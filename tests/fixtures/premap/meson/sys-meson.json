@@ -1,0 +1,48 @@
+{
+ "versions": {
+  "meson": "1.12.1"
+ },
+ "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+ "runs": [
+  {
+   "command": {
+    "tool": "meson",
+    "argv": [
+     "sh",
+     "-c",
+     "b=$(mktemp -d) && meson setup --wrap-mode nodownload \"$b\" >&2 && meson introspect \"$b\" --targets --projectinfo"
+    ],
+    "cwd": ".",
+    "env": {},
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"projectinfo\": {\"version\": \"0.3.0\", \"descriptive_name\": \"imgconv\", \"license\": [\"MIT\"], \"license_files\": [], \"subproject_dir\": \"subprojects\", \"subprojects\": []}, \"targets\": [{\"name\": \"img\", \"id\": \"f98ca55@@img@sta\", \"type\": \"static library\", \"defined_in\": \"/work/libimg/meson.build\", \"filename\": [\"/tmp/tmp.Bgt35L7WFI/libimg/libimg.a\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"c\", \"machine\": \"host\", \"compiler\": [\"cc\"], \"parameters\": [\"-I/tmp/tmp.Bgt35L7WFI/libimg/libimg.a.p\", \"-I/tmp/tmp.Bgt35L7WFI/libimg\", \"-I/work/libimg\", \"-I/work/libimg/include\", \"-fdiagnostics-color=always\", \"-D_FILE_OFFSET_BITS=64\", \"-Wall\", \"-Winvalid-pch\", \"-Wextra\", \"-std=c11\", \"-O0\", \"-g\", \"-fPIC\", \"-DIMG_MAX_SIDE=4096\"], \"sources\": [\"/work/libimg/img.c\"], \"generated_sources\": [], \"unity_sources\": []}, {\"linker\": [\"gcc-ar\"], \"parameters\": [\"csrDT\"]}], \"extra_files\": [], \"subproject\": null, \"dependencies\": [\"zlib\", \"m\"], \"depends\": [], \"installed\": false}, {\"name\": \"imgconv\", \"id\": \"imgconv@exe\", \"type\": \"executable\", \"defined_in\": \"/work/meson.build\", \"filename\": [\"/tmp/tmp.Bgt35L7WFI/imgconv\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"c\", \"machine\": \"host\", \"compiler\": [\"cc\"], \"parameters\": [\"-I/tmp/tmp.Bgt35L7WFI/imgconv.p\", \"-I/tmp/tmp.Bgt35L7WFI\", \"-I/work\", \"-I/work/libimg/include\", \"-fdiagnostics-color=always\", \"-D_FILE_OFFSET_BITS=64\", \"-Wall\", \"-Winvalid-pch\", \"-Wextra\", \"-std=c11\", \"-O0\", \"-g\"], \"sources\": [\"/work/src/main.c\"], \"generated_sources\": [], \"unity_sources\": []}, {\"linker\": [\"cc\"], \"parameters\": [\"-Wl,--as-needed\", \"-Wl,--no-undefined\", \"-Wl,--start-group\", \"-Wl,--start-group\", \"libimg/libimg.a\", \"/usr/lib/x86_64-linux-gnu/libz.so\", \"-lm\", \"-Wl,--end-group\", \"-Wl,--end-group\"]}], \"extra_files\": [], \"subproject\": null, \"dependencies\": [], \"depends\": [], \"win_subsystem\": \"console\", \"installed\": true, \"install_filename\": [\"/usr/local/bin/imgconv\"]}, {\"name\": \"roundtrip\", \"id\": \"59830eb@@roundtrip@exe\", \"type\": \"executable\", \"defined_in\": \"/work/tests/meson.build\", \"filename\": [\"/tmp/tmp.Bgt35L7WFI/tests/roundtrip\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"c\", \"machine\": \"host\", \"compiler\": [\"cc\"], \"parameters\": [\"-I/tmp/tmp.Bgt35L7WFI/tests/roundtrip.p\", \"-I/tmp/tmp.Bgt35L7WFI/tests\", \"-I/work/tests\", \"-I/work/libimg/include\", \"-fdiagnostics-color=always\", \"-D_FILE_OFFSET_BITS=64\", \"-Wall\", \"-Winvalid-pch\", \"-Wextra\", \"-std=c11\", \"-O0\", \"-g\"], \"sources\": [\"/work/tests/roundtrip.c\"], \"generated_sources\": [], \"unity_sources\": []}, {\"linker\": [\"cc\"], \"parameters\": [\"-Wl,--as-needed\", \"-Wl,--no-undefined\", \"-Wl,--start-group\", \"-Wl,--start-group\", \"libimg/libimg.a\", \"/usr/lib/x86_64-linux-gnu/libz.so\", \"-lm\", \"-Wl,--end-group\", \"-Wl,--end-group\"]}], \"extra_files\": [], \"subproject\": null, \"dependencies\": [], \"depends\": [], \"win_subsystem\": \"console\", \"installed\": false}]}\n",
+    "stderr": "The Meson build system\nVersion: 1.12.1\nSource dir: /work\nBuild dir: /tmp/tmp.Bgt35L7WFI\nBuild type: native build\nProject name: imgconv\nProject version: 0.3.0\nC compiler for the host machine: cc (gcc 13.3.0 \"cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\")\nC linker for the host machine: cc ld.bfd 2.42\nHost machine cpu family: x86_64\nHost machine cpu: x86_64\nFound pkg-config: YES (/usr/bin/pkg-config) 1.8.1\nRun-time dependency zlib found: YES 1.3\nLibrary m found: YES\nBuild targets in project: 3\n\nimgconv 0.3.0\n\n  User defined options\n    wrap_mode: nodownload\n\nFound ninja-1.13.2.git.kitware.jobserver-pipe-1 at /tmp/t/bin/ninja\n",
+    "root": "/work"
+   }
+  },
+  {
+   "command": {
+    "tool": "meson",
+    "argv": [
+     "meson",
+     "introspect",
+     "meson.build",
+     "--targets",
+     "--projectinfo"
+    ],
+    "cwd": ".",
+    "env": {},
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"projectinfo\": {\"descriptive_name\": \"imgconv\", \"version\": \"0.3.0\", \"license\": [\"MIT\"], \"license_files\": [], \"subprojects\": [], \"buildsystem_files\": [\"meson.build\", \"meson.options\", \"tests/meson.build\", \"libimg/meson.build\"], \"subproject_dir\": \"subprojects\"}, \"targets\": [{\"name\": \"img\", \"id\": \"f98ca55@@img@sta\", \"type\": \"static library\", \"defined_in\": \"libimg/meson.build\", \"filename\": [\"libimg/libimg.a\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"unknown\", \"machine\": \"host\", \"compiler\": [], \"parameters\": [], \"sources\": [\"/work/libimg/img.c\"], \"generated_sources\": []}], \"depends\": [], \"extra_files\": [], \"subproject\": null, \"installed\": false}, {\"name\": \"imgconv\", \"id\": \"imgconv@exe\", \"type\": \"executable\", \"defined_in\": \"meson.build\", \"filename\": [\"imgconv\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"unknown\", \"machine\": \"host\", \"compiler\": [], \"parameters\": [], \"sources\": [\"/work/src/main.c\"], \"generated_sources\": []}], \"depends\": [], \"extra_files\": [], \"subproject\": null, \"installed\": true}, {\"name\": \"roundtrip\", \"id\": \"59830eb@@roundtrip@exe\", \"type\": \"executable\", \"defined_in\": \"tests/meson.build\", \"filename\": [\"tests/roundtrip\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"unknown\", \"machine\": \"host\", \"compiler\": [], \"parameters\": [], \"sources\": [\"/work/tests/roundtrip.c\"], \"generated_sources\": []}], \"depends\": [], \"extra_files\": [], \"subproject\": null, \"installed\": false}]}\n",
+    "stderr": "",
+    "root": "/work"
+   }
+  }
+ ]
+}
