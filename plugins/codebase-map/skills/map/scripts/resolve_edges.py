@@ -43,14 +43,8 @@ comparable to one landing on a concrete body: a consumer that propagates through
 (`stale-callers`, `edit_impact`) must decide that separately, which is one reason
 these edges stay in their own store instead of being merged into the lexical graph.
 
-Run it through uv, which supplies the engine without making it a dependency of the
-snapshot:
-
-    uv run --with jedi --no-config --no-project --script resolve_edges.py \
-        <manifest.sqlite> --engine jedi --environment <venv-or-site-packages> [...]
-
-Without `--environment` the engine sees the project only, and the measured residual
-unresolved rises from 2.7% to 24.1%; the report says which of the two it ran.
+`--pass` runs every analyzer the snapshot's languages need, as the detached pass does;
+`--engine <entry>` runs one stage, under uv with its adapter's requirements (`stage_command`).
 """
 from __future__ import annotations
 
@@ -100,8 +94,6 @@ EXCLUDED_REASONS = frozenset({"unbound-name"})
 REPORT_NAME = "engine-report.json"
 RUNNING_NAME = "engine-pass.running"
 LOG_NAME = "engine-pass.log"
-ENGINE_INSTALL = ("install uv, which gives the pass jedi and the snapshot's parser packages, "
-                  "or install jedi in the interpreter that writes the snapshot")
 ENGINE_RESOLVER_PREFIX = "engine"
 CANDIDATE_REASONS = {
     "project-not-a-symbol": "engine-project-not-a-symbol",
@@ -207,305 +199,12 @@ def free_memory() -> int | None:
     return None
 
 
-def site_packages_of(environment: Path) -> Path | None:
-    """The importable directory of a venv root, a site-packages dir, or neither."""
-    if (environment / "pyvenv.cfg").is_file():
-        for candidate in (environment / "Lib" / "site-packages",):
-            if candidate.is_dir():
-                return candidate
-        matches = sorted(environment.glob("lib/python*/site-packages"))
-        return matches[-1] if matches else None
-    if environment.is_dir() and environment.name == "site-packages":
-        return environment
-    return None
-
-
-def package_names(site_packages: Path | None) -> list[str]:
-    """Directly importable top-level names, excluding installers and metadata.
-
-    This is a static count of the supplied directory. It does not execute `.pth`
-    files or claim to enumerate editable dependencies exposed by those files.
-    """
-    if site_packages is None:
-        return []
-    excluded = {"pip", "setuptools", "wheel", "pkg_resources", "_distutils_hack",
-                "_virtualenv", "__pycache__"}
-    names = set()
-    for child in site_packages.iterdir():
-        name = child.name
-        if child.is_file():
-            if name.endswith((".py", ".pyc", ".pyd", ".so")):
-                name = name.split(".")[0]
-            else:
-                continue
-        if name.isidentifier() and name not in excluded:
-            names.add(name)
-    return sorted(names)
-
-
-def requested_interpreter(environment: Path) -> str | None:
-    for candidate in (environment / "Scripts/python.exe", environment / "bin/python",
-                      environment / "bin/python3"):
-        if candidate.is_file():
-            return candidate.as_posix()
-    if (environment / "pyvenv.cfg").is_file():
-        relative = "Scripts/python.exe" if (environment / "Lib/site-packages").is_dir() else "bin/python"
-        return (environment / relative).as_posix()
-    return None
-
-
-class JediEngine:
-    """The measured Python engine: Jedi, inferring at the callee name.
-
-    The environment model is the one the recording campaign measured, not a
-    simpler one: an inference run against the project's real environments confirmed
-    505 of 1,600 positions with 2.7% residual, and the same run without them 403
-    with 24.1% residual (evals/codebase-map/resolver-spike/RESULTS.md). So each
-    `--environment` is turned into a real Jedi environment through
-    `create_environment(path, safe=False)`, and only an environment that fails to
-    build degrades to `added_sys_path` over only its own site-packages. Populated
-    environments beat installer-only stubs; serving scope breaks ties between
-    populated offers. A run with no usable environment uses `project-only` mode.
-    The report records the choice, interpreter and package count for each file.
-
-    Deliberately not touched: `jedi.settings.fast_parser`. Setting it to False raises
-    a KeyError inside jedi 0.20.1 (`jedi/inference/syntax_tree.py`), which the
-    campaign recorded as a known pitfall rather than working around.
-    """
-
-    name = "jedi"
-    languages = ("python",)
-
-    def __init__(self, project_root: Path, environments: list[Path]):
-        self.project_root = project_root
-        self.requests = environments
-        self.modes: dict[str, int] = {}
-        self.unusable: list[str] = []
-        self.built: list[dict] = []
-        self._per_root: dict[Path, tuple] = {}
-        self.file_environments: dict[str, dict] = {}
-        self.version: str | None = None
-        self.plain_project = None
-        self.default_environment = None
-        # Directories the project puts on sys.path at runtime (`runtime_import_roots`).
-        self.import_roots: list[Path] = []
-        self.lines = SourceLines()
-        self.install = None
-
-    def scope_of(self, root: Path) -> Path:
-        """The source subtree an environment serves.
-
-        A conventional venv (`.venv`, `venv`, `env`) lives inside the package
-        directory it serves and no source file is ever inside the venv itself, so
-        nearest-enclosing has to match the parent. Anything else scopes to its own
-        directory.
-        """
-        if root.name == "site-packages":
-            for ancestor in list(root.parents)[:3]:
-                if (ancestor / "pyvenv.cfg").is_file():
-                    return self.scope_of(ancestor)
-            # A bare directory was explicitly offered for this project; its
-            # dependencies cannot serve source files inside site-packages itself.
-            return self.project_root
-        parent = root.parent
-        if root.name in (".venv", "venv", "env") and parent != root:
-            try:
-                parent.relative_to(self.project_root)
-            except ValueError:
-                return root
-            return parent
-        return root
-
-    def probe(self) -> tuple[bool, str]:
-        """Import the engine, build its environments, and answer one real inference.
-
-        A version string is not readiness: the measured campaign found ten defects in
-        its own harness before it could measure, two of them producing plausibly
-        false numbers. Readiness is an inference that answers.
-        """
-        self.modes.clear()
-        self.unusable.clear()
-        self.built.clear()
-        self._per_root.clear()
-        self.file_environments.clear()
-        try:
-            import jedi
-        except ImportError as error:
-            self.install = ENGINE_INSTALL
-            return False, (f"jedi is not installed: {error}. Run this command through "
-                           f"`uv run --with jedi --no-config --no-project --script "
-                           f"resolve_edges.py` or install jedi into this interpreter.")
-        self.version = getattr(jedi, "__version__", "unknown")
-        try:
-            from jedi.api.environment import create_environment, get_default_environment
-        except ImportError as error:
-            return False, f"jedi has no environment API: {error}"
-        try:
-            self.default_environment = get_default_environment()
-            roots = [str(self.project_root), *map(str, self.import_roots)]
-            # Jedi appends added paths after the environment's, so a standard or
-            # installed module still wins over a project script of the same name.
-            self.plain_project = jedi.Project(path=str(self.project_root), added_sys_path=roots)
-            for request in self.requests:
-                entry = {"path": request.as_posix(), "scope": self.scope_of(request).as_posix(),
-                         "environment": None, "mode": None, "site_packages": None,
-                         "requested_interpreter": requested_interpreter(request),
-                         "interpreter": getattr(self.default_environment, "executable", sys.executable),
-                         "package_count": 0, "package_names": [],
-                         "package_count_source": "direct site-packages names; .pth not executed"}
-                packages = site_packages_of(request)
-                entry["site_packages"] = packages.as_posix() if packages else None
-                environment = None
-                project = self.plain_project
-                if packages is None:
-                    entry["mode"] = "unusable"
-                    self.unusable.append(str(request))
-                else:
-                    try:
-                        entry["package_names"] = package_names(packages)
-                    except OSError as error:
-                        entry["package_inventory_error"] = f"{type(error).__name__}: {error}"[:300]
-                        entry["mode"] = "unusable"
-                        self.unusable.append(str(request))
-                        self.built.append(entry)
-                        continue
-                    entry["package_count"] = len(entry["package_names"])
-                    try:
-                        environment = create_environment(str(request), safe=False)
-                        # The report carries a description, never the live object:
-                        # the binding is JSON and an Environment is not serializable.
-                        entry["environment"] = getattr(environment, "path", None) or str(request)
-                        entry["interpreter"] = getattr(environment, "executable", None) \
-                            or entry["requested_interpreter"] or str(request)
-                        version = getattr(environment, "version_info", None)
-                        entry["python_version"] = ".".join(map(str, version[:3])) if version else None
-                        entry["mode"] = "create_environment"
-                    except Exception as error:
-                        environment = None
-                        entry["mode"] = "added_sys_path"
-                        entry["create_environment_error"] = \
-                            f"{type(error).__name__}: {error}"[:300]
-                        # Only this environment's dependency directory is added.
-                        # Pooling all candidates silently gives a file packages
-                        # from unrelated projects and misstates its provenance.
-                        project = jedi.Project(path=str(self.project_root),
-                                               added_sys_path=[*roots, str(packages)])
-                self.built.append(entry)
-                self._per_root[request] = (environment, project, entry)
-            # Positional, because jedi 0.20 renamed the keyword `source` to `code`.
-            # Verified against jedi 0.20.1; the identity that answered is recorded in
-            # the edge store's binding, so another version is another resolver.
-            probe = jedi.Script("import os\nos.getcwd()\n", project=self.plain_project,
-                                environment=self.default_environment)
-            if not probe.infer(line=2, column=6):
-                return False, "jedi answered no definition for its own readiness probe"
-        except Exception as error:  # an engine that cannot infer is not ready
-            return False, f"{type(error).__name__}: {error}"
-        return True, ""
-
-    def environment_for(self, absolute: Path) -> tuple:
-        """Prefer populated environments, then the nearest eligible serving scope."""
-        candidates = [item for item in self._per_root.values() if item[2]["mode"] != "unusable"]
-        populated = [item for item in candidates if item[2]["package_count"] > 0]
-        candidates = populated or candidates
-        scoped = [item for item in candidates if absolute.is_relative_to(Path(item[2]["scope"]))]
-
-        def rank(item):
-            entry = item[2]
-            scope = Path(entry["scope"])
-            shared = len(Path(os.path.commonpath([absolute.parent, scope])).parts) \
-                if absolute.drive == scope.drive else 0
-            distance = len(absolute.parent.parts) + len(scope.parts) - 2 * shared
-            return (-len(scope.parts) if scoped else distance,
-                    entry["mode"] != "create_environment", entry["path"])
-
-        if candidates:
-            environment, project, entry = min(scoped or candidates, key=rank)
-            mode = entry["mode"]
-            record = {key: entry[key] for key in ("path", "scope", "mode", "interpreter",
-                                                  "requested_interpreter", "package_count")}
-            record["selection"] = ("populated" if populated else "empty") + \
-                ("-serving-scope" if scoped else "-nearest-offered-environment")
-        else:
-            environment, project, mode = self.default_environment, self.plain_project, "project-only"
-            record = {"path": None, "mode": mode, "scope": self.project_root.as_posix(),
-                      "interpreter": getattr(self.default_environment, "executable", sys.executable),
-                      "requested_interpreter": None, "package_count": 0,
-                      "selection": "no-usable-environment"}
-        try:
-            file = absolute.relative_to(self.project_root).as_posix()
-        except ValueError:
-            file = absolute.as_posix()
-        self.file_environments[file] = record
-        self.modes[mode] = self.modes.get(mode, 0) + 1
-        return project, environment or self.default_environment, mode
-
-    def definitions(self, path: Path, line: int, column: int) -> list[Location]:
-        """Infer at a UTF-8 byte column. Jedi counts code points, in both directions."""
-        import jedi
-        path = Path(path).resolve()
-        text = self.lines.get(path, line)
-        character = None if text is None else byte_to_char(text, column)
-        if character is None:
-            raise ValueError(f"no character starts at byte {column} of {path}:{line}")
-        project, environment, _mode = self.environment_for(path)
-        script = jedi.Script(path=str(path), project=project, environment=environment)
-        found = []
-        inferred = script.infer(line=line, column=character)
-        if inferred and all(definition.type not in ("function", "class") for definition in inferred):
-            # The value is an object, as a decorator returns one: the callee is declared where its name is.
-            named = [definition for definition in script.goto(line=line, column=character, follow_imports=True)
-                     if definition.type in ("function", "class")]
-            inferred = named or inferred
-        for definition in inferred:
-            if definition.module_path is None:
-                found.append(Location(None, None, None))
-                continue
-            target, row, start = Path(definition.module_path), definition.line, definition.column
-            # An instance, statement or module names no declaration: it gets no column.
-            # Only a project file can hold an edge's target; others need no conversion.
-            declared = definition.type in ("function", "class")
-            name_line = self.lines.get(target, row)                 if declared and target.is_relative_to(self.project_root) else None
-            found.append(Location(target, row, char_to_byte(name_line, start)
-                                  if name_line is not None and type(start) is int else None))
-        return found
-
-    def identity(self) -> str:
-        return f"{self.name}@{self.version}"
-
-    def context(self) -> str | None:
-        """What a Jedi answer depends on besides the sources: its version, environments and import roots."""
-        try:
-            version = metadata.version("jedi")
-        except metadata.PackageNotFoundError:
-            return None
-        offered = []
-        for request in self.requests:
-            packages = site_packages_of(request)
-            try:
-                # Distribution folders carry versions, so an upgrade is a new context.
-                installed = sorted(child.name for child in packages.iterdir()) if packages else None
-            except OSError:
-                installed = None
-            offered.append([request.as_posix(), installed])
-        roots = sorted(path.as_posix() for path in self.import_roots)
-        return f"jedi@{version}|" + hashlib.sha256(json.dumps([offered, roots]).encode("utf-8")).hexdigest()
-
-    def report(self) -> dict:
-        return {"environments": self.built, "unusable_environments": self.unusable,
-                "import_roots": [path.relative_to(self.project_root).as_posix() for path in self.import_roots],
-                "inference_modes": dict(sorted(self.modes.items())),
-                "file_environments": dict(sorted(self.file_environments.items()))}
-
-
 class EngineFailure(RuntimeError):
     """The engine can no longer answer; the pass stops asking and reports why."""
 
 
 # Bounds that keep one server from taking a shared machine.
 SERVER_MEMORY_MB = 2048
-# A JVM server keeps its whole heap once grown; this one measured 1.8 GB with 2 GB allowed.
-JVM_MEMORY_MB = 1024
 ENGINE_THREADS = 2
 LSP_START_TIMEOUT = 300
 LSP_REQUEST_TIMEOUT = 60
@@ -513,7 +212,7 @@ LSP_OPEN_DOCUMENTS = 64
 
 
 class LspEngine:
-    """A language server asked `textDocument/definition` at the callee name, as Jedi is asked `infer`.
+    """A language server asked `textDocument/definition` at the callee name.
 
     multilspy supplies the pinned server releases and the JSON-RPC transport; each
     subclass says how its server is installed, launched, configured and known to be
@@ -1458,273 +1157,6 @@ class GoEngine(MirroredEngine):
         return f"{self.identity()}|go={GO_VERSION}|{modules.hexdigest()[:16]}"
 
 
-class TypeScriptEngine(MirroredEngine):
-    """TypeScript and JavaScript through typescript-language-server.
-
-    The server needs no build and no installed dependencies: a file outside every
-    tsconfig gets an inferred project, which is how tests and scripts are covered
-    at all. Measured against scip-typescript, which indexes only the files a
-    tsconfig includes and stops at a tsconfig extending an uninstalled package,
-    this engine confirmed more edges on both a TypeScript and a JavaScript project.
-    Vue and Svelte files are served as a virtual `.ts` or `.js` document holding
-    only their script blocks at the snapshot's byte offsets, so a position means the
-    same in both. Automatic type acquisition is off, so the server never downloads.
-
-    Without the project's packages a library call is unresolved instead of external
-    (ky: 59.1% instead of 90.9%). A project without `node_modules` gets its packages
-    installed once into the shared directory (`npm_modules`), and the server opens a
-    mirror of the project in a temporary directory: a link per top-level directory,
-    a copy of each top-level file and `node_modules` linked to the shared install,
-    since TypeScript looks for packages only in the folders above a file.
-    """
-
-    name = "typescript"
-    server_name = "typescript-language-server"
-    languages = ("typescript", "javascript", "vue", "svelte")
-    language_ids = {".ts": "typescript", ".mts": "typescript", ".cts": "typescript", ".tsx": "typescriptreact",
-                    ".js": "javascript", ".mjs": "javascript", ".cjs": "javascript", ".jsx": "javascriptreact"}
-
-    def pinned(self) -> dict:
-        packages = [dependency["command"].split()[-1]
-                    for dependency in _multilspy_pins("typescript_language_server")["runtimeDependencies"]]
-        server = next(item for item in packages if item.startswith("typescript-language-server@"))
-        return {"version": server.rsplit("@", 1)[1], "packages": packages}
-
-    def prepare(self, home: Path) -> tuple[bool, str]:
-        node, npm = shutil.which("node"), shutil.which("npm")
-        if not node or not npm:
-            self.install = "install Node.js 18 or later with npm (https://nodejs.org)"
-            return False, "node and npm are needed to run typescript-language-server"
-
-        def fill(partial):
-            subprocess.run([npm, "install", "--prefix", str(partial), "--no-audit", "--no-fund", "--no-save",
-                            *self.pinned()["packages"]], check=True, stdin=subprocess.DEVNULL,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-
-        self._install(home, fill)
-        return True, ""
-
-    def command(self, home: Path) -> tuple[list[str], dict]:
-        # The npm shim is a shell script on Windows; node runs the entry point itself.
-        cli = home / "node_modules" / "typescript-language-server" / "lib" / "cli.mjs"
-        return [shutil.which("node"), str(cli), "--stdio"], {"UV_THREADPOOL_SIZE": str(ENGINE_THREADS)}
-
-    def initialization_options(self) -> dict:
-        return {"disableAutomaticTypingAcquisition": True, "maxTsServerMemory": SERVER_MEMORY_MB,
-                "tsserver": {"useSyntaxServer": "never"}}
-
-    def readiness_probe(self):
-        return "__daodan_engine_probe__.ts", "function probe() {}\nprobe();\n", 1, 0
-
-    mirror_skip = (".git", "node_modules")
-
-    def probe(self) -> tuple[bool, str]:
-        self.mirror = None
-        links = {}
-        for directory in package_directories(self.project_root):
-            try:
-                modules = npm_modules(directory)
-            except (OSError, subprocess.SubprocessError) as error:
-                print(f"the project's JavaScript packages were not installed: {error}", flush=True)
-                modules = None
-            if modules is not None:
-                links[(PurePosixPath(directory.relative_to(self.project_root).as_posix()) / "node_modules").as_posix()] = modules
-        if links:
-            self.mirror = self.build_mirror(links)
-        return super().probe()
-
-    def served_text(self, path: Path) -> tuple[Path, str]:
-        served, text = super().served_text(path)
-        if path.suffix.lower() not in (".vue", ".svelte"):
-            return served, text
-        from languages.sfc import mask_non_script
-        text, typed, _has_script = mask_non_script(text)
-        return served.with_name(served.name + (".ts" if typed else ".js")), text
-
-    def context(self) -> str | None:
-        """The server version and the project's packages, which decide what is external."""
-        if self.version is None:
-            return None
-        modules = self.project_root / "node_modules"
-        packages = f"node_modules={modules.stat().st_mtime_ns}" if modules.is_dir() else \
-            "npm=" + ",".join(str(npm_key(directory)) for directory in package_directories(self.project_root))
-        return f"{self.identity()}|{packages}"
-
-    def report(self) -> dict:
-        return {**super().report(), "max_server_memory_mb": SERVER_MEMORY_MB,
-                "packages": "project" if (self.project_root / "node_modules").is_dir() else
-                "shared" if self.mirror else None}
-
-
-class JavaEngine(LspEngine):
-    """Java through Eclipse JDT LS, with the Java runtime its release bundles.
-
-    The server never sees the build: its workspace is an Eclipse project that Daodan
-    writes in a temporary directory, with the project's package roots as linked
-    source folders and its libraries, resolved into the shared store by
-    `jvm_classpath`, as jars. JDT LS refuses an invisible project beside a pom.xml
-    or a Gradle build, and an offline Maven import was measured to answer no
-    position, so neither is used; automatic building and both imports stay off.
-    Nothing is compiled and nothing is written into the project. Memory and
-    processors are capped for the JVM; the runtime library's index is shared.
-    """
-
-    name = "java"
-    server_name = "eclipse-jdtls"
-    languages = ("java",)
-    source_languages = ("java",)
-    language_ids = {".java": "java"}
-
-    def __init__(self, project_root: Path, install_dir: Path | None = None):
-        super().__init__(project_root, install_dir)
-        self.workspace = None
-        self.ready_event = None
-        self.service_ready = False
-        self.jre_home = None
-        self.sources: list[Path] = []
-        self.libraries: list[Path] = []
-        self.source_roots: list[Path] = []
-
-    def workspace_root(self) -> Path:
-        return self.workspace / "project" if self.workspace is not None else self.project_root
-
-    def describe_project(self) -> None:
-        """Write the Eclipse project the server opens: linked package roots and library jars."""
-        from xml.sax.saxutils import quoteattr
-        sources = self.sources or sorted(self.project_root.rglob("*.java"))
-        self.source_roots = java_source_roots(sources)
-        try:
-            self.libraries = jvm_classpath(self.project_root)
-        except Exception as error:
-            # Without its libraries the engine still answers for the project's own code.
-            print(f"the project's libraries were not resolved: {type(error).__name__}: {error}", flush=True)
-            self.libraries = []
-        project = self.workspace / "project"
-        project.mkdir()
-        links = "".join(f"<link><name>source{index}</name><type>2</type><location>{path.as_posix()}</location></link>"
-                        for index, path in enumerate(self.source_roots))
-        (project / ".project").write_text(
-            "<?xml version='1.0' encoding='UTF-8'?><projectDescription><name>daodan-sources</name><comment/>"
-            "<projects/><buildSpec/><natures><nature>org.eclipse.jdt.core.javanature</nature></natures>"
-            f"<linkedResources>{links}</linkedResources></projectDescription>", encoding="utf-8")
-        entries = "".join(f"<classpathentry kind='src' path='source{index}'/>"
-                          for index in range(len(self.source_roots)))
-        entries += "".join(f"<classpathentry kind='lib' path={quoteattr(path.as_posix())}/>" for path in self.libraries)
-        (project / ".classpath").write_text(
-            "<?xml version='1.0' encoding='UTF-8'?><classpath>" + entries
-            + "<classpathentry kind='con' path='org.eclipse.jdt.launching.JRE_CONTAINER'/>"
-            "<classpathentry kind='output' path='bin'/></classpath>", encoding="utf-8")
-
-
-    def pinned(self) -> dict:
-        entry = _multilspy_pins("eclipse_jdtls")["vscode-java"][_platform()]
-        version = entry["url"].rsplit("/", 2)[-2].lstrip("v")
-        return {"version": version, **entry}
-
-    def prepare(self, home: Path) -> tuple[bool, str]:
-        pins = self.pinned()
-
-        def fill(partial):
-            from multilspy.multilspy_logger import MultilspyLogger
-            from multilspy.multilspy_utils import FileUtils
-            FileUtils.download_and_extract_archive(MultilspyLogger(), pins["url"], str(partial), pins["archiveType"])
-
-        self._install(home, fill)
-        self.jre_home = home / pins["jre_home_path"]
-        # The archive is a zip and its extraction drops the execute bit: without it the bundled runtime cannot
-        # start. Restored at every use, so an install made before this line is repaired too.
-        if os.name != "nt":
-            for binary in (*(self.jre_home / "bin").glob("*"), self.jre_home / "lib" / "jspawnhelper"):
-                if binary.is_file() and not os.access(binary, os.X_OK):
-                    binary.chmod(0o755)
-        return True, ""
-
-    def command(self, home: Path) -> tuple[list[str], dict]:
-        pins = self.pinned()
-        server = home / "extension" / "server"
-        launcher = next(iter(sorted(server.glob("plugins/org.eclipse.equinox.launcher_*.jar"))))
-        platform = _platform()
-        family = "win" if platform.startswith("win") else "mac" if platform.startswith("osx") else "linux"
-        arm = "_arm" if platform.endswith("arm64") else ""
-        config = server / f"config_{family}{arm}"
-        if not config.is_dir():
-            config = server / f"config_{family}"
-        self.workspace = Path(tempfile.mkdtemp(prefix="daodan-jdtls-"))
-        shutil.copytree(config, self.workspace / "config")
-        # Buildship, which the server starts even with the Gradle import off, downloads the list of
-        # Gradle releases unless a cache younger than a day exists. A fresh empty list keeps it local.
-        versions = self.workspace / "xdg" / "tooling" / "gradle" / "versions.json"
-        versions.parent.mkdir(parents=True)
-        versions.write_text("[]", encoding="utf-8")
-        self.describe_project()
-        lombok = sorted((home / "extension" / "lombok").glob("lombok-*.jar"))
-        shared_index = self.install_root / "shared-index"
-        command = [str(home / pins["jre_path"]), "--add-modules=ALL-SYSTEM",
-                   "--add-opens", "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED",
-                   "--add-opens", "java.base/sun.nio.fs=ALL-UNNAMED",
-                   "-Declipse.application=org.eclipse.jdt.ls.core.id1", "-Dosgi.bundles.defaultStartLevel=4",
-                   "-Declipse.product=org.eclipse.jdt.ls.core.product",
-                   "-Djava.import.generatesMetadataFilesAtProjectRoot=false", "-Dfile.encoding=utf8",
-                   "-XX:+UseParallelGC", "-XX:GCTimeRatio=4", "-XX:AdaptiveSizePolicyWeight=90",
-                   "-Dsun.zip.disableMemoryMapping=true", f"-Xmx{JVM_MEMORY_MB}m", "-Xms100m",
-                   f"-XX:ActiveProcessorCount={ENGINE_THREADS}", "-Xlog:disable",
-                   *([f"-javaagent:{lombok[-1]}"] if lombok else []),
-                   f"-Djdt.core.sharedIndexLocation={shared_index}",
-                   "-jar", str(launcher), "-configuration", str(self.workspace / "config"),
-                   "-data", str(self.workspace / "data")]
-        return command, {"syntaxserver": "false", "JAVA_HOME": str(self.jre_home),
-                         "XDG_CACHE_HOME": str(self.workspace / "xdg")}
-
-    def settings(self) -> dict:
-        return {"java": {
-            "autobuild": {"enabled": False}, "maxConcurrentBuilds": 1,
-            # The Gradle wrapper check fetches services.gradle.org even with the import off.
-            "import": {"gradle": {"enabled": False, "wrapper": {"enabled": False}}, "maven": {"enabled": False},
-                       "exclusions": ["**/node_modules/**", "**/.metadata/**", "**/archetype-resources/**",
-                                      "**/META-INF/maven/**"]},
-            "configuration": {"updateBuildConfiguration": "disabled",
-                              "runtimes": [{"name": "JavaSE-21", "path": str(self.jre_home), "default": True}]},
-            "references": {"includeDecompiledSources": False},
-            "signatureHelp": {"enabled": False}, "format": {"enabled": False},
-        }}
-
-    def initialization_options(self) -> dict:
-        return {"bundles": [], "workspaceFolders": [self.workspace_root().as_uri()], "settings": self.settings(),
-                "extendedClientCapabilities": {"classFileContentsSupport": True}}
-
-    def notifications(self) -> dict:
-        async def status(params):
-            if params.get("type") == "ServiceReady":
-                self.service_ready = True
-                if self.ready_event is not None:
-                    self.ready_event.set()
-        return {"language/status": status}
-
-    async def wait_ready(self) -> None:
-        # Both callbacks run on the transport's loop, so the flag and the event cannot race.
-        if not self.service_ready:
-            self.ready_event = asyncio.Event()
-            await self.ready_event.wait()
-
-    def probe(self) -> tuple[bool, str]:
-        self.ready_event, self.service_ready = None, False
-        return super().probe()
-
-    def cleanup(self) -> None:
-        if self.workspace is not None:
-            shutil.rmtree(self.workspace, ignore_errors=True)
-            self.workspace = None
-
-    def context(self) -> str | None:
-        if self.version is None:
-            return None
-        return f"{self.identity()}|libraries={coordinates_digest(self.project_root)}"
-
-    def report(self) -> dict:
-        return {**super().report(), "max_heap_mb": JVM_MEMORY_MB, "processors": ENGINE_THREADS,
-                "source_roots": [path.as_posix() for path in self.source_roots], "libraries": len(self.libraries)}
-
-
 # The Kotlin Analysis API in standalone mode with the platform it runs on, as KSP publishes it on
 # Maven Central, and the compiler that builds the resolver against it once.
 KOTLIN_ANALYSIS = "com.google.devtools.ksp:symbol-processing-aa:2.3.13"
@@ -1740,20 +1172,9 @@ KOTLIN_COMPILER = ("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.4.21",
                    "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0",
                    "org.jetbrains:annotations:13.0")
 KOTLIN_OPT_INS = ("KaExperimentalApi", "KaPlatformInterface", "KaImplementationDetail", "KaIdeApi")
-KOTLIN_MEMORY_MB = 1536
-JAVA_MINIMUM = 17
-TEMURIN_JRE = "https://api.adoptium.net/v3/binary/latest/21/ga/{os}/{arch}/jre/hotspot/normal/eclipse"
 
 
 MAVEN_CENTRAL = "https://repo1.maven.org/maven2"
-# Coursier resolves Maven coordinates with their transitive dependencies, without running a build.
-COURSIER = {"version": "2.1.24", "sha256": "8c724dc204534353ea8263ba0af624979658f7ab62395f35b04f03ce5714f330",
-            "url": "https://github.com/coursier/coursier/releases/download/v2.1.24/coursier.jar"}
-BUILD_SKIP = frozenset({"node_modules", "target", "build", "out", "bin", "dist"})
-GRADLE_COORDINATE = re.compile(r"""["']([A-Za-z0-9_.\-]+):([A-Za-z0-9_.\-]+):([A-Za-z0-9_.\-+\[\],()]+)["']""")
-GRADLE_KOTLIN_MODULE = re.compile(r"""\bkotlin\(\s*["']([A-Za-z0-9_.\-]+)["']\s*(?:,\s*["']([^"']+)["'])?\s*\)""")
-GRADLE_KOTLIN_PLUGIN = re.compile(r"""kotlin\(\s*["'](?:jvm|multiplatform|android)["']\s*\)\s*version\s*["']([^"']+)["']"""
-                                  r"""|org\.jetbrains\.kotlin\.(?:jvm|multiplatform|android)["']\)?\s*version\s*["']([^"']+)["']""")
 
 
 def maven_central_dir() -> Path:
@@ -1808,467 +1229,6 @@ def maven_artifact(coordinate: str) -> Path:
     print(f"downloading {coordinate} into {target.parent}", flush=True)
     url = f"{MAVEN_CENTRAL}/{relative.as_posix()}"
     return download(url, target, sha1_url=url + ".sha1")
-
-
-def build_files(root: Path, names: tuple[str, ...]) -> list[Path]:
-    """Build files under the project, outside dot directories and build outputs."""
-    found, stack = [], [Path(root)]
-    while stack:
-        directory = stack.pop()
-        try:
-            entries = sorted(directory.iterdir())
-        except OSError:
-            continue
-        for entry in entries:
-            if entry.is_dir():
-                if not entry.name.startswith(".") and entry.name not in BUILD_SKIP and not entry.is_symlink():
-                    stack.append(entry)
-            elif entry.name in names:
-                found.append(entry)
-    return found
-
-
-def _pom(path: Path, local: dict, depth: int = 0) -> dict:
-    """A pom's properties, managed versions, dependencies, BOMs and remote parent, local parents merged in."""
-    import xml.etree.ElementTree as ElementTree
-    empty = {"properties": {}, "managed": {}, "dependencies": [], "boms": []}
-    try:
-        project = ElementTree.parse(path).getroot()
-    except (OSError, ElementTree.ParseError):
-        return empty
-    parent = project.find("{*}parent")
-    inherited = empty
-    boms = []
-    if parent is not None and depth < 5:
-        coordinate = tuple(parent.findtext(f"{{*}}{key}") or "" for key in ("groupId", "artifactId", "version"))
-        relative = parent.findtext("{*}relativePath")
-        candidate = (path.parent / (relative if relative is not None else "../pom.xml")).resolve()
-        if candidate.is_dir():
-            candidate = candidate / "pom.xml"
-        if candidate.is_file() and candidate.resolve() in local:
-            inherited = _pom(candidate, local, depth + 1)
-        elif all(coordinate):
-            # A parent outside the project manages versions the way a BOM does.
-            boms.append(":".join(coordinate))
-    properties = dict(inherited["properties"])
-    for key in ("groupId", "version"):
-        value = project.findtext(f"{{*}}{key}") or (parent.findtext(f"{{*}}{key}") if parent is not None else None)
-        if value:
-            properties[f"project.{key}"] = properties[f"pom.{key}"] = value
-    for item in project.findall("{*}properties/*"):
-        properties[item.tag.split("}")[-1]] = (item.text or "").strip()
-
-    def resolve(value):
-        for _ in range(5):
-            if not value or "${" not in value:
-                break
-            value = re.sub(r"\$\{([^}]+)\}", lambda match: properties.get(match.group(1), match.group(0)), value)
-        return None if not value or "${" in value else value.strip()
-
-    def entries(xpath):
-        for dependency in project.findall(xpath):
-            group = resolve(dependency.findtext("{*}groupId"))
-            artifact = resolve(dependency.findtext("{*}artifactId"))
-            if group and artifact:
-                yield (group, artifact, resolve(dependency.findtext("{*}version")),
-                       (dependency.findtext("{*}scope") or "").strip(), (dependency.findtext("{*}type") or "").strip())
-
-    managed = dict(inherited["managed"])
-    boms.extend(inherited["boms"])
-    for group, artifact, version, scope, kind in entries("{*}dependencyManagement/{*}dependencies/{*}dependency"):
-        if scope == "import" and kind == "pom" and version:
-            boms.append(f"{group}:{artifact}:{version}")
-        elif version:
-            managed[(group, artifact)] = version
-    dependencies = list(inherited["dependencies"])
-    for xpath in ("{*}dependencies/{*}dependency", "{*}profiles/{*}profile/{*}dependencies/{*}dependency"):
-        for group, artifact, version, scope, _kind in entries(xpath):
-            if scope != "system":
-                dependencies.append((group, artifact, version or managed.get((group, artifact))))
-    return {"properties": properties, "managed": managed, "dependencies": dependencies, "boms": boms}
-
-
-def jvm_coordinates(root: Path) -> tuple[list[str], list[str]]:
-    """The project's library coordinates and BOMs, read from its build files without running any of them.
-
-    Maven poms with their properties, managed versions, BOM imports and parents
-    inside the project; a parent outside it is used as a BOM. Gradle build files
-    and version catalogs give the coordinates they spell out, and `kotlin("x")`
-    the Kotlin module at the Kotlin plugin's version. Dependencies a build script
-    computes are invisible here, which is the price of not running it.
-    """
-    import tomllib
-    poms = build_files(root, ("pom.xml",))
-    local = {path.resolve() for path in poms}
-    dependencies: set[str] = set()
-    boms: set[str] = set()
-    for pom in poms:
-        description = _pom(pom, local)
-        boms.update(description["boms"])
-        for group, artifact, version in description["dependencies"]:
-            dependencies.add(f"{group}:{artifact}:{version}" if version else f"{group}:{artifact}")
-    import xml.etree.ElementTree as ElementTree
-    project_modules = set()
-    for pom in poms:
-        try:
-            project = ElementTree.parse(pom).getroot()
-        except (OSError, ElementTree.ParseError):
-            continue
-        group = project.findtext("{*}groupId") or project.findtext("{*}parent/{*}groupId")
-        artifact = project.findtext("{*}artifactId")
-        if group and artifact:
-            project_modules.add(f"{group}:{artifact}")
-    gradle = build_files(root, ("build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"))
-    kotlin_version = None
-    for build in gradle:
-        try:
-            text = build.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-        for match in GRADLE_KOTLIN_PLUGIN.finditer(text):
-            kotlin_version = kotlin_version or match.group(1) or match.group(2)
-        dependencies.update(":".join(parts) for parts in GRADLE_COORDINATE.findall(text))
-    for catalog in build_files(root, ("libs.versions.toml",)):
-        try:
-            data = tomllib.loads(catalog.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
-        versions = data.get("versions") or {}
-        kotlin_version = kotlin_version or (versions.get("kotlin") if isinstance(versions.get("kotlin"), str) else None)
-        for entry in (data.get("libraries") or {}).values():
-            if isinstance(entry, str):
-                parts = entry.split(":")
-                if len(parts) >= 2:
-                    dependencies.add(":".join(parts[:3]))
-                continue
-            if not isinstance(entry, dict):
-                continue
-            module = entry.get("module") or f"{entry.get('group', '')}:{entry.get('name', '')}"
-            version = entry.get("version")
-            if isinstance(version, dict):
-                version = versions.get(version["ref"]) if "ref" in version else (
-                    version.get("strictly") or version.get("require") or version.get("prefer"))
-            version = version or versions.get(entry.get("version.ref") or "")
-            if module.count(":") == 1 and not module.startswith(":"):
-                dependencies.add(f"{module}:{version}" if isinstance(version, str) else module)
-    for build in gradle:
-        try:
-            text = build.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-        for name, version in GRADLE_KOTLIN_MODULE.findall(text):
-            if name not in ("jvm", "multiplatform", "android", "kapt", "plugin.serialization", "plugin.spring"):
-                version = version or kotlin_version
-                dependencies.add(f"org.jetbrains.kotlin:kotlin-{name}" + (f":{version}" if version else ""))
-    # The project's own modules are sources, not libraries.
-    dependencies = {item for item in dependencies if ":".join(item.split(":")[:2]) not in project_modules}
-    return sorted(dependencies), sorted(boms)
-
-
-def coursier_jar() -> Path:
-    target = shared_engine_dir("coursier") / COURSIER["version"] / "coursier.jar"
-    if not target.is_file():
-        print(f"installing coursier {COURSIER['version']} into {target.parent} (first use)", flush=True)
-        download(COURSIER["url"], target, sha256=COURSIER["sha256"])
-    return target
-
-
-def jvm_classpath(root: Path) -> list[Path]:
-    """The jars of the project's libraries with their dependencies, resolved once into the shared store.
-
-    Coursier fetches from Maven Central into the shared store, so each library is fetched
-    once for every project on the machine. The resolved list is recorded per set
-    of coordinates, so a later pass reads it without starting Coursier. A version
-    the build leaves to a BOM or a parent comes from it; a version it does not
-    spell out at all is the latest stable one, since a library call needs only to
-    be recognized as a library's. A coordinate that does not resolve is left out;
-    the rest still counts.
-    """
-    coordinates, boms = jvm_coordinates(root)
-    if not coordinates:
-        return []
-    key = hashlib.sha256(json.dumps([coordinates, boms]).encode("utf-8")).hexdigest()[:16]
-    record = shared_cache_dir() / "classpaths" / f"{key}.json"
-    try:
-        recorded = json.loads(record.read_text(encoding="utf-8"))
-        known = [Path(item) for item in recorded["jars"]]
-        # A coordinate that did not resolve is tried again a day later, not at every pass.
-        settled = not recorded["unresolved"] or time.time() - record.stat().st_mtime < 86400
-        if settled and all(path.is_file() for path in known):
-            return known
-    except (OSError, ValueError, KeyError, TypeError):
-        pass
-    print(f"resolving {len(coordinates)} libraries of the project into {maven_central_dir().parents[2]} "
-          "(first use)", flush=True)
-    base = [str(java_runtime()), "-Xmx512m", "-jar", str(coursier_jar()), "fetch", "--quiet",
-            # Not the user's own repository: one there with a pom and no jar fails the whole resolution.
-            "--cache", str(maven_central_dir().parents[2]), "--no-default", "-r", "central",
-            *[item for bom in boms for item in ("--bom", bom)]]
-
-    def fetch(items):
-        completed = subprocess.run([*base, *items], stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                                   timeout=1200)
-        paths = [Path(row.strip()) for row in completed.stdout.splitlines() if row.strip().endswith(".jar")]
-        return completed.returncode == 0, [path for path in paths if path.is_file()]
-
-    def spelled(coordinate, fallback=False):
-        if coordinate.count(":") >= 2:
-            return coordinate
-        # Coursier takes an empty version from the BOMs.
-        return f"{coordinate}:" if boms and not fallback else f"{coordinate}:latest.stable"
-
-    ok, jars = fetch([spelled(item) for item in coordinates])
-    unresolved = []
-    if not ok:
-        found: dict[Path, None] = {}
-        for coordinate in coordinates:
-            single_ok, single = fetch([spelled(coordinate)])
-            if not single_ok and coordinate.count(":") == 1 and boms:
-                single_ok, single = fetch([spelled(coordinate, fallback=True)])
-            found.update(dict.fromkeys(single))
-            if not single_ok:
-                unresolved.append(coordinate)
-        jars = list(found)
-    record.parent.mkdir(parents=True, exist_ok=True)
-    record.write_text(json.dumps({"coordinates": coordinates, "boms": boms, "unresolved": unresolved,
-                                  "jars": [str(path) for path in jars]}, indent=1), encoding="utf-8")
-    return jars
-
-
-def coordinates_digest(root: Path) -> str:
-    return hashlib.sha256(json.dumps(jvm_coordinates(root)).encode("utf-8")).hexdigest()[:16]
-
-
-def java_source_roots(sources: list[Path]) -> list[Path]:
-    """Where the package hierarchy of each Java file begins: its directory minus its package path."""
-    roots: dict[Path, None] = {}
-    for source in sources:
-        try:
-            with source.open(encoding="utf-8", errors="replace") as handle:
-                head = handle.read(8192)
-        except OSError:
-            continue
-        match = re.search(r"^\s*package\s+([\w.]+)\s*;", head, re.MULTILINE)
-        directory = source.parent
-        for _ in range(len(match.group(1).split(".")) if match else 0):
-            directory = directory.parent
-        roots[directory] = None
-    return sorted(roots)
-
-
-def java_runtime() -> Path:
-    """A Java runtime of at least version 17: the one on PATH, else Temurin 21 in the shared directory."""
-    java = shutil.which("java")
-    if java:
-        try:
-            probe = subprocess.run([java, "-XshowSettings:properties", "-version"], capture_output=True,
-                                   text=True, timeout=60)
-            match = re.search(r"java\.specification\.version = (\d+)", probe.stderr)
-            if match and int(match.group(1)) >= JAVA_MINIMUM:
-                return Path(java)
-        except (OSError, subprocess.TimeoutExpired):
-            pass
-    home = shared_engine_dir("jre") / "21"
-    executable = home / "bin" / ("java.exe" if os.name == "nt" else "java")
-    if executable.is_file():
-        return executable
-    family, machine = _platform().split("-")
-    system = {"win": "windows", "linux": "linux", "osx": "mac"}[family]
-    arch = "aarch64" if machine == "arm64" else "x64"
-    print(f"installing a Java 21 runtime into {home} (first use)", flush=True)
-    partial = home.with_name(".21.partial")
-    shutil.rmtree(partial, ignore_errors=True)
-    partial.mkdir(parents=True)
-    archive = partial / ("jre.zip" if system == "windows" else "jre.tar.gz")
-    with open_url(TEMURIN_JRE.format(os=system, arch=arch), timeout=600) as response, \
-            archive.open("wb") as handle:
-        shutil.copyfileobj(response, handle)
-    if archive.suffix == ".zip":
-        import zipfile
-        with zipfile.ZipFile(archive) as bundle:
-            bundle.extractall(partial)
-    else:
-        import tarfile
-        with tarfile.open(archive) as bundle:
-            bundle.extractall(partial, filter="data")
-    archive.unlink()
-    top = next(child for child in partial.iterdir() if child.is_dir())
-    bin_parent = top / "Contents" / "Home" if (top / "Contents" / "Home").is_dir() else top
-    shutil.rmtree(home, ignore_errors=True)
-    os.replace(bin_parent, home)
-    shutil.rmtree(partial, ignore_errors=True)
-    return executable
-
-
-class KotlinEngine:
-    """Kotlin through the Kotlin Analysis API in standalone mode: a local library, no server, no license.
-
-    On first use Daodan downloads the Analysis API as KSP publishes it on Maven Central,
-    a Java runtime when none of version 17 or later is installed, and the Kotlin
-    compiler, and compiles `engines/KotlinResolver.kt` against it once, all into the
-    shared directory. The resolver runs as one JVM process with a capped heap: it
-    builds a standalone session over the snapshot's Kotlin and Java files, with the
-    runtime's JDK and the Kotlin standard library as dependencies, and answers one
-    position per line. Nothing is built, imported or downloaded for the project, and
-    nothing is written into it. The Analysis API's standalone mode is not stable, so
-    its version is pinned.
-    """
-
-    name = "kotlin"
-    languages = ("kotlin",)
-    # Java files are loaded too, so a Kotlin call into Java code arrives at its declaration.
-    source_languages = ("kotlin", "java")
-
-    def __init__(self, project_root: Path, install_dir: Path | None = None):
-        self.project_root = Path(project_root).resolve()
-        self.install_root = Path(install_dir) if install_dir else shared_engine_dir("kotlin-analysis-api")
-        self.sources: list[Path] = []
-        self.install = None
-        self.installed_now = False
-        self.process = None
-        self.answers = None
-        self.config = None
-        self.lines = SourceLines()
-        self.files = 0
-        self.timeouts = 0
-        self.libraries: list[Path] = []
-
-    @property
-    def version(self) -> str:
-        return KOTLIN_ANALYSIS.rsplit(":", 1)[1]
-
-    def source(self) -> Path:
-        return SCRIPT_DIR / "engines" / "KotlinResolver.kt"
-
-    def resolver(self) -> Path:
-        digest = hashlib.sha256(self.source().read_bytes()).hexdigest()[:12]
-        return self.install_root / f"{self.version}-{digest}" / "resolver.jar"
-
-    def build(self, java: Path) -> Path:
-        jar = self.resolver()
-        if jar.is_file():
-            return jar
-        self.installed_now = True
-        print(f"compiling the Kotlin resolver into {jar.parent} (first use)", flush=True)
-        compiler = os.pathsep.join(str(maven_artifact(item)) for item in KOTLIN_COMPILER)
-        classpath = os.pathsep.join(str(path) for path in self.runtime_classpath()[1:])
-        jar.parent.mkdir(parents=True, exist_ok=True)
-        partial = jar.with_name("resolver.partial.jar")
-        command = [str(java), "-Xmx768m", f"-XX:ActiveProcessorCount={ENGINE_THREADS}", "-cp", compiler,
-                   "org.jetbrains.kotlin.cli.jvm.K2JVMCompiler", str(self.source()), "-classpath", classpath,
-                   "-d", str(partial), "-jvm-target", "17", "-no-stdlib", "-no-reflect", "-Xskip-prerelease-check",
-                   *[f"-opt-in=org.jetbrains.kotlin.analysis.api.{name}" for name in KOTLIN_OPT_INS]]
-        completed = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=600)
-        if completed.returncode != 0 or not partial.is_file():
-            partial.unlink(missing_ok=True)
-            raise RuntimeError("the Kotlin resolver did not compile: " + (completed.stderr or completed.stdout)[-600:])
-        os.replace(partial, jar)
-        return jar
-
-    def runtime_classpath(self) -> list[Path]:
-        return [self.resolver(), maven_artifact(KOTLIN_ANALYSIS), *(maven_artifact(item) for item in KOTLIN_RUNTIME)]
-
-    def probe(self) -> tuple[bool, str]:
-        import queue
-        try:
-            java = java_runtime()
-            self.build(java)
-            classpath = self.runtime_classpath()
-        except Exception as error:
-            return False, f"could not install the Kotlin Analysis API: {type(error).__name__}: {error}"
-        try:
-            project_libraries = jvm_classpath(self.project_root)
-        except Exception as error:
-            print(f"the project's libraries were not resolved: {type(error).__name__}: {error}", flush=True)
-            project_libraries = []
-        self.libraries = [maven_artifact("org.jetbrains.kotlin:kotlin-stdlib:2.4.21"), *project_libraries]
-        descriptor, name = tempfile.mkstemp(prefix="daodan-kotlin-", suffix=".txt")
-        os.close(descriptor)
-        self.config = Path(name)
-        self.config.write_text("".join(f"root={path}\n" for path in self.sources)
-                               + "".join(f"library={path}\n" for path in self.libraries), encoding="utf-8")
-        command = [str(java), f"-Xmx{KOTLIN_MEMORY_MB}m", f"-XX:ActiveProcessorCount={ENGINE_THREADS}",
-                   "-Djava.awt.headless=true", "-cp", os.pathsep.join(map(str, classpath)),
-                   "daodan.KotlinResolverKt", str(self.config)]
-        self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                        stderr=subprocess.DEVNULL, text=True, encoding="utf-8", bufsize=1)
-        self.answers = queue.Queue()
-
-        def read():
-            for row in self.process.stdout:
-                self.answers.put(row.rstrip("\n"))
-            self.answers.put(None)
-
-        threading.Thread(target=read, daemon=True).start()
-        try:
-            ready = self.answers.get(timeout=LSP_START_TIMEOUT)
-        except queue.Empty:
-            return False, "the Kotlin Analysis API did not start in time"
-        if not ready or not ready.startswith("READY"):
-            return False, f"the Kotlin Analysis API did not start: {ready or 'the process exited'}"
-        self.files = int(ready.split("\t")[1])
-        return True, ""
-
-    def definitions(self, path: Path, line: int, column: int) -> list[Location]:
-        """Ask at a UTF-8 byte column; the resolver counts UTF-16 units, as PSI does."""
-        import queue
-        path = Path(path).resolve()
-        text = self.lines.get(path, line)
-        units = byte_to_utf16(text, column) if text is not None else None
-        if units is None:
-            raise ValueError(f"no character starts at byte {column} of {path}:{line}")
-        if self.process.poll() is not None:
-            raise EngineFailure(f"the Kotlin resolver exited with code {self.process.returncode}")
-        self.process.stdin.write(f"{path}\t{line}\t{units}\n")
-        self.process.stdin.flush()
-        try:
-            answer = self.answers.get(timeout=LSP_REQUEST_TIMEOUT)
-        except queue.Empty:
-            self.timeouts += 1
-            if self.timeouts >= 3:
-                raise EngineFailure("the Kotlin resolver timed out three times in a row") from None
-            raise TimeoutError("the Kotlin resolver did not answer in time") from None
-        self.timeouts = 0
-        if answer is None:
-            raise EngineFailure("the Kotlin resolver exited")
-        fields = answer.split("\t")
-        if fields[0] != "OK":
-            raise RuntimeError(" ".join(fields[1:]) or "the Kotlin resolver failed")
-        found = []
-        for index in range(1, len(fields) - 2, 3):
-            target, row, units = fields[index], int(fields[index + 1]), int(fields[index + 2])
-            if target == "-":
-                found.append(Location(None, None, None))
-                continue
-            target_path = Path(target).resolve()
-            name_line = self.lines.get(target_path, row) if target_path.is_relative_to(self.project_root) else None
-            found.append(Location(target_path, row, utf16_to_byte(name_line, units) if name_line is not None else None))
-        return found
-
-    def close(self) -> None:
-        if self.process is not None:
-            try:
-                self.process.stdin.close()
-                self.process.wait(timeout=30)
-            except (OSError, subprocess.TimeoutExpired):
-                self.process.kill()
-            self.process = None
-        if self.config is not None:
-            self.config.unlink(missing_ok=True)
-            self.config = None
-
-    def identity(self) -> str:
-        return f"kotlin-analysis-api@{self.version}"
-
-    def context(self) -> str:
-        source = hashlib.sha256(self.source().read_bytes()).hexdigest()[:12]
-        return f"{self.identity()}|resolver={source}|libraries={coordinates_digest(self.project_root)}"
-
-    def report(self) -> dict:
-        return {"engine": self.identity(), "install_dir": self.install_root.as_posix(),
-                "installed_now": self.installed_now, "files": self.files, "max_heap_mb": KOTLIN_MEMORY_MB,
-                "processors": ENGINE_THREADS, "libraries": len(self.libraries),
-                "position_encoding": "utf-16"}
 
 
 def _pb_read_varint(buf: bytes, pos: int) -> tuple[int, int]:
@@ -2683,11 +1643,6 @@ def runtime_imports(connection) -> dict[str, dict]:
     return {name: {"directory": directory, "files": sorted(files), "importers": sorted(importers[name])}
             for name, places in sorted(found.items()) if len(places) == 1
             for directory, files in places.items()}
-
-
-def runtime_import_roots(connection) -> list[str]:
-    """Directories the project puts on sys.path at runtime (`runtime_imports`), relative and sorted."""
-    return sorted({item["directory"] for item in runtime_imports(connection).values()})
 
 
 def project_callee_names(connection) -> set[str]:
@@ -3239,8 +2194,6 @@ def resolve_edges(manifest: Path, *, engine, limit: int | None, stride: int,
         except (OSError, ValueError) as error:
             return {"engine": engine.name, "available": False,
                     "reason": str(error), "stage": "before-inference", "edges_store": None}
-        if hasattr(engine, "import_roots"):
-            engine.import_roots = [store_root / rel for rel in runtime_import_roots(connection)]
         if hasattr(engine, "sources"):
             # An engine that loads the sources itself gets the snapshot's perimeter, never the directory.
             wanted = set(engine.source_languages)
@@ -3787,18 +2740,6 @@ def python_environment(project_root: Path, names) -> Path | None:
     return destination
 
 
-def default_environments(project_root: Path) -> list[Path]:
-    """The analyzed project's own environments, when it has one where projects keep it."""
-    found = []
-    for candidate in (project_root / ".venv", project_root / "venv"):
-        if (candidate / "pyvenv.cfg").is_file():
-            found.append(candidate)
-    active = os.environ.get("VIRTUAL_ENV")
-    if active and (Path(active) / "pyvenv.cfg").is_file() and Path(active) not in found:
-        found.append(Path(active))
-    return found
-
-
 def _process_alive(pid: int) -> bool:
     if type(pid) is not int or pid <= 0:
         return False
@@ -3934,11 +2875,14 @@ INDEXER_INSTALL = "install uv, which runs the pass with the snapshot's parser"
 
 
 class EngineSpec(NamedTuple):
-    """One engine of the derived pass: its languages and what its stage environment needs.
+    """One analyzer of the derived pass: its languages and what its stage environment needs.
 
-    An indexer's entry names its module under `indexers/` (`indexer`): its stage runs that indexer and builds
-    the graph of its languages (`index_stage`). One that `needs_container` builds the project, which happens
-    only in a container: the stage finds the container engine before the indexer starts.
+    The entry names its adapter module under `indexers/` (`indexer`): its stage runs that indexer and builds
+    the graph of its languages (`index_stage`), or, for an adapter that declares `engine`, asks that engine
+    at each call position (`resolve_edges`). One that `needs_container` builds the project, which happens
+    only in a container: the stage finds the container engine before the indexer starts. A stage needs the
+    snapshot's parser, plus the adapter's `REQUIREMENTS` when it declares them (`IMPORT` is the module that
+    shows they are there, `INSTALL` what to do without them).
     """
 
     name: str
@@ -3946,71 +2890,32 @@ class EngineSpec(NamedTuple):
     requirements: tuple[str, ...]
     module: str
     install: str
-    environment: dict
     indexer: str = ""
     needs_container: bool = False
 
     @property
     def min_free(self) -> int:
-        """The free memory the stage starts with: its indexer's `MIN_FREE`, else `ENGINE_MIN_FREE`."""
-        return importlib.import_module(f"indexers.{self.indexer}").MIN_FREE if self.indexer else ENGINE_MIN_FREE
+        """The free memory the stage starts with: its adapter's `MIN_FREE`."""
+        return importlib.import_module(f"indexers.{self.indexer}").MIN_FREE
 
 
-ENGINES = (
-    EngineSpec("jedi", (), ("jedi>=0.19",), "jedi", ENGINE_INSTALL, {}),
-    # multilspy pins jedi-language-server, which would downgrade Jedi: each engine
-    # runs in an environment of its own.
-    EngineSpec("typescript", ("vue", "svelte"), ("multilspy==0.1.1",), "multilspy",
-               "install uv, which gives the pass multilspy and its pinned typescript-language-server", {}),
-    EngineSpec("java", (), ("multilspy==0.1.1",), "multilspy",
-               "install uv, which gives the pass multilspy and its pinned Eclipse JDT LS", {}),
-    # Kotlin needs nothing in Python: its engine is a JVM process that installs itself.
-    EngineSpec("kotlin", (), (), "json", "install uv, which runs the pass", {}),
-    EngineSpec("rust", (), ("multilspy==0.1.1",), "multilspy",
-               "install uv, which gives the pass multilspy; rust-analyzer installs itself", {}),
-    EngineSpec("go", (), ("multilspy==0.1.1",), "multilspy",
-               "install uv, which gives the pass multilspy; Go and gopls install themselves", {}),
-    # The indexers (docs/plans/2026-11-14-grafo-dall-indice.md). Their stage needs the snapshot's parser only;
-    # a language moves to its indexer when it leaves the entry above that lists it.
-    *(EngineSpec(analyzer.ENTRY, tuple(analyzer.LANGUAGES), (), "tree_sitter", INDEXER_INSTALL, {},
-                 analyzer.__name__.rsplit(".", 1)[-1], needs_container=analyzer.NEEDS_CONTAINER)
-      for analyzer in __import__("indexers").analyzers()),
-)
+# The analyzers (docs/plans/2026-11-14-grafo-dall-indice.md), each from its adapter's own declaration.
+ENGINES = tuple(EngineSpec(analyzer.ENTRY, tuple(analyzer.LANGUAGES), tuple(getattr(analyzer, "REQUIREMENTS", ())),
+                           getattr(analyzer, "IMPORT", "tree_sitter"), getattr(analyzer, "INSTALL", INDEXER_INSTALL),
+                           analyzer.__name__.rsplit(".", 1)[-1], needs_container=analyzer.NEEDS_CONTAINER)
+                for analyzer in __import__("indexers").analyzers())
 # Each language's engine: the first entry that lists it.
 ENGINE_LANGUAGES = {language: spec for spec in reversed(ENGINES) for language in spec.languages}
 
 
 def from_source(language: str, entry: dict) -> bool:
-    """Whether a store entry came from the entry that serves `language` now. An indexer's stage names its entry
-    (`scip-go@v0.2.9`); an engine's names no indexer. An entry from a former source is not fresh, so the next
-    pass replaces it."""
+    """Whether a store entry came from the entry that serves `language` now: a stage names its entry
+    (`scip-go@v0.2.9`). An entry from a former source is not fresh, so the next pass replaces it."""
     spec = ENGINE_LANGUAGES.get(language)
-    name = str(entry.get("engine") or "").split("@", 1)[0]
-    if spec is None:
-        return False
-    return name == spec.name if spec.indexer else name not in {other.name for other in ENGINES if other.indexer}
-# One engine runs at a time, and only with this much memory free.
-ENGINE_MIN_FREE = 2 * 2**30
+    return spec is not None and str(entry.get("engine") or "").split("@", 1)[0] == spec.name
 
 
-def build_engine(name: str, project_root: Path, environments: list[Path], scip_index: list[Path] = ()):
-    if name == "scip":
-        return ScipEngine(project_root, list(scip_index))
-    if name == "typescript":
-        return TypeScriptEngine(project_root)
-    if name == "java":
-        return JavaEngine(project_root)
-    if name == "kotlin":
-        return KotlinEngine(project_root)
-    if name == "rust":
-        return RustEngine(project_root)
-    if name == "go":
-        return GoEngine(project_root)
-    return JediEngine(project_root, environments)
-
-
-def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, environments: list[Path],
-                  *, offline: bool = False) -> list[str] | None:
+def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, *, offline: bool = False) -> list[str] | None:
     """The command that runs one engine's stage with the snapshot's parser set.
 
     uv gives the stage an environment with the engine's requirements plus this
@@ -4023,9 +2928,6 @@ def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, environme
     import snapshot
     script = [str(Path(__file__).resolve()), str(manifest), "--engine", spec.name, "--compact",
               "--report-out", str(report_path)]
-    if spec.name == "jedi":
-        for path in environments:
-            script.extend(["--environment", str(path)])
     uv = shutil.which("uv")
     if uv:
         pins = []
@@ -4044,12 +2946,12 @@ def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, environme
     return None
 
 
-def cached_offline(spec: EngineSpec, manifest: Path, report_path: Path, environments: list[Path]) -> bool:
+def cached_offline(spec: EngineSpec, manifest: Path, report_path: Path) -> bool:
     """Whether the stage's environment is already in uv's cache, so the stage runs with no network at all.
 
     Only the first stage of an engine on a machine reaches the package index.
     """
-    command = stage_command(spec, manifest, report_path, environments, offline=True)
+    command = stage_command(spec, manifest, report_path, offline=True)
     if not command or "--offline" not in command:
         return False
     head = command[:command.index("python") + 1]
@@ -4060,13 +2962,10 @@ def cached_offline(spec: EngineSpec, manifest: Path, report_path: Path, environm
         return False
 
 
-def engine_command(manifest: Path, report_path: Path, environments: list[Path]) -> list[str]:
+def engine_command(manifest: Path, report_path: Path) -> list[str]:
     """The detached pass: this interpreter runs one stage per engine, one after another."""
-    command = [sys.executable, "-B", "-X", "faulthandler", str(Path(__file__).resolve()), str(manifest),
-               "--pass", "--report-out", str(report_path)]
-    for path in environments:
-        command.extend(["--environment", str(path)])
-    return command
+    return [sys.executable, "-B", "-X", "faulthandler", str(Path(__file__).resolve()), str(manifest),
+            "--pass", "--report-out", str(report_path)]
 
 
 def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict, str]:
@@ -4120,15 +3019,15 @@ def run_pass(manifest: Path, report_path: Path, environments: list[Path], bus=No
         else:
             stage_report = manifest.with_name(f".engine-stage-{spec.name}.json")
             stage_report.unlink(missing_ok=True)
-            command = stage_command(spec, manifest, stage_report, environments,
-                                    offline=cached_offline(spec, manifest, stage_report, environments))
+            command = stage_command(spec, manifest, stage_report,
+                                    offline=cached_offline(spec, manifest, stage_report))
             if command is None:
                 reason, state, install = f"neither uv nor {spec.module} is available to {sys.executable}", \
                     "unavailable", spec.install
             else:
                 print(f"engine pass: {spec.name} for {', '.join(wanted)}", flush=True)
                 completed = subprocess.run(command, stdin=subprocess.DEVNULL, cwd=str(SCRIPT_DIR),
-                                           env={**os.environ, **node_environment(), **spec.environment})
+                                           env={**os.environ, **node_environment()})
                 try:
                     stage = json.loads(stage_report.read_text(encoding="utf-8"))
                 except (OSError, ValueError):
@@ -4297,18 +3196,13 @@ def ensure_edges(manifest: Path, *, check: bool = False, environments: list[Path
         return {**before, "action": "none"}
     if check:
         return {**before, "action": "reported"}
-    with open_snapshot(manifest) as store:
-        project_root = (Path(store["root"]) / store["target"]).resolve()
-    if project_root.is_file():
-        project_root = project_root.parent
-    environments = list(environments) if environments is not None else default_environments(project_root)
     report_path = manifest.with_name(REPORT_NAME)
     running_path = manifest.with_name(RUNNING_NAME)
     for leftover in (report_path, running_path):
         leftover.unlink(missing_ok=True)
     plan, fresh, digest = pass_plan(manifest)
     pending = [(spec, wanted) for spec, wanted in plan if not all(language in fresh for language in wanted)]
-    if pending and all(stage_command(spec, manifest, report_path, environments) is None for spec, _ in pending):
+    if pending and all(stage_command(spec, manifest, report_path) is None for spec, _ in pending):
         outcomes = {language: {"state": "fresh", "engine": entry["engine"]} for language, entry in fresh.items()}
         for spec, wanted in pending:
             outcomes.update({language: {"state": "unavailable", "engine": spec.name, "install": spec.install,
@@ -4319,7 +3213,7 @@ def ensure_edges(manifest: Path, *, check: bool = False, environments: list[Path
         return {**edge_state(manifest), "action": "none"}
     with manifest.with_name(LOG_NAME).open("ab") as log:
         try:
-            child = _spawn_detached(engine_command(manifest, report_path, environments), log)
+            child = _spawn_detached(engine_command(manifest, report_path), log)
         except OSError as error:
             _write_report(report_path, {"pass": True, "manifest_digest": digest, "available": False,
                                         "languages": {language: {"state": "failed", "reason":
@@ -4388,26 +3282,17 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
     return summary
 
 
-def main(argv: list[str] | None = None) -> int:
-    require_minimum_interpreter("resolve_edges.py")
+def _arguments(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("manifest", type=Path, nargs="?", help="a snapshot's manifest.sqlite")
     parser.add_argument("--pass", dest="whole_pass", action="store_true",
-                        help="run every engine the snapshot's languages need, one after another, as the "
+                        help="run every analyzer the snapshot's languages need, one after another, as the "
                              "detached pass does")
-    indexers = {spec.name: spec for spec in ENGINES if spec.indexer}
-    parser.add_argument("--engine", choices=("jedi", "typescript", "java", "kotlin", "rust", "go", "scip", *indexers),
-                        default="jedi")
+    parser.add_argument("--engine", choices=("scip", *(spec.name for spec in ENGINES)),
+                        help="the analyzer of one stage: an entry of the pass, or scip for --scip-index")
     parser.add_argument("--scip-index", action="append", default=[], type=Path,
-                        help="path to a precomputed SCIP index file (index.scip Protobuf or JSON) when --engine scip is used")
-    parser.add_argument("--environment", action="append", default=[], type=Path,
-                        help="a virtual-environment root of the project under analysis, "
-                             "turned into a real Jedi environment; a bare site-packages "
-                             "directory also works, in added_sys_path mode. Repeatable; "
-                             "populated environments beat empty stubs, then the "
-                             "nearest serving scope wins per file. Default: the project's "
-                             ".venv or venv, or VIRTUAL_ENV, else with --pass one built in the "
-                             "shared directory from the declared packages; `none` uses no environment")
+                        help="path to a precomputed SCIP index file (index.scip Protobuf or JSON) when --engine "
+                             "scip is used")
     parser.add_argument("--limit", type=int, default=None,
                         help="ask about at most this many positions")
     parser.add_argument("--stride", type=int, default=1,
@@ -4424,37 +3309,44 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.manifest is None:
         parser.error("a manifest is required")
+    if not args.whole_pass and args.engine is None:
+        parser.error("--engine or --pass is required")
     if args.limit is not None and args.limit < 0:
         parser.error("--limit must be nonnegative")
     if args.stride < 1:
         parser.error("--stride must be positive")
+    return args
 
+
+def _stage(args: argparse.Namespace, manifest: Path) -> dict:
+    """One stage's report: a precomputed SCIP index, an adapter's position engine or an indexer's graph."""
+    with open_snapshot(manifest) as store:
+        project_root = (Path(store["root"]) / store["target"]).resolve()
+    if project_root.is_file():
+        project_root = project_root.parent
+    if args.engine == "scip":
+        engine = ScipEngine(project_root, [path.resolve() for path in args.scip_index])
+    else:
+        spec = next(spec for spec in ENGINES if spec.name == args.engine)
+        module = importlib.import_module(f"indexers.{spec.indexer}")
+        if not hasattr(module, "engine"):
+            return index_stage(spec, manifest, project_root, out=args.out)
+        engine = module.engine(project_root)
+    return resolve_edges(manifest, engine=engine, limit=args.limit, stride=args.stride, dry_run=args.dry_run,
+                         out=args.out)
+
+
+def main(argv: list[str] | None = None) -> int:
+    require_minimum_interpreter("resolve_edges.py")
+    args = _arguments(argv)
     manifest = args.manifest.resolve()
     if not manifest.is_file():
         print(json.dumps({"error": f"no such manifest: {manifest}"}), file=sys.stderr)
         return 2
-    with open_snapshot(manifest) as store:
-        project_root = (Path(store["root"]) / store["target"]).resolve()
-        if project_root.is_file():
-            project_root = project_root.parent
-    declined = any(str(path) == "none" for path in args.environment)
-    environments = [] if declined else [path.resolve() for path in (args.environment or default_environments(project_root))]
     if args.whole_pass:
-        if not environments and not declined:
-            # The detached pass is where a first install may take minutes.
-            # Snapshot paths are relative to the snapshot root, which a target below it does not change.
-            with open_snapshot(manifest) as store:
-                names = [row[0] for row in store.connection.execute("SELECT file FROM sem_coverage")]
-                snapshot_root = Path(store["root"]).resolve()
-            try:
-                prepared = python_environment(snapshot_root, names)
-            except (OSError, subprocess.SubprocessError) as error:
-                print(f"the project's Python packages were not installed: {error}", flush=True)
-                prepared = None
-            environments = [prepared] if prepared is not None else []
         # The detached pass is the pipeline's analysis and union: each analyzer, then the complete graph.
         import pipeline
-        results = pipeline.run(manifest, environments=environments, start="analyze",
+        results = pipeline.run(manifest, start="analyze",
                                report_path=(args.report_out or manifest.with_name(REPORT_NAME)).resolve())
         report = results.get("analyze") or {}
         if "failed" in report:
@@ -4462,12 +3354,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         print(json.dumps({key: report[key] for key in ("available", "languages")}, indent=2, sort_keys=True))
         return 0 if report.get("available") else 1
-    if args.engine in indexers:
-        report = index_stage(indexers[args.engine], manifest, project_root, out=args.out)
-    else:
-        engine = build_engine(args.engine, project_root, environments, [path.resolve() for path in args.scip_index])
-        report = resolve_edges(manifest, engine=engine, limit=args.limit,
-                               stride=args.stride, dry_run=args.dry_run, out=args.out)
+    report = _stage(args, manifest)
     report_out = None
     if args.report_out is not None:
         report_out = args.report_out.resolve()

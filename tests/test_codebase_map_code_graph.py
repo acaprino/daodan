@@ -305,8 +305,9 @@ def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
     import importlib
     import resolve_edges
     for spec in resolve_edges.ENGINES:
-        if spec.indexer:  # every indexer of the pass takes its structure from the pre-map
-            assert callable(getattr(importlib.import_module(f"indexers.{spec.indexer}"), "structure", None)), spec.name
+        module = importlib.import_module(f"indexers.{spec.indexer}")
+        if not hasattr(module, "engine"):  # every indexer of the pass takes its structure from the pre-map
+            assert callable(getattr(module, "structure", None)), spec.name
     record = {"units": [{"kind": "go-module", "root": "."}, {"kind": "cargo-crate", "root": "crates/a"},
                         {"kind": "npm-package", "root": "web"}],
               "workspace": [{"tool": "cargo", "root": "."}]}

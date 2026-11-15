@@ -8,7 +8,6 @@ import os
 import subprocess
 import sys
 import tempfile
-import types
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -19,6 +18,7 @@ if str(SCRIPTS) not in sys.path:
 
 import resolve_edges
 import snapshot
+from indexers import vue_svelte  # noqa: E402
 from snapshot_store import _unpack, open_snapshot
 
 
@@ -31,7 +31,7 @@ def coverage_sums(coverage: dict) -> tuple[int, int]:
 class Definition:
     """An engine's answer: a path and the exact position of a name, in UTF-8 bytes.
 
-    Name and kind mirror what Jedi also reports; grading reads only the position.
+    Name and kind mirror what an engine reports; grading reads only the position.
     """
 
     def __init__(self, module_path, name, *, kind="function", line=2, column=8):
@@ -43,7 +43,7 @@ class Definition:
 
 
 class StubEngine:
-    """An engine whose every answer is scripted, so grading is tested without jedi."""
+    """An engine whose every answer is scripted, so grading is tested without a language server."""
 
     name = "stub"
 
@@ -134,7 +134,7 @@ class ResolveEdgesTests(unittest.TestCase):
                          ("project-callable", "edge-call", "confirmed", "stub@1.0"))
         self.assertTrue(edge["target_id"].startswith("app/tool.py::"), edge["target_id"])
         # The stored payload qualifies its caller already; qualifying it twice
-        # produced `app/use.py::app/use.py::function@2:4` in a real jedi run.
+        # produced `app/use.py::app/use.py::function@2:4` in a real engine run.
         self.assertTrue(edge["caller"].startswith("app/use.py::function@"), edge["caller"])
         self.assertEqual(edge["caller"].count("::"), 1, edge["caller"])
         self.assertEqual(binding["engine"], "stub@1.0")
@@ -226,7 +226,7 @@ class ResolveEdgesTests(unittest.TestCase):
         _identity, before = self.unresolved_run_reference()
         for definition in (Definition(self.root / "app/tool.py", "run", line=3),
                            Definition(self.root / "app/tool.py", "run", column=4),
-                           # An answer that names no declaration, as Jedi's instances do.
+                           # An answer that names no declaration, as an instance does.
                            Definition(self.root / "app/tool.py", "run", column=None)):
             with self.subTest(definition=vars(definition)):
                 report = self.run_engine(StubEngine({("use.py", before["span"][0]): definition}))
@@ -368,10 +368,10 @@ class ResolveEdgesTests(unittest.TestCase):
                          [("project-not-a-symbol", "uncertain", None)])
 
     def test_an_unready_engine_is_a_declared_degradation_that_writes_nothing(self):
-        engine = StubEngine(ready=False, reason="jedi is not installed")
+        engine = StubEngine(ready=False, reason="the engine is not installed")
         report = self.run_engine(engine)
         self.assertFalse(report["available"])
-        self.assertEqual(report["reason"], "jedi is not installed")
+        self.assertEqual(report["reason"], "the engine is not installed")
         self.assertEqual(engine.asked, [])
         self.assertFalse(self.edges.exists())
 
@@ -586,8 +586,9 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual(ref_by_id[_identity]["target_id"], free_id)
 
 
-# The entries with Python on Jedi, as before scip-python, for the tests of the position pass (until task 8).
-POSITION_ENGINES = tuple(spec._replace(languages=("python",)) if spec.name == "jedi" else spec
+# The entries with Python on the position engine's entry, named as the stub engines answer, for the tests of the
+# position pass.
+POSITION_ENGINES = tuple(spec._replace(name="stub", languages=("python",)) if spec.name == "typescript" else spec
                          for spec in resolve_edges.ENGINES if spec.name != "scip-python")
 POSITION_LANGUAGES = {language: spec for spec in reversed(POSITION_ENGINES) for language in spec.languages}
 
@@ -605,7 +606,7 @@ class PassLifecycleTests(unittest.TestCase):
     }
 
     def setUp(self):
-        # Python reads from scip-python; these tests run the position pass on it, as Jedi did.
+        # Python reads from scip-python; these tests run the position pass on it.
         self.enterContext(mock.patch.object(resolve_edges, "ENGINES", POSITION_ENGINES))
         self.enterContext(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
         self.temp = tempfile.TemporaryDirectory()
@@ -662,21 +663,6 @@ class PassLifecycleTests(unittest.TestCase):
                          ("stub@1.0", "missing"))
         self.assertEqual(state["coverage"]["python"]["answered"]["project-callable"], 1)
 
-    def test_the_engine_sees_the_directories_the_project_puts_on_sys_path(self):
-        (self.root / "tools").mkdir()
-        (self.root / "tools/helper.py").write_text("def assist():\n    return 1\n", encoding="utf-8")
-        (self.root / "tests").mkdir()
-        (self.root / "tests/test_tool.py").write_text(
-            "import json\nimport sys\nsys.path.insert(0, 'tools')\nimport helper\nhelper.assist()\n",
-            encoding="utf-8")
-        snapshot.write_snapshot(self.root, self.manifest)
-        with open_snapshot(self.manifest) as store:
-            self.assertEqual(resolve_edges.runtime_import_roots(store.connection), ["tools"])
-        engine = self.confirming_engine()
-        engine.import_roots = []
-        self.run_pass(engine)
-        self.assertEqual(engine.import_roots, [self.root / "tools"])
-
     def test_a_changed_document_does_not_refuse_a_python_pass(self):
         (self.root / "notes.md").write_text("# Notes, edited during the pass\n", encoding="utf-8")
         report = self.run_pass()
@@ -715,18 +701,19 @@ class PassLifecycleTests(unittest.TestCase):
 
         with mock.patch.object(resolve_edges.shutil, "which", return_value="uv"), \
                 mock.patch.object(resolve_edges.metadata, "version", side_effect=version):
-            command = resolve_edges.stage_command(resolve_edges.ENGINES[0], self.manifest, report, [])
+            command = resolve_edges.stage_command(resolve_edges.ENGINE_LANGUAGES["python"], self.manifest, report)
         python = f"{sys.version_info[0]}.{sys.version_info[1]}"
         self.assertEqual(command[:7], ["uv", "run", "--quiet", "--no-config", "--no-project", "--python", python])
-        self.assertEqual(command[7:11], ["--with", "jedi>=0.19", "--with", "tree-sitter==0.25.2"])
+        self.assertEqual(command[7:11], ["--with", "multilspy==0.1.1", "--with", "tree-sitter==0.25.2"])
         self.assertEqual(command[11:15], ["python", "-B", "-X", "faulthandler"])
         self.assertIn(str(report), command)
         with mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
                 mock.patch.object(resolve_edges.importlib.util, "find_spec", return_value=object()):
-            self.assertEqual(resolve_edges.stage_command(resolve_edges.ENGINES[0], self.manifest, report, [])[:4],
+            self.assertEqual(resolve_edges.stage_command(resolve_edges.ENGINE_LANGUAGES["python"], self.manifest,
+                                                         report)[:4],
                              [sys.executable, "-B", "-X", "faulthandler"])
         # The detached pass itself needs nothing beyond this interpreter.
-        self.assertEqual(resolve_edges.engine_command(self.manifest, report, [])[-3:],
+        self.assertEqual(resolve_edges.engine_command(self.manifest, report)[-3:],
                          ["--pass", "--report-out", str(report)])
 
     def test_a_background_pass_is_running_while_its_process_lives(self):
@@ -923,7 +910,6 @@ class HomonymHolderTests(unittest.TestCase):
             self.assertEqual(verdicts[calls[rel][0]], "project-not-a-symbol")
 
 
-
 class ProvenanceGradingTests(unittest.TestCase):
     def setUp(self):
         self.root = Path(__file__).resolve().parent
@@ -1018,21 +1004,6 @@ class PreparedEnvironmentTests(unittest.TestCase):
         count = len(self.commands)
         self.assertEqual(self.prepare(), first)
         self.assertEqual(len(self.commands), count)
-
-    def test_a_target_below_the_snapshot_root_still_finds_its_manifests(self):
-        subprocess.run(["git", "init", "-q", str(self.root)], check=True)
-        (self.root / "api/app.py").write_text("def run():\n    return 1\n", encoding="utf-8")
-        manifest = Path(self.temp.name).resolve() / "manifest.sqlite"
-        snapshot.write_snapshot(self.root / "api", manifest)
-        seen = []
-        prepare = mock.patch.object(resolve_edges, "python_environment",
-                                    side_effect=lambda root, names: seen.append((root, sorted(names))))
-        with prepare, mock.patch.object(resolve_edges, "run_pass",
-                                        return_value={"available": True, "languages": {}}):
-            resolve_edges.main([str(manifest), "--pass"])
-        root, names = seen[0]
-        self.assertTrue(all((root / name).is_file() for name in names), (root, names))
-        self.assertIn("requirements.txt", {Path(name).name for name in names})
 
     def test_changed_manifests_build_another_environment_and_none_declared_builds_none(self):
         first = self.prepare()
@@ -1135,7 +1106,7 @@ class MultiLanguageTests(unittest.TestCase):
         calls = []
         report = self.manifest.with_name(resolve_edges.REPORT_NAME)
         with mock.patch.object(resolve_edges, "stage_command",
-                               side_effect=lambda spec, manifest, path, environments, offline=False:
+                               side_effect=lambda spec, manifest, path, offline=False:
                                [spec.name, str(path)]), \
                 mock.patch.object(resolve_edges, "cached_offline", return_value=False), \
                 mock.patch.object(resolve_edges.subprocess, "run", side_effect=self.stage_runner(outcomes, calls)), \
@@ -1193,7 +1164,7 @@ class DistributionTests(unittest.TestCase):
     }
 
     def setUp(self):
-        # Python reads from scip-python; these tests run the position pass on it, as Jedi did.
+        # Python reads from scip-python; these tests run the position pass on it.
         self.enterContext(mock.patch.object(resolve_edges, "ENGINES", POSITION_ENGINES))
         self.enterContext(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
         self.temp = tempfile.TemporaryDirectory()
@@ -1394,138 +1365,19 @@ class ContractTests(unittest.TestCase):
         self.assertIn("Client.get", {row["qualified_name"] for row in contracts})
 
 
-class JavaEngineTests(unittest.TestCase):
-    def test_the_java_server_builds_nothing_downloads_nothing_and_writes_outside_the_project(self):
-        with tempfile.TemporaryDirectory() as temp:
-            engine = resolve_edges.JavaEngine(Path(temp), install_dir=Path(temp) / "engines")
-            engine.jre_home = Path(temp) / "jre"
-            java = engine.settings()["java"]
-            self.assertEqual((java["autobuild"]["enabled"], java["import"]["maven"]["enabled"],
-                              java["import"]["gradle"]["enabled"]), (False, False, False))
-            options = engine.initialization_options()
-            self.assertEqual(options["bundles"], [])
-            # Library definitions come back as class-file locations, which grade as external.
-            self.assertTrue(options["extendedClientCapabilities"]["classFileContentsSupport"])
-            self.assertEqual(engine.definitions.__func__, resolve_edges.LspEngine.definitions)
-
-    def test_the_java_server_finds_the_gradle_release_list_locally(self):
-        with tempfile.TemporaryDirectory() as temp:
-            home = Path(temp) / "home"
-            plugins = home / "extension" / "server" / "plugins"
-            plugins.mkdir(parents=True)
-            (plugins / "org.eclipse.equinox.launcher_1.jar").write_bytes(b"")
-            for name in ("config_win", "config_linux", "config_mac"):
-                (home / "extension" / "server" / name).mkdir()
-            engine = resolve_edges.JavaEngine(Path(temp), install_dir=Path(temp) / "engines")
-            engine.jre_home = Path(temp) / "jre"
-            with mock.patch.object(resolve_edges.JavaEngine, "pinned",
-                                   return_value={"version": "1", "jre_path": "jre/bin/java"}):
-                _command, environment = engine.command(home)
-            versions = Path(environment["XDG_CACHE_HOME"]) / "tooling" / "gradle" / "versions.json"
-            self.assertEqual(versions.read_text(encoding="utf-8"), "[]")
-            engine.cleanup()
-            self.assertFalse(versions.exists())
-
-
 class OfflineStageTests(unittest.TestCase):
     def test_a_cached_stage_runs_uv_offline(self):
         with tempfile.TemporaryDirectory() as temp:
             manifest, report = Path(temp) / "manifest.sqlite", Path(temp) / "report.json"
             spec = resolve_edges.ENGINES[1]
             with mock.patch.object(resolve_edges.shutil, "which", return_value="uv"):
-                online = resolve_edges.stage_command(spec, manifest, report, [])
-                offline = resolve_edges.stage_command(spec, manifest, report, [], offline=True)
+                online = resolve_edges.stage_command(spec, manifest, report)
+                offline = resolve_edges.stage_command(spec, manifest, report, offline=True)
             self.assertNotIn("--offline", online)
             self.assertEqual(offline[:6], ["uv", "run", "--quiet", "--no-config", "--no-project", "--offline"])
 
 
-class JvmLibraryTests(unittest.TestCase):
-    """The project's libraries are read from its build files, never by running them, and resolved once."""
-
-    POM = """<project xmlns="http://maven.apache.org/POM/4.0.0">
-  <parent><groupId>org.demo</groupId><artifactId>parent</artifactId><version>3</version></parent>
-  <groupId>org.demo</groupId><artifactId>app</artifactId><version>1.0</version>
-  <properties><guava.version>33.0-jre</guava.version></properties>
-  <dependencyManagement><dependencies>
-    <dependency><groupId>org.demo</groupId><artifactId>bom</artifactId><version>2</version>
-      <type>pom</type><scope>import</scope></dependency>
-    <dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.13.2</version></dependency>
-  </dependencies></dependencyManagement>
-  <dependencies>
-    <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId><version>${guava.version}</version></dependency>
-    <dependency><groupId>junit</groupId><artifactId>junit</artifactId><scope>test</scope></dependency>
-    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId></dependency>
-  </dependencies>
-  <build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><dependencies>
-    <dependency><groupId>org.tool</groupId><artifactId>only-for-the-build</artifactId><version>1</version></dependency>
-  </dependencies></plugin></plugins></build>
-</project>
-"""
-
-    def test_coordinates_come_from_poms_gradle_files_and_catalogs(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            (root / "pom.xml").write_text(self.POM, encoding="utf-8")
-            (root / "lib").mkdir()
-            (root / "lib/build.gradle.kts").write_text(
-                'plugins { kotlin("jvm") version "2.0.0" }\n'
-                'dependencies {\n  implementation("com.squareup.okio:okio:3.9.0")\n'
-                '  implementation(kotlin("reflect"))\n  implementation(project(":app"))\n}\n', encoding="utf-8")
-            (root / "gradle").mkdir()
-            (root / "gradle/libs.versions.toml").write_text(
-                '[versions]\nktor = "2.3.0"\n[libraries]\n'
-                'ktor = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }\n', encoding="utf-8")
-            coordinates, boms = resolve_edges.jvm_coordinates(root)
-        self.assertEqual(coordinates, [
-            "com.google.guava:guava:33.0-jre", "com.squareup.okio:okio:3.9.0", "io.ktor:ktor-client-core:2.3.0",
-            "junit:junit:4.13.2", "org.jetbrains.kotlin:kotlin-reflect:2.0.0", "org.slf4j:slf4j-api"])
-        self.assertEqual(boms, ["org.demo:bom:2", "org.demo:parent:3"])
-
-    def test_the_classpath_is_resolved_once_with_versions_left_to_boms_or_the_latest_stable(self):
-        with tempfile.TemporaryDirectory() as temp, \
-                mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"):
-            root = Path(temp) / "proj"
-            root.mkdir()
-            jar = Path(temp) / "guava.jar"
-            jar.write_bytes(b"jar")
-            calls = []
-
-            def run(command, **_options):
-                calls.append(command)
-                return subprocess.CompletedProcess(command, 0, stdout=f"{jar}\n", stderr="")
-
-            with mock.patch.object(resolve_edges, "jvm_coordinates",
-                                   return_value=(["com.google.guava:guava", "junit:junit:4.13.2"], [])), \
-                    mock.patch.object(resolve_edges, "java_runtime", return_value=Path("java")), \
-                    mock.patch.object(resolve_edges, "coursier_jar", return_value=Path("coursier.jar")), \
-                    mock.patch.object(resolve_edges.subprocess, "run", side_effect=run):
-                first = resolve_edges.jvm_classpath(root)
-                again = resolve_edges.jvm_classpath(root)
-        self.assertEqual((first, again), ([jar], [jar]))
-        self.assertEqual(len(calls), 1)
-        self.assertEqual(calls[0][-2:], ["com.google.guava:guava:latest.stable", "junit:junit:4.13.2"])
-        self.assertNotIn("m2Local", calls[0])
-
-    def test_the_java_server_opens_an_eclipse_project_kept_outside_the_repository(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp) / "proj"
-            (root / "src/main/java/org/demo").mkdir(parents=True)
-            (root / "src/main/java/org/demo/App.java").write_text("package org.demo;\nclass App {}\n", encoding="utf-8")
-            (root / "pom.xml").write_text(self.POM, encoding="utf-8")
-            engine = resolve_edges.JavaEngine(root, install_dir=Path(temp) / "engines")
-            engine.sources = [root / "src/main/java/org/demo/App.java"]
-            engine.workspace = Path(temp) / "workspace"
-            engine.workspace.mkdir()
-            with mock.patch.object(resolve_edges, "jvm_classpath", return_value=[Path(temp) / "guava.jar"]):
-                engine.describe_project()
-            project = engine.workspace_root()
-            description = (project / ".project").read_text(encoding="utf-8")
-            classpath = (project / ".classpath").read_text(encoding="utf-8")
-            self.assertIn((root / "src/main/java").as_posix(), description)
-            self.assertIn("kind='src' path='source0'", classpath)
-            self.assertIn((Path(temp) / "guava.jar").as_posix(), classpath)
-            self.assertEqual(sorted(path.name for path in root.iterdir()), ["pom.xml", "src"])
-
+class LanguageServerTests(unittest.TestCase):
     def test_a_language_server_is_given_the_files_exact_line_endings(self):
         with tempfile.TemporaryDirectory() as temp:
             source = Path(temp) / "App.java"
@@ -1544,7 +1396,7 @@ class TypeScriptMirrorTests(unittest.TestCase):
             modules = Path(temp) / "shared/node_modules/pkg"
             modules.mkdir(parents=True)
             (modules / "index.d.ts").write_text("export declare const p: number;\n", encoding="utf-8")
-            engine = resolve_edges.TypeScriptEngine(root, install_dir=Path(temp) / "engines")
+            engine = vue_svelte.TypeScriptEngine(root, install_dir=Path(temp) / "engines")
             engine.mirror = engine.build_mirror({"node_modules": modules.parent})
             mirror = engine.workspace_root()
             self.assertEqual((mirror / "src/deep/a.ts").read_text(encoding="utf-8"), "export const a = 1;\n")
@@ -1672,7 +1524,7 @@ class NestedPackageTests(unittest.TestCase):
         modules = Path(self.temp.name).resolve() / "shared/node_modules"
         (modules / "left").mkdir(parents=True)
         (modules / "left/index.d.ts").write_text("export declare const l: number;\n", encoding="utf-8")
-        engine = resolve_edges.TypeScriptEngine(self.root, install_dir=Path(self.temp.name) / "engines")
+        engine = vue_svelte.TypeScriptEngine(self.root, install_dir=Path(self.temp.name) / "engines")
         engine.mirror = engine.build_mirror({"web/node_modules": modules})
         mirror = engine.workspace_root()
         self.assertTrue((mirror / "web/node_modules/left/index.d.ts").is_file())
@@ -1685,7 +1537,7 @@ class NestedPackageTests(unittest.TestCase):
         self.assertTrue((modules / "left/index.d.ts").is_file())
 
 
-class KotlinEngineTests(unittest.TestCase):
+class MavenArtifactTests(unittest.TestCase):
     def test_a_maven_jar_on_disk_is_reused_and_a_download_is_verified(self):
         import io
         payload = b"jar bytes"
@@ -1710,25 +1562,6 @@ class KotlinEngineTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     resolve_edges.maven_artifact("org.demo:broken:3.0")
             self.assertFalse((resolve_edges.maven_central_dir() / "org/demo/broken/3.0/broken-3.0.jar").exists())
-
-    def test_the_kotlin_engine_loads_the_snapshots_kotlin_and_java_files_only(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp) / "proj"
-            (root / "src").mkdir(parents=True)
-            # `make().run()` needs a type the lexical resolver does not infer, so the engine is started.
-            (root / "src/Tool.kt").write_text(
-                "class Tool {\n    fun run(): Int = 1\n}\n\nfun make(): Tool = Tool()\n\nfun go(): Int = make().run()\n",
-                encoding="utf-8")
-            (root / "src/Help.java").write_text("class Help { int go() { return 1; } }\n", encoding="utf-8")
-            (root / "notes.md").write_text("# notes\n", encoding="utf-8")
-            manifest = Path(temp) / "manifest.sqlite"
-            snapshot.write_snapshot(root, manifest)
-            engine = resolve_edges.KotlinEngine(root)
-            seen = []
-            engine.probe = lambda: (seen.append(sorted(path.name for path in engine.sources)), (False, "stopped"))[1]
-            report = resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)
-        self.assertFalse(report["available"])
-        self.assertEqual(seen, [["Help.java", "Tool.kt"]])
 
 
 class RustGoContractTests(unittest.TestCase):
@@ -1957,186 +1790,6 @@ class CalleePositionTests(unittest.TestCase):
         self.assertIsNone(resolve_edges.callee_column(line, span, "run"))
 
 
-class EnvironmentTests(unittest.TestCase):
-    def make_environment(self, root, relative, names):
-        environment = root / relative
-        packages = environment / "Lib/site-packages"
-        packages.mkdir(parents=True)
-        (environment / "pyvenv.cfg").write_text("home = .\n", encoding="utf-8")
-        interpreter = environment / "Scripts/python.exe"
-        interpreter.parent.mkdir()
-        interpreter.write_bytes(b"fixture; never executed")
-        for name in names:
-            (packages / name).mkdir()
-        return environment, packages
-
-    def engine_with_mock_jedi(self, root, environments, *, broken=()):
-        jedi = types.ModuleType("jedi")
-        jedi.__version__ = "test"
-        api = types.ModuleType("jedi.api")
-        environment_api = types.ModuleType("jedi.api.environment")
-        default = types.SimpleNamespace(executable=sys.executable, version_info=(3, 13, 0))
-
-        def project(*, path, added_sys_path):
-            return types.SimpleNamespace(path=path, added_sys_path=added_sys_path)
-
-        def create_environment(path, *, safe):
-            path = Path(path)
-            if path in broken or not (path / "pyvenv.cfg").is_file():
-                raise RuntimeError("requested interpreter cannot launch")
-            return types.SimpleNamespace(path=str(path),
-                                         executable=str(path / "Scripts/python.exe"),
-                                         version_info=(3, 13, 0))
-
-        jedi.Project = mock.Mock(side_effect=project)
-        jedi.Script = mock.Mock(return_value=types.SimpleNamespace(infer=lambda **kwargs: [object()]))
-        environment_api.create_environment = create_environment
-        environment_api.get_default_environment = lambda: default
-        self.enterContext(mock.patch.dict(sys.modules, {"jedi": jedi, "jedi.api": api,
-                                                       "jedi.api.environment": environment_api}))
-        engine = resolve_edges.JediEngine(root, environments)
-        ready, reason = engine.probe()
-        self.assertTrue(ready, reason)
-        return engine
-
-    def test_a_decorated_function_is_found_where_its_name_is_declared(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            (root / "config.py").write_text("@cache\ndef get_settings():\n    return 1\n", encoding="utf-8")
-            (root / "use.py").write_text("get_settings()\n", encoding="utf-8")
-            engine = self.engine_with_mock_jedi(root, [])
-            # Jedi infers the object the decorator returns, which no file declares.
-            wrapper = types.SimpleNamespace(module_path=None, type="instance", line=None, column=None)
-            declared = types.SimpleNamespace(module_path=root / "config.py", type="function", line=2, column=4)
-            statement = types.SimpleNamespace(module_path=root / "use.py", type="statement", line=1, column=0)
-            asked, named = [], [declared]
-            sys.modules["jedi"].Script = mock.Mock(return_value=types.SimpleNamespace(
-                infer=lambda **kwargs: [wrapper], goto=lambda **kwargs: asked.append(kwargs) or list(named)))
-            self.assertEqual(engine.definitions(root / "use.py", 1, 0),
-                             [resolve_edges.Location(root / "config.py", 2, 4)])
-            self.assertEqual(asked, [{"line": 1, "column": 0, "follow_imports": True}])
-            # A name bound to a value declares no callable: the inferred object stays the answer.
-            named[:] = [statement]
-            self.assertEqual(engine.definitions(root / "use.py", 1, 0), [resolve_edges.Location(None, None, None)])
-
-    def test_a_venv_root_a_site_packages_and_neither(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            windows = root / "win-venv"
-            (windows / "Lib" / "site-packages").mkdir(parents=True)
-            (windows / "pyvenv.cfg").write_text("home = .\n", encoding="utf-8")
-            posix = root / "posix-venv"
-            (posix / "lib" / "python3.12" / "site-packages").mkdir(parents=True)
-            (posix / "pyvenv.cfg").write_text("home = .\n", encoding="utf-8")
-            bare = root / "site-packages"
-            bare.mkdir()
-            plain = root / "project"
-            plain.mkdir()
-            self.assertEqual(resolve_edges.site_packages_of(windows),
-                             windows / "Lib" / "site-packages")
-            self.assertEqual(resolve_edges.site_packages_of(posix),
-                             posix / "lib" / "python3.12" / "site-packages")
-            self.assertEqual(resolve_edges.site_packages_of(bare), bare)
-            self.assertIsNone(resolve_edges.site_packages_of(plain))
-
-    def test_package_count_excludes_installers_metadata_and_nonimportable_files(self):
-        with tempfile.TemporaryDirectory() as temp:
-            packages = Path(temp).resolve() / "site-packages"
-            packages.mkdir()
-            for name in ("pip", "setuptools", "wheel", "_distutils_hack", "pkg_resources",
-                         "__pycache__", "requests", "google", "pkg-1.dist-info"):
-                (packages / name).mkdir()
-            for name in ("service.py", "native.cp313-win_amd64.pyd", "README.txt", "editable.pth"):
-                (packages / name).write_bytes(b"")
-            self.assertEqual(resolve_edges.package_names(packages),
-                             ["google", "native", "requests", "service"])
-
-    def test_a_populated_outer_environment_beats_a_nearer_pip_only_stub(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            populated, _ = self.make_environment(root, "env", ["requests"])
-            stub, _ = self.make_environment(root, "app/.venv", ["pip", "setuptools", "wheel"])
-            engine = self.engine_with_mock_jedi(root, [stub, populated])
-            _project, environment, mode = engine.environment_for(root / "app/use.py")
-            self.assertEqual((Path(environment.path), mode), (populated, "create_environment"))
-            report = engine.report()["file_environments"]["app/use.py"]
-            self.assertEqual(report["path"], populated.as_posix())
-            self.assertEqual(report["package_count"], 1)
-            self.assertEqual(Path(report["interpreter"]), populated / "Scripts/python.exe")
-            self.assertEqual(report["selection"], "populated-serving-scope")
-
-    def test_a_populated_offered_environment_beats_an_empty_serving_scope(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            stub, _ = self.make_environment(root, ".venv", ["pip"])
-            populated, _ = self.make_environment(root, "worker/env", ["requests"])
-            engine = self.engine_with_mock_jedi(root, [stub, populated])
-            _project, environment, mode = engine.environment_for(root / "app/use.py")
-            self.assertEqual((Path(environment.path), mode), (populated, "create_environment"))
-            self.assertEqual(engine.report()["file_environments"]["app/use.py"]["selection"],
-                             "populated-nearest-offered-environment")
-
-    def test_populated_environments_use_the_nearest_serving_scope(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            outer, _ = self.make_environment(root, "env", ["requests", "more"])
-            inner, _ = self.make_environment(root, "app/.venv", ["requests"])
-            engine = self.engine_with_mock_jedi(root, [outer, inner])
-            _project, environment, mode = engine.environment_for(root / "app/use.py")
-            self.assertEqual((Path(environment.path), mode), (inner, "create_environment"))
-
-    def test_fallback_environments_do_not_pool_other_projects_packages(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            first, first_packages = self.make_environment(root, "first/env", ["first_pkg"])
-            second, second_packages = self.make_environment(root, "second/env", ["second_pkg"])
-            engine = self.engine_with_mock_jedi(root, [first, second], broken=[first, second])
-            project, environment, mode = engine.environment_for(root / "first/use.py")
-            self.assertEqual(mode, "added_sys_path")
-            self.assertEqual(project.added_sys_path, [str(root), str(first_packages)])
-            self.assertNotIn(str(second_packages), project.added_sys_path)
-            report = engine.report()["file_environments"]["first/use.py"]
-            self.assertEqual(report["path"], first.as_posix())
-            self.assertEqual(report["requested_interpreter"], (first / "Scripts/python.exe").as_posix())
-            self.assertEqual(report["interpreter"], sys.executable)
-            self.assertEqual(report["package_count"], 1)
-            self.assertNotIn("package_names", report)
-            self.assertIn("cannot launch", engine.report()["environments"][0]["create_environment_error"])
-
-    def test_a_healthy_environment_wins_a_tie_with_a_broken_populated_environment(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            broken, _ = self.make_environment(root, ".venv", ["more", "packages"])
-            healthy, _ = self.make_environment(root, "venv", ["requests"])
-            engine = self.engine_with_mock_jedi(root, [broken, healthy], broken=[broken])
-            _project, environment, mode = engine.environment_for(root / "app/use.py")
-            self.assertEqual((Path(environment.path), mode), (healthy, "create_environment"))
-            self.assertIn("create_environment_error", engine.report()["environments"][0])
-
-    def test_a_bare_site_packages_directory_serves_the_project_in_fallback_mode(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            packages = root / "dependencies/site-packages"
-            (packages / "requests").mkdir(parents=True)
-            engine = self.engine_with_mock_jedi(root, [packages])
-            project, _environment, mode = engine.environment_for(root / "app/use.py")
-            self.assertEqual(mode, "added_sys_path")
-            self.assertEqual(project.added_sys_path, [str(root), str(packages)])
-            self.assertEqual(engine.report()["file_environments"]["app/use.py"]["package_count"], 1)
-
-    def test_project_only_and_unusable_environments_are_declared_once(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp).resolve()
-            missing = root / "no-such-environment"
-            engine = self.engine_with_mock_jedi(root, [missing])
-            _project, environment, mode = engine.environment_for(root / "app/use.py")
-            self.assertEqual(mode, "project-only")
-            report = engine.report()
-            self.assertEqual(report["unusable_environments"], [str(missing)])
-            self.assertEqual(report["file_environments"]["app/use.py"]["interpreter"], sys.executable)
-            self.assertEqual(report["inference_modes"], {"project-only": 1})
-
-
 class LexicalCheckTests(unittest.TestCase):
     """The engine is asked about the calls the lexical resolver bound too, and its answer wins."""
 
@@ -2223,17 +1876,18 @@ class CommandLineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve() / "proj"
             root.mkdir()
-            (root / "a.py").write_text("def f(x):\n    return x.f()\n", encoding="utf-8")
+            (root / "a.vue").write_text("<script>\nfunction f(x) { return x.f(); }\n</script>\n",
+                                        encoding="utf-8")
             manifest = Path(temp).resolve() / "manifest.sqlite"
             snapshot.write_snapshot(root, manifest)
             stdout = io.StringIO()
-            with mock.patch.dict(sys.modules, {"jedi": None}), contextlib.redirect_stdout(stdout):
-                code = resolve_edges.main([str(manifest), "--engine", "jedi"])
+            with mock.patch.dict(sys.modules, {"multilspy": None}), contextlib.redirect_stdout(stdout):
+                code = resolve_edges.main([str(manifest), "--engine", "typescript"])
         self.assertEqual(code, 1)
         payload = json.loads(stdout.getvalue())
         self.assertFalse(payload["available"])
-        self.assertIn("uv run --with jedi", payload["reason"])
-        self.assertEqual(payload["install"], resolve_edges.ENGINE_INSTALL)
+        self.assertIn("multilspy is not installed", payload["reason"])
+        self.assertEqual(payload["install"], "install uv, which gives the pass multilspy")
 
 
 class CoverageTests(unittest.TestCase):
@@ -2350,7 +2004,7 @@ class IndexerStageTests(unittest.TestCase):
             stack.enter_context(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES",
                                                   {language: spec for language in spec.languages}))
             stack.enter_context(mock.patch.object(
-                resolve_edges, "stage_command", side_effect=lambda spec, manifest, path, environments, offline=False:
+                resolve_edges, "stage_command", side_effect=lambda spec, manifest, path, offline=False:
                 [str(manifest), "--engine", spec.name, "--report-out", str(path)]))
             stack.enter_context(mock.patch.object(resolve_edges, "cached_offline", return_value=False))
             stack.enter_context(mock.patch.object(resolve_edges.subprocess, "run", side_effect=stage))
@@ -2488,7 +2142,7 @@ class IndexerStageTests(unittest.TestCase):
         self.assertIn("workspace", seen)
         self.assertIsInstance(seen["engine"], container.Engine)
 
-    def test_python_reads_from_its_index_and_a_jedi_entry_is_not_fresh(self):
+    def test_python_reads_from_its_index_and_an_entry_of_a_former_engine_is_not_fresh(self):
         project, manifest = self.project("python")
         engine = StubEngine({})
         engine.languages, engine.identity = ("python",), lambda: "jedi@0.20.1"
@@ -2542,8 +2196,7 @@ class IndexerStageTests(unittest.TestCase):
         indexed.assert_not_called()
         self.assertEqual(result["languages"]["go"]["state"], "failed")
         self.assertIn("0.5 GB of memory free", result["languages"]["go"]["reason"])
-        # Above the indexer's own minimum and below every engine's, the stage starts.
-        self.assertLess(go.MIN_FREE, resolve_edges.ENGINE_MIN_FREE)
+        # At the indexer's own minimum, the stage starts.
         _result, started, _indexed = self.run_stage(
             "scip-go", manifest,
             lambda project_dir, work_dir, files=None, **given: self.contract("go"), free=go.MIN_FREE)
@@ -2593,14 +2246,13 @@ class IndexerStageTests(unittest.TestCase):
                           "vue": "typescript", "svelte": "typescript", "java": "scip-java", "kotlin": "scip-kotlin",
                           "rust": "scip-rust", "go": "scip-go", "c": "scip-clang", "cpp": "scip-clang",
                           "stylesheet": "stylesheet"})
-        indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container)
-                    for spec in resolve_edges.ENGINES if spec.indexer}
+        indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container) for spec in resolve_edges.ENGINES}
         self.assertEqual(indexers, {
             "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", False),
             "scip-typescript": (("typescript", "javascript"), "typescript", False),
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
             "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True),
-            "stylesheet": (("stylesheet",), "css", False)})
+            "stylesheet": (("stylesheet",), "css", False), "typescript": (("vue", "svelte"), "vue_svelte", False)})
 
     def test_the_resolver_names_the_entry_not_the_indexer(self):
         # rust-analyzer is also the engine of the position pass, and scip-java indexes Kotlin too.
