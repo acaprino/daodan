@@ -111,10 +111,11 @@ def run(context):
     if not files:
         return None
     text = lambda rel: disk[rel] if rel in disk else inventory.text(rel)  # noqa: E731
-    from premap.module_graph import _name
-    python = sorted(((m["members"][0]["path"], _name(m)) for m in context.graph["modules"]
+    from premap.module_graph import references
+    ref = references(context.graph)
+    python = sorted(((m["members"][0]["path"], ref[m["id"]]) for m in context.graph["modules"]
                      if m["provenance"] == "build" and "python" in m["ecosystems"]), key=lambda r: -len(r[0]))
-    roots = {m["members"][0]["path"]: _name(m) for m in context.graph["modules"] if m["provenance"] == "build"}
+    roots = {m["members"][0]["path"]: ref[m["id"]] for m in context.graph["modules"] if m["provenance"] == "build"}
     parsed = {rel: _parse(text(rel)) for rel in files}
     compiled = {rel: _join(_parent(rel), match.group(1)) for rel in files
                 for match in [COMPILED.search(text(rel))] if match}

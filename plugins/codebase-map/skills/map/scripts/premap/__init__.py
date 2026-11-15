@@ -240,7 +240,7 @@ def python_runs(record: dict) -> list[dict]:
     runs = []
     for root in outer:
         held = [u for u in units if _inside(u["root"], root)]
-        names = {u["name"] for u in held if u.get("name")}
+        names = {u.get("name") or u["root"] for u in held}
         manifests = {u["manifest"] for u in held if u.get("manifest")}
         manifests |= {rel for u in held for rel in (u.get("config") or {}).get("requirements", [])}
         manifests |= {d["declared_in"].split("#", 1)[0] for d in record.get("dependencies", [])

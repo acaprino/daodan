@@ -10,7 +10,7 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map
 sys.path.insert(0, str(SCRIPTS))
 
 import premap  # noqa: E402
-from premap import cargo, enry, go, npm, renovate, tsc, uv  # noqa: E402
+from premap import cargo, enry, go, module_graph, npm, renovate, tsc, uv  # noqa: E402
 import snapshot  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
@@ -340,6 +340,42 @@ def test_a_command_that_did_not_answer_never_states_a_fact_empty(tmp_path):
                                                 sorted(stated - answered))
                     checked += 1
     assert checked >= 80
+
+
+def _module(ident, root, kind, ecosystem, name, *, named=True, aliases=(), manifests=(), external=()):
+    return {"id": ident, "name": name, "named": named, "kind": kind, "ecosystems": [ecosystem],
+            "aliases": list(aliases), "members": [{"path": root}], "manifests": list(manifests),
+            "provenance": "build", "external": list(external)}
+
+
+def test_a_unit_is_named_as_its_build_tool_names_it_and_referred_to_by_root_when_the_name_cannot_tell():
+    """One conversion of the module graph, the product's: Gradle's project path, Maven's coordinates, no name
+    where no file gives one; an entry refers to such a unit, or to one of several with the same name, by root."""
+    graph = {"modules": [
+        _module("g", ".", "gradle-project", "gradle", "billing", manifests=["settings.gradle.kts", "build.gradle.kts"],
+                external=["org.postgresql:postgresql"]),
+        _module("ga", "app/core", "gradle-project", "gradle", "core", manifests=["app/core/build.gradle.kts"]),
+        _module("gi", "tools", "gradle-build", "gradle", "tools", manifests=["tools/settings.gradle.kts"]),
+        _module("gb", "buildSrc", "gradle-project", "gradle", "buildSrc", manifests=["buildSrc/build.gradle.kts"]),
+        _module("m", "svc", "maven-module", "maven", "svc", aliases=["com.acme:svc"], manifests=["svc/pom.xml"]),
+        _module("p", "scripts", "python-package", "python", "scripts", named=False,
+                manifests=["scripts/requirements.txt"], external=["requests"]),
+        _module("other", "second", "gradle-project", "gradle", "second", manifests=["second/settings.gradle"]),
+    ], "edges": [{"source": "g", "target": "ga", "kind": "contains"},
+                 {"source": "g", "target": "gi", "kind": "contains"},
+                 {"source": "ga", "target": "g", "kind": "declares"}]}
+    facts = module_graph.facts(graph)
+    names = {u["root"]: u["name"] for u in facts["units"]}
+    assert names == {".": ":", "app/core": ":app:core", "tools": ":tools", "buildSrc": ":buildSrc",
+                     "svc": "com.acme:svc", "scripts": None, "second": ":"}
+    by_root = {u["root"]: u for u in facts["units"]}
+    assert by_root["app/core"]["depends_on"] == ["."]  # two builds are `:`; the root tells them apart
+    assert {(d["unit"], d["name"]) for d in facts["dependencies"]} == {(".", "org.postgresql:postgresql"),
+                                                                    ("scripts", "requests")}
+    # an included build is no member
+    assert facts["workspace"] == [{"tool": "gradle", "root": ".", "members": ["app/core"]}]
+    assert module_graph.references(graph) == {"g": ".", "ga": ":app:core", "gi": ":tools", "gb": ":buildSrc",
+                                              "m": "com.acme:svc", "p": "scripts", "other": "second"}
 
 
 def test_npm_reader_gives_workspace_members_and_entry_files(tmp_path):

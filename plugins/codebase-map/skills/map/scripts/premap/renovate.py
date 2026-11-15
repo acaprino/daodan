@@ -54,14 +54,14 @@ def commands(context):
 
 
 def _owners(context) -> tuple[dict, list]:
-    from premap.module_graph import _name
-    by_manifest, roots = {}, []
+    from premap.module_graph import references
+    by_manifest, roots, ref = {}, [], references(context.graph)
     for module in context.graph["modules"]:
         if module["provenance"] != "build":
             continue
-        roots += [(module["members"][0]["path"], ecosystem, _name(module)) for ecosystem in module["ecosystems"]]
+        roots += [(module["members"][0]["path"], ecosystem, ref[module["id"]]) for ecosystem in module["ecosystems"]]
         for manifest in module["manifests"]:
-            by_manifest[manifest] = _name(module)
+            by_manifest[manifest] = ref[module["id"]]
     return by_manifest, sorted(roots, key=lambda r: -len(r[0]))
 
 
