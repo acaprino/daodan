@@ -4431,7 +4431,14 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"the project's Python packages were not installed: {error}", flush=True)
                 prepared = None
             environments = [prepared] if prepared is not None else []
-        report = run_pass(manifest, (args.report_out or manifest.with_name(REPORT_NAME)).resolve(), environments)
+        # The detached pass is the pipeline's analysis and union: each analyzer, then the complete graph.
+        import pipeline
+        results = pipeline.run(manifest, environments=environments, start="analyze",
+                               report_path=(args.report_out or manifest.with_name(REPORT_NAME)).resolve())
+        report = results.get("analyze") or {}
+        if "failed" in report:
+            print(f"the analysis failed: {report['failed']}", file=sys.stderr)
+            return 1
         print(json.dumps({key: report[key] for key in ("available", "languages")}, indent=2, sort_keys=True))
         return 0 if report.get("available") else 1
     if args.engine in indexers:

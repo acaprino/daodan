@@ -111,9 +111,34 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
     ready = [e for e in seen if e["kind"] == "graph.ready"]
     assert len(ready) == 1 and ready[0]["data"]["languages"]["go"]["state"] == "fresh"
     assert any(e["kind"] == "gap" and e["data"].get("language") == "go" for e in seen)  # no observed edges yet
-    assert result["languages"]["go"]["state"] == "fresh"
+    assert result["union"]["languages"]["go"]["state"] == "fresh"
     journal, _cursor = events.read(manifest.with_name(events.JOURNAL))
     assert [e["kind"] for e in journal] == [e["kind"] for e in seen]
+
+
+def test_a_run_can_start_and_stop_at_a_step_and_a_failed_step_stops_the_rest(tmp_path):
+    """The snapshot runs the scan and leaves the rest to the analysis in its own process, which goes from the
+    analysis to the union; a step that fails stops what comes after it and says why."""
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    (tmp_path / "p").mkdir()
+    (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.write_snapshot(tmp_path / "p", manifest)
+    seen = []
+    result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
+    assert list(result) == ["scan"] and [e["step"] for e in seen if e["kind"].startswith("step.")] == ["scan", "scan"]
+    with mock.patch.object(pipeline.Analyze, "run", side_effect=pipeline.StepFailed("no store", "write it")):
+        result = pipeline.run(manifest, listeners=[seen.append], start="analyze")
+    assert result == {"analyze": {"failed": "no store", "remedy": "write it"}}
+    assert seen[-1]["kind"] == "step.failed" and seen[-1]["data"]["remedy"] == "write it"
+
+
+def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs_the_rest():
+    """One way in: `snapshot.py write` and a run's refresh run the scan step, the detached pass the analysis
+    and the union."""
+    import inspect
+    assert "pipeline.run(" in inspect.getsource(snapshot.cmd_write)
+    assert "premap.ensure" not in inspect.getsource(snapshot.cmd_write)
+    assert "pipeline.run(" in inspect.getsource(resolve_edges.main)
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():

@@ -29,6 +29,7 @@ class Context:
     manifest: Path
     bus: events.Bus
     environments: list = field(default_factory=list)
+    report_path: Path | None = None  # the analysis's report, beside the snapshot by default
 
 
 class Scan:
@@ -52,7 +53,8 @@ class Scan:
         record = premap.ensure(manifest, report=source)
         for gap in record.get("gaps", []):
             bus.emit("gap", gap.get("detail") or gap["kind"], step=Scan.NAME, gap=gap)
-        return {"units": len(record["units"]), "gaps": len(record["gaps"])}
+        return {"modules": graph.get("modules", 0), "graph": graph["graph"], "action": graph.get("action"),
+                "units": len(record["units"]), "gaps": len(record["gaps"]), "premap": str(premap.path(manifest))}
 
 
 class Analyze:
@@ -61,9 +63,10 @@ class Analyze:
     @staticmethod
     def run(context: Context) -> dict:
         import resolve_edges
-        report = resolve_edges.run_pass(context.manifest, context.manifest.with_name(resolve_edges.REPORT_NAME),
+        report = resolve_edges.run_pass(context.manifest,
+                                        context.report_path or context.manifest.with_name(resolve_edges.REPORT_NAME),
                                         context.environments, bus=context.bus)
-        return {"languages": report["languages"]}
+        return report
 
 
 class Union:
@@ -94,25 +97,30 @@ class StepFailed(Exception):
         self.cause, self.remedy = cause, remedy
 
 
-def run(manifest: Path, listeners=(), environments=None) -> dict:
-    """Every step in order on the snapshot `manifest`, with `listeners` on the bus and the journal beside it.
-    A step that fails says why and stops the ones after it."""
+def run(manifest: Path, listeners=(), environments=None, *, start: str | None = None, stop: str | None = None,
+        report_path: Path | None = None) -> dict:
+    """The steps in order on the snapshot `manifest`, from `start` through `stop` (default: all), with
+    `listeners` on the bus and the journal beside it; each step's result by its name. A step that fails says
+    why and stops the ones after it: its result is `{"failed": cause, "remedy": ...}`."""
     manifest = Path(manifest).resolve()
     bus = events.Bus(manifest.with_name(events.JOURNAL))
     for listener in listeners:
         bus.subscribe(listener)
-    context = Context(manifest, bus, list(environments or []))
+    context = Context(manifest, bus, list(environments or []), report_path)
+    names = [step.NAME for step in STEPS]
+    chosen = STEPS[names.index(start) if start else 0:names.index(stop) + 1 if stop else len(STEPS)]
     results = {}
-    for step in STEPS:
+    for step in chosen:
         bus.emit("step.started", step.NAME, step=step.NAME, inputs=list(step.INPUTS))
         try:
             results[step.NAME] = step.run(context)
         except StepFailed as failure:
             bus.emit("step.failed", failure.cause, step=step.NAME, level="error", cause=failure.cause,
                      remedy=failure.remedy)
+            results[step.NAME] = {"failed": failure.cause, "remedy": failure.remedy}
             break
         bus.emit("step.finished", step.NAME, step=step.NAME, outputs=list(step.OUTPUTS))
-    return results.get(Union.NAME, {})
+    return results
 
 
 def follow(manifest: Path, after: int = 0, limit: int | None = None) -> tuple[list[dict], int]:

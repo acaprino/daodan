@@ -3399,8 +3399,7 @@ def refresh_working(root: Path) -> dict:
 
 
 def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
-    import modules
-    import premap
+    import pipeline
     import resolve_edges
     import retrieval
     from datetime import datetime, timezone
@@ -3443,13 +3442,12 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
                 base.close()
             written = write_snapshot(target, manifest, format=state["snapshot"]["format"],
                                      previous=None if full else base)
-        failed = [f"{name}: {result['state']}: {result.get('reason', '')}"
-                  for name, result in (("index", retrieval.ensure_index(manifest)),
-                                       ("modules", modules.ensure_graph(manifest)))
-                  if result["state"] != "fresh"]
-        if failed:
-            raise ValueError("; ".join(failed))
-        premap.ensure(manifest)  # before the engine pass: the pre-map names what the pass will index
+        index = retrieval.ensure_index(manifest)
+        if index["state"] != "fresh":
+            raise ValueError(f"index: {index['state']}: {index.get('reason', '')}")
+        scanned = pipeline.run(manifest, stop="scan")["scan"]  # before the analysis: the pre-map names what it indexes
+        if "failed" in scanned:
+            raise ValueError(f"modules: {scanned['failed']}")
         engine = resolve_edges.ensure_edges(manifest) if state.get("engine", True) else {"state": "off"}
         with ExitStack() as stack:
             base = stack.enter_context(open_snapshot(resolve_run_snapshot(published, pstate)))
@@ -3667,17 +3665,15 @@ def cmd_write(args: argparse.Namespace) -> int:
         else:
             print(f"index: {index['action']} -> {index['index']} ({index['documents']} documents)")
     if not getattr(args, "no_modules", False):
-        import modules
-        graph = modules.ensure_graph(Path(args.out))
-        if graph["state"] != "fresh":
-            print(f"modules: {graph['state']}: {graph.get('reason', '')}", file=sys.stderr)
+        # The scan, the pipeline's first step: nothing downstream decides the project's structure.
+        import pipeline
+        scanned = pipeline.run(Path(args.out), stop="scan")["scan"]
+        if "failed" in scanned:
+            print(f"modules: {scanned['failed']}", file=sys.stderr)
             status = 1
         else:
-            print(f"modules: {graph['action']} -> {graph['graph']} ({graph['modules']} modules)")
-            # The first thing an analysis knows about the project: nothing downstream decides its structure.
-            import premap
-            record = premap.ensure(Path(args.out))
-            print(f"premap: {len(record['units'])} units, {len(record['gaps'])} gaps -> {premap.path(Path(args.out))}")
+            print(f"modules: {scanned['action']} -> {scanned['graph']} ({scanned['modules']} modules)")
+            print(f"premap: {scanned['units']} units, {scanned['gaps']} gaps -> {scanned['premap']}")
     if not getattr(args, "no_engine", False):
         engine = resolve_edges.ensure_edges(Path(args.out))
         if engine["state"] in ("running", "fresh"):
