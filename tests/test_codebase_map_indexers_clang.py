@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import json
 import os
+import re
+import shutil
 import sys
 from pathlib import Path, PurePosixPath
 from unittest import mock
@@ -21,6 +23,7 @@ SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
+import code_graph  # noqa: E402
 import container  # noqa: E402
 from indexers import clang, clang_run  # noqa: E402
 
@@ -315,3 +318,30 @@ def test_smoke_cmake_records_fmt_from_github_and_the_unit_is_unavailable(tmp_pat
     state = result["units"][0]
     assert state["kind"] == "download-outside-registries" and state["fetched"] == [FMT]
     assert "CMake Error" in state["error"] and "github.com" in result["reason"]
+
+
+def _occurrences(root: Path, indexes) -> dict:
+    """Every occurrence of every document. A symbol of a system package is named with the version of the package
+    the image carries (`libc6-dev 2.39-0ubuntu8.9`): that version is the image's, not the project's, and is left
+    out of the comparison."""
+    index = code_graph.Index(root)
+    for path, prefix in indexes:
+        index.load(Path(path), prefix)
+    system = re.compile(r"^(cxx \. (?!project )\S+) \S+\$ ")
+    return {rel: sorted((o.line, o.start, o.end_line, o.end, system.sub(lambda m: m.group(1) + " $ ", o.key),
+                         o.definition) for o in found) for rel, found in index.documents.items()}
+
+
+@pytest.mark.skipif(not SMOKE, reason="set DAODAN_CLANG_SMOKE=1 to index the fixtures in a real container")
+@pytest.mark.parametrize("language", ["c", "cpp"])
+def test_smoke_a_unit_that_configures_is_indexed_and_its_index_comes_back(tmp_path, language):
+    """The whole path on a real engine: CMake configures, scip-clang runs with the jobs it is given, the index
+    returns through the writer, and it says what the fixture's stored index says."""
+    fixture = HERE / "fixtures/code-graph" / language
+    project = tmp_path / "project"
+    shutil.copytree(fixture, project, ignore=shutil.ignore_patterns("index.scip", "expected.json"))
+    unit = {"name": language, "kind": "cmake-target", "root": ".", "manifest": "CMakeLists.txt"}
+    result = clang.index(project, tmp_path / "work", units=[unit], cpus=2)
+    assert "state" not in result, result
+    assert [u["state"] for u in result["units"]] == ["indexed"], result["units"]
+    assert _occurrences(project, result["indexes"]) == _occurrences(fixture, [(fixture / "index.scip", "")])
