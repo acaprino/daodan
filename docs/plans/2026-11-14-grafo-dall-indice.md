@@ -447,7 +447,8 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
   - [ ] La stessa dipendenza sotto un secondo nome: 5 (rinomina di Cargo, nome del repository di SwiftPM, suffisso Scala). Vale il nome che usa il build tool.
   - [ ] File compilato da pip-compile letto come dichiarazioni: 5. Dà `resolved`, come fa già `premap/requirements.py`.
   - [ ] Non una dipendenza (script di un Pipfile, bersaglio di un `replace` di Go), letterale preso da `setup.py`, script che nessuna build applica: 4.
-  - [ ] Da decidere con il proprietario, perché lo schema non ha una parola: BOM e `platform()` (6), POM genitore (8), `ext-*` di Composer (3), `flutter: sdk` (1).
+  - [ ] Deciso dal proprietario il 15 novembre 2026: un BOM, un `platform()` e un POM genitore sono dipendenze, con un tipo loro, perché sono dichiarazioni vere che la build scarica (14 voci). Restano da decidere `ext-*` di Composer (3) e `flutter: sdk` (1).
+  - [ ] Deciso lo stesso giorno, per le versioni scritte in un file centrale: una voce sola per unità e pacchetto; l'unità viene dal file che nomina il pacchetto, la versione e `declared_in` dal file che la scrive.
   - [ ] Sbagliate: scope `runtime` dato a voci Gradle di test o di build (6); `declared_in` sul primo manifesto dell'unità invece che sul file che scrive la voce (8); virgolette del Gemfile nel range (5).
   - [ ] Toolchain in più, 47: range di npm ricavato dal formato del lockfile (11), `packageManager` della radice ripetuto sui membri (12), lo stesso wrapper due volte con e senza frammento (10), la versione dello script wrapper (8), altre 6.
   - [ ] Unità in più, 5: `project()` di CMake riportato come target (4), la libreria Angular come pacchetto npm (1). Archi in più, 2: `premap/go.py` fa un arco di ogni `require` verso un modulo del checkout anche senza `replace` né `go.work`.
