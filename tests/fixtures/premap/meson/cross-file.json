@@ -1,0 +1,93 @@
+{
+ "versions": {
+  "meson": "1.12.1"
+ },
+ "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+ "runs": [
+  {
+   "command": {
+    "tool": "meson",
+    "argv": [
+     "sh",
+     "-c",
+     "b=$(mktemp -d) && meson setup --wrap-mode nodownload \"$b\" >&2 && meson introspect \"$b\" --targets --projectinfo"
+    ],
+    "cwd": ".",
+    "env": {},
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"projectinfo\": {\"version\": \"undefined\", \"descriptive_name\": \"sensor\", \"license\": [\"unknown\"], \"license_files\": [], \"subproject_dir\": \"subprojects\", \"subprojects\": []}, \"targets\": [{\"name\": \"driver\", \"id\": \"driver@sta\", \"type\": \"static library\", \"defined_in\": \"/work/meson.build\", \"filename\": [\"/tmp/tmp.o5mfrNyq3s/libdriver.a\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"c\", \"machine\": \"host\", \"compiler\": [\"cc\"], \"parameters\": [\"-I/tmp/tmp.o5mfrNyq3s/libdriver.a.p\", \"-I/tmp/tmp.o5mfrNyq3s\", \"-I/work\", \"-fdiagnostics-color=always\", \"-D_FILE_OFFSET_BITS=64\", \"-Wall\", \"-Winvalid-pch\", \"-O0\", \"-g\", \"-fPIC\"], \"sources\": [\"/work/driver.c\"], \"generated_sources\": [], \"unity_sources\": []}, {\"linker\": [\"gcc-ar\"], \"parameters\": [\"csrDT\"]}], \"extra_files\": [], \"subproject\": null, \"dependencies\": [], \"depends\": [], \"installed\": false}, {\"name\": \"host_tests\", \"id\": \"host_tests@exe\", \"type\": \"executable\", \"defined_in\": \"/work/meson.build\", \"filename\": [\"/tmp/tmp.o5mfrNyq3s/host_tests\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"c\", \"machine\": \"host\", \"compiler\": [\"cc\"], \"parameters\": [\"-I/tmp/tmp.o5mfrNyq3s/host_tests.p\", \"-I/tmp/tmp.o5mfrNyq3s\", \"-I/work\", \"-fdiagnostics-color=always\", \"-D_FILE_OFFSET_BITS=64\", \"-Wall\", \"-Winvalid-pch\", \"-O0\", \"-g\"], \"sources\": [\"/work/tests.c\"], \"generated_sources\": [], \"unity_sources\": []}, {\"linker\": [\"cc\"], \"parameters\": [\"-Wl,--as-needed\", \"-Wl,--no-undefined\", \"libdriver.a\"]}], \"extra_files\": [], \"subproject\": null, \"dependencies\": [], \"depends\": [], \"win_subsystem\": \"console\", \"installed\": false}]}\n",
+    "stderr": "The Meson build system\nVersion: 1.12.1\nSource dir: /work\nBuild dir: /tmp/tmp.o5mfrNyq3s\nBuild type: native build\nProject name: sensor\nProject version: undefined\nC compiler for the host machine: cc (gcc 13.3.0 \"cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\")\nC linker for the host machine: cc ld.bfd 2.42\nHost machine cpu family: x86_64\nHost machine cpu: x86_64\nBuild targets in project: 2\n\nsensor undefined\n\n  User defined options\n    wrap_mode: nodownload\n\nFound ninja-1.13.2.git.kitware.jobserver-pipe-1 at /daodan/state/tools/bin/ninja\n",
+    "root": "/work"
+   }
+  },
+  {
+   "command": {
+    "tool": "meson",
+    "argv": [
+     "meson",
+     "introspect",
+     "meson.build",
+     "--targets",
+     "--projectinfo"
+    ],
+    "cwd": ".",
+    "env": {},
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"projectinfo\": {\"descriptive_name\": \"sensor\", \"version\": \"undefined\", \"license\": [\"unknown\"], \"license_files\": [], \"subprojects\": [], \"buildsystem_files\": [\"meson.build\"], \"subproject_dir\": \"subprojects\"}, \"targets\": [{\"name\": \"driver\", \"id\": \"driver@sta\", \"type\": \"static library\", \"defined_in\": \"meson.build\", \"filename\": [\"libdriver.a\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"unknown\", \"machine\": \"host\", \"compiler\": [], \"parameters\": [], \"sources\": [\"/work/driver.c\"], \"generated_sources\": []}], \"depends\": [], \"extra_files\": [], \"subproject\": null, \"installed\": false}, {\"name\": \"firmware\", \"id\": \"firmware@exe\", \"type\": \"executable\", \"defined_in\": \"meson.build\", \"filename\": [\"firmware\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"unknown\", \"machine\": \"host\", \"compiler\": [], \"parameters\": [], \"sources\": [\"/work/firmware.c\"], \"generated_sources\": []}], \"depends\": [], \"extra_files\": [], \"subproject\": null, \"installed\": false}, {\"name\": \"host_tests\", \"id\": \"host_tests@exe\", \"type\": \"executable\", \"defined_in\": \"meson.build\", \"filename\": [\"host_tests\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"unknown\", \"machine\": \"host\", \"compiler\": [], \"parameters\": [], \"sources\": [\"/work/tests.c\"], \"generated_sources\": []}], \"depends\": [], \"extra_files\": [], \"subproject\": null, \"installed\": false}]}\n",
+    "stderr": "",
+    "root": "/work"
+   }
+  },
+  {
+   "command": {
+    "tool": "meson",
+    "argv": [
+     "sh",
+     "-c",
+     "b=$(mktemp -d) && meson setup --wrap-mode nodownload --cross-file \"$1\" \"$b\" >&2 && meson introspect \"$b\" --targets --projectinfo",
+     "meson",
+     "cross/arm-none-eabi.txt"
+    ],
+    "cwd": ".",
+    "env": {},
+    "network": "none",
+    "needs": [
+     "arm-none-eabi"
+    ]
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"projectinfo\": {\"version\": \"undefined\", \"descriptive_name\": \"sensor\", \"license\": [\"unknown\"], \"license_files\": [], \"subproject_dir\": \"subprojects\", \"subprojects\": []}, \"targets\": [{\"name\": \"driver\", \"id\": \"driver@sta\", \"type\": \"static library\", \"defined_in\": \"/work/meson.build\", \"filename\": [\"/tmp/tmp.FALfSApujN/libdriver.a\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"c\", \"machine\": \"host\", \"compiler\": [\"arm-none-eabi-gcc\"], \"parameters\": [\"-I/tmp/tmp.FALfSApujN/libdriver.a.p\", \"-I/tmp/tmp.FALfSApujN\", \"-I/work\", \"-fdiagnostics-color=always\", \"-D_FILE_OFFSET_BITS=64\", \"-Wall\", \"-Winvalid-pch\", \"-O0\", \"-g\", \"-fPIC\"], \"sources\": [\"/work/driver.c\"], \"generated_sources\": [], \"unity_sources\": []}, {\"linker\": [\"arm-none-eabi-ar\"], \"parameters\": [\"csrDT\"]}], \"extra_files\": [], \"subproject\": null, \"dependencies\": [], \"depends\": [], \"installed\": false}, {\"name\": \"firmware\", \"id\": \"firmware@exe\", \"type\": \"executable\", \"defined_in\": \"/work/meson.build\", \"filename\": [\"/tmp/tmp.FALfSApujN/firmware\"], \"build_by_default\": true, \"target_sources\": [{\"language\": \"c\", \"machine\": \"host\", \"compiler\": [\"arm-none-eabi-gcc\"], \"parameters\": [\"-I/tmp/tmp.FALfSApujN/firmware.p\", \"-I/tmp/tmp.FALfSApujN\", \"-I/work\", \"-fdiagnostics-color=always\", \"-D_FILE_OFFSET_BITS=64\", \"-Wall\", \"-Winvalid-pch\", \"-O0\", \"-g\"], \"sources\": [\"/work/firmware.c\"], \"generated_sources\": [], \"unity_sources\": []}, {\"linker\": [\"arm-none-eabi-gcc\"], \"parameters\": [\"-Wl,--as-needed\", \"-Wl,--no-undefined\", \"--specs=nosys.specs\", \"libdriver.a\"]}], \"extra_files\": [], \"subproject\": null, \"dependencies\": [], \"depends\": [], \"win_subsystem\": \"console\", \"installed\": false}]}\n",
+    "stderr": "The Meson build system\nVersion: 1.12.1\nSource dir: /work\nBuild dir: /tmp/tmp.FALfSApujN\nBuild type: cross build\nProject name: sensor\nProject version: undefined\nC compiler for the host machine: arm-none-eabi-gcc (gcc 15.2.1 \"arm-none-eabi-gcc (Arm GNU Toolchain 15.2.Rel1 (Build arm-15.86)) 15.2.1 20251203\")\nC linker for the host machine: arm-none-eabi-gcc ld.bfd 2.45.1.20251203\nC compiler for the build machine: cc (gcc 13.3.0 \"cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\")\nC linker for the build machine: cc ld.bfd 2.42\nBuild machine cpu family: x86_64\nBuild machine cpu: x86_64\nHost machine cpu family: arm\nHost machine cpu: cortex-m4\nTarget machine cpu family: arm\nTarget machine cpu: cortex-m4\nBuild targets in project: 2\n\nsensor undefined\n\n  User defined options\n    Cross files: cross/arm-none-eabi.txt\n    wrap_mode  : nodownload\n\nFound ninja-1.13.2.git.kitware.jobserver-pipe-1 at /daodan/state/tools/bin/ninja\n",
+    "root": "/work"
+   }
+  },
+  {
+   "command": {
+    "tool": "meson",
+    "argv": [
+     "sh",
+     "-c",
+     "b=$(mktemp -d) && meson setup --wrap-mode nodownload --cross-file \"$1\" \"$b\" >&2 && meson introspect \"$b\" --targets --projectinfo",
+     "meson",
+     "cross/riscv.ini"
+    ],
+    "cwd": ".",
+    "env": {},
+    "network": "none"
+   },
+   "result": {
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "The Meson build system\nVersion: 1.12.1\nSource dir: /work\nBuild dir: /tmp/tmp.zkfon0F72F\nBuild type: cross build\nProject name: sensor\nProject version: undefined\n\nmeson.build:1:0: ERROR: Unknown compiler(s): [['riscv64-unknown-elf-gcc']]\nThe following exception(s) were encountered:\nRunning `riscv64-unknown-elf-gcc --version` gave \"[Errno 2] No such file or directory: 'riscv64-unknown-elf-gcc'\"\n\nA full log can be found at /tmp/tmp.zkfon0F72F/meson-logs/meson-log.txt\n",
+    "root": "/work"
+   }
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+[binaries]
+c = 'arm-none-eabi-gcc'
+ar = 'arm-none-eabi-ar'
+strip = 'arm-none-eabi-strip'
+
+[built-in options]
+c_link_args = ['--specs=nosys.specs']
+
+[host_machine]
+system = 'none'
+cpu_family = 'arm'
+cpu = 'cortex-m4'
+endian = 'little'

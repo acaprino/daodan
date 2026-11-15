@@ -8,12 +8,20 @@ the configure decides, dependencies and conditions, is then unknown). Each targe
 the folder of the meson.build defining it, its sources' folders, the targets it links as edges, its type,
 sources, include folders and `-D` definitions as the compiler gets them. An edge is a target whose output
 file the linker of another one reads.
+
+Beside the host configure, one per cross file under the top folder (an ini file with a `[host_machine]` section,
+Meson's own definition): `meson setup --cross-file`, with the compilers its `[binaries]` name brought by the
+preparation where `preparation.COMPILERS` knows them; its targets are units too, `config.cross_files` naming the
+cross files that define them, and a cross configure that fails is a `model_failed` gap with its `cross_file`.
 """
 from __future__ import annotations
 
 import json
 import posixpath
+import re
 from pathlib import PurePosixPath
+
+import preparation
 
 NAME, VERSION, RANK = "meson", "1.12.1", "model"
 DOWNLOAD = (  # what the runner carries: Meson, and Ninja, its backend, which the setup only finds
@@ -26,6 +34,27 @@ FILE = "meson.build"
 SECTIONS = ["--targets", "--projectinfo"]
 SETUP = ('b=$(mktemp -d) && meson setup --wrap-mode nodownload "$b" >&2'
          ' && meson introspect "$b" ' + " ".join(SECTIONS))
+
+
+CROSS = ('b=$(mktemp -d) && meson setup --wrap-mode nodownload --cross-file "$1" "$b" >&2'
+         ' && meson introspect "$b" ' + " ".join(SECTIONS))  # $1: the cross file, from the top folder
+CROSS_SUFFIXES = (".txt", ".ini", ".cross", ".cfg")
+BINARY = re.compile(r"(?m)^\s*(?:c|cpp)\s*=\s*\[?\s*'([^']+)'")
+
+
+def _cross_files(context, top: str) -> list[tuple[str, list[str]]]:
+    """The cross files under `top`, each relative to it, with the needs of the compilers its `[binaries]` name."""
+    out = []
+    for rel in sorted(context.inventory.files):
+        if not rel.endswith(CROSS_SUFFIXES) or not _inside(rel, top):
+            continue
+        text = context.inventory.text(rel)
+        if "[host_machine]" not in text:
+            continue
+        compilers = {posixpath.basename(c) for c in BINARY.findall(text.split("[host_machine]")[0])}
+        needs = sorted({preparation.COMPILERS[c] for c in compilers if c in preparation.COMPILERS})
+        out.append((posixpath.relpath(rel, top) if top != "." else rel, needs))
+    return out
 
 
 def _folder(rel: str) -> str:
@@ -43,49 +72,75 @@ def commands(context):
     return [command for top in tops for command in (
         {"tool": "meson", "argv": ["sh", "-c", SETUP], "cwd": top, "env": {}, "network": "none"},
         {"tool": "meson", "argv": ["meson", "introspect", FILE, *SECTIONS], "cwd": top, "env": {},
-         "network": "none"})] or None
+         "network": "none"},
+        *({"tool": "meson", "argv": ["sh", "-c", CROSS, "meson", cross], "cwd": top, "env": {}, "network": "none",
+           **({"needs": needs} if needs else {})} for cross, needs in _cross_files(context, top)))] or None
+
+
+def _units(targets: list[dict], top: str, rel) -> list[dict]:
+    outputs = {f: t["name"] for t in targets for f in t.get("filename", [])}
+    units = []
+    for target in targets:
+        groups = [g for g in target.get("target_sources", []) if "sources" in g]
+        sources = sorted({p for g in groups for s in g["sources"] for p in [rel(s, top)] if p})
+        parameters = [p for g in groups for p in g.get("parameters", [])]
+        linked = [p for g in target.get("target_sources", []) if "linker" in g for p in g.get("parameters", [])]
+        manifest = rel(target["defined_in"], top)
+        config = {"type": target["type"], "sources": sources}
+        includes = sorted({p for i in parameters if i.startswith("-I") for p in [rel(i[2:], top)] if p})
+        defines = sorted({d[2:] for d in parameters if d.startswith("-D")})
+        if includes:
+            config["include_dirs"] = includes
+        if defines:
+            config["build_tags"] = defines
+        units.append({"name": target["name"], "kind": "meson-target", "root": _folder(manifest),
+                      "manifest": manifest, "source_roots": sorted({_folder(s) for s in sources}),
+                      "depends_on": sorted({name for file, name in outputs.items() if name != target["name"]
+                                            and any(file == p or file.endswith("/" + p) for p in linked)}),
+                      "config": config})
+    return units
 
 
 def read(context, commands, results):
     root = next((r["root"] for r in results if r.get("root")), "/")
-    by_folder: dict[str, list] = {}
+    by_folder: dict[str, dict] = {}
     for command, result in zip(commands, results):
-        by_folder.setdefault(command["cwd"], []).append(result)
-    units, gaps = [], []
+        group = by_folder.setdefault(command["cwd"], {"cross": []})
+        if command["argv"][:2] == ["meson", "introspect"]:
+            group["plain"] = result
+        elif len(command["argv"]) > 3:
+            group["cross"].append((command["argv"][4], result))
+        else:
+            group["configured"] = result
+    units, gaps = {}, []
 
     def rel(path: str, base: str) -> str | None:
         full = posixpath.normpath(path if posixpath.isabs(path) else posixpath.join(root, base, path))
         value = posixpath.relpath(full, root)
         return None if value.startswith("..") else value
 
-    for top, (configured, plain) in by_folder.items():
+    for top, group in by_folder.items():
+        configured, plain = group["configured"], group["plain"]
         chosen = configured if configured["returncode"] == 0 else plain if plain["returncode"] == 0 else None
         if chosen is None:
             gaps.append({"kind": "model_failed", "path": top, "detail": "; ".join(
                 f"{name}: {(r['stderr'] or '').strip()[-300:]}" for name, r in (("meson setup", configured),
                                                                                  ("meson introspect", plain)))})
-            continue
-        if chosen is plain:
-            gaps.append({"kind": "model_partial", "path": top, "detail": "dependencies, conditions and links "
-                         f"unknown: meson setup: {(configured['stderr'] or '').strip()[-300:]}"})
-        targets = json.loads(chosen["stdout"])["targets"]
-        outputs = {f: t["name"] for t in targets for f in t.get("filename", [])}
-        for target in targets:
-            groups = [g for g in target.get("target_sources", []) if "sources" in g]
-            sources = sorted({p for g in groups for s in g["sources"] for p in [rel(s, top)] if p})
-            parameters = [p for g in groups for p in g.get("parameters", [])]
-            linked = [p for g in target.get("target_sources", []) if "linker" in g for p in g.get("parameters", [])]
-            manifest = rel(target["defined_in"], top)
-            config = {"type": target["type"], "sources": sources}
-            includes = sorted({p for i in parameters if i.startswith("-I") for p in [rel(i[2:], top)] if p})
-            defines = sorted({d[2:] for d in parameters if d.startswith("-D")})
-            if includes:
-                config["include_dirs"] = includes
-            if defines:
-                config["build_tags"] = defines
-            units.append({"name": target["name"], "kind": "meson-target", "root": _folder(manifest),
-                          "manifest": manifest, "source_roots": sorted({_folder(s) for s in sources}),
-                          "depends_on": sorted({name for file, name in outputs.items() if name != target["name"]
-                                                and any(file == p or file.endswith("/" + p) for p in linked)}),
-                          "config": config})
-    return {"facts": {"units": units} if units else {}, "gaps": gaps}
+        else:
+            if chosen is plain:
+                gaps.append({"kind": "model_partial", "path": top, "detail": "dependencies, conditions and links "
+                             f"unknown: meson setup: {(configured['stderr'] or '').strip()[-300:]}"})
+            for unit in _units(json.loads(chosen["stdout"])["targets"], top, rel):
+                units[(unit["manifest"], unit["name"])] = unit
+        for cross, result in group["cross"]:
+            path = posixpath.normpath(posixpath.join(top, cross))
+            if result["returncode"] != 0:
+                text = result["stderr"] or ""
+                start = max(text.find("ERROR"), 0)
+                gaps.append({"kind": "model_failed", "path": top, "cross_file": path,
+                             "detail": "meson setup --cross-file: " + " ".join(text[start:].split())[:400]})
+                continue
+            for unit in _units(json.loads(result["stdout"])["targets"], top, rel):
+                kept = units.setdefault((unit["manifest"], unit["name"]), unit)
+                kept["config"].setdefault("cross_files", []).append(path)
+    return {"facts": {"units": list(units.values())} if units else {}, "gaps": gaps}

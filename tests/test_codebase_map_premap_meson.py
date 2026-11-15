@@ -31,7 +31,8 @@ def replay(name, change=None):
 
 def build(tmp_path, name, change=None):
     project = tmp_path / "proj"
-    shutil.copytree(CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
+    own = ANSWERS / name  # a project written for this source, beside its answers
+    shutil.copytree(own if own.is_dir() else CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.write_snapshot(project, manifest)
     return premap.write(manifest, sources=(meson,), runner=replay(name, change))
@@ -85,3 +86,35 @@ def test_commands_configure_each_top_meson_folder_with_the_network_closed():
     commands = meson.commands(Context())
     assert {c["cwd"] for c in commands} == {"."} and {c["network"] for c in commands} == {"none"}
     assert {c["tool"] for c in commands} == {"meson"} and len(commands) == 2
+
+
+def test_each_cross_file_is_configured_with_the_compiler_it_names_and_its_targets_say_so(tmp_path):
+    """`firmware` exists only when cross compiling; the Arm cross file's compiler comes from the preparation, the
+    RISC-V one's from nowhere: its configure is a gap naming the compiler, and the host configure still counts."""
+    record = build(tmp_path, "cross-file")
+    units = targets(record)
+    assert set(units) == {"driver", "host_tests", "firmware"}
+    assert units["firmware"]["depends_on"] == ["driver"]
+    assert units["firmware"]["config"]["cross_files"] == ["cross/arm-none-eabi.txt"]
+    assert units["driver"]["config"]["cross_files"] == ["cross/arm-none-eabi.txt"]
+    assert "cross_files" not in units["host_tests"]["config"]
+    [gap] = [g for g in record["gaps"] if g["kind"] == "model_failed"]
+    assert gap["cross_file"] == "cross/riscv.ini" and "riscv64-unknown-elf-gcc" in gap["detail"]
+
+
+def test_commands_configure_each_cross_file_with_the_needs_of_its_compilers():
+    texts = {"meson.build": "project('a', 'c')\n",
+             "cross/arm.txt": "[binaries]\nc = 'arm-none-eabi-gcc'\n[host_machine]\nsystem = 'none'\n",
+             "native.ini": "[binaries]\nc = 'gcc'\n", "doc/notes.txt": "x"}
+
+    class Inventory:
+        files = list(texts)
+        headers = dict.fromkeys(texts)
+        text = staticmethod(texts.__getitem__)
+
+    class Context:
+        inventory = Inventory()
+
+    commands = meson.commands(Context())
+    cross = [c for c in commands if "--cross-file" in c["argv"][2]]
+    assert [(c["argv"][-1], c.get("needs")) for c in cross] == [("cross/arm.txt", ["arm-none-eabi"])]

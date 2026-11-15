@@ -99,8 +99,8 @@ def test_without_an_engine_the_source_states_nothing_and_its_gap_says_why(tmp_pa
     _, fake = recorder(state="gap")
     with mock.patch.object(container, "run_commands", fake):
         record = premap.write(manifest, sources=(premap.cargo,), runner=container_runner.runner(manifest))
-    [gap] = [g for g in record["gaps"] if g["kind"] == "source_failed"]
-    assert "no engine" in gap["detail"] and not record["units"]
+    [gap] = [g for g in record["gaps"] if g["kind"] == "model_not_run"]
+    assert "no engine" in json.dumps(gap) and not record["units"]
 
 
 def test_a_failed_setup_fails_the_source(tmp_path, no_download):
