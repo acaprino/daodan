@@ -1,7 +1,9 @@
 """The pre-map of a snapshot: what the project holds and how each unit is analysed, before any indexer.
 
 `premap.json` (`daodan/premap/v1`) beside the manifest, in Daodan's store, never in the project; the shape is
-in `references/premap.md`. A source is a thin adapter in this package (`NAME`, `VERSION`, `RANK`) that states
+in `references/premap.md`: the project's structure and the toolchains it declares, never the libraries its
+units use (each analyzer's build tool resolves those in the container while it indexes; a source stating them
+fails). A source is a thin adapter in this package (`NAME`, `VERSION`, `RANK`) that states
 facts in that shape: Daodan detects nothing on its own. A reader reads files and runs nothing (`run(context)`).
 A model source is a build system's own command: `commands(context)` describes it as data, a runner the caller
 supplies executes it in Daodan's container, and `read(context, commands, results)` reads its output; without a
@@ -16,7 +18,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import posixpath
 from pathlib import Path, PurePosixPath
 import re
 import sys
@@ -46,9 +47,6 @@ IDENTITY = {  # the fields that make two entries one fact, from the strictest to
     "units": (("root", "kind", "name", "manifest"), ("root", "kind", "name"), ("root", "kind")),
     "workspace": (("root", "tool"),),  # two build systems in one folder are two workspaces
     "toolchains": (("tool", "declared_in", "version"), ("tool", "declared_in")),
-    # A file belongs to one unit: name and file make one dependency even where a source names no unit.
-    "dependencies": (("unit", "name", "scope", "declared_in"), ("unit", "name", "declared_in"), ("name", "declared_in"),
-                     ("unit", "name")),
 }
 EXECUTES = {  # unit kinds whose model or index exists only when the build runs project code
     "gradle-project": "Gradle runs the build scripts for the model and the compile tasks the index needs",
@@ -112,8 +110,8 @@ def _canonical(value) -> str:
 
 def _same(facet: str, field: str, a, b) -> bool:
     # Names fold as PEP 503 does: uv prints `acme-cli` for `acme_cli`; a unit's name is compared only between
-    # entries of the same root and kind, a dependency's within one unit.
-    if (facet, field) in (("dependencies", "unit"), ("dependencies", "name"), ("units", "name")) and a and b:
+    # entries of the same root and kind.
+    if (facet, field) == ("units", "name") and a and b:
         return _package(a) == _package(b)
     if (facet, field) == ("toolchains", "declared_in") and a and b:  # a file and a setting of it are one place
         return str(a).split("#", 1)[0] == str(b).split("#", 1)[0]
@@ -173,37 +171,6 @@ def join(parts: list[dict]) -> dict:
 
 
 # ------------------------------------------------------- what the join derives
-
-def versions_from_tables(record: dict) -> dict:
-    """A version a table writes (`_table`: a catalog, a central versions file, a workspace's dependency table)
-    completes each entry, in its folder or below, that names the package with no version: one entry per unit
-    and package, `declared` and `declared_in` from the table. A table entry no unit is known to use stays as the
-    file states it, with no unit."""
-    entries, tables = [], []
-    for item in record.get("dependencies", []):
-        (tables if item.pop("_table", False) else entries).append(item)
-    for table in tables:
-        folder = posixpath.dirname(table["declared_in"].split("#", 1)[0]) or "."
-        users = [item for item in entries if item.get("unit") and not item.get("declared")
-                 and _package(item["name"]) == _package(table["name"])
-                 and _inside(item.get("declared_in") or ".", folder)]
-        for item in users:
-            item.update(declared=table.get("declared"), declared_in=table["declared_in"])
-            item["sources"] = list(dict.fromkeys(item.get("sources", []) + table.get("sources", [])))
-        if not users:
-            entries.append(table)
-    return {**record, "dependencies": entries}
-
-
-def external(record: dict) -> list[dict]:
-    """The dependencies that are not edges: one that names a unit its unit `depends_on` is that edge, said once."""
-    edges = {}
-    for unit in record.get("units", []):
-        for ref in {unit.get("name"), unit["root"]} - {None}:
-            edges.setdefault(_package(ref), set()).update(_package(name) for name in unit.get("depends_on") or ())
-    return [d for d in record.get("dependencies", [])
-            if not (d.get("unit") and _package(d["name"]) in edges.get(_package(d["unit"]), ()))]
-
 
 def _inside(rel: str, root: str) -> bool:
     return root == "." or rel == root or rel.startswith(root + "/")
@@ -273,8 +240,8 @@ def python_runs(record: dict) -> list[dict]:
     """The indexer stage's Python runs: one per outermost Python root, a `python-project` unit or a uv
     workspace that no other one holds, the units inside folded into it (one run reads its whole folder). Each
     run: `root` ('' for the project's root), `name` (the outer unit's, None for a virtual workspace),
-    `manifests` (the files declaring the packages of every folded unit: manifests, the files dependencies are
-    declared in, `uv.lock` where uv read one), `source_roots` (declared ones, relative to the run's root)."""
+    `manifests` (the files declaring the packages of every folded unit: manifests, requirements files, `uv.lock`
+    where uv read one), `source_roots` (declared ones, relative to the run's root)."""
     units = [u for u in record.get("units", []) if u["kind"] == "python-project"]
     workspaces = [w for w in record.get("workspace", []) if w.get("tool") == "uv"]
     roots = {u["root"] for u in units} | {w["root"] for w in workspaces}
@@ -282,11 +249,8 @@ def python_runs(record: dict) -> list[dict]:
     runs = []
     for root in outer:
         held = [u for u in units if _inside(u["root"], root)]
-        names = {u.get("name") or u["root"] for u in held}
         manifests = {u["manifest"] for u in held if u.get("manifest")}
         manifests |= {rel for u in held for rel in (u.get("config") or {}).get("requirements", [])}
-        manifests |= {d["declared_in"].split("#", 1)[0] for d in record.get("dependencies", [])
-                      if d.get("declared_in") and d.get("unit") in names}
         locked = [w["root"] for w in workspaces if _inside(w["root"], root)]
         locked += [u["root"] for u in held if any(s.startswith(f"{uv.NAME}@") for s in u["sources"])
                    and not any(_inside(u["root"], w) for w in locked)]
@@ -335,6 +299,9 @@ def _run(source, context: Context, runner) -> tuple[dict, dict | None, list[dict
                 result = source.read(context, commands, results)
         else:
             result = source.run(context)
+        stated = set((result or {}).get("facts") or {}) - set(IDENTITY)
+        if stated:  # structure only: a library a unit uses is resolved by its analyzer's build tool
+            raise ValueError(f"no facet {', '.join(sorted(stated))} in the pre-map")
     except Exception as error:  # an adapter's every failure is the source's gap, never the pre-map's end
         gap = _failed(status, error)
         status["seconds"] = round(time.monotonic() - started, 3)
@@ -371,8 +338,6 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
     record.setdefault("units", [])
     for unit in record["units"]:
         unit.setdefault("depends_on", [])
-    if "dependencies" in record:
-        record["dependencies"] = external(versions_from_tables(record))
     record["units"].sort(key=lambda u: (u["root"], u["kind"], u.get("name") or ""))
     record["gaps"] = gaps + _run_facts(record, context) + _coverage(record, context)
     return record

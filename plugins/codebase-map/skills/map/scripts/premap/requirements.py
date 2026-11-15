@@ -4,11 +4,11 @@ A requirements file is a `.txt` or `.in` whose name holds `requirements`, or one
 (it belongs to the folder above). A folder whose only Python manifest is a requirements file is a
 `python-project` unit, without a name, its manifest `requirements.in`, else `requirements.txt`, else the first
 by name; a requirements file beside a `pyproject.toml` or below a Python unit adds to that unit and makes no
-other. `-r` includes belong to the including file's unit, `-c` constraints are no dependencies, `-e` and bare
-local paths (from the unit's folder, where pip runs) are edges to the unit at that path, `--index-url` and `--extra-index-url` are registries. A file
-pip-compile wrote (its header names the `.in` it compiled) is the lock of that `.in`: its pins are the
-`resolved` versions of the `.in`'s requirements, and it declares nothing itself. Every requirements file of a
-unit is in its `config.requirements`.
+other. `-r` includes belong to the including file's unit, `-c` constraints to none; `-e` and bare local paths
+(from the unit's folder, where pip runs) are edges to the unit at that path, `--index-url` and
+`--extra-index-url` are registries. A file pip-compile wrote (its header names the `.in` it compiled) goes with
+that `.in`. Every requirements file of a unit is in its `config.requirements`; the packages they name are not
+the pre-map's.
 """
 from __future__ import annotations
 
@@ -21,9 +21,7 @@ NAME, VERSION, RANK = "requirements", "daodan/premap/v1", "reader"
 INCLUDE = re.compile(r"^(-r|--requirement|-c|--constraint)(?:\s+|=)(\S+)$")
 INDEX = re.compile(r"^(?:-i|--index-url|--extra-index-url)(?:\s+|=)(\S+)$")
 EDITABLE = re.compile(r"^(?:-e|--editable)(?:\s+|=)(\S+)$")
-REQUIREMENT = re.compile(r"^([A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?)\s*(?:\[[^\]]*\])?\s*(.*)$")
 COMPILED = re.compile(r"^#\s+pip-compile\b.*?\s(\S+\.in)\s*$", re.M)
-PIN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])?==([^\s;#]+)", re.M)
 PREFERRED = ("requirements.in", "requirements.txt")
 
 
@@ -57,7 +55,7 @@ def _lines(text: str) -> list[str]:
 
 
 def _parse(text: str) -> dict:
-    out = {"includes": [], "constraints": [], "indexes": [], "paths": [], "requirements": []}
+    out = {"includes": [], "constraints": [], "indexes": [], "paths": []}
     for line in _lines(text):
         if not line:
             continue
@@ -71,17 +69,8 @@ def _parse(text: str) -> dict:
             continue
         editable = EDITABLE.match(line)
         target = editable.group(1) if editable else line if line.startswith((".", "/")) else None
-        if target is not None:
-            if not re.match(r"^[a-z+]+://", target):
-                out["paths"].append(target)
-            continue
-        if line.startswith("-"):
-            continue  # another pip option: it declares no package
-        requirement = REQUIREMENT.match(line)
-        if requirement:
-            spec = requirement.group(2).split(";", 1)[0].strip()
-            declared = spec[1:].strip() if spec.startswith("@") else spec or None
-            out["requirements"].append((requirement.group(1), declared))
+        if target is not None and not re.match(r"^[a-z+]+://", target):
+            out["paths"].append(target)
     return out
 
 
@@ -113,8 +102,8 @@ def run(context):
     text = lambda rel: disk[rel] if rel in disk else inventory.text(rel)  # noqa: E731
     from premap.module_graph import references
     ref = references(context.graph)
-    python = sorted(((m["members"][0]["path"], ref[m["id"]]) for m in context.graph["modules"]
-                     if m["provenance"] == "build" and "python" in m["ecosystems"]), key=lambda r: -len(r[0]))
+    python = sorted((m["members"][0]["path"] for m in context.graph["modules"]
+                     if m["provenance"] == "build" and "python" in m["ecosystems"]), key=lambda r: -len(r))
     roots = {m["members"][0]["path"]: ref[m["id"]] for m in context.graph["modules"] if m["provenance"] == "build"}
     parsed = {rel: _parse(text(rel)) for rel in files}
     compiled = {rel: _join(_parent(rel), match.group(1)) for rel in files
@@ -139,14 +128,12 @@ def run(context):
     for rel, source in compiled.items():  # a lock goes with the `.in` it compiles, even when used as a constraint
         if source in home:
             home[rel] = home[source]
-    pins = {compiled[rel]: {name.lower(): version for name, version in PIN.findall(text(rel))} for rel in compiled}
-    units, dependencies, gaps, by_folder = [], [], [], {}
+    units, gaps, by_folder = [], [], {}
     for rel, folder in sorted(home.items()):
         by_folder.setdefault(folder, []).append(rel)
     for folder, members in sorted(by_folder.items()):
-        owner = next(((root, name) for root, name in python if _inside(folder, root)), None)
-        unit_name = owner[1] if owner else None
-        unit = {"root": owner[0] if owner else folder, "kind": "python-project",
+        owner = next((root for root in python if _inside(folder, root)), None)
+        unit = {"root": owner or folder, "kind": "python-project",
                 "config": {"requirements": sorted(members)}}
         if owner is None:
             names = [m for m in members if m not in compiled]
@@ -166,14 +153,9 @@ def run(context):
                 else:
                     gaps.append({"kind": "dependency_unresolved", "path": rel,
                                  "detail": f"{path}: no build unit at {target}"})
-            for name, declared in facts["requirements"]:
-                item = {"unit": unit_name, "name": name, "declared": declared, "declared_in": rel}
-                if pins.get(rel, {}).get(name.lower()):
-                    item["resolved"] = pins[rel][name.lower()]
-                dependencies.append(item)
         if origins:
             unit["registries"] = sorted(origins)
         if depends:
             unit["depends_on"] = sorted(depends)
         units.append(unit)
-    return {"facts": {"units": units, "dependencies": dependencies}, "gaps": gaps}
+    return {"facts": {"units": units}, "gaps": gaps}

@@ -1,7 +1,7 @@
 """Source: the Git submodules `.gitmodules` declares, read from the file, never run.
 
 The file is Git's configuration format: `[submodule "name"]` sections of `key = value` lines. Each submodule is
-an excluded folder and a dependency named by its URL as written, its branch as `declared`. A submodule whose
+an excluded folder: another repository, not code of the project. A submodule whose
 folder is missing or empty is a `submodule_absent` gap: its code is not in the project. The commit a gitlink
 pins is Git's index, not this file: it stays absent.
 """
@@ -39,14 +39,12 @@ def run(context):
         entry = ENTRY.match(line)
         if entry and current is not None:
             current[entry.group(1).lower()] = _value(entry.group(2))
-    excluded, dependencies, gaps = [], [], []
+    excluded, gaps = [], []
     for name, fields in sorted(found.items()):
         folder = (fields.get("path") or name).strip("/")
         excluded.append({"path": folder + "/", "why": "submodule"})
-        dependencies.append({"name": fields.get("url"), "declared": fields.get("branch"),
-                             "declared_in": f".gitmodules#submodule.{folder}"})
         disk = context.root / folder
         if not disk.is_dir() or not any(disk.iterdir()):
             gaps.append({"kind": "submodule_absent", "path": folder,
                          "detail": f"submodule {fields.get('url')} is not checked out: its code is not in the project"})
-    return {"facts": {"excluded": excluded, "dependencies": dependencies}, "gaps": gaps}
+    return {"facts": {"excluded": excluded}, "gaps": gaps}

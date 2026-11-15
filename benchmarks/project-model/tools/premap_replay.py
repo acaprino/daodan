@@ -105,18 +105,20 @@ def totals(results: dict) -> str:
     for facet in FACETS:
         row = []
         for side in ("base", "premap"):
-            found = extra = wrong = expected = 0
+            found = extra = wrong = expected = given = 0
             for result in results.values():
                 entry = (result.get(side) or {}).get(facet) or {}
                 expected += entry.get("expected", 0)
                 if entry.get("given"):
+                    given += 1
                     found += entry.get("found", 0)
                     extra += len(entry.get("extra", []))
                     wrong += len(entry.get("wrong", []))
-            row.append(f"{found:>5} +{extra:<4} w{wrong:<3}")
+            row.append(f"{found:>5} +{extra:<4} w{wrong:<3}" if given else "not given")
         lines.append(f"{facet:20} {row[0]:>16} {row[1]:>18} /{expected}")
-    worse = []
-    for facet in FACETS[:6]:
+    worse = []  # a facet the pre-map does not hold (external dependencies are the analyzer's) is not worse
+    for facet in [f for f in FACETS[:6] if any(((r.get("premap") or {}).get(f) or {}).get("given")
+                                               for r in results.values())]:
         for group in FAMILIES:
             sums = {side: sum(((result.get(side) or {}).get(facet) or {}).get("found", 0)
                               for name, result in results.items() if family(name) == group

@@ -3,11 +3,9 @@
 `commands` describes, for Daodan's container, `--locked` (the lockfile as it is, never rewritten; it reaches
 the registries) and `--no-deps` (no resolution, offline). `RUSTUP_TOOLCHAIN` pins the toolchain, so a
 `rust-toolchain` file of the project never makes rustup install another; no build script runs. `read` keeps the
-`--locked` answer, else the `--no-deps` one (a `model_partial` gap: versions unresolved). Units are the
-workspace members with their targets, edition, features and build script; dependencies are the members'
-registry and git dependencies, resolved from the `resolve` graph; registries are the sources of the packages
-the lockfile resolves. Cargo's `req` is the requirement as Cargo reads it (`^1.0` for `1.0`), not as written:
-it is not `declared`.
+`--locked` answer, else the `--no-deps` one (a `model_partial` gap: registries unknown). Units are the
+workspace members with their targets, edition, features and build script, and the path dependencies between
+them as edges; registries are the sources of the packages the lockfile resolves.
 """
 from __future__ import annotations
 
@@ -18,7 +16,6 @@ import tomllib
 
 NAME, VERSION, RANK = "cargo", "1.99.1", "model"  # the Rust release Daodan pins (`resolve_edges.RUST_VERSION`)
 ENV = {"CARGO_TERM_COLOR": "never", "RUSTUP_TOOLCHAIN": VERSION, "RUSTUP_AUTO_INSTALL": "0"}
-SCOPE = {None: "runtime", "dev": "dev", "build": "build"}
 MODES = (("--locked", "registries"), ("--no-deps", "none"))
 
 
@@ -39,7 +36,7 @@ def read(context, commands, results):
     for command, result in zip(commands, results):
         by_folder.setdefault(command["cwd"], {})[command["argv"][-1]] = result
     root = next((r["root"] for r in results if r.get("root")), "/")
-    gaps, units, workspaces, toolchains, dependencies, seen = [], [], [], [], [], set()
+    gaps, units, workspaces, toolchains, seen = [], [], [], [], set()
 
     def rel(path: str) -> str:
         value = posixpath.relpath(path, root)
@@ -54,13 +51,13 @@ def read(context, commands, results):
             continue
         if chosen is plain and locked is not None:
             gaps.append({"kind": "model_partial", "path": folder,
-                         "detail": f"resolved versions unknown: cargo metadata --locked: {(locked['stderr'] or '').strip()[-300:]}"})
+                         "detail": "registries unknown: cargo metadata --locked: "
+                                   f"{(locked['stderr'] or '').strip()[-300:]}"})
         data = json.loads(chosen["stdout"])
         packages = {p["id"]: p for p in data["packages"]}
         members = [packages[i] for i in data["workspace_members"] if i in packages]
         if all(rel(p["manifest_path"]) in seen for p in members):
             continue
-        nodes = {n["id"]: n for n in (data.get("resolve") or {}).get("nodes") or []}
         registries = sorted({_origin(p["source"]) for p in data["packages"] if p.get("source") and p["id"] not in
                              data["workspace_members"]}) if data.get("resolve") is not None else None
         ws_manifest = rel(posixpath.join(data["workspace_root"], "Cargo.toml"))
@@ -79,27 +76,12 @@ def read(context, commands, results):
                 config["build_script"] = build[0]
             if package.get("features"):
                 config["features"] = package["features"]
-            resolved = {}
-            for dep in (nodes.get(package["id"]) or {}).get("deps") or []:
-                target = packages.get(dep["pkg"])
-                if target:
-                    resolved[dep["name"]] = target["version"]
-                    resolved.setdefault(target["name"], target["version"])
-            depends = []
-            for dep in package["dependencies"]:
-                if dep.get("path") or dep.get("source") is None:
-                    depends.append(dep["name"])
-                    continue
-                item = {"unit": package["name"], "name": dep["name"], "declared_in": manifest,
-                        "scope": "optional" if dep.get("optional") else SCOPE.get(dep.get("kind"), dep.get("kind"))}
-                version = resolved.get((dep.get("rename") or dep["name"]).replace("-", "_"), resolved.get(dep["name"]))
-                if version:  # an optional dependency the default features leave out is not in `resolve`
-                    item["resolved"] = version
-                dependencies.append(item)
+            depends = sorted({dep["name"] for dep in package["dependencies"]
+                              if dep.get("path") or dep.get("source") is None})
             unit = {"name": package["name"], "kind": "cargo-crate", "root": unit_root, "manifest": manifest,
                     "source_roots": sorted({PurePosixPath(t["path"]).parent.as_posix() for t in targets
                                             if t["kind"] != "custom-build"}),
-                    "depends_on": sorted(set(depends)), "config": config}
+                    "depends_on": depends, "config": config}
             if registries is not None:
                 unit["registries"] = registries
             units.append(unit)
@@ -113,5 +95,4 @@ def read(context, commands, results):
         ws_root = rel(data["workspace_root"])
         if (len(member_dirs) > 1 or member_dirs != [ws_root]) and not any(w["root"] == ws_root for w in workspaces):
             workspaces.append({"tool": "cargo", "root": ws_root, "members": member_dirs})
-    return {"facts": {"units": units, "workspace": workspaces, "toolchains": toolchains, "dependencies": dependencies},
-            "gaps": gaps}
+    return {"facts": {"units": units, "workspace": workspaces, "toolchains": toolchains}, "gaps": gaps}

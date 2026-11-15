@@ -1,12 +1,13 @@
 """Source: Daodan's module graph (`modules.py`), its build units as the pre-map names them.
 
-Units, the workspaces that contain them, the declared edges between units (`depends_on`) and the names of
-their external dependencies, each declared in the unit's manifest. A module of several kinds in one folder
-(settings and build script, `package.json` beside a workspace file) is one unit per kind the pre-map knows; a
+Units, the workspaces that contain them and the declared edges between units (`depends_on`). A module of
+several kinds in one folder (settings and build script, `package.json` beside a workspace file) is one unit per
+kind the pre-map knows; a
 workspace member without its own manifest is a member, not a unit; an included Gradle build is a unit, not a
 member. A unit is named as its build tool names it (`_names`), and has no name where no file gives one.
 Another entry refers to a unit by `references`: its name, or its root when the name cannot tell it apart. The
-graph's gaps are kept. This is the one conversion of the graph: the benchmark's adapter calls it.
+graph's gaps are kept. This is the one conversion of the graph: the benchmark's adapter calls `facts`, which
+also gives the names of each unit's external dependencies; the pre-map takes only its structure (`run`).
 """
 from __future__ import annotations
 
@@ -107,7 +108,7 @@ def _read(graph: dict):
 
 
 def references(graph: dict) -> dict:
-    """Module id -> how a dependency, an edge or a gap names that unit."""
+    """Module id -> how an edge or a gap names that unit."""
     return _read(graph)[5]
 
 
@@ -143,4 +144,5 @@ def run(context) -> dict:
     gaps = [dict(gap) for gap in graph.get("gaps") or []]
     gaps += [{**gap, "unit": ref[module["id"]]} for module in graph["modules"] if module["provenance"] == "build"
              for gap in module.get("gaps") or []]
-    return {"facts": facts(graph), "gaps": gaps}
+    found = facts(graph)
+    return {"facts": {"units": found["units"], "workspace": found["workspace"]}, "gaps": gaps}

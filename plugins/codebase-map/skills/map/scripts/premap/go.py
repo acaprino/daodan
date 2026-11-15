@@ -2,7 +2,7 @@
 
 `commands` describes, for Daodan's container: `go env -json GOPROXY`; in each folder holding a `go.work`, `go
 work edit -json`; in each folder holding a `go.mod`, `go mod edit -json` (requirements as written), `go list -m
--json` (main modules), `go list -m -json all` (the build list) and `go list -e -json ./...` (packages), with
+-json` (main modules) and `go list -e -json ./...` (packages), with
 `GOWORK=off` and, for a module under a `go.work`, also in workspace mode. `-mod=readonly` and
 `GOTOOLCHAIN=local`: nothing is written in the project, no project code runs. `read` keeps, for each module,
 the answers of the mode Go applies to it (workspace mode when a `go.work` uses it). A command that fails is a
@@ -54,14 +54,13 @@ def commands(context):
         out.append(_command(["go", "mod", "edit", "-json"], mod, OFF, "none"))
         for env in [OFF] + ([ENV] if any(_inside(mod, work) for work in works) else []):
             out += [_command(["go", "list", "-m", "-json"], mod, env, "none"),
-                    _command(["go", "list", "-m", "-json", "all"], mod, env, "registries"),
                     _command(["go", "list", "-e", "-json", "./..."], mod, env, "registries")]
     return out
 
 
 def read(context, commands, results):
     answers = {(c["cwd"], " ".join(c["argv"]), c["env"].get("GOWORK")): r for c, r in zip(commands, results)}
-    gaps, units, workspaces, toolchains, dependencies = [], [], [], [], []
+    gaps, units, workspaces, toolchains = [], [], [], []
     root = next((r["root"] for r in results if r.get("root")), "/")
 
     def rel(path: str) -> str:
@@ -111,9 +110,6 @@ def read(context, commands, results):
             continue
         edit = answer(mod, "go mod edit -json", "off")
         written = json.loads(edit) if edit is not None else None  # None: go.mod unread, so no requirement is known
-        build = answer(mod, "go list -m -json all", mode)
-        resolved = ({m["Path"]: m.get("Version") for m in _stream(build) if isinstance(m, dict) and not m.get("Main")}
-                    if build is not None else None)
         listed = answer(mod, "go list -e -json ./...", mode, report=False)
         packages = [p for p in _stream(listed or "") if isinstance(p, dict)]
         manifest = rel(module.get("GoMod") or posixpath.join(root, mod, "go.mod"))
@@ -133,22 +129,11 @@ def read(context, commands, results):
             gaps.append({"kind": "model_failed", "path": mod, "detail": "go list: " + "; ".join(broken[:5])})
         requires = (written or {}).get("Require") or []
         # A module of the checkout is built from its folder only through a `replace` to a path, or when one
-        # `go.work` lists both; otherwise Go takes the version it requires as published: a dependency.
+        # `go.work` lists both; otherwise Go takes the version it requires as published: no edge.
         replaced = {r["Old"]["Path"] for r in (written or {}).get("Replace") or []
                     if r["Old"]["Path"] in mains and not r["New"].get("Version")}
         depends = sorted(replaced | {r["Path"] for r in requires
                                      if r["Path"] in mains and mod in used and mains[r["Path"]] in used})
-        for require in requires:
-            if require["Path"] in depends or require.get("Indirect"):
-                continue
-            # go.mod says no scope for a requirement: only a `tool` directive is one (`dev`, below).
-            item = {"unit": module["Path"], "name": require["Path"], "declared": require.get("Version"),
-                    "declared_in": manifest}
-            if resolved is not None and resolved.get(require["Path"]):
-                item["resolved"] = resolved[require["Path"]]
-            dependencies.append(item)
-        dependencies += [{"unit": module["Path"], "name": tool["Path"], "scope": "dev", "declared_in": manifest}
-                         for tool in (written or {}).get("Tool") or []]
         unit = {"name": module["Path"], "kind": "go-module", "root": mod, "manifest": manifest, "source_roots": [mod]}
         if written is not None and every_path_known:  # a module whose path is unknown may be one of its requirements
             unit["depends_on"] = depends
@@ -159,5 +144,4 @@ def read(context, commands, results):
         units.append(unit)
         toolchains += [{"tool": "go", "version": v, "declared_in": manifest}
                        for v in (module.get("GoVersion"), (written or {}).get("Toolchain")) if v]
-    return {"facts": {"units": units, "workspace": workspaces, "toolchains": toolchains,
-                      "dependencies": dependencies}, "gaps": gaps}
+    return {"facts": {"units": units, "workspace": workspaces, "toolchains": toolchains}, "gaps": gaps}

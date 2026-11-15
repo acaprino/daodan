@@ -2,9 +2,9 @@
 
 `commands` describes, for Daodan's container, in each folder holding a `uv.lock` beside a `pyproject.toml`:
 `uv export --frozen --all-packages --no-hashes --format pylock.toml` (the local packages with their
-directories: units and workspace members) and `uv tree --frozen --depth 1` (each member's direct dependencies,
-the version the lock fixes and the group or extra). `UV_OFFLINE` and no interpreter download: uv reads the lock
-and writes nothing in the project. Registries are the indexes the exported lock names.
+directories: units and workspace members) and `uv tree --frozen --depth 1` (each member's direct dependencies:
+those that are local packages are the edges between units). `UV_OFFLINE` and no interpreter download: uv reads
+the lock and writes nothing in the project. Registries are the indexes the exported lock names.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ LINE = re.compile(r"^(?P<prefix>[\s│├└─]*)(?P<name>[A-Za-z0-9][A-Za-z0-9
                   r"(?P<rest>.*)$")
 
 
-def _tree(text: str) -> dict[str, list[dict]]:
+def _tree(text: str) -> dict[str, list[str]]:
     """`{root package: [direct dependency]}` from `uv tree --depth 1`."""
     out, current = {}, None
     for line in text.splitlines():
@@ -32,16 +32,8 @@ def _tree(text: str) -> dict[str, list[dict]]:
         if not match.group("prefix"):
             current = match.group("name")
             out.setdefault(current, [])
-            continue
-        if current is None:
-            continue
-        rest, scope = match.group("rest"), "runtime"
-        group = re.search(r"\(group: ([^)]+)\)", rest)
-        if group:
-            scope = "test" if group.group(1).strip() == "test" else "dev"
-        if re.search(r"\(extra: ([^)]+)\)", rest):
-            scope = "optional"
-        out[current].append({"name": match.group("name"), "version": match.group("version"), "scope": scope})
+        elif current is not None:
+            out[current].append(match.group("name"))
     return out
 
 
@@ -55,7 +47,7 @@ def commands(context):
 
 def read(context, commands, results):
     answers = {(c["cwd"], c["argv"][1]): r for c, r in zip(commands, results)}
-    gaps, units, workspaces, dependencies, covered = [], [], [], [], set()
+    gaps, units, workspaces, covered = [], [], [], set()
     for folder in sorted({c["cwd"] for c in commands}, key=lambda f: (f.count("/"), f)):
         if folder in covered:
             continue
@@ -77,9 +69,7 @@ def read(context, commands, results):
             unit_root = local.get(name, folder)
             covered.add(unit_root)
             manifest = "pyproject.toml" if unit_root == "." else f"{unit_root}/pyproject.toml"
-            inner = {d["name"] for d in trees.get(name, []) if d["name"] in local or d["name"] in trees}
-            dependencies += [{"unit": name, "name": d["name"], "resolved": d["version"], "scope": d["scope"],
-                              "declared_in": manifest} for d in trees.get(name, []) if d["name"] not in inner]
+            inner = {d for d in trees.get(name, []) if d in local or d in trees}
             unit = {"name": name, "kind": "python-project", "root": unit_root, "manifest": manifest,
                     "registries": registries}
             if tree["returncode"] == 0:  # the edges between units come from `uv tree` alone
@@ -88,4 +78,4 @@ def read(context, commands, results):
         members = sorted(v for v in local.values() if v != folder)
         if members:
             workspaces.append({"tool": "uv", "root": folder, "members": members})
-    return {"facts": {"units": units, "workspace": workspaces, "dependencies": dependencies}, "gaps": gaps}
+    return {"facts": {"units": units, "workspace": workspaces}, "gaps": gaps}
