@@ -21,30 +21,36 @@ run), the caller's `runner(commands)` executes it and answers
 `{returncode, stdout, stderr, root}` per command (`root` the project's absolute
 path in the container), and `read(context, commands, results)` reads the
 answers. Without a runner a model source is `not_run`, with a `model_not_run`
-gap. `RANK` is `model`, `reader` or `scanner`.
+gap. A source states only what it read: a command that did not answer leaves
+its facts absent, never empty, since an empty value would win the join.
+`RANK` is `model`, `reader` or `scanner`.
 
 | Source | Rank | Facts |
 |---|---|---|
 | `modules.py` | reader | units, workspaces, `depends_on`, dependency names (`references/modules.md`) |
 | `python-build` | reader | `source_roots` of a Python unit where its build configuration declares the package folder: setuptools `package-dir` and `packages.find.where`, hatch's wheel `packages`, poetry `packages[].from`, pdm `package-dir`, uv's `module-root`, `setup.cfg` `package_dir`, a literal `package_dir` in `setup.py`; a backend's default is no fact of the file |
+| `requirements` | reader | pip's requirements files (`*requirements*.txt` and `.in`, the files of a `requirements/` folder): a folder whose only Python manifest is one is a `python-project` unit without a name (manifest `requirements.in`, else `requirements.txt`), one beside a `pyproject.toml` or below a Python unit adds to that unit; `-r` includes go with the including unit, `-c` constraints are no dependencies, `-e` and local paths are `depends_on`, index URLs are `registries`; a pip-compile output is the lock of its `.in` (`resolved`); every file in `config.requirements` |
 | `npm-files` | reader | install scripts of `package.json` and the dependencies `package-lock.json` marks `hasInstallScript` (a `not_executed` gap: Daodan installs with `--ignore-scripts`); `registries`, the origins of the lockfile's `resolved` URLs |
 | `jvm-files` | reader | the wrapper of a Gradle build or a Maven project (`config.wrapper`: `file`, `distribution_url`, `distribution_sha256`; the build tool's version); the Java release and the Kotlin plugin version a pom writes, with `line`; a Gradle build's Java version is a `toolchain_undeclared` gap (only its scripts state it) |
 | `gitmodules` | reader | `.gitmodules`: submodules as excluded folders and dependencies (URL, branch) |
-| `renovate` 44.239.1 | reader | `renovate --platform=local --dry-run=extract`, run in the container as a separate program (AGPL-3.0: no code of it in Daodan), reading files only: toolchains every manager reports (version files, `engines`, `packageManager`, `go`, `requires-python`, wrappers) and dependencies with the range as written and the locked version, on the unit whose manifest the file is |
-| `snapshot.py` | scanner | languages from the suffix table, totals |
+| `renovate` 44.239.1 | reader | `renovate --platform=local --dry-run=extract`, run in the container as a separate program (AGPL-3.0: no code of it in Daodan), reading files only: toolchains every manager reports (version files, `engines`, `packageManager`, `go`, `requires-python`, wrappers, the runtime image of a Dockerfile, compose file or devcontainer) and the package managers' dependencies with the range as written and the locked version, on the unit whose manifest the file is; images, CI actions, transitive pins and overrides are no dependencies of a unit; it runs on Node 24.22.3 |
+| `go-enry` v2.9.6 | scanner | `daodan-enry .` (`premap/enry_facts.go`, built with go-enry): languages in Linguist's spelling, totals, and the files go-enry calls vendored, generated, documentation or binary as `excluded`, a folder whose files share one reason as `folder/`; dot folders stay outside |
 | `go` 1.27.3 | model | per `go.mod`, nested ones too: `go env GOPROXY`, `go work edit`, `go mod edit`, `go list -m`, `go list -m all`, `go list -e ./...`, with `-mod=readonly`, `GOTOOLCHAIN=local`, `CGO_ENABLED=1`, in workspace mode for a module a `go.work` uses: units, packages, files the default build leaves out, cgo, `replace`, workspaces, Go versions, requirements with resolved versions, `registries` (`GOPROXY`) |
 | `cargo` 1.99.1 | model | `cargo metadata --locked`, else `--no-deps`, with `RUSTUP_TOOLCHAIN` pinned: crates, targets, edition, features, build script, `rust-version` (the workspace root's when inherited), dependencies with resolved versions, `registries` (the lockfile's package sources) |
 | `uv` 0.11.28 | model | `uv export --frozen` and `uv tree --frozen`, offline, where a `uv.lock` sits: units, workspace members, direct dependencies with locked versions, `registries` (the lock's indexes) |
+| `tsc` 6.0.3 | model | `tsc --showConfig -p` per tsconfig: each unit's `config.tsconfig` (its folder's `tsconfig.json`, its references in order, the others) and `config.paths`, the aliases resolved against `baseUrl` or the tsconfig's folder; a tsconfig no unit holds is a `config_outside_units` gap |
+| `npm` | model | `npm query ":root, .workspace"`, from the lockfile, else from the manifests: units, from the lockfile only, the workspace with its members and the edges between units (without it npm links none: a `model_partial` gap), each node placed by its `path` since npm answers for the whole workspace from a member's folder; `config.entry_files` from `main`, `module`, `browser`, `bin`, `exports`; labelled with the npm version that answers |
 
 ## The join
 
 Every entry carries `sources`, the `tool@version` of each source stating it.
 Two entries are one fact when their identity fields agree, from the strictest
 match to the loosest: units `root`+`kind`+`name`+`manifest`, then
-`root`+`kind`+`name`, then `root`+`kind`; workspaces `root`+`tool`, then
-`root`; toolchains `tool`+`declared_in`+`version`, then `tool`+`declared_in`;
+`root`+`kind`+`name`, then `root`+`kind`; workspaces `root`+`tool` (two
+build systems in one folder are two workspaces); toolchains `tool`+`declared_in`+`version`, then `tool`+`declared_in`;
 dependencies `unit`+`name`+`scope`+`declared_in`, then without `scope`, then
-`unit`+`name`; languages `language`; excluded `path`. Unit and dependency
+`name`+`declared_in` (a file belongs to one unit, so a dependency a source
+gives without its unit is still the same one), then `unit`+`name`; languages `language`; excluded `path`. Unit and dependency
 names compare after PEP 503 folding. Two entries of one source never merge.
 When two sources give a field different values, the value of the higher rank
 stays (between equal ranks, the earlier source in `SOURCES`) and the other goes
@@ -58,9 +64,9 @@ source does not give is no conflict. `config` joins key by key
 |---|---|
 | `binding`, `inputs_digest` | the manifest, its logical digest and root; what freshness compares |
 | `sources` | per source `{source, rank, state, seconds}`: `ran`, `not_needed` (nothing of its kind), `not_run` (model commands without a runner, with `commands`), `unavailable` (with `reason`, `install`) or `failed` (with `reason`) |
-| `languages` | `{language, files}`: Linguist's spelling where one exists; each file's language stays in the snapshot |
+| `languages` | `{language, files}` from go-enry, in Linguist's spelling; each file's language stays in the snapshot |
 | `excluded` | `{path, why}`: `vendored`, `generated`, `documentation`, `binary`, `submodule` |
-| `units` | `{name, kind, root, manifest, source_roots, depends_on, config, registries, run}`; `kind` one of `npm-package`, `deno-project`, `nx-project`, `python-project`, `cargo-crate`, `go-module`, `maven-module`, `gradle-project`, `sbt-project`, `dotnet-project`, `cmake-target`, `composer-package`, `gem`, `bundler-project`, `pub-package`, `swift-package`, `mix-project`, `cabal-package`, `dune-project`, `zig-package`, `julia-package`, `terraform-module`; `name` null when no file names the unit; `config` what an indexer reads (`tsconfig`, `paths`, `packages`, `ignored_files`, `build_script`, `wrapper`, ...); `registries` the origins the preparation reaches, when a source states them |
+| `units` | `{name, kind, root, manifest, source_roots, depends_on, config, registries, run}`; `kind` one of `npm-package`, `deno-project`, `nx-project`, `python-project`, `cargo-crate`, `go-module`, `maven-module`, `gradle-project`, `sbt-project`, `dotnet-project`, `cmake-target`, `composer-package`, `gem`, `bundler-project`, `pub-package`, `swift-package`, `mix-project`, `cabal-package`, `dune-project`, `zig-package`, `julia-package`, `terraform-module`; `name` null when no file names the unit; `config` what an indexer reads (`tsconfig`, `paths`, `entry_files`, `packages`, `ignored_files`, `build_script`, `wrapper`, `requirements`, ...); `registries` the origins the preparation reaches, when a source states them |
 | `units[].run` | `{executes_project_code, reason}`, below |
 | `workspace` | `{tool, root, members}`, members as resolved unit folders; a Gradle build, a Maven reactor or an included build is a workspace with its own `root` |
 | `toolchains` | `{tool, version, declared_in, line}`: `declared_in` the file and, after `#`, the field; a toolchain belongs to the nearest unit whose `root` holds `declared_in` |
@@ -77,7 +83,7 @@ inside fold into it, since a run reads its whole folder. Each run is
 `{root, name, manifests, source_roots}`: `root` relative to the checkout (`''`
 for its root), `name` the outer unit's (`None` for a virtual workspace),
 `manifests` the files declaring the packages of every folded unit (their
-manifests, the files their dependencies are declared in, `uv.lock` with the
+manifests, their `config.requirements`, the files their dependencies are declared in, `uv.lock` with the
 `pyproject.toml` beside it where uv read one), `source_roots` the declared ones,
 relative to the run's root.
 
@@ -104,6 +110,7 @@ facts are literal in its files: the pre-map gives no `needs`.
 | `model_not_run` | a model source whose commands have not run yet: its facts are missing until a runner runs them |
 | `model_failed`, `model_partial` | a model command that failed for a folder or answered without resolution (`detail`: the command and its stderr) |
 | `not_executed` | a file read and not run: what it computes at run time is unknown |
+| `config_outside_units` | a tsconfig no package.json, deno.json or project.json above it puts in a unit |
 | `toolchain_undeclared` | a toolchain version no file states as a literal: a Gradle build's Java, a pom property the pom does not define |
 | `submodule_absent` | a submodule `.gitmodules` declares whose folder is missing or empty: its code is not in the project |
 | `code_outside_units` | `{path, language, files}`: code of a language that no unit able to index it holds, per outermost folder (a Python folder without a manifest Daodan reads) |

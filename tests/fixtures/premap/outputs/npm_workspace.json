@@ -1,0 +1,206 @@
+{
+ "versions": {
+  "go": "go version go1.27.3 linux/amd64",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "uv": "uv 0.11.28 (x86_64-unknown-linux-gnu)",
+  "renovate": "44.239.1"
+ },
+ "runs": [
+  {
+   "command": {
+    "tool": "daodan-enry",
+    "argv": [
+     "daodan-enry",
+     "."
+    ],
+    "cwd": ".",
+    "env": {},
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[{\"path\":\"package-lock.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":true,\"binary\":false},{\"path\":\"package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/a/package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/a/src/index.js\",\"language\":\"JavaScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/b/index.js\",\"language\":\"JavaScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/b/package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false}]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "renovate",
+    "argv": [
+     "renovate",
+     "--platform=local",
+     "--dry-run=extract",
+     "--report-type=file",
+     "--report-path=/dev/stdout"
+    ],
+    "cwd": ".",
+    "env": {
+     "LOG_LEVEL": "fatal",
+     "LOG_FILE": "/dev/stderr",
+     "LOG_FILE_LEVEL": "warn",
+     "NO_COLOR": "1",
+     "RENOVATE_ONBOARDING": "false",
+     "RENOVATE_REQUIRE_CONFIG": "ignored",
+     "RENOVATE_BASE_DIR": "/tmp/daodan-renovate"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"86b4c21b-c67f-452a-aac8-c34871f89309\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\"}],\"repositories\":{\"local\":{\"problems\":[],\"branches\":[],\"packageFiles\":{\"npm\":[{\"deps\":[],\"extractedConstraints\":{\"npm\":\">=7\"},\"managerData\":{\"packageJsonName\":\"mono\",\"hasPackageManager\":false,\"workspaces\":[\"packages/*\"],\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"package.json\",\"lockFiles\":[\"package-lock.json\"]},{\"deps\":[],\"extractedConstraints\":{\"npm\":\">=7\"},\"packageFileVersion\":\"1.0.0\",\"managerData\":{\"packageJsonName\":\"a\",\"hasPackageManager\":false,\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"packages/a/package.json\",\"lockFiles\":[\"package-lock.json\"]},{\"deps\":[{\"depType\":\"dependencies\",\"depName\":\"a\",\"currentValue\":\"1.0.0\",\"datasource\":\"npm\",\"prettyDepType\":\"dependency\",\"isInternal\":true,\"lockedVersion\":null,\"packageName\":\"a\"}],\"extractedConstraints\":{\"npm\":\">=7\"},\"packageFileVersion\":\"1.0.0\",\"managerData\":{\"packageJsonName\":\"b\",\"hasPackageManager\":false,\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"packages/b/package.json\",\"lockFiles\":[\"package-lock.json\"]}]}}}}",
+    "stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":44,\"level\":40,\"logContext\":\"86b4c21b-c67f-452a-aac8-c34871f89309\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-14T20:52:32.562Z\",\"v\":0}\n",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "--version"
+    ],
+    "cwd": ".",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "11.19.1\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace",
+     "--package-lock-only"
+    ],
+    "cwd": ".",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"mono\",\n    \"private\": true,\n    \"workspaces\": [\n      \"packages/*\"\n    ],\n    \"pkgid\": \"mono@\",\n    \"location\": \"\",\n    \"path\": \"/work/npm_workspace\",\n    \"realpath\": \"/work/npm_workspace\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\",\n      \"node_modules/b\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"a\",\n    \"version\": \"1.0.0\",\n    \"main\": \"dist/index.js\",\n    \"bin\": {\n      \"a\": \"bin/a.js\"\n    },\n    \"exports\": {\n      \".\": {\n        \"import\": \"./esm/index.mjs\"\n      }\n    },\n    \"_id\": \"a@1.0.0\",\n    \"pkgid\": \"a@1.0.0\",\n    \"location\": \"packages/a\",\n    \"path\": \"/work/npm_workspace/packages/a\",\n    \"realpath\": \"/work/npm_workspace/packages/a\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"b\",\n    \"version\": \"1.0.0\",\n    \"dependencies\": {\n      \"a\": \"1.0.0\"\n    },\n    \"_id\": \"b@1.0.0\",\n    \"pkgid\": \"b@1.0.0\",\n    \"location\": \"packages/b\",\n    \"path\": \"/work/npm_workspace/packages/b\",\n    \"realpath\": \"/work/npm_workspace/packages/b\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace"
+    ],
+    "cwd": ".",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"mono\",\n    \"private\": true,\n    \"workspaces\": [\n      \"packages/*\"\n    ],\n    \"pkgid\": \"mono@\",\n    \"location\": \"\",\n    \"path\": \"/work/npm_workspace\",\n    \"realpath\": \"/work/npm_workspace\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace",
+     "--package-lock-only"
+    ],
+    "cwd": "packages/a",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"mono\",\n    \"private\": true,\n    \"workspaces\": [\n      \"packages/*\"\n    ],\n    \"pkgid\": \"mono@\",\n    \"location\": \"\",\n    \"path\": \"/work/npm_workspace\",\n    \"realpath\": \"/work/npm_workspace\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\",\n      \"node_modules/b\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"a\",\n    \"version\": \"1.0.0\",\n    \"main\": \"dist/index.js\",\n    \"bin\": {\n      \"a\": \"bin/a.js\"\n    },\n    \"exports\": {\n      \".\": {\n        \"import\": \"./esm/index.mjs\"\n      }\n    },\n    \"_id\": \"a@1.0.0\",\n    \"pkgid\": \"a@1.0.0\",\n    \"location\": \"packages/a\",\n    \"path\": \"/work/npm_workspace/packages/a\",\n    \"realpath\": \"/work/npm_workspace/packages/a\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"b\",\n    \"version\": \"1.0.0\",\n    \"dependencies\": {\n      \"a\": \"1.0.0\"\n    },\n    \"_id\": \"b@1.0.0\",\n    \"pkgid\": \"b@1.0.0\",\n    \"location\": \"packages/b\",\n    \"path\": \"/work/npm_workspace/packages/b\",\n    \"realpath\": \"/work/npm_workspace/packages/b\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace"
+    ],
+    "cwd": "packages/a",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace",
+     "--package-lock-only"
+    ],
+    "cwd": "packages/b",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"mono\",\n    \"private\": true,\n    \"workspaces\": [\n      \"packages/*\"\n    ],\n    \"pkgid\": \"mono@\",\n    \"location\": \"\",\n    \"path\": \"/work/npm_workspace\",\n    \"realpath\": \"/work/npm_workspace\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\",\n      \"node_modules/b\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"a\",\n    \"version\": \"1.0.0\",\n    \"main\": \"dist/index.js\",\n    \"bin\": {\n      \"a\": \"bin/a.js\"\n    },\n    \"exports\": {\n      \".\": {\n        \"import\": \"./esm/index.mjs\"\n      }\n    },\n    \"_id\": \"a@1.0.0\",\n    \"pkgid\": \"a@1.0.0\",\n    \"location\": \"packages/a\",\n    \"path\": \"/work/npm_workspace/packages/a\",\n    \"realpath\": \"/work/npm_workspace/packages/a\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"b\",\n    \"version\": \"1.0.0\",\n    \"dependencies\": {\n      \"a\": \"1.0.0\"\n    },\n    \"_id\": \"b@1.0.0\",\n    \"pkgid\": \"b@1.0.0\",\n    \"location\": \"packages/b\",\n    \"path\": \"/work/npm_workspace/packages/b\",\n    \"realpath\": \"/work/npm_workspace/packages/b\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace"
+    ],
+    "cwd": "packages/b",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  }
+ ]
+}

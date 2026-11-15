@@ -3,9 +3,11 @@
 `commands` describes, for Daodan's container, one `renovate --platform=local --dry-run=extract` at the
 project's root with the report written to stdout and the log silenced: every manager reports the files it
 understands with their dependencies, and looks nothing up. `read` keeps, per package file, the toolchains (the
-version-file managers, the engine fields of manifests, the `go` and `requires-python` directives) and the
-dependencies with the range as written and the version the lockfile fixes, each on the unit whose manifest
-the file is, else on the nearest unit holding it.
+version-file managers, the engine fields of manifests, the `go` and `requires-python` directives, the runtime a
+Dockerfile, compose file or devcontainer starts from) and the dependencies of the package managers (`MANAGERS`)
+with the range as written and the version the lockfile fixes, each on the unit whose manifest the file is, else
+on the nearest unit of that ecosystem holding it. Not dependencies of a unit: container images, CI actions,
+transitive pins (`indirect`) and overrides; a git dependency's value is its ref, so it gives no `declared`.
 """
 from __future__ import annotations
 
@@ -26,6 +28,11 @@ MANAGERS = {  # Renovate's manager -> the module graph's ecosystems whose units 
     "gomod": ("go",), "cargo": ("cargo",), "maven": ("maven",), "maven-wrapper": ("maven",), "gradle": ("gradle",),
     "gradle-wrapper": ("gradle",), "composer": ("composer",), "bundler": ("bundler", "rubygems"), "nuget": ("dotnet",),
     "pub": ("pub",), "mix": ("mix",), "swift": ("swiftpm",), "sbt": ("sbt",)}
+IMAGE_MANAGERS = {"dockerfile", "docker-compose", "devcontainer"}
+DOCKER_RUNTIMES = {"node": "node", "python": "python", "golang": "go", "rust": "rust", "ruby": "ruby",
+                   "openjdk": "java", "eclipse-temurin": "java", "amazoncorretto": "java", "maven": "maven",
+                   "gradle": "gradle"}
+NOT_DECLARED = {"indirect", "overrides", "resolutions", "pnpm.overrides", "packageManager", "volta", "engines"}
 CANON = {"nodejs": "node", "golang": "go", "rustc": "rust", "cpython": "python", "jdk": "java", "jre": "java",
          "temurin": "java", "openjdk": "java", "node.js": "node", "gradle-wrapper": "gradle"}
 SCOPE = {"dependencies": "runtime", "devDependencies": "dev", "peerDependencies": "peer",
@@ -87,13 +94,19 @@ def read(context, commands, results):
                 name, current = dep.get("depName") or dep.get("packageName"), dep.get("currentValue")
                 if not name:
                     continue
-                if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES:
-                    item = {"tool": _tool(name), "declared_in": path}
+                tool = _tool(name) if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES else \
+                    DOCKER_RUNTIMES.get(name) if manager in IMAGE_MANAGERS else None
+                if tool:
+                    item = {"tool": tool, "declared_in": path}
                     if current is not None:
                         item["version"] = current
                     toolchains.append(item)
                     continue
-                item = {"name": name, "declared": current, "declared_in": path}
+                if manager not in MANAGERS or dep.get("depType") in NOT_DECLARED:
+                    continue  # an image, an action, a transitive pin or an override: no package a unit declares
+                item = {"name": name, "declared_in": path}
+                if current and not str(dep.get("datasource", "")).startswith("git"):
+                    item["declared"] = current  # a git dependency's value is its ref, not the range as written
                 if unit:
                     item["unit"] = unit
                 if dep.get("lockedVersion") is not None:

@@ -80,8 +80,11 @@ def read(context, commands, results):
             inner = {d["name"] for d in trees.get(name, []) if d["name"] in local or d["name"] in trees}
             dependencies += [{"unit": name, "name": d["name"], "resolved": d["version"], "scope": d["scope"],
                               "declared_in": manifest} for d in trees.get(name, []) if d["name"] not in inner]
-            units.append({"name": name, "kind": "python-project", "root": unit_root, "manifest": manifest,
-                          "depends_on": sorted(inner), "registries": registries})
+            unit = {"name": name, "kind": "python-project", "root": unit_root, "manifest": manifest,
+                    "registries": registries}
+            if tree["returncode"] == 0:  # the edges between units come from `uv tree` alone
+                unit["depends_on"] = sorted(inner)
+            units.append(unit)
         members = sorted(v for v in local.values() if v != folder)
         if members:
             workspaces.append({"tool": "uv", "root": folder, "members": members})

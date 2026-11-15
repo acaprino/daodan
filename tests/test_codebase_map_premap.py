@@ -10,8 +10,9 @@ SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map
 sys.path.insert(0, str(SCRIPTS))
 
 import premap  # noqa: E402
-from premap import cargo, go, renovate, uv  # noqa: E402
+from premap import cargo, enry, go, npm, renovate, tsc, uv  # noqa: E402
 import snapshot  # noqa: E402
+from snapshot_store import open_snapshot  # noqa: E402
 
 FIXTURES = Path(__file__).with_name("fixtures") / "premap"
 PROJECTS = json.loads((FIXTURES / "projects.json").read_text(encoding="utf-8"))
@@ -70,14 +71,15 @@ def test_premap_beside_the_manifest_every_fact_with_its_source(tmp_path):
     assert on_disk == record and record["schema"] == premap.SCHEMA
     assert {(u["root"], u["kind"], u["name"]) for u in record["units"]} == {
         (".", "python-project", "acme"), ("web", "npm-package", "@acme/web")}
-    for facet in ("languages", "units", "dependencies"):
+    for facet in ("units", "dependencies"):
         assert record[facet] and all(item["sources"] and all("@" in s for s in item["sources"]) for item in record[facet])
-    assert {"Python", "JavaScript"} <= {item["language"] for item in record["languages"]}
+    assert "languages" not in record  # go-enry runs in the container only
     assert {(d["unit"], d["name"]) for d in record["dependencies"]} >= {("acme", "requests"), ("@acme/web", "react")}
     assert {s["source"].split("@")[0]: s["state"] for s in record["sources"]} == {
-        "modules.py": "ran", "python-build": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
+        "modules.py": "ran", "python-build": "not_needed", "requirements": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
         "gitmodules": "not_needed",
-        "snapshot.py": "ran", "renovate": "not_run", "go": "not_needed", "cargo": "not_needed", "uv": "not_needed"}
+        "go-enry": "not_run", "renovate": "not_run", "go": "not_needed", "cargo": "not_needed", "uv": "not_needed",
+        "tsc": "not_needed", "npm": "not_run"}
     assert all(u["run"] == {"executes_project_code": False, "reason": ""} for u in record["units"])
     assert "needs" not in record
 
@@ -184,9 +186,9 @@ def test_model_commands_without_a_runner_are_not_run_and_a_gap(tmp_path):
 
 
 def test_every_command_is_data_with_its_network():
-    for source in (go, cargo, uv, renovate):
+    for source in (go, cargo, uv, renovate, tsc, enry, npm):
         assert hasattr(source, "commands") and hasattr(source, "read")
-    assert all(source.RANK == "model" for source in (go, cargo, uv)) and renovate.RANK == "reader"
+    assert all(source.RANK == "model" for source in (go, cargo, uv, tsc, npm)) and renovate.RANK == "reader"
     import resolve_edges as rx
     assert (go.VERSION, cargo.VERSION) == (rx.GO_VERSION, rx.RUST_VERSION)
 
@@ -276,6 +278,81 @@ def test_uv_reader_gives_members_and_their_edges(tmp_path):
     assert not gaps(record, "model_failed")
 
 
+def test_tsc_reader_gives_the_tsconfigs_in_reference_order_and_their_aliases(tmp_path):
+    _, _, record = build(tmp_path, "tsc_alias", runner=replay("tsc_alias"))
+    [web] = by_root(record, "npm-package").values()
+    assert premap.label(tsc) in web["sources"]
+    assert web["config"]["tsconfig"] == ["tsconfig.json", "tsconfig.app.json", "tsconfig.node.json", "tools/tsconfig.json"]
+    assert web["config"]["paths"] == {"@/*": ["src/*"]}
+    [failed] = [g for g in gaps(record, "model_failed") if g["source"] == premap.label(tsc)]
+    assert failed["path"] == "tools/tsconfig.json"
+
+
+def test_enry_reader_gives_languages_and_the_files_to_leave_out_with_why(tmp_path):
+    _, _, record = build(tmp_path, "enry_files", runner=replay("enry_files"))
+    label = premap.label(enry)
+    assert {(e["path"], e["why"]) for e in record["excluded"] if label in e["sources"]} == {
+        ("vendor/", "vendored"), ("docs/", "documentation"), ("README.md", "documentation"), ("gen/", "generated")}
+    languages = {item["language"]: item["files"] for item in record["languages"]}
+    assert languages["TypeScript"] == 1 and languages["JavaScript"] == 1 and "Go" not in languages
+    assert not any(e["path"].startswith(".github") for e in record["excluded"])
+
+
+def _stated_empty(facts) -> set:
+    """Every list or mapping a source states empty, as (facet, entry identity, field)."""
+    found = set()
+    for facet, entries in (facts or {}).items():
+        for entry in entries:
+            identity = (facet, *(json.dumps(entry.get(k)) for k in ("root", "kind", "tool", "name", "path", "unit")))
+            fields = {k: v for k, v in entry.items() if k != "config"}
+            fields.update({f"config.{k}": v for k, v in (entry.get("config") or {}).items()})
+            if "config" in entry and not entry["config"]:
+                fields["config"] = entry["config"]
+            found |= {(identity, field) for field, value in fields.items() if value in ([], {})}
+    return found
+
+
+def test_a_command_that_did_not_answer_never_states_a_fact_empty(tmp_path):
+    """A failed command takes away the facts it gives; it never turns one into "none", which would win the join."""
+    checked = 0
+    for case in sorted(p.stem for p in (FIXTURES / "outputs").glob("*.json")):
+        _, manifest, _ = build(tmp_path / case, case, sources=())
+        runner = replay(case)
+        with open_snapshot(manifest) as store:
+            context = premap.Context(manifest, store)
+            for source in (go, cargo, uv, tsc, npm, renovate, enry):
+                commands = source.commands(context)
+                if not commands:
+                    continue
+                results = runner(commands)
+                answered = _stated_empty(source.read(context, commands, results).get("facts"))
+                # One command failing, and one kind of command failing in every folder (a project without the
+                # lockfile the command reads).
+                kinds = {tuple(c["argv"]) + (c["env"].get("GOWORK"),) for c in commands}
+                groups = [{i} for i in range(len(commands))] + [
+                    {i for i, c in enumerate(commands) if tuple(c["argv"]) + (c["env"].get("GOWORK"),) == kind}
+                    for kind in sorted(kinds, key=str)]
+                for group in groups:
+                    broken = [{**r, "returncode": 1, "stdout": "", "stderr": "failed"} if i in group else r
+                              for i, r in enumerate(results)]
+                    stated = _stated_empty(source.read(context, commands, broken).get("facts"))
+                    assert stated <= answered, (case, source.NAME, [commands[i]["argv"] for i in sorted(group)],
+                                                sorted(stated - answered))
+                    checked += 1
+    assert checked >= 80
+
+
+def test_npm_reader_gives_workspace_members_and_entry_files(tmp_path):
+    _, _, record = build(tmp_path, "npm_workspace", runner=replay("npm_workspace"))
+    units = by_root(record, "npm-package")
+    assert set(units) == {".", "packages/a", "packages/b"}
+    assert all(any(s.startswith("npm@") for s in u["sources"]) for u in units.values())
+    assert units["packages/a"]["config"]["entry_files"] == [
+        "packages/a/bin/a.js", "packages/a/dist/index.js", "packages/a/esm/index.mjs"]
+    assert units["packages/b"]["depends_on"] == ["a"]
+    assert [sorted(w["members"]) for w in record["workspace"] if w["tool"] == "npm"] == [["packages/a", "packages/b"]]
+
+
 def test_renovate_reader_gives_declared_toolchains_and_ranges_on_their_unit(tmp_path):
     _, _, record = build(tmp_path, "versions", runner=replay("versions"))
     label = premap.label(renovate)
@@ -284,6 +361,51 @@ def test_renovate_reader_gives_declared_toolchains_and_ranges_on_their_unit(tmp_
     [ms] = [d for d in record["dependencies"] if d["name"] == "ms"]
     assert (ms["unit"], ms["declared"], ms["resolved"], ms["scope"]) == ("site", "^2.1.0", "2.1.3", "runtime")
     assert label in ms["sources"] and any(s.startswith("modules.py@") for s in ms["sources"])
+
+
+# -------------------------------------------------------- requirements files
+
+def requirement_deps(record):
+    return {(d["name"], d.get("declared"), d["declared_in"], d.get("unit"), d.get("resolved"))
+            for d in record["dependencies"] if any(s.startswith("requirements@") for s in d["sources"])}
+
+
+def test_a_requirements_file_alone_makes_a_unit_and_its_includes_belong_to_it(tmp_path):
+    _, _, record = build(tmp_path, "req_includes")
+    units = by_root(record, "python-project")
+    assert set(units) == {".", "libs/localpkg"}
+    root = units["."]
+    assert (root["name"], root["manifest"], root["depends_on"]) == (None, "requirements.txt", ["localpkg"])
+    assert root["config"]["requirements"] == ["requirements-dev.txt", "requirements.txt", "requirements/base.txt"]
+    assert root["registries"] == ["https://pypi.example.org"]
+    assert requirement_deps(record) == {
+        ("requests", ">=2.31,<3", "requirements/base.txt", None, None),
+        ("click", "==8.1.7", "requirements/base.txt", None, None),
+        ("numpy", ">=1.26", "requirements/base.txt", None, None),
+        ("mylib", "git+https://github.com/example/mylib.git@v1.4.0", "requirements/base.txt", None, None),
+        ("gunicorn", "==22.0.0", "requirements.txt", None, None),
+        ("pytest", "==8.3.3", "requirements-dev.txt", None, None)}  # a constraint is no dependency
+
+
+def test_a_pip_compile_output_is_the_lock_of_its_in_file(tmp_path):
+    _, _, record = build(tmp_path, "req_pip_tools")
+    [unit] = by_root(record, "python-project").values()
+    assert unit["manifest"] == "requirements.in"
+    assert requirement_deps(record) == {("django", ">=4.2,<5.1", "requirements.in", None, "4.2.16"),
+                                        ("ruff", None, "dev-requirements.in", None, "0.6.9")}
+
+
+def test_service_folders_with_requirements_are_units_and_one_beside_a_pyproject_joins_it(tmp_path):
+    _, _, record = build(tmp_path, "req_services")
+    units = by_root(record, "python-project")
+    assert set(units) == {"vote", "load-gen", "functions-python"}
+    assert units["vote"]["manifest"] == "vote/requirements.txt" and units["vote"]["name"] is None
+    assert units["functions-python"]["manifest"] == "functions-python/pyproject.toml"
+    assert units["functions-python"]["config"]["requirements"] == ["functions-python/requirements-test.txt"]
+    assert ("pytest", ">=8", "functions-python/requirements-test.txt", "shop-functions", None) in requirement_deps(record)
+    assert [r["root"] for r in premap.python_runs(record)] == ["functions-python", "load-gen", "vote"]
+    assert "functions-python/requirements-test.txt" in premap.python_runs(record)[0]["manifests"]
+    assert not [g for g in gaps(record, "code_outside_units") if g["language"] == "Python"]
 
 
 # ---------------------------------------------------------- the stage's views

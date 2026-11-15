@@ -77,8 +77,8 @@ def read(context, commands, results):
             return None
         return result["stdout"]
 
-    proxy = json.loads(answer(".", "go env -json GOPROXY", None) or "{}").get("GOPROXY", "")
-    registries = [entry for entry in proxy.replace("|", ",").split(",") if entry and entry != "off"]
+    proxy = answer(".", "go env -json GOPROXY", None)
+    registries = None if proxy is None else         [entry for entry in json.loads(proxy).get("GOPROXY", "").replace("|", ",").split(",") if entry and entry != "off"]
     used = set()
     for cwd, argv, _mode in [k for k in answers if k[1] == "go work edit -json"]:
         text = answer(cwd, argv, None)
@@ -93,11 +93,15 @@ def read(context, commands, results):
         toolchains += [{"tool": "go", "version": data[key], "declared_in": work} for key in ("Go", "Toolchain") if data.get(key)]
     mods = sorted({cwd for cwd, argv, _ in answers if argv == "go mod edit -json"})
     mode_of = {mod: None if mod in used else "off" for mod in mods}
-    mains = {}
+    mains = {}  # module path -> folder: from go.mod as written, else from the go command
     for mod in mods:
+        edit = answer(mod, "go mod edit -json", "off", report=False)
+        if edit is not None and (json.loads(edit).get("Module") or {}).get("Path"):
+            mains[json.loads(edit)["Module"]["Path"]] = mod
         for module in _stream(answer(mod, "go list -m -json", mode_of[mod]) or ""):
             if isinstance(module, dict) and module.get("Dir"):
-                mains[module["Path"]] = rel(module["Dir"])
+                mains.setdefault(module["Path"], rel(module["Dir"]))
+    every_path_known = set(mods) <= set(mains.values())
     for mod in mods:
         mode = mode_of[mod]
         module = next((m for m in _stream(answer(mod, "go list -m -json", mode, report=False) or "")
@@ -105,14 +109,15 @@ def read(context, commands, results):
         if module is None:
             gaps.append({"kind": "model_failed", "path": mod, "detail": "no go command named this module"})
             continue
-        written = json.loads(answer(mod, "go mod edit -json", "off") or "{}")
+        edit = answer(mod, "go mod edit -json", "off")
+        written = json.loads(edit) if edit is not None else None  # None: go.mod unread, so no requirement is known
         build = answer(mod, "go list -m -json all", mode)
         resolved = ({m["Path"]: m.get("Version") for m in _stream(build) if isinstance(m, dict) and not m.get("Main")}
                     if build is not None else None)
-        packages = [p for p in _stream(answer(mod, "go list -e -json ./...", mode, report=False) or "")
-                    if isinstance(p, dict)]
+        listed = answer(mod, "go list -e -json ./...", mode, report=False)
+        packages = [p for p in _stream(listed or "") if isinstance(p, dict)]
         manifest = rel(module.get("GoMod") or posixpath.join(root, mod, "go.mod"))
-        config = {"packages": sorted(p["ImportPath"] for p in packages if p.get("ImportPath"))}
+        config = {} if listed is None else {"packages": sorted(p["ImportPath"] for p in packages if p.get("ImportPath"))}
         ignored = sorted(rel(posixpath.join(p["Dir"], f)) for p in packages for f in p.get("IgnoredGoFiles") or [])
         if ignored:
             config["ignored_files"] = ignored
@@ -120,31 +125,35 @@ def read(context, commands, results):
                for p in packages if p.get("CgoFiles")]
         if cgo:
             config["cgo"] = cgo
-        if written.get("Replace"):
+        if (written or {}).get("Replace"):
             config["replace"] = {r["Old"]["Path"]: r["New"]["Path"] + (f"@{r['New']['Version']}" if r["New"].get("Version") else "")
                                  for r in written["Replace"]}
         broken = [f"{p['ImportPath']}: {(p.get('Error') or {}).get('Err', '')[:160]}" for p in packages if p.get("Error")]
         if broken:
             gaps.append({"kind": "model_failed", "path": mod, "detail": "go list: " + "; ".join(broken[:5])})
-        requires = written.get("Require") or []
+        requires = (written or {}).get("Require") or []
         depends = sorted({r["Path"] for r in requires if r["Path"] in mains}
-                         | {r["Old"]["Path"] for r in written.get("Replace") or [] if r["Old"]["Path"] in mains})
+                         | {r["Old"]["Path"] for r in (written or {}).get("Replace") or [] if r["Old"]["Path"] in mains})
         for require in requires:
             if require["Path"] in mains or require.get("Indirect"):
                 continue
+            # go.mod says no scope for a requirement: only a `tool` directive is one (`dev`, below).
             item = {"unit": module["Path"], "name": require["Path"], "declared": require.get("Version"),
-                    "scope": "runtime", "declared_in": manifest}
+                    "declared_in": manifest}
             if resolved is not None and resolved.get(require["Path"]):
                 item["resolved"] = resolved[require["Path"]]
             dependencies.append(item)
         dependencies += [{"unit": module["Path"], "name": tool["Path"], "scope": "dev", "declared_in": manifest}
-                         for tool in written.get("Tool") or []]
-        unit = {"name": module["Path"], "kind": "go-module", "root": mod, "manifest": manifest,
-                "source_roots": [mod], "depends_on": depends, "config": config}
-        if any(r["Path"] not in mains for r in requires):
+                         for tool in (written or {}).get("Tool") or []]
+        unit = {"name": module["Path"], "kind": "go-module", "root": mod, "manifest": manifest, "source_roots": [mod]}
+        if written is not None and every_path_known:  # a module whose path is unknown may be one of its requirements
+            unit["depends_on"] = depends
+        if config:
+            unit["config"] = config
+        if registries is not None and any(r["Path"] not in mains for r in requires):
             unit["registries"] = registries
         units.append(unit)
         toolchains += [{"tool": "go", "version": v, "declared_in": manifest}
-                       for v in (module.get("GoVersion"), written.get("Toolchain")) if v]
+                       for v in (module.get("GoVersion"), (written or {}).get("Toolchain")) if v]
     return {"facts": {"units": units, "workspace": workspaces, "toolchains": toolchains,
                       "dependencies": dependencies}, "gaps": gaps}

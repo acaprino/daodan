@@ -30,21 +30,24 @@ import confinement  # noqa: E402
 import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
-from premap import (cargo, gitmodules, go, jvm_files, module_graph, npm_lock, python_build, renovate,  # noqa: E402
-                    suffix_table, uv)
+from premap import (cargo, enry, gitmodules, go, jvm_files, module_graph, npm, npm_lock, python_build,  # noqa: E402
+                    renovate, requirements, suffix_table, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
 RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run` and the coverage gaps
 RANKS = ("model", "reader", "scanner")
-SOURCES = (module_graph, python_build, npm_lock, jvm_files, gitmodules, suffix_table, renovate, go, cargo, uv)
+SOURCES = (module_graph, python_build, requirements, npm_lock, jvm_files, gitmodules, enry, renovate, go, cargo, uv,
+           tsc, npm)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
     "languages": (("language",),),
     "excluded": (("path",),),
     "units": (("root", "kind", "name", "manifest"), ("root", "kind", "name"), ("root", "kind")),
-    "workspace": (("root", "tool"), ("root",)),
+    "workspace": (("root", "tool"),),  # two build systems in one folder are two workspaces
     "toolchains": (("tool", "declared_in", "version"), ("tool", "declared_in")),
-    "dependencies": (("unit", "name", "scope", "declared_in"), ("unit", "name", "declared_in"), ("unit", "name")),
+    # A file belongs to one unit: name and file make one dependency even where a source names no unit.
+    "dependencies": (("unit", "name", "scope", "declared_in"), ("unit", "name", "declared_in"), ("name", "declared_in"),
+                     ("unit", "name")),
 }
 EXECUTES = {  # unit kinds whose model or index exists only when the build runs project code
     "gradle-project": "Gradle runs the build scripts for the model and the compile tasks the index needs",
@@ -234,13 +237,14 @@ def python_runs(record: dict) -> list[dict]:
     workspaces = [w for w in record.get("workspace", []) if w.get("tool") == "uv"]
     roots = {u["root"] for u in units} | {w["root"] for w in workspaces}
     outer = sorted(r for r in roots if not any(other != r and _inside(r, other) for other in roots))
-    by_name = {u.get("name"): u for u in units}
     runs = []
     for root in outer:
         held = [u for u in units if _inside(u["root"], root)]
+        names = {u["name"] for u in held if u.get("name")}
         manifests = {u["manifest"] for u in held if u.get("manifest")}
+        manifests |= {rel for u in held for rel in (u.get("config") or {}).get("requirements", [])}
         manifests |= {d["declared_in"].split("#", 1)[0] for d in record.get("dependencies", [])
-                      if d.get("declared_in") and by_name.get(d.get("unit")) in held}
+                      if d.get("declared_in") and d.get("unit") in names}
         locked = [w["root"] for w in workspaces if _inside(w["root"], root)]
         locked += [u["root"] for u in held if any(s.startswith(f"{uv.NAME}@") for s in u["sources"])
                    and not any(_inside(u["root"], w) for w in locked)]
