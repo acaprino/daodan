@@ -1,100 +1,24 @@
-# Benchmark: cosa danno i motori di inferenza e cosa ne usa Daodan
+# Benchmark: cosa danno gli indicizzatori e cosa ne usa Daodan
 
-Verifica, per ogni motore del passo di inferenza ([spec del motore](../../docs/specs/2026-11-08-risoluzione-chiamate-motore.md)), il percorso di un fatto dal motore al grafo che usano mappa e flussi: cosa si chiede, cosa il motore risponde, cosa si registra, cosa arriva ai collegamenti. Lo scopo è trovare ogni punto in cui un'informazione utile che il motore dà, o darebbe se gli si chiedesse, va persa. Nessun modello; tutto gira su Modal.
+Verifica, per ogni linguaggio, il grafo che Daodan costruisce dall'indice SCIP di un indicizzatore esistente e, accanto, le seconde fonti del programma intero: cosa l'indice dichiara, cosa arriva al grafo e ai collegamenti dei flussi, dove resta un buco e di che classe. Nessun modello; tutto gira su Modal.
 
 ## Domande
 
-| Punto | Cosa si conta |
+| Domanda | Cosa si conta |
 | --- | --- |
-| P1 Cosa non si chiede | riferimenti per tipo e stato (chiamate risolte, non risolte, letture); fra le letture, quelle che nominano una funzione, un metodo o una classe del progetto (un componente reso, una funzione passata come valore) |
-| P2 Cosa si chiede | chiamate non risolte per classe (`askable`, `dynamic`, `builtin`) e per esito del passo (`edge-call`, `external-definition`, `project-not-a-symbol`, `ambiguous-target`, `unresolved`, errori, posizioni non verificate) |
-| P3 Cosa il motore risponde e Daodan riduce | su un campione per esito, la risposta grezza: dove cade ogni destinazione (dichiarazione del progetto e suo tipo, contratto, valore, file del progetto senza dichiarazione, libreria esterna con il suo pacchetto, destinazione non su file); dal 13 novembre anche graduata alla posizione esatta come la gradua il passo, e per un valore che cosa contiene (parametro, proprietà, destrutturazione, chiamata con o senza una funzione scritta sul posto, con il nome della funzione chiamata) |
-| P4 Cosa il motore darebbe se gli si chiedesse | sullo stesso campione, per i server LSP, `implementation` e `typeDefinition` accanto a `definition`; per Jedi, `goto` accanto a `infer`, con il nome completo delle destinazioni esterne |
-| P5 Cosa si registra | archi confermati e candidati per esito e per tipo della dichiarazione di destinazione |
-| P6 Cosa arriva al grafo | riferimenti risolti dal motore nella vista degli archi (`edge_view`), candidati e conflitti; fra i riferimenti risolti, quelli che diventano un collegamento dei flussi e quelli che si perdono (destinazione senza dichiarazione, chiamata fuori da un simbolo) |
-| P7 Accordo con il lessicale | su un campione di chiamate già risolte dal risolutore lessicale, quante volte il motore indica la stessa dichiarazione |
+| Cosa arriva al grafo dal passo del prodotto | riferimenti risolti nella vista degli archi (`edge_view`), candidati e conflitti; fra i riferimenti risolti, quelli che diventano un collegamento dei flussi e quelli che si perdono (destinazione senza dichiarazione, chiamata fuori da un simbolo) |
 
 ## Parametri
 
 | Parametro | Valore |
 | --- | --- |
 | casi | phazly (archivio privato: Python, TypeScript, Rust), tududi `71da9d7b34dfd1600657e9c5ddf40420206fd263` (JavaScript, TypeScript), javapoet `b9017a9503b76e11b4ad4c1a9f050e2d29112cb0` (Java), klaxon `1173bdc568a6d339b45cf24a6a9c5c2f6847f42d` (Kotlin), semver `280ebcb6edac3aa4cdc545dbff8a26c5ac4861fe` (Rust), chi `c64ed7d6635f33a8b2feaff7dcfa55677023ac7d` (Go) |
-| passo | quello del prodotto: `snapshot.py write --no-engine --no-index`, poi `resolve_edges.py --pass`, tutte le posizioni |
-| campione P3 e P4 | fino a 20 posizioni per esito e per linguaggio, a passo fisso sull'ordine degli identificativi |
-| campione P1 | fino a 60 letture che nominano una funzione, un metodo o una classe del progetto, per linguaggio |
-| campione P7 | fino a 30 chiamate risolte dal lessicale, per linguaggio; dal 13 novembre fino a 2.000, confrontate anche alla posizione esatta, con ogni disaccordo registrato (fino a 200) |
-| regole dei flussi (P6) | `benchmarks/phazly-flow/rules.json`, `benchmarks/tududi-flow/rules.json`; gli altri casi senza regole contano solo la vista degli archi |
+| passo | quello del prodotto: `snapshot.py write --no-engine --no-index`, poi `resolve_edges.py --pass` |
+| regole dei flussi | `benchmarks/phazly-flow/rules.json`, `benchmarks/tududi-flow/rules.json`; gli altri casi senza regole contano solo la vista degli archi |
 
 Esecuzione: `modal run --detach benchmarks/inference-audit/modal_audit.py --phazly-tar PATH`; un container per caso, risultati in `results/audit-<caso>.json` e sul volume `daodan-flow-results`.
 
 ## Risultati
-
-### 13 novembre 2026
-
-Sei casi su Modal, un container ciascuno (app `ap-BDU0cjbbx8vImvzZqpgAFZ`), nessun modello. Valori per caso in `results/audit-<caso>.json`. Le perdite in ordine di peso:
-
-| # | Dove si perde | Misura |
-| --- | --- | --- |
-| 1 | Chiamate risolte fuori da una funzione con nome (codice al livello del modulo: registrazioni delle rotte, composizione dell'app) non diventano collegamenti dei flussi | tududi 8.314 su 17.377 chiamate risolte (48%: 2.780 del motore, 5.534 del lessicale); phazly 485 su 13.339; javapoet 15; semver 3; chi 0 |
-| 2 | Letture che nominano una funzione, un metodo o una classe del progetto (componenti resi, funzioni passate come valore, riferimenti) non si chiedono al motore né diventano collegamenti | tududi 29.380, phazly Python 14.071, phazly TypeScript 3.614, javapoet 296, klaxon 260, chi 181, semver 82; chieste a campione, la definizione cade su una funzione o una classe del progetto nel 25-55% dei casi |
-| 3 | Archi confermati verso un metodo (anche di un contratto) scartati dalla vista degli archi, che tiene solo destinazioni `function` e `class` | tududi 2.199 su 7.681 (29%: 1.303 metodi, 896 contratti); phazly TypeScript 304 su 733 (41%); chi 156 su 783; semver 19 su 371 |
-| 4 | Una risposta che cade in una libreria si registra come `external-definition`, senza il pacchetto | tududi 35.863, phazly 18.763 (Python 11.273, TypeScript 7.490), chi 2.299, javapoet 1.076, semver 242: nessun arco verso un servizio esterno nasce dall'inferenza |
-| 5 | Una funzione assegnata a una costante (funzione freccia, espressione di funzione) è graduata `project-not-a-symbol`: il motore indica il nome della costante, che è un valore | tududi JavaScript 1.087, metà dei casi a campione cadono su una funzione; phazly TypeScript 2.072, in parte valori veri (setter di `useState`), in parte funzioni (`handleClose`); restano candidati che i flussi non usano |
-| 6 | Il motore Kotlin non si installa | phazly e klaxon: «could not install the Kotlin Analysis API: HTTP Error 403: Forbidden»; klaxon resta al 17,7% |
-| 7 | `implementation` non si chiede mai | dove la definizione cade su un contratto o su un valore, a campione trova la funzione concreta in 11 casi su 20 (phazly TypeScript, chiamate), 11 su 20 (tududi JavaScript, destinazioni ambigue), 5 su 20 (phazly TypeScript, non simboli); `type_definition` non aggiunge destinazioni utili |
-
-- Il motore tace (`unresolved`) su tududi JavaScript 15.109, phazly Python 2.868, javapoet 1.213: a campione sono metodi di librerie su valori senza tipo (`res.status`, `dict.get`, collezioni di Motor). Non sono collegamenti persi, ma contano fra le chiamate risolvibili e abbassano la copertura dichiarata.
-- Il risolutore lessicale e il motore indicano la stessa dichiarazione in 28-30 casi su 30 per caso (semver 25 su 30).
-- Jedi `goto` e `infer` danno le stesse destinazioni a campione.
-- Nessun conflitto fra lessicale e motore in nessun caso.
-
-### 13 novembre 2026, rimisura dopo le correzioni
-
-Stessi sei casi (app `ap-2Cwf3qAFgMtesOgHaex1Qa`, plugin del working tree al commit `4adbde359`, con le modifiche locali non committate di `store_graph.py`, `store_consumers.py`, `snapshot.py` e `mcp_service.py`), P7 fino a 2.000 chiamate. Costo fatturato da Modal: 0,66 USD (la prima misura 0,48 USD).
-
-| Caso | Chiamate risolte su risolvibili, prima | Dopo | Collegamenti persi nel grafo, prima | Dopo |
-| --- | --- | --- | --- | --- |
-| chi | 858 su 1.100 (78,0%) | 1.014 su 1.100 (92,2%) | 0 | 0 |
-| javapoet | 2.864 su 4.077 (70,2%) | 2.864 su 2.874 (99,7%) | 15 | 0 |
-| klaxon | 311 su 1.755 (17,7%) | 812 su 917 (88,5%) | 12 | 0 |
-| phazly | 13.339 su 19.763 (67,5%) | 13.655 su 19.648 (69,5%) | 485 | 0 |
-| semver | 428 su 484 (88,4%) | 447 su 484 (92,4%) | 3 | 0 |
-| tududi | 17.377 su 41.695 (41,7%) | 19.794 su 41.715 (47,5%) | 8.314 | 0 |
-
-- Il motore Kotlin si installa in un container senza Java: klaxon passa da 17,7% a 88,5%; in phazly risponde su 269 chiamate (5 archi, 151 senza risposta).
-- In javapoet 1.203 chiamate prima senza risposta ora cadono in una libreria (`external-definition` da 1.076 a 2.279): escono dalle risolvibili.
-
-P7, lessicale e motore alla posizione esatta:
-
-| Caso e motore | Confrontate | Stessa dichiarazione | Divergenze |
-| --- | --- | --- | --- |
-| chi, gopls | 231 | 231 | 0 |
-| klaxon, Kotlin | 311 | 311 | 0 |
-| phazly, Kotlin | 36 | 36 | 0 |
-| phazly, TypeScript | 2.000 su 2.582 | 2.000 | 0 |
-| tududi, TypeScript | 2.000 su 11.895 | 2.000 | 0 |
-| javapoet, JDT LS | 289 | 264 | 25: il lessicale indica la classe, il motore il suo costruttore |
-| semver, rust-analyzer | 76 | 65 | 9: il lessicale lega `Err(...)` al tipo associato `type Err` dell'`impl`, il motore alla libreria standard; 2 senza risposta del motore |
-| phazly, Jedi | 2.000 su 4.815 | 1.956 | 44: funzioni decorate con `@cache` o `@lru_cache`; `infer` dà l'oggetto restituito dal decoratore (`functools._lru_cache_wrapper`, senza posizione), graduato `external-definition`; ha ragione il lessicale |
-
-Due difetti che la tabella mostra: il grafo tiene i 9 archi lessicali sbagliati di semver, perché il passo non interroga il motore sulle chiamate già risolte dal lessicale; Jedi classifica come esterne le chiamate a funzioni del progetto decorate (`@contextmanager` compreso: `infer` dà `typing.Callable`).
-
-### 13 novembre 2026, il motore controlla anche le chiamate già risolte
-
-Stessi sei casi con le correzioni `1f5c55ac5` (il motore interroga anche le chiamate legate dal lessicale e la sua risposta vince) ed `e86bdb39c` (Jedi usa `goto` quando `infer` non dà una funzione o una classe). chi, javapoet, klaxon e semver dall'app `ap-aE8qBaqhrNAjhSe0Y1IsQo`; phazly e tududi da chiamate `spawn` dell'app distribuita, perché `modal run` annulla i casi in corso quando il client locale perde la rete. Costo fatturato: 0,33 USD per i primi quattro, 0,43 USD per phazly e tududi; 0,27 USD di una run annullata.
-
-| Caso | Chiamate già risolte controllate | Uguali | Corrette | Esterne | Copertura |
-| --- | --- | --- | --- | --- | --- |
-| chi | 231 | 231 | 0 | 0 | 92,2% |
-| javapoet | 289 | 264 | 25 (dalla classe al costruttore) | 0 | 99,7% |
-| klaxon | 311 | 311 | 0 | 0 | 88,5% |
-| semver | 76 | 65 | 0 | 9 (`Err(...)` tolto dal tipo associato) | 92,2% (438 su 475) |
-| phazly | 7.433 | 7.433 | 0 | 0 | 69,6% (13.692 su 19.686) |
-| tududi | 11.895 | 11.894 | 0 | 0 (1 senza risposta) | 47,4% (19.790 su 41.715) |
-
-- Jedi su phazly: P7 2.000 su 2.000 alla stessa dichiarazione (prima 1.956); 37 chiamate Python in più risolte dal motore (10.329 su 13.385).
-- Tempo del passo dei motori: tududi da 1.676 a 2.138 s (+28%); phazly da 2.285 a 1.594 s, ma la misura precedente comprende un riavvio per preemption e non è confrontabile.
-- tududi TypeScript perde 4 archi del motore (7.027 → 7.023) senza una chiamata corretta o esterna che li spieghi: causa da guardare.
 
 ### 13 novembre 2026, indice SCIP contro motori
 
@@ -574,65 +498,6 @@ Non verificato:
 - Perché i task di scip-java non girano in buildSrc: lo dice solo il log.
 - I picchi di RAM fra un campione e l'altro, sotto gVisor.
 - Altri progetti Kotlin, Gradle 8 e oltre, Android, Kotlin Multiplatform.
-
-### 14 novembre 2026, seconda fonte in un colpo: Python
-
-Verdetto: Jedi in un solo processo sull'intero progetto chiude 2 dei 19 mancati veri e non contraddice mai l'indice su una chiamata (0 bersagli diversi su 468 chiamate con bersaglio del progetto), ma tace su 48 di quelle 468 e su tutte le 13 chiamate senza occorrenza dell'indice. Sui tre bersagli sbagliati dell'indice dà la risposta giusta o un valore, mai la classe sbagliata. La regola `goto` del prodotto, alla lettera, perde 103 chiamate a metodi `classmethod`: serve allargarla.
-
-Adattatore `adapters/python_jedi.py` (`analyze(project_dir, work_dir, environment)`, anche da riga di comando) e `strong_python.py` (collegamento: venv delle dipendenze, Jedi in un processo suo, confronto con il grafo salvato). Esecuzione: `modal deploy benchmarks/inference-audit/strong_python.py`, poi `spawn --cases semver` (con `--reuse` rifà solo il confronto sull'uscita di Jedi già salvata), `fetch --cases semver`, `report --cases semver`. Risultati: `results/strong-python-semver.json` (una riga per riferimento dello snapshot con le due risposte, conteggi, verifica a mano) e `results/strong-python-semver-jedi.json` (uscita dell'adattatore: archi, nomi senza risposta). Il grafo salvato, `scip_graph.py`, `adapters/python.py`, `lang_python.py` e `plugins/` non sono toccati.
-
-| Parametro | Valore |
-| --- | --- |
-| caso | lo stesso di `lang_python.py`: python-semver `b6e83e3e40d3a7570386e8d694ae8011477a55c1`, 35 file, la copia dello snapshot (symlink come file normali) |
-| motore | Jedi 0.20.1, Python 3.13, `jedi.Project` con radici il progetto e `src` (come il `pyrightconfig.json` dell'indice), ambiente creato con `create_environment(safe=False)` |
-| ambiente | venv con le dipendenze dichiarate, installate come nell'esecuzione dell'indice: 87 pacchetti, `pip list` identico a quello dell'esecuzione dell'indice (stesse versioni) |
-| nomi | `get_names(all_scopes=True, definitions=False, references=True)` su ogni file, senza i nomi di argomenti per parola chiave: 3.125 nomi, 2.653 con risposta, 472 senza, 0 errori |
-| risposta | `infer()` alla posizione del nome; `goto(follow_imports=True)` ristretto a funzioni, classi e property quando nessun valore inferito è una funzione, classe o property del progetto. Ogni arco porta `via` e `product`: `product` marca i `goto` che la regola del prodotto (`JediEngine.definitions`: `goto` solo se nessun valore è funzione o classe) usa al posto dei valori inferiti. 3.865 archi, 2.885 da `infer`, 980 da `goto` |
-| confronto | i 2.343 riferimenti `call` e `read` dello snapshot (995 chiamate, 1.348 letture) alla posizione del nome, contro le fini del grafo salvato; un bersaglio di Jedi è del progetto quando lo snapshot riconosce alla posizione del suo nome una funzione, un metodo o una classe (`Snapshot.grade`, come il prodotto fa con i risultati di Jedi) |
-| archi | `caller` (definizione più interna), `callee`, `site` `file:riga:colonna` (colonna in caratteri, da 0), `kind` (`call` se il token dopo il nome è `(`), `external`; in più `at`, `type`, `via`, `product` |
-| tempo e memoria | Jedi 21,5 s in un processo a parte, 136 MB di picco; il processo con l'avvio 24,3 s |
-
-Perché serve allargare la regola: per un metodo `@classmethod` `infer()` dà la funzione `__get__` di `builtins`, che è una funzione, e la regola del prodotto non cerca altro. Sono le 103 chiamate che con la regola del prodotto non hanno bersaglio del progetto (`Version.parse` e `Version.is_valid` in `_deprecated.py` e `cli.py`, `cls.parse`, `cls._validate_identifiers`, `super().parse` in `tests/semverwithvprefix.py:23`). L'adattatore chiede `goto` anche quando nessun valore è del progetto: 418 chiamate sul bersaglio dell'indice invece di 317.
-
-1. I 19 mancati veri (`report` li elenca): 2 risolti, 1 parziale, 16 no.
-   - Risolti: `version.py:65` (due volte, `cls(**other)` e `cls(*other)` con `cls = type(self)` nel wrapper di `_comparator`): Jedi arriva alla classe `Version` (`version.py:78`).
-   - Parziale, non conta: `cli.py:46 func()` con `func = getattr(ver, maptable[...])`: Jedi dà solo `Version.bump_minor`, uno dei cinque metodi possibili.
-   - Valori creati da un decoratore, 7 (`tests/test_pysemver-cli.py:41, 109, 116, 124, 129, 133, 156`): Jedi dà istanze di `functools.partial` e `typing.Callable`, il tipo ritornato dal decoratore, non la funzione.
-   - Parametri chiamati, 4: `_deprecated.py:81` e `version.py:68` istanze `Callable` (e `NoneType`); `tests/test_deprecated_functions.py:63` e `tests/test_pysemver-cli.py:104` nessuna risposta.
-   - Attributo dinamico `cli.py:152 args.func(args)`: nessuna risposta. Callee calcolato, 2 (`version.py:556 getattr(...)()`, `:807 type(self)(**version)`): non c'è un nome a cui chiedere, Jedi per nome non ha niente da dire. Fixture senza tipo, 2 (`tests/test_semver.py:30`, `:36`): nessuna risposta.
-2. Le tre classi di bersaglio sbagliato e i 9 locali senza definizione.
-   - Attributi di `__slots__` (l'indice punta alla classe `Version`): 23 letture di `self._major` e degli altri quattro; 18 con il tipo del valore (`int`, `str`, `NoneType`), 5 senza risposta, nessuna alla classe. Qui Jedi ha ragione e l'indice no. Sono 23 e non i 29 del conteggio dell'indice, che conta anche altre forme.
-   - `operator.lt`, `operator.gt` (`tests/test_compare_invalid_operands.py:52`, `:67`): Jedi dà `_operator.lt` e `_operator.gt`, le funzioni giuste della libreria standard.
-   - `pytest.skip`, `pytest.fail` (`tests/test_optional_native_backend.py:16`, `tests/test_deprecated_functions.py:65`): Jedi dà il pacchetto giusto, `pytest`, con l'istanza `_pytest.outcomes._Skip` o `_Fail` e non con la funzione.
-   - I 9 locali senza definizione: 9 su 9 la funzione giusta della libreria (`builtins.str.format` 6, `sys.exit`, `importlib.util.find_spec`, `unittest.mock.NonCallableMock.assert_called_once`).
-3. Dove l'indice ha già un bersaglio del progetto: 468 chiamate, 131 letture.
-   - Chiamate: 418 stesso insieme di bersagli; 2 sovrapposte (`version.py:479`, `:833`, `cls.parse`: l'indice aggiunge i quattro override di `SemVerWithVPrefix.parse` per dispatch dinamico, Jedi solo `Version.parse`; tutte e due difendibili); 48 senza risposta di Jedi; 0 con bersaglio diverso, quindi nessun sito in cui decidere chi ha ragione. Delle 48: 44 sono metodi chiamati su `v = parse_version_info(...)` (`tests/test_bump.py`, 43; `tests/test_parsing.py:109`), funzione fatta da `deprecated` di cui Jedi non vede il tipo di ritorno (le 15 assegnazioni `v =` di `test_bump.py` sono tutte `parse_version_info(...)`); 4 in `version.py:584`-`590` (`version = self` più su, causa non indagata).
-   - Letture: 52 stesso insieme; 5 senza risposta (`version.py:455`-`460`, `self._x` di `__slots__`); 74 senza una funzione del progetto. Delle 74: 54 sono property: l'indice va alla funzione del getter, Jedi all'ultima `def` dello stesso nome (la riga `@x.setter`, per esempio `version.py:218` invece di `:213`), cioè alla stessa property; 18 sono gli attributi di `__slots__` del punto 2; 2 sono `return wrapper` (`_deprecated.py:83`, `version.py:70`), dove Jedi dà il tipo `Callable`.
-   - Pacchetti esterni: sulle 483 chiamate con pacchetto esterno in tutti e due, 482 identici e 1 (`version.py:769 _native_parse_parts`) con in più `python-stdlib` da Jedi (l'istanza `NoneType` dell'alias in `try`); sulle letture 312 identici e 5 con in più `python-stdlib` (`excinfo.value`, `actual.value`: Jedi dà anche il tipo del valore). Il pacchetto dell'indice è sempre dentro quelli di Jedi.
-4. Dove uno risponde e l'altro tace.
-   - Jedi risponde, l'indice no, 26 siti. Chiamate 11: i 9 locali del punto 2, `pytest.skip` e `pytest.fail`. Letture 15: sei `__file__`, `__package__`, `__doc__`, `__name__` come `str`; cinque `@x.setter` come `property.setter`; il modulo `semver` due volte; `_module.__name__`; `version_module._native_parse_parts`, dove Jedi dà la funzione `parse_parts` di `fast-semver-rs-backend`.
-   - L'indice risponde, Jedi tace. Chiamate 54: le 48 del punto 3, 4 con pacchetto esterno (`func.__name__.startswith` in `tests/test_docstrings.py:12` due volte, `m.__package__.startswith`, `resultdict.keys` in `tests/test_semver.py:32`), 2 parametri (`tests/test_deprecated_functions.py:63`, `tests/test_pysemver-cli.py:104`). Letture: 5 del progetto, 8 esterne (per esempio `sys.stderr` in `cli.py:173`), 301 di valori (locali e parametri).
-   - Tacciono tutti e due: le 13 chiamate senza occorrenza (`args.parser.parse_args`, `args.func`, `capsys.readouterr`, `captured.out.rstrip`, `version.to_dict`, `version.to_tuple`...) e 23 letture di `args.*` e simili. Jedi non chiude i buchi dell'indice.
-   - Siti di Jedi fuori dai riferimenti dello snapshot: 710 (ricevitori di catene come `Version` in `Version.parse`, annotazioni): 118 funzioni o classi del progetto, 393 esterni, 199 valori; non confrontati.
-   - Rumore di Jedi: su un parametro o un valore creato da decoratore risponde con un tipo (`Callable`, `functools.partial`, `NoneType`, `type` `instance`); sulle chiamate sono 195 bersagli `instance`, mai funzioni.
-5. Verifica a mano, gli stessi 20 siti di `HAND`, stesso criterio del testo atteso.
-
-| | giusti | note |
-| --- | --- | --- |
-| solo indice | 18 su 20 | mancano `version.py:65 cls` e `:769 _native_parse_parts` (arriva al modulo) |
-| solo Jedi, regola allargata | 19 su 20 | manca `tests/test_pysemver-cli.py:109 main` (tipi `partial` e `Callable`, non il valore); `:65` e `:769` giusti (`parse_parts`, pacchetto `fast-semver-rs-backend`); `_deprecated.py:81` e `version.py:68` senza funzione del progetto, come atteso |
-| solo Jedi, regola del prodotto | 16 su 20 | in più mancano `_deprecated.py:113 parse`, `tests/test_subclass.py:13` e `:62 parse` (solo `classmethod.__get__`) |
-| indice più Jedi | 20 su 20 | dove l'indice dà un valore o il modulo (`:65`, `:769`) vale Jedi, altrove l'indice; sui siti dove rispondono tutti e due non si contraddicono mai |
-
-Costo: cinque chiamate al container, stimate 0,025 USD dalla tariffa e dai secondi (cpu 2, 6 GiB, circa 2 minuti l'una, 0,005 USD a chiamata); non letto dal conto di Modal. Cinque perché la regola `goto` del prodotto si è dimostrata troppo stretta (103 `classmethod`), perché l'etichetta del pacchetto dei moduli compilati era sbagliata (`python-stdlib` per `fast-semver-rs-backend`), perché le property non erano accettate dal confronto e perché una chiamata, spawnata subito dopo un deploy, ha eseguito la versione precedente dell'adattatore (hash `bbbd7aa3ff3e`, causa non indagata; la sua uscita è stata sostituita). Nessun fallimento due volte per la stessa causa.
-
-Non verificato:
-- Le 4 chiamate senza risposta in `version.py:584`-`590`: causa non letta.
-- Perché `cli.py:46` dà `bump_minor` e non un altro dei cinque.
-- Il tempo della costruzione della venv e quello totale del container: non misurati.
-- Un solo progetto, 995 chiamate: l'accordo (418 su 468) e i silenzi (48) non valgono per altri progetti Python; httpx non è stato provato.
-- La verifica a mano di Jedi e di indice più Jedi è mia, sul testo atteso di `HAND`; per i due siti con atteso "vicolo cieco" (`_deprecated.py:81`, `version.py:68`) ho contato giusta l'assenza di una funzione del progetto, non il tipo dato da Jedi. Per `tests/test_pysemver-cli.py:109` l'indice vale giusto perché arriva alla variabile `main` del progetto, come nella verifica del 13 novembre.
-- Le chiamate con più bersagli di Jedi (`str.format` due volte) vengono da `infer` e `goto` insieme, non da due valori diversi.
 
 ### 14 novembre 2026, grafo delle chiamate del programma intero: Go
 

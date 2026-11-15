@@ -1,8 +1,7 @@
-"""Inference audit on Modal: for each case and each engine, what is asked, what the engine answers, what
-is stored and what reaches the graph (README of this benchmark, P1 to P7). No model.
+"""The product's pass on Modal, for each case: its report and what reaches the graph (README of this benchmark,
+Domande). No model. `CASES`, `_run` and `_source` are the cases and checkout the other benchmarks of this folder share.
 
-One container per case: snapshot, the product's engine pass, then `probe.py` in each engine's own stage
-environment (the command `resolve_edges.stage_command` builds), then the graph use measured in process.
+One container per case: snapshot, the product's pass, then the graph use measured in process.
 
     modal deploy benchmarks/inference-audit/modal_audit.py
     python benchmarks/inference-audit/modal_audit.py spawn --phazly-tar PATH [--cases ...]
@@ -45,7 +44,6 @@ image = (
     .apt_install("git", "curl", "ca-certificates", "nodejs", "npm", "unzip", "xz-utils")
     .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
     .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])
-    .add_local_file(HERE / "probe.py" if modal.is_local() else Path("/audit/probe.py"), "/audit/probe.py")
 )
 app = modal.App("daodan-inference-audit", image=image)
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
@@ -78,7 +76,7 @@ def _source(source: Path, case: dict, archive: bytes | None) -> Path:
 
 
 def _graph_use(manifest: Path, rules: list | None) -> dict:
-    """P6: what the edge view holds and what of it becomes a link of the flows."""
+    """What the edge view holds and what of it becomes a link of the flows."""
     import collections
     import sys
     sys.path.insert(0, SCRIPTS)
@@ -124,7 +122,6 @@ def _graph_use(manifest: Path, rules: list | None) -> dict:
 
 @app.function(cpu=4, memory=16384, timeout=4 * 3600, volumes={"/results": volume})
 def audit(name: str, case: dict, archive: bytes | None, rules_text: str, label: str = "") -> dict:
-    import os
     import sys
     import time
 
@@ -146,27 +143,6 @@ def audit(name: str, case: dict, archive: bytes | None, rules_text: str, label: 
     except (OSError, ValueError) as error:
         result["pass_report"] = {"error": repr(error)}
 
-    sys.path.insert(0, SCRIPTS)
-    import resolve_edges as rx
-    plan, _fresh, _digest = rx.pass_plan(manifest)
-    result["engines"] = {}
-    for spec, wanted in plan:
-        out = work / f"probe-{spec.name}.json"
-        command = rx.stage_command(spec, manifest, work / "unused.json", [])
-        if command is None:
-            result["engines"][spec.name] = {"error": "no stage command"}
-            continue
-        at = next(i for i in range(len(command) - 1) if command[i] == "python" and command[i + 1] == "-B")
-        command = command[:at] + ["python", "-B", "/audit/probe.py", SCRIPTS, str(manifest), spec.name, str(out)]
-        begun = time.time()
-        try:
-            probe = _run(command, cwd=SCRIPTS, ok=(0, 1), timeout=7200, env={**os.environ, **spec.environment})
-            value = json.loads(out.read_text(encoding="utf-8")) if out.is_file() else \
-                {"error": f"exit {probe.returncode}", "stderr": probe.stderr[-3000:]}
-        except Exception as error:
-            value = {"error": repr(error)[:3000]}
-        value["probe_seconds"] = round(time.time() - begun, 1)
-        result["engines"][spec.name] = value
     try:
         rules = json.loads(rules_text)["rules"] if rules_text else None
         result["graph_use"] = _graph_use(manifest, rules)
@@ -204,7 +180,7 @@ def main(phazly_tar: str = "", cases: str = ",".join(CASES)):
             continue
         (RESULTS / f"audit-{result['case']}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n",
                                                               encoding="utf-8")
-        print(result["case"], "engines", sorted(result["engines"]), "seconds", result["seconds"])
+        print(result["case"], "seconds", result["seconds"])
 
 
 def _calls(phazly_tar: str, cases: str) -> list[tuple]:

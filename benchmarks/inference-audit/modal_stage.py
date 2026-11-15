@@ -16,7 +16,7 @@ copy that `lang_python.py` keeps (`snapshot.py write` stops on a linked file), w
 5. each graph's edges and holes per top folder of the checkout.
 
 `--entries` limits the stages to those entries, and each language an entry lists reads from it in this run
-(`_serving`): `--entries scip-python` measures Python from its index while the product keeps it on Jedi. The
+(`_serving`): `--entries scip-python` runs scip-python's stage alone. The
 driver gives scip-python its Python projects (`UNITS`), as the pre-map will. A private case's result keeps no
 indexer log. `fetch` sets beside each result the stored one it confirms: `results/scip-<case>-confirm.json`,
 `CONFIRM` for the others.
@@ -46,7 +46,7 @@ sys.path.insert(0, SCRIPTS)
 import plugin_scripts  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
-AUDIT = ("modal_audit.py", "modal_scip.py", "plugin_scripts.py", "probe.py", "lang_python.py")
+AUDIT = ("modal_audit.py", "modal_scip.py", "plugin_scripts.py", "lang_python.py")
 # The cases `lang_python.py` keeps on the volume: its work folder (checkout, copy, snapshot) and its case there.
 KEPT = {"python-semver": ("graph-python/semver-plugin/work.tar.gz", "semver")}
 # The stored result each case's run is set beside, when it is not `scip-<case>-confirm.json`.
