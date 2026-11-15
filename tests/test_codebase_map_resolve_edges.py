@@ -2,13 +2,17 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import math
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
+from importlib import metadata
 from pathlib import Path
 from unittest import mock
 
@@ -17,6 +21,10 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import resolve_edges
+import engine_pass  # noqa: E402
+import engine_tools  # noqa: E402
+import position_stage  # noqa: E402
+import semantic_store  # noqa: E402
 import snapshot
 from indexers import vue_svelte  # noqa: E402
 from snapshot_store import _unpack, open_snapshot
@@ -298,7 +306,7 @@ class ResolveEdgesTests(unittest.TestCase):
         self.edges.write_bytes(b"old output")
         partial = self.edges.with_name(self.edges.name + ".partial")
         partial.write_bytes(b"another invocation")
-        with mock.patch.object(resolve_edges.os, "replace", side_effect=OSError("cannot replace")):
+        with mock.patch.object(os, "replace", side_effect=OSError("cannot replace")):
             report = self.run_engine(engine)
         self.assertFalse(report["available"], report)
         self.assertEqual(report["stage"], "write")
@@ -458,7 +466,7 @@ class ResolveEdgesTests(unittest.TestCase):
                 clock[0] += next(steps)
                 return super().definitions(path, line, column)
 
-        with mock.patch.object(resolve_edges.time, "perf_counter", side_effect=lambda: clock[0]):
+        with mock.patch.object(time, "perf_counter", side_effect=lambda: clock[0]):
             report = self.run_engine(TimedEngine())
         self.assertEqual(report["asked"], 2)
         self.assertEqual(report["latency_mean_ms"], 150)
@@ -510,7 +518,7 @@ class ResolveEdgesTests(unittest.TestCase):
         engine = StubEngine(answers={("use.py", before["span"][0]):
                                      Definition(self.root / "app/tool.py", "run")})
         self.run_engine(engine)
-        with mock.patch.object(resolve_edges.semantic_store, "RESOLVER_VERSION", 999):
+        with mock.patch.object(semantic_store, "RESOLVER_VERSION", 999):
             edges, binding, reason = self.stored_edges()
         self.assertIsNone(edges)
         self.assertIsNotNone(binding)
@@ -607,8 +615,8 @@ class PassLifecycleTests(unittest.TestCase):
 
     def setUp(self):
         # Python reads from scip-python; these tests run the position pass on it.
-        self.enterContext(mock.patch.object(resolve_edges, "ENGINES", POSITION_ENGINES))
-        self.enterContext(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
+        self.enterContext(mock.patch.object(engine_pass, "ENGINES", POSITION_ENGINES))
+        self.enterContext(mock.patch.object(engine_pass, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve() / "proj"
@@ -682,9 +690,9 @@ class PassLifecycleTests(unittest.TestCase):
         self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "stale")
 
     def test_a_missing_engine_is_unavailable_and_starts_no_process(self):
-        with mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
-                mock.patch.object(resolve_edges.importlib.util, "find_spec", return_value=None), \
-                mock.patch.object(resolve_edges, "_spawn_detached") as spawn:
+        with mock.patch.object(shutil, "which", return_value=None), \
+                mock.patch.object(importlib.util, "find_spec", return_value=None), \
+                mock.patch.object(engine_pass, "_spawn_detached") as spawn:
             result = resolve_edges.ensure_edges(self.manifest)
         spawn.assert_not_called()
         self.assertEqual((result["state"], result["action"]), ("unavailable", "none"))
@@ -697,19 +705,19 @@ class PassLifecycleTests(unittest.TestCase):
         def version(name):
             if name == "tree-sitter":
                 return "0.25.2"
-            raise resolve_edges.metadata.PackageNotFoundError(name)
+            raise metadata.PackageNotFoundError(name)
 
-        with mock.patch.object(resolve_edges.shutil, "which", return_value="uv"), \
-                mock.patch.object(resolve_edges.metadata, "version", side_effect=version):
-            command = resolve_edges.stage_command(resolve_edges.ENGINE_LANGUAGES["python"], self.manifest, report)
+        with mock.patch.object(shutil, "which", return_value="uv"), \
+                mock.patch.object(metadata, "version", side_effect=version):
+            command = resolve_edges.stage_command(engine_pass.ENGINE_LANGUAGES["python"], self.manifest, report)
         python = f"{sys.version_info[0]}.{sys.version_info[1]}"
         self.assertEqual(command[:7], ["uv", "run", "--quiet", "--no-config", "--no-project", "--python", python])
         self.assertEqual(command[7:11], ["--with", "multilspy==0.1.1", "--with", "tree-sitter==0.25.2"])
         self.assertEqual(command[11:15], ["python", "-B", "-X", "faulthandler"])
         self.assertIn(str(report), command)
-        with mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
-                mock.patch.object(resolve_edges.importlib.util, "find_spec", return_value=object()):
-            self.assertEqual(resolve_edges.stage_command(resolve_edges.ENGINE_LANGUAGES["python"], self.manifest,
+        with mock.patch.object(shutil, "which", return_value=None), \
+                mock.patch.object(importlib.util, "find_spec", return_value=object()):
+            self.assertEqual(resolve_edges.stage_command(engine_pass.ENGINE_LANGUAGES["python"], self.manifest,
                                                          report)[:4],
                              [sys.executable, "-B", "-X", "faulthandler"])
         # The detached pass itself needs nothing beyond this interpreter.
@@ -718,8 +726,8 @@ class PassLifecycleTests(unittest.TestCase):
 
     def test_a_background_pass_is_running_while_its_process_lives(self):
         child = mock.Mock(pid=os.getpid())
-        with mock.patch.object(resolve_edges, "engine_command", return_value=["engine"]), \
-                mock.patch.object(resolve_edges, "_spawn_detached", return_value=child) as spawn:
+        with mock.patch.object(engine_pass, "engine_command", return_value=["engine"]), \
+                mock.patch.object(engine_pass, "_spawn_detached", return_value=child) as spawn:
             started = resolve_edges.ensure_edges(self.manifest)
             again = resolve_edges.ensure_edges(self.manifest)
         self.assertEqual((started["state"], started["action"]), ("running", "started"))
@@ -751,8 +759,8 @@ class PassLifecycleTests(unittest.TestCase):
         running.write_text(json.dumps({"pid": 4242}), encoding="utf-8")
         partial = self.manifest.with_name(".engine-edges.sqlite.abc.partial")
         partial.write_bytes(b"half a store")
-        with mock.patch.object(resolve_edges, "_process_alive", return_value=True), \
-                mock.patch.object(resolve_edges, "_terminate_tree") as terminate, \
+        with mock.patch.object(engine_pass, "_process_alive", return_value=True), \
+                mock.patch.object(engine_pass, "_terminate_tree") as terminate, \
                 mock.patch.object(resolve_edges, "ensure_edges",
                                   return_value={"state": "running", "edges_store": "x"}), \
                 contextlib.redirect_stdout(io.StringIO()):
@@ -983,9 +991,9 @@ class PreparedEnvironmentTests(unittest.TestCase):
         return subprocess.CompletedProcess(command, 0, "", "")
 
     def prepare(self):
-        with mock.patch.object(resolve_edges, "shared_cache_dir", return_value=self.cache), \
-                mock.patch.object(resolve_edges.shutil, "which", return_value="uv"), \
-                mock.patch.object(resolve_edges.subprocess, "run", side_effect=self.run_uv):
+        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=self.cache), \
+                mock.patch.object(shutil, "which", return_value="uv"), \
+                mock.patch.object(subprocess, "run", side_effect=self.run_uv):
             return resolve_edges.python_environment(self.root, self.names)
 
     def test_only_package_lines_are_declared_requirements(self):
@@ -1105,13 +1113,13 @@ class MultiLanguageTests(unittest.TestCase):
     def run_whole_pass(self, outcomes, free=8 * 2**30):
         calls = []
         report = self.manifest.with_name(resolve_edges.REPORT_NAME)
-        with mock.patch.object(resolve_edges, "stage_command",
+        with mock.patch.object(engine_pass, "stage_command",
                                side_effect=lambda spec, manifest, path, offline=False:
                                [spec.name, str(path)]), \
-                mock.patch.object(resolve_edges, "cached_offline", return_value=False), \
-                mock.patch.object(resolve_edges.subprocess, "run", side_effect=self.stage_runner(outcomes, calls)), \
-                mock.patch.object(resolve_edges, "free_memory", return_value=free):
-            result = resolve_edges.run_pass(self.manifest, report, [])
+                mock.patch.object(engine_pass, "cached_offline", return_value=False), \
+                mock.patch.object(subprocess, "run", side_effect=self.stage_runner(outcomes, calls)), \
+                mock.patch.object(engine_pass, "free_memory", return_value=free):
+            result = resolve_edges.run_pass(self.manifest, report)
         return result, calls
 
     def test_the_pass_runs_one_engine_at_a_time_and_records_each_language(self):
@@ -1165,8 +1173,8 @@ class DistributionTests(unittest.TestCase):
 
     def setUp(self):
         # Python reads from scip-python; these tests run the position pass on it.
-        self.enterContext(mock.patch.object(resolve_edges, "ENGINES", POSITION_ENGINES))
-        self.enterContext(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
+        self.enterContext(mock.patch.object(engine_pass, "ENGINES", POSITION_ENGINES))
+        self.enterContext(mock.patch.object(engine_pass, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve() / "proj"
@@ -1258,7 +1266,7 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual((report["asked"], report["reused"]), (3, 0))
 
     def test_a_failed_pass_keeps_what_it_proved_and_the_next_one_resumes(self):
-        with mock.patch.object(resolve_edges, "PUBLISH_SECONDS", 0):
+        with mock.patch.object(position_stage, "PUBLISH_SECONDS", 0):
             failed = self.run_engine(self.engine(fail_after=2))
         self.assertFalse(failed["available"])
         with open_snapshot(self.manifest) as store:
@@ -1370,7 +1378,7 @@ class OfflineStageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             manifest, report = Path(temp) / "manifest.sqlite", Path(temp) / "report.json"
             spec = resolve_edges.ENGINES[1]
-            with mock.patch.object(resolve_edges.shutil, "which", return_value="uv"):
+            with mock.patch.object(shutil, "which", return_value="uv"):
                 online = resolve_edges.stage_command(spec, manifest, report)
                 offline = resolve_edges.stage_command(spec, manifest, report, offline=True)
             self.assertNotIn("--offline", online)
@@ -1411,7 +1419,7 @@ class TypeScriptMirrorTests(unittest.TestCase):
 
     def test_only_the_manifests_reach_npm_and_scripts_never_run(self):
         with tempfile.TemporaryDirectory() as temp, \
-                mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"):
+                mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"):
             root = Path(temp) / "proj"
             (root / "src").mkdir(parents=True)
             (root / "src/a.ts").write_text("export const a = 1;\n", encoding="utf-8")
@@ -1424,8 +1432,8 @@ class TypeScriptMirrorTests(unittest.TestCase):
                 (Path(cwd) / "node_modules").mkdir()
                 return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-            with mock.patch.object(resolve_edges.shutil, "which", return_value="npm"), \
-                    mock.patch.object(resolve_edges.subprocess, "run", side_effect=run):
+            with mock.patch.object(shutil, "which", return_value="npm"), \
+                    mock.patch.object(subprocess, "run", side_effect=run):
                 first = resolve_edges.npm_modules(root)
                 again = resolve_edges.npm_modules(root)
         self.assertEqual(first, again)
@@ -1469,9 +1477,9 @@ class NestedPackageTests(unittest.TestCase):
             return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
         before = (self.root / "web/package.json").read_text(encoding="utf-8")
-        with mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(self.temp.name) / "cache"), \
-                mock.patch.object(resolve_edges.shutil, "which", return_value="npm"), \
-                mock.patch.object(resolve_edges.subprocess, "run", side_effect=run):
+        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(self.temp.name) / "cache"), \
+                mock.patch.object(shutil, "which", return_value="npm"), \
+                mock.patch.object(subprocess, "run", side_effect=run):
             modules = resolve_edges.npm_modules(self.root / "web")
         self.assertIsNotNone(modules)
         command, manifest = seen[0]
@@ -1507,9 +1515,9 @@ class NestedPackageTests(unittest.TestCase):
         (self.root / "web/package.json").write_text(json.dumps({
             "name": "web", "dependencies": {"express": "^4", "typed": "^1", "@scope/plain": "^1", "left": "^1"}}),
             encoding="utf-8")
-        with mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(self.temp.name) / "cache"), \
-                mock.patch.object(resolve_edges.shutil, "which", return_value="npm"), \
-                mock.patch.object(resolve_edges.subprocess, "run", side_effect=run):
+        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(self.temp.name) / "cache"), \
+                mock.patch.object(shutil, "which", return_value="npm"), \
+                mock.patch.object(subprocess, "run", side_effect=run):
             modules = resolve_edges.npm_modules(self.root / "web")
         installs = [command for command in calls if "--no-save" in command]
         self.assertEqual(sorted(item for item in installs[0] if item.startswith("@types/")),
@@ -1541,7 +1549,7 @@ class MavenArtifactTests(unittest.TestCase):
     def test_a_maven_jar_on_disk_is_reused_and_a_download_is_verified(self):
         import io
         payload = b"jar bytes"
-        with tempfile.TemporaryDirectory() as temp,                 mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"),                 mock.patch.object(resolve_edges.Path, "home", return_value=Path(temp) / "home"):
+        with tempfile.TemporaryDirectory() as temp,                 mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"),                 mock.patch.object(Path, "home", return_value=Path(temp) / "home"):
             local = Path(temp) / "home/.m2/repository/org/demo/lib/1.0/lib-1.0.jar"
             local.parent.mkdir(parents=True)
             local.write_bytes(payload)
@@ -1558,7 +1566,7 @@ class MavenArtifactTests(unittest.TestCase):
             self.assertEqual(fetched, resolve_edges.maven_central_dir() / "org/demo/other/2.0/other-2.0.jar")
             self.assertEqual(fetched.read_bytes(), payload)
             with mock.patch("urllib.request.urlopen", side_effect=lambda request, timeout: io.BytesIO(
-                    b"0" * 40 if request.full_url.endswith(".sha1") else payload)),                     mock.patch.object(resolve_edges.time, "sleep"):
+                    b"0" * 40 if request.full_url.endswith(".sha1") else payload)),                     mock.patch.object(time, "sleep"):
                 with self.assertRaises(ValueError):
                     resolve_edges.maven_artifact("org.demo:broken:3.0")
             self.assertFalse((resolve_edges.maven_central_dir() / "org/demo/broken/3.0/broken-3.0.jar").exists())
@@ -1602,10 +1610,10 @@ class NativeToolchainTests(unittest.TestCase):
             (sysroot / "lib/rustlib/src/rust/library").mkdir(parents=True)
             (sysroot / "bin").mkdir()
             fake = lambda name: str(sysroot / "bin" / name)
-            with mock.patch.object(resolve_edges.shutil, "which", side_effect=fake), \
-                    mock.patch.object(resolve_edges.subprocess, "run", return_value=subprocess.CompletedProcess(
+            with mock.patch.object(shutil, "which", side_effect=fake), \
+                    mock.patch.object(subprocess, "run", return_value=subprocess.CompletedProcess(
                         [], 0, stdout=str(sysroot) + "\n", stderr="")), \
-                    mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"):
+                    mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"):
                 self.assertEqual(resolve_edges.rust_toolchain(), sysroot)
             self.assertFalse((Path(temp) / "cache").exists())
 
@@ -1635,9 +1643,9 @@ class NativeToolchainTests(unittest.TestCase):
             return io.BytesIO(archives[Path(url).name.removesuffix(".tar.xz")])
 
         with tempfile.TemporaryDirectory() as temp, \
-                mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
-                mock.patch.object(resolve_edges, "_platform", return_value="win-x64"), \
-                mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"), \
+                mock.patch.object(shutil, "which", return_value=None), \
+                mock.patch.object(engine_tools, "_platform", return_value="win-x64"), \
+                mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"), \
                 mock.patch("urllib.request.urlopen", side_effect=answer):
             home = resolve_edges.rust_toolchain()
             self.assertEqual(home.name, resolve_edges.RUST_VERSION)
@@ -1653,10 +1661,10 @@ class NativeToolchainTests(unittest.TestCase):
         manifest = ('[pkg.rustc.target.x86_64-pc-windows-msvc]\nxz_url = "https://static.rust-lang.org/rustc.tar.xz"\n'
                     'xz_hash = "' + "0" * 64 + '"\n')
         with tempfile.TemporaryDirectory() as temp, \
-                mock.patch.object(resolve_edges.shutil, "which", return_value=None), \
-                mock.patch.object(resolve_edges, "_platform", return_value="win-x64"), \
-                mock.patch.object(resolve_edges.time, "sleep"), \
-                mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"), \
+                mock.patch.object(shutil, "which", return_value=None), \
+                mock.patch.object(engine_tools, "_platform", return_value="win-x64"), \
+                mock.patch.object(time, "sleep"), \
+                mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"), \
                 mock.patch("urllib.request.urlopen", side_effect=lambda url, timeout=None: io.BytesIO(
                     manifest.encode() if str(url).endswith(".toml") else b"not the archive")):
             self.assertIsNone(resolve_edges.rust_toolchain())
@@ -1677,10 +1685,10 @@ class NativeToolchainTests(unittest.TestCase):
                 target.write_bytes(payload)
                 return target
 
-            with mock.patch.object(resolve_edges, "GO_ASSETS", assets), \
-                    mock.patch.object(resolve_edges, "_platform", return_value="win-x64"), \
-                    mock.patch.object(resolve_edges, "download", side_effect=fetch), \
-                    mock.patch.object(resolve_edges, "shared_cache_dir", return_value=Path(temp) / "cache"):
+            with mock.patch.object(engine_tools, "GO_ASSETS", assets), \
+                    mock.patch.object(engine_tools, "_platform", return_value="win-x64"), \
+                    mock.patch.object(engine_tools, "download", side_effect=fetch), \
+                    mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"):
                 root = resolve_edges.go_toolchain()
                 self.assertTrue((root / "bin" / resolve_edges.executable_name("go")).is_file())
                 self.assertEqual(resolve_edges.go_toolchain(), root)
@@ -1710,7 +1718,8 @@ class NativeToolchainTests(unittest.TestCase):
             (root / "src/lib.rs").write_bytes(b"pub fn a() {}\n")
             (root / "Cargo.toml").write_text('[package]\nname = "demo"\n', encoding="utf-8")
             (root / ".git").mkdir()
-            engine = resolve_edges.RustEngine(root, install_dir=Path(temp) / "engines")
+            from indexers import runtime
+            engine = runtime.Tool(root, "rust-analyzer", "1")
             engine.mirror = engine.build_mirror()
             mirror = engine.workspace_root()
             self.assertFalse((mirror / ".git").exists())
@@ -2000,19 +2009,19 @@ class IndexerStageTests(unittest.TestCase):
             return subprocess.CompletedProcess(command, 0)
 
         with contextlib.ExitStack() as stack:
-            stack.enter_context(mock.patch.object(resolve_edges, "ENGINES", (spec,)))
-            stack.enter_context(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES",
+            stack.enter_context(mock.patch.object(engine_pass, "ENGINES", (spec,)))
+            stack.enter_context(mock.patch.object(engine_pass, "ENGINE_LANGUAGES",
                                                   {language: spec for language in spec.languages}))
             stack.enter_context(mock.patch.object(
-                resolve_edges, "stage_command", side_effect=lambda spec, manifest, path, offline=False:
+                engine_pass, "stage_command", side_effect=lambda spec, manifest, path, offline=False:
                 [str(manifest), "--engine", spec.name, "--report-out", str(path)]))
-            stack.enter_context(mock.patch.object(resolve_edges, "cached_offline", return_value=False))
-            stack.enter_context(mock.patch.object(resolve_edges.subprocess, "run", side_effect=stage))
-            stack.enter_context(mock.patch.object(resolve_edges, "free_memory", return_value=free))
+            stack.enter_context(mock.patch.object(engine_pass, "cached_offline", return_value=False))
+            stack.enter_context(mock.patch.object(subprocess, "run", side_effect=stage))
+            stack.enter_context(mock.patch.object(engine_pass, "free_memory", return_value=free))
             for target, attribute, value in patches.values():
                 stack.enter_context(mock.patch.object(target, attribute, value))
             indexed = stack.enter_context(mock.patch.object(module, "index", side_effect=index))
-            result = resolve_edges.run_pass(manifest, manifest.with_name(resolve_edges.REPORT_NAME), [])
+            result = resolve_edges.run_pass(manifest, manifest.with_name(resolve_edges.REPORT_NAME))
         return result, started, indexed
 
     def test_entry_is_fresh_with_its_resolver(self):

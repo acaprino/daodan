@@ -1,9 +1,9 @@
 """rust-analyzer's SCIP output: how it runs, and the aliases its index states its own way.
 
-`index` runs `rust-analyzer scip` with the engine pass's binary, toolchain and options (`RustEngine`: all
-features, no build script, no procedural macro, so no project code runs) in a mirror of the project where every
-directory holding a `Cargo.toml` is real: at the root, then in each crate directory holding files the root run
-left out. What a macro generates is not seen.
+`index` runs `rust-analyzer scip` with the release and the Rust toolchain Daodan pins (`engine_tools`) and its
+options (`CONFIG`: all features, no build script, no procedural macro, so no project code runs) in a mirror of
+the project where every directory holding a `Cargo.toml` is real: at the root, then in each crate directory
+holding files the root run left out. What a macro generates is not seen.
 
 `hops` reads `let x = y` (the symbol the index references at the value) and a closure value (the function the
 snapshot declares there). A module several crates include (`mod util;` in each test crate) is written once,
@@ -146,25 +146,31 @@ def structure(record: dict) -> dict:
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str]) -> dict:
     """The rust-analyzer index of `project_dir` for `files` (default: every `.rs` file outside `target`),
     `roots` the folders of its crates and workspaces as the pre-map names them."""
+    import engine_tools
     import resolve_edges as rx
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-    engine = rx.RustEngine(project_dir)
-    engine.target_dir = work_dir / "rust-target"
-    home = engine.home()
+    tool = runtime.Tool(project_dir, "rust-analyzer", rx.RUST_ANALYZER_RELEASE)
+    home = tool.home()
     try:
         runtime.memory("rust-analyzer", MIN_FREE)
-        if not (home / ".installed").is_file():
+        if not tool.installed():
             runtime.room()
         with runtime.fetching(f"rust-analyzer {rx.RUST_ANALYZER_RELEASE} and Rust {rx.RUST_VERSION}",
                               "github.com and static.rust-lang.org"):
-            ready, reason = engine.prepare(home)
-        if not ready:
-            raise runtime.Unavailable(reason, engine.install)
+            toolchain = engine_tools.rust_toolchain()
+            if toolchain is None:
+                raise runtime.Unavailable("no Rust toolchain could be installed", "check the network: Daodan "
+                                          "downloads cargo, rustc and rust-src from static.rust-lang.org")
+            tool._install(home, engine_tools.fetch_rust_analyzer)
     except runtime.Unavailable as error:
         return runtime.refused("rust-analyzer", rx.RUST_ANALYZER_RELEASE, error)
-    launch, overrides = engine.command(home)
+    # Crates the project depends on land in the shared directory, not in the user's cargo home.
+    launch = [str(home / rx.executable_name("rust-analyzer"))]
+    overrides = {"PATH": str(toolchain / "bin") + os.pathsep + os.environ.get("PATH", ""),
+                 "CARGO_HOME": str(engine_tools.shared_cache_dir() / "cargo"),
+                 "CARGO_TARGET_DIR": str(work_dir / "rust-target")}
     # On Windows rust-analyzer leaves a `proc-macro-srv*` directory per load in the temporary folder.
     temp = work_dir / "rust-analyzer-temp"
     temp.mkdir(exist_ok=True)
@@ -183,7 +189,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
 
     runtime.clear(work_dir, "rust-analyzer")
     try:
-        with runtime.mirrored(engine, runtime.real(roots, work_dir)) as mirror:
+        with runtime.mirrored(tool, runtime.real(roots, work_dir)) as mirror:
             runs = code_graph.module_runs("rust-analyzer", roots, command, files, mirror, work_dir, env,
                                           fallback=lambda prefix, output: command(prefix, output)[:-2])
     finally:

@@ -121,6 +121,7 @@ def structure(record: dict) -> dict:
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str]) -> dict:
     """The scip-go index of `project_dir` for `files` (default: every `.go` file), `roots` the folders of its
     modules as the pre-map names them; see the module's docstring."""
+    import engine_tools
     import resolve_edges as rx
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
@@ -132,7 +133,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
         if not tool.installed() or not (goroot / "bin" / rx.executable_name("go")).is_file():
             runtime.room()
         with runtime.fetching(f"Go {rx.GO_VERSION} and scip-go {VERSION}", "go.dev and proxy.golang.org"):
-            env = {**os.environ, **rx.GoEngine(project_dir).go_environment()}
+            env = {**os.environ, **engine_tools.go_environment()}
             go = str(Path(env["GOROOT"]) / "bin" / rx.executable_name("go"))
             tool._install(tool.home(), lambda partial: _build(go, env, partial, work_dir))
     except runtime.Unavailable as error:

@@ -1,5 +1,5 @@
 """Vue and Svelte: no SCIP indexer reads their templates, so their calls are asked of typescript-language-server
-at each call position (`resolve_edges.resolve_edges`), one virtual `.ts` or `.js` document per component.
+at each call position (`position_stage.resolve_edges`), one virtual `.ts` or `.js` document per component.
 
 The adapter declares itself like the indexers (`indexers.analyzers`); `engine` in place of `index` makes its stage
 the position stage. The stage runs under uv with multilspy, which pins the server release (`REQUIREMENTS`).
@@ -10,14 +10,13 @@ import shutil
 import subprocess
 from pathlib import Path, PurePosixPath
 
-# Declared before the engine's own imports: the pass reads them while it is still being built (`ENGINES`).
+from engine_tools import npm_key, npm_modules, package_directories
+from language_servers import ENGINE_THREADS, SERVER_MEMORY_MB, MirroredEngine, _multilspy_pins
+
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "typescript", ("vue", "svelte"), frozenset(), False
 MIN_FREE = 2 * 2**30  # one language server at a time, with this much memory free
 REQUIREMENTS, IMPORT = ("multilspy==0.1.1",), "multilspy"
 INSTALL = "install uv, which gives the pass multilspy and its pinned typescript-language-server"
-
-from resolve_edges import (ENGINE_THREADS, SERVER_MEMORY_MB, MirroredEngine, _multilspy_pins,  # noqa: E402
-                           npm_key, npm_modules, package_directories)
 
 
 def engine(project_dir: Path) -> "TypeScriptEngine":

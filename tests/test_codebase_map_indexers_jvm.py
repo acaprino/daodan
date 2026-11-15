@@ -37,6 +37,7 @@ for path in (str(SCRIPTS), str(HERE)):
 
 import container  # noqa: E402
 import resolve_edges  # noqa: E402
+import engine_tools  # noqa: E402
 import test_codebase_map_code_graph as graph_tests  # noqa: E402
 from indexers import java, jvm, kotlin  # noqa: E402
 from test_codebase_map_container import FAKE_CLI, tree_digest  # noqa: E402
@@ -144,7 +145,8 @@ class FakeEngineTest(unittest.TestCase):
                         mock.patch.object(jvm, "MAVEN", ("0.test", digest(MAVEN_ZIP))),
                         mock.patch.object(jvm, "GRADLE", ("0.test", digest(GRADLE_ZIP))),
                         mock.patch.object(resolve_edges, "open_url", self.open_url),
-                        mock.patch("resolve_edges.time.sleep")):
+                        mock.patch.object(engine_tools, "open_url", self.open_url),
+                        mock.patch("time.sleep")):
             patcher.start()
             self.addCleanup(patcher.stop)
 
@@ -595,7 +597,7 @@ class RealContainerSmokeTest(unittest.TestCase):
             asked.append(url)
             return real_open(url, timeout)
 
-        with mock.patch.object(resolve_edges, "open_url", spy):
+        with mock.patch.object(resolve_edges, "open_url", spy), mock.patch.object(engine_tools, "open_url", spy):
             result = kotlin.index(project, scratch / "work", roots={""}, engine=engine, memory=MEMORY["kotlin"])
         print(json.dumps({"state": result.get("state"), "reason": result.get("reason"), "asked": asked}, indent=1))
         self.assertEqual(result["state"], "unavailable")

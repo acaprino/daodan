@@ -14,7 +14,7 @@ See docs/specs/2026-11-15-pipeline-di-analisi.md.
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parents[1]
@@ -28,7 +28,6 @@ from pipeline import events  # noqa: E402
 class Context:
     manifest: Path
     bus: events.Bus
-    environments: list = field(default_factory=list)
     report_path: Path | None = None  # the analysis's report, beside the snapshot by default
 
 
@@ -65,7 +64,7 @@ class Analyze:
         import resolve_edges
         report = resolve_edges.run_pass(context.manifest,
                                         context.report_path or context.manifest.with_name(resolve_edges.REPORT_NAME),
-                                        context.environments, bus=context.bus)
+                                        bus=context.bus)
         return report
 
 
@@ -97,7 +96,7 @@ class StepFailed(Exception):
         self.cause, self.remedy = cause, remedy
 
 
-def run(manifest: Path, listeners=(), environments=None, *, start: str | None = None, stop: str | None = None,
+def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | None = None,
         report_path: Path | None = None) -> dict:
     """The steps in order on the snapshot `manifest`, from `start` through `stop` (default: all), with
     `listeners` on the bus and the journal beside it; each step's result by its name. A step that fails says
@@ -106,7 +105,7 @@ def run(manifest: Path, listeners=(), environments=None, *, start: str | None = 
     bus = events.Bus(manifest.with_name(events.JOURNAL))
     for listener in listeners:
         bus.subscribe(listener)
-    context = Context(manifest, bus, list(environments or []), report_path)
+    context = Context(manifest, bus, report_path)
     names = [step.NAME for step in STEPS]
     chosen = STEPS[names.index(start) if start else 0:names.index(stop) + 1 if stop else len(STEPS)]
     results = {}

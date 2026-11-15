@@ -38,10 +38,10 @@ class MapServiceTests(unittest.TestCase):
         return self.service.create_run("src", "example", **options)
 
     def test_run_creation_starts_the_engine_pass_and_status_reports_it(self):
-        import resolve_edges
+        import engine_pass
         child = mock.Mock(pid=os.getpid())
-        with mock.patch.object(resolve_edges, "engine_command", return_value=["engine"]), \
-                mock.patch.object(resolve_edges, "_spawn_detached", return_value=child):
+        with mock.patch.object(engine_pass, "engine_command", return_value=["engine"]), \
+                mock.patch.object(engine_pass, "_spawn_detached", return_value=child):
             created = self.create(engine=True)
         self.assertEqual(created["engine"]["state"], "running")
         self.assertIn("coverage", created["engine"])
@@ -50,26 +50,26 @@ class MapServiceTests(unittest.TestCase):
         self.assertEqual(self.service.status("example")["engine"]["state"], "running")
 
     def test_stopping_a_run_ends_its_engine_pass_and_keeps_it_stopped(self):
-        import resolve_edges
+        import engine_pass
         child = mock.Mock(pid=4242)
-        with mock.patch.object(resolve_edges, "engine_command", return_value=["engine"]), \
-                mock.patch.object(resolve_edges, "_spawn_detached", return_value=child), \
-                mock.patch.object(resolve_edges, "_process_alive", return_value=True):
+        with mock.patch.object(engine_pass, "engine_command", return_value=["engine"]), \
+                mock.patch.object(engine_pass, "_spawn_detached", return_value=child), \
+                mock.patch.object(engine_pass, "_process_alive", return_value=True):
             self.create(engine=True)
-            with mock.patch.object(resolve_edges, "_terminate_tree") as terminate:
+            with mock.patch.object(engine_pass, "_terminate_tree") as terminate:
                 stopped = self.service.stop("example", "owner stopped the run")
             terminate.assert_called_once_with(4242)
         self.assertEqual(stopped["engine"]["state"], "stopped")
         events = [item["event"] for item in self.service.events("example")["events"]]
         self.assertIn("engine_stopped", events)
-        with mock.patch.object(resolve_edges, "_spawn_detached") as spawn:
+        with mock.patch.object(engine_pass, "_spawn_detached") as spawn:
             repaired = self.service.index("example")
         spawn.assert_not_called()
         self.assertEqual((repaired["engine"]["state"], repaired["engine"]["action"]), ("stopped", "none"))
 
     def test_a_missing_engine_is_an_event_and_a_state_never_a_failed_run(self):
-        import resolve_edges
-        with mock.patch.object(resolve_edges, "stage_command", return_value=None),                 mock.patch.object(resolve_edges, "_spawn_detached") as spawn:
+        import engine_pass
+        with mock.patch.object(engine_pass, "stage_command", return_value=None),                 mock.patch.object(engine_pass, "_spawn_detached") as spawn:
             created = self.create(engine=True)
         spawn.assert_not_called()
         self.assertEqual(created["engine"]["state"], "unavailable")

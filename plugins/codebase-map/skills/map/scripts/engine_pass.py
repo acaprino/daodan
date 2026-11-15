@@ -1,0 +1,597 @@
+"""The derived pass: its analyzers, built from the adapters' declarations (`ENGINES`), its plan, one
+stage after another in its own process (`run_pass`), an indexer's stage (`index_stage`), and the pass's state and
+lifecycle beside the snapshot (`edge_state`, `ensure_edges`, `reset_pass`, `stop_pass`).
+
+`ENGINES` is built last: an adapter imports `resolve_edges` back, which takes this module's other names."""
+from __future__ import annotations
+
+import importlib.util
+import json
+import os
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+from datetime import datetime, timezone
+from importlib import metadata
+from pathlib import Path
+from typing import NamedTuple
+
+from snapshot_store import logical_digest, open_snapshot
+from engine_tools import free_memory, node_environment
+from edge_store import default_edge_store, read_edge_store
+from position_stage import MEMORY_EXHAUSTED, snapshot_languages
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+
+# Files the derived pass leaves beside the edge store.
+REPORT_NAME = "engine-report.json"
+
+
+RUNNING_NAME = "engine-pass.running"
+
+
+LOG_NAME = "engine-pass.log"
+
+
+def pass_languages(connection) -> list[str]:
+    """The languages the pass serves: the snapshot's parsed ones, and those of an analyzer whose graph is built from
+    files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph) when the snapshot holds one, parsed or not."""
+    import indexers
+    present = set(snapshot_languages(connection))
+    held = {row[0] for row in connection.execute("SELECT DISTINCT language FROM sem_coverage")}
+    for analyzer in indexers.analyzers():
+        if held & set(getattr(analyzer, "SNAPSHOT_LANGUAGES", ())):
+            present.update(analyzer.LANGUAGES)
+    return sorted(present)
+
+
+def _process_alive(pid: int) -> bool:
+    if type(pid) is not int or pid <= 0:
+        return False
+    if os.name == "nt":
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
+                return False
+            return code.value == 259  # STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def pass_state(manifest: Path) -> dict | None:
+    """The pass in flight or the last one finished beside the manifest, without opening it.
+
+    `running` while the recorded process lives; `finished` after a pass that
+    reported, with its per-language outcomes; `stopped` after `stop_pass`;
+    `failed` when it ended without a report. None when no pass ever started.
+    """
+    manifest = Path(manifest)
+    running = manifest.with_name(RUNNING_NAME)
+    report = manifest.with_name(REPORT_NAME)
+    if running.is_file():
+        try:
+            marker = json.loads(running.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            marker = {}
+        if _process_alive(marker.get("pid")):
+            return {"state": "running", "pid": marker.get("pid"), "started_at": marker.get("started_at")}
+    if report.is_file():
+        try:
+            last = json.loads(report.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            last = {}
+        if last.get("stopped"):
+            return {"state": "stopped", "reason": last.get("reason")}
+        return {"state": "finished", "languages": last.get("languages") or {}}
+    if running.is_file():
+        return {"state": "failed", "reason": "the engine pass ended without a report; see " + LOG_NAME}
+    return None
+
+
+STATE_ORDER = ("missing", "failed", "fresh", "unavailable")
+
+
+def edge_state(manifest: Path) -> dict:
+    """Report the derived edge store and its pass without touching either.
+
+    `languages` holds one state per snapshot language an engine covers: `fresh`
+    from the store, with its `coverage`; `unavailable` or `failed` from the last
+    pass; `running` while a pass may still reach it; `missing` otherwise, also when
+    the store's entry came from a former source. The overall state is `running`,
+    `stopped` or `stale` (store bound to another revision) when one applies, else
+    the first of missing, failed, fresh and unavailable that a language holds.
+    Every state carries `coverage`, each store entry's by language.
+    """
+    manifest = Path(manifest)
+    store_path = default_edge_store(manifest)
+    base = {"edges_store": store_path.as_posix()}
+    with open_snapshot(manifest) as store:
+        if store.format != "sqlite" or store.connection is None:
+            return {**base, "state": "unavailable", "format": store.format,
+                    "reason": "a JSON manifest holds no reference table"}
+        binding, stale = None, None
+        if store_path.is_file():
+            _edges, loaded, reason = read_edge_store(store_path, store)
+            binding, stale = (loaded, None) if reason is None else (None, reason)
+        last = pass_state(manifest) or {}
+        running = last.get("state") == "running"
+        entries = (binding or {}).get("languages") or {}
+        outcomes = last.get("languages") or {}
+        languages = {}
+        for language in pass_languages(store.connection):
+            if language not in ENGINE_LANGUAGES:
+                continue
+            if language in entries and from_source(language, entries[language]):
+                entry = entries[language]
+                state, outcome = entry["state"], outcomes.get(language) or {}
+                if state == "partial":
+                    # A pass publishes as it goes: running, then what its stage ended as.
+                    state = "running" if running else \
+                        outcome["state"] if outcome.get("state") in ("failed", "unavailable") else "failed"
+                languages[language] = {"state": state, "engine": entry["engine"], "coverage": entry.get("coverage")}
+                if state in ("failed", "unavailable"):
+                    languages[language]["reason"] = outcome.get("reason") or (
+                        "the pass ended before this language's stage finished; the next pass resumes from what it "
+                        "proved")
+            elif language in outcomes and not running and outcomes[language]["state"] != "fresh":
+                # Only the store proves edges; a report can only say why there are none.
+                languages[language] = dict(outcomes[language])
+            elif last.get("state") == "failed":
+                languages[language] = {"state": "failed", "reason": last.get("reason")}
+            else:
+                languages[language] = {"state": "running" if running else "missing"}
+        if running:
+            result = {**base, "state": "running", "pid": last.get("pid"), "started_at": last.get("started_at")}
+        elif last.get("state") == "stopped":
+            result = {**base, "state": "stopped", "reason": last.get("reason")}
+        elif stale is not None:
+            result = {**base, "state": "stale", "reason": stale}
+        else:
+            states = {value["state"] for value in languages.values()}
+            state = next((name for name in STATE_ORDER if name in states), "fresh")
+            result = {**base, "state": state}
+            first = next((value for value in languages.values() if value["state"] == state), {})
+            for key in ("reason", "install"):
+                if first.get(key):
+                    result[key] = first[key]
+            if state == "missing" and "reason" not in result:
+                result["reason"] = "no engine pass has run for this snapshot"
+        if binding is not None:
+            result.update(engine=binding.get("engine"), created_at=binding.get("created_at"))
+        result["languages"] = languages
+        result["coverage"] = {language: entry["coverage"] for language, entry in entries.items()
+                              if entry.get("coverage")}
+        return result
+
+
+INDEXER_INSTALL = "install uv, which runs the pass with the snapshot's parser"
+
+
+class EngineSpec(NamedTuple):
+    """One analyzer of the derived pass: its languages and what its stage environment needs.
+
+    The entry names its adapter module under `indexers/` (`indexer`): its stage runs that indexer and builds
+    the graph of its languages (`index_stage`), or, for an adapter that declares `engine`, asks that engine
+    at each call position (`resolve_edges`). One that `needs_container` builds the project, which happens
+    only in a container: the stage finds the container engine before the indexer starts. A stage needs the
+    snapshot's parser, plus the adapter's `REQUIREMENTS` when it declares them (`IMPORT` is the module that
+    shows they are there, `INSTALL` what to do without them).
+    """
+
+    name: str
+    languages: tuple[str, ...]
+    requirements: tuple[str, ...]
+    module: str
+    install: str
+    indexer: str = ""
+    needs_container: bool = False
+
+    @property
+    def min_free(self) -> int:
+        """The free memory the stage starts with: its adapter's `MIN_FREE`."""
+        return importlib.import_module(f"indexers.{self.indexer}").MIN_FREE
+
+
+def from_source(language: str, entry: dict) -> bool:
+    """Whether a store entry came from the entry that serves `language` now: a stage names its entry
+    (`scip-go@v0.2.9`). An entry from a former source is not fresh, so the next pass replaces it."""
+    spec = ENGINE_LANGUAGES.get(language)
+    return spec is not None and str(entry.get("engine") or "").split("@", 1)[0] == spec.name
+
+
+def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, *, offline: bool = False) -> list[str] | None:
+    """The command that runs one engine's stage with the snapshot's parser set.
+
+    uv gives the stage an environment with the engine's requirements plus this
+    interpreter's Python minor and exact parser packages, so the stage reproduces
+    the parser fingerprint of the snapshot whichever environment wrote it, and the
+    environment lives exactly as long as the stage. `offline` keeps uv from the
+    network, for an environment already in its cache. Without uv, this interpreter
+    runs the stage when it can import the engine. None when neither can.
+    """
+    import snapshot
+    script = [str(SCRIPT_DIR / "resolve_edges.py"), str(manifest), "--engine", spec.name, "--compact",
+              "--report-out", str(report_path)]
+    uv = shutil.which("uv")
+    if uv:
+        pins = []
+        for package in snapshot.PARSER_PACKAGES:
+            try:
+                pins.extend(["--with", f"{package}=={metadata.version(package)}"])
+            except metadata.PackageNotFoundError:
+                continue
+        requirements = [item for requirement in spec.requirements for item in ("--with", requirement)]
+        return [uv, "run", "--quiet", "--no-config", "--no-project", *(["--offline"] if offline else []),
+                "--python", f"{sys.version_info[0]}.{sys.version_info[1]}",
+                *requirements, *pins, "python", "-B", "-X", "faulthandler", *script]
+    if importlib.util.find_spec(spec.module) is not None:
+        # faulthandler puts a hard crash's traceback in the pass log.
+        return [sys.executable, "-B", "-X", "faulthandler", *script]
+    return None
+
+
+def cached_offline(spec: EngineSpec, manifest: Path, report_path: Path) -> bool:
+    """Whether the stage's environment is already in uv's cache, so the stage runs with no network at all.
+
+    Only the first stage of an engine on a machine reaches the package index.
+    """
+    command = stage_command(spec, manifest, report_path, offline=True)
+    if not command or "--offline" not in command:
+        return False
+    head = command[:command.index("python") + 1]
+    try:
+        return subprocess.run([*head, "-c", f"import {spec.module}"], stdin=subprocess.DEVNULL,
+                              capture_output=True, timeout=120).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def engine_command(manifest: Path, report_path: Path) -> list[str]:
+    """The detached pass: this interpreter runs one stage per engine, one after another."""
+    return [sys.executable, "-B", "-X", "faulthandler", str(SCRIPT_DIR / "resolve_edges.py"), str(manifest),
+            "--pass", "--report-out", str(report_path)]
+
+
+def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict, str]:
+    """The engines whose languages the snapshot holds, with the entries already fresh."""
+    manifest = Path(manifest)
+    with open_snapshot(manifest) as store:
+        present = pass_languages(store.connection)
+        digest = logical_digest(store)
+        fresh = {}
+        if default_edge_store(manifest).is_file():
+            _edges, binding, reason = read_edge_store(default_edge_store(manifest), store)
+            if reason is None:
+                fresh = {language: entry for language, entry in (binding.get("languages") or {}).items()
+                         if entry.get("state") == "fresh" and from_source(language, entry)}
+    plan = [(spec, [language for language in spec.languages
+                    if language in present and ENGINE_LANGUAGES.get(language) is spec]) for spec in ENGINES]
+    return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
+
+
+def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
+    """Run each engine's stage in turn and record per language what came of it.
+
+    A language already fresh in the store is not asked again. Before a stage the
+    free memory is checked; after a stage that ran out of memory no other starts.
+    The report is rewritten after every stage, so the state shows progress, and
+    each analyzer says on `bus` (`pipeline.events`) when it starts and how it ends.
+    """
+    from pipeline import events
+    manifest = Path(manifest).resolve()
+    bus = bus or events.Bus(manifest.with_name(events.JOURNAL))
+    plan, fresh, digest = pass_plan(manifest)
+    report = {"pass": True, "manifest_digest": digest, "languages": {}, "engines": {},
+              "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    outcomes = report["languages"]
+    exhausted = None
+    for number, (spec, wanted) in enumerate(plan, 1):
+        bus.progress("analyze", number - 1, len(plan), analyzer=spec.name, message=f"{spec.name}: {', '.join(wanted)}")
+        if all(language in fresh for language in wanted):
+            outcomes.update({language: {"state": "fresh", "engine": fresh[language]["engine"]} for language in wanted})
+            bus.emit("analyzer.finished", f"{spec.name}: already fresh", step="analyze", analyzer=spec.name,
+                     languages=wanted, fresh=True)
+            continue
+        bus.emit("analyzer.started", f"{spec.name} for {', '.join(wanted)}", step="analyze", analyzer=spec.name,
+                 languages=wanted)
+        free = free_memory()
+        if exhausted:
+            reason, state, install = f"not started: {exhausted}", "failed", None
+        elif free is not None and free < spec.min_free:
+            reason, state, install = (f"{free / 2**30:.1f} GB of memory free; {spec.name} starts with at least "
+                                      f"{spec.min_free / 2**30:.1f} GB"), "failed", None
+        else:
+            state, reason, install, stage = _launch(spec, wanted, manifest)
+            if stage is not None:
+                report["engines"][spec.name] = compact_report(stage)
+                if stage.get("memory_exhausted"):
+                    exhausted = f"the {spec.name} engine ran out of memory"
+            if state is None:
+                for language in wanted:
+                    entry = (stage.get("languages") or {}).get(language) or {}
+                    outcomes[language] = {"state": entry.get("state", "fresh"), "engine": stage.get("engine")}
+                _write_report(report_path, report)
+                bus.emit("analyzer.finished", f"{stage.get('engine')}: {', '.join(wanted)}", step="analyze",
+                         analyzer=spec.name, languages=wanted, engine=stage.get("engine"))
+                continue
+        _not_fresh(bus, spec, wanted, outcomes, state, reason, install)
+        _write_report(report_path, report)
+    report["available"] = any(outcome["state"] == "fresh" for outcome in outcomes.values())
+    report["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    bus.progress("analyze", len(plan), len(plan))
+    _write_report(report_path, report)
+    return report
+
+
+def _launch(spec: EngineSpec, wanted: list[str], manifest: Path) -> tuple[str | None, str | None, str | None,
+                                                                       dict | None]:
+    """One stage in its own process: its state (None once it succeeded), reason, install and report."""
+    stage_report = manifest.with_name(f".engine-stage-{spec.name}.json")
+    stage_report.unlink(missing_ok=True)
+    command = stage_command(spec, manifest, stage_report, offline=cached_offline(spec, manifest, stage_report))
+    if command is None:
+        return "unavailable", f"neither uv nor {spec.module} is available to {sys.executable}", spec.install, None
+    print(f"engine pass: {spec.name} for {', '.join(wanted)}", flush=True)
+    completed = subprocess.run(command, stdin=subprocess.DEVNULL, cwd=str(SCRIPT_DIR),
+                               env={**os.environ, **node_environment()})
+    try:
+        stage = json.loads(stage_report.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        stage = None
+    stage_report.unlink(missing_ok=True)
+    if stage is None:
+        return "failed", (f"the {spec.name} stage exited with code {completed.returncode} without a report; "
+                          f"see {LOG_NAME}"), None, {"memory_exhausted": bool(MEMORY_EXHAUSTED.search(
+                              _log_tail(manifest)))}
+    if stage.get("available"):
+        return None, None, None, stage
+    install = stage.get("install")
+    return ("unavailable" if install else "failed"), stage.get("reason"), install, stage
+
+
+def _not_fresh(bus, spec: EngineSpec, wanted: list[str], outcomes: dict, state: str, reason, install) -> None:
+    """A stage that is unavailable here or failed: its event and its languages' outcomes."""
+    if state == "unavailable":
+        bus.emit("analyzer.unavailable", f"{spec.name} cannot run here", step="analyze", analyzer=spec.name,
+                 level="warning", cause=reason, remedy=install, languages=wanted)
+    else:
+        bus.emit("analyzer.finished", f"{spec.name} failed", step="analyze", analyzer=spec.name, level="error",
+                 cause=reason, remedy=f"see {LOG_NAME} beside the snapshot", languages=wanted)
+    for language in wanted:
+        outcomes[language] = {key: value for key, value in
+                              (("state", state), ("engine", spec.name), ("reason", reason), ("install", install))
+                              if value is not None}
+
+
+def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path | None = None) -> dict:
+    """An indexer's stage: its index of the project, the graph of each of its languages the snapshot holds,
+    saved in the store beside the other languages' entries (`code_graph.write_store`).
+
+    The indexer works in a directory removed after the stage. One that `needs_container` gets its engine here:
+    without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
+    `engine` (the resolver: the entry's name, `@`, the indexer's version), `indexer` and `languages`; without
+    an index, the indexer's `reason` and, when it is `unavailable`, its `install`.
+
+    An analyzer that `READS` files by suffix is handed the snapshot's (`files`); one whose outcome is a `graph` of
+    its own, no index (`indexers/css.py`), gives the store's rows itself (`rows`).
+    """
+    import code_graph
+    import premap
+    module = importlib.import_module(f"indexers.{spec.indexer}")
+    # The pre-map first: an indexer takes the project's structure from it and looks for no manifest itself.
+    options = module.structure(premap.ensure(Path(manifest))) if hasattr(module, "structure") else {}
+    if hasattr(module, "READS"):
+        with code_graph.Snapshot(manifest) as snap:
+            options["files"] = sorted(rel for rel in snap.checkout.values() if Path(rel).suffix.lower() in module.READS)
+    if spec.needs_container:
+        import container
+        try:
+            options["engine"] = container.find_engine()
+        except container.Gap as gap:
+            return {"available": False, "engine": spec.name,
+                    "reason": f"the build runs only in a container: {gap.cause}", "install": gap.remedy}
+    work = Path(tempfile.mkdtemp(prefix=f"daodan-{spec.name}-"))
+    try:
+        result = module.index(Path(project_root), work, **options)
+        indexer = result.get("indexer") or {}
+        # The entry names the source: rust-analyzer is also an engine, and scip-java indexes Kotlin too.
+        resolver = f"{spec.name}@{indexer.get('version')}"
+        if result.get("state"):
+            return {"available": False, "engine": resolver, "indexer": indexer, "reason": result.get("reason"),
+                    **({"install": result.get("install")} if result["state"] == "unavailable" else {})}
+        built, rows = {}, {}
+        try:
+            with code_graph.Snapshot(manifest) as snap:
+                if result.get("graph"):
+                    rows[result["graph"]["language"]] = (*module.rows(result["graph"], resolver), indexer)
+                else:
+                    index = code_graph.Index(snap.root)
+                    for path, prefix in result["indexes"]:
+                        index.load(Path(path), prefix)
+                    hops, traversal, _prepared = code_graph.adapter_traversal(module, index, snap)
+                    static = module.static(index) if hasattr(module, "static") else None
+                    # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
+                    extra = (module.tasks(result.get("configs")),) if hasattr(module, "tasks") else ()
+                    refine = (lambda read, graph: module.refine(read, graph, *extra)) if hasattr(module, "refine") \
+                        else None
+                    for language in spec.languages:
+                        rels = sorted(snap.checkout[rel] for rel in snap.inventory
+                                      if snap.languages.get(rel) == language and rel in snap.checkout)
+                        if not rels:
+                            continue
+                        absent = [rel for rel in rels if rel not in index.documents]
+                        reasons = module.missing(index, absent, *extra) if hasattr(module, "missing") and absent \
+                            else {}
+                        built[language] = code_graph.build(index, snap, language, hops, indexer, reasons, traversal,
+                                                           static, refine=refine)
+                code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver, rows)
+        except ValueError as error:  # a changed source, or a store that would break sites = answered + holes
+            return {"available": False, "engine": resolver, "indexer": indexer, "reason": str(error)}
+        return {"available": True, "engine": resolver, "indexer": indexer,
+                "languages": {language: {"state": "fresh"} for language in {**built, **rows}}}
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def _log_tail(manifest: Path, size: int = 65536) -> str:
+    try:
+        with manifest.with_name(LOG_NAME).open("rb") as log:
+            log.seek(0, os.SEEK_END)
+            log.seek(max(log.tell() - size, 0))
+            return log.read().decode("utf-8", errors="replace")
+    except OSError:
+        return ""
+
+
+def _spawn_detached(command: list[str], log) -> subprocess.Popen:
+    options = {"stdin": subprocess.DEVNULL, "stdout": log, "stderr": log, "cwd": str(SCRIPT_DIR),
+               "close_fds": True}
+    if os.name != "nt":
+        return subprocess.Popen(command, start_new_session=True, **options)
+    detached = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    try:
+        # Outlive a host that closes its job object when the calling command ends.
+        return subprocess.Popen(command, creationflags=detached | 0x01000000, **options)
+    except OSError:
+        # The job forbids breaking away: the pass lives as long as the host.
+        return subprocess.Popen(command, creationflags=detached, **options)
+
+
+def _terminate_tree(pid: int) -> None:
+    """End the pass and the interpreter it started, which a plain kill would orphan."""
+    if os.name == "nt":
+        result = subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True, text=True)
+        if result.returncode and _process_alive(pid):
+            raise OSError(result.stderr.strip() or result.stdout.strip())
+        return
+    os.killpg(pid, signal.SIGTERM)
+
+
+def _write_report(path: Path, report: dict) -> None:
+    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
+    """Start the pass unless `check`, when some engine language is neither fresh nor settled.
+
+    The pass is a detached child (`engine_command`) that runs one stage per engine
+    and leaves the store, its report and a log beside the manifest, so a run is
+    usable at once and its graph gains each language's edges as its stage lands.
+    `fresh`, `running`, `stopped` and `unavailable` start nothing: only a new
+    snapshot reopens them. When no stage could start, the report says so and no
+    process is spawned. Returns the state plus `action`: `none`, `reported` or `started`.
+    """
+    manifest = Path(manifest).resolve()
+    before = edge_state(manifest)
+    if before["state"] in ("fresh", "running", "stopped", "unavailable") or before.get("format") == "json":
+        return {**before, "action": "none"}
+    if check:
+        return {**before, "action": "reported"}
+    report_path = manifest.with_name(REPORT_NAME)
+    running_path = manifest.with_name(RUNNING_NAME)
+    for leftover in (report_path, running_path):
+        leftover.unlink(missing_ok=True)
+    plan, fresh, digest = pass_plan(manifest)
+    pending = [(spec, wanted) for spec, wanted in plan if not all(language in fresh for language in wanted)]
+    if pending and all(stage_command(spec, manifest, report_path) is None for spec, _ in pending):
+        outcomes = {language: {"state": "fresh", "engine": entry["engine"]} for language, entry in fresh.items()}
+        for spec, wanted in pending:
+            outcomes.update({language: {"state": "unavailable", "engine": spec.name, "install": spec.install,
+                                        "reason": f"neither uv nor {spec.module} is available to {sys.executable}"}
+                             for language in wanted})
+        _write_report(report_path, {"pass": True, "manifest_digest": digest, "available": False,
+                                    "languages": outcomes, "engines": {}})
+        return {**edge_state(manifest), "action": "none"}
+    with manifest.with_name(LOG_NAME).open("ab") as log:
+        try:
+            child = _spawn_detached(engine_command(manifest, report_path), log)
+        except OSError as error:
+            _write_report(report_path, {"pass": True, "manifest_digest": digest, "available": False,
+                                        "languages": {language: {"state": "failed", "reason":
+                                                                 f"could not start the engine pass: {error}"}
+                                                      for _spec, wanted in pending for language in wanted},
+                                        "engines": {}})
+            return {**edge_state(manifest), "action": "none"}
+    started = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    running_path.write_text(json.dumps({"pid": child.pid, "started_at": started}) + "\n", encoding="utf-8")
+    return {**edge_state(manifest), "action": "started"}
+
+
+def reset_pass(manifest: Path) -> dict | None:
+    """Clear the previous revision's pass before a snapshot replaces its manifest.
+
+    A running pass holds the manifest open, which on Windows refuses the
+    replacement, and its result would describe the old revision anyway. Ends it,
+    removes its marker, report, stage reports and partial store, and returns what it found.
+    """
+    manifest = Path(manifest)
+    last = pass_state(manifest)
+    if last is not None and last["state"] == "running":
+        _terminate_tree(last["pid"])
+    for name in (RUNNING_NAME, REPORT_NAME):
+        manifest.with_name(name).unlink(missing_ok=True)
+    for pattern in (f".{default_edge_store(manifest).name}.*.partial", ".engine-stage-*.json"):
+        for leftover in manifest.parent.glob(pattern):
+            leftover.unlink(missing_ok=True)
+    return last
+
+
+def stop_pass(manifest: Path, reason: str) -> dict:
+    """End a running pass with its stages and servers, and record it as stopped, so no repair restarts it."""
+    manifest = Path(manifest).resolve()
+    last = pass_state(manifest)
+    if last is None or last["state"] != "running":
+        return {"stopped": False, "state": (last or {}).get("state", "missing")}
+    try:
+        _terminate_tree(last["pid"])
+    except OSError as error:
+        return {"stopped": False, "state": "running", "reason": f"could not stop pid {last['pid']}: {error}"}
+    _write_report(manifest.with_name(REPORT_NAME),
+                  {"pass": True, "available": False, "stopped": True, "reason": f"stopped: {reason}"})
+    # The report is the record now; a dying process must not read as running.
+    manifest.with_name(RUNNING_NAME).unlink(missing_ok=True)
+    return {"stopped": True, "state": "stopped", "pid": last["pid"]}
+
+
+def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
+    """Bounded summary for CLI/coordinator callers when the full report is on disk."""
+    summary = {
+        key: report[key]
+        for key in (
+            "engine", "available", "reason", "stage", "install", "project_root", "languages",
+            "population", "population_language", "selected", "asked", "reused", "answer_cache", "stride",
+            "confirmed_edges", "candidates", "no_edges_reason", "position_unverified",
+            "excluded_classes", "coverage", "verdicts", "memory_exhausted",
+            "source_verification", "probe_init_elapsed_ms", "inference_elapsed_ms",
+            "total_elapsed_ms", "latency_mean_ms", "latency_p95_ms", "dry_run",
+            "edges_store", "coverage", "indexer",
+        )
+        if key in report
+    }
+    if report_out is not None:
+        summary["report_out"] = report_out.as_posix()
+    return summary
+
+
+# The analyzers (docs/plans/2026-11-14-grafo-dall-indice.md), each from its adapter's own declaration.
+ENGINES = tuple(EngineSpec(analyzer.ENTRY, tuple(analyzer.LANGUAGES), tuple(getattr(analyzer, "REQUIREMENTS", ())),
+                           getattr(analyzer, "IMPORT", "tree_sitter"), getattr(analyzer, "INSTALL", INDEXER_INSTALL),
+                           analyzer.__name__.rsplit(".", 1)[-1], needs_container=analyzer.NEEDS_CONTAINER)
+                for analyzer in __import__("indexers").analyzers())
+# Each language's engine: the first entry that lists it.
+ENGINE_LANGUAGES = {language: spec for spec in reversed(ENGINES) for language in spec.languages}

@@ -28,6 +28,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import code_graph  # noqa: E402
 import resolve_edges as rx  # noqa: E402
+import engine_tools  # noqa: E402
 from indexers import go, python, runtime, rust, typescript  # noqa: E402
 
 FIXTURES = HERE / "fixtures/code-graph"
@@ -125,6 +126,7 @@ def sandbox(tmp_path, monkeypatch):
     temp = tmp_path / "temp"
     temp.mkdir()
     monkeypatch.setattr(rx, "shared_cache_dir", lambda: cache)
+    monkeypatch.setattr(engine_tools, "shared_cache_dir", lambda: cache)
     monkeypatch.setattr(tempfile, "tempdir", str(temp))
     monkeypatch.setattr(rx, "free_memory", lambda: 64 * GB)
     usage = collections.namedtuple("usage", "total used free")
@@ -133,6 +135,7 @@ def sandbox(tmp_path, monkeypatch):
     fake, web = Fake(), Web()
     monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: fake(*args, **kwargs))
     monkeypatch.setattr(rx, "open_url", lambda url, timeout: web(url, timeout))
+    monkeypatch.setattr(engine_tools, "open_url", lambda url, timeout: web(url, timeout))
     monkeypatch.setattr(python, "RUNS_HERE", True)  # the fakes run on every platform
     return {"root": tmp_path, "cache": cache, "temp": temp, "fake": fake, "web": web, "monkeypatch": monkeypatch}
 

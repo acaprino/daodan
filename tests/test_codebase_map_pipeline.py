@@ -15,6 +15,8 @@ sys.path.insert(0, str(SCRIPTS))
 
 import pipeline  # noqa: E402
 import resolve_edges  # noqa: E402
+import engine_pass  # noqa: E402
+import subprocess  # noqa: E402
 import snapshot  # noqa: E402
 from pipeline import events  # noqa: E402
 
@@ -93,22 +95,22 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
 
     seen = []
     go_spec = next(spec for spec in resolve_edges.ENGINES if spec.name == "scip-go")
-    real = resolve_edges.subprocess.run
+    real = subprocess.run
 
     def stage(command, **options):  # the analyzer's stage in this process, as its own process runs it
         if command[1:2] != ["--engine"]:
             return real(command, **options)
         resolve_edges.main(command)
-        return resolve_edges.subprocess.CompletedProcess(command, 0)
+        return subprocess.CompletedProcess(command, 0)
 
-    with mock.patch.object(resolve_edges, "ENGINES", (go_spec,)), \
-            mock.patch.object(resolve_edges, "ENGINE_LANGUAGES", {"go": go_spec}), \
-            mock.patch.object(resolve_edges, "stage_command", side_effect=lambda spec, manifest, path,
+    with mock.patch.object(engine_pass, "ENGINES", (go_spec,)), \
+            mock.patch.object(engine_pass, "ENGINE_LANGUAGES", {"go": go_spec}), \
+            mock.patch.object(engine_pass, "stage_command", side_effect=lambda spec, manifest, path,
                               offline=False: [str(manifest), "--engine", spec.name, "--report-out", str(path)]), \
-            mock.patch.object(resolve_edges, "cached_offline", return_value=False), \
-            mock.patch.object(resolve_edges.subprocess, "run", side_effect=stage), \
+            mock.patch.object(engine_pass, "cached_offline", return_value=False), \
+            mock.patch.object(subprocess, "run", side_effect=stage), \
             mock.patch.object(go, "index", side_effect=index), \
-            mock.patch.object(resolve_edges, "free_memory", return_value=64 * 2**30):
+            mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30):
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
     assert steps == [("step.started", "scan"), ("step.finished", "scan"), ("step.started", "analyze"),

@@ -43,21 +43,3 @@ def test_the_platform_key_comes_from_the_process_and_starts_no_process(silent_wi
     monkeypatch.setattr(rx.os, "uname", lambda: types.SimpleNamespace(machine=machine), raising=False)
     assert rx._platform() == key
     assert silent_windows == []
-
-
-def test_the_java_runtime_download_names_the_process_platform_and_starts_no_process(silent_windows, tmp_path,
-                                                                                    monkeypatch):
-    asked = []
-
-    def opened(url, *args, **kwargs):
-        asked.append(url)
-        raise OSError("offline")
-
-    monkeypatch.setattr(rx, "shared_cache_dir", lambda: tmp_path / "cache")
-    monkeypatch.setattr(rx.shutil, "which", lambda name: None)
-    monkeypatch.setattr(rx, "open_url", opened)
-    monkeypatch.setattr(rx, "_platform", lambda: "win-arm64")
-    with pytest.raises(OSError):
-        rx.java_runtime()
-    assert len(asked) == 1 and "/ga/windows/aarch64/" in asked[0], asked
-    assert silent_windows == []
