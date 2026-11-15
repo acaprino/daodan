@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- where the shared library lives: projects name it through this property -->
+    <LibDir>$(MSBuildThisFileDirectory)src/Lib/</LibDir>
+  </PropertyGroup>
+</Project>

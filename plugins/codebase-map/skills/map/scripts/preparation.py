@@ -23,6 +23,7 @@ GITHUB = ("github.com", "codeload.github.com", "objects.githubusercontent.com", 
 UV = ("https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-gnu.tar.gz",
       "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224", "uv.tar.gz")
 PATH = ":".join([f"{T}/bin", f"{T}/node/bin", f"{T}/npm/bin", f"{T}/go/bin", f"{T}/rust/bin", f"{T}/cmake/bin",
+                 "/opt/java/openjdk/bin",  # the JDK image's java and jar
                  "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin", "/bin"])
 ENV = {"PATH": PATH, "HOME": f"{STATE}/home", "GOPATH": f"{STATE}/go", "GOCACHE": f"{STATE}/go-build",
        "GOTELEMETRY": "off", "CARGO_HOME": f"{STATE}/cargo", "UV_CACHE_DIR": f"{STATE}/uv",

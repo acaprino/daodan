@@ -115,7 +115,8 @@ def test_a_failed_setup_fails_the_source(tmp_path, no_download):
 def test_every_model_source_of_the_premap_has_a_setup():
     tools = {"go": premap.go, "cargo": premap.cargo, "uv": premap.uv, "tsc": premap.tsc, "npm": premap.npm,
              "renovate": premap.renovate, "daodan-enry": premap.enry, "cmake": premap.cmake, "meson": premap.meson,
-             "bazel": premap.bazel, "make": premap.make}
+             "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
+             "sbt": premap.sbt, "dotnet": premap.dotnet}
     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
     assert set(tools) <= set(container_runner.TOOLS)
 
@@ -130,7 +131,9 @@ CASES = {  # tool -> (corpus fixture, the source), one project each
     "npm": ("js-npm-workspaces", premap.npm), "renovate": ("js-npm-single", premap.renovate),
     "daodan-enry": ("js-vendored-generated", premap.enry), "cmake": ("sys-cmake-targets", premap.cmake),
     "meson": ("sys-meson", premap.meson), "bazel": ("sys-bazel", premap.bazel),
-    "make": ("sys-make-plain", premap.make)}
+    "make": ("sys-make-plain", premap.make), "gradle": ("jvm-gradle-groovy-wrapper", premap.gradle),
+    "maven": ("jvm-maven-multi-bom-profile", premap.maven), "sbt": ("jvm-sbt-two-subprojects", premap.sbt),
+    "dotnet": ("mix-dotnet-central", premap.dotnet)}
 
 
 @pytest.mark.skipif(not SMOKE, reason="set DAODAN_PREMAP_SMOKE=1 to run each source in a real container")
@@ -231,3 +234,19 @@ def test_cargo_runs_on_the_rust_the_project_states_behind_mise():
     assert "install rust@1.80.0" in first["argv"][-1] and first["network"] == "registries"
     [line] = [x for x in preparation.toolchains([{"tool": "rust", "version": "1.80.0"}])["lines"] if " install " in x]
     assert "bin-paths rust@1.80.0" in line and " x rust@1.80.0 -- " in line  # rustup's proxies need mise's env
+
+
+def test_the_jvm_build_tools_run_on_the_jdk_image_with_the_proxy_set_for_java(tmp_path, no_download):
+    import preparation
+    _, manifest = manifest_of(tmp_path, {"pom.xml": "<project/>\n"})
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        for tool in ("maven", "gradle", "sbt"):
+            container_runner.runner(manifest)([command(tool, "registries")])
+        container_runner.runner(manifest)([command("dotnet")])
+    images = [c["image"] for c in calls]
+    assert images[:3] == [premap.maven.IMAGE] * 3 and images[3] == container_runner.IMAGE
+    for call in calls[:3]:  # the JVM ignores HTTPS_PROXY: each command gets it as Java's own settings first
+        wrapped = call["commands"][1]["argv"]
+        assert preparation.JAVA_PROXY in wrapped[2] and wrapped[-2:] == [call["commands"][1]["tool"], "x"]
+    assert calls[3]["commands"][1]["argv"] == ["dotnet", "x"]

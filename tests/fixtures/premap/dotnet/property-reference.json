@@ -1,0 +1,74 @@
+{
+ "versions": {
+  "dotnet": "10.0.404"
+ },
+ "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+ "runs": [
+  {
+   "command": {
+    "tool": "dotnet",
+    "argv": [
+     "dotnet",
+     "msbuild",
+     "App.csproj",
+     "-nologo",
+     "-getProperty:AssemblyName",
+     "-getProperty:OutputType",
+     "-getProperty:TargetFramework",
+     "-getProperty:TargetFrameworks",
+     "-getItem:ProjectReference",
+     "-getItem:Compile"
+    ],
+    "cwd": "src/App",
+    "env": {
+     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+     "DOTNET_NOLOGO": "1",
+     "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+     "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
+     "DOTNET_CLI_HOME": "/tmp/daodan-dotnet",
+     "MSBUILDDISABLENODEREUSE": "1"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n  \"Properties\": {\n    \"AssemblyName\": \"App\",\n    \"OutputType\": \"Exe\",\n    \"TargetFramework\": \"net8.0\",\n    \"TargetFrameworks\": \"\"\n  },\n  \"Items\": {\n    \"ProjectReference\": [\n      {\n        \"Identity\": \"/work/src/Lib/Lib.csproj\",\n        \"Targets\": \"\",\n        \"OutputItemType\": \"\",\n        \"ReferenceSourceTarget\": \"ProjectReference\",\n        \"FullPath\": \"/work/src/Lib/Lib.csproj\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Lib\",\n        \"Extension\": \".csproj\",\n        \"RelativeDir\": \"/work/src/Lib/\",\n        \"Directory\": \"work/src/Lib/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"CreatedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"AccessedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"DefiningProjectFullPath\": \"/work/src/App/App.csproj\",\n        \"DefiningProjectDirectory\": \"/work/src/App/\",\n        \"DefiningProjectName\": \"App\",\n        \"DefiningProjectExtension\": \".csproj\"\n      }\n    ],\n    \"Compile\": [\n      {\n        \"Identity\": \"Program.cs\",\n        \"FullPath\": \"/work/src/App/Program.cs\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Program\",\n        \"Extension\": \".cs\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/App/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"CreatedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"AccessedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"DefiningProjectFullPath\": \"/daodan/state/tools/dotnet/sdk/10.0.404/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.DefaultItems.props\",\n        \"DefiningProjectDirectory\": \"/daodan/state/tools/dotnet/sdk/10.0.404/Sdks/Microsoft.NET.Sdk/targets/\",\n        \"DefiningProjectName\": \"Microsoft.NET.Sdk.DefaultItems\",\n        \"DefiningProjectExtension\": \".props\"\n      }\n    ]\n  }\n}\n",
+    "stderr": "",
+    "root": "/work"
+   }
+  },
+  {
+   "command": {
+    "tool": "dotnet",
+    "argv": [
+     "dotnet",
+     "msbuild",
+     "Lib.csproj",
+     "-nologo",
+     "-getProperty:AssemblyName",
+     "-getProperty:OutputType",
+     "-getProperty:TargetFramework",
+     "-getProperty:TargetFrameworks",
+     "-getItem:ProjectReference",
+     "-getItem:Compile"
+    ],
+    "cwd": "src/Lib",
+    "env": {
+     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+     "DOTNET_NOLOGO": "1",
+     "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1",
+     "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
+     "DOTNET_CLI_HOME": "/tmp/daodan-dotnet",
+     "MSBUILDDISABLENODEREUSE": "1"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\n  \"Properties\": {\n    \"AssemblyName\": \"Lib\",\n    \"OutputType\": \"Library\",\n    \"TargetFramework\": \"net8.0\",\n    \"TargetFrameworks\": \"\"\n  },\n  \"Items\": {\n    \"ProjectReference\": [],\n    \"Compile\": [\n      {\n        \"Identity\": \"Greeter.cs\",\n        \"FullPath\": \"/work/src/Lib/Greeter.cs\",\n        \"RootDir\": \"/\",\n        \"Filename\": \"Greeter\",\n        \"Extension\": \".cs\",\n        \"RelativeDir\": \"\",\n        \"Directory\": \"work/src/Lib/\",\n        \"RecursiveDir\": \"\",\n        \"ModifiedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"CreatedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"AccessedTime\": \"2026-11-15 16:56:44.0000000\",\n        \"DefiningProjectFullPath\": \"/daodan/state/tools/dotnet/sdk/10.0.404/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.Sdk.DefaultItems.props\",\n        \"DefiningProjectDirectory\": \"/daodan/state/tools/dotnet/sdk/10.0.404/Sdks/Microsoft.NET.Sdk/targets/\",\n        \"DefiningProjectName\": \"Microsoft.NET.Sdk.DefaultItems\",\n        \"DefiningProjectExtension\": \".props\"\n      }\n    ]\n  }\n}\n",
+    "stderr": "",
+    "root": "/work"
+   }
+  }
+ ]
+}

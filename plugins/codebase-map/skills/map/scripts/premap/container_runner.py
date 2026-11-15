@@ -20,7 +20,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import preparation  # noqa: E402
-from premap import bazel, cmake, meson  # noqa: E402
+from premap import bazel, cmake, maven, meson, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
@@ -38,6 +38,12 @@ UNPACK = {
 
 def _npm(package: str) -> str:
     return f"npm install -g --prefix {T}/npm --ignore-scripts --no-audit --no-fund --loglevel=error {package}"
+
+
+def _jar(name: str, folder: str, program: str) -> str:
+    """Unpack a zip with the JDK's own `jar` (the JDK image has no unzip) and put its program on the path."""
+    return (f"cd {T} && jar xf {IN}/{name} && chmod 755 {T}/{folder}/bin/{program}"
+            f" && ln -sf {T}/{folder}/bin/{program} {T}/bin/{program}")
 
 
 ENRY = (f"mkdir -p {STATE}/enry && cp {IN}/enry_facts.go {STATE}/enry/main.go && cd {STATE}/enry"
@@ -63,6 +69,19 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                         f" 'PYTHONPATH={T}/meson exec python3 -m mesonbuild.mesonmain \"$@\"' > {T}/bin/meson"
                         f" && chmod 755 {T}/bin/meson", UNPACK["ninja"]]},
     "make": {"files": [], "setup": []},  # the image's GNU Make
+    # the JVM build tools: on the JDK image (`indexers/jvm.py` IMAGE), each command with Java's proxy settings
+    "maven": {"files": [(*maven.DOWNLOAD[0], "maven.zip")], "setup": [_jar("maven.zip", "apache-maven-3.10.0", "mvn")],
+              "image": maven.IMAGE, "java": True},
+    "gradle": {"files": [("https://services.gradle.org/distributions/gradle-9.9.1-bin.zip",
+                          "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228", "gradle.zip")],
+               "setup": [_jar("gradle.zip", "gradle-9.9.1", "gradle")], "image": maven.IMAGE, "java": True,
+               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3},
+    "sbt": {"files": [(*sbt.DOWNLOAD[0], "sbt.tgz")],
+            "setup": [f"tar -xzf {IN}/sbt.tgz -C {T} && ln -sf {T}/sbt/bin/sbt {T}/bin/sbt"], "image": sbt.IMAGE,
+            "java": True, "hosts": ("repo.scala-sbt.org", "scala.jfrog.io"), "memory": 3},
+    "dotnet": {"files": preparation.NEEDS["dotnet"]["files"], "setup": preparation.NEEDS["dotnet"]["setup"],
+               "env": {"DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1",
+                       "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1"}},
     "bazel": {"files": [(*bazel.DOWNLOAD[0], "bazel")],
               "setup": [f"cp {IN}/bazel {T}/bin/bazel && chmod 755 {T}/bin/bazel"],
               "hosts": ("bcr.bazel.build", "github.com", "objects.githubusercontent.com",
@@ -111,9 +130,11 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
             raise ValueError(f"no container setup for the tool {tool}")
         spec = TOOLS[tool]
         first, files, hosts, gaps = plan(tool, commands, toolchains)
-        ran = [first, *({**c, "env": {**ENV, **(c.get("env") or {})}} for c in commands)]
+        ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
+                         **({"argv": ["sh", "-c", f'{preparation.JAVA_PROXY}; exec "$@"', c["tool"], *c["argv"]]}
+                            if spec.get("java") else {})} for c in commands)]
         result = container.run_commands(
-            project, ran, image=IMAGE, out_dir=manifest.parent / "premap-runs" / tool, engine=engine,
+            project, ran, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / tool, engine=engine,
             inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
             registries=container.REGISTRIES + tuple(dict.fromkeys(hosts)),
             memory=int(spec.get("memory", 2) * 2**30), timeout=1800)
