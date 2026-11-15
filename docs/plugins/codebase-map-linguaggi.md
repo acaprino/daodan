@@ -8,7 +8,7 @@ Lo snapshot analizza ogni linguaggio con un parser e risolve le chiamate con il 
 
 | Linguaggio | Estensioni | Parser dello snapshot | Motore di inferenza | Librerie del progetto |
 |---|---|---|---|---|
-| Python | `.py` `.pyi` | `ast` della libreria standard | Jedi | l'ambiente del progetto (`.venv`, `venv`, `VIRTUAL_ENV`) |
+| Python | `.py` `.pyi` | `ast` della libreria standard | indice di scip-python; su Windows in un container | installate da Daodan dai manifest (`pyproject.toml`, `requirements*.txt`, `uv.lock`), solo wheel |
 | TypeScript | `.ts` `.tsx` `.mts` `.cts` | tree-sitter | indice di scip-typescript | installate da Daodan con `npm ci --ignore-scripts` |
 | JavaScript | `.js` `.jsx` `.mjs` `.cjs` | tree-sitter | indice di scip-typescript | come TypeScript |
 | Vue, Svelte | `.vue` `.svelte` | tree-sitter sui blocchi `<script>`, tokenizer sui blocchi `<style>` (CSS, SCSS, Sass, LESS; Stylus nominato nelle note, non letto) | typescript-language-server | come TypeScript |
@@ -27,7 +27,6 @@ Lo snapshot analizza ogni linguaggio con un parser e risolve le chiamate con il 
 
 | Motore | Versione | Rilasciata | Licenza | Come gira | Spazio su disco |
 |---|---|---|---|---|---|
-| Jedi | 0.20.1 | 12 ottobre 2026 | MIT | libreria Python, in un ambiente `uv` dello stage | 15 MB |
 | typescript-language-server | 4.3.3, con TypeScript 5.5.4 | 9 febbraio 2024 (TypeScript 22 luglio 2024) | Apache 2.0 | server LSP su Node.js, versione fissata da multilspy 0.1.1 | 24 MB |
 | Eclipse JDT LS | 1.51.0, dentro vscode-java 1.46.0 con il runtime Java 21.0.8 | 2 ottobre 2025 | EPL 2.0 | server LSP su JVM, heap 1 GB | 167 MB |
 | Kotlin Analysis API, modalità standalone | KSP `symbol-processing-aa` 2.3.13, risolutore compilato con Kotlin 2.4.21 | 30 ottobre 2026 (compilatore 8 ottobre 2026) | Apache 2.0 | processo JVM di Daodan, heap 1,5 GB | 140 MB |
@@ -36,6 +35,7 @@ Lo snapshot analizza ogni linguaggio con un parser e risolve le chiamate con il 
 | scip-go | v0.2.9 | 22 ottobre 2026 | Apache 2.0 | indicizzatore nativo, compilato al primo uso con il Go di Daodan (`go install`, 4 compilatori al massimo), in uno specchio del progetto | — |
 | Go, per scip-go e per leggere i moduli | 1.27.3 | 2026 | BSD 3-clause | solo `go list` e `go mod download`, nessuna build; configurazione e telemetria, spenta, nella cartella condivisa | 264 MB |
 | scip-typescript | 0.5.2 | 22 ottobre 2026 | Apache 2.0 | indicizzatore su Node, installato con `--ignore-scripts`, in uno specchio del progetto | — |
+| scip-python | 0.6.8 | 22 ottobre 2026 | MIT | indicizzatore su Node, installato con `--ignore-scripts`, in uno specchio del progetto; su Windows non parte (`new RegExp(path.sep)`), quindi gira in un container `python:3.13-slim` senza rete, con Docker o Podman | — |
 | Node.js, per gli indicizzatori su npm | 22.23.4 | 20 ottobre 2026 | MIT | scaricato da nodejs.org e verificato con lo `SHASUMS256` della release; npm e Node tengono le cache nella cartella condivisa | — |
 | Coursier, per le librerie JVM | 2.1.24 | 9 gennaio 2025 | Apache 2.0 | risolve le coordinate Maven, non esegue build | 43 MB |
 | multilspy, trasporto LSP | 0.1.1 | 13 ottobre 2026 | MIT | libreria Python nell'ambiente dello stage | 12 MB |

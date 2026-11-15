@@ -349,7 +349,7 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
   - le 94 «solo passo» di phazly hanno tutte una riga: 65 buchi con classe (`no-occurrence` 56, `no-document` 8, `undefined-project-symbol` 1), 29 archi su un valore del progetto;
   - verifica a mano: python-semver 20 siti identici, phazly 15 su 15;
   - indicizzatore: python-semver 9,4 s e 347 MB, phazly 91,0 s e 1.815 MB.
-- [ ] **Cambio** di Python, nel giro guidato dalla pre-mappa (task 12): la pre-mappa dà le unità e lo stage le passa a `index()`. La patch tenuta per il giro contiene la voce di Jedi senza `python` in `ENGINES`, i test adattati (`PassLifecycleTests` e `DistributionTests` tengono Python su Jedi fino al task 8), `test_python_reads_from_its_index_and_a_jedi_entry_is_not_fresh`, il test vero `test_a_python_pass_resolves_a_method_on_a_typed_receiver` (verde su Modal), i documenti, e la regola che trovava i progetti Python (`_python_roots`, con il suo test), che passa alla pre-mappa.
+- [x] **Cambio** di Python (15 novembre 2026): la voce di Jedi non elenca più `python`, la fonte è l'indice di scip-python. Lo stadio prende le esecuzioni dalla pre-mappa (`premap.python_runs`, attraverso `python.structure`): la regola provvisoria `_python_roots` della patch tenuta non è entrata. `PassLifecycleTests` e `DistributionTests` tengono Python su Jedi fino al task 8. Il test vero `test_a_python_pass_resolves_a_method_on_a_typed_receiver` gira nel giro su Modal.
 
 ### Task 6: copertura e stato (dopo la domanda 3)
 

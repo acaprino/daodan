@@ -586,6 +586,12 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual(ref_by_id[_identity]["target_id"], free_id)
 
 
+# The entries with Python on Jedi, as before scip-python, for the tests of the position pass (until task 8).
+POSITION_ENGINES = tuple(spec._replace(languages=("python",)) if spec.name == "jedi" else spec
+                         for spec in resolve_edges.ENGINES if spec.name != "scip-python")
+POSITION_LANGUAGES = {language: spec for spec in reversed(POSITION_ENGINES) for language in spec.languages}
+
+
 class PassLifecycleTests(unittest.TestCase):
     """The engine asked first about project names, its coverage, and the store's lifecycle."""
 
@@ -599,6 +605,9 @@ class PassLifecycleTests(unittest.TestCase):
     }
 
     def setUp(self):
+        # Python reads from scip-python; these tests run the position pass on it, as Jedi did.
+        self.enterContext(mock.patch.object(resolve_edges, "ENGINES", POSITION_ENGINES))
+        self.enterContext(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve() / "proj"
@@ -1136,11 +1145,12 @@ class MultiLanguageTests(unittest.TestCase):
 
     def test_the_pass_runs_one_engine_at_a_time_and_records_each_language(self):
         result, calls = self.run_whole_pass({
-            "jedi": {"available": True, "engine": "jedi@0.20.1", "languages": {"python": {"state": "fresh"}}},
+            "scip-python": {"available": True, "engine": "scip-python@0.6.8",
+                            "languages": {"python": {"state": "fresh"}}},
             "scip-typescript": {"available": False, "reason": "node and npm are needed",
                            "install": "install Node.js 18 or later with npm (https://nodejs.org)"}})
-        self.assertEqual(calls, ["jedi", "scip-typescript"])
-        self.assertEqual(result["languages"]["python"], {"state": "fresh", "engine": "jedi@0.20.1"})
+        self.assertEqual(calls, ["scip-typescript", "scip-python"])
+        self.assertEqual(result["languages"]["python"], {"state": "fresh", "engine": "scip-python@0.6.8"})
         self.assertEqual(result["languages"]["typescript"]["state"], "unavailable")
         self.assertIn("Node.js", result["languages"]["typescript"]["install"])
         state = resolve_edges.edge_state(self.manifest)
@@ -1150,23 +1160,24 @@ class MultiLanguageTests(unittest.TestCase):
 
     def test_an_engine_that_runs_out_of_memory_starts_no_other(self):
         result, calls = self.run_whole_pass({
-            "jedi": {"available": False, "reason": "MemoryError during inference", "memory_exhausted": True},
-            "scip-typescript": {"available": True}})
-        self.assertEqual(calls, ["jedi"])
-        self.assertEqual(result["languages"]["python"]["state"], "failed")
-        self.assertEqual(result["languages"]["typescript"],
-                         {"state": "failed", "engine": "scip-typescript",
-                          "reason": "not started: the jedi engine ran out of memory"})
+            "scip-typescript": {"available": False, "reason": "JavaScript heap out of memory",
+                                "memory_exhausted": True},
+            "scip-python": {"available": True}})
+        self.assertEqual(calls, ["scip-typescript"])
+        self.assertEqual(result["languages"]["typescript"]["state"], "failed")
+        self.assertEqual(result["languages"]["python"],
+                         {"state": "failed", "engine": "scip-python",
+                          "reason": "not started: the scip-typescript engine ran out of memory"})
 
     def test_an_engine_waits_for_free_memory(self):
-        result, calls = self.run_whole_pass({"jedi": None, "scip-typescript": None}, free=2**30)
+        result, calls = self.run_whole_pass({"scip-python": None, "scip-typescript": None}, free=2**30)
         self.assertEqual(calls, [])
         self.assertTrue(all(outcome["state"] == "failed" and "GB of memory free" in outcome["reason"]
                             for outcome in result["languages"].values()), result)
         self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "failed")
 
     def test_a_stage_without_a_report_failed_and_says_where_to_look(self):
-        result, _calls = self.run_whole_pass({"jedi": None, "scip-typescript": {"available": True}})
+        result, _calls = self.run_whole_pass({"scip-python": None, "scip-typescript": {"available": True}})
         self.assertEqual(result["languages"]["python"]["state"], "failed")
         self.assertIn(resolve_edges.LOG_NAME, result["languages"]["python"]["reason"])
 
@@ -1182,6 +1193,9 @@ class DistributionTests(unittest.TestCase):
     }
 
     def setUp(self):
+        # Python reads from scip-python; these tests run the position pass on it, as Jedi did.
+        self.enterContext(mock.patch.object(resolve_edges, "ENGINES", POSITION_ENGINES))
+        self.enterContext(mock.patch.object(resolve_edges, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve() / "proj"
@@ -2454,6 +2468,20 @@ class IndexerStageTests(unittest.TestCase):
         indexer = {"name": "scip-python", "version": "0.6.8", "seconds": 1.0, "peak_mb": None}
         return self.contract("python", indexer, **outcome)
 
+    def test_python_reads_from_its_index_and_a_jedi_entry_is_not_fresh(self):
+        project, manifest = self.project("python")
+        engine = StubEngine({})
+        engine.languages, engine.identity = ("python",), lambda: "jedi@0.20.1"
+        resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)
+        self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["python"]["state"], "missing")
+        result, started, _indexed = self.run_stage(
+            "scip-python", manifest, lambda project_dir, work_dir, files=None, **given: self.python_contract())
+        self.assertEqual(len(started), 1)
+        self.assertEqual(result["languages"]["python"], {"state": "fresh", "engine": "scip-python@0.6.8"})
+        state = resolve_edges.edge_state(manifest)
+        self.assertEqual(state["languages"]["python"]["state"], "fresh")
+        self.assertTrue(state["coverage"]["python"]["answered"].get("project-callable"))
+
     def test_python_without_a_container_engine_where_scip_python_cannot_start_is_unavailable_until_one_answers(self):
         import container
         from indexers import python, runtime
@@ -2541,7 +2569,7 @@ class IndexerStageTests(unittest.TestCase):
 
     def test_each_language_reads_from_its_source(self):
         self.assertEqual({language: spec.name for language, spec in resolve_edges.ENGINE_LANGUAGES.items()},
-                         {"python": "jedi", "typescript": "scip-typescript", "javascript": "scip-typescript",
+                         {"python": "scip-python", "typescript": "scip-typescript", "javascript": "scip-typescript",
                           "vue": "typescript", "svelte": "typescript", "java": "java", "kotlin": "kotlin",
                           "rust": "scip-rust", "go": "scip-go"})
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container)

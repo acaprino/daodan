@@ -3942,7 +3942,7 @@ class EngineSpec(NamedTuple):
 
 
 ENGINES = (
-    EngineSpec("jedi", ("python",), ("jedi>=0.19",), "jedi", ENGINE_INSTALL, {}),
+    EngineSpec("jedi", (), ("jedi>=0.19",), "jedi", ENGINE_INSTALL, {}),
     # multilspy pins jedi-language-server, which would downgrade Jedi: each engine
     # runs in an environment of its own.
     EngineSpec("typescript", ("vue", "svelte"), ("multilspy==0.1.1",), "multilspy",

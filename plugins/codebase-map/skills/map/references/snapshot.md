@@ -143,10 +143,10 @@ Parser notes name the engine or fallback; missing grammars report
 `tree-sitter unavailable: <error>`. For optional offline embedding, read
 `references/embeddings.md` before invoking `embedding_worker.py`.
 The engine pass writes `<run-dir>/snapshot/engine-edges.sqlite`, read by
-`edge_view.py`: one stage per language engine, one at a time (Jedi for Python,
-typescript-language-server for TypeScript, JavaScript, Vue and Svelte,
-Eclipse JDT LS for Java, the Kotlin Analysis API for Kotlin, rust-analyzer for Rust,
-gopls for Go), each
+`edge_view.py`: one stage per language source, one at a time (the index of
+scip-go for Go, rust-analyzer for Rust, scip-typescript for TypeScript and
+JavaScript, scip-python for Python; typescript-language-server for Vue and Svelte,
+Eclipse JDT LS for Java, the Kotlin Analysis API for Kotlin), each
 installed on first use under the shared Daodan directory. Answers whose file,
 imports and target are unchanged come from `engine-answers.sqlite`, beside the
 card store; the store is published at once with them, then every 30 seconds. `resolve_edges.py

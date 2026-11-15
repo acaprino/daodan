@@ -1,7 +1,7 @@
 # Progressive code scope
 
 `scripts/scope_planner.py` selects evidence for an analysis or intervention using
-existing snapshots, verified lexical/Jedi edges and optional local retrieval.
+existing snapshots, verified lexical and engine edges and optional local retrieval.
 It performs machine computation only. It never starts an encoder, calls an LLM,
 refreshes an index, edits project source or closes a process gate. The complete
 checkpoint stays on disk; `context.md` owns recipient packets, tokenization and CLI/MCP.

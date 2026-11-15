@@ -294,6 +294,25 @@ class CodebaseMapWireTests(unittest.TestCase):
         # `Make()` is lexical; `Make().Run()` is the engine's, and `Other.Run` shares its name.
         self.assertGreaterEqual(go["answered"].get("project-callable", 0), 2, go)
 
+    def test_a_python_pass_resolves_a_method_on_a_typed_receiver(self):
+        (self.project / "pkg/app").mkdir(parents=True)
+        (self.project / "pkg/pyproject.toml").write_text('[project]\nname = "demo"\nversion = "0.1.0"\n',
+                                                         encoding="utf-8")
+        (self.project / "pkg/app/__init__.py").write_text("", encoding="utf-8")
+        (self.project / "pkg/app/tool.py").write_text(
+            "class Tool:\n    def run(self) -> int:\n        return 1\n\n\nclass Other:\n"
+            "    def run(self) -> int:\n        return 2\n", encoding="utf-8")
+        (self.project / "pkg/app/use.py").write_text(
+            "from app.tool import Tool\n\n\ndef go(tool: Tool) -> int:\n    return tool.run()\n", encoding="utf-8")
+        self.call("codebase_map_create_run", {"target": "pkg", "run_id": "python-live"})
+        # The first pass on a machine installs Node and scip-python.
+        entry, python = self.pass_state("python-live", "python", 420)
+        self.assertTrue(entry["engine"].startswith("scip-python@"), entry)
+        # `tool.run()` is the index's: the lexical resolver cannot choose between `Tool.run` and `Other.run`.
+        self.assertGreaterEqual(python["answered"].get("project-callable", 0), 1, python)
+        self.assertEqual(python["sites"], sum(python["answered"].values()) + sum(
+            hole["count"] for hole in python["holes"].values()), python)
+
     def test_a_rust_pass_resolves_a_method_on_a_typed_receiver(self):
         (self.project / "crate/src").mkdir(parents=True)
         (self.project / "crate/Cargo.toml").write_text(
