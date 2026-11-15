@@ -222,4 +222,12 @@ def test_every_need_names_the_version_a_failed_install_reports():
     import preparation
     assert all(spec.get("version") for spec in preparation.NEEDS.values())
     lines = preparation.setup(set(preparation.NEEDS))["lines"]
-    assert all("DAODAN-MISSING" in line for line in lines) and "vcpkg@2026-10-29" in lines[0]
+    assert all("DAODAN-MISSING" in line for line in lines) and any("vcpkg@2026-10-29" in line for line in lines)
+
+
+def test_cargo_runs_on_the_rust_the_project_states_behind_mise():
+    import preparation
+    first, *_ = container_runner.plan("cargo", [command("cargo")], [{"tool": "rust", "version": "1.80.0"}])
+    assert "install rust@1.80.0" in first["argv"][-1] and first["network"] == "registries"
+    [line] = [x for x in preparation.toolchains([{"tool": "rust", "version": "1.80.0"}])["lines"] if " install " in x]
+    assert "bin-paths rust@1.80.0" in line and " x rust@1.80.0 -- " in line  # rustup's proxies need mise's env

@@ -22,8 +22,29 @@ IN, T = f"{STATE}/in", f"{STATE}/tools"
 GITHUB = ("github.com", "codeload.github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com")
 UV = ("https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-gnu.tar.gz",
       "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224", "uv.tar.gz")
+PATH = ":".join([f"{T}/bin", f"{T}/node/bin", f"{T}/npm/bin", f"{T}/go/bin", f"{T}/rust/bin", f"{T}/cmake/bin",
+                 "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin", "/bin"])
+ENV = {"PATH": PATH, "HOME": f"{STATE}/home", "GOPATH": f"{STATE}/go", "GOCACHE": f"{STATE}/go-build",
+       "GOTELEMETRY": "off", "CARGO_HOME": f"{STATE}/cargo", "UV_CACHE_DIR": f"{STATE}/uv",
+       "npm_config_cache": f"{STATE}/npm-cache", "npm_config_update_notifier": "false",
+       "VCPKG_ROOT": f"{T}/vcpkg", "VCPKG_DISABLE_METRICS": "1", "VCPKG_BINARY_SOURCES": "clear",
+       "CONAN_HOME": f"{STATE}/conan-home"}  # what every container command of the preparation and after runs with
+NODE = ("https://nodejs.org/dist/v24.22.3/node-v24.22.3-linux-x64.tar.gz",
+        "061ec3e3062115705b56b51fa9cc330ab50d34b6969387d4e4b1a50c6809acc2", "node.tar.gz")  # `renovate.NODE`
+GO = ("https://go.dev/dl/go1.27.3.linux-amd64.tar.gz",
+      "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40", "go.tar.gz")  # `engine_tools.GO_ASSETS`
+RUST = [("https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
+         "2ff05ff9c08a90861e7f6e4065b40a8b87463b4576186fd613871c3e37f2091f", "rustc.tar.xz"),
+        ("https://static.rust-lang.org/dist/2026-10-15/cargo-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
+         "53f3521949404d595efb06a55c12c5658d4ed1c75566f33d3d514eaebe70bd8a", "cargo.tar.xz")]
 UNPACK_UV = f"mkdir -p {T}/uvc {T}/bin && tar -xzf {IN}/uv.tar.gz -C {T}/uvc && ln -sf {T}/uvc/*/uv {T}/bin/uv"
 NEEDS = {
+    "node": {"files": [NODE], "setup": [f"tar -xzf {IN}/node.tar.gz -C {T} && mv {T}/node-v24.22.3-linux-x64 {T}/node"],
+             "version": "24.22.3"},
+    "go": {"files": [GO], "setup": [f"tar -xzf {IN}/go.tar.gz -C {T}"], "version": "1.27.3"},
+    "rust": {"files": RUST, "setup": [f"for c in rustc cargo; do mkdir -p {T}/x && tar -xJf {IN}/$c.tar.xz -C {T}/x"
+                                      f" && cp -R {T}/x/$c-*/$c/. {T}/rust/ && rm -rf {T}/x; done"],
+             "version": "1.99.1"},
     "vcpkg": {  # the tool, Microsoft's build; the registry is cloned at its default branch, blobs on demand
         "files": [("https://github.com/microsoft/vcpkg-tool/releases/download/2026-10-29/vcpkg-glibc",
                    "8b10d43c1392a2d51622b1e439cb952289dcf56cbb595eb935847e79fe00d303", "vcpkg")],
@@ -89,10 +110,13 @@ def toolchains(stated: list[dict]) -> dict:
     if not wanted:
         return {"files": [], "lines": [], "hosts": (), "gaps": gaps}
     mise = f"MISE_DATA_DIR={T}/mise MISE_YES=1 {IN}/mise"
-    lines = [f"chmod 755 {IN}/mise"] + [
-        f"{mise} install {tool}@{version} >&2 || echo 'DAODAN-MISSING {tool}@{version}' >&2" for tool, version in
-        sorted(wanted.items())]
-    lines.append(f"for d in {T}/mise/installs/*/*/bin; do [ -d \"$d\" ] && ln -sf \"$d\"/* {T}/bin/; done; true")
+    lines = [f"chmod 755 {IN}/mise"]
+    for tool, version in sorted(wanted.items()):  # each program behind `mise x`, which sets what it needs (rustup's)
+        wrap = (f"for d in $({mise} bin-paths {tool}@{version}); do for b in \"$d\"/*; do n=${{b##*/}};"
+                f" printf '#!/bin/sh\\nexec env {mise} x {tool}@{version} -- %s \"$@\"\\n' \"$n\" > {T}/bin/$n"
+                f" && chmod 755 {T}/bin/$n; done; done")
+        lines.append(f"{{ {mise} install {tool}@{version} >&2 && {wrap}; }}"
+                     f" || echo 'DAODAN-MISSING {tool}@{version}' >&2")
     hosts = tuple(dict.fromkeys([*MISE_OWN, *(h for tool in sorted(wanted) for h in MISE_HOSTS[tool])]))
     return {"files": [MISE], "lines": lines, "hosts": hosts, "gaps": gaps}
 
@@ -142,6 +166,10 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
             "error": "^error|No solution|not found", "hosts": (),
             "line": f'r=requirements.txt; [ -f $r ] || r=pyproject.toml; uv venv -q --python python3 "{VENVS}/$f"'
                     f' && uv pip install -q --python "{VENVS}/$f" -r "$r"'},
+    "go": {"marks": ("go.mod",), "nested": True, "needs": ["go"], "error": "go: |go.mod:|error", "hosts": (),
+           "line": "go mod download"},  # each module is its own; the toolchain go.mod names comes from its proxy
+    "cargo": {"marks": ("Cargo.toml",), "needs": ["rust"], "error": "^error|^Caused by|^  ", "hosts": (),
+              "line": "if [ -f Cargo.lock ]; then cargo fetch --locked; else cargo fetch; fi"},
 }
 LOG = "/tmp/daodan-restore.log"
 
@@ -156,8 +184,9 @@ def _inside(rel: str, folder: str) -> bool:
 
 def restores(files) -> dict[str, list[str]]:
     """Per manager, the folders where its restore runs: each folder with a mark of its family that no other such
-    folder holds (a Gradle build, a Maven reactor, a Node workspace restore their projects from their root), and
-    each folder with a lockfile of its own; within a family, the folder's lockfile names the manager, and the
+    folder holds (a Gradle build, a Maven reactor, a Node workspace restore their projects from their root), every
+    marked folder of a manager that is `nested` (each Go module is its own), and each folder with a lockfile of its
+    own; within a family, the folder's lockfile names the manager, and the
     manager without `locks` is the default."""
     files = list(files)
     families: dict[str, list[str]] = {}
@@ -172,7 +201,8 @@ def restores(files) -> dict[str, list[str]]:
                   if posixpath.basename(rel) in RESTORES[name].get("locks", ())}
         default = next(name for name in managers if not RESTORES[name].get("locks"))
         for folder in marked:
-            if folder in locked or not any(o != folder and _inside(folder, o) for o in marked):
+            nested = any(RESTORES[name].get("nested") for name in managers)
+            if nested or folder in locked or not any(o != folder and _inside(folder, o) for o in marked):
                 out.setdefault(locked.get(folder, default), []).append(folder)
     return out
 

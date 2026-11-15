@@ -105,3 +105,20 @@ def test_one_python_folder_has_one_manager_its_lockfile_names():
 def test_a_restore_names_what_it_needs_from_the_preparation():
     assert preparation.RESTORES["uv"]["needs"] == ["uv"] and preparation.RESTORES["poetry"]["needs"] == ["poetry"]
     assert all(n in preparation.NEEDS for spec in preparation.RESTORES.values() for n in spec.get("needs", ()))
+
+
+def test_go_downloads_each_module_and_one_no_proxy_has_is_a_gap():
+    gaps = preparation.restore_gaps(recorded("go")["stderr"])
+    assert [(g["kind"], g["manager"], g["path"]) for g in gaps] == [("restore_failed", "go", "bad")]
+    assert "example.com/missing" in gaps[0]["detail"]
+
+
+def test_cargo_fetches_the_crates_and_one_no_registry_has_is_a_gap():
+    gaps = preparation.restore_gaps(recorded("cargo")["stderr"])
+    assert [(g["kind"], g["manager"], g["path"]) for g in gaps] == [("restore_failed", "cargo", "bad")]
+    assert "example-missing-nothing" in gaps[0]["detail"]
+
+
+def test_every_go_module_restores_on_its_own_and_a_cargo_workspace_from_its_root():
+    files = ["go.mod", "tools/go.mod", "Cargo.toml", "crates/a/Cargo.toml"]
+    assert preparation.restores(files) == {"go": [".", "tools"], "cargo": ["."]}

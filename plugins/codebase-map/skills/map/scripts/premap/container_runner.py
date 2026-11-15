@@ -25,21 +25,12 @@ from premap import bazel, cmake, meson  # noqa: E402
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
 STATE, IN, T = preparation.STATE, preparation.IN, preparation.T
-PATH = ":".join([f"{T}/bin", f"{T}/node/bin", f"{T}/npm/bin", f"{T}/go/bin", f"{T}/rust/bin", f"{T}/cmake/bin",
-                 "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin", "/bin"])
-ENV = {"PATH": PATH, "HOME": f"{STATE}/home", "GOPATH": f"{STATE}/go", "GOCACHE": f"{STATE}/go-build",
-       "GOTELEMETRY": "off", "CARGO_HOME": f"{STATE}/cargo", "UV_CACHE_DIR": f"{STATE}/uv",
-       "npm_config_cache": f"{STATE}/npm-cache", "npm_config_update_notifier": "false",
-       "VCPKG_ROOT": f"{T}/vcpkg", "VCPKG_DISABLE_METRICS": "1", "VCPKG_BINARY_SOURCES": "clear",
-       "CONAN_HOME": f"{STATE}/conan-home"}
-NODE = ("https://nodejs.org/dist/v24.22.3/node-v24.22.3-linux-x64.tar.gz",
-        "061ec3e3062115705b56b51fa9cc330ab50d34b6969387d4e4b1a50c6809acc2", "node.tar.gz")  # `renovate.NODE`
-GO = ("https://go.dev/dl/go1.27.3.linux-amd64.tar.gz",
-      "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40", "go.tar.gz")  # `engine_tools.GO_ASSETS`
+PATH, ENV = preparation.PATH, preparation.ENV
+NODE, GO = preparation.NODE, preparation.GO
 NINJA = (*meson.DOWNLOAD[1], "ninja.whl")
 UNPACK = {
-    "node": f"tar -xzf {IN}/node.tar.gz -C {T} && mv {T}/node-v24.22.3-linux-x64 {T}/node",
-    "go": f"tar -xzf {IN}/go.tar.gz -C {T}",
+    "node": preparation.NEEDS["node"]["setup"][0],
+    "go": preparation.NEEDS["go"]["setup"][0],
     "ninja": f"python3 -m zipfile -e {IN}/ninja.whl {T}/ninja-whl"
              f" && cp {T}/ninja-whl/ninja-*.data/scripts/ninja {T}/bin/ && chmod 755 {T}/bin/ninja",
 }
@@ -55,12 +46,8 @@ ENRY = (f"mkdir -p {STATE}/enry && cp {IN}/enry_facts.go {STATE}/enry/main.go &&
 TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the registries, extra hosts, memory GB
     "go": {"files": [GO], "setup": [UNPACK["go"]], "runs_on": ("go",)},
     "daodan-enry": {"files": [GO, (None, None, "enry_facts.go")], "setup": [UNPACK["go"], ENRY], "registries": True},
-    "cargo": {"files": [("https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
-                         "2ff05ff9c08a90861e7f6e4065b40a8b87463b4576186fd613871c3e37f2091f", "rustc.tar.xz"),
-                        ("https://static.rust-lang.org/dist/2026-10-15/cargo-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
-                         "53f3521949404d595efb06a55c12c5658d4ed1c75566f33d3d514eaebe70bd8a", "cargo.tar.xz")],
-              "setup": [f"for c in rustc cargo; do mkdir -p {T}/x && tar -xJf {IN}/$c.tar.xz -C {T}/x"
-                        f" && cp -R {T}/x/$c-*/$c/. {T}/rust/ && rm -rf {T}/x; done"]},
+    "cargo": {"files": preparation.NEEDS["rust"]["files"], "setup": preparation.NEEDS["rust"]["setup"],
+              "runs_on": ("rust",)},
     "uv": {"files": [preparation.UV],
            "setup": [f"tar -xzf {IN}/uv.tar.gz -C {T} && cp {T}/uv-x86_64-unknown-linux-gnu/uv {T}/bin/"],
            "runs_on": ("python",)},
