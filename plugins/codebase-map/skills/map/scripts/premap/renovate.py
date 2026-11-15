@@ -5,8 +5,9 @@ project's root with the report written to stdout and the log silenced: every man
 understands with their dependencies, and looks nothing up. `read` keeps, per package file, the toolchains (the
 version-file managers, the engine fields of manifests, the `go` and `requires-python` directives, the runtime a
 Dockerfile, compose file or devcontainer starts from) and the dependencies of the package managers (`MANAGERS`)
-with the range as written and the version the lockfile fixes, each on the unit whose manifest the file is, else
-on the nearest unit of that ecosystem holding it. Not dependencies of a unit: container images, CI actions,
+with the range as written and the version the lockfile fixes, each on the unit whose manifest the file is.
+A file no unit owns (a version catalog, a central versions file) names no unit: the nearest one would be a
+guess. Not dependencies of a unit: container images, CI actions,
 transitive pins (`indirect`) and overrides; a git dependency's value is its ref, so it gives no `declared`.
 """
 from __future__ import annotations
@@ -22,12 +23,10 @@ ENV = {"LOG_LEVEL": "fatal", "LOG_FILE": "/dev/stderr", "LOG_FILE_LEVEL": "warn"
 VERSION_MANAGERS = {"asdf", "mise", "proto", "nvm", "nodenv", "pyenv", "rust-toolchain", "gradle-wrapper",
                     "maven-wrapper", "bazelisk", "ruby-version", "bun-version"}
 TOOL_DEPTYPES = {"engines", "packageManager", "volta", "golang", "toolchain", "requires-python"}
-MANAGERS = {  # Renovate's manager -> the module graph's ecosystems whose units its files belong to
-    "npm": ("npm", "pnpm", "lerna"), "pep621": ("python",), "pip_requirements": ("python",), "pip-compile": ("python",),
-    "pipenv": ("python",), "poetry": ("python",), "setup-cfg": ("python",), "pip_setup": ("python",),
-    "gomod": ("go",), "cargo": ("cargo",), "maven": ("maven",), "maven-wrapper": ("maven",), "gradle": ("gradle",),
-    "gradle-wrapper": ("gradle",), "composer": ("composer",), "bundler": ("bundler", "rubygems"), "nuget": ("dotnet",),
-    "pub": ("pub",), "mix": ("mix",), "swift": ("swiftpm",), "sbt": ("sbt",)}
+MANAGERS = frozenset({  # Renovate's managers whose dependencies are packages a project declares
+    "npm", "pep621", "pip_requirements", "pip-compile", "pipenv", "poetry", "setup-cfg", "pip_setup", "gomod",
+    "cargo", "maven", "maven-wrapper", "gradle", "gradle-wrapper", "composer", "bundler", "nuget", "pub", "mix",
+    "swift", "sbt"})
 IMAGE_MANAGERS = {"dockerfile", "docker-compose", "devcontainer"}
 DOCKER_RUNTIMES = {"node": "node", "python": "python", "golang": "go", "rust": "rust", "ruby": "ruby",
                    "openjdk": "java", "eclipse-temurin": "java", "amazoncorretto": "java", "maven": "maven",
@@ -53,16 +52,12 @@ def commands(context):
                                           "--report-path=/dev/stdout"], "cwd": ".", "env": ENV, "network": "none"}]
 
 
-def _owners(context) -> tuple[dict, list]:
+def _owners(context) -> dict:
+    """Manifest -> how its unit is referred to."""
     from premap.module_graph import references
-    by_manifest, roots, ref = {}, [], references(context.graph)
-    for module in context.graph["modules"]:
-        if module["provenance"] != "build":
-            continue
-        roots += [(module["members"][0]["path"], ecosystem, ref[module["id"]]) for ecosystem in module["ecosystems"]]
-        for manifest in module["manifests"]:
-            by_manifest[manifest] = ref[module["id"]]
-    return by_manifest, sorted(roots, key=lambda r: -len(r[0]))
+    ref = references(context.graph)
+    return {manifest: ref[module["id"]] for module in context.graph["modules"] if module["provenance"] == "build"
+            for manifest in module["manifests"]}
 
 
 def read(context, commands, results):
@@ -72,15 +67,7 @@ def read(context, commands, results):
                                        "detail": f"renovate: {(result['stderr'] or result['stdout']).strip()[-400:]}"}]}
     report = json.loads(result["stdout"])
     repository = (report.get("repositories") or {}).get("local") or {}
-    by_manifest, roots = _owners(context)
-
-    def owner(path: str, manager: str):
-        """The unit whose manifest the file is, else the nearest unit of the manager's ecosystem holding it."""
-        if path in by_manifest:
-            return by_manifest[path]
-        ecosystems = MANAGERS.get(manager, ())
-        return next((name for root, ecosystem, name in roots if ecosystem in ecosystems
-                     and (root == "." or path.startswith(root + "/"))), None)
+    by_manifest = _owners(context)
 
     toolchains, dependencies = [], []
     for manager, files in (repository.get("packageFiles") or {}).items():
@@ -89,7 +76,7 @@ def read(context, commands, results):
             if not path:
                 continue
             path = PurePosixPath(path).as_posix()
-            unit = owner(path, manager)
+            unit = by_manifest.get(path)
             for dep in package_file.get("deps") or []:
                 name, current = dep.get("depName") or dep.get("packageName"), dep.get("currentValue")
                 if not name:

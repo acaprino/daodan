@@ -413,6 +413,22 @@ def test_npm_reader_links_a_package_to_the_local_folder_a_file_dependency_names(
     assert [w for w in record["workspace"] if w["tool"] == "npm"] == []
 
 
+def test_a_dependency_declared_in_a_file_no_unit_owns_names_no_unit(tmp_path):
+    """A version catalog or a central versions file says which versions exist, not which unit uses them: the
+    nearest unit would be a guess. Only a unit's own manifest gives the unit."""
+    extra = {"gradle/libs.versions.toml": '[libraries]\nlib = "com.acme:lib:1.0"\n'}
+    _, manifest, _ = build(tmp_path, "gradle", sources=(), extra=extra)
+    report = {"repositories": {"local": {"packageFiles": {"gradle": [
+        {"packageFile": "gradle/libs.versions.toml", "deps": [{"depName": "com.acme:lib", "currentValue": "1.0"}]},
+        {"packageFile": "build.gradle", "deps": [{"depName": "com.acme:other", "currentValue": "2.0"}]}]}}}}
+    with open_snapshot(manifest) as store:
+        context = premap.Context(manifest, store)
+        facts = renovate.read(context, [], [{"returncode": 0, "stdout": json.dumps(report), "stderr": ""}])["facts"]
+    found = {d["name"]: d for d in facts["dependencies"]}
+    assert "unit" not in found["com.acme:lib"]
+    assert found["com.acme:other"]["unit"] == ":"
+
+
 def test_renovate_reader_gives_declared_toolchains_and_ranges_on_their_unit(tmp_path):
     _, _, record = build(tmp_path, "versions", runner=replay("versions"))
     label = premap.label(renovate)
