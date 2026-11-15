@@ -1,11 +1,13 @@
 """Vue and Svelte: no SCIP indexer reads their templates, so their calls are asked of typescript-language-server
-at each call position (`position_stage.resolve_edges`), one virtual `.ts` or `.js` document per component.
+at each call position (`position_stage.resolve_edges`), one virtual `.ts` or `.js` document per component. Only
+the script blocks are read: a component with a template is a declared gap of its language (`unread`).
 
 The adapter declares itself like the indexers (`indexers.analyzers`); `engine` in place of `index` makes its stage
 the position stage. The stage runs under uv with multilspy, which pins the server release (`REQUIREMENTS`).
 """
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 from pathlib import Path, PurePosixPath
@@ -17,6 +19,14 @@ ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "typescript", ("vue", "svelte"),
 MIN_FREE = 2 * 2**30  # one language server at a time, with this much memory free
 REQUIREMENTS, IMPORT = ("multilspy==0.1.1",), "multilspy"
 INSTALL = "install uv, which gives the pass multilspy and its pinned typescript-language-server"
+BLOCK_RE = re.compile(r"<(script|style)\b[^>]*>.*?</\1\s*>|<!--.*?-->", re.IGNORECASE | re.DOTALL)
+
+
+def has_template(content: str, suffix: str) -> bool:
+    """Whether a component holds markup outside its script and style blocks, comments aside: the `<template>`
+    block of a `.vue` file, anything of a `.svelte` file. Its calls and bindings are in no script block."""
+    rest = BLOCK_RE.sub("", content)
+    return bool(re.search(r"<template\b", rest, re.IGNORECASE)) if suffix == ".vue" else bool(rest.strip())
 
 
 def engine(project_dir: Path) -> "TypeScriptEngine":
@@ -46,7 +56,9 @@ class TypeScriptEngine(MirroredEngine):
 
     name = "typescript"
     server_name = "typescript-language-server"
-    languages = ("typescript", "javascript", "vue", "svelte")
+    # The stage answers for the entry's languages: the TypeScript and JavaScript sites are scip-typescript's.
+    # A component imports files of those languages, so they are checked against the snapshot too (`reads`).
+    languages, reads = LANGUAGES, ("typescript", "javascript")
     language_ids = {".ts": "typescript", ".mts": "typescript", ".cts": "typescript", ".tsx": "typescriptreact",
                     ".js": "javascript", ".mjs": "javascript", ".cjs": "javascript", ".jsx": "javascriptreact"}
 
@@ -107,6 +119,12 @@ class TypeScriptEngine(MirroredEngine):
         from languages.sfc import mask_non_script
         text, typed, _has_script = mask_non_script(text)
         return served.with_name(served.name + (".ts" if typed else ".js")), text
+
+    def unread(self, path: Path) -> str | None:
+        """What of a file no adapter reads, None when it is read whole."""
+        if has_template(path.read_text(encoding="utf-8", errors="replace"), path.suffix.lower()):
+            return "template not read: calls and bindings in it are not sites"
+        return None
 
     def context(self) -> str | None:
         """The server version and the project's packages, which decide what is external."""

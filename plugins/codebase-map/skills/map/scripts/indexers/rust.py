@@ -129,12 +129,27 @@ def hops(index) -> dict:
     return {key: list(dict.fromkeys(items)) for key, items in out.items() if items}
 
 
-def missing(index, rels: list[str]) -> dict:
-    """Why a Rust file has no document: no `mod` item of an indexed file loads it, so no crate includes it."""
+def tasks(configs) -> dict:
+    """What the run brought back for `missing`: `{"roots": [folder], "failed": {folder: how its run ended}}`,
+    empty without it."""
+    return configs if isinstance(configs, dict) else {}
+
+
+def missing(index, rels: list[str], configs: dict | None = None) -> dict:
+    """Why a Rust file has no document: the run of its crate wrote no index and no other run read the crate;
+    else no `mod` item of an indexed file loads it, so no crate includes it."""
+    roots, failed = set((configs or {}).get("roots") or ()), (configs or {}).get("failed") or {}
+    read = {code_graph.owner(rel, roots) for rel in index.documents}
     loaded = {candidate for rel, name in _mod_items(index) for candidate in _module_files(rel, name.text.decode("utf-8"))}
-    return {rel: "no crate includes it: no `mod` item of an indexed file loads it" for rel in rels
-            if rel not in loaded and PurePosixPath(rel).name not in ("lib.rs", "main.rs", "build.rs")
-            and PurePosixPath(rel).parent.name not in ROOT_DIRECTORIES}
+    reasons = {}
+    for rel in rels:
+        root = code_graph.owner(rel, roots)
+        if root in failed and root not in read:
+            reasons[rel] = f"the rust-analyzer run of its crate {root or '.'} wrote no index ({failed[root]})"
+        elif rel not in loaded and PurePosixPath(rel).name not in ("lib.rs", "main.rs", "build.rs") \
+                and PurePosixPath(rel).parent.name not in ROOT_DIRECTORIES:
+            reasons[rel] = "no crate includes it: no `mod` item of an indexed file loads it"
+    return reasons
 
 
 def structure(record: dict) -> dict:
@@ -194,6 +209,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
                                           fallback=lambda prefix, output: command(prefix, output)[:-2])
     finally:
         shutil.rmtree(temp, ignore_errors=True)
-    # Named by its pinned release, like every indexer; `build` is what the binary states.
+    # Named by its pinned release, like every indexer; `build` is what the binary states; `configs` is for `tasks`.
     return {**runtime.outcome("rust-analyzer", rx.RUST_ANALYZER_RELEASE, runs), "build": build,
-            "toolchain": rx.RUST_VERSION, "config": CONFIG}
+            "toolchain": rx.RUST_VERSION, "config": CONFIG,
+            "configs": {"roots": sorted(roots), "failed": {run["prefix"]: f"exit code {run['returncode']}"
+                                                           for run in runs if not run["index"]}}}

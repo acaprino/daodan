@@ -18,8 +18,9 @@ A stylesheet has no calls. Its references are names the cascade resolves at run 
 A name nothing declares is a hole with its class (`css-in-js` when a script's object literal has a selector key
 naming it, `tailwind-named-group` for `group/x` and `peer/x`); a class built at run time (template,
 concatenation, a value the TypeScript checker cannot state, a token glued to an EJS tag) is a hole, never a guess.
-A stylesheet or markup file no reader here takes is listed in `files.missing` with the reason, never dropped. An arc's `chain` lists the rules that led from
-the site to the target (`literal-type`, `initializer`, `clsx`, `classList`, `@apply`, `composes`...).
+A stylesheet or markup file handed to the graph that no reader here takes is listed in `files.missing` with the
+reason, never dropped; the pass hands it the snapshot's files. An arc's `chain` lists the rules that led from the
+site to the target (`literal-type`, `initializer`, `clsx`, `classList`, `@apply`, `composes`...).
 
 An adapter per engine. This one: the product's stylesheet parser (`languages/stylesheet.py`, CSS, SCSS, LESS), every
 statement it reads observed as it reads it (the parser keeps no `@apply`, `@include` or import line), and the
@@ -58,10 +59,12 @@ LANGUAGE = "stylesheet"  # the label of the graph and of every store row, whatev
 STYLESHEETS = (".css", ".scss", ".sass", ".less", ".pcss", ".postcss", ".styl", ".stylus")
 MARKUP = (".html", ".htm", ".ejs")
 COMPONENTS = {".vue": css_vue, ".svelte": css_svelte, ".astro": css_astro}
-# Stylesheet and markup files no reader here takes, and why: listed in `files.missing`, never dropped.
-UNREAD = {
-          **dict.fromkeys((".erb", ".hbs", ".handlebars", ".mustache", ".njk", ".twig", ".pug", ".jade", ".liquid",
-                           ".jinja", ".j2"), "template language: no reader")}
+# Stylesheet and markup files no reader here takes, and why: listed in `files.missing`, never dropped. Every
+# markup suffix of the snapshot is read or here; a suffix the snapshot does not hold reaches a direct run only (`walk`).
+UNREAD = {**dict.fromkeys((".erb", ".hbs", ".handlebars", ".mustache", ".njk", ".twig", ".pug", ".jade", ".liquid",
+                           ".jinja", ".j2", ".cshtml", ".razor", ".jsp", ".jspx", ".ftl", ".vm"),
+                          "template language: no reader"),
+          ".xhtml": "XHTML: no reader"}
 PARTLY: dict[str, str] = {}  # suffix -> what a file of it leaves out of the graph
 NAMED_GROUP_RE = re.compile(r"^(?:group|peer)/[\w-]+$")  # Tailwind 3.2+: a variant anchor, never a utility
 # A leading comment naming a package and its version: "/*! Font Awesome Free 6.4.0 by ...", "Bootstrap v5.3.0".
@@ -121,7 +124,8 @@ SUFFIXES = STYLESHEETS + MARKUP + tuple(COMPONENTS) + css_typescript.SUFFIXES + 
 MIN_FREE = 1536 * 2**20  # 1,458 MB peak of the TypeScript run on tududi (benchmarks/inference-audit, 14 November 2026)
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "stylesheet", (LANGUAGE,), frozenset(), False
 READS = SUFFIXES  # the stage hands `index` the snapshot's files with these suffixes
-SNAPSHOT_LANGUAGES = ("css", "markup")  # the snapshot's languages whose files bring this entry into the pass
+# The snapshot's languages whose files bring this entry into the pass.
+SNAPSHOT_LANGUAGES = ("css", "markup", "vue", "svelte")
 PINS = Path(__file__).resolve().with_name("css_engines")  # package.json and lockfile of the engines
 NODE_OPTIONS = "--max-old-space-size=6144"
 TIMEOUT = 3600

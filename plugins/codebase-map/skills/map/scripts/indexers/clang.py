@@ -55,7 +55,8 @@ OUT = "/tmp/daodan-clang/out"
 MIN_FREE = 2 * 2**30  # the container's memory
 PIDS = 1024
 CMAKE_UNIT = "cmake-target"
-OTHER_BUILDS = {"meson-target": "meson", "make-target": "make", "bazel-target": "bazel"}  # not configured yet
+OTHER_BUILDS = {"meson-target": "meson", "make-target": "make", "bazel-target": "bazel",
+                "msbuild-project": "MSBuild"}  # not configured yet
 C_SOURCES = {".c"}
 CPP_SOURCES = {".cc", ".cpp", ".cxx", ".c++"}
 CALLABLES = ("function", "method", "class")
@@ -286,24 +287,26 @@ def tasks(configs) -> dict:
 
 
 def _unit(rel: str, units: list[dict]) -> dict | None:
-    """The innermost unit holding a file, by its root."""
+    """The innermost unit holding a file, by its root; where two builds share a folder, the indexed one."""
     holding = [unit for unit in units if unit["root"] in (".", "") or rel.startswith(unit["root"].rstrip("/") + "/")]
-    return max(holding, key=lambda unit: len(unit["root"]), default=None)
+    return max(holding, key=lambda unit: (len(unit["root"].strip(".")), unit["state"] == "indexed"), default=None)
 
 
 def missing(index, rels: list[str], configs: dict | None = None) -> dict:
     """Why a C or C++ file of the snapshot has no document."""
-    reasons, compiled = {}, (configs or {}).get("compiled") or {}
+    reasons, compiled, units = {}, (configs or {}).get("compiled") or {}, (configs or {}).get("units") or []
     for rel in rels:
-        unit = _unit(rel, (configs or {}).get("units") or [])
+        unit = _unit(rel, units)
         if unit is not None and unit["state"] != "indexed":
             reasons[rel] = f"the index of unit {unit['root']} is {unit['state']}: {unit['cause']}"
         elif rel in compiled:
             reasons[rel] = "compiled, yet no document in the index"
-        elif Path(rel).suffix.lower() in C_SOURCES | CPP_SOURCES:
-            reasons[rel] = "no compile command: not built by the default configuration"
-        else:
+        elif Path(rel).suffix.lower() not in C_SOURCES | CPP_SOURCES:
             reasons[rel] = "header no indexed translation unit includes in an active branch"
+        elif units and unit is None:
+            reasons[rel] = "in no CMake unit of the pre-map"
+        else:
+            reasons[rel] = "no compile command: not built by the default configuration"
     return reasons
 
 
@@ -357,7 +360,7 @@ def _folder(path: str | None) -> str:
     return (path or ".").strip("/").removeprefix("./") or "."
 
 
-NATIVE = frozenset({CMAKE_UNIT, *OTHER_BUILDS, "msbuild-project"})  # the units that build C and C++
+NATIVE = frozenset({CMAKE_UNIT, *OTHER_BUILDS})  # the units that build C and C++
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATIVE, True
@@ -384,15 +387,16 @@ def wanted_cmake(stated) -> dict | None:
 
 def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
     """The folders CMake configures, each once: a `cmake-target`'s CMake workspace root, else its own root; and
-    the state of each unit another native build declares."""
+    the state of each folder another native build declares, once per build."""
     owner = {_folder(member): _folder(item["root"]) for item in workspace or () if item.get("tool") == "cmake"
              for member in item.get("members", ())}
     roots = list(dict.fromkeys(owner.get(_folder(unit.get("root")), _folder(unit.get("root")))
                                for unit in units or () if unit.get("kind") == CMAKE_UNIT))
-    states = [{"root": _folder(unit.get("root")), "state": "unavailable", "kind": "not-cmake",
-               "cause": f"built with {OTHER_BUILDS[unit['kind']]}: Daodan configures C and C++ units with CMake "
-                        "only"}
-              for unit in units or () if unit.get("kind") in OTHER_BUILDS]
+    others = dict.fromkeys((_folder(unit.get("root")), OTHER_BUILDS[unit["kind"]])
+                           for unit in units or () if unit.get("kind") in OTHER_BUILDS)
+    states = [{"root": root, "state": "unavailable", "kind": "not-cmake",
+               "cause": f"built with {build}: Daodan configures C and C++ units with CMake only"}
+              for root, build in others]
     return roots, states
 
 
@@ -413,7 +417,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     chosen = [{"root": root} for root in roots]
     if not chosen:
         return unavailable("no C or C++ unit built with CMake in the pre-map" + (
-            "; " + "; ".join(item["cause"] for item in states) if states else ""),
+            "; " + "; ".join(dict.fromkeys(item["cause"] for item in states)) if states else ""),
             "none: the project's C and C++ files keep their static facts")
     if container.architecture() != "x64":
         return unavailable(f"scip-clang {VERSION} has an x86_64 Linux build only", "index on an x86_64 machine")

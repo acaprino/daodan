@@ -206,7 +206,10 @@ def main(argv: list[str]) -> int:
         steps, state = configure(run, cmake, unit, build, SCRATCH / f"fetch-{number}.log")
         record = {"root": unit.get("root", "."), **state, "steps": steps, "compiled": {}, "index": None}
         compdb = build / "compile_commands.json"
-        if state["state"] == "configured" and compdb.is_file():
+        if state["state"] == "configured" and not compdb.is_file():
+            record.update(state="failed", cause="no compilation database: the configure wrote no "
+                                                "compile_commands.json")
+        elif state["state"] == "configured":
             record["compiled"] = compiled(compdb)
             (WORK / "index.scip").unlink(missing_ok=True)
             code, output, seconds = run(index_command(scip_clang, compdb, packages, jobs), WORK)

@@ -155,6 +155,22 @@ def test_the_report_is_written_into_the_folder_the_caller_names_under_the_scratc
     assert [(unit["root"], unit["state"], unit["fetched"]) for unit in report["units"]] == [(".", "unavailable", [FMT])]
 
 
+def test_a_unit_that_configures_without_a_compilation_database_failed_and_says_why(tmp_path):
+    """CMake writes no compile_commands.json for a project without a C or C++ target, or for a generator that
+    exports none: the unit is not left `configured`, a state without a cause the host cannot report."""
+    scratch, tools, plan, out = tmp_path / "scratch", tmp_path / "tools", tmp_path / "units.json", tmp_path / "out"
+    tools.mkdir()
+    (tools / "scip-clang").write_bytes(b"")
+    plan.write_text(json.dumps([{"root": "docs"}]), encoding="utf-8")
+    run, _calls = _runner(0, "-- Generating done\n")
+    with mock.patch.multiple(clang_run, SCRATCH=scratch, TOOLS=tools, run=run, package_map=lambda project: []):
+        assert clang_run.main(["clang_run.py", str(plan), str(out), "1"]) == 0
+    unit, = json.loads((out / "result.json").read_text(encoding="utf-8"))["units"]
+    assert (unit["root"], unit["state"], unit["index"]) == ("docs", "failed", None)
+    assert unit["cause"] == "no compilation database: the configure wrote no compile_commands.json"
+    assert [step["step"] for step in unit["steps"]] == ["configure"]
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # On the host: index()
 
@@ -167,6 +183,35 @@ def test_without_a_cmake_unit_the_index_is_unavailable(tmp_path):
     assert result["state"] == "unavailable" and result["reason"].startswith("no C or C++ unit built with CMake")
     meson = clang.index(tmp_path, tmp_path / "work", units=[{"name": "m", "kind": "meson-target", "root": "."}])
     assert meson["state"] == "unavailable" and "built with meson" in meson["reason"]
+
+
+MSBUILD = "built with MSBuild: Daodan configures C and C++ units with CMake only"
+
+
+def test_an_msbuild_project_is_stated_like_every_build_cmake_does_not_configure(tmp_path):
+    """Several project files share a folder: the folder is stated once."""
+    app = {"name": "app", "kind": "msbuild-project", "root": "win"}
+    alone = clang.index(tmp_path, tmp_path / "work", units=[app, {**app, "name": "lib"}])
+    assert alone["state"] == "unavailable"
+    assert alone["reason"] == f"no C or C++ unit built with CMake in the pre-map; {MSBUILD}"
+    roots, states = clang.configure_roots([UNIT, app, {**app, "name": "lib"}], None)
+    assert roots == ["."]
+    assert states == [{"root": "win", "state": "unavailable", "kind": "not-cmake", "cause": MSBUILD}]
+    assert "msbuild-project" in clang.UNIT_KINDS
+
+
+def test_a_file_without_a_document_names_its_own_cause():
+    win = {"root": "win", "state": "unavailable", "kind": "not-cmake", "cause": MSBUILD}
+    configs = {"compiled": {"lib/a.c": 1}, "units": [win, {"root": "lib", "state": "indexed"}]}
+    reasons = clang.missing(None, ["win/main.cpp", "tools/gen.c", "tools/gen.h", "lib/a.c", "lib/unused.c"], configs)
+    assert reasons == {"win/main.cpp": f"the index of unit win is unavailable: {MSBUILD}",
+                       "tools/gen.c": "in no CMake unit of the pre-map",
+                       "tools/gen.h": "header no indexed translation unit includes in an active branch",
+                       "lib/a.c": "compiled, yet no document in the index",
+                       "lib/unused.c": "no compile command: not built by the default configuration"}
+    # Another build's file beside the CMakeLists.txt CMake indexed does not speak for the folder.
+    both = {"units": [{**win, "root": "."}, {"root": ".", "state": "indexed"}]}
+    assert clang.missing(None, ["a.c"], both) == {"a.c": "no compile command: not built by the default configuration"}
 
 
 def test_a_workspace_is_configured_once_at_its_root():

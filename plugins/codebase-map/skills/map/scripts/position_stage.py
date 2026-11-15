@@ -255,6 +255,8 @@ class PositionStage:
         self.project_root = project_root.parent if project_root.is_file() else project_root
         self.fingerprint = store.metadata.get("parser_fingerprint")
         self.languages = engine_languages(engine, self.connection)
+        # The files hashed against the snapshot: those of its languages and of the ones its answers read.
+        self.checked = (*self.languages, *getattr(engine, "reads", ()))
         self.edges: list[dict] = []
         self.answers: list[dict] = []
         self.skipped_position = 0
@@ -269,7 +271,7 @@ class PositionStage:
     def prepare(self, out: Path | None) -> dict | None:
         """The verified sources, the store's destination and the population; a refusal or None."""
         try:
-            self.store_root, self.source_paths, self.verified_before = verify_sources(self.store, self.languages)
+            self.store_root, self.source_paths, self.verified_before = verify_sources(self.store, self.checked)
             self.destination = edge_destination(out or default_edge_store(self.manifest), self.manifest,
                                                 self.source_paths)
         except (OSError, ValueError) as error:
@@ -283,7 +285,19 @@ class PositionStage:
         self.inventory = inventory_files(self.connection)
         self.hashes = {rel: entry.get("raw_hash") for rel, entry in self.store.iter_file_headers_only()}
         self._population()
+        self.files = {language: self._files(language) for language in self.counts}
         return None
+
+    def _files(self, language: str) -> dict | None:
+        """A language's files and those the engine reads in part, with what it leaves out (`unread`): the `files`
+        of its coverage. None for an engine that states nothing of it."""
+        unread = getattr(self.engine, "unread", None)
+        if unread is None:
+            return None
+        rels = sorted(rel for rel, held in self.connection.execute("SELECT file, language FROM sem_coverage")
+                      if held == language and rel in self.source_paths)
+        missing = [{"path": rel, "reason": reason} for rel in rels if (reason := unread(self.source_paths[rel]))]
+        return {"snapshot": len(rels), "indexed": len(rels) - len(missing), "missing": missing}
 
     def _population(self) -> None:
         """The calls of the engine's languages: those to ask, those the lexical resolver bound, the sites."""
@@ -451,7 +465,8 @@ class PositionStage:
              for reference_id, rel, kind, l0, _c0, site_language, resolution in self.sites
              if site_language == language],
             [edge for edge in self.edges if edge["language"] == language],
-            [hole for hole in written_holes if hole["language"] == language]) for language in self.counts}
+            [hole for hole in written_holes if hole["language"] == language], self.files[language])
+            for language in self.counts}
 
     def _entries(self, partial: bool, covered: dict, verified_after) -> dict:
         """Each language's store entry as the stage stands."""
@@ -482,7 +497,7 @@ class PositionStage:
         if any(broken):
             return {"reason": "; ".join(reason for reason in broken if reason), "stage": "coverage"}
         try:
-            _root, _paths, verified_after = verify_sources(self.store, self.languages)
+            _root, _paths, verified_after = verify_sources(self.store, self.checked)
             edge_destination(self.destination, self.manifest, self.source_paths)
         except (OSError, ValueError) as error:
             return {"reason": str(error), "stage": "after-inference"}

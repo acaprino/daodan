@@ -157,6 +157,14 @@ def _install_type_packages(npm: str, directory: Path) -> int:
     return sum(1 for name in wanted if run([name], 300))
 
 
+def _local_packages(data: dict) -> list[tuple[str, str, str]]:
+    """(table, name, spec) of each package a package.json takes from a local path."""
+    return [(table, name, spec)
+            for table in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies")
+            if isinstance(data.get(table), dict) for name, spec in data[table].items()
+            if isinstance(spec, str) and spec.startswith(("file:", "link:", "workspace:", ".", "/", "~/"))]
+
+
 def _without_local_packages(manifest: Path) -> str | None:
     """A package.json without the packages it takes from a local path, or None when it has none.
 
@@ -167,16 +175,24 @@ def _without_local_packages(manifest: Path) -> str | None:
         data = json.loads(manifest.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
-    dropped = False
-    for table in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies"):
-        packages = data.get(table)
-        if not isinstance(packages, dict):
+    local = _local_packages(data)
+    for table, name, _spec in local:
+        del data[table][name]
+    return json.dumps(data, indent=2) + "\n" if local else None
+
+
+def npm_local_packages(root: Path) -> list[tuple[str, str, str]]:
+    """(manifest from `root`, name, spec) of each package `npm_modules` leaves out of its install."""
+    root, found = Path(root), set()
+    for manifest in npm_manifests(root):
+        if manifest.name != "package.json":
             continue
-        for name, spec in list(packages.items()):
-            if isinstance(spec, str) and spec.startswith(("file:", "link:", "workspace:", ".", "/", "~/")):
-                del packages[name]
-                dropped = True
-    return json.dumps(data, indent=2) + "\n" if dropped else None
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        found |= {(manifest.relative_to(root).as_posix(), name, spec) for _table, name, spec in _local_packages(data)}
+    return sorted(found)
 
 
 def package_directories(root: Path, limit: int = 8) -> list[Path]:
@@ -203,17 +219,20 @@ def node_environment() -> dict:
     return {"npm_config_cache": str(cache / "npm-cache"), "NODE_COMPILE_CACHE": str(cache / "node-compile-cache")}
 
 
-def npm_modules(root: Path) -> Path | None:
+def npm_modules(root: Path, failed: list | None = None) -> Path | None:
     """The project's packages installed once into the shared directory, without running any package script.
 
     Only the manifests are copied there, so npm never sees the project's code; the
     lockfile is honoured when there is one. Every project with the same manifests
     shares the installation, and npm's own cache spares repeated downloads. None
-    when the project has no package.json, npm is missing or the install fails.
+    when the project has no package.json, npm is missing or the install fails:
+    `failed` then gets the reason of the last two.
     """
     root = Path(root).resolve()
     key, npm = npm_key(root), shutil.which("npm")
     if key is None or npm is None:
+        if key is not None and failed is not None:
+            failed.append("npm is not on the PATH")
         return None
     destination = shared_cache_dir() / "npm" / key
     if (destination / "daodan-modules.json").is_file():
@@ -244,7 +263,10 @@ def npm_modules(root: Path) -> Path | None:
         completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
                                    timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment()})
     if completed.returncode != 0 or not (partial / "node_modules").is_dir():
-        print(f"the project's JavaScript packages were not installed: {(completed.stderr or '')[-300:]}", flush=True)
+        reason = (completed.stderr or "").strip()[-300:] or "npm wrote no node_modules"
+        print(f"the project's JavaScript packages were not installed: {reason}", flush=True)
+        if failed is not None:
+            failed.append(reason)
         shutil.rmtree(partial, ignore_errors=True)
         return None
     try:

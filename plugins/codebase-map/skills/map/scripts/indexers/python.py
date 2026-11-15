@@ -2,15 +2,17 @@
 
 `index` runs scip-python (npm, without install scripts, on Daodan's Node) in a mirror of the project, once per
 Python project it is given (`units`; the whole checkout when none is), its documents named from the root by
-that project's folder. A file outside every project has no document. The adapter finds no project itself. Run
-from the root, a Python project kept in a folder (`svc/app`, imported as `app`) would name its modules
-differently where they are defined and where they are imported. Each run has that project's declared packages
-in the engine pass's environment (`python_environment`: wheels only) described to it as an environment file,
-so it never asks pip. A `src` layout is not found unless Pyright is told: without it no absolute import of the
-project's own package resolves. The mirror gets a `pyrightconfig.json` with `src` as a root and an extra path
-when `src` holds a package and the project declares no Pyright configuration. No project code runs. The
-project's version is `_` in every run: it is part of each project symbol, so node ids stay the same from one
-snapshot to the next.
+that project's folder. A file outside every project has no document (`missing` says so). The adapter finds no
+project itself. Run from the root, a Python project kept in a folder (`svc/app`, imported as `app`) would name
+its modules differently where they are defined and where they are imported. Each run has that project's
+declared packages, from the manifests its unit states (`manifests`), in the engine pass's environment
+(`python_environment`: wheels only) described to it as an environment file, so it never asks pip. A source
+root is not found unless Pyright is told: without it no absolute import of the project's own package resolves.
+The mirror gets a `pyrightconfig.json` with the source roots the unit states (`source_roots`), else `src`
+where it holds a package, each as a root and an extra path, unless the project declares a Pyright
+configuration. What a run lacks is a gap of the contract (`gaps`): an environment that failed, a stated
+manifest the environment does not read. No project code runs. The project's version is `_` in every run: it
+is part of each project symbol, so node ids stay the same from one snapshot to the next.
 
 Where scip-python cannot start (Windows: `RUNS_HERE`), it runs in a container (`container.run_in_container`,
 `IMAGE`) over the copy of the project, with no network: the copy carries Node for Linux, checked like the
@@ -56,7 +58,6 @@ MIN_FREE = 1920 * 2**20  # 1,852 MB peak on phazly, 350 MB on python-semver (ben
 # stops there, before reading anything (0.6.8, 14 November 2026).
 RUNS_HERE = os.sep == "/"
 IMAGE = "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90"  # 3.13.18
-SRC_LAYOUT = {"executionEnvironments": [{"root": "src"}, {"root": ".", "extraPaths": ["src"]}]}
 CONTAINER_MEMORY = 2 * 2**30
 OUT = "/daodan/out"
 # The container's script: $1 the project's name, $2 its version, $3 its folder. The image's Python adds the host
@@ -228,7 +229,8 @@ def hops(index) -> dict:
 
 
 def _manifests(project: Path) -> list[str]:
-    """The project's files that may declare packages, for `python_environment` to choose from."""
+    """The project's files that may declare packages, for `python_environment` to choose from: for a run whose
+    unit states none (no pre-map)."""
     names = []
     for current, directories, found in os.walk(project):
         directories[:] = [name for name in directories if not name.startswith(".")
@@ -280,29 +282,45 @@ def _identity(project: Path, given: str | None = None) -> tuple[str, str]:
     return name, "_"
 
 
-def _pyright_config(root: Path, target: Path) -> dict | None:
-    """The `src` layout declared to Pyright in `target`, unless the project at `root` configures Pyright."""
+def _pyright_config(root: Path, target: Path, source_roots=()) -> dict | None:
+    """The source roots of the project at `root` declared to Pyright in `target`, unless the project configures
+    Pyright: the ones its unit states (`source_roots`, from its folder), else `src` where it holds a package.
+    Each is a root that also sees the others, and the project's folder sees them all."""
     if (root / "pyrightconfig.json").exists():
         return None
     pyproject = root / "pyproject.toml"
     if pyproject.is_file() and "[tool.pyright]" in pyproject.read_text(encoding="utf-8"):
         return None
-    if not any((root / "src").glob("*/__init__.py")):
+    roots = sorted(set(source_roots) - {"."}) if source_roots else \
+        ["src"] if any((root / "src").glob("*/__init__.py")) else []
+    if not roots:
         return None
-    target.write_text(json.dumps(SRC_LAYOUT, indent=1), encoding="utf-8")
-    return SRC_LAYOUT
+    config = {"executionEnvironments": [
+        *[{"root": one, **({"extraPaths": others} if others else {})}
+          for one in roots for others in [[other for other in roots if other != one]]],
+        {"root": ".", "extraPaths": roots}]}
+    target.write_text(json.dumps(config, indent=1), encoding="utf-8")
+    return config
 
 
-def _prepared(project_dir: Path, environment: Path | None) -> Path | None:
-    """`environment`, else the one `python_environment` builds from the project's declared packages."""
+def _prepared(project_dir: Path, unit: dict, environment: Path | None) -> tuple[Path | None, list[dict]]:
+    """`environment`, else the one `python_environment` builds from the manifests the unit states, named from
+    the checkout's root (without them, from the ones under its folder); and its gaps: a stated manifest the
+    environment does not read, an environment that failed."""
     import resolve_edges as rx
     if environment is not None:
-        return Path(environment)
+        return Path(environment), []
+    here = project_dir / unit["root"]
+    root, names = (project_dir, unit["manifests"]) if "manifests" in unit else (here, _manifests(here))
+    read = rx.python_manifests(root, names)
+    gaps = [{"kind": "manifest_unread", "path": name,
+             "detail": "the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this "
+                       "file declares are not installed"} for name in names if name not in read]
     try:
-        return rx.python_environment(project_dir, _manifests(project_dir))
+        return rx.python_environment(root, names), gaps
     except (OSError, subprocess.SubprocessError) as error:
-        print(f"the project's Python packages were not installed: {error}", flush=True)
-        return None
+        return None, gaps + [{"kind": "restore_failed", "manager": "uv", "path": unit["root"] or ".",
+                              "detail": str(error)[:600]}]
 
 
 def _facts(environment: Path | None, packages: list[dict], config: dict | None, project: tuple[str, str]) -> dict:
@@ -315,18 +333,41 @@ def _facts(environment: Path | None, packages: list[dict], config: dict | None, 
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: one run per outermost Python project."""
+    """What `index` takes from the pre-map: one run per outermost Python project, with its manifests and
+    source roots."""
     import premap
     return {"units": premap.python_runs(record)}
+
+
+def tasks(configs) -> list[str]:
+    """The folders of the Python projects the runs read (`configs` of the contract), for `missing`."""
+    return list(configs or ())
+
+
+def missing(index, rels: list[str], roots: list[str] | None = None) -> dict:
+    """Why a Python file has no document: it lies outside every project the runs read (`roots`)."""
+    if not roots or "" in roots:
+        return {}
+    return {rel: "outside every Python project the pre-map states" for rel in rels
+            if not any(rel.startswith(f"{root}/") for root in roots)}
+
+
+def _outcome(runs: list[dict], units: list[dict]) -> dict:
+    """The runs' contract, with the gaps of their environments (`gaps`) and the folders they read (`configs`)."""
+    from indexers import runtime
+    gaps = [gap for run in runs for gap in run.pop("gaps")]
+    return {**runtime.outcome("scip-python", VERSION, runs), "configs": [unit["root"] for unit in units],
+            **({"gaps": gaps} if gaps else {})}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, environment: Path | None = None,
           *, engine=None, units: list[dict] | None = None) -> dict:
     """The scip-python index of each Python project of `units` (`root`: its folder from the checkout's root, ''
-    for the root; `name`, else the one its `pyproject.toml` declares, else its folder's), the whole checkout when
-    none is given (`files` is not needed: scip-python reads each project); with `environment`, else the one
-    `python_environment` builds for each; in a container where scip-python cannot start, or with `engine`, a
-    container engine; see the module's docstring. Each run holds its project's facts (`_facts`)."""
+    for the root; `name`, else the one its `pyproject.toml` declares, else its folder's; `manifests` and
+    `source_roots` as the pre-map states them), the whole checkout when none is given (`files` is not needed:
+    scip-python reads each project); with `environment`, else the one `python_environment` builds for each; in
+    a container where scip-python cannot start, or with `engine`, a container engine; see the module's
+    docstring. Each run holds its project's facts (`_facts`)."""
     import resolve_edges as rx
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
@@ -347,14 +388,14 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
         for number, unit in enumerate(units):
             prefix = unit["root"]
             here, cwd = project_dir / prefix, mirror / prefix
-            used = _prepared(here, environment)
+            used, gaps = _prepared(project_dir, unit, environment)
             packages = _packages(used)
             described = work_dir / f"scip-python-environment-{number}.json"
             described.write_text(json.dumps(packages), encoding="utf-8")
             name, version = _identity(here, unit.get("name"))
             output = work_dir / f"scip-python-{number}.scip"
             # Read from the project: the mirror only links its folders, and a walk does not enter a link.
-            config = _pyright_config(here, cwd / "pyrightconfig.json")
+            config = _pyright_config(here, cwd / "pyrightconfig.json", unit.get("source_roots") or ())
             paths = [Path(used) / ("Scripts" if os.name == "nt" else "bin")] if used else []
             variables = {"VIRTUAL_ENV": str(used)} if used else {}
             env = runtime.environment(*paths, directory, NODE_OPTIONS="--max-old-space-size=4096", **variables)
@@ -364,8 +405,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
                 str(cwd), env, 3000)}
             run["index"] = str(output) if output.is_file() and run["returncode"] == 0 else None
             run["index_bytes"] = output.stat().st_size if output.is_file() else 0
-            runs.append({**run, **_facts(used, packages, config, (name, version))})
-    return runtime.outcome("scip-python", VERSION, runs)
+            runs.append({**run, **_facts(used, packages, config, (name, version)), "gaps": gaps})
+    return _outcome(runs, units)
 
 
 def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engine, units: list[dict]) -> dict:
@@ -377,7 +418,7 @@ def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engi
                 for number, unit in enumerate(units)]
     except runtime.Unavailable as error:
         return runtime.refused("scip-python", VERSION, error)
-    return runtime.outcome("scip-python", VERSION, runs)
+    return _outcome(runs, units)
 
 
 def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environment: Path | None, engine) -> dict:
@@ -388,7 +429,7 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
     prefix = unit["root"]
     here = project_dir / prefix
     name, version = _identity(here, unit.get("name"))
-    held: dict = {"environment": None, "packages": [], "config": None}
+    held: dict = {"environment": None, "packages": [], "config": None, "gaps": []}
 
     def inputs() -> dict[str, Path]:
         try:
@@ -397,7 +438,7 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
             archive = runtime.node_archive(project_dir, f"linux-{container.architecture()}")
         except runtime.Unavailable as error:
             raise container.Gap(error.reason, error.install) from error
-        held["environment"] = _prepared(here, environment)
+        held["environment"], held["gaps"] = _prepared(project_dir, unit, environment)
         held["packages"] = _packages(held["environment"])
         described = work_dir / f"scip-python-environment-{number}.json"
         described.write_text(json.dumps(held["packages"]), encoding="utf-8")
@@ -407,7 +448,7 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
         carried = {"/daodan/tools/node.tar.gz": archive, "/daodan/tools/environment.json": described,
                    "/daodan/tools/scip-python.path": located}
         configured = work_dir / f"pyrightconfig-{number}.json"
-        held["config"] = _pyright_config(here, configured)
+        held["config"] = _pyright_config(here, configured, unit.get("source_roots") or ())
         if held["config"]:
             carried["/daodan/tools/pyrightconfig.json"] = configured
         for path in (home / "node_modules").rglob("*"):
@@ -447,4 +488,5 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
            "stderr_errors": len(errors), "stderr_error_examples": list(dict.fromkeys(errors))[:5],
            "image": IMAGE, "index": str(output) if done else None,
            "index_bytes": output.stat().st_size if output.is_file() else 0}
-    return {**run, **_facts(held["environment"], held["packages"], held["config"], (name, version))}
+    return {**run, **_facts(held["environment"], held["packages"], held["config"], (name, version)),
+            "gaps": held["gaps"]}

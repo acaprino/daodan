@@ -280,9 +280,9 @@ def test_without_a_root_package_json_each_outermost_package_gets_its_install(san
     seen = {}
     real_tsconfig = typescript._tsconfig
 
-    def spy(mirror, files, base=None):  # what the mirror holds when the run starts
+    def spy(mirror, files, *rest):  # what the mirror holds when the run starts
         seen["linked"] = os.path.isjunction(mirror / "app/node_modules") or (mirror / "app/node_modules").is_symlink()
-        return real_tsconfig(mirror, files, base)
+        return real_tsconfig(mirror, files, *rest)
 
     sandbox["monkeypatch"].setattr(typescript, "_tsconfig", spy)
     result = typescript.index(project, sandbox["root"] / "work", tsconfig="app/tsconfig.app.json",
@@ -476,8 +476,8 @@ def test_each_given_python_project_is_a_run_of_its_own(sandbox, layout):
     sandbox["fake"].index = FIXTURES / "python/index.scip"
     seen = []
     real = python._pyright_config
-    sandbox["monkeypatch"].setattr(python, "_pyright_config", lambda root, target: seen.append(
-        (Path(root), Path(target))) or real(root, target))
+    sandbox["monkeypatch"].setattr(python, "_pyright_config", lambda root, target, *rest: seen.append(
+        (Path(root), Path(target))) or real(root, target, *rest))
     before = _hashes(project)
     result = python.index(project, sandbox["root"] / "work", environment=_environment(sandbox["root"]), units=units)
     assert "state" not in result, result.get("reason")
@@ -705,3 +705,28 @@ def test_the_peak_is_none_when_no_run_measured_it():
 
 def test_every_indexer_declares_the_memory_it_needs():
     assert [MODULES[name].MIN_FREE // 2**20 for name in ("go", "rust", "ts", "python")] == [512, 1280, 2304, 1920]
+
+
+@pytest.mark.parametrize("which, nested, reason", [
+    ("go", "tools/tool.go", "the scip-go run of its module tools wrote no index (exit code 2)"),
+    ("rust", "fuzz/src/main.rs", "the rust-analyzer run of its crate fuzz wrote no index (exit code 2)")])
+def test_a_nested_run_without_an_index_is_the_reason_its_files_have_no_document(sandbox, which, nested, reason):
+    """`configs` is what the stage hands `tasks`, then `missing`: the folders of the runs, and those whose run
+    wrote no index."""
+    project = _project(sandbox, which)
+    _tools(project, which)
+    fake, module = sandbox["fake"], MODULES[which]
+    fake.index = FIXTURES / which / "index.scip"
+
+    def run(*args, **kwargs):
+        fake.code = 2 if fake.runs() else 0  # the root's run writes its index, every later run fails
+        return fake(*args, **kwargs)
+
+    sandbox["monkeypatch"].setattr(subprocess, "run", run)
+    result = module.index(project, sandbox["root"] / "work", **_given(project, which))
+    root = nested.split("/")[0]
+    assert result["configs"] == {"roots": ["", root], "failed": {root: "exit code 2"}}
+    index = code_graph.Index(project)
+    for path, prefix in result["indexes"]:
+        index.load(Path(path), prefix)
+    assert module.missing(index, [nested], module.tasks(result["configs"])) == {nested: reason}

@@ -15,10 +15,12 @@ from __future__ import annotations
 
 import collections
 import os
+import platform
 import shutil
 import subprocess
+import sys
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import code_graph
 
@@ -28,6 +30,11 @@ VERSION = "v0.2.9"  # github.com/scip-code/scip-go
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-go", ("go",), frozenset({"go-module"}), False
 MIN_FREE = 512 * 2**20  # 335 MB peak on chi (benchmarks/inference-audit, 13 November 2026)
 PARAMETERS = {"parameter_declaration", "variadic_parameter_declaration"}
+# The operating systems and architectures a file's name restricts it to (go/build's lists, Go 1.27).
+GOOS = frozenset("aix android darwin dragonfly freebsd hurd illumos ios js linux nacl netbsd openbsd plan9 solaris "
+                 "wasip1 windows zos".split())
+GOARCH = frozenset("386 amd64 amd64p32 arm armbe arm64 arm64be loong64 mips mipsle mips64 mips64le mips64p32 "
+                   "mips64p32le ppc ppc64 ppc64le riscv riscv64 s390 s390x sparc sparc64 wasm".split())
 
 
 def _positional(names: list, node, values) -> tuple[str, object]:
@@ -83,17 +90,50 @@ def hops(index) -> dict:
     return {key: list(dict.fromkeys(items)) for key, items in out.items() if items}
 
 
-def missing(index, rels: list[str]) -> dict:
-    """Why a Go file has no document: a build constraint the indexer's default build leaves out."""
-    reasons = {}
+def tasks(configs) -> dict:
+    """What the run brought back for `missing`: `{"roots": [folder], "failed": {folder: how its run ended}}`,
+    empty without it."""
+    return configs if isinstance(configs, dict) else {}
+
+
+def _target() -> tuple[str, str]:
+    """GOOS and GOARCH of the indexer's build: the environment's, else Go's defaults, the machine's."""
+    system = {"win32": "windows", "darwin": "darwin"}.get(sys.platform, "linux")
+    machine = "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "amd64"
+    return os.environ.get("GOOS") or system, os.environ.get("GOARCH") or machine
+
+
+def _named(rel: str) -> list[str]:
+    """The GOOS and GOARCH a file's name restricts it to, as go/build reads names: the last words after the
+    first underscore, `_test` aside (`x_linux.go`, `x_windows_amd64_test.go`; `linux.go` names none)."""
+    words = PurePosixPath(rel).stem.split("_")[1:]
+    if words[-1:] == ["test"]:
+        words.pop()
+    if len(words) >= 2 and words[-2] in GOOS and words[-1] in GOARCH:
+        return words[-2:]
+    return words[-1:] if words and words[-1] in GOOS | GOARCH else []
+
+
+def missing(index, rels: list[str], configs: dict | None = None) -> dict:
+    """Why a Go file has no document: the run of its module wrote no index, a build constraint, or a file name
+    the indexer's build leaves out."""
+    roots, failed = set((configs or {}).get("roots") or ()), (configs or {}).get("failed") or {}
+    read = {code_graph.owner(rel, roots) for rel in index.documents}
+    reasons, target = {}, _target()
     for rel in rels:
+        root, named = code_graph.owner(rel, roots), _named(rel)
+        if root in failed and root not in read:
+            reasons[rel] = f"the scip-go run of its module {root or '.'} wrote no index ({failed[root]})"
+            continue
         try:
             head = (index.root / rel).read_text(encoding="utf-8", errors="replace").split("\n")[:20]
         except OSError:
-            continue
+            head = []
         constraint = next((line.strip() for line in head if line.startswith("//go:build")), None)
         if constraint:
             reasons[rel] = f"build constraint `{constraint}`"
+        elif any(word not in target for word in named):
+            reasons[rel] = f"file name constraint `{'_'.join(named)}`: the indexer's build is {'/'.join(target)}"
     return reasons
 
 
@@ -156,4 +196,6 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     runtime.clear(work_dir, "scip-go")
     with runtime.mirrored(tool, runtime.real(packages | roots, work_dir)) as mirror:
         runs = code_graph.module_runs("scip-go", roots, command, files, mirror, work_dir, env)
-    return runtime.outcome("scip-go", VERSION, runs)
+    return {**runtime.outcome("scip-go", VERSION, runs),  # `configs` is for `tasks`
+            "configs": {"roots": sorted(roots), "failed": {run["prefix"]: f"exit code {run['returncode']}"
+                                                           for run in runs if not run["index"]}}}
