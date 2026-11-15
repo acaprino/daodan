@@ -108,6 +108,15 @@ GRADLE_URL = f"{jvm.GRADLE_SITE}gradle-0.test-bin.zip"
 BUILD_FILES = ("pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts")
 
 
+def pre_map(project: Path, folder: Path) -> dict:
+    """The project's pre-map, as an analysis derives it first: a snapshot outside the project, then the record."""
+    import premap
+    import snapshot
+    manifest = folder / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    return premap.ensure(manifest)
+
+
 class FakeEngineTest(unittest.TestCase):
     language = "java"
 
@@ -635,12 +644,15 @@ class RealContainerSmokeTest(unittest.TestCase):
                 self.skipTest("git is needed for a tracked `.mvn/`")
             for args in (["init", "-q"], ["add", "."]):
                 subprocess.run([git, "-C", str(project), *args], check=True, capture_output=True)
+        module = java if language == "java" else kotlin
+        given = module.structure(pre_map(project, scratch / "snapshot"))  # what the stage hands the indexer
+        self.assertEqual(given, {"roots": {""}})
         before_project = tree_digest(project)
         started = time.monotonic()
-        module = java if language == "java" else kotlin
-        result = module.index(project, scratch / "work", engine=engine, memory=memory)
+        result = module.index(project, scratch / "work", engine=engine, memory=memory, **given)
         after, engine_after = user_settings(), engine_state(engine)
-        records = [json.loads(row) for row in (scratch / "work" / "container" / container.RECORD_NAME).read_text(
+        build = scratch / "work" / "build-0"
+        records = [json.loads(row) for row in (build / "container" / container.RECORD_NAME).read_text(
             encoding="utf-8").splitlines()]
         tools = {name: str(path) for name, path in jvm.tools(project).items() if name.startswith(jvm.TOOLS)}
         print(json.dumps({"engine": engine.name, "language": language, "wrapper": wrapper,
@@ -656,7 +668,7 @@ class RealContainerSmokeTest(unittest.TestCase):
                           "settings unchanged": after == before}, indent=1))
         prepared = ""
         for phase in ("prepare", "execute"):
-            log = scratch / "work" / "container" / f"{phase}.log"
+            log = build / "container" / f"{phase}.log"
             if log.is_file():
                 text = log.read_text(encoding="utf-8", errors="replace")
                 prepared = text if phase == "prepare" else prepared

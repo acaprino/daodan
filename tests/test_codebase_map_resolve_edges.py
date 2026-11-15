@@ -2570,7 +2570,7 @@ class IndexerStageTests(unittest.TestCase):
     def test_each_language_reads_from_its_source(self):
         self.assertEqual({language: spec.name for language, spec in resolve_edges.ENGINE_LANGUAGES.items()},
                          {"python": "scip-python", "typescript": "scip-typescript", "javascript": "scip-typescript",
-                          "vue": "typescript", "svelte": "typescript", "java": "java", "kotlin": "kotlin",
+                          "vue": "typescript", "svelte": "typescript", "java": "scip-java", "kotlin": "scip-kotlin",
                           "rust": "scip-rust", "go": "scip-go"})
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container)
                     for spec in resolve_edges.ENGINES if spec.indexer}

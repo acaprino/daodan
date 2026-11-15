@@ -12,8 +12,8 @@ Lo snapshot analizza ogni linguaggio con un parser e risolve le chiamate con il 
 | TypeScript | `.ts` `.tsx` `.mts` `.cts` | tree-sitter | indice di scip-typescript | installate da Daodan con `npm ci --ignore-scripts` |
 | JavaScript | `.js` `.jsx` `.mjs` `.cjs` | tree-sitter | indice di scip-typescript | come TypeScript |
 | Vue, Svelte | `.vue` `.svelte` | tree-sitter sui blocchi `<script>`, tokenizer sui blocchi `<style>` (CSS, SCSS, Sass, LESS; Stylus nominato nelle note, non letto) | typescript-language-server | come TypeScript |
-| Java | `.java` | tree-sitter | Eclipse JDT LS | lette da Maven e Gradle, scaricate da Daodan |
-| Kotlin | `.kt` `.kts` | tree-sitter | Kotlin Analysis API | come Java |
+| Java | `.java` | tree-sitter | indice di scip-java, una build per cartella della pre-mappa, in un container | lette da Maven e Gradle nel container, dai soli registri JVM |
+| Kotlin | `.kt` `.kts` | tree-sitter | indice di scip-java con il plugin Kotlin, come Java | come Java |
 | Rust | `.rs` | tree-sitter | indice di rust-analyzer (`rust-analyzer scip`) | le dipendenze di Cargo, scaricate da Daodan |
 | Go | `.go` | tree-sitter | indice di scip-go | i moduli di `go.mod`, scaricati da Daodan |
 | C# | `.cs` | tree-sitter | **da fare**: motore da scegliere (server LSP o SCIP) | — |

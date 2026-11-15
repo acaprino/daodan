@@ -3947,10 +3947,10 @@ ENGINES = (
     # runs in an environment of its own.
     EngineSpec("typescript", ("vue", "svelte"), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy and its pinned typescript-language-server", {}),
-    EngineSpec("java", ("java",), ("multilspy==0.1.1",), "multilspy",
+    EngineSpec("java", (), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy and its pinned Eclipse JDT LS", {}),
     # Kotlin needs nothing in Python: its engine is a JVM process that installs itself.
-    EngineSpec("kotlin", ("kotlin",), (), "json", "install uv, which runs the pass", {}),
+    EngineSpec("kotlin", (), (), "json", "install uv, which runs the pass", {}),
     EngineSpec("rust", (), ("multilspy==0.1.1",), "multilspy",
                "install uv, which gives the pass multilspy; rust-analyzer installs itself", {}),
     EngineSpec("go", (), ("multilspy==0.1.1",), "multilspy",

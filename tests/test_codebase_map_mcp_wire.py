@@ -21,6 +21,19 @@ SERVER = (Path(__file__).resolve().parents[1] /
 HAS_SDK = importlib.util.find_spec("mcp") is not None
 
 
+POM = """<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>demo</groupId>
+  <artifactId>demo</artifactId>
+  <version>1.0</version>
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+</project>
+"""  # the smallest build scip-java runs: a Java source is read only through its build
+
 @unittest.skipUnless(HAS_SDK, "requires the actual MCP SDK runtime")
 class CodebaseMapWireTests(unittest.TestCase):
     def setUp(self):
@@ -252,9 +265,11 @@ class CodebaseMapWireTests(unittest.TestCase):
             "package demo;\n\npublic class Tool {\n  public int run() { return 1; }\n}\n", encoding="utf-8")
         (package / "Use.java").write_text(
             "package demo;\n\npublic class Use {\n  int go(Tool tool) { return tool.run(); }\n}\n", encoding="utf-8")
+        (self.project / "jvm/pom.xml").write_text(POM, encoding="utf-8")
         state = self.data(self.call("codebase_map_create_run", {"target": "jvm", "run_id": "java-live"}))["engine"]
-        # The first pass on a machine installs Eclipse JDT LS with its Java runtime.
-        deadline = time.monotonic() + 420
+        # The first pass on a machine brings scip-java, Maven and the JDK into Daodan's cache: the build runs in a
+        # container, and without an engine the language is unavailable with its remedy.
+        deadline = time.monotonic() + 900
         while state["state"] == "running" and time.monotonic() < deadline:
             time.sleep(1)
             state = self.data(self.call("codebase_map_status", {"run_id": "java-live"}))["engine"]
@@ -262,7 +277,7 @@ class CodebaseMapWireTests(unittest.TestCase):
         if language["state"] == "unavailable":
             self.skipTest(language.get("install"))
         self.assertEqual(language["state"], "fresh", state)
-        self.assertTrue(language["engine"].startswith("eclipse-jdtls@"), language)
+        self.assertTrue(language["engine"].startswith("scip-java@"), language)
         java = state["coverage"]["java"]
         self.assertGreaterEqual(java["answered"].get("project-callable", 0), 1, java)
 
