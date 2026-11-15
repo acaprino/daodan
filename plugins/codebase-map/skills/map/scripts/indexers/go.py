@@ -109,8 +109,15 @@ def _build(go: str, env: dict, partial: Path, work_dir: Path) -> None:
         shutil.rmtree(scratch, onexc=lambda function, path, _error: (os.chmod(path, 0o700), function(path)))
 
 
-def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> dict:
-    """The scip-go index of `project_dir` for `files` (default: every `.go` file); see the module's docstring."""
+def structure(record: dict) -> dict:
+    """What `index` takes from the pre-map: the folders it runs in."""
+    import premap
+    return {"roots": premap.roots(record, {"go-module"}, {"go"})}
+
+
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str]) -> dict:
+    """The scip-go index of `project_dir` for `files` (default: every `.go` file), `roots` the folders of its
+    modules as the pre-map names them; see the module's docstring."""
     import resolve_edges as rx
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
@@ -130,7 +137,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> 
     scip_go = str(tool.home() / rx.executable_name("scip-go"))
     if files is None:
         files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*.go"))
-    roots = code_graph.manifest_dirs(project_dir, "go.mod")
+    roots = set(roots)
     packages = {rel.rsplit("/", 1)[0] for rel in files if "/" in rel}
 
     def command(prefix, output):

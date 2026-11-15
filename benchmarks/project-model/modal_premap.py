@@ -170,17 +170,9 @@ def score_fixtures(names: list) -> dict:
         except Exception as error:  # noqa: BLE001 - a fixture's failure is its result
             out["score"][name] = {"error": f"{type(error).__name__}: {error}"}
             continue
-        # What an indexer finds looking for manifests on disk, beside what the pre-map names.
-        import code_graph
-        folders = {}
-        for file, kinds, tools in (("go.mod", {"go-module"}, {"go"}), ("Cargo.toml", {"cargo-crate"}, {"cargo"}),
-                                   ("package.json", {"npm-package"}, {"npm", "pnpm", "lerna"})):
-            disk, named = code_graph.manifest_dirs(project, file), premap.roots(record, kinds, tools)
-            if disk or named:
-                folders[file] = {"disk": sorted(disk), "premap": sorted(named)}
         out["score"][name] = {"base": scorer.score(expected, daodan_modules.convert(graph)),
                               "premap": scorer.score(expected, record), "sources": record["sources"],
-                              "gaps": record["gaps"], "output": record, "roots": folders,
+                              "gaps": record["gaps"], "output": record,
                               "languages_per_file": languages,
                               "seconds": {"snapshot_and_graph": round(middle - started, 2),
                                           "premap": round(time.monotonic() - middle, 2)}}

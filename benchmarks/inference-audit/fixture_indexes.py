@@ -2,7 +2,8 @@
 Modal with each language's pinned indexer, through its `index()`: the plugin's for Go and Python, which install
 what they need themselves, the adapters' for Java and Kotlin, which run the plugin's two phases in the function's
 container, on the plugin's image (`adapters/jvm_here.py`), and the adapter's for C and C++ (`adapters/clang.py`:
-CMake's configure and build of the fixture, then scip-clang). No model, snapshot or graph.
+CMake's configure and build of the fixture, then scip-clang). No model or graph; a snapshot only for the
+pre-map the indexers take their structure from.
 
     modal deploy benchmarks/inference-audit/fixture_indexes.py
     python benchmarks/inference-audit/fixture_indexes.py spawn --languages go,python,java,kotlin,c,cpp
@@ -84,7 +85,13 @@ def _index(language: str, sources: dict[str, bytes]) -> dict:
     store.mkdir(parents=True)
     result = {"language": language, "code": plugin_scripts.code_sha256()}
     try:
-        engine = ADAPTERS[language].index(project, work / "engine")
+        import premap
+        import snapshot
+        manifest = work / "snapshot" / "manifest.sqlite"
+        snapshot.write_snapshot(project, manifest)
+        module = ADAPTERS[language]  # the structure an indexer takes, as the stage hands it
+        given = module.structure(premap.ensure(manifest)) if hasattr(module, "structure") else {}
+        engine = module.index(project, work / "engine", **given)
     except Exception:
         engine = {"error": traceback.format_exc()[-3000:]}
     indexes = engine.get("indexes") or []

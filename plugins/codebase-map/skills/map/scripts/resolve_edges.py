@@ -4154,8 +4154,10 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     an index, the indexer's `reason` and, when it is `unavailable`, its `install`.
     """
     import code_graph
+    import premap
     module = importlib.import_module(f"indexers.{spec.indexer}")
-    options = {}
+    # The pre-map first: an indexer takes the project's structure from it and looks for no manifest itself.
+    options = module.structure(premap.ensure(Path(manifest))) if hasattr(module, "structure") else {}
     if spec.needs_container:
         import container
         try:

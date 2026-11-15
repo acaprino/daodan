@@ -154,17 +154,24 @@ def _tsconfig(mirror: Path, files: list[str], base: str | None = None) -> str | 
     return config.get("extends")
 
 
-def _package_roots(project_dir: Path) -> list[str]:
-    """'' when the project's root has a package.json, else each outermost directory that has one."""
-    if (project_dir / "package.json").is_file():
+def structure(record: dict) -> dict:
+    """What `index` takes from the pre-map: the folders it runs in."""
+    import premap
+    return {"roots": premap.roots(record, {"npm-package"}, {"npm", "pnpm", "lerna"})}
+
+
+def _package_roots(roots: set[str]) -> list[str]:
+    """'' when the project's root is a package, else each outermost folder that is one."""
+    if "" in roots:
         return [""]
-    roots = sorted(code_graph.manifest_dirs(project_dir, "package.json"))
-    return [root for root in roots if not any(root.startswith(f"{other}/") for other in roots)]
+    return [root for root in sorted(roots) if not any(root.startswith(f"{other}/") for other in roots)]
 
 
-def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsconfig: str | None = None) -> dict:
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsconfig: str | None = None, *,
+          roots: set[str]) -> dict:
     """The scip-typescript index of `project_dir` for `files` (default: every JS/TS file outside
-    `node_modules`), `tsconfig` the configuration a root without one extends; see the module's docstring."""
+    `node_modules`), `tsconfig` the configuration a root without one extends, `roots` the folders of its packages
+    as the pre-map names them; see the module's docstring."""
     import resolve_edges as rx
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
@@ -174,7 +181,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
         runtime.memory("scip-typescript", MIN_FREE)
         directory = runtime.node(project_dir)
         script = runtime.npm_package(project_dir, directory, "@sourcegraph/scip-typescript", VERSION)
-        roots = _package_roots(project_dir)
+        roots = _package_roots(set(roots))
         for root in roots:
             key = rx.npm_key(project_dir / root)
             if key and not (rx.shared_cache_dir() / "npm" / key / "daodan-modules.json").is_file():

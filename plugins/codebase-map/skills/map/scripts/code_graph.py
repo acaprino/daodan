@@ -929,16 +929,6 @@ def measured(command: list[str], cwd: str, env: dict | None, timeout: int) -> di
             "stderr_errors": len(errors), "stderr_error_examples": list(dict.fromkeys(errors))[:5]}
 
 
-def manifest_dirs(mirror: Path, manifest: str) -> set[str]:
-    """The checkout-relative directories holding a build manifest (`go.mod`, `Cargo.toml`), '' for the root."""
-    roots = set()
-    for path in Path(mirror).rglob(manifest):
-        relative = path.parent.relative_to(mirror)
-        if not {".git", "target", "node_modules"} & set(relative.parts):
-            roots.add("" if relative == Path(".") else relative.as_posix())
-    return roots
-
-
 def owner(rel: str, roots: set[str]) -> str | None:
     """The nearest directory holding a manifest above a file, '' for the checkout's root."""
     parts = rel.split("/")[:-1]

@@ -134,8 +134,15 @@ def missing(index, rels: list[str]) -> dict:
             and PurePosixPath(rel).parent.name not in ROOT_DIRECTORIES}
 
 
-def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> dict:
-    """The rust-analyzer index of `project_dir` for `files` (default: every `.rs` file outside `target`)."""
+def structure(record: dict) -> dict:
+    """What `index` takes from the pre-map: the folders it runs in."""
+    import premap
+    return {"roots": premap.roots(record, {"cargo-crate"}, {"cargo"})}
+
+
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str]) -> dict:
+    """The rust-analyzer index of `project_dir` for `files` (default: every `.rs` file outside `target`),
+    `roots` the folders of its crates and workspaces as the pre-map names them."""
     import resolve_edges as rx
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
@@ -166,7 +173,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None) -> 
     if files is None:
         files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*.rs")
                        if "target" not in path.relative_to(project_dir).parts)
-    roots = code_graph.manifest_dirs(project_dir, "Cargo.toml")
+    roots = set(roots)
 
     def command(prefix, output):
         return [launch[0], "scip", ".", "--output", str(output), "--config-path", str(config)]

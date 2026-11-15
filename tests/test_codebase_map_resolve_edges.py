@@ -2351,7 +2351,7 @@ class IndexerStageTests(unittest.TestCase):
         project, manifest = self.project("go")
         seen = []
 
-        def index(project_dir, work_dir, files=None):
+        def index(project_dir, work_dir, files=None, **given):
             seen.append((Path(project_dir), Path(work_dir), Path(work_dir).is_dir()))
             return self.contract("go")
 
@@ -2381,15 +2381,30 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual(set(hooks), {"hops", *code_graph.TRAVERSAL_HOOKS})
         with mock.patch.multiple(go, create=True, **hooks):
             result, _started, _indexed = self.run_stage(
-                "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+                "scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("go"))
         self.assertEqual(result["languages"]["go"], {"state": "fresh", "engine": "scip-go@v0.2.9"})
         self.assertEqual((calls[:2], sorted(calls[2:])), (["prepare", "hops"], ["classify", "same_range"]))
+
+    def test_the_stage_gives_the_indexer_the_folders_the_pre_map_names(self):
+        """The stage reads the pre-map and hands the indexer its structure: the indexer looks for no manifest."""
+        extra = {"tools/go.mod": "module example.com/tools" + chr(10) + chr(10) + "go 1.21" + chr(10),
+                 "tools/tool.go": "package tools" + chr(10)}
+        _project, manifest = self.project("go", extra)
+        seen = {}
+
+        def index(project_dir, work_dir, files=None, **given):
+            seen.update(given)
+            return self.contract("go")
+
+        result, _started, _indexed = self.run_stage("scip-go", manifest, index)
+        self.assertEqual(result["languages"]["go"], {"state": "fresh", "engine": "scip-go@v0.2.9"})
+        self.assertEqual(seen, {"roots": {"", "tools"}})
 
     def test_the_stage_keeps_the_entries_of_the_other_languages(self):
         project, manifest = self.project("go", self.PYTHON)
         engine = StubEngine({("use.py", 3): Definition(project / "app/tool.py", "run")})
         self.assertTrue(resolve_edges.resolve_edges(manifest, engine=engine, limit=None, stride=1)["available"])
-        self.run_stage("scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+        self.run_stage("scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("go"))
         with open_snapshot(manifest) as store:
             edges, binding, reason = resolve_edges.read_edge_store(resolve_edges.default_edge_store(manifest), store)
         self.assertIsNone(reason, reason)
@@ -2401,7 +2416,7 @@ class IndexerStageTests(unittest.TestCase):
         _project, manifest = self.project("go")
         reason = "scip-go wrote no index (exit code 1): panic: no packages"
         result, _started, _indexed = self.run_stage(
-            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract(
                 "go", state="failed", reason=reason, errors=2))
         self.assertEqual(result["languages"]["go"], {"state": "failed", "engine": "scip-go", "reason": reason})
         self.assertFalse(resolve_edges.default_edge_store(manifest).exists())
@@ -2412,7 +2427,7 @@ class IndexerStageTests(unittest.TestCase):
         reason = "Go 1.27.3 and scip-go v0.2.9 could not be downloaded: no network"
         install = "check the network: Daodan downloads Go 1.27.3 and scip-go v0.2.9 from go.dev and proxy.golang.org"
         result, _started, _indexed = self.run_stage(
-            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract(
+            "scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract(
                 "go", state="unavailable", reason=reason, install=install))
         self.assertEqual(result["languages"]["go"],
                          {"state": "unavailable", "engine": "scip-go", "reason": reason, "install": install})
@@ -2463,7 +2478,7 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["python"]["state"], "unavailable")
         # The next pass asks again; with an engine that answers, the language is fresh.
         result, started, _indexed = self.run_stage(
-            "scip-python", manifest, lambda project_dir, work_dir, files=None: self.python_contract())
+            "scip-python", manifest, lambda project_dir, work_dir, files=None, **given: self.python_contract())
         self.assertEqual(len(started), 1)
         self.assertEqual(result["languages"]["python"], {"state": "fresh", "engine": "scip-python@0.6.8"})
 
@@ -2473,7 +2488,8 @@ class IndexerStageTests(unittest.TestCase):
         spec = next(spec for spec in resolve_edges.ENGINES if spec.name == "scip-go")
         self.assertEqual(spec.min_free, go.MIN_FREE)
         result, started, indexed = self.run_stage(
-            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"), free=go.MIN_FREE - 1)
+            "scip-go", manifest,
+            lambda project_dir, work_dir, files=None, **given: self.contract("go"), free=go.MIN_FREE - 1)
         self.assertEqual(started, [])
         indexed.assert_not_called()
         self.assertEqual(result["languages"]["go"]["state"], "failed")
@@ -2481,13 +2497,14 @@ class IndexerStageTests(unittest.TestCase):
         # Above the indexer's own minimum and below every engine's, the stage starts.
         self.assertLess(go.MIN_FREE, resolve_edges.ENGINE_MIN_FREE)
         _result, started, _indexed = self.run_stage(
-            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"), free=go.MIN_FREE)
+            "scip-go", manifest,
+            lambda project_dir, work_dir, files=None, **given: self.contract("go"), free=go.MIN_FREE)
         self.assertEqual(len(started), 1)
 
     def test_a_missing_file_and_a_hole_give_lower_bound_with_the_counts(self):
         _project, manifest = self.project("go", {"extra.go": "package fx\n\nfunc Extra() int { return len(\"x\") }\n"})
         result, _started, _indexed = self.run_stage(
-            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+            "scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("go"))
         self.assertEqual(result["languages"]["go"]["state"], "fresh")
         state = resolve_edges.edge_state(manifest)
         go = state["coverage"]["go"]
@@ -2514,7 +2531,7 @@ class IndexerStageTests(unittest.TestCase):
             return graph, references
 
         result, _started, _indexed = self.run_stage(
-            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"),
+            "scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("go"),
             build=(code_graph, "build", dropping))
         go = result["languages"]["go"]
         self.assertEqual(go["state"], "failed")
@@ -2540,7 +2557,7 @@ class IndexerStageTests(unittest.TestCase):
         _project, manifest = self.project("rust")
         indexer = {"name": "rust-analyzer", "version": "2026-11-09", "seconds": 1.0, "peak_mb": None}
         result, _started, _indexed = self.run_stage(
-            "scip-rust", manifest, lambda project_dir, work_dir, files=None: self.contract("rust", indexer))
+            "scip-rust", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("rust", indexer))
         self.assertEqual(result["languages"]["rust"], {"state": "fresh", "engine": "scip-rust@2026-11-09"})
 
     def test_an_entry_from_the_former_source_is_not_fresh(self):
@@ -2554,12 +2571,12 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["go"]["state"], "missing")
         self.assertEqual(resolve_edges.ensure_edges(manifest, check=True)["action"], "reported")
         _result, started, _indexed = self.run_stage(
-            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+            "scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("go"))
         self.assertEqual(len(started), 1)
         self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["go"]["state"], "fresh")
         # From the source that serves it, the entry is fresh: no stage starts again.
         _result, started, _indexed = self.run_stage(
-            "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+            "scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("go"))
         self.assertEqual(started, [])
 
 if __name__ == "__main__":

@@ -295,6 +295,25 @@ def test_adapter_traversal_runs_prepare_first_and_passes_only_what_the_module_de
 HOOKS = ("prepare", "same_range", "classify", "static", "refine", "missing", "tasks")  # the optional ones
 
 
+def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
+    """The structure of a project is the pre-map's: an indexer that runs once per module, crate or package says
+    which units it wants (`structure`) and is handed their folders (`roots`); none walks the tree for a
+    manifest, and the common part offers no way to."""
+    import inspect
+    from indexers import go, rust, typescript
+    assert not hasattr(code_graph, "manifest_dirs")
+    record = {"units": [{"kind": "go-module", "root": "."}, {"kind": "cargo-crate", "root": "crates/a"},
+                        {"kind": "npm-package", "root": "web"}],
+              "workspace": [{"tool": "cargo", "root": "."}]}
+    assert go.structure(record) == {"roots": {""}}
+    assert rust.structure(record) == {"roots": {"", "crates/a"}}
+    assert typescript.structure(record) == {"roots": {"web"}}
+    for module in (go, rust, typescript):
+        source = inspect.getsource(module)
+        assert "roots" in inspect.signature(module.index).parameters
+        assert not re.search(r"rglob[(][^)]*(go[.]mod|Cargo[.]toml|package[.]json)", source), module.__name__
+
+
 def test_every_hook_an_indexer_defines_is_reached():
     """A hook an indexer module defines and nothing calls is a silent difference between the measured graph and
     the product's: each is reached through `adapter_traversal`, which the driver calls, or by the driver itself."""

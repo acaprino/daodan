@@ -507,19 +507,27 @@ def _indexers(target: Path, work: Path, manifest: Path, options: dict | None = N
     coverage = connection.execute("SELECT file, language FROM sem_coverage WHERE status='ast'").fetchall()
     connection.close()
     out, options = {}, options or {}
+    import premap
+    record = premap.ensure(Path(manifest))  # the structure an indexer takes, as the stage hands it
     for name in sorted({ADAPTERS[language] for _, language in coverage if language in ADAPTERS}):
         files = sorted(rel for rel, language in coverage if ADAPTERS.get(language) == name
                        and rel.endswith(SUFFIXES[name]))
         root = options.get("roots", {}).get(name, "")
         extra = {"tsconfig": options["tsconfig"]} if name == "typescript" and options.get("tsconfig") else {}
+        module = importlib.import_module(f"indexers.{name}")
+        given = module.structure(record) if hasattr(module, "structure") else {}
+        if root and "roots" in given:  # the folders below the directory indexed, named from it
+            given["roots"] = {folder[len(root) + 1:] for folder in given["roots"]
+                              if folder == root or folder.startswith(f"{root}/")}
+        extra.update(given)
         try:
             if root:
                 inner = [rel[len(root) + 1:] for rel in files if rel.startswith(f"{root}/")]
-                info = importlib.import_module(f"indexers.{name}").index(target / root, work, inner, **extra)
+                info = module.index(target / root, work, inner, **extra)
                 info["indexes"] = [[path, f"{root}/{prefix}" if prefix else root] for path, prefix in info["indexes"]]
                 out[name] = {**info, "root": root}
             else:
-                out[name] = importlib.import_module(f"indexers.{name}").index(target, work, files, **extra)
+                out[name] = module.index(target, work, files, **extra)
         except Exception:
             import traceback
             out[name] = {"error": traceback.format_exc()[-3000:], "indexes": []}

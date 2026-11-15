@@ -38,6 +38,17 @@ NPM = {"ts": "@sourcegraph/scip-typescript", "python": "@sourcegraph/scip-python
 MANIFESTS = ("go.mod", "go.sum", "Cargo.toml", "Cargo.lock", "package.json", "tsconfig.json", "pyproject.toml")
 
 
+def _given(project: Path, which: str) -> dict:
+    """The structure the stage hands an indexer, as the pre-map names it for these fixtures: the folders holding
+    the language's manifest."""
+    manifest = {"go": "go.mod", "rust": "Cargo.toml", "ts": "package.json"}.get(which)
+    if manifest is None:
+        return {}
+    found = {path.parent.relative_to(project).as_posix() for path in Path(project).rglob(manifest)
+             if "node_modules" not in path.parts}
+    return {"roots": {"" if root == "." else root for root in found}}
+
+
 class Fake:
     """Every program an `index()` starts. An indexer run (`--output`) writes `index` there (the first run; an
     empty index after) and exits with `code` and `stderr`; each run and `go mod download` also writes where a real tool writes, beside the manifests of
@@ -224,7 +235,7 @@ def test_a_run_writes_nothing_in_the_project_removes_its_mirror_and_feeds_the_gr
     _tools(project, which)
     sandbox["fake"].index = FIXTURES / which / "index.scip"
     before = _hashes(project)
-    result = MODULES[which].index(project, sandbox["root"] / "work")
+    result = MODULES[which].index(project, sandbox["root"] / "work", **_given(project, which))
     assert "state" not in result, result.get("reason")
     assert _hashes(project) == before
     runs = sandbox["fake"].runs()
@@ -250,7 +261,7 @@ def test_go_runs_every_module_and_names_the_directories_go_ignores(sandbox):
     project = _project(sandbox, "go")
     _tools(project, "go")
     sandbox["fake"].index = FIXTURES / "go/index.scip"
-    result = go.index(project, sandbox["root"] / "work")
+    result = go.index(project, sandbox["root"] / "work", **_given(project, "go"))
     roots = [run["prefix"] for run in result["runs"]]
     assert roots == ["", "tools"]
     first = result["runs"][0]["command"]
@@ -271,7 +282,8 @@ def test_without_a_root_package_json_each_outermost_package_gets_its_install(san
         return real_tsconfig(mirror, files, base)
 
     sandbox["monkeypatch"].setattr(typescript, "_tsconfig", spy)
-    result = typescript.index(project, sandbox["root"] / "work", tsconfig="app/tsconfig.app.json")
+    result = typescript.index(project, sandbox["root"] / "work", tsconfig="app/tsconfig.app.json",
+                              **_given(project, "ts"))
     assert "state" not in result, result.get("reason")
     assert list(result["node_modules"]) == ["app"] and seen["linked"]
     assert result["tsconfig_extends"] == "./app/tsconfig.app.json"
@@ -282,7 +294,7 @@ def test_the_first_use_installs_with_one_log_line(sandbox, capsys):
     _tools(project, "go")
     shutil.rmtree(rx.shared_engine_dir("scip-go"))
     sandbox["fake"].index = FIXTURES / "go/index.scip"
-    result = go.index(project, sandbox["root"] / "work")
+    result = go.index(project, sandbox["root"] / "work", **_given(project, "go"))
     assert "state" not in result
     lines = [line for line in capsys.readouterr().out.splitlines() if line.startswith("installing ")]
     assert lines == [f"installing scip-go {go.VERSION} into {rx.shared_engine_dir('scip-go') / go.VERSION} "
@@ -328,7 +340,7 @@ def test_node_installs_from_its_release_checked_against_shasums256(sandbox, caps
 def test_a_wrong_checksum_is_refused(sandbox):
     project = _project(sandbox, "ts")
     sandbox["web"].pages.update(_node_release(digest="f" * 64))
-    result = typescript.index(project, sandbox["root"] / "work")
+    result = typescript.index(project, sandbox["root"] / "work", **_given(project, "ts"))
     assert result["state"] == "unavailable"
     assert "checksum mismatch" in result["reason"] and "nodejs.org" in result["install"]
     assert not (rx.shared_engine_dir("node") / runtime.NODE_VERSION / ".installed").exists()
@@ -337,7 +349,7 @@ def test_a_wrong_checksum_is_refused(sandbox):
 
 def test_a_download_that_cannot_happen_is_unavailable_with_its_cause(sandbox):
     project = _project(sandbox, "go")
-    result = go.index(project, sandbox["root"] / "work")
+    result = go.index(project, sandbox["root"] / "work", **_given(project, "go"))
     assert result["state"] == "unavailable"
     assert result["reason"].startswith(f"Go {rx.GO_VERSION} and scip-go {go.VERSION} could not be downloaded")
     assert "no network in this test" in result["reason"]
@@ -360,7 +372,7 @@ def test_rust_analyzer_leaves_its_temporary_directories_in_a_folder_removed_afte
         return fake(command, *args, **kwargs)
 
     sandbox["monkeypatch"].setattr(subprocess, "run", leaving)
-    result = rust.index(project, work)
+    result = rust.index(project, work, **_given(project, "rust"))
     assert "state" not in result and len(seen) == 1
     temp = Path(seen[0]["TEMP"])
     assert set(seen[0].values()) == {str(temp)} and temp.is_relative_to(work)
@@ -372,7 +384,7 @@ def test_rust_analyzer_is_named_by_its_pinned_release_and_keeps_the_build_it_sta
     shutil.rmtree(project / "fuzz")
     _tools(project, "rust")
     sandbox["fake"].index = FIXTURES / "rust/index.scip"
-    result = rust.index(project, sandbox["root"] / "work")
+    result = rust.index(project, sandbox["root"] / "work", **_given(project, "rust"))
     assert (result["indexer"]["version"], result["build"]) == (rx.RUST_ANALYZER_RELEASE, "tool 0.0.0-test")
 
 
@@ -389,7 +401,7 @@ def test_an_install_that_crashes_states_the_first_line_of_its_error(sandbox):
         return fake(command, *args, **kwargs)
 
     sandbox["monkeypatch"].setattr(subprocess, "run", crashing)
-    result = go.index(project, sandbox["root"] / "work")
+    result = go.index(project, sandbox["root"] / "work", **_given(project, "go"))
     assert result["state"] == "unavailable" and "(exit code 2)" in result["reason"]
     assert "fatal error: out of memory" in result["reason"] and result["reason"].endswith("runtime.rt0_go()")
     assert len(result["reason"]) < 1200
@@ -401,7 +413,7 @@ def test_a_failed_run_is_failed_with_the_stderr_tail_and_the_error_count(sandbox
     _tools(project, "rust")
     sandbox["fake"].code = 101
     sandbox["fake"].stderr = "start\n2026-11-14 ERROR one thing\n2026-11-14 ERROR another\nthe last words\n"
-    result = rust.index(project, sandbox["root"] / "work")
+    result = rust.index(project, sandbox["root"] / "work", **_given(project, "rust"))
     assert result["state"] == "failed" and result["indexes"] == []
     assert "the last words" in result["reason"] and "101" in result["reason"]
     assert result["errors"] == 2 and len(result["runs"]) == 1  # the fallback run replaces the first one
@@ -581,7 +593,7 @@ def test_less_memory_than_the_indexer_needs_starts_nothing(sandbox):
     project = _project(sandbox, "ts")
     _tools(project, "ts")
     sandbox["monkeypatch"].setattr(rx, "free_memory", lambda: typescript.MIN_FREE - 1)
-    result = typescript.index(project, sandbox["root"] / "work")
+    result = typescript.index(project, sandbox["root"] / "work", **_given(project, "ts"))
     assert result["state"] == "unavailable" and "memory" in result["reason"]
     assert sandbox["fake"].calls == [] and sandbox["web"].asked == []
 
@@ -603,7 +615,7 @@ def test_scip_go_is_built_with_at_most_four_compilers_at_once(sandbox, cpus, job
     shutil.rmtree(rx.shared_engine_dir("scip-go"))
     sandbox["monkeypatch"].setattr(os, "cpu_count", lambda: cpus)
     sandbox["fake"].index = FIXTURES / "go/index.scip"
-    assert "state" not in go.index(project, sandbox["root"] / "work")
+    assert "state" not in go.index(project, sandbox["root"] / "work", **_given(project, "go"))
     build = next(command for command, _cwd in sandbox["fake"].calls if command[1:2] == ["install"])
     assert build[1:4] == ["install", "-p", jobs]
 
@@ -614,7 +626,7 @@ def test_go_keeps_its_configuration_and_telemetry_in_the_shared_directory_and_tu
     shutil.rmtree(rx.shared_engine_dir("scip-go"))
     sandbox["fake"].index = FIXTURES / "go/index.scip"
     for _ in range(2):
-        assert "state" not in go.index(project, sandbox["root"] / "work")
+        assert "state" not in go.index(project, sandbox["root"] / "work", **_given(project, "go"))
     # The variable Go's os.UserConfigDir reads on this platform.
     variable = "APPDATA" if os.name == "nt" else "HOME" if sys.platform == "darwin" else "XDG_CONFIG_HOME"
     fake = sandbox["fake"]
@@ -632,7 +644,7 @@ def test_node_and_npm_keep_their_caches_in_the_shared_directory(sandbox):
     shutil.rmtree(rx.shared_engine_dir("scip-typescript"))
     shutil.rmtree(rx.shared_cache_dir() / "npm")
     sandbox["fake"].index = FIXTURES / "ts/index.scip"
-    typescript.index(project, sandbox["root"] / "work")
+    typescript.index(project, sandbox["root"] / "work", **_given(project, "ts"))
     fake = sandbox["fake"]
     started = [(command, env) for (command, _cwd), env in zip(fake.calls, fake.envs)
                if Path(command[0]).stem in ("node", "npm")]

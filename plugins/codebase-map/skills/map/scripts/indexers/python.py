@@ -311,6 +311,12 @@ def _facts(environment: Path | None, packages: list[dict], config: dict | None, 
             "packages": {package["name"]: package["version"] for package in packages}, "pyrightconfig": config}
 
 
+def structure(record: dict) -> dict:
+    """What `index` takes from the pre-map: one run per outermost Python project."""
+    import premap
+    return {"units": premap.python_runs(record)}
+
+
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, environment: Path | None = None,
           *, engine=None, units: list[dict] | None = None) -> dict:
     """The scip-python index of each Python project of `units` (`root`: its folder from the checkout's root, ''
