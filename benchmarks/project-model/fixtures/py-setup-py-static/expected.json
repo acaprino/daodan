@@ -90,5 +90,6 @@
     "install_requires is a literal list: statically readable, no execution needed",
     "tests_require (nose) is a deprecated test dependency declared in setup.py",
     "no pyproject.toml: build backend is implicit setuptools, so no build dependency is declared"
-  ]
+  ],
+  "cases": ["custom-source-roots", "no-lockfile"]
 }

@@ -111,5 +111,6 @@
     "the TypeScript range is declared only in the catalog (dependencies names pnpm-workspace.yaml), the manifest says catalog:",
     "packages globs: packages/* and apps/*, in that order; members are listed in directory order",
     "lock has no integrity hashes (not fabricated)"
-  ]
+  ],
+  "cases": ["workspace-glob", "locked-versions", "version-indirect", "internal-link"]
 }

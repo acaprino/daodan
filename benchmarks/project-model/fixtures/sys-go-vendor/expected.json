@@ -63,5 +63,6 @@
     "only the imported package golang.org/x/sync/errgroup is vendored; semaphore and singleflight of the same module are absent, and that is correct",
     "vendor/golang.org/x/sync/go.mod is never copied: the module's go version 1.18 is only in the ## explicit line of modules.txt",
     "LICENSE and PATENTS under vendor/ belong to the dependency, not to the project"
-  ]
+  ],
+  "cases": ["locked-versions", "vendored-code"]
 }

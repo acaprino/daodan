@@ -190,5 +190,6 @@
         "client-py/src/shop_client/gen/shop/v1/order_pb2.py"
       ]
     }
-  ]
+  ],
+  "cases": ["unit-no-name", "build-only-dependency", "generated-file", "undeclared-connections", "shared-contract"]
 }

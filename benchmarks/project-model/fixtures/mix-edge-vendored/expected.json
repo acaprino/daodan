@@ -35,5 +35,6 @@
     "docs/conf.py is Python but it is Sphinx configuration inside documentation; myst_parser in it is not a dependency of any unit",
     "esbuild is named in the build script but not declared anywhere",
     "public/index.html is the page that loads the app; it is not excluded"
-  ]
+  ],
+  "cases": ["no-lockfile", "undeclared-imports", "generated-file", "vendored-code", "documentation-tree", "binary-file", "committed-ignored"]
 }

@@ -269,5 +269,6 @@
     "[tool.black] target-version lists py37 to py311 while requires-python is >=3.10; black is not declared anywhere",
     "CI installs Python with uv python install, not setup-python: the check job pins 3.10, the tests job takes the matrix",
     "the Makefile only runs python setup.py sdist bdist_wheel --universal, and there is no setup.py"
-  ]
+  ],
+  "cases": ["custom-source-roots", "version-disagree", "version-matrix", "locked-versions", "scope-from-groups", "build-only-dependency", "documentation-tree", "symlinks", "dot-folder-facts", "missing-file"]
 }

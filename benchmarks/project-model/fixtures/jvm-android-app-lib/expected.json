@@ -280,5 +280,6 @@
     "The Gradle path names are :app and :core; rootProject.name NotesApp is only the display name.",
     "AGP 8.7.3 requires Gradle 8.9 or later: the wrapper's 8.11.1 satisfies it.",
     "resolved for firebase-analytics (22.1.2) is read from firebase-bom 33.7.0 as published on Google Maven."
-  ]
+  ],
+  "cases": ["name-mismatch", "source-sets", "build-variants", "version-in-wrapper", "platform-sdk", "no-lockfile", "version-from-bom", "build-only-dependency", "vendored-code", "needs-build", "missing-file", "saas-service"]
 }

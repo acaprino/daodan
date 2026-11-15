@@ -126,5 +126,6 @@
     "cpp/detail.h is C++ (namespace, template) with a .h extension; c/zutil.h and include/*.h are C",
     "#define local static leaks into every C++ file that includes zmini.h; checksum.cpp includes the standard headers first for that reason",
     "add_library(zmini zmini.c) has no STATIC or SHARED: its kind follows BUILD_SHARED_LIBS"
-  ]
+  ],
+  "cases": ["targets-as-units", "file-in-several-units", "build-variants", "ambiguous-extension"]
 }

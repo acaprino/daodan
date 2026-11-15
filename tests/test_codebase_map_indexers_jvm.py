@@ -122,10 +122,6 @@ class FakeEngineTest(unittest.TestCase):
         shutil.copytree(self.fixture, self.project, ignore=lambda folder, names: [
             name for name in names if name in OWN or name == "kotlin-configs"])
         self.work = self.scratch / "work"
-        # Python asks Windows its version once per process (`platform.uname`, which `shared_cache_dir` reaches);
-        # when WMI fails, as it does with the commit exhausted, it runs `ver` through the shell. Asked here,
-        # before the recorded window, so the guard below sees only the build's own processes.
-        platform.uname()
         Recorder.calls = []
         self.asked: list[str] = []
         self.served = {f"{resolve_edges.MAVEN_CENTRAL}/fx/test/tool/1.0/tool-1.0.jar": JAR, MAVEN_URL: MAVEN_ZIP,
@@ -218,16 +214,13 @@ class JavaContainerTests(FakeEngineTest):
         self.assertNotIn("scip-java\" index", execute)
 
     @unittest.skipUnless(os.name == "nt", "the shell fallback of Python's version query exists only on Windows")
-    def test_pythons_windows_version_query_is_the_process_the_guard_once_saw(self):
-        """The red of the guard under low memory: the first `platform` call of the process, with WMI failing,
-        runs `ver`. It is Python's, not the build's; with the answer cached the index starts no such process."""
+    def test_the_index_starts_no_version_query_even_when_windows_does_not_answer(self):
+        """With the cache empty and WMI failing, Python's `platform` would run `ver` through the shell; the index
+        takes the platform from the process (`resolve_edges._platform`), so no such process starts."""
         self.play_success()
         with mock.patch.object(platform, "_uname_cache", None), \
                 mock.patch.object(platform, "_wmi_query", side_effect=OSError("WMI did not answer")):
             self.index()
-        self.assertIn(["ver"], Recorder.calls)
-        Recorder.calls = []
-        self.index()
         self.assertNotIn(["ver"], Recorder.calls)
 
     def test_preparation_reaches_only_the_registries_and_execution_no_network(self):

@@ -34,5 +34,6 @@
     "util is compiled twice, once inside each test crate: util::sample in api and in cli are two distinct items, and a symbol index that keys by file merges them",
     "the test crates reach the library as an external crate (tally::words), not through crate::",
     "no dependency at all: the lock has only the package itself"
-  ]
+  ],
+  "cases": ["file-in-several-units"]
 }

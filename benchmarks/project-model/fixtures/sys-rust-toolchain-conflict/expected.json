@@ -63,5 +63,6 @@
     "src/main.rs uses std::sync::LazyLock, stable since 1.80: the toolchain rustup picks cannot compile it",
     "the legacy rust-toolchain file is a bare channel name, not TOML; components and targets exist only in the .toml file, which is ignored",
     "three versions, three meanings: a reader that takes the first file found reports a different toolchain depending on file order"
-  ]
+  ],
+  "cases": ["version-disagree"]
 }

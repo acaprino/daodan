@@ -235,5 +235,6 @@
     "There is no wrapper in libs/money: inside the composite it runs with the main build's Gradle 8.11.1.",
     "resolved for junit-jupiter (5.11.3) and junit-platform-launcher (1.11.3) is read from junit-bom 5.11.3 as published on Maven Central; guava and jackson-databind have their versions written in the catalog, so they are declared there and resolved stays null.",
     "Workspace members are the subprojects of settings.gradle.kts (domain, api): the root is the workspace root, buildSrc and the included build libs/money are separate builds, not members."
-  ]
+  ],
+  "cases": ["virtual-root", "nested-module", "inherited-settings", "version-in-wrapper", "version-from-bom", "version-indirect", "build-only-dependency", "vendored-code", "needs-build"]
 }

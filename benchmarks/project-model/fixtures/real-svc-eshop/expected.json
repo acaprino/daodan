@@ -368,5 +368,6 @@
      "evidence": ["src/OrderProcessor/Services/GracePeriodManagerService.cs", "src/Ordering.API/Extensions/Extensions.cs"]},
     {"kind": "generates", "key": "src/Basket.API/Proto/basket.proto", "provided_by": ["Basket.API"], "used_by": ["Basket.API", "WebApp"], "evidence": ["src/Basket.API/Basket.API.csproj", "src/WebApp/WebApp.csproj"]},
     {"kind": "generates", "key": "src/ClientApp/Services/Basket/Protos/basket.proto", "provided_by": ["ClientApp"], "used_by": ["ClientApp"], "evidence": ["src/ClientApp/ClientApp.csproj", "src/ClientApp/Services/Basket/Protos/Basket.cs", "src/ClientApp/Services/Basket/Protos/BasketGrpc.cs"]}
-  ]
+  ],
+  "cases": ["file-in-several-units", "version-disagree", "platform-sdk", "no-lockfile", "version-indirect", "generated-file", "vendored-code", "documentation-tree", "binary-file", "dot-folder-facts", "needs-build", "build-generates-code", "missing-file", "saas-service", "undeclared-connections", "shared-contract"]
 }

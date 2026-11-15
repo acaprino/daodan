@@ -101,5 +101,6 @@
     "all dependencies are hoisted to the root node_modules in the lock: the per-unit owner is only in the manifests",
     "lock has no integrity hashes (not fabricated)",
     "no packageManager or engines declared: npm is implied by package-lock.json only"
-  ]
+  ],
+  "cases": ["workspace-glob", "version-absent", "locked-versions", "internal-link"]
 }

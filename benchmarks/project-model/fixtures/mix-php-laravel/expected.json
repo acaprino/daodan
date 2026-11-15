@@ -235,5 +235,6 @@
     "services come from .env.example, a template: the real .env is absent; Redis serves both cache and queue (QUEUE_CONNECTION, CACHE_STORE)",
     "phpunit.xml switches tests to SQLite in memory: an embedded engine, not an external service",
     "vendor/ is absent: composer.json post-autoload-dump runs project code (artisan package:discover) on install"
-  ]
+  ],
+  "cases": ["shared-root", "unit-no-name", "toolchain-in-dependencies", "no-lockfile", "ambiguous-extension", "shebang-only", "install-scripts", "missing-file", "service-from-config"]
 }

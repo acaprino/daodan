@@ -73,5 +73,6 @@
     "declared_in carries a #field fragment for the declarations that live in package.json (engines, packageManager, volta)",
     "@types/node ^18 matches the engines floor, not .nvmrc",
     "no lockfile, so resolved is null"
-  ]
+  ],
+  "cases": ["version-disagree", "no-lockfile"]
 }

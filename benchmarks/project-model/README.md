@@ -20,13 +20,18 @@ Misura quanto di una **pre-mappa** danno gli strumenti esistenti, prima di ogni 
 - `modal_<gruppo>.py` esegue gli strumenti di un gruppo su Modal, mai su questo PC.
 - `results/<tool>.json` tiene, per fixture: uscita grezza riassunta, uscita normalizzata, punteggio, secondi, memoria di picco, tentativi di rete, seconda esecuzione offline, codice del progetto eseguito.
 - `score.py` dà il punteggio di ogni faccetta: trovate, sbagliate, mancate, in più. Una faccetta che lo strumento non dà conta come "non data", non come zero.
+- `cases.json` è il dominio chiuso dei casi di test; ogni `expected.json` elenca i suoi in `cases`.
+- `catalog.py` scrive [ANAGRAFICA.md](ANAGRAFICA.md) dai dati: per ogni progetto origine, tecnologie, versioni dichiarate, framework, servizi e casi, poi la copertura dei casi.
 
-```
-python -m unittest test_score.py     # test del punteggio
-python score.py --check all          # controlla ogni expected.json
-python score.py all all              # tabelle per strumento e faccetta
-python score.py syft,trivy js        # alcuni strumenti, una famiglia
-```
+## Dopo una modifica
+
+Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Dalla cartella del benchmark:
+
+1. `python -m unittest test_score.py test_catalog.py`: test del punteggio e dell'anagrafica.
+2. `python score.py --check all`: forma di ogni `expected.json`, casi contro `cases.json` e contro i dati, casi che nessun progetto usa.
+3. `python catalog.py`: riscrive ANAGRAFICA.md; `python catalog.py --check` dice solo se è da riscrivere.
+4. Su Modal, il driver `modal_<gruppo>.py` del gruppo toccato: riscrive i suoi `results/<tool>.json`.
+5. `python score.py all all`, o `python score.py <tool> <famiglia>`: tabelle da confrontare con quelle di REPORT.md.
 
 ## Parametri
 

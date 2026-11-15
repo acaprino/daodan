@@ -58,5 +58,6 @@
     "an indexer that runs the pinned Go 1.22.5 cannot type-check seq/seq.go: the iter package and range over a func arrive in Go 1.23",
     ".tool-versions names the tool golang (the asdf plugin); the tool is go",
     "the toolchain value keeps its go prefix (go1.24.1); the go line has none"
-  ]
+  ],
+  "cases": ["version-disagree"]
 }

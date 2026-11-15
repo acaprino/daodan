@@ -154,5 +154,6 @@
     "GREET_LOUD=1 is a local_defines entry: it applies to greet.cc only and does not reach //app or //test",
     "the C++17 flag lives in .bazelrc as --cxxopt, not in any BUILD file",
     "@googletest//:gtest_main is a label of an external repository, not a package of this project"
-  ]
+  ],
+  "cases": ["targets-as-units", "version-range", "no-lockfile", "scope-from-groups", "build-only-dependency"]
 }

@@ -64,5 +64,6 @@
     "lockfileVersion 3 implies npm 7+ but no npm version is declared anywhere: do not invent one",
     "ms is imported only by the test file and is a devDependency",
     "lock has no integrity hashes (not fabricated); a real npm would add them"
-  ]
+  ],
+  "cases": ["version-absent", "locked-versions"]
 }

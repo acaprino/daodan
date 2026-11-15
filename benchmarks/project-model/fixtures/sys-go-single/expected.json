@@ -71,5 +71,6 @@
     "internal/greet is a package of the same module, not a second unit",
     "the /v5 suffix is part of the module path: the dependency name is github.com/go-chi/chi/v5, not github.com/go-chi/chi",
     "resolved equals declared because Go picks the minimal version selected by go.mod; go.sum only proves the hashes"
-  ]
+  ],
+  "cases": ["name-mismatch", "version-range", "locked-versions"]
 }

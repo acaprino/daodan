@@ -90,5 +90,6 @@
     "the lock carries only zh: hashes (the SHA256SUMS of the release zips); a lock written by terraform init also has an h1: hash per platform used",
     "the provider is named by its source address hashicorp/random, which stands for registry.terraform.io/hashicorp/random",
     ".terraform-version (tfenv) pins 1.9.8 while required_version only asks >= 1.6.0"
-  ]
+  ],
+  "cases": ["unit-no-name", "version-range", "locked-versions", "internal-link"]
 }

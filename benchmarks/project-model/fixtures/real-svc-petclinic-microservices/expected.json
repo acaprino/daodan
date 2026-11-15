@@ -296,5 +296,6 @@
      "used_by": ["org.springframework.samples.petclinic.visits:spring-petclinic-visits-service"],
      "evidence": ["spring-petclinic-customers-service/src/main/resources/db/mysql/schema.sql",
                   "spring-petclinic-visits-service/src/main/resources/db/mysql/schema.sql"]}
-  ]
+  ],
+  "cases": ["name-mismatch", "inherited-settings", "build-variants", "version-in-wrapper", "version-from-bom", "version-indirect", "build-only-dependency", "generated-file", "vendored-code", "documentation-tree", "binary-file", "needs-build", "build-generates-code", "service-in-infra", "framework-from-files", "undeclared-connections"]
 }

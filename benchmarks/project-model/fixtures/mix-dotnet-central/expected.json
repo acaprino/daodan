@@ -118,5 +118,6 @@
     "no packages.lock.json: every resolved is null (a NuGet lock file needs a contentHash per package, not written by hand)",
     "the solution folder 'src' in Shop.sln is a virtual folder, not a project",
     "Microsoft.NET.Sdk.Web is the evidence of ASP.NET Core: there is no PackageReference for it"
-  ]
+  ],
+  "cases": ["inherited-settings", "version-range", "no-lockfile", "version-indirect", "needs-build", "framework-from-files"]
 }

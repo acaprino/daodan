@@ -78,5 +78,6 @@
     "with CGO_ENABLED=0 (the default when cross-compiling) sum.go is dropped and sum_nocgo.go defines Floats: the C files are then unused",
     "C.fastsum and C.size_t are not Go declarations anywhere: a Go indexer without cgo preprocessing sees unresolved names",
     "fastsum.h is a C header"
-  ]
+  ],
+  "cases": ["build-variants"]
 }

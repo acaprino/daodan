@@ -87,5 +87,6 @@
     ".tool-versions 3.8.18 even falls outside requires-python",
     "pyright, mypy and ruff entries are the Python version each tool is told to target, not an installed tool; they are python toolchains with a #field fragment in declared_in",
     "the truth records every declaration; picking one winner is a policy, not a fact in the files"
-  ]
+  ],
+  "cases": ["version-disagree", "no-lockfile", "build-only-dependency"]
 }

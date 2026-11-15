@@ -183,5 +183,6 @@
     "Sentry, SMTP and FastAPI Cloud are named only by a client package, settings and a workflow: none has a compose service",
     "languages lists programming and markup languages only; JSON, YAML, TOML and Markdown files are present and not listed",
     "connections is a sample of 29 points: every route of the generated client, the OpenAPI document the client is generated from, the two build outputs written into backend/app, the database, the Mailpit API used by tests and the shared Biome configuration"
-  ]
+  ],
+  "cases": ["workspace-glob", "shared-root", "unit-no-name", "name-mismatch", "custom-source-roots", "path-alias", "version-disagree", "version-in-image", "locked-versions", "scope-from-groups", "build-only-dependency", "ambiguous-extension", "generated-file", "documentation-tree", "binary-file", "symlinks", "dot-folder-facts", "build-generates-code", "saas-service", "undeclared-connections", "shared-contract"]
 }

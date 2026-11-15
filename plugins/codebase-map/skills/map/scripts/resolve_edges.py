@@ -846,11 +846,15 @@ def _multilspy_pins(server: str) -> dict:
 
 
 def _platform() -> str:
-    """The platform key multilspy uses in its pins: `win-x64`, `linux-arm64`, `osx-x64` and so on."""
-    import platform
-    system = {"Windows": "win", "Linux": "linux", "Darwin": "osx"}.get(platform.system(), platform.system().lower())
-    machine = "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "x64"
-    return f"{system}-{machine}"
+    """The platform key multilspy uses in its pins: `win-x64`, `linux-arm64`, `osx-x64` and so on.
+
+    From `sys.platform` and the process's architecture (`PROCESSOR_ARCHITECTURE` on Windows, `os.uname`
+    elsewhere). Never from `platform`: it asks Windows through WMI and, when WMI fails, runs `ver` through the
+    shell.
+    """
+    system = {"win32": "win", "linux": "linux", "darwin": "osx"}.get(sys.platform, sys.platform)
+    machine = os.environ.get("PROCESSOR_ARCHITECTURE", "") if sys.platform == "win32" else os.uname().machine
+    return f"{system}-{'arm64' if machine.lower() in ('arm64', 'aarch64') else 'x64'}"
 
 
 def npm_manifests(root: Path) -> list[Path]:
@@ -1157,7 +1161,24 @@ RUST_TARGETS = {"win-x64": "x86_64-pc-windows-msvc", "win-arm64": "aarch64-pc-wi
 # Every cargo, rustc and rust-analyzer Daodan starts: rustup's proxy installs no toolchain, not even the one a
 # project's `rust-toolchain.toml` names (rustup 1.28.1 and later).
 RUSTUP_GUARD = {"RUSTUP_AUTO_INSTALL": "0"}
+RUSTUP_SWITCH = (1, 28, 1)  # the first rustup that reads RUSTUP_AUTO_INSTALL
 RUST_PINS = ("rust-toolchain.toml", "rust-toolchain")
+
+
+def rustup_version() -> tuple[int, ...] | None:
+    """The version of the rustup on PATH, asked from the root of its drive so no project's toolchain file is
+    read; `(0,)` when it does not say; None without rustup, where no toolchain file is read at all."""
+    rustup = shutil.which("rustup")
+    if rustup is None:
+        return None
+    try:
+        out = subprocess.run([rustup, "--version"], capture_output=True, text=True, timeout=60,
+                             stdin=subprocess.DEVNULL, cwd=Path(rustup).anchor or None,
+                             env={**os.environ, **RUSTUP_GUARD}).stdout
+    except (OSError, subprocess.SubprocessError):
+        out = ""
+    match = re.search(r"rustup (\d+)\.(\d+)\.(\d+)", out)
+    return tuple(int(part) for part in match.groups()) if match else (0,)
 
 
 def rust_toolchain() -> Path | None:
@@ -1325,19 +1346,27 @@ class RustEngine(MirroredEngine):
 
     def missing_pin(self) -> str:
         """Why the project cannot be read with the toolchain on PATH: a folder of it pins, in a toolchain file,
-        one rustup does not have, and Daodan installs no toolchain a project names (`install` says how to);
-        '' otherwise."""
-        rustc = shutil.which("rustc")
+        one rustup does not have, or rustup is older than the switch that keeps it from installing that one
+        (`RUSTUP_SWITCH`); Daodan installs no toolchain a project names (`install` says how to). '' otherwise."""
+        rustc, version = shutil.which("rustc"), None
         for current, directories, files in os.walk(self.project_root):
             directories[:] = sorted(name for name in directories
                                     if not name.startswith(".") and name not in ("target", "node_modules"))
             pin = next((name for name in RUST_PINS if name in files), None)
             if pin is None or rustc is None:
                 continue
+            where = (Path(current) / pin).relative_to(self.project_root).as_posix()
+            version = version or rustup_version() or ()
+            if version and version < RUSTUP_SWITCH:
+                said = ".".join(map(str, version)) if len(version) == 3 else "(version not given)"
+                self.install = (f"update rustup with `rustup self update`, or install the toolchain {where} names "
+                                f"yourself with `rustup toolchain install`, run in {current}; then analyze again")
+                return (f"the project pins its Rust toolchain in {where}, and this rustup would install the "
+                        f"toolchain the project pins: rustup {said} has no "
+                        f"RUSTUP_AUTO_INSTALL, which needs {'.'.join(map(str, RUSTUP_SWITCH))} or later")
             probe = subprocess.run([rustc, "--print", "sysroot"], capture_output=True, text=True, timeout=60,
                                    stdin=subprocess.DEVNULL, cwd=current, env={**os.environ, **RUSTUP_GUARD})
             if probe.returncode != 0:
-                where = (Path(current) / pin).relative_to(self.project_root).as_posix()
                 self.install = (f"install the toolchain {where} names with `rustup toolchain install`, run in "
                                 f"{current}, then analyze again")
                 return (f"the project pins its Rust toolchain in {where} and rustup does not have it; Daodan "
@@ -2091,7 +2120,6 @@ def java_source_roots(sources: list[Path]) -> list[Path]:
 
 def java_runtime() -> Path:
     """A Java runtime of at least version 17: the one on PATH, else Temurin 21 in the shared directory."""
-    import platform
     java = shutil.which("java")
     if java:
         try:
@@ -2106,8 +2134,9 @@ def java_runtime() -> Path:
     executable = home / "bin" / ("java.exe" if os.name == "nt" else "java")
     if executable.is_file():
         return executable
-    system = {"Windows": "windows", "Linux": "linux", "Darwin": "mac"}[platform.system()]
-    arch = "aarch64" if platform.machine().lower() in ("arm64", "aarch64") else "x64"
+    family, machine = _platform().split("-")
+    system = {"win": "windows", "linux": "linux", "osx": "mac"}[family]
+    arch = "aarch64" if machine == "arm64" else "x64"
     print(f"installing a Java 21 runtime into {home} (first use)", flush=True)
     partial = home.with_name(".21.partial")
     shutil.rmtree(partial, ignore_errors=True)

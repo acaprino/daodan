@@ -60,5 +60,6 @@
     "bin/run has no extension: it is JavaScript only by its shebang",
     "scripts/lib.js is CommonJS (exports.) and report.mjs is ESM: with no package.json there is no type field, so .js is CommonJS by default",
     "no Node version is declared"
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "version-absent", "undeclared-imports", "ambiguous-extension", "shebang-only"]
 }

@@ -114,5 +114,6 @@
     "an exact pin (==) is a declared specifier, not a lock: resolved stays null without a lockfile",
     "no Python version declared anywhere",
     "no file states a project name: the unit name is null (the folder name is not a name)"
-  ]
+  ],
+  "cases": ["unit-no-name", "version-absent", "no-lockfile", "internal-link", "git-dependency", "build-only-dependency", "included-requirement-files"]
 }

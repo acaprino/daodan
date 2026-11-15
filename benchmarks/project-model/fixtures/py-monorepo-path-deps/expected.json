@@ -149,5 +149,6 @@
     "mono-models is depended on by nobody",
     "mono-common is a repo unit, not a package to fetch from PyPI",
     "no lockfile: resolved is null everywhere"
-  ]
+  ],
+  "cases": ["independent-units", "no-lockfile", "internal-link", "build-only-dependency"]
 }

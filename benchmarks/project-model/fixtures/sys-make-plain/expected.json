@@ -93,5 +93,6 @@
     "-lm is a system library (libm), not a dependency to download",
     "there is no other manifest: no configure, no CMake, no pkg-config file",
     "both targets are declared by the one Makefile at the root, so both units have root . ; their sources live in lib/ and app/"
-  ]
+  ],
+  "cases": ["targets-as-units"]
 }

@@ -78,5 +78,6 @@
     "memchr?/std is a weak feature: it turns on memchr's std only when memchr is already enabled by fast",
     "memchr = \"2.7\" is a caret range: 2.8.3 satisfies it",
     "which functions exist depends on the features: int_text and float_text vanish from the default build, an indexer with default features misses them"
-  ]
+  ],
+  "cases": ["build-variants", "version-range", "locked-versions"]
 }

@@ -59,5 +59,6 @@
     "the library crate is hello_rs (hyphen becomes underscore), the binary keeps hello-rs; main.rs calls the library by hello_rs",
     "itoa = \"1.0\" is a caret range (^1.0), not an exact pin: the lock picks 1.0.19",
     "no rust-version and no toolchain file: no Rust version is declared, edition 2021 is not a toolchain version"
-  ]
+  ],
+  "cases": ["name-mismatch", "version-range", "version-absent", "locked-versions"]
 }

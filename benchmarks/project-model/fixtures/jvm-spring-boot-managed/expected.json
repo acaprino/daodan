@@ -160,5 +160,6 @@
     "junit-platform-launcher 1.11.3 is managed by the junit-bom imported by spring-boot-dependencies, not by the Boot version itself.",
     "compose.yaml names port 5432 on the container side only: the host port is random.",
     "resolved for every library is read from spring-boot-dependencies 3.4.0 (and the junit-bom 5.11.3 it imports) as published on Maven Central."
-  ]
+  ],
+  "cases": ["version-from-bom", "scope-from-groups", "build-only-dependency", "needs-build", "service-in-infra"]
 }

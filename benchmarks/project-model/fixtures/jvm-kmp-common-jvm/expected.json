@@ -108,5 +108,6 @@
     "kotlinx-coroutines-core is a multiplatform coordinate: on the JVM target Gradle module metadata redirects it to org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0. The declared name stays kotlinx-coroutines-core.",
     "jvmTest exists by convention (src/jvmTest/kotlin) although no file is there; commonTest compiles into the JVM test compilation.",
     "kotlin(\"test\") has no version: the plugin aligns it to 2.0.21. The Kotlin compiler and kotlin-stdlib 2.0.21 come from the plugin, not from a toolchain or a declared dependency."
-  ]
+  ],
+  "cases": ["custom-source-roots", "source-sets", "no-lockfile", "version-from-bom", "build-only-dependency"]
 }

@@ -30,5 +30,6 @@
     "kubeVersion >=1.27.0-0 constrains the cluster, not a tool on the machine: no toolchain",
     "the application image ghcr.io/acme/shop-api is built elsewhere: no code unit in this repository",
     "the database URL comes from a Secret (shop-db) that is not in the repository"
-  ]
+  ],
+  "cases": ["no-lockfile", "ambiguous-extension", "templated-config", "service-in-infra"]
 }

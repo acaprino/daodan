@@ -91,5 +91,6 @@
      "evidence": ["vote/app.py", "seed-data/generate-votes.sh", "result/tests/tests.sh"]},
     {"kind": "event", "key": "socket.io scores", "provided_by": ["result"], "used_by": ["result"],
      "evidence": ["result/server.js", "result/views/app.js"]}
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "build-variants", "version-disagree", "version-in-image", "no-lockfile", "ambiguous-extension", "vendored-code", "binary-file", "service-in-infra", "framework-from-files", "undeclared-connections"]
 }

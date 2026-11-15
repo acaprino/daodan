@@ -59,5 +59,6 @@
     "open_test.go and integration_test.go declare package store_test, an external test package beside store; it is not a separate directory or unit",
     "integration_test.go only builds with -tags integration: the default go test ./... does not compile TestOpenTwice",
     "ignore and integration are both build tags, but only integration selects a build variant; ignore means never"
-  ]
+  ],
+  "cases": ["build-variants"]
 }

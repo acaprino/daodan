@@ -136,5 +136,6 @@
     "no Cargo.lock and no package-lock.json: a real Tauri lock is over 100 KB, beyond the fixture budget, so every resolved version is null rather than invented",
     "icons/ is absent: tauri-build needs icons/icon.ico to build on Windows; the fixture is never built",
     "capabilities/default.json points its $schema at gen/, a folder that exists only after the build script runs"
-  ]
+  ],
+  "cases": ["nested-module", "shared-name", "no-lockfile", "build-only-dependency", "needs-build", "build-generates-code", "missing-file"]
 }

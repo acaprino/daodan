@@ -1,0 +1,347 @@
+{
+  "groups": [
+    {
+      "id": "structure",
+      "title": "Struttura"
+    },
+    {
+      "id": "versions",
+      "title": "Versioni"
+    },
+    {
+      "id": "dependencies",
+      "title": "Dipendenze"
+    },
+    {
+      "id": "files",
+      "title": "Linguaggi e file"
+    },
+    {
+      "id": "execution",
+      "title": "Esecuzione"
+    },
+    {
+      "id": "services",
+      "title": "Servizi e framework"
+    },
+    {
+      "id": "connections",
+      "title": "Collegamenti"
+    }
+  ],
+  "cases": [
+    {
+      "id": "workspace-glob",
+      "group": "structure",
+      "definition": "I membri del workspace vengono da un glob o dalla scoperta dei file, con esclusioni o ricorsione, non da un elenco."
+    },
+    {
+      "id": "virtual-root",
+      "group": "structure",
+      "definition": "La radice del workspace non è un'unità o non ha un file di build proprio."
+    },
+    {
+      "id": "nested-module",
+      "group": "structure",
+      "definition": "Un modulo con il suo manifesto sta dentro la cartella di un altro, e il comando del genitore non lo vede.",
+      "measured": "chi: moduli Go annidati in _examples/* che ./... salta"
+    },
+    {
+      "id": "independent-units",
+      "group": "structure",
+      "definition": "Più unità nella stessa cartella, senza un workspace che le unisca."
+    },
+    {
+      "id": "shared-root",
+      "group": "structure",
+      "definition": "Due sistemi di build o due ecosistemi nella stessa cartella."
+    },
+    {
+      "id": "one-unit-many-parts",
+      "group": "structure",
+      "definition": "Una sola unità contiene parti con ruoli diversi: frontend e backend, browser e server, più entry point.",
+      "measured": "tududi: frontend e backend si installano da un solo package.json radice"
+    },
+    {
+      "id": "targets-as-units",
+      "group": "structure",
+      "definition": "Le unità sono target dichiarati in un file di build (CMake, Meson, Make, Bazel, sbt, angular.json, Xcode), non pacchetti con un manifesto ciascuno."
+    },
+    {
+      "id": "no-build-file",
+      "group": "structure",
+      "definition": "Codice senza file di build, oppure nessun codice."
+    },
+    {
+      "id": "unit-no-name",
+      "group": "structure",
+      "definition": "Un'unità senza nome dichiarato, nominata per radice."
+    },
+    {
+      "id": "shared-name",
+      "group": "structure",
+      "definition": "Due unità con lo stesso nome."
+    },
+    {
+      "id": "name-mismatch",
+      "group": "structure",
+      "definition": "Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto."
+    },
+    {
+      "id": "custom-source-roots",
+      "group": "structure",
+      "definition": "Le radici dei sorgenti non sono quelle di default e si leggono dalla configurazione del build."
+    },
+    {
+      "id": "source-sets",
+      "group": "structure",
+      "definition": "Più source set o target in un'unità, con dipendenze e task di compilazione propri.",
+      "measured": "Kotlin: più task di compilazione, overload referenziati fra loro"
+    },
+    {
+      "id": "path-alias",
+      "group": "structure",
+      "definition": "Import risolti da alias di percorso (paths di tsconfig, alias del bundler, import map), non da pacchetti.",
+      "measured": "app React: alias @/ in tsconfig.app.json sopra un tsconfig base"
+    },
+    {
+      "id": "file-in-several-units",
+      "group": "structure",
+      "definition": "Lo stesso file sorgente è compilato in più unità o target.",
+      "measured": "workspace Rust: un modulo di test condiviso fra più crate di test"
+    },
+    {
+      "id": "inherited-settings",
+      "group": "structure",
+      "definition": "Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore."
+    },
+    {
+      "id": "build-variants",
+      "group": "structure",
+      "definition": "Unità, file o dipendenze cambiano con un'opzione di build: tag, feature, profilo, preset, flavor, piattaforma."
+    },
+    {
+      "id": "version-disagree",
+      "group": "versions",
+      "definition": "La stessa toolchain è chiesta in più file con valori diversi."
+    },
+    {
+      "id": "version-in-wrapper",
+      "group": "versions",
+      "definition": "La versione del build tool è scritta solo nel wrapper."
+    },
+    {
+      "id": "version-matrix",
+      "group": "versions",
+      "definition": "Più versioni da una matrice CI o di ambienti di test, una voce per versione."
+    },
+    {
+      "id": "version-range",
+      "group": "versions",
+      "definition": "La versione scritta è un minimo o un intervallo; quella usata sta in un lock, in una regola di selezione o in nessun file."
+    },
+    {
+      "id": "version-absent",
+      "group": "versions",
+      "definition": "Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna."
+    },
+    {
+      "id": "version-in-image",
+      "group": "versions",
+      "definition": "La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI."
+    },
+    {
+      "id": "toolchain-in-dependencies",
+      "group": "versions",
+      "definition": "L'interprete o l'SDK compare fra le dipendenze (python, php, sdk: flutter), ma è una toolchain."
+    },
+    {
+      "id": "platform-sdk",
+      "group": "versions",
+      "definition": "L'unità chiede un SDK di piattaforma (Android, Xcode, MAUI, Flutter) che non è un pacchetto.",
+      "measured": "Android Gradle: serve l'SDK di Android e chiama cargo"
+    },
+    {
+      "id": "no-lockfile",
+      "group": "dependencies",
+      "definition": "Nessun lockfile, quindi le versioni risolte restano vuote."
+    },
+    {
+      "id": "locked-versions",
+      "group": "dependencies",
+      "definition": "Le versioni risolte si leggono da un lockfile.",
+      "measured": "progetto Python con le versioni in uv.lock"
+    },
+    {
+      "id": "transitive-not-direct",
+      "group": "dependencies",
+      "definition": "Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette."
+    },
+    {
+      "id": "version-from-bom",
+      "group": "dependencies",
+      "definition": "Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build."
+    },
+    {
+      "id": "version-indirect",
+      "group": "dependencies",
+      "definition": "La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza."
+    },
+    {
+      "id": "internal-link",
+      "group": "dependencies",
+      "definition": "Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on."
+    },
+    {
+      "id": "git-dependency",
+      "group": "dependencies",
+      "definition": "Dipendenza presa da un URL git, un tarball o un sottomodulo, non dal registro."
+    },
+    {
+      "id": "computed-dependencies",
+      "group": "dependencies",
+      "definition": "Le dipendenze nascono da codice del progetto (cicli, condizioni, funzioni): leggere le righe non basta a trovarle tutte."
+    },
+    {
+      "id": "declared-in-source",
+      "group": "dependencies",
+      "definition": "Dipendenze dichiarate dentro un file sorgente: PEP 723, %pip, import map in HTML, #Requires."
+    },
+    {
+      "id": "undeclared-imports",
+      "group": "dependencies",
+      "definition": "Pacchetti importati dal codice e dichiarati da nessun file."
+    },
+    {
+      "id": "scope-from-groups",
+      "group": "dependencies",
+      "definition": "Lo scope si legge da gruppi, extra o configurazioni del build tool."
+    },
+    {
+      "id": "build-only-dependency",
+      "group": "dependencies",
+      "definition": "Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires."
+    },
+    {
+      "id": "two-package-managers",
+      "group": "dependencies",
+      "definition": "Due gestori di pacchetti dichiarano le dipendenze della stessa unità."
+    },
+    {
+      "id": "included-requirement-files",
+      "group": "dependencies",
+      "definition": "Liste divise su file inclusi (-r) o su vincoli (-c) che non aggiungono dipendenze."
+    },
+    {
+      "id": "ambiguous-extension",
+      "group": "files",
+      "definition": "L'estensione non dice il linguaggio: lo dice il contenuto."
+    },
+    {
+      "id": "shebang-only",
+      "group": "files",
+      "definition": "File senza estensione, riconoscibile solo dalla riga #!."
+    },
+    {
+      "id": "generated-file",
+      "group": "files",
+      "definition": "File generato da escludere."
+    },
+    {
+      "id": "false-generated",
+      "group": "files",
+      "definition": "File che sembra generato ma è sorgente del progetto."
+    },
+    {
+      "id": "vendored-code",
+      "group": "files",
+      "definition": "Codice di terzi copiato nel repository."
+    },
+    {
+      "id": "documentation-tree",
+      "group": "files",
+      "definition": "Albero di documentazione da escludere."
+    },
+    {
+      "id": "binary-file",
+      "group": "files",
+      "definition": "File binari da escludere."
+    },
+    {
+      "id": "committed-ignored",
+      "group": "files",
+      "definition": "File committato anche se .gitignore lo esclude."
+    },
+    {
+      "id": "symlinks",
+      "group": "files",
+      "definition": "Link simbolici nel repository."
+    },
+    {
+      "id": "templated-config",
+      "group": "files",
+      "definition": "Configurazione che un parser rigido non legge: JSON con commenti, YAML con template, ERB."
+    },
+    {
+      "id": "dot-folder-facts",
+      "group": "files",
+      "definition": "Fatti che stanno solo in cartelle che iniziano con un punto (.github, .devcontainer, .mvn, .config)."
+    },
+    {
+      "id": "needs-build",
+      "group": "execution",
+      "definition": "Il modello completo esiste solo eseguendo la build, quindi in un container."
+    },
+    {
+      "id": "install-scripts",
+      "group": "execution",
+      "definition": "Installare le dipendenze esegue codice del progetto."
+    },
+    {
+      "id": "build-generates-code",
+      "group": "execution",
+      "definition": "Parte del codice o della configurazione esiste solo dopo un passo di build."
+    },
+    {
+      "id": "submodule-absent",
+      "group": "execution",
+      "definition": "Un sottomodulo Git dichiarato ma assente.",
+      "measured": "sottomoduli Git assenti da un archivio"
+    },
+    {
+      "id": "missing-file",
+      "group": "execution",
+      "definition": "Un file nominato dalla configurazione non è nel repository."
+    },
+    {
+      "id": "service-in-infra",
+      "group": "services",
+      "definition": "Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze."
+    },
+    {
+      "id": "service-from-config",
+      "group": "services",
+      "definition": "Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente."
+    },
+    {
+      "id": "saas-service",
+      "group": "services",
+      "definition": "Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione."
+    },
+    {
+      "id": "framework-from-files",
+      "group": "services",
+      "definition": "Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata."
+    },
+    {
+      "id": "undeclared-connections",
+      "group": "connections",
+      "definition": "Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections."
+    },
+    {
+      "id": "shared-contract",
+      "group": "connections",
+      "definition": "Un file di contratto (proto, OpenAPI, GraphQL) unisce unità diverse."
+    }
+  ]
+}

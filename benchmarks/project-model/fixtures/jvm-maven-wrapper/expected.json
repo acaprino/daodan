@@ -110,5 +110,6 @@
     "mvnw, mvnw.cmd and .mvn/wrapper/ are vendored for Linguist and must not count as project Shell or Batchfile code.",
     "The Java level is maven.compiler.release=17 (javac --release 17); the pom has no maven-compiler-plugin element, so the plugin version comes from the default lifecycle.",
     "resolved is null for every dependency: the versions are literal and there is no lockfile."
-  ]
+  ],
+  "cases": ["version-in-wrapper", "no-lockfile", "build-only-dependency", "vendored-code"]
 }

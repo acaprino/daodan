@@ -174,5 +174,6 @@
     "The scalafmt version 3.8.3 in .scalafmt.conf is downloaded by the plugin at format time; it is neither a toolchain nor a declared dependency.",
     "Java has no version anywhere: sbt runs on whatever JDK is installed.",
     "root is the aggregating project at the workspace root; the members are core and app."
-  ]
+  ],
+  "cases": ["targets-as-units", "name-mismatch", "version-absent", "no-lockfile", "build-only-dependency", "ambiguous-extension"]
 }

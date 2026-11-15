@@ -76,5 +76,6 @@
     "colorama appears only in Pipfile.lock (transitive, Windows marker)",
     "Pipfile.lock is hand-written: no per-package hashes and _meta.hash.sha256 is a placeholder of zeros (not computed)",
     "no file states a project name: the unit name is null (the folder name is not a name)"
-  ]
+  ],
+  "cases": ["unit-no-name", "locked-versions", "transitive-not-direct", "scope-from-groups"]
 }

@@ -240,5 +240,6 @@
     "The Java level differs per module: the parent sets maven.compiler.release 21, inherited by shop-parent, shop-service and shop-cli; model/pom.xml overrides it with 17 for shop-model. A reader that stops at the parent gives 21 everywhere.",
     "resolved for jackson-annotations, jackson-databind and junit-jupiter is read from jackson-bom 2.18.1 and junit-bom 5.11.3 as published on Maven Central at those versions; guava's comes from the parent's dependencyManagement.",
     "cli/pom.xml writes <version>${picocli.version}</version>; the value 4.7.6 is a property of the parent pom, so declared is 4.7.6 with declared_in pom.xml#properties.picocli.version, not the child file."
-  ]
+  ],
+  "cases": ["name-mismatch", "inherited-settings", "build-variants", "version-from-bom", "version-indirect", "internal-link", "build-only-dependency", "needs-build"]
 }

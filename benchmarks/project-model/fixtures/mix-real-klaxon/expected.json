@@ -424,5 +424,6 @@
     "gradle/publishing*.gradle are Groovy scripts that no build script applies",
     "the 5 .kts build scripts and buildSrc's KlaxonConfig.kt are build code: no KotlinCompile task of the main build compiles them",
     "no lock file: resolved is null except for the Kotlin libraries the Gradle Kotlin plugin aligns"
-  ]
+  ],
+  "cases": ["shared-root", "custom-source-roots", "version-in-wrapper", "no-lockfile", "version-from-bom", "version-indirect", "computed-dependencies", "build-only-dependency", "binary-file", "needs-build"]
 }

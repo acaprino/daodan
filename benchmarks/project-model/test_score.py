@@ -348,5 +348,43 @@ class Check(unittest.TestCase):
         self.assertEqual(score.check_expected(PY_EXPECTED, None), [])
 
 
+class Cases(unittest.TestCase):
+    DOMAIN = {"groups": [{"id": "structure", "title": "Struttura"}],
+              "cases": [{"id": cid, "group": "structure", "definition": "d"} for cid in score.DERIVED]
+              + [{"id": "workspace-glob", "group": "structure", "definition": "d"},
+                 {"id": "nested-module", "group": "structure", "definition": "d", "measured": "chi"}]}
+
+    def test_committed_domain_is_well_formed(self):
+        self.assertEqual(score.domain_problems(score.load_domain()), [])
+
+    def test_domain_rejects_bad_ids_groups_and_missing_derived(self):
+        bad = {"groups": [{"id": "structure"}],
+               "cases": [{"id": "Bad_Id", "group": "structure", "definition": "d"},
+                         {"id": "x", "group": "nowhere", "definition": "two\nlines"}]}
+        text = "\n".join(score.domain_problems(bad))
+        for needle in ("Bad_Id", "nowhere", "one non-empty line", "vendored-code"):
+            self.assertIn(needle, text)
+
+    def test_unknown_id_and_derived_disagreement_fail(self):
+        doc = dict(NPM_EXPECTED, cases=["workspace-glob", "ghost-case", "needs-build"])
+        problems = score.check_cases(doc, self.DOMAIN)
+        self.assertTrue(any("'ghost-case' is not in cases.json" in x for x in problems))
+        self.assertTrue(any("shows 'vendored-code'" in x for x in problems))      # excluded vendor/ in the data
+        self.assertTrue(any("'needs-build' is listed" in x for x in problems))   # needs.container is false
+
+    def test_data_consistent_list_passes(self):
+        doc = dict(NPM_EXPECTED, cases=["workspace-glob", "vendored-code"])
+        self.assertEqual(score.check_cases(doc, self.DOMAIN), [])
+        self.assertEqual(score.check_cases(dict(NPM_EXPECTED), self.DOMAIN),
+                         ["cases: must be a non-empty list of case ids"])
+
+    def test_unused_and_single_use_cases_warn(self):
+        docs = {"a": {"cases": ["workspace-glob", "nested-module"]}}
+        text = "\n".join(score.coverage_warnings(score.coverage(docs, self.DOMAIN), self.DOMAIN))
+        self.assertIn("'vendored-code' is used by no project", text)
+        self.assertIn("'workspace-glob' is used by one project only (a)", text)
+        self.assertNotIn("'nested-module'", text)                                   # a measured case may stand alone
+
+
 if __name__ == "__main__":
     unittest.main()

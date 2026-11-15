@@ -2098,5 +2098,6 @@
     "os400/zlib.inc is an ILE RPG copy member, not a C include; Linguist has no candidate for it",
     "the cmake_minimum_required range 2.4.4...3.15.0 sets policies up to 3.15; CI picks compilers through a matrix (gcc, clang, cl, gcc-11) and installs Ninja on Windows",
     "no external dependency in the C builds"
-  ]
+  ],
+  "cases": ["nested-module", "shared-root", "targets-as-units", "shared-name", "file-in-several-units", "build-variants", "version-matrix", "version-range", "build-only-dependency", "ambiguous-extension", "documentation-tree", "binary-file", "needs-build", "build-generates-code", "missing-file"]
 }

@@ -138,5 +138,6 @@
     "each submodule is also a dependency named by its URL as .gitmodules writes it: declared is the branch (main) or null, resolved would be the gitlink commit, which lives only in the parent repository's index: this fixture has no .git, so resolved is null",
     "vendor/ui-kit is reached twice: as the submodule and as @acme/ui-kit (file:vendor/ui-kit) in package.json; libs/proto-py as the submodule and as proto-py in [tool.uv.sources]",
     "shallow = true only steers git submodule update"
-  ]
+  ],
+  "cases": ["shared-root", "no-lockfile", "git-dependency", "build-only-dependency", "submodule-absent"]
 }

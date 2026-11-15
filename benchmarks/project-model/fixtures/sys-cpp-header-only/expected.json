@@ -86,5 +86,6 @@
     "ringbuf_tests links the alias ringbuf::ringbuf; the alias is the same unit as ringbuf, not a second one",
     "the tests exist only when ringbuf is the top-level project; consumed through add_subdirectory or FetchContent they are skipped",
     "the header's include path is <ringbuf/ringbuf.hpp>, relative to include/, not to the header's own directory"
-  ]
+  ],
+  "cases": ["targets-as-units", "build-variants", "ambiguous-extension"]
 }

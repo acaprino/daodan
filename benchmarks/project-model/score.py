@@ -7,9 +7,9 @@ with expected == found + len(wrong) + len(missed). The rules are in SCHEMA.md.
 
 CLI:
   python score.py <tools> <fixtures> [--json OUT]   tables per tool and facet
-  python score.py --check [<fixtures>]              validate expected.json files
+  python score.py --check [<fixtures>]              validate expected.json files and their cases
 <tools>: all or a comma list of results/<tool>.json names.
-<fixtures>: all, a family (js, py, jvm, sys, mix) or a comma list of fixture names.
+<fixtures>: all, a family (js, py, jvm, sys, mix, real) or a comma list of fixture names.
 Standard library only.
 """
 
@@ -23,6 +23,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 HERE = Path(__file__).resolve().parent
 FIXTURES = HERE / "fixtures"
 RESULTS = HERE / "results"
+CASES = HERE / "cases.json"
 FAMILIES = ("js", "py", "jvm", "sys", "mix", "real")
 
 FACETS = (
@@ -33,7 +34,7 @@ FACETS = (
 )
 FACT_KEYS = ("languages", "excluded", "units", "workspace", "toolchains", "dependencies",
              "frameworks", "services", "needs")
-TOP_KEYS = FACT_KEYS + ("traps", "unknown", "connections")
+TOP_KEYS = FACT_KEYS + ("traps", "unknown", "connections", "cases")
 PER_UNIT = ("dependencies", "frameworks")  # facets whose items name a unit: "unknown" may keep some units
 WHY = ("vendored", "generated", "documentation", "binary", "submodule")
 SCOPES = ("runtime", "dev", "build", "test", "optional", "peer", "provided")
@@ -706,6 +707,112 @@ def check_expected(doc, fixture_dir):
     return p
 
 
+# ---------------------------------------------------------------- test cases
+
+def _units_of(doc):
+    return [u for u in doc.get("units") or [] if isinstance(u, dict)]
+
+
+def _excluded_for(why):
+    return lambda doc: any(isinstance(x, dict) and x.get("why") == why for x in doc.get("excluded") or [])
+
+
+def _shared_root(doc):
+    kinds = {}
+    for u in _units_of(doc):
+        kinds.setdefault(_path(u.get("root")), set()).add(u.get("kind"))
+    return any(len(k) > 1 for k in kinds.values())
+
+
+def _shared_name(doc):
+    names = [u.get("name") for u in _units_of(doc) if u.get("name") is not None]
+    return len(names) != len(set(names))
+
+
+# Cases that follow from expected.json: check_cases fails when the list and the data disagree.
+DERIVED = {
+    "shared-root": _shared_root,
+    "no-build-file": lambda d: not _units_of(d) or any(u.get("kind") == "source-tree" for u in _units_of(d)),
+    "unit-no-name": lambda d: any(u.get("name") is None for u in _units_of(d)),
+    "shared-name": _shared_name,
+    "generated-file": _excluded_for("generated"),
+    "vendored-code": _excluded_for("vendored"),
+    "documentation-tree": _excluded_for("documentation"),
+    "binary-file": _excluded_for("binary"),
+    "submodule-absent": _excluded_for("submodule"),
+    "build-only-dependency": lambda d: any(isinstance(x, dict) and x.get("scope") == "build"
+                                           for x in d.get("dependencies") or []),
+    "needs-build": lambda d: (d.get("needs") or {}).get("container") is True,
+    "undeclared-connections": lambda d: bool(d.get("connections")),
+}
+
+
+def load_domain(path=CASES):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def domain_problems(domain):
+    """Shape problems of cases.json: unique kebab-case ids, a known group, a one-line definition."""
+    p = []
+    groups = [g.get("id") for g in domain.get("groups") or [] if isinstance(g, dict)]
+    seen = set()
+    for n, c in enumerate(domain.get("cases") or []):
+        cid = c.get("id") if isinstance(c, dict) else None
+        if not isinstance(cid, str) or not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", cid):
+            p.append(f"cases[{n}]: id must be kebab-case: {cid!r}")
+            continue
+        if cid in seen:
+            p.append(f"cases[{n}]: id {cid!r} is repeated")
+        seen.add(cid)
+        if c.get("group") not in groups:
+            p.append(f"{cid}: unknown group {c.get('group')!r}")
+        d = c.get("definition")
+        if not isinstance(d, str) or not d.strip() or "\n" in d:
+            p.append(f"{cid}: definition must be one non-empty line")
+    for cid in DERIVED:
+        if cid not in seen:
+            p.append(f"derived case {cid!r} is not in the domain")
+    return p
+
+
+def check_cases(doc, domain):
+    """Problems of one expected.json's cases list against the domain and the data."""
+    cases = doc.get("cases")
+    if not isinstance(cases, list) or not cases or not all(isinstance(c, str) for c in cases):
+        return ["cases: must be a non-empty list of case ids"]
+    ids = {c.get("id") for c in domain.get("cases") or []}
+    p = [f"cases: {c!r} is not in cases.json" for c in cases if c not in ids]
+    if len(set(cases)) != len(cases):
+        p.append("cases: an id is repeated")
+    for cid, holds in DERIVED.items():
+        if holds(doc) and cid not in cases:
+            p.append(f"cases: the data shows {cid!r} but the list lacks it")
+        elif cid in cases and not holds(doc):
+            p.append(f"cases: {cid!r} is listed but the data does not show it")
+    return p
+
+
+def coverage(docs, domain):
+    """{case id: [fixture names]} in domain order."""
+    cover = {c["id"]: [] for c in domain.get("cases") or []}
+    for name, doc in sorted(docs.items()):
+        for cid in doc.get("cases") or []:
+            if cid in cover:
+                cover[cid].append(name)
+    return cover
+
+
+def coverage_warnings(cover, domain):
+    w = []
+    for c in domain.get("cases") or []:
+        users = cover.get(c["id"], [])
+        if not users:
+            w.append(f"warning: case {c['id']!r} is used by no project")
+        elif len(users) == 1 and not c.get("measured"):
+            w.append(f"warning: case {c['id']!r} is used by one project only ({users[0]}) and is not a measured case")
+    return w
+
+
 # ---------------------------------------------------------------- CLI
 
 def _fixtures(spec):
@@ -726,6 +833,16 @@ def _tools(spec):
 
 def run_check(spec):
     bad = 0
+    try:
+        domain = load_domain()
+        domain_errors = domain_problems(domain)
+    except (OSError, ValueError) as exc:
+        domain, domain_errors = {}, [f"cannot read: {exc}"]
+    print(f"cases.json: {f'{len(domain_errors)} errors' if domain_errors else 'ok'}")
+    for line in domain_errors:
+        print(f"  - {line}")
+    bad += bool(domain_errors)
+    docs = {}
     for name in _fixtures(spec):
         d = FIXTURES / name
         try:
@@ -734,13 +851,18 @@ def run_check(spec):
             print(f"{name}: cannot read expected.json: {exc}")
             bad += 1
             continue
+        docs[name] = doc
         descriptor = (d / "source.json").exists()
         problems = check_expected(doc, None if descriptor else d)
+        if isinstance(doc, dict):
+            problems += check_cases(doc, domain)
         if descriptor:
             try:
                 src = json.loads((d / "source.json").read_text(encoding="utf-8"))
                 if not isinstance(src.get("repo"), str) or not re.fullmatch(r"[0-9a-f]{40}", str(src.get("commit"))):
                     problems.append("source.json: needs repo (URL) and commit (40 hex characters)")
+                if not src.get("licence"):
+                    problems.append("warning: source.json: no licence")
             except (OSError, ValueError, AttributeError) as exc:
                 problems.append(f"source.json: cannot read: {exc}")
         errors = [x for x in problems if not x.startswith("warning:")]
@@ -750,6 +872,11 @@ def run_check(spec):
             status += f", {len(problems) - len(errors)} warnings"
         print(f"{name}: {status}{' (descriptor: paths not checked)' if descriptor else ''}")
         for line in problems:
+            print(f"  - {line}")
+    if spec in (None, "all"):
+        warnings = coverage_warnings(coverage(docs, domain), domain)
+        print(f"coverage: {len(warnings)} warnings" if warnings else "coverage: ok")
+        for line in warnings:
             print(f"  - {line}")
     return 1 if bad else 0
 

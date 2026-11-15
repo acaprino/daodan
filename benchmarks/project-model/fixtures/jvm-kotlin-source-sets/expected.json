@@ -109,5 +109,6 @@
     "The plugin adds org.jetbrains.kotlin:kotlin-stdlib 2.0.21 to implementation without any line in the build file; it is not a declared dependency.",
     "The Kotlin compiler version is the plugin version 2.0.21: Gradle downloads it, so it is a build dependency, not a toolchain. jvmToolchain(21) is the JDK for both the Kotlin and the Java compilation.",
     "Each Kotlin source set also has a java directory (src/main/java and so on) that does not exist on disk."
-  ]
+  ],
+  "cases": ["source-sets", "no-lockfile", "version-from-bom", "build-only-dependency"]
 }

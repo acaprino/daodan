@@ -108,5 +108,6 @@
     "typing-extensions has the marker python_version < \"3.11\" on the same line",
     "extras named 'test' and 'docs' are optional-dependencies (scope optional), not dev groups",
     "[tool:pytest] and [flake8] in setup.cfg are tool configuration, not metadata"
-  ]
+  ],
+  "cases": ["no-lockfile", "scope-from-groups", "build-only-dependency"]
 }

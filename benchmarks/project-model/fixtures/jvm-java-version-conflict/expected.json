@@ -100,5 +100,6 @@
     "There is no wrapper for either tool, so neither the Maven nor the Gradle version is declared.",
     "Clock.java uses only Java 8 API, so it compiles at every level declared.",
     "Neither build has modules or subprojects, so there is no workspace: two single-project builds share the folder."
-  ]
+  ],
+  "cases": ["shared-root", "version-disagree", "version-absent"]
 }

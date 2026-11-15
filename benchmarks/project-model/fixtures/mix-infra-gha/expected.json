@@ -130,5 +130,6 @@
     "runs-on: ubuntu-24.04 is the runner image, not a toolchain",
     "the project has no dependencies: pnpm-lock.yaml has only the empty root importer",
     "the CI pins live under .github/: a reader whose perimeter skips dot folders never sees them"
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "version-disagree", "version-matrix", "version-in-image", "dot-folder-facts"]
 }

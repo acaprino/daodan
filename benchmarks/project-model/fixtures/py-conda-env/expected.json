@@ -89,5 +89,6 @@
     "'-r requirements-extra.txt' inside the pip section pulls tqdm from another file",
     "numpy and pandas are conda packages, requests is a PyPI package: the same file mixes two ecosystems",
     "no conda lockfile written (cannot be written faithfully by hand): resolved versions are unknown unless pinned"
-  ]
+  ],
+  "cases": ["toolchain-in-dependencies", "no-lockfile", "two-package-managers", "included-requirement-files"]
 }

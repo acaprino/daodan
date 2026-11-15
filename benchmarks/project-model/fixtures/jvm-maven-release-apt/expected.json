@@ -160,5 +160,6 @@
     "Processors write into target/generated-sources/annotations (main) and target/generated-test-sources/test-annotations (test), which maven-compiler-plugin adds to the compile source roots; they do not exist before a build.",
     "CustomerMapperImpl and the Lombok getters and constructor exist only after compilation: a static index sees calls to getFullName(), getEmail() and new Customer(String, String, String) with no declaration in source.",
     "mapstruct, mapstruct-processor and both lombok entries write ${mapstruct.version} or ${lombok.version}; declared holds the property values 1.6.3 and 1.18.36, with declared_in the property that writes them."
-  ]
+  ],
+  "cases": ["version-disagree", "no-lockfile", "version-indirect", "build-only-dependency", "build-generates-code"]
 }

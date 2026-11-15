@@ -137,5 +137,6 @@
     "SENSOR_BOARD_NAME is a string definition whose value comes from the SENSOR_BOARD cache variable: \"host\" by default, \"nucleo_f401re\" under cortex-m4",
     "the hidden preset base is not a preset anyone can select; it only carries the generator, binaryDir and build type",
     "cmake/arm-none-eabi.cmake is a toolchain file, not a module of the project: it declares no target"
-  ]
+  ],
+  "cases": ["targets-as-units", "build-variants", "version-disagree", "version-absent"]
 }

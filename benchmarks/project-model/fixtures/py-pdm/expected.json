@@ -85,5 +85,6 @@
     "pyyaml is optional (extra 'yaml'): in pdm.lock it is in group 'yaml', not 'default'",
     "no PDM version is declared anywhere (lock_version 4.5.0 is the file format, not the tool)",
     "pdm.lock is hand-written: files = [] and content_hash is a placeholder of zeros (not computed)"
-  ]
+  ],
+  "cases": ["version-absent", "locked-versions", "scope-from-groups", "build-only-dependency"]
 }

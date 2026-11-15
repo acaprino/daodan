@@ -67,5 +67,6 @@
     "file:../lib is an internal link by path (depends_on), not a registry dependency; the lock records it as a link to ../lib",
     "is-number comes from a git URL, not from the registry: the lock pins it to commit 98e8ff1da1a89f93d1397a24d7413ed15421c139 and rewrites the URL to git+ssh; resolved is the version at that commit (7.0.0)",
     "the lock has no integrity hashes (not fabricated); @acme/lib has no lockfile of its own and no dependencies"
-  ]
+  ],
+  "cases": ["independent-units", "locked-versions", "internal-link", "git-dependency"]
 }

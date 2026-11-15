@@ -158,5 +158,6 @@
     "app/api/health/route.ts is an HTTP route by file convention, not by any manifest",
     "next is pinned exactly (14.2.15) while react is a bare major range (^18)",
     "no lockfile, so resolved is null"
-  ]
+  ],
+  "cases": ["path-alias", "version-range", "no-lockfile", "generated-file", "service-from-config"]
 }

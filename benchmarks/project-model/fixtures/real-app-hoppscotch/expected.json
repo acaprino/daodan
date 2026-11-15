@@ -2248,5 +2248,6 @@
   "the backend mail templates are Handlebars (.hbs); the agent serves an HTTP API on localhost:9119 that @hoppscotch/common calls as an interceptor",
   "languages lists programming and markup languages only; JSON, YAML, TOML and Markdown files are present and not listed, and the Caddyfiles are left out",
   "connections is a sample of 25 points: the generated GraphQL schema and the operations, the Tauri commands invoked by the desktop front end, the agent and webapp-server routes, the bundle built for the desktop, the shared packages and the database"
- ]
+ ],
+ "cases": ["workspace-glob", "nested-module", "independent-units", "shared-root", "shared-name", "path-alias", "version-disagree", "version-in-image", "locked-versions", "git-dependency", "generated-file", "false-generated", "documentation-tree", "binary-file", "needs-build", "install-scripts", "build-generates-code", "missing-file", "undeclared-connections", "shared-contract"]
 }

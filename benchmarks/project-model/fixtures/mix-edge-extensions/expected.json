@@ -60,5 +60,6 @@
     "logic/family.pl is Prolog (facts and a :- rule), not Perl",
     "bin/report has no extension: Python by its #!/usr/bin/env python3 shebang",
     "i18n/app_it.ts is a Qt Linguist translation file (<!DOCTYPE TS>, <TS version>): XML, not TypeScript"
-  ]
+  ],
+  "cases": ["no-build-file", "unit-no-name", "ambiguous-extension", "shebang-only"]
 }

@@ -111,5 +111,6 @@
     "the dependency api -> util exists only as the import '@acme/util' resolved by tsconfig.base.json paths: no manifest declares it",
     "no lockfile (the Nx install tree is too large to write faithfully), so resolved is null",
     "node is not declared anywhere"
-  ]
+  ],
+  "cases": ["workspace-glob", "path-alias", "version-absent", "no-lockfile"]
 }

@@ -129,5 +129,6 @@
     "one uv.lock at the root serves both members; colorama is transitive (click on win32) and declared nowhere",
     "workspace members are listed explicitly, not by glob",
     "hand-written lock without wheel or sdist hashes (not fabricated): name, version and source only"
-  ]
+  ],
+  "cases": ["virtual-root", "locked-versions", "transitive-not-direct", "internal-link", "build-only-dependency"]
 }

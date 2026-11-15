@@ -113,5 +113,6 @@
     "the mix.lock entries are copied from a real lock (inner and outer Hex checksums), not recomputed",
     "elixir 1.17.3-otp-27 in .tool-versions names the OTP major the build was made for; erlang is its own toolchain",
     "shop_web's entry point is the mod: in application/0, not a file named main"
-  ]
+  ],
+  "cases": ["workspace-glob", "unit-no-name", "locked-versions", "transitive-not-direct", "internal-link", "needs-build"]
 }

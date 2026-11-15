@@ -245,5 +245,6 @@
     "docs/ is Doxygen output (HTML, JavaScript, CSS) checked in; dox is the Doxygen configuration; resources/ holds XML test inputs that xmltest reads from the working directory",
     "setversion.py is a release helper that rewrites the version in the sources and build files; it is not part of any build",
     "CI runs a matrix of three operating systems and two CMake versions (3.15 and the latest 3.x), with Ninja"
-  ]
+  ],
+  "cases": ["nested-module", "shared-root", "targets-as-units", "shared-name", "file-in-several-units", "build-variants", "version-matrix", "ambiguous-extension", "documentation-tree", "binary-file", "needs-build"]
 }

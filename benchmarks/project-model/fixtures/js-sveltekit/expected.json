@@ -145,5 +145,6 @@
     "everything is a devDependency, including svelte and the kit, because the app is bundled at build time",
     "route files (+page.svelte, +page.server.ts) are routes by naming convention, not by any manifest",
     "no lockfile, so resolved is null"
-  ]
+  ],
+  "cases": ["path-alias", "no-lockfile", "build-generates-code"]
 }
