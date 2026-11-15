@@ -8,7 +8,9 @@ snapshot is the pipeline's input; the flows read the complete graph after it.
    commands run in Daodan's container (`premap.container_runner`).
 2. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
 3. `union`: the graphs of the technologies as the complete graph. Until the dynamic step and the connection
-   points exist, it is the store of the static graphs, and it says so with a gap per language.
+   points exist, it is the store of the static graphs, and it says so with a gap per language; it also says what
+   the graph does not hold: the files an index left out, the languages no analyzer lists, the calls between two
+   analyzers' languages.
 
 See docs/specs/2026-11-15-pipeline-di-analisi.md.
 """
@@ -93,21 +95,46 @@ class Analyze:
 
 class Union:
     NAME, INPUTS, OUTPUTS = "union", ("edges",), ("graph",)
+    # Languages two analyzers index apart that call each other (Java and Kotlin in one build, cgo, a Python C
+    # extension, JNI): each stage loads only its own index, so no edge joins them.
+    APART = (("java", "kotlin"), ("go", "c"), ("python", "c"), ("python", "cpp"), ("java", "c"), ("java", "cpp"))
 
     @staticmethod
     def run(context: Context) -> dict:
+        import collections
         import resolve_edges
         state = resolve_edges.edge_state(context.manifest)
         languages = state.get("languages") or {}
+
+        def say(message: str, gap: dict, language: str | None = None) -> None:
+            context.bus.emit("gap", message, step=Union.NAME, gap=gap, **({"language": language} if language else {}))
+
         for language, entry in sorted(languages.items()):
-            if entry.get("state") == "fresh":
-                context.bus.emit("gap", f"{language}: static graph only", step=Union.NAME, language=language,
-                                 gap={"kind": "not-observed",
-                                      "detail": "no edge observed in a run: the dynamic step is not built yet"})
+            if entry.get("state") != "fresh":
+                continue
+            say(f"{language}: static graph only", {"kind": "not-observed", "detail":
+                "no edge observed in a run: the dynamic step is not built yet"}, language)
+            files = (entry.get("coverage") or {}).get("files") or {}
+            if files.get("missing"):
+                reasons = dict(collections.Counter(item["reason"] for item in files["missing"]).most_common(3))
+                detail = (f"{len(files['missing'])} of {files['snapshot']} {language} files are not in the index: "
+                          + ", ".join(f"{reason} ({count})" for reason, count in reasons.items()))
+                say(f"{language}: {detail}", {"kind": "files-missing", "files": len(files["missing"]),
+                                              "of": files["snapshot"], "reasons": reasons, "detail": detail}, language)
+        unserved = state.get("no_analyzer") or {}
+        for language, files in unserved.items():
+            detail = f"{files} {language} files are in the snapshot and no analyzer lists the language: no graph"
+            say(detail, {"kind": "no-analyzer", "language": language, "files": files, "detail": detail}, language)
+        apart = [list(pair) for pair in Union.APART if set(pair) <= set(languages)]
+        for one, other in apart:
+            detail = (f"calls between {one} and {other} are not resolved: each analyzer reads its own index, so a "
+                      "project symbol of the other language can read as external")
+            say(detail, {"kind": "not-joined", "languages": [one, other], "detail": detail})
         context.bus.emit("graph.ready", "the complete graph is ready", step=Union.NAME,
                          languages={language: {"state": entry.get("state"), "engine": entry.get("engine")}
                                     for language, entry in languages.items()})
-        return {"languages": languages}
+        return {"languages": languages, **({"no_analyzer": unserved} if unserved else {}),
+                **({"not_joined": apart} if apart else {})}
 
 
 STEPS = (Scan, Analyze, Union)

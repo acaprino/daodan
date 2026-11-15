@@ -21,7 +21,7 @@ from typing import NamedTuple
 from snapshot_store import logical_digest, open_snapshot
 from engine_tools import free_memory, node_environment
 from edge_store import default_edge_store, read_edge_store
-from position_stage import MEMORY_EXHAUSTED, snapshot_languages
+from position_stage import MEMORY_EXHAUSTED
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -36,16 +36,53 @@ RUNNING_NAME = "engine-pass.running"
 LOG_NAME = "engine-pass.log"
 
 
+# What to do for a language the snapshot holds and did not parse (`unparsed`).
+PARSER_INSTALL = ("install the snapshot's parser packages (requirements.txt beside snapshot.py) and write the "
+                  "snapshot again")
+
+
+def _statuses(connection) -> dict[str, dict[str, int]]:
+    """The snapshot's files per language and parse status."""
+    held: dict[str, dict[str, int]] = {}
+    for language, status, files in connection.execute(
+            "SELECT language, status, COUNT(*) FROM sem_coverage WHERE language IS NOT NULL GROUP BY language, status"):
+        held.setdefault(language, {})[status] = files
+    return held
+
+
 def pass_languages(connection) -> list[str]:
-    """The languages the pass serves: the snapshot's parsed ones, and those of an analyzer whose graph is built from
-    files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph) when the snapshot holds one, parsed or not."""
+    """The languages the pass serves: every one the snapshot holds a file of, parsed or not (`unparsed`), and those
+    of an analyzer whose graph is built from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph)
+    when the snapshot holds one."""
     import indexers
-    present = set(snapshot_languages(connection))
-    held = {row[0] for row in connection.execute("SELECT DISTINCT language FROM sem_coverage")}
+    held = _statuses(connection)
+    present = {language for language, files in held.items() if set(files) - {"excluded"}}
     for analyzer in indexers.analyzers():
-        if held & set(getattr(analyzer, "SNAPSHOT_LANGUAGES", ())):
+        if set(held) & set(getattr(analyzer, "SNAPSHOT_LANGUAGES", ())):
             present.update(analyzer.LANGUAGES)
     return sorted(present)
+
+
+def unparsed(connection) -> dict[str, str]:
+    """The snapshot's languages without one parsed file, each with why: a stage places an index on the snapshot's
+    references, which only a parsed file has, so no stage starts for them."""
+    out = {}
+    for language, files in _statuses(connection).items():
+        rest = {status: count for status, count in sorted(files.items()) if status != "excluded"}
+        if rest and "ast" not in rest:
+            out[language] = (f"none of the {sum(rest.values())} {language} files was parsed by the snapshot ("
+                             + ", ".join(f"{status}: {count}" for status, count in rest.items()) + ")")
+    return out
+
+
+def no_analyzer(connection) -> dict[str, int]:
+    """The snapshot's languages no analyzer lists, each with its files: in the snapshot, in no graph."""
+    import indexers
+    served = set(ENGINE_LANGUAGES) | {language for analyzer in indexers.analyzers()
+                                      for language in getattr(analyzer, "SNAPSHOT_LANGUAGES", ())}
+    counts = {language: sum(count for status, count in files.items() if status != "excluded")
+              for language, files in _statuses(connection).items() if language not in served}
+    return {language: count for language, count in sorted(counts.items()) if count}
 
 
 def _process_alive(pid: int) -> bool:
@@ -115,7 +152,8 @@ def edge_state(manifest: Path) -> dict:
     the store's entry came from a former source. The overall state is `running`,
     `stopped` or `stale` (store bound to another revision) when one applies, else
     the first of missing, failed, fresh and unavailable that a language holds.
-    Every state carries `coverage`, each store entry's by language.
+    Every state carries `coverage`, each store entry's by language, and `no_analyzer`
+    when the snapshot holds languages no engine covers, each with its files.
     """
     manifest = Path(manifest)
     store_path = default_edge_store(manifest)
@@ -176,6 +214,9 @@ def edge_state(manifest: Path) -> dict:
         result["languages"] = languages
         result["coverage"] = {language: entry["coverage"] for language, entry in entries.items()
                               if entry.get("coverage")}
+        unserved = no_analyzer(store.connection)
+        if unserved:
+            result["no_analyzer"] = unserved
         return result
 
 
@@ -268,10 +309,10 @@ def engine_command(manifest: Path, report_path: Path) -> list[str]:
 
 
 def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict, str]:
-    """The engines whose languages the snapshot holds, with the entries already fresh."""
+    """The engines whose languages the snapshot holds parsed, with the entries already fresh."""
     manifest = Path(manifest)
     with open_snapshot(manifest) as store:
-        present = pass_languages(store.connection)
+        present = set(pass_languages(store.connection)) - set(unparsed(store.connection))
         digest = logical_digest(store)
         fresh = {}
         if default_edge_store(manifest).is_file():
@@ -287,8 +328,9 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
 def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     """Run each engine's stage in turn and record per language what came of it.
 
-    A language already fresh in the store is not asked again. Before a stage the
-    free memory is checked; after a stage that ran out of memory no other starts.
+    A language already fresh in the store is not asked again; one the snapshot did
+    not parse is `unavailable`, with no stage. Before a stage the free memory is
+    checked; after a stage that ran out of memory no other starts.
     The report is rewritten after every stage, so the state shows progress, and
     each analyzer says on `bus` (`pipeline.events`) when it starts and how it ends.
     """
@@ -299,6 +341,11 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     report = {"pass": True, "manifest_digest": digest, "languages": {}, "engines": {},
               "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
     outcomes = report["languages"]
+    with open_snapshot(manifest) as store:
+        skipped = unparsed(store.connection)
+    for language, reason in sorted(skipped.items()):
+        if language in ENGINE_LANGUAGES:
+            _not_fresh(bus, ENGINE_LANGUAGES[language], [language], outcomes, "unavailable", reason, PARSER_INSTALL)
     exhausted = None
     for number, (spec, wanted) in enumerate(plan, 1):
         bus.progress("analyze", number - 1, len(plan), analyzer=spec.name, message=f"{spec.name}: {', '.join(wanted)}")
@@ -325,8 +372,11 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
                     exhausted = f"the {spec.name} engine ran out of memory"
             if state is None:
                 for language in wanted:
-                    entry = (stage.get("languages") or {}).get(language) or {}
-                    outcomes[language] = {"state": entry.get("state", "fresh"), "engine": stage.get("engine")}
+                    # Only what the stage reports is fresh: a language it does not list has no outcome.
+                    entry = (stage.get("languages") or {}).get(language) or {
+                        "state": "missing", "reason": f"the {spec.name} stage reported no outcome for {language}"}
+                    outcomes[language] = {"state": entry["state"], "engine": stage.get("engine"),
+                                          **({"reason": entry["reason"]} if entry.get("reason") else {})}
                 _write_report(report_path, report)
                 bus.emit("analyzer.finished", f"{stage.get('engine')}: {', '.join(wanted)}", step="analyze",
                          analyzer=spec.name, languages=wanted, engine=stage.get("engine"))
@@ -388,7 +438,9 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
     `engine` (the resolver: the entry's name, `@`, the indexer's version), `indexer` and `languages`; without
     an index, the indexer's `reason` and, when it is `unavailable`, its `install`; `gaps`, what the indexer's
-    preparation could not do (a restore, a toolchain), which the pass says on the bus.
+    preparation could not do (a restore, a toolchain) and each build, unit or run that gave no index
+    (`_not_indexed`), which the pass says on the bus. A language none of whose files is in the index is `failed`
+    with the commonest cause, and the store gets no entry for it: a gap too, beside a language that is fresh.
 
     An analyzer that `READS` files by suffix is handed the snapshot's (`files`); one whose outcome is a `graph` of
     its own, no index (`indexers/css.py`), gives the store's rows itself (`rows`).
@@ -406,15 +458,17 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
         try:
             options["engine"] = container.find_engine()
         except container.Gap as gap:
-            return {"available": False, "engine": spec.name,
-                    "reason": f"the build runs only in a container: {gap.cause}", "install": gap.remedy}
+            if options.get("roots") or options.get("units"):  # with nothing to build, the indexer says that
+                return {"available": False, "engine": spec.name,
+                        "reason": f"the build runs only in a container: {gap.cause}", "install": gap.remedy}
     work = Path(tempfile.mkdtemp(prefix=f"daodan-{spec.name}-"))
     try:
         result = module.index(Path(project_root), work, **options)
         indexer = result.get("indexer") or {}
         # The entry names the source: rust-analyzer is also an engine, and scip-java indexes Kotlin too.
         resolver = f"{spec.name}@{indexer.get('version')}"
-        gaps = {"gaps": result["gaps"]} if result.get("gaps") else {}  # what its preparation could not do
+        gaps = [*(result.get("gaps") or ()), *_not_indexed(result, options.get("roots"))]
+        gaps = {"gaps": gaps} if gaps else {}
         if result.get("state"):
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": result.get("reason"),
                     **({"install": result.get("install")} if result["state"] == "unavailable" else {}), **gaps}
@@ -443,13 +497,58 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
                             else {}
                         built[language] = code_graph.build(index, snap, language, hops, indexer, reasons, traversal,
                                                            static, refine=refine)
-                code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver, rows)
+                # An index that holds none of a language's files proves nothing of it.
+                failed = {language: _none_indexed(language, graph["files"])
+                          for language, (graph, _references) in built.items() if not graph["files"]["indexed"]}
+                built = {language: made for language, made in built.items() if language not in failed}
+                if built or rows or not failed:
+                    code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver, rows)
         except ValueError as error:  # a changed source, or a store that would break sites = answered + holes
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": str(error)}
-        return {"available": True, "engine": resolver, "indexer": indexer,
-                "languages": {language: {"state": "fresh"} for language in {**built, **rows}}, **gaps}
+        if failed and not (built or rows):
+            return {"available": False, "engine": resolver, "indexer": indexer, "reason": "; ".join(failed.values()),
+                    **gaps}
+        states = {**{language: {"state": "fresh"} for language in {**built, **rows}},
+                  **{language: {"state": "failed", "reason": reason} for language, reason in failed.items()}}
+        noted = [*gaps.get("gaps", ()), *({"kind": "language_not_indexed", "language": language, "detail": reason}
+                                          for language, reason in failed.items())]
+        return {"available": True, "engine": resolver, "indexer": indexer, "languages": states,
+                **({"gaps": noted} if noted else {})}
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+def _none_indexed(language: str, files: dict) -> str:
+    """Why a language is not fresh when the index holds none of its files: their count and the commonest causes."""
+    import collections
+    causes = collections.Counter(item["reason"] for item in files["missing"]).most_common(3)
+    return (f"none of the {files['snapshot']} {language} files is in the index: "
+            + ", ".join(f"{reason} ({count})" for reason, count in causes))
+
+
+def _not_indexed(result: dict, roots) -> list[dict]:
+    """The builds, units and runs of an indexer's contract that gave no index, each as a gap: another one's index
+    keeps the language fresh, and this one's cause would be gone. A contract that names its `builds` or `units`
+    gives their state; one with `runs` only, the runs without an index. A cause the contract's `reason` already
+    says is not said twice. `code_graph.module_runs` runs first at the checkout's root whatever it holds: where no
+    manifest is there (`roots`), that run's failure is no loss."""
+    said, gaps = result.get("reason") or "", []
+    named = [*(result.get("builds") or ()), *(result.get("units") or ())]
+    for item in named:
+        cause = item.get("reason") or item.get("cause") or "no index"
+        if item["state"] not in ("done", "indexed") and cause not in said:
+            gaps.append({"kind": "build_not_indexed", "path": item["root"], "state": item["state"],
+                         "detail": f"{item['root'] or '.'}: {item['state']}: {cause}"})
+    for run in () if named else result.get("runs") or ():
+        if "index" not in run or run["index"] or (not run.get("prefix") and roots and "" not in roots):
+            continue
+        tail = (run.get("stderr_tail") or run.get("stdout_tail") or "").strip().splitlines()
+        if tail and tail[-1] in said:
+            continue
+        gaps.append({"kind": "build_not_indexed", "path": run.get("prefix") or "", "state": "failed",
+                     "detail": f"{run.get('prefix') or '.'}: no index (exit code {run.get('returncode')})"
+                               + (f": {tail[-1][:300]}" if tail else "")})
+    return gaps
 
 
 def _log_tail(manifest: Path, size: int = 65536) -> str:

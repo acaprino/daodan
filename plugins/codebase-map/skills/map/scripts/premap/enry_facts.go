@@ -1,6 +1,7 @@
-// Prints, for every file below the folder given, what go-enry's library says of it: its language and the
-// predicates the enry command uses to leave a file out silently (vendored, documentation, configuration, dot
-// file), plus generated and binary, which it does not use. Daodan builds it with go-enry at the version
+// Prints, for every file below the folder given, what go-enry's library says of it: its language, that
+// language's type (programming, data, markup, prose, unknown) and the predicates the enry command uses to leave
+// a file out silently (vendored, documentation, configuration, dot file), plus generated and binary, which it
+// does not use. Daodan builds it with go-enry at the version
 // `premap/enry.py` pins; it reads files and runs nothing.
 package main
 
@@ -11,11 +12,13 @@ import (
 	"path/filepath"
 
 	"github.com/go-enry/go-enry/v2"
+	"github.com/go-enry/go-enry/v2/data"
 )
 
 type row struct {
 	Path          string `json:"path"`
 	Language      string `json:"language"`
+	Type          string `json:"type"`
 	Vendored      bool   `json:"vendored"`
 	Documentation bool   `json:"documentation"`
 	Configuration bool   `json:"configuration"`
@@ -48,8 +51,11 @@ func main() {
 		}
 		content, _ := io.ReadAll(io.LimitReader(f, 16*1024))
 		f.Close()
+		language := enry.GetLanguage(rel, content)
 		rows = append(rows, row{
-			Path: rel, Language: enry.GetLanguage(rel, content), Vendored: enry.IsVendor(rel),
+			// enry.Type has no String method; data.Type, the same values, has it.
+			Path: rel, Language: language, Type: data.Type(enry.GetLanguageType(language)).String(),
+			Vendored: enry.IsVendor(rel),
 			Documentation: enry.IsDocumentation(rel), Configuration: enry.IsConfiguration(rel),
 			DotFile: enry.IsDotFile(rel), Generated: enry.IsGenerated(rel, content),
 			Binary: enry.IsBinary(content) || enry.IsImage(rel),

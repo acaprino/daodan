@@ -687,3 +687,53 @@ def test_the_gaps_the_runner_hands_back_are_the_sources_gaps(tmp_path):
     _, _, record = build(tmp_path, "mixed", sources=(built,), runner=runner)
     assert read == [["x", "x"]]
     assert [g for g in record["gaps"] if g["kind"] == "toolchain_unavailable"] == [{**gap, "source": "built@1"}]
+
+
+# ------------------------------------------------------------------ analyzers
+
+def test_a_programming_language_no_analyzer_lists_is_a_gap_with_its_files(tmp_path):
+    """go-enry counts Scala and C# files, programming languages no analyzer lists: each is a gap with its files.
+    One an analyzer lists (TSX is TypeScript's), one that is data, markup or prose, and one whose type the answer
+    does not give (a recording older than `type`) are none."""
+    counted = fake("counted", "scanner", lambda context: {"facts": {"languages": [
+        {"language": name, "files": files, **({"type": kind} if kind else {})}
+        for name, files, kind in (("Scala", 3, "programming"), ("C#", 2, "programming"), ("Python", 4, "programming"),
+                                  ("TSX", 1, "programming"), ("C++", 1, "programming"), ("JSON", 5, "data"),
+                                  ("SCSS", 1, "markup"), ("Markdown", 2, "prose"), ("Ruby", 6, None))]}})
+    _, _, record = build(tmp_path, "mixed", sources=(counted,))
+    found = {gap["language"]: gap for gap in gaps(record, "no_analyzer")}
+    assert set(found) == {"Scala", "C#"}
+    assert found["Scala"]["files"] == 3 and found["Scala"]["source"] == premap.RULE
+    assert "3 Scala files" in found["Scala"]["detail"]
+
+
+def test_enry_gives_each_language_its_type_when_the_answer_has_it(tmp_path):
+    """`daodan-enry` prints go-enry's type of each file's language: the facet carries it. An answer without it
+    (the stored one) states no type, and the pre-map raises no `no_analyzer` gap from it."""
+    rows = [{"path": "a.scala", "language": "Scala", "type": "programming"},
+            {"path": "b.scala", "language": "Scala", "type": "programming"},
+            {"path": "c.json", "language": "JSON", "type": "data"}, {"path": "d.rb", "language": "Ruby"}]
+    facts = enry.read(None, [{}], [{"returncode": 0, "stdout": json.dumps(rows), "stderr": ""}])["facts"]
+    assert facts["languages"] == [{"language": "JSON", "files": 1, "type": "data"}, {"language": "Ruby", "files": 1},
+                                  {"language": "Scala", "files": 2, "type": "programming"}]
+    _, _, record = build(tmp_path, "enry_files", runner=replay("enry_files"))
+    assert not any("type" in item for item in record["languages"]) and not gaps(record, "no_analyzer")
+
+
+def test_the_unit_kinds_able_to_index_a_language_are_the_ones_its_analyzer_declares(tmp_path):
+    """The pre-map keeps no table of its own: a language is indexed by the unit kinds its analyzer declares, so a
+    Java file whose only unit is of a kind no analyzer takes (sbt) is code outside the units; a language without
+    an analyzer is no row (its gap is `no_analyzer`), nor is one whose analyzer takes no unit."""
+    import indexers
+    from premap import suffix_table
+    table = premap.indexed_by()
+    for analyzer in indexers.analyzers():
+        for language in analyzer.LANGUAGES:
+            name = suffix_table.NAMES.get(language, language)
+            assert table.get(name, frozenset()) == frozenset(analyzer.UNIT_KINDS), name
+    assert "C#" not in table and "Vue" not in table
+    _, _, record = build(tmp_path, "mixed", extra={"legacy/build.sbt": 'name := "legacy"\n',
+                                                   "legacy/src/main/java/A.java": "class A {}\n"})
+    assert "legacy" in by_root(record, "sbt-project")
+    [gap] = [g for g in gaps(record, "code_outside_units") if g["language"] == "Java"]
+    assert gap["path"] == "legacy/src/main/java" and "sbt-project" not in gap["detail"]

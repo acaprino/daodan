@@ -78,7 +78,7 @@ source does not give is no conflict. `config` joins key by key
 |---|---|
 | `binding`, `inputs_digest` | the manifest, its logical digest and root; what freshness compares |
 | `sources` | per source `{source, rank, state, seconds}`: `ran`, `not_needed` (nothing of its kind), `not_run` (model commands without a runner, with `commands`), `unavailable` (with `reason`, `install`) or `failed` (with `reason`) |
-| `languages` | `{language, files}` from go-enry, in Linguist's spelling; each file's language stays in the snapshot |
+| `languages` | `{language, files, type}` from go-enry, in Linguist's spelling; `type` is go-enry's (`programming`, `data`, `markup`, `prose`, `unknown`); each file's language stays in the snapshot |
 | `excluded` | `{path, why}`: `vendored`, `generated`, `documentation`, `binary`, `submodule` |
 | `units` | `{name, kind, root, manifest, source_roots, depends_on, config, registries, run}`; `kind` one of `npm-package`, `deno-project`, `nx-project`, `python-project`, `cargo-crate`, `go-module`, `maven-module`, `gradle-project`, `sbt-project`, `dotnet-project`, `cmake-target`, `composer-package`, `gem`, `bundler-project`, `pub-package`, `swift-package`, `mix-project`, `cabal-package`, `dune-project`, `zig-package`, `julia-package`, `terraform-module`; `name` null when no file names the unit; `config` what an indexer reads (`tsconfig`, `paths`, `entry_files`, `packages`, `ignored_files`, `build_script`, `wrapper`, `requirements`, ...); `registries` the origins the preparation reaches, when a source states them |
 | `units[].run` | `{executes_project_code, reason}`, below |
@@ -129,5 +129,6 @@ facts are literal in its files: the pre-map gives no `needs`.
 | `toolchain_unavailable` | a toolchain the readers state that the container's preparation cannot install at that version (`tool`, `version`): a range, a tool mise has no entry for, a second version of one tool, an install that failed; the commands run on what installed |
 | `restore_failed` | a dependency restore a model command needs failed (`manager`, its error): the configure runs without it |
 | `submodule_absent` | a submodule `.gitmodules` declares whose folder is missing or empty: its code is not in the project |
-| `code_outside_units` | `{path, language, files}`: code of a language that no unit able to index it holds, per outermost folder (a Python folder without a manifest Daodan reads) |
+| `code_outside_units` | `{path, language, files}`: code of a language that no unit able to index it holds, per outermost folder (a Python folder without a manifest Daodan reads); the unit kinds able to index a language are the ones its analyzer declares (`UNIT_KINDS`) |
+| `no_analyzer` | `{language, files}`: a language of `type` `programming` that no analyzer lists (`LANGUAGES` of each module of `indexers.analyzers`): its code is in no graph |
 | module graph gaps | `manifest_unreadable`, `directory_missing`, `member_missing`, `dependency_unresolved`, ... as `modules.py` states them |

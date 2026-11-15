@@ -68,13 +68,7 @@ EXECUTES = {  # unit kinds whose model or index exists only when the build runs 
     "mix-project": "Mix evaluates mix.exs and expands the project's macros",
     "xcode-target": "the build settings come from xcodebuild",
 }
-_JS = frozenset({"npm-package", "deno-project", "angular-project", "nx-project"})
-_JVM = frozenset({"maven-module", "gradle-project", "sbt-project"})
-_NATIVE = frozenset({"cmake-target", "make-target", "meson-target", "bazel-target", "msbuild-project"})
-INDEXED_BY = {"Python": frozenset({"python-project"}), "Go": frozenset({"go-module"}),
-              "Rust": frozenset({"cargo-crate"}), "TypeScript": _JS, "JavaScript": _JS, "Vue": _JS, "Svelte": _JS,
-              "Java": _JVM, "Kotlin": _JVM, "C": _NATIVE, "C++": _NATIVE,
-              "C#": frozenset({"dotnet-project", "msbuild-project"})}
+ALSO = {"typescript": ("TSX",)}  # Linguist's other programming languages inside one of the snapshot's
 
 
 class Context:
@@ -217,15 +211,42 @@ def _run_facts(record: dict, context: Context) -> list[dict]:
     return gaps
 
 
+def _analyzers() -> list:
+    """The analyzers' declarations (`indexers.analyzers`), loaded through the pass: an adapter imports it back."""
+    import engine_pass  # noqa: F401
+    import indexers
+    return indexers.analyzers()
+
+
+def indexed_by() -> dict[str, frozenset]:
+    """The unit kinds able to index each language, in Linguist's spelling: the ones its analyzer declares
+    (`LANGUAGES`, `UNIT_KINDS`). An analyzer that takes no unit reads the snapshot's files wherever they are, and a
+    language no analyzer lists has no row: its gap is `no_analyzer`."""
+    return {suffix_table.NAMES.get(language, language): frozenset(analyzer.UNIT_KINDS)
+            for analyzer in _analyzers() if analyzer.UNIT_KINDS for language in analyzer.LANGUAGES}
+
+
+def _unlisted(record: dict) -> list[dict]:
+    """Each programming language go-enry counts that no analyzer lists: its code is in no graph. A language whose
+    type the answer does not give is no gap: the type is go-enry's, never guessed."""
+    listed = {name for analyzer in _analyzers() for language in analyzer.LANGUAGES
+              for name in (suffix_table.NAMES.get(language, language), *ALSO.get(language, ()))}
+    return [{"kind": "no_analyzer", "language": item["language"], "files": item["files"], "source": RULE,
+             "detail": f"{item['files']} {item['language']} files and no analyzer lists the language: their code is "
+                       "in no graph"}
+            for item in record.get("languages", [])
+            if item.get("type") == "programming" and item["language"] not in listed]
+
+
 def _coverage(record: dict, context: Context) -> list[dict]:
     """Code of a language that no unit able to index it holds, per outermost folder."""
     excluded = [e["path"].rstrip("/") for e in record.get("excluded", [])]
-    roots = {language: [u["root"] for u in record["units"] if u["kind"] in kinds]
-             for language, kinds in INDEXED_BY.items()}
+    table = indexed_by()
+    roots = {language: [u["root"] for u in record["units"] if u["kind"] in kinds] for language, kinds in table.items()}
     loose: dict[str, list[str]] = {}
     for rel, header in context.inventory.headers.items():
         language = suffix_table.NAMES.get(header.get("language"))
-        if language not in INDEXED_BY or any(_inside(rel, e) for e in excluded):
+        if language not in table or any(_inside(rel, e) for e in excluded):
             continue
         if not any(_inside(rel, root) for root in roots[language]):
             loose.setdefault(language, []).append(rel)
@@ -233,7 +254,7 @@ def _coverage(record: dict, context: Context) -> list[dict]:
     for language, files in sorted(loose.items()):
         folders = sorted({PurePosixPath(rel).parent.as_posix() for rel in files})
         outer = [f for f in folders if not any(other != f and _inside(f, other) for other in folders)]
-        kinds = ", ".join(sorted(INDEXED_BY[language]))
+        kinds = ", ".join(sorted(table[language]))
         for folder in outer:
             held = sum(1 for rel in files if _inside(rel, folder))
             gaps.append({"kind": "code_outside_units", "path": folder, "language": language, "files": held,
@@ -389,7 +410,7 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
     for unit in record["units"]:
         unit.setdefault("depends_on", [])
     record["units"].sort(key=lambda u: (u["root"], u["kind"], u.get("name") or ""))
-    record["gaps"] = gaps + _run_facts(record, context) + _coverage(record, context)
+    record["gaps"] = gaps + _run_facts(record, context) + _coverage(record, context) + _unlisted(record)
     return record
 
 
