@@ -15,9 +15,12 @@ language is `unavailable`, with the gap's cause and remedy.
   the distribution site publishes; without a wrapper, `GRADLE` or `MAVEN`. A wrapper that names another site is
   `unavailable`, and nothing is fetched from it. In the container the wrapper only calls that tool, so no build
   downloads a distribution.
-- Preparation, on a network that reaches only `registries` through the operation's proxy: the build and
-  `scip-java index`. The build downloads the project's dependencies and its Gradle plugins; its scripts run
-  there and stay in the container (spec, section 4).
+- Preparation, on a network that reaches only `registries` through the operation's proxy: the steps of
+  `preparation` (its proxy for the JVM, a JDK the pre-map states above the image's installed by mise, the restore
+  of the dependencies with Gradle's or Maven's own command), then the build and `scip-java index`. The build
+  downloads the project's dependencies and its Gradle plugins; its scripts run there and stay in the container
+  (spec, section 4). What a step could not do (`preparation.missing`, `preparation.restore_gaps`) is a gap of
+  the contract, and the build goes on.
 - Execution, with no network, from the same image: what reads the build's output, and every output copied
   under `OUT`, which comes back into `<work_dir>/container/out`. What the preparation keeps for it lies in the
   operation's volumes (`container.STATE`): scip-java and the build tools, `HOME` with the dependency caches
@@ -35,6 +38,7 @@ import shutil
 from pathlib import Path
 
 import code_graph
+import preparation
 
 VERSION = "0.14.2"  # org.scip-code:scip-java, released 2026-11-12
 IMAGE = "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6"
@@ -119,9 +123,14 @@ step() {
 }
 trap 'echo "DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)"' EXIT
 export JAVA_HOME=${JAVA_HOME:-/opt/java/openjdk}
+JDK=17
+for java in /daodan/state/tools/mise/installs/java/*/bin/java; do  # the JDK the preparation installed
+  [ -x "$java" ] && JAVA_HOME=${java%/bin/java} && JDK=$DAODAN_JDK
+done
+export JAVA_HOME
 export PATH="$JAVA_HOME/bin:$PATH"
-if ! "$JAVA_HOME/bin/java" -version 2>&1 | grep -q 'version "17\.'; then
-  step jdk sh -c 'echo "no JDK 17 at $JAVA_HOME"; exit 70'
+if ! "$JAVA_HOME/bin/java" -version 2>&1 | grep -q "version \"$JDK[.\"]"; then
+  step jdk sh -c "echo 'no JDK $JDK at $JAVA_HOME'; exit 70"
   exit 70
 fi
 # The options scip-java's own image gives its JVM, for the compiler classes it reads.
@@ -138,22 +147,9 @@ JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.hom
 export GRADLE_USER_HOME="$HOME/.gradle"
 '''
 
-# The JVM ignores HTTPS_PROXY: Java tools get the proxy as system properties, Maven also in its settings. The
-# build tools Daodan brought are unpacked and put first on the PATH, and a wrapper only calls them.
-PREPARE = r'''if [ -n "${HTTPS_PROXY:-}" ]; then
-  address=${HTTPS_PROXY#*://}
-  address=${address%%/*}
-  host=${address%:*}
-  port=${address##*:}
-  JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Dhttps.proxyHost=$host -Dhttps.proxyPort=$port"
-  JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Dhttp.proxyHost=$host -Dhttp.proxyPort=$port"
-  mkdir -p "$HOME/.m2"
-  printf '%s\n' '<settings><proxies>' \
-    "<proxy><id>https</id><protocol>https</protocol><host>$host</host><port>$port</port></proxy>" \
-    "<proxy><id>http</id><protocol>http</protocol><host>$host</host><port>$port</port></proxy>" \
-    '</proxies></settings>' > "$HOME/.m2/settings.xml"
-fi
-export JAVA_TOOL_OPTIONS
+# The JVM ignores HTTPS_PROXY: the preparation's proxy for Java tools (`preparation.JAVA_PROXY`). The build
+# tools Daodan brought are unpacked and put first on the PATH, and a wrapper only calls them.
+PREPARE = preparation.JAVA_PROXY + "\n" + r'''export JAVA_TOOL_OPTIONS
 for zip in /daodan/state/tools/*.zip; do
   [ -f "$zip" ] || continue
   mkdir -p "${zip%.zip}" && (cd "${zip%.zip}" && jar xf "$zip") && rm -f "$zip" || exit 70
@@ -184,12 +180,42 @@ def registries(project_dir: Path) -> tuple[str, ...]:
     return READ_ONLY + (PLUGIN_PORTAL if gradle else ())
 
 
-def script(phase: str, body: str) -> str:
-    """The bash script of one phase: the shared head, the preparation's network setup, then `body`."""
+def script(phase: str, body: str, *, setup: str = "", jdk: int = JDK) -> str:
+    """The bash script of one phase: `setup` (the preparation's toolchains, before the head picks the JDK, `jdk`
+    when one was installed), the shared head, the preparation's network setup, then `body`."""
+    first = f"# daodan {phase}\nPHASE_OUT={KEPT if phase == 'prepare' else OUT}\nDAODAN_JDK={jdk}\n"
     if phase == "prepare":
-        return f"# daodan {phase}\nPHASE_OUT={KEPT}\n{HEAD}{PREPARE}{body}"
+        return f"{first}{setup}{HEAD}{PREPARE}{body}"
     carry = f'if [ -z "${{DAODAN_OUT:-}}" ] && [ -d {KEPT} ]; then cp -a {KEPT}/. "$OUT"/ || exit 70; fi\n'
-    return f"# daodan {phase}\nPHASE_OUT={OUT}\n{HEAD}{carry}export JAVA_TOOL_OPTIONS\n{body}"
+    return f"{first}{HEAD}{carry}export JAVA_TOOL_OPTIONS\n{body}"
+
+
+def toolchains(record: dict) -> list[dict]:
+    """The JDKs the pre-map states (`toolchains`, tool `java`): what the stage hands `run`."""
+    return [item for item in record.get("toolchains", []) if item.get("tool") == "java"]
+
+
+def _major(version: str) -> int | None:
+    match = re.match(r"\s*(?:1\.)?(\d+)", str(version or ""))
+    return int(match.group(1)) if match else None
+
+
+def wanted_jdk(stated) -> dict | None:
+    """The newest JDK `stated` above the image's: a release or toolchain the image's JDK compiles needs nothing,
+    one above it is installed by the preparation at the version stated."""
+    above = [item for item in stated or () if (_major(item.get("version")) or 0) > JDK]
+    return max(above, key=lambda item: _major(item["version"])) if above else None
+
+
+def restore_lines(project_dir: Path) -> str:
+    """The preparation's restore of Gradle's and Maven's dependencies, per build folder (`preparation.restores`)."""
+    marks = {mark for manager in ("gradle", "maven") for mark in preparation.RESTORES[manager]["marks"]}
+    skipped = {"build", "target", "node_modules"}
+    files = [path.relative_to(project_dir).as_posix() for path in Path(project_dir).rglob("*")
+             if path.name in marks and path.is_file()
+             and not any(part.startswith(".") or part in skipped for part in path.relative_to(project_dir).parts[:-1])]
+    return "".join(preparation.restore(manager, folders) + "\n"
+                   for manager, folders in preparation.restores(files).items() if manager in ("gradle", "maven"))
 
 
 def properties(path: Path) -> dict[str, str]:
@@ -273,21 +299,23 @@ def tools(project_dir: Path) -> dict[str, Path]:
     return inputs
 
 
-def newer_jdk(text: str) -> int | None:
-    """The newest JDK above `JDK` a failed build's output asks for, or None."""
+def newer_jdk(text: str, used: int = JDK) -> int | None:
+    """The newest JDK above `used` a failed build's output asks for, or None."""
     found = [int(value) for pattern in NEWER for value in pattern.findall(text)]
     found += [int(value) - 44 for value in CLASS_FILE.findall(text)]
-    found = [value for value in found if value > JDK]
+    found = [value for value in found if value > used]
     return max(found) if found else None
 
 
-def judged(result: dict, text: str) -> dict:
-    """A failed preparation that asks for a newer JDK is a gap: the image has JDK 17 only."""
-    jdk = newer_jdk(text) if result["state"] not in ("done", "gap") else None
+def judged(result: dict, text: str, used: int = JDK) -> dict:
+    """A failed preparation that asks for a JDK above the one it ran with (`used`) is a gap."""
+    jdk = newer_jdk(text, used) if result["state"] not in ("done", "gap") else None
     if jdk is None:
         return result
-    return {**result, "state": "gap", "cause": f"the build asks for JDK {jdk}; Daodan's image holds JDK {JDK} only",
-            "remedy": f"none yet: no image with JDK {jdk} exists, so this project is not indexed"}
+    held = f"Daodan's image holds JDK {JDK} only" if used == JDK else f"the preparation installed JDK {used}"
+    return {**result, "state": "gap", "cause": f"the build asks for JDK {jdk}; {held}",
+            "remedy": f"declare JDK {jdk} where the pre-map reads it (the build's toolchain or release), so the "
+                      "preparation installs it"}
 
 
 def _errors(line: str) -> str | None:
@@ -353,20 +381,32 @@ def failed(result: dict, runs: list[dict]) -> dict:
 
 
 def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory: int, engine=None,
-        prepare_timeout: float = 1800, timeout: float = 600) -> tuple[dict, list[dict], Path]:
-    """Both phases in one container run over a copy of `project_dir` and the `tools` it needs: the operation's
-    result (`judged`), the runs of both logs, and the folder the outputs came back into."""
+        toolchains=(), prepare_timeout: float = 1800, timeout: float = 600) -> tuple[dict, list[dict], Path]:
+    """Both phases in one container run over a copy of `project_dir` and the `tools` it needs, the preparation's
+    steps before `prepare` (a JDK of `toolchains` above the image's, the restore): the operation's result
+    (`judged`, with the preparation's `gaps`), the runs of both logs, and the folder the outputs came back into."""
     import container
     out_dir = Path(work_dir) / "container"
     out = out_dir / Path(OUT).name
     shutil.rmtree(out, ignore_errors=True)
     for phase in ("prepare", "execute"):
         (out_dir / f"{phase}.log").unlink(missing_ok=True)
+    jdk = wanted_jdk(toolchains)
+    chains = preparation.toolchains([jdk] if jdk else [])
+    setup = "".join(f"{line}\n" for line in ([f"mkdir -p {preparation.T}/bin"] if jdk else []) + chains["lines"])
+    used = _major(jdk["version"]) if jdk else JDK
+
+    def inputs() -> dict:
+        given = tools(project_dir)
+        given.update({f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
+                      for url, digest, name in chains["files"]})
+        return given
+
     result = container.run_in_container(
-        project_dir, ["bash", "-c", script("execute", execute)], image=IMAGE, out_dir=out_dir,
-        prepare=["bash", "-c", script("prepare", prepare)], outputs=[OUT], env=dict(ENV), timeout=timeout,
-        prepare_timeout=prepare_timeout, memory=memory, pids=PIDS, registries=registries(project_dir), engine=engine,
-        inputs=lambda: tools(project_dir))
+        project_dir, ["bash", "-c", script("execute", execute, jdk=used)], image=IMAGE, out_dir=out_dir,
+        prepare=["bash", "-c", script("prepare", restore_lines(project_dir) + prepare, setup=setup, jdk=used)],
+        outputs=[OUT], env=dict(ENV), timeout=timeout, prepare_timeout=prepare_timeout, memory=memory, pids=PIDS,
+        registries=registries(project_dir) + tuple(chains["hosts"]), engine=engine, inputs=inputs)
     runs, prepared = [], ""
     for phase in ("prepare", "execute"):
         log = out_dir / f"{phase}.log"
@@ -374,7 +414,16 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
             text = log.read_text(encoding="utf-8", errors="replace")
             prepared = text if phase == "prepare" else prepared
             runs += steps(text, phase)
-    return judged(result, prepared), runs, out
+    missing = preparation.missing(prepared)
+    if any(gap["tool"] == "java" for gap in missing):
+        used = JDK  # the head ran with the image's JDK
+    gaps = chains["gaps"] + missing + preparation.restore_gaps(prepared)
+    return {**judged(result, prepared, used), **({"gaps": gaps} if gaps else {})}, runs, out
+
+
+def with_gaps(part: dict, result: dict) -> dict:
+    """A build's contract with the preparation's gaps of its run."""
+    return {**part, "gaps": result["gaps"]} if result.get("gaps") else part
 
 
 BUILDS = ({"gradle-project"}, {"maven-module"})  # a Gradle build and a Maven reactor build the modules inside them
@@ -410,6 +459,8 @@ def combined(parts: list[tuple[str, dict]], **joined) -> dict:
         return unavailable("no Gradle or Maven build in the pre-map: nothing builds these files",
                            "declare the build of the project (settings.gradle, build.gradle or pom.xml)")
     runs, indexes, states = [], [], []
+    gaps = [gap for _root, part in parts for gap in part.get("gaps", ())]
+    joined = {**joined, **({"gaps": gaps} if gaps else {})}
     for root, part in parts:
         runs += [{**run, "build": root} for run in part.get("runs", [])]
         indexes += [[path, "/".join(name for name in (root, prefix) if name)] for path, prefix in part["indexes"]]
@@ -417,7 +468,7 @@ def combined(parts: list[tuple[str, dict]], **joined) -> dict:
                        **({"reason": part["reason"]} if part.get("state") else {})})
     if not indexes:
         first = next((part for _root, part in parts if part.get("state") == "failed"), parts[0][1])
-        return {**first, "runs": runs, "builds": states}
+        return {**first, "runs": runs, "builds": states, **({"gaps": gaps} if gaps else {})}
     return {"indexes": indexes, "runs": runs, "indexer": code_graph.indexer("scip-java", VERSION, runs),
             "builds": states, **joined}
 

@@ -6,7 +6,10 @@ CMake code, so it runs only in a container (`container.run_in_container`), in on
 copy of the project: `clang_run.py` there configures each root (a fetched dependency is never downloaded: a unit
 that needs one to configure is not indexed, `unavailable` with what CMake recorded and its own output) and runs
 scip-clang over the compilation database. CMake, scip-clang and that script are what the copy carries under
-`TOOLS`, CMake and scip-clang downloaded once by Daodan into the shared directory and checked by sha256. The image
+`TOOLS`, CMake and scip-clang downloaded once by Daodan into the shared directory and checked by sha256. A CMake
+minimum the pre-map states above `CMAKE` (`toolchains`) is installed at that version by mise in a preparation
+before it, the only phase with a network, which reaches mise's hosts only (`preparation.toolchains`); what it
+could not install is a gap and the configure runs with `CMAKE`. The image
 (`IMAGE`) gives gcc and g++ with their headers, which scip-clang needs to read the system includes, glibc 2.39
 (scip-clang v0.4.1 needs 2.38), dpkg, whose file lists name the package of each system header, and python3.
 
@@ -38,6 +41,7 @@ import shutil
 from pathlib import Path
 
 import code_graph
+import preparation
 
 VERSION = "v0.4.1"  # github.com/sourcegraph/scip-clang, released 2026-10-22, LLVM 21
 URL = f"https://github.com/sourcegraph/scip-clang/releases/download/{VERSION}/scip-clang-x86_64-linux"
@@ -45,7 +49,8 @@ SHA256 = "a434d26a079fd80e1996ba79276cb1ef86b2b2ad28b13e24386285db32c59046"  # t
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"
 CMAKE = ("3.28.3", "https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.tar.gz",
          "804d231460ab3c8b556a42d2660af4ac7a0e21c98a7f8ee3318a74b4a9a187a6")  # Ubuntu 24.04's own CMake
-TOOLS = "/daodan/tools"  # where the copy carries the tools in the container (clang_run.py reads them there)
+TOOLS = "/daodan/state/clang"  # where the copy carries the tools (clang_run.py reads them there); under the
+# operation's state, which a preparation keeps for the run
 OUT = "/tmp/daodan-clang/out"
 MIN_FREE = 2 * 2**30  # the container's memory
 PIDS = 1024
@@ -360,9 +365,21 @@ ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATI
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: its native units and the workspaces that hold them."""
+    """What `index` takes from the pre-map: its native units, the workspaces that hold them and the CMake versions
+    it states."""
     return {"units": [unit for unit in record.get("units", []) if unit["kind"] in NATIVE],
-            "workspace": record.get("workspace", [])}
+            "workspace": record.get("workspace", []),
+            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "cmake"]}
+
+
+def _version(text) -> tuple[int, ...]:
+    return tuple(int(part) for part in str(text or "").split(".")[:3] if part.isdigit())
+
+
+def wanted_cmake(stated) -> dict | None:
+    """The newest CMake minimum `stated` above `CMAKE`, which the pin does not meet; None when it meets them all."""
+    above = [item for item in stated or () if _version(item.get("version")) > _version(CMAKE[0])]
+    return max(above, key=lambda item: _version(item["version"])) if above else None
 
 
 def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
@@ -380,14 +397,15 @@ def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, units: list[dict] | None = None,
-          workspace: list[dict] | None = None, engine=None, memory: int = MIN_FREE, cpus: int = 1,
+          workspace: list[dict] | None = None, toolchains=(), engine=None, memory: int = MIN_FREE, cpus: int = 1,
           timeout: float = 3600) -> dict:
     """The index of each configured root, with its runs and each root's state; `units` and `workspace` are the
     pre-map's (`files` is not used: a unit's compilation database decides what is indexed). `cpus` is the
     container's share, as the caller gives it: its limit and scip-clang's jobs. A unit built otherwise
     than with CMake, or whose configure needs a download outside the allowed registries, is `unavailable`; one
     whose configure fails otherwise, `failed`; either keeps its static facts from the snapshot. Without a unit
-    indexed, or without a container, the result's state is `unavailable` (no unit failed) or `failed`."""
+    indexed, or without a container, the result's state is `unavailable` (no unit failed) or `failed`. `gaps` says
+    what the preparation of a CMake of `toolchains` could not install."""
     import container
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
@@ -404,10 +422,29 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     out_dir = work_dir / "container"
     back = out_dir / Path(OUT).name
     shutil.rmtree(back, ignore_errors=True)
+    cmake = wanted_cmake(toolchains)
+    chains = preparation.toolchains([cmake] if cmake else [])
+    command = ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT, str(cpus)]
+    options = {"prepare": ["sh", "-c", "\n".join([f"mkdir -p {preparation.T}/bin", *chains["lines"]])],
+               "registries": tuple(chains["hosts"])} if cmake else {}
+    if cmake:
+        command.append(f"{preparation.T}/bin/cmake")  # mise's, linked there; the pin when it is not
+    (out_dir / "prepare.log").unlink(missing_ok=True)
     result = container.run_in_container(
-        project_dir, ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT, str(cpus)], image=IMAGE,
-        out_dir=out_dir, outputs=[OUT], env={"TERM": "dumb"}, timeout=timeout, memory=memory, pids=PIDS, cpus=cpus,
-        engine=engine, inputs=lambda: {**tools(), f"{TOOLS}/units.json": plan})
+        project_dir, command, image=IMAGE, out_dir=out_dir, outputs=[OUT], env={"TERM": "dumb"}, timeout=timeout,
+        memory=memory, pids=PIDS, cpus=cpus, engine=engine, **options,
+        inputs=lambda: {**tools(), f"{TOOLS}/units.json": plan,
+                        **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
+                           for url, digest, name in chains["files"]}})
+    log = out_dir / "prepare.log"
+    gaps = chains["gaps"] + preparation.missing(log.read_text(encoding="utf-8", errors="replace")
+                                                if log.is_file() else "")
+    return {**_contract(result, back, work_dir, states), **({"gaps": gaps} if gaps else {})}
+
+
+def _contract(result: dict, back: Path, work_dir: Path, states: list[dict]) -> dict:
+    """The contract from what the container run brought back into `back`, its indexes moved into `work_dir`,
+    after the `states` of the units it did not configure."""
     if result["state"] == "gap":
         return unavailable(result["cause"], result["remedy"])
     report = back / "result.json"

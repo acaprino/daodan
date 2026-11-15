@@ -36,6 +36,7 @@ for path in (str(SCRIPTS), str(HERE)):
         sys.path.insert(0, path)
 
 import container  # noqa: E402
+import preparation  # noqa: E402
 import resolve_edges  # noqa: E402
 import engine_tools  # noqa: E402
 import test_codebase_map_code_graph as graph_tests  # noqa: E402
@@ -262,11 +263,82 @@ class EachBuildTests:
         record = {"units": [{"kind": "gradle-project", "root": "."}, {"kind": "gradle-project", "root": "app"},
                             {"kind": "maven-module", "root": "svc"}, {"kind": "maven-module", "root": "svc/core"},
                             {"kind": "gradle-project", "root": "tools/plugin"}, {"kind": "npm-package", "root": "web"}]}
-        self.assertEqual(java.structure(record), {"roots": {"", "svc"}})
-        self.assertEqual(kotlin.structure(record), {"roots": {"", "svc"}})
+        self.assertEqual(java.structure(record)["roots"], {"", "svc"})
+        self.assertEqual(kotlin.structure(record)["roots"], {"", "svc"})
 
 
-class JavaContainerTests(EachBuildTests, FakeEngineTest):
+class PreparationTests:
+    """A JVM build takes the preparation's steps (`preparation`): its proxy for the JVM, the restore of the
+    dependencies before scip-java, a JDK the pre-map states above the image's from mise; what they could not do is
+    a gap of the stage, and the build goes on."""
+
+    def manager(self) -> str:
+        return "maven" if self.language == "java" else "gradle"
+
+    def serve_mise(self):
+        tool = b"mise"
+        self.served[preparation.MISE[0]] = tool
+        patcher = mock.patch.object(preparation, "MISE", (preparation.MISE[0], digest(tool), "mise"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return tool
+
+    def test_the_build_restores_its_dependencies_with_the_preparation_before_scip_java(self):
+        self.play_success()
+        self.index()
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        line = preparation.restore(self.manager(), ["."])
+        self.assertIn(preparation.JAVA_PROXY, script)
+        self.assertNotIn("address=${HTTPS_PROXY", jvm.PREPARE)  # one proxy setup for the JVM: the preparation's
+        self.assertIn(line, script)
+        self.assertLess(script.index(line), script.index('"$SCIP_JAVA" index'))
+
+    def test_a_restore_that_fails_is_a_gap_and_the_build_goes_on(self):
+        self.play_success()
+        failed = (f"DAODAN-RESTORE-FAILED {self.manager()} .\n[ERROR] Could not resolve com.example:gone:1.0\n"
+                  "DAODAN-RESTORE-END\n")
+        self.play("prepare", text=failed + log(("index", 0, "[INFO] BUILD SUCCESS")))
+        result = self.index()
+        self.assertTrue(result["indexes"])
+        self.assertEqual(result["gaps"], preparation.restore_gaps(failed))
+
+    def test_a_jdk_the_pre_map_states_above_the_images_is_installed_by_the_preparation(self):
+        tool = self.serve_mise()
+        self.play_success()
+        self.index(toolchains=[{"tool": "java", "version": "21", "declared_in": "pom.xml#maven.compiler.release"}])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@21", script)
+        self.assertIn("mise/installs/java", script)  # JAVA_HOME follows the JDK installed
+        self.assertIn("api.adoptium.net", self.created()[0])
+        self.assertEqual((self.arrived(1) / preparation.IN.lstrip("/") / "mise").read_bytes(), tool)
+
+    def test_a_jdk_the_image_holds_is_not_installed(self):
+        self.play_success()
+        self.index(toolchains=[{"tool": "java", "version": "1.8", "declared_in": "pom.xml#x"},
+                               {"tool": "java", "version": "17", "declared_in": "pom.xml#y"}])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertNotIn("install java@", script)
+        self.assertNotIn("api.adoptium.net", self.created()[0])
+
+    def test_a_jdk_the_preparation_could_not_install_is_a_gap_and_the_build_still_needs_it(self):
+        self.serve_mise()
+        self.play("prepare", text="DAODAN-MISSING java@21\n" + log(
+            ("index", 1, "> No matching toolchains found for requested specification: {languageVersion=21}")), code=1)
+        result = self.index(toolchains=[{"tool": "java", "version": "21", "declared_in": "build.gradle#x"}])
+        self.assertEqual(result["state"], "unavailable")
+        self.assertIn("JDK 21", result["reason"])
+        self.assertEqual([gap["kind"] for gap in result["gaps"]], ["toolchain_unavailable"])
+
+    def test_the_stage_is_handed_the_jdk_the_pre_map_states(self):
+        module = java if self.language == "java" else kotlin
+        record = {"units": [], "workspace": [], "toolchains": [
+            {"tool": "java", "version": "21", "declared_in": "a#x"},
+            {"tool": "node", "version": "24", "declared_in": "b"}]}
+        self.assertEqual(module.structure(record)["toolchains"],
+                         [{"tool": "java", "version": "21", "declared_in": "a#x"}])
+
+
+class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
     def test_the_build_runs_only_in_the_container(self):
         self.play_success()
         result = self.index()
@@ -459,7 +531,7 @@ class JavaContainerTests(EachBuildTests, FakeEngineTest):
         self.assertIn("JDK 17 only", result["reason"])
 
 
-class KotlinContainerTests(EachBuildTests, FakeEngineTest):
+class KotlinContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
     language = "kotlin"
 
     def test_gradle_reaches_only_the_jvm_registries(self):

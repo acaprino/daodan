@@ -25,6 +25,7 @@ if str(SCRIPTS) not in sys.path:
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import preparation  # noqa: E402
 from indexers import clang, clang_run  # noqa: E402
 
 FMT = {"name": "fmt", "urls": ["https://github.com/fmtlib/fmt.git"]}
@@ -272,6 +273,59 @@ def test_a_container_gap_is_unavailable_and_a_run_without_report_failed(tmp_path
     assert (gap["state"], gap["reason"], gap["install"]) == ("unavailable", "no engine", "install WSL")
     failed, _seen = _index(tmp_path / "again", None, [UNIT], None, "timeout")
     assert failed["state"] == "failed" and "timeout" in failed["reason"]
+
+
+INDEXED = {"peak_mb": 1, "units": [{"root": ".", "state": "indexed", "index": "index-0.scip", "compiled": {"a.c": 1},
+                                    "steps": [{"step": "configure", "returncode": 0, "seconds": 1.0, "tail": ""}]}]}
+STATED = [{"tool": "cmake", "version": "3.31", "declared_in": "CMakeLists.txt#cmake_minimum_required"}]
+
+
+def _index_stated(tmp_path, toolchains, prepared: str = ""):
+    """`index()` with the pre-map's `toolchains` and a container run whose preparation printed `prepared`."""
+    run, seen = _fake_run(tmp_path, INDEXED)
+
+    def logged(project, command, **options):
+        if prepared:
+            Path(options["out_dir"]).mkdir(parents=True, exist_ok=True)
+            (Path(options["out_dir"]) / "prepare.log").write_text(prepared, encoding="utf-8")
+        return run(project, command, **options)
+
+    with mock.patch.object(container, "run_in_container", logged), \
+            mock.patch.object(clang, "tools", return_value=TOOLS), \
+            mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)), \
+            mock.patch.object(container, "architecture", return_value="x64"):
+        result = clang.index(tmp_path / "project", tmp_path / "work", units=[UNIT], toolchains=toolchains)
+    return result, seen
+
+
+def test_a_cmake_the_pre_map_states_above_the_pin_is_installed_by_the_preparation(tmp_path):
+    """A CMake minimum the pin does not meet: mise installs the version stated in the preparation, the only
+    phase with a network (mise's hosts), and the configure runs with it, with no network."""
+    result, seen = _index_stated(tmp_path, STATED)
+    assert "install cmake@3.31" in seen["prepare"][-1]
+    assert "github.com" in seen["registries"]
+    assert seen["inputs"][f"{preparation.IN}/mise"] == Path("mise")
+    assert seen["command"][-1] == f"{preparation.T}/bin/cmake"
+    assert all(path.startswith(container.STATE) for path in seen["inputs"])  # what a preparation keeps
+    assert result["indexes"] and "gaps" not in result
+
+
+def test_a_cmake_the_pin_meets_runs_in_one_phase_with_no_network(tmp_path):
+    result, seen = _index_stated(tmp_path, [{**STATED[0], "version": "3.16"}])
+    assert "prepare" not in seen and len(seen["command"]) == 5 and result["indexes"]
+
+
+def test_a_cmake_the_preparation_could_not_install_is_a_gap_and_the_pin_configures(tmp_path):
+    result, _seen = _index_stated(tmp_path, STATED, prepared="DAODAN-MISSING cmake@3.31\n")
+    assert result["indexes"]
+    assert [(gap["kind"], gap["tool"], gap["version"]) for gap in result["gaps"]] == [
+        ("toolchain_unavailable", "cmake", "3.31")]
+    assert clang_run.cmake_tool(str(tmp_path / "absent"), tmp_path) == "cmake"  # the pin, unpacked
+
+
+def test_the_stage_is_handed_the_cmake_the_pre_map_states():
+    record = {"units": [], "workspace": [], "toolchains": [*STATED, {"tool": "java", "version": "21"}]}
+    assert clang.structure(record)["toolchains"] == STATED
 
 
 def test_the_tools_are_downloaded_once_and_checked_each_time(tmp_path):

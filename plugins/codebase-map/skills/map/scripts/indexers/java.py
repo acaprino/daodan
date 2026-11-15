@@ -135,12 +135,12 @@ def execute(external_classes: dict | None = None) -> str:
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folder of each build."""
-    return {"roots": jvm.build_roots(record)}
+    """What `index` takes from the pre-map: the folder of each build and the JDKs it states."""
+    return {"roots": jvm.build_roots(record), "toolchains": jvm.toolchains(record)}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, external_classes: dict | None = None,
-          *, roots, engine=None, memory: int = MIN_FREE) -> dict:
+          *, roots, toolchains=(), engine=None, memory: int = MIN_FREE) -> dict:
     """The forward index of each build in `roots` (the pre-map's build folders), each in a container of its own,
     with its runs and the indexer's time and memory (`files` is not used: a build compiles every module); the
     member order of all of them in `javap.json`. Without a container, `unavailable`; without an index, `failed`."""
@@ -148,8 +148,9 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
     work_dir.mkdir(parents=True, exist_ok=True)
 
     def one(folder: Path, work: Path) -> dict:
-        result, runs, out = jvm.run(folder, work, PREPARE, execute(external_classes), memory=memory, engine=engine)
-        return finish(folder, work, result, runs, out)
+        result, runs, out = jvm.run(folder, work, PREPARE, execute(external_classes), memory=memory, engine=engine,
+                                    toolchains=toolchains)
+        return jvm.with_gaps(finish(folder, work, result, runs, out), result)
 
     parts = jvm.builds(project_dir, work_dir, roots, one)
     members = {}

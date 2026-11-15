@@ -319,6 +319,8 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
             state, reason, install, stage = _launch(spec, wanted, manifest)
             if stage is not None:
                 report["engines"][spec.name] = compact_report(stage)
+                for gap in stage.get("gaps") or ():
+                    bus.emit("gap", gap.get("detail") or gap["kind"], step="analyze", analyzer=spec.name, gap=gap)
                 if stage.get("memory_exhausted"):
                     exhausted = f"the {spec.name} engine ran out of memory"
             if state is None:
@@ -385,7 +387,8 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     The indexer works in a directory removed after the stage. One that `needs_container` gets its engine here:
     without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
     `engine` (the resolver: the entry's name, `@`, the indexer's version), `indexer` and `languages`; without
-    an index, the indexer's `reason` and, when it is `unavailable`, its `install`.
+    an index, the indexer's `reason` and, when it is `unavailable`, its `install`; `gaps`, what the indexer's
+    preparation could not do (a restore, a toolchain), which the pass says on the bus.
 
     An analyzer that `READS` files by suffix is handed the snapshot's (`files`); one whose outcome is a `graph` of
     its own, no index (`indexers/css.py`), gives the store's rows itself (`rows`).
@@ -411,9 +414,10 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
         indexer = result.get("indexer") or {}
         # The entry names the source: rust-analyzer is also an engine, and scip-java indexes Kotlin too.
         resolver = f"{spec.name}@{indexer.get('version')}"
+        gaps = {"gaps": result["gaps"]} if result.get("gaps") else {}  # what its preparation could not do
         if result.get("state"):
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": result.get("reason"),
-                    **({"install": result.get("install")} if result["state"] == "unavailable" else {})}
+                    **({"install": result.get("install")} if result["state"] == "unavailable" else {}), **gaps}
         built, rows = {}, {}
         try:
             with code_graph.Snapshot(manifest) as snap:
@@ -443,7 +447,7 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
         except ValueError as error:  # a changed source, or a store that would break sites = answered + holes
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": str(error)}
         return {"available": True, "engine": resolver, "indexer": indexer,
-                "languages": {language: {"state": "fresh"} for language in {**built, **rows}}}
+                "languages": {language: {"state": "fresh"} for language in {**built, **rows}}, **gaps}
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
@@ -579,7 +583,7 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
             "excluded_classes", "coverage", "verdicts", "memory_exhausted",
             "source_verification", "probe_init_elapsed_ms", "inference_elapsed_ms",
             "total_elapsed_ms", "latency_mean_ms", "latency_p95_ms", "dry_run",
-            "edges_store", "coverage", "indexer",
+            "edges_store", "coverage", "indexer", "gaps",
         )
         if key in report
     }

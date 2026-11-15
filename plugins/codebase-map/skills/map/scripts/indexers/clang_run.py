@@ -29,7 +29,7 @@ import sys
 import time
 from pathlib import Path
 
-TOOLS = Path("/daodan/tools")  # where the copy carries CMake and scip-clang (indexers/clang.py, TOOLS)
+TOOLS = Path("/daodan/state/clang")  # where the copy carries CMake and scip-clang (indexers/clang.py, TOOLS)
 WORK = Path("/work")  # the project's copy
 SCRATCH = Path("/tmp/daodan-clang")
 OUTSIDE = "download-outside-registries"  # the cause the map-driven round counts
@@ -178,13 +178,22 @@ def index_command(scip_clang: Path, compdb: Path, packages: Path, jobs: int) -> 
             "--show-compiler-diagnostics"]
 
 
+def cmake_tool(given: str | None, scratch: Path) -> str:
+    """The CMake the preparation installed (`given`, when it is there), else the pinned one unpacked in `scratch`."""
+    if given and Path(given).is_file():
+        return given
+    return str(next(scratch.glob("cmake-*/bin/cmake"), Path("cmake")))
+
+
 def main(argv: list[str]) -> int:
     units, out, jobs = json.loads(Path(argv[1]).read_text(encoding="utf-8")), Path(argv[2]), int(argv[3])
     shutil.rmtree(SCRATCH, ignore_errors=True)
     SCRATCH.mkdir(parents=True)
     out.mkdir(parents=True, exist_ok=True)  # once the scratch folder is emptied: OUT_DIR may lie in it
-    run(["tar", "-xzf", str(TOOLS / "cmake.tar.gz"), "-C", str(SCRATCH)], SCRATCH)
-    cmake = str(next(SCRATCH.glob("cmake-*/bin/cmake"), Path("cmake")))
+    given = argv[4] if len(argv) > 4 else None
+    if not (given and Path(given).is_file()):
+        run(["tar", "-xzf", str(TOOLS / "cmake.tar.gz"), "-C", str(SCRATCH)], SCRATCH)
+    cmake = cmake_tool(given, SCRATCH)
     scip_clang = SCRATCH / "scip-clang"
     shutil.copyfile(TOOLS / "scip-clang", scip_clang)
     scip_clang.chmod(0o755)

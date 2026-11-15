@@ -184,13 +184,13 @@ exit 0
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folder of each build."""
+    """What `index` takes from the pre-map: the folder of each build and the JDKs it states."""
     from indexers import jvm
-    return {"roots": jvm.build_roots(record)}
+    return {"roots": jvm.build_roots(record), "toolchains": jvm.toolchains(record)}
 
 
-def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots, engine=None,
-          memory: int = MIN_FREE) -> dict:
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots, toolchains=(),
+          engine=None, memory: int = MIN_FREE) -> dict:
     """The forward-only index of each build in `roots` (the pre-map's build folders), each in a container of its
     own, its runs, the indexer's time and memory, `configs` (the compile tasks `refine` reads, with the build
     each came from) and `written` (the index as scip-java wrote it); `files` is not used: a build compiles every
@@ -200,8 +200,9 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     work_dir.mkdir(parents=True, exist_ok=True)
 
     def one(folder: Path, work: Path) -> dict:
-        result, runs, out = jvm.run(folder, work, PREPARE, EXECUTE, memory=memory, engine=engine)
-        return finish(work, result, runs, out)
+        result, runs, out = jvm.run(folder, work, PREPARE, EXECUTE, memory=memory, engine=engine,
+                                    toolchains=toolchains)
+        return jvm.with_gaps(finish(work, result, runs, out), result)
 
     parts = jvm.builds(project_dir, work_dir, roots, one)
     done = [(root, part) for root, part in parts if part.get("indexes")]

@@ -2109,6 +2109,20 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual(result["languages"]["go"],
                          {"state": "unavailable", "engine": "scip-go", "reason": reason, "install": install})
 
+    def test_the_gaps_an_indexer_reports_reach_the_pass_and_its_events(self):
+        """What the preparation could not do (a restore, a toolchain) is said by the stage and the pass, with the
+        language indexed all the same."""
+        from pipeline import events
+        _project, manifest = self.project("go")
+        gap = {"kind": "restore_failed", "manager": "maven", "path": ".", "detail": "[ERROR] Could not resolve x"}
+        result, _started, _indexed = self.run_stage(
+            "scip-go", manifest, lambda *args, **kwargs: {**self.contract("go"), "gaps": [gap]})
+        self.assertEqual(result["languages"]["go"]["state"], "fresh")
+        self.assertEqual(result["engines"]["scip-go"]["gaps"], [gap])
+        journal, _cursor = events.read(manifest.with_name(events.JOURNAL))
+        said = [event for event in journal if event["kind"] == "gap" and event["step"] == "analyze"]
+        self.assertEqual([(event["analyzer"], event["data"]["gap"]) for event in said], [("scip-go", gap)])
+
     def test_container_language_without_container_is_unavailable(self):
         import container
         _project, manifest = self.project("java")
