@@ -440,6 +440,7 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 - [x] **Run reale senza resti, Kotlin:** la fixture Kotlin con i volumi, il 15 novembre 2026, con le cartelle delle build prese dalla pre-mappa come le passa lo stadio; anche Java e il wrapper Maven fatto su Windows. Kiri uguale prima e dopo: 5 immagini, nessun container, nessun volume.
 - [ ] **Run reale su klaxon:** non ancora rifatto con i volumi.
 - [x] **Cambio** di Java e Kotlin (15 novembre 2026): le voci di Eclipse JDT LS e della Kotlin Analysis API non elencano più `java` e `kotlin`; la fonte è l'indice di scip-java, una build per ogni cartella che la pre-mappa nomina (il Gradle e il Maven più esterni), ognuna in un container. Il test vero sul protocollo MCP ora ha un `pom.xml`: un sorgente Java si legge solo attraverso la sua build.
+- [x] **Cambio** di C e C++ (15 novembre 2026): una voce `scip-clang` in `ENGINES`, nel container; lo stadio passa all'indicizzatore le unità native e i workspace della pre-mappa (`clang.structure`). La prova vera su Kiri indicizza le fixture C e C++ partendo dalle unità della pre-mappa.
 - [ ] **Soglia:** come nel task 5, su javapoet e klaxon, con il confronto fra passo per posizione e indice misurato.
 - [ ] **Si cancella:** `JavaEngine`, `KotlinEngine` e `engines/KotlinResolver.kt`, solo se la domanda 2 esclude le richieste mirate per la JVM.
 

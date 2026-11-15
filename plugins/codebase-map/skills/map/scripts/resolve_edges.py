@@ -3963,6 +3963,7 @@ ENGINES = (
     EngineSpec("scip-python", ("python",), (), "tree_sitter", INDEXER_INSTALL, {}, "python"),
     EngineSpec("scip-java", ("java",), (), "tree_sitter", INDEXER_INSTALL, {}, "java", needs_container=True),
     EngineSpec("scip-kotlin", ("kotlin",), (), "tree_sitter", INDEXER_INSTALL, {}, "kotlin", needs_container=True),
+    EngineSpec("scip-clang", ("c", "cpp"), (), "tree_sitter", INDEXER_INSTALL, {}, "clang", needs_container=True),
 )
 # Each language's engine: the first entry that lists it.
 ENGINE_LANGUAGES = {language: spec for spec in reversed(ENGINES) for language in spec.languages}

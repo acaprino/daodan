@@ -47,7 +47,7 @@ CMAKE = ("3.28.3", "https://github.com/Kitware/CMake/releases/download/v3.28.3/c
          "804d231460ab3c8b556a42d2660af4ac7a0e21c98a7f8ee3318a74b4a9a187a6")  # Ubuntu 24.04's own CMake
 TOOLS = "/daodan/tools"  # where the copy carries the tools in the container (clang_run.py reads them there)
 OUT = "/tmp/daodan-clang/out"
-MEMORY = 2 * 2**30
+MIN_FREE = 2 * 2**30  # the container's memory
 PIDS = 1024
 CMAKE_UNIT = "cmake-target"
 OTHER_BUILDS = {"meson-target": "meson", "make-target": "make", "bazel-target": "bazel"}  # not configured yet
@@ -352,6 +352,15 @@ def _folder(path: str | None) -> str:
     return (path or ".").strip("/").removeprefix("./") or "."
 
 
+NATIVE = frozenset({CMAKE_UNIT, *OTHER_BUILDS, "msbuild-project"})  # the units that build C and C++
+
+
+def structure(record: dict) -> dict:
+    """What `index` takes from the pre-map: its native units and the workspaces that hold them."""
+    return {"units": [unit for unit in record.get("units", []) if unit["kind"] in NATIVE],
+            "workspace": record.get("workspace", [])}
+
+
 def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
     """The folders CMake configures, each once: a `cmake-target`'s CMake workspace root, else its own root; and
     the state of each unit another native build declares."""
@@ -367,7 +376,7 @@ def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, units: list[dict] | None = None,
-          workspace: list[dict] | None = None, engine=None, memory: int = MEMORY, cpus: int = 1,
+          workspace: list[dict] | None = None, engine=None, memory: int = MIN_FREE, cpus: int = 1,
           timeout: float = 3600) -> dict:
     """The index of each configured root, with its runs and each root's state; `units` and `workspace` are the
     pre-map's (`files` is not used: a unit's compilation database decides what is indexed). `cpus` is the

@@ -2468,6 +2468,26 @@ class IndexerStageTests(unittest.TestCase):
         indexer = {"name": "scip-python", "version": "0.6.8", "seconds": 1.0, "peak_mb": None}
         return self.contract("python", indexer, **outcome)
 
+    def test_c_reads_from_scip_clang_with_the_units_the_pre_map_names(self):
+        """C and C++ come from scip-clang in a container: the stage hands it the pre-map's native units and
+        workspaces, and the graph of C is built from the index it returns."""
+        import container
+        _project, manifest = self.project("c")
+        seen = {}
+
+        def index(project_dir, work_dir, files=None, **given):
+            seen.update(given)
+            indexer = {"name": "scip-clang", "version": "v0.4.1", "seconds": 1.0, "peak_mb": None}
+            return self.contract("c", indexer)
+
+        result, started, _indexed = self.run_stage(
+            "scip-clang", manifest, index, engine=(container, "find_engine", lambda: container.Engine("fake", ("x",))))
+        self.assertEqual(len(started), 1)
+        self.assertEqual(result["languages"]["c"], {"state": "fresh", "engine": "scip-clang@v0.4.1"})
+        self.assertEqual({unit["kind"] for unit in seen["units"]}, {"cmake-target"})
+        self.assertIn("workspace", seen)
+        self.assertIsInstance(seen["engine"], container.Engine)
+
     def test_python_reads_from_its_index_and_a_jedi_entry_is_not_fresh(self):
         project, manifest = self.project("python")
         engine = StubEngine({})
@@ -2571,14 +2591,14 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual({language: spec.name for language, spec in resolve_edges.ENGINE_LANGUAGES.items()},
                          {"python": "scip-python", "typescript": "scip-typescript", "javascript": "scip-typescript",
                           "vue": "typescript", "svelte": "typescript", "java": "scip-java", "kotlin": "scip-kotlin",
-                          "rust": "scip-rust", "go": "scip-go"})
+                          "rust": "scip-rust", "go": "scip-go", "c": "scip-clang", "cpp": "scip-clang"})
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container)
                     for spec in resolve_edges.ENGINES if spec.indexer}
         self.assertEqual(indexers, {
             "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", False),
             "scip-typescript": (("typescript", "javascript"), "typescript", False),
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
-            "scip-kotlin": (("kotlin",), "kotlin", True)})
+            "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True)})
 
     def test_the_resolver_names_the_entry_not_the_indexer(self):
         # rust-analyzer is also the engine of the position pass, and scip-java indexes Kotlin too.

@@ -302,6 +302,11 @@ def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
     import inspect
     from indexers import go, java, kotlin, rust, typescript
     assert not hasattr(code_graph, "manifest_dirs")
+    import importlib
+    import resolve_edges
+    for spec in resolve_edges.ENGINES:
+        if spec.indexer:  # every indexer of the pass takes its structure from the pre-map
+            assert callable(getattr(importlib.import_module(f"indexers.{spec.indexer}"), "structure", None)), spec.name
     record = {"units": [{"kind": "go-module", "root": "."}, {"kind": "cargo-crate", "root": "crates/a"},
                         {"kind": "npm-package", "root": "web"}],
               "workspace": [{"tool": "cargo", "root": "."}]}

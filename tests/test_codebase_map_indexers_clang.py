@@ -335,13 +335,18 @@ def _occurrences(root: Path, indexes) -> dict:
 @pytest.mark.skipif(not SMOKE, reason="set DAODAN_CLANG_SMOKE=1 to index the fixtures in a real container")
 @pytest.mark.parametrize("language", ["c", "cpp"])
 def test_smoke_a_unit_that_configures_is_indexed_and_its_index_comes_back(tmp_path, language):
-    """The whole path on a real engine: CMake configures, scip-clang runs with the jobs it is given, the index
-    returns through the writer, and it says what the fixture's stored index says."""
+    """The whole path on a real engine, from the pre-map's units: CMake configures, scip-clang runs with the
+    jobs it is given, the index returns through the writer, and it says what the fixture's stored index says."""
     fixture = HERE / "fixtures/code-graph" / language
     project = tmp_path / "project"
     shutil.copytree(fixture, project, ignore=shutil.ignore_patterns("index.scip", "expected.json"))
-    unit = {"name": language, "kind": "cmake-target", "root": ".", "manifest": "CMakeLists.txt"}
-    result = clang.index(project, tmp_path / "work", units=[unit], cpus=2)
+    import premap
+    import snapshot
+    manifest = tmp_path / "snapshot" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    given = clang.structure(premap.ensure(manifest))  # the units the stage hands the indexer
+    assert {unit["kind"] for unit in given["units"]} == {"cmake-target"}
+    result = clang.index(project, tmp_path / "work", cpus=2, **given)
     assert "state" not in result, result
     assert [u["state"] for u in result["units"]] == ["indexed"], result["units"]
     assert _occurrences(project, result["indexes"]) == _occurrences(fixture, [(fixture / "index.scip", "")])
