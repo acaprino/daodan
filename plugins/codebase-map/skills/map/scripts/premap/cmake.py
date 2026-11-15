@@ -17,9 +17,12 @@ open (`preparation.NEEDS`): where a top folder declares vcpkg (vcpkg.json) `vcpk
 the baseline it names, else where it declares Conan (conanfile.txt, conanfile.py) `conan install`, its conan.lock
 honoured, building only what has no binary; each writes an initial cache (`-C`) naming its toolchain file, which
 every configure of that folder reads. Both declared: the one a preset's `CMAKE_TOOLCHAIN_FILE` names, else vcpkg,
-with a `choice` gap; an install that fails is a `restore_failed` gap naming the manager and its error, and the
-configures run without it. A preset's toolchain file whose `CMAKE_<LANG>_COMPILER` is in `preparation.COMPILERS` brings
-that compiler onto the path; any other stays the configure's gap, which names it.
+with a `choice` gap. Each Conan profile the project keeps (a file with a `[settings]` section in a `profiles`
+folder) is one more install (`-pr:h`, at the build type it states) and one more configure, with the compilers it
+names brought like a preset's; its targets carry `config.conan_profiles`, its gaps the `profile`. An install
+that fails is a `restore_failed` gap naming the manager and its error, and the configures run without it. A
+preset's toolchain file whose `CMAKE_<LANG>_COMPILER` is in `preparation.COMPILERS` brings that compiler onto the
+path; any other stays the configure's gap, which names it.
 """
 from __future__ import annotations
 
@@ -55,7 +58,18 @@ CONAN = (f'conan profile detect --force >&2 && conan install . $([ -f conan.lock
          f' && t=$(find "{PREP}/$1/conan" -name conan_toolchain.cmake | head -n 1) && [ -n "$t" ]'
          ' && printf \'%s\n\' "set(CMAKE_TOOLCHAIN_FILE \\"$t\\" CACHE FILEPATH \\"\\")"'
          f' "set(CMAKE_BUILD_TYPE Release CACHE STRING \\"\\")" > "{PREP}/$1/init.cmake"')  # the type it installed
+CONAN_PROFILE = (  # $2: the profile, from the top folder; the build type is the one the profile states
+    'conan profile detect --force >&2 && bt=$(conan profile show -pr:h "$2" -pr:b default --format=json'
+    ' | python3 -c "import json,sys; print(json.load(sys.stdin)[\'host\'][\'settings\'].get(\'build_type\','
+    ' \'Release\'))") && conan install . $([ -f conan.lock ] && echo --lockfile=conan.lock) -pr:h "$2" -pr:b default'
+    f' --output-folder="{PREP}/$1/conan" --build=missing -c tools.cmake.cmaketoolchain:user_presets="" >&2'
+    f' && t=$(find "{PREP}/$1/conan" -name conan_toolchain.cmake | head -n 1) && [ -n "$t" ]'
+    ' && printf \'%s\\n\' "set(CMAKE_TOOLCHAIN_FILE \\"$t\\" CACHE FILEPATH \\"\\")"'
+    f' "set(CMAKE_BUILD_TYPE $bt CACHE STRING \\"\\")" > "{PREP}/$1/init.cmake"')
 MANAGERS = (("vcpkg", ("vcpkg.json",), VCPKG), ("conan", ("conanfile.txt", "conanfile.py"), CONAN))
+PROFILES = "profiles"  # the folder Conan's documentation keeps a project's profiles in
+SETTINGS = re.compile(r"(?m)^\s*\[settings\]\s*$")
+PROFILE_COMPILERS = re.compile(r"""(?m)^\s*(?:CC|CXX)\s*=\s*(\S+)|["'](?:c|cpp)["']\s*:\s*["']([^"']+)["']""")
 COMPILER = re.compile(r"(?i)set\s*\(\s*CMAKE_(?:C|CXX)_COMPILER\s+\"?([^\s\")]+)")
 PROJECT = re.compile(r"(?im)^[ \t]*project[ \t]*\(")  # the call that makes a CMakeLists.txt a project's top
 PRESETS = "CMakePresets.json"
@@ -70,11 +84,15 @@ def _inside(rel: str, folder: str) -> bool:
     return folder == "." or rel == folder or rel.startswith(folder + "/")
 
 
-def _error(stderr: str | None) -> str:
-    """CMake's first error, from its `CMake Error` line on, whitespace folded; else the output's tail."""
+CMAKE_ERROR = re.compile(r"CMake Error")
+RESTORE_ERROR = re.compile(r"(?mi)^error:")  # vcpkg's and Conan's error lines
+
+
+def _error(stderr: str | None, first=CMAKE_ERROR) -> str:
+    """The tool's first error, from its error line on, whitespace folded; else the output's tail."""
     text = stderr or ""
-    start = text.find("CMake Error")
-    return " ".join((text[start:] if start >= 0 else text[-300:]).split())[:400]
+    found = first.search(text)
+    return " ".join((text[found.start():] if found else text[-300:]).split())[:600]
 
 
 def _preset_data(context, top: str) -> dict:
@@ -131,6 +149,22 @@ def _manager(context, top: str) -> tuple[str | None, str | None]:
     return chosen, f"{' and '.join(m[0] for m in declared)} declared: {chosen[0]} prepares the configure"
 
 
+def _profiles(context, top: str) -> list[tuple[str, list[str]]]:
+    """The Conan profiles under `top` (a file with a `[settings]` section in a `profiles` folder), each relative
+    to `top`, with the needs of the compilers it names (`[buildenv]` CC/CXX, `compiler_executables`)."""
+    out = []
+    for rel in sorted(context.inventory.files):
+        if not _inside(rel, top) or PurePosixPath(rel).parent.name != PROFILES:
+            continue
+        text = context.inventory.text(rel)
+        if not SETTINGS.search(text):
+            continue
+        named = {posixpath.basename(a or b) for a, b in PROFILE_COMPILERS.findall(text)}
+        needs = sorted({preparation.COMPILERS[c] for c in named if c in preparation.COMPILERS})
+        out.append((posixpath.relpath(rel, top) if top != "." else rel, needs))
+    return out
+
+
 def commands(context):
     lists = sorted({_folder(rel) for rel in context.inventory.files if PurePosixPath(rel).name == FILE},
                    key=lambda f: (f.count("/"), f))
@@ -149,6 +183,13 @@ def commands(context):
             needs = _compilers(context, top, preset) if preset else []
             out.append({"tool": "cmake", "argv": ["sh", "-c", SCRIPT, "cmake", preset, _key(top)], "cwd": top,
                         "env": {}, "network": "none", **({"needs": needs} if needs else {})})
+        for profile, needs in (_profiles(context, top) if manager and manager[0] == "conan" else []):
+            key = f"{_key(top)}--{profile.replace('/', '__')}"
+            out.append({"tool": "cmake", "argv": ["sh", "-c", f'mkdir -p "{PREP}/$1" && {CONAN_PROFILE}', "prepare",
+                                                  key, profile],
+                        "cwd": top, "env": {}, "network": "registries", "needs": ["conan", *needs]})
+            out.append({"tool": "cmake", "argv": ["sh", "-c", SCRIPT, "cmake", "", key], "cwd": top, "env": {},
+                        "network": "none", "profile": profile, **({"needs": needs} if needs else {})})
     return out or None
 
 
@@ -177,14 +218,16 @@ def read(context, commands, results):
                 gaps.append({"kind": "choice", "path": command["cwd"], "detail": command["choice"]})
             if result["returncode"] != 0:
                 gaps.append({"kind": "restore_failed", "path": command["cwd"], "manager": command["needs"][0],
-                             "detail": (result["stderr"] or "").strip()[-300:] or f"exit {result['returncode']}"})
+                             **({"profile": command["argv"][5]} if len(command["argv"]) > 5 else {}),
+                             "detail": _error(result["stderr"], RESTORE_ERROR) or f"exit {result['returncode']}"})
             continue
-        top, preset = command["cwd"], command["argv"][4]
+        top, preset, profile = command["cwd"], command["argv"][4], command.get("profile")
+        variant = {"preset": preset} if preset else {"profile": profile} if profile else {}
         files = replies(result["stdout"]) if result["returncode"] == 0 else {}
         index = next((files[n] for n in sorted(files) if n.startswith("index-")), None)
         entry = next((o for o in (index or {}).get("objects", []) if o.get("kind") == "codemodel"), None)
         if entry is None:
-            gaps.append({"kind": "model_failed", "path": top, **({"preset": preset} if preset else {}),
+            gaps.append({"kind": "model_failed", "path": top, **variant,
                          "detail": f"cmake configure: {_error(result['stderr'])}"})
             continue
         version = version or index.get("cmake", {}).get("version", {}).get("string")
@@ -234,6 +277,8 @@ def read(context, commands, results):
                 "config": config})
             if preset:
                 unit["config"].setdefault("presets", []).append(preset)
+            if profile:
+                unit["config"].setdefault("conan_profiles", []).append(profile)
     failed = {g["path"] for g in gaps}
     if reached:
         for rel_path in sorted(rel for rel in context.inventory.files if PurePosixPath(rel).name == FILE):

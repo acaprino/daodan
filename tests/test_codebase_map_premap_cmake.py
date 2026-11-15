@@ -187,3 +187,85 @@ def test_a_restore_that_fails_is_a_gap_naming_the_manager_and_the_reason():
     record = cmake.read(None, [prepare], [failed])
     [gap] = [g for g in record["gaps"] if g["kind"] == "restore_failed"]
     assert (gap["manager"], gap["path"]) == ("vcpkg", ".") and "BUILD_FAILED" in gap["detail"]
+
+
+CORTEX = """include(default)
+
+[settings]
+os=baremetal
+arch=armv7
+build_type=Release
+
+[conf]
+tools.build:compiler_executables={"c": "arm-none-eabi-gcc", "cpp": "arm-none-eabi-g++"}
+"""
+
+
+def test_commands_prepare_each_conan_profile_of_the_project_with_its_compilers():
+    """A `profiles` folder holds Conan profiles: each is its own install (`-pr:h`) and its own configure; a profile's
+    compilers come with it; a file without a `[settings]` section is no profile."""
+    texts = {"CMakeLists.txt": "project(a)\n", "conanfile.txt": "[requires]\n", "profiles/cortex-m4": CORTEX,
+             "profiles/debug": "[settings]\nbuild_type=Debug\n", "profiles/README": "how to build\n",
+             "conan/profiles/clang": "[settings]\ncompiler=clang\n[buildenv]\nCC=clang-19\nCXX=clang++-19\n"}
+
+    class Inventory:
+        files = list(texts)
+        headers = dict.fromkeys(texts)
+        text = staticmethod(texts.__getitem__)
+
+    class Context:
+        inventory = Inventory()
+
+    commands = cmake.commands(Context())
+    prepares = [c for c in commands if c["argv"][3] == "prepare"]
+    assert [(c["argv"][4:], c["needs"]) for c in prepares] == [
+        (["root"], ["conan"]),
+        (["root--conan__profiles__clang", "conan/profiles/clang"], ["conan"]),
+        (["root--profiles__cortex-m4", "profiles/cortex-m4"], ["conan", "arm-none-eabi"]),
+        (["root--profiles__debug", "profiles/debug"], ["conan"])]
+    assert all(c["network"] == "registries" for c in prepares)
+    configures = [c for c in commands if c["argv"][3] == "cmake"]
+    assert [(c["argv"][5], c.get("profile"), c.get("needs")) for c in configures] == [
+        ("root", None, None), ("root--conan__profiles__clang", "conan/profiles/clang", None),
+        ("root--profiles__cortex-m4", "profiles/cortex-m4", ["arm-none-eabi"]),
+        ("root--profiles__debug", "profiles/debug", None)]
+
+
+def test_a_profile_install_that_fails_is_a_gap_naming_the_profile():
+    """The answers are shaped by hand: what matters is where the profile lands in the gaps."""
+    prepare = {"tool": "cmake", "argv": ["sh", "-c", "x", "prepare", "root--p", "profiles/p"], "cwd": ".",
+               "env": {}, "network": "registries", "needs": ["conan"]}
+    configure = {"tool": "cmake", "argv": ["sh", "-c", "x", "cmake", "", "root--p"], "cwd": ".", "env": {},
+                 "network": "none", "profile": "profiles/p"}
+    failed = {"returncode": 1, "stdout": "", "root": "/work", "stderr": "ERROR: Invalid setting 'os=Nope'\n"}
+    unconfigured = {"returncode": 1, "stdout": "", "root": "/work", "stderr": "CMake Error at CMakeLists.txt:9\n"}
+    record = cmake.read(None, [prepare, configure], [failed, unconfigured])
+    [restore] = [g for g in record["gaps"] if g["kind"] == "restore_failed"]
+    assert (restore["manager"], restore["profile"]) == ("conan", "profiles/p")
+    assert restore["detail"] == "ERROR: Invalid setting 'os=Nope'"
+    [model] = [g for g in record["gaps"] if g["kind"] == "model_failed"]
+    assert model["profile"] == "profiles/p" and "preset" not in model
+
+
+def test_a_profile_whose_packages_have_no_binary_is_a_gap_naming_it_and_the_source_host(tmp_path):
+    """`profiles/debug` asks fmt as Debug: ConanCenter has no such binary, so Conan builds it from the sources its
+    recipe names on GitHub, a host the preparation does not open. The project's own configure still gives
+    imgtool; the profile is a gap with Conan's error, and its configure fails without fmt."""
+    record = build(tmp_path, "conan-profile")
+    [imgtool] = targets(record).values()
+    assert "conan_profiles" not in imgtool["config"]
+    [restore] = [g for g in record["gaps"] if g["kind"] == "restore_failed"]
+    assert (restore["manager"], restore["profile"]) == ("conan", "profiles/debug")
+    assert restore["detail"].startswith("ERROR: fmt/10.2.1") and "403 Forbidden" in restore["detail"]
+    [model] = [g for g in record["gaps"] if g["kind"] == "model_failed"]
+    assert model["profile"] == "profiles/debug" and "fmt" in model["detail"]
+
+
+def test_the_snapshot_records_the_profiles_a_profiles_folder_holds(tmp_path):
+    import source_files
+    (tmp_path / "profiles").mkdir()
+    for name in ("profiles/debug", "profiles/notes.md", "other/debug"):
+        (tmp_path / name).parent.mkdir(exist_ok=True)
+        (tmp_path / name).write_text("[settings]\n", encoding="utf-8")
+    found = {p.relative_to(tmp_path).as_posix() for p in source_files.iter_files(tmp_path)}
+    assert "profiles/debug" in found and "other/debug" not in found

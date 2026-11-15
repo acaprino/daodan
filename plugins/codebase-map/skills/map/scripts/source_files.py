@@ -50,6 +50,9 @@ MANIFEST_FILES = frozenset({
 MAKEFILES = re.compile(r"(?i)^((gnu)?makefile(\..+)?|.+\.(mak|mms)|descrip\.mms)$")
 
 
+BUILD_FOLDERS = frozenset({"profiles"})  # folders whose files without a suffix are build files: Conan's profiles
+
+
 def is_build_file(name: str) -> bool:
     """A build file without a suffix the snapshot records by its name."""
     return name in MANIFEST_FILES or bool(MAKEFILES.match(name))
@@ -139,6 +142,7 @@ def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Pat
                 and suffix not in DOC_EXTENSIONS
                 and suffix not in PRESENTATION_EXTENSIONS
                 and not is_build_file(name)
+                and not (not suffix and directory.name in BUILD_FOLDERS)
             ):
                 continue
             yield path
