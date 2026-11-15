@@ -150,3 +150,75 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
     assert status["state"] == "ran", status
     assert not [g for g in record["gaps"] if g["kind"] in ("source_failed", "model_failed")]
     assert held() == before
+
+
+def test_the_stated_toolchains_are_installed_by_mise_at_their_version_and_the_rest_are_gaps():
+    import preparation
+    plan = preparation.toolchains([{"tool": "node", "version": "20.11.0"}, {"tool": "go", "version": "1.22"},
+                                   {"tool": "node", "version": ">=20"}, {"tool": "fortran", "version": "2018"}])
+    assert plan["files"] == [preparation.MISE]
+    installs = [line for line in plan["lines"] if " install " in line]
+    assert [line.split(" install ")[1].split(" ")[0] for line in installs] == ["go@1.22", "node@20.11.0"]
+    assert all("DAODAN-MISSING" in line for line in installs)  # a failed install leaves the run going
+    assert {"nodejs.org", "go.dev", "mise-versions.jdx.dev"} <= set(plan["hosts"])
+    assert sorted((g["tool"], g["version"]) for g in plan["gaps"]) == [("fortran", "2018"), ("node", ">=20")]
+    assert preparation.toolchains([]) == {"files": [], "lines": [], "hosts": (), "gaps": []}
+
+
+def test_the_runner_prepares_the_toolchains_in_the_preparation(tmp_path, no_download):
+    _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        container_runner.runner(manifest, toolchains=[{"tool": "go", "version": "1.22.4"}])([command("go")])
+    first = calls[0]["commands"][0]
+    assert first["network"] == "registries" and "install go@1.22.4" in first["argv"][-1]
+    assert "go.dev" in calls[0]["registries"] and f"{container_runner.IN}/mise" in calls[0]["inputs"]()
+
+
+def test_only_the_toolchains_a_tool_runs_on_are_installed(tmp_path, no_download):
+    """Go's commands get the project's Go, not its Node; the Node a tsc command runs on is the project's."""
+    _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
+    stated = [{"tool": "go", "version": "1.22.4"}, {"tool": "node", "version": "20.11.0"}]
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        run = container_runner.runner(manifest, toolchains=stated)
+        run([command("go")])
+        run([command("tsc", "registries")])
+    go_setup, tsc_setup = (c["commands"][0]["argv"][-1] for c in calls)
+    assert "install go@1.22.4" in go_setup and "node@" not in go_setup
+    assert "install node@20.11.0" in tsc_setup and "go@" not in tsc_setup
+
+
+def test_a_toolchain_the_preparation_could_not_install_is_a_gap_on_the_answers(tmp_path, no_download):
+    _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
+    setup = {"returncode": 0, "stdout": "", "stderr": "mise ERROR no such version\nDAODAN-MISSING go@1.99.9\n"}
+    calls, fake = recorder()
+
+    def run_commands(project, commands, **options):
+        result = fake(project, commands, **options)
+        result["results"][0] = setup
+        return result
+
+    with mock.patch.object(container, "run_commands", run_commands):
+        answers = container_runner.runner(manifest, toolchains=[{"tool": "go", "version": "1.99.9"}])(
+            [command("go"), command("go")])
+    gaps = [g for a in answers for g in a.get("gaps", ())]
+    assert [(g["kind"], g["tool"], g["version"]) for g in gaps] == [("toolchain_unavailable", "go", "1.99.9")]
+    assert "1.99.9" in gaps[0]["detail"]
+
+
+def test_a_stated_version_that_is_a_range_is_a_gap_and_the_run_goes_on(tmp_path, no_download):
+    _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        answers = container_runner.runner(manifest, toolchains=[{"tool": "go", "version": ">=1.21"}])(
+            [command("go")])
+    assert "mise" not in calls[0]["commands"][0]["argv"][-1]
+    assert [(g["kind"], g["version"]) for g in answers[0]["gaps"]] == [("toolchain_unavailable", ">=1.21")]
+
+
+def test_every_need_names_the_version_a_failed_install_reports():
+    import preparation
+    assert all(spec.get("version") for spec in preparation.NEEDS.values())
+    lines = preparation.setup(set(preparation.NEEDS))["lines"]
+    assert all("DAODAN-MISSING" in line for line in lines) and "vcpkg@2026-10-29" in lines[0]

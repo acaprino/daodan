@@ -7,7 +7,10 @@ fails). A source is a thin adapter in this package (`NAME`, `VERSION`, `RANK`) t
 facts in that shape: Daodan detects nothing on its own. A reader reads files and runs nothing (`run(context)`).
 A model source is a build system's own command: `commands(context)` describes it as data, a runner the caller
 supplies executes it in Daodan's container, and `read(context, commands, results)` reads its output; without a
-runner it is `not_run`. The join keeps one entry per fact with the sources that state it (`tool@version`).
+runner it is `not_run`. The readers run first: the toolchains they state go to a runner that takes `toolchains`,
+which prepares them, so a model command runs on the version the project declares; the gaps of that preparation
+ride on the answers (`gaps`) and are the source's. The join keeps one entry per fact with the sources that state
+it (`tool@version`).
 Where two sources give a field different values, the value of the source with precedence stays (`RANKS`: a
 model command, a file reader, a scanner; between equals, the earlier in `SOURCES`) and the other goes to the
 entry's `conflicts` with its source. What no source establishes is a gap with its class. Deterministic for the
@@ -16,6 +19,7 @@ same snapshot, source versions and command outputs.
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -293,7 +297,14 @@ def _failed(status: dict, error: Exception) -> dict:
     return {"kind": "source_failed", "source": status["source"], "detail": status["reason"]}
 
 
-def _run(source, context: Context, runner) -> tuple[dict, dict | None, list[dict]]:
+def _takes_toolchains(runner) -> bool:
+    try:
+        return "toolchains" in inspect.signature(runner).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def _run(source, context: Context, runner, toolchains=()) -> tuple[dict, dict | None, list[dict]]:
     started = time.monotonic()
     status = {"source": label(source), "rank": source.RANK}
     try:
@@ -307,10 +318,13 @@ def _run(source, context: Context, runner) -> tuple[dict, dict | None, list[dict
                                        "detail": f"{len(commands)} model commands not run yet: they run in "
                                                  "Daodan's container, and their facts are missing until then"}]
             else:
-                results = runner(commands)
+                results = runner(commands, toolchains=toolchains) if _takes_toolchains(runner) else runner(commands)
                 if len(results) != len(commands):
                     raise ValueError(f"the runner answered {len(results)} of {len(commands)} commands")
-                result = source.read(context, commands, results)
+                prepared = [g for r in results for g in r.get("gaps") or ()]
+                result = source.read(context, commands, [{k: v for k, v in r.items() if k != "gaps"} for r in results])
+                if prepared:
+                    result = {**(result or {"facts": {}}), "gaps": [*prepared, *((result or {}).get("gaps") or ())]}
         else:
             result = source.run(context)
         stated = set((result or {}).get("facts") or {}) - set(IDENTITY)
@@ -331,18 +345,28 @@ def _run(source, context: Context, runner) -> tuple[dict, dict | None, list[dict
             [{**gap, "source": name} for gap in result.get("gaps") or []])
 
 
+def _stated(ran: dict) -> list[dict]:
+    """The toolchains the readers that ran state, joined: what the runner prepares for the model commands."""
+    return join([part for _, part, _ in ran.values() if part]).get("toolchains", [])
+
+
 def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dict:
     """The pre-map of the snapshot in `store`; `runner(commands) -> results` runs the model commands, each
     `{tool, argv, cwd, env}` under the project's root, each result `{returncode, stdout, stderr, root}` with
     `root` the project's absolute path where it ran."""
     sources = tuple(SOURCES if sources is None else sources)
     context = Context(manifest, store)
-    statuses, parts, gaps = [], [], []
-    for number, source in enumerate(sources, 1):
-        status, part, found = _run(source, context, runner)
-        statuses.append(status)
+    ran: dict[int, tuple] = {}
+    readers = [i for i, s in enumerate(sources) if not hasattr(s, "commands")]
+    for i in readers + [i for i in range(len(sources)) if i not in readers]:
+        toolchains = () if i in readers else _stated(ran)
+        ran[i] = _run(sources[i], context, runner, toolchains)
         if report is not None:  # `report(status, done, total)`: each source as it ends
-            report(status, number, len(sources))
+            report(ran[i][0], len(ran), len(sources))
+    statuses, parts, gaps = [], [], []
+    for i in range(len(sources)):  # the sources' order: the join's precedence between equals
+        status, part, found = ran[i]
+        statuses.append(status)
         if part:
             parts.append(part)
         gaps.extend(found)

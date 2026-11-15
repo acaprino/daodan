@@ -13,24 +13,25 @@ its gap says why. Each run's record lands in `premap-runs/<tool>/` beside the ma
 from __future__ import annotations
 
 from pathlib import Path
-import posixpath
 import sys
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import preparation  # noqa: E402
 from premap import bazel, cmake, meson  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
-STATE = "/daodan/state"
-IN, T = f"{STATE}/in", f"{STATE}/tools"
+STATE, IN, T = preparation.STATE, preparation.IN, preparation.T
 PATH = ":".join([f"{T}/bin", f"{T}/node/bin", f"{T}/npm/bin", f"{T}/go/bin", f"{T}/rust/bin", f"{T}/cmake/bin",
                  "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin", "/bin"])
 ENV = {"PATH": PATH, "HOME": f"{STATE}/home", "GOPATH": f"{STATE}/go", "GOCACHE": f"{STATE}/go-build",
        "GOTELEMETRY": "off", "CARGO_HOME": f"{STATE}/cargo", "UV_CACHE_DIR": f"{STATE}/uv",
-       "npm_config_cache": f"{STATE}/npm-cache", "npm_config_update_notifier": "false"}
+       "npm_config_cache": f"{STATE}/npm-cache", "npm_config_update_notifier": "false",
+       "VCPKG_ROOT": f"{T}/vcpkg", "VCPKG_DISABLE_METRICS": "1", "VCPKG_BINARY_SOURCES": "clear",
+       "CONAN_HOME": f"{STATE}/conan-home"}
 NODE = ("https://nodejs.org/dist/v24.22.3/node-v24.22.3-linux-x64.tar.gz",
         "061ec3e3062115705b56b51fa9cc330ab50d34b6969387d4e4b1a50c6809acc2", "node.tar.gz")  # `renovate.NODE`
 GO = ("https://go.dev/dl/go1.27.3.linux-amd64.tar.gz",
@@ -52,7 +53,7 @@ ENRY = (f"mkdir -p {STATE}/enry && cp {IN}/enry_facts.go {STATE}/enry/main.go &&
         " && go mod init daodan-enry && GOFLAGS=-mod=mod go get github.com/go-enry/go-enry/v2@v2.9.6"
         f" && CGO_ENABLED=0 GOFLAGS=-mod=mod go build -o {T}/bin/daodan-enry .")
 TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the registries, extra hosts, memory GB
-    "go": {"files": [GO], "setup": [UNPACK["go"]]},
+    "go": {"files": [GO], "setup": [UNPACK["go"]], "runs_on": ("go",)},
     "daodan-enry": {"files": [GO, (None, None, "enry_facts.go")], "setup": [UNPACK["go"], ENRY], "registries": True},
     "cargo": {"files": [("https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
                          "2ff05ff9c08a90861e7f6e4065b40a8b87463b4576186fd613871c3e37f2091f", "rustc.tar.xz"),
@@ -60,11 +61,12 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                          "53f3521949404d595efb06a55c12c5658d4ed1c75566f33d3d514eaebe70bd8a", "cargo.tar.xz")],
               "setup": [f"for c in rustc cargo; do mkdir -p {T}/x && tar -xJf {IN}/$c.tar.xz -C {T}/x"
                         f" && cp -R {T}/x/$c-*/$c/. {T}/rust/ && rm -rf {T}/x; done"]},
-    "uv": {"files": [("https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-gnu.tar.gz",
-                      "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224", "uv.tar.gz")],
-           "setup": [f"tar -xzf {IN}/uv.tar.gz -C {T} && cp {T}/uv-x86_64-unknown-linux-gnu/uv {T}/bin/"]},
-    "npm": {"files": [NODE], "setup": [UNPACK["node"]]},
-    "tsc": {"files": [NODE], "setup": [UNPACK["node"], _npm("typescript@6.0.3")], "registries": True},
+    "uv": {"files": [preparation.UV],
+           "setup": [f"tar -xzf {IN}/uv.tar.gz -C {T} && cp {T}/uv-x86_64-unknown-linux-gnu/uv {T}/bin/"],
+           "runs_on": ("python",)},
+    "npm": {"files": [NODE], "setup": [UNPACK["node"]], "runs_on": ("node",)},
+    "tsc": {"files": [NODE], "setup": [UNPACK["node"], _npm("typescript@6.0.3")], "registries": True,
+            "runs_on": ("node",)},
     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
     "cmake": {"files": [(*cmake.DOWNLOAD[0], "cmake.tar.gz"), NINJA],
               "setup": [f"tar -xzf {IN}/cmake.tar.gz -C {T} && mv {T}/cmake-4.4.5-linux-x86_64 {T}/cmake",
@@ -82,49 +84,50 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
 
 
 def fetched(url: str | None, sha256: str | None, name: str) -> Path:
-    """The file at `url`, downloaded once into the shared directory and checked by sha256; `enry_facts.go` is
-    Daodan's own, beside this module."""
-    if url is None:
-        return Path(__file__).with_name(name)
-    import container
-    from engine_tools import download, shared_engine_dir
-    target = shared_engine_dir("premap") / sha256[:16] / posixpath.basename(url)
-    try:
-        if not target.is_file():
-            download(url, target, sha256=sha256)
-    except (OSError, ValueError) as error:
-        raise container.Gap(f"{url} could not be downloaded and verified: {error}", "check the network") from error
-    return target
+    """`preparation.fetched`; `enry_facts.go` (no URL) is Daodan's own, beside this module."""
+    return Path(__file__).with_name(name) if url is None else preparation.fetched(url, sha256, name)
 
 
-def setup(tool: str, commands: list[dict]) -> dict:
+def plan(tool: str, commands: list[dict], stated: list[dict] = ()) -> tuple[dict, list, tuple, list]:
+    """The setup command, the files it unpacks, the hosts beside the registries and the gaps known before it runs:
+    the tool's own (`TOOLS`), the project's toolchains it runs on (`runs_on`, installed by mise at the version
+    `stated`), and what the commands name in `needs` (`preparation.NEEDS`)."""
     spec = TOOLS[tool]
-    network = "registries" if spec.get("registries") or any(c.get("network") == "registries" for c in commands) \
-        else "none"
-    lines = [f"mkdir -p {T}/bin {ENV['HOME']}", *spec["setup"]]
-    return {"tool": tool, "argv": ["sh", "-c", " && ".join(f"( {line} )" for line in lines)], "cwd": ".",
-            "env": ENV, "network": network}
+    chains = preparation.toolchains([t for t in stated if t.get("tool") in spec.get("runs_on", ())])
+    needs = preparation.setup({n for c in commands for n in c.get("needs", ())})
+    network = "registries" if spec.get("registries") or needs["registries"] or chains["lines"] or any(
+        c.get("network") == "registries" for c in commands) else "none"
+    lines = [f"mkdir -p {T}/bin {ENV['HOME']}", *spec["setup"], *chains["lines"], *needs["lines"]]
+    first = {"tool": tool, "argv": ["sh", "-c", " && ".join(f"( {line} )" for line in lines)], "cwd": ".",
+             "env": ENV, "network": network}
+    return (first, [*spec["files"], *chains["files"], *needs["files"]],
+            (*spec.get("hosts", ()), *chains["hosts"], *needs["hosts"]), chains["gaps"])
 
 
-def runner(manifest: Path, engine=None):
-    """`runner(commands) -> results` for `premap.derive`: see the module's docstring."""
+def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
+    """`runner(commands, toolchains) -> results` for `premap.derive`: see the module's docstring. `toolchains`,
+    entries of the pre-map's facet, are installed by mise first where the tool runs on them; `toolchains` given
+    here is the default when the caller passes none (an analyzer, which holds the pre-map)."""
     import container
     from snapshot_store import open_snapshot
     manifest = Path(manifest).resolve()
     with open_snapshot(manifest) as store:
         project = Path(store["root"])
 
-    def run(commands: list[dict]) -> list[dict]:
+    default = toolchains
+
+    def run(commands: list[dict], toolchains: list[dict] = ()) -> list[dict]:
+        toolchains = toolchains or default
         tool = commands[0]["tool"]
         if tool not in TOOLS or any(c["tool"] != tool for c in commands):
             raise ValueError(f"no container setup for the tool {tool}")
         spec = TOOLS[tool]
-        first = setup(tool, commands)
+        first, files, hosts, gaps = plan(tool, commands, toolchains)
         ran = [first, *({**c, "env": {**ENV, **(c.get("env") or {})}} for c in commands)]
         result = container.run_commands(
             project, ran, image=IMAGE, out_dir=manifest.parent / "premap-runs" / tool, engine=engine,
-            inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in spec["files"]},
-            registries=container.REGISTRIES + tuple(spec.get("hosts", ())),
+            inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
+            registries=container.REGISTRIES + tuple(dict.fromkeys(hosts)),
             memory=int(spec.get("memory", 2) * 2**30), timeout=1800)
         if result["state"] == "gap":
             raise container.Gap(result["cause"], result["remedy"])
@@ -134,6 +137,8 @@ def runner(manifest: Path, engine=None):
         if not answers or answers[0]["returncode"] != 0:
             raise RuntimeError(f"the {tool} setup failed: "
                                f"{(answers[0]['stderr'] if answers else '').strip()[-400:] or 'no answer'}")
-        return [{**answer, "root": result["root"]} for answer in answers[1:]]
+        gaps += preparation.missing(answers[0]["stderr"])  # the preparation's gaps ride on the first answer
+        return [{**answer, "root": result["root"], **({"gaps": gaps} if n == 0 and gaps else {})}
+                for n, answer in enumerate(answers[1:])]
 
     return run

@@ -1,0 +1,6 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {"name": "riscv", "generator": "Ninja", "toolchainFile": "${sourceDir}/cmake/riscv.cmake"}
+  ]
+}

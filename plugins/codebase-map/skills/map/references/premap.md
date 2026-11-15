@@ -25,8 +25,12 @@ project's root; `network` `registries` for the preparation, `none` for the
 run), the caller's `runner(commands)` executes it and answers
 `{returncode, stdout, stderr, root}` per command (`root` the project's absolute
 path in the container), and `read(context, commands, results)` reads the
-answers. Without a runner a model source is `not_run`, with a `model_not_run`
-gap. A source states only what it read: a command that did not answer leaves
+answers. The readers run first: a runner that takes `toolchains` gets the
+toolchains they state, and its preparation installs the ones each tool runs on
+at that version, so a model command runs on the project's Go or Node, not
+Daodan's; what it could not prepare rides on the answers (`gaps`) and becomes
+the source's gaps. Without a runner a model source is `not_run`, with a
+`model_not_run` gap. A source states only what it read: a command that did not answer leaves
 its facts absent, never empty, since an empty value would win the join.
 `RANK` is `model`, `reader` or `scanner`.
 
@@ -119,6 +123,8 @@ facts are literal in its files: the pre-map gives no `needs`.
 | `not_executed` | a file read and not run: what it computes at run time is unknown |
 | `config_outside_units` | a tsconfig no package.json, deno.json or project.json above it puts in a unit |
 | `toolchain_undeclared` | a toolchain version no file states as a literal: a Gradle build's Java, a pom property the pom does not define |
+| `toolchain_unavailable` | a toolchain the readers state that the container's preparation cannot install at that version (`tool`, `version`): a range, a tool mise has no entry for, a second version of one tool, an install that failed; the commands run on what installed |
+| `restore_failed` | a dependency restore a model command needs failed (`manager`, its error): the configure runs without it |
 | `submodule_absent` | a submodule `.gitmodules` declares whose folder is missing or empty: its code is not in the project |
 | `code_outside_units` | `{path, language, files}`: code of a language that no unit able to index it holds, per outermost folder (a Python folder without a manifest Daodan reads) |
 | module graph gaps | `manifest_unreadable`, `directory_missing`, `member_missing`, `dependency_unresolved`, ... as `modules.py` states them |

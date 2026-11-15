@@ -626,3 +626,52 @@ def test_the_module_graph_gaps_are_kept_with_their_source(tmp_path):
     _, _, record = build(tmp_path, "mixed", extra={"broken/package.json": "{not json"})
     [gap] = gaps(record, "manifest_unreadable")
     assert gap["path"] == "broken/package.json" and gap["source"].startswith("modules.py@")
+
+
+# ------------------------------------------------------------------ preparation
+
+def model(name, commands, read):
+    return SimpleNamespace(NAME=name, VERSION="1", RANK="model", commands=commands, read=read)
+
+
+def test_the_readers_run_first_and_their_toolchains_go_to_the_runner(tmp_path):
+    """The model source comes first in the sources, the reader stating Go 1.22.4 after it: the runner still gets
+    that version, and the statuses keep the sources' order."""
+    asked = []
+
+    def runner(commands, toolchains=()):
+        asked.append([(t["tool"], t["version"]) for t in toolchains])
+        return [{"returncode": 0, "stdout": "", "stderr": "", "root": "/p"} for _ in commands]
+
+    built = model("built", lambda context: [{"tool": "go", "argv": ["go"], "cwd": ".", "env": {}}],
+                  lambda context, commands, results: {"facts": {}})
+    declared = fake("declared", "reader", lambda context: {"facts": {"toolchains": [
+        {"tool": "go", "version": "1.22.4", "declared_in": "go.mod#go"}]}})
+    _, _, record = build(tmp_path, "mixed", sources=(built, declared), runner=runner)
+    assert asked == [[("go", "1.22.4")]]
+    assert [s["source"] for s in record["sources"]] == ["built@1", "declared@1"]
+
+
+def test_a_runner_that_takes_no_toolchains_still_runs(tmp_path):
+    built = model("built", lambda context: [{"tool": "go", "argv": ["go"], "cwd": ".", "env": {}}],
+                  lambda context, commands, results: {"facts": {}})
+    _, _, record = build(tmp_path, "mixed", sources=(built,), runner=lambda commands: [
+        {"returncode": 0, "stdout": "", "stderr": "", "root": "/p"} for _ in commands])
+    assert record["sources"][0]["state"] == "ran"
+
+
+def test_the_gaps_the_runner_hands_back_are_the_sources_gaps(tmp_path):
+    """The runner's preparation could not install Go 1.22.4: the gap rides on the answers and lands in the record
+    with the source's label; the commands' answers still reach `read`."""
+    gap = {"kind": "toolchain_unavailable", "tool": "go", "version": "1.22.4", "detail": "mise install failed"}
+
+    def runner(commands, toolchains=()):
+        return [{"returncode": 0, "stdout": "x", "stderr": "", "root": "/p", "gaps": [gap] if n == 0 else []}
+                for n, _ in enumerate(commands)]
+
+    read = []
+    built = model("built", lambda context: [{"tool": "go", "argv": ["go"], "cwd": ".", "env": {}}] * 2,
+                  lambda context, commands, results: read.append([r["stdout"] for r in results]) or {"facts": {}})
+    _, _, record = build(tmp_path, "mixed", sources=(built,), runner=runner)
+    assert read == [["x", "x"]]
+    assert [g for g in record["gaps"] if g["kind"] == "toolchain_unavailable"] == [{**gap, "source": "built@1"}]

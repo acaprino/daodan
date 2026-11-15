@@ -53,6 +53,17 @@ La pipeline finisce con il grafo completo; i flussi lo leggono dopo, fuori da es
 - Gli eventi si scrivono anche nel registro della run, così un listener che arriva dopo li rilegge.
 - Un listener che fallisce non ferma l'analisi: il suo errore diventa un evento.
 
+### Preparazione
+
+Ogni comando nel container, della pre-mappa o di un analyzer, ha prima ciò che serve alla CI del progetto: strumenti, toolchain e dipendenze. È uno strato solo del runner del container (`preparation.py`), che gira nella preparazione, con la rete verso i registri dei pacchetti e verso gli host che ogni strumento dichiara (come quelli di Bazel), mai altro.
+
+- **Toolchain:** le versioni che la faccetta `toolchains` della pre-mappa dichiara le installa mise, ognuna alla versione scritta (`mise install strumento@versione`): mise non sceglie mai una versione da sé. mise stesso è un pin con sha256 (`MISE`). Una versione che è un intervallo, o uno strumento che mise non installa, è una lacuna `toolchain_unavailable` che nomina strumento e versione; un'installazione fallita lo scrive e la run va avanti con ciò che si è installato. Daodan tiene un proprio pin con sha256 (`NEEDS`) solo dove mise non ha un backend verificabile: lo strumento di vcpkg e l'Arm GNU Toolchain.
+- **Host:** ogni strumento dichiara i suoi in un punto solo, oltre ai registri di `container.REGISTRIES`: mise in `preparation.MISE_HOSTS` (per strumento: nodejs.org; go.dev e dl.google.com; static.rust-lang.org; builds.dotnet.microsoft.com; download.swift.org; ziglang.org; services.gradle.org; api.adoptium.net; GitHub per le release) più `MISE_OWN` (mise-versions.jdx.dev); vcpkg e Conan in `preparation.NEEDS` (GitHub, center2.conan.io); Bazel in `premap/container_runner.TOOLS` (bcr.bazel.build, mirror.bazel.build, GitHub).
+- **Dipendenze:** il comando di ripristino del gestore che il progetto dichiara, con gli script spenti dove lo strumento lo consente: `vcpkg install` in modalità manifest alla baseline che il progetto nomina, `conan install` con il suo lockfile (`--build=missing` solo per ciò che non ha un binario), e dopo npm, pnpm, yarn, uv, pip, poetry, Go, Cargo, Maven, Gradle, .NET, Composer, Bundler, SwiftPM, pub.
+- **Compilatori:** un file di toolchain CMake (o un file cross di Meson, un profilo Conan) che nomina un compilatore noto (`COMPILERS`) lo porta sul path; ogni preset di configure gira.
+- **Un comando dichiara ciò che gli serve** (`needs`), il runner lo prepara una volta per run. Ciò che non si può installare o ripristinare resta una lacuna che lo nomina: un configure che fallisce dice quale compilatore o pacchetto manca.
+- Se un progetto dichiara due gestori (vcpkg e Conan), vince quello che i preset nominano, altrimenti vcpkg; una lacuna `choice` lo dice.
+
 ### 4. Codice
 
 - `pipeline/`: gli step, l'orchestratore, gli eventi.
