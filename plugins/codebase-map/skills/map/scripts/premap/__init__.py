@@ -399,7 +399,8 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
 
 
 def ensure(manifest: Path, sources=None, runner=None, report=None) -> dict:
-    """The pre-map of `manifest`, derived again when it is not fresh."""
+    """The pre-map of `manifest`, derived again when it is not fresh; with a runner, also when model commands were
+    left `not_run` (the whole pre-map again: the join needs every source's part)."""
     if state(manifest, sources, runner)["state"] == "fresh":
         return json.loads(path(manifest).read_text(encoding="utf-8"))
     return write(manifest, sources, runner, report)

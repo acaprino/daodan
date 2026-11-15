@@ -6,6 +6,8 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 
+import pytest
+
 SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts"
 sys.path.insert(0, str(SCRIPTS))
 
@@ -207,6 +209,19 @@ def test_model_commands_without_a_runner_are_not_run_and_a_gap(tmp_path):
     assert set(by_root(record, "go-module")) == {".", "_examples/demo"}  # from modules.py alone
     assert premap.state(manifest)["state"] == "fresh"
     assert premap.state(manifest, runner=replay("go_nested"))["state"] == "stale"
+
+
+def test_ensure_with_a_runner_runs_the_model_commands_a_fresh_premap_left_not_run(tmp_path):
+    """Without a runner the pre-map stays as it is; with one, the sources left `not_run` run (the whole pre-map is
+    derived again: the join needs every source's part), and the next `ensure` with a runner keeps it."""
+    _, manifest, record = build(tmp_path, "go_nested")
+    assert premap.ensure(manifest) == record
+    asked = []
+    runner = replay("go_nested")
+    again = premap.ensure(manifest, runner=lambda commands: asked.append(len(commands)) or runner(commands))
+    states = {s["source"].split("@")[0]: s["state"] for s in again["sources"]}
+    assert states["go"] == "ran" and asked and not gaps(again, "model_not_run")
+    assert premap.ensure(manifest, runner=lambda commands: pytest.fail("ran twice")) == again
 
 
 def test_every_command_is_data_with_its_network():
