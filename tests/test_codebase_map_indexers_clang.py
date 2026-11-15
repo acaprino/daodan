@@ -57,9 +57,10 @@ def test_the_configure_never_downloads_and_hands_cmake_the_recording_provider(tm
 def test_the_provider_records_each_fetchcontent_dependency_and_supplies_none():
     """CMake's dependency provider is called for each FetchContent_MakeAvailable with the details the project
     declared. It writes the name and the URLs and returns without populating, so FetchContent goes on with
-    downloads disabled."""
+    downloads disabled. CMake takes as provider only a command already defined."""
     provider = clang_run.PROVIDER
     assert "cmake_language(SET_DEPENDENCY_PROVIDER daodan_record_fetch" in provider
+    assert provider.index("function(daodan_record_fetch ") < provider.index("cmake_language(SET_DEPENDENCY_PROVIDER")
     assert "SUPPORTED_METHODS FETCHCONTENT_MAKEAVAILABLE_SERIAL)" in provider
     assert 'file(APPEND "${DAODAN_FETCH_LOG}"' in provider
     assert "FetchContent_SetPopulated" not in provider and "file(DOWNLOAD" not in provider
@@ -299,7 +300,7 @@ def test_the_tools_are_downloaded_once_and_checked_each_time(tmp_path):
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# A real container, only on request. Until it passes, the provider path is not verified on a real run.
+# A real container, only on request: the provider path on a real run.
 
 SMOKE = os.environ.get("DAODAN_CLANG_SMOKE") == "1"
 

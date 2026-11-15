@@ -11,8 +11,7 @@ runs with FETCHCONTENT_FULLY_DISCONNECTED, and CMake's dependency provider inter
 CMAKE_PROJECT_TOP_LEVEL_INCLUDES) records each dependency the project asks FetchContent_MakeAvailable for, with the
 URLs it declares, and supplies none. A unit whose configure then fails is not indexed: `unavailable` with what
 CMake recorded when it asked for a download, else `failed`; CMake's own output, unparsed, either way.
-`file(DOWNLOAD)` and ExternalProject are not recorded. Not yet verified on a real run: the provider path, until
-the smoke test of tests/test_codebase_map_indexers_clang.py passes.
+`file(DOWNLOAD)` and ExternalProject are not recorded.
 
 `OUT_DIR/result.json` holds, per unit, its state, its steps (`returncode`, `seconds`, the output's tail), the
 files of the compilation database with how many commands compile each, and the index it wrote
@@ -38,12 +37,12 @@ ERROR_TAIL = 4000
 UNCOVERED = "FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded"
 PROVIDER = r"""# Written by Daodan: records each dependency the project asks FetchContent_MakeAvailable
 # for, with the URLs it declares, and supplies none, so FetchContent goes on with downloads disabled.
-cmake_language(SET_DEPENDENCY_PROVIDER daodan_record_fetch SUPPORTED_METHODS FETCHCONTENT_MAKEAVAILABLE_SERIAL)
 function(daodan_record_fetch method name)
   cmake_parse_arguments(PARSE_ARGV 2 dep "" "GIT_REPOSITORY;SVN_REPOSITORY;HG_REPOSITORY" "URL")
   string(JOIN "\t" line "${name}" ${dep_URL} ${dep_GIT_REPOSITORY} ${dep_SVN_REPOSITORY} ${dep_HG_REPOSITORY})
   file(APPEND "${DAODAN_FETCH_LOG}" "${line}\n")
 endfunction()
+cmake_language(SET_DEPENDENCY_PROVIDER daodan_record_fetch SUPPORTED_METHODS FETCHCONTENT_MAKEAVAILABLE_SERIAL)
 """
 
 
