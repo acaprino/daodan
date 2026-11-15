@@ -378,6 +378,28 @@ def test_a_unit_is_named_as_its_build_tool_names_it_and_referred_to_by_root_when
                                               "m": "com.acme:svc", "p": "scripts", "other": "second"}
 
 
+def test_writing_a_snapshot_derives_the_pre_map_before_anything_reads_the_project(tmp_path):
+    """The pre-map is the first thing an analysis knows about a project: `snapshot.py write` leaves it beside the
+    manifest with the module graph it is built on, and fresh."""
+    import subprocess
+    project = tmp_path / "proj"
+    for rel, text in PROJECTS["go_nested"].items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8", newline="\n")
+    scripts = Path(premap.__file__).resolve().parents[1]
+    for name, options, expected in (("with", [], True), ("without", ["--no-modules"], False)):
+        manifest = tmp_path / name / "manifest.sqlite"
+        done = subprocess.run([sys.executable, "-B", str(scripts / "snapshot.py"), "write", str(project), "--out",
+                               str(manifest), "--no-engine", "--no-index", *options], cwd=scripts,
+                              capture_output=True, text=True, timeout=300)
+        assert done.returncode == 0, done.stderr
+        assert premap.path(manifest).is_file() is expected
+        if expected:
+            assert premap.state(manifest)["state"] == "fresh"
+            assert "premap:" in done.stdout
+            assert premap.roots(premap.ensure(manifest), {"go-module"}, {"go"}) == {"", "_examples/demo"}
+
+
 def test_the_folders_an_indexer_runs_in_come_from_the_units_and_the_workspaces(tmp_path):
     """Nothing downstream looks for manifests on its own: the roots of the units of the indexer's kinds, and of
     the workspaces of its tools (a virtual Cargo workspace is no crate, yet rust-analyzer starts there)."""

@@ -19,8 +19,9 @@ Subcommands:
         List the snapshot inventory: path, sha256 of the bytes, size, lines, language.
     write <target> --out <manifest.json> [--reuse <previous.json>]
         Write a structural snapshot; reuse parses only after checking file bytes.
-        Also builds the lexical index and the module graph beside it
-        (`--no-index`, `--no-modules` skip them; `modules.py` owns the graph), then
+        Also builds the lexical index, the module graph and the pre-map beside it
+        (`--no-index` skips the first, `--no-modules` the other two; `modules.py` owns
+        the graph, `premap/` the pre-map built on it), then
         starts the call-resolution engine pass in the background (`--no-engine`
         skips it; `resolve_edges.py` owns it).
     diff <parent_run> <target> --out <run_dir>
@@ -3399,6 +3400,7 @@ def refresh_working(root: Path) -> dict:
 
 def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
     import modules
+    import premap
     import resolve_edges
     import retrieval
     from datetime import datetime, timezone
@@ -3447,6 +3449,7 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
                   if result["state"] != "fresh"]
         if failed:
             raise ValueError("; ".join(failed))
+        premap.ensure(manifest)  # before the engine pass: the pre-map names what the pass will index
         engine = resolve_edges.ensure_edges(manifest) if state.get("engine", True) else {"state": "off"}
         with ExitStack() as stack:
             base = stack.enter_context(open_snapshot(resolve_run_snapshot(published, pstate)))
@@ -3671,6 +3674,10 @@ def cmd_write(args: argparse.Namespace) -> int:
             status = 1
         else:
             print(f"modules: {graph['action']} -> {graph['graph']} ({graph['modules']} modules)")
+            # The first thing an analysis knows about the project: nothing downstream decides its structure.
+            import premap
+            record = premap.ensure(Path(args.out))
+            print(f"premap: {len(record['units'])} units, {len(record['gaps'])} gaps -> {premap.path(Path(args.out))}")
     if not getattr(args, "no_engine", False):
         engine = resolve_edges.ensure_edges(Path(args.out))
         if engine["state"] in ("running", "fresh"):
@@ -3896,7 +3903,8 @@ def main(argv: list[str] | None = None) -> int:
     write_parser.add_argument("--no-index", action="store_true",
                               help="skip the lexical index that write builds beside the manifest")
     write_parser.add_argument("--no-modules", action="store_true",
-                              help="skip the module graph (modules.json/.md) that write derives beside the manifest")
+                              help="skip the module graph (modules.json/.md) and the pre-map (premap.json) that write "
+                                   "derives beside the manifest")
     write_parser.add_argument("--no-engine", action="store_true",
                               help="skip the call-resolution engine pass that write starts in the background")
     write_parser.set_defaults(func=cmd_write)
