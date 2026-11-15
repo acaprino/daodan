@@ -1,7 +1,10 @@
 """The part of the C and C++ index that runs in the container, with no network: each unit configured with CMake,
 then scip-clang over its compilation database. Standard library only: the image's python3 runs it.
 
-    python3 clang_run.py UNITS_JSON OUT_DIR
+    python3 clang_run.py UNITS_JSON OUT_DIR JOBS
+
+JOBS is how many compiler processes scip-clang runs at once: the container's share of the machine, as the caller
+gives it, never the machine's processor count.
 
 A unit is `{"root"}`, the folder CMake configures. A dependency the project fetches is never downloaded: CMake
 runs with FETCHCONTENT_FULLY_DISCONNECTED, and CMake's dependency provider interface (`PROVIDER`, given through
@@ -171,8 +174,13 @@ def _peak() -> int | None:
     return None
 
 
+def index_command(scip_clang: Path, compdb: Path, packages: Path, jobs: int) -> list[str]:
+    return [str(scip_clang), f"--compdb-path={compdb}", f"--package-map-path={packages}", f"--jobs={jobs}",
+            "--show-compiler-diagnostics"]
+
+
 def main(argv: list[str]) -> int:
-    units, out = json.loads(Path(argv[1]).read_text(encoding="utf-8")), Path(argv[2])
+    units, out, jobs = json.loads(Path(argv[1]).read_text(encoding="utf-8")), Path(argv[2]), int(argv[3])
     out.mkdir(parents=True, exist_ok=True)
     shutil.rmtree(SCRATCH, ignore_errors=True)
     SCRATCH.mkdir(parents=True)
@@ -193,8 +201,7 @@ def main(argv: list[str]) -> int:
         if state["state"] == "configured" and compdb.is_file():
             record["compiled"] = compiled(compdb)
             (WORK / "index.scip").unlink(missing_ok=True)
-            code, output, seconds = run([str(scip_clang), f"--compdb-path={compdb}", f"--package-map-path={packages}",
-                                         f"--jobs={os.cpu_count() or 2}", "--show-compiler-diagnostics"], WORK)
+            code, output, seconds = run(index_command(scip_clang, compdb, packages, jobs), WORK)
             steps.append({"step": "index", "returncode": code, "seconds": seconds, "tail": output[-2500:],
                           "diagnostics": _diagnostics(output)})
             if (WORK / "index.scip").is_file():

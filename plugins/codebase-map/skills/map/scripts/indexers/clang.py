@@ -367,9 +367,11 @@ def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, units: list[dict] | None = None,
-          workspace: list[dict] | None = None, engine=None, memory: int = MEMORY, timeout: float = 3600) -> dict:
+          workspace: list[dict] | None = None, engine=None, memory: int = MEMORY, cpus: int = 1,
+          timeout: float = 3600) -> dict:
     """The index of each configured root, with its runs and each root's state; `units` and `workspace` are the
-    pre-map's (`files` is not used: a unit's compilation database decides what is indexed). A unit built otherwise
+    pre-map's (`files` is not used: a unit's compilation database decides what is indexed). `cpus` is the
+    container's share, as the caller gives it: its limit and scip-clang's jobs. A unit built otherwise
     than with CMake, or whose configure needs a download outside the allowed registries, is `unavailable`; one
     whose configure fails otherwise, `failed`; either keeps its static facts from the snapshot. Without a unit
     indexed, or without a container, the result's state is `unavailable` (no unit failed) or `failed`."""
@@ -390,8 +392,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     back = out_dir / Path(OUT).name
     shutil.rmtree(back, ignore_errors=True)
     result = container.run_in_container(
-        project_dir, ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT], image=IMAGE,
-        out_dir=out_dir, outputs=[OUT], env={"TERM": "dumb"}, timeout=timeout, memory=memory, pids=PIDS,
+        project_dir, ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT, str(cpus)], image=IMAGE,
+        out_dir=out_dir, outputs=[OUT], env={"TERM": "dumb"}, timeout=timeout, memory=memory, pids=PIDS, cpus=cpus,
         engine=engine, inputs=lambda: {**tools(), f"{TOOLS}/units.json": plan})
     if result["state"] == "gap":
         return unavailable(result["cause"], result["remedy"])

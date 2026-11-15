@@ -197,11 +197,11 @@ UNAVAILABLE = {"root": "vendor", "state": "unavailable", "kind": "download-outsi
                "compiled": {}, "index": None}
 
 
-def _index(tmp_path, report, units, workspace=None, state="done", **extra):
+def _index(tmp_path, report, units, workspace=None, state="done", cpus=1, **extra):
     run, seen = _fake_run(tmp_path, report, state, **extra)
     with mock.patch.object(container, "run_in_container", run), mock.patch.object(clang, "tools", return_value=TOOLS), \
             mock.patch.object(container, "architecture", return_value="x64"):
-        return clang.index(tmp_path / "project", tmp_path / "work", units=units, workspace=workspace), seen
+        return clang.index(tmp_path / "project", tmp_path / "work", units=units, workspace=workspace, cpus=cpus), seen
 
 
 def test_one_run_with_no_network_indexes_the_units_that_configure_and_states_the_others(tmp_path):
@@ -213,7 +213,8 @@ def test_one_run_with_no_network_indexes_the_units_that_configure_and_states_the
     units = [UNIT, {**UNIT, "name": "vendor", "root": "vendor"}, {"name": "m", "kind": "meson-target", "root": "m"}]
     result, seen = _index(tmp_path, report, units)
     assert seen["image"] == clang.IMAGE and seen["outputs"] == [clang.OUT] and "prepare" not in seen
-    assert seen["command"] == ["python3", f"{clang.TOOLS}/clang_run.py", f"{clang.TOOLS}/units.json", clang.OUT]
+    assert seen["command"] == ["python3", f"{clang.TOOLS}/clang_run.py", f"{clang.TOOLS}/units.json", clang.OUT, "1"]
+    assert seen["cpus"] == 1
     assert set(seen["inputs"]) == set(TOOLS) | {f"{clang.TOOLS}/units.json"}
     assert json.loads(seen["inputs"][f"{clang.TOOLS}/units.json"].read_text(encoding="utf-8")) == \
         [{"root": "."}, {"root": "vendor"}]
@@ -230,6 +231,15 @@ def test_one_run_with_no_network_indexes_the_units_that_configure_and_states_the
     assert reasons["vendor/app.cpp"] == f"the index of unit vendor is unavailable: {UNAVAILABLE['cause']}"
     assert reasons["m/x.c"].startswith("the index of unit m is unavailable: built with meson")
     assert reasons["orphan.c"] == "no compile command: not built by the default configuration"
+
+
+def test_scip_clang_runs_as_many_jobs_as_the_caller_gives_the_container(tmp_path):
+    """The share is the caller's: the container's CPU limit and scip-clang's jobs, never the machine's count."""
+    assert clang_run.index_command(Path("scip-clang"), Path("cc.json"), Path("pm.json"), 3) == \
+        ["scip-clang", "--compdb-path=cc.json", "--package-map-path=pm.json", "--jobs=3", "--show-compiler-diagnostics"]
+    assert "cpu_count" not in Path(clang_run.__file__).read_text(encoding="utf-8")
+    _result, seen = _index(tmp_path, None, [UNIT], cpus=3)
+    assert seen["cpus"] == 3 and seen["command"][-1] == "3"
 
 
 def test_without_an_index_the_result_is_unavailable_when_no_unit_failed(tmp_path):
