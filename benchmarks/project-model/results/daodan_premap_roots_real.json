@@ -1,0 +1,227 @@
+{
+ "mix-real-chi": {
+  "go.mod": {
+   "disk": [
+    "",
+    "_examples/rest",
+    "_examples/versions"
+   ],
+   "premap": [
+    "",
+    "_examples/rest",
+    "_examples/versions"
+   ]
+  }
+ },
+ "mix-real-javapoet": {},
+ "mix-real-klaxon": {},
+ "mix-real-python-semver": {
+  "error": "IntegrityError: UNIQUE constraint failed: files.path"
+ },
+ "mix-real-semver": {
+  "Cargo.toml": {
+   "disk": [
+    "",
+    "fuzz"
+   ],
+   "premap": [
+    "",
+    "fuzz"
+   ]
+  }
+ },
+ "mix-real-tinyxml2": {},
+ "mix-real-tududi": {
+  "package.json": {
+   "disk": [
+    ""
+   ],
+   "premap": [
+    ""
+   ]
+  }
+ },
+ "mix-real-zlib": {},
+ "real-app-full-stack-fastapi": {
+  "package.json": {
+   "disk": [
+    "",
+    "frontend",
+    "packages/react-email"
+   ],
+   "premap": [
+    "",
+    "frontend",
+    "packages/react-email"
+   ]
+  }
+ },
+ "real-app-hoppscotch": {
+  "go.mod": {
+   "disk": [
+    "packages/hoppscotch-selfhost-web/webapp-server"
+   ],
+   "premap": [
+    "packages/hoppscotch-selfhost-web/webapp-server"
+   ]
+  },
+  "Cargo.toml": {
+   "disk": [
+    "packages/hoppscotch-agent/src-tauri",
+    "packages/hoppscotch-desktop/crates/webapp-bundler",
+    "packages/hoppscotch-desktop/plugin-workspace/relay",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload/examples/tauri-app/src-tauri",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-relay",
+    "packages/hoppscotch-desktop/src-tauri",
+    "packages/hoppscotch-relay"
+   ],
+   "premap": [
+    "packages/hoppscotch-agent/src-tauri",
+    "packages/hoppscotch-desktop/crates/webapp-bundler",
+    "packages/hoppscotch-desktop/plugin-workspace/relay",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload/examples/tauri-app/src-tauri",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-relay",
+    "packages/hoppscotch-desktop/src-tauri",
+    "packages/hoppscotch-relay"
+   ]
+  },
+  "package.json": {
+   "disk": [
+    "",
+    "packages/codemirror-lang-graphql",
+    "packages/hoppscotch-agent",
+    "packages/hoppscotch-backend",
+    "packages/hoppscotch-cli",
+    "packages/hoppscotch-common",
+    "packages/hoppscotch-data",
+    "packages/hoppscotch-desktop",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload/examples/tauri-app",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-relay",
+    "packages/hoppscotch-js-sandbox",
+    "packages/hoppscotch-kernel",
+    "packages/hoppscotch-selfhost-web",
+    "packages/hoppscotch-sh-admin"
+   ],
+   "premap": [
+    "",
+    "packages/codemirror-lang-graphql",
+    "packages/hoppscotch-agent",
+    "packages/hoppscotch-backend",
+    "packages/hoppscotch-cli",
+    "packages/hoppscotch-common",
+    "packages/hoppscotch-data",
+    "packages/hoppscotch-desktop",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload/examples/tauri-app",
+    "packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-relay",
+    "packages/hoppscotch-js-sandbox",
+    "packages/hoppscotch-kernel",
+    "packages/hoppscotch-selfhost-web",
+    "packages/hoppscotch-sh-admin"
+   ]
+  }
+ },
+ "real-app-jhipster-sample": {
+  "package.json": {
+   "disk": [
+    ""
+   ],
+   "premap": [
+    ""
+   ]
+  }
+ },
+ "real-app-kotlinconf": {},
+ "real-app-memos": {
+  "go.mod": {
+   "disk": [
+    ""
+   ],
+   "premap": [
+    ""
+   ]
+  },
+  "package.json": {
+   "disk": [
+    "web"
+   ],
+   "premap": [
+    "web"
+   ]
+  }
+ },
+ "real-svc-eshop": {
+  "package.json": {
+   "disk": [
+    ""
+   ],
+   "premap": [
+    ""
+   ]
+  }
+ },
+ "real-svc-otel-demo": {
+  "go.mod": {
+   "disk": [
+    "internal/tools",
+    "src/checkout",
+    "src/product-catalog"
+   ],
+   "premap": [
+    "internal/tools",
+    "src/checkout",
+    "src/product-catalog"
+   ]
+  },
+  "Cargo.toml": {
+   "disk": [
+    "src/shipping"
+   ],
+   "premap": [
+    "src/shipping"
+   ]
+  },
+  "package.json": {
+   "disk": [
+    "",
+    "src/frontend",
+    "src/payment",
+    "src/react-native-app"
+   ],
+   "premap": [
+    "",
+    "src/frontend",
+    "src/payment",
+    "src/react-native-app"
+   ]
+  }
+ },
+ "real-svc-petclinic-microservices": {},
+ "real-svc-robot-shop": {
+  "package.json": {
+   "disk": [
+    "cart",
+    "catalogue",
+    "user"
+   ],
+   "premap": [
+    "cart",
+    "catalogue",
+    "user"
+   ]
+  }
+ },
+ "real-svc-voting-app": {
+  "package.json": {
+   "disk": [
+    "result"
+   ],
+   "premap": [
+    "result"
+   ]
+  }
+ }
+}
