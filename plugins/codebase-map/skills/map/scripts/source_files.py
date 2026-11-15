@@ -43,6 +43,8 @@ DOC_EXTENSIONS = frozenset({
 MANIFEST_FILES = frozenset({
     "go.mod", "go.work", "Gemfile", "Package.swift", "mix.exs", "build.sbt",
     "build.zig.zon", "dune-project", "Dockerfile",
+    "meson.build", "meson.options", "BUILD", "BUILD.bazel", "MODULE.bazel", "WORKSPACE",
+    "WORKSPACE.bazel",
 })
 
 # Presentation files no adapter parses: Pug and Stylus. They carry no symbols,

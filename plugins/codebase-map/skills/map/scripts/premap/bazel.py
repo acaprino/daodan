@@ -19,7 +19,6 @@ NAME, VERSION, RANK = "bazel", "9.3.1", "model"
 DOWNLOAD = (("https://github.com/bazelbuild/bazel/releases/download/9.3.1/bazel-9.3.1-linux-x86_64",
              "7f775b54bbec487efaf0f49ccda1d2ed02cd34f582edfdd6aeeec76e39ef585c"),)  # what the runner carries
 WORKSPACES = ("MODULE.bazel", "WORKSPACE", "WORKSPACE.bazel")
-BUILD_FILES = (*WORKSPACES, "BUILD", "BUILD.bazel")  # build files without a suffix the snapshot records
 STARTUP = ["bazel", "--max_idle_secs=5"]  # the server ends once the commands are done
 QUERY = 'kind(".*_(library|binary|test) rule", //...)'
 SOURCES = ("srcs", "hdrs")

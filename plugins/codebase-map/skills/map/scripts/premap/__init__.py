@@ -32,15 +32,15 @@ import confinement  # noqa: E402
 import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
-from premap import (cargo, enry, gitmodules, go, jvm_files, module_graph, npm, npm_lock, python_build,  # noqa: E402
-                    renovate, requirements, suffix_table, tsc, uv)
+from premap import (bazel, cargo, cmake, enry, gitmodules, go, jvm_files, meson, module_graph, npm,  # noqa: E402
+                    npm_lock, python_build, renovate, requirements, suffix_table, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
 RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run` and the coverage gaps
 RANKS = ("model", "reader", "scanner")
 SOURCES = (module_graph, python_build, requirements, npm_lock, jvm_files, gitmodules, enry, renovate, go, cargo, uv,
-           tsc, npm)
+           tsc, npm, cmake, meson, bazel)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
     "languages": (("language",),),
     "excluded": (("path",),),

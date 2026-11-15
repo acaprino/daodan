@@ -23,7 +23,6 @@ DOWNLOAD = (  # what the runner carries: Meson, and Ninja, its backend, which th
      "ninja-1.13.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
      "65a24341b5ac09fcadcc37082660be40a94174e51a937fabf6e2cae26225fa2c"))
 FILE = "meson.build"
-BUILD_FILES = (FILE, "meson.options")  # build files without a suffix the snapshot records
 SECTIONS = ["--targets", "--projectinfo"]
 SETUP = ('b=$(mktemp -d) && meson setup --wrap-mode nodownload "$b" >&2'
          ' && meson introspect "$b" ' + " ".join(SECTIONS))

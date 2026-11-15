@@ -77,7 +77,7 @@ def test_premap_beside_the_manifest_every_fact_with_its_source(tmp_path):
         "modules.py": "ran", "python-build": "not_needed", "requirements": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
         "gitmodules": "not_needed",
         "go-enry": "not_run", "renovate": "not_run", "go": "not_needed", "cargo": "not_needed", "uv": "not_needed",
-        "tsc": "not_needed", "npm": "not_run"}
+        "tsc": "not_needed", "npm": "not_run", "cmake": "not_needed", "meson": "not_needed", "bazel": "not_needed"}
     assert all(u["run"] == {"executes_project_code": False, "reason": ""} for u in record["units"])
     assert "needs" not in record
 

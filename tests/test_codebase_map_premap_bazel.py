@@ -17,7 +17,6 @@ sys.path.insert(0, str(ROOT / "plugins/codebase-map/skills/map/scripts"))
 import premap  # noqa: E402
 from premap import bazel  # noqa: E402
 import snapshot  # noqa: E402
-import source_files  # noqa: E402
 
 CORPUS = ROOT / "benchmarks/project-model/fixtures"
 ANSWERS = Path(__file__).with_name("fixtures") / "premap" / "bazel"
@@ -35,12 +34,7 @@ def build(tmp_path, name, change=None):
     project = tmp_path / "proj"
     shutil.copytree(CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
-    recorded = source_files.MANIFEST_FILES  # until the snapshot records Bazel's build files itself
-    source_files.MANIFEST_FILES = recorded | set(bazel.BUILD_FILES)
-    try:
-        snapshot.write_snapshot(project, manifest)
-    finally:
-        source_files.MANIFEST_FILES = recorded
+    snapshot.write_snapshot(project, manifest)
     return premap.write(manifest, sources=(bazel,), runner=replay(name, change))
 
 
