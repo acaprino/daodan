@@ -241,33 +241,8 @@ def registered_distros() -> tuple[str | None, dict[str, str]]:
     return names.get(default), folders
 
 
-LOCAL_ENDPOINTS = ("unix://", "npipe://")  # an engine reached any other way runs on another machine
-
-
-def elsewhere(name: str, path: str) -> str | None:
-    """Where the user's `name` sends the copy when that is not this machine (its endpoint), else None. Read as
-    the CLI resolves it, changing nothing: `DOCKER_HOST`, else the current context; `CONTAINER_HOST`, else
-    whether Podman's service is remote (a machine or a connection)."""
-    variable = os.environ.get("DOCKER_HOST" if name == "docker" else "CONTAINER_HOST")
-    if variable:
-        return None if variable.startswith(LOCAL_ENDPOINTS) else variable
-    probe = ("context", "inspect", "--format", "{{.Endpoints.docker.Host}}") if name == "docker" else (
-        "info", "--format", "{{.Host.ServiceIsRemote}}")
-    try:
-        answer = subprocess.run([path, *probe], stdin=subprocess.DEVNULL, capture_output=True, timeout=20)
-    except (OSError, subprocess.TimeoutExpired):
-        return f"an endpoint {name} does not state"
-    said = answer.stdout.decode("utf-8", "replace").strip()
-    local = said.startswith(LOCAL_ENDPOINTS) if name == "docker" else said == "false"
-    if answer.returncode == 0 and local:
-        return None
-    return (said or "an endpoint it does not state") if name == "docker" else "a Podman service elsewhere"
-
-
 def find_engine(*, own: bool = True) -> Engine:
-    """The user's engine that answers (`docker`, then `podman`) on this machine, else Daodan's own; a Gap when
-    none can run. An engine whose endpoint is elsewhere is never used: the project's copy would leave."""
-    remote = []
+    """The user's engine that answers (`docker`, then `podman`), else Daodan's own; a Gap when none can run."""
     for name, probe in (("docker", ("version", "--format", "{{.Server.Os}}")),
                         ("podman", ("info", "--format", "{{.Host.Os}}"))):
         path = shutil.which(name)
@@ -278,14 +253,7 @@ def find_engine(*, own: bool = True) -> Engine:
         except (OSError, subprocess.TimeoutExpired):
             continue
         if answer.returncode == 0 and answer.stdout.decode("utf-8", "replace").strip() == "linux":
-            endpoint = elsewhere(name, path)
-            if endpoint is None:
-                return Engine(name, (path,))
-            remote.append(f"{name} talks to {endpoint}")
-    if remote and not own:
-        raise Gap(f"{'; '.join(remote)}: the project's copy would leave this machine",
-                  "point Docker or Podman to an engine on this machine (a local pipe or socket); Daodan changes "
-                  "neither its context nor its variables")
+            return Engine(name, (path,))
     if not own:
         raise Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
     return own_engine()

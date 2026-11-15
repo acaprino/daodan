@@ -43,13 +43,8 @@ VALUED = {"--name", "--network", "--memory", "--memory-swap", "--pids-limit", "-
 box = lambda name: state / "containers" / name
 volume = lambda name: state / "volumes" / name
 verb = args[0] if args else ""
-if verb == "info" and "ServiceIsRemote" in " ".join(args):
-    print("true" if (state / "remote").is_file() else "false")
-elif verb == "version" or verb == "info":
+if verb == "version" or verb == "info":
     print("linux")
-elif verb == "context":
-    endpoint = state / "endpoint"
-    print(endpoint.read_text() if endpoint.is_file() else "npipe:////./pipe/docker_engine")
 elif verb == "create":
     rest, mounts = args[1:], []
     while rest[0] in VALUED:
@@ -784,67 +779,8 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual(result["state"], "done", result)
         self.assertEqual(tree_digest(config), before)
         flat = [token for call in self.calls() for token in call]
-        self.assertEqual([call[:2] for call in self.calls() if "context" in call], [["context", "inspect"]])  # read
+        self.assertNotIn("context", flat)
         self.assertNotIn("--context", flat)
-
-    def wrapped_engine(self) -> dict:
-        """The fake reached as the user's `docker` on PATH, with an empty Docker configuration."""
-        bin_dir = self.scratch / "bin"
-        bin_dir.mkdir(exist_ok=True)
-        if os.name == "nt":
-            (bin_dir / "docker.cmd").write_text(f'@"{sys.executable}" "{self.fake}" "{self.state}" %*\r\n')
-        else:
-            wrapper = bin_dir / "docker"
-            wrapper.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{self.fake}" "{self.state}" "$@"\n')
-            wrapper.chmod(0o755)
-        (self.scratch / "docker-config").mkdir(exist_ok=True)
-        return {"PATH": str(bin_dir), "DOCKER_CONFIG": str(self.scratch / "docker-config")}
-
-    # Guarantee 2: the copy never leaves this machine.
-    def test_an_engine_that_talks_to_another_machine_is_never_used(self):
-        remote = {"DOCKER_HOST": ["tcp://build.example.com:2376", "ssh://user@build.example.com"],
-                  "endpoint": ["tcp://10.0.0.5:2375", "ssh://user@build.example.com"]}
-        for where, endpoints in remote.items():
-            for endpoint in endpoints:
-                with self.subTest(where=where, endpoint=endpoint):
-                    variables = self.wrapped_engine()
-                    (self.state / "endpoint").unlink(missing_ok=True)
-                    if where == "DOCKER_HOST":
-                        variables["DOCKER_HOST"] = endpoint
-                    else:
-                        (self.state / "endpoint").write_text(endpoint)
-                    with mock.patch.dict(os.environ, variables), self.assertRaises(container.Gap) as caught:
-                        container.find_engine(own=False)
-                    self.assertIn(endpoint, caught.exception.cause)
-                    self.assertTrue(caught.exception.remedy)
-        self.assertEqual(self.created(), [])
-
-    def test_a_local_pipe_or_socket_is_used(self):
-        for endpoint in ("npipe:////./pipe/docker_engine", "unix:///var/run/docker.sock"):
-            with self.subTest(endpoint=endpoint):
-                (self.state / "endpoint").write_text(endpoint)
-                with mock.patch.dict(os.environ, self.wrapped_engine()):
-                    self.assertEqual(container.find_engine(own=False).name, "docker")
-
-    def test_a_podman_service_elsewhere_is_never_used(self):
-        bin_dir = self.scratch / "podman-bin"
-        bin_dir.mkdir()
-        if os.name == "nt":
-            (bin_dir / "podman.cmd").write_text(f'@"{sys.executable}" "{self.fake}" "{self.state}" %*\r\n')
-        else:
-            wrapper = bin_dir / "podman"
-            wrapper.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{self.fake}" "{self.state}" "$@"\n')
-            wrapper.chmod(0o755)
-        (self.state / "remote").write_text("")
-        with mock.patch.dict(os.environ, {"PATH": str(bin_dir)}), self.assertRaises(container.Gap) as caught:
-            container.find_engine(own=False)
-        self.assertIn("podman", caught.exception.cause)
-        (self.state / "remote").unlink()
-        with mock.patch.dict(os.environ, {"PATH": str(bin_dir), "CONTAINER_HOST": "tcp://build.example.com:8080"}), \
-                self.assertRaises(container.Gap):
-            container.find_engine(own=False)
-        with mock.patch.dict(os.environ, {"PATH": str(bin_dir)}):
-            self.assertEqual(container.find_engine(own=False).name, "podman")
 
 
 SMOKE = os.environ.get("DAODAN_CONTAINER_SMOKE") == "1"

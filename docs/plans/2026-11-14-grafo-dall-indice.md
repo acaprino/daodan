@@ -526,7 +526,7 @@ Prima di ogni indicizzatore Daodan scrive la pre-mappa: cosa c'è nel progetto e
 
 ## 8. Rischi
 
-- **Strumenti dell'host fino al container.** Sull'host rustup non installa toolchain (`RUSTUP_GUARD`; con un rustup precedente alla 1.28.1 un progetto con un file di toolchain è `unavailable`) e uv non scarica interpreti (`uv_environment`). Restano esposti gli shim dei gestori di versione (Volta, mise, corepack), che installano nella home il Node, l'npm o il JDK che il progetto fissa, e `uv run` dello stage di Jedi e multilspy, che può scaricare un CPython e tiene la sua cache nella home. Li chiude lo spostamento delle analisi nel container, non una correzione per strumento.
+- **Strumenti dell'host fino al container.** Gli strumenti che girano ancora sull'host (rustup, uv, gli shim di Volta, mise e corepack, `uv run` dello stage di Jedi e multilspy) possono installare nella home la toolchain o l'interprete che un progetto fissa. Lo chiude lo spostamento delle analisi nel container, non una correzione per strumento.
 
 - **Strumenti attivi.** Nessun indicizzatore è stato controllato con la regola dei motori: licenza che consente l'uso, repository non archiviato, commit e release nell'ultimo anno. Vale per scip-go, scip-typescript, scip-python, scip-java e rust-analyzer. Va fatto prima di fissarli.
 - **Windows.** Tutte le misure sono su Linux (Modal). Non sono misurati:
