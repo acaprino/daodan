@@ -63,7 +63,14 @@ def same_range(index) -> dict[tuple[str, str], bool]:
 
 # How it runs: `indexers.jvm`, with the steps below.
 
-PREPARE = r'''if step index "$SCIP_JAVA" index --output "$OUT/index.scip" && [ -s "$OUT/index.scip" ]; then exit 0; fi
+# Under Maven the modules' Kotlin is indexed too (`jvm.MAVEN_KOTLIN`), so a call from Java to a Kotlin member
+# ends where the same index defines it, as it does under Gradle, where scip-java indexes both.
+PREPARE = r'''kotlin_too() {
+  [ -f pom.xml ] && maven_kotlin "$(mktemp -d)" \
+    && step aggregate-kotlin "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$WORK/target/scip-targetroot"
+  [ -s "$OUT/index.scip" ]
+}
+if step index "$SCIP_JAVA" index --output "$OUT/index.scip" && [ -s "$OUT/index.scip" ]; then kotlin_too; exit; fi
 [ -f pom.xml ] || exit 1
 cat > /tmp/PlainJavac.java <<'JAVA'
 import java.nio.file.Files;
@@ -109,14 +116,17 @@ public class PlainJavac {
 JAVA
 step plain-javac java /tmp/PlainJavac.java || exit 1
 rm -f "$OUT/index.scip"
-step index "$SCIP_JAVA" index --output "$OUT/index.scip" && [ -s "$OUT/index.scip" ]
+step index "$SCIP_JAVA" index --output "$OUT/index.scip" && [ -s "$OUT/index.scip" ] && kotlin_too
 '''
-EXECUTE = r'''step aggregate "$SCIP_JAVA" aggregate --no-emit-inverse-relationships --output "$OUT/index-forward.scip" \
-  target/scip-targetroot
+# Maven writes under `target/`, Gradle under `build/`: the build that ran made one of them, in every module.
+EXECUTE = r'''TARGETROOT=target/scip-targetroot
+[ -d "$TARGETROOT" ] || TARGETROOT=build/scip-targetroot
+step aggregate "$SCIP_JAVA" aggregate --no-emit-inverse-relationships --output "$OUT/index-forward.scip" \
+  "$TARGETROOT"
 mkdir -p "$OUT/javap"
 javap_to() { local out=$1; shift; javap -p -v "$@" > "$out"; }
 project_classes() {
-  for directory in target/*classes; do [ -d "$directory" ] && find "$directory" -name '*.class'; done \
+  find . \( -path '*/target/*classes/*' -o -path '*/build/classes/*' \) -name '*.class' \
     | sort | xargs -r -d '\n' javap -p -v > "$OUT/javap/project.txt"
 }
 '''
@@ -135,12 +145,14 @@ def execute(external_classes: dict | None = None) -> str:
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folder of each build and the JDKs it states."""
-    return {"roots": jvm.build_roots(record), "toolchains": jvm.toolchains(record)}
+    """What `index` takes from the pre-map: the folder of each build, the JDKs it states, Maven's modules with
+    their source folders, and the kinds of the JVM builds Daodan does not run."""
+    return {"roots": jvm.build_roots(record), "toolchains": jvm.toolchains(record), "modules": jvm.modules(record),
+            "other_builds": jvm.other_builds(record)}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, external_classes: dict | None = None,
-          *, roots, toolchains=(), engine=None, memory: int = MIN_FREE) -> dict:
+          *, roots, toolchains=(), modules=(), other_builds=(), engine=None, memory: int = MIN_FREE) -> dict:
     """The forward index of each build in `roots` (the pre-map's build folders), each in a container of its own,
     with its runs and the indexer's time and memory (`files` is not used: a build compiles every module); the
     member order of all of them in `javap.json`. Without a container, `unavailable`; without an index, `failed`."""
@@ -148,7 +160,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
     work_dir.mkdir(parents=True, exist_ok=True)
 
     def one(folder: Path, work: Path) -> dict:
-        result, runs, out = jvm.run(folder, work, PREPARE, execute(external_classes), memory=memory, engine=engine,
+        prepare = jvm.modules_line(modules, jvm.build_root(project_dir, folder)) + PREPARE
+        result, runs, out = jvm.run(folder, work, prepare, execute(external_classes), memory=memory, engine=engine,
                                     toolchains=toolchains)
         return jvm.with_gaps(finish(folder, work, result, runs, out), result)
 
@@ -159,7 +172,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
         if listed and listed.is_file():
             members.update(json.loads(listed.read_text(encoding="utf-8")))
     (work_dir / "javap.json").write_text(json.dumps(members), encoding="utf-8")
-    return jvm.combined(parts)
+    return jvm.combined(parts, other_builds)
 
 
 def finish(project_dir: Path, work_dir: Path, result: dict, runs: list[dict], out: Path) -> dict:
@@ -182,9 +195,14 @@ def finish(project_dir: Path, work_dir: Path, result: dict, runs: list[dict], ou
     for run in runs:
         if run["step"] == "aggregate":
             run["same_occurrences"] = same
-    # Without an equal forward index the default one is read, and its implementations include the inverses.
+    # Without an equal forward index the default one is read, and its implementations include the inverses:
+    # a call on a method then also reaches its parent and siblings. Said as a gap, never silent.
+    gaps = [] if same else [{"kind": "implementations_both_ways", "detail":
+                             "the forward aggregate of this build is missing or differs from its index: "
+                             "implementations are read both ways, so a call on a method may also name its "
+                             "parent and sibling methods"}]
     return {"indexes": [[str(forward if same else default), ""]], "runs": runs,
-            "indexer": code_graph.indexer("scip-java", jvm.VERSION, runs)}
+            "indexer": code_graph.indexer("scip-java", jvm.VERSION, runs), **({"gaps": gaps} if gaps else {})}
 
 
 def same_occurrences(root: Path, default: Path, forward: Path) -> bool:

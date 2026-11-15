@@ -167,6 +167,46 @@ for tool in /daodan/state/tools/*/*/bin/gradle /daodan/state/tools/*/*/bin/mvn; 
 done
 export PATH
 '''
+# Under Maven scip-java indexes Java only (its getting-started table: Maven, Kotlin no). After its build, the
+# Kotlin Analysis API indexer it ships reads each module's Kotlin files, as scip-java does after a Gradle build:
+# the files in the source folders Maven's own model gives the module (the pre-map's, `DAODAN_MODULES`: a line per
+# module, its folder, a tab, its source folders joined by `:`), with the module's classpath (Maven's own
+# `dependency:build-classpath` and the reactor's compiled classes), into the build's targetroot. Each module's
+# files are written as a compile task (`kotlin.tasks`) under `$1`; the caller aggregates the targetroot again.
+# It returns 1, and runs nothing, when no module has a Kotlin file.
+MAVEN_KOTLIN = r'''maven_kotlin() {
+  local configs=$1 targetroot="$WORK/target/scip-targetroot" tab compiled module roots name list classpath
+  tab=$(printf '\t')
+  mkdir -p "$configs"
+  printf '%s\n' "${DAODAN_MODULES:-}" | while IFS="$tab" read -r module roots; do
+    name=$(printf %s "$module" | tr -c 'A-Za-z0-9.\n' _)
+    printf '%s\n' "$roots" | tr : '\n' | while read -r root; do
+      [ -n "$root" ] && [ -d "$WORK/$root" ] && find "$WORK/$root" -type f -name '*.kt'
+    done | sort -u > "$configs/maven-$name.list"
+    [ -s "$configs/maven-$name.list" ] || rm -f "$configs/maven-$name.list"
+  done
+  ls "$configs"/*.list >/dev/null 2>&1 || return 1
+  mkdir -p "$targetroot"
+  step classpath mvn -q --batch-mode dependency:build-classpath -Dmdep.outputFile=target/daodan-classpath.txt \
+    -Dmdep.includeScope=test
+  compiled=$(find "$WORK" -type d \( -path '*/target/classes' -o -path '*/target/test-classes' \) | sort | paste -sd: -)
+  printf '%s\n' "${DAODAN_MODULES:-}" | while IFS="$tab" read -r module roots; do
+    name=$(printf %s "$module" | tr -c 'A-Za-z0-9.\n' _)
+    list="$configs/maven-$name.list"
+    [ -f "$list" ] || continue
+    classpath=$compiled
+    [ -f "$WORK/$module/target/daodan-classpath.txt" ] && classpath="$classpath:$(cat "$WORK/$module/target/daodan-classpath.txt")"
+    { echo "sourceroot $WORK"; printf '%s\n' "$classpath" | tr : '\n' | sed '/^$/d;s/^/classpath /'
+      sed 's/^/source /' "$list"; } > "$configs/maven-$name.txt"
+    step kotlin xargs -d '\n' -a "$list" java $JAVA_OPTS -classpath "/daodan/state/scip-java/lib/*" \
+      org.scip_code.scip_java.kotlin_analysis.MainKt --sourceroot "$WORK" --targetroot "$targetroot" \
+      --classpath "$classpath" < /dev/null
+    rm -f "$list"
+  done
+  return 0
+}
+'''
+PREPARE += MAVEN_KOTLIN
 # A build that needs a newer JDK says so: Gradle's toolchain request, javac's release, a class file version
 # (61 is Java 17's).
 NEWER = (re.compile(r"languageVersion=(\d+)"), re.compile(r"release version (\d+) not supported"),
@@ -422,8 +462,9 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
 
 
 def with_gaps(part: dict, result: dict) -> dict:
-    """A build's contract with the preparation's gaps of its run."""
-    return {**part, "gaps": result["gaps"]} if result.get("gaps") else part
+    """A build's contract with the preparation's gaps of its run beside its own."""
+    gaps = [*part.get("gaps", ()), *result.get("gaps", ())]
+    return {**part, "gaps": gaps} if gaps else part
 
 
 BUILDS = ({"gradle-project"}, {"maven-module"})  # a Gradle build and a Maven reactor build the modules inside them
@@ -442,6 +483,39 @@ def build_roots(record: dict) -> set[str]:
     return found
 
 
+OTHER_BUILDS = frozenset({"sbt-project", "bazel-target", "bazel-module"})  # JVM builds Daodan does not run
+
+
+def other_builds(record: dict) -> list[str]:
+    """The unit kinds of the pre-map that build JVM code another way: what `combined` names when nothing ran."""
+    return sorted({unit["kind"] for unit in record.get("units", [])} & OTHER_BUILDS)
+
+
+def modules(record: dict) -> list[list]:
+    """Each Maven module of the pre-map, '' the project's root, with the source folders Maven's model gives it."""
+    return sorted(["" if unit["root"] == "." else unit["root"], list(unit.get("source_roots") or [])]
+                  for unit in record.get("units", []) if unit["kind"] == "maven-module")
+
+
+def modules_line(modules, root: str) -> str:
+    """The script line that hands `MAVEN_KOTLIN` the modules of the build in `root` ('' the project's), their
+    folders relative to the build's."""
+    import posixpath
+    import shlex
+    inside = [(module, folders) for module, folders in modules
+              if not root or module == root or module.startswith(f"{root}/")]
+    rows = "\n".join(f"{posixpath.relpath(module or '.', root or '.')}\t"
+                     + ":".join(posixpath.relpath(folder, root or ".") for folder in folders)
+                     for module, folders in inside)
+    return f"DAODAN_MODULES={shlex.quote(rows)}\n"
+
+
+def build_root(project_dir: Path, folder: Path) -> str:
+    """The build folder as the pre-map names it: relative to the checkout, '' for the project's root."""
+    root = Path(folder).relative_to(project_dir).as_posix()
+    return "" if root == "." else root
+
+
 def builds(project_dir: Path, work_dir: Path, roots, one) -> list[tuple[str, dict]]:
     """`one(folder, work)` for each build folder, each in a work folder of its own (`build-N`), in order."""
     out = []
@@ -452,9 +526,14 @@ def builds(project_dir: Path, work_dir: Path, roots, one) -> list[tuple[str, dic
     return out
 
 
-def combined(parts: list[tuple[str, dict]], **joined) -> dict:
+def combined(parts: list[tuple[str, dict]], others=(), **joined) -> dict:
     """One contract from one per build: each index named from the checkout by its build's folder, every run
-    with its `build`, each build's state; without any index, the first build's failure (or `unavailable`)."""
+    with its `build`, each build's state; without any index, the first build's failure (or `unavailable`,
+    naming the builds of `others`, the pre-map's kinds Daodan does not run)."""
+    if not parts and others:
+        tools = ", ".join(sorted({kind.split("-")[0] for kind in others}))
+        return unavailable(f"built with {tools}: Daodan builds Java and Kotlin only with Gradle and Maven",
+                           "none yet: these files have no graph")
     if not parts:
         return unavailable("no Gradle or Maven build in the pre-map: nothing builds these files",
                            "declare the build of the project (settings.gradle, build.gradle or pom.xml)")

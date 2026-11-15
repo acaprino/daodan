@@ -771,10 +771,11 @@ def test_a_maven_build_gets_its_kotlin_from_the_analysis_indexer():
     module's classpath, into the build's targetroot, writes the compile task `tasks` reads, and aggregates."""
     maven, gradle = kotlin.PREPARE.split("\nelse\n")
     assert "pom.xml" in maven.split("\n", 1)[0] and "gradle" in maven.split("\n", 1)[0]
+    assert 'maven_kotlin "$OUT/kotlin-configs"' in maven and 'aggregate --output "$OUT/index.scip"' in maven
     for needed in ("dependency:build-classpath", "org.scip_code.scip_java.kotlin_analysis.MainKt",
-                   '--targetroot "$TARGETROOT"', '"$OUT/kotlin-configs/', 'aggregate --output "$OUT/index.scip"'):
-        assert needed in maven, needed
-    assert "MainKt" not in gradle and '"$SCIP_JAVA" index --output "$OUT/index.scip"' in gradle
+                   '--targetroot "$targetroot"', '"$configs/maven-$name.txt"'):
+        assert needed in jvm.MAVEN_KOTLIN, needed
+    assert "maven_kotlin" not in gradle and '"$SCIP_JAVA" index --output "$OUT/index.scip"' in gradle
 
 
 def test_a_kotlin_file_no_compile_task_lists_says_so_for_any_build():
@@ -791,8 +792,61 @@ def test_under_maven_the_kotlin_files_are_those_in_the_source_folders_the_pre_ma
         {"kind": "gradle-project", "root": "tools/gen", "name": "gen", "source_roots": ["tools/gen/src"]}], "workspace": []}
     given = kotlin.structure(record)
     assert given["modules"] == [["", []], ["core", ["core/src/main/kotlin", "core/src/main/java"]]]
-    script = kotlin.prepare_script(given["modules"], "")
+    script = jvm.modules_line(given["modules"], "") + jvm.MAVEN_KOTLIN
     assert "DAODAN_MODULES='.\t\ncore\tcore/src/main/kotlin:core/src/main/java'\n" in script
     assert "find \"$WORK\" -name pom.xml" not in script and '"$WORK/$root"' in script
-    nested = kotlin.prepare_script([["svc/api", ["svc/api/src/main/kotlin"]], ["other", ["other/src"]]], "svc")
+    nested = jvm.modules_line([["svc/api", ["svc/api/src/main/kotlin"]], ["other", ["other/src"]]], "svc")
     assert "DAODAN_MODULES='api\tapi/src/main/kotlin'\n" in nested  # relative to the build's folder, its own modules
+
+
+def test_java_execution_reads_the_targetroot_and_the_classes_of_the_build_that_ran():
+    """Maven writes under `target/`, Gradle under `build/`: the forward aggregation and `javap` read whichever
+    the build made, in every module."""
+    assert "target/scip-targetroot" in java.EXECUTE and "build/scip-targetroot" in java.EXECUTE
+    assert "*/target/*classes/*" in java.EXECUTE and "*/build/classes/*" in java.EXECUTE
+
+
+def test_without_an_equal_forward_index_the_contract_declares_the_inverse_implementations(tmp_path):
+    """The default index writes each implementation both ways: read without its forward copy, a call on a
+    method also reaches its parent and siblings. That is a gap of the contract, never silent."""
+    out, work = tmp_path / "out", tmp_path / "work"
+    out.mkdir()
+    work.mkdir()
+    (out / "index.scip").write_bytes(b"x")
+    part = java.finish(tmp_path, work, {"state": "done"}, [{"step": "aggregate", "returncode": 1, "seconds": 1.0}], out)
+    assert part["indexes"] == [[str(work / "index.scip"), ""]]
+    [gap] = part["gaps"]
+    assert gap["kind"] == "implementations_both_ways" and "aggregate" in gap["detail"]
+
+
+def test_under_maven_the_java_index_also_holds_the_kotlin_of_its_modules():
+    """A Java call to a Kotlin member ends where the same index defines it: Java's build indexes the modules'
+    Kotlin as Kotlin's does (`jvm.MAVEN_KOTLIN`), from the same source folders of the pre-map."""
+    record = {"units": [{"kind": "maven-module", "root": ".", "name": "g:a", "source_roots": ["src/main/kotlin"]}],
+              "workspace": []}
+    assert java.structure(record)["modules"] == kotlin.structure(record)["modules"] == [["", ["src/main/kotlin"]]]
+    assert "maven_kotlin() {" in jvm.PREPARE and "kotlin_analysis.MainKt" in jvm.MAVEN_KOTLIN
+    assert "maven_kotlin " in java.PREPARE and "maven_kotlin " in kotlin.PREPARE
+    assert jvm.modules_line([["svc/api", ["svc/api/src/main/kotlin"]], ["other", ["other/src"]]], "svc") == (
+        "DAODAN_MODULES='api\tapi/src/main/kotlin'\n")
+
+
+def test_a_jvm_build_daodan_does_not_run_is_named_in_the_reason():
+    record = {"units": [{"kind": "sbt-project", "root": ".", "name": "app"},
+                        {"kind": "bazel-target", "root": "tools", "name": "//tools:gen"}], "workspace": []}
+    given = java.structure(record)
+    assert given["other_builds"] == ["bazel-target", "sbt-project"]
+    result = java.index(Path("."), Path(tempfile.mkdtemp(prefix="daodan-jvm-none-")), **given)
+    assert result["state"] == "unavailable"
+    assert "sbt" in result["reason"] and "bazel" in result["reason"] and "Gradle and Maven" in result["reason"]
+
+
+def test_a_kotlin_index_from_a_build_that_ended_in_error_says_so(tmp_path):
+    out, work = tmp_path / "out", tmp_path / "work"
+    out.mkdir()
+    work.mkdir()
+    (out / "index.scip").write_bytes(b"")
+    runs = [{"step": "index", "returncode": 1, "seconds": 1.0, "stderr_tail": "FAILURE: Build failed with an exception."}]
+    part = kotlin.finish(work, {"state": "done"}, runs, out)
+    [gap] = part["gaps"]
+    assert gap["kind"] == "build_failed" and "Build failed" in gap["detail"]
