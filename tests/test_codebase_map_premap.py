@@ -378,6 +378,19 @@ def test_a_unit_is_named_as_its_build_tool_names_it_and_referred_to_by_root_when
                                               "m": "com.acme:svc", "p": "scripts", "other": "second"}
 
 
+def test_the_folders_an_indexer_runs_in_come_from_the_units_and_the_workspaces(tmp_path):
+    """Nothing downstream looks for manifests on its own: the roots of the units of the indexer's kinds, and of
+    the workspaces of its tools (a virtual Cargo workspace is no crate, yet rust-analyzer starts there)."""
+    _, _, go_record = build(tmp_path / "go", "go_nested", runner=replay("go_nested"))
+    assert premap.roots(go_record, {"go-module"}, {"go"}) == {"", "_examples/demo"}
+    _, _, rust_record = build(tmp_path / "rust", "rust_buildrs", runner=replay("rust_buildrs"))
+    assert premap.roots(rust_record, {"cargo-crate"}, {"cargo"}) == {"", "flags", "gen"}
+    assert premap.roots(rust_record, {"go-module"}, {"go"}) == set()
+    _, _, mixed = build(tmp_path / "mixed", "mixed", sources=(module_graph,))
+    assert premap.roots(mixed, {"npm-package"}, {"npm", "pnpm", "lerna"}) == {"web"}
+    assert premap.roots(mixed, {"python-project"}, {"uv"}) == {""}
+
+
 def test_npm_reader_gives_workspace_members_and_entry_files(tmp_path):
     _, _, record = build(tmp_path, "npm_workspace", runner=replay("npm_workspace"))
     units = by_root(record, "npm-package")

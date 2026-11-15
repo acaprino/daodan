@@ -227,6 +227,14 @@ def _relative(path: str, root: str) -> str:
     return path if root == "." else "." if path == root else path[len(root) + 1:]
 
 
+def roots(record: dict, kinds, tools=()) -> set[str]:
+    """The folders an indexer runs in: the roots of the units of `kinds` and of the workspaces of `tools`, ''
+    for the project's root. An indexer looks for no manifest on its own."""
+    found = {u["root"] for u in record.get("units", []) if u["kind"] in kinds}
+    found |= {w["root"] for w in record.get("workspace", []) if w.get("tool") in tools}
+    return {"" if root == "." else root for root in found}
+
+
 def python_runs(record: dict) -> list[dict]:
     """The indexer stage's Python runs: one per outermost Python root, a `python-project` unit or a uv
     workspace that no other one holds, the units inside folded into it (one run reads its whole folder). Each
