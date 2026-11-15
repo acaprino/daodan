@@ -11,6 +11,7 @@ import re
 
 import confinement
 import snapshot
+import source_files
 from tree_scope import DEPENDENCY_DIRS, Perimeter
 
 EMPTY_DIRECTORY = "directory holds no inventoried file"
@@ -136,7 +137,8 @@ class _Inventory:
             return EMPTY_DIRECTORY
         suffix = path.suffix.lower()
         if (suffix not in snapshot.SUPPORTED_EXTENSIONS and suffix not in snapshot.DOC_EXTENSIONS
-                and suffix not in snapshot.PRESENTATION_EXTENSIONS and path.name not in snapshot.MANIFEST_FILES):
+                and suffix not in snapshot.PRESENTATION_EXTENSIONS
+                and not source_files.is_build_file(path.name)):
             return "file type the map does not inventory"
         return "present on disk but not in this snapshot; refresh the snapshot"
 

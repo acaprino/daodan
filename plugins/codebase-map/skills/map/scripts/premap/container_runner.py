@@ -75,6 +75,7 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
               "setup": [f"python3 -m zipfile -e {IN}/meson.whl {T}/meson && printf '%s\\n' '#!/bin/sh'"
                         f" 'PYTHONPATH={T}/meson exec python3 -m mesonbuild.mesonmain \"$@\"' > {T}/bin/meson"
                         f" && chmod 755 {T}/bin/meson", UNPACK["ninja"]]},
+    "make": {"files": [], "setup": []},  # the image's GNU Make
     "bazel": {"files": [(*bazel.DOWNLOAD[0], "bazel")],
               "setup": [f"cp {IN}/bazel {T}/bin/bazel && chmod 755 {T}/bin/bazel"],
               "hosts": ("bcr.bazel.build", "github.com", "objects.githubusercontent.com",

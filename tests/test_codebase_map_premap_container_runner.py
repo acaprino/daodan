@@ -115,7 +115,7 @@ def test_a_failed_setup_fails_the_source(tmp_path, no_download):
 def test_every_model_source_of_the_premap_has_a_setup():
     tools = {"go": premap.go, "cargo": premap.cargo, "uv": premap.uv, "tsc": premap.tsc, "npm": premap.npm,
              "renovate": premap.renovate, "daodan-enry": premap.enry, "cmake": premap.cmake, "meson": premap.meson,
-             "bazel": premap.bazel}
+             "bazel": premap.bazel, "make": premap.make}
     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
     assert set(tools) <= set(container_runner.TOOLS)
 
@@ -129,7 +129,8 @@ CASES = {  # tool -> (corpus fixture, the source), one project each
     "uv": ("py-uv-workspace", premap.uv), "tsc": ("js-vite-react-ts", premap.tsc),
     "npm": ("js-npm-workspaces", premap.npm), "renovate": ("js-npm-single", premap.renovate),
     "daodan-enry": ("js-vendored-generated", premap.enry), "cmake": ("sys-cmake-targets", premap.cmake),
-    "meson": ("sys-meson", premap.meson), "bazel": ("sys-bazel", premap.bazel)}
+    "meson": ("sys-meson", premap.meson), "bazel": ("sys-bazel", premap.bazel),
+    "make": ("sys-make-plain", premap.make)}
 
 
 @pytest.mark.skipif(not SMOKE, reason="set DAODAN_PREMAP_SMOKE=1 to run each source in a real container")

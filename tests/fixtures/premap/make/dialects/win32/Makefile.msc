@@ -1,0 +1,2 @@
+prog.exe: prog.obj util.obj
+	link -out:$@ prog.obj util.obj
