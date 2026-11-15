@@ -307,9 +307,11 @@ def strong_case(label: str = "") -> dict:
     manifest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(kept / "manifest.sqlite", manifest)
     indexers = modal_scip._kept_indexers(kept, json.loads((kept / "inputs.json").read_text(encoding="utf-8")))
+    import premap
+    roots = go.structure(premap.ensure(manifest))["roots"]  # the module folders, as the engine pass gives them
     result = {"case": CASE, "commit": CASES[CASE]["commit"], "code": plugin_scripts.code_sha256()}
     begun = time.time()
-    output = go_callgraph.analyze(target, work / "callgraph")
+    output = go_callgraph.analyze(target, work / "callgraph", roots)
     result["engine"], result["engine_wall_seconds"] = output["engine"], round(time.time() - begun, 1)
     edges = output["edges"]
     result["edges"] = {"total": len(edges), "by_kind": dict(collections.Counter(edge["kind"] for edge in edges)),
@@ -339,7 +341,7 @@ def strong_case(label: str = "") -> dict:
             stored = json.load(handle)["edges"]
         result["graph_check"] = {"rebuilt_edges": len(graph["edges"]), "stored_edges": len(stored),
                                  "same": _digest(graph["edges"]) == _digest(stored)}
-        nested = scip_graph.manifest_dirs(target, "go.mod") - {""}
+        nested = roots - {""}
         result["nested_modules"] = sorted(nested)
         result.update(compare(snapshot, index, references, edges, nested))
     result["compare_seconds"] = round(time.time() - begun, 1)

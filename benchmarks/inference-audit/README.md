@@ -16,13 +16,13 @@ Verifica, per ogni linguaggio, il grafo che Daodan costruisce dall'indice SCIP d
 | passo | quello del prodotto: `snapshot.py write --no-engine --no-index`, poi `resolve_edges.py --pass` |
 | regole dei flussi | `benchmarks/phazly-flow/rules.json`, `benchmarks/tududi-flow/rules.json`; gli altri casi senza regole contano solo la vista degli archi |
 
-Esecuzione: `modal run --detach benchmarks/inference-audit/modal_audit.py --phazly-tar PATH`; un container per caso, risultati in `results/audit-<caso>.json` e sul volume `daodan-flow-results`.
+Esecuzione: `modal run --detach benchmarks/inference-audit/modal_audit.py --phazly-tar PATH`; un container per caso, risultati sul volume `daodan-flow-results`.
 
 ## Risultati
 
 ### 13 novembre 2026, indice SCIP contro motori
 
-Strada A: il passo dei motori del prodotto (`resolve_edges.py --pass`, una posizione per volta, solo chiamate). Strada B: l'indice SCIP dell'intero progetto da un indicizzatore esistente, unito per posizione ai riferimenti dello snapshot (`call` e `read`) e graduato con le stesse regole del passo (`grade_all`, simboli `local` compresi). App `daodan-scip-audit` (`modal_scip.py`), risultati in `results/scip-<caso>.json`.
+Strada A: il passo dei motori per posizione, misurato come il prodotto lo eseguiva il 13 novembre (`resolve_edges.py --pass`, una posizione per volta, solo chiamate). Strada B: l'indice SCIP dell'intero progetto da un indicizzatore esistente, unito per posizione ai riferimenti dello snapshot (`call` e `read`) e graduato con le stesse regole del passo (`grade_all`, simboli `local` compresi). App `daodan-scip-audit` (`modal_scip.py`), risultati in `results/scip-<caso>.json`.
 
 | Parametro | Valore |
 | --- | --- |
@@ -1594,7 +1594,7 @@ Mancati del passo:
 - `<PaywallModal` è reso da 11 componenti, contati nel sorgente, tutti con un nome di una sola parte. Nel grafo arrivano tutti e 11 a `react-app/src/components/subscription/PaywallModal.tsx:68`, senza salti: 23 archi, cioè 11 letture JSX, 11 import e il re-export di `react-app/src/components/subscription/index.ts:1`.
 - Il passo non chiede le letture. Dei 3 siti di resa controllati a mano ne ha 1, grazie al lessicale (import diretto, `react-app/src/components/subscription/ExpiredBanner.tsx:66`). Gli altri due passano dal barrel `@/components/subscription` o `../subscription`.
 - In phazly a questo commit non c'è nessun `<X.Paywall />`. Le forme JSX a due parti presenti: `react-app/src/contexts/SubscriptionContext.tsx:699` `SubscriptionContext.Provider` è giusta (esterno `@types/react`), `Reorder.Item` è mancata.
-- `startCheckout` ha 3 archi, tutti verso il contratto `react-app/src/contexts/SubscriptionContext.tsx:151`: la chiamata `PaywallModal.tsx:132`, la destrutturazione `PaywallModal.tsx:71` e la proprietà dell'oggetto valore `SubscriptionContext.tsx:687`. Nessuno arriva alla funzione `:296`. Il grafo conserva il contratto, come chiede il recap. Per arrivare alla funzione bisognerebbe legare la proprietà dell'oggetto passato al Provider al membro del contratto, e l'indice questo legame non lo scrive.
+- `startCheckout` ha 3 archi, tutti verso il contratto `react-app/src/contexts/SubscriptionContext.tsx:151`: la chiamata `PaywallModal.tsx:132`, la destrutturazione `PaywallModal.tsx:71` e la proprietà dell'oggetto valore `SubscriptionContext.tsx:687`. Nessuno arriva alla funzione `:296`. Il grafo conserva il contratto. Per arrivare alla funzione bisognerebbe legare la proprietà dell'oggetto passato al Provider al membro del contratto, e l'indice questo legame non lo scrive.
 - Classe aperta: quando una funzione arriva a chi la chiama attraverso un oggetto passato al Provider di un contesto o a un creatore di store (zustand), l'indice si ferma al membro del contratto. Su phazly: `startCheckout` e `clearError` del contesto, le azioni degli slice (`setTheme`, `setCurrentPlan`, `addMealAddition`). Nessuna fonte provata finora la chiude.
 
 ### Tempi, memoria, costo
@@ -1661,7 +1661,7 @@ uguale al worktree):
 
 ## 14 novembre 2026, gli stage degli indicizzatori nel passaggio
 
-Il passaggio del prodotto legge Go, TypeScript e JavaScript, Rust dai loro indicizzatori (`ENGINES` di `resolve_edges.py`, task 5 del piano `docs/plans/2026-11-14-grafo-dall-indice.md`). `modal_stage.py` fa girare lo stage vero (`index_stage`) sul caso e, dallo stesso indice, scrive lo store come lo scrive il benchmark; poi li confronta.
+Il passaggio del prodotto legge ogni linguaggio dal suo indicizzatore (`ENGINES` di `resolve_edges.py`); questa misura copre Go, TypeScript e JavaScript, Rust. `modal_stage.py` fa girare lo stage vero (`index_stage`) sul caso e, dallo stesso indice, scrive lo store come lo scrive il benchmark; poi li confronta.
 
 | Parametro | Valore |
 | --- | --- |
@@ -1681,11 +1681,11 @@ Risultati, con il codice del plugin verificato per hash. Costo: 0,10 USD.
 - Verifica a mano: chi 15 su 15, semver 15 su 15, tududi 26 su 30, come prima.
 - Indicizzatore: scip-go 10,1 s e 318 MB; rust-analyzer 9,7 s e 1.172 MB; scip-typescript 59,1 s e 2.116 MB.
 - Lo stage intero su una macchina nuova dura 54 s, 27 s e 885 s. Per tududi quasi tutto il tempo è installazione al primo uso: Node, scip-typescript e i pacchetti npm del progetto.
-- Il test del passaggio TypeScript attraverso MCP (`tests/test_codebase_map_mcp_wire.py`, con l'SDK MCP vero, su Modal) dà la voce `fresh` con `scip-typescript@0.5.2`. «Risolte su risolvibili» dà però 0 su 1: quel numero legge campi che solo il passo per posizione scrive, ed esce dal prodotto con il task 6.
+- Il test del passaggio TypeScript attraverso MCP (`tests/test_codebase_map_mcp_wire.py`, con l'SDK MCP vero, su Modal) dà la voce `fresh` con `scip-typescript@0.5.2`. In questa misura «risolte su risolvibili» dà 0 su 1, perché legge campi che solo il passo per posizione scrive; il prodotto non dà più quel numero.
 
 ## 14 novembre 2026, Python dall'indice nello stage, senza cambio di fonte
 
-`modal_stage.py --entries scip-python` fa girare lo stage vero del prodotto con Python letto da scip-python, solo in quel container (`_serving`). Nel prodotto Python resta su Jedi finché la pre-mappa non dà le sue unità (task 12 del piano). Il driver dà a scip-python i progetti Python (`UNITS`), come farà la pre-mappa: l'adattatore non ne cerca.
+`modal_stage.py --entries scip-python` fa girare solo lo stage vero di scip-python (`_serving`). Nel prodotto Python viene da scip-python, nelle cartelle che gli dà la pre-mappa. Qui il driver dà a scip-python i progetti Python (`UNITS`), come la pre-mappa: l'adattatore non ne cerca.
 
 | Parametro | Valore |
 | --- | --- |

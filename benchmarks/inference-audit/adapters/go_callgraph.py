@@ -1,12 +1,13 @@
 """Go's whole-program call graph: `golang.org/x/tools/cmd/callgraph`, algorithm VTA, tests included.
 
-`analyze` installs the tool at a pinned release (`go install`, checked against the Go checksum database) and
-runs it once over the root module: `./...` and the directories that pattern skips (`_x`, `.x`), never a nested
-module. VTA types every function the program holds, reached from a `main` or not; the tool folds synthetic
-wrappers into the edges that cross them (`DeleteSyntheticNodes`), and a generic instance keeps its origin's
-position. An edge is kept when its call site is in the project. The site is where SSA puts the call: the `(` of
-the call, or the `go` / `defer` keyword. A function declared in the project is `rel:line:col` (its name, or the
-`func` of a literal); any other is its SSA name, with its module read from the path that declares it.
+`analyze` installs the tool at a pinned release (`go install`, checked against the Go checksum database) and runs
+it once over the root module: `./...` and the directories that pattern skips (`_x`, `.x`), never a nested module.
+The module folders are the pre-map's, as the plugin's `indexers/go.py` reads them (`structure`). VTA types every
+function the program holds, reached from a `main` or not; the tool folds synthetic wrappers into the edges that
+cross them (`DeleteSyntheticNodes`), and a generic instance keeps its origin's position. An edge is kept when its
+call site is in the project. The site is where SSA puts the call: the `(` of the call, or the `go` / `defer`
+keyword. A function declared in the project is `rel:line:col` (its name, or the `func` of a literal); any other is
+its SSA name, with its module read from the path that declares it.
 """
 from __future__ import annotations
 
@@ -70,9 +71,9 @@ class _Place:
         return name, self.external(position[0] if position else None, name)
 
 
-def patterns(project_dir: Path) -> list[str]:
-    """`./...` and each directory of the root module it skips, outside nested modules and `testdata`."""
-    roots = scip_graph.manifest_dirs(project_dir, "go.mod")
+def patterns(project_dir: Path, roots: set[str]) -> list[str]:
+    """`./...` and each directory of the root module it skips, outside the nested modules of `roots` (the
+    pre-map's module folders, '' for the root) and `testdata`."""
     found = set()
     for path in project_dir.rglob("*.go"):
         rel = path.relative_to(project_dir).as_posix()
@@ -84,7 +85,7 @@ def patterns(project_dir: Path) -> list[str]:
     return ["./...", *(f"./{directory}" for directory in sorted(found))]
 
 
-def analyze(project_dir: Path, work_dir: Path) -> dict:
+def analyze(project_dir: Path, work_dir: Path, roots: set[str]) -> dict:
     import resolve_edges as rx
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
@@ -101,7 +102,7 @@ def analyze(project_dir: Path, work_dir: Path) -> dict:
     subprocess.run([str(GO / "bin/go"), "mod", "download"], cwd=project_dir, env=env, capture_output=True,
                    timeout=1800)
     go_version = (GO / "VERSION").read_text(encoding="utf-8").split("\n", 1)[0].strip()
-    loaded = patterns(project_dir)
+    loaded = patterns(project_dir, roots)
     output = work_dir / "callgraph.tsv"
     command = [str(tool / "callgraph"), "-algo=vta", "-test", f"-format={chr(9).join(FIELDS)}", *loaded]
     run = scip_graph.measured(["sh", "-c", 'exec "$@" > "$0"', str(output), *command], str(project_dir), env,
