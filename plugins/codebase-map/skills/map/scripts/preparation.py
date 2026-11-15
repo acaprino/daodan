@@ -93,6 +93,72 @@ def toolchains(stated: list[dict]) -> dict:
     return {"files": [MISE], "lines": lines, "hosts": hosts, "gaps": gaps}
 
 
+# The JVM ignores HTTPS_PROXY: Java tools get the preparation's proxy as system properties, Maven also in its
+# settings (the same lines as `indexers.jvm.PREPARE`).
+JAVA_PROXY = (r'if [ -n "${HTTPS_PROXY:-}" ]; then a=${HTTPS_PROXY#*://}; a=${a%%/*}; h=${a%:*}; p=${a##*:};'
+              r' export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-} -Duser.home=$HOME -Dhttps.proxyHost=$h'
+              r' -Dhttps.proxyPort=$p -Dhttp.proxyHost=$h -Dhttp.proxyPort=$p"; mkdir -p "$HOME/.m2";'
+              r' printf "%s\n" "<settings><proxies>"'
+              r' "<proxy><id>https</id><protocol>https</protocol><host>$h</host><port>$p</port></proxy>"'
+              r' "<proxy><id>http</id><protocol>http</protocol><host>$h</host><port>$p</port></proxy>"'
+              r' "</proxies></settings>" > "$HOME/.m2/settings.xml"; fi')
+RESTORES = {  # manager -> the files that mark where its build starts, its own restore, what in its output is an
+    # error (`error`) or a failure it reports with success (`failed`), the hosts beside the registries
+    "gradle": {"marks": ("settings.gradle", "settings.gradle.kts", "build.gradle", "build.gradle.kts"),
+               "line": "gradle --no-daemon --console=plain -q dependencies",  # every project's configurations
+               "failed": " FAILED$", "error": " FAILED$|What went wrong|Could not ", "before": JAVA_PROXY,
+               "hosts": ("plugins.gradle.org", "plugins-artifacts.gradle.org", "services.gradle.org",
+                         "dl.google.com", "maven.google.com")},
+    "maven": {"marks": ("pom.xml",), "error": r"^\[ERROR\]", "before": JAVA_PROXY, "hosts": (),
+              "line": "mvn -B -q org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline"},
+}
+LOG = "/tmp/daodan-restore.log"
+
+
+def _folder(rel: str) -> str:
+    return posixpath.dirname(rel) or "."
+
+
+def _inside(rel: str, folder: str) -> bool:
+    return folder == "." or rel == folder or rel.startswith(folder + "/")
+
+
+def restores(files) -> dict[str, list[str]]:
+    """Per manager, the folders where its restore runs: each folder with one of its marks that no other such
+    folder holds (a Gradle build or a Maven reactor restores its projects from its root)."""
+    out = {}
+    for manager, spec in RESTORES.items():
+        marked = sorted({_folder(rel) for rel in files if posixpath.basename(rel) in spec["marks"]},
+                        key=lambda f: (f.count("/"), f))
+        tops = [f for f in marked if not any(o != f and _inside(f, o) for o in marked)]
+        if tops:
+            out[manager] = tops
+    return out
+
+
+def restore(manager: str, folders: list[str]) -> str:
+    """The shell line restoring `manager`'s dependencies in each of `folders`: a folder that fails prints
+    `DAODAN-RESTORE-FAILED manager folder`, its error lines, `DAODAN-RESTORE-END` on stderr; the line goes on."""
+    spec = RESTORES[manager]
+    failed = f" && ! grep -Eq '{spec['failed']}' {LOG}" if spec.get("failed") else ""
+    report = (f"{{ printf 'DAODAN-RESTORE-FAILED {manager} %s\\n' \"$f\"; {{ grep -E '{spec['error']}' {LOG}"
+              f" || tail -n 30 {LOG}; }} | head -n 30; echo DAODAN-RESTORE-END; }} >&2")
+    names = " ".join(f"'{f}'" for f in folders)
+    before = f"{spec['before']}; " if spec.get("before") else ""
+    return (f"{before}for f in {names}; do ( cd \"$f\" && {spec['line']} ) > {LOG} 2>&1{failed} || {report};"
+            " done; true")
+
+
+RESTORE = re.compile(r"DAODAN-RESTORE-FAILED (\S+) (.+)\n((?:.*\n)*?)DAODAN-RESTORE-END")
+
+
+def restore_gaps(stderr: str) -> list[dict]:
+    """The `restore_failed` gaps a restore line printed: the manager, the folder, the tool's error lines."""
+    return [{"kind": "restore_failed", "manager": manager, "path": folder,
+             "detail": " | ".join(line.strip() for line in lines.splitlines() if line.strip())[:600]}
+            for manager, folder, lines in RESTORE.findall(stderr or "")]
+
+
 MISSING = re.compile(r"DAODAN-MISSING (\S+)@(\S+)")
 
 

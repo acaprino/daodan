@@ -1,0 +1,12 @@
+{
+ "versions": {
+  "gradle": "9.9.1"
+ },
+ "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+ "line": "if [ -n \"${HTTPS_PROXY:-}\" ]; then a=${HTTPS_PROXY#*://}; a=${a%%/*}; h=${a%:*}; p=${a##*:}; export JAVA_TOOL_OPTIONS=\"${JAVA_TOOL_OPTIONS:-} -Duser.home=$HOME -Dhttps.proxyHost=$h -Dhttps.proxyPort=$p -Dhttp.proxyHost=$h -Dhttp.proxyPort=$p\"; mkdir -p \"$HOME/.m2\"; printf \"%s\\n\" \"<settings><proxies>\" \"<proxy><id>https</id><protocol>https</protocol><host>$h</host><port>$p</port></proxy>\" \"<proxy><id>http</id><protocol>http</protocol><host>$h</host><port>$p</port></proxy>\" \"</proxies></settings>\" > \"$HOME/.m2/settings.xml\"; fi; for f in 'good' 'bad'; do ( cd \"$f\" && gradle --no-daemon --console=plain -q dependencies ) > /tmp/daodan-restore.log 2>&1 && ! grep -Eq ' FAILED$' /tmp/daodan-restore.log || { printf 'DAODAN-RESTORE-FAILED gradle %s\\n' \"$f\"; { grep -E ' FAILED$|What went wrong|Could not ' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+ "result": {
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "DAODAN-RESTORE-FAILED gradle bad\n\\--- org.example.missing:nothing:9.9.9 FAILED\n\\--- org.example.missing:nothing:9.9.9 FAILED\n\\--- org.example.missing:nothing:9.9.9 FAILED\n\\--- org.example.missing:nothing:9.9.9 FAILED\nDAODAN-RESTORE-END\n"
+ }
+}

@@ -1,0 +1,12 @@
+{
+ "versions": {
+  "maven": "3.10.0"
+ },
+ "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+ "line": "if [ -n \"${HTTPS_PROXY:-}\" ]; then a=${HTTPS_PROXY#*://}; a=${a%%/*}; h=${a%:*}; p=${a##*:}; export JAVA_TOOL_OPTIONS=\"${JAVA_TOOL_OPTIONS:-} -Duser.home=$HOME -Dhttps.proxyHost=$h -Dhttps.proxyPort=$p -Dhttp.proxyHost=$h -Dhttp.proxyPort=$p\"; mkdir -p \"$HOME/.m2\"; printf \"%s\\n\" \"<settings><proxies>\" \"<proxy><id>https</id><protocol>https</protocol><host>$h</host><port>$p</port></proxy>\" \"<proxy><id>http</id><protocol>http</protocol><host>$h</host><port>$p</port></proxy>\" \"</proxies></settings>\" > \"$HOME/.m2/settings.xml\"; fi; for f in 'good' 'bad'; do ( cd \"$f\" && mvn -B -q org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED maven %s\\n' \"$f\"; { grep -E '^\\[ERROR\\]' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+ "result": {
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "DAODAN-RESTORE-FAILED maven bad\n[ERROR] Failed to execute goal org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline (default-cli) on project bad: org.eclipse.aether.resolution.DependencyResolutionException: The following artifacts could not be resolved: org.example.missing:nothing:jar:9.9.9 (absent): prefixes: Path org/example/missing/nothing/9.9.9/nothing-9.9.9.jar NOT allowed from central -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException\nDAODAN-RESTORE-END\n"
+ }
+}

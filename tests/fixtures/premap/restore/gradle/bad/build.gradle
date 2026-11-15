@@ -1,0 +1,3 @@
+plugins { id 'java' }
+repositories { mavenCentral() }
+dependencies { implementation 'org.example.missing:nothing:9.9.9' }
