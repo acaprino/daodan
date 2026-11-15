@@ -443,5 +443,279 @@
         "web"
       ]
     ]
+  },
+  "solution_outside_root_lists_projects_from_its_own_folder": {
+    "files": {
+      "apps/Hub.sln": "Project(\"{A}\") = \"Leaf\", \"lib\\Leaf.csproj\", \"{B}\"\nEndProject\n",
+      "apps/lib/Leaf.csproj": "<Project />"
+    },
+    "units": [
+      [
+        "Hub",
+        "dotnet-solution",
+        "apps",
+        []
+      ],
+      [
+        "Leaf",
+        "dotnet-project",
+        "apps/lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "Hub",
+        "Leaf"
+      ]
+    ]
+  },
+  "unit_folder_without_inventoried_files_is_still_a_unit": {
+    "files": {
+      "build.sbt": "lazy val leaf = (project in file(\"lib\"))\nlazy val hub = (project in file(\"app\"))\n  .dependsOn(leaf)\n",
+      "lib/Leaf.scala": "object Leaf\n",
+      "app/Hub.scala": "object Hub\n"
+    },
+    "units": [
+      [
+        "hub",
+        "sbt-project",
+        "app",
+        []
+      ],
+      [
+        "leaf",
+        "sbt-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "hub",
+        "leaf"
+      ]
+    ],
+    "contains": []
+  },
+  "mix_umbrella_sibling_is_internal": {
+    "files": {
+      "mix.exs": "def project, do: [apps_path: \"apps\"]",
+      "apps/web/mix.exs": "def project, do: [app: :web, deps: [{:core, in_umbrella: true}, {:remote, \"~> 1.0\"}]]",
+      "apps/core/mix.exs": "def project, do: [app: :core]"
+    },
+    "units": [
+      [
+        "proj",
+        "mix-umbrella",
+        ".",
+        []
+      ],
+      [
+        "web",
+        "mix-project",
+        "apps/web",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "core",
+        "mix-project",
+        "apps/core",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "web",
+        "core"
+      ]
+    ],
+    "contains": [
+      [
+        "proj",
+        "core"
+      ],
+      [
+        "proj",
+        "web"
+      ]
+    ]
+  },
+  "npm_file_dependency_is_resolved_by_path": {
+    "files": {
+      "app/package.json": "{\"name\": \"app\", \"dependencies\": {\"lib-api\": \"file:../lib\", \"remote\": \"1\"}}",
+      "lib/package.json": "{\"name\": \"@acme/lib\"}"
+    },
+    "units": [
+      [
+        "app",
+        "npm-package",
+        "app",
+        [
+          "remote"
+        ]
+      ],
+      [
+        "@acme/lib",
+        "npm-package",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "app",
+        "@acme/lib"
+      ]
+    ],
+    "contains": []
+  },
+  "gradle_included_build_is_not_a_member": {
+    "files": {
+      "settings.gradle.kts": "rootProject.name = \"hub\"\ninclude(\":lib\")\nincludeBuild(\"tools\")\n",
+      "lib/build.gradle.kts": "",
+      "tools/settings.gradle.kts": "rootProject.name = \"tools\"\n"
+    },
+    "units": [
+      [
+        "hub",
+        "gradle-build",
+        ".",
+        []
+      ],
+      [
+        "lib",
+        "gradle-project",
+        "lib",
+        []
+      ],
+      [
+        "tools",
+        "gradle-build",
+        "tools",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "lib"
+      ]
+    ]
+  },
+  "composer_platform_requirement_is_not_a_package": {
+    "files": {
+      "composer.json": "{\"name\": \"acme/app\", \"require\": {\"php\": \"^8.2\", \"ext-json\": \"*\", \"remote/lib\": \"1\"}}"
+    },
+    "units": [
+      [
+        "acme/app",
+        "composer-package",
+        ".",
+        [
+          "remote/lib"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "pub_sdk_dependency_is_not_a_package": {
+    "files": {
+      "pubspec.yaml": "name: app\ndependencies:\n  flutter:\n    sdk: flutter\n  remote: ^1.0.0\n"
+    },
+    "units": [
+      [
+        "app",
+        "dart-package",
+        ".",
+        [
+          "remote"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "cargo_renamed_and_target_dependencies": {
+    "files": {
+      "Cargo.toml": "[package]\nname=\"app\"\n[dependencies]\nalias={package=\"real_name\",version=\"1\"}\n[target.'cfg(unix)'.dev-dependencies]\nbench=\"1\"\n"
+    },
+    "units": [
+      [
+        "app",
+        "cargo-crate",
+        ".",
+        [
+          "bench",
+          "real_name"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "python_development_groups": {
+    "files": {
+      "pyproject.toml": "[project]\nname=\"app\"\n[dependency-groups]\ndev=[\"ruff>=0.6\", {include-group=\"test\"}]\ntest=[\"pytest\"]\n[tool.pdm.dev-dependencies]\nlint=[\"black\"]\n[tool.poetry.group.docs.dependencies]\nsphinx=\"^7\"\n[tool.hatch.envs.default]\ndependencies=[\"coverage[toml]>=7\"]\n"
+    },
+    "units": [
+      [
+        "app",
+        "python-package",
+        ".",
+        [
+          "black",
+          "coverage",
+          "pytest",
+          "ruff",
+          "sphinx"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "setup_cfg_requirements": {
+    "files": {
+      "setup.cfg": "[metadata]\nname=legacy\n[options]\ninstall_requires =\n    remote>=1\n    other; python_version < \"3.11\"\n[options.extras_require]\ncli =\n    click>=8\n"
+    },
+    "units": [
+      [
+        "legacy",
+        "python-package",
+        ".",
+        [
+          "click",
+          "other",
+          "remote"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "deno_import_map": {
+    "files": {
+      "deno.json": "{\"name\": \"hub\", \"importMap\": \"./import_map.json\", \"imports\": {\"direct\": \"npm:direct@1\"}}",
+      "import_map.json": "{\"imports\": {\"@std/assert\": \"jsr:@std/assert@^1\", \"@/\": \"./src/\"}}"
+    },
+    "units": [
+      [
+        "hub",
+        "deno-package",
+        ".",
+        [
+          "@std/assert",
+          "direct"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
   }
 }

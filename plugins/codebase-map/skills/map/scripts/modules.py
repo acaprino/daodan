@@ -5,7 +5,7 @@ Three provenances, one record:
 
 - `build`: what the build system declares. Workspaces, packages, crates,
   Maven and Gradle modules, Go modules, .NET projects, Composer, Gems,
-  pubspec, Swift, Mix, Deno, Nx, Lerna, CMake, Cabal and Stack, sbt,
+  pubspec, Swift, Mix, Deno, Nx, Angular, Lerna, CMake, Cabal and Stack, sbt,
   Terraform, Zig, Julia and dune. Read programmatically, no heuristics,
   status `confirmed`.
 - `declared`: `codebase-modules.json` at the project root, written by the
@@ -57,6 +57,7 @@ MAX_MEMBERS = 500
 MAX_MODULES = 500
 MAX_EDGE_EVIDENCE = 20
 MAX_BRIEF_SYMBOLS = 2000
+EMPTY_DIRECTORY = "directory holds no inventoried file"
 
 
 # ---------------------------------------------------------------- helpers
@@ -161,8 +162,12 @@ def _names(values) -> list[str]:
     return []
 
 
+def _table(value) -> dict:
+    return value if isinstance(value, dict) else {}
+
+
 def _family(ecosystem: str) -> str:
-    return {"pnpm": "npm", "lerna": "npm", "nx": "npm", "rubygems": "bundler",
+    return {"pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "rubygems": "bundler",
             "melos": "pub", "stack": "cabal"}.get(ecosystem, ecosystem)
 
 
@@ -252,7 +257,7 @@ class _Inventory:
         if self._perimeter and self._perimeter.git_ignore == "applied" and not self._perimeter.covers(probe):
             return "ignored by Git, outside the map perimeter"
         if is_dir:
-            return "directory holds no inventoried file"
+            return EMPTY_DIRECTORY
         suffix = path.suffix.lower()
         if (suffix not in snapshot.SUPPORTED_EXTENSIONS and suffix not in snapshot.DOC_EXTENSIONS
                 and suffix not in snapshot.PRESENTATION_EXTENSIONS and path.name not in snapshot.MANIFEST_FILES):
@@ -286,6 +291,9 @@ def _package_json(inv, rel, text):
     deps = set()
     for key in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
         deps.update(_names(data.get(key)))
+        for dep, spec in _table(data.get(key)).items():
+            if isinstance(spec, str) and spec.startswith(("file:", "link:")):
+                unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec.split(":", 1)[1])})
     unit["dependencies"] = sorted(deps)
     workspaces = data.get("workspaces")
     if isinstance(workspaces, dict):
@@ -313,6 +321,11 @@ def _deno(inv, rel, text):
     if not isinstance(data, dict):
         raise ValueError("not an object")
     unit = _unit(rel, "deno-package", data.get("name") if isinstance(data.get("name"), str) else None)
+    imports = dict(_table(data.get("imports")))
+    import_map = _join(unit["directory"], data["importMap"]) if isinstance(data.get("importMap"), str) else None
+    if import_map in inv.headers:
+        imports.update(_table(_table(json.loads(inv.text(import_map))).get("imports")))
+    unit["dependencies"] = sorted(k for k, v in imports.items() if isinstance(v, str) and not v.startswith((".", "/")))
     workspace = data.get("workspace")
     if isinstance(workspace, dict):
         workspace = workspace.get("members")
@@ -328,6 +341,13 @@ def _nx_project(inv, rel, text):
         return []
     deps = data.get("implicitDependencies")
     return [_unit(rel, "nx-project", data["name"], dependencies=_names(deps) if isinstance(deps, list) else [])]
+
+
+def _angular(inv, rel, text):
+    projects = {name: spec.get("root") or "." for name, spec in _table(_table(json.loads(text)).get("projects")).items()
+                if isinstance(spec, dict)}
+    return [_unit(rel, "angular-workspace", None, members=list(projects.values())),
+            *(_unit(rel, "angular-project", name, directory=_join(_dirname(rel), root)) for name, root in projects.items())]
 
 
 def _pyproject(inv, rel, text):
@@ -348,6 +368,11 @@ def _pyproject(inv, rel, text):
     for group in (project.get("optional-dependencies") or {}).values() if isinstance(project.get("optional-dependencies"), dict) else []:
         deps.update(_names(group))
     deps.update(d for d in _names(poetry.get("dependencies")) if d != "python")
+    for group in [*_table(data.get("dependency-groups")).values(),
+                  *_table(_table(tool.get("pdm")).get("dev-dependencies")).values(),
+                  *(_table(g).get("dependencies") for g in _table(poetry.get("group")).values()),
+                  *(_table(e).get("dependencies") for e in _table(_table(tool.get("hatch")).get("envs")).values())]:
+        deps.update(_names(group))
     unit["dependencies"] = sorted(deps)
     workspace = uv.get("workspace") if isinstance(uv.get("workspace"), dict) else {}
     if isinstance(workspace.get("members"), list):
@@ -367,7 +392,11 @@ def _setup_cfg(inv, rel, text):
     parser = configparser.ConfigParser(interpolation=None)
     parser.read_string(text)
     name = parser.get("metadata", "name", fallback=None)
-    return [_unit(rel, "python-package", name.strip() if name else None)]
+    requirements = [parser.get("options", "install_requires", fallback="")]
+    if parser.has_section("options.extras_require"):
+        requirements += [value for _, value in parser.items("options.extras_require")]
+    return [_unit(rel, "python-package", name.strip() if name else None,
+                  dependencies=_names([line for value in requirements for line in value.splitlines()]))]
 
 
 def _setup_py(inv, rel, text):
@@ -381,14 +410,15 @@ def _cargo(inv, rel, text):
     unit = _unit(rel, "cargo-crate", package.get("name") if isinstance(package.get("name"), str) else None)
     _described(unit, package)
     deps = set()
-    for key in ("dependencies", "dev-dependencies", "build-dependencies"):
-        table = data.get(key)
-        if isinstance(table, dict):
-            for dep, spec in table.items():
+    for holder in [data, *_table(data.get("target")).values()]:
+        for key in ("dependencies", "dev-dependencies", "build-dependencies"):
+            for dep, spec in _table(_table(holder).get(key)).items():
+                spec = _table(spec)
+                dep = spec["package"] if isinstance(spec.get("package"), str) else dep
                 deps.add(dep)
-                if isinstance(spec, dict) and isinstance(spec.get("path"), str):
+                if isinstance(spec.get("path"), str):
                     unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
-                elif isinstance(spec, dict) and isinstance(spec.get("git"), str):
+                elif isinstance(spec.get("git"), str):
                     unit["path_dependencies"].append({"name": dep, "path": "", "git": spec["git"]})
     unit["dependencies"] = sorted(deps)
     workspace = data.get("workspace") if isinstance(data.get("workspace"), dict) else {}
@@ -469,11 +499,9 @@ def _gradle_settings(inv, rel, text):
     name = re.search(r"""rootProject\.name\s*=\s*['"]([^'"]+)['"]""", text)
     unit = _unit(rel, "gradle-build", name.group(1) if name else None)
     members = []
-    for block in re.findall(r"\binclude\s*\(?([^)\n]+)\)?", text):
+    for block in re.findall(r"\binclude\b\s*\(?([^)\n]+)\)?", text):
         for project in re.findall(r"""['"]:?([^'"]+)['"]""", block):
             members.append(project.replace(":", "/"))
-    for build in re.findall(r"""includeBuild\s*\(?\s*['"]([^'"]+)['"]""", text):
-        members.append(build)
     unit["members"] = members
     return [unit]
 
@@ -486,14 +514,15 @@ def _gradle_build(inv, rel, text):
 
 
 def _sln(inv, rel, text):
-    units = []
+    units, members = [], []
     for name, path in re.findall(r"""Project\("\{[^}]+\}"\)\s*=\s*"([^"]+)",\s*"([^"]+)\""""
                                  , text):
         posix = _posix(path)
         if posix.lower().endswith((".csproj", ".fsproj", ".vbproj")):
+            members.append(_dirname(posix))
             units.append(_unit(_join(_dirname(rel), posix), "dotnet-project", name,
                                directory=_dirname(_join(_dirname(rel), posix)), declared_by=rel))
-    return [_unit(rel, "dotnet-solution", PurePosixPath(rel).stem, members=[u["directory"] for u in units])] + units
+    return [_unit(rel, "dotnet-solution", PurePosixPath(rel).stem, members=members)] + units
 
 
 def _msbuild_project(inv, rel, text):
@@ -521,7 +550,8 @@ def _composer(inv, rel, text):
         raise ValueError("not an object")
     unit = _unit(rel, "composer-package", data.get("name") if isinstance(data.get("name"), str) else None)
     _described(unit, data)
-    unit["dependencies"] = sorted(set(_names(data.get("require"))) | set(_names(data.get("require-dev"))))
+    unit["dependencies"] = sorted(n for n in {*_names(data.get("require")), *_names(data.get("require-dev"))}
+                                  if "/" in n)  # `php`, `ext-json`: the platform, not a package
     for repo in data.get("repositories", []) if isinstance(data.get("repositories"), list) else []:
         if isinstance(repo, dict) and repo.get("type") == "path" and isinstance(repo.get("url"), str):
             unit["members"].append(repo["url"])
@@ -552,6 +582,8 @@ def _pubspec(inv, rel, text):
         table = data.get(key)
         if isinstance(table, dict):
             for dep, spec in table.items():
+                if isinstance(spec, dict) and "sdk" in spec:
+                    continue  # `sdk: flutter` comes with the toolchain
                 deps.add(dep)
                 if isinstance(spec, dict) and isinstance(spec.get("path"), str):
                     unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
@@ -588,6 +620,8 @@ def _mix(inv, rel, text):
         unit["members"] = [apps_path.group(1).rstrip("/") + "/*"]
     for dep, path in re.findall(r"""\{\s*:(\w+)\s*,[^}]*?path:\s*"([^"]+)\"""", text):
         unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], path)})
+    for dep in re.findall(r"\{\s*:(\w+)\s*,[^}]*?in_umbrella:\s*true", text):
+        unit["path_dependencies"].append({"name": dep, "path": None})
     unit["dependencies"] = sorted(set(re.findall(r"""\{\s*:(\w+)\s*,\s*"[~>=<\d]""", text)))
     return [unit]
 
@@ -623,7 +657,7 @@ def _sbt(inv, rel, text):
     for val, path in re.findall(r"""lazy\s+val\s+(\w+)\s*=\s*(?:\(\s*)?project(?:\s+in\s+file|\.in\s*\(\s*file)\s*\(\s*"([^"]+)"\s*\)""", text):
         unit = _unit(rel, "sbt-project", val, directory=_join(_dirname(rel), path))
         unit["path_dependencies"] = [{"name": dep, "path": None} for dep in re.findall(
-            rf"""lazy\s+val\s+{val}\b[^\n]*?dependsOn\s*\(([^)]*)\)""", text) for dep in re.findall(r"\w+", dep)]
+            rf"""lazy\s+val\s+{val}\b(?:(?!lazy\s+val)[\s\S])*?dependsOn\s*\(([^)]*)\)""", text) for dep in re.findall(r"\w+", dep)]
         units.append(unit)
     if not units:
         name = re.search(r"""\bname\s*:=\s*"([^"]+)\"""", text)
@@ -674,7 +708,7 @@ def _daodan_plugin(inv, rel, text):
 READERS: dict[str, tuple[str, object]] = {
     "package.json": ("npm", _package_json), "pnpm-workspace.yaml": ("pnpm", _pnpm_workspace),
     "lerna.json": ("lerna", _lerna), "deno.json": ("deno", _deno), "deno.jsonc": ("deno", _deno),
-    "project.json": ("nx", _nx_project), "pyproject.toml": ("python", _pyproject),
+    "project.json": ("nx", _nx_project), "angular.json": ("angular", _angular), "pyproject.toml": ("python", _pyproject),
     "setup.cfg": ("python", _setup_cfg), "setup.py": ("python", _setup_py), "Cargo.toml": ("cargo", _cargo),
     "go.mod": ("go", _go_mod), "go.work": ("go", _go_work), "pom.xml": ("maven", _pom),
     "settings.gradle": ("gradle", _gradle_settings), "settings.gradle.kts": ("gradle", _gradle_settings),
@@ -707,9 +741,10 @@ def _read_units(inventory: _Inventory) -> tuple[list[dict], list[dict]]:
             continue
         for unit in found:
             gaps.extend({"path": rel, **gap} for gap in unit.pop("gaps", []))
-            if unit["directory"] != "." and unit["directory"] not in inventory.directories:
+            absence = None if unit["directory"] in inventory.directories else inventory.absence(unit["directory"])
+            if absence not in (None, EMPTY_DIRECTORY):  # a folder of files the snapshot does not inventory is still the unit's
                 gaps.append({"kind": "directory_missing", "path": rel,
-                             "detail": f"{unit['name'] or unit['kind']} at {unit['directory']}: {inventory.absence(unit['directory'])}"})
+                             "detail": f"{unit['name'] or unit['kind']} at {unit['directory']}: {absence}"})
                 continue
             unit["ecosystem"] = ecosystem
             unit["line"] = _line_of(text, unit["name"]) if unit["name"] else None

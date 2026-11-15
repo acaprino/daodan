@@ -851,5 +851,46 @@
       ]
     ],
     "contains": []
+  },
+  "_angular": {
+    "files": {
+      "angular.json": "{\"projects\": {\"shop\": {\"root\": \"projects/shop\"}, \"kit\": {\"root\": \"projects/kit\"}}}",
+      "package.json": "{\"name\": \"hub\"}",
+      "projects/shop/main.ts": "export {};\n",
+      "projects/kit/package.json": "{\"name\": \"kit\", \"dependencies\": {\"remote\": \"1\"}}"
+    },
+    "units": [
+      [
+        "hub",
+        "angular-workspace+npm-package",
+        ".",
+        []
+      ],
+      [
+        "shop",
+        "angular-project",
+        "projects/shop",
+        []
+      ],
+      [
+        "kit",
+        "angular-project+npm-package",
+        "projects/kit",
+        [
+          "remote"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "hub",
+        "kit"
+      ],
+      [
+        "hub",
+        "shop"
+      ]
+    ]
   }
 }

@@ -37,13 +37,7 @@
       }
     }
   ],
-  "workspace": {
-    "tool": "maven",
-    "root": ".",
-    "members": [
-      "."
-    ]
-  },
+  "workspace": null,
   "toolchains": [
     {
       "tool": "java",

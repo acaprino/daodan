@@ -2024,7 +2024,22 @@
       }
     }
   ],
-  "workspace": null,
+  "workspace": [
+    {
+      "tool": "dotnet",
+      "root": "contrib/dotzlib",
+      "members": [
+        "contrib/dotzlib/DotZLib"
+      ]
+    },
+    {
+      "tool": "dotnet",
+      "root": "contrib/nuget",
+      "members": [
+        "contrib/nuget"
+      ]
+    }
+  ],
   "toolchains": [
     {
       "tool": "cmake",
