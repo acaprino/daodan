@@ -720,7 +720,7 @@ class RealContainerSmokeTest(unittest.TestCase):
                 subprocess.run([git, "-C", str(project), *args], check=True, capture_output=True)
         module = java if language == "java" else kotlin
         given = module.structure(pre_map(project, scratch / "snapshot"))  # what the stage hands the indexer
-        self.assertEqual(given, {"roots": {""}})
+        self.assertEqual(given["roots"], {""})  # with the toolchains the pre-map states, for the preparation
         before_project = tree_digest(project)
         started = time.monotonic()
         result = module.index(project, scratch / "work", engine=engine, memory=memory, **given)
