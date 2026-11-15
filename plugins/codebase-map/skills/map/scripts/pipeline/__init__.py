@@ -4,7 +4,8 @@ Each step has the same contract: `NAME`, `INPUTS` (what it reads, written by the
 (what it writes) and `run(context)`; it says what it does on the context's event bus (`pipeline.events`). The
 snapshot is the pipeline's input; the flows read the complete graph after it.
 
-1. `scan`: the module graph and the pre-map, the project's modules and technologies.
+1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
+   commands run in Daodan's container (`premap.container_runner`).
 2. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
 3. `union`: the graphs of the technologies as the complete graph. Until the dynamic step and the connection
    points exist, it is the store of the static graphs, and it says so with a gap per language.
@@ -49,11 +50,33 @@ class Scan:
             bus.progress(Scan.NAME, done, total, phase=status["source"],
                          message=f"{status['source']}: {status['state']}")
 
-        record = premap.ensure(manifest, report=source)
+        record = premap.ensure(manifest, report=source, runner=_runner(manifest))
         for gap in record.get("gaps", []):
             bus.emit("gap", gap.get("detail") or gap["kind"], step=Scan.NAME, gap=gap)
         return {"modules": graph.get("modules", 0), "graph": graph["graph"], "action": graph.get("action"),
                 "units": len(record["units"]), "gaps": len(record["gaps"]), "premap": str(premap.path(manifest))}
+
+
+def _runner(manifest: Path):
+    """`container_runner.runner` with the engine asked once per scan, as an analyzer asks it once per stage
+    (`container.find_engine`): the engine found goes to the first run, which ends it, and the next runs find their
+    own; without one, every model source gets the same `container.Gap` at once, with no second wait."""
+    import container
+    from premap import container_runner
+    asked: dict = {}
+
+    def run(commands: list[dict], toolchains: list[dict] = ()) -> list[dict]:
+        if not asked:
+            asked["once"] = True
+            try:
+                asked["engine"] = container.find_engine()
+            except container.Gap as gap:
+                asked["gap"] = gap
+        if "gap" in asked:
+            raise asked["gap"]
+        return container_runner.runner(manifest, engine=asked.pop("engine", None))(commands, toolchains)
+
+    return run
 
 
 class Analyze:

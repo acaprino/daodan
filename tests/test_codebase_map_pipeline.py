@@ -194,3 +194,73 @@ def test_an_analyzer_takes_the_units_of_the_kinds_it_declares():
         folders = given.get("roots", {unit["root"] for unit in given.get("units", [])})
         assert folders, module.ENTRY
 
+
+
+def _go_snapshot(tmp_path):
+    import shutil
+    project = tmp_path / "go"
+    shutil.copytree(FIXTURES / "go", project, ignore=shutil.ignore_patterns("index.scip", "expected.json"))
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    return manifest
+
+
+def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_found_once(tmp_path):
+    """The scan hands the pre-map the container runner: each model source's commands go to one container run,
+    the engine found once is given to the first run (it ends with that run), the others find their own."""
+    import container
+    import premap
+    from premap import container_runner
+    manifest = _go_snapshot(tmp_path)
+    engine = container.Engine("fake", ("fake",))
+    asked = []
+
+    def runner(manifest_given, engine=None, toolchains=()):
+        def run(commands, toolchains=()):
+            asked.append((commands[0]["tool"], engine))
+            return [{"returncode": 1, "stdout": "", "stderr": "", "root": str(tmp_path / "go")} for _ in commands]
+        return run
+
+    seen = []
+    with mock.patch.object(container, "find_engine", return_value=engine) as found, \
+            mock.patch.object(container_runner, "runner", side_effect=runner):
+        result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
+    assert "failed" not in result["scan"]
+    assert found.call_count == 1
+    assert [tool for tool, _ in asked] == ["daodan-enry", "renovate", "go"]
+    assert [given for _, given in asked] == [engine, None, None]
+    record = premap.ensure(manifest)
+    assert not [s for s in record["sources"] if s["state"] == "not_run"]
+    sources = {e["data"]["phase"] for e in seen if e["kind"] == "progress" and e["step"] == "scan"}
+    assert {s["source"] for s in record["sources"]} == sources  # one progress event per source
+
+
+def test_without_a_container_engine_the_model_sources_are_not_run_with_the_gap_and_no_wait(tmp_path):
+    """No engine answers: the engine is asked once, every model source is `not_run` at once with a gap that names
+    the missing engine and its remedy, nothing starts a container, and the next scan with an engine runs them."""
+    import container
+    import premap
+    manifest = _go_snapshot(tmp_path)
+    gap = container.Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
+    seen = []
+    with mock.patch.object(container, "find_engine", side_effect=gap) as found, \
+            mock.patch.object(container, "run_commands", side_effect=AssertionError("a container started")):
+        result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
+    assert "failed" not in result["scan"] and found.call_count == 1
+    record = premap.ensure(manifest)
+    model = [s for s in record["sources"] if s["state"] not in ("ran", "not_needed")]
+    assert {s["source"].split("@")[0] for s in model} == {"go-enry", "renovate", "go"}
+    assert {s["state"] for s in model} == {"not_run"}
+    named = [g for g in record["gaps"] if g["kind"] == "model_not_run"]
+    assert len(named) == 3 and all(gap.cause in g["detail"] and g["remedy"] == gap.remedy for g in named)
+    assert sum(1 for e in seen if e["kind"] == "gap" and gap.cause in e["message"]) == 3
+    assert premap.state(manifest, runner=lambda commands: [])["state"] == "stale"  # retried once one answers
+
+
+def test_the_tests_start_no_container():
+    """The suites write snapshots in this process and in `snapshot.py` subprocesses: the engine is off for both."""
+    import os
+    import container
+    assert os.environ.get("DAODAN_CONTAINER") == "off"
+    with pytest.raises(container.Gap, match="DAODAN_CONTAINER=off"):
+        container.find_engine()

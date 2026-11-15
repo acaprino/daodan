@@ -770,7 +770,7 @@ class FakeEngineTest(unittest.TestCase):
         (config / "contexts" / "meta" / "abc" / "meta.json").write_text('{"Name": "mine"}')
         before = tree_digest(config)
         path = os.pathsep.join([str(bin_dir), *([str(Path(self.git).parent)] if self.git else [])])  # Git reads it
-        with mock.patch.dict(os.environ, {"PATH": path, "DOCKER_CONFIG": str(config)}), \
+        with mock.patch.dict(os.environ, {"PATH": path, "DOCKER_CONFIG": str(config), "DAODAN_CONTAINER": ""}), \
                 mock.patch.object(container, "free_memory", return_value=64 * 2**30):
             found = container.find_engine()
             self.assertEqual(found.name, "docker")

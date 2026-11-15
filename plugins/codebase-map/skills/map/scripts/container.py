@@ -32,6 +32,7 @@ Daodan's. Otherwise, on Windows, Daodan runs Kiri at a pinned version in a WSL 2
 distribution of its own under the shared directory, never through Kiri's Windows app or
 installer. Kiri engines in one WSL VM share its network namespace and each rebuilds and
 removes the same nftables table, so Daodan's engine never starts beside another one.
+`DAODAN_CONTAINER=off` leaves every run without an engine, a gap at once (the test suites).
 
 Standard library only.
 """
@@ -242,7 +243,10 @@ def registered_distros() -> tuple[str | None, dict[str, str]]:
 
 
 def find_engine(*, own: bool = True) -> Engine:
-    """The user's engine that answers (`docker`, then `podman`), else Daodan's own; a Gap when none can run."""
+    """The user's engine that answers (`docker`, then `podman`), else Daodan's own; a Gap when none can run, and
+    at once with `DAODAN_CONTAINER=off` (the test suites, which start no container)."""
+    if os.environ.get("DAODAN_CONTAINER") == "off":
+        raise Gap("container engine off (DAODAN_CONTAINER=off)", "unset DAODAN_CONTAINER to run in a container")
     for name, probe in (("docker", ("version", "--format", "{{.Server.Os}}")),
                         ("podman", ("info", "--format", "{{.Host.Os}}"))):
         path = shutil.which(name)

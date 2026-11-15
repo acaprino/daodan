@@ -29,8 +29,9 @@ answers. The readers run first: a runner that takes `toolchains` gets the
 toolchains they state, and its preparation installs the ones each tool runs on
 at that version, so a model command runs on the project's Go or Node, not
 Daodan's; what it could not prepare rides on the answers (`gaps`) and becomes
-the source's gaps. Without a runner a model source is `not_run`, with a
-`model_not_run` gap. A source states only what it read: a command that did not answer leaves
+the source's gaps. Without a runner, or with one that finds no container engine
+(`container.Gap`), a model source is `not_run`, with a `model_not_run` gap, and
+the next scan with a runner runs it again. A source states only what it read: a command that did not answer leaves
 its facts absent, never empty, since an empty value would win the join.
 `RANK` is `model`, `reader` or `scanner`.
 
@@ -118,7 +119,7 @@ facts are literal in its files: the pre-map gives no `needs`.
 | Kind | Meaning |
 |---|---|
 | `source_unavailable`, `source_failed` | a source that could not run (`remedy`) or failed (`detail`); it states nothing |
-| `model_not_run` | a model source whose commands have not run yet: its facts are missing until a runner runs them |
+| `model_not_run` | a model source whose commands have not run yet: its facts are missing until a runner runs them; without a container engine, `detail` names the engine's cause and `remedy` how to have one |
 | `model_failed`, `model_partial` | a model command that failed for a folder or answered without resolution (`detail`: the command and its stderr) |
 | `superseded` | a unit a reader states in a folder where a model source answers for every unit of that kind (`covers`, today CMake's configured folders) and that the model does not state: dropped, the gap names it and its sources |
 | `not_executed` | a file read and not run: what it computes at run time is unknown |

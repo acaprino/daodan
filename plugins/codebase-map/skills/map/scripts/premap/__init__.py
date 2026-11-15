@@ -319,7 +319,16 @@ def _run(source, context: Context, runner, toolchains=()) -> tuple[dict, dict | 
                                        "detail": f"{len(commands)} model commands not run yet: they run in "
                                                  "Daodan's container, and their facts are missing until then"}]
             else:
-                results = runner(commands, toolchains=toolchains) if _takes_toolchains(runner) else runner(commands)
+                try:
+                    results = runner(commands, toolchains=toolchains) if _takes_toolchains(runner) else runner(commands)
+                except Exception as error:  # no container here (`container.Gap`): not run, retried when one answers
+                    if not (hasattr(error, "cause") and hasattr(error, "remedy")):
+                        raise
+                    status.update(state="not_run", commands=len(commands),
+                                  seconds=round(time.monotonic() - started, 3))
+                    return status, None, [{"kind": "model_not_run", "source": status["source"],
+                                           "detail": f"{len(commands)} model commands not run: {error.cause}",
+                                           "remedy": error.remedy}]
                 if len(results) != len(commands):
                     raise ValueError(f"the runner answered {len(results)} of {len(commands)} commands")
                 prepared = [g for r in results for g in r.get("gaps") or ()]
