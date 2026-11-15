@@ -4,11 +4,13 @@
 project's root with the report written to stdout and the log silenced: every manager reports the files it
 understands, and looks nothing up. `read` keeps, per package file, the toolchains only: the version-file
 managers, the engine fields of manifests, the `go` and `requires-python` directives, the runtime a Dockerfile,
-compose file or devcontainer starts from, and the constraints a file writes (Poetry's `python`, Composer's
-`php`, pub's `dart`). A constraint is kept only when the file writes its value (Renovate derives `npm` from a
-lockfile's format and repeats a root's `packageManager` on each member). A wrapper's entry for itself is not a
-toolchain: the Maven wrapper gives Maven's version, not its own. The packages a file declares are not the
-pre-map's: each analyzer's build tool resolves them.
+compose file or devcontainer starts from, the constraints a file writes (Poetry's `python`, Composer's
+`php`, pub's `dart`), and the packages that are the language or its build tool (`PACKAGE_TOOLS`: TypeScript in a
+manifest, Scala and sbt in an sbt build, the Kotlin Gradle plugins). A constraint is kept only when the file writes
+its value (Renovate derives `npm` from a lockfile's format and repeats a root's `packageManager` on each member), a
+package only with a version (a pnpm `catalog:` reference has none: the catalog states it). A wrapper's entry for
+itself is not a toolchain: the Maven wrapper gives Maven's version, not its own. The other packages a file declares
+are not the pre-map's: each analyzer's build tool resolves them.
 """
 from __future__ import annotations
 
@@ -28,6 +30,10 @@ IMAGE_MANAGERS = {"dockerfile", "docker-compose", "devcontainer"}
 DOCKER_RUNTIMES = {"node": "node", "python": "python", "golang": "go", "rust": "rust", "ruby": "ruby",
                    "openjdk": "java", "eclipse-temurin": "java", "amazoncorretto": "java", "maven": "maven",
                    "gradle": "gradle"}
+PACKAGE_TOOLS = (  # (manager, package, depType or None, tool): a package that is the language or its build tool
+    ("npm", "typescript", None, "typescript"), ("bun", "typescript", None, "typescript"),
+    ("sbt", "scala", None, "scala"), ("sbt", "sbt/sbt", None, "sbt"),
+    ("gradle", "org.jetbrains.kotlin.", "plugin", "kotlin"))  # a prefix ends with `.`: every Kotlin Gradle plugin
 CANON = {"nodejs": "node", "golang": "go", "rustc": "rust", "cpython": "python", "jdk": "java", "jre": "java",
          "temurin": "java", "openjdk": "java", "node.js": "node", "gradle-wrapper": "gradle",
          "hashicorp/terraform": "terraform"}
@@ -36,6 +42,14 @@ CANON = {"nodejs": "node", "golang": "go", "rustc": "rust", "cpython": "python",
 def _tool(name) -> str:
     value = str(name or "").strip().lower()
     return CANON.get(value, value)
+
+
+def _package_tool(manager: str, name: str, dep: dict) -> str | None:
+    if dep.get("skipReason") == "unspecified-version":
+        return None
+    return next((tool for m, package, dep_type, tool in PACKAGE_TOOLS if m == manager
+                 and (name == package or package.endswith(".") and name.startswith(package))
+                 and dep_type in (None, dep.get("depType"))), None)
 
 
 def commands(context):
@@ -71,12 +85,13 @@ def read(context, commands, results):
                 if not name or (manager in WRAPPER_SELF and name in WRAPPER_SELF):
                     continue
                 tool = _tool(name) if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES else (
-                    DOCKER_RUNTIMES.get(name) if manager in IMAGE_MANAGERS else None)
+                    DOCKER_RUNTIMES.get(name) if manager in IMAGE_MANAGERS else _package_tool(manager, name, dep))
                 if tool:
                     item = {"tool": tool, "declared_in": path}
                     if current is not None:
                         item["version"] = current
-                    toolchains.append(item)
+                    if item not in toolchains:  # the Kotlin plugins of one file share one version
+                        toolchains.append(item)
             known = {(t["tool"], t["declared_in"]) for t in toolchains}
             written = text(path)
             for key, value in (package_file.get("extractedConstraints") or {}).items():

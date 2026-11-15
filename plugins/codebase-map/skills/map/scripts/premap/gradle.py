@@ -1,0 +1,105 @@
+"""Source: Gradle's own model of a build, read by an init script while Gradle configures it.
+
+`commands` describes, for Daodan's container, `gradle help` with the init script `gradle_model.gradle` in each top
+folder holding a settings script (or, without one, a build script), with the Gradle Daodan carries. The init script
+applies to every build Gradle loads (the root build, included builds, buildSrc) and prints, once a build's settings
+are evaluated, its root folder and the tree of projects its settings made (each project's path, folder and build
+file); once its projects are configured, per project with a build file, the projects it depends on and only the
+Java and Kotlin targets the build sets, never a default or a convention (that would be Gradle's own JVM, or a
+toolchain lookup): the Java toolchain's `languageVersion`, `sourceCompatibility` and `targetCompatibility` of the
+`java` extension or of a Java compile task, a compile task's `options.release`, Kotlin's `compilerOptions.jvmTarget`
+of the extension or of a compile task. Configuring runs the project's settings and build scripts; the command
+reaches the registries (plugins, a toolchain resolver).
+
+`read` turns each project into a `gradle-project` unit named by its path (`:app:shared`; in an included build, its
+identity path, `:tooling:core`), rooted at its folder, with its build file as manifest (none for a project without
+one, which Gradle still makes) and the projects of its build it depends on as edges; each build is a `gradle`
+workspace with its projects' folders as members; each target is a `java` toolchain declared in the project's build
+file with the field (Gradle's model says which project a value applies to, not which script set it). A build whose
+settings did not evaluate is a `model_failed` gap; one that failed while configuring keeps its projects and is
+`model_partial`: their edges and targets are unknown.
+"""
+from __future__ import annotations
+
+import json
+import posixpath
+from pathlib import Path, PurePosixPath
+
+NAME, VERSION, RANK = "gradle", "9.9.1", "model"  # the Gradle of `indexers/jvm.py` GRADLE
+DOWNLOAD = (("https://services.gradle.org/distributions/gradle-9.9.1-bin.zip",
+             "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228"),)  # what the runner carries
+IMAGE = "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6"
+SETTINGS = ("settings.gradle", "settings.gradle.kts")
+BUILDS = ("build.gradle", "build.gradle.kts")
+SEPARATOR = "\x1e"  # starts each record the init script prints
+INIT = Path(__file__).with_name("gradle_model.gradle").read_text(encoding="utf-8")
+SCRIPT = 'i=$(mktemp) && printf %s "$1" > "$i" && exec gradle --no-daemon --console=plain -q --init-script "$i" help'
+
+
+def _folder(rel: str) -> str:
+    return PurePosixPath(rel).parent.as_posix() if "/" in rel else "."
+
+
+def _inside(rel: str, folder: str) -> bool:
+    return folder == "." or rel == folder or rel.startswith(folder + "/")
+
+
+def commands(context):
+    marks = [rel for rel in context.inventory.files if PurePosixPath(rel).name in SETTINGS + BUILDS]
+    folders = sorted({_folder(rel) for rel in marks}, key=lambda f: (f.count("/"), f))
+    tops = [f for f in folders if not any(o != f and _inside(f, o) for o in folders)]
+    return [{"tool": "gradle", "argv": ["sh", "-c", SCRIPT, "gradle", INIT], "cwd": top,
+             "env": {"GRADLE_OPTS": "-Xmx512m", "LC_ALL": "C.UTF-8"}, "network": "registries"}
+            for top in tops] or None
+
+
+def _name(build: str | None, path: str) -> str:
+    """A project's identity path: in an included build, prefixed by the build's name."""
+    return path if build is None else f":{build}{'' if path == ':' else path}"
+
+
+def read(context, commands, results):
+    units, workspaces, toolchains, gaps, seen, version = {}, [], [], [], set(), None
+    for command, result in zip(commands, results):
+        root = result.get("root") or "/"
+
+        def rel(path: str) -> str | None:
+            value = posixpath.relpath(posixpath.normpath(path), root)
+            return None if value.startswith("..") else value
+
+        records = [json.loads(line[1:]) for line in (result["stdout"] or "").split("\n") if line.startswith(SEPARATOR)]
+        builds = [r for r in records if r["kind"] == "build"]
+        detail = (result["stderr"] or "").strip()[-400:]
+        if not builds:
+            gaps.append({"kind": "model_failed", "path": command["cwd"], "detail": f"gradle settings: {detail}"})
+            continue
+        if result["returncode"] != 0:
+            gaps.append({"kind": "model_partial", "path": command["cwd"],
+                         "detail": f"gradle configure failed: the edges and Java targets are unknown: {detail}"})
+        for build in builds:
+            version = version or build["gradle"]
+            build_root = rel(build["root"])
+            if build_root is None or build_root in seen:
+                continue
+            seen.add(build_root)
+            members = []
+            for project in build["projects"]:
+                folder = rel(project["dir"])
+                if folder is None:
+                    continue
+                members.append(folder)
+                name = _name(build["name"] if build["nested"] else None, project["path"])
+                units[name] = {"name": name, "kind": "gradle-project", "root": folder,
+                               "manifest": rel(project["buildFile"]) if project["buildFileExists"] else None}
+            workspaces.append({"tool": "gradle", "root": build_root, "members": members})
+        for project in (r for r in records if r["kind"] == "project"):
+            unit, build_file = units.get(_name(project["build"], project["path"])), rel(project["buildFile"])
+            if unit is not None and result["returncode"] == 0:
+                unit["depends_on"] = [_name(project["build"], path) for path in project["uses"]]
+            for field, value in project["facts"].items():
+                item = {"tool": "java", "version": str(value), "declared_in": f"{build_file}#{field}"}
+                if build_file and result["returncode"] == 0 and item not in toolchains:
+                    toolchains.append(item)
+    facts = {key: value for key, value in (("units", list(units.values())), ("workspace", workspaces),
+                                           ("toolchains", toolchains)) if value}
+    return {"facts": facts, "gaps": gaps, **({"version": version} if version else {})}

@@ -1,0 +1,64 @@
+// Daodan's pre-map: Gradle's project tree once the settings are evaluated, then per configured project the
+// projects it depends on and the Java and Kotlin targets the build sets. Each record is a line starting with \u001e.
+import groovy.json.JsonOutput
+def emit(record) { println '\u001e' + JsonOutput.toJson(record) }
+def tree
+tree = { d -> [[path: d.path, dir: d.projectDir.absolutePath, buildFile: d.buildFile.absolutePath,
+                buildFileExists: d.buildFile.exists()]] + d.children.sort { it.path }.collectMany { tree(it) } }
+def explicitValue(property) {  // the value the build set, never a convention (Gradle's internal state of a Property)
+    try {
+        def field = org.gradle.api.internal.provider.AbstractProperty.getDeclaredField('state')
+        field.accessible = true
+        return field.get(property).isExplicit() ? property.getOrNull() : null
+    } catch (Throwable ignored) { return null }
+}
+def text(value) { value == null ? null : (value.hasProperty('target') ? value.target : value.toString()) }
+def compatibility(task, name) {  // a compile task's own field, null under the java extension's convention
+    try {
+        def field = org.gradle.api.tasks.compile.AbstractCompile.getDeclaredField(name)
+        field.accessible = true
+        return field.get(task)
+    } catch (Throwable ignored) { return null }
+}
+def jvmTarget(options) {
+    options != null && options.hasProperty('jvmTarget') ? text(explicitValue(options.jvmTarget)) : null
+}
+settingsEvaluated { s ->
+    emit([kind: 'build', root: s.rootDir.absolutePath, name: s.rootProject.name, nested: s.gradle.parent != null,
+          gradle: s.gradle.gradleVersion, projects: tree(s.rootProject)])
+}
+gradle.projectsEvaluated { g ->
+    def build = g.parent == null ? null : g.rootProject.name
+    g.rootProject.allprojects { p ->
+        if (!p.buildFile.exists()) { return }
+        def facts = [:]
+        def java = p.extensions.findByName('java')
+        if (java != null) {
+            facts['java.toolchain.languageVersion'] = text(explicitValue(java.toolchain.languageVersion))
+            ['sourceCompatibility', 'targetCompatibility'].each { name ->
+                def raw = 'raw' + name.capitalize()
+                facts['java.' + name] = java.hasProperty(raw) ? text(java."$raw") : null
+            }
+        }
+        p.tasks.withType(JavaCompile).each { t ->
+            facts['options.release'] = facts['options.release'] ?: text(explicitValue(t.options.release))
+            ['sourceCompatibility', 'targetCompatibility'].each { name -> facts[name] = facts[name] ?: compatibility(t, name) }
+        }
+        def kotlin = p.extensions.findByName('kotlin')
+        if (kotlin != null && kotlin.hasProperty('compilerOptions')) {
+            facts['kotlin.compilerOptions.jvmTarget'] = jvmTarget(kotlin.compilerOptions)
+        }
+        p.tasks.names.findAll { it ==~ /compile\w*Kotlin\w*/ }.collect { p.tasks.getByName(it) }.each { t ->
+            if (t.hasProperty('compilerOptions')) {
+                facts['compilerOptions.jvmTarget'] = facts['compilerOptions.jvmTarget'] ?: jvmTarget(t.compilerOptions)
+            }
+        }
+        def uses = [] as SortedSet
+        p.configurations.each { c ->
+            c.dependencies.withType(org.gradle.api.artifacts.ProjectDependency).each { d -> uses << d.path }
+        }
+        uses.remove(p.path)
+        emit([kind: 'project', build: build, path: p.path, buildFile: p.buildFile.absolutePath,
+              uses: uses as List, facts: facts.findAll { it.value != null }])
+    }
+}
