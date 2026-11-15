@@ -620,11 +620,17 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
 
 
 def relative_to_root(path: Path, root: Path) -> str:
-    """POSIX path relative to the manifest root, or absolute when outside it."""
+    """
+    POSIX path relative to the manifest root, or absolute when outside it.
+
+    A path is named by where it stands. Callers pass a root and a target they
+    resolved, and paths walked from them: resolving again here named a link by
+    what it points to.
+    """
     try:
-        return path.resolve().relative_to(root).as_posix()
+        return path.relative_to(root).as_posix()
     except ValueError:
-        return path.resolve().as_posix()
+        return path.as_posix()
 
 
 def scope_record(perimeter: Perimeter, root: Path) -> dict:
@@ -638,6 +644,7 @@ def scope_record(perimeter: Perimeter, root: Path) -> dict:
         "git_ignore": perimeter.git_ignore,
         "skipped": {
             "dot_directories": [relative_to_root(path, root) for path in perimeter.dot_directories],
+            "links": [relative_to_root(path, root) for path in perimeter.links],
             "git_ignored": perimeter.git_ignored,
         },
     }

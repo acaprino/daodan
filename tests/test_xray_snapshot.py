@@ -677,6 +677,65 @@ class PerimeterTests(unittest.TestCase):
         skipped = self.manifest()["scope"]["skipped"]
         self.assertEqual(skipped["dot_directories"], [".github", "src/.cache"])
 
+    def link(self, rel: str, to, directory: bool = False) -> None:
+        path = self.project / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            os.symlink(to, path, target_is_directory=directory)
+        except OSError as error:
+            self.skipTest(f"filesystem/account cannot create a symlink: {error}")
+
+    def linked_project(self) -> list[str]:
+        """One link of each kind: to a file, to a folder, out of the project, to nothing."""
+        outside = write(self.tmp, "outside/secret.py", "TOKEN = 'outside'\n")
+        self.link("src/alias.py", "app.py")
+        self.link("shared", "src", directory=True)
+        self.link("src/leak.py", outside)
+        self.link("src/broken.py", "missing.py")
+        return ["shared", "src/alias.py", "src/broken.py", "src/leak.py"]
+
+    def test_a_link_is_named_as_left_out_and_never_read(self):
+        """
+        Git records a link as a link, not as what it points to. Read through,
+        a link to a file of the project gave one path twice, and a link out of
+        the project put a file from outside in the snapshot.
+        """
+        links = self.linked_project()
+        manifest = self.manifest()
+        self.assertEqual(sorted(manifest["files"]), ["src/app.py"])
+        self.assertEqual(manifest["metrics"]["files_read"], 1)
+        self.assertEqual(manifest["scope"]["skipped"]["links"], links)
+        code, out, err = run_script("scope", self.project, env=self.env)
+        self.assertEqual(code, 0, err)
+        self.assertEqual(json.loads(out)["scope"], manifest["scope"])
+
+    def test_a_project_with_links_writes_its_store(self):
+        import snapshot
+        from snapshot_store import open_snapshot
+        self.linked_project()
+        out = self.tmp / "snapshot.sqlite"
+        with mock.patch.dict(os.environ, self.env):
+            snapshot.write_snapshot(self.project, out)
+        with open_snapshot(out) as store:
+            self.assertEqual(list(store.iter_paths()), ["src/app.py"])
+
+    @unittest.skipUnless(os.name == "nt", "a junction is a Windows link")
+    def test_a_junction_is_a_link(self):
+        import _winapi
+        _winapi.CreateJunction(str(self.project / "src"), str(self.project / "shared"))
+        manifest = self.manifest()
+        self.assertEqual(sorted(manifest["files"]), ["src/app.py"])
+        self.assertEqual(manifest["scope"]["skipped"]["links"], ["shared"])
+
+    def test_a_path_found_another_way_is_outside_the_perimeter_when_it_crosses_a_link(self):
+        from tree_scope import Perimeter
+        self.linked_project()
+        with mock.patch.dict(os.environ, self.env):
+            perimeter = Perimeter(self.project)
+        self.assertTrue(perimeter.covers(self.project / "src/app.py"))
+        for rel in ("src/alias.py", "src/leak.py", "src/broken.py", "shared/app.py"):
+            self.assertFalse(perimeter.covers(self.project / rel), rel)
+
     def test_outside_a_repository_the_manifest_says_no_ignore_rule_applied(self):
         self.assertEqual(self.manifest()["scope"]["git_ignore"], "unavailable")
 

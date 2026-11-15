@@ -7,9 +7,10 @@ One rule, owned here, for every script that walks a tree:
 - what Git ignores, when the target is inside a work tree that does not
   ignore it and git answers;
 - every directory whose name starts with a dot;
-- dependency and build directories, by name.
+- dependency and build directories, by name;
+- every link, to a file or to a directory, whether or not its target exists.
 
-All three apply below the target. The target itself is analyzed as given, so
+All four apply below the target. The target itself is analyzed as given, so
 naming a dot directory is how its content gets a Codebase Map of its own. A dot file
 beside analyzed source is not a directory, and stays. A target that its work
 tree ignores, itself or through a directory above it, is not that work tree's:
@@ -20,6 +21,12 @@ campaign left its run records under `.daodan/` and its review under
 `.team-review/`; the next snapshot counted them as project files, and an
 incremental update of an untouched project asked for a full analysis.
 
+A link is a name for a place that is not there. Git records it as a link,
+never as what it points to. Read through, a link to a file of the project gave
+one path twice, and a link out of the project put a file from outside in the
+snapshot: a repository that tracks two tests as links into its documentation
+could not have its snapshot written.
+
 A script may read less than the perimeter. None reads more: a usage found in a
 file the snapshot never recorded is a citation no phase file can carry.
 
@@ -29,6 +36,7 @@ Standard library only.
 from __future__ import annotations
 
 import os
+import stat
 import subprocess
 from pathlib import Path
 from typing import Iterator
@@ -64,6 +72,19 @@ DEPENDENCY_DIRS = frozenset({
 _UNREPORTED = frozenset({".git", ".daodan"})
 
 GIT_TIMEOUT_SECONDS = 30
+
+# A Windows junction: a directory link that `lstat` does not report as a
+# symbolic link (IO_REPARSE_TAG_MOUNT_POINT).
+_JUNCTION = 0xA0000003
+
+
+def _is_link(path: Path) -> bool:
+    """True for a symbolic link or a junction, whether or not its target exists."""
+    try:
+        status = os.lstat(path)
+    except OSError:
+        return False
+    return stat.S_ISLNK(status.st_mode) or getattr(status, "st_reparse_tag", 0) == _JUNCTION
 
 
 def _key(relative: str) -> str:
@@ -115,9 +136,9 @@ class Perimeter:
     The part of one target a script may read.
 
     `walk` yields it; `covers` answers for a path found some other way, by a
-    glob or by a search tool. `dot_directories` and `git_ignored` say what a
-    walk left out, so that a run can declare it: an exclusion nobody reported
-    is how a stylesheet once went missing from every inventory.
+    glob or by a search tool. `dot_directories`, `links` and `git_ignored` say
+    what a walk left out, so that a run can declare it: an exclusion nobody
+    reported is how a stylesheet once went missing from every inventory.
     """
 
     def __init__(self, target: Path) -> None:
@@ -126,9 +147,11 @@ class Perimeter:
         # target it passed. Compared resolved, so a path that reached us
         # through a link or another spelling is still recognized.
         self.base = target if target.is_dir() else target.parent
+        self._given_base = Path(os.path.abspath(self.base))
         self._resolved_base = self.base.resolve()
         self._ignored_files, self._ignored_dirs, self.git_ignore = self._ask_git()
         self._dot: set[Path] = set()
+        self._links: set[Path] = set()
         self._ignored_seen: set[Path] = set()
 
     def _ask_git(self) -> tuple[frozenset[str], frozenset[str], str]:
@@ -184,6 +207,23 @@ class Perimeter:
             self._ignored_seen.add(path)
         return True
 
+    def _leaves_link(self, path: Path) -> bool:
+        """Asked last: a link another rule skips is reported by that rule."""
+        if not _is_link(path):
+            return False
+        self._links.add(path)
+        return True
+
+    def _crosses_link(self, given: Path) -> bool:
+        """True when a path below the base, as given, is a link or lies under one."""
+        for base in (self._given_base, self._resolved_base):
+            try:
+                parts = given.relative_to(base).parts
+            except ValueError:
+                continue
+            return any(_is_link(base.joinpath(*parts[:depth])) for depth in range(1, len(parts) + 1))
+        return False
+
     def walk(self) -> Iterator[tuple[Path, list[str]]]:
         """Each directory inside the perimeter with its file names, in a stable order."""
         for dirpath, dirnames, filenames in os.walk(self.base):
@@ -193,18 +233,24 @@ class Perimeter:
             dirnames[:] = [
                 name for name in sorted(dirnames)
                 if not self._skips_directory(here / name, prefix + name, record=True)
+                and not self._leaves_link(here / name)
             ]
             yield here, [
                 name for name in sorted(filenames)
                 if not self._ignores_file(here / name, prefix + name, record=True)
+                and not self._leaves_link(here / name)
             ]
 
     def covers(self, path: Path) -> bool:
         """
         True when a file is inside the perimeter. A path outside the target is
-        not this perimeter's to judge, and passes.
+        not this perimeter's to judge, and passes. A path that names a link
+        below the target, or passes through one, is outside whatever it leads to.
         """
-        resolved = Path(path).resolve()
+        given = Path(os.path.abspath(path))
+        resolved = given.resolve()
+        if resolved != given and self._crosses_link(given):
+            return False
         try:
             parts = resolved.relative_to(self._resolved_base).parts
         except ValueError:
@@ -219,6 +265,11 @@ class Perimeter:
     def dot_directories(self) -> list[Path]:
         """The dot directories the walk pruned, outermost only, in a stable order."""
         return sorted(self._dot)
+
+    @property
+    def links(self) -> list[Path]:
+        """The links the walk left out, as they stand in the tree, in a stable order."""
+        return sorted(self._links)
 
     @property
     def git_ignored(self) -> int:
