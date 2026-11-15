@@ -181,9 +181,9 @@ def index_command(scip_clang: Path, compdb: Path, packages: Path, jobs: int) -> 
 
 def main(argv: list[str]) -> int:
     units, out, jobs = json.loads(Path(argv[1]).read_text(encoding="utf-8")), Path(argv[2]), int(argv[3])
-    out.mkdir(parents=True, exist_ok=True)
     shutil.rmtree(SCRATCH, ignore_errors=True)
     SCRATCH.mkdir(parents=True)
+    out.mkdir(parents=True, exist_ok=True)  # once the scratch folder is emptied: OUT_DIR may lie in it
     run(["tar", "-xzf", str(TOOLS / "cmake.tar.gz"), "-C", str(SCRATCH)], SCRATCH)
     cmake = str(next(SCRATCH.glob("cmake-*/bin/cmake"), Path("cmake")))
     scip_clang = SCRATCH / "scip-clang"

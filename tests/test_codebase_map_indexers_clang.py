@@ -135,6 +135,21 @@ def test_the_compilation_database_counts_the_commands_of_each_file(tmp_path):
     assert clang_run.compiled(compdb) == {"main.c": 1, "util.c": 2}
 
 
+def test_the_report_is_written_into_the_folder_the_caller_names_under_the_scratch_folder(tmp_path):
+    """`index()` names the report's folder under the script's scratch folder (`clang.OUT`): emptying the scratch
+    folder at the start leaves that folder for the report."""
+    scratch, tools, plan = tmp_path / "scratch", tmp_path / "tools", tmp_path / "units.json"
+    out = scratch / PurePosixPath(clang.OUT).relative_to(clang_run.SCRATCH.as_posix()).as_posix()
+    tools.mkdir()
+    (tools / "scip-clang").write_bytes(b"")
+    plan.write_text(json.dumps([{"root": "."}]), encoding="utf-8")
+    run, _calls = _runner(1, LINK_ERROR, RECORD)
+    with mock.patch.multiple(clang_run, SCRATCH=scratch, TOOLS=tools, run=run, package_map=lambda project: []):
+        assert clang_run.main(["clang_run.py", str(plan), str(out), "1"]) == 0
+    report = json.loads((out / "result.json").read_text(encoding="utf-8"))
+    assert [(unit["root"], unit["state"], unit["fetched"]) for unit in report["units"]] == [(".", "unavailable", [FMT])]
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # On the host: index()
 
