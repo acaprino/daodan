@@ -295,8 +295,6 @@ def test_adapter_traversal_runs_prepare_first_and_passes_only_what_the_module_de
 HOOKS = ("prepare", "same_range", "classify", "static", "refine", "missing", "tasks")  # the optional ones
 
 
-@pytest.mark.xfail(strict=True, reason="today's driver builds its Traversal itself and drops java.same_range and "
-                                       "kotlin.classify; clang-driver.patch makes it call adapter_traversal")
 def test_every_hook_an_indexer_defines_is_reached():
     """A hook an indexer module defines and nothing calls is a silent difference between the measured graph and
     the product's: each is reached through `adapter_traversal`, which the driver calls, or by the driver itself."""

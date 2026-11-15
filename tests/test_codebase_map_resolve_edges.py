@@ -2369,6 +2369,22 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual(binding["languages"]["go"]["indexer"]["name"], "scip-go")
         self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["go"]["state"], "fresh")
 
+    def test_the_stage_builds_its_traversal_from_every_hook_the_adapter_defines(self):
+        import code_graph
+        from indexers import go
+        _project, manifest = self.project("go")
+        calls, hops = [], go.hops
+        hooks = {"prepare": lambda index, snap: calls.append("prepare"),
+                 "hops": lambda index: calls.append("hops") or hops(index),
+                 "same_range": lambda index: calls.append("same_range") or {},
+                 "classify": lambda index: calls.append("classify") or (lambda key: None)}
+        self.assertEqual(set(hooks), {"hops", *code_graph.TRAVERSAL_HOOKS})
+        with mock.patch.multiple(go, create=True, **hooks):
+            result, _started, _indexed = self.run_stage(
+                "scip-go", manifest, lambda project_dir, work_dir, files=None: self.contract("go"))
+        self.assertEqual(result["languages"]["go"], {"state": "fresh", "engine": "scip-go@v0.2.9"})
+        self.assertEqual((calls[:2], sorted(calls[2:])), (["prepare", "hops"], ["classify", "same_range"]))
+
     def test_the_stage_keeps_the_entries_of_the_other_languages(self):
         project, manifest = self.project("go", self.PYTHON)
         engine = StubEngine({("use.py", 3): Definition(project / "app/tool.py", "run")})

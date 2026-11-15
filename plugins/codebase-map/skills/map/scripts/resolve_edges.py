@@ -4178,8 +4178,7 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
                 index = code_graph.Index(snap.root)
                 for path, prefix in result["indexes"]:
                     index.load(Path(path), prefix)
-                hops = module.hops(index)
-                traversal = code_graph.Traversal(index, snap, hops)
+                hops, traversal, _prepared = code_graph.adapter_traversal(module, index, snap)
                 static = module.static(index) if hasattr(module, "static") else None
                 # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
                 extra = (module.tasks(result.get("configs")),) if hasattr(module, "tasks") else ()
