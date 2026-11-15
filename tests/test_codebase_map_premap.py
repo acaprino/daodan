@@ -255,6 +255,30 @@ def test_go_reader_gives_the_nested_module_and_what_the_build_leaves_out(tmp_pat
     assert not gaps(record, "model_failed") and not gaps(record, "model_not_run")
 
 
+def test_a_dependency_on_a_unit_its_unit_depends_on_is_an_edge_not_a_dependency():
+    """`workspace:*`, a path, a member of the workspace: the edge says it once, in `depends_on`; the package
+    file that names the unit does not make it an external dependency too. A unit it does not depend on (Go
+    builds the published module) stays a dependency."""
+    record = {"units": [unit("packages/a", "npm-package", "@lrn/a"),
+                        unit("packages/b", "npm-package", "@lrn/b", depends_on=["@lrn/a"]),
+                        unit("_examples/use", "go-module", "example.com/use", depends_on=[])],
+              "dependencies": [{"unit": "@lrn/b", "name": "@lrn/a", "declared": "^2.0.0"},
+                               {"unit": "@lrn/b", "name": "ms", "declared": "^2.1.3"},
+                               {"unit": "example.com/use", "name": "example.com/app", "declared": "v1.2.0"}]}
+    assert [(d["unit"], d["name"]) for d in premap.external(record)] == [
+        ("@lrn/b", "ms"), ("example.com/use", "example.com/app")]
+
+
+def test_a_nested_go_module_without_a_replace_depends_on_the_published_module(tmp_path):
+    """Without a `replace` to the folder or a `go.work` that lists both, Go builds the nested module against the
+    module it requires as published, not against the folder beside it: a dependency, never an edge."""
+    _, _, record = build(tmp_path, "go_published", runner=replay("go_published"))
+    units = by_root(record, "go-module")
+    assert units["_examples/use"]["depends_on"] == []
+    [app] = [d for d in record["dependencies"] if d["unit"] == "example.com/use" and d["name"] == "example.com/app"]
+    assert (app["declared"], app["declared_in"]) == ("v1.2.0", "_examples/use/go.mod")
+
+
 def test_cargo_reader_gives_crates_and_the_build_script_as_a_fact(tmp_path):
     _, _, record = build(tmp_path, "rust_buildrs", runner=replay("rust_buildrs"))
     crates = by_root(record, "cargo-crate")
@@ -449,6 +473,169 @@ def test_a_dependency_declared_in_a_file_no_unit_owns_names_no_unit(tmp_path):
     found = {d["name"]: d for d in facts["dependencies"]}
     assert "unit" not in found["com.acme:lib"]
     assert found["com.acme:other"]["unit"] == ":"
+
+
+def _renovate(tmp_path, files: dict, package_files: dict) -> dict:
+    """What the Renovate reader keeps of a report, on a project of `files`."""
+    project = tmp_path / "proj"
+    for rel, text in files.items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8", newline="\n")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    report = {"repositories": {"local": {"packageFiles": package_files}}}
+    with open_snapshot(manifest) as store:
+        context = premap.Context(manifest, store)
+        return renovate.read(context, [], [{"returncode": 0, "stdout": json.dumps(report), "stderr": ""}])["facts"]
+
+
+def test_a_constraint_renovate_extracts_from_the_file_is_a_toolchain_not_a_package(tmp_path):
+    """Poetry's `python`, Composer's `php`, pub's `dart` and `flutter`, global.json's SDK: the same file states
+    them as constraints. Not packages a unit uses."""
+    files = {"pyproject.toml": '[tool.poetry]\nname = "app"\n[tool.poetry.dependencies]\npython = "^3.10"\nrich = "^13"\n'}
+    facts = _renovate(tmp_path, files, {"poetry": [{"packageFile": "pyproject.toml", "extractedConstraints": {"python": "^3.10"},
+                                                    "deps": [{"depName": "python", "currentValue": "^3.10", "depType": "dependencies"},
+                                                             {"depName": "rich", "currentValue": "^13", "depType": "dependencies"}]}]})
+    assert [d["name"] for d in facts["dependencies"]] == ["rich"]
+    assert {"tool": "python", "version": "^3.10", "declared_in": "pyproject.toml"} in facts["toolchains"]
+
+
+def test_an_entry_that_is_no_package_is_left_out(tmp_path):
+    """A Pipfile script, a deno task, a `replace` target, an import mapped to a path or a URL."""
+    files = {"Pipfile": "[scripts]\nstart = \"python -m app\"\n", "deno.json": '{"tasks": {"t": "deno test"}}\n',
+             "import_map.json": '{"imports": {"chalk": "npm:chalk@5.3.0", "@/": "./src/"}}\n',
+             "plugins/go.mod": "module x\n\ngo 1.22\n\nreplace y => ../..\n"}
+    facts = _renovate(tmp_path, files, {
+        "pipenv": [{"packageFile": "Pipfile", "deps": [{"depName": "start", "currentValue": "python -m app", "depType": "scripts"}]}],
+        "deno": [{"packageFile": "deno.json", "deps": [{"depName": "deno test", "depType": "tasks"}]},
+                 {"packageFile": "./import_map.json", "deps": [
+                     {"depName": "chalk", "currentValue": "5.3.0", "depType": "imports"},
+                     {"depName": "./src/", "depType": "imports"},
+                     {"depName": "https://esm.sh/ms@2.1.3", "depType": "imports"}]}],
+        "gomod": [{"packageFile": "plugins/go.mod", "deps": [{"depName": "../..", "depType": "replace"}]}]})
+    assert [(d["name"], d["declared_in"]) for d in facts["dependencies"]] == [("chalk", "import_map.json")]
+
+
+def test_a_constraint_no_file_writes_is_left_out_and_a_written_one_stays(tmp_path):
+    """Renovate derives `npm >=7` from the lockfile's format and repeats the root's `packageManager` on every
+    member: a toolchain is what a file writes."""
+    files = {"package.json": '{"name": "a", "engines": {"node": ">=18"}}\n', "web/package.json": '{"name": "w"}\n'}
+    facts = _renovate(tmp_path, files, {"npm": [
+        {"packageFile": "package.json", "extractedConstraints": {"node": ">=18", "npm": ">=7"}, "deps": []},
+        {"packageFile": "web/package.json", "extractedConstraints": {"npm": "10.8.2"}, "deps": []}]})
+    assert facts["toolchains"] == [{"tool": "node", "version": ">=18", "declared_in": "package.json"}]
+
+
+def test_the_maven_wrapper_gives_maven_and_not_its_own_version(tmp_path):
+    files = {"pom.xml": "<project/>\n", ".mvn/wrapper/maven-wrapper.properties": "distributionUrl=x\n"}
+    facts = _renovate(tmp_path, files, {"maven-wrapper": [{"packageFile": ".mvn/wrapper/maven-wrapper.properties", "deps": [
+        {"depName": "maven", "currentValue": "3.9.9"}, {"depName": "maven-wrapper", "currentValue": "3.3.2"}]}]})
+    assert [(t["tool"], t["version"]) for t in facts["toolchains"]] == [("maven", "3.9.9")]
+
+
+def test_parents_and_imported_boms_are_scoped_gradle_gets_no_scope_and_gemfile_ranges_lose_their_quotes(tmp_path):
+    files = {"pom.xml": "<project/>\n", "build.gradle": "\n", "Gemfile": 'gem "rails", "~> 8.0.1"\n'}
+    facts = _renovate(tmp_path, files, {
+        "maven": [{"packageFile": "pom.xml", "deps": [
+            {"depName": "org.sonatype.oss:oss-parent", "currentValue": "7", "depType": "parent"},
+            {"depName": "org.junit:junit-bom", "currentValue": "5.11.3", "depType": "import"}]}],
+        "gradle": [{"packageFile": "build.gradle", "deps": [
+            {"depName": "org.assertj:assertj-core", "currentValue": "3.26.3", "depType": "dependencies"}]}],
+        "bundler": [{"packageFile": "Gemfile", "deps": [{"depName": "rails", "currentValue": '"~> 8.0.1"'}]}]})
+    found = {d["name"]: d for d in facts["dependencies"]}
+    assert (found["org.sonatype.oss:oss-parent"]["scope"], found["org.junit:junit-bom"]["scope"]) == ("parent", "bom")
+    assert "scope" not in found["org.assertj:assertj-core"]
+    assert found["rails"]["declared"] == "~> 8.0.1"
+
+
+def test_bazel_helm_terraform_conan_and_deno_declare_packages(tmp_path):
+    files = {"MODULE.bazel": 'bazel_dep(name = "rules_cc", version = "0.0.9")\n', "conanfile.txt": "[requires]\nfmt/10.2.1\n",
+             "main.tf": 'terraform {\n  required_version = ">= 1.6.0"\n}\n', "charts/shop/Chart.yaml": "name: shop\n"}
+    facts = _renovate(tmp_path, files, {
+        "bazel-module": [{"packageFile": "MODULE.bazel", "deps": [{"depName": "rules_cc", "currentValue": "0.0.9", "depType": "bazel_dep"}]}],
+        "conan": [{"packageFile": "conanfile.txt", "deps": [{"depName": "fmt", "currentValue": "10.2.1", "depType": "requires"}]}],
+        "terraform": [{"packageFile": "main.tf", "deps": [
+            {"depName": "cloudposse/label/null", "currentValue": "0.25.0", "depType": "module"},
+            {"depName": "hashicorp/terraform", "currentValue": ">= 1.6.0", "depType": "required_version"}]}],
+        "helmv3": [{"packageFile": "charts/shop/Chart.yaml", "deps": [{"depName": "postgresql", "currentValue": "16.2.1"}]}]})
+    assert {d["name"] for d in facts["dependencies"]} == {"rules_cc", "fmt", "cloudposse/label/null", "postgresql"}
+    assert {"tool": "terraform", "version": ">= 1.6.0", "declared_in": "main.tf"} in facts["toolchains"]
+
+
+def test_a_package_is_named_as_its_build_tool_names_it(tmp_path):
+    """Cargo's `package =` names the crate the registry has, whatever key the manifest gives it; SwiftPM names a
+    package by the last part of its URL."""
+    files = {"Cargo.toml": '[package]\nname = "app"\n[dependencies]\nserde = { package = "serde_core", version = "1" }\n',
+             "Package.swift": "// swift-tools-version:5.9\n"}
+    facts = _renovate(tmp_path, files, {
+        "cargo": [{"packageFile": "Cargo.toml", "deps": [
+            {"depName": "serde", "packageName": "serde_core", "currentValue": "1", "depType": "dependencies"}]}],
+        "swift": [{"packageFile": "Package.swift", "deps": [
+            {"depName": "apple/swift-argument-parser", "packageName": "apple/swift-argument-parser",
+             "currentValue": 'from: "1.5.0"'}]}]})
+    assert sorted(d["name"] for d in facts["dependencies"]) == ["serde_core", "swift-argument-parser"]
+
+
+def test_a_file_pip_compile_wrote_is_no_declaration(tmp_path):
+    """Its pins are what pip-compile resolved: the requirements reader gives them as `resolved`."""
+    header = ("#\n# This file is autogenerated by pip-compile with Python 3.12\n# by the following command:\n#\n"
+              "#    pip-compile requirements.in\n#\n")
+    files = {"requirements.in": "django\n", "requirements.txt": header + "django==4.2.16\nasgiref==3.8.1\n"}
+    facts = _renovate(tmp_path, files, {"pip_requirements": [
+        {"packageFile": "requirements.in", "deps": [{"depName": "django"}]},
+        {"packageFile": "requirements.txt", "deps": [{"depName": "django", "currentValue": "==4.2.16"},
+                                                     {"depName": "asgiref", "currentValue": "==3.8.1"}]}]})
+    assert [(d["name"], d["declared_in"]) for d in facts["dependencies"]] == [("django", "requirements.in")]
+
+
+def test_a_version_written_in_a_central_file_completes_the_entry_of_the_unit_that_names_the_package(tmp_path):
+    """NuGet's Directory.Packages.props, a pnpm catalog, Cargo's [workspace.dependencies]: one entry per unit and
+    package, the unit from the file that names the package, `declared` and `declared_in` from the file that
+    writes the version. A version no unit is known to use stays as the file states it, with no unit."""
+    files = {"Directory.Packages.props": "<Project/>\n", "src/Api/Api.csproj": "<Project/>\n",
+             "pnpm-workspace.yaml": "packages:\n  - web\ncatalog:\n  ms: ^2.1.3\n", "package.json": '{"name": "root"}\n',
+             "web/package.json": '{"name": "web", "dependencies": {"ms": "catalog:"}}\n',
+             "Cargo.toml": '[workspace]\nmembers = ["core"]\n[workspace.dependencies]\nitoa = "1.0"\n',
+             "core/Cargo.toml": '[package]\nname = "core"\n[dependencies]\nitoa = { workspace = true }\n'}
+    facts = _renovate(tmp_path, files, {
+        "nuget": [{"packageFile": "Directory.Packages.props", "deps": [
+                       {"depName": "Serilog", "currentValue": "4.1.0", "depType": "nuget"},
+                       {"depName": "Unused", "currentValue": "1.0.0", "depType": "nuget"}]},
+                  {"packageFile": "src/Api/Api.csproj", "deps": [{"depName": "Serilog", "depType": "nuget"}]}],
+        "npm": [{"packageFile": "pnpm-workspace.yaml", "deps": [
+                     {"depName": "ms", "currentValue": "^2.1.3", "depType": "pnpm.catalog.default"}]},
+                {"packageFile": "web/package.json", "deps": [
+                     {"depName": "ms", "currentValue": "catalog:", "depType": "dependencies"}]}],
+        "cargo": [{"packageFile": "Cargo.toml", "deps": [
+                       {"depName": "itoa", "currentValue": "1.0", "depType": "workspace.dependencies"}]},
+                  {"packageFile": "core/Cargo.toml", "deps": [{"depName": "itoa", "depType": "dependencies"}]}]})
+    record = premap.join([part("renovate", "reader", **facts)])
+    found = {(d.get("unit"), d["name"]): d for d in premap.versions_from_tables(record)["dependencies"]}
+    assert (found[("Api", "Serilog")]["declared"], found[("Api", "Serilog")]["declared_in"]) == ("4.1.0", "Directory.Packages.props")
+    assert (found[("web", "ms")]["declared"], found[("web", "ms")]["declared_in"]) == ("^2.1.3", "pnpm-workspace.yaml")
+    assert (found[("core", "itoa")]["declared"], found[("core", "itoa")]["declared_in"]) == ("1.0", "Cargo.toml")
+    assert (None, "Unused") in found and "_table" not in found[(None, "Unused")]
+    assert set(found) == {("Api", "Serilog"), ("web", "ms"), ("core", "itoa"), (None, "Unused")}
+
+
+def test_the_module_graph_names_the_file_of_a_dependency_only_when_its_unit_has_one_manifest():
+    """modules.py knows the names of a unit's dependencies, not the file of each: with several manifests (deno.json
+    and an import map, pyproject.toml and setup.cfg) the file is left to a source that read it."""
+    graph = {"modules": [
+        _module("d", ".", "deno-package", "deno", "app", manifests=["deno.json", "import_map.json"], external=["chalk"]),
+        _module("p", "lib", "python-package", "python", "lib", manifests=["lib/setup.cfg"], external=["six"])], "edges": []}
+    found = {d["name"]: d for d in module_graph.facts(graph)["dependencies"]}
+    assert "declared_in" not in found["chalk"]
+    assert found["six"]["declared_in"] == "lib/setup.cfg"
+
+
+def test_the_same_toolchain_in_one_file_is_one_fact_with_or_without_a_fragment():
+    parts = [part("jvm-files", "reader", toolchains=[{"tool": "gradle", "version": "8.11.1",
+                                                      "declared_in": "gradle/wrapper/gradle-wrapper.properties#distributionUrl"}]),
+             part("renovate", "reader", toolchains=[{"tool": "gradle", "version": "8.11.1",
+                                                     "declared_in": "gradle/wrapper/gradle-wrapper.properties"}])]
+    [entry] = premap.join(parts)["toolchains"]
+    assert entry["sources"] == ["jvm-files", "renovate"]
 
 
 def test_renovate_reader_gives_declared_toolchains_and_ranges_on_their_unit(tmp_path):

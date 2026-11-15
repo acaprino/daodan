@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import posixpath
 from pathlib import Path, PurePosixPath
 import re
 import sys
@@ -114,6 +115,8 @@ def _same(facet: str, field: str, a, b) -> bool:
     # entries of the same root and kind, a dependency's within one unit.
     if (facet, field) in (("dependencies", "unit"), ("dependencies", "name"), ("units", "name")) and a and b:
         return _package(a) == _package(b)
+    if (facet, field) == ("toolchains", "declared_in") and a and b:  # a file and a setting of it are one place
+        return str(a).split("#", 1)[0] == str(b).split("#", 1)[0]
     return _canonical(a) == _canonical(b)
 
 
@@ -170,6 +173,37 @@ def join(parts: list[dict]) -> dict:
 
 
 # ------------------------------------------------------- what the join derives
+
+def versions_from_tables(record: dict) -> dict:
+    """A version a table writes (`_table`: a catalog, a central versions file, a workspace's dependency table)
+    completes each entry, in its folder or below, that names the package with no version: one entry per unit
+    and package, `declared` and `declared_in` from the table. A table entry no unit is known to use stays as the
+    file states it, with no unit."""
+    entries, tables = [], []
+    for item in record.get("dependencies", []):
+        (tables if item.pop("_table", False) else entries).append(item)
+    for table in tables:
+        folder = posixpath.dirname(table["declared_in"].split("#", 1)[0]) or "."
+        users = [item for item in entries if item.get("unit") and not item.get("declared")
+                 and _package(item["name"]) == _package(table["name"])
+                 and _inside(item.get("declared_in") or ".", folder)]
+        for item in users:
+            item.update(declared=table.get("declared"), declared_in=table["declared_in"])
+            item["sources"] = list(dict.fromkeys(item.get("sources", []) + table.get("sources", [])))
+        if not users:
+            entries.append(table)
+    return {**record, "dependencies": entries}
+
+
+def external(record: dict) -> list[dict]:
+    """The dependencies that are not edges: one that names a unit its unit `depends_on` is that edge, said once."""
+    edges = {}
+    for unit in record.get("units", []):
+        for ref in {unit.get("name"), unit["root"]} - {None}:
+            edges.setdefault(_package(ref), set()).update(_package(name) for name in unit.get("depends_on") or ())
+    return [d for d in record.get("dependencies", [])
+            if not (d.get("unit") and _package(d["name"]) in edges.get(_package(d["unit"]), ()))]
+
 
 def _inside(rel: str, root: str) -> bool:
     return root == "." or rel == root or rel.startswith(root + "/")
@@ -335,6 +369,8 @@ def derive(manifest: Path, store, sources=None, runner=None) -> dict:
     record.setdefault("units", [])
     for unit in record["units"]:
         unit.setdefault("depends_on", [])
+    if "dependencies" in record:
+        record["dependencies"] = external(versions_from_tables(record))
     record["units"].sort(key=lambda u: (u["root"], u["kind"], u.get("name") or ""))
     record["gaps"] = gaps + _run_facts(record, context) + _coverage(record, context)
     return record

@@ -147,5 +147,11 @@
     "packages/app/package.json": "{\n  \"name\": \"@acme/app\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\",\n  \"dependencies\": {\n    \"@acme/lib\": \"file:../lib\",\n    \"is-number\": \"git+https://github.com/jonschlinkert/is-number.git#7.0.0\"\n  }\n}\n",
     "packages/lib/index.js": "module.exports = { id: (x) => x };\n",
     "packages/lib/package.json": "{\n  \"name\": \"@acme/lib\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\"\n}\n"
+  },
+  "go_published": {
+    "go.mod": "module example.com/app\n\ngo 1.22\n",
+    "app.go": "package app\n\nconst Name = \"app\"\n",
+    "_examples/use/go.mod": "module example.com/use\n\ngo 1.22\n\nrequire example.com/app v1.2.0\n",
+    "_examples/use/use.go": "package use\n\nimport \"example.com/app\"\n\nvar N = app.Name\n"
   }
 }

@@ -119,10 +119,10 @@ def facts(graph: dict) -> dict:
                   "depends_on": sorted({ref[e["target"]] for e in edges if e["kind"] == "declares"
                                         and e["source"] == module["id"]})} for kind in kinds_of[module["id"]]]
         units += found
-        if found:  # once per module, in the manifest that declares them: angular.json declares none
-            declared_in = next((u["manifest"] for u in found if u["kind"] != "angular-project"),
-                               _manifest(module, "npm-package"))
-            dependencies += [{"unit": ref[module["id"]], "name": name, "declared_in": declared_in}
+        if found:  # once per module; the graph knows the names, the file only when the module has one manifest
+            declared_in = module["manifests"][0] if len(module["manifests"]) == 1 else None
+            dependencies += [{"unit": ref[module["id"]], "name": name,
+                              **({"declared_in": declared_in} if declared_in else {})}
                              for name in module.get("external") or []]
     workspaces: dict[str, dict] = {}
     for edge in edges:

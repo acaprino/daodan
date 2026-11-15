@@ -132,10 +132,14 @@ def read(context, commands, results):
         if broken:
             gaps.append({"kind": "model_failed", "path": mod, "detail": "go list: " + "; ".join(broken[:5])})
         requires = (written or {}).get("Require") or []
-        depends = sorted({r["Path"] for r in requires if r["Path"] in mains}
-                         | {r["Old"]["Path"] for r in (written or {}).get("Replace") or [] if r["Old"]["Path"] in mains})
+        # A module of the checkout is built from its folder only through a `replace` to a path, or when one
+        # `go.work` lists both; otherwise Go takes the version it requires as published: a dependency.
+        replaced = {r["Old"]["Path"] for r in (written or {}).get("Replace") or []
+                    if r["Old"]["Path"] in mains and not r["New"].get("Version")}
+        depends = sorted(replaced | {r["Path"] for r in requires
+                                     if r["Path"] in mains and mod in used and mains[r["Path"]] in used})
         for require in requires:
-            if require["Path"] in mains or require.get("Indirect"):
+            if require["Path"] in depends or require.get("Indirect"):
                 continue
             # go.mod says no scope for a requirement: only a `tool` directive is one (`dev`, below).
             item = {"unit": module["Path"], "name": require["Path"], "declared": require.get("Version"),

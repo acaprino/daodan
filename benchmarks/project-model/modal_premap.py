@@ -14,6 +14,10 @@ sides; they must match.
 
     python -m modal run benchmarks/project-model/modal_premap.py --store go_nested,rust_buildrs,uv_workspace
     python -m modal run benchmarks/project-model/modal_premap.py --score js,py,jvm,sys,mix,real --out OUT.json
+    python -m modal run benchmarks/project-model/modal_premap.py --score ... --out OUT.json --runs results/premap-runs
+
+`--runs` also keeps, per fixture, every model command with its answer (`results/premap-runs/<fixture>.json.gz`):
+`tools/premap_replay.py` replays them on this PC, so a change to a reader is scored without a new run.
 
 A family's fixtures share one container; each real repository (its clone from the archive `modal_native.py
 prepare` keeps on the volume `daodan-flow-results`) has a container of its own.
@@ -173,7 +177,7 @@ def score_fixtures(names: list) -> dict:
         out["score"][name] = {"base": scorer.score(expected, daodan_modules.convert(graph)),
                               "premap": scorer.score(expected, record), "sources": record["sources"],
                               "gaps": record["gaps"], "output": record,
-                              "languages_per_file": languages,
+                              "languages_per_file": languages, "runs": log,
                               "seconds": {"snapshot_and_graph": round(middle - started, 2),
                                           "premap": round(time.monotonic() - middle, 2)}}
     return out
@@ -216,7 +220,7 @@ def _languages(manifest: Path, log: list) -> dict:
 
 
 @app.local_entrypoint()
-def main(store: str = "", score: str = "", out: str = ""):
+def main(store: str = "", score: str = "", out: str = "", runs: str = ""):
     local = code_hash(Path(__file__), REPO / "plugins/codebase-map/skills/map/scripts/premap")
     print("code", local, flush=True)
     if store:
@@ -246,6 +250,14 @@ def main(store: str = "", score: str = "", out: str = ""):
             print("a container failed:", answer, flush=True)
             continue
         codes.add(answer["code"])
+        for name, result in answer["score"].items():
+            log = result.pop("runs", None)
+            if runs and log is not None:  # every model command with its answer, to replay the pre-map here
+                import gzip
+                target = Path(runs) / f"{name}.json.gz"
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(gzip.compress(json.dumps({"versions": answer["versions"], "runs": log}, indent=1,
+                                                            ensure_ascii=False).encode("utf-8") + b"\n", 9, mtime=0))
         results.update(answer["score"])
     print("remote code", sorted(codes), "same" if codes == {local} else "DIFFERENT", flush=True)
     Path(out).write_text(json.dumps(results, indent=1), encoding="utf-8")
