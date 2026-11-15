@@ -1859,7 +1859,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Origine: [github.com/square/javapoet](https://github.com/square/javapoet.git) al commit `b9017a9503b76e11b4ad4c1a9f050e2d29112cb0`, licenza Apache-2.0.
 - Linguaggi: Java.
 - Unità: maven-module.
-- Workspace: maven.
+- Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
   - java: 1.8 (`pom.xml#java.version`); 8 (`.github/workflows/build.yml`)
@@ -1994,7 +1994,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Origine: [github.com/madler/zlib](https://github.com/madler/zlib.git) al commit `51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf`, licenza Zlib.
 - Linguaggi: Ada, Assembly, C, C#, C++, CMake, DIGITAL Command Language, HTML, M4Sugar, Makefile, Module Management System, Pascal, Roff Manpage, Shell.
 - Unità: cmake-target (6), dotnet-project (2), make-target (78), msbuild-project (36).
-- Workspace: nessuno.
+- Workspace: dotnet.
 - File delle dipendenze: contrib/dotzlib/DotZLib/DotZLib.csproj, contrib/nuget/nuget.csproj.
 - Versioni dichiarate:
   - cmake: 2.4.4...3.15.0 (`CMakeLists.txt#cmake_minimum_required`)

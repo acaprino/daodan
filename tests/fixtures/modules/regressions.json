@@ -573,40 +573,6 @@
     ],
     "contains": []
   },
-  "gradle_included_build_is_not_a_member": {
-    "files": {
-      "settings.gradle.kts": "rootProject.name = \"hub\"\ninclude(\":lib\")\nincludeBuild(\"tools\")\n",
-      "lib/build.gradle.kts": "",
-      "tools/settings.gradle.kts": "rootProject.name = \"tools\"\n"
-    },
-    "units": [
-      [
-        "hub",
-        "gradle-build",
-        ".",
-        []
-      ],
-      [
-        "lib",
-        "gradle-project",
-        "lib",
-        []
-      ],
-      [
-        "tools",
-        "gradle-build",
-        "tools",
-        []
-      ]
-    ],
-    "declares": [],
-    "contains": [
-      [
-        "hub",
-        "lib"
-      ]
-    ]
-  },
   "composer_platform_requirement_is_not_a_package": {
     "files": {
       "composer.json": "{\"name\": \"acme/app\", \"require\": {\"php\": \"^8.2\", \"ext-json\": \"*\", \"remote/lib\": \"1\"}}"
@@ -716,6 +682,52 @@
       ]
     ],
     "declares": [],
+    "contains": []
+  },
+  "maven_build_plugins_are_dependencies": {
+    "files": {
+      "pom.xml": "<project><artifactId>app</artifactId><build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId><configuration><annotationProcessorPaths><path><groupId>org.apt</groupId><artifactId>processor</artifactId></path></annotationProcessorPaths></configuration><dependencies><dependency><groupId>org.tool</groupId><artifactId>helper</artifactId></dependency></dependencies></plugin></plugins><pluginManagement><plugins><plugin><groupId>org.managed</groupId><artifactId>only-managed</artifactId></plugin></plugins></pluginManagement></build></project>"
+    },
+    "units": [
+      [
+        "app",
+        "maven-module",
+        ".",
+        [
+          "org.apache.maven.plugins:maven-compiler-plugin",
+          "org.apt:processor",
+          "org.tool:helper"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
+  },
+  "projects_sharing_a_folder_stay_separate_units": {
+    "files": {
+      "vs/app.vcxproj": "<Project><ItemGroup><ProjectReference Include=\"lib.vcxproj\"/></ItemGroup></Project>",
+      "vs/lib.vcxproj": "<Project />"
+    },
+    "units": [
+      [
+        "app",
+        "msbuild-project",
+        "vs",
+        []
+      ],
+      [
+        "lib",
+        "msbuild-project",
+        "vs",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "app",
+        "lib"
+      ]
+    ],
     "contains": []
   }
 }

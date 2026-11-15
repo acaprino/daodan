@@ -892,5 +892,77 @@
         "shop"
       ]
     ]
+  },
+  "_slnx": {
+    "files": {
+      "Hub.slnx": "<Solution><Folder Name=\"/src/\"><Project Path=\"lib/Leaf.csproj\" /></Folder></Solution>",
+      "lib/Leaf.csproj": "<Project />"
+    },
+    "units": [
+      [
+        "Hub",
+        "dotnet-solution",
+        ".",
+        []
+      ],
+      [
+        "Leaf",
+        "dotnet-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [],
+    "contains": [
+      [
+        "Hub",
+        "Leaf"
+      ]
+    ]
+  },
+  "_vcxproj": {
+    "files": {
+      "app/app.vcxproj": "<Project><ItemGroup><ProjectReference Include=\"..\\lib\\lib.vcxproj\"/></ItemGroup></Project>",
+      "lib/lib.vcxproj": "<Project />"
+    },
+    "units": [
+      [
+        "app",
+        "msbuild-project",
+        "app",
+        []
+      ],
+      [
+        "lib",
+        "msbuild-project",
+        "lib",
+        []
+      ]
+    ],
+    "declares": [
+      [
+        "app",
+        "lib"
+      ]
+    ],
+    "contains": []
+  },
+  "_buf": {
+    "files": {
+      "buf.yaml": "version: v2\nmodules:\n  - path: proto\n    name: buf.build/acme/api\ndeps:\n  - buf.build/googleapis/googleapis\n",
+      "proto/a.proto": "syntax = \"proto3\";\n"
+    },
+    "units": [
+      [
+        "buf.build/acme/api",
+        "buf-module",
+        "proto",
+        [
+          "buf.build/googleapis/googleapis"
+        ]
+      ]
+    ],
+    "declares": [],
+    "contains": []
   }
 }

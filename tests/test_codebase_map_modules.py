@@ -150,6 +150,20 @@ def test_contract_setup_py_is_read_without_execution(tmp_path):
     assert not (project / "executed.txt").exists()
 
 
+def test_contract_a_unit_says_whether_a_file_names_it(tmp_path):
+    _, _, graph = build(tmp_path, {"Gemfile": 'gem "rails"\n', "web/package.json": '{"name":"web"}'})
+    assert {m["name"]: m["named"] for m in graph["modules"]} == {"proj": False, "web": True}
+
+
+def test_gradle_include_is_not_include_group(tmp_path):
+    _, _, graph = build(tmp_path, {
+        "settings.gradle.kts": 'pluginManagement { repositories { google { content { includeGroup("com.android") } } } }\n'
+                               'include(":lib")\n',
+        "lib/build.gradle.kts": ""})
+    assert relations(graph, "contains") == [["proj", "lib"]]
+    assert graph["gaps"] == []
+
+
 def test_regression_ambiguous_dependency_is_a_gap(tmp_path):
     _, _, graph = build(tmp_path, {"package.json": '{"name":"app","dependencies":{"core":"1"}}',
         "left/package.json": '{"name":"core"}', "right/package.json": '{"name":"core"}'})

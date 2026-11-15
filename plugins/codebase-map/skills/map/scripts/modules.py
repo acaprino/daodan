@@ -6,7 +6,9 @@ Three provenances, one record:
 - `build`: what the build system declares. Workspaces, packages, crates,
   Maven and Gradle modules, Go modules, .NET projects, Composer, Gems,
   pubspec, Swift, Mix, Deno, Nx, Angular, Lerna, CMake, Cabal and Stack, sbt,
-  Terraform, Zig, Julia and dune. Read programmatically, no heuristics,
+  Terraform, Zig, Julia, dune, buf and Visual Studio C++ projects. `named`
+  says whether a file names the unit or its folder does. Read
+  programmatically, no heuristics,
   status `confirmed`.
 - `declared`: `codebase-modules.json` at the project root, written by the
   project: name, responsibility and members (`path::Symbol`, files,
@@ -477,10 +479,12 @@ def _pom(inv, rel, text):
     if group and artifact:
         unit["aliases"] = [f"{group}:{artifact}"]
     deps = set()
-    for dep in root.findall(f"{ns}dependencies/{ns}dependency"):
+    plugins = root.findall(f"{ns}build/{ns}plugins/{ns}plugin")
+    used = [node for plugin in plugins for tag in ("dependency", "path") for node in plugin.iter(ns + tag)]
+    for dep in [*root.findall(f"{ns}dependencies/{ns}dependency"), *plugins, *used]:
         name = child(dep, "artifactId")
         if name:
-            dep_group = child(dep, "groupId")
+            dep_group = child(dep, "groupId") or ("org.apache.maven.plugins" if dep in plugins else None)
             if dep_group in ("${project.groupId}", "${pom.groupId}"):
                 dep_group = group
             deps.add(f"{dep_group}:{name}" if dep_group else name)
@@ -502,6 +506,8 @@ def _gradle_settings(inv, rel, text):
     for block in re.findall(r"\binclude\b\s*\(?([^)\n]+)\)?", text):
         for project in re.findall(r"""['"]:?([^'"]+)['"]""", block):
             members.append(project.replace(":", "/"))
+    for build in re.findall(r"""includeBuild\s*\(?\s*['"]([^'"]+)['"]""", text):
+        members.append(build)
     unit["members"] = members
     return [unit]
 
@@ -523,6 +529,22 @@ def _sln(inv, rel, text):
             units.append(_unit(_join(_dirname(rel), posix), "dotnet-project", name,
                                directory=_dirname(_join(_dirname(rel), posix)), declared_by=rel))
     return [_unit(rel, "dotnet-solution", PurePosixPath(rel).stem, members=members)] + units
+
+
+def _slnx(inv, rel, text):
+    projects = [_posix(node.get("Path", "")) for node in ET.fromstring(text).iter("Project")]
+    return [_unit(rel, "dotnet-solution", PurePosixPath(rel).stem,
+                  members=[_dirname(p) for p in projects if p.lower().endswith((".csproj", ".fsproj", ".vbproj"))])]
+
+
+def _vcxproj(inv, rel, text):
+    """One unit per project file: several share a folder, so the file is the unit's `slot`."""
+    unit = _unit(rel, "msbuild-project", PurePosixPath(rel).stem, slot=rel)
+    for node in ET.fromstring(text).iter():
+        if node.tag.endswith("ProjectReference") and node.get("Include"):
+            target = _join(unit["directory"], _posix(node.get("Include")))
+            unit["path_dependencies"].append({"name": PurePosixPath(target).stem, "path": _dirname(target), "slot": target})
+    return [unit]
 
 
 def _msbuild_project(inv, rel, text):
@@ -694,6 +716,14 @@ def _dune(inv, rel, text):
     return [_unit(rel, "dune-project", name.group(1) if name else None)]
 
 
+def _buf(inv, rel, text):
+    data = _yaml(text)
+    modules = [m for m in data.get("modules") or [] if isinstance(m, dict) and isinstance(m.get("path"), str)]
+    return [_unit(rel, "buf-module", m.get("name") if isinstance(m.get("name"), str) else None,
+                  directory=_join(_dirname(rel), m["path"]), dependencies=_names(data.get("deps")))
+            for m in modules or [{"path": ".", "name": data.get("name")}]]
+
+
 def _daodan_plugin(inv, rel, text):
     data = tomllib.loads(text)
     if data.get("schema") != "daodan/v1":
@@ -717,9 +747,10 @@ READERS: dict[str, tuple[str, object]] = {
     "pubspec.yaml": ("pub", _pubspec), "melos.yaml": ("melos", _melos), "Package.swift": ("swiftpm", _package_swift),
     "mix.exs": ("mix", _mix), "CMakeLists.txt": ("cmake", _cmake), "stack.yaml": ("stack", _stack),
     "build.sbt": ("sbt", _sbt), "build.zig.zon": ("zig", _zig), "Project.toml": ("julia", _julia),
-    "dune-project": ("dune", _dune), "plugin.toml": ("daodan", _daodan_plugin),
+    "dune-project": ("dune", _dune), "buf.yaml": ("buf", _buf), "plugin.toml": ("daodan", _daodan_plugin),
 }
-SUFFIX_READERS = {".sln": ("dotnet", _sln), ".csproj": ("dotnet", _msbuild_project),
+SUFFIX_READERS = {".sln": ("dotnet", _sln), ".slnx": ("dotnet", _slnx), ".csproj": ("dotnet", _msbuild_project),
+                  ".vcxproj": ("msbuild", _vcxproj), ".vcproj": ("msbuild", _vcxproj),
                   ".fsproj": ("dotnet", _msbuild_project), ".vbproj": ("dotnet", _msbuild_project),
                   ".gemspec": ("rubygems", _gemspec), ".cabal": ("cabal", _cabal), ".tf": ("terraform", _terraform)}
 ECOSYSTEMS = sorted({eco for eco, _ in [*READERS.values(), *SUFFIX_READERS.values()]})
@@ -937,9 +968,9 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
     # 1. Complementary manifests share a unit; independent build systems do not.
     units, unit_gaps = _read_units(inventory)
     gaps.extend(unit_gaps)
-    by_directory: dict[tuple[str, str], dict] = {}
+    by_directory: dict[tuple[str, str, str | None], dict] = {}
     for unit in sorted(units, key=lambda u: (u["directory"].count("/"), u["directory"], u["path"])):
-        key = (unit["directory"], _family(unit["ecosystem"]))
+        key = (unit["directory"], _family(unit["ecosystem"]), unit.get("slot"))
         merged = by_directory.get(key)
         if merged is None:
             by_directory[key] = merged = {
@@ -963,7 +994,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
         merged["path_dependencies"].extend(unit["path_dependencies"])
         merged["patterns"].extend((pattern, unit["path"]) for pattern in unit["members"])
     for key, merged in list(by_directory.items()):
-        directory, family = key
+        directory, family, _ = key
         excluded_members = {d for pattern, _ in merged["patterns"] if pattern.startswith("!")
                             for d in inventory.glob_directories(directory, pattern[1:])}
         for pattern, manifest in dict.fromkeys(p for p in merged["patterns"] if not p[0].startswith("!")):
@@ -974,12 +1005,12 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
             for member in found:
                 if member in excluded_members:
                     continue
-                member_key = (member, family)
+                member_key = (member, family, None)
                 if member_key not in by_directory:
                     if any(ch in pattern for ch in "*?["):
                         continue  # a glob selects the units it finds; it declares none
                     by_directory[member_key] = {
-                        "directory": member, "name": PurePosixPath(member).name, "aliases": [], "kinds": ["workspace-member"],
+                        "directory": member, "name": None, "aliases": [], "kinds": ["workspace-member"],
                         "ecosystems": [merged["ecosystems"][0]], "description": None, "manifests": [],
                         "evidence": [], "dependencies": set(), "path_dependencies": [], "patterns": [], "registered_by": []}
                 site = {"path": manifest, "line": _line_of(inventory.text(manifest), pattern)}
@@ -990,10 +1021,11 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
         basename = PurePosixPath(merged["directory"]).name
         if basename and basename != name and basename not in merged["aliases"]:
             merged["aliases"].append(basename)
-        nested = sorted({d for d, _ in by_directory if d != merged["directory"] and _inside(d, merged["directory"])})
+        nested = sorted({d for d, *_ in by_directory if d != merged["directory"] and _inside(d, merged["directory"])})
         excluded = [d for d in nested if not any(_inside(d, other) for other in nested if other != d)]
         modules.append({
-            "id": "", "name": name, "aliases": sorted(dict.fromkeys(merged["aliases"])), "provenance": "build",
+            "id": "", "name": name, "named": merged["name"] is not None,
+            "aliases": sorted(dict.fromkeys(merged["aliases"])), "provenance": "build",
             "kind": sorted(set(merged["kinds"]))[0] if len(set(merged["kinds"])) == 1 else "+".join(sorted(set(merged["kinds"]))),
             "location": "internal", "ecosystems": sorted(set(merged["ecosystems"])), "description": merged["description"],
             "responsibility": "", "members": [{"id": merged["directory"], "kind": "directory",
@@ -1034,7 +1066,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
             else:
                 status = "inferred"
             modules.append({
-                "id": "", "name": record["name"], "aliases": [], "provenance": provenance, "kind": record["kind"],
+                "id": "", "name": record["name"], "named": True, "aliases": [], "provenance": provenance, "kind": record["kind"],
                 "location": record["location"], "ecosystems": [], "description": None, "responsibility": record["responsibility"],
                 "members": members, "excluded": [], "manifests": [DECLARED_FILE] if provenance == "declared" else [],
                 "registered_by": [], "evidence": evidence, "dependencies": [], "path_dependencies": [],
@@ -1132,12 +1164,11 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
             record["evidence"].append(evidence)
 
     by_name: dict[tuple[str, str], set[str]] = {}
-    build_by_dir = {(m["members"][0]["path"], _family(m["ecosystems"][0])): m["id"]
-                    for m in modules if m["provenance"] == "build"}
+    build_by_key = {key: module["id"] for key, module in zip(by_directory, modules)}  # build modules come first, in this order
     # Query aliases (including directory basenames) are not package identities.
     for unit in units:
         family = _family(unit["ecosystem"])
-        module_id = build_by_dir[(unit["directory"], family)]
+        module_id = build_by_key[(unit["directory"], family, unit.get("slot"))]
         for name in [unit["name"], *unit["aliases"]]:
             if name:
                 by_name.setdefault((family, _dependency_name(name, family)), set()).add(module_id)
@@ -1154,7 +1185,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
                 remote.add(_dependency_name(item["name"], family))
                 continue
             if item["path"]:
-                target = build_by_dir.get((item["path"], family))
+                target = build_by_key.get((item["path"], family, item.get("slot")))
                 targets = {target} if target else set()
             else:
                 targets = by_name.get((family, _dependency_name(item["name"], family)), set())
@@ -1165,7 +1196,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
                 edge("declares", module["id"], next(iter(targets)), "confirmed", site)
             elif len(targets) > 1:
                 module["gaps"].append({"kind": "dependency_ambiguous", "detail": f"{item['name']}: several build units match"})
-            elif build_by_dir.get((item["path"], family)) != module["id"]:
+            elif build_by_key.get((item["path"], family, item.get("slot"))) != module["id"]:
                 module["gaps"].append({"kind": "dependency_unresolved",
                                        "detail": f"{item['name']} -> {item['path'] or 'no path'}: no build unit there"})
                 continue
@@ -1186,8 +1217,8 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
                 module["gaps"].append({"kind": "dependency_ambiguous", "detail": f"{name}: several build units match"})
         module["external"] = external
         for parent, site in module.pop("registrations"):
-            if parent in build_by_dir and build_by_dir[parent] != module["id"]:
-                edge("contains", build_by_dir[parent], module["id"], "confirmed", site)
+            if parent in build_by_key and build_by_key[parent] != module["id"]:
+                edge("contains", build_by_key[parent], module["id"], "confirmed", site)
     resolved_imports = snapshot.resolved_imports(store)
     for importer in sorted(resolved_imports):
         entry = None

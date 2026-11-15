@@ -39,29 +39,32 @@ library, or a regular expression over a file that is really a program
 
 | Ecosystem | Manifest | Unit kind | Reads | Parser |
 |---|---|---|---|---|
-| npm | `package.json` | `npm-package`, `npm-workspace` | name, description, `dependencies`, `devDependencies`, `peerDependencies`, `optionalDependencies`, `workspaces` | JSON |
+| npm | `package.json` | `npm-package`, `npm-workspace` | name, description, `dependencies`, `devDependencies`, `peerDependencies`, `optionalDependencies` (a `file:` or `link:` one by its path), `workspaces` | JSON |
 | pnpm | `pnpm-workspace.yaml` | `pnpm-workspace` | `packages` (negations skipped) | YAML |
 | lerna | `lerna.json` | `lerna-workspace` | `packages` | JSON |
-| deno | `deno.json`, `deno.jsonc` | `deno-package`, `deno-workspace` | name, `workspace` members | JSON |
+| deno | `deno.json`, `deno.jsonc` | `deno-package`, `deno-workspace` | name, `workspace` members, `imports` and the `importMap` file (local paths skipped) | JSON |
 | nx | `project.json` | `nx-project` | name, `implicitDependencies` | JSON |
-| python | `pyproject.toml` | `python-package`, `uv-workspace` | `project` or `tool.poetry` name and description, dependencies and optional groups, `tool.uv.workspace.members`, `tool.uv.sources` and poetry `path` dependencies | TOML |
-| python | `setup.cfg` | `python-package` | `metadata.name` | INI |
+| angular | `angular.json` | `angular-workspace`, one `angular-project` per project | `projects`: name and `root` | JSON |
+| python | `pyproject.toml` | `python-package`, `uv-workspace` | `project` or `tool.poetry` name and description, dependencies, optional groups and development groups (`dependency-groups`, PDM, Poetry, Hatch environments), `tool.uv.workspace.members`, `tool.uv.sources` and poetry `path` dependencies | TOML |
+| python | `setup.cfg` | `python-package` | `metadata.name`, `install_requires`, `extras_require` | INI |
 | python | `setup.py` | `python-package` | `name=` literal | regex |
-| cargo | `Cargo.toml` | `cargo-crate`, `cargo-workspace` | package name and description, `dependencies`, `dev-dependencies`, `build-dependencies` with `path`, `workspace.members` | TOML |
+| cargo | `Cargo.toml` | `cargo-crate`, `cargo-workspace` | package name and description, `dependencies`, `dev-dependencies`, `build-dependencies` with `path`, also under `target.*`, by their `package` name, `workspace.members` | TOML |
 | go | `go.mod` | `go-module` | `module`, `require`, `replace ... => ./local` | regex |
 | go | `go.work` | `go-workspace` | `use` directories | regex |
-| maven | `pom.xml` | `maven-module`, `maven-aggregator` | `artifactId`, `groupId` (own or parent) as alias `group:artifact`, description, dependency `artifactId`s, `modules` | XML |
+| maven | `pom.xml` | `maven-module`, `maven-aggregator` | `artifactId`, `groupId` (own or parent) as alias `group:artifact`, description, dependency `artifactId`s, build plugins with their dependencies and annotation processor paths, `modules` | XML |
 | gradle | `settings.gradle`, `settings.gradle.kts` | `gradle-build` | `rootProject.name`, `include`, `includeBuild` | regex |
 | gradle | `build.gradle`, `build.gradle.kts` | `gradle-project` | `project(":x")` references | regex |
 | dotnet | `*.sln` | `dotnet-solution`, one `dotnet-project` per listed project | `Project(...)` entries ending in `.csproj`, `.fsproj`, `.vbproj` | regex |
+| dotnet | `*.slnx` | `dotnet-solution` | `Project Path` entries ending in `.csproj`, `.fsproj`, `.vbproj` | XML |
 | dotnet | `*.csproj`, `*.fsproj`, `*.vbproj` | `dotnet-project` | `AssemblyName`, `ProjectReference`, `PackageReference` | XML |
-| composer | `composer.json` | `composer-package` | name, description, `require`, `require-dev`, `path` repositories | JSON |
+| msbuild | `*.vcxproj`, `*.vcproj` | `msbuild-project`, one per file | file name, `ProjectReference` | XML |
+| composer | `composer.json` | `composer-package` | name, description, `require`, `require-dev` (platform requirements such as `php` and `ext-*` skipped), `path` repositories | JSON |
 | rubygems | `*.gemspec` | `ruby-gem` | `.name`, `add_dependency`, `add_runtime_dependency`, `add_development_dependency` | regex |
 | bundler | `Gemfile` | `ruby-bundle` | `gem` names, `gem ... path:` | regex |
-| pub | `pubspec.yaml` | `dart-package`, `dart-workspace` | name, description, `dependencies` and `dev_dependencies` with `path`, `workspace` | YAML |
+| pub | `pubspec.yaml` | `dart-package`, `dart-workspace` | name, description, `dependencies` and `dev_dependencies` with `path` (`sdk:` ones skipped), `workspace` | YAML |
 | melos | `melos.yaml` | `melos-workspace` | name, `packages` | YAML |
 | swiftpm | `Package.swift` | `swift-package` | `Package(name:)`, `.package(path:)`, `.package(url:)` | regex |
-| mix | `mix.exs` | `mix-project`, `mix-umbrella` | `app:`, `apps_path:`, deps with `path:`, versioned deps | regex |
+| mix | `mix.exs` | `mix-project`, `mix-umbrella` | `app:`, `apps_path:`, deps with `path:` or `in_umbrella: true`, versioned deps | regex |
 | cmake | `CMakeLists.txt` | `cmake-project` | `project()`, `add_subdirectory()` | regex |
 | cabal | `*.cabal` | `cabal-package` | `name`, `build-depends` | regex |
 | stack | `stack.yaml` | `stack-workspace` | `packages` (string or `location`) | YAML |
@@ -70,14 +73,17 @@ library, or a regular expression over a file that is really a program
 | zig | `build.zig.zon` | `zig-package` | `.name`, dependencies with `.path` | regex |
 | julia | `Project.toml` | `julia-package` | name, `deps` | TOML |
 | dune | `dune-project` | `dune-project` | `(name x)` | regex |
+| buf | `buf.yaml` | `buf-module` | `modules` paths and names (the file's folder without them), `deps` | YAML |
 | daodan | `plugin.toml` | `daodan-plugin` | `schema = "daodan/v1"` (else ignored), name, description, `dependencies.required` and `.optional` | TOML |
 
 Manifests in one directory merge into one unit; the first name wins, the
-others become aliases, the directory name too. A workspace pattern (`*`
+others become aliases, the directory name too. Visual Studio C++ projects do
+not merge: each file is a unit. `named` is false when no manifest names the
+unit and its folder does. A workspace pattern (`*`
 inside a segment, `**` across) registers its member directories, with a
 `workspace-member` unit where no manifest exists. A nested unit is excluded
-from its parent's files. An unreadable manifest or a unit whose directory the
-snapshot does not hold is a graph gap.
+from its parent's files. An unreadable manifest or a unit whose directory is
+not in the tree is a graph gap.
 
 A project with no build manager, or one whose folders are split by function,
 technology or architectural role beyond what any manifest says, gets no build

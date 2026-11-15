@@ -99,6 +99,7 @@ Per ogni fixture conta la voce trovata dal migliore dell'insieme.
 | stack-analyser via Daodan | — | — | — | — | — | — | — | — | — | — | — | — | 27 +66 |
 | `modules.py` di Daodan | — | — | — | 197 (266) +4 | 70 +31 | — | — | 15 (19) +7 | 64 +486 | — | 508 (573) +332 | — | — |
 | `modules.py` rivisto (`daodan_modules_candidate`) | — | — | — | 200 (266) +4 | 81 +14 | — | — | 15 (20) +7 | 65 +1 | — | 574 (628) +52 | — | — |
+| `modules.py` con i lettori nuovi e i nomi dello schema (`daodan_modules_next`) | — | — | — | 298 (311) +4 | 113 | — | — | 23 (25) +7 | 99 | — | 664 (684) | — | — |
 | affected 1.0.0 | — | — | — | 59 (75) +3 | 24 +4 | — | — | — | — | — | — | — | — |
 | npm (Node 22.23.4) | — | — | — | 52 (53) | 1 | — | 1 (2) | 2 (5) | 2 | 18 | 365 (374) +3 | — | — |
 | Go 1.27.3 | — | — | — | 19 | 2 | 19 | 19 (22) | 1 | 3 | 23 | 51 (53) | — | — |

@@ -142,8 +142,8 @@ MAX_DIFF_HUNKS = 2_000
 DOC_EXTENSIONS = frozenset({
     ".bat", ".cabal", ".cfg", ".cmake", ".cmd", ".csproj", ".fsproj", ".gemspec", ".gql", ".gradle",
     ".graphql", ".hcl", ".ini", ".json", ".json5", ".jsonc", ".md", ".mk",
-    ".plist", ".props", ".proto", ".prisma", ".ps1", ".rst", ".sh", ".sln",
-    ".targets", ".tf", ".toml", ".txt", ".vbproj", ".wsdl", ".xml", ".xsd",
+    ".plist", ".props", ".proto", ".prisma", ".ps1", ".rst", ".sh", ".sln", ".slnx",
+    ".targets", ".tf", ".toml", ".txt", ".vbproj", ".vcproj", ".vcxproj", ".wsdl", ".xml", ".xsd",
     ".xsl", ".xslt", ".yaml", ".yml",
 })
 
