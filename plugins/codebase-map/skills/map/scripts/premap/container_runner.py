@@ -81,7 +81,7 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
             "java": True, "hosts": ("repo.scala-sbt.org", "scala.jfrog.io"), "memory": 3},
     "dotnet": {"files": preparation.NEEDS["dotnet"]["files"], "setup": preparation.NEEDS["dotnet"]["setup"],
                "env": {"DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1",
-                       "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1"}},
+                       "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1"}, "runs_on": ("dotnet",)},
     "bazel": {"files": [(*bazel.DOWNLOAD[0], "bazel")],
               "setup": [f"cp {IN}/bazel {T}/bin/bazel && chmod 755 {T}/bin/bazel"],
               "hosts": ("bcr.bazel.build", "github.com", "objects.githubusercontent.com",

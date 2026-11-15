@@ -36,7 +36,7 @@ PACKAGE_TOOLS = (  # (manager, package, depType or None, tool): a package that i
     ("gradle", "org.jetbrains.kotlin.", "plugin", "kotlin"))  # a prefix ends with `.`: every Kotlin Gradle plugin
 CANON = {"nodejs": "node", "golang": "go", "rustc": "rust", "cpython": "python", "jdk": "java", "jre": "java",
          "temurin": "java", "openjdk": "java", "node.js": "node", "gradle-wrapper": "gradle",
-         "hashicorp/terraform": "terraform"}
+         "hashicorp/terraform": "terraform", "dotnet-sdk": "dotnet"}
 
 
 def _tool(name) -> str:

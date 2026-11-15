@@ -109,7 +109,9 @@ def test_the_tools_version_line_takes_spaces_and_a_line_further_down_is_no_decla
 
 def test_the_target_framework_of_directory_build_props(tmp_path):
     record = build(tmp_path, "mix-dotnet-central", (project_files,))
-    assert toolchains(record, "dotnet", "c#") == [("dotnet", "net8.0", "Directory.Build.props#TargetFramework")]
+    # the framework a project targets is not the SDK that builds it (`global.json`, tool `dotnet`)
+    assert toolchains(record, "dotnet-target", "c#") == [
+        ("dotnet-target", "net8.0", "Directory.Build.props#TargetFramework")]
 
 
 def test_a_csproj_gives_each_target_framework_and_the_language_version(tmp_path):
@@ -118,9 +120,9 @@ def test_a_csproj_gives_each_target_framework_and_the_language_version(tmp_path)
     computed = ('<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup>\n    <TargetFramework>$(NetCurrent)'
                 '</TargetFramework>\n  </PropertyGroup>\n</Project>\n')
     record = build(tmp_path, "csproj", (project_files,), files={"lib/Lib.csproj": csproj, "app/App.csproj": computed})
-    assert toolchains(record, "dotnet", "c#") == [
-        ("c#", "12", "lib/Lib.csproj#LangVersion"), ("dotnet", "net8.0", "lib/Lib.csproj#TargetFrameworks"),
-        ("dotnet", "netstandard2.0", "lib/Lib.csproj#TargetFrameworks")]
+    assert toolchains(record, "dotnet-target", "c#") == [
+        ("c#", "12", "lib/Lib.csproj#LangVersion"), ("dotnet-target", "net8.0", "lib/Lib.csproj#TargetFrameworks"),
+        ("dotnet-target", "netstandard2.0", "lib/Lib.csproj#TargetFrameworks")]
     lang = next(t for t in record["toolchains"] if t["tool"] == "c#")
     assert lang["line"] == 4
     [gap] = [g for g in record["gaps"] if g["kind"] == "toolchain_undeclared"]
@@ -209,3 +211,22 @@ def test_a_failed_configure_keeps_the_projects_and_states_no_target(tmp_path):
     assert "toolchains" not in record
     gaps = [g for g in record["gaps"] if g["kind"].startswith("model_")]
     assert [(g["kind"], g["path"]) for g in gaps] == [("model_partial", ".")] and "jcenter" in gaps[0]["detail"]
+
+
+# ------------------------------------------------------------ CMake and Cargo
+
+def test_the_c_and_cxx_standard_cmake_applies_is_a_toolchain_where_the_target_is_defined(tmp_path):
+    """`set(CMAKE_C_STANDARD 90)` and `set(CMAKE_CXX_STANDARD 17)` at the top reach each target's compile group as
+    `languageStandard`; CMake's backtrace names the CMakeLists.txt that defines the target."""
+    from premap import cmake
+    record = build(tmp_path, "sys-c-macro-annotations", (cmake,), answers="../cmake/sys-c-macro-annotations")
+    assert [(t["tool"], t["version"], t["declared_in"], t["line"]) for t in record["toolchains"]
+            if t["tool"] in ("c", "c++")] == [("c", "90", "c/CMakeLists.txt#C_STANDARD", 1),
+                                              ("c++", "17", "cpp/CMakeLists.txt#CXX_STANDARD", 1)]
+
+
+def test_the_rust_edition_a_manifest_writes_is_a_toolchain_and_an_inherited_one_is_the_workspace_s(tmp_path):
+    from premap import cargo
+    record = build(tmp_path, "sys-rust-workspace", (cargo,))
+    assert toolchains(record, "rust-edition") == [("rust-edition", "2021", "Cargo.toml"),
+                                                  ("rust-edition", "2021", "crates/experimental/Cargo.toml")]

@@ -134,12 +134,14 @@ CASES = {  # tool -> (corpus fixture, the source), one project each
     "make": ("sys-make-plain", premap.make), "gradle": ("jvm-gradle-groovy-wrapper", premap.gradle),
     "maven": ("jvm-maven-multi-bom-profile", premap.maven), "sbt": ("jvm-sbt-two-subprojects", premap.sbt),
     "dotnet": ("mix-dotnet-central", premap.dotnet)}
+FIRST = {"dotnet": (premap.renovate,)}  # global.json pins the SDK: Renovate reads it, the preparation installs it
 
 
 @pytest.mark.skipif(not SMOKE, reason="set DAODAN_PREMAP_SMOKE=1 to run each source in a real container")
 @pytest.mark.parametrize("tool", sorted(CASES))
 def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, tool):
     name, source = CASES[tool]
+    sources = (*FIRST.get(tool, ()), source)  # what states the toolchain the tool runs on, then the tool
     engine = container.find_engine()
     held = lambda: (container.cli(engine, "ps", "-a", "-q").stdout, container.cli(engine, "volume", "ls", "-q").stdout)  # noqa: E731
     before = held()
@@ -147,11 +149,10 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
     shutil.copytree(CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.write_snapshot(project, manifest)
-    record = premap.write(manifest, sources=(source,), runner=container_runner.runner(manifest, engine=engine))
+    record = premap.write(manifest, sources=sources, runner=container_runner.runner(manifest, engine=engine))
     print(json.dumps({"tool": tool, "sources": record["sources"], "units": len(record["units"]),
                       "gaps": record["gaps"][:5]}, indent=1)[:3000])
-    [status] = record["sources"]
-    assert status["state"] == "ran", status
+    assert [s["state"] for s in record["sources"]] == ["ran"] * len(sources), record["sources"]
     assert not [g for g in record["gaps"] if g["kind"] in ("source_failed", "model_failed")]
     assert held() == before
 
@@ -234,6 +235,19 @@ def test_cargo_runs_on_the_rust_the_project_states_behind_mise():
     assert "install rust@1.80.0" in first["argv"][-1] and first["network"] == "registries"
     [line] = [x for x in preparation.toolchains([{"tool": "rust", "version": "1.80.0"}])["lines"] if " install " in x]
     assert "bin-paths rust@1.80.0" in line and " x rust@1.80.0 -- " in line  # rustup's proxies need mise's env
+
+
+def test_dotnet_runs_on_the_sdk_the_project_states(tmp_path, no_download):
+    _, manifest = manifest_of(tmp_path, {"global.json": '{"sdk": {"version": "8.0.404"}}\n'})
+    calls, fake = recorder()
+    stated = [{"tool": "dotnet", "version": "8.0.404", "declared_in": "global.json"},
+              {"tool": "dotnet-target", "version": "net8.0", "declared_in": "a.csproj#TargetFramework"}]
+    with mock.patch.object(container, "run_commands", fake):
+        answers = container_runner.runner(manifest)([command("dotnet")], toolchains=stated)
+    setup = calls[0]["commands"][0]["argv"][2]
+    assert " install dotnet@8.0.404 " in setup and "net8.0" not in setup
+    assert "dot.net" in calls[0]["registries"]  # where mise takes Microsoft's install script
+    assert "gaps" not in answers[0]  # the target framework is not a toolchain to install
 
 
 def test_the_jvm_build_tools_run_on_the_jdk_image_with_the_proxy_set_for_java(tmp_path, no_download):

@@ -13,7 +13,8 @@ import xml.etree.ElementTree as ET
 
 NAME, VERSION, RANK = "project-files", "daodan/premap/v1", "reader"
 TOOLS_VERSION = re.compile(r"//\s*swift-tools-version\s*:\s*([0-9]+(?:\.[0-9]+)*)")
-MSBUILD = {"TargetFramework": "dotnet", "TargetFrameworks": "dotnet", "LangVersion": "c#"}
+# The framework a project targets is `dotnet-target`: `dotnet` is the SDK that builds it (`global.json`).
+MSBUILD = {"TargetFramework": "dotnet-target", "TargetFrameworks": "dotnet-target", "LangVersion": "c#"}
 
 
 def _line(text: str, needle: str) -> int | None:

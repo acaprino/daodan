@@ -85,13 +85,16 @@ def read(context, commands, results):
             if registries is not None:
                 unit["registries"] = registries
             units.append(unit)
-            if package.get("rust_version"):
-                written = tomllib.loads(context.inventory.text(manifest)).get("package", {}).get("rust-version") \
-                    if manifest in context.inventory.headers else None
-                toolchain = {"tool": "rust", "version": package["rust_version"],
-                             "declared_in": ws_manifest if isinstance(written, dict) else manifest}
-                if toolchain not in toolchains:
-                    toolchains.append(toolchain)
+            declared = (tomllib.loads(context.inventory.text(manifest)).get("package", {})
+                        if manifest in context.inventory.headers else {})
+            for field, tool, value in (("rust-version", "rust", package.get("rust_version")),
+                                       ("edition", "rust-edition", package.get("edition"))):
+                written = declared.get(field)
+                if value and (written is not None or field == "rust-version"):  # an edition no file writes is 2015
+                    toolchain = {"tool": tool, "version": value,
+                                 "declared_in": ws_manifest if isinstance(written, dict) else manifest}
+                    if toolchain not in toolchains:
+                        toolchains.append(toolchain)
         ws_root = rel(data["workspace_root"])
         if (len(member_dirs) > 1 or member_dirs != [ws_root]) and not any(w["root"] == ws_root for w in workspaces):
             workspaces.append({"tool": "cargo", "root": ws_root, "members": member_dirs})

@@ -78,7 +78,8 @@ MISE = ("https://github.com/jdx/mise/releases/download/v2026.11.8/mise-v2026.11.
 MISE_HOSTS = {  # mise's tool -> the hosts its backend downloads from, beside mise's own version lists
     "node": ("nodejs.org",), "go": ("go.dev", "dl.google.com"), "python": GITHUB, "java": ("api.adoptium.net",
     *GITHUB), "ruby": GITHUB, "rust": ("static.rust-lang.org", "sh.rustup.rs"),
-    "dotnet": ("builds.dotnet.microsoft.com", "dotnetcli.azureedge.net"), "swift": ("download.swift.org",),
+    "dotnet": ("dot.net", "builds.dotnet.microsoft.com", "dotnetcli.azureedge.net"),
+    "swift": ("download.swift.org",),
     "zig": ("ziglang.org",), "bun": GITHUB, "deno": GITHUB, "cmake": GITHUB, "bazel": GITHUB, "uv": GITHUB,
     "maven": GITHUB, "gradle": ("services.gradle.org", *GITHUB)}
 MISE_OWN = ("mise-versions.jdx.dev", *GITHUB)

@@ -311,7 +311,8 @@ def test_cargo_reader_gives_crates_and_the_build_script_as_a_fact(tmp_path):
     assert crates["gen"]["config"]["build_script"] == "gen/build.rs" and crates["gen"]["source_roots"] == ["gen/src"]
     assert all(c["run"]["executes_project_code"] is False for c in crates.values())
     assert sorted(g["path"] for g in gaps(record, "not_executed")) == ["flags/build.rs", "gen/build.rs"]
-    assert [t["version"] for t in record["toolchains"] if t["declared_in"] == "flags/Cargo.toml"] == ["1.80"]
+    assert [(t["tool"], t["version"]) for t in record["toolchains"] if t["declared_in"] == "flags/Cargo.toml"] == [
+        ("rust", "1.80"), ("rust-edition", "2021")]  # the compiler it asks for and the language edition it writes
     assert [sorted(w["members"]) for w in record["workspace"] if w["root"] == "."] == [["flags", "gen"]]
     assert not gaps(record, "model_failed") and not gaps(record, "model_partial")
 
@@ -506,6 +507,15 @@ def test_a_constraint_renovate_extracts_from_the_file_is_a_toolchain_not_a_packa
                                                     "deps": [{"depName": "python", "currentValue": "^3.10", "depType": "dependencies"},
                                                              {"depName": "rich", "currentValue": "^13", "depType": "dependencies"}]}]})
     assert facts == {"toolchains": [{"tool": "python", "version": "^3.10", "declared_in": "pyproject.toml"}]}
+
+
+def test_the_sdk_of_global_json_is_the_dotnet_toolchain(tmp_path):
+    """Renovate names it `dotnet-sdk`: the tool the build runs on is `dotnet`, the name the preparation installs."""
+    files = {"global.json": '{"sdk": {"version": "8.0.404", "rollForward": "latestFeature"}}\n'}
+    facts = _renovate(tmp_path, files, {"nuget": [{"packageFile": "global.json", "deps": [
+        {"depName": "dotnet-sdk", "depType": "dotnet-sdk", "currentValue": "8.0.404"}],
+        "extractedConstraints": {"dotnet-sdk": "8.0.404"}}]})
+    assert facts == {"toolchains": [{"tool": "dotnet", "version": "8.0.404", "declared_in": "global.json"}]}
 
 
 def test_a_constraint_no_file_writes_is_left_out_and_a_written_one_stays(tmp_path):

@@ -59,6 +59,7 @@ MANAGERS = (("vcpkg", ("vcpkg.json",), VCPKG), ("conan", ("conanfile.txt", "cona
 COMPILER = re.compile(r"(?i)set\s*\(\s*CMAKE_(?:C|CXX)_COMPILER\s+\"?([^\s\")]+)")
 PROJECT = re.compile(r"(?im)^[ \t]*project[ \t]*\(")  # the call that makes a CMakeLists.txt a project's top
 PRESETS = "CMakePresets.json"
+STANDARDS = {"C": "c", "CXX": "c++"}  # a compile group's language, as a toolchain
 
 
 def _folder(rel: str) -> str:
@@ -210,6 +211,16 @@ def read(context, commands, results):
             config = {"type": target["type"], "sources": sources}
             includes = sorted({p for g in groups for i in g.get("includes", []) for p in [rel(i["path"], top)] if p})
             defines = sorted({d["define"] for g in groups for d in g.get("defines", [])})
+            graph = target.get("backtraceGraph") or {}
+            for group in groups:  # the language standard CMake applies, where the target that gets it is defined
+                standard, tool = (group.get("languageStandard") or {}), STANDARDS.get(group.get("language"))
+                node = graph["nodes"][standard["backtraces"][0]] if standard.get("backtraces") else None
+                if tool and standard.get("standard") and node is not None:
+                    where = rel(graph["files"][node["file"]], top)
+                    toolchain = {"tool": tool, "version": standard["standard"], "line": node.get("line"),
+                                 "declared_in": f"{where}#{group['language']}_STANDARD"}
+                    if toolchain not in toolchains:
+                        toolchains.append(toolchain)
             if includes:
                 config["include_dirs"] = includes
             if defines:
