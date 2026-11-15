@@ -27,13 +27,13 @@ def replay(name):
     return lambda commands: [table[json.dumps(command, sort_keys=True)] for command in commands]
 
 
-def build(tmp_path, name):
+def build(tmp_path, name, sources=(cmake,)):
     project = tmp_path / "proj"
     own = ANSWERS / name  # a project written for this source, beside its answers
     shutil.copytree(own if own.is_dir() else CORPUS / name, project, ignore=shutil.ignore_patterns("expected.json"))
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.write_snapshot(project, manifest)
-    return premap.write(manifest, sources=(cmake,), runner=replay(name))
+    return premap.write(manifest, sources=sources, runner=replay(name))
 
 
 def targets(record):
@@ -56,6 +56,16 @@ def test_each_target_is_a_unit_with_its_folder_sources_and_links(tmp_path):
     assert {"tool": "cmake", "version": "3.20", "declared_in": "CMakeLists.txt#cmake_minimum_required",
             "sources": ["cmake@4.4.5"]} in record["toolchains"]
     assert not [g for g in record["gaps"] if g["kind"].startswith("model_")]
+
+
+def test_beside_the_file_readers_the_project_folder_without_a_target_is_superseded(tmp_path):
+    """modules.py reads `project(calc)` at the top as a unit; CMake defines no target there."""
+    record = build(tmp_path, "sys-cmake-targets", sources=(*[s for s in premap.SOURCES if not hasattr(s, "commands")],
+                                                           cmake))
+    assert sorted((u["root"], u["name"]) for u in record["units"] if u["kind"] == "cmake-target") == [
+        ("app", "calc"), ("core", "calc_core")]
+    [gap] = [g for g in record["gaps"] if g["kind"] == "superseded"]
+    assert gap["path"] == "."
 
 
 def test_an_interface_library_is_a_unit_and_its_users_depend_on_it(tmp_path):

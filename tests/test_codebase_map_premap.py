@@ -148,6 +148,18 @@ def test_config_keys_join_one_by_one():
     assert "conflicts" not in only
 
 
+def test_a_source_that_covers_a_folder_supersedes_the_units_it_does_not_state_there():
+    model = {**part("cmake@4", "model", units=[unit("core", "cmake-target", "calc_core")]),
+             "covers": {"cmake-target": [".", "core"]}}
+    reader = part("modules.py@1", "reader", units=[unit(".", "cmake-target", "calc"), unit("core", "cmake-target", None),
+                                                   unit("tools", "cmake-target", "gen"), unit(".", "npm-package", "web")])
+    joined = premap.join([reader, model])
+    assert sorted((u["root"], u["kind"], u["name"]) for u in joined["units"]) == [
+        (".", "npm-package", "web"), ("core", "cmake-target", "calc_core"), ("tools", "cmake-target", "gen")]
+    [gap] = joined["superseded"]
+    assert gap["path"] == "." and "calc" in gap["detail"] and "cmake@4" in gap["detail"]
+
+
 def test_two_entries_of_one_source_never_merge():
     joined = premap.join([part("cmake@3", "model", units=[unit("lib", "cmake-target", "core"), unit("lib", "cmake-target", "cli")]),
                           part("reader@1", "reader", units=[unit("lib", "cmake-target", "core")])])

@@ -154,7 +154,9 @@ def _add(facet: str, entries: list[dict], item: dict, source: str) -> None:
 
 
 def join(parts: list[dict]) -> dict:
-    """The facts of `parts` (`{"source", "rank", "facts"}`) as one entry per fact; see the module's docstring."""
+    """The facts of `parts` (`{"source", "rank", "facts", "covers"}`) as one entry per fact; see the module's
+    docstring. `covers` (`{kind: [folders]}`) is where a source answers for every unit of a kind: a unit of that kind
+    and folder no such source states goes to `superseded`, a gap each."""
     order = sorted(range(len(parts)), key=lambda i: (RANKS.index(parts[i]["rank"]), i))
     out: dict[str, list[dict]] = {}
     for i in order:
@@ -167,6 +169,18 @@ def join(parts: list[dict]) -> dict:
     for entries in out.values():
         for entry in entries:
             entry.pop("_from")
+    covers = {(kind, root): part["source"] for part in parts for kind, roots in (part.get("covers") or {}).items()
+              for root in roots}
+    kept, superseded = [], []
+    for unit in out.get("units", []):
+        by = covers.get((unit["kind"], unit["root"]))
+        (superseded if by and by not in unit["sources"] else kept).append(unit)
+    if superseded:
+        out["units"] = kept
+        out["superseded"] = [{"kind": "superseded", "path": u["root"], "source": RULE,
+                              "detail": f"{u['kind']} {u.get('name')} of {', '.join(u['sources'])}: "
+                                        f"{covers[(u['kind'], u['root'])]} answers for this folder without it"}
+                             for u in superseded]
     return out
 
 
@@ -312,7 +326,8 @@ def _run(source, context: Context, runner) -> tuple[dict, dict | None, list[dict
     if result.get("version"):  # the version that answered, when it is not the pinned one
         status["source"] = f"{source.NAME}@{result['version']}"
     name = status["source"]
-    return (status, {"source": name, "rank": source.RANK, "facts": result.get("facts") or {}},
+    return (status, {"source": name, "rank": source.RANK, "facts": result.get("facts") or {},
+                     "covers": result.get("covers") or {}},
             [{**gap, "source": name} for gap in result.get("gaps") or []])
 
 
@@ -335,6 +350,7 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
               "binding": {"manifest": str(Path(manifest).resolve()), "logical_digest": logical_digest(store),
                           "root": store["root"]},
               "inputs_digest": _inputs(store, sources), "sources": statuses, **join(parts)}
+    gaps.extend(record.pop("superseded", []))
     record.setdefault("units", [])
     for unit in record["units"]:
         unit.setdefault("depends_on", [])

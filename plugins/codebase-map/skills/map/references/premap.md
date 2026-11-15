@@ -58,7 +58,8 @@ match to the loosest: units `root`+`kind`+`name`+`manifest`, then
 build systems in one folder are two workspaces); toolchains `tool`+`declared_in`+`version`, then `tool`+`declared_in`;
 languages `language`; excluded `path`. Unit names compare after PEP 503
 folding. Two entries of one source never merge.
-When two sources give a field different values, the value of the higher rank
+A model source may state the folders where it answers for every unit of a kind (`covers`): there a unit of that kind
+no such source states is dropped as a `superseded` gap. When two sources give a field different values, the value of the higher rank
 stays (between equal ranks, the earlier source in `SOURCES`) and the other goes
 to the entry's `conflicts` as `{field, value, source, kept_from}`; a field one
 source does not give is no conflict. `config` joins key by key
@@ -114,6 +115,7 @@ facts are literal in its files: the pre-map gives no `needs`.
 | `source_unavailable`, `source_failed` | a source that could not run (`remedy`) or failed (`detail`); it states nothing |
 | `model_not_run` | a model source whose commands have not run yet: its facts are missing until a runner runs them |
 | `model_failed`, `model_partial` | a model command that failed for a folder or answered without resolution (`detail`: the command and its stderr) |
+| `superseded` | a unit a reader states in a folder where a model source answers for every unit of that kind (`covers`, today CMake's configured folders) and that the model does not state: dropped, the gap names it and its sources |
 | `not_executed` | a file read and not run: what it computes at run time is unknown |
 | `config_outside_units` | a tsconfig no package.json, deno.json or project.json above it puts in a unit |
 | `toolchain_undeclared` | a toolchain version no file states as a literal: a Gradle build's Java, a pom property the pom does not define |

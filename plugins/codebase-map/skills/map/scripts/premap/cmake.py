@@ -8,8 +8,9 @@ command prints the reply files, each after a record separator line naming it. `r
 reports, interface libraries included (not `UTILITY` or imported ones), into a `cmake-target` unit named by the
 target: its folder, the CMakeLists.txt of that folder, the folders of its sources, the targets it links as
 edges, its type, sources, include folders, compile definitions and the presets that define it; a folder an
-outer configure reached keeps that configure's targets. `cmake_minimum_required` is a toolchain. A configure
-that failed is a `model_failed` gap; a CMakeLists.txt no configure reached, `model_partial`.
+outer configure reached keeps that configure's targets. `cmake_minimum_required` is a toolchain. The folders a
+configure reached are `covers`: a reader's `cmake-target` there that names no target CMake reports is dropped. A
+configure that failed is a `model_failed` gap; a CMakeLists.txt no configure reached, `model_partial`.
 """
 from __future__ import annotations
 
@@ -132,4 +133,5 @@ def read(context, commands, results):
                 gaps.append({"kind": "model_partial", "path": rel_path,
                              "detail": "no configure reached this CMakeLists.txt: its targets are unknown"})
     facts = {"units": list(units.values()), "toolchains": toolchains} if units or toolchains else {}
-    return {"facts": facts, "gaps": gaps, **({"version": version} if version else {})}
+    return {"facts": facts, "gaps": gaps, "covers": {"cmake-target": sorted(reached)},
+            **({"version": version} if version else {})}
