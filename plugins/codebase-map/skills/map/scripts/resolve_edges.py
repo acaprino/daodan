@@ -89,6 +89,9 @@ import semantic_store  # noqa: E402
 from source_reader import _binding, _no_links, _source_path  # noqa: E402
 from snapshot_store import _pack, _unpack, logical_digest, open_snapshot  # noqa: E402
 
+if __name__ == "__main__":  # one module whether run or imported: the adapters import it back
+    sys.modules.setdefault("resolve_edges", sys.modules[__name__])
+
 # The population an engine is asked about: the snapshot's own unresolved call
 # references, minus the builtins the lexical resolver declines to model and minus
 # the callees no project declaration is named after (`classify_reference`).
@@ -3957,13 +3960,9 @@ ENGINES = (
                "install uv, which gives the pass multilspy; Go and gopls install themselves", {}),
     # The indexers (docs/plans/2026-11-14-grafo-dall-indice.md). Their stage needs the snapshot's parser only;
     # a language moves to its indexer when it leaves the entry above that lists it.
-    EngineSpec("scip-go", ("go",), (), "tree_sitter", INDEXER_INSTALL, {}, "go"),
-    EngineSpec("scip-rust", ("rust",), (), "tree_sitter", INDEXER_INSTALL, {}, "rust"),
-    EngineSpec("scip-typescript", ("typescript", "javascript"), (), "tree_sitter", INDEXER_INSTALL, {}, "typescript"),
-    EngineSpec("scip-python", ("python",), (), "tree_sitter", INDEXER_INSTALL, {}, "python"),
-    EngineSpec("scip-java", ("java",), (), "tree_sitter", INDEXER_INSTALL, {}, "java", needs_container=True),
-    EngineSpec("scip-kotlin", ("kotlin",), (), "tree_sitter", INDEXER_INSTALL, {}, "kotlin", needs_container=True),
-    EngineSpec("scip-clang", ("c", "cpp"), (), "tree_sitter", INDEXER_INSTALL, {}, "clang", needs_container=True),
+    *(EngineSpec(analyzer.ENTRY, tuple(analyzer.LANGUAGES), (), "tree_sitter", INDEXER_INSTALL, {},
+                 analyzer.__name__.rsplit(".", 1)[-1], needs_container=analyzer.NEEDS_CONTAINER)
+      for analyzer in __import__("indexers").analyzers()),
 )
 # Each language's engine: the first entry that lists it.
 ENGINE_LANGUAGES = {language: spec for spec in reversed(ENGINES) for language in spec.languages}

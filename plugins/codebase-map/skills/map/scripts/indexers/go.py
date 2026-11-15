@@ -23,6 +23,9 @@ from pathlib import Path
 import code_graph
 
 VERSION = "v0.2.9"  # github.com/scip-code/scip-go
+# The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
+# its structure from, and whether its build runs only in a container (`indexers.analyzers`).
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-go", ("go",), frozenset({"go-module"}), False
 MIN_FREE = 512 * 2**20  # 335 MB peak on chi (benchmarks/inference-audit, 13 November 2026)
 PARAMETERS = {"parameter_declaration", "variadic_parameter_declaration"}
 
@@ -112,7 +115,7 @@ def _build(go: str, env: dict, partial: Path, work_dir: Path) -> None:
 def structure(record: dict) -> dict:
     """What `index` takes from the pre-map: the folders it runs in."""
     import premap
-    return {"roots": premap.roots(record, {"go-module"}, {"go"})}
+    return {"roots": premap.roots(record, UNIT_KINDS, {"go"})}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str]) -> dict:

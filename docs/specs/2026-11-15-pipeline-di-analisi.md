@@ -37,8 +37,8 @@ La pipeline finisce con il grafo completo; i flussi lo leggono dopo, fuori da es
 
 ### 2. Analyzer: un'istanza per tecnologia trovata
 
-- Ogni adattatore dichiara le tecnologie che serve, con i tipi di unità della pre-mappa (`go-module`, `gradle-project`, `cmake-target`, …), non con i linguaggi dei file.
-- Lo step 2 legge la pre-mappa e crea un'istanza per ogni tecnologia presente, con le sue unità: niente più tabella per linguaggio.
+- Ogni adattatore si dichiara da solo (`ENTRY`, `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`): i linguaggi che indicizza e i tipi di unità della pre-mappa da cui prende la struttura (`go-module`, `gradle-project`, `cmake-target`, …). Le voci del passaggio si costruiscono da queste dichiarazioni (`indexers.analyzers`), dal più leggero in memoria al più pesante: uno che esaurisce la memoria ferma quelli dopo.
+- Lo step 2 crea un'istanza per ogni tecnologia presente: parte quando lo snapshot ha file dei suoi linguaggi, anche fuori da ogni unità (il codice senza file di build non si perde), e prende le sue unità dalla pre-mappa.
 - Interfaccia comune: `structure(premap)`, `index(...)`, le correzioni del grafo opzionali di oggi (`hops`, `same_range`, `classify`, `static`, `refine`, `missing`, `tasks`).
 - I fogli di stile diventano un adattatore come gli altri. I motori per posizione restano solo dove nessun indicizzatore serve la tecnologia (Vue, Svelte), come adattatori; Jedi per Python si toglie.
 

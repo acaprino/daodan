@@ -378,6 +378,7 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
 
 
 BUILDS = ({"gradle-project"}, {"maven-module"})  # a Gradle build and a Maven reactor build the modules inside them
+BUILD_KINDS = frozenset().union(*BUILDS)
 
 
 def build_roots(record: dict) -> set[str]:

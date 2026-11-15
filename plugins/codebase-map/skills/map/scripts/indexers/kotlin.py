@@ -169,6 +169,9 @@ def refine(index, graph: dict, compiled: dict[str, str]) -> None:
 # task, the sources and classpath its Kotlin Analysis API indexer read (`kotlin-configs/`); the execution copies
 # those out. The index is read even when the build exits with an error, as long as scip-java wrote it.
 
+# The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
+# its structure from, and whether its build runs only in a container (`indexers.analyzers`).
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-kotlin", ("kotlin",), frozenset({"gradle-project", "maven-module"}), True
 MIN_FREE = 5 * 2**30  # the container's memory: 4,688 MB for all its processes on klaxon (13 November 2026)
 PREPARE = r'''step index "$SCIP_JAVA" index --output "$OUT/index.scip"
 [ -f "$OUT/index.scip" ]

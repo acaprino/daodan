@@ -48,6 +48,9 @@ from pathlib import Path
 import code_graph
 
 VERSION = "0.6.8"  # @sourcegraph/scip-python on npm
+# The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
+# its structure from, and whether its build runs only in a container (`indexers.analyzers`).
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-python", ("python",), frozenset({"python-project"}), False
 MIN_FREE = 1920 * 2**20  # 1,852 MB peak on phazly, 350 MB on python-semver (benchmarks/inference-audit, 14 November 2026)
 # scip-python builds `new RegExp(path.sep, 'g')` when it loads (`PythonEnvironment.ts`): with Windows' `\` it
 # stops there, before reading anything (0.6.8, 14 November 2026).

@@ -22,6 +22,9 @@ from pathlib import Path, PurePosixPath
 
 import code_graph
 
+# The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
+# its structure from, and whether its build runs only in a container (`indexers.analyzers`).
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-rust", ("rust",), frozenset({"cargo-crate"}), False
 MIN_FREE = 1280 * 2**20  # 1,180 MB peak on semver (benchmarks/inference-audit, 13 November 2026)
 # The engine pass's own rust-analyzer options: all features, no build script, no procedural macro.
 CONFIG = {"cargo": {"buildScripts": {"enable": False}, "features": "all"}, "procMacro": {"enable": False}}
@@ -137,7 +140,7 @@ def missing(index, rels: list[str]) -> dict:
 def structure(record: dict) -> dict:
     """What `index` takes from the pre-map: the folders it runs in."""
     import premap
-    return {"roots": premap.roots(record, {"cargo-crate"}, {"cargo"})}
+    return {"roots": premap.roots(record, UNIT_KINDS, {"cargo"})}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str]) -> dict:

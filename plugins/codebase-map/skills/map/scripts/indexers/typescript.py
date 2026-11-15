@@ -23,6 +23,9 @@ from pathlib import Path, PurePosixPath
 import code_graph
 
 VERSION = "0.5.2"  # @sourcegraph/scip-typescript on npm
+# The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
+# its structure from, and whether its build runs only in a container (`indexers.analyzers`).
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-typescript", ("typescript", "javascript"), frozenset({"npm-package"}), False
 MIN_FREE = 2304 * 2**20  # 2,264 MB peak on tududi (benchmarks/inference-audit, 13 November 2026)
 SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
 GRAMMARS = {".ts": "typescript", ".mts": "typescript", ".cts": "typescript", ".tsx": "tsx", ".js": "javascript",
@@ -157,7 +160,7 @@ def _tsconfig(mirror: Path, files: list[str], base: str | None = None) -> str | 
 def structure(record: dict) -> dict:
     """What `index` takes from the pre-map: the folders it runs in."""
     import premap
-    return {"roots": premap.roots(record, {"npm-package"}, {"npm", "pnpm", "lerna"})}
+    return {"roots": premap.roots(record, UNIT_KINDS, {"npm", "pnpm", "lerna"})}
 
 
 def _package_roots(roots: set[str]) -> list[str]:

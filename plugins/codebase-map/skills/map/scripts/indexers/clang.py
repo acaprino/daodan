@@ -353,6 +353,10 @@ def _folder(path: str | None) -> str:
 
 
 NATIVE = frozenset({CMAKE_UNIT, *OTHER_BUILDS, "msbuild-project"})  # the units that build C and C++
+# The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
+# its structure from, and whether its build runs only in a container (`indexers.analyzers`).
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATIVE, True
+
 
 
 def structure(record: dict) -> dict:

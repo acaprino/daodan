@@ -24,6 +24,9 @@ from pathlib import Path
 import code_graph
 from indexers import jvm
 
+# The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
+# its structure from, and whether its build runs only in a container (`indexers.analyzers`).
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-java", ("java",), jvm.BUILD_KINDS, True
 MIN_FREE = 2 * 2**30  # the container's memory: 1,360 MB for all its processes on javapoet (13 November 2026)
 
 

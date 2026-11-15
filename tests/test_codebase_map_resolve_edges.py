@@ -1149,7 +1149,7 @@ class MultiLanguageTests(unittest.TestCase):
                             "languages": {"python": {"state": "fresh"}}},
             "scip-typescript": {"available": False, "reason": "node and npm are needed",
                            "install": "install Node.js 18 or later with npm (https://nodejs.org)"}})
-        self.assertEqual(calls, ["scip-typescript", "scip-python"])
+        self.assertEqual(calls, ["scip-python", "scip-typescript"])  # the lightest first
         self.assertEqual(result["languages"]["python"], {"state": "fresh", "engine": "scip-python@0.6.8"})
         self.assertEqual(result["languages"]["typescript"]["state"], "unavailable")
         self.assertIn("Node.js", result["languages"]["typescript"]["install"])
@@ -1160,14 +1160,14 @@ class MultiLanguageTests(unittest.TestCase):
 
     def test_an_engine_that_runs_out_of_memory_starts_no_other(self):
         result, calls = self.run_whole_pass({
-            "scip-typescript": {"available": False, "reason": "JavaScript heap out of memory",
-                                "memory_exhausted": True},
-            "scip-python": {"available": True}})
-        self.assertEqual(calls, ["scip-typescript"])
-        self.assertEqual(result["languages"]["typescript"]["state"], "failed")
-        self.assertEqual(result["languages"]["python"],
-                         {"state": "failed", "engine": "scip-python",
-                          "reason": "not started: the scip-typescript engine ran out of memory"})
+            "scip-python": {"available": False, "reason": "MemoryError in scip-python",
+                            "memory_exhausted": True},
+            "scip-typescript": {"available": True}})
+        self.assertEqual(calls, ["scip-python"])
+        self.assertEqual(result["languages"]["python"]["state"], "failed")
+        self.assertEqual(result["languages"]["typescript"],
+                         {"state": "failed", "engine": "scip-typescript",
+                          "reason": "not started: the scip-python engine ran out of memory"})
 
     def test_an_engine_waits_for_free_memory(self):
         result, calls = self.run_whole_pass({"scip-python": None, "scip-typescript": None}, free=2**30)
