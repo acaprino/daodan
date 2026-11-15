@@ -28,6 +28,10 @@ Node engine through the `runner` the stage supplies (`css_sass`): Sass, Less, St
 and Astro, the TypeScript compiler over JS/TS/JSX/TSX, and the project's Tailwind, which says which class tokens are
 its utilities. `run` wires them; `graph` resolves and assembles; `rows` gives the edge store's rows.
 
+An analyzer of the engine pass (`indexers.analyzers`) with a graph of its own, no SCIP index: `index` runs it over
+the snapshot's files the stage hands it (`READS`) with the engines through `node_runner`, and the stage writes `rows`
+(`resolve_edges.index_stage`). Its entry is in the pass when the snapshot holds a file of `SNAPSHOT_LANGUAGES`.
+
 What the code loads together is an input, never discovered here: `units`, the units of code the pre-map states
 (the files and sheets each one loads together), beside the pages and bundles the graph's own imports state; and
 `remote`, the text of the sheets the markup links from a CDN, which the caller takes from the package registry.
@@ -115,6 +119,67 @@ def _sha(path: Path) -> str:
 # The files the graph reads, or lists as missing with the reason.
 SUFFIXES = STYLESHEETS + MARKUP + tuple(COMPONENTS) + css_typescript.SUFFIXES + tuple(UNREAD)
 MIN_FREE = 1536 * 2**20  # 1,458 MB peak of the TypeScript run on tududi (benchmarks/inference-audit, 14 November 2026)
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "stylesheet", (LANGUAGE,), frozenset(), False
+READS = SUFFIXES  # the stage hands `index` the snapshot's files with these suffixes
+SNAPSHOT_LANGUAGES = ("css", "markup")  # the snapshot's languages whose files bring this entry into the pass
+PINS = Path(__file__).resolve().with_name("css_engines")  # package.json and lockfile of the engines
+NODE_OPTIONS = "--max-old-space-size=6144"
+TIMEOUT = 3600
+
+
+def structure(record: dict) -> dict:
+    """What `index` takes from the pre-map: nothing yet. The graph runs once over the snapshot's files; the units
+    of code that load sheets together (`graph`'s `units`) are not in the pre-map."""
+    return {}
+
+
+def index(project_dir: Path, work_dir: Path, *, files: list[str]) -> dict:
+    """The analyzer's run: the graph over `files` outside dependency directories, its engines through
+    `node_runner`. `{"graph", "indexer"}`, the indexer's version a digest of every engine's (`versions`); without a
+    graph, `state` `unavailable` with `reason` and `install`."""
+    from . import runtime
+    project_dir = Path(project_dir).resolve()
+    files = [rel for rel in files
+             if not any(part in DEPENDENCY_DIRS or part.startswith(".") for part in rel.split("/"))]
+    try:
+        runtime.memory(ENTRY, MIN_FREE)
+        built = run(project_dir, node_runner(project_dir, Path(work_dir)), files)
+    except runtime.Unavailable as error:
+        return runtime.refused(ENTRY, None, error)
+    versions = built["indexer"]["version"]
+    return {"graph": built, "indexer": {**built["indexer"], "versions": versions,
+                                        "version": hashlib.sha256(versions.encode("utf-8")).hexdigest()[:12]}}
+
+
+def node_runner(project_dir: Path, work_dir: Path):
+    """The engines' runner (`css_sass`): Node at the pinned release and the engines `PINS` pins, each installed once
+    into the shared directory by the first run that needs them (`runtime.node`, `runtime.npm_lockfile`), then
+    `node <script> IN OUT` in the project's root, IN and OUT in `work_dir`. A run without data says why (`state`,
+    `reason`); an install that cannot happen raises `runtime.Unavailable`."""
+    import code_graph
+    import resolve_edges as rx
+    from . import runtime
+    project_dir, work_dir = Path(project_dir), Path(work_dir)
+    installed = {}
+
+    def runner(script, payload):
+        if not installed:
+            directory = runtime.node(project_dir)
+            installed.update(node=str(directory / rx.executable_name("node")),
+                             engines=str(runtime.npm_lockfile(project_dir, directory, "stylesheet-engines", PINS)),
+                             env=runtime.environment(directory, NODE_OPTIONS=NODE_OPTIONS))
+        work_dir.mkdir(parents=True, exist_ok=True)
+        settings, output = work_dir / f"{Path(script).stem}-in.json", work_dir / f"{Path(script).stem}-out.json"
+        settings.write_text(json.dumps({**payload, "engines": installed["engines"]}), encoding="utf-8")
+        output.unlink(missing_ok=True)
+        measured = code_graph.measured([installed["node"], str(script), str(settings), str(output)], str(project_dir),
+                                       installed["env"], TIMEOUT)
+        data = json.loads(output.read_text(encoding="utf-8")) if output.is_file() else None
+        if data is None:
+            measured.update(state="failed", reason=f"exit code {measured['returncode']}: "
+                                                   f"{(measured['stderr_tail'] or '').strip()[-300:]}")
+        return data, measured
+    return runner
 
 
 def walk(project_dir: Path) -> list[str]:
@@ -133,7 +198,7 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
     them."""
     project_dir = Path(project_dir).resolve()
     files = walk(project_dir) if files is None else files
-    own = index(project_dir, files)
+    own = parse(project_dir, files)
     sass = sass_sheets(runner, project_dir, files)
     less = less_sheets(runner, project_dir, files)
     stylus = engine_sheets(runner, css_stylus, "stylus", project_dir, files)
@@ -299,7 +364,7 @@ def sass_sheets(runner, project_dir: Path, files: list[str]) -> dict:
 
 # Reading: stylesheets and markup into records.
 
-def index(project_dir: Path, files: list[str] | None = None) -> dict:
+def parse(project_dir: Path, files: list[str] | None = None) -> dict:
     """Records of every stylesheet and HTML/EJS file: `node`, `ref`, `classes`, `hole` and `file`."""
     begun = time.time()
     project_dir = Path(project_dir)

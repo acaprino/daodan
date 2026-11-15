@@ -2591,14 +2591,16 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual({language: spec.name for language, spec in resolve_edges.ENGINE_LANGUAGES.items()},
                          {"python": "scip-python", "typescript": "scip-typescript", "javascript": "scip-typescript",
                           "vue": "typescript", "svelte": "typescript", "java": "scip-java", "kotlin": "scip-kotlin",
-                          "rust": "scip-rust", "go": "scip-go", "c": "scip-clang", "cpp": "scip-clang"})
+                          "rust": "scip-rust", "go": "scip-go", "c": "scip-clang", "cpp": "scip-clang",
+                          "stylesheet": "stylesheet"})
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container)
                     for spec in resolve_edges.ENGINES if spec.indexer}
         self.assertEqual(indexers, {
             "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", False),
             "scip-typescript": (("typescript", "javascript"), "typescript", False),
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
-            "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True)})
+            "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True),
+            "stylesheet": (("stylesheet",), "css", False)})
 
     def test_the_resolver_names_the_entry_not_the_indexer(self):
         # rust-analyzer is also the engine of the position pass, and scip-java indexes Kotlin too.

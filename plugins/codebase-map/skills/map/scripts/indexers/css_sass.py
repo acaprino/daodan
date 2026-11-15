@@ -17,8 +17,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .runtime import Unavailable
-
 SUFFIXES = (".scss", ".sass")
 SCRIPT = Path(__file__).resolve().with_suffix(".js")
 
@@ -38,6 +36,7 @@ def engine_index(runner, script: Path, package: str, items: list[dict], field: s
 
 def failure(package: str, measured: dict) -> str:
     """Why a run gave no data; an engine that cannot run here raises `Unavailable` with the runner's cause."""
+    from .runtime import Unavailable  # runtime imports the pass, which imports every analyzer, this one too
     if measured.get("state") == "unavailable":
         raise Unavailable(f"{package}: {measured.get('reason') or 'not available'}",
                           measured.get("install") or "analyze again once the container can run the stylesheet engines")

@@ -204,6 +204,29 @@ def npm_package(project_dir: Path, directory: Path, package: str, version: str) 
     return root / (declared if isinstance(declared, str) else declared[name])
 
 
+def npm_lockfile(project_dir: Path, directory: Path, name: str, folder: Path) -> Path:
+    """The packages that `folder`'s package.json and lockfile pin, installed once by `npm ci` without their install
+    scripts (npm checks each tarball against the lockfile's integrity): the folder that holds them, where a script
+    resolves its packages from `package.json`. The lockfile's digest is the version: a new pin installs again."""
+    import hashlib
+    folder = Path(folder)
+    tool = Tool(project_dir, name, hashlib.sha256((folder / "package-lock.json").read_bytes()).hexdigest()[:12])
+
+    def fill(partial: Path) -> None:
+        for item in ("package.json", "package-lock.json"):
+            shutil.copyfile(folder / item, partial / item)
+        subprocess.run([str(directory / rx.executable_name("node")), str(_npm_cli(directory)), "ci", "--ignore-scripts",
+                        "--no-audit", "--no-fund", "--loglevel=error"], cwd=str(partial), check=True,
+                       env=environment(directory), stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                       timeout=1800)
+
+    if not tool.installed():
+        room()
+        with fetching(name, "the npm registry"):
+            tool._install(tool.home(), fill)
+    return tool.home()
+
+
 def clear(work_dir: Path, name: str) -> None:
     """The index files an earlier run left in `work_dir`, so only this run's are read."""
     for stale in Path(work_dir).glob(f"{name}-*.scip"):

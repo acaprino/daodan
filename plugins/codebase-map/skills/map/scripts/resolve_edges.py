@@ -3029,6 +3029,18 @@ def snapshot_languages(connection) -> list[str]:
         "SELECT DISTINCT language FROM sem_coverage WHERE status='ast' AND language IS NOT NULL ORDER BY language")]
 
 
+def pass_languages(connection) -> list[str]:
+    """The languages the pass serves: the snapshot's parsed ones, and those of an analyzer whose graph is built from
+    files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph) when the snapshot holds one, parsed or not."""
+    import indexers
+    present = set(snapshot_languages(connection))
+    held = {row[0] for row in connection.execute("SELECT DISTINCT language FROM sem_coverage")}
+    for analyzer in indexers.analyzers():
+        if held & set(getattr(analyzer, "SNAPSHOT_LANGUAGES", ())):
+            present.update(analyzer.LANGUAGES)
+    return sorted(present)
+
+
 def engine_languages(engine, connection) -> tuple[str, ...]:
     """The snapshot languages an engine answers for: its declared ones, or every parsed one."""
     declared = getattr(engine, "languages", ("python",))
@@ -3872,7 +3884,7 @@ def edge_state(manifest: Path) -> dict:
         entries = (binding or {}).get("languages") or {}
         outcomes = last.get("languages") or {}
         languages = {}
-        for language in snapshot_languages(store.connection):
+        for language in pass_languages(store.connection):
             if language not in ENGINE_LANGUAGES:
                 continue
             if language in entries and from_source(language, entries[language]):
@@ -4061,7 +4073,7 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
     """The engines whose languages the snapshot holds, with the entries already fresh."""
     manifest = Path(manifest)
     with open_snapshot(manifest) as store:
-        present = snapshot_languages(store.connection)
+        present = pass_languages(store.connection)
         digest = logical_digest(store)
         fresh = {}
         if default_edge_store(manifest).is_file():
@@ -4169,12 +4181,18 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     without one its languages are `unavailable` and the indexer never starts. The report holds `available`,
     `engine` (the resolver: the entry's name, `@`, the indexer's version), `indexer` and `languages`; without
     an index, the indexer's `reason` and, when it is `unavailable`, its `install`.
+
+    An analyzer that `READS` files by suffix is handed the snapshot's (`files`); one whose outcome is a `graph` of
+    its own, no index (`indexers/css.py`), gives the store's rows itself (`rows`).
     """
     import code_graph
     import premap
     module = importlib.import_module(f"indexers.{spec.indexer}")
     # The pre-map first: an indexer takes the project's structure from it and looks for no manifest itself.
     options = module.structure(premap.ensure(Path(manifest))) if hasattr(module, "structure") else {}
+    if hasattr(module, "READS"):
+        with code_graph.Snapshot(manifest) as snap:
+            options["files"] = sorted(rel for rel in snap.checkout.values() if Path(rel).suffix.lower() in module.READS)
     if spec.needs_container:
         import container
         try:
@@ -4191,32 +4209,36 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
         if result.get("state"):
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": result.get("reason"),
                     **({"install": result.get("install")} if result["state"] == "unavailable" else {})}
-        built = {}
+        built, rows = {}, {}
         try:
             with code_graph.Snapshot(manifest) as snap:
-                index = code_graph.Index(snap.root)
-                for path, prefix in result["indexes"]:
-                    index.load(Path(path), prefix)
-                hops, traversal, _prepared = code_graph.adapter_traversal(module, index, snap)
-                static = module.static(index) if hasattr(module, "static") else None
-                # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
-                extra = (module.tasks(result.get("configs")),) if hasattr(module, "tasks") else ()
-                refine = (lambda read, graph: module.refine(read, graph, *extra)) if hasattr(module, "refine") \
-                    else None
-                for language in spec.languages:
-                    rels = sorted(snap.checkout[rel] for rel in snap.inventory
-                                  if snap.languages.get(rel) == language and rel in snap.checkout)
-                    if not rels:
-                        continue
-                    absent = [rel for rel in rels if rel not in index.documents]
-                    reasons = module.missing(index, absent, *extra) if hasattr(module, "missing") and absent else {}
-                    built[language] = code_graph.build(index, snap, language, hops, indexer, reasons, traversal,
-                                                       static, refine=refine)
-                code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver)
+                if result.get("graph"):
+                    rows[result["graph"]["language"]] = (*module.rows(result["graph"], resolver), indexer)
+                else:
+                    index = code_graph.Index(snap.root)
+                    for path, prefix in result["indexes"]:
+                        index.load(Path(path), prefix)
+                    hops, traversal, _prepared = code_graph.adapter_traversal(module, index, snap)
+                    static = module.static(index) if hasattr(module, "static") else None
+                    # Kotlin's `missing` and `refine` also read the compile tasks its run brought back.
+                    extra = (module.tasks(result.get("configs")),) if hasattr(module, "tasks") else ()
+                    refine = (lambda read, graph: module.refine(read, graph, *extra)) if hasattr(module, "refine") \
+                        else None
+                    for language in spec.languages:
+                        rels = sorted(snap.checkout[rel] for rel in snap.inventory
+                                      if snap.languages.get(rel) == language and rel in snap.checkout)
+                        if not rels:
+                            continue
+                        absent = [rel for rel in rels if rel not in index.documents]
+                        reasons = module.missing(index, absent, *extra) if hasattr(module, "missing") and absent \
+                            else {}
+                        built[language] = code_graph.build(index, snap, language, hops, indexer, reasons, traversal,
+                                                           static, refine=refine)
+                code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver, rows)
         except ValueError as error:  # a changed source, or a store that would break sites = answered + holes
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": str(error)}
         return {"available": True, "engine": resolver, "indexer": indexer,
-                "languages": {language: {"state": "fresh"} for language in built}}
+                "languages": {language: {"state": "fresh"} for language in {**built, **rows}}}
     finally:
         shutil.rmtree(work, ignore_errors=True)
 

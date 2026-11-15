@@ -784,9 +784,11 @@ def _refined(index: Index, graph: dict, refine) -> None:
     graph["edges"] = [edge for edge in graph["edges"] if not edge.get("removed")]
 
 
-def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str) -> Path:
+def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str, rows: dict | None = None) -> Path:
     """Save `build`'s graphs, `{language: (graph, references)}`, as the snapshot's edge store, beside what it
-    already holds for other languages (`resolve_edges.kept_languages`).
+    already holds for other languages (`resolve_edges.kept_languages`). `rows` holds the graphs that bring their own
+    store rows, no index (`indexers.css.rows`): `{language: (edges, holes, coverage, indexer)}`, each row's `file`
+    relative to the checkout.
 
     A snapshot reference's ends are its rows, `uncertain` where `refine` marked the edge of that end at its
     site; an end `refine` removed is counted in `edges_removed` and not saved. A reference the index answers
@@ -854,7 +856,15 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str) -> Pa
             raise ValueError(broken)
         entries[language] = {"engine": resolver, "state": "fresh", "indexer": graph["indexer"], "coverage": coverage,
                              "edges_removed": dict(collections.Counter(edge["removed"] for edge in graph["removed"]))}
-    kept_entries, kept_edges, kept_holes, kept_reports = rx.kept_languages(out, snapshot.store, built)
+    for language, (own_edges, own_holes, coverage, indexer) in sorted((rows or {}).items()):
+        broken = rx.coverage_violation(language, coverage)
+        if broken:
+            raise ValueError(broken)
+        edges += [{**row, "file": snapshot.rel.get(row["file"], row["file"])} for row in own_edges]
+        holes += [{**row, "file": snapshot.rel.get(row["file"], row["file"])} for row in own_holes]
+        entries[language] = {"engine": resolver, "state": "fresh", "indexer": indexer, "coverage": coverage,
+                             "edges_removed": {}}
+    kept_entries, kept_edges, kept_holes, kept_reports = rx.kept_languages(out, snapshot.store, entries)
     binding = rx.store_binding(snapshot.store, snapshot.manifest, snapshot.store.metadata.get("parser_fingerprint"),
                                {**kept_entries, **entries}, kept_reports)
     return rx.write_edge_store(out, kept_edges + edges, binding, kept_holes + holes)
