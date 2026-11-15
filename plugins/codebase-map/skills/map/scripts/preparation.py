@@ -42,6 +42,10 @@ NEEDS = {
     "node": {"files": [NODE], "setup": [f"tar -xzf {IN}/node.tar.gz -C {T} && mv {T}/node-v24.22.3-linux-x64 {T}/node"],
              "version": "24.22.3"},
     "go": {"files": [GO], "setup": [f"tar -xzf {IN}/go.tar.gz -C {T}"], "version": "1.27.3"},
+    "dotnet": {"files": [("https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.404/dotnet-sdk-10.0.404-linux-x64.tar.gz",
+                          "c0610757a818fde4b960d27a0ac421f273068a05dc5ec7abafc01dbf84e9cb4d", "dotnet.tar.gz")],
+               "setup": [f"mkdir -p {T}/dotnet && tar -xzf {IN}/dotnet.tar.gz -C {T}/dotnet"
+                         f" && ln -sf {T}/dotnet/dotnet {T}/bin/dotnet"], "version": "10.0.404"},
     "rust": {"files": RUST, "setup": [f"for c in rustc cargo; do mkdir -p {T}/x && tar -xJf {IN}/$c.tar.xz -C {T}/x"
                                       f" && cp -R {T}/x/$c-*/$c/. {T}/rust/ && rm -rf {T}/x; done"],
              "version": "1.99.1"},
@@ -168,6 +172,10 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
                     f' && uv pip install -q --python "{VENVS}/$f" -r "$r"'},
     "go": {"marks": ("go.mod",), "nested": True, "needs": ["go"], "error": "go: |go.mod:|error", "hosts": (),
            "line": "go mod download"},  # each module is its own; the toolchain go.mod names comes from its proxy
+    "dotnet": {"marks": (), "suffixes": (".sln", ".slnx", ".csproj", ".fsproj", ".vbproj"), "needs": ["dotnet"],
+               "before": "export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1",
+               "error": "error", "hosts": (),  # a folder's solution, else its one project
+               "line": "dotnet restore $(ls *.slnx *.sln 2>/dev/null | head -n 1)"},
     "cargo": {"marks": ("Cargo.toml",), "needs": ["rust"], "error": "^error|^Caused by|^  ", "hosts": (),
               "line": "if [ -f Cargo.lock ]; then cargo fetch --locked; else cargo fetch; fi"},
 }
@@ -195,8 +203,9 @@ def restores(files) -> dict[str, list[str]]:
     out: dict[str, list[str]] = {}
     for managers in families.values():
         marks = {m for name in managers for m in RESTORES[name]["marks"]}
-        marked = sorted({_folder(rel) for rel in files if posixpath.basename(rel) in marks},
-                        key=lambda f: (f.count("/"), f))
+        suffixes = tuple(x for name in managers for x in RESTORES[name].get("suffixes", ()))
+        marked = sorted({_folder(rel) for rel in files if posixpath.basename(rel) in marks
+                         or (suffixes and rel.endswith(suffixes))}, key=lambda f: (f.count("/"), f))
         locked = {_folder(rel): name for name in managers for rel in files
                   if posixpath.basename(rel) in RESTORES[name].get("locks", ())}
         default = next(name for name in managers if not RESTORES[name].get("locks"))

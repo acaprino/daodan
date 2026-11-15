@@ -122,3 +122,15 @@ def test_cargo_fetches_the_crates_and_one_no_registry_has_is_a_gap():
 def test_every_go_module_restores_on_its_own_and_a_cargo_workspace_from_its_root():
     files = ["go.mod", "tools/go.mod", "Cargo.toml", "crates/a/Cargo.toml"]
     assert preparation.restores(files) == {"go": [".", "tools"], "cargo": ["."]}
+
+
+def test_dotnet_restores_the_solution_or_the_project_and_a_package_no_feed_has_is_a_gap():
+    gaps = preparation.restore_gaps(recorded("dotnet")["stderr"])
+    assert [(g["kind"], g["manager"], g["path"]) for g in gaps] == [("restore_failed", "dotnet", "bad")]
+    assert "Example.Missing.Nothing" in gaps[0]["detail"]
+
+
+def test_a_dotnet_solution_restores_the_projects_below_it():
+    files = ["App.sln", "src/App/App.csproj", "tests/T/T.fsproj", "tools/x/x.csproj"]
+    assert preparation.restores(files) == {"dotnet": ["."]}
+    assert preparation.restores(["a/A.csproj", "b/B.vbproj"]) == {"dotnet": ["a", "b"]}
