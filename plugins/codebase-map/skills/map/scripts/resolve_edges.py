@@ -4075,23 +4075,31 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
     return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
 
 
-def run_pass(manifest: Path, report_path: Path, environments: list[Path]) -> dict:
+def run_pass(manifest: Path, report_path: Path, environments: list[Path], bus=None) -> dict:
     """Run each engine's stage in turn and record per language what came of it.
 
     A language already fresh in the store is not asked again. Before a stage the
     free memory is checked; after a stage that ran out of memory no other starts.
-    The report is rewritten after every stage, so the state shows progress.
+    The report is rewritten after every stage, so the state shows progress, and
+    each analyzer says on `bus` (`pipeline.events`) when it starts and how it ends.
     """
+    from pipeline import events
     manifest = Path(manifest).resolve()
+    bus = bus or events.Bus(manifest.with_name(events.JOURNAL))
     plan, fresh, digest = pass_plan(manifest)
     report = {"pass": True, "manifest_digest": digest, "languages": {}, "engines": {},
               "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
     outcomes = report["languages"]
     exhausted = None
-    for spec, wanted in plan:
+    for number, (spec, wanted) in enumerate(plan, 1):
+        bus.progress("analyze", number - 1, len(plan), analyzer=spec.name, message=f"{spec.name}: {', '.join(wanted)}")
         if all(language in fresh for language in wanted):
             outcomes.update({language: {"state": "fresh", "engine": fresh[language]["engine"]} for language in wanted})
+            bus.emit("analyzer.finished", f"{spec.name}: already fresh", step="analyze", analyzer=spec.name,
+                     languages=wanted, fresh=True)
             continue
+        bus.emit("analyzer.started", f"{spec.name} for {', '.join(wanted)}", step="analyze", analyzer=spec.name,
+                 languages=wanted)
         free = free_memory()
         if exhausted:
             reason, state, install = f"not started: {exhausted}", "failed", None
@@ -4133,7 +4141,15 @@ def run_pass(manifest: Path, report_path: Path, environments: list[Path]) -> dic
                         entry = (stage.get("languages") or {}).get(language) or {}
                         outcomes[language] = {"state": entry.get("state", "fresh"), "engine": stage.get("engine")}
                     _write_report(report_path, report)
+                    bus.emit("analyzer.finished", f"{stage.get('engine')}: {', '.join(wanted)}", step="analyze",
+                             analyzer=spec.name, languages=wanted, engine=stage.get("engine"))
                     continue
+        if state == "unavailable":
+            bus.emit("analyzer.unavailable", f"{spec.name} cannot run here", step="analyze", analyzer=spec.name,
+                     level="warning", cause=reason, remedy=install, languages=wanted)
+        else:
+            bus.emit("analyzer.finished", f"{spec.name} failed", step="analyze", analyzer=spec.name, level="error",
+                     cause=reason, remedy=f"see {LOG_NAME} beside the snapshot", languages=wanted)
         for language in wanted:
             outcomes[language] = {key: value for key, value in
                                   (("state", state), ("engine", spec.name), ("reason", reason), ("install", install))
@@ -4141,6 +4157,7 @@ def run_pass(manifest: Path, report_path: Path, environments: list[Path]) -> dic
         _write_report(report_path, report)
     report["available"] = any(outcome["state"] == "fresh" for outcome in outcomes.values())
     report["finished_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    bus.progress("analyze", len(plan), len(plan))
     _write_report(report_path, report)
     return report
 

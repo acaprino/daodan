@@ -349,16 +349,18 @@ def _run(source, context: Context, runner) -> tuple[dict, dict | None, list[dict
             [{**gap, "source": name} for gap in result.get("gaps") or []])
 
 
-def derive(manifest: Path, store, sources=None, runner=None) -> dict:
+def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dict:
     """The pre-map of the snapshot in `store`; `runner(commands) -> results` runs the model commands, each
     `{tool, argv, cwd, env}` under the project's root, each result `{returncode, stdout, stderr, root}` with
     `root` the project's absolute path where it ran."""
     sources = tuple(SOURCES if sources is None else sources)
     context = Context(manifest, store)
     statuses, parts, gaps = [], [], []
-    for source in sources:
+    for number, source in enumerate(sources, 1):
         status, part, found = _run(source, context, runner)
         statuses.append(status)
+        if report is not None:  # `report(status, done, total)`: each source as it ends
+            report(status, number, len(sources))
         if part:
             parts.append(part)
         gaps.extend(found)
@@ -376,13 +378,13 @@ def derive(manifest: Path, store, sources=None, runner=None) -> dict:
     return record
 
 
-def write(manifest: Path, sources=None, runner=None) -> dict:
+def write(manifest: Path, sources=None, runner=None, report=None) -> dict:
     """Derive and publish `premap.json` beside the manifest."""
     manifest = Path(manifest).resolve()
     target = path(manifest)
     confinement.reject_link_chain(target)
     with open_snapshot(manifest) as store:
-        record = derive(manifest, store, sources, runner)
+        record = derive(manifest, store, sources, runner, report)
         if logical_digest(store) != record["binding"]["logical_digest"]:
             raise ValueError("snapshot changed during the pre-map; retry")
     descriptor, name = tempfile.mkstemp(prefix=".premap-", dir=target.parent)
@@ -415,8 +417,8 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
     return {**report, "state": "fresh"}
 
 
-def ensure(manifest: Path, sources=None, runner=None) -> dict:
+def ensure(manifest: Path, sources=None, runner=None, report=None) -> dict:
     """The pre-map of `manifest`, derived again when it is not fresh."""
     if state(manifest, sources, runner)["state"] == "fresh":
         return json.loads(path(manifest).read_text(encoding="utf-8"))
-    return write(manifest, sources, runner)
+    return write(manifest, sources, runner, report)
