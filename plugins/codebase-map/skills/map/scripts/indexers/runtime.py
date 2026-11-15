@@ -195,13 +195,26 @@ def npm_package(project_dir: Path, directory: Path, package: str, version: str) 
                         f"{package}@{version}"], check=True, env=environment(directory), stdin=subprocess.DEVNULL,
                        capture_output=True, text=True, timeout=1800)
 
+    def script() -> Path | None:
+        root = tool.home() / "node_modules" / package
+        try:
+            declared = json.loads((root / "package.json").read_text(encoding="utf-8")).get("bin")
+        except (OSError, ValueError):
+            return None
+        return root / (declared if isinstance(declared, str) else declared[name])
+
+    # An install whose mark is there and whose script is gone (a cleaner, a disk fault) is made anew, once.
+    if tool.installed() and not (script() and script().is_file()):
+        (tool.home() / ".installed").unlink()
     if not tool.installed():
         room()
         with fetching(f"{name} {version}", "the npm registry"):
             tool._install(tool.home(), fill)
-    root = tool.home() / "node_modules" / package
-    declared = json.loads((root / "package.json").read_text(encoding="utf-8")).get("bin")
-    return root / (declared if isinstance(declared, str) else declared[name])
+    found = script()
+    if found is None or not found.is_file():
+        raise Unavailable(f"{package} {version} is installed without {found.name if found else 'its package.json'}, "
+                          "the script it runs", "check the npm registry and the disk, then analyze again")
+    return found
 
 
 def npm_lockfile(project_dir: Path, directory: Path, name: str, folder: Path) -> Path:

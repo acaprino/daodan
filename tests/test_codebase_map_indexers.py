@@ -76,6 +76,7 @@ class Fake:
             root.mkdir(parents=True)
             (root / "package.json").write_text(json.dumps({"bin": {package.rsplit("/", 1)[-1]: "main.js"}}),
                                                encoding="utf-8")
+            (root / "main.js").write_text("// the indexer", encoding="utf-8")
         elif command[1:2] == ["install"] and env.get("GOBIN"):
             Path(env["GOBIN"], rx.executable_name("scip-go")).write_text("fake", encoding="utf-8")
         elif any(part == "--output" or part.startswith("--output=") for part in command):
