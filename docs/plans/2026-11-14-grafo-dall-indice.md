@@ -439,6 +439,20 @@ Vue e Svelte restano sul motore TypeScript per posizione: scip-typescript non le
 - [x] **Run reale senza resti, Java:** la fixture Java con i volumi, il 14 novembre 2026: 22 s in tutto, indicizzatore 13,5 s e 584 MB. `system df`, strati, volumi e container di Kiri e il suo disco (2.260.729.856 B) uguali prima e dopo; il registro dei volumi resta vuoto. Il commit di Windows sale di 0,62 GB al picco (da 39,01 a 39,63 GB su 43,46) e torna a 39,08 GB.
 - [ ] **Run reale senza resti, Kotlin e klaxon:** non ancora rifatti con i volumi; servono 6 GB di commit liberi.
 - [ ] **Soglia:** come nel task 5, su javapoet e klaxon, con il confronto fra passo per posizione e indice misurato.
+- [ ] **Voci in più della pre-mappa, per causa** (misura del 15 novembre 2026 sui 122 progetti, `results/daodan_premap_corpus.json`: dipendenze 720 su 843 con 150 in più e 35 sbagliate; nessuna delle 150 è una lacuna di una risposta attesa). Dove si chiude ognuna:
+  - [x] Unità indovinata per un file che nessuna unità possiede (catalogo di versioni, file centrale): 72 in eShop più altre; in più 150 -> 83.
+  - [ ] Un'unità dello stesso progetto riportata come pacchetto esterno, quando l'arco è già in `depends_on`: 19. Nell'unione (`premap/__init__.py`), non per nome soltanto: in chi i moduli annidati richiedono il chi pubblicato.
+  - [ ] Voce di una tabella condivisa di versioni riportata come dipendenza, invece di completare la voce dell'unità che nomina il pacchetto senza versione: 17 in più e 12 sbagliate (pnpm `catalog:`, `[workspace.dependencies]`, `Directory.Packages.props`, `dependencyManagement`, catalogo Gradle).
+  - [ ] Vincolo di linguaggio, runtime o SDK contato come pacchetto: 14 (`python` di Poetry, `environment.sdk` di pub, `php` e `ext-*` di Composer, `scalaVersion`, `sbt.version`, `global.json`). È solo una toolchain.
+  - [ ] La stessa dipendenza sotto un secondo nome: 5 (rinomina di Cargo, nome del repository di SwiftPM, suffisso Scala). Vale il nome che usa il build tool.
+  - [ ] File compilato da pip-compile letto come dichiarazioni: 5. Dà `resolved`, come fa già `premap/requirements.py`.
+  - [ ] Non una dipendenza (script di un Pipfile, bersaglio di un `replace` di Go), letterale preso da `setup.py`, script che nessuna build applica: 4.
+  - [ ] Da decidere con il proprietario, perché lo schema non ha una parola: BOM e `platform()` (6), POM genitore (8), `ext-*` di Composer (3), `flutter: sdk` (1).
+  - [ ] Sbagliate: scope `runtime` dato a voci Gradle di test o di build (6); `declared_in` sul primo manifesto dell'unità invece che sul file che scrive la voce (8); virgolette del Gemfile nel range (5).
+  - [ ] Toolchain in più, 47: range di npm ricavato dal formato del lockfile (11), `packageManager` della radice ripetuto sui membri (12), lo stesso wrapper due volte con e senza frammento (10), la versione dello script wrapper (8), altre 6.
+  - [ ] Unità in più, 5: `project()` di CMake riportato come target (4), la libreria Angular come pacchetto npm (1). Archi in più, 2: `premap/go.py` fa un arco di ogni `require` verso un modulo del checkout anche senza `replace` né `go.work`.
+  - [ ] Due risposte attese contraddicono lo schema (`declared_in` è il file che scrive la versione): `real-svc-eshop` (EventBus) e `sys-rust-workspace` (cfg-if, itoa).
+  - [ ] Esclusi e linguaggi: le risposte attese elencano la faccetta solo in parte (87 su 122 senza esclusi; JSON e TOML in 0 su 122). Da go-enry: file di Git e `.d.ts` scritti a mano marcati vendored (circa 95), una decina di nomi di linguaggio sbagliati.
 - [ ] **Si cancella:** `JavaEngine`, `KotlinEngine` e `engines/KotlinResolver.kt`, solo se la domanda 2 esclude le richieste mirate per la JVM.
 
 ### Task 10: C e C++
