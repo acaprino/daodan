@@ -58,15 +58,19 @@ def classify(index):
 
 # Compile tasks, from the sources each KotlinCompile task listed for the indexer.
 
-def tasks(configs_dir: Path | None) -> dict[str, str]:
-    """Checkout-relative path -> the compile task whose dump lists it."""
+def tasks(configs) -> dict[str, str]:
+    """Checkout-relative path -> the compile task whose dump lists it; `configs` the dumps' folders, each with
+    the folder of the build it came from. Two builds are two compilations: a task is named with its build."""
     out = {}
-    for config in sorted(Path(configs_dir).glob("*.txt")) if configs_dir and Path(configs_dir).is_dir() else ():
-        rows = config.read_text(encoding="utf-8").splitlines()
-        root = next((row.split(" ", 1)[1] for row in rows if row.startswith("sourceroot ")), "")
-        for row in rows:
-            if row.startswith("source ") and root and row.split(" ", 1)[1].startswith(root):
-                out[Path(row.split(" ", 1)[1]).relative_to(root).as_posix()] = config.stem
+    for folder, build in configs or ():
+        for config in sorted(Path(folder).glob("*.txt")) if Path(folder).is_dir() else ():
+            rows = config.read_text(encoding="utf-8").splitlines()
+            root = next((row.split(" ", 1)[1] for row in rows if row.startswith("sourceroot ")), "")
+            task = f"{build}/{config.stem}" if build else config.stem
+            for row in rows:
+                if row.startswith("source ") and root and row.split(" ", 1)[1].startswith(root):
+                    rel = Path(row.split(" ", 1)[1]).relative_to(root).as_posix()
+                    out[f"{build}/{rel}" if build else rel] = task
     return out
 
 
@@ -176,16 +180,30 @@ exit 0
 '''
 
 
-def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, engine=None,
+def structure(record: dict) -> dict:
+    """What `index` takes from the pre-map: the folder of each build."""
+    from indexers import jvm
+    return {"roots": jvm.build_roots(record)}
+
+
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots, engine=None,
           memory: int = MIN_FREE) -> dict:
-    """The forward-only index of the whole build, its runs, the indexer's time and memory and `configs`, the
-    compile tasks `refine` reads (`files` is not used: the build compiles every task). Without a container,
-    `unavailable`; without an index, `failed`."""
+    """The forward-only index of each build in `roots` (the pre-map's build folders), each in a container of its
+    own, its runs, the indexer's time and memory, `configs` (the compile tasks `refine` reads, with the build
+    each came from) and `written` (the index as scip-java wrote it); `files` is not used: a build compiles every
+    task. Without a container, `unavailable`; without an index, `failed`."""
     from indexers import jvm
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
-    result, runs, out = jvm.run(project_dir, work_dir, PREPARE, EXECUTE, memory=memory, engine=engine)
-    return finish(work_dir, result, runs, out)
+
+    def one(folder: Path, work: Path) -> dict:
+        result, runs, out = jvm.run(folder, work, PREPARE, EXECUTE, memory=memory, engine=engine)
+        return finish(work, result, runs, out)
+
+    parts = jvm.builds(project_dir, work_dir, roots, one)
+    done = [(root, part) for root, part in parts if part.get("indexes")]
+    return jvm.combined(parts, configs=[[part["configs"], root] for root, part in done if part.get("configs")],
+                        written=[[part["written"], root] for root, part in done])
 
 
 def finish(work_dir: Path, result: dict, runs: list[dict], out: Path) -> dict:

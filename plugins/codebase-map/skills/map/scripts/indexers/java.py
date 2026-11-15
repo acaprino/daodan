@@ -131,15 +131,31 @@ def execute(external_classes: dict | None = None) -> str:
     return "\n".join(lines)
 
 
+def structure(record: dict) -> dict:
+    """What `index` takes from the pre-map: the folder of each build."""
+    return {"roots": jvm.build_roots(record)}
+
+
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, external_classes: dict | None = None,
-          *, engine=None, memory: int = MIN_FREE) -> dict:
-    """The forward index of the whole build, its runs and the indexer's time and memory (`files` is not used:
-    the build compiles every module). Without a container, `unavailable`; without an index, `failed`."""
+          *, roots, engine=None, memory: int = MIN_FREE) -> dict:
+    """The forward index of each build in `roots` (the pre-map's build folders), each in a container of its own,
+    with its runs and the indexer's time and memory (`files` is not used: a build compiles every module); the
+    member order of all of them in `javap.json`. Without a container, `unavailable`; without an index, `failed`."""
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
-    result, runs, out = jvm.run(project_dir, work_dir, PREPARE, execute(external_classes), memory=memory,
-                                engine=engine)
-    return finish(project_dir, work_dir, result, runs, out)
+
+    def one(folder: Path, work: Path) -> dict:
+        result, runs, out = jvm.run(folder, work, PREPARE, execute(external_classes), memory=memory, engine=engine)
+        return finish(folder, work, result, runs, out)
+
+    parts = jvm.builds(project_dir, work_dir, roots, one)
+    members = {}
+    for _root, part in parts:
+        listed = Path(part["indexes"][0][0]).parent / "javap.json" if part.get("indexes") else None
+        if listed and listed.is_file():
+            members.update(json.loads(listed.read_text(encoding="utf-8")))
+    (work_dir / "javap.json").write_text(json.dumps(members), encoding="utf-8")
+    return jvm.combined(parts)
 
 
 def finish(project_dir: Path, work_dir: Path, result: dict, runs: list[dict], out: Path) -> dict:

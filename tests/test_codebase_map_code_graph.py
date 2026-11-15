@@ -300,7 +300,7 @@ def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
     which units it wants (`structure`) and is handed their folders (`roots`); none walks the tree for a
     manifest, and the common part offers no way to."""
     import inspect
-    from indexers import go, rust, typescript
+    from indexers import go, java, kotlin, rust, typescript
     assert not hasattr(code_graph, "manifest_dirs")
     record = {"units": [{"kind": "go-module", "root": "."}, {"kind": "cargo-crate", "root": "crates/a"},
                         {"kind": "npm-package", "root": "web"}],
@@ -308,7 +308,8 @@ def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
     assert go.structure(record) == {"roots": {""}}
     assert rust.structure(record) == {"roots": {"", "crates/a"}}
     assert typescript.structure(record) == {"roots": {"web"}}
-    for module in (go, rust, typescript):
+    assert java.structure(record) == kotlin.structure(record) == {"roots": set()}
+    for module in (go, rust, typescript, java, kotlin):
         source = inspect.getsource(module)
         assert "roots" in inspect.signature(module.index).parameters
         assert not re.search(r"rglob[(][^)]*(go[.]mod|Cargo[.]toml|package[.]json)", source), module.__name__
@@ -409,7 +410,7 @@ def _built(name: str, source: Path, manifest: Path) -> dict:
         if hasattr(adapter, "static"):
             build_options["static"] = adapter.static(index)
         if hasattr(adapter, "refine"):
-            extra = (adapter.tasks(source / "kotlin-configs"),) if hasattr(adapter, "tasks") else ()
+            extra = (adapter.tasks([[source / "kotlin-configs", ""]]),) if hasattr(adapter, "tasks") else ()
             build_options["refine"] = lambda read, graph: adapter.refine(read, graph, *extra)
         graphs, references = {}, {}
         for language in LANGUAGES[name]:

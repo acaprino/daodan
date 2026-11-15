@@ -105,6 +105,9 @@ MAVEN_URL = f"{jvm.MAVEN_SITE}0.test/apache-maven-0.test-bin.zip"
 GRADLE_URL = f"{jvm.GRADLE_SITE}gradle-0.test-bin.zip"
 
 
+BUILD_FILES = ("pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts")
+
+
 class FakeEngineTest(unittest.TestCase):
     language = "java"
 
@@ -186,6 +189,7 @@ class FakeEngineTest(unittest.TestCase):
     def index(self, **options) -> dict:
         module = java if self.language == "java" else kotlin
         options.setdefault("engine", self.engine)
+        options.setdefault("roots", {""})
         with mock.patch.object(container, "free_memory", return_value=64 * 2**30), \
                 mock.patch("subprocess.Popen", Recorder):
             return module.index(self.project, self.work, **options)
@@ -198,7 +202,60 @@ class FakeEngineTest(unittest.TestCase):
         return [call for call in self.calls() if call[0] == "create"]
 
 
-class JavaContainerTests(FakeEngineTest):
+class EachBuildTests:
+    """One run per build folder of the pre-map, for Java and for Kotlin alike."""
+
+    def test_each_build_the_pre_map_names_runs_in_a_container_of_its_own(self):
+        """A project with its build in a subfolder, beside another: one run per build folder, over that folder
+        only, its index named from the checkout by the folder."""
+        shutil.copytree(self.project, self.scratch / "second")
+        shutil.move(str(self.scratch / "second"), str(self.project / "services/shop"))
+        self.play_success()
+        result = self.index(roots={"", "services/shop"})
+        self.assertNotIn("state", result)
+        self.assertEqual([prefix for _path, prefix in result["indexes"]], ["", "services/shop"])
+        self.assertEqual(result["builds"], [{"root": "", "state": "done"}, {"root": "services/shop", "state": "done"}])
+        self.assertEqual(sorted({run["build"] for run in result["runs"]}), ["", "services/shop"])
+        copied = [self.state / "containers" / call[call.index("--name") + 1] / "fs" for call in self.created()]
+        roots = sorted({path.parent.relative_to(fs).as_posix() for fs in copied for name in BUILD_FILES
+                        for path in fs.rglob(name) if "tools" not in path.parts} - {"."}, key=len)
+        self.assertNotIn("services/shop", roots)  # the second run holds only its own folder
+
+    def test_a_build_that_fails_keeps_the_others_and_says_which_failed(self):
+        shutil.copytree(self.project, self.scratch / "second")
+        shutil.move(str(self.scratch / "second"), str(self.project / "services/shop"))
+        self.play_success()
+        real = jvm.run
+        calls = []
+
+        def one_fails(project_dir, *args, **options):
+            calls.append(Path(project_dir))
+            if Path(project_dir).name == "shop":
+                return {"state": "failed", "cause": "the build failed"}, [], Path(args[0]) / "nothing"
+            return real(project_dir, *args, **options)
+
+        with mock.patch.object(jvm, "run", one_fails):
+            result = self.index(roots={"", "services/shop"})
+        self.assertNotIn("state", result)
+        self.assertEqual([prefix for _path, prefix in result["indexes"]], [""])
+        self.assertEqual(result["builds"][1]["root"], "services/shop")
+        self.assertEqual(result["builds"][1]["state"], "failed")
+
+    def test_without_a_build_in_the_pre_map_nothing_runs_and_the_cause_is_said(self):
+        result = self.index(roots=set())
+        self.assertEqual(result["state"], "unavailable")
+        self.assertIn("no Gradle or Maven build", result["reason"])
+        self.assertEqual(self.created(), [])
+
+    def test_the_builds_are_the_outermost_gradle_and_maven_units_of_the_pre_map(self):
+        record = {"units": [{"kind": "gradle-project", "root": "."}, {"kind": "gradle-project", "root": "app"},
+                            {"kind": "maven-module", "root": "svc"}, {"kind": "maven-module", "root": "svc/core"},
+                            {"kind": "gradle-project", "root": "tools/plugin"}, {"kind": "npm-package", "root": "web"}]}
+        self.assertEqual(java.structure(record), {"roots": {"", "svc"}})
+        self.assertEqual(kotlin.structure(record), {"roots": {"", "svc"}})
+
+
+class JavaContainerTests(EachBuildTests, FakeEngineTest):
     def test_the_build_runs_only_in_the_container(self):
         self.play_success()
         result = self.index()
@@ -285,8 +342,10 @@ class JavaContainerTests(FakeEngineTest):
         self.play_success()
         result = self.index()
         self.assertNotIn("state", result)
-        self.assertEqual(result["indexes"], [[str(self.work.resolve() / "index-forward.scip"), ""]])
-        self.assertEqual((self.work / "index-forward.scip").read_bytes(), (self.fixture / "index.scip").read_bytes())
+        build = self.work.resolve() / "build-0"
+        self.assertEqual(result["indexes"], [[str(build / "index-forward.scip"), ""]])
+        self.assertEqual((build / "index-forward.scip").read_bytes(), (self.fixture / "index.scip").read_bytes())
+        self.assertEqual(result["builds"], [{"root": "", "state": "done"}])
         self.assertEqual(result["indexer"], {"name": "scip-java", "version": jvm.VERSION, "seconds": 7.5,
                                              "peak_mb": 1024})
         self.assertEqual([(run["phase"], run["step"], run["returncode"]) for run in result["runs"]],
@@ -294,7 +353,7 @@ class JavaContainerTests(FakeEngineTest):
         self.assertTrue(result["runs"][1]["same_occurrences"])
         members = json.loads((self.work / "javap.json").read_text(encoding="utf-8"))
         self.assertEqual(members["fx/Shapes"][0]["flags"], ["ACC_PUBLIC"])
-        records = [json.loads(row) for row in (self.work / "container" / container.RECORD_NAME).read_text(
+        records = [json.loads(row) for row in (build / "container" / container.RECORD_NAME).read_text(
             encoding="utf-8").splitlines()]
         self.assertEqual([record["phase"] for record in records], ["prepare", "execute"])
 
@@ -315,7 +374,7 @@ class JavaContainerTests(FakeEngineTest):
 
     def test_memory_below_the_container_limit_is_unavailable(self):
         with mock.patch.object(container, "free_memory", return_value=2**30), mock.patch("subprocess.Popen", Recorder):
-            result = java.index(self.project, self.work, engine=self.engine)
+            result = java.index(self.project, self.work, roots={""}, engine=self.engine)
         self.assertEqual(result["state"], "unavailable")
         self.assertIn("1.0 GB of memory free", result["reason"])
         self.assertEqual(Recorder.calls, [])
@@ -389,7 +448,7 @@ class JavaContainerTests(FakeEngineTest):
         self.assertIn("JDK 17 only", result["reason"])
 
 
-class KotlinContainerTests(FakeEngineTest):
+class KotlinContainerTests(EachBuildTests, FakeEngineTest):
     language = "kotlin"
 
     def test_gradle_reaches_only_the_jvm_registries(self):
@@ -400,10 +459,12 @@ class KotlinContainerTests(FakeEngineTest):
         before = tree_digest(self.project)
         result = self.index()
         self.assertEqual(tree_digest(self.project), before)
-        forward = self.work.resolve() / "index-forward.scip"
+        forward = self.work.resolve() / "build-0" / "index-forward.scip"
         self.assertEqual(result["indexes"], [[str(forward), ""]])
-        self.assertEqual(result["written"], str(self.work.resolve() / "scip-java-0.scip"))
-        self.assertEqual(sorted(path.name for path in Path(result["configs"]).iterdir()),
+        self.assertEqual(result["written"], [[str(self.work.resolve() / "build-0" / "scip-java-0.scip"), ""]])
+        (configs, prefix), = result["configs"]
+        self.assertEqual(prefix, "")
+        self.assertEqual(sorted(path.name for path in Path(configs).iterdir()),
                          sorted(path.name for path in (self.fixture / "kotlin-configs").iterdir()))
         index_run = result["runs"][0]
         self.assertEqual((index_run["step"], index_run["reverse_relationships_dropped"], index_run["index"]),
@@ -429,6 +490,7 @@ class KotlinContainerTests(FakeEngineTest):
         self.assertEqual(result["state"], "failed")
         self.assertIn("Build failed with an exception", result["reason"])
 
+
     def test_the_contract_feeds_the_graph_and_its_expected_ends_hold(self):
         self.play_success()
         check_fixture(self, self.language, self.index())
@@ -445,7 +507,8 @@ def check_fixture(test: unittest.TestCase, name: str, result: dict) -> None:
     shutil.copyfile(path, source / "index.scip")
     if name == "kotlin":
         shutil.rmtree(source / "kotlin-configs")
-        shutil.copytree(result["configs"], source / "kotlin-configs")
+        (configs, _prefix), = result["configs"]
+        shutil.copytree(configs, source / "kotlin-configs")
     manifest = scratch / "manifest.sqlite"
     done = subprocess.run([sys.executable, "-I", "snapshot.py", "write", str(source), "--out", str(manifest),
                            "--no-engine", "--no-index", "--no-modules"], cwd=SCRIPTS, capture_output=True, text=True,
@@ -524,7 +587,7 @@ class RealContainerSmokeTest(unittest.TestCase):
             return real_open(url, timeout)
 
         with mock.patch.object(resolve_edges, "open_url", spy):
-            result = kotlin.index(project, scratch / "work", engine=engine, memory=MEMORY["kotlin"])
+            result = kotlin.index(project, scratch / "work", roots={""}, engine=engine, memory=MEMORY["kotlin"])
         print(json.dumps({"state": result.get("state"), "reason": result.get("reason"), "asked": asked}, indent=1))
         self.assertEqual(result["state"], "unavailable")
         self.assertIn("downloads.example.com", result["reason"])

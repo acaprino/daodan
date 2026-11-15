@@ -173,7 +173,7 @@ def graph(index_path: Path, manifest: Path, source: Path, configs: Path | None, 
     """The graph, and what the result file reports of it."""
     index = scip_graph.Index(source)
     index.load(index_path, "")
-    compiled = indexers.kotlin.tasks(configs)
+    compiled = indexers.kotlin.tasks([[configs, ""]] if configs else [])
     hops = indexers.kotlin.hops(index)
     with scip_graph.Snapshot(manifest) as snapshot:
         traversal = scip_graph.Traversal(index, snapshot, hops, classify=indexers.kotlin.classify(index))

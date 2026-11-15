@@ -377,6 +377,50 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
     return judged(result, prepared), runs, out
 
 
+BUILDS = ({"gradle-project"}, {"maven-module"})  # a Gradle build and a Maven reactor build the modules inside them
+
+
+def build_roots(record: dict) -> set[str]:
+    """The folder of each build to run, as the pre-map names it: per build tool, the outermost unit, '' for the
+    project's root. A module inside one is built by it."""
+    import premap
+    found = set()
+    for kinds in BUILDS:
+        roots = premap.roots(record, kinds)
+        found |= {root for root in roots
+                  if not any(other != root and (other == "" or root.startswith(f"{other}/")) for other in roots)}
+    return found
+
+
+def builds(project_dir: Path, work_dir: Path, roots, one) -> list[tuple[str, dict]]:
+    """`one(folder, work)` for each build folder, each in a work folder of its own (`build-N`), in order."""
+    out = []
+    for number, root in enumerate(sorted(roots)):
+        work = Path(work_dir) / f"build-{number}"
+        work.mkdir(parents=True, exist_ok=True)
+        out.append((root, one(Path(project_dir) / root if root else Path(project_dir), work)))
+    return out
+
+
+def combined(parts: list[tuple[str, dict]], **joined) -> dict:
+    """One contract from one per build: each index named from the checkout by its build's folder, every run
+    with its `build`, each build's state; without any index, the first build's failure (or `unavailable`)."""
+    if not parts:
+        return unavailable("no Gradle or Maven build in the pre-map: nothing builds these files",
+                           "declare the build of the project (settings.gradle, build.gradle or pom.xml)")
+    runs, indexes, states = [], [], []
+    for root, part in parts:
+        runs += [{**run, "build": root} for run in part.get("runs", [])]
+        indexes += [[path, "/".join(name for name in (root, prefix) if name)] for path, prefix in part["indexes"]]
+        states.append({"root": root, "state": part.get("state", "done"),
+                       **({"reason": part["reason"]} if part.get("state") else {})})
+    if not indexes:
+        first = next((part for _root, part in parts if part.get("state") == "failed"), parts[0][1])
+        return {**first, "runs": runs, "builds": states}
+    return {"indexes": indexes, "runs": runs, "indexer": code_graph.indexer("scip-java", VERSION, runs),
+            "builds": states, **joined}
+
+
 def place(source: Path, target: Path) -> Path | None:
     """An output moved from the container's folder to where the contract names it; None when it is missing."""
     if not source.exists():
