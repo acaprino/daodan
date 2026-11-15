@@ -37,7 +37,7 @@ FACT_KEYS = ("languages", "excluded", "units", "workspace", "toolchains", "depen
 TOP_KEYS = FACT_KEYS + ("traps", "unknown", "connections", "cases")
 PER_UNIT = ("dependencies", "frameworks")  # facets whose items name a unit: "unknown" may keep some units
 WHY = ("vendored", "generated", "documentation", "binary", "submodule")
-SCOPES = ("runtime", "dev", "build", "test", "optional", "peer", "provided")
+SCOPES = ("runtime", "dev", "build", "test", "optional", "peer", "provided", "bom", "parent")
 VERSION_FIELDS = ("version", "declared", "resolved")
 KINDS = ("npm-package", "deno-project", "angular-project", "nx-project", "python-project", "cargo-crate",
          "go-module", "maven-module", "gradle-project", "sbt-project", "dotnet-project", "cmake-target",

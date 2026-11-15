@@ -180,7 +180,7 @@
     {
       "id": "version-from-bom",
       "group": "dependencies",
-      "definition": "Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build."
+      "definition": "Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto."
     },
     {
       "id": "version-indirect",

@@ -40,9 +40,9 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 | Dipendenze | `no-lockfile` | Nessun lockfile, quindi le versioni risolte restano vuote. | 54 | letto |  |
 | Dipendenze | `locked-versions` | Le versioni risolte si leggono da un lockfile. | 33 | letto | progetto Python con le versioni in uv.lock |
 | Dipendenze | `transitive-not-direct` | Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette. | 8 | letto |  |
-| Dipendenze | `version-from-bom` | Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build. | 11 | letto |  |
+| Dipendenze | `version-from-bom` | Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto. | 11 | letto |  |
 | Dipendenze | `version-indirect` | La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza. | 13 | letto |  |
-| Dipendenze | `internal-link` | Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on. | 17 | letto |  |
+| Dipendenze | `internal-link` | Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on. | 18 | letto |  |
 | Dipendenze | `git-dependency` | Dipendenza presa da un URL git, un tarball o un sottomodulo, non dal registro. | 6 | letto |  |
 | Dipendenze | `computed-dependencies` | Le dipendenze nascono da codice del progetto (cicli, condizioni, funzioni): leggere le righe non basta a trovarle tutte. | 4 | letto |  |
 | Dipendenze | `declared-in-source` | Dipendenze dichiarate dentro un file sorgente: PEP 723, %pip, import map in HTML, #Requires. | 3 | letto |  |
@@ -782,7 +782,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `version-in-wrapper`: La versione del build tool è scritta solo nel wrapper.
   - `platform-sdk`: L'unità chiede un SDK di piattaforma (Android, Xcode, MAUI, Flutter) che non è un pacchetto.
   - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
   - `vendored-code`: Codice di terzi copiato nel repository.
   - `needs-build`: Il modello completo esiste solo eseguendo la build, quindi in un container.
@@ -821,7 +821,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Casi:
   - `name-mismatch`: Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto.
   - `version-in-wrapper`: La versione del build tool è scritta solo nel wrapper.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `vendored-code`: Codice di terzi copiato nel repository.
   - `needs-build`: Il modello completo esiste solo eseguendo la build, quindi in un container.
   - `missing-file`: Un file nominato dalla configurazione non è nel repository.
@@ -832,7 +832,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Linguaggi: Java.
 - Unità: gradle-project (5).
 - Workspace: gradle.
-- File delle dipendenze: gradle/libs.versions.toml, libs/money/settings.gradle.kts, settings.gradle.kts.
+- File delle dipendenze: domain/build.gradle.kts, gradle/libs.versions.toml, libs/money/settings.gradle.kts, settings.gradle.kts.
 - Versioni dichiarate:
   - gradle: 8.11.1 (`gradle/wrapper/gradle-wrapper.properties`)
   - java: 21 (`buildSrc/src/main/kotlin/inventory.java-conventions.gradle.kts`); 17 (`libs/money/build.gradle.kts`)
@@ -843,7 +843,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `nested-module`: Un modulo con il suo manifesto sta dentro la cartella di un altro, e il comando del genitore non lo vede.
   - `inherited-settings`: Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore.
   - `version-in-wrapper`: La versione del build tool è scritta solo nel wrapper.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `version-indirect`: La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
   - `vendored-code`: Codice di terzi copiato nel repository.
@@ -896,7 +896,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `custom-source-roots`: Le radici dei sorgenti non sono quelle di default e si leggono dalla configurazione del build.
   - `source-sets`: Più source set o target in un'unità, con dipendenze e task di compilazione propri.
   - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
 
 #### jvm-kotlin-source-sets
@@ -913,7 +913,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Casi:
   - `source-sets`: Più source set o target in un'unità, con dipendenze e task di compilazione propri.
   - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
 
 #### jvm-maven-multi-bom-profile
@@ -931,7 +931,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `name-mismatch`: Il nome di un pacchetto o di un'unità è diverso da come lo scrivono il codice, la cartella o l'artefatto.
   - `inherited-settings`: Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore.
   - `build-variants`: Unità, file o dipendenze cambiano con un'opzione di build: tag, feature, profilo, preset, flavor, piattaforma.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `version-indirect`: La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza.
   - `internal-link`: Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
@@ -1056,7 +1056,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Framework: Hibernate, JUnit Jupiter, Spring Boot, Spring Data JPA, Spring MVC.
 - Servizi: PostgreSQL.
 - Casi:
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `scope-from-groups`: Lo scope si legge da gruppi, extra o configurazioni del build tool.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
   - `needs-build`: Il modello completo esiste solo eseguendo la build, quindi in un container.
@@ -1458,7 +1458,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Linguaggi: Rust.
 - Unità: cargo-crate (4).
 - Workspace: cargo.
-- File delle dipendenze: crates/core/Cargo.toml.
+- File delle dipendenze: Cargo.toml.
 - Versioni dichiarate:
   - rust: 1.74 (`Cargo.toml`)
 - Framework: nessuno.
@@ -1891,7 +1891,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `custom-source-roots`: Le radici dei sorgenti non sono quelle di default e si leggono dalla configurazione del build.
   - `version-in-wrapper`: La versione del build tool è scritta solo nel wrapper.
   - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `version-indirect`: La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza.
   - `computed-dependencies`: Le dipendenze nascono da codice del progetto (cicli, condizioni, funzioni): leggere le righe non basta a trovarle tutte.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
@@ -2171,7 +2171,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `version-in-wrapper`: La versione del build tool è scritta solo nel wrapper.
   - `version-in-image`: La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI.
   - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `vendored-code`: Codice di terzi copiato nel repository.
   - `documentation-tree`: Albero di documentazione da escludere.
   - `binary-file`: File binari da escludere.
@@ -2249,7 +2249,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Linguaggi: C#, CSS, HTML, HTML+Razor, JavaScript, PowerShell, Protocol Buffer, Text, TypeScript, XML.
 - Unità: dotnet-project (28), npm-package.
 - Workspace: dotnet.
-- File delle dipendenze: package.json, src/EventBus/EventBus.csproj, src/HybridApp/HybridApp.csproj.
+- File delle dipendenze: Directory.Packages.props, package.json, src/HybridApp/HybridApp.csproj.
 - Versioni dichiarate:
   - dotnet: 10.0.302 (`global.json#sdk.version`); 10.0.x (`.github/workflows/playwright.yml`)
   - node: lts/* (`.github/workflows/playwright.yml`); 20.x (`.github/workflows/markdownlint.yml`)
@@ -2344,8 +2344,9 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `inherited-settings`: Impostazioni di un'unità che vengono da un file di una cartella superiore o da un genitore: rust-toolchain, Directory.Build.props, [workspace.package], pom genitore.
   - `build-variants`: Unità, file o dipendenze cambiano con un'opzione di build: tag, feature, profilo, preset, flavor, piattaforma.
   - `version-in-wrapper`: La versione del build tool è scritta solo nel wrapper.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `version-indirect`: La versione sta in una proprietà, un catalogo o un file centrale, non accanto alla dipendenza.
+  - `internal-link`: Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
   - `generated-file`: File generato da escludere.
   - `vendored-code`: Codice di terzi copiato nel repository.
@@ -2378,7 +2379,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `version-disagree`: La stessa toolchain è chiesta in più file con valori diversi.
   - `version-in-image`: La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI.
   - `toolchain-in-dependencies`: L'interprete o l'SDK compare fra le dipendenze (python, php, sdk: flutter), ma è una toolchain.
-  - `version-from-bom`: Nessuna versione è scritta: la fissano un BOM, un genitore o un plugin del build.
+  - `version-from-bom`: Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
   - `vendored-code`: Codice di terzi copiato nel repository.
   - `documentation-tree`: Albero di documentazione da escludere.
@@ -2449,7 +2450,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - `transitive-not-direct` (8): mix-elixir-umbrella, mix-real-chi, py-pip-tools, py-pipenv, py-poetry-groups, py-uv-src-layout, py-uv-workspace, real-svc-otel-demo
 - `version-from-bom` (11): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-multi-bom-profile, jvm-spring-boot-managed, mix-real-klaxon, real-app-jhipster-sample, real-svc-petclinic-microservices, real-svc-robot-shop
 - `version-indirect` (13): js-pnpm-workspace, jvm-gradle-computed-deps, jvm-gradle-kts-catalog-composite, jvm-maven-multi-bom-profile, jvm-maven-release-apt, jvm-mixed-java-kotlin, mix-dotnet-central, mix-real-javapoet, mix-real-klaxon, real-app-kotlinconf, real-svc-eshop, real-svc-petclinic-microservices, sys-rust-workspace
-- `internal-link` (17): js-lerna, js-local-and-git-deps, js-npm-workspaces, js-pnpm-workspace, js-turborepo, js-yarn-berry, jvm-maven-multi-bom-profile, mix-dart-flutter, mix-elixir-umbrella, mix-terraform-modules, py-monorepo-path-deps, py-requirements-includes, py-uv-workspace, sys-go-nested, sys-go-workspace, sys-rust-path-git, sys-rust-workspace
+- `internal-link` (18): js-lerna, js-local-and-git-deps, js-npm-workspaces, js-pnpm-workspace, js-turborepo, js-yarn-berry, jvm-maven-multi-bom-profile, mix-dart-flutter, mix-elixir-umbrella, mix-terraform-modules, py-monorepo-path-deps, py-requirements-includes, py-uv-workspace, real-svc-petclinic-microservices, sys-go-nested, sys-go-workspace, sys-rust-path-git, sys-rust-workspace
 - `git-dependency` (6): js-local-and-git-deps, mix-edge-submodules, py-requirements-includes, real-app-hoppscotch, sys-git-submodule-absent, sys-rust-path-git
 - `computed-dependencies` (4): jvm-gradle-computed-deps, mix-real-klaxon, py-setup-py-dynamic, real-svc-otel-demo
 - `declared-in-source` (3): js-static-html, py-notebooks, py-pep723-scripts

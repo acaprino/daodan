@@ -343,6 +343,16 @@ class Check(unittest.TestCase):
         for needle in ("colour", "ghost", "sometimes", "needs", "traps"):
             self.assertIn(needle, text)
 
+    def test_bom_and_parent_are_scopes_and_another_scope_is_wrong(self):
+        deps = [{"unit": "g:a", "name": "g:a-bom", "declared": "1.0", "resolved": None, "scope": "bom", "declared_in": "pom.xml"},
+                {"unit": "g:a", "name": "g:a-parent", "declared": "7", "resolved": None, "scope": "parent", "declared_in": "pom.xml"}]
+        doc = {"dependencies": deps, "needs": {"container": False, "reason": ""}, "traps": ["t"]}
+        self.assertEqual(score.check_expected(doc, None), [])
+        got = {"dependencies": [dict(deps[0], scope="test"), deps[1]]}
+        result = score.score(doc, got)["dependencies"]
+        self.assertEqual(result["found"], 1)
+        self.assertEqual([w["fields"] for w in result["wrong"]], [{"scope": {"expected": "bom", "got": "test"}}])
+
     def test_check_accepts_the_hand_made_cases(self):
         self.assertEqual(score.check_expected(NPM_EXPECTED, None), [])
         self.assertEqual(score.check_expected(PY_EXPECTED, None), [])

@@ -42,7 +42,9 @@
       "source_roots": [
         "model/src/main/java"
       ],
-      "depends_on": [],
+      "depends_on": [
+        "com.example.shop:shop-parent"
+      ],
       "config": {
         "source_sets": {
           "main": [
@@ -64,7 +66,8 @@
         "service/src/test/java"
       ],
       "depends_on": [
-        "com.example.shop:shop-model"
+        "com.example.shop:shop-model",
+        "com.example.shop:shop-parent"
       ],
       "config": {
         "source_sets": {
@@ -86,7 +89,8 @@
         "cli/src/main/java"
       ],
       "depends_on": [
-        "com.example.shop:shop-service"
+        "com.example.shop:shop-service",
+        "com.example.shop:shop-parent"
       ],
       "config": {
         "source_sets": {
@@ -152,6 +156,22 @@
       "declared_in": "pom.xml"
     },
     {
+      "unit": "com.example.shop:shop-parent",
+      "name": "com.fasterxml.jackson:jackson-bom",
+      "declared": "2.18.1",
+      "resolved": null,
+      "scope": "bom",
+      "declared_in": "pom.xml#properties.jackson.version"
+    },
+    {
+      "unit": "com.example.shop:shop-parent",
+      "name": "org.junit:junit-bom",
+      "declared": "5.11.3",
+      "resolved": null,
+      "scope": "bom",
+      "declared_in": "pom.xml#properties.junit.version"
+    },
+    {
       "unit": "com.example.shop:shop-model",
       "name": "com.fasterxml.jackson.core:jackson-annotations",
       "declared": null,
@@ -170,10 +190,10 @@
     {
       "unit": "com.example.shop:shop-service",
       "name": "com.google.guava:guava",
-      "declared": null,
-      "resolved": "33.3.1-jre",
+      "declared": "33.3.1-jre",
+      "resolved": null,
       "scope": "runtime",
-      "declared_in": "service/pom.xml"
+      "declared_in": "pom.xml#properties.guava.version"
     },
     {
       "unit": "com.example.shop:shop-service",
@@ -234,11 +254,12 @@
     "Module directories (model, service, cli) differ from artifactIds (shop-model, shop-service, shop-cli).",
     "shop-cli is a module only under the profile cli, activated by -Dwith-cli: the default reactor has two member modules (model, service), a reader that takes every pom.xml on disk finds three. build_tags records the profile that selects it; the aggregator at the root is the workspace root, not a member.",
     "junit-jupiter is declared once in the parent's dependencies and inherited by every child and by the pom-packaged parent itself; declared_in stays pom.xml.",
-    "No child declares a version: guava and the sibling modules get theirs from the parent's dependencyManagement (guava.version, project.version), jackson and junit from the imported BOMs.",
+    "Only cli/pom.xml writes a version, and as a placeholder: guava and the sibling modules get theirs from the parent's dependencyManagement (guava.version, project.version), jackson and junit from the imported BOMs.",
     "The sibling modules (shop-model, shop-service) are written as coordinates in the child poms but are units of this project: they belong in depends_on, not dependencies.",
-    "The BOM imports (jackson-bom, junit-bom, scope import) are not dependencies of any unit. The pluginManagement entries only fix the versions of plugins the default lifecycle runs in every module; they are listed once, under the parent, with scope build.",
+    "The BOM imports (jackson-bom, junit-bom, scope import) are dependencies with scope bom: Maven downloads them and no code uses them. They are listed once, under the parent whose dependencyManagement declares them, not under the children that inherit them; their versions are the properties jackson.version and junit.version. The pluginManagement entries only fix the versions of plugins the default lifecycle runs in every module; they are listed once, under the parent, with scope build.",
     "The Java level differs per module: the parent sets maven.compiler.release 21, inherited by shop-parent, shop-service and shop-cli; model/pom.xml overrides it with 17 for shop-model. A reader that stops at the parent gives 21 everywhere.",
-    "resolved for jackson-annotations, jackson-databind and junit-jupiter is read from jackson-bom 2.18.1 and junit-bom 5.11.3 as published on Maven Central at those versions; guava's comes from the parent's dependencyManagement.",
+    "resolved for jackson-annotations, jackson-databind and junit-jupiter is read from jackson-bom 2.18.1 and junit-bom 5.11.3 as published on Maven Central at those versions. guava's version is written in the project, by the parent's property guava.version: one entry under shop-service, with declared 33.3.1-jre and declared_in pom.xml#properties.guava.version, and resolved null.",
+    "The parent of the three modules is the root pom, a unit of this project: each child has it in depends_on and no dependency entry names it.",
     "cli/pom.xml writes <version>${picocli.version}</version>; the value 4.7.6 is a property of the parent pom, so declared is 4.7.6 with declared_in pom.xml#properties.picocli.version, not the child file."
   ],
   "cases": ["name-mismatch", "inherited-settings", "build-variants", "version-from-bom", "version-indirect", "internal-link", "build-only-dependency", "needs-build"]

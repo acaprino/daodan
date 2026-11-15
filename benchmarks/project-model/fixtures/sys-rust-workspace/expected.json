@@ -118,7 +118,7 @@
       "declared": "1.0",
       "resolved": "1.0.0",
       "scope": "runtime",
-      "declared_in": "crates/core/Cargo.toml"
+      "declared_in": "Cargo.toml"
     },
     {
       "unit": "ledger-core",
@@ -126,7 +126,7 @@
       "declared": "1.0",
       "resolved": "1.0.19",
       "scope": "runtime",
-      "declared_in": "crates/core/Cargo.toml"
+      "declared_in": "Cargo.toml"
     }
   ],
   "frameworks": [],
@@ -139,7 +139,7 @@
     "the root Cargo.toml is a virtual manifest: it has [workspace] and no [package], so the root is not a crate",
     "members is the glob crates/*, and exclude removes crates/experimental: the glob matches four directories, the workspace has three members",
     "crates/experimental is a package of its own outside the workspace: it is absent from Cargo.lock and is not built by cargo build at the root",
-    "the version requirements of cfg-if and itoa are written in [workspace.dependencies] of the root; the member only says workspace = true. declared_in is the member manifest, declared is the inherited requirement",
+    "the version requirements of cfg-if and itoa are written in [workspace.dependencies] of the root; the member only says workspace = true. One entry per crate and package: the unit is ledger-core, whose manifest names them; declared and declared_in come from the root Cargo.toml, which writes the requirement",
     "version, edition and rust-version of every member come from [workspace.package]: no member writes a number",
     "ledger-macros is a proc-macro crate (proc-macro = true): it is compiled for the host and its target kind is proc-macro, not lib",
     "the binary of ledger-cli is named ledger by [[bin]], not ledger-cli",

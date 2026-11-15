@@ -53,6 +53,14 @@
   "dependencies": [
     {
       "unit": "com.squareup:javapoet",
+      "name": "org.sonatype.oss:oss-parent",
+      "declared": "7",
+      "resolved": null,
+      "scope": "parent",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.squareup:javapoet",
       "name": "com.google.truth:truth",
       "declared": "1.4.4",
       "resolved": null,
@@ -165,7 +173,7 @@
     "the compiler plugin sets <compilerId>javac-with-errorprone</compilerId> and <forceJavacCompilerUse>true</forceJavacCompilerUse>, with plexus-compiler-javac-errorprone 2.8.2 and error_prone_core 2.3.1 as plugin dependencies: Error Prone 2.3.1 predates Java 17, so the unmodified pom does not compile on a Java 17 JDK (class file has wrong version 61.0, should be 53.0)",
     "the Java level is the property java.version = 1.8, read by <source> and <target> of the compiler plugin; CI builds on Zulu JDK 8",
     "truth, compile-testing and junit take their versions from properties (truth.version, compile-testing.version, junit.version): declared is the property value, declared_in names the property",
-    "the parent org.sonatype.oss:oss-parent 7 is inherited configuration fetched from Maven Central, not a dependency; it is where the build's extra repositories come from",
+    "the parent org.sonatype.oss:oss-parent 7 is inherited configuration fetched from Maven Central: a dependency with scope parent; it is where the build's extra repositories come from",
     "maven-checkstyle-plugin runs the checkstyle goal in the verify phase with checkstyle.xml; CI also runs source:jar and javadoc:jar, plugins with no version in the pom",
     "src/test/java/ClassNameNoPackageTest.java is a test in the default package",
     "no lock file: every resolved is null"

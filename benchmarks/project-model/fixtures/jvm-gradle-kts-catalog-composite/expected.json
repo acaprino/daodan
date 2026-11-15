@@ -184,11 +184,19 @@
     },
     {
       "unit": ":domain",
+      "name": "org.junit:junit-bom",
+      "declared": "5.11.3",
+      "resolved": null,
+      "scope": "bom",
+      "declared_in": "gradle/libs.versions.toml"
+    },
+    {
+      "unit": ":domain",
       "name": "org.junit.jupiter:junit-jupiter",
       "declared": null,
       "resolved": "5.11.3",
       "scope": "test",
-      "declared_in": "gradle/libs.versions.toml"
+      "declared_in": "domain/build.gradle.kts"
     },
     {
       "unit": ":domain",
@@ -196,7 +204,7 @@
       "declared": null,
       "resolved": "1.11.3",
       "scope": "test",
-      "declared_in": "gradle/libs.versions.toml"
+      "declared_in": "domain/build.gradle.kts"
     },
     {
       "unit": ":api",
@@ -233,7 +241,8 @@
     "The kotlin-dsl plugin in buildSrc has no version: it is embedded in Gradle 8.11.1.",
     "The foojay resolver plugin lets Gradle download the JDKs 21 and 17 it does not find on the machine.",
     "There is no wrapper in libs/money: inside the composite it runs with the main build's Gradle 8.11.1.",
-    "resolved for junit-jupiter (5.11.3) and junit-platform-launcher (1.11.3) is read from junit-bom 5.11.3 as published on Maven Central; guava and jackson-databind have their versions written in the catalog, so they are declared there and resolved stays null.",
+    "resolved for junit-jupiter (5.11.3) and junit-platform-launcher (1.11.3) is read from junit-bom 5.11.3 as published on Maven Central; guava and jackson-databind have their versions written in the catalog, so they are declared there and resolved stays null. The catalog gives junit-jupiter and junit-launcher a coordinate and no version, and no file of the project writes one: declared is null and declared_in is domain/build.gradle.kts, the file that names them.",
+    "testImplementation(platform(libs.junit.bom)) is a dependency of :domain with scope bom, not test; its version 5.11.3 is written in the catalog, so declared_in is gradle/libs.versions.toml.",
     "Workspace members are the subprojects of settings.gradle.kts (domain, api): the root is the workspace root, buildSrc and the included build libs/money are separate builds, not members."
   ],
   "cases": ["virtual-root", "nested-module", "inherited-settings", "version-in-wrapper", "version-from-bom", "version-indirect", "build-only-dependency", "vendored-code", "needs-build"]

@@ -180,7 +180,7 @@
   ],
   "dependencies": [
     {"unit": "EventBus", "name": "Microsoft.Extensions.Options", "declared": "10.0.12", "resolved": null, "scope": "runtime",
-     "declared_in": "src/EventBus/EventBus.csproj"},
+     "declared_in": "Directory.Packages.props"},
     {"unit": "HybridApp", "name": "Microsoft.AspNetCore.Components.WebView.Maui", "declared": "9.0.30", "resolved": null, "scope": "runtime",
      "declared_in": "src/HybridApp/HybridApp.csproj"},
     {"unit": "HybridApp", "name": "Microsoft.Maui.Controls", "declared": "9.0.30", "resolved": null, "scope": "runtime",
@@ -264,7 +264,7 @@
   "traps": [
     "eShop.AppHost has no ProjectReference: it launches each service with AddDotnetProject(\"basket-api\", \"../Basket.API\") by folder path, so its depends_on is empty and the orchestration lives only in src/eShop.AppHost/AppHost.cs",
     "three solutions: eShop.slnx (all 28 projects), src/ClientApp/ClientApp.sln (ClientApp and its tests) and tests/ClientApp.UnitTests/ClientApp.UnitTests.sln; eShop.Web.slnf is a solution filter over eShop.slnx that drops HybridApp, ClientApp and ClientApp.UnitTests, and it is what CI builds (pr-validation.yml, ci.yml)",
-    "central package management: PackageReference carries no Version and the version is in Directory.Packages.props (declared_in stays the csproj, as in mix-dotnet-central); ClientApp, HybridApp and ClientApp.UnitTests set ManagePackageVersionsCentrally=false and write their own versions, so HybridApp asks Microsoft.Maui.Controls 9.0.30 and ClientApp.UnitTests 9.0.40",
+    "central package management: PackageReference carries no Version and the version is in Directory.Packages.props (declared and declared_in come from that file, as in mix-dotnet-central; the unit is the project whose csproj names the package); ClientApp, HybridApp and ClientApp.UnitTests set ManagePackageVersionsCentrally=false and write their own versions, so HybridApp asks Microsoft.Maui.Controls 9.0.30 and ClientApp.UnitTests 9.0.40",
     "no packages.lock.json: every NuGet resolved is null; only the root package-lock.json fixes the three npm versions",
     "MSTest.Sdk 4.0.2 (global.json msbuild-sdks) and Aspire.AppHost.Sdk/13.6.0 (the Sdk attribute of eShop.AppHost and the four functional test projects) are MSBuild project SDKs fetched from NuGet like build plugins: they are build dependencies of those projects, not toolchains; aspire.config.json repeats sdk 13.6.0 for the Aspire CLI and .aspire/settings.json only points the CLI at the AppHost",
     "global.json asks SDK 10.0.302 with rollForward latestFeature and allowPrerelease false, while .config/configuration.*.winget installs Microsoft.DotNet.SDK.Preview with no version; pr-validation workflows and ci.yml take the SDK from global.json, playwright.yml asks 10.0.x",

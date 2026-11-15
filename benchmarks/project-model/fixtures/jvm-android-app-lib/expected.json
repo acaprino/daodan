@@ -218,6 +218,14 @@
     },
     {
       "unit": ":app",
+      "name": "com.google.firebase:firebase-bom",
+      "declared": "33.7.0",
+      "resolved": null,
+      "scope": "bom",
+      "declared_in": "app/build.gradle.kts"
+    },
+    {
+      "unit": ":app",
       "name": "com.google.firebase:firebase-analytics",
       "declared": null,
       "resolved": "22.1.2",
@@ -279,7 +287,7 @@
     "jvmToolchain(17) sets the JDK for Kotlin and, through AGP, the Java compile options; there is no compileOptions block.",
     "The Gradle path names are :app and :core; rootProject.name NotesApp is only the display name.",
     "AGP 8.7.3 requires Gradle 8.9 or later: the wrapper's 8.11.1 satisfies it.",
-    "resolved for firebase-analytics (22.1.2) is read from firebase-bom 33.7.0 as published on Google Maven."
+    "resolved for firebase-analytics (22.1.2) is read from firebase-bom 33.7.0 as published on Google Maven; the BOM itself, implementation(platform(...)), is a dependency of :app with scope bom."
   ],
   "cases": ["name-mismatch", "source-sets", "build-variants", "version-in-wrapper", "platform-sdk", "no-lockfile", "version-from-bom", "build-only-dependency", "vendored-code", "needs-build", "missing-file", "saas-service"]
 }

@@ -82,6 +82,14 @@
     },
     {
       "unit": ":",
+      "name": "org.junit:junit-bom",
+      "declared": "5.11.3",
+      "resolved": null,
+      "scope": "bom",
+      "declared_in": "build.gradle"
+    },
+    {
+      "unit": ":",
       "name": "org.junit.jupiter:junit-jupiter",
       "declared": null,
       "resolved": "5.11.3",
@@ -113,7 +121,7 @@
     "The wrapper declares Gradle 8.11.1 but gradle/wrapper/gradle-wrapper.jar is not in the fixture: ./gradlew cannot start until someone runs gradle wrapper or supplies the jar.",
     "gradlew, gradlew.bat and gradle/wrapper/ are vendored for Linguist: they are not project Shell or Batchfile code.",
     "Java 17 is sourceCompatibility/targetCompatibility, not a toolchain: Gradle compiles with whatever JDK runs it, with -source 17 -target 17 (no --release).",
-    "platform('org.junit:junit-bom:5.11.3') is a version source, not a dependency of the project; it is not listed.",
+    "testImplementation platform('org.junit:junit-bom:5.11.3') is a dependency with scope bom, not test: Gradle downloads the BOM for its versions and no code uses it.",
     "The launcher's version 1.11.3 is not 5.11.3: the JUnit Platform has its own numbering inside the same BOM.",
     "The unit name is the Gradle path ':'; rootProject.name 'hello-groovy' is the project's display name and artifact base name.",
     "The application plugin's mainClass makes App.java the entry file.",

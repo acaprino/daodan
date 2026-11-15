@@ -458,6 +458,14 @@
     },
     {
       "unit": ":app",
+      "name": "com.google.firebase:firebase-bom",
+      "declared": "33.6.0",
+      "resolved": null,
+      "scope": "bom",
+      "declared_in": "android/app/build.gradle.kts"
+    },
+    {
+      "unit": ":app",
       "name": "com.google.firebase:firebase-firestore",
       "declared": null,
       "resolved": "25.1.1",
@@ -556,7 +564,7 @@
     "two Cloud Functions codebases in one firebase.json: ts (Node 20) and py (Python 3.12); nodejs20 and python312 are written only in firebase.json and functions/package.json engines",
     "the Firebase CLI installs Python functions from requirements.txt; this codebase declares its dependencies only in pyproject.toml",
     "Stripe appears with three packages: @stripe/stripe-js (browser), stripe on npm (TypeScript functions), stripe on PyPI (Python functions)",
-    "android/app/google-services.json is absent although the google-services plugin needs it; firebase-firestore has no version: the platform firebase-bom 33.6.0 fixes it to 25.1.1 (read from the BOM on Google Maven), and the BOM itself is a constraint, not listed; the Gradle wrapper jar and gradlew scripts are absent",
+    "android/app/google-services.json is absent although the google-services plugin needs it; firebase-firestore has no version: the platform firebase-bom 33.6.0 fixes it to 25.1.1 (read from the BOM on Google Maven), and the BOM itself is a dependency of :app with scope bom; the Gradle wrapper jar and gradlew scripts are absent",
     "no lockfile anywhere: npm, Cargo and uv locks are not reproducible by hand, every resolved is null",
     "no workspace joins the units: the only one is the Gradle build under android/; firebase.json deploys units but does not build them"
   ],
