@@ -8,6 +8,7 @@ the end use a real engine and run only with DAODAN_CONTAINER_SMOKE=1.
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import os
 import shutil
@@ -16,6 +17,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import threading
 import time
 import types
 import unittest
@@ -41,8 +43,13 @@ VALUED = {"--name", "--network", "--memory", "--memory-swap", "--pids-limit", "-
 box = lambda name: state / "containers" / name
 volume = lambda name: state / "volumes" / name
 verb = args[0] if args else ""
-if verb == "version" or verb == "info":
+if verb == "info" and "ServiceIsRemote" in " ".join(args):
+    print("true" if (state / "remote").is_file() else "false")
+elif verb == "version" or verb == "info":
     print("linux")
+elif verb == "context":
+    endpoint = state / "endpoint"
+    print(endpoint.read_text() if endpoint.is_file() else "npipe:////./pipe/docker_engine")
 elif verb == "create":
     rest, mounts = args[1:], []
     while rest[0] in VALUED:
@@ -89,6 +96,8 @@ elif verb == "cp" and args[1] == "-":
     (box(name) / "copy.tar").write_bytes(data)
     with tarfile.open(fileobj=io.BytesIO(data)) as bundle:
         bundle.extractall(box(name) / "fs", filter="data")
+elif verb == "cp" and args[1] != "-" and (state / "served.tar").is_file():  # as a hostile container would
+    sys.stdout.buffer.write((state / "served.tar").read_bytes())
 elif verb == "cp":
     name, path = args[1].split(":", 1)
     target = box(name) / "fs" / path.lstrip("/")
@@ -128,6 +137,29 @@ def tree_digest(root: Path) -> dict[str, str]:
     """Every file under `root` but `.git`, with the sha256 of its bytes."""
     return {path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in sorted(root.rglob("*")) if path.is_file() and ".git" not in path.relative_to(root).parts}
+
+
+def unfixed_block(self, count):
+    """`TarInfo._block` as CPython had it before its fix of CVE-2025-8194: a negative count goes back."""
+    blocks, remainder = divmod(count, tarfile.BLOCKSIZE)
+    return (blocks + 1 if remainder else blocks) * tarfile.BLOCKSIZE
+
+
+def negative_size_tar() -> bytes:
+    """A file, then a header whose size is -512. CPython before its fix reads that header again forever
+    (CVE-2025-8194); after it, the archive silently ends there."""
+    data = io.BytesIO()
+    with tarfile.open(fileobj=data, mode="w", format=tarfile.USTAR_FORMAT) as bundle:
+        first = tarfile.TarInfo("out/a.txt")
+        first.size = 1
+        bundle.addfile(first, io.BytesIO(b"a"))
+        bundle.addfile(tarfile.TarInfo("out/again"), io.BytesIO(b""))
+    raw = bytearray(data.getvalue())
+    at = 2 * tarfile.BLOCKSIZE  # the first header and its one block of data
+    raw[at + 124:at + 136] = b"\xff" + (256**11 - 512).to_bytes(11, "big")  # base-256: -512
+    raw[at + 148:at + 156] = b" " * 8
+    raw[at + 148:at + 155] = b"%06o\0" % sum(raw[at:at + tarfile.BLOCKSIZE])
+    return bytes(raw)
 
 
 class FakeEngineTest(unittest.TestCase):
@@ -199,6 +231,132 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual((self.out / "result.txt").read_text(), "hello")
         self.assertEqual(result["outputs"], [str(self.out / "result.txt")])
 
+    def serve(self, *members: tuple[str, bytes | str, str]) -> None:
+        """The tar the fake hands back for any output: (name, data or link target, kind)."""
+        with tarfile.open(self.state / "served.tar", "w") as bundle:
+            for name, data, kind in members:
+                entry = tarfile.TarInfo(name)
+                if kind == "file":
+                    entry.size = len(data)
+                    bundle.addfile(entry, io.BytesIO(data))
+                    continue
+                entry.type = {"dir": tarfile.DIRTYPE, "symlink": tarfile.SYMTYPE, "hardlink": tarfile.LNKTYPE,
+                              "fifo": tarfile.FIFOTYPE, "device": tarfile.CHRTYPE}[kind]
+                entry.linkname = data if kind in ("symlink", "hardlink") else ""
+                bundle.addfile(entry)
+
+    def test_an_output_holding_anything_but_files_and_folders_is_refused(self):
+        for kind, target in (("symlink", "../../outside"), ("symlink", "inside.txt"), ("hardlink", "out/a.txt"),
+                             ("fifo", ""), ("device", "")):
+            with self.subTest(kind=kind, target=target):
+                shutil.rmtree(self.out, ignore_errors=True)
+                self.serve(("out", "", "dir"), ("out/a.txt", b"a", "file"), ("out/odd", target, kind))
+                result = self.run_operation(["exit", "0"], outputs=["/out"])
+                self.assertEqual(result["state"], "failed", result)
+                self.assertIn("not regular files", result["cause"])
+                self.assertFalse((self.out / "out").exists())
+                self.assertEqual([p.name for p in self.out.iterdir() if p.name.startswith(".incoming")], [])
+
+    def test_outputs_are_summed_against_the_cap_before_anything_is_unpacked(self):
+        self.serve(("out", "", "dir"), ("out/a.bin", b"x" * 600, "file"), ("out/b.bin", b"y" * 600, "file"))
+        with mock.patch.object(container, "OUTPUT_CAP", 1000):
+            result = self.run_operation(["exit", "0"], outputs=["/out"])
+        self.assertEqual(result["state"], "failed", result)
+        self.assertIn("1000", result["cause"])
+        self.assertFalse((self.out / "out").exists())
+
+    def test_an_archive_longer_than_the_cap_is_cut_while_it_streams(self):
+        self.serve(("out", "", "dir"), ("out/a.bin", b"x" * 5000, "file"))
+        with mock.patch.object(container, "OUTPUT_CAP", 1000), mock.patch.object(container, "STREAM_SLACK", 0):
+            result = self.run_operation(["exit", "0"], outputs=["/out"])
+        self.assertEqual(result["state"], "failed", result)
+        self.assertIn("is over the 1000 bytes", result["cause"])
+        self.assertFalse((self.out / "out").exists())
+
+    def test_a_member_named_twice_is_refused(self):
+        self.serve(("out", "", "dir"), ("out/a.txt", b"first", "file"), ("out/a.txt", b"second", "file"))
+        result = self.run_operation(["exit", "0"], outputs=["/out"])
+        self.assertEqual(result["state"], "failed", result)
+        self.assertFalse((self.out / "out").exists())
+
+    def test_an_output_never_replaces_a_file_already_in_the_output_folder(self):
+        self.out.mkdir(parents=True, exist_ok=True)
+        (self.out / "index.scip").write_bytes(b"earlier")
+        self.serve(("index.scip", b"later", "file"))
+        result = self.run_operation(["exit", "0"], outputs=["/out"])
+        self.assertEqual(result["state"], "failed", result)
+        self.assertEqual((self.out / "index.scip").read_bytes(), b"earlier")
+
+    def test_an_output_never_replaces_a_file_of_the_run(self):
+        self.serve((container.RECORD_NAME, b'{"phase": "forged"}\n', "file"))
+        result = self.run_operation(["exit", "0"], outputs=["/out"])
+        self.assertEqual(result["state"], "failed", result)
+        rows = (self.out / container.RECORD_NAME).read_text(encoding="utf-8")
+        self.assertNotIn("forged", rows)
+
+    def bounded(self, outputs: list[str], seconds: int = 30) -> dict:
+        """The operation bringing back `outputs`, which must end within `seconds`."""
+        box = {}
+        worker = threading.Thread(target=lambda: box.update(result=self.run_operation(["exit", "0"], outputs=outputs)),
+                                  daemon=True)
+        worker.start()
+        worker.join(seconds)
+        self.assertFalse(worker.is_alive(), f"the operation did not end within {seconds} s")
+        return box["result"]
+
+    def test_outputs_are_written_by_daodan_never_by_tarfile_extraction(self):
+        refuse = mock.Mock(side_effect=AssertionError("tarfile extraction called"))
+        with mock.patch.object(tarfile.TarFile, "extractall", refuse), \
+                mock.patch.object(tarfile.TarFile, "extract", refuse):
+            result = self.run_operation(["emit", "/out/r.txt", "hello"], outputs=["/out/r.txt"])
+        self.assertEqual(result["state"], "done", result)
+        self.assertEqual((self.out / "r.txt").read_text(), "hello")
+
+    def test_an_output_naming_a_place_outside_its_folder_is_refused(self):
+        for name in ("../escaped.txt", "out/../../escaped.txt", "/escaped.txt", "out\\..\\escaped.txt",
+                     "C:escaped.txt", "out/CON", "out/trailing.", "out/a\x01b"):
+            with self.subTest(name=name):
+                shutil.rmtree(self.out, ignore_errors=True)
+                self.serve(("out", "", "dir"), ("out/a.txt", b"a", "file"), (name, b"x", "file"))
+                result = self.bounded(["/out"])
+                self.assertEqual(result["state"], "failed", result)
+                self.assertIn("name", result["cause"])
+                self.assertFalse((self.out / "out").exists())
+                self.assertEqual(list(self.scratch.rglob("escaped.txt")), [])
+                self.assertFalse(Path("/escaped.txt").exists())
+                self.assertEqual([p.name for p in self.out.iterdir() if p.name.startswith(".incoming")], [])
+
+    def test_a_header_with_a_negative_size_fails_and_ends_on_any_python(self):
+        for hook in ("_block", "_proc_pax", "_proc_gnulong"):  # the reader's methods Daodan guards, 3.12 to 3.14
+            self.assertTrue(callable(getattr(tarfile.TarInfo, hook, None)), hook)
+        (self.state / "served.tar").write_bytes(negative_size_tar())
+        for label, block in (("this Python", tarfile.TarInfo._block), ("before the fix", unfixed_block)):
+            with self.subTest(label), mock.patch.object(tarfile.TarInfo, "_block", block):
+                shutil.rmtree(self.out, ignore_errors=True)
+                result = self.bounded(["/out"])
+                self.assertEqual(result["state"], "failed", result)
+                self.assertIn("negative", result["cause"])
+                self.assertFalse((self.out / "out").exists())
+
+    def test_an_oversized_header_is_refused_before_it_is_parsed(self):
+        for kind in ("pax", "gnu long name"):
+            with self.subTest(kind):
+                shutil.rmtree(self.out, ignore_errors=True)
+                data = io.BytesIO()
+                pax = kind == "pax"
+                with tarfile.open(fileobj=data, mode="w",
+                                  format=tarfile.PAX_FORMAT if pax else tarfile.GNU_FORMAT) as bundle:
+                    entry = tarfile.TarInfo("out/a.txt" if pax else "out/" + "a" * (container.HEADER_CAP + 1))
+                    entry.size = 1
+                    if pax:
+                        entry.pax_headers = {"comment": "1" * (container.HEADER_CAP + 1)}
+                    bundle.addfile(entry, io.BytesIO(b"a"))
+                (self.state / "served.tar").write_bytes(data.getvalue())
+                result = self.bounded(["/out"])
+                self.assertEqual(result["state"], "failed", result)
+                self.assertIn("header", result["cause"])
+                self.assertFalse((self.out / "out").exists())
+
     def test_out_dir_inside_the_project_is_refused(self):
         with self.assertRaises(ValueError):
             container.run_in_container(self.project, ["exit", "0"], image="fake/runtime:1",
@@ -214,6 +372,21 @@ class FakeEngineTest(unittest.TestCase):
         with tarfile.open(self.state / "containers" / name / "copy.tar") as bundle:
             names = sorted(member.name for member in bundle.getmembers() if member.isfile())
         self.assertEqual(names, ["work/.gitignore", "work/data/fixture.csv", "work/package.json", "work/src/app.js"])
+
+    def test_credential_files_stay_out_of_the_copy_in_every_folder_tracked_or_not(self):
+        written = [".npmrc", "packages/app/.npmrc", ".pypirc", "tools/.netrc"]
+        for name in written:
+            (self.project / name).parent.mkdir(parents=True, exist_ok=True)
+            (self.project / name).write_text("//registry.npmjs.org/:_authToken=secret\n", encoding="utf-8")
+        if self.git:
+            git = [self.git, "-C", str(self.project)]
+            subprocess.run([*git, "add", "-f", *written], check=True, capture_output=True)
+        self.run_operation(["exit", "0"])
+        name = self.created()[0][self.created()[0].index("--name") + 1]
+        with tarfile.open(self.state / "containers" / name / "copy.tar") as bundle:
+            names = [member.name for member in bundle.getmembers()]
+        for secret in written:
+            self.assertNotIn(f"work/{secret}", names)
 
     def test_copy_holds_what_git_tracks_in_dot_directories_with_the_mode_git_records(self):
         if not self.git:
@@ -240,6 +413,33 @@ class FakeEngineTest(unittest.TestCase):
                                          "work/mvnw", "work/package.json", "work/src/app.js"])
         self.assertEqual(files["work/mvnw"], 0o755)
         self.assertEqual(files["work/.mvn/jvm.config"], 0o644)
+
+    def test_a_work_tree_git_does_not_answer_for_is_a_gap_not_a_copy_of_ignored_files(self):
+        (self.project / ".git").mkdir(exist_ok=True)
+        refusing = self.scratch / ("git.cmd" if os.name == "nt" else "git")
+        script = "import sys; sys.stderr.write('fatal: detected dubious ownership'); sys.exit(128)"
+        if os.name == "nt":
+            refusing.write_text(f'@"{sys.executable}" -c "{script}"\r\n')
+        else:
+            refusing.write_text(f'#!/bin/sh\nexec "{sys.executable}" -c "{script}"\n')
+            refusing.chmod(0o755)
+        for git in (None, str(refusing)):
+            with self.subTest(git=git), mock.patch.object(container, "git_executable", return_value=git):
+                result = self.run_operation(["exit", "0"])
+                self.assertEqual(result["state"], "gap", result)
+                self.assertIn("Git", result["cause"])
+                self.assertTrue(result["remedy"])
+        self.assertEqual(self.created(), [])
+
+    def test_a_project_outside_any_work_tree_is_copied_without_git(self):
+        loose = self.scratch / "loose"
+        (loose / "src").mkdir(parents=True)
+        (loose / "src" / "a.py").write_text("x = 1\n", encoding="utf-8")
+        with mock.patch.object(container, "git_executable", return_value=None), \
+                mock.patch.object(container, "free_memory", return_value=64 * 2**30):
+            result = container.run_in_container(loose, ["exit", "0"], image="fake/runtime:1", out_dir=self.out,
+                                                engine=self.engine)
+        self.assertEqual(result["state"], "done", result)
 
     def test_inputs_reach_the_container_at_their_own_paths(self):
         tool = self.scratch / "served" / "tool.zip"
@@ -420,6 +620,7 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual(execute[execute.index("--memory-swap") + 1], str(512 * 2**20))
         self.assertEqual(execute[execute.index("--pids-limit") + 1], "64")
         self.assertEqual(execute[execute.index("--cpus") + 1], "1.5")
+        self.assertEqual(execute[execute.index("--security-opt") + 1], "no-new-privileges")
         self.assertIn(["kill", name], self.calls())
         self.assertIn(["rm", "-f", name], self.calls())
 
@@ -573,7 +774,8 @@ class FakeEngineTest(unittest.TestCase):
         (config / "config.json").write_text('{"currentContext": "mine", "proxies": {}}')
         (config / "contexts" / "meta" / "abc" / "meta.json").write_text('{"Name": "mine"}')
         before = tree_digest(config)
-        with mock.patch.dict(os.environ, {"PATH": str(bin_dir), "DOCKER_CONFIG": str(config)}), \
+        path = os.pathsep.join([str(bin_dir), *([str(Path(self.git).parent)] if self.git else [])])  # Git reads it
+        with mock.patch.dict(os.environ, {"PATH": path, "DOCKER_CONFIG": str(config)}), \
                 mock.patch.object(container, "free_memory", return_value=64 * 2**30):
             found = container.find_engine()
             self.assertEqual(found.name, "docker")
@@ -582,8 +784,67 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual(result["state"], "done", result)
         self.assertEqual(tree_digest(config), before)
         flat = [token for call in self.calls() for token in call]
-        self.assertNotIn("context", flat)
+        self.assertEqual([call[:2] for call in self.calls() if "context" in call], [["context", "inspect"]])  # read
         self.assertNotIn("--context", flat)
+
+    def wrapped_engine(self) -> dict:
+        """The fake reached as the user's `docker` on PATH, with an empty Docker configuration."""
+        bin_dir = self.scratch / "bin"
+        bin_dir.mkdir(exist_ok=True)
+        if os.name == "nt":
+            (bin_dir / "docker.cmd").write_text(f'@"{sys.executable}" "{self.fake}" "{self.state}" %*\r\n')
+        else:
+            wrapper = bin_dir / "docker"
+            wrapper.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{self.fake}" "{self.state}" "$@"\n')
+            wrapper.chmod(0o755)
+        (self.scratch / "docker-config").mkdir(exist_ok=True)
+        return {"PATH": str(bin_dir), "DOCKER_CONFIG": str(self.scratch / "docker-config")}
+
+    # Guarantee 2: the copy never leaves this machine.
+    def test_an_engine_that_talks_to_another_machine_is_never_used(self):
+        remote = {"DOCKER_HOST": ["tcp://build.example.com:2376", "ssh://user@build.example.com"],
+                  "endpoint": ["tcp://10.0.0.5:2375", "ssh://user@build.example.com"]}
+        for where, endpoints in remote.items():
+            for endpoint in endpoints:
+                with self.subTest(where=where, endpoint=endpoint):
+                    variables = self.wrapped_engine()
+                    (self.state / "endpoint").unlink(missing_ok=True)
+                    if where == "DOCKER_HOST":
+                        variables["DOCKER_HOST"] = endpoint
+                    else:
+                        (self.state / "endpoint").write_text(endpoint)
+                    with mock.patch.dict(os.environ, variables), self.assertRaises(container.Gap) as caught:
+                        container.find_engine(own=False)
+                    self.assertIn(endpoint, caught.exception.cause)
+                    self.assertTrue(caught.exception.remedy)
+        self.assertEqual(self.created(), [])
+
+    def test_a_local_pipe_or_socket_is_used(self):
+        for endpoint in ("npipe:////./pipe/docker_engine", "unix:///var/run/docker.sock"):
+            with self.subTest(endpoint=endpoint):
+                (self.state / "endpoint").write_text(endpoint)
+                with mock.patch.dict(os.environ, self.wrapped_engine()):
+                    self.assertEqual(container.find_engine(own=False).name, "docker")
+
+    def test_a_podman_service_elsewhere_is_never_used(self):
+        bin_dir = self.scratch / "podman-bin"
+        bin_dir.mkdir()
+        if os.name == "nt":
+            (bin_dir / "podman.cmd").write_text(f'@"{sys.executable}" "{self.fake}" "{self.state}" %*\r\n')
+        else:
+            wrapper = bin_dir / "podman"
+            wrapper.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{self.fake}" "{self.state}" "$@"\n')
+            wrapper.chmod(0o755)
+        (self.state / "remote").write_text("")
+        with mock.patch.dict(os.environ, {"PATH": str(bin_dir)}), self.assertRaises(container.Gap) as caught:
+            container.find_engine(own=False)
+        self.assertIn("podman", caught.exception.cause)
+        (self.state / "remote").unlink()
+        with mock.patch.dict(os.environ, {"PATH": str(bin_dir), "CONTAINER_HOST": "tcp://build.example.com:8080"}), \
+                self.assertRaises(container.Gap):
+            container.find_engine(own=False)
+        with mock.patch.dict(os.environ, {"PATH": str(bin_dir)}):
+            self.assertEqual(container.find_engine(own=False).name, "podman")
 
 
 SMOKE = os.environ.get("DAODAN_CONTAINER_SMOKE") == "1"

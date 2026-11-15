@@ -227,9 +227,15 @@ class JavaContainerTests(FakeEngineTest):
         self.play_success()
         self.index()
         proxy, prepare, execute = self.created()
-        self.assertEqual(proxy[proxy.index(str(container.PROXY_PORT)) + 1:], list(jvm.registries()))
-        for host in ("repo.maven.apache.org", "plugins.gradle.org", "plugins-artifacts.gradle.org"):
+        self.assertEqual(proxy[proxy.index(str(container.PROXY_PORT)) + 1:], list(jvm.registries(self.project)))
+        for host in ("repo1.maven.org", "repo.maven.apache.org"):
             self.assertIn(host, proxy)
+        portal = ("plugins.gradle.org", "plugins-artifacts.gradle.org")
+        for host in portal:  # the Plugin Portal only for Gradle: it also takes plugin uploads
+            (self.assertIn if self.language == "kotlin" else self.assertNotIn)(host, proxy)
+        for host in ("registry.npmjs.org", "registry.yarnpkg.com", "rubygems.org", "pypi.org", "files.pythonhosted.org",
+                     "index.crates.io", "static.crates.io", "api.nuget.org", "proxy.golang.org", "sum.golang.org"):
+            self.assertNotIn(host, proxy)  # registries that accept publishing: a build here runs project code
         for host in ("services.gradle.org", "github.com", "objects.githubusercontent.com",
                      "release-assets.githubusercontent.com"):
             self.assertNotIn(host, proxy)
@@ -258,6 +264,16 @@ class JavaContainerTests(FakeEngineTest):
         script = (self.state / "scripts/execute.sh").read_text(encoding="utf-8")
         self.assertIn(f'cp -a {jvm.KEPT}/. "$OUT"/', script)
         self.assertIn("-Duser.home=$HOME", script)
+
+    def test_each_build_tool_has_its_own_registries(self):
+        maven = jvm.registries(self.project)
+        gradle_project = self.scratch / "gradle-project"
+        gradle_project.mkdir()
+        (gradle_project / "settings.gradle").write_text("rootProject.name = 'x'\n", encoding="utf-8")
+        gradle = jvm.registries(gradle_project)
+        self.assertEqual(set(maven), set(jvm.READ_ONLY))
+        self.assertEqual(set(gradle), {*jvm.READ_ONLY, *jvm.PLUGIN_PORTAL})
+        self.assertEqual(set(jvm.registries(self.scratch / "no-build")), set(jvm.READ_ONLY))
 
     def test_the_project_is_not_changed(self):
         before = tree_digest(self.project)
@@ -375,6 +391,9 @@ class JavaContainerTests(FakeEngineTest):
 
 class KotlinContainerTests(FakeEngineTest):
     language = "kotlin"
+
+    def test_gradle_reaches_only_the_jvm_registries(self):
+        JavaContainerTests.test_preparation_reaches_only_the_registries_and_execution_no_network(self)
 
     def test_outputs_come_back_and_the_contract_is_returned(self):
         self.play_success()

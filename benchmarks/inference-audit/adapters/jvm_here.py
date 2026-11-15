@@ -4,7 +4,7 @@ No container engine runs on Modal, and the function's container is the isolation
 here as subprocesses, over the files the container operation would copy (`container.copy_perimeter`) and
 the tools it would carry (`indexers.jvm.tools`, placed at their own paths), with the outputs under
 `<work_dir>/container/out` as the operation brings them back. The preparation reaches the network
-through the operation's registry proxy (`container.PROXY_SCRIPT`, with `indexers.jvm.registries()`); here it is
+through the operation's registry proxy (`container.PROXY_SCRIPT`, with `indexers.jvm.registries`); here it is
 only a check, since nothing forces a tool through it, and the hosts it refused are returned. The execution has
 the proxy variables empty. Never used on a user's machine: there the build runs only in a container.
 """
@@ -53,7 +53,8 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, prepar
     env.update(jvm.ENV, DAODAN_WORK=str(copy), DAODAN_OUT=str(out))
     proxy_log = out_dir / "proxy.log"
     with proxy_log.open("wb") as handle:
-        proxy = subprocess.Popen([sys.executable, "-c", container.PROXY_SCRIPT, str(PORT), *jvm.registries()],
+        hosts = jvm.registries(Path(project_dir))
+        proxy = subprocess.Popen([sys.executable, "-c", container.PROXY_SCRIPT, str(PORT), *hosts],
                                  stdin=subprocess.DEVNULL, stdout=handle, stderr=subprocess.STDOUT)
     result, runs, prepared = {"state": "done"}, [], ""
     try:

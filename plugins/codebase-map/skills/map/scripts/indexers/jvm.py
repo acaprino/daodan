@@ -15,7 +15,7 @@ language is `unavailable`, with the gap's cause and remedy.
   the distribution site publishes; without a wrapper, `GRADLE` or `MAVEN`. A wrapper that names another site is
   `unavailable`, and nothing is fetched from it. In the container the wrapper only calls that tool, so no build
   downloads a distribution.
-- Preparation, on a network that reaches only `registries()` through the operation's proxy: the build and
+- Preparation, on a network that reaches only `registries` through the operation's proxy: the build and
   `scip-java index`. The build downloads the project's dependencies and its Gradle plugins; its scripts run
   there and stay in the container (spec, section 4).
 - Execution, with no network, from the same image: what reads the build's output, and every output copied
@@ -89,9 +89,14 @@ DISTRIBUTION = {
     "maven": re.compile(r"https://(?:repo\.maven\.apache\.org|repo1\.maven\.org)/maven2/org/apache/maven/"
                         r"apache-maven/([\w.\-]+)/apache-maven-\1-bin\.zip"),
 }
-# Repositories some builds declare beyond the operation's default registries: JCenter (read-only) and Google's
-# Maven under both its names.
-REGISTRIES_ADDED = ("jcenter.bintray.com", "dl.google.com", "maven.google.com")
+# The only hosts a JVM build reaches: the build runs project code, and a registry that accepts publishing
+# (npm, RubyGems, PyPI, crates.io, NuGet, Go) would let it publish the source. Maven Central under its two
+# names, Google's Maven under its two and JCenter take no upload (Central publishes through central.sonatype.com
+# and the OSSRH hosts, never listed; JCenter is read-only since 2021). For Gradle also the Plugin Portal and its
+# artifact host: the Portal does take plugin uploads, with the publisher's key, and Gradle resolves its plugins
+# there; no other way exists to build a Gradle project that applies one.
+READ_ONLY = ("repo1.maven.org", "repo.maven.apache.org", "dl.google.com", "maven.google.com", "jcenter.bintray.com")
+PLUGIN_PORTAL = ("plugins.gradle.org", "plugins-artifacts.gradle.org")
 LIB, TOOLS, KEPT, OUT = "/daodan/state/scip-java/lib", "/daodan/state/tools", "/daodan/state/out", "/daodan/out"
 ENV = {"TERM": "dumb"}
 PIDS = 4096  # threads count: Gradle, the Kotlin daemon and scip-java each start a hundred or more
@@ -173,9 +178,10 @@ NEWER = (re.compile(r"languageVersion=(\d+)"), re.compile(r"release version (\d+
 CLASS_FILE = re.compile(r"class file (?:has wrong )?version (\d+)\.0")
 
 
-def registries() -> tuple[str, ...]:
-    import container
-    return tuple(dict.fromkeys((*container.REGISTRIES, *REGISTRIES_ADDED)))
+def registries(project_dir: Path) -> tuple[str, ...]:
+    """The hosts the build of `project_dir` may reach: `READ_ONLY`, and `PLUGIN_PORTAL` when Gradle builds it."""
+    gradle = any(tool == "gradle" for tool, *_ in wanted(project_dir))
+    return READ_ONLY + (PLUGIN_PORTAL if gradle else ())
 
 
 def script(phase: str, body: str) -> str:
@@ -359,7 +365,7 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
     result = container.run_in_container(
         project_dir, ["bash", "-c", script("execute", execute)], image=IMAGE, out_dir=out_dir,
         prepare=["bash", "-c", script("prepare", prepare)], outputs=[OUT], env=dict(ENV), timeout=timeout,
-        prepare_timeout=prepare_timeout, memory=memory, pids=PIDS, registries=registries(), engine=engine,
+        prepare_timeout=prepare_timeout, memory=memory, pids=PIDS, registries=registries(project_dir), engine=engine,
         inputs=lambda: tools(project_dir))
     runs, prepared = [], ""
     for phase in ("prepare", "execute"):

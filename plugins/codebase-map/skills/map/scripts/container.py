@@ -73,6 +73,12 @@ HOME = STATE + "/home"
 VOLUME_NAME = re.compile(r"daodan-(?:work|state)-[0-9a-f]{12}")  # the only names a run removes
 RESULTS = "/daodan/out/results"  # each command's code and streams, brought back by `run_commands`
 NETWORKS = ("none", "registries")
+OUTPUT_CAP = 2**30  # what the declared outputs of a run may hold together
+RUN_FILES = (RECORD_NAME, "prepare.log", "execute.log")  # the run's own files, never an output's name
+STREAM_SLACK = 2**26  # what tar headers and padding may add to the files' bytes, and far more
+HEADER_CAP = 2**13  # a pax or GNU long-name header: a 4096-byte path and the times fit
+# A member name no system may receive as written: a Windows device, a character Windows refuses or a control.
+UNSAFE_PART = re.compile(r'(?is)(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?|.*[\x00-\x1f\\:*?"<>|].*|.*[. ]')
 # The registries a preparation may reach, by host; everything else is refused by the proxy.
 REGISTRIES = (
     "registry.npmjs.org", "registry.yarnpkg.com", "pypi.org", "files.pythonhosted.org",
@@ -235,8 +241,33 @@ def registered_distros() -> tuple[str | None, dict[str, str]]:
     return names.get(default), folders
 
 
+LOCAL_ENDPOINTS = ("unix://", "npipe://")  # an engine reached any other way runs on another machine
+
+
+def elsewhere(name: str, path: str) -> str | None:
+    """Where the user's `name` sends the copy when that is not this machine (its endpoint), else None. Read as
+    the CLI resolves it, changing nothing: `DOCKER_HOST`, else the current context; `CONTAINER_HOST`, else
+    whether Podman's service is remote (a machine or a connection)."""
+    variable = os.environ.get("DOCKER_HOST" if name == "docker" else "CONTAINER_HOST")
+    if variable:
+        return None if variable.startswith(LOCAL_ENDPOINTS) else variable
+    probe = ("context", "inspect", "--format", "{{.Endpoints.docker.Host}}") if name == "docker" else (
+        "info", "--format", "{{.Host.ServiceIsRemote}}")
+    try:
+        answer = subprocess.run([path, *probe], stdin=subprocess.DEVNULL, capture_output=True, timeout=20)
+    except (OSError, subprocess.TimeoutExpired):
+        return f"an endpoint {name} does not state"
+    said = answer.stdout.decode("utf-8", "replace").strip()
+    local = said.startswith(LOCAL_ENDPOINTS) if name == "docker" else said == "false"
+    if answer.returncode == 0 and local:
+        return None
+    return (said or "an endpoint it does not state") if name == "docker" else "a Podman service elsewhere"
+
+
 def find_engine(*, own: bool = True) -> Engine:
-    """The user's engine that answers (`docker`, then `podman`), else Daodan's own; a Gap when none can run."""
+    """The user's engine that answers (`docker`, then `podman`) on this machine, else Daodan's own; a Gap when
+    none can run. An engine whose endpoint is elsewhere is never used: the project's copy would leave."""
+    remote = []
     for name, probe in (("docker", ("version", "--format", "{{.Server.Os}}")),
                         ("podman", ("info", "--format", "{{.Host.Os}}"))):
         path = shutil.which(name)
@@ -247,7 +278,14 @@ def find_engine(*, own: bool = True) -> Engine:
         except (OSError, subprocess.TimeoutExpired):
             continue
         if answer.returncode == 0 and answer.stdout.decode("utf-8", "replace").strip() == "linux":
-            return Engine(name, (path,))
+            endpoint = elsewhere(name, path)
+            if endpoint is None:
+                return Engine(name, (path,))
+            remote.append(f"{name} talks to {endpoint}")
+    if remote and not own:
+        raise Gap(f"{'; '.join(remote)}: the project's copy would leave this machine",
+                  "point Docker or Podman to an engine on this machine (a local pipe or socket); Daodan changes "
+                  "neither its context nor its variables")
     if not own:
         raise Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
     return own_engine()
@@ -411,18 +449,44 @@ def own_engine() -> Engine:
     raise Gap(f"Daodan's Kiri did not start: {tail[0]}", f"see {home / 'daemon.log'}")
 
 
-def tracked(project: Path) -> dict[str, int]:
-    """The files Git tracks under `project`, dot directories included, with the mode Git records; none without Git."""
+def work_tree_git(project: Path) -> str | None:
+    """Git for `project` when a `.git` is at or above it, None outside every work tree; a Gap when Git is not
+    there or does not answer for it: without Git the copy would carry what Git ignores."""
+    marker = next((folder / ".git" for folder in (project, *project.parents) if (folder / ".git").exists()), None)
+    if marker is None:
+        return None
+    remedy = "install Git, or let it read this repository (git config --global --add safe.directory)"
     git = git_executable()
+    if git is None:
+        raise Gap(f"{marker} is there and no Git is on PATH: the copy cannot leave out what Git ignores", remedy)
+    try:
+        answer = subprocess.run([git, "-C", str(project), "rev-parse", "--is-inside-work-tree"],
+                                stdin=subprocess.DEVNULL, capture_output=True, timeout=120)
+    except (OSError, subprocess.SubprocessError) as error:
+        raise Gap(f"Git did not answer for {project} ({error}): the copy cannot leave out what Git ignores",
+                  remedy) from error
+    if answer.returncode != 0:
+        said = answer.stderr.decode("utf-8", "replace").strip()[-300:]
+        raise Gap(f"Git refuses {project} ({said}): the copy cannot leave out what Git ignores", remedy)
+    return git
+
+
+def tracked(project: Path) -> dict[str, int]:
+    """The files Git tracks under `project`, dot directories included, with the mode Git records; none outside a
+    work tree. A Gap when Git does not answer inside one (`work_tree_git`)."""
+    git = work_tree_git(project)
     if git is None:
         return {}
     try:
         listed = subprocess.run([git, "-C", str(project), "ls-files", "-z", "--stage"], stdin=subprocess.DEVNULL,
                                 capture_output=True, timeout=120)
-    except (OSError, subprocess.SubprocessError):
-        return {}
+    except (OSError, subprocess.SubprocessError) as error:
+        raise Gap(f"Git did not list {project} ({error})", "install Git") from error
+    if listed.returncode != 0:
+        raise Gap(f"Git did not list {project}: {listed.stderr.decode('utf-8', 'replace').strip()[-300:]}",
+                  "install Git, or let it read this repository")
     modes = {}
-    for entry in listed.stdout.split(b"\0") if listed.returncode == 0 else ():
+    for entry in listed.stdout.split(b"\0"):
         info, _, name = entry.partition(b"\t")
         if info[:6] in (b"100644", b"100755"):
             modes[name.decode("utf-8", "surrogateescape")] = 0o755 if info[:6] == b"100755" else 0o644
@@ -553,8 +617,11 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
             except subprocess.TimeoutExpired:
                 cli(engine, "kill", box)
                 row["exit_code"], row["outcome"] = None, "timeout"
+        budget = OUTPUT_CAP
         for path in outputs:
-            row["outputs"] += fetch(engine, box, path, out_dir)
+            files, size = fetch(engine, box, path, out_dir, budget)
+            row["outputs"] += files
+            budget -= size
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
         row["outcome"], row["cause"] = "failed", str(error)
     finally:
@@ -563,19 +630,100 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
     return row
 
 
-def fetch(engine: Engine, box: str, path: str, out_dir: Path) -> list[str]:
-    """A declared output brought out as a tar and unpacked with the data filter; nothing when it is missing."""
+class Header(tarfile.TarInfo):
+    """A tar header read with the refusals CPython's reader lacks in some supported releases: a negative size,
+    which before its fix of CVE-2025-8194 sends the reader back to the same header forever, and a pax header over
+    `HEADER_CAP`, which before 3.12.6 it parses with backtracking (CVE-2024-6232). A GNU long name over the cap
+    is refused too: no output needs one."""
+
+    def _block(self, count):
+        if count < 0:
+            raise tarfile.ReadError("a header gives a negative size")
+        return super()._block(count)
+
+    def _proc_pax(self, archive):
+        self.capped()
+        return super()._proc_pax(archive)
+
+    def _proc_gnulong(self, archive):
+        self.capped()
+        return super()._proc_gnulong(archive)
+
+    def capped(self) -> None:
+        if self.size > HEADER_CAP:
+            raise tarfile.ReadError(f"a header of {self.size} bytes, over the {HEADER_CAP} a name and its times need")
+
+
+def member_parts(name: str) -> list[str] | None:
+    """The folders and file name of an archive member below its folder, or None for a name that could leave the
+    folder or that some system cannot hold as written (the same rule everywhere)."""
+    parts = [part for part in name.split("/") if part not in ("", ".")]
+    if not parts or name.startswith("/") or any(part == ".." or UNSAFE_PART.fullmatch(part) for part in parts):
+        return None
+    return parts
+
+
+def unpack(bundle: tarfile.TarFile, members: list[tarfile.TarInfo], folder: Path, path: str) -> None:
+    """Every member written by Daodan into the empty `folder`, never by tarfile's extraction: names checked
+    first, folders made, regular files copied from their content and created, never opened over a file."""
+    placed = []
+    for member in members:
+        parts = member_parts(member.name)
+        if parts is None:
+            raise RuntimeError(f"output {path} refused: the member name {member.name!r} leaves its folder or is "
+                               "not a file name on every system")
+        placed.append((member, folder.joinpath(*parts)))
+    for member, target in placed:
+        if member.isdir():
+            target.mkdir(parents=True, exist_ok=True)
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with bundle.extractfile(member) as source, target.open("xb") as handle:
+            shutil.copyfileobj(source, handle, 2**20)
+
+
+def fetch(engine: Engine, box: str, path: str, out_dir: Path, budget: int) -> tuple[list[str], int]:
+    """A declared output brought out as a plain tar, read only up to `budget` bytes of files with `Header`:
+    regular files and folders only, their sizes summed before anything is written, then written by `unpack`
+    into a fresh empty folder and moved into `out_dir`, never over a file already there. Nothing when it is
+    missing."""
     with tempfile.TemporaryFile() as archive:
-        if cli(engine, "cp", f"{box}:{path}", "-", stdout=archive).returncode != 0:
-            return []
+        process = subprocess.Popen([*engine.argv, "cp", f"{box}:{path}", "-"], stdin=subprocess.DEVNULL,
+                                   stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        size = 0
+        for chunk in iter(lambda: process.stdout.read(2**20), b""):
+            size += len(chunk)
+            if size > budget + STREAM_SLACK:
+                process.kill()
+                process.wait()
+                raise RuntimeError(f"output {path} is over the {budget} bytes the run may still bring back")
+            archive.write(chunk)
+        if process.wait() != 0:
+            return [], 0
         archive.seek(0)
         try:
-            with tarfile.open(fileobj=archive) as bundle:
-                members = [member for member in bundle.getmembers() if member.isfile()]
-                bundle.extractall(out_dir, filter="data")
-        except tarfile.TarError as error:
+            with tarfile.open(fileobj=archive, mode="r:", tarinfo=Header) as bundle:
+                members = bundle.getmembers()
+                odd = [member.name for member in members if not (member.isfile() or member.isdir())]
+                if odd:
+                    raise RuntimeError(f"output {path} refused: {', '.join(odd[:3])} are not regular files or folders")
+                total = sum(member.size for member in members if member.isfile())
+                if total > budget:
+                    raise RuntimeError(f"output {path} holds {total} bytes, over the {budget} the run may still "
+                                       "bring back")
+                fresh = Path(tempfile.mkdtemp(prefix=".incoming-", dir=out_dir))
+                try:
+                    unpack(bundle, members, fresh, path)
+                    for item in sorted(fresh.iterdir()):
+                        if item.name in RUN_FILES or (out_dir / item.name).exists():
+                            raise RuntimeError(f"output {path} refused: it would replace {out_dir / item.name}")
+                    for item in sorted(fresh.iterdir()):
+                        shutil.move(str(item), str(out_dir / item.name))
+                finally:
+                    shutil.rmtree(fresh, ignore_errors=True)
+        except (tarfile.TarError, OSError) as error:
             raise RuntimeError(f"output {path} refused: {error}") from error
-    return [str(out_dir / member.name) for member in members]
+    return [str(out_dir / member.name) for member in members if member.isfile()], total
 
 
 def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, ...]) -> None:
