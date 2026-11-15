@@ -85,7 +85,7 @@ def missing(index, rels: list[str], compiled: dict[str, str] | None = None) -> d
         elif rel.startswith("buildSrc/"):
             reasons[rel] = "buildSrc: compiled by its own build, where scip-java's tasks do not run"
         else:
-            reasons[rel] = "in no Gradle source set: no KotlinCompile task lists it"
+            reasons[rel] = "no Kotlin compile task of the build lists it"
     return reasons
 
 
@@ -173,9 +173,55 @@ def refine(index, graph: dict, compiled: dict[str, str]) -> None:
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-kotlin", ("kotlin",), frozenset({"gradle-project", "maven-module"}), True
 MIN_FREE = 5 * 2**30  # the container's memory: 4,688 MB for all its processes on klaxon (13 November 2026)
-PREPARE = r'''step index "$SCIP_JAVA" index --output "$OUT/index.scip"
+# Under Maven scip-java indexes Java only (its getting-started table: Maven, Kotlin no). After its build, the
+# Kotlin Analysis API indexer it ships reads each module's Kotlin files, as scip-java does after a Gradle build:
+# the files in the source folders Maven's own model gives the module (the pre-map's, `DAODAN_MODULES`: a line per
+# module, its folder, a tab, its source folders joined by `:`), with the module's classpath (Maven's own
+# `dependency:build-classpath` and the reactor's compiled classes), into the build's targetroot. Each module's
+# files are written as a compile task (`tasks`), and the targetroot is aggregated again into the index.
+PREPARE = r'''if [ -f pom.xml ] && ! ls build.gradle build.gradle.kts settings.gradle settings.gradle.kts >/dev/null 2>&1; then
+  step index "$SCIP_JAVA" index --output "$OUT/index.scip"
+  TARGETROOT="$WORK/target/scip-targetroot"
+  mkdir -p "$TARGETROOT" "$OUT/kotlin-configs"
+  step classpath mvn -q --batch-mode dependency:build-classpath -Dmdep.outputFile=target/daodan-classpath.txt \
+    -Dmdep.includeScope=test
+  compiled=$(find "$WORK" -type d \( -path '*/target/classes' -o -path '*/target/test-classes' \) | sort | paste -sd: -)
+  printf '%s\n' "$DAODAN_MODULES" | while IFS="$(printf '\t')" read -r module roots; do
+    list=$(mktemp)
+    printf '%s\n' "$roots" | tr : '\n' | while read -r root; do
+      [ -n "$root" ] && [ -d "$WORK/$root" ] && find "$WORK/$root" -type f -name '*.kt'
+    done | sort -u > "$list"
+    [ -s "$list" ] || continue
+    classpath=$compiled
+    [ -f "$WORK/$module/target/daodan-classpath.txt" ] && classpath="$classpath:$(cat "$WORK/$module/target/daodan-classpath.txt")"
+    name=$(printf %s "$module" | tr -c 'A-Za-z0-9.\n' _)
+    { echo "sourceroot $WORK"; printf '%s\n' "$classpath" | tr : '\n' | sed '/^$/d;s/^/classpath /'
+      sed 's/^/source /' "$list"; } > "$OUT/kotlin-configs/maven-${name}.txt"
+    step kotlin xargs -d '\n' -a "$list" java $JAVA_OPTS -classpath "/daodan/state/scip-java/lib/*" \
+      org.scip_code.scip_java.kotlin_analysis.MainKt --sourceroot "$WORK" --targetroot "$TARGETROOT" \
+      --classpath "$classpath" < /dev/null
+  done
+  step aggregate "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$TARGETROOT"
+else
+  step index "$SCIP_JAVA" index --output "$OUT/index.scip"
+fi
 [ -f "$OUT/index.scip" ]
 '''
+
+
+def prepare_script(modules, root: str) -> str:
+    """`PREPARE` for the build in `root` ('' the project's): its Maven modules and their source folders, from the
+    pre-map (`structure`), relative to the build's folder."""
+    import posixpath
+    import shlex
+    inside = [(module, folders) for module, folders in modules
+              if not root or module == root or module.startswith(f"{root}/")]
+    rows = "\n".join(f"{posixpath.relpath(module or '.', root or '.')}\t"
+                     + ":".join(posixpath.relpath(folder, root or ".") for folder in folders)
+                     for module, folders in inside)
+    return f"DAODAN_MODULES={shlex.quote(rows)}\n{PREPARE}"
+
+
 EXECUTE = r'''if [ -d build/scip-targetroot/kotlin-configs ]; then
   step configs cp -r build/scip-targetroot/kotlin-configs "$OUT/kotlin-configs"
 fi
@@ -184,13 +230,16 @@ exit 0
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folder of each build and the JDKs it states."""
+    """What `index` takes from the pre-map: the folder of each build, the JDKs it states and, for Maven, each
+    module with the source folders Maven's own model gives it."""
     from indexers import jvm
-    return {"roots": jvm.build_roots(record), "toolchains": jvm.toolchains(record)}
+    modules = sorted(["" if unit["root"] == "." else unit["root"], list(unit.get("source_roots") or [])]
+                     for unit in record.get("units", []) if unit["kind"] == "maven-module")
+    return {"roots": jvm.build_roots(record), "toolchains": jvm.toolchains(record), "modules": modules}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots, toolchains=(),
-          engine=None, memory: int = MIN_FREE) -> dict:
+          modules=(), engine=None, memory: int = MIN_FREE) -> dict:
     """The forward-only index of each build in `roots` (the pre-map's build folders), each in a container of its
     own, its runs, the indexer's time and memory, `configs` (the compile tasks `refine` reads, with the build
     each came from) and `written` (the index as scip-java wrote it); `files` is not used: a build compiles every
@@ -200,8 +249,9 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     work_dir.mkdir(parents=True, exist_ok=True)
 
     def one(folder: Path, work: Path) -> dict:
-        result, runs, out = jvm.run(folder, work, PREPARE, EXECUTE, memory=memory, engine=engine,
-                                    toolchains=toolchains)
+        root = folder.relative_to(project_dir).as_posix()
+        result, runs, out = jvm.run(folder, work, prepare_script(modules, "" if root == "." else root), EXECUTE,
+                                    memory=memory, engine=engine, toolchains=toolchains)
         return jvm.with_gaps(finish(work, result, runs, out), result)
 
     parts = jvm.builds(project_dir, work_dir, roots, one)

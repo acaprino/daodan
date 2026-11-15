@@ -763,3 +763,36 @@ class RealContainerSmokeTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_a_maven_build_gets_its_kotlin_from_the_analysis_indexer():
+    """scip-java indexes Kotlin only under Gradle (its getting-started table: Maven, Kotlin no). Under Maven the
+    preparation runs the Kotlin Analysis API indexer scip-java ships on each module's Kotlin files, with the
+    module's classpath, into the build's targetroot, writes the compile task `tasks` reads, and aggregates."""
+    maven, gradle = kotlin.PREPARE.split("\nelse\n")
+    assert "pom.xml" in maven.split("\n", 1)[0] and "gradle" in maven.split("\n", 1)[0]
+    for needed in ("dependency:build-classpath", "org.scip_code.scip_java.kotlin_analysis.MainKt",
+                   '--targetroot "$TARGETROOT"', '"$OUT/kotlin-configs/', 'aggregate --output "$OUT/index.scip"'):
+        assert needed in maven, needed
+    assert "MainKt" not in gradle and '"$SCIP_JAVA" index --output "$OUT/index.scip"' in gradle
+
+
+def test_a_kotlin_file_no_compile_task_lists_says_so_for_any_build():
+    reasons = kotlin.missing(None, ["src/main/kotlin/a/A.kt", "build.gradle.kts", "buildSrc/src/main/kotlin/B.kt"])
+    assert reasons["src/main/kotlin/a/A.kt"] == "no Kotlin compile task of the build lists it"
+    assert "Gradle script" in reasons["build.gradle.kts"] and "buildSrc" in reasons["buildSrc/src/main/kotlin/B.kt"]
+
+
+def test_under_maven_the_kotlin_files_are_those_in_the_source_folders_the_pre_map_states():
+    """What Maven compiles comes from Maven's own model, through the pre-map: the analyzer looks for no folder."""
+    record = {"units": [
+        {"kind": "maven-module", "root": ".", "name": "g:shop", "source_roots": []},
+        {"kind": "maven-module", "root": "core", "name": "g:core", "source_roots": ["core/src/main/kotlin", "core/src/main/java"]},
+        {"kind": "gradle-project", "root": "tools/gen", "name": "gen", "source_roots": ["tools/gen/src"]}], "workspace": []}
+    given = kotlin.structure(record)
+    assert given["modules"] == [["", []], ["core", ["core/src/main/kotlin", "core/src/main/java"]]]
+    script = kotlin.prepare_script(given["modules"], "")
+    assert "DAODAN_MODULES='.\t\ncore\tcore/src/main/kotlin:core/src/main/java'\n" in script
+    assert "find \"$WORK\" -name pom.xml" not in script and '"$WORK/$root"' in script
+    nested = kotlin.prepare_script([["svc/api", ["svc/api/src/main/kotlin"]], ["other", ["other/src"]]], "svc")
+    assert "DAODAN_MODULES='api\tapi/src/main/kotlin'\n" in nested  # relative to the build's folder, its own modules

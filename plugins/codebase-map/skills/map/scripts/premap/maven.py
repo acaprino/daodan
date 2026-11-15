@@ -6,7 +6,7 @@ parents and properties resolved, and prints every project of it after inheritanc
 the registries (the help plugin, parent poms, the build's extensions) and loads the build's extensions. `read`
 turns each project into a `maven-module` unit named `groupId:artifactId`, rooted at the folder of its build
 directory's parent, with its pom.xml as manifest, the reactor projects it depends on as edges, and its source
-folders; the reactor is a `maven` workspace with the folders of the projects its root's modules list, profiles
+folders (the build's own and the ones a plugin's configuration names, `PLUGIN_SOURCES`); the reactor is a `maven` workspace with the folders of the projects its root's modules list, profiles
 included, as members. A pom.xml no reactor holds states nothing: Maven does not build it.
 """
 from __future__ import annotations
@@ -23,6 +23,8 @@ FILE = "pom.xml"
 HELP = "org.apache.maven.plugins:maven-help-plugin:3.5.1:effective-pom"
 SCRIPT = f'o=$(mktemp) && mvn -B -ntp -q {HELP} -Doutput="$o" >&2 && cat "$o"'
 NS = "{http://maven.apache.org/POM/4.0.0}"
+# Where a plugin's configuration names the folders it compiles: kotlin-maven-plugin, build-helper-maven-plugin.
+PLUGIN_SOURCES = (("sourceDirs", "sourceDir"), ("sources", "source"))
 
 
 def _folder(rel: str) -> str:
@@ -73,6 +75,9 @@ def read(context, commands, results):
         for key, (project, folder) in found.items():
             sources = [rel(_text(project, f"{NS}build/{NS}{tag}"))
                        for tag in ("sourceDirectory", "testSourceDirectory")]
+            for plugin in project.findall(f"{NS}build/{NS}plugins/{NS}plugin"):  # the folders a plugin compiles
+                sources += [rel((node.text or "").strip()) for held, tag in PLUGIN_SOURCES
+                            for node in plugin.iterfind(f".//{NS}{held}/{NS}{tag}")]
             units.append({"name": key, "kind": "maven-module", "root": folder,
                           "manifest": posixpath.join(folder, FILE).removeprefix("./"),
                           "source_roots": sorted({s for s in sources if s and s in context.inventory.directories}),

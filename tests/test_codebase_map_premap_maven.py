@@ -66,3 +66,30 @@ def test_commands_evaluate_each_top_reactor_with_the_registries_open():
 
     commands = maven.commands(Context())
     assert [c["cwd"] for c in commands] == ["."] and commands[0]["network"] == "registries"
+
+
+def test_the_source_folders_are_the_ones_the_build_and_its_plugins_declare(tmp_path):
+    """Maven's effective pom states where the code is: `sourceDirectory`, `testSourceDirectory`, and the folders
+    a plugin of the build is given to compile (kotlin-maven-plugin's `sourceDirs`, build-helper's `sources`)."""
+    project = tmp_path / "proj"
+    for folder in ("src/main/java", "src/main/kotlin", "src/test/kotlin", "src/generated/java"):
+        (project / folder).mkdir(parents=True)
+        (project / folder / "A.txt").write_text("x\n", encoding="utf-8")
+    (project / "pom.xml").write_text("<project/>\n", encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    pom = f'''<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>g</groupId><artifactId>a</artifactId>
+<build><sourceDirectory>/work/src/main/java</sourceDirectory><testSourceDirectory>/work/src/test/java</testSourceDirectory>
+<directory>/work/target</directory><plugins>
+<plugin><artifactId>kotlin-maven-plugin</artifactId><executions>
+<execution><id>compile</id><configuration><sourceDirs><sourceDir>/work/src/main/kotlin</sourceDir>
+<sourceDir>/work/src/main/java</sourceDir></sourceDirs></configuration></execution>
+<execution><id>test-compile</id><configuration><sourceDirs><sourceDir>/work/src/test/kotlin</sourceDir>
+</sourceDirs></configuration></execution></executions></plugin>
+<plugin><artifactId>build-helper-maven-plugin</artifactId><executions><execution><configuration><sources>
+<source>/work/src/generated/java</source><source>/elsewhere/x</source></sources></configuration></execution>
+</executions></plugin></plugins></build></project>'''
+    answer = lambda commands: [{"returncode": 0, "stdout": pom, "stderr": "", "root": "/work"}]  # noqa: E731
+    record = premap.write(manifest, sources=(maven,), runner=answer)
+    [unit] = [u for u in record["units"] if u["kind"] == "maven-module"]
+    assert unit["source_roots"] == ["src/generated/java", "src/main/java", "src/main/kotlin", "src/test/kotlin"]
