@@ -65,6 +65,7 @@ def read(journal: Path, after: int = 0, limit: int | None = None) -> tuple[list[
     path = Path(journal)
     if not path.is_file():
         return [], after
-    lines = path.read_text(encoding="utf-8").splitlines()
+    text = path.read_text(encoding="utf-8")
+    lines = text.split("\n")[:-1]  # a last line without its newline is still being written: read it next time
     chosen = lines[after:] if limit is None else lines[after:after + limit]
     return [json.loads(line) for line in chosen], after + len(chosen)

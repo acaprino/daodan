@@ -37,6 +37,15 @@ def test_an_event_has_its_step_kind_level_and_message_and_goes_to_every_listener
     assert [e["kind"] for e in later] == ["progress"] and cursor == 2
 
 
+def test_a_line_still_being_written_is_read_next_time(tmp_path):
+    journal = tmp_path / events.JOURNAL
+    events.Bus(journal).emit("step.started", "scan", step="scan")
+    with journal.open("a", encoding="utf-8") as stream:
+        stream.write('{"kind": "prog')  # another process is appending
+    written, cursor = events.read(journal)
+    assert [e["kind"] for e in written] == ["step.started"] and cursor == 1
+
+
 def test_an_unknown_kind_or_level_is_refused():
     bus = events.Bus()
     with pytest.raises(ValueError):
@@ -155,7 +164,8 @@ def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarati
     import indexers
     declared = indexers.analyzers()
     assert {module.ENTRY for module in declared} == {
-        "scip-go", "scip-rust", "scip-typescript", "scip-python", "scip-java", "scip-kotlin", "scip-clang"}
+        "scip-go", "scip-rust", "scip-typescript", "scip-python", "scip-java", "scip-kotlin", "scip-clang",
+        "stylesheet"}
     for module in declared:
         assert module.LANGUAGES and isinstance(module.UNIT_KINDS, frozenset)
         assert isinstance(module.NEEDS_CONTAINER, bool)
@@ -172,6 +182,8 @@ def test_an_analyzer_takes_the_units_of_the_kinds_it_declares():
     for module in indexers.analyzers():
         if module.ENTRY == "scip-python":
             continue  # its runs are the outermost Python projects (`premap.python_runs`)
+        if not module.UNIT_KINDS:
+            continue  # one run over the snapshot's files (`indexers/css.py`): it takes no unit
         record = {"units": [{"kind": kind, "root": f"u{number}", "name": f"u{number}"}
                             for number, kind in enumerate(sorted(module.UNIT_KINDS))], "workspace": []}
         given = module.structure(record)

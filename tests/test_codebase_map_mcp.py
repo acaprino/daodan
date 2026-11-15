@@ -382,6 +382,32 @@ class MapServiceTests(unittest.TestCase):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 fresh.events("example", **values)
 
+    def test_events_and_status_follow_the_analysis_pipeline_of_the_run(self):
+        from pipeline import events as pipeline_events
+        self.create()
+        self.assertIsNone(self.service.status("example")["progress"])
+        bus = pipeline_events.Bus(self.service.root / "runs/example/snapshot" / pipeline_events.JOURNAL)
+        bus.emit("step.started", "scan", step="scan")
+        bus.progress("analyze", 1, 3, analyzer="python", phase="index")
+        bus.progress("analyze", 2, 3, analyzer="python", phase="graph")
+        bus.emit("log", "x" * (mcp_service.MAX_MESSAGE + 5), step="analyze", analyzer="python", level="debug")
+        service_events = self.service.events("example")["events"]
+        first = self.service.events("example", limit=2)
+        self.assertEqual(first["events"], service_events[:2])
+        self.assertEqual([item["kind"] for item in first["pipeline"]["events"]], ["step.started", "progress"])
+        self.assertEqual((first["pipeline"]["next_cursor"], first["pipeline"]["has_more"]), (2, True))
+        rest = self.service.events("example", pipeline_after=first["pipeline"]["next_cursor"])
+        self.assertEqual([item["kind"] for item in rest["pipeline"]["events"]], ["progress", "log"])
+        self.assertEqual(len(rest["pipeline"]["events"][-1]["message"]), mcp_service.MAX_MESSAGE)
+        self.assertEqual((rest["pipeline"]["next_cursor"], rest["pipeline"]["has_more"]), (4, False))
+        self.assertFalse(self.service.events("example", pipeline_after=4)["pipeline"]["events"])
+        progress = self.service.status("example")["progress"]
+        self.assertEqual({key: progress[key] for key in ("step", "analyzer", "done", "total", "phase")},
+                         {"step": "analyze", "analyzer": "python", "done": 2, "total": 3, "phase": "graph"})
+        for values in ({"pipeline_after": -1}, {"pipeline_after": True}, {"pipeline_after": 5}):
+            with self.subTest(values=values), self.assertRaises(ValueError):
+                self.service.events("example", **values)
+
     def test_invalid_checkpoint_event_and_read_requests_fail_as_value_errors(self):
         self.create()
         with self.assertRaises(ValueError):
@@ -769,7 +795,9 @@ class MapServiceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.service.status("example")
 
-    def test_source_and_artifact_links_are_refused_before_reading(self):
+    def test_a_source_link_is_never_read_and_an_artifact_link_is_refused(self):
+        """A link in the project is outside the perimeter: the run is made, the link is named among what the walk
+        left out, and what it points to is never read. A link where an artifact should be is refused."""
         outside = self.project / "outside.py"
         outside.write_text("raise RuntimeError('must not read')")
         linked = self.source / "linked.py"
@@ -777,10 +805,14 @@ class MapServiceTests(unittest.TestCase):
             linked.symlink_to(outside)
         except (OSError, NotImplementedError):
             self.skipTest("symlink creation unavailable")
-        with self.assertRaises(ValueError):
-            self.create()
-        linked.unlink()
         self.create()
+        from snapshot_store import open_snapshot
+        with open_snapshot(self.run_dir / "snapshot/manifest.sqlite") as store:
+            paths = [row[0] for row in store.connection.execute("SELECT path FROM files")]
+            scope = store["scope"]
+        self.assertFalse(any(path.endswith("linked.py") for path in paths), paths)
+        self.assertTrue(any(str(link).endswith("linked.py") for link in scope["skipped"]["links"]), scope)
+        linked.unlink()
         (self.run_dir / "01-structure.md").symlink_to(outside)
         with self.assertRaises(ValueError):
             self.service.artifact("example", "01-structure.md")

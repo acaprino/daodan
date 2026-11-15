@@ -77,7 +77,7 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
 
     @server.tool(annotations=read_only)
     async def codebase_map_status(ctx: Context, run_id: str) -> dict:
-        """Read canonical state and actual delivery gaps, including direct worker changes, and the call-resolution engine state and, per language, its coverage (sites with an answer by class, holes by class, uncertain arcs, complete or lower-bound)."""
+        """Read canonical state and actual delivery gaps, including direct worker changes, and the call-resolution engine state and, per language, its coverage (sites with an answer by class, holes by class, uncertain arcs, complete or lower-bound), and the analysis's last progress (step, analyzer, done of total)."""
         return await _invoke(ctx, service.status, run_id)
 
     @server.tool(annotations=read_only)
@@ -204,10 +204,11 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
 
     @server.tool(annotations=read_only)
     async def codebase_map_events(
-        ctx: Context, run_id: str, after: int = 0, limit: int = 100,
+        ctx: Context, run_id: str, after: int = 0, limit: int = 100, pipeline_after: int = 0,
     ) -> dict:
-        """Replay persistent service events after a cursor; canonical status owns completeness."""
-        return await _invoke(ctx, service.events, run_id, after=after, limit=limit)
+        """Replay persistent service events after a cursor, and in `pipeline` the analysis pipeline's events of the run's snapshot after their own cursor `pipeline_after`; canonical status owns completeness."""
+        return await _invoke(ctx, service.events, run_id, after=after, limit=limit,
+                             pipeline_after=pipeline_after)
 
     @server.tool(annotations=writes)
     async def codebase_map_resume(ctx: Context, run_id: str, phase: int | None = None) -> dict:

@@ -23,6 +23,7 @@ import sys
 import card_store
 import confinement
 import modules as module_graph
+from pipeline import events as pipeline_events
 import resolve_edges
 import retrieval
 import semantic_store
@@ -258,6 +259,7 @@ class MapService:
                  "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite",
                  "snapshot/engine-report.json", "snapshot/engine-pass.running", "snapshot/engine-pass.log",
                  "snapshot/modules.json", "snapshot/modules.md", "snapshot/proposals.json", "snapshot/context",
+                 f"snapshot/{pipeline_events.JOURNAL}",
                  "cards.sqlite"}
         for path in run.glob("[0-9][0-9]-*.md"):
             confinement.reject_link_chain(path)
@@ -285,7 +287,35 @@ class MapService:
                   "source_available": True}
         if engine:
             result["engine"] = self._engine(state, manifest.path, repair=False)
+            result["progress"] = self._progress(manifest.path)
         return result
+
+    def _pipeline_journal(self, manifest):
+        path = Path(manifest).with_name(pipeline_events.JOURNAL)
+        confinement.reject_link_chain(path)
+        return path
+
+    def _pipeline_events(self, manifest, after, limit):
+        """The analysis pipeline's events of the run's snapshot after their own cursor, a count of lines."""
+        if type(after) is not int or after < 0:
+            raise ValueError("pipeline_after must be a nonnegative integer cursor")
+        journal = self._pipeline_journal(manifest)
+        selected, _ = pipeline_events.read(journal, after, limit + 1)
+        # An empty page past the start is the journal's end only when the line before the cursor exists.
+        if after and not selected and not pipeline_events.read(journal, after - 1, 1)[0]:
+            raise ValueError("pipeline cursor is ahead of the analysis journal")
+        selected = [dict(item, message=str(item.get("message", ""))[:MAX_MESSAGE]) for item in selected]
+        page = selected[:limit]
+        return {"events": page, "next_cursor": after + len(page), "has_more": len(selected) > limit}
+
+    def _progress(self, manifest):
+        """The analysis's last `progress` event, so a client shows a percentage without reading every event."""
+        recorded, _ = pipeline_events.read(self._pipeline_journal(manifest))
+        last = next((item for item in reversed(recorded) if item.get("kind") == "progress"), None)
+        if last is None:
+            return None
+        return {"at": last.get("at"), "step": last.get("step"), "analyzer": last.get("analyzer"),
+                **last.get("data", {}), "message": str(last.get("message", ""))[:MAX_MESSAGE]}
 
     def _engine(self, state, manifest, *, repair, environment=None):
         """The run's engine store, repaired when asked, unless the run declined the pass.
@@ -1011,19 +1041,20 @@ class MapService:
                     gaps.extend(declared)
             return {"findings": findings, "gaps": gaps}
 
-    def events(self, run_id, after=0, limit=100):
+    def events(self, run_id, after=0, limit=100, pipeline_after=0):
         if type(after) is not int or after < 0:
             raise ValueError("after must be a nonnegative integer cursor")
         _limit(limit)
         with self._operation():
-            run, _, _, _ = self._bound_run(run_id)
+            run, _, manifest, _ = self._bound_run(run_id)
+            pipeline = self._pipeline_events(manifest.path, pipeline_after, limit)
             journal = self._journal(run)
             if after > len(journal):
                 raise ValueError("cursor is ahead of the persisted journal")
             selected = journal[after:after + limit]
             cursor = selected[-1]["cursor"] if selected else after
             return {"run_id": run_id, "events": selected, "next_cursor": cursor,
-                    "has_more": cursor < len(journal)}
+                    "has_more": cursor < len(journal), "pipeline": pipeline}
 
     def resume(self, run_id, phase=None):
         if phase is not None and (type(phase) is not int or phase not in range(1, 8)):
