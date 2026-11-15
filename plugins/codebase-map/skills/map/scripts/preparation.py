@@ -102,6 +102,7 @@ JAVA_PROXY = (r'if [ -n "${HTTPS_PROXY:-}" ]; then a=${HTTPS_PROXY#*://}; a=${a%
               r' "<proxy><id>https</id><protocol>https</protocol><host>$h</host><port>$p</port></proxy>"'
               r' "<proxy><id>http</id><protocol>http</protocol><host>$h</host><port>$p</port></proxy>"'
               r' "</proxies></settings>" > "$HOME/.m2/settings.xml"; fi')
+COREPACK = "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1"  # corepack: the pnpm or Yarn named
 RESTORES = {  # manager -> the files that mark where its build starts, its own restore, what in its output is an
     # error (`error`) or a failure it reports with success (`failed`), the hosts beside the registries
     "gradle": {"marks": ("settings.gradle", "settings.gradle.kts", "build.gradle", "build.gradle.kts"),
@@ -111,6 +112,17 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
                          "dl.google.com", "maven.google.com")},
     "maven": {"marks": ("pom.xml",), "error": r"^\[ERROR\]", "before": JAVA_PROXY, "hosts": (),
               "line": "mvn -B -q org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline"},
+    # Node: one family, `package.json` marks the folders, the lockfile names the manager (none: npm); scripts off
+    "npm": {"marks": ("package.json",), "family": "node", "error": "^npm (error|ERR!)", "hosts": (),
+            "line": "if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ];"
+                    " then npm ci --ignore-scripts --no-audit --no-fund;"
+                    " else npm install --ignore-scripts --no-audit --no-fund; fi"},
+    "pnpm": {"marks": ("package.json",), "family": "node", "locks": ("pnpm-lock.yaml",), "error": "ERR_PNPM|ERROR",
+             "before": COREPACK, "hosts": (), "line": "corepack pnpm install --frozen-lockfile --ignore-scripts"},
+    "yarn": {"marks": ("package.json",), "family": "node", "locks": ("yarn.lock",), "before": COREPACK,
+             "error": "^error|YN0[0-9]+: .*Error", "hosts": (),
+             "line": "if [ -f .yarnrc.yml ]; then corepack yarn install --immutable --mode=skip-build;"
+                     " else corepack yarn install --frozen-lockfile --ignore-scripts; fi"},
 }
 LOG = "/tmp/daodan-restore.log"
 
@@ -124,15 +136,25 @@ def _inside(rel: str, folder: str) -> bool:
 
 
 def restores(files) -> dict[str, list[str]]:
-    """Per manager, the folders where its restore runs: each folder with one of its marks that no other such
-    folder holds (a Gradle build or a Maven reactor restores its projects from its root)."""
-    out = {}
+    """Per manager, the folders where its restore runs: each folder with a mark of its family that no other such
+    folder holds (a Gradle build, a Maven reactor, a Node workspace restore their projects from their root), and
+    each folder with a lockfile of its own; within a family, the folder's lockfile names the manager, and the
+    manager without `locks` is the default."""
+    files = list(files)
+    families: dict[str, list[str]] = {}
     for manager, spec in RESTORES.items():
-        marked = sorted({_folder(rel) for rel in files if posixpath.basename(rel) in spec["marks"]},
+        families.setdefault(spec.get("family", manager), []).append(manager)
+    out: dict[str, list[str]] = {}
+    for managers in families.values():
+        marks = {m for name in managers for m in RESTORES[name]["marks"]}
+        marked = sorted({_folder(rel) for rel in files if posixpath.basename(rel) in marks},
                         key=lambda f: (f.count("/"), f))
-        tops = [f for f in marked if not any(o != f and _inside(f, o) for o in marked)]
-        if tops:
-            out[manager] = tops
+        locked = {_folder(rel): name for name in managers for rel in files
+                  if posixpath.basename(rel) in RESTORES[name].get("locks", ())}
+        default = next(name for name in managers if not RESTORES[name].get("locks"))
+        for folder in marked:
+            if folder in locked or not any(o != folder and _inside(folder, o) for o in marked):
+                out.setdefault(locked.get(folder, default), []).append(folder)
     return out
 
 

@@ -1,0 +1,5 @@
+{
+  "name": "bad",
+  "version": "1.0.0",
+  "dependencies": {"@example-missing/nothing": "9.9.9"}
+}

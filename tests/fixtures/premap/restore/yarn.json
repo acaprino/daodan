@@ -1,0 +1,12 @@
+{
+ "versions": {
+  "yarn": "node 24.22.3"
+ },
+ "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+ "line": "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1; for f in 'good' 'bad'; do ( cd \"$f\" && if [ -f .yarnrc.yml ]; then corepack yarn install --immutable --mode=skip-build; else corepack yarn install --frozen-lockfile --ignore-scripts; fi ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED yarn %s\\n' \"$f\"; { grep -E '^error|YN0[0-9]+: .*Error' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+ "result": {
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "DAODAN-RESTORE-FAILED yarn bad\nerror Your lockfile needs to be updated, but yarn was run with `--frozen-lockfile`.\nDAODAN-RESTORE-END\n"
+ }
+}

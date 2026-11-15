@@ -48,3 +48,30 @@ def test_every_restore_line_reports_its_failure_and_the_run_goes_on():
     for manager in preparation.RESTORES:
         line = preparation.restore(manager, ["x"])
         assert "DAODAN-RESTORE-FAILED" in line and line.endswith("true"), manager
+
+
+def test_npm_installs_without_scripts_and_a_package_no_registry_has_is_a_gap():
+    gaps = preparation.restore_gaps(recorded("npm")["stderr"])
+    assert [(g["kind"], g["manager"], g["path"]) for g in gaps] == [("restore_failed", "npm", "bad")]
+    assert "@example-missing/nothing" in gaps[0]["detail"]
+
+
+def test_pnpm_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
+    gaps = preparation.restore_gaps(recorded("pnpm")["stderr"])
+    assert [(g["kind"], g["manager"], g["path"]) for g in gaps] == [("restore_failed", "pnpm", "bad")]
+    assert "OUTDATED_LOCKFILE" in gaps[0]["detail"]
+
+
+def test_yarn_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
+    gaps = preparation.restore_gaps(recorded("yarn")["stderr"])
+    assert [(g["kind"], g["manager"], g["path"]) for g in gaps] == [("restore_failed", "yarn", "bad")]
+    assert "lockfile" in gaps[0]["detail"].lower()
+
+
+def test_one_node_folder_has_one_manager_its_lockfile_names():
+    """A workspace's members restore with its root, whatever manager the root uses; a folder with its own
+    lockfile is a project of its own."""
+    assert preparation.restores(["package.json", "pnpm-lock.yaml", "packages/a/package.json"]) == {"pnpm": ["."]}
+    files = ["package.json", "packages/a/package.json", "web/package.json", "web/pnpm-lock.yaml",
+             "site/package.json", "site/yarn.lock"]
+    assert preparation.restores(files) == {"npm": ["."], "pnpm": ["web"], "yarn": ["site"]}
