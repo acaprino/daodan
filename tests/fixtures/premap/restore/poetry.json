@@ -1,0 +1,12 @@
+{
+ "versions": {
+  "poetry": "2.1.3"
+ },
+ "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+ "line": "for f in 'good' 'bad'; do ( cd \"$f\" && poetry install --no-root --no-interaction ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED poetry %s\\n' \"$f\"; { grep -E 'poetry.lock|Error|error' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+ "result": {
+  "returncode": 0,
+  "stdout": "",
+  "stderr": "DAODAN-RESTORE-FAILED poetry bad\npyproject.toml changed significantly since poetry.lock was last generated. Run `poetry lock` to fix the lock file.\nDAODAN-RESTORE-END\n"
+ }
+}

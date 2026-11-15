@@ -22,6 +22,7 @@ IN, T = f"{STATE}/in", f"{STATE}/tools"
 GITHUB = ("github.com", "codeload.github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com")
 UV = ("https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-gnu.tar.gz",
       "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224", "uv.tar.gz")
+UNPACK_UV = f"mkdir -p {T}/uvc {T}/bin && tar -xzf {IN}/uv.tar.gz -C {T}/uvc && ln -sf {T}/uvc/*/uv {T}/bin/uv"
 NEEDS = {
     "vcpkg": {  # the tool, Microsoft's build; the registry is cloned at its default branch, blobs on demand
         "files": [("https://github.com/microsoft/vcpkg-tool/releases/download/2026-10-29/vcpkg-glibc",
@@ -30,11 +31,14 @@ NEEDS = {
                   f" && cp {IN}/vcpkg {T}/vcpkg/vcpkg && chmod 755 {T}/vcpkg/vcpkg && touch {T}/vcpkg/.vcpkg-root"
                   f" && ln -sf {T}/vcpkg/vcpkg {T}/bin/vcpkg"],
         "registries": True, "hosts": GITHUB, "version": "2026-10-29"},  # ports: sources where portfiles say
+    "uv": {"files": [UV], "setup": [UNPACK_UV], "version": "0.11.28"},
     "conan": {"files": [UV], "setup": [  # the image's Python has no pip: uv makes the environment
-        f"mkdir -p {T}/uvc && tar -xzf {IN}/uv.tar.gz -C {T}/uvc && u=$(echo {T}/uvc/*/uv)"
-        f" && $u venv -q --python /usr/bin/python3 {T}/conan && $u pip install -q --python {T}/conan conan==2.34.0"
+        f"{UNPACK_UV} && uv venv -q --python python3 {T}/conan && uv pip install -q --python {T}/conan conan==2.34.0"
         f" && ln -sf {T}/conan/bin/conan {T}/bin/conan"],
               "registries": True, "hosts": ("center2.conan.io",), "version": "2.34.0"},
+    "poetry": {"files": [UV], "setup": [
+        f"{UNPACK_UV} && uv venv -q --python python3 {T}/poetry && uv pip install -q --python {T}/poetry"
+        f" poetry==2.1.3 && ln -sf {T}/poetry/bin/poetry {T}/bin/poetry"], "registries": True, "version": "2.1.3"},
     "arm-none-eabi": {
         "files": [("https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/"
                    "arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi.tar.xz",
@@ -103,6 +107,9 @@ JAVA_PROXY = (r'if [ -n "${HTTPS_PROXY:-}" ]; then a=${HTTPS_PROXY#*://}; a=${a%
               r' "<proxy><id>http</id><protocol>http</protocol><host>$h</host><port>$p</port></proxy>"'
               r' "</proxies></settings>" > "$HOME/.m2/settings.xml"; fi')
 COREPACK = "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1"  # corepack: the pnpm or Yarn named
+PYTHON = ("pyproject.toml", "requirements.txt")
+VENVS = f"{STATE}/venvs"  # a Python project's environment, per folder
+UV_ENV = "export UV_PYTHON_DOWNLOADS=never UV_NO_PROGRESS=1"
 RESTORES = {  # manager -> the files that mark where its build starts, its own restore, what in its output is an
     # error (`error`) or a failure it reports with success (`failed`), the hosts beside the registries
     "gradle": {"marks": ("settings.gradle", "settings.gradle.kts", "build.gradle", "build.gradle.kts"),
@@ -123,6 +130,18 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
              "error": "^error|YN0[0-9]+: .*Error", "hosts": (),
              "line": "if [ -f .yarnrc.yml ]; then corepack yarn install --immutable --mode=skip-build;"
                      " else corepack yarn install --frozen-lockfile --ignore-scripts; fi"},
+    # Python: one family, the lockfile names the manager (none: pip); the environment lives outside the project, and
+    # a Python the project needs comes from the toolchains, never from uv's own downloads
+    "uv": {"marks": PYTHON, "family": "python", "locks": ("uv.lock",), "needs": ["uv"], "before": UV_ENV,
+           "error": "^error|needs to be updated|No solution", "hosts": (),
+           "line": f'UV_PROJECT_ENVIRONMENT="{VENVS}/$f" uv sync --locked --all-packages --no-install-project'},
+    "poetry": {"marks": PYTHON, "family": "python", "locks": ("poetry.lock",), "needs": ["poetry"],
+               "error": "poetry.lock|Error|error", "hosts": (),
+               "line": "poetry install --no-root --no-interaction"},
+    "pip": {"marks": PYTHON, "family": "python", "needs": ["uv"], "before": UV_ENV,
+            "error": "^error|No solution|not found", "hosts": (),
+            "line": f'r=requirements.txt; [ -f $r ] || r=pyproject.toml; uv venv -q --python python3 "{VENVS}/$f"'
+                    f' && uv pip install -q --python "{VENVS}/$f" -r "$r"'},
 }
 LOG = "/tmp/daodan-restore.log"
 
