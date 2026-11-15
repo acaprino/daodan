@@ -314,7 +314,7 @@ def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
     assert go.structure(record) == {"roots": {""}}
     assert rust.structure(record) == {"roots": {"", "crates/a"}}
     assert typescript.structure(record) == {"roots": {"web"}}
-    assert java.structure(record) == kotlin.structure(record) == {"roots": set()}
+    assert java.structure(record) == kotlin.structure(record) == {"roots": set(), "toolchains": []}
     for module in (go, rust, typescript, java, kotlin):
         source = inspect.getsource(module)
         assert "roots" in inspect.signature(module.index).parameters
