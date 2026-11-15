@@ -140,5 +140,12 @@
     "functions-python/pyproject.toml": "[project]\nname = \"shop-functions\"\ndependencies = [\"fastapi>=0.110\"]\n",
     "functions-python/requirements-test.txt": "pytest>=8\n",
     "functions-python/main.py": "import fastapi\n"
+  },
+  "npm_local_link": {
+    "packages/app/index.js": "const { id } = require(\"@acme/lib\");\nconst isNumber = require(\"is-number\");\n\nmodule.exports = (x) => isNumber(id(x));\n",
+    "packages/app/package-lock.json": "{\n  \"name\": \"@acme/app\",\n  \"version\": \"1.0.0\",\n  \"lockfileVersion\": 3,\n  \"requires\": true,\n  \"packages\": {\n    \"\": {\n      \"name\": \"@acme/app\",\n      \"version\": \"1.0.0\",\n      \"dependencies\": {\n        \"@acme/lib\": \"file:../lib\",\n        \"is-number\": \"git+https://github.com/jonschlinkert/is-number.git#7.0.0\"\n      }\n    },\n    \"../lib\": {\n      \"name\": \"@acme/lib\",\n      \"version\": \"1.0.0\"\n    },\n    \"node_modules/@acme/lib\": {\n      \"resolved\": \"../lib\",\n      \"link\": true\n    },\n    \"node_modules/is-number\": {\n      \"version\": \"7.0.0\",\n      \"resolved\": \"git+ssh://git@github.com/jonschlinkert/is-number.git#98e8ff1da1a89f93d1397a24d7413ed15421c139\",\n      \"license\": \"MIT\",\n      \"engines\": {\n        \"node\": \">=0.12.0\"\n      }\n    }\n  }\n}\n",
+    "packages/app/package.json": "{\n  \"name\": \"@acme/app\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\",\n  \"dependencies\": {\n    \"@acme/lib\": \"file:../lib\",\n    \"is-number\": \"git+https://github.com/jonschlinkert/is-number.git#7.0.0\"\n  }\n}\n",
+    "packages/lib/index.js": "module.exports = { id: (x) => x };\n",
+    "packages/lib/package.json": "{\n  \"name\": \"@acme/lib\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\"\n}\n"
   }
 }

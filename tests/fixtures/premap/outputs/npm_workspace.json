@@ -48,8 +48,8 @@
    },
    "result": {
     "returncode": 0,
-    "stdout": "{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"86b4c21b-c67f-452a-aac8-c34871f89309\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\"}],\"repositories\":{\"local\":{\"problems\":[],\"branches\":[],\"packageFiles\":{\"npm\":[{\"deps\":[],\"extractedConstraints\":{\"npm\":\">=7\"},\"managerData\":{\"packageJsonName\":\"mono\",\"hasPackageManager\":false,\"workspaces\":[\"packages/*\"],\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"package.json\",\"lockFiles\":[\"package-lock.json\"]},{\"deps\":[],\"extractedConstraints\":{\"npm\":\">=7\"},\"packageFileVersion\":\"1.0.0\",\"managerData\":{\"packageJsonName\":\"a\",\"hasPackageManager\":false,\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"packages/a/package.json\",\"lockFiles\":[\"package-lock.json\"]},{\"deps\":[{\"depType\":\"dependencies\",\"depName\":\"a\",\"currentValue\":\"1.0.0\",\"datasource\":\"npm\",\"prettyDepType\":\"dependency\",\"isInternal\":true,\"lockedVersion\":null,\"packageName\":\"a\"}],\"extractedConstraints\":{\"npm\":\">=7\"},\"packageFileVersion\":\"1.0.0\",\"managerData\":{\"packageJsonName\":\"b\",\"hasPackageManager\":false,\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"packages/b/package.json\",\"lockFiles\":[\"package-lock.json\"]}]}}}}",
-    "stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":44,\"level\":40,\"logContext\":\"86b4c21b-c67f-452a-aac8-c34871f89309\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-14T20:52:32.562Z\",\"v\":0}\n",
+    "stdout": "{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"341b62b3-c414-4810-aeff-d4e44f88ec95\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\"}],\"repositories\":{\"local\":{\"problems\":[],\"branches\":[],\"packageFiles\":{\"npm\":[{\"deps\":[],\"extractedConstraints\":{\"npm\":\">=7\"},\"managerData\":{\"packageJsonName\":\"mono\",\"hasPackageManager\":false,\"workspaces\":[\"packages/*\"],\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"package.json\",\"lockFiles\":[\"package-lock.json\"]},{\"deps\":[],\"extractedConstraints\":{\"npm\":\">=7\"},\"packageFileVersion\":\"1.0.0\",\"managerData\":{\"packageJsonName\":\"a\",\"hasPackageManager\":false,\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"packages/a/package.json\",\"lockFiles\":[\"package-lock.json\"]},{\"deps\":[{\"depType\":\"dependencies\",\"depName\":\"a\",\"currentValue\":\"1.0.0\",\"datasource\":\"npm\",\"prettyDepType\":\"dependency\",\"isInternal\":true,\"lockedVersion\":null,\"packageName\":\"a\"}],\"extractedConstraints\":{\"npm\":\">=7\"},\"packageFileVersion\":\"1.0.0\",\"managerData\":{\"packageJsonName\":\"b\",\"hasPackageManager\":false,\"npmLock\":\"package-lock.json\",\"yarnZeroInstall\":false,\"workspacesPackages\":[\"packages/*\"],\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"packages/b/package.json\",\"lockFiles\":[\"package-lock.json\"]}]}}}}",
+    "stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":239,\"level\":40,\"logContext\":\"341b62b3-c414-4810-aeff-d4e44f88ec95\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-15T10:47:06.047Z\",\"v\":0}\n",
     "root": "/work/npm_workspace"
    }
   },
@@ -122,6 +122,28 @@
     "argv": [
      "npm",
      "query",
+     ":link",
+     "--package-lock-only"
+    ],
+    "cwd": ".",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"a\",\n    \"version\": \"1.0.0\",\n    \"main\": \"dist/index.js\",\n    \"bin\": {\n      \"a\": \"bin/a.js\"\n    },\n    \"exports\": {\n      \".\": {\n        \"import\": \"./esm/index.mjs\"\n      }\n    },\n    \"_id\": \"a@1.0.0\",\n    \"pkgid\": \"a@1.0.0\",\n    \"location\": \"packages/a\",\n    \"path\": \"/work/npm_workspace/packages/a\",\n    \"realpath\": \"/work/npm_workspace/packages/a\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"b\",\n    \"version\": \"1.0.0\",\n    \"dependencies\": {\n      \"a\": \"1.0.0\"\n    },\n    \"_id\": \"b@1.0.0\",\n    \"pkgid\": \"b@1.0.0\",\n    \"location\": \"packages/b\",\n    \"path\": \"/work/npm_workspace/packages/b\",\n    \"realpath\": \"/work/npm_workspace/packages/b\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
      ":root, .workspace",
      "--package-lock-only"
     ],
@@ -165,6 +187,28 @@
     "argv": [
      "npm",
      "query",
+     ":link",
+     "--package-lock-only"
+    ],
+    "cwd": "packages/a",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"a\",\n    \"version\": \"1.0.0\",\n    \"main\": \"dist/index.js\",\n    \"bin\": {\n      \"a\": \"bin/a.js\"\n    },\n    \"exports\": {\n      \".\": {\n        \"import\": \"./esm/index.mjs\"\n      }\n    },\n    \"_id\": \"a@1.0.0\",\n    \"pkgid\": \"a@1.0.0\",\n    \"location\": \"packages/a\",\n    \"path\": \"/work/npm_workspace/packages/a\",\n    \"realpath\": \"/work/npm_workspace/packages/a\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"b\",\n    \"version\": \"1.0.0\",\n    \"dependencies\": {\n      \"a\": \"1.0.0\"\n    },\n    \"_id\": \"b@1.0.0\",\n    \"pkgid\": \"b@1.0.0\",\n    \"location\": \"packages/b\",\n    \"path\": \"/work/npm_workspace/packages/b\",\n    \"realpath\": \"/work/npm_workspace/packages/b\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
      ":root, .workspace",
      "--package-lock-only"
     ],
@@ -198,6 +242,28 @@
    "result": {
     "returncode": 0,
     "stdout": "[]\n",
+    "stderr": "",
+    "root": "/work/npm_workspace"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":link",
+     "--package-lock-only"
+    ],
+    "cwd": "packages/b",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"a\",\n    \"version\": \"1.0.0\",\n    \"main\": \"dist/index.js\",\n    \"bin\": {\n      \"a\": \"bin/a.js\"\n    },\n    \"exports\": {\n      \".\": {\n        \"import\": \"./esm/index.mjs\"\n      }\n    },\n    \"_id\": \"a@1.0.0\",\n    \"pkgid\": \"a@1.0.0\",\n    \"location\": \"packages/a\",\n    \"path\": \"/work/npm_workspace/packages/a\",\n    \"realpath\": \"/work/npm_workspace/packages/a\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  },\n  {\n    \"name\": \"b\",\n    \"version\": \"1.0.0\",\n    \"dependencies\": {\n      \"a\": \"1.0.0\"\n    },\n    \"_id\": \"b@1.0.0\",\n    \"pkgid\": \"b@1.0.0\",\n    \"location\": \"packages/b\",\n    \"path\": \"/work/npm_workspace/packages/b\",\n    \"realpath\": \"/work/npm_workspace/packages/b\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/a\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
     "stderr": "",
     "root": "/work/npm_workspace"
    }

@@ -4,7 +4,8 @@
 (`--package-lock-only`) and without it (npm then reads the manifests, since nothing is installed); neither
 installs, runs a script or reaches a registry. `read` keeps the lockfile's answer, else the other, and gives
 the units (the root and the workspaces npm resolves), from the lockfile only the workspace with its members
-and the edges between units (without one npm links no workspace: a `model_partial` gap), and each unit's
+and the edges between units, also to a package a `file:` dependency links to a folder of the project
+(`npm query ":link"`; without a lockfile npm links nothing: a `model_partial` gap), and each unit's
 `config.entry_files`: the files its `main`, `module`, `browser`, `bin` and `exports` name, relative to the
 project's root, as written (a build output the snapshot does not hold stays as declared).
 """
@@ -16,6 +17,9 @@ from pathlib import PurePosixPath
 
 NAME, VERSION, RANK = "npm", "bundled with Node", "model"  # the version that answers (`npm --version`) labels the facts
 QUERY = ["npm", "query", ":root, .workspace"]
+# The packages a `file:` dependency links to a folder of the project: outside any workspace npm lists them
+# only here, and an edge to one is an edge between units.
+LINKS = ["npm", "query", ":link", "--package-lock-only"]
 
 
 def _parent(rel: str) -> str:
@@ -34,8 +38,8 @@ def commands(context):
         return None
     env = {"npm_config_update_notifier": "false"}
     return [{"tool": "npm", "argv": ["npm", "--version"], "cwd": ".", "env": env, "network": "none"}] + [
-        {"tool": "npm", "argv": QUERY + mode, "cwd": folder, "env": env, "network": "none"}
-        for folder in folders for mode in (["--package-lock-only"], [])]
+        {"tool": "npm", "argv": argv, "cwd": folder, "env": env, "network": "none"}
+        for folder in folders for argv in (QUERY + ["--package-lock-only"], QUERY, LINKS)]
 
 
 def _strings(value) -> list[str]:
@@ -56,11 +60,27 @@ def _entries(node: dict, root: str) -> list[str]:
     return sorted({_join(root, path) for path in declared if not path.startswith(("http:", "https:"))})
 
 
+def _nodes(result) -> list | None:
+    """npm's answer, or None when the command gave none."""
+    try:
+        nodes = json.loads(result["stdout"]) if result and result["returncode"] == 0 else None
+    except ValueError:
+        return None
+    return nodes if isinstance(nodes, list) else None
+
+
+def _local(nodes: list) -> list[dict]:
+    """The nodes that are folders of the project, not installed packages."""
+    return [n for n in nodes if isinstance(n, dict) and "node_modules/" not in f"/{n.get('location', '')}/"]
+
+
 def read(context, commands, results):
     answers: dict[str, dict] = {}
     version = results[0]["stdout"].strip() if results[0]["returncode"] == 0 else None
     for command, result in zip(commands[1:], results[1:]):
-        answers.setdefault(command["cwd"], {})["lock" if "--package-lock-only" in command["argv"] else "tree"] = result
+        locked = "--package-lock-only" in command["argv"]
+        mode = "links" if command["argv"] == LINKS else "lock" if locked else "tree"
+        answers.setdefault(command["cwd"], {})[mode] = result
     gaps, units, workspaces, covered = [], [], [], set()
     for folder in sorted(answers, key=lambda f: (f.count("/"), f)):
         if folder in covered:
@@ -75,7 +95,7 @@ def read(context, commands, results):
                 except ValueError:
                     pass
         if not isinstance(nodes, list):
-            stderr = "; ".join((r["stderr"] or "").strip()[-200:] for r in answers[folder].values())
+            stderr = "; ".join((answers[folder][m]["stderr"] or "").strip()[-200:] for m in ("lock", "tree"))
             gaps.append({"kind": "model_failed", "path": folder, "detail": f"npm query: {stderr}"})
             continue
         base = result.get("root")
@@ -88,17 +108,20 @@ def read(context, commands, results):
             return _join(folder, node.get("location") or ".")
 
         # Without the lockfile nothing is installed: npm then links no workspace, so it states no member and no
-        # edge between units (silence there would read as "none").
+        # edge between units (silence there would read as "none"). The same holds for the edges when the links
+        # did not answer.
         locked = mode == "lock"
-        local = [n for n in nodes if isinstance(n, dict) and "node_modules/" not in f"/{n.get('location', '')}/"]
-        names = {n.get("name") for n in local if n.get("name")}
+        local = _local(nodes)
+        linked = _nodes(answers[folder].get("links")) if locked else None
+        names = {n.get("name") for n in local + _local(linked or []) if n.get("name")}
         for node in local:
             root = place(node)
             if root in covered:
                 continue
             covered.add(root)
-            unit = {"name": node.get("name"), "kind": "npm-package", "root": root, "manifest": _join(root, "package.json")}
-            if locked:
+            unit = {"name": node.get("name"), "kind": "npm-package", "root": root,
+                    "manifest": _join(root, "package.json")}
+            if linked is not None:
                 unit["depends_on"] = sorted({dep for section in ("dependencies", "devDependencies",
                                                                  "optionalDependencies", "peerDependencies")
                                              for dep in (node.get(section) or {}) if dep in names})
@@ -106,6 +129,9 @@ def read(context, commands, results):
             if entries:
                 unit["config"] = {"entry_files": entries}
             units.append(unit)
+        if locked and linked is None:
+            gaps.append({"kind": "model_partial", "path": folder,
+                         "detail": "npm query :link did not answer: no edge between units stated"})
         root_node = next((n for n in local if not n.get("location")), None)
         if root_node is None or not root_node.get("workspaces"):
             continue

@@ -1,0 +1,207 @@
+{
+ "versions": {
+  "go": "go version go1.27.3 linux/amd64",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "uv": "uv 0.11.28 (x86_64-unknown-linux-gnu)",
+  "renovate": "44.239.1"
+ },
+ "runs": [
+  {
+   "command": {
+    "tool": "daodan-enry",
+    "argv": [
+     "daodan-enry",
+     "."
+    ],
+    "cwd": ".",
+    "env": {},
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[{\"path\":\"packages/app/index.js\",\"language\":\"JavaScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/app/package-lock.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":true,\"binary\":false},{\"path\":\"packages/app/package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/lib/index.js\",\"language\":\"JavaScript\",\"vendored\":false,\"documentation\":false,\"configuration\":false,\"dot_file\":false,\"generated\":false,\"binary\":false},{\"path\":\"packages/lib/package.json\",\"language\":\"JSON\",\"vendored\":false,\"documentation\":false,\"configuration\":true,\"dot_file\":false,\"generated\":false,\"binary\":false}]\n",
+    "stderr": "",
+    "root": "/work/npm_local_link"
+   }
+  },
+  {
+   "command": {
+    "tool": "renovate",
+    "argv": [
+     "renovate",
+     "--platform=local",
+     "--dry-run=extract",
+     "--report-type=file",
+     "--report-path=/dev/stdout"
+    ],
+    "cwd": ".",
+    "env": {
+     "LOG_LEVEL": "fatal",
+     "LOG_FILE": "/dev/stderr",
+     "LOG_FILE_LEVEL": "warn",
+     "NO_COLOR": "1",
+     "RENOVATE_ONBOARDING": "false",
+     "RENOVATE_REQUIRE_CONFIG": "ignored",
+     "RENOVATE_BASE_DIR": "/tmp/daodan-renovate"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"f951bdee-ccfe-43d8-96f5-4c353827f722\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\"}],\"repositories\":{\"local\":{\"problems\":[{\"name\":\"renovate\",\"level\":40,\"logContext\":\"f951bdee-ccfe-43d8-96f5-4c353827f722\",\"githubDeps\":[\"is-number\"],\"msg\":\"GitHub token is required for some dependencies\"}],\"branches\":[],\"packageFiles\":{\"npm\":[{\"deps\":[{\"depType\":\"dependencies\",\"depName\":\"@acme/lib\",\"currentValue\":\"file:../lib\",\"skipReason\":\"file\",\"prettyDepType\":\"dependency\",\"lockedVersion\":null,\"packageName\":\"@acme/lib\"},{\"depType\":\"dependencies\",\"depName\":\"is-number\",\"currentValue\":\"7.0.0\",\"currentRawValue\":\"git+https://github.com/jonschlinkert/is-number.git#7.0.0\",\"datasource\":\"github-tags\",\"versioning\":\"npm\",\"packageName\":\"jonschlinkert/is-number\",\"pinDigests\":false,\"sourceUrl\":\"https://github.com/jonschlinkert/is-number\",\"gitRef\":true,\"prettyDepType\":\"dependency\",\"lockedVersion\":\"7.0.0\",\"skipReason\":\"github-token-required\"}],\"extractedConstraints\":{\"npm\":\">=7\"},\"packageFileVersion\":\"1.0.0\",\"managerData\":{\"packageJsonName\":\"@acme/app\",\"hasPackageManager\":false,\"npmLock\":\"packages/app/package-lock.json\",\"yarnZeroInstall\":false,\"npmrcFileName\":null},\"skipInstalls\":false,\"packageFile\":\"packages/app/package.json\",\"lockFiles\":[\"packages/app/package-lock.json\"]},{\"deps\":[],\"extractedConstraints\":{},\"packageFileVersion\":\"1.0.0\",\"managerData\":{\"packageJsonName\":\"@acme/lib\",\"hasPackageManager\":false,\"yarnZeroInstall\":false,\"npmrcFileName\":null},\"skipInstalls\":true,\"packageFile\":\"packages/lib/package.json\"}]}}}}",
+    "stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":124,\"level\":40,\"logContext\":\"f951bdee-ccfe-43d8-96f5-4c353827f722\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/opt/node-v24.22.3-linux-x64/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-15T10:46:55.010Z\",\"v\":0}\n{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":124,\"level\":40,\"logContext\":\"f951bdee-ccfe-43d8-96f5-4c353827f722\",\"repository\":\"local\",\"githubDeps\":[\"is-number\"],\"msg\":\"GitHub token is required for some dependencies\",\"time\":\"2026-11-15T10:46:55.620Z\",\"v\":0}\n",
+    "root": "/work/npm_local_link"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "--version"
+    ],
+    "cwd": ".",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "11.19.1\n",
+    "stderr": "",
+    "root": "/work/npm_local_link"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace",
+     "--package-lock-only"
+    ],
+    "cwd": "packages/app",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"@acme/app\",\n    \"version\": \"1.0.0\",\n    \"main\": \"index.js\",\n    \"dependencies\": {\n      \"@acme/lib\": \"file:../lib\",\n      \"is-number\": \"git+https://github.com/jonschlinkert/is-number.git#7.0.0\"\n    },\n    \"_id\": \"@acme/app@1.0.0\",\n    \"pkgid\": \"@acme/app@1.0.0\",\n    \"location\": \"\",\n    \"path\": \"/work/npm_local_link/packages/app\",\n    \"realpath\": \"/work/npm_local_link/packages/app\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [\n      \"node_modules/@acme/lib\",\n      \"node_modules/is-number\"\n    ],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_local_link"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace"
+    ],
+    "cwd": "packages/app",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"@acme/app\",\n    \"version\": \"1.0.0\",\n    \"main\": \"index.js\",\n    \"dependencies\": {\n      \"@acme/lib\": \"file:../lib\",\n      \"is-number\": \"git+https://github.com/jonschlinkert/is-number.git#7.0.0\"\n    },\n    \"_id\": \"@acme/app@1.0.0\",\n    \"pkgid\": \"@acme/app@1.0.0\",\n    \"location\": \"\",\n    \"path\": \"/work/npm_local_link/packages/app\",\n    \"realpath\": \"/work/npm_local_link/packages/app\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_local_link"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":link",
+     "--package-lock-only"
+    ],
+    "cwd": "packages/app",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"@acme/lib\",\n    \"version\": \"1.0.0\",\n    \"main\": \"index.js\",\n    \"_id\": \"@acme/lib@1.0.0\",\n    \"pkgid\": \"lib@npm:@acme/lib@1.0.0\",\n    \"location\": \"../lib\",\n    \"path\": \"/work/npm_local_link/packages/lib\",\n    \"realpath\": \"/work/npm_local_link/packages/lib\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_local_link"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace",
+     "--package-lock-only"
+    ],
+    "cwd": "packages/lib",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 1,
+    "stdout": "{\n  \"error\": {\n    \"code\": \"EUSAGE\",\n    \"summary\": \"A package lock or shrinkwrap file is required in package-lock-only mode\\n\\nRetrieve a filtered list of packages\\n\\nUsage:\\nnpm query <selector>\\n\\nOptions:\\n[-g|--global]\\n[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\\n[--workspaces] [--include-workspace-root] [--package-lock-only]\\n[--expect-results|--expect-result-count <count>] [--before <date>]\\n[--min-release-age <days>]\\n[--min-release-age-exclude <pkg|glob> [--min-release-age-exclude <pkg|glob> ...]]\\n\\n  -g|--global\\n    Operates in \\\"global\\\" mode, so that packages are installed into the\\n\\n  -w|--workspace\\n    Enable running a command in the context of the configured workspaces of the\\n\\n  --workspaces\\n    Set to true to run the command in the context of **all** configured\\n\\n  --include-workspace-root\\n    Include the workspace root when workspaces are enabled for a command.\\n\\n  --package-lock-only\\n    If set to true, the current operation will only use the `package-lock.json`,\\n\\n  --expect-results\\n    Tells npm whether or not to expect results from the command.\\n\\n  --before\\n    If passed to `npm install`, will rebuild the npm tree such that only\\n\\n  --min-release-age\\n    If set, npm will build the npm tree such that only versions that were\\n\\n  --min-release-age-exclude\\n    A list of package names or `minimatch` glob patterns that are exempt\\n\\n\\nRun \\\"npm help query\\\" for more info\",\n    \"detail\": \"\"\n  }\n}\n",
+    "stderr": "npm error code EUSAGE\nnpm error\nnpm error A package lock or shrinkwrap file is required in package-lock-only mode\nnpm error\nnpm error Retrieve a filtered list of packages\nnpm error\nnpm error Usage:\nnpm error npm query <selector>\nnpm error\nnpm error Options:\nnpm error [-g|--global]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [--workspaces] [--include-workspace-root] [--package-lock-only]\nnpm error [--expect-results|--expect-result-count <count>] [--before <date>]\nnpm error [--min-release-age <days>]\nnpm error [--min-release-age-exclude <pkg|glob> [--min-release-age-exclude <pkg|glob> ...]]\nnpm error\nnpm error   -g|--global\nnpm error     Operates in \"global\" mode, so that packages are installed into the\nnpm error\nnpm error   -w|--workspace\nnpm error     Enable running a command in the context of the configured workspaces of the\nnpm error\nnpm error   --workspaces\nnpm error     Set to true to run the command in the context of **all** configured\nnpm error\nnpm error   --include-workspace-root\nnpm error     Include the workspace root when workspaces are enabled for a command.\nnpm error\nnpm error   --package-lock-only\nnpm error     If set to true, the current operation will only use the `package-lock.json`,\nnpm error\nnpm error   --expect-results\nnpm error     Tells npm whether or not to expect results from the command.\nnpm error\nnpm error   --before\nnpm error     If passed to `npm install`, will rebuild the npm tree such that only\nnpm error\nnpm error   --min-release-age\nnpm error     If set, npm will build the npm tree such that only versions that were\nnpm error\nnpm error   --min-release-age-exclude\nnpm error     A list of package names or `minimatch` glob patterns that are exempt\nnpm error\nnpm error\nnpm error Run \"npm help query\" for more info\nnpm error A complete log of this run can be found in: /root/.npm/_logs/2026-11-15T10_46_58_131Z-debug-0.log\n",
+    "root": "/work/npm_local_link"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":root, .workspace"
+    ],
+    "cwd": "packages/lib",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 0,
+    "stdout": "[\n  {\n    \"name\": \"@acme/lib\",\n    \"version\": \"1.0.0\",\n    \"main\": \"index.js\",\n    \"_id\": \"@acme/lib@1.0.0\",\n    \"pkgid\": \"@acme/lib@1.0.0\",\n    \"location\": \"\",\n    \"path\": \"/work/npm_local_link/packages/lib\",\n    \"realpath\": \"/work/npm_local_link/packages/lib\",\n    \"resolved\": null,\n    \"from\": [],\n    \"to\": [],\n    \"dev\": false,\n    \"inBundle\": false,\n    \"deduped\": false,\n    \"overridden\": false,\n    \"queryContext\": {}\n  }\n]\n",
+    "stderr": "",
+    "root": "/work/npm_local_link"
+   }
+  },
+  {
+   "command": {
+    "tool": "npm",
+    "argv": [
+     "npm",
+     "query",
+     ":link",
+     "--package-lock-only"
+    ],
+    "cwd": "packages/lib",
+    "env": {
+     "npm_config_update_notifier": "false"
+    },
+    "network": "none"
+   },
+   "result": {
+    "returncode": 1,
+    "stdout": "{\n  \"error\": {\n    \"code\": \"EUSAGE\",\n    \"summary\": \"A package lock or shrinkwrap file is required in package-lock-only mode\\n\\nRetrieve a filtered list of packages\\n\\nUsage:\\nnpm query <selector>\\n\\nOptions:\\n[-g|--global]\\n[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\\n[--workspaces] [--include-workspace-root] [--package-lock-only]\\n[--expect-results|--expect-result-count <count>] [--before <date>]\\n[--min-release-age <days>]\\n[--min-release-age-exclude <pkg|glob> [--min-release-age-exclude <pkg|glob> ...]]\\n\\n  -g|--global\\n    Operates in \\\"global\\\" mode, so that packages are installed into the\\n\\n  -w|--workspace\\n    Enable running a command in the context of the configured workspaces of the\\n\\n  --workspaces\\n    Set to true to run the command in the context of **all** configured\\n\\n  --include-workspace-root\\n    Include the workspace root when workspaces are enabled for a command.\\n\\n  --package-lock-only\\n    If set to true, the current operation will only use the `package-lock.json`,\\n\\n  --expect-results\\n    Tells npm whether or not to expect results from the command.\\n\\n  --before\\n    If passed to `npm install`, will rebuild the npm tree such that only\\n\\n  --min-release-age\\n    If set, npm will build the npm tree such that only versions that were\\n\\n  --min-release-age-exclude\\n    A list of package names or `minimatch` glob patterns that are exempt\\n\\n\\nRun \\\"npm help query\\\" for more info\",\n    \"detail\": \"\"\n  }\n}\n",
+    "stderr": "npm error code EUSAGE\nnpm error\nnpm error A package lock or shrinkwrap file is required in package-lock-only mode\nnpm error\nnpm error Retrieve a filtered list of packages\nnpm error\nnpm error Usage:\nnpm error npm query <selector>\nnpm error\nnpm error Options:\nnpm error [-g|--global]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [--workspaces] [--include-workspace-root] [--package-lock-only]\nnpm error [--expect-results|--expect-result-count <count>] [--before <date>]\nnpm error [--min-release-age <days>]\nnpm error [--min-release-age-exclude <pkg|glob> [--min-release-age-exclude <pkg|glob> ...]]\nnpm error\nnpm error   -g|--global\nnpm error     Operates in \"global\" mode, so that packages are installed into the\nnpm error\nnpm error   -w|--workspace\nnpm error     Enable running a command in the context of the configured workspaces of the\nnpm error\nnpm error   --workspaces\nnpm error     Set to true to run the command in the context of **all** configured\nnpm error\nnpm error   --include-workspace-root\nnpm error     Include the workspace root when workspaces are enabled for a command.\nnpm error\nnpm error   --package-lock-only\nnpm error     If set to true, the current operation will only use the `package-lock.json`,\nnpm error\nnpm error   --expect-results\nnpm error     Tells npm whether or not to expect results from the command.\nnpm error\nnpm error   --before\nnpm error     If passed to `npm install`, will rebuild the npm tree such that only\nnpm error\nnpm error   --min-release-age\nnpm error     If set, npm will build the npm tree such that only versions that were\nnpm error\nnpm error   --min-release-age-exclude\nnpm error     A list of package names or `minimatch` glob patterns that are exempt\nnpm error\nnpm error\nnpm error Run \"npm help query\" for more info\nnpm error A complete log of this run can be found in: /root/.npm/_logs/2026-11-15T10_46_59_526Z-debug-0.log\n",
+    "root": "/work/npm_local_link"
+   }
+  }
+ ]
+}

@@ -353,6 +353,17 @@ def test_npm_reader_gives_workspace_members_and_entry_files(tmp_path):
     assert [sorted(w["members"]) for w in record["workspace"] if w["tool"] == "npm"] == [["packages/a", "packages/b"]]
 
 
+def test_npm_reader_links_a_package_to_the_local_folder_a_file_dependency_names(tmp_path):
+    """No workspace: `packages/app` depends on `file:../lib`. npm knows the link from the lockfile; a source that
+    asked only for the root and the workspaces would state no edge and hide the one `modules.py` reads."""
+    _, _, record = build(tmp_path, "npm_local_link", runner=replay("npm_local_link"))
+    units = by_root(record, "npm-package")
+    assert set(units) == {"packages/app", "packages/lib"}
+    assert units["packages/app"]["depends_on"] == ["@acme/lib"]
+    assert units["packages/lib"]["depends_on"] == []
+    assert [w for w in record["workspace"] if w["tool"] == "npm"] == []
+
+
 def test_renovate_reader_gives_declared_toolchains_and_ranges_on_their_unit(tmp_path):
     _, _, record = build(tmp_path, "versions", runner=replay("versions"))
     label = premap.label(renovate)
