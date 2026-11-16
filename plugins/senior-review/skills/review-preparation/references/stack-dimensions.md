@@ -7,15 +7,16 @@ one dispatch round and ledger, no extra roles or clean skips for unknown signals
 
 | Dimension ID | Automatic activation evidence | Role to dispatch |
 |---|---|---|
-| react | Target includes JSX/TSX (`FRAMEWORK_BY_SUFFIX` in `review_roster.py`) or affected React runtime | `senior-review:react-auditor` |
+| react | Target includes JSX/TSX (`FRAMEWORK_BY_SUFFIX` in `review_roster.py`), its build unit declares React (`TECHNOLOGY_ROLE`) or affected React runtime | `senior-review:react-auditor` |
 | typescript | Target includes TS/TSX | `senior-review:typescript-auditor` |
-| tauri | Target includes `src-tauri/`, `tauri.conf.json`, `capabilities/*.json` or `@tauri-apps/*` calls (`SIGNAL_PATHS`/`SIGNAL_PATTERNS` in `review_roster.py`) | `senior-review:tauri-auditor` |
+| tauri | Target includes `src-tauri/`, `tauri.conf.json`, `capabilities/*.json` or `@tauri-apps/*` calls (`SIGNAL_PATHS`/`SIGNAL_PATTERNS` in `review_roster.py`), or its build unit declares Tauri (`TECHNOLOGY_ROLE`) | `senior-review:tauri-auditor` |
 | platform | Roster evidence for browser/PWA storage, service workers, mobile capabilities or an Electron shell | none beyond Tauri; record activation evidence and leave the specialist coverage as a declared gap |
-| python | Target includes `.py` or `.pyi` files, or the relevant package declares `pyproject.toml`, `setup.py`, `uv.lock` or `requirements*.txt` | `senior-review:code-auditor` through the host isolated-worker binding when Python-specific evidence is needed; no Python-specific specialist exists; a declared gap |
+| python | Target includes `.py` or `.pyi` files (`LANGUAGE_ROLE`) | `senior-review:python-auditor` |
+| stripe | Target calls Stripe (`SIGNAL_PATTERNS`) or its build unit declares it (`TECHNOLOGY_ROLE`) | `senior-review:stripe-auditor` |
 | dependencies | The candidate changes a manifest or lockfile: `pyproject.toml`, `uv.lock`, `poetry.lock`, `requirements*.txt`, `package.json`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `Cargo.toml`, `Cargo.lock`, `go.mod`, `go.sum`, `Gemfile.lock`, `composer.lock`, `pom.xml`, `build.gradle*`, `*.csproj` | `senior-review:dependency-auditor` (usage and provenance members); license tooling does not exist and remains a declared gap |
 
-Dependencies bind through `senior-review:dependency-usage-auditor`. Python and
-any future stack specialist use the host isolated-worker binding when available.
+Dependencies bind through `senior-review:dependency-usage-auditor`. Any future
+stack specialist uses the host isolated-worker binding when available.
 Carry skill identities, audit-only mode, evidence-pack paths and the report
 path in its brief, as for other inline lenses.
 

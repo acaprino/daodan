@@ -9,7 +9,10 @@ export type Entity = {
   ref: string; type: string; name: string; technical: string; description: string;
   provenance?: string; status?: string; freshness?: string; path?: string; lines?: number | number[];
   address?: string; location?: 'internal' | 'external'; node_type?: string; evidence: Evidence[]; gaps: unknown[];
+  technologies?: string[];
 };
+// A framework, library, tool or service the stack step recognized, with the files that show it.
+export type Technology = { id: string; name: string; type: string; paths: string[] };
 export type Relation = {
   ref: string; kind: string; source: string; target: string; status: string;
   counts?: Record<string, number>; evidence: Evidence[];
@@ -21,7 +24,7 @@ export type Flow = { ref: string; entry: string; entry_kind: string; complete: b
 export type Gap = { refs: string[]; reason: string };
 export type Envelope = {
   schema: typeof SCHEMA; meta: Record<string, unknown>; entities: Entity[]; relations: Relation[];
-  memberships: Membership[]; gaps: Gap[]; flows: Flow[];
+  memberships: Membership[]; gaps: Gap[]; flows: Flow[]; technologies: Technology[];
 };
 
 export class EnvelopeError extends Error {}
@@ -63,5 +66,6 @@ export function parseEnvelope(json: unknown): Envelope {
   return {
     schema: SCHEMA, meta: isObject(json.meta) ? json.meta : {}, entities, relations, memberships,
     gaps: list(json.gaps ?? [], 'gaps') as Gap[], flows,
+    technologies: list(json.technologies ?? [], 'technologies') as Technology[],
   };
 }

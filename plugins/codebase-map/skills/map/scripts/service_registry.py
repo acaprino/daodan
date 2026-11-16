@@ -5,7 +5,8 @@
 """External services and projects of a snapshot, recognized from the registry without a model.
 
 Signs: the dependencies of each build unit, in the registry ecosystem of the unit;
-the packages of `requirements*.txt`; the images of Dockerfiles and compose files;
+the packages of `requirements*.txt`; the images of Dockerfiles and compose files and
+of the services the pre-map states (a CI job's, those Compose starts);
 the names of configuration variables and the hosts written in the files; the file
 names the registry knows. A dependency that names a build unit of the project is
 the project's own, never external.
@@ -23,6 +24,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import flows  # noqa: E402
 import modules  # noqa: E402
+import premap  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 REGISTRY = SCRIPT_DIR.parent / "data" / "service-registry.json"
@@ -90,6 +92,12 @@ def _text_signs(files: list[str], lines_of) -> list[tuple[str, str, str, int]]:
     return out
 
 
+def _service_signs(manifest: Path) -> list[tuple[str, str, str, None]]:
+    """(ecosystem, package, path, line) of the image of every service the pre-map states, at the file declaring it."""
+    return [("docker", _image(service["image"]), service["declared_in"].split("#", 1)[0], None)
+            for service in premap.ensure(manifest).get("services", []) if service.get("image")]
+
+
 def recognize(manifest: Path, registry: dict | None = None) -> list[dict]:
     """Registry entries the snapshot shows signs of, each sign with its path and line."""
     manifest = Path(manifest)
@@ -99,6 +107,8 @@ def recognize(manifest: Path, registry: dict | None = None) -> list[dict]:
         source = flows.Source(store)
         packages = _package_signs(manifest, source.lines) + _text_signs(files, source.lines)
         texts = {rel: source.lines(rel) or [] for rel in files}
+    read = {sign[:3] for sign in packages}  # an image a compose file writes is already a sign, with its line
+    packages += [sign for sign in _service_signs(manifest) if sign[:3] not in read]
     by_package, patterns, prefixes, hosts, names = {}, [], {}, {}, {}
     for entry in entries:
         signs = entry.get("signs") or {}
@@ -149,3 +159,4 @@ def recognize(manifest: Path, registry: dict | None = None) -> list[dict]:
         out.append({**{k: entry.get(k) for k in ("id", "name", "kind", "type", "site", "icon")}, "source": "registry",
                     "signs": sorted(signs.values(), key=lambda s: (s["sign"], s["path"] or "", s["line"] or 0, s["value"]))})
     return out
+

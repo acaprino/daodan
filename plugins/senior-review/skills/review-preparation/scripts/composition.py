@@ -21,7 +21,7 @@ Commands:
   resolved perimeter (``grounding.conclusion_paths``) gets one cell per planned
   reviewer of the default scope, and each such job becomes one job per group of
   its open files under a byte budget, with ``paths`` and a single JSON result at
-  ``output_path``. Stack reviewers (TypeScript, React, Tauri) skip only files
+  ``output_path``. Stack reviewers (TypeScript, React, Python, Tauri, Stripe) skip only files
   that clearly lack their stack; a requested file absent from the inventory stays
   open without a job.
 - ``account``: after the delivery barrier, each group job's result at
@@ -182,7 +182,7 @@ def coverage_scope(roster: dict, coverage: dict, entries: dict) -> dict:
                 obliged.setdefault(item.get("specialist_id"), []).append(evidence["path"])
                 if evidence.get("source") == "configurations":
                     configured.append(evidence["path"])
-    stacks = {**review_roster.LANGUAGE_ROLE, "tauri": review_roster.SIGNAL_ROLE["tauri"]}
+    stacks = {**review_roster.LANGUAGE_ROLE, **review_roster.TECHNOLOGY_ROLE}
     units = coverage.get("units", [])
     if not isinstance(units, list) or not all(isinstance(unit, list) and all(isinstance(path, str) for path in unit)
                                               for unit in units):
@@ -199,13 +199,15 @@ def stack_skip(cover: dict, path: str, row: dict, stacks: set[str], keep: list[s
         return None
     if stacks & {"typescript", "react"} and row["language"] in SCRIPT_LANGUAGES:
         return None
-    if "tauri" in stacks:
-        if review_roster.SIGNAL_PATHS["tauri"].search(path):
+    if "python" in stacks and row["language"] == "python":
+        return None
+    for stack in stacks & review_roster.SIGNAL_PATTERNS.keys():  # a technology: its paths, or its API in the file
+        if stack in review_roster.SIGNAL_PATHS and review_roster.SIGNAL_PATHS[stack].search(path):
             return None
         texts = cover["texts"]
         if path not in texts:
             texts[path] = (cover["root"] / path).read_text(encoding="utf-8", errors="replace")
-        if review_roster.SIGNAL_PATTERNS["tauri"].search(texts[path]):
+        if review_roster.SIGNAL_PATTERNS[stack].search(texts[path]):
             return None
     return f"no {', '.join(sorted(stacks))} sign in file"
 

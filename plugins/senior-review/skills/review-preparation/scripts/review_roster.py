@@ -124,6 +124,13 @@ SUPPORT = ["senior-review:premise-auditor", "senior-review:isolated-worker"]
 LANGUAGE_ROLE = {
     "typescript": "senior-review:typescript-auditor",
     "react": "senior-review:react-auditor",
+    "python": "senior-review:python-auditor",
+}
+# Registry ids the map recognizes in the build unit of a reviewed file (`snapshot.py technologies`).
+TECHNOLOGY_ROLE = {
+    "react": "senior-review:react-auditor",
+    "tauri": "senior-review:tauri-auditor",
+    "stripe": "senior-review:stripe-auditor",
 }
 SIGNAL_ROLE = {
     "accessibility": "senior-review:accessibility-auditor",
@@ -141,6 +148,7 @@ SIGNAL_ROLE = {
     "persistence": "senior-review:data-integrity-auditor",
     "trust": "senior-review:security-auditor",
     "tauri": "senior-review:tauri-auditor",
+    "stripe": "senior-review:stripe-auditor",
     "workspace": "senior-review:workspace-hygiene-auditor",
     "testing": "senior-review:testing-auditor",
 }
@@ -196,6 +204,7 @@ SIGNAL_PATTERNS = {
     "tauri": re.compile(r"tauri::|#\[tauri|@tauri-apps/|\btauri\.conf\.json\b|\bwithGlobalTauri\b|"
                         r"\b(?:register_uri_scheme_protocol|dangerousRemoteDomainIpcAccess|"
                         r"dangerousDisableAssetCspModification|assetProtocol|externalBin)\b"),
+    "stripe": re.compile(r"\bstripe\b|Stripe-Signature|\bconstruct_?[Ee]vent\b", re.IGNORECASE),
     # Conflict markers; the bare `=======` line alone is also a setext underline.
     "workspace": re.compile(r"^(?:<<<<<<< |>>>>>>> )", re.MULTILINE),
 }
@@ -535,10 +544,26 @@ def specialist_obligations(roster: list[str], context: dict, scope_id: str,
     return list(obligations.values())
 
 
+def unit_technologies(technologies: dict | None, paths: list[str]) -> list[str]:
+    """Registry ids of the build units holding the paths: a path is of the unit with the longest path above it."""
+    roots = [("" if root in ("", ".") else root.rstrip("/") + "/", unit.get("technologies", []))
+             for unit in (technologies or {}).get("units", []) for root in unit.get("paths", [])]
+    found: set[str] = set()
+    for path in paths:
+        held = [(root, ids) for root, ids in roots if path.startswith(root)]
+        if held:
+            found.update(max(held, key=lambda unit: len(unit[0]))[1])
+    return sorted(found)
+
+
 def signal_roles(signals: dict, kind: str, roster: list[str]) -> list[str]:
     added = []
     for language in signals["languages"] if kind == "changeset" else ():
         role = LANGUAGE_ROLE.get(language)
+        if role and role not in roster + added:
+            added.append(role)
+    for technology in signals["technologies"] if kind == "changeset" else ():
+        role = TECHNOLOGY_ROLE.get(technology)
         if role and role not in roster + added:
             added.append(role)
     for name, present in signals["content"].items():
@@ -552,7 +577,7 @@ def signal_roles(signals: dict, kind: str, roster: list[str]) -> list[str]:
 
 def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | None, deeper: bool,
             kind: str = "changeset", review_id: str | None = None, stage: str | None = None,
-            *, context: dict | None = None, rigor: str | None = None) -> dict:
+            *, context: dict | None = None, rigor: str | None = None, technologies: dict | None = None) -> dict:
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {', '.join(KINDS)}")
     if rigor is not None and rigor not in RIGOR:
@@ -609,6 +634,7 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
         "lines": lines,
         "modules": modules,
         "languages": languages,
+        "technologies": unit_technologies(technologies, production),
         "symbols": touched_symbols(diff) if basis == "changeset" else [],
         "interface_changed": sorted(set(interfaces) | set(map_signals["interface_changed"])),
         "effects_changed": map_signals["effects_changed"],
@@ -727,6 +753,7 @@ def main(argv=None) -> int:
     compute_parser.add_argument("--diff", required=True, help="unified diff of the candidate")
     compute_parser.add_argument("--numstat", help="git diff --numstat output; derived from the diff when absent")
     compute_parser.add_argument("--impact", help="snapshot.py edit-impact JSON for the changed symbols")
+    compute_parser.add_argument("--technologies", help="snapshot.py technologies JSON of the candidate's map run")
     compute_parser.add_argument("--context", help="prepared review basis, scope, snapshot locators and evidence JSON")
     compute_parser.add_argument("--rigor", choices=RIGOR, help="how much scrutiny the request asks for, as the model read it; default standard")
     compute_parser.add_argument("--deeper", action="store_true", help="the caller asked for one rigor more")
@@ -742,7 +769,8 @@ def main(argv=None) -> int:
         impact = json.loads(Path(args.impact).read_text(encoding="utf-8")) if args.impact else None
         context = json.loads(Path(args.context).read_text(encoding="utf-8")) if args.context else None
         result = compute(args.shape, diff, numstat, impact, args.deeper, args.kind, args.review_id, args.stage,
-                         context=context, rigor=args.rigor)
+                         context=context, rigor=args.rigor,
+                         technologies=json.loads(Path(args.technologies).read_text(encoding="utf-8")) if args.technologies else None)
         Path(args.out).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(json.dumps({"rigor": result["rigor"], "roster": result["roster"], "reasons": result["reasons"], "gaps": result["gaps"]}))
         return 0

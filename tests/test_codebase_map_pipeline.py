@@ -114,7 +114,8 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
             mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30):
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
-    assert steps == [("step.started", "scan"), ("step.finished", "scan"), ("step.started", "analyze"),
+    assert steps == [("step.started", "scan"), ("step.finished", "scan"), ("step.started", "stack"),
+                     ("step.finished", "stack"), ("step.started", "analyze"),
                      ("step.finished", "analyze"), ("step.started", "dynamic"), ("step.finished", "dynamic"),
                      ("step.started", "union"), ("step.finished", "union")]
     analyzers = [(e["kind"], e["analyzer"]) for e in seen if e["kind"].startswith("analyzer.")
@@ -176,7 +177,7 @@ def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():
-    assert [step.NAME for step in pipeline.STEPS] == ["scan", "analyze", "dynamic", "union"]
+    assert [step.NAME for step in pipeline.STEPS] == ["scan", "stack", "analyze", "dynamic", "union"]
     for step in pipeline.STEPS:
         assert step.INPUTS and step.OUTPUTS and callable(step.run)
 

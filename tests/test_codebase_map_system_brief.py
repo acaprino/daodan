@@ -18,21 +18,14 @@ PAY, CREATE, RETRY, ORDERS = ("web/checkout.ts::onPayClick", "server/payments.py
                               "server/jobs.py::retry_declined", "server/orders.py::list_orders")
 
 
-def unavailable(*_):
-    return {"status": "unavailable", "reason": "not in tests"}
-
-
 class BriefTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         fixture(cls)
-        cls.run_stack = system_brief.stack_analyser.run
-        system_brief.stack_analyser.run = unavailable
         cls.brief = system_brief.brief(cls.manifest, cls.rules)
 
     @classmethod
     def tearDownClass(cls):
-        system_brief.stack_analyser.run = cls.run_stack
         shutil.rmtree(cls.work, True)
 
     def groups(self, value):
@@ -66,7 +59,6 @@ class BriefTests(unittest.TestCase):
     def test_externals_say_their_source(self):
         external = next(e for e in self.brief["externals"] if e["name"] == "card payment provider")
         self.assertEqual(external["from"], ["modules"])
-        self.assertEqual(self.brief["stack_analyser"]["status"], "unavailable")
 
     def test_the_text_keeps_within_the_cap(self):
         self.assertLessEqual(len(self.brief["text"]), system_brief.CAP)
@@ -78,32 +70,20 @@ class BriefTests(unittest.TestCase):
 
 
 class DeclaredTests(unittest.TestCase):
-    def test_stack_analyser_paths_count_from_the_target_inside_the_repository(self):
+    def test_a_technology_of_a_target_inside_the_repository_cites_its_path_from_the_root(self):
         work = Path(tempfile.mkdtemp(prefix="brief-"))
         self.addCleanup(shutil.rmtree, work, True)
         project = work / "project"
         (project / "server").mkdir(parents=True)
-        (project / "server/pyproject.toml").write_text('[project]\ndependencies = ["fastapi"]\n', encoding="utf-8")
+        (project / "server/pyproject.toml").write_text('[project]\nname = "server"\ndependencies = ["fastapi"]\n', encoding="utf-8")
         (project / "server/app.py").write_text("print('hi')\n", encoding="utf-8")
         for command in (["git", "init", "-q"], ["git", "add", "-A"],
                         ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "x"]):
             subprocess.run(command, cwd=project, check=True, capture_output=True)
         manifest = work / "snapshot/manifest.sqlite"
         snapshot.main(["write", str(project / "server"), "--out", str(manifest), "--no-engine", "--no-index"])
-
-        def tool(root, _cache, files):  # as stack_analyser.run: paths from the directory read, kept among files
-            self.assertTrue((Path(root) / "pyproject.toml").is_file())
-            paths = sorted({"pyproject.toml"} & set(files))
-            return {"status": "ok", "found": [{"tech": "fastapi", "paths": paths}] if paths else []}
-
-        run = system_brief.stack_analyser.run
-        system_brief.stack_analyser.run = tool
-        try:
-            value = system_brief.brief(manifest, [])
-        finally:
-            system_brief.stack_analyser.run = run
-        fastapi = next(e for e in value["externals"] if e["id"] == "fastapi")
-        self.assertEqual((fastapi["from"], fastapi["paths"]), (["registry", "stack-analyser"], ["server/pyproject.toml"]))
+        fastapi = next(e for e in system_brief.brief(manifest, [])["externals"] if e["id"] == "fastapi")
+        self.assertEqual((fastapi["from"], fastapi["paths"]), (["registry"], ["server/pyproject.toml"]))
 
     def test_compose_declares_services_and_the_image_is_recognized(self):
         work = Path(tempfile.mkdtemp(prefix="brief-"))
@@ -119,12 +99,7 @@ class DeclaredTests(unittest.TestCase):
             subprocess.run(command, cwd=project, check=True, capture_output=True)
         manifest = work / "snapshot/manifest.sqlite"
         snapshot.main(["write", str(project), "--out", str(manifest), "--no-engine", "--no-index"])
-        run = system_brief.stack_analyser.run
-        system_brief.stack_analyser.run = unavailable
-        try:
-            value = system_brief.brief(manifest, [])
-        finally:
-            system_brief.stack_analyser.run = run
+        value = system_brief.brief(manifest, [])
         declared = {(d["kind"], d["name"]): d for d in value["declared"]}
         self.assertEqual((declared[("service", "db")]["image"], declared[("service", "db")]["file"]),
                          ("postgres", "docker-compose.yml"))

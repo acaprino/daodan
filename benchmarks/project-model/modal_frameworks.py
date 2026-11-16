@@ -1,6 +1,5 @@
 """Frameworks and services group: Specfy stack-analyser, @vercel/fs-detectors, @netlify/build-info, alizer and
-Railpack `info` read the corpus of `fixtures/` on Modal, against two read-only baselines (Daodan's service registry
-and Daodan's stack-analyser wrapper).
+Railpack `info` read the corpus of `fixtures/` on Modal, against a read-only baseline (Daodan's service registry).
 
 Per tool and fixture the container copies the fixture without `expected.json` and `source.json`, makes it a git
 repository (as Daodan's snapshot expects) and runs the adapter in a fresh child process three times: traced (strace
@@ -47,7 +46,7 @@ LOCAL = modal.is_local()
 ROOT = HERE if LOCAL else Path("/pm")
 PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
 TOOLS = ("specfy_stack_analyser", "vercel_fs_detectors", "netlify_build_info", "alizer", "railpack_info",
-         "daodan_registry", "daodan_stack_analyser")
+         "daodan_registry")
 STORE = "project-model/frameworks"
 RUN_TIMEOUT = 240  # seconds for one execution of one adapter on one fixture (the call may raise it); the function is capped below
 COMMIT_EVERY = 5  # a volume commit costs about 12 s
@@ -328,8 +327,7 @@ COMMANDS = {"specfy_stack_analyser": "stack-analyser <dir> --output=out.json",
             "netlify_build_info": "build-info <dir> [--rootDir <root>] at the root and each workspace package",
             "alizer": "alizer analyze <dir>; alizer component <dir> --no-port-detection",
             "railpack_info": "railpack info --format json <dir>",
-            "daodan_registry": "snapshot.py write <dir> --no-engine --no-index; service_registry.recognize(manifest)",
-            "daodan_stack_analyser": "stack_analyser.run(root, cache, files) over stack-analyser 1.27.6"}
+            "daodan_registry": "snapshot.py write <dir> --no-engine --no-index; service_registry.recognize(manifest)"}
 
 
 def _local_hash():
