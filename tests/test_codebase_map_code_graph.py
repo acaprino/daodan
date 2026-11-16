@@ -602,7 +602,7 @@ def test_fixture_case(built, name, case):
 def test_every_reference_ends_or_is_a_hole(built):
     from indexers import clang, rust
     causes = (clang.INACTIVE, rust.INACTIVE, clang.DROPPED, clang.AMBIGUOUS, clang.BUILT_IN, clang.EXTERN_C,
-              clang.UNDEFINED)  # the adapters' own causes of a site the index holds nothing at
+              clang.UNDEFINED, clang.DEPENDENT)  # the adapters' own causes of a site the index holds nothing at
     inactive = [cause.split("{}") for cause in causes]
     classes = set(code_graph.HOLES) | {"implicit-operator", typescript.MEMBER}  # the TS adapter's cause of a member
     classes |= {hole["class"] for data in built.values() for graph in data["graphs"].values() for hole in graph["holes"]
@@ -768,7 +768,8 @@ DROPPED_C = ("#define Assert(cond, msg)\n"
              "#endif\n"
              "    return bits + (note != 0);\n"
              "}\n")
-CAST_CPP = "unsigned twice(unsigned v) {\n    return v + unsigned(1);\n}\n"
+CAST_CPP = ("unsigned twice(unsigned v) {\n    return v + unsigned(1);\n}\n"
+            "template <class T> void reset(T *node) {\n    node->pool = 0;\n}\n")
 
 
 def test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing(tmp_path):
@@ -777,7 +778,8 @@ def test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing(tm
     none of them; gzlib.c's `#ifdef WIDECHAR` inside an expression, which the reader parses as no branch: the
     lines say so, though statements after it hold occurrences; zlib's `DROPBITS(here.bits)`, whose argument's name
     two symbols written at the macro have; tinyxml2's `#ifdef TINYXML2_DEBUG` inside an initializer, which the
-    reader reads as code, and `unsigned(100)`, a conversion to a type C++ builds in, which has no symbol."""
+    reader reads as code, `unsigned(100)`, a conversion to a type C++ builds in, which has no symbol, and
+    `returnNode->_memPool` in a template, a member of a type that depends on the template's parameters."""
     import snapshot
     from indexers import clang
     project = tmp_path / "proj"
@@ -803,7 +805,9 @@ def test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing(tm
         *(occurrence(20, 4, 8, key) for key in (drop, "local 3", field, "local 4")),
         occurrence(21, 23, 27, "local 5", True), occurrence(27, 11, 15, "local 4"),
         occurrence(27, 19, 23, "local 5")]) + document("cast.cpp", [
-        occurrence(1, 9, 14, cast, True), occurrence(1, 24, 25, "local 0", True), occurrence(2, 11, 12, "local 0")]))
+        occurrence(1, 9, 14, cast, True), occurrence(1, 24, 25, "local 0", True), occurrence(2, 11, 12, "local 0"),
+        occurrence(4, 16, 17, "local 1", True), occurrence(4, 24, 29, "cxx . project 0$ reset(5e).", True),
+        occurrence(4, 30, 31, "local 1"), occurrence(4, 33, 37, "local 2", True), occurrence(5, 4, 8, "local 2")]))
     found = {}
     with code_graph.Snapshot(manifest) as snap:
         index = code_graph.Index(snap.root)
@@ -824,6 +828,34 @@ def test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing(tm
     assert found[("run.c:20", "here.bits")] == clang.AMBIGUOUS.format("DROP", "run.c:17", 2, "bits")
     assert found[("run.c:22", "UNSET")] == clang.UNDEFINED  # tinyxml2's `#ifdef TINYXML2_DEBUG` in an initializer
     assert found[("cast.cpp:2", "unsigned")] == clang.BUILT_IN.format("unsigned")
+    assert found[("cast.cpp:5", "node.pool")] == clang.DEPENDENT  # tinyxml2.h's `returnNode->_memPool`
+
+
+def test_clang_an_explicit_destructor_call_ends_at_the_destructor(tmp_path):
+    """tinyxml2's `node->~XMLNode()`: scip-clang names the class at the name after `~`, where the reader's call has
+    no position; the call is the destructor's, written at the `~`."""
+    import snapshot
+    from indexers import clang
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "dtor.cpp").write_text("struct Node { ~Node(); };\nNode::~Node() {}\nvoid drop(Node *node) {\n"
+                                      "    node->~Node();\n}\n", encoding="utf-8")
+    manifest = tmp_path / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    node, dtor, drop = ("cxx . project 0$ Node#", "cxx . project 0$ Node#`~Node`(1a).",
+                        "cxx . project 0$ drop(2b).")
+    (tmp_path / "index.scip").write_bytes(document("dtor.cpp", [
+        occurrence(1, 7, 11, node, True), occurrence(1, 14, 19, dtor), occurrence(2, 0, 4, node),
+        occurrence(2, 6, 11, dtor, True), occurrence(3, 5, 9, drop, True), occurrence(3, 10, 14, node),
+        occurrence(3, 16, 20, "local 0", True), occurrence(4, 4, 8, "local 0"), occurrence(4, 11, 15, node)]))
+    with code_graph.Snapshot(manifest) as snap:
+        index = code_graph.Index(snap.root)
+        index.load(tmp_path / "index.scip")
+        hops, traversal, prepared = code_graph.adapter_traversal(clang, index, snap)
+        _graph, references = code_graph.build(index, snap, "cpp", hops, {}, None, traversal)
+    call = next(row for row in references.values() if row["site"] == "dtor.cpp:4" and row["kind"] == "call")
+    assert prepared["destructor_calls"] == 1
+    assert call["hole"] == "" and any(end.cls == "project-callable" for end in call["ends"]), call
 
 
 def test_clang_an_operator_call_is_an_edge_of_kind_unknown(built):

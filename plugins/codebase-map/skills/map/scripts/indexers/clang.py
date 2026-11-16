@@ -30,7 +30,8 @@ Symbols carry no file: a function declared in a header and defined in a source f
 its body; the declaration is a reference. Two `static` functions of one name in two files are one symbol too.
 scip-clang writes what a macro expands to at the expansion: the call `SQUARE(n)` references the macro and the
 function its body calls, at the same range, so macros need no hop; what its arguments name sits there too, and
-`prepare` moves it back to the argument (`macro_arguments`).
+`prepare` moves it back to the argument (`macro_arguments`). An explicit destructor call names the class after
+the `~`; `prepare` writes the destructor at the `~`, where the call starts (`destructor_calls`).
 
 `prepare(index, snapshot)` fills in place what the index leaves out, before anything reads it: each
 occurrence once (a file compiled by several translation units comes as several documents, which the shared
@@ -286,6 +287,34 @@ def macro_arguments(index) -> int:
     return added
 
 
+def destructor_calls(index) -> int:
+    """An explicit destructor call (`node->~XMLNode()`): scip-clang writes the class at the name after `~`, and the
+    call, which starts at the `~`, takes the class's destructor there, when the index defines one; returns how many
+    occurrences it placed."""
+    destructors = {key[:key.index("#") + 1]: key for key in index.defs
+                   if "#`~" in key and _last_name(key) == "~" + (_last_name(key[:key.index("#") + 1]) or "")}
+    added = 0
+    for rel, occurrences in index.documents.items():
+        try:
+            source = (index.root / rel).read_bytes().split(b"\n")
+        except OSError:
+            continue
+        for item in list(occurrences):
+            key = destructors.get(item.key)
+            if key is None or item.definition or item.line > len(source):
+                continue
+            before = source[item.line - 1][:item.start].rstrip()
+            if before.endswith(b"~") and before[:-1].rstrip().endswith((b".", b"->")):
+                column = len(before) - 1
+                if not any(other.key == key for other in index.at.get((rel, item.line, column), ())):
+                    occurrences.append(code_graph.Occurrence(item.line, column, item.line, item.end, key, False,
+                                                             None))
+                    added += 1
+    if added:
+        dedupe(index)
+    return added
+
+
 def prepare(index, snapshot) -> dict:
     """Fill in what the index leaves to the reader (see the module docstring); returns what each step did."""
     deduplicated = dedupe(index)
@@ -294,7 +323,7 @@ def prepare(index, snapshot) -> dict:
     index.languages = {snapshot.checkout[rel]: language for rel, language in snapshot.languages.items()
                        if rel in snapshot.checkout and language in ("c", "cpp")}
     return {"deduplicated": deduplicated, "utf8_documents": documents, "enclosed": enclose(index),
-            "macro_arguments": macro_arguments(index)}
+            "macro_arguments": macro_arguments(index), "destructor_calls": destructor_calls(index)}
 
 
 INACTIVE = "in a branch of `{}` the build does not compile: the index has no occurrence in it"
@@ -311,6 +340,8 @@ UNDEFINED = ("a name a conditional directive tests, read as code because the dir
 EXTERN_C = ("`{}`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): "
             "scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not "
             "released)")
+DEPENDENT = ("a member, in a template, of a value whose type may depend on the template's parameters: clang "
+             "resolves it only where the template is instantiated, and the index names it nowhere")
 DIRECTIVE = re.compile(rb"\s*#\s*(?:if|ifdef|ifndef|elif|elifdef|elifndef)\b")
 BRANCHES = ("preproc_if", "preproc_ifdef", "preproc_elif", "preproc_elifdef", "preproc_else")
 # The types C and C++ build in, the callee of a conversion like `unsigned(1)` (the reader's grammar reads the
@@ -380,7 +411,8 @@ def unanswered(index):
     tree or by the directives' lines (a directive inside an expression, which the tree misplaces); in an argument
     a macro's expansion drops (`DROPPED`) or whose name two symbols written at the macro have (`AMBIGUOUS`); a
     name a conditional directive tests (`UNDEFINED`); a conversion to a type the language builds in (`BUILT_IN`);
-    or, in C++, a name declared only in an `extern "C"` block (`EXTERN_C`)."""
+    a member, in a template, of a value whose type may depend on its parameters (`DEPENDENT`); or, in C++, a name
+    declared only in an `extern "C"` block (`EXTERN_C`)."""
     lines: dict[str, set[int]] = {}
     dropped: dict[str, dict] = {}
     defined: dict[str, set[str]] = {}  # each name the index defines: the languages of the files defining it
@@ -427,6 +459,13 @@ def unanswered(index):
             and node.parent.type == "call_expression" else None
         if callee is not None and callee.id == node.id and node.text.decode("utf-8", "replace") in TYPES:
             return BUILT_IN.format(node.text.decode("utf-8", errors="replace"))
+        member = next((at for at in (node, node.parent if node is not None else None)
+                       if at is not None and at.type == "field_expression"), None)
+        held = member
+        while held is not None and held.type != "template_declaration":
+            held = held.parent
+        if held is not None:
+            return DEPENDENT
         while node is not None and node.type not in BRANCHES:
             node = node.parent
 
