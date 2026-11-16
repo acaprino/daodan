@@ -604,12 +604,14 @@ ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATI
 
 def structure(record: dict) -> dict:
     """What `index` takes from the pre-map: its native units, the workspaces that hold them, the CMake versions
-    it states and the submodules it finds not checked out."""
+    it states, the submodules it finds not checked out and the Dockerfiles as BuildKit reads them."""
+    builds = record.get("docker_builds") or []
     return {"units": [unit for unit in record.get("units", []) if unit["kind"] in NATIVE
                       and (unit["kind"] != "go-module" or cgo(unit))],
             "workspace": record.get("workspace", []),
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in STATED],
-            "absent": [gap["path"] for gap in record.get("gaps", []) if gap.get("kind") == "submodule_absent"]}
+            "absent": [gap["path"] for gap in record.get("gaps", []) if gap.get("kind") == "submodule_absent"],
+            **({"docker": builds} if builds else {})}
 
 
 STATED = ("cmake", "bazel", "go")  # the toolchains of the pre-map a build here runs with
@@ -737,7 +739,7 @@ def restores(project_dir: Path, roots) -> dict[str, dict]:
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, units: list[dict] | None = None,
           workspace: list[dict] | None = None, toolchains=(), absent=(), engine=None, memory: int = MIN_FREE,
-          cpus: int = 1, timeout: float = 3600, declared: dict | None = None) -> dict:
+          cpus: int = 1, timeout: float = 3600, declared: dict | None = None, docker=()) -> dict:
     """The index of each configured root, with its runs and each root's state; `units`, `workspace` and the
     submodules not checked out (`absent`) are the pre-map's (`files` is not used: a unit's compilation database
     decides what is indexed). `cpus` is the container's share, as the caller gives it: its limit and scip-clang's
@@ -745,7 +747,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     allowed registries or an absent submodule, is `unavailable`; one whose build fails otherwise, `failed`; either
     keeps its static facts from the snapshot. Without a unit indexed, or without a container, the result's state
     is `unavailable` (no unit failed) or `failed`. `gaps` says what the preparation could not install: a CMake of
-    `toolchains`, a root's dependencies (`restores`)."""
+    `toolchains`, a root's dependencies (`restores`). A CMake root not indexed here is built in the stage of the
+    Dockerfile (`docker`, the pre-map's) that copies in its CMakeLists.txt (`_docker`)."""
     import container
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
@@ -796,7 +799,205 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     prepared = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
     gaps = chains["gaps"] + preparation.missing(prepared) + preparation.restore_gaps(prepared) + list(
         result.get("gaps") or ())  # and what the copy left out (`container.copy_perimeter`)
-    return {**_contract(result, back, work_dir, states), **({"gaps": gaps} if gaps else {})}
+    contract = _contract(result, back, work_dir, states)
+    if docker:
+        contract, staged = _docker(project_dir, work_dir, roots, contract, docker, memory=memory, cpus=cpus,
+                                   engine=engine, timeout=timeout)
+        gaps += staged
+    return {**contract, **({"gaps": gaps} if gaps else {})}
+
+
+CMAKE_BUILD = r"\bcmake\b"  # the RUN of a Dockerfile's stage that configures and builds its CMake project
+STAGE_OUT = "/daodan/out"  # what the run in a Dockerfile's stage brings back
+BUILD_EXIT = re.compile(r"DAODAN-BUILD-EXIT (\d+)")
+MUSL = "/lib/ld-musl-x86_64.so.1"  # a base whose C library is musl (Alpine), where scip-clang needs glibc beside it
+STAGE_MEMORY = 8 * 2**30  # a stage's steps build its dependencies as its Dockerfile does (`make -j$(nproc)`)
+# The stage's package map, the main route's (`clang_run.package_map`) in POSIX sh and awk, which a base without
+# python3 has: the folder the build runs in as the project; each folder under the C and C++ compilers' include
+# paths as the apk or dpkg package owning most of its files there, named as `clang_run._clean` writes it. What a
+# CMake install of the stage's steps wrote (its install_manifest.txt, the build's own record) belongs to the package
+# that build's CMakeCache names, project and version; the build in the folder the stage's build runs in is the
+# project's. A folder no package owns has none. DAODAN_ROOT is where the stage's filesystem lies: the container's
+# own, unset.
+PACKAGE_MAP = r"""R=${DAODAN_ROOT:-}
+dirs=$( { cc -xc -E -v /dev/null; c++ -xc++ -E -v /dev/null; } 2>&1 </dev/null |
+  sed -n '/^#include <\.\.\.> search starts here:/,/^End of search list\./s/^ //p' |
+  while read -r d; do realpath "$d" 2>/dev/null; done | sort -u )
+{
+  [ -f "$R/lib/apk/db/installed" ] && awk '/^P:/ { p = substr($0, 3) } /^V:/ { print "V\t" p "\t" substr($0, 3) }
+    /^F:/ { f = "/" substr($0, 3) } /^R:/ { print "O\t" f "/" substr($0, 3) "\t" p }' "$R/lib/apk/db/installed"
+  if [ -d "$R/var/lib/dpkg/info" ]; then
+    dpkg-query --admindir="$R/var/lib/dpkg" -W -f '${Package}\t${Version}\n' 2>/dev/null | sed 's/^/V\t/'
+    for list in "$R"/var/lib/dpkg/info/*.list; do
+      [ -f "$list" ] || continue
+      name=${list##*/}; name=${name%.list}
+      awk -v name="${name%%:*}" '{ print "O\t" $0 "\t" name }' "$list"
+    done
+  fi
+  find "$R/" -xdev -name install_manifest.txt -type f 2>/dev/null | while read -r manifest; do
+    case "$manifest" in "$PWD"/*) continue ;; esac
+    cache="${manifest%/*}/CMakeCache.txt"
+    name=$(sed -n 's/^CMAKE_PROJECT_NAME:[A-Z]*=//p' "$cache" 2>/dev/null | head -n 1)
+    [ -n "$name" ] || continue
+    printf 'V\t%s\t%s\n' "$name" "$(sed -n 's/^CMAKE_PROJECT_VERSION:[A-Z]*=//p' "$cache" | head -n 1)"
+    awk -v name="$name" '{ print "O\t" $0 "\t" name }' "$manifest"
+  done
+  printf '%s\n' "$dirs" | while read -r d; do [ -n "$d" ] && find "$d" -type f 2>/dev/null; done |
+    awk -v root="$R" '{ print "F\t" substr($0, length(root) + 1) }'
+} | awk -F '\t' '
+  function clean(s) { gsub(/[^A-Za-z0-9_.-]/, "_", s); return s }
+  $1 == "V" { version[$2] = $3; next }
+  $1 == "O" { owner[$2] = $3; next }
+  $1 == "F" && ($2 in owner) { dir = $2; sub(/\/[^\/]*$/, "", dir); votes[dir "\t" owner[$2]]++ }
+  END {
+    for (key in votes) { split(key, k, "\t"); if (votes[key] > best[k[1]]) { best[k[1]] = votes[key]; won[k[1]] = k[2] } }
+    printf "[{\"path\": \".\", \"package\": \"project@0\"}"
+    for (dir in won) if (dir !~ /["\\]/)
+      printf ",\n{\"path\": \"%s\", \"package\": \"%s@%s\"}", dir, clean(won[dir]),
+             clean(version[won[dir]] == "" ? "unknown" : version[won[dir]])
+    print "]" }'"""
+HEADERS = f"{preparation.T}/clang/include"  # clang's builtin headers in the stage (`clang_headers`, `_staged`)
+# `clang_run.builtin_headers` and the compiler's target, in POSIX sh: the compilation database `$db` into `$out`,
+# each command given `--target=` its compiler's `-dumpmachine` (clang otherwise looks for the compiler's headers
+# under its own default target: Alpine's are x86_64-alpine-linux-musl's) and, for a compiler that is not clang (no
+# `-print-resource-dir`), `-nobuiltininc -isystem HEADERS -idirafter <its include folder>`, on a musl target
+# `-idirafter HEADERS`, after the C library's headers, where clang's own driver puts them (Linux.cpp of
+# llvmorg-21.1.8); a command with -nostdinc or -nobuiltininc keeps its builtin headers as they are.
+COMPDB = r"""rules=/tmp/daodan-compdb.sed
+: > "$rules"
+for c in $(sed -n 's/^ *"command": "\([^ ]*\) .*/\1/p' "$db" | sort -u); do
+  t=$("$c" -dumpmachine) || exit 4
+  if ! "$c" -print-resource-dir >/dev/null 2>&1; then
+    case "$t" in *musl*) f=" -nobuiltininc -idirafter HEADERS" ;; *) f=" -nobuiltininc -isystem HEADERS" ;; esac
+    i=$("$c" -print-file-name=include 2>/dev/null | tail -n 1)
+    case "$i" in /*) [ -d "$i" ] && f="$f -idirafter $i" ;; esac
+    printf '/-nostdinc[ "]/!{\n/-nobuiltininc[ "]/!s|"command": "%s |"command": "%s%s |\n}\n' "$c" "$c" "$f" >> "$rules"
+  fi
+  printf 's|"command": "%s |"command": "%s --target=%s |\n' "$c" "$c" "$t" >> "$rules"
+done
+sed -f "$rules" "$db" > "$out"
+""".replace("HEADERS", HEADERS)
+
+
+def _stage_script(build: list[str], jobs: int) -> str:
+    """POSIX sh, as a stage's base may have no python3 (Alpine): the stage's own build with CMake writing its
+    compilation database, its exit code printed; that database (the first under the build's folder) with each
+    command given its compiler's target and clang's builtin headers (`COMPDB`); then scip-clang where the build
+    runs, its documents relative to that folder, the system's named by the stage's packages (`PACKAGE_MAP`) and
+    clang's headers as clang at their version, as the main route names them."""
+    return "\n".join([
+        "export CMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        f'{shlex.join(build)} ; echo "DAODAN-BUILD-EXIT $?"',
+        "db=$(find . -name compile_commands.json -type f | head -n 1)",
+        '[ -n "$db" ] || { echo DAODAN-NO-DATABASE ; exit 3 ; }',
+        f'mkdir -p {STAGE_OUT} && cp "$db" {STAGE_OUT}/compile_commands.json',
+        f"out=/tmp/daodan-compdb.json\n{COMPDB}",
+        f"(\n{PACKAGE_MAP}\n) | sed '1s|^\\[|[{{\"path\": \"{HEADERS}\", \"package\": \"clang@{CLANG_HEADERS[0]}\"}},|'"
+        " > /tmp/daodan-packages.json",
+        f"exec {preparation.T}/bin/scip-clang --compdb-path=/tmp/daodan-compdb.json"
+        f" --package-map-path=/tmp/daodan-packages.json --jobs={jobs} --show-compiler-diagnostics"
+        f" --index-output-path={STAGE_OUT}/index.scip"])
+
+
+def _docker(project_dir: Path, work_dir: Path, roots: list[str], contract: dict, builds, *, memory: int,
+            cpus: int, engine, timeout: float) -> tuple[dict, list[dict]]:
+    """The contract with each CMake root the run here did not index built and indexed in the stage of a
+    Dockerfile that copies in its CMakeLists.txt (`docker_build.plan`): the stage's steps in the preparation on
+    its base by digest, with scip-clang and, on a musl base, glibc's libraries where only glibc's loader looks
+    (`docker_build.glibc`); then offline the stage's own build and scip-clang (`_stage_script`), the documents
+    named as the checkout's files. The unit's state is that run's, with the Dockerfile, the stage and the steps
+    run (`docker`); a stage not reproduced or a step that fails is the unit's cause with its line. Also the gaps
+    of the stages: `not_reproduced`, `restore_failed`, `host_unreachable`."""
+    import docker_build
+    units = list(contract.get("units") or ())
+    indexes, runs, gaps = list(contract.get("indexes") or ()), list(contract.get("runs") or ()), []
+    compiled = collections.Counter((contract.get("configs") or {}).get("compiled") or {})
+    changed, seen = False, {}
+
+    def staged(build: dict, plan: dict, root: str) -> dict:
+        return _staged(project_dir, work_dir, build, plan, root, indexes, runs, compiled, gaps, memory=memory,
+                       cpus=cpus, engine=engine, timeout=timeout)
+
+    for root in roots:
+        if any(unit["root"] == root and unit["state"] == "indexed" for unit in units):
+            continue
+        wanted = [posixpath.join(root, "CMakeLists.txt") if root not in ("", ".") else "CMakeLists.txt"]
+        found = next(((build, plan) for build in builds
+                      if (plan := docker_build.plan(build, project_dir, wanted, CMAKE_BUILD)) is not None), None)
+        if found is None:
+            continue
+        build, plan = found
+        changed, state = True, next((unit for unit in units if unit["root"] == root), None)
+        if state is None:
+            state = {"root": root, "state": "failed", "cause": contract.get("reason") or "not configured here"}
+            units.append(state)
+        key = (plan["dockerfile"], plan["stage"])
+        if key not in seen:  # one plan and one run for the units one stage builds
+            plan = docker_build.sourced(plan, work_dir / f"sources-{len(seen)}", engine=engine)
+            gaps += plan["gaps"]
+            seen[key] = (plan, None if plan["gaps"] else staged(build, plan, root))
+        plan, outcome = seen[key]
+        if plan["gaps"]:
+            first = plan["gaps"][0]
+            state["cause"] = (f"{state.get('cause')}; its Dockerfile's build stage is not reproduced: "
+                              f"{first['path']}: {first['detail']}")
+            continue
+        state.pop("cause", None)
+        state.update(outcome)
+    return (_assembled(indexes, runs, compiled, units), gaps) if changed else (contract, [])
+
+
+def _staged(project_dir: Path, work_dir: Path, build: dict, plan: dict, root: str, indexes: list, runs: list,
+            compiled: collections.Counter, gaps: list, *, memory: int, cpus: int, engine, timeout: float) -> dict:
+    """The run of `plan`'s stage for `root` (`_docker`): what the unit's state becomes; its index, run, compiled
+    files and gaps added to the lists given."""
+    import docker_build
+    out_dir, started = work_dir / f"docker-{len(runs)}", time.monotonic()
+    result = docker_build.run(
+        project_dir, out_dir, plan, ["sh", "-c", _stage_script(plan["build"]["argv"], cpus)],
+        setup=[f"mkdir -p {preparation.T}/bin", f"if [ -e {MUSL} ]; then tar -xf {preparation.IN}/glibc.tar -C / ; fi",
+               f"cp {preparation.IN}/scip-clang {preparation.T}/bin/scip-clang && chmod 755 {preparation.T}/bin/scip-clang",
+               f"mkdir -p {posixpath.dirname(HEADERS)} && tar -xf {preparation.IN}/clang-headers.tar"
+               f" -C {posixpath.dirname(HEADERS)}"],
+        carried=lambda: {f"{preparation.IN}/scip-clang": tools()[f"{TOOLS}/scip-clang"],
+                         f"{preparation.IN}/glibc.tar": docker_build.glibc(),
+                         f"{preparation.IN}/clang-headers.tar": clang_headers()},
+        outputs=[STAGE_OUT], memory=max(memory, STAGE_MEMORY), cpus=cpus, pids=PIDS, engine=engine, timeout=timeout,
+        prepare_timeout=3600)
+    logs = {name: (out_dir / f"{name}.log").read_text(encoding="utf-8", errors="replace")
+            if (out_dir / f"{name}.log").is_file() else "" for name in ("prepare", "execute")}
+    step, ended = docker_build.failed_step(plan, build, logs["prepare"]), BUILD_EXIT.search(logs["execute"])
+    gaps += result.get("gaps") or []  # what the copy left out (`container.copy_perimeter`)
+    built = f"{plan['dockerfile']}:{plan['build']['line']} `{plan['build']['original']}`"
+    provenance = docker_build.provenance(plan)
+    runs.append({"unit": root, "step": "docker", "returncode": result.get("exit_code"),
+                 "seconds": round(time.monotonic() - started, 1), "peak_mb": None,
+                 "stderr_tail": (logs["execute"] or logs["prepare"])[-2500:], "docker": provenance})
+    if step:
+        gaps += step["gaps"]
+        return {"state": "failed", "cause": f"{step['path']} `{step['original']}` failed: {step['error']}"}
+    if ended is None:
+        last = docker_build.last_line(logs["prepare"]).strip()
+        return {"state": "failed", "cause": f"its Dockerfile's build stage did not run: {result.get('cause')}"
+                                            + (f": {last}" if last else "")}
+    code = int(ended.group(1))
+    if "DAODAN-NO-DATABASE" in logs["execute"]:
+        return {"state": "failed", "cause": f"{built} ended with exit code {code} and wrote no compilation database: "
+                                            f"{docker_build.last_line(logs['execute'], ended.start())}"}
+    database = out_dir / "out" / "compile_commands.json"
+    for entry in json.loads(database.read_text(encoding="utf-8")) if database.is_file() else ():
+        rel = docker_build.origin(plan, posixpath.join(entry.get("directory") or plan["workdir"], entry["file"]))
+        if rel:
+            compiled[rel] += 1
+    written, target = out_dir / "out" / "index.scip", work_dir / f"scip-clang-docker-{len(indexes)}.scip"
+    if written.is_file() and docker_build.rewritten(written, plan, target):
+        indexes.append([str(target), ""])
+        return {"state": "indexed", "docker": provenance,
+                **({"cause": f"{built} ended with exit code {code}"} if code else {})}
+    said = f"; {result['cause']}" if result.get("cause") else ""  # the engine's own words
+    return {"state": "failed", "cause": f"scip-clang in its Dockerfile's build stage wrote no index of the checkout's "
+                                        f"files (exit code {result.get('exit_code')}{said}): "
+                                        f"{docker_build.last_line(logs['execute']).strip()}"}
 
 
 def _contract(result: dict, back: Path, work_dir: Path, states: list[dict]) -> dict:
@@ -822,6 +1023,11 @@ def _contract(result: dict, back: Path, work_dir: Path, states: list[dict]) -> d
             target.unlink(missing_ok=True)
             shutil.move(str(back / unit["index"]), str(target))
             indexes.append([str(target), ""])
+    return _assembled(indexes, runs, compiled, states)
+
+
+def _assembled(indexes: list, runs: list[dict], compiled: collections.Counter, states: list[dict]) -> dict:
+    """The contract of the units' `states`, with their indexes, runs and compiled files."""
     if not indexes:
         causes = "; ".join(f"{item['root']}: {item['cause']}" for item in states)
         if all(item["state"] == "unavailable" for item in states):

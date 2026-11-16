@@ -17,7 +17,8 @@ same image, pinned by the same digest:
   pulls each image and pins it by its digest (`container.pin`); the second, network blocked, starts Docker again
   and each service with `--network host`, the sandbox's own namespace, awaited before the tests
   (`container.start_services`): they reach it at localhost, and nothing outside;
-- the declared outputs come back as one tar, into the run's folder, as `container.fetch` leaves them.
+- the declared outputs come back, a tar each made by the image's own tar (BusyBox's has no -r and one -C), into
+  the run's folder, as `container.fetch` leaves them.
 
 A family's fixtures run in groups of `--chunk` (4), each group in a function call of its own; each real repository (its clone from the archive `modal_native.py
 prepare` keeps on the volume) has its own. Per case the result holds the pre-map's score against
@@ -340,13 +341,16 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         container.append_record(record, {**container.mask_row(row, hide), "image": image, "command": list(command),
                                          "copy": digest})
         if outputs and row["outcome"] != "failed":
-            pack = " ; ".join(f"[ -e {shlex.quote(path)} ] && tar -rf {PACKED} -C {shlex.quote(posixpath.dirname(path))}"
-                              f" {shlex.quote(posixpath.basename(path))}" for path in outputs)
-            boxes[-1].exec("sh", "-c", f"rm -f {PACKED} ; {pack} ; [ -e {PACKED} ] || tar -cf {PACKED} -T /dev/null").wait()
-            with tarfile.open(fileobj=io.BytesIO(boxes[-1].filesystem.read_bytes(PACKED))) as bundle:
-                members = [m for m in bundle.getmembers() if m.isfile() or m.isdir()]
-                bundle.extractall(out_dir, members=members, filter="data")
-                result["outputs"] = [str(out_dir / m.name) for m in members if m.isfile()]
+            for number, path in enumerate(outputs):  # a tar each: the image's own may be BusyBox's (no -r, one -C)
+                packed = f"{PACKED}.{number}"
+                pack = (f"[ -e {shlex.quote(path)} ] && tar -cf {packed} -C {shlex.quote(posixpath.dirname(path))}"
+                        f" {shlex.quote(posixpath.basename(path))}")
+                if boxes[-1].exec("sh", "-c", pack).wait() != 0:  # an output the run did not write
+                    continue
+                with tarfile.open(fileobj=io.BytesIO(boxes[-1].filesystem.read_bytes(packed))) as bundle:
+                    members = [m for m in bundle.getmembers() if m.isfile() or m.isdir()]
+                    bundle.extractall(out_dir, members=members, filter="data")
+                    result["outputs"] += [str(out_dir / m.name) for m in members if m.isfile()]
             for path in result["outputs"]:  # the text a run printed there, masked as its logs are
                 if path.endswith(container.TEXTS):
                     container.mask_file(path, hide)

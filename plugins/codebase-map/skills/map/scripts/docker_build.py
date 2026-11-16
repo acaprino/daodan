@@ -4,17 +4,23 @@ The pre-map states each Dockerfile as BuildKit reads it (`docker_builds`, `prema
 stage whose COPY from the build context brings the unit's files (the last such stage) and the stages it starts
 FROM, and their instructions up to that stage's last RUN, the build itself, which must run the analyzer's build:
 
-- ENV and ARG are exports with BuildKit's values (an ARG reaches the RUN instructions only, as in BuildKit);
+- ENV and ARG are exports with BuildKit's values (an ARG reaches the RUN instructions only, as in BuildKit); a
+  variable of a tracked .env file, `${NAME}` in the fact (its `dotenv`), the shell expands from the
+  preparation's environment, which the container sets from the copy's .env (`run`), never from a value the plan
+  holds, and the execution's environment leaves it out;
 - WORKDIR is the folder the next instructions run in, `/` before the first;
 - RUN runs in a shell of its own, with the stage's SHELL for its shell form;
 - COPY and ADD copy the context's files from the copy of the checkout (`WORK`) by BuildKit's rules: a folder's
   contents into the destination; a file into a destination folder (one ending in `/` or `.`, or for several
-  sources), else as the destination itself.
+  sources), else as the destination itself. The context is what the copy carries under it (`container.carried`),
+  less what its .dockerignore leaves out (the pre-map's `excluded`, by BuildKit's own matcher).
 
 The build is not a step: the plan keeps its words in the stage's shell (`build.argv`) and the stage's ENV and ARG
 values (`env`), for an analyzer that runs it where it would (`command`) or runs its own tool in its place.
-The image is the first stage's FROM, run by the digest its registry gives (`pinned`); the hosts the preparation opens beside the registries are those the RUN
-instructions name in a URL. What the steps write (a `go.mod`, a generated source) is no file of the checkout:
+The image is the first stage's FROM, run by the digest its registry gives (`pinned`); the hosts the preparation
+opens beside the registries are those the RUN instructions name in a URL and those of the package sources the
+image itself names (`sourced`); apt's plain HTTP archives are opened for its paths, apk's are a gap. What the
+steps write (a `go.mod`, a generated source) is no file of the checkout:
 `origin` maps back only what a COPY brought. An instruction it cannot reproduce is a `not_reproduced` gap naming
 the Dockerfile's line, and the stage is not run: a build argument without a value, a RUN mount other than a cache
 or a tmpfs, a heredoc, an insecure RUN, a COPY or ADD from another stage or image, of a remote source or an
@@ -43,6 +49,7 @@ URL = re.compile(r"\b(?:https?|git|ssh)://(?:[^@/\s'\"]+@)?([A-Za-z0-9.-]+)")
 ARCHIVE = re.compile(r"\.(tar|tgz|tbz2|txz|tar\.gz|tar\.bz2|tar\.xz|gz|bz2|xz)$")
 NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 GLOB = re.compile(r"[*?\[]")
+MARKER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")  # a variable a fact names in place of its value
 MANIFESTS = ", ".join(("application/vnd.oci.image.index.v1+json",  # what a registry may answer for a tag
                        "application/vnd.docker.distribution.manifest.list.v2+json",
                        "application/vnd.oci.image.manifest.v1+json",
@@ -134,9 +141,9 @@ def pinned(image: str, timeout: float = 60) -> str:
     return f"{reference}@{digest}"
 
 
-def _context(project: Path, context: str) -> tuple[set[str], set[str]]:
-    """The files and folders of the build context, relative to it."""
-    files, folders, base = set(), {"."}, Path(project) / context
+def _listing(base: Path) -> tuple[set[str], set[str]]:
+    """The files and folders on disk under `base`, relative to it."""
+    files, folders = set(), {"."}
     for folder, names, found in os.walk(base):
         rel = Path(folder).relative_to(base).as_posix()
         for name in names:
@@ -144,6 +151,39 @@ def _context(project: Path, context: str) -> tuple[set[str], set[str]]:
         for name in found:
             files.add(posixpath.normpath(posixpath.join(rel, name)))
     return files, folders
+
+
+def _context(project: Path, context: str, excluded=()) -> tuple[set[str], set[str]]:
+    """The files and folders of the build context, relative to it: what the copy of the checkout carries under it
+    (`container.carried`: never a file Daodan never reads), less what its .dockerignore leaves out (`excluded`, the
+    pre-map's, relative to the context, a folder ending in /)."""
+    import container
+    walked, kept, links, _ = container.carried(Path(project))
+    base = posixpath.normpath(context)
+
+    def inside(rel: str) -> str | None:
+        if base == ".":
+            return rel
+        return posixpath.relpath(rel, base) if rel == base or rel.startswith(base + "/") else None
+
+    left = [entry.rstrip("/") for entry in excluded]
+    out = lambda rel: any(rel == entry or rel.startswith(entry + "/") for entry in left)  # noqa: E731
+    files = {rel for rel in (inside(item[0]) for item in (*kept, *links)) if rel is not None and not out(rel)}
+    folders = {rel for rel in (inside(folder) for folder in walked) if rel is not None}
+    folders |= {rel[:at] for rel in files for at, char in enumerate(rel) if char == "/"}  # each file's folders
+    return files, {rel for rel in folders if rel == "." or not out(rel)} | {"."}
+
+
+def _absent(sources: list[str], project: Path, build: dict) -> list[str]:
+    """Why each COPY source that names nothing in the build context does not: its .dockerignore leaves it out,
+    Daodan's copy of the checkout does not carry it, or it is not in the checkout."""
+    context = build["context"]
+    carried, disk = _context(project, context), _listing(Path(project) / context)
+    return [f"{source}: {build.get('dockerignore')} leaves it out of the build context {context}"
+            if _sources(source, *carried) else
+            f"{source}: not in Daodan's copy of the checkout (a file it never reads, or one Git does not track in a "
+            f"folder the snapshot leaves out)" if _sources(source, *disk) else
+            f"{source}: not in the build context {context}" for source in sources]
 
 
 def _sources(pattern: str, files: set[str], folders: set[str]) -> list[tuple[str, bool]] | None:
@@ -167,7 +207,8 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
     RUN, which must match `builds` (the analyzer's build command); None when no stage copies one in. `root` is
     where the stage's filesystem lies (the container's own: empty), `work` the copy of the checkout."""
     dockerfile, context, stages = build["dockerfile"], build["context"], build["stages"]
-    files, folders = _context(project, context)
+    excluded = build.get("excluded") or ()
+    files, folders = _context(project, context, excluded)
     checkout = lambda rel: posixpath.normpath(posixpath.join(context, rel))  # noqa: E731
     wanted, target = set(wanted), None
     for index, stage in enumerate(stages):
@@ -186,12 +227,24 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
     image, last = stages[chain[0]]["base"], stages[target]
     name = last["name"] or str(target)
     runs = [item for item in last["commands"] if item["kind"] == "RUN"]
-    gaps, lines, ran, copies, env, hosts = [], ["set -e"], [], {}, {}, set()
+    gaps, lines, ran, copies, env, hosts, steps_run = [], ["set -e"], [], {}, {}, set(), []
     workdir, shell = "/", ["/bin/sh", "-c"]
 
     def gap(item: dict, detail: str) -> None:
         gaps.append({"kind": "not_reproduced", "path": f"{dockerfile}:{item['line']}",
                      "detail": f"{item['original']}: {detail}"})
+
+    dotenv = build.get("dotenv") or {}  # {NAME: file}: a tracked .env file's variable, `${NAME}` in the fact
+
+    def named(value: str) -> bool:
+        return any(found.group(1) in dotenv for found in MARKER.finditer(value))
+
+    def quoted(value: str) -> str:
+        """`value` for the shell, each `${NAME}` of a tracked .env file left for it to expand: the container's
+        environment holds it in the preparation (`run`)."""
+        parts = re.split(r"(\$\{[A-Za-z_][A-Za-z0-9_]*\})", value)
+        return "".join(f'"{part}"' if MARKER.fullmatch(part) and part[2:-1] in dotenv else shlex.quote(part)
+                       for part in parts if part) or "''"
 
     def failed(item: dict) -> str:
         return f'|| {{ echo "DAODAN-DOCKERFILE-FAILED {dockerfile}:{item["line"]}" >&2; exit 1; }}'
@@ -216,13 +269,14 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
                     if value is None:
                         gap(item, f"{key} has no value: no default and no build argument gives one")
                     else:
-                        lines.append(f"export {key}={shlex.quote(value)}")
-                        if any(item is mine for mine in own):  # in scope where the build runs; an ENV wins
-                            env.setdefault(key, value)
+                        lines.append(f"export {key}={quoted(value)}")
+                        if any(item is mine for mine in own) and not named(value):  # where the build runs;
+                            env.setdefault(key, value)  # an ENV wins
         elif kind == "ENV":
             for key, value in item["env"]:
-                env[key] = value
-                lines.append(f"export {key}={shlex.quote(value)}")
+                if not named(value):
+                    env[key] = value
+                lines.append(f"export {key}={quoted(value)}")
         elif kind == "WORKDIR":
             workdir = posixpath.normpath(posixpath.join(workdir, item["path"]))
             lines.append(f"mkdir -p {shlex.quote(root + workdir)}")
@@ -243,6 +297,7 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
                 words = [*shell, *item["cmd"]] if item.get("shell") else item["cmd"]
                 hosts.update(URL.findall(" ".join(item["cmd"])))
                 lines.append(f"( cd {shlex.quote(root + workdir)} && exec {shlex.join(words)} ) {failed(item)}")
+                steps_run.append({"line": item["line"], "original": item["original"]})
         elif kind in ("COPY", "ADD"):
             flags = [f for f in item.get("flags") or () if f != "link"] + [f for f in ("chown", "chmod") if item.get(f)]
             if item.get("from"):
@@ -259,9 +314,7 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
                 missing = [s for paths, s in found if paths == []]
                 if outside or missing:
                     gap(item, "; ".join([*([f"{', '.join(outside)}: outside the build context {context}"]
-                                           if outside else []),
-                                         *([f"{', '.join(missing)}: not in the build context {context}"]
-                                           if missing else [])]))
+                                           if outside else []), *_absent(missing, project, build)]))
                     continue
                 paths = [path for group, _ in found for path in group]
                 dest = posixpath.normpath(posixpath.join(workdir, item["dest"]))
@@ -271,6 +324,9 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
                     if folder:
                         lines.append(f"mkdir -p {shlex.quote(root + dest)} && cp -a {source}/. "
                                      f"{shlex.quote(root + dest)}/ {failed(item)}")
+                        inner = "" if path == "." else f"{path}/"  # what .dockerignore leaves out stays out
+                        lines += [f"rm -rf {shlex.quote(root + posixpath.join(dest, entry[len(inner):]))}"
+                                  for entry in excluded if entry.startswith(inner)]
                         copies.update({posixpath.join(dest, rel[len(path) + 1:] if path != "." else rel): checkout(rel)
                                        for rel in _under(files, path)})
                     elif into:
@@ -288,7 +344,7 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
             "ran": ran, "build": {"line": runs[-1]["line"], "original": runs[-1]["original"],
                                   "argv": [*shell, *runs[-1]["cmd"]] if runs[-1].get("shell") else runs[-1]["cmd"]}
             if runs else None,
-            "copies": copies, "hosts": sorted(hosts), "gaps": gaps}
+            "copies": copies, "hosts": sorted(hosts), "runs": steps_run, "dotenv": dotenv, "gaps": gaps}
 
 
 FAILED = re.compile(r"DAODAN-DOCKERFILE-FAILED (\S+)")  # what a step of the plan's lines prints when it fails
@@ -363,6 +419,62 @@ def provenance(plan: dict) -> dict:
             "build": (plan["build"] or {}).get("line")}
 
 
+SOURCES_MARK = "DAODAN-SOURCES"
+SOURCES = ("for f in /etc/apk/repositories /etc/apk/repositories.d/* /etc/apt/sources.list /etc/apt/sources.list.d/*;"
+           f' do [ -f "$f" ] && {{ echo "{SOURCES_MARK} $f"; cat "$f"; echo; }}; done; exit 0')  # each, as it is
+MANAGERS = {"/etc/apk/": ("apk", re.compile(r"(?:^|[\s;&|(`])apk\s")),  # the files a package manager reads,
+            "/etc/apt/": ("apt", re.compile(r"(?:^|[\s;&|(`])(?:apt-get|apt|aptitude)\s"))}  # and a RUN that runs it
+SOURCE = re.compile(r"\b(https?)://(?:[^@/\s]+@)?([A-Za-z0-9.-]+)\S*")
+
+
+def sourced(plan: dict, out_dir: Path, *, engine=None) -> dict:
+    """`plan` with its base image by digest and, among its hosts (which the preparation opens), those of the
+    package sources the image itself names (`SOURCES`: apk's repositories, apt's sources, read in the image with
+    no network). apt's plain HTTP sources are `http://<host>` hosts, which the preparation's proxy opens for
+    apt's archive paths only (`container.PROXY_SCRIPT`: apt verifies the signed Release files and each package's
+    hash); a step that runs apk where the image names a plain HTTP source is not reproduced, a `not_reproduced`
+    gap at that RUN naming the sources. A plan with gaps, a registry that does not answer and an image that does not run leave
+    `plan` as it is: `run` says why."""
+    import tempfile
+    import container
+    if plan["gaps"]:
+        return plan
+    try:
+        image = pinned(plan["image"])
+    except (OSError, RuntimeError):
+        return plan
+    with tempfile.TemporaryDirectory() as empty:
+        result = container.run_in_container(Path(empty), ["sh", "-c", SOURCES], image=image, out_dir=Path(out_dir),
+                                            timeout=300, engine=engine)
+    log = Path(out_dir) / "execute.log"
+    if result.get("state") != "done" or not log.is_file():
+        return plan
+    hosts, plain, file = set(plan["hosts"]), {}, None
+    for line in log.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.startswith(f"{SOURCES_MARK} "):
+            file = line[len(SOURCES_MARK) + 1:].strip()
+        elif file and not line.lstrip().startswith("#"):
+            for found in SOURCE.finditer(line):
+                if found.group(1) == "https":
+                    hosts.add(found.group(2).lower())
+                else:
+                    plain.setdefault(file, {})[found.group(0)] = None
+    gaps = []
+    for prefix, (manager, runs_it) in MANAGERS.items():
+        named = [name for name in plain if name.startswith(prefix)]
+        step = next((item for item in plan["runs"] if runs_it.search(item["original"])), None)
+        if not (named and step):
+            continue
+        urls = dict.fromkeys(url for name in named for url in plain[name])
+        if manager == "apt":  # its signed archives: the proxy opens `http://<host>` for their paths only
+            hosts.update(f"http://{SOURCE.match(url).group(2).lower()}" for url in urls)
+        else:
+            gaps.append({"kind": "not_reproduced", "path": f"{plan['dockerfile']}:{step['line']}", "detail": (
+                f"{step['original']}: {manager} reads {', '.join(urls)} ({', '.join(named)} of {image}), plain "
+                f"HTTP, which the preparation opens for apt's archives only")})
+    return {**plan, "image": image, "hosts": sorted(hosts), **({"gaps": gaps, "lines": []} if gaps else {})}
+
+
 def run(project: Path, out_dir: Path, plan: dict, argv: list[str], *, setup=(), files=(), carried=None,
         **options) -> dict:
     """`argv` in what the stage `plan` reproduces leaves (`container.run_in_container`'s result): its steps, then
@@ -382,6 +494,7 @@ def run(project: Path, out_dir: Path, plan: dict, argv: list[str], *, setup=(), 
         project, command(plan, argv), image=image, out_dir=out_dir, env={"HOME": "/root"}, keep_root=True,
         prepare=["sh", "-c", "\n".join([*plan["lines"], *setup])],
         registries=tuple(dict.fromkeys((*container.REGISTRIES, *plan["hosts"]))),
+        dotenv_env=sorted((plan.get("dotenv") or {}).items()),
         inputs=lambda: {**{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                            for url, digest, name in files}, **(carried() if carried else {})}, **options)
 

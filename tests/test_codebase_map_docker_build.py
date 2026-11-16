@@ -6,9 +6,13 @@ packages the stage installs with apk and builds from GitHub).
 """
 import json
 import os
+import posixpath
+import shlex
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 for path in (str(ROOT / "plugins/codebase-map/skills/map/scripts"), str(ROOT / "tests")):
@@ -32,11 +36,49 @@ def fact(name, dockerfile, context, args=None):
 
 
 def project(tmp_path, files):
+    """A checkout: a Git work tree whose files are tracked, as the copy carries them (`container.carried`)."""
     folder = tmp_path / "project"
     for rel, text in files.items():
         (folder / rel).parent.mkdir(parents=True, exist_ok=True)
         (folder / rel).write_text(text, encoding="utf-8")
+    for argv in (["git", "init", "-q"], ["git", "add", "-A"]):
+        subprocess.run(argv, cwd=folder, check=True, capture_output=True)
     return folder
+
+
+# Package sources as the images hold them (Modal Sandboxes, 16 November 2026), as `docker_build.SOURCES` prints them.
+ALPINE_SOURCES = ("DAODAN-SOURCES /etc/apk/repositories\nhttps://dl-cdn.alpinelinux.org/alpine/v3.24/main\n"
+                  "https://dl-cdn.alpinelinux.org/alpine/v3.24/community\n\n")  # alpine:3.24.3
+BULLSEYE_SOURCES = (  # golang:1.17
+    "DAODAN-SOURCES /etc/apt/sources.list\n"
+    "# deb http://snapshot.debian.org/archive/debian/20220711T000000Z bullseye main\n"
+    "deb http://deb.debian.org/debian bullseye main\n"
+    "# deb http://snapshot.debian.org/archive/debian-security/20220711T000000Z bullseye-security main\n"
+    "deb http://deb.debian.org/debian-security bullseye-security main\n"
+    "# deb http://snapshot.debian.org/archive/debian/20220711T000000Z bullseye-updates main\n"
+    "deb http://deb.debian.org/debian bullseye-updates main\n\n")
+TRIXIE_SOURCES = (  # debian:13
+    "DAODAN-SOURCES /etc/apt/sources.list.d/debian.sources\nTypes: deb\n"
+    "# http://snapshot.debian.org/archive/debian/20261104T212339Z\nURIs: http://deb.debian.org/debian\n"
+    "Suites: trixie trixie-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.pgp\n\n"
+    "Types: deb\n# http://snapshot.debian.org/archive/debian-security/20261104T212339Z\n"
+    "URIs: http://deb.debian.org/debian-security\nSuites: trixie-security\nComponents: main\n"
+    "Signed-By: /usr/share/keyrings/debian-archive-keyring.pgp\n\n")
+
+
+def probed(command, out_dir, sources=""):
+    """The run that reads the base image's package sources (`docker_build.sourced`), `sources` its output; None
+    for any other run."""
+    if docker_build.SOURCES_MARK not in " ".join(command):
+        return None
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    (Path(out_dir) / "execute.log").write_text(sources, encoding="utf-8")
+    return {"state": "done", "exit_code": 0, "outputs": []}
+
+
+def pin(image, timeout=60):
+    """`docker_build.pinned` without a registry: a reference by digest stays as it is."""
+    return image if "@sha256:" in image else f"docker.io/library/{image}@sha256:{'c' * 64}"
 
 
 def run(lines, tmp_path, work, programs):
@@ -82,9 +124,7 @@ def test_currency_runs_base_then_builder_with_compose_s_argument_and_maps_each_c
     """OpenTelemetry Demo's currency: `builder` starts FROM `base` (apk add grpc-dev protobuf-dev), adds the
     compiler and builds opentelemetry-cpp at the version Compose gives, then copies the unit's folders and the
     repository's pb/demo.proto. Its last RUN is the CMake build."""
-    work = project(tmp_path, {"src/currency/src/main.cpp": "int main(){}\n", "src/currency/CMakeLists.txt": "",
-                              "src/currency/genproto/CMakeLists.txt": "", "src/currency/build/.keep": "",
-                              "src/currency/proto/.keep": "", "pb/demo.proto": "", "src/currency/Dockerfile": ""})
+    work = project(tmp_path, CURRENCY_FILES)
     build = fact("otel-demo-currency.json", "src/currency/Dockerfile", ".", {"OPENTELEMETRY_CPP_VERSION": "1.28.0"})
     root = tmp_path / "root"
     plan = docker_build.plan(build, work, ["src/currency/src/main.cpp"], CMAKE_BUILD, work=str(work),
@@ -113,6 +153,40 @@ def test_currency_runs_base_then_builder_with_compose_s_argument_and_maps_each_c
                          "ver=1.28.0"]
     assert (root / "currency/src/main.cpp").is_file() and (root / "currency/proto/demo.proto").is_file()
     assert (root / "currency/genproto/CMakeLists.txt").is_file()
+
+
+GIT = 'echo "git $*" >> "$CALLS"\nmkdir -p opentelemetry-cpp\n'
+
+
+def test_a_value_of_a_tracked_env_file_reaches_the_stage_only_in_its_container(tmp_path, monkeypatch):
+    """otel-demo as it is: Compose gives OPENTELEMETRY_CPP_VERSION from the tracked .env, so the fact keeps
+    `${OPENTELEMETRY_CPP_VERSION}` and its file (`premap/dockerfile.py`). The plan exports the ARG from that
+    variable, which the run asks the container to set from the copy's .env (`dotenv_env`): the value is in the
+    preparation's environment only, never in the plan or on record. The execution's ENV leaves it out."""
+    work = project(tmp_path, {**CURRENCY_FILES, ".env": "OPENTELEMETRY_CPP_VERSION=1.28.0\n"})
+    build = {**fact("otel-demo-currency.json", "src/currency/Dockerfile", ".",
+                    {"OPENTELEMETRY_CPP_VERSION": "${OPENTELEMETRY_CPP_VERSION}"}),
+             "dotenv": {"OPENTELEMETRY_CPP_VERSION": ".env"}}
+    for item in (item for stage_ in build["stages"] for item in stage_["commands"]):  # as BuildKit expands them
+        if "cmd" in item:
+            item["cmd"] = [word.replace("1.28.0", "${OPENTELEMETRY_CPP_VERSION}") for word in item["cmd"]]
+        for args in item.get("args") or ():
+            args.update({key: "${OPENTELEMETRY_CPP_VERSION}" for key, value in args.items() if value == "1.28.0"})
+    root = tmp_path / "root"
+    plan = docker_build.plan(build, work, ["src/currency/src/main.cpp"], CMAKE_BUILD, work=str(work), root=str(root))
+    assert not plan["gaps"] and "1.28.0" not in json.dumps(plan)
+    assert 'export OPENTELEMETRY_CPP_VERSION="${OPENTELEMETRY_CPP_VERSION}"' in plan["lines"]
+    assert ["OPENTELEMETRY_CPP_VERSION", "${OPENTELEMETRY_CPP_VERSION}"] not in plan["env"]
+    done = subprocess.run(["sh", "-c", "\n".join(plan["lines"])], capture_output=True, text=True, timeout=60, cwd=work,
+                          env={**os.environ, "OPENTELEMETRY_CPP_VERSION": "1.28.0", "CALLS": str(tmp_path / "calls"),
+                               "PATH": f"{bin_with(tmp_path, {**BUILDING, 'git': GIT})}:{os.environ['PATH']}"})
+    assert done.returncode == 0, done.stderr
+    assert "--branch v1.28.0 " in (tmp_path / "calls").read_text(encoding="utf-8")
+    calls = []
+    monkeypatch.setattr(docker_build, "pinned", pin)
+    monkeypatch.setattr(container, "run_in_container", lambda *args, **options: calls.append(options) or {})
+    docker_build.run(work, tmp_path / "out", plan, ["true"])
+    assert calls[0]["dotenv_env"] == [("OPENTELEMETRY_CPP_VERSION", ".env")]
 
 
 def test_each_instruction_it_cannot_reproduce_is_a_gap_naming_its_line(tmp_path):
@@ -183,6 +257,164 @@ def test_the_base_image_is_named_by_the_digest_its_registry_gives(monkeypatch):
     assert "application/vnd.oci.image.index.v1+json" in asked[0][2]["Accept"]
     kept = "docker.io/library/alpine:3.24.3@sha256:" + "b" * 64
     assert docker_build.pinned(kept) == kept
+
+
+CURRENCY_FILES = {"src/currency/src/main.cpp": "int main(){}\n", "src/currency/CMakeLists.txt": "",
+                  "src/currency/genproto/CMakeLists.txt": "", "src/currency/build/.keep": "",
+                  "src/currency/proto/.keep": "", "pb/demo.proto": "", "src/currency/Dockerfile": ""}
+BUILDING = {"apk": "", "git": "mkdir -p opentelemetry-cpp\n", "cmake": "", "make": "", "nproc": "echo 2\n"}
+
+
+def stage(*commands, base="debian:13"):
+    """A build fact of one stage on `base`, its instructions as BuildKit reads them, one per line from line 3."""
+    items = []
+    for line, (kind, original, more) in enumerate(commands, start=3):
+        items.append({"kind": kind, "line": line, "end_line": line, "original": original, **more})
+    return {"dockerfile": "Dockerfile", "context": ".", "args": {},
+            "stages": [{"name": "", "base": base, "base_stage": None, "line": 1, "commands": items}]}
+
+
+def shell(original):
+    return "RUN", original, {"cmd": [original[len("RUN "):]], "shell": True, "network": "default",
+                             "security": "sandbox"}
+
+
+def copy(original, sources, dest):
+    return "COPY", original, {"sources": sources, "dest": dest}
+
+
+APT_STAGE = stage(shell("RUN apt-get update && apt-get install -y cmake g++"),
+                  ("WORKDIR", "WORKDIR /src", {"path": "/src"}), copy("COPY . .", ["."], "."),
+                  shell("RUN cmake -S . -B build && cmake --build build"))
+
+
+def test_the_base_image_s_own_package_sources_are_hosts_of_its_stage(tmp_path, monkeypatch):
+    """currency's `builder` runs `apk update && apk add ...` on alpine:3.24.3, whose apk reads the repositories
+    /etc/apk/repositories names: read from the pinned image itself with no network, their hosts are opened in the
+    preparation beside those the RUN lines name. apk-tools 3.0.8 reaches them through Daodan's proxy (Modal,
+    16 November 2026: jq installed with dl-cdn.alpinelinux.org allowed, `HTTP 403: Forbidden` without it)."""
+    work = project(tmp_path, CURRENCY_FILES)
+    build = fact("otel-demo-currency.json", "src/currency/Dockerfile", ".", {"OPENTELEMETRY_CPP_VERSION": "1.28.0"})
+    calls = []
+
+    def run_in_container(project_dir, command, *, image, out_dir, **options):
+        calls.append({"image": image, "command": command, **options})
+        return probed(command, out_dir, ALPINE_SOURCES)
+
+    monkeypatch.setattr(container, "run_in_container", run_in_container)
+    monkeypatch.setattr(docker_build, "pinned", pin)
+    plan = docker_build.plan(build, work, ["src/currency/src/main.cpp"], CMAKE_BUILD)
+    plan = docker_build.sourced(plan, tmp_path / "sources")
+    [call] = calls
+    assert call["image"] == plan["image"] == build["stages"][0]["base"]  # named by its digest already
+    assert "prepare" not in call and "/etc/apk/repositories" in call["command"][-1]
+    assert "/etc/apt/sources.list.d/*" in call["command"][-1]
+    assert plan["hosts"] == ["dl-cdn.alpinelinux.org", "github.com"] and not plan["gaps"] and plan["lines"]
+
+
+def test_apt_s_plain_http_archives_are_opened_for_its_paths_and_apk_s_are_a_gap(tmp_path, monkeypatch):
+    """Debian's and Ubuntu's images name their archives over plain HTTP (golang:1.17, golang:1.23, debian:13,
+    ubuntu:24.04). apt verifies the signed Release files and each package's hash, so the preparation's proxy opens
+    an `http://<host>` entry for apt's archive paths only (`container.PROXY_SCRIPT`): a stage whose step runs apt
+    there gets those entries among its hosts. apk over plain HTTP stays a gap naming the sources. A stage that
+    runs no apt leaves them unused: dispatch, on golang:1.17."""
+    monkeypatch.setattr(docker_build, "pinned", pin)
+    plain_apk = "DAODAN-SOURCES /etc/apk/repositories\nhttp://dl-cdn.alpinelinux.org/alpine/v3.24/main\n\n"
+    answers = iter([TRIXIE_SOURCES, plain_apk, BULLSEYE_SOURCES])
+    monkeypatch.setattr(container, "run_in_container",
+                        lambda project_dir, command, *, image, out_dir, **options: probed(command, out_dir,
+                                                                                        next(answers)))
+    work = project(tmp_path, {"CMakeLists.txt": "project(app CXX)\n", "main.cpp": "int main() {}\n"})
+    plan = docker_build.sourced(docker_build.plan(APT_STAGE, work, ["main.cpp"], CMAKE_BUILD), tmp_path / "sources")
+    assert not plan["gaps"] and plan["lines"] and plan["hosts"] == ["http://deb.debian.org"]
+    apk = stage(shell("RUN apk add cmake g++"), ("WORKDIR", "WORKDIR /src", {"path": "/src"}),
+                copy("COPY . .", ["."], "."), shell("RUN cmake -S . -B build && cmake --build build"),
+                base="alpine:3.24.3")
+    plan = docker_build.sourced(docker_build.plan(apk, work, ["main.cpp"], CMAKE_BUILD), tmp_path / "apk")
+    assert plan["lines"] == [] and plan["gaps"] == [{"kind": "not_reproduced", "path": "Dockerfile:3", "detail": (
+        "RUN apk add cmake g++: apk reads http://dl-cdn.alpinelinux.org/alpine/v3.24/main (/etc/apk/repositories of "
+        f"docker.io/library/alpine:3.24.3@sha256:{'c' * 64}), plain HTTP, which the preparation opens for apt's "
+        "archives only")}]
+    work = project(tmp_path / "robot-shop", {"dispatch/main.go": "package main\n", "dispatch/Dockerfile": ""})
+    build = fact("robot-shop-dispatch.json", "dispatch/Dockerfile", "dispatch")
+    plan = docker_build.sourced(docker_build.plan(build, work, ["dispatch/main.go"], GO_BUILD), tmp_path / "go")
+    assert not plan["gaps"] and plan["lines"] and plan["hosts"] == []
+
+
+def test_the_build_context_is_what_the_copy_carries_less_what_its_dockerignore_leaves_out(tmp_path):
+    """BuildKit sends the context less what .dockerignore leaves out (the pre-map's `excluded`, a folder ending in
+    /); Daodan's copy carries what Git tracks (a tracked .env too) and what the snapshot reads, never a file
+    Daodan never reads that Git does not track (an untracked .env.local). A folder COPY brings what the copy
+    carries; a COPY of a file .dockerignore leaves out fails in BuildKit and is a gap here, as is one of a file the
+    copy does not carry."""
+    work = project(tmp_path, {**CURRENCY_FILES, "src/currency/src/tracer_common.h": "", "src/currency/src/.env": "A=1\n"})
+    (work / "src/currency/src/.env.local").write_text("B=2\n", encoding="utf-8")  # untracked
+    build = {**fact("otel-demo-currency.json", "src/currency/Dockerfile", ".", {"OPENTELEMETRY_CPP_VERSION": "1.28.0"}),
+             "dockerignore": ".dockerignore", "excluded": ["src/currency/README.md", "src/currency/src/tracer_common.h"]}
+    root = tmp_path / "root"
+    plan = docker_build.plan(build, work, ["src/currency/src/main.cpp"], CMAKE_BUILD, work=str(work), root=str(root))
+    assert not plan["gaps"] and plan["copies"]["/currency/src/main.cpp"] == "src/currency/src/main.cpp"
+    assert "/currency/src/tracer_common.h" not in plan["copies"] and "/currency/src/.env.local" not in plan["copies"]
+    assert plan["copies"]["/currency/src/.env"] == "src/currency/src/.env"
+    done = run(plan["lines"], tmp_path, work, BUILDING)
+    assert done.returncode == 0, done.stderr
+    assert (root / "currency/src/main.cpp").is_file() and not (root / "currency/src/tracer_common.h").exists()
+    ignored = {**build, "excluded": ["src/currency/CMakeLists.txt"]}
+    assert docker_build.plan(ignored, work, ["src/currency/src/main.cpp"], CMAKE_BUILD)["gaps"] == [
+        {"kind": "not_reproduced", "path": "src/currency/Dockerfile:45", "detail":
+         "COPY ./src/currency/CMakeLists.txt CMakeLists.txt: ./src/currency/CMakeLists.txt: .dockerignore leaves it "
+         "out of the build context ."}]
+    secret = stage(copy("COPY src/currency/src/.env.local ./", ["src/currency/src/.env.local"], "./"),
+                   copy("COPY src/currency/src/ ./", ["src/currency/src/"], "./"), shell("RUN cmake ."))
+    assert docker_build.plan(secret, work, ["src/currency/src/main.cpp"], CMAKE_BUILD)["gaps"] == [
+        {"kind": "not_reproduced", "path": "Dockerfile:3", "detail":
+         "COPY src/currency/src/.env.local ./: src/currency/src/.env.local: not in Daodan's copy of the checkout (a "
+         "file it never reads, or one Git does not track in a folder the snapshot leaves out)"}]
+
+
+def test_on_the_host_only_git_lists_the_checkout_and_no_project_file_or_run_instruction_runs(tmp_path, monkeypatch):
+    """AGENTS.md: the analyzed project's code runs only in Daodan's container. On the host the Go and the C and C++
+    routes read the pre-map's facts and the checkout (Git lists what the copy carries: `container.carried`); a RUN
+    instruction and the build reach only the scripts the engine runs in the container (`prepare`, the command).
+    Each file here leaves a mark where it runs: a RUN instruction, the script the build runs, CMake's configure,
+    `go generate`, and the core.fsmonitor hook of the checkout's Git, which Git runs where it reads the index."""
+    from indexers import clang, go
+    marks = tmp_path / "marks"
+    marks.mkdir()
+    work = project(tmp_path, {"CMakeLists.txt": f"execute_process(COMMAND touch {marks}/cmake)\nproject(app CXX)\n",
+                              "main.cpp": "int main() {}\n",
+                              "main.go": f"package main\n\n//go:generate touch {marks}/go-generate\nfunc main() {{}}\n",
+                              "build.sh": f"#!/bin/sh\ntouch {marks}/build-sh\n",
+                              "tools/fsmonitor.sh": f"#!/bin/sh\ntouch {marks}/fsmonitor\n"})
+    for rel in ("build.sh", "tools/fsmonitor.sh"):
+        (work / rel).chmod(0o755)
+    subprocess.run(["git", "config", "core.fsmonitor", str(work / "tools/fsmonitor.sh")], cwd=work, check=True)
+    marked = (shell(f"RUN touch {marks}/run-instruction"), ("WORKDIR", "WORKDIR /src", {"path": "/src"}),
+              copy("COPY . .", ["."], "."))
+    go_build = stage(*marked, shell("RUN ./build.sh && go generate ./... && go install"))
+    cmake_build = stage(*marked, shell("RUN ./build.sh && cmake -S . -B build && cmake --build build"))
+    calls, started, real = [], [], subprocess.Popen
+
+    class Started(real):  # every process the routes start on the host
+        def __init__(self, args, *more, **options):
+            started.append([str(part) for part in ([args] if isinstance(args, (str, Path)) else args)])
+            super().__init__(args, *more, **options)
+
+    def run_in_container(project_dir, command, *, image, out_dir, prepare=None, **options):  # runs nothing
+        calls.append({"image": image, "command": command, "prepare": prepare})
+        return probed(command, out_dir, ALPINE_SOURCES) or {"state": "done", "exit_code": 0, "outputs": []}
+
+    monkeypatch.setattr(subprocess, "Popen", Started)
+    monkeypatch.setattr(container, "run_in_container", run_in_container)
+    monkeypatch.setattr(docker_build, "pinned", pin)
+    go._docker(work, tmp_path / "go", ["main.go"], set(), [go_build])
+    clang._docker(work, tmp_path / "clang", ["."], {"units": [{"root": ".", "state": "failed", "cause": "here"}]},
+                  [cmake_build], memory=2**30, cpus=1, engine=None, timeout=60)
+    assert sorted(path.name for path in marks.iterdir()) == []
+    assert started and all(Path(argv[0]).name in ("git", "git.exe") for argv in started), started
+    prepared = [call["prepare"][-1] for call in calls if call["prepare"]]
+    assert len(prepared) == 2 and all(f"touch {marks}/run-instruction" in script for script in prepared)
+    assert any("./build.sh && cmake -S . -B build" in call["command"][-1] for call in calls if call["prepare"])
 
 
 def deb(path: Path, members: dict[str, bytes | str]) -> Path:
@@ -282,8 +514,10 @@ def test_go_files_no_module_holds_are_indexed_in_the_stage_their_dockerfile_buil
     from indexers import go
     calls = []
 
-    def run_in_container(project_dir, command, *, image, out_dir, prepare, outputs, registries, inputs=None,
-                         **options):
+    def run_in_container(project_dir, command, *, image, out_dir, prepare=None, outputs=(), registries=(),
+                         inputs=None, **options):
+        if (answer := probed(command, out_dir, BULLSEYE_SOURCES)) is not None:
+            return answer
         calls.append({"image": image, "command": command, "prepare": prepare, "outputs": outputs,
                       "registries": registries, "inputs": inputs, **options})
         out = Path(out_dir) / "out"
@@ -295,7 +529,7 @@ def test_go_files_no_module_holds_are_indexed_in_the_stage_their_dockerfile_buil
         return {"state": "done", "exit_code": 0, "outputs": ["/daodan/out"]}
 
     monkeypatch.setattr(container, "run_in_container", run_in_container)
-    monkeypatch.setattr(docker_build, "pinned", lambda image, timeout=60: f"docker.io/library/{image}@sha256:{'c' * 64}")
+    monkeypatch.setattr(docker_build, "pinned", pin)
     project = dispatch(sandbox)
     build = fact("robot-shop-dispatch.json", "dispatch/Dockerfile", "dispatch")
     result = go.index(project, sandbox["root"] / "work", roots=set(), docker=[build])
@@ -329,6 +563,8 @@ def test_a_step_that_fails_in_the_preparation_names_its_line_and_the_host_it_cou
     from indexers import go
 
     def run_in_container(project_dir, command, *, out_dir, **options):
+        if (answer := probed(command, out_dir, BULLSEYE_SOURCES)) is not None:
+            return answer
         Path(out_dir).mkdir(parents=True)
         (Path(out_dir) / "prepare.log").write_text(
             "go: creating new go.mod: module dispatch\ngo: finding module for package github.com/streadway/amqp\n"
@@ -338,7 +574,7 @@ def test_a_step_that_fails_in_the_preparation_names_its_line_and_the_host_it_cou
         return {"state": "failed", "exit_code": None, "outputs": [], "cause": "preparation exited with code 1"}
 
     monkeypatch.setattr(container, "run_in_container", run_in_container)
-    monkeypatch.setattr(docker_build, "pinned", lambda image, timeout=60: f"{image}@sha256:{'c' * 64}")
+    monkeypatch.setattr(docker_build, "pinned", pin)
     project = dispatch(sandbox)
     build = fact("robot-shop-dispatch.json", "dispatch/Dockerfile", "dispatch")
     result = go.index(project, sandbox["root"] / "work", roots=set(), docker=[build])
@@ -357,6 +593,8 @@ def test_a_preparation_that_stops_after_the_stage_s_steps_says_its_last_line(san
     from indexers import go
 
     def run_in_container(project_dir, command, *, out_dir, **options):
+        if (answer := probed(command, out_dir, BULLSEYE_SOURCES)) is not None:
+            return answer
         Path(out_dir).mkdir(parents=True)
         (Path(out_dir) / "prepare.log").write_text("go: creating new go.mod: module dispatch\n"
                                                    "tar: /daodan/state/tools: Cannot open: No such file or directory\n",
@@ -364,7 +602,7 @@ def test_a_preparation_that_stops_after_the_stage_s_steps_says_its_last_line(san
         return {"state": "failed", "exit_code": None, "outputs": [], "cause": "preparation exited with code 2"}
 
     monkeypatch.setattr(container, "run_in_container", run_in_container)
-    monkeypatch.setattr(docker_build, "pinned", lambda image, timeout=60: f"{image}@sha256:{'c' * 64}")
+    monkeypatch.setattr(docker_build, "pinned", pin)
     project = dispatch(sandbox)
     build = fact("robot-shop-dispatch.json", "dispatch/Dockerfile", "dispatch")
     result = go.index(project, sandbox["root"] / "work", roots=set(), docker=[build])
@@ -405,14 +643,19 @@ def test_a_stage_it_cannot_reproduce_leaves_its_go_files_with_the_instruction_th
 
 
 def currency(sandbox):
+    """OpenTelemetry Demo's checkout around currency, its files tracked as Git tracks them (the sandbox's fake
+    subprocess answers no Git: `container.tracked` stands in), src/currency/build among them."""
     project = sandbox["root"] / "project"
-    for rel, text in {"src/currency/src/server.cpp": "int main() { return 0; }\n",
-                      "src/currency/src/other.cpp": "int other() { return 1; }\n",
-                      "src/currency/CMakeLists.txt": "project(currency CXX)\n", "src/currency/genproto/CMakeLists.txt": "",
-                      "src/currency/build/.keep": "", "src/currency/proto/.keep": "", "pb/demo.proto": "",
-                      "src/currency/Dockerfile": ""}.items():
+    files = {"src/currency/src/server.cpp": "int main() { return 0; }\n",
+             "src/currency/src/other.cpp": "int other() { return 1; }\n",
+             "src/currency/CMakeLists.txt": "project(currency CXX)\n", "src/currency/genproto/CMakeLists.txt": "",
+             "src/currency/build/.keep": "", "src/currency/proto/.keep": "", "pb/demo.proto": "",
+             "src/currency/Dockerfile": ""}
+    for rel, text in files.items():
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8")
+    sandbox["monkeypatch"].setattr(container, "tracked", lambda folder: {rel: (0o100644, "") for rel in files}
+                                   if Path(folder) == project else {})
     return project
 
 
@@ -423,6 +666,8 @@ def clang_runs(monkeypatch, docker, roots=("src/currency",)):
     calls = []
 
     def run_in_container(project_dir, command, *, image, out_dir, **options):
+        if (answer := probed(command, out_dir, ALPINE_SOURCES)) is not None:
+            return answer
         calls.append({"image": image, "command": command, **options})
         out = Path(out_dir) / "out"
         out.mkdir(parents=True, exist_ok=True)
@@ -445,3 +690,293 @@ CURRENCY = fact("otel-demo-currency.json", "src/currency/Dockerfile", ".", {"OPE
 UNITS = [{"root": "src/currency", "kind": "cmake-target"}]
 
 
+def test_a_cmake_unit_daodan_cannot_configure_is_built_and_indexed_in_its_dockerfile_s_stage(sandbox, monkeypatch):
+    """currency: Daodan's image has no Protobuf for its configure. Its Dockerfile's `builder` installs it: the
+    preparation runs the stage's steps on the base by its digest, places glibc for scip-clang where only glibc's
+    loader looks when the base is musl (Alpine), and the execution, offline, runs the stage's own build with
+    CMake writing its compilation database, gives each command the target of the compiler it names (clang finds
+    Alpine's headers so) and runs scip-clang where the build runs; its documents name the checkout's files."""
+    from indexers import clang
+
+    def docker(out_dir):
+        out = out_dir / "out"
+        (out / "index.scip").write_bytes(document("src/server.cpp", []) + document("build/generated/demo.pb.cc", []))
+        (out / "compile_commands.json").write_text(json.dumps([
+            {"directory": "/currency/build", "command": "/usr/bin/c++ -c /currency/src/server.cpp",
+             "file": "/currency/src/server.cpp"},
+            {"directory": "/currency/build", "command": "/usr/bin/c++ -c generated/demo.pb.cc",
+             "file": "generated/demo.pb.cc"}]), encoding="utf-8")
+        (out_dir / "execute.log").write_text("[100%] Built target currency\nDAODAN-BUILD-EXIT 0\nFinished indexing 2 "
+                                             "translation units (num errored TUs: 0).\n", encoding="utf-8")
+        return {"state": "done", "exit_code": 0, "outputs": [str(out / "index.scip")]}
+
+    calls = clang_runs(monkeypatch, docker)
+    project = currency(sandbox)
+    result = clang.index(project, sandbox["root"] / "work", units=UNITS, docker=[CURRENCY])
+    own, staged = calls
+    assert own["image"] == clang.IMAGE and staged["image"].startswith("docker.io/library/alpine:3.24.3@sha256:")
+    script = staged["prepare"][-1]
+    assert "apk add git cmake make g++ linux-headers" in script and "mkdir -p build && cd build" not in script
+    assert f"if [ -e /lib/ld-musl-x86_64.so.1 ]; then tar -xf {preparation.IN}/glibc.tar -C / ; fi" in script
+    assert f"{preparation.T}/bin/scip-clang" in script and callable(staged["inputs"])
+    assert {"github.com", "dl-cdn.alpinelinux.org"} <= set(staged["registries"]) and staged["outputs"] == ["/daodan/out"]
+    assert "cd /currency" in staged["command"][2]
+    run = staged["command"][-1]
+    assert "export CMAKE_EXPORT_COMPILE_COMMANDS=ON" in run and "-dumpmachine" in run and "--target=" in run
+    assert "/bin/sh -c 'mkdir -p build && cd build     && cmake ..     && make" in run
+    assert f"{preparation.T}/bin/scip-clang --compdb-path=" in run and "--index-output-path=/daodan/out/index.scip" in run
+    index = code_graph.Index(project)
+    for path, prefix in result["indexes"]:
+        index.load(Path(path), prefix)
+    assert sorted(index.documents) == ["src/currency/src/server.cpp"] and "state" not in result
+    [unit] = [u for u in result["units"] if u["root"] == "src/currency"]
+    assert unit["state"] == "indexed"
+    assert unit["docker"] == {"dockerfile": "src/currency/Dockerfile", "stage": "builder",
+                              "ran": [19, 24, 26, 28, 38, 40, 41, 42, 44, 45, 47], "build": 49}
+    assert result["configs"]["compiled"] == {"src/currency/src/server.cpp": 1}
+    assert clang.missing(index, ["src/currency/src/other.cpp"], result["configs"]) == {
+        "src/currency/src/other.cpp": "no compile command: the build compiles other files of src/currency/src, "
+                                      "not this one"}
+
+
+def test_two_units_one_stage_builds_are_built_once_and_take_that_run_s_state(sandbox, monkeypatch):
+    """currency's genproto has a CMakeLists.txt of its own, which the stage copies too: the stage runs once (it
+    builds opentelemetry-cpp), and each unit it builds takes that run's state."""
+    from indexers import clang
+
+    def docker(out_dir):
+        (out_dir / "out" / "index.scip").write_bytes(document("src/server.cpp", []))
+        (out_dir / "execute.log").write_text("DAODAN-BUILD-EXIT 0\n", encoding="utf-8")
+        return {"state": "done", "exit_code": 0, "outputs": []}
+
+    roots = ("src/currency", "src/currency/genproto")
+    calls = clang_runs(monkeypatch, docker, roots)
+    result = clang.index(currency(sandbox), sandbox["root"] / "work", docker=[CURRENCY],
+                         units=[{"root": root, "kind": "cmake-target"} for root in roots])
+    assert [call["image"] == clang.IMAGE for call in calls] == [True, False]
+    states = {u["root"]: (u["state"], u["docker"]["build"]) for u in result["units"]}
+    assert states == {"src/currency": ("indexed", 49), "src/currency/genproto": ("indexed", 49)}
+    assert len(result["indexes"]) == 1
+
+
+def test_a_stage_build_that_writes_no_database_leaves_the_unit_with_its_line_and_the_build_s_words(sandbox,
+                                                                                                    monkeypatch):
+    from indexers import clang
+
+    def docker(out_dir):
+        (out_dir / "execute.log").write_text(
+            "CMake Error at CMakeLists.txt:7 (find_package):\n  Could not find a package configuration file provided "
+            "by \"Protobuf\"\n-- Configuring incomplete, errors occurred!\nDAODAN-BUILD-EXIT 1\nDAODAN-NO-DATABASE\n",
+            encoding="utf-8")
+        return {"state": "done", "exit_code": 3, "outputs": []}
+
+    clang_runs(monkeypatch, docker)
+    result = clang.index(currency(sandbox), sandbox["root"] / "work", units=UNITS, docker=[CURRENCY])
+    assert result["state"] == "failed"
+    [unit] = [u for u in result["units"] if u["root"] == "src/currency"]
+    assert unit["state"] == "failed" and unit["cause"] == (
+        "src/currency/Dockerfile:49 `RUN mkdir -p build && cd build     && cmake ..     && make -j$(nproc || sysctl -n "
+        "hw.ncpu || echo 1) install` ended with exit code 1 and wrote no compilation database: -- Configuring "
+        "incomplete, errors occurred!")
+
+
+def packages_in(root: Path, tmp_path: Path, owned: dict, database: str, versions: dict) -> list[dict]:
+    """The stage's package map (`clang.PACKAGE_MAP`) run in a shell over `root`, standing for the stage's
+    filesystem: `owned` maps each file to its package (None for one no package owns), `database` is apk's or
+    dpkg's; the compilers' include paths are those GCC on Alpine prints, `..` included."""
+    from indexers import clang
+    for rel in owned:
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text("", encoding="utf-8")
+    (root / "usr/lib/gcc/x86_64-alpine-linux-musl/15.2.0").mkdir(parents=True, exist_ok=True)
+    if database == "apk":
+        blocks = {}
+        for rel, package in owned.items():
+            if package:
+                blocks.setdefault(package, {}).setdefault(posixpath.dirname(rel), []).append(posixpath.basename(rel))
+        (root / "lib/apk/db").mkdir(parents=True)
+        (root / "lib/apk/db/installed").write_text("".join(
+            f"P:{package}\nV:{versions[package]}\nA:x86_64\n" + "".join(
+                f"F:{folder}\n" + "".join(f"R:{name}\nZ:Q1abc=\n" for name in names)
+                for folder, names in folders.items()) + "\n" for package, folders in blocks.items()), encoding="utf-8")
+        programs = {}
+    else:
+        (root / "var/lib/dpkg/info").mkdir(parents=True)
+        for package in sorted(set(filter(None, owned.values()))):
+            (root / f"var/lib/dpkg/info/{package}:amd64.list").write_text("".join(
+                f"/{rel}\n" for rel, owner in owned.items() if owner == package) + "/usr\n/usr/include\n",
+                                                                         encoding="utf-8")
+        programs = {"dpkg-query": "".join(f"printf '%s\\t%s\\n' {shlex.quote(name)} {shlex.quote(version)}\n"
+                                          for name, version in versions.items())}
+    search = (f"{root}/usr/local/include\n {root}/usr/lib/gcc/x86_64-alpine-linux-musl/15.2.0/../../../../include/c++/"
+              f"15.2.0\n {root}/usr/include")
+    for name in ("cc", "c++"):
+        programs[name] = (f"echo 'ignoring nonexistent directory \"/usr/include/fixed\"' >&2\n"
+                          f"printf '#include <...> search starts here:\\n {search}\\nEnd of search list.\\n' >&2\n")
+    done = subprocess.run(["sh", "-c", clang.PACKAGE_MAP], capture_output=True, text=True, timeout=60, cwd=tmp_path,
+                          env={**os.environ, "DAODAN_ROOT": str(root),
+                               "PATH": f"{bin_with(tmp_path, programs)}:{os.environ['PATH']}"})
+    assert done.returncode == 0, done.stderr
+    return json.loads(done.stdout)
+
+
+def bin_with(tmp_path: Path, programs: dict) -> Path:
+    folder = tmp_path / "bin"
+    folder.mkdir(exist_ok=True)
+    for name, body in programs.items():
+        (folder / name).write_text("#!/bin/sh\n" + body, encoding="utf-8", newline="\n")
+        (folder / name).chmod(0o755)
+    return folder
+
+
+def test_the_stage_names_each_system_header_folder_by_the_package_that_owns_most_of_its_files(tmp_path):
+    """As the main route's package map (`clang_run.package_map`), in the stage's own shell, which may have no
+    python3 (Alpine): each folder under the compilers' include paths named by the apk package that owns most of
+    its files, as scip-clang writes a package (`clang_run._clean`); the project is the folder the build runs in; a
+    folder no package owns (what the stage's `make install` wrote, opentelemetry-cpp under /usr/local) has none."""
+    owned = {"usr/include/absl/base/prefetch.h": "abseil-cpp-dev", "usr/include/absl/base/config.h": "abseil-cpp-dev",
+             "usr/include/absl/base/odd.h": "grpc-dev", "usr/include/grpc/grpc.h": "grpc-dev",
+             "usr/include/c++/15.2.0/string": "libstdc++-dev", "usr/include/c++/15.2.0/vector": "libstdc++-dev",
+             "usr/include/stdio.h": "musl-dev", "usr/local/include/opentelemetry/version.h": None}
+    versions = {"abseil-cpp-dev": "20250814.1-r0", "grpc-dev": "1.74.1-r0", "libstdc++-dev": "15.2.0-r2",
+                "musl-dev": "1.2.5-r10"}
+    entries = packages_in(tmp_path / "root", tmp_path, owned, "apk", versions)
+    assert entries[0] == {"path": ".", "package": "project@0"}
+    assert sorted(entries[1:], key=lambda e: e["path"]) == [
+        {"path": "/usr/include", "package": "musl-dev@1.2.5-r10"},
+        {"path": "/usr/include/absl/base", "package": "abseil-cpp-dev@20250814.1-r0"},
+        {"path": "/usr/include/c++/15.2.0", "package": "libstdc__-dev@15.2.0-r2"},  # `_clean`: + is _
+        {"path": "/usr/include/grpc", "package": "grpc-dev@1.74.1-r0"}]
+
+
+def test_what_a_cmake_install_of_the_stage_wrote_is_named_by_that_build(tmp_path):
+    """opentelemetry-cpp, which currency's stage clones and installs with `make install`, owns no apk package: its
+    build's own record of what it installed (install_manifest.txt) names the files, the package its CMakeCache
+    states. The build the stage's WORKDIR holds is the project's, not a package."""
+    root = tmp_path / "root"
+    built = {"opentelemetry-cpp/build": ("opentelemetry-cpp", "1.28.0",
+                                         ["usr/local/include/opentelemetry/version.h",
+                                          "usr/local/include/opentelemetry/common/attribute_value.h"]),
+             "currency/build": ("currency", "", ["usr/local/include/currency/api.h"])}
+    for folder, (name, version, files) in built.items():
+        (root / folder).mkdir(parents=True)
+        (root / folder / "install_manifest.txt").write_text("".join(f"/{rel}\n" for rel in files), encoding="utf-8")
+        (root / folder / "CMakeCache.txt").write_text(
+            f"CMAKE_PROJECT_NAME:STATIC={name}\nCMAKE_PROJECT_VERSION:STATIC={version}\n", encoding="utf-8")
+    owned = {rel: None for _name, _version, files in built.values() for rel in files}
+    entries = packages_in(root, root / "currency", {**owned, "usr/include/stdio.h": "musl-dev"}, "apk",
+                          {"musl-dev": "1.2.5-r10"})
+    assert sorted(entries[1:], key=lambda e: e["path"]) == [
+        {"path": "/usr/include", "package": "musl-dev@1.2.5-r10"},
+        {"path": "/usr/local/include/opentelemetry", "package": "opentelemetry-cpp@1.28.0"},
+        {"path": "/usr/local/include/opentelemetry/common", "package": "opentelemetry-cpp@1.28.0"}]
+
+
+def test_a_compiler_that_is_not_clang_reads_clang_s_builtin_headers(tmp_path):
+    """`clang_run.builtin_headers` in the stage's shell: a command of GCC (no `-print-resource-dir`) gets
+    `-nobuiltininc -isystem <clang's headers> -idirafter <its own include folder>`, as scip-clang otherwise reads
+    GCC's xmmintrin.h as clang's (204 errors on currency); on a musl target clang's headers come after the C
+    library's, where clang's own driver puts them (Linux.cpp of llvmorg-21.1.8:641-686): `-idirafter`. A clang
+    keeps its own; a command that drops the builtin headers itself is left as it is. Each gets the target of its
+    compiler."""
+    from indexers import clang
+    include = tmp_path / "gcc/include"
+    include.mkdir(parents=True)
+    folder = bin_with(tmp_path, {
+        "gcc": ('case "$1" in -dumpmachine) echo x86_64-alpine-linux-musl ;; -print-resource-dir) exit 1 ;; '
+                f'-print-file-name=include) echo {include} ;; esac\n'),
+        "clang": 'case "$1" in -dumpmachine) echo x86_64-pc-linux-gnu ;; -print-resource-dir) echo /r ;; esac\n'})
+    gnu = bin_with(tmp_path, {"gnu-gcc": ('case "$1" in -dumpmachine) echo x86_64-linux-gnu ;; -print-resource-dir) '
+                                          f'exit 1 ;; -print-file-name=include) echo {include} ;; esac\n')}) / "gnu-gcc"
+    gcc, cc = folder / "gcc", folder / "clang"
+    db = tmp_path / "compile_commands.json"
+    db.write_text(json.dumps([{"directory": "/w", "command": f"{gcc} -c a.c", "file": "a.c"},
+                              {"directory": "/w", "command": f"{cc} -c b.c", "file": "b.c"},
+                              {"directory": "/w", "command": f"{gcc} -nostdinc -c c.c", "file": "c.c"},
+                              {"directory": "/w", "command": f"{gnu} -c d.c", "file": "d.c"}], indent=1),
+                  encoding="utf-8")
+    out = tmp_path / "out.json"
+    done = subprocess.run(["sh", "-c", clang.COMPDB], capture_output=True, text=True, timeout=60,
+                          env={**os.environ, "db": str(db), "out": str(out)})
+    assert done.returncode == 0, done.stderr
+    assert [entry["command"] for entry in json.loads(out.read_text(encoding="utf-8"))] == [
+        f"{gcc} --target=x86_64-alpine-linux-musl -nobuiltininc -idirafter {clang.HEADERS} -idirafter {include} -c a.c",
+        f"{cc} --target=x86_64-pc-linux-gnu -c b.c",
+        f"{gcc} --target=x86_64-alpine-linux-musl -nostdinc -c c.c",
+        f"{gnu} --target=x86_64-linux-gnu -nobuiltininc -isystem {clang.HEADERS} -idirafter {include} -c d.c"]
+
+
+def test_on_a_debian_stage_dpkg_s_lists_name_the_folders(tmp_path):
+    owned = {"usr/include/c++/13/string": "libstdc++-13-dev", "usr/include/stdio.h": "libc6-dev",
+             "usr/include/zlib.h": "zlib1g-dev", "usr/include/zconf.h": "zlib1g-dev"}
+    versions = {"libstdc++-13-dev": "13.3.0-6ubuntu2~24.04.1", "libc6-dev": "2.39-0ubuntu8.6",
+                "zlib1g-dev": "1:1.3.dfsg-3.1ubuntu2.1"}
+    entries = packages_in(tmp_path / "root", tmp_path, {**owned, "usr/include/c++/15.2.0/x": None}, "dpkg", versions)
+    assert sorted(entries[1:], key=lambda e: e["path"]) == [
+        {"path": "/usr/include", "package": "zlib1g-dev@1_1.3.dfsg-3.1ubuntu2.1"},
+        {"path": "/usr/include/c++/13", "package": "libstdc__-13-dev@13.3.0-6ubuntu2_24.04.1"}]
+
+
+def test_a_stage_run_whose_index_does_not_come_back_says_the_engine_s_cause(sandbox, monkeypatch):
+    """currency on Modal (16 November 2026): the stage built and scip-clang finished, and the run ended with no
+    exit code and no outputs; the unit's cause carries what the engine said."""
+    from indexers import clang
+
+    def docker(out_dir):
+        (out_dir / "execute.log").write_text("DAODAN-BUILD-EXIT 0\nFinished indexing 5 translation units in 13.9s "
+                                             "(indexing: 13.4s, merging: 0.5s, num errored TUs: 0).\n",
+                                             encoding="utf-8")
+        return {"state": "failed", "exit_code": None, "outputs": [], "cause": "the engine's own words"}
+
+    clang_runs(monkeypatch, docker)
+    result = clang.index(currency(sandbox), sandbox["root"] / "work", units=UNITS, docker=[CURRENCY])
+    [unit] = [u for u in result["units"] if u["root"] == "src/currency"]
+    assert unit["state"] == "failed" and unit["cause"] == (
+        "scip-clang in its Dockerfile's build stage wrote no index of the checkout's files (exit code None; the "
+        "engine's own words): Finished indexing 5 translation units in 13.9s (indexing: 13.4s, merging: 0.5s, num "
+        "errored TUs: 0).")
+
+
+def test_a_stage_it_cannot_reproduce_adds_its_line_to_the_unit_s_cause(sandbox, monkeypatch):
+    from indexers import clang
+    calls = clang_runs(monkeypatch, lambda out_dir: (_ for _ in ()).throw(AssertionError(out_dir)))
+    build = json.loads(json.dumps(CURRENCY))
+    build["stages"][1]["commands"].insert(0, {"kind": "ARG", "line": 23, "end_line": 23, "original": "ARG TOKEN",
+                                              "args": [{"TOKEN": None}]})
+    result = clang.index(currency(sandbox), sandbox["root"] / "work", units=UNITS, docker=[build])
+    assert [call["image"] for call in calls] == [clang.IMAGE]
+    [unit] = [u for u in result["units"] if u["root"] == "src/currency"]
+    assert unit["state"] == "failed" and unit["cause"] == (
+        "the configure ended with exit code 1; its Dockerfile's build stage is not reproduced: "
+        "src/currency/Dockerfile:23: ARG TOKEN: TOKEN has no value: no default and no build argument gives one")
+    assert [g["path"] for g in result["gaps"] if g["kind"] == "not_reproduced"] == ["src/currency/Dockerfile:23"]
+
+
+def test_the_pre_map_s_dockerfiles_reach_the_c_and_cpp_index():
+    from indexers import clang
+    build = {"dockerfile": "src/currency/Dockerfile", "context": ".", "args": {}, "stages": []}
+    assert clang.structure({"units": [], "docker_builds": [build]})["docker"] == [build]
+    assert "docker" not in clang.structure({"units": []})
+
+
+ALPINE = "docker.io/library/alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a"
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_an_alpine_stage_brings_its_outputs_back(tmp_path):
+    """currency's stage starts FROM Alpine, whose tar is BusyBox's: no -r, a single -C. The execution's outputs
+    come back from it, a folder and a file; an output the run did not write is none. Before, the run ended with
+    `SandboxFilesystemNotFoundError: path does not exist: /tmp/daodan-outputs.tar` and no output."""
+    from test_codebase_map_dynamic_services import the_driver
+    work = tmp_path / "project"
+    work.mkdir()
+    (work / "a.txt").write_text("x\n", encoding="utf-8")
+    with the_driver() as modal_pipeline:
+        result = modal_pipeline.sandbox_run(
+            work, ["sh", "-c", "mkdir -p /daodan/out/sub && echo hi > /daodan/out/x && echo there > /daodan/out/sub/y"
+                               " && echo one > /tmp/one"],
+            image=ALPINE, out_dir=tmp_path / "out", outputs=["/daodan/out", "/tmp/one", "/tmp/never"])
+    assert result["state"] == "done" and result["exit_code"] == 0, result
+    assert sorted(Path(path).relative_to(tmp_path / "out").as_posix() for path in result["outputs"]) == [
+        "one", "out/sub/y", "out/x"]
+    assert (tmp_path / "out/out/sub/y").read_text(encoding="utf-8") == "there\n"

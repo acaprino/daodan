@@ -42,8 +42,7 @@ def test_a_compose_file_s_builds_are_read_with_the_context_and_arguments_compose
     the context; one Compose cannot read is a gap naming the service."""
     files = ("compose.yaml", ".env", "src/currency/Dockerfile", "src/ad/Dockerfile", "dispatch/Dockerfile")
     commands = dockerfile.commands(context(*files))
-    assert commands[0]["argv"][:2] == ["sh", "-c"] and "docker-compose -f compose.yaml config --format json" in \
-        commands[0]["argv"][2] and "daodan-dockerfile --compose" in commands[0]["argv"][2]
+    assert commands[0]["argv"][:3] == ["sh", "-c", "cd . && exec daodan-dockerfile --compose compose.yaml"]
     assert [c["argv"][1] for c in commands[1:]] == ["dispatch/Dockerfile", "src/ad/Dockerfile",
                                                     "src/currency/Dockerfile"]
     answers = [{"returncode": 0, "stdout": (FIXTURES / "otel-demo-compose.json").read_text(encoding="utf-8"),
@@ -57,8 +56,94 @@ def test_a_compose_file_s_builds_are_read_with_the_context_and_arguments_compose
     assert currency["args"] == {"OPENTELEMETRY_CPP_VERSION": "1.28.0"}
     assert currency["declared_in"] == "compose.yaml#services.currency.build"
     assert [s["name"] for s in currency["stages"]] == ["base", "builder", "release"]
+    # Its root .dockerignore, as BuildKit reads it: `.github`, `internal`, `src/*/README.md`, `src/*/Dockerfile`,
+    # `src/*/*/Dockerfile` (recorded on Modal, 16 November 2026, with the folders and files they name).
+    assert currency["dockerignore"] == ".dockerignore" and currency["excluded"] == [
+        ".github/", "internal/", "src/currency/Dockerfile", "src/currency/README.md", "src/currency/genproto/Dockerfile"]
     missing = [g for g in out["gaps"] if g["path"] == "src/ad/Dockerfile"]
     assert missing and missing[0]["kind"] == "model_failed" and "compose.yaml#services.ad" in missing[0]["detail"]
+
+
+def test_what_a_build_s_dockerignore_leaves_out_is_read_by_buildkit_s_own_matcher():
+    """BuildKit's own rules (its dockerui frontend; patternmatcher v0.6.1, as BuildKit v0.34.2 pins it): the
+    Dockerfile's own ignore file, `<Dockerfile>.dockerignore`, before the context's .dockerignore (here `*`, which
+    would leave out everything); a folder that matches is left out whole unless an exception lies inside it
+    (`docs`, with `!docs/keep.md`); `*.log` matches at the context's root only. Recorded on Modal, 16 November
+    2026, from tools/: Dockerfile, .dockerignore, Dockerfile.dockerignore, docs/{a,keep}.md, x.log, sub/y.log,
+    build/out.bin, src/main.c."""
+    files = ("tools/Dockerfile", "tools/.dockerignore", "tools/Dockerfile.dockerignore")
+    commands = dockerfile.commands(context(*files))
+    answers = [{"returncode": 0, "stdout": (FIXTURES / "dockerignore-exceptions.json").read_text(encoding="utf-8"),
+                "stderr": ""}]
+    [build] = dockerfile.read(context(*files), commands, answers)["facts"]["docker_builds"]
+    assert (build["dockerfile"], build["context"]) == ("tools/Dockerfile", "tools")
+    assert build["dockerignore"] == "tools/Dockerfile.dockerignore"
+    assert build["excluded"] == ["build/", "docs/a.md", "x.log"]
+    # A Dockerfile without an ignore file has neither field.
+    answers = [{"returncode": 0, "stdout": (FIXTURES / "robot-shop-dispatch.json").read_text(encoding="utf-8"),
+                "stderr": ""}]
+    [build] = dockerfile.read(context("dispatch/Dockerfile"), dockerfile.commands(context("dispatch/Dockerfile")),
+                              answers)["facts"]["docker_builds"]
+    assert "dockerignore" not in build and "excluded" not in build
+
+
+def test_a_compose_file_compose_does_not_read_says_its_error_and_the_variables_it_found_unset():
+    """OpenTelemetry Demo's compose.yaml without the `.env` Daodan never reads (Compose 5.6.1 on Modal, 16 November
+    2026): Compose stops on a volume its blank HOST_FILESYSTEM leaves `:/hostfs:ro`, after warning of each
+    variable it interpolates blank; the warnings come after the error."""
+    files = ("compose.yaml", "src/currency/Dockerfile")
+    commands = dockerfile.commands(context(*files))
+    warning = 'time="2026-11-16T17:19:59Z" level=warning msg="The \\"{}\\" variable is not set. Defaulting to a ' \
+              'blank string."'
+    stderr = "\n".join(["invalid spec: :/hostfs:ro: empty section between colons",
+                        *(warning.format(name) for name in ("CURRENCY_DOCKERFILE", "OPENTELEMETRY_CPP_VERSION",
+                                                            "ENVOY_ADMIN_PORT", "ENVOY_ADMIN_PORT"))])
+    answers = [{"returncode": 1, "stdout": "", "stderr": stderr},
+               {"returncode": 0, "stdout": (FIXTURES / "otel-demo-currency-no-args.json").read_text(encoding="utf-8"),
+                "stderr": ""}]
+    out = dockerfile.read(context(*files), commands, answers)
+    [gap] = [g for g in out["gaps"] if g["path"] == "compose.yaml"]
+    assert gap == {"kind": "model_failed", "path": "compose.yaml", "detail": (
+        "buildkit: docker compose config: invalid spec: :/hostfs:ro: empty section between colons; not set, so "
+        "blank: CURRENCY_DOCKERFILE, ENVOY_ADMIN_PORT, OPENTELEMETRY_CPP_VERSION (Daodan reads no .env: it may "
+        "hold secrets)")}
+    # The Dockerfile is then read as `docker build` of its folder reads it.
+    assert [(b["dockerfile"], b["context"]) for b in out["facts"]["docker_builds"]] == [
+        ("src/currency/Dockerfile", "src/currency")]
+
+
+def placeholder(file, name):
+    """`container.named`'s placeholder of a tracked .env file's variable, as Compose interpolates it."""
+    return f"./daodan-dotenv-{file.encode().hex()}-{name.encode().hex()}"
+
+
+def test_a_build_s_values_from_a_tracked_env_file_are_named_never_given():
+    """OpenTelemetry Demo's currency: the helper runs Compose with the tracked .env's values the pre-map's container
+    keeps (`container.named`), and once without interpolating, which says what names a variable. It reads the
+    Dockerfile CURRENCY_DOCKERFILE gives, a tracked path, and says the variable; an argument, and the words BuildKit
+    expanded with it, keep `${NAME}`: no value reaches the fact. A value that names no file of the checkout is a gap
+    naming the variable, as is a placeholder in Compose's own error (`compose._named`)."""
+    files = ("compose.yaml", "src/currency/Dockerfile")
+    commands = dockerfile.commands(context(*files))
+    answer = {"builds": [{"service": "currency", "dockerfile": "src/currency/Dockerfile", "context": ".",
+                          "args": {"OPENTELEMETRY_CPP_VERSION": "${OPENTELEMETRY_CPP_VERSION}"}, "target": "",
+                          "dotenv": {"CURRENCY_DOCKERFILE": ".env", "OPENTELEMETRY_CPP_VERSION": ".env"},
+                          "stages": [{"name": "builder", "base": "alpine:3.24.3", "base_stage": None, "line": 1,
+                                      "commands": [{"kind": "RUN", "line": 2, "original": "RUN git clone v${V}",
+                                                    "cmd": ["git clone --branch v${OPENTELEMETRY_CPP_VERSION} x"],
+                                                    "shell": True}]}]}],
+              "errors": [{"service": "ad", "dockerfile": "${AD_DOCKERFILE}",
+                          "error": "AD_DOCKERFILE of .env gives no file or folder of the checkout"}]}
+    out = dockerfile.read(context(*files), commands, [{"returncode": 0, "stdout": json.dumps(answer), "stderr": ""}])
+    [build] = out["facts"]["docker_builds"]
+    assert build["args"] == {"OPENTELEMETRY_CPP_VERSION": "${OPENTELEMETRY_CPP_VERSION}"}
+    assert build["dotenv"] == {"CURRENCY_DOCKERFILE": ".env", "OPENTELEMETRY_CPP_VERSION": ".env"}
+    assert out["gaps"] == [{"kind": "model_failed", "path": "${AD_DOCKERFILE}", "detail": (
+        "buildkit: compose.yaml#services.ad.build: AD_DOCKERFILE of .env gives no file or folder of the checkout")}]
+    port = placeholder(".env", "VALKEY_PORT")
+    failed = dockerfile.read(context(*files), commands, [{"returncode": 1, "stdout": "",
+                                                          "stderr": f"invalid proto: {port}"}])
+    assert failed["gaps"][0]["detail"] == "buildkit: docker compose config: invalid proto: ${VALKEY_PORT}"
 
 
 def test_buildkit_s_stages_of_a_dockerfile_are_its_build_fact():

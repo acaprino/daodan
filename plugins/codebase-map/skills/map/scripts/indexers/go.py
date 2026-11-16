@@ -572,6 +572,7 @@ def _docker(project: Path, work_dir: Path, files: list[str], roots: set[str], bu
         plan = docker_build.plan(build, project, outside, GO_BUILD)
         if plan is None:
             continue
+        plan = docker_build.sourced(plan, Path(work_dir) / f"sources-{len(runs)}")  # the base's package hosts
         covered = sorted(set(plan["copies"].values()) & set(outside))
         if plan["gaps"]:
             first = plan["gaps"][0]
@@ -594,6 +595,7 @@ def _docker(project: Path, work_dir: Path, files: list[str], roots: set[str], bu
         log = out_dir / "prepare.log"
         said = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
         step = docker_build.failed_step(plan, build, said, _first_error)
+        gaps += result.get("gaps") or []  # what the copy left out (`container.copy_perimeter`)
         if step:
             reasons.update({rel: f"no Go module holds it: {step['path']} `{step['original']}` failed: "
                                  f"{step['error']}" for rel in covered})
