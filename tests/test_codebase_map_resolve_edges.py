@@ -2268,13 +2268,14 @@ class IndexerStageTests(unittest.TestCase):
                          {"python": "scip-python", "typescript": "scip-typescript", "javascript": "scip-typescript",
                           "vue": "typescript", "svelte": "typescript", "java": "scip-java", "kotlin": "scip-kotlin",
                           "rust": "scip-rust", "go": "scip-go", "c": "scip-clang", "cpp": "scip-clang",
-                          "stylesheet": "stylesheet"})
+                          "csharp": "scip-dotnet", "stylesheet": "stylesheet"})
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container) for spec in resolve_edges.ENGINES}
         self.assertEqual(indexers, {
             "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", False),
             "scip-typescript": (("typescript", "javascript"), "typescript", False),
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
             "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True),
+            "scip-dotnet": (("csharp",), "csharp", True),
             "stylesheet": (("stylesheet",), "css", False), "typescript": (("vue", "svelte"), "vue_svelte", False)})
 
     def test_the_resolver_names_the_entry_not_the_indexer(self):

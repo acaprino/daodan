@@ -168,7 +168,7 @@ def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarati
     declared = indexers.analyzers()
     assert {module.ENTRY for module in declared} == {
         "scip-go", "scip-rust", "scip-typescript", "scip-python", "scip-java", "scip-kotlin", "scip-clang",
-        "stylesheet", "typescript"}
+        "scip-dotnet", "stylesheet", "typescript"}
     for module in declared:
         assert module.LANGUAGES and isinstance(module.UNIT_KINDS, frozenset)
         assert isinstance(module.NEEDS_CONTAINER, bool)
@@ -191,7 +191,7 @@ def test_an_analyzer_takes_the_units_of_the_kinds_it_declares():
         record = {"units": [{"kind": kind, "root": f"u{number}", "name": f"u{number}"}
                             for number, kind in enumerate(sorted(module.UNIT_KINDS))], "workspace": []}
         given = module.structure(record)
-        folders = given.get("roots", {unit["root"] for unit in given.get("units", [])})
+        folders = given.get("roots") or {unit["root"] for unit in given.get("units", [])}
         assert folders, module.ENTRY
 
 

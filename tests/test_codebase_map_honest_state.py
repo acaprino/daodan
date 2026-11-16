@@ -207,16 +207,17 @@ def test_a_language_with_no_parsed_file_is_unavailable_in_the_pass_with_the_reas
 
 
 def test_the_union_names_the_languages_no_analyzer_serves(tmp_path):
-    """C# and SQL are in the snapshot and no analyzer lists them: one gap each with its files, in the union's
+    """PL/SQL and SQL are in the snapshot and no analyzer lists them: one gap each with its files, in the union's
     result and in the pass's state; a stylesheet, which an analyzer reads by its own name, is not one."""
     _project_dir, manifest = _project(tmp_path, {"db/a.sql": "select 1;\n", "db/b.sql": "select 2;\n",
-                                                 "X.cs": "class X { void M() {} }\n", "s.scss": "a { b: c }\n"})
+                                                 "db/p.pkb": "create package body p as end p;\n",
+                                                 "s.scss": "a { b: c }\n"})
     seen = []
     result = pipeline.Union.run(pipeline.Context(manifest, _bus(seen)))
-    assert result["no_analyzer"] == {"csharp": 1, "sql": 2}
+    assert result["no_analyzer"] == {"plsql": 1, "sql": 2}
     gaps = {gap["language"]: gap for gap in _gaps(seen, "union", "no-analyzer")}
-    assert set(gaps) == {"csharp", "sql"} and gaps["sql"]["files"] == 2 and "2 sql files" in gaps["sql"]["detail"]
-    assert resolve_edges.edge_state(manifest)["no_analyzer"] == {"csharp": 1, "sql": 2}
+    assert set(gaps) == {"plsql", "sql"} and gaps["sql"]["files"] == 2 and "2 sql files" in gaps["sql"]["detail"]
+    assert resolve_edges.edge_state(manifest)["no_analyzer"] == {"plsql": 1, "sql": 2}
     assert "no_analyzer" not in resolve_edges.edge_state(_project(tmp_path / "go")[1])
 
 

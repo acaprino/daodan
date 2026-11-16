@@ -692,17 +692,17 @@ def test_the_gaps_the_runner_hands_back_are_the_sources_gaps(tmp_path):
 # ------------------------------------------------------------------ analyzers
 
 def test_a_programming_language_no_analyzer_lists_is_a_gap_with_its_files(tmp_path):
-    """go-enry counts Scala and C# files, programming languages no analyzer lists: each is a gap with its files.
+    """go-enry counts Scala and PHP files, programming languages no analyzer lists: each is a gap with its files.
     One an analyzer lists (TSX is TypeScript's), one that is data, markup or prose, and one whose type the answer
     does not give (a recording older than `type`) are none."""
     counted = fake("counted", "scanner", lambda context: {"facts": {"languages": [
         {"language": name, "files": files, **({"type": kind} if kind else {})}
-        for name, files, kind in (("Scala", 3, "programming"), ("C#", 2, "programming"), ("Python", 4, "programming"),
+        for name, files, kind in (("Scala", 3, "programming"), ("PHP", 2, "programming"), ("Python", 4, "programming"),
                                   ("TSX", 1, "programming"), ("C++", 1, "programming"), ("JSON", 5, "data"),
                                   ("SCSS", 1, "markup"), ("Markdown", 2, "prose"), ("Ruby", 6, None))]}})
     _, _, record = build(tmp_path, "mixed", sources=(counted,))
     found = {gap["language"]: gap for gap in gaps(record, "no_analyzer")}
-    assert set(found) == {"Scala", "C#"}
+    assert set(found) == {"Scala", "PHP"}
     assert found["Scala"]["files"] == 3 and found["Scala"]["source"] == premap.RULE
     assert "3 Scala files" in found["Scala"]["detail"]
 
@@ -731,7 +731,7 @@ def test_the_unit_kinds_able_to_index_a_language_are_the_ones_its_analyzer_decla
         for language in analyzer.LANGUAGES:
             name = suffix_table.NAMES.get(language, language)
             assert table.get(name, frozenset()) == frozenset(analyzer.UNIT_KINDS), name
-    assert "C#" not in table and "Vue" not in table
+    assert "SQL" not in table and "Vue" not in table
     _, _, record = build(tmp_path, "mixed", extra={"legacy/build.sbt": 'name := "legacy"\n',
                                                    "legacy/src/main/java/A.java": "class A {}\n"})
     assert "legacy" in by_root(record, "sbt-project")
