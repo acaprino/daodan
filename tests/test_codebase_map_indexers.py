@@ -629,7 +629,7 @@ def test_node_and_npm_keep_their_caches_in_the_shared_directory(sandbox):
     started = [(command, env) for (command, _cwd), env in zip(fake.calls, fake.envs)
                if Path(command[0]).stem in ("node", "npm")]
     assert {Path(command[0]).stem for command, _env in started} == {"node", "npm"}  # npm_package, npm_modules
-    assert len(started) == 3  # the indexer's install, its run, the packages' install
+    assert len(started) == 4  # the indexer's install, its run, the checker's install (`python.PYRIGHT`), the packages'
     for command, env in started:
         assert env is not None, command
         assert Path(env["npm_config_cache"]).is_relative_to(sandbox["cache"])

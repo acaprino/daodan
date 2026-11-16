@@ -34,6 +34,17 @@ image's Python adds to its path. Without a container engine Python is `unavailab
   `typing_extensions`, by name, alias or attribute) is bound at run time by its last `def` without
   that decorator; the index defines the symbol at the first `def` only. A symbol with stubs alone keeps
   them.
+- `source-root`: a module imported through a source root the run tells Pyright (`semver`, under `src`) is named
+  by its import where it is imported and by its path (`src.semver`) where it is defined: it leads to that one.
+
+`classify` reads what scip-python labels wrongly (0.6.8): a symbol of the project's package whose module is a
+file of a distribution the run's environment lists (a name the package's `__init__` re-exports: `sa.UUID`,
+`typer.Typer`, `pytest.fail`) is that distribution's; the namespace alone of a module, which it gives the
+attributes the interpreter sets on every module (`__name__`, `__file__`, `__doc__`), is the interpreter's
+(`python-stdlib`). After the index, where scip-python runs here, the checker's pass (`python_unbound.py`:
+Pyright `PYRIGHT`'s language server over the same environment) says of each member the project reads what the
+checker gives it, beside the index (`<index>.unbound.jsonl`): a member where the index has no occurrence
+(`unanswered`) or gives a local it defines nowhere (`classify`) carries that cause (`UNBOUND_CAUSES`).
 """
 from __future__ import annotations
 
@@ -45,11 +56,18 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import code_graph
 
 VERSION = "0.6.8"  # @sourcegraph/scip-python on npm
+PYRIGHT = "1.1.414"  # pyright on npm: the checker's pass (`python_unbound.py`)
+UNBOUND = Path(__file__).with_name("python_unbound.py")
+# Why the index names nothing at a member, by what the checker says of it (`python_unbound.py`).
+UNBOUND_CAUSES = {"Any": "a member the checker types Any (a dynamic attribute, `__getattr__`): only execution knows it",
+                  "Unknown": "a member of a value the checker types Unknown: only execution knows it",
+                  "bound": "the checker binds the {} and scip-python names nothing there"}
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-python", ("python",), frozenset({"python-project"}), False
@@ -166,10 +184,129 @@ def _implementations(index, rel: str, ordered: list, by_line: dict) -> list:
     return out
 
 
+def _beside(path: Path, what: str):
+    """What a run left beside its index `scip-python-<n>.scip`: the environment scip-python was told
+    (`environment`), the Pyright configuration it read (`config`), the checker's lines (`unbound`); None without."""
+    number = path.stem.rsplit("-", 1)[-1]
+    side = {"environment": path.with_name(f"scip-python-environment-{number}.json"),
+            "config": path.with_name(f"pyrightconfig-{number}.json"), "unbound": path.with_suffix(".unbound.jsonl")}[what]
+    try:
+        text = side.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    if what != "unbound":
+        return json.loads(text)
+    rows = []
+    for line in text.splitlines():
+        try:
+            rows.append(json.loads(line))
+        except ValueError:  # a line the pass cut short says nothing
+            continue
+    return rows
+
+
+def _module(key: str) -> tuple[str, str, str] | None:
+    """`(what precedes the module, the module, the descriptors after it)` of a global key."""
+    parts = code_graph.split_symbol(key)
+    if not parts:
+        return None
+    descriptors = parts[4]
+    if descriptors.startswith("`"):
+        module, _, rest = descriptors[1:].partition("`/")
+    else:
+        module, _, rest = descriptors.partition("/")
+    return key[:len(key) - len(descriptors)], module, rest
+
+
+def _own(index) -> set:
+    """The packages of the project: those of the symbols the index defines."""
+    return {tuple(parts[1:4]) for parts in map(code_graph.split_symbol, index.defs) if parts}
+
+
+def _checked(index) -> dict:
+    """`(rel, line, column)` -> the cause the checker's pass gives a member (`UNBOUND_CAUSES`)."""
+    causes = {}
+    for path, prefix in index.sources:
+        for row in _beside(path, "unbound") or ():
+            try:
+                rel, line, column, kind, said = row
+                causes[(f"{prefix}/{rel}" if prefix else rel, line, column)] = UNBOUND_CAUSES[kind].format(said)
+            except (ValueError, KeyError, TypeError):
+                continue
+    return causes
+
+
+def unanswered(index):
+    """Why the index has no occurrence at a member's site: what the checker's pass said there."""
+    return _checked(index).get
+
+
+def classify(index):
+    """What scip-python labels wrongly, by key (see the module's docstring), and the cause the checker gives a
+    local it defines nowhere; None for the rest."""
+    own, causes, modules, stdlib = _own(index), _checked(index), {}, None
+    for path, _prefix in index.sources:
+        for package in _beside(path, "environment") or ():
+            for file in package.get("files") or ():
+                stem, _, suffix = str(file).rpartition(".")
+                if suffix in ("py", "pyi") and stem:
+                    modules.setdefault(stem.replace("/", ".").removesuffix(".__init__"), package)
+    for occurrences in index.documents.values():
+        for o in occurrences:
+            parts = None if "#local " in o.key else code_graph.split_symbol(o.key)
+            if parts and parts[2] == "python-stdlib":
+                stdlib = parts[3]
+                break
+        if stdlib:
+            break
+
+    def stated(key: str):
+        if key in index.defs:
+            return None
+        if "#local " in key:
+            rel = key.split("#local ", 1)[0]
+            return next((causes[(rel, o.line, o.start)] for o in index.documents.get(rel, ())
+                         if o.key == key and (rel, o.line, o.start) in causes), None)
+        parts, split = code_graph.split_symbol(key), _module(key)
+        if not parts or not split or tuple(parts[1:4]) not in own:
+            return None
+        if not split[2]:  # a module's namespace alone: an attribute the interpreter sets on it
+            return {"manager": parts[1], "package": "python-stdlib", "version": stdlib}
+        found = modules.get(split[1])
+        return {"manager": parts[1], "package": found["name"], "version": found["version"]} if found else None
+    return stated
+
+
+def _rooted(index) -> dict:
+    """`{key: defined key}` for a project module named by its import (`semver`) where it is defined under a source
+    root the run told Pyright (`src.semver`)."""
+    roots = [str(environment.get("root")).replace("/", ".") for path, _prefix in index.sources
+             for environment in (_beside(path, "config") or {}).get("executionEnvironments", ())
+             if environment.get("root") not in (None, ".")]
+    own, out = _own(index), {}
+    for occurrences in index.documents.values() if roots else ():
+        for o in occurrences:
+            if o.definition or o.key in index.defs or "#local " in o.key or o.key in out:
+                continue
+            parts, split = code_graph.split_symbol(o.key), _module(o.key)
+            if not parts or not split or tuple(parts[1:4]) not in own:
+                continue
+            head, module, rest = split
+            for root in roots:
+                name = f"{root}.{module}"
+                candidate = f"{head}`{name}`/{rest}"
+                if candidate in index.defs:
+                    out[o.key] = candidate
+                    break
+    return out
+
+
 def hops(index) -> dict:
     """Hops `{key: [(target key, tag)]}` for what scip-python leaves implicit; see the module's docstring."""
     import builtins
     out = collections.defaultdict(list)
+    for key, defined in _rooted(index).items():
+        out[key].append((defined, "source-root"))
     stdlib = next((key.split(" builtins/")[0] for occurrences in index.documents.values() for o in occurrences
                    for key in (o.key,) if " builtins/" in key), None)
     for rel, occurrences in index.documents.items():
@@ -401,6 +538,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
             # Read from the project: the mirror only links its folders, and a walk does not enter a link.
             config = _pyright_config(here, cwd / "pyrightconfig.json", unit.get("source_roots") or (),
                                      unit.get("unit_roots") or ())
+            if config:  # beside the index too, where `hops` reads the source roots
+                (work_dir / f"pyrightconfig-{number}.json").write_text(json.dumps(config), encoding="utf-8")
             paths = [Path(used) / ("Scripts" if os.name == "nt" else "bin")] if used else []
             variables = {"VIRTUAL_ENV": str(used)} if used else {}
             env = runtime.environment(*paths, directory, NODE_OPTIONS="--max-old-space-size=4096", **variables)
@@ -410,8 +549,31 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
                 str(cwd), env, 3000)}
             run["index"] = str(output) if output.is_file() and run["returncode"] == 0 else None
             run["index_bytes"] = output.stat().st_size if output.is_file() else 0
+            if run["index"]:
+                gaps += _unbound(project_dir, directory, cwd, used, env, output.with_suffix(".unbound.jsonl"), prefix)
             runs.append({**run, **_facts(used, packages, config, (name, version)), "gaps": gaps})
     return _outcome(runs, units)
+
+
+def _unbound(project_dir: Path, directory: Path, cwd: Path, used: Path | None, env: dict, target: Path,
+             prefix: str) -> list[dict]:
+    """The checker's pass over the run's folder `cwd` (`python_unbound.py`), its lines written to `target`; a gap
+    when it could not run, and the holes keep `no-occurrence`."""
+    import resolve_edges as rx
+    from indexers import runtime
+    try:
+        langserver = runtime.npm_package(project_dir, directory, "pyright", PYRIGHT).with_name("langserver.index.js")
+        done = subprocess.run([sys.executable, str(UNBOUND), str(directory / rx.executable_name("node")), str(langserver),
+                               str(cwd), str(Path(used) / "bin" / "python") if used else "-"],
+                              capture_output=True, text=True, timeout=1800, env=env)
+    except (runtime.Unavailable, OSError, subprocess.SubprocessError) as error:
+        return [{"kind": "checker_not_run", "path": prefix or ".",
+                 "detail": f"Pyright {PYRIGHT}'s pass did not run ({error}): a member the index names nothing at "
+                           "keeps no cause"}]
+    target.write_text(done.stdout, encoding="utf-8")
+    return [] if done.returncode == 0 else [{"kind": "checker_not_run", "path": prefix or ".",
+                                            "detail": f"Pyright {PYRIGHT}'s pass ended with code {done.returncode}: "
+                                                      f"{done.stderr.strip()[-300:]}"}]
 
 
 def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engine, units: list[dict]) -> dict:
