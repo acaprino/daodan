@@ -8,7 +8,8 @@ turns each project into a `maven-module` unit named `groupId:artifactId`, rooted
 directory's parent, with its pom.xml as manifest, the reactor projects it depends on as edges, and its source
 folders (the build's own and the ones a plugin's configuration names, `PLUGIN_SOURCES`), and as registries the
 origins of the repositories and plugin repositories it resolves from (Central from the super POM, those the pom or a
-parent declares); the reactor is a `maven` workspace with the folders of the projects its root's modules list, profiles
+parent declares), and what maven-compiler-plugin leaves out of each source folder it compiles (`compile_excludes`,
+its `excludes` and `testExcludes`, each pattern relative to that folder); the reactor is a `maven` workspace with the folders of the projects its root's modules list, profiles
 included, as members. A pom.xml no reactor holds states nothing: Maven does not build it.
 """
 from __future__ import annotations
@@ -30,6 +31,8 @@ NS = "{http://maven.apache.org/POM/4.0.0}"
 # Where a plugin's configuration names the folders it compiles: kotlin-maven-plugin, build-helper-maven-plugin.
 PLUGIN_SOURCES = (("sourceDirs", "sourceDir"), ("sources", "source"))
 REPOSITORIES = (("repositories", "repository"), ("pluginRepositories", "pluginRepository"))
+# What maven-compiler-plugin leaves out of the folder it compiles, its patterns relative to that folder.
+EXCLUDES = (("excludes", "exclude", "sourceDirectory"), ("testExcludes", "testExclude", "testSourceDirectory"))
 
 
 def _folder(rel: str) -> str:
@@ -83,6 +86,15 @@ def read(context, commands, results):
             for plugin in project.findall(f"{NS}build/{NS}plugins/{NS}plugin"):  # the folders a plugin compiles
                 sources += [rel((node.text or "").strip()) for held, tag in PLUGIN_SOURCES
                             for node in plugin.iterfind(f".//{NS}{held}/{NS}{tag}")]
+            excludes = {}
+            for plugin in project.findall(f"{NS}build/{NS}plugins/{NS}plugin"):
+                if _text(plugin, f"{NS}artifactId") != "maven-compiler-plugin":
+                    continue
+                for held, tag, where in EXCLUDES:  # the plugin's configuration and its executions'
+                    compiled = rel(_text(project, f"{NS}build/{NS}{where}"))
+                    patterns = {(node.text or "").strip() for node in plugin.iterfind(f".//{NS}{held}/{NS}{tag}")}
+                    if compiled and patterns - {""}:
+                        excludes.setdefault(compiled, set()).update(patterns - {""})
             registries = {origin(_text(repository, f"{NS}url")) for held, tag in REPOSITORIES
                           for repository in project.findall(f"{NS}{held}/{NS}{tag}")} - {None}
             units.append({"name": key, "kind": "maven-module", "root": folder,
@@ -91,7 +103,9 @@ def read(context, commands, results):
                           "depends_on": sorted({f"{_text(d, f'{NS}groupId')}:{_text(d, f'{NS}artifactId')}"
                                                 for d in project.findall(f"{NS}dependencies/{NS}dependency")}
                                                & set(found) - {key}),
-                          **({"registries": sorted(registries)} if registries else {})})
+                          **({"registries": sorted(registries)} if registries else {}),
+                          **({"compile_excludes": {compiled: sorted(patterns) for compiled, patterns in sorted(
+                              excludes.items())}} if excludes else {})})
         top = projects[0] if projects else None
         if top is not None and len(found) > 1:
             first = rel(posixpath.dirname(_text(top, f"{NS}build/{NS}directory") or "")) or command["cwd"]

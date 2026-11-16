@@ -35,6 +35,7 @@ for path in (str(SCRIPTS), str(HERE)):
     if path not in sys.path:
         sys.path.insert(0, path)
 
+import code_graph  # noqa: E402
 import container  # noqa: E402
 import preparation  # noqa: E402
 import resolve_edges  # noqa: E402
@@ -1374,6 +1375,54 @@ def test_under_maven_the_java_index_also_holds_the_kotlin_of_its_modules():
     assert "maven_kotlin " in java.PREPARE and "maven_kotlin " in kotlin.PREPARE
     assert jvm.modules_line([["svc/api", ["svc/api/src/main/kotlin"]], ["other", ["other/src"]]], "svc") == (
         "DAODAN_MODULES='api\tapi/src/main/kotlin'\n")
+
+
+def test_a_java_file_the_compiler_plugin_excludes_says_so():
+    """jhipster-sample's DatabaseTestcontainer.java (D-111): the profile `dev`, active by default, has
+    maven-compiler-plugin's testExcludes name it, so the build never compiles it and the index holds no document;
+    its reason says that, with the pattern and the pom. Another file without a document says no javac task
+    compiles it."""
+    record = {"units": [{"kind": "maven-module", "root": ".", "name": "g:a", "manifest": "pom.xml",
+                         "source_roots": ["src/main/java", "src/test/java"],
+                         "compile_excludes": {"src/test/java": ["io/github/jhipster/sample/config/Database*.java"],
+                                              "src/main/java": ["**/legacy/**"]}}], "workspace": []}
+    given = java.structure(record)
+    configs = java.tasks({"excluded": given["excluded"]})
+    absent = ["src/test/java/io/github/jhipster/sample/config/DatabaseTestcontainer.java",
+              "src/main/java/app/legacy/Old.java", "src/main/java/app/Lost.java"]
+    assert java.missing(code_graph.Index(Path(".")), absent, configs) == {
+        absent[0]: "the build leaves it out: maven-compiler-plugin excludes `io/github/jhipster/sample/config/"
+                   "Database*.java` from src/test/java (pom.xml, as Maven's effective model gives it)",
+        absent[1]: "the build leaves it out: maven-compiler-plugin excludes `**/legacy/**` from src/main/java "
+                   "(pom.xml, as Maven's effective model gives it)",
+        absent[2]: "no javac task of the build compiles it: scip-java writes a document for every file javac "
+                   "compiles"}
+    assert java.tasks(None) == {}
+
+
+def test_a_java_file_no_javac_task_compiles_says_why():
+    """D-112. jvm-maven-multi-bom-profile: cli/pom.xml joins the reactor only through profile `cli`
+    (`-Dwith-cli`), so Maven's effective model holds no project of it and the default build compiles none of its
+    files; the pre-map has the module from its file alone. jvm-protobuf-generated: GreetingProto.java, checked in
+    under src/generated/java, is in no source set of the Gradle build. scip-java writes a document for every file
+    javac compiles, so a file without one is one no javac task of the build compiled; a build that wrote no index
+    says that instead."""
+    record = {"units": [
+        {"kind": "maven-module", "root": ".", "name": "g:parent", "manifest": "pom.xml", "sources": ["maven@3.10.0"]},
+        {"kind": "maven-module", "root": "service", "name": "g:service", "manifest": "service/pom.xml",
+         "source_roots": ["service/src/main/java"], "sources": ["jvm-files@daodan", "maven@3.10.0"]},
+        {"kind": "maven-module", "root": "cli", "name": "g:cli", "manifest": "cli/pom.xml",
+         "sources": ["jvm-files@daodan"]}], "workspace": []}
+    given = java.structure(record)
+    configs = java.tasks({"outside": given["outside"], "failed": {"tools": "scip-java wrote no index (exit code 1)"}})
+    absent = ["cli/src/main/java/com/example/shop/cli/ShopCommand.java",
+              "src/generated/java/com/example/greeting/v1/GreetingProto.java", "tools/src/main/java/T.java"]
+    assert java.missing(code_graph.Index(Path(".")), absent, configs) == {
+        absent[0]: "its module cli (cli/pom.xml) is in no reactor of Maven's default build: Maven's effective model "
+                   "holds no project of it, so no javac task compiles it",
+        absent[1]: "no javac task of the build compiles it: scip-java writes a document for every file javac "
+                   "compiles",
+        absent[2]: "the build of tools wrote no index: scip-java wrote no index (exit code 1)"}
 
 
 def test_a_jvm_build_daodan_does_not_run_is_named_in_the_reason():

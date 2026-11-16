@@ -95,6 +95,37 @@ def test_the_source_folders_are_the_ones_the_build_and_its_plugins_declare(tmp_p
     assert unit["source_roots"] == ["src/generated/java", "src/main/java", "src/main/kotlin", "src/test/kotlin"]
 
 
+def test_the_files_the_compiler_plugin_leaves_out_are_the_module_s(tmp_path):
+    """jhipster-sample (6b000b5d23a3, D-111): its profile `dev`, active by default, gives maven-compiler-plugin
+    `<testExcludes><testExclude>io/github/jhipster/sample/config/DatabaseTestcontainer.java</testExclude>`, which
+    Maven's effective pom repeats in each execution (measured on Modal with Maven 3.10.0). Each pattern is
+    relative to the source folder it excludes from: `excludes` the build's sourceDirectory, `testExcludes` its
+    testSourceDirectory."""
+    project = tmp_path / "proj"
+    for folder in ("src/main/java", "src/test/java"):
+        (project / folder).mkdir(parents=True)
+        (project / folder / "A.java").write_text("class A {}\n", encoding="utf-8")
+    (project / "pom.xml").write_text("<project/>\n", encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    excluded = "<testExcludes><testExclude>io/github/jhipster/sample/config/DatabaseTestcontainer.java</testExclude>" \
+               "</testExcludes>"
+    pom = f'''<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>g</groupId><artifactId>a</artifactId>
+<build><sourceDirectory>/work/src/main/java</sourceDirectory><testSourceDirectory>/work/src/test/java</testSourceDirectory>
+<directory>/work/target</directory><plugins>
+<plugin><artifactId>maven-compiler-plugin</artifactId><executions>
+<execution><id>default-compile</id><configuration><excludes><exclude>**/legacy/**</exclude></excludes>{excluded}
+</configuration></execution>
+<execution><id>default-testCompile</id><configuration>{excluded}</configuration></execution></executions>
+<configuration>{excluded}</configuration></plugin></plugins></build></project>'''
+    answer = lambda commands: [{"returncode": 0, "stdout": pom, "stderr": "", "root": "/work"}]  # noqa: E731
+    record = premap.write(manifest, sources=(maven,), runner=answer)
+    [unit] = [u for u in record["units"] if u["kind"] == "maven-module"]
+    assert unit["compile_excludes"] == {
+        "src/main/java": ["**/legacy/**"],
+        "src/test/java": ["io/github/jhipster/sample/config/DatabaseTestcontainer.java"]}
+
+
 def test_the_repositories_maven_resolves_from_are_registries(tmp_path):
     """The effective pom names every repository a module resolves its dependencies and plugins from: Central from
     the super POM, and the ones the pom or a parent declares (JitPack here), credentials left out."""

@@ -195,14 +195,23 @@ def execute(external_classes: dict | None = None) -> str:
 
 def structure(record: dict) -> dict:
     """What `index` takes from the pre-map: the folder of each build with its tools, the JDKs it states, Maven's
-    modules with their source folders, and the kinds of the JVM builds Daodan does not run."""
+    modules with their source folders, the kinds of the JVM builds Daodan does not run, what maven-compiler-plugin
+    leaves out of each source folder (`excluded`: {folder: [pom, patterns]}), and the Maven modules only a file
+    states, which Maven's reactor does not hold (`outside`: [root, pom])."""
+    maven = [unit for unit in record.get("units", []) if unit["kind"] == "maven-module"]
+    excluded = {folder: [unit["manifest"], patterns] for unit in maven
+                for folder, patterns in (unit.get("compile_excludes") or {}).items()}
+    modeled = [any(str(source).startswith("maven@") for source in unit.get("sources") or ()) for unit in maven]
+    outside = [[unit["root"], unit["manifest"]] for unit, held in zip(maven, modeled) if not held] if any(modeled) \
+        else []  # a module only a file names: Maven's reactor does not hold it
     return {"roots": jvm.build_roots(record), "tools": jvm.build_tools(record), "toolchains": jvm.toolchains(record),
-            "modules": jvm.modules(record), "other_builds": jvm.other_builds(record)}
+            "modules": jvm.modules(record), "other_builds": jvm.other_builds(record),
+            **({"excluded": excluded} if excluded else {}), **({"outside": outside} if outside else {})}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, external_classes: dict | None = None,
           *, roots, tools=None, toolchains=(), modules=(), other_builds=(), engine=None,
-          memory: int = MIN_FREE, declared=None) -> dict:
+          memory: int = MIN_FREE, declared=None, excluded=None, outside=None) -> dict:
     """The forward index of each build in `roots` (the pre-map's build folders, built by their `tools`), each in
     a container of its own, with its runs and the indexer's time and memory (`files` is not used: a build compiles
     every module); the member order of all of them in `javap.json`. The preparation also reaches the hosts the
@@ -238,7 +247,60 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
         if listed and listed.is_file():
             members.update(json.loads(listed.read_text(encoding="utf-8")))
     (work_dir / "javap.json").write_text(json.dumps(members), encoding="utf-8")
-    return jvm.combined(parts, other_builds)
+    result = jvm.combined(parts, other_builds)
+    failed = {build["root"]: build["reason"] for build in result.get("builds") or () if build.get("reason")}
+    configs = {key: value for key, value in (("excluded", excluded), ("outside", outside), ("failed", failed)) if value}
+    return {**result, "configs": configs} if result.get("indexes") else result
+
+
+def tasks(configs) -> dict:
+    """What `missing` reads of the run: `{"excluded": {folder: [pom, patterns]}, "outside": [[root, pom]],
+    "failed": {build root: why it wrote no index}}`, empty without it."""
+    return configs if isinstance(configs, dict) else {}
+
+
+def _matches(pattern: str, path: str) -> bool:
+    """Whether `path`, relative to a source folder, matches a pattern of maven-compiler-plugin (Ant's: `**` any
+    folders, `*` and `?` within one name; a pattern ending in `/` takes all below it)."""
+    pattern = pattern + "**" if pattern.endswith("/") else pattern
+    words = []
+    for part in re.split(r"(\*\*/?|\*|\?)", pattern):
+        words.append({"**/": "(?:.*/)?", "**": ".*", "*": "[^/]*", "?": "[^/]"}.get(part, re.escape(part)))
+    return re.fullmatch("".join(words), path) is not None
+
+
+def missing(index, rels: list[str], configs: dict | None = None) -> dict:
+    """Why a Java file has no document. scip-java writes one for every file javac compiles, so no javac task of the
+    build compiled it: maven-compiler-plugin leaves it out of the source folder it compiles, its module is in no
+    reactor of Maven's default build, the build that holds it wrote no index, or no source set holds it."""
+    configs = configs or {}
+
+    def inside(rel: str, root: str) -> bool:
+        return root in ("", ".") or rel.startswith(root.rstrip("/") + "/")
+
+    reasons = {}
+    for rel in rels:
+        for folder, (pom, patterns) in (configs.get("excluded") or {}).items():
+            found = next((pattern for pattern in patterns
+                          if inside(rel, folder) and _matches(pattern, rel[len(folder) + 1:])), None)
+            if found:
+                reasons[rel] = (f"the build leaves it out: maven-compiler-plugin excludes `{found}` from {folder} "
+                                f"({pom}, as Maven's effective model gives it)")
+                break
+        if rel in reasons:
+            continue
+        module = max((item for item in configs.get("outside") or () if inside(rel, item[0])),
+                     key=lambda item: len(item[0]), default=None)
+        build = max((root for root in configs.get("failed") or {} if inside(rel, root)), key=len, default=None)
+        if module:
+            reasons[rel] = (f"its module {module[0]} ({module[1]}) is in no reactor of Maven's default build: Maven's "
+                            "effective model holds no project of it, so no javac task compiles it")
+        elif build is not None:
+            reasons[rel] = f"the build of {build or '.'} wrote no index: {configs['failed'][build]}"
+        else:
+            reasons[rel] = ("no javac task of the build compiles it: scip-java writes a document for every file "
+                            "javac compiles")
+    return reasons
 
 
 def finish(project_dir: Path, work_dir: Path, result: dict, runs: list[dict], out: Path) -> dict:
