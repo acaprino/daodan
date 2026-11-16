@@ -113,7 +113,8 @@ many callers force `deep`, even when `quick` was asked; size alone raises nothin
 
 `TECHNOLOGIES.json` is `snapshot.py technologies` on the candidate's map run:
 the record of the map's `stack` step, frameworks, libraries, tools and services per build unit;
-without a usable run, omit it.
+without a usable run, omit it. It counts only when its `root` and `target` are
+the `candidate` locators; otherwise the roster ignores it and states the gap.
 
 The technical context carries the prepared `review_basis`
 (`changeset`, `content`, or `claims`), `scope_id`, `conclusion_paths`,

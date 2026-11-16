@@ -96,7 +96,13 @@ class Stack:
     @staticmethod
     def run(context: Context) -> dict:
         import technologies
-        record = technologies.ensure(context.manifest)
+        try:
+            record = technologies.ensure(context.manifest)
+        except Exception as error:  # noqa: BLE001 - the analysis needs no technology: it goes on without them
+            cause = f"{type(error).__name__}: {error}"
+            context.bus.emit("log", f"the stack step failed: {error}", step=Stack.NAME, level="error", cause=cause,
+                             remedy="the analysis goes on; scan again to recognize the technologies")
+            return {"failed": cause}
         return {"technologies": len(record["technologies"]), "units": len(record["units"]),
                 "path": str(technologies.path(context.manifest))}
 

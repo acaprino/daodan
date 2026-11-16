@@ -542,7 +542,7 @@ Prima di ogni indicizzatore Daodan scrive la pre-mappa: cosa c'è nel progetto e
   - usa `code_graph.adapter_traversal`, così valgono `java.same_range`, `kotlin.classify` e `prepare`, `same_range` e `classify` di clang; lo stato è `lower-bound` quando un file non è letto, e il test di guardia `test_every_hook_an_indexer_defines_is_reached` perde lo `xfail`. Oggi il grafo di produzione di Java e Kotlin non usa i due hook che i benchmark misurano;
   - applica il cambio di Python (task 5, «Secondo giro»).
   - ogni indicizzatore segue la regola di rete decisa dal proprietario il 14 novembre 2026: il codice del progetto non gira mai con la rete aperta; un comando che non esegue codice del progetto (un gestore di pacchetti che solo scarica, con gli script spenti) può usare la rete pubblica. La regola sta nella spec e in `run_commands`.
-- [ ] **Si cancella:** la tabella dei suffissi; il wrapper `stack_analyser.py`, dopo aver portato nel registro il solo servizio che aggiunge; la scoperta di radici e `tsconfig` dentro gli indicizzatori (`snapshot.py:1414-1581`); i lettori di `modules.py` che un comando di modello sull'host sostituisce senza perdere unità.
+- [ ] **Si cancella:** la tabella dei suffissi; il wrapper `stack_analyser.py` (tolto il 16 novembre 2026; il solo servizio che aggiungeva, Redis in `.env.example`, ha già la regola `REDIS_` nel registro); la scoperta di radici e `tsconfig` dentro gli indicizzatori (`snapshot.py:1414-1581`); i lettori di `modules.py` che un comando di modello sull'host sostituisce senza perdere unità.
 
 ## 8. Rischi
 

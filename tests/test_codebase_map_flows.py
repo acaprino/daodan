@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -121,6 +122,11 @@ class FlowFixtureTests(unittest.TestCase):
         self.assertEqual(asked["status"], "needs_rules")
         self.assertEqual([(unit["paths"], unit["technologies"]) for unit in asked["technologies"]],
                          [(["app/web"], ["express", "nodejs"])])
+        import technologies
+        with mock.patch.object(technologies, "ensure", side_effect=OSError("disk full")):
+            failed = service.flows("flows")
+        self.assertEqual((failed["status"], failed["technologies_unavailable"]), ("needs_rules", "OSError: disk full"))
+        self.assertNotIn("technologies", failed)
         rules = json.loads((BENCH / "rules.json").read_text(encoding="utf-8"))["rules"]
         rules = [{**rule, "callee": "app/" + rule["callee"]} for rule in rules]
         with self.assertRaisesRegex(ValueError, "unknown field"):

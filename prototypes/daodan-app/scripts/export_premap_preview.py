@@ -74,7 +74,7 @@ with tempfile.TemporaryDirectory(prefix="daodan-preview-") as work:
 versions = {(unit["root"], dependency["name"]): dependency["version"] for unit in units for dependency in unit["dependencies"]}
 known = {entry["id"]: entry for entry in record["technologies"]}
 for found in record["units"]:
-    owned = tuple(path.rstrip("/") + "/" for path in found["paths"])
+    owned = tuple("" if path in ("", ".") else path.rstrip("/") + "/" for path in found["paths"])
     for ident in found["technologies"]:
         sign = next(s for s in known[ident]["signs"] if s["path"].startswith(owned))
         technologies.append({"name": known[ident]["name"], "category": {None: "tecnologia", "altro": "tecnologia"}.get(known[ident]["type"], known[ident]["type"]),

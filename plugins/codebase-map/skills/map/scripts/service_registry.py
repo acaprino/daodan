@@ -96,15 +96,16 @@ def _text_signs(files: list[str], lines_of) -> list[tuple[str, str, str, int]]:
     return out
 
 
-def _service_signs(manifest: Path) -> list[tuple[str, str, str, None]]:
+def _service_signs(facts: dict) -> list[tuple[str, str, str, None]]:
     """(ecosystem, package, path, line) of the image of every service the pre-map states, at the file declaring it."""
     return [("docker", _image(service["image"]), service["declared_in"].split("#", 1)[0], None)
-            for service in premap.ensure(manifest).get("services", []) if service.get("image")]
+            for service in facts.get("services", []) if service.get("image")]
 
 
-def recognize(manifest: Path, registry: dict | None = None) -> list[dict]:
-    """Registry entries the snapshot shows signs of, each sign with its path and line."""
+def recognize(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> list[dict]:
+    """Registry entries the snapshot shows signs of, each sign with its path and line; `facts` is the pre-map."""
     manifest = Path(manifest)
+    facts = premap.ensure(manifest) if facts is None else facts
     entries = (registry or load())["entries"]
     with open_snapshot(manifest) as store:
         files = sorted(dict(store.iter_file_headers_only()))
@@ -112,7 +113,7 @@ def recognize(manifest: Path, registry: dict | None = None) -> list[dict]:
         packages = _package_signs(manifest, source.lines) + _text_signs(files, source.lines)
         texts = {rel: source.lines(rel) or [] for rel in files}
     read = {sign[:3] for sign in packages}  # an image a compose file writes is already a sign, with its line
-    packages += [sign for sign in _service_signs(manifest) if sign[:3] not in read]
+    packages += [sign for sign in _service_signs(facts) if sign[:3] not in read]
     by_package, patterns, prefixes, hosts, names = {}, [], {}, {}, {}
     for entry in entries:
         signs = entry.get("signs") or {}
@@ -149,7 +150,7 @@ def recognize(manifest: Path, registry: dict | None = None) -> list[dict]:
     words = re.compile(r"\b(" + "|".join(sorted(map(re.escape, prefixes), key=len, reverse=True)) + r")[A-Z0-9_]*\b") \
         if prefixes else None
     places = re.compile("|".join(sorted(map(re.escape, hosts), key=len, reverse=True))) if hosts else None
-    left_out = tuple(item["path"] for item in premap.ensure(manifest).get("excluded", []))
+    left_out = tuple(item["path"] for item in facts.get("excluded", []))
     for rel, lines in texts.items():
         if any(rel == path or rel.startswith(path.rstrip("/") + "/") for path in left_out) \
                 or any(mark in line for line in lines[:3] for mark in OWN):

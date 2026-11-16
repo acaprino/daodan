@@ -204,7 +204,9 @@ SIGNAL_PATTERNS = {
     "tauri": re.compile(r"tauri::|#\[tauri|@tauri-apps/|\btauri\.conf\.json\b|\bwithGlobalTauri\b|"
                         r"\b(?:register_uri_scheme_protocol|dangerousRemoteDomainIpcAccess|"
                         r"dangerousDisableAssetCspModification|assetProtocol|externalBin)\b"),
-    "stripe": re.compile(r"\bstripe\b|Stripe-Signature|\bconstruct_?[Ee]vent\b", re.IGNORECASE),
+    # Stripe's API as code writes it, never the word: a CSS class or a sentence names no payment.
+    "stripe": re.compile(r"\bstripe\.\w+\s*[.(]|\bStripe\(|\bimport stripe\b|['\"]stripe['\"]|@stripe/|"
+                         r"[Ss]tripe-[Ss]ignature|\bconstruct(?:_e|E)vent\b"),
     # Conflict markers; the bare `=======` line alone is also a setext underline.
     "workspace": re.compile(r"^(?:<<<<<<< |>>>>>>> )", re.MULTILINE),
 }
@@ -544,6 +546,13 @@ def specialist_obligations(roster: list[str], context: dict, scope_id: str,
     return list(obligations.values())
 
 
+def technologies_bound(technologies: dict | None, context: dict) -> bool:
+    """Whether the record is of the candidate snapshot the context names, by root and target as `edit-impact`."""
+    candidate = context.get("candidate") or {}
+    return isinstance(technologies, dict) and all(candidate.get(key) and technologies.get(key) == candidate[key]
+                                                  for key in ("root", "target"))
+
+
 def unit_technologies(technologies: dict | None, paths: list[str]) -> list[str]:
     """Registry ids of the build units holding the paths: a path is of the unit with the longest path above it."""
     roots = [("" if root in ("", ".") else root.rstrip("/") + "/", unit.get("technologies", []))
@@ -612,6 +621,7 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
     lines = sum((row["added"] or 0) + (row["removed"] or 0) for row in rows)
     interfaces = interface_changes(diff) if basis == "changeset" else []
     map_signals = impact_signals(impact, context, conclusion_paths if basis == "changeset" else [])
+    bound = technologies_bound(technologies, context)
     content = content_signals(diff) if basis != "content" else {name: False for name in SIGNAL_PATTERNS}
     content["testing"] = False
     text = "\n".join(item.get("text", "") for key in ("requirements", "sources", "configurations")
@@ -634,7 +644,7 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
         "lines": lines,
         "modules": modules,
         "languages": languages,
-        "technologies": unit_technologies(technologies, production),
+        "technologies": unit_technologies(technologies if bound else None, production),
         "symbols": touched_symbols(diff) if basis == "changeset" else [],
         "interface_changed": sorted(set(interfaces) | set(map_signals["interface_changed"])),
         "effects_changed": map_signals["effects_changed"],
@@ -648,6 +658,8 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
     }
     gaps = map_signals["gaps"] + evidence_gaps({key: context.get(key, []) for key in
                                                ("inventory", "sources", "configurations", "requirements")}, "context")
+    if technologies is not None and not bound:
+        gaps.append("technologies record is not of the candidate snapshot (root, target): unit technologies unknown")
     if basis == "content" and not context.get("inventory"):
         gaps.append("content inventory unavailable or empty; explicit target paths remain in scope")
     if not all(content.values()):
