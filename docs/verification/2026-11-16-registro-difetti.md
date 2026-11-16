@@ -46,7 +46,7 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (65): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264
+- `tutti` (66): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269
 - `java` (45): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265
 - `c` (35): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268
 - `kotlin` (34): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229
@@ -75,8 +75,8 @@ Convenzioni:
 - `servizi` (13): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
 - `container` (11): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262
+- `host` (11): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269
 - `preparazione` (11): D-044, D-045, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-063
-- `host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264
 - `snapshot` (10): D-031, D-032, D-033, D-034, D-035, D-059, D-245, D-250, D-252, D-265
 - `documenti` (6): D-222, D-227, D-229, D-230, D-231, D-232
 - `parser` (3): D-037, D-165, D-166
@@ -86,7 +86,7 @@ Convenzioni:
 ### Tipo
 
 - `completezza` (141): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267
-- `correttezza` (85): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268
+- `correttezza` (86): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269
 - `sicurezza` (23): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
@@ -94,7 +94,7 @@ Convenzioni:
 
 ### Origine
 
-- `commit` (113): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268
+- `commit` (114): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (30): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264
@@ -117,9 +117,10 @@ Convenzioni:
 - `Gradle` (28): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-058, D-063, D-064, D-089, D-090, D-094, D-095, D-097, D-098, D-101, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-180, D-221, D-223
 - `Maven` (16): D-003, D-025, D-026, D-049, D-054, D-063, D-064, D-089, D-090, D-091, D-095, D-100, D-102, D-112, D-221, D-226
 - `npm` (14): D-013, D-017, D-049, D-053, D-056, D-072, D-084, D-185, D-186, D-191, D-198, D-201, D-258, D-263
+- `uv` (11): D-042, D-047, D-049, D-184, D-188, D-246, D-248, D-252, D-253, D-254, D-269
 - `scip-java` (10): D-089, D-096, D-098, D-099, D-100, D-101, D-103, D-105, D-108, D-110
-- `uv` (10): D-042, D-047, D-049, D-184, D-188, D-246, D-248, D-252, D-253, D-254
 - `CMake` (9): D-060, D-061, D-076, D-122, D-124, D-125, D-131, D-132, D-135
+- `scip-python` (7): D-084, D-086, D-088, D-246, D-247, D-248, D-269
 - `Cargo` (6): D-014, D-021, D-030, D-041, D-175, D-239
 - `Compose` (6): D-201, D-212, D-214, D-215, D-240, D-261
 - `Docker` (6): D-046, D-107, D-135, D-140, D-141, D-240
@@ -127,17 +128,16 @@ Convenzioni:
 - `GitHub Actions` (6): D-056, D-182, D-201, D-213, D-260, D-261
 - `scip-clang` (6): D-123, D-131, D-132, D-236, D-255, D-266
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
-- `scip-python` (6): D-084, D-086, D-088, D-246, D-247, D-248
 - `scip-typescript` (6): D-146, D-147, D-148, D-152, D-156, D-160
 - `tree-sitter` (6): D-034, D-035, D-036, D-037, D-117, D-265
 - `Modal` (5): D-209, D-210, D-224, D-230, D-251
+- `Pyright` (5): D-074, D-088, D-247, D-248, D-269
 - `rust-analyzer` (5): D-041, D-143, D-144, D-237, D-239
 - `Conan` (4): D-029, D-061, D-125, D-177
 - `GitLab CI` (4): D-202, D-212, D-216, D-217
 - `javac` (4): D-100, D-101, D-102, D-104
 - `Make` (4): D-043, D-060, D-133, D-267
 - `pnpm` (4): D-021, D-049, D-051, D-072
-- `Pyright` (4): D-074, D-088, D-247, D-248
 - `Roslyn` (4): D-113, D-115, D-116, D-249
 - `scip-go` (4): D-139, D-140, D-141, D-142
 - `Yarn` (4): D-049, D-051, D-072, D-157
@@ -182,6 +182,7 @@ Convenzioni:
 - `Launchpad` (1): D-176
 - `Meson` (1): D-060
 - `Mix` (1): D-012
+- `Node` (1): D-269
 - `pip-compile` (1): D-028
 - `podman` (1): D-263
 - `prettier` (1): D-256
@@ -200,7 +201,7 @@ Convenzioni:
 
 ## Indice
 
-268 schede: 208 risolte, 22 aperte, 38 buchi dichiarati.
+269 schede: 208 risolte, 23 aperte, 38 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -398,7 +399,7 @@ Convenzioni:
 | D-248 | L'ambiente Python dell'analisi eseguiva sull'host il codice dei suoi pacchetti | fastapi (`aabb90126964`), python-semver (`b6e83e3e40d3`) | risolto | `ef6641248` | python · analizzatore · sicurezza · commit · scip-python, Pyright, uv |
 | D-249 | C#: un gruppo di metodi passato come `System.Delegate` non aveva occorrenza | eShop (`913acea66708`) | risolto | `9290d446a` | csharp · analizzatore · completezza · prova su Modal · scip-dotnet, Roslyn |
 | D-253 | uv sull'host poteva installare una ruota costruita da un sdist e leggeva configurazioni altrui | analizzatore Python | risolto | `a9b4e1df2` | python · analizzatore · sicurezza · commit · uv |
-| D-254 | L'uv dell'host non è fissato | fastapi (`aabb90126964`) | risolto | `5e3757031` | python · host · correttezza · review · uv |
+| D-254 | L'uv dell'host non era fissato | fastapi (`aabb90126964`) | risolto da `5e3757031` e `2057bbafc` | `5e3757031`, `2057bbafc` | python · host · correttezza · review · uv |
 | D-255 | scip-clang leggeva i database di GCC con gli header builtin di GCC | otel-demo currency (`b825c7c25726`), riprodotto da android-sdk | risolto da `125ab9ebd` nella via principale | `125ab9ebd` | c, cpp · analizzatore · correttezza · prova su Modal · scip-clang, GCC |
 | D-257 | L'analizzatore Go esegue sull'host `go mod download` e il compilatore C | analizzatore Go | aperto (host-guard-2) | — | go · analizzatore · sicurezza · review · go, git, gcc |
 | D-258 | Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto | analizzatore di Vue e Svelte | risolto | `b9aeca1fb` | vue, svelte · analizzatore · sicurezza · review · npm, typescript-language-server |
@@ -453,7 +454,7 @@ Convenzioni:
 
 ### Container, servizi e driver Modal
 
-22 schede: 16 risolto, 3 aperto, 3 buco dichiarato.
+23 schede: 16 risolto, 4 aperto, 3 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -479,6 +480,7 @@ Convenzioni:
 | D-260 | Il passo di test della CI senza le variabili che la CI gli dà | fastapi (`aabb90126964`) | risolto | `b1f14ac08` | tutti · servizi · completezza · commit · GitHub Actions |
 | D-261 | Un passo di test dentro `docker compose run` | passo dinamico | buco dichiarato (`ci_step_not_run`) | `b1f14ac08` | tutti · servizi · completezza · commit · Compose, GitHub Actions |
 | D-262 | apt dietro il proxy del container: l'archivio su HTTP in chiaro | container | risolto | `b1f14ac08` | tutti · container · completezza · commit · apt |
+| D-269 | Due prime installazioni dello stesso strumento si toglievano i file a vicenda | cartella condivisa degli strumenti, macchina nuova | aperto (python-env) | `2057bbafc` | tutti · host · correttezza · commit · uv, Node, scip-python, Pyright |
 
 ### Benchmark e documenti
 
@@ -3221,14 +3223,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Stato:** risolto.
 - **Note:** D-248, la stessa via: l'ambiente Python dell'analisi sull'host; D-254, la versione di uv.
 
-#### D-254 L'uv dell'host non è fissato
+#### D-254 L'uv dell'host non era fissato
 - **Tag:** lingua python · area host · tipo correttezza · origine review · strumento uv
-- **Descrizione:** sull'host l'analisi Python usa l'uv che trova sul PATH: con lo 0.7.19 di questo PC, la versione 3.14 di fastapi diventava l'interprete 3.14.0b3 (D-252) (riportato da team-lead il 16 novembre).
+- **Descrizione:** sull'host l'analisi Python usava l'uv che trovava sul PATH: con lo 0.7.19 di questo PC, la versione 3.14 di fastapi diventava l'interprete 3.14.0b3 (D-252) (riportato da team-lead il 16 novembre).
 - **Spiegazione:** nel container uv è fissato allo 0.11.28 (`scripts/preparation.py:25`, `:64`); sull'host no.
 - **Progetto e caso:** fastapi (`aabb90126964`) — review di team-lead, 16 novembre 2026.
-- **Rimedio:** `5e3757031` (16 novembre, python-env), `scripts/engine_tools.py` (`uv_binary`, `UV_ASSETS`): l'uv 0.11.28 scaricato una volta e controllato con lo sha256 del rilascio, mai quello del PATH; senza, Python è non disponibile con la causa. fastapi: deps.py letto da 3.14.6, grafo invariato.
-- **Verifica:** —.
-- **Stato:** risolto.
+- **Rimedio:**
+  - `5e3757031` (16 novembre, python-env), `scripts/engine_tools.py` (`uv_binary`, `UV_ASSETS`): l'uv 0.11.28 scaricato una volta e controllato con lo sha256 del rilascio, mai quello del PATH; senza, Python è non disponibile con la causa. fastapi: deps.py letto da 3.14.6, grafo invariato.
+  - `2057bbafc` (16 novembre, python-env), `scripts/engine_pass.py`: anche il runner degli stadi (`stage_command`) prendeva l'uv del PATH; ora usa `engine_tools.uv_binary()` con `uv_options()` (`--no-config` e la cache di Daodan), e il controllo della cache gira dalla cartella degli script, non dal progetto; senza il pin resta il ripiego sull'interprete di Daodan, mai il PATH.
+- **Verifica:** `tests/test_codebase_map_resolve_edges.py` (`test_two_first_downloads_of_the_pinned_uv_at_once_both_end_with_it`).
+- **Stato:** risolto da `5e3757031` e `2057bbafc`.
 - **Note:** D-252, D-253.
 
 #### D-255 scip-clang leggeva i database di GCC con gli header builtin di GCC
@@ -3985,6 +3989,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** `tests/test_codebase_map_container.py` (`test_proxy_forwards_plain_http_to_an_apt_host_only_for_its_archive`, e su Modal `test_on_modal_apt_updates_and_downloads_from_debian_s_plain_http_archive_through_the_proxy`).
 - **Stato:** risolto.
 - **Note:** D-064, il perimetro di rete.
+
+#### D-269 Due prime installazioni dello stesso strumento si toglievano i file a vicenda
+- **Tag:** lingua tutti · area host · tipo correttezza · origine commit · strumento uv, Node, scip-python, Pyright
+- **Descrizione:** una prova in parallelo di python-env: due prime installazioni dello stesso strumento (il server e il passo, o due worker) condividevano la cartella `.partial` e si toglievano i file a vicenda: 3 fallimenti su 3 su una macchina nuova, «File exists: …/engines/node/.v22.23.4.partial» (dal commit `2057bbafc`).
+- **Spiegazione:** ogni installazione scriveva in una cartella dal nome fisso accanto a quella definitiva.
+- **Progetto e caso:** cartella condivisa degli strumenti, macchina nuova — commit `2057bbafc`, 16 novembre 2026.
+- **Rimedio:** `2057bbafc` (16 novembre, python-env), `scripts/engine_tools.py:568` (`publish`): ogni installazione ha la sua cartella, e resta la prima pubblicata; la usano `LspEngine._install` (Node, scip-python, Pyright, ogni `runtime.Tool`) e `uv_binary`.
+- **Verifica:** solo test: `tests/test_codebase_map_resolve_edges.py` (`test_two_first_installs_of_one_release_at_once_both_end_with_it_installed`, `test_two_first_downloads_of_the_pinned_uv_at_once_both_end_with_it`).
+- **Stato:** aperto (python-env): `npm_modules`, `go_toolchain` e i download di un solo file usano ancora il vecchio nome fisso.
+- **Note:** D-254, dallo stesso commit.
 
 ### Benchmark e documenti
 
