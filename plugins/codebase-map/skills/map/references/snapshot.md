@@ -142,12 +142,16 @@ Python uses stdlib `ast`, SQL/PL-SQL regex DDL, CSS/SCSS/LESS the tokenizer.
 Parser notes name the engine or fallback; missing grammars report
 `tree-sitter unavailable: <error>`. For optional offline embedding, read
 `references/embeddings.md` before invoking `embedding_worker.py`.
-The engine pass writes `<run-dir>/snapshot/engine-edges.sqlite`, read by
-`edge_view.py`: one stage per language source, one at a time (the index of
-scip-go for Go, rust-analyzer for Rust, scip-typescript for TypeScript and
-JavaScript, scip-python for Python, scip-java for Java and Kotlin, one build per
-folder of the pre-map in a container; typescript-language-server for Vue and Svelte), each
-installed on first use under the shared Daodan directory. Answers whose file,
+The engine pass is the pipeline after `scan` (`pipeline/`): `analyze`, `dynamic`
+and `union`, into `<run-dir>/snapshot/engine-edges.sqlite`, read by `edge_view.py`.
+`analyze` runs one analyzer per technology of the pre-map, one at a time: the index
+of scip-go for Go, rust-analyzer for Rust and scip-python for Python; in a
+container, over the build the project declares, scip-typescript for TypeScript and
+JavaScript, scip-java for Java and Kotlin, scip-dotnet for C# and scip-clang for C
+and C++; typescript-language-server for Vue and Svelte; the stylesheet graph. Each
+is installed on first use under the shared Daodan directory. `dynamic` runs the
+project's declared tests in a container under a recorder and adds the calls they
+execute as observed edges (`dynamic/`). Answers whose file,
 imports and target are unchanged come from `engine-answers.sqlite`, beside the
 card store; the store is published at once with them, then every 30 seconds. `resolve_edges.py
 <manifest> --pass` runs the whole pass in the foreground; `--engine <name>

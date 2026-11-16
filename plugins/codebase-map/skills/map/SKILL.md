@@ -22,8 +22,10 @@ description: >
 | Go | `.go` | tree-sitter (preferred) or regex; functions, methods, types | `//`, `/* */` |
 | Kotlin | `.kt`, `.kts` | tree-sitter (preferred) or regex; classes, interfaces, objects, suspend functions, properties | `//`, `/* */`, KDoc `/** */` |
 | C# | `.cs` | tree-sitter (preferred) or regex; namespaces, classes, interfaces, structs, records, enums, async methods, properties | `//`, `/* */`, XML doc `///` |
+| C, C++ | `.c`, `.h` (C); `.cc`, `.cpp`, `.cxx`, `.hpp`, `.hh`, `.hxx` (C++); a `.h` is C++ when its text says so | tree-sitter (preferred), else includes only; functions, structs, unions, enums, typedefs, C++ classes and namespaces | `//`, `/* */` |
 | Vue / Svelte | `.vue`, `.svelte` | byte-aligned `<script>` / `<script setup>` extraction via JS/TS adapters | `//`, `/* */` inside script blocks |
-| CSS, SCSS, LESS | `.css`, `.scss`, `.less` | stdlib tokenizer, never tree-sitter; one symbol per applied rule (flattened selector within enclosing at-rules); top-level at-rules, Sass/LESS variables, mixins, Sass functions; `@import`/`@use`/`@forward`; Tailwind `@apply` layout utilities expanded as declarations | `/* */`, and `//` outside plain CSS |
+| CSS, SCSS, Sass, LESS, PostCSS | `.css`, `.scss`, `.sass`, `.less`, `.pcss`, `.postcss` | stdlib tokenizer, never tree-sitter; indented Sass read as the SCSS its indentation implies; one symbol per applied rule (flattened selector within enclosing at-rules); top-level at-rules, Sass/LESS variables, mixins, Sass functions; `@import`/`@use`/`@forward`; Tailwind `@apply` layout utilities expanded as declarations | `/* */`, and `//` outside plain CSS |
+| Markup | `.html`, `.htm`, `.xhtml`, `.ejs`, `.erb`, `.astro`, `.hbs`, `.handlebars`, `.mustache`, `.liquid`, `.twig`, `.j2`, `.jinja`, `.njk`, `.jsp`, `.jspx`, `.cshtml`, `.razor`, `.ftl`, `.vm` | the rules of each `<style>` block, read by the stylesheet adapter in the block's dialect; nothing else of the markup | those of its `<style>` blocks |
 
 `.sql` is disambiguated against PL/SQL by Oracle-specific content markers (`languages/__init__.py`); `plpgsql` stays SQL.
 
