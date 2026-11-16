@@ -313,7 +313,7 @@ def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
                         {"kind": "npm-package", "root": "web"}],
               "workspace": [{"tool": "cargo", "root": "."}]}
     assert go.structure(record) == {"roots": {""}}
-    assert rust.structure(record) == {"roots": {"", "crates/a"}}
+    assert rust.structure(record)["roots"] == {"", "crates/a"}  # and the container's runs (`indexers_rust`)
     assert typescript.structure(record) == {"roots": {"web"}}
     assert java.structure(record) == kotlin.structure(record) == {  # Maven's modules, the builds not run
         "roots": set(), "tools": {}, "toolchains": [], "modules": [], "other_builds": []}
@@ -604,7 +604,7 @@ def test_every_reference_ends_or_is_a_hole(built):
     inactive = [cause.split("{}") for cause in (clang.INACTIVE, rust.INACTIVE)]  # code the configuration leaves out
     classes = set(code_graph.HOLES) | {"implicit-operator", typescript.MEMBER}  # the TS adapter's cause of a member
     classes |= {hole["class"] for data in built.values() for graph in data["graphs"].values() for hole in graph["holes"]
-                if any(hole["class"].startswith(head) and hole["class"].endswith(tail) for head, tail in inactive)}
+                if any(hole["class"].startswith(parts[0]) and hole["class"].endswith(parts[-1]) for parts in inactive)}
     violations = collections.defaultdict(list)
     for name, data in sorted(built.items()):
         graphs = data["graphs"].values()
