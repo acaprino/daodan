@@ -1665,13 +1665,16 @@ class _TreeSitterEvidence(_Evidence):
                 )
                 parts = self.parts(target_node)
                 callee_span = None
-                member = self.member_name(target_node) if not parts else None
+                # `x.f::<T>()`: the turbofish is no part of the member's name
+                accessed = target_node.child_by_field_name("function") if target_node.type == "generic_function" \
+                    else target_node
+                member = self.member_name(accessed) if not parts and accessed is not None else None
                 if member is not None:
                     # A member of a computed value keeps its name, so the call can be classified and asked.
                     parts = ["(expr)", self.text(member)]
-                    receiver = target_node.child_by_field_name("object") or target_node.child_by_field_name(
-                        "expression") or target_node.child_by_field_name("operand") or target_node.child_by_field_name(
-                        "value") or (target_node.named_children[0] if target_node.named_children else None)
+                    receiver = accessed.child_by_field_name("object") or accessed.child_by_field_name(
+                        "expression") or accessed.child_by_field_name("operand") or accessed.child_by_field_name(
+                        "value") or (accessed.named_children[0] if accessed.named_children else None)
                     self.walk(receiver)
                 elif target_node is not node and not parts:
                     self.walk(target_node)

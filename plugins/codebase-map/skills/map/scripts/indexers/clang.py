@@ -29,7 +29,8 @@ commands; a build that writes no database is a gap with the tool's own output; M
 Symbols carry no file: a function declared in a header and defined in a source file is one symbol, defined at
 its body; the declaration is a reference. Two `static` functions of one name in two files are one symbol too.
 scip-clang writes what a macro expands to at the expansion: the call `SQUARE(n)` references the macro and the
-function its body calls, at the same range, so macros need no hop.
+function its body calls, at the same range, so macros need no hop; what its arguments name sits there too, and
+`prepare` moves it back to the argument (`macro_arguments`).
 
 `prepare(index, snapshot)` fills in place what the index leaves out, before anything reads it: each
 occurrence once (a file compiled by several translation units comes as several documents, which the shared
@@ -44,15 +45,18 @@ lambda (`lambda`, the closure type is its own). A call through a function pointe
 parameter ends on that value: nothing is guessed. `same_range` keeps the shared rule from reading a variable
 defined where a constructor or a macro is referenced as an alias: only a using-declaration aliases at a shared
 range. `classify` names namespaces and the package of an external symbol. `refine` marks an edge `uncertain`
-when its symbol has bodies at several places, each place a candidate.
+when its symbol has bodies at several places, each place a candidate. `unanswered` names the cause of a site in a branch of
+`#if` where the index has no occurrence at all: the build's configuration does not compile it (`INACTIVE`).
 """
 from __future__ import annotations
 
 import collections
 import json
 import posixpath
+import re
 import shlex
 import shutil
+import time
 from pathlib import Path
 
 import code_graph
@@ -176,6 +180,92 @@ def enclose(index) -> int:
     return done
 
 
+MACRO = re.compile(r"`[^`]*:\d+:\d+`!$")  # a macro's symbol: scip-clang names it by where it is defined
+IDENTIFIER = re.compile(rb"[A-Za-z_]\w*")
+LITERAL = re.compile(rb'"(?:\\.|[^"\\])*"' rb"|'(?:\\.|[^'\\])*'|//.*|/\*.*?\*/")  # blanked: no names there
+
+
+def _arguments(lines: list[bytes], line: int, end: int) -> list[tuple[int, int, bytes]]:
+    """`(line, byte column, name)` of each identifier in the arguments of a macro invoked at `line`, its name ending
+    at byte `end`: the parenthesized list after it, across lines; none without one."""
+    row, column = line - 1, end
+    while row < len(lines) and not lines[row][column:].strip():
+        row, column = row + 1, 0
+    if row >= len(lines):
+        return []
+    column += len(lines[row][column:]) - len(lines[row][column:].lstrip())
+    if lines[row][column:column + 1] != b"(":
+        return []
+    depth, out = 0, []
+    for row in range(row, min(len(lines), row + 200)):
+        text = LITERAL.sub(lambda found: b" " * len(found.group()), lines[row])
+        while column < len(text):
+            byte = text[column:column + 1]
+            word = IDENTIFIER.match(text, column) if depth and (column == 0 or not (
+                text[column - 1:column].isalnum() or text[column - 1:column] == b"_")) else None
+            if word:
+                out.append((row + 1, column, word.group()))
+                column = word.end()
+                continue
+            depth += byte == b"("
+            depth -= byte == b")"
+            if depth == 0:
+                return out
+            column += 1
+        column = 0
+    return []
+
+
+def macro_arguments(index) -> int:
+    """scip-clang writes a reference at its expansion location (Indexer.cc, `saveReference`): what a macro's
+    arguments name sits at the macro's name. Each identifier of the arguments takes the symbol of its name written
+    there, when one symbol has that name, and the macro's name keeps what no argument took: its body's own;
+    returns how many occurrences it placed."""
+    sources: dict[str, list[bytes]] = {}
+
+    def lines(rel: str) -> list[bytes]:
+        if rel not in sources:
+            try:
+                sources[rel] = (index.root / rel).read_bytes().split(b"\n")
+            except OSError:
+                sources[rel] = []
+        return sources[rel]
+
+    def written(key: str) -> set[str]:  # the names a symbol is written with: a local's, at its definitions
+        if "#local " not in key:  # (a file two translation units compile numbers its locals twice: one key, two)
+            return {_last_name(key)} - {None}
+        return {lines(rel)[item.line - 1][item.start:item.end].decode("utf-8", errors="replace")
+                for rel, item in index.defs.get(key, ()) if item.end_line == item.line <= len(lines(rel))}
+
+    added = 0
+    for rel, occurrences in index.documents.items():
+        groups, moved = collections.defaultdict(list), set()
+        for item in occurrences:
+            if not item.definition and item.end_line == item.line:
+                groups[(item.line, item.start, item.end)].append(item)
+        for (line, _start, end), items in groups.items():
+            if not any(MACRO.search(item.key) for item in items):
+                continue
+            named = collections.defaultdict(set)
+            for item in items:
+                for name in () if MACRO.search(item.key) else written(item.key):
+                    named[name].add(item.key)
+            taken = set()
+            for row, column, word in _arguments(lines(rel), line, end):
+                keys = named.get(word.decode("utf-8", errors="replace"), ())
+                if len(keys) == 1 and not index.at.get((rel, row, column)):
+                    occurrences.append(code_graph.Occurrence(row, column, row, column + len(word), next(iter(keys)),
+                                                             False, None))
+                    taken |= keys
+                    added += 1
+            moved |= {item for item in items if item.key in taken}
+        if moved:
+            occurrences[:] = [item for item in occurrences if item not in moved]
+    if added:
+        dedupe(index)
+    return added
+
+
 def prepare(index, snapshot) -> dict:
     """Fill in what the index leaves to the reader (see the module docstring); returns what each step did."""
     deduplicated = dedupe(index)
@@ -183,7 +273,44 @@ def prepare(index, snapshot) -> dict:
     index.declarations = _declarations(index, snapshot)
     index.languages = {snapshot.checkout[rel]: language for rel, language in snapshot.languages.items()
                        if rel in snapshot.checkout and language in ("c", "cpp")}
-    return {"deduplicated": deduplicated, "utf8_documents": documents, "enclosed": enclose(index)}
+    return {"deduplicated": deduplicated, "utf8_documents": documents, "enclosed": enclose(index),
+            "macro_arguments": macro_arguments(index)}
+
+
+INACTIVE = "in a branch of `{}` the build does not compile: the index has no occurrence in it"
+BRANCHES = ("preproc_if", "preproc_ifdef", "preproc_elif", "preproc_elifdef", "preproc_else")
+
+
+def unanswered(index):
+    """Why the index has no occurrence at a site: the site is in a branch of a conditional directive where the
+    index has no occurrence at all, one the build's configuration leaves out (`INACTIVE`)."""
+    lines: dict[str, set[int]] = {}
+
+    def cause(position: tuple) -> str | None:
+        rel, line, column = position
+        tree = _tree(index, rel) if rel in index.documents else None
+        node = tree.root_node.descendant_for_point_range((line - 1, column), (line - 1, column + 1)) \
+            if tree is not None and column is not None else None
+        while node is not None and node.type not in BRANCHES:
+            node = node.parent
+        if node is None:
+            return None
+        alternative = node.child_by_field_name("alternative")
+        holder = node
+        while holder is not None and holder.type not in ("preproc_if", "preproc_ifdef"):
+            holder = holder.parent
+        closing = alternative or next((child for child in (holder.children if holder else ()) if child.type ==
+                                       "#endif"), None)
+        last = closing.start_point[0] + 1 if closing is not None else node.end_point[0] + 2
+        if rel not in lines:
+            lines[rel] = {item.line for item in index.documents[rel]}
+        if any(node.start_point[0] + 1 < row < last for row in lines[rel]):
+            return None
+        source = (index.root / rel).read_bytes().split(b"\n")
+        said = [" ".join(source[at.start_point[0]].decode("utf-8", "replace").split())[:80]
+                for at in dict.fromkeys((node, holder)) if at is not None]
+        return INACTIVE.format("` of `".join(said))  # `#else` of `#if X`: the branch and the condition it opens
+    return cause
 
 
 # ---------------------------------------------------------------------------------------------------------

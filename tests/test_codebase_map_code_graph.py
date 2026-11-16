@@ -600,7 +600,11 @@ def test_fixture_case(built, name, case):
 # The invariant: every call and read of a snapshot ends in graph ends or in a hole with a class.
 
 def test_every_reference_ends_or_is_a_hole(built):
+    from indexers import clang, rust
+    inactive = [cause.split("{}") for cause in (clang.INACTIVE, rust.INACTIVE)]  # code the configuration leaves out
     classes = set(code_graph.HOLES) | {"implicit-operator", typescript.MEMBER}  # the TS adapter's cause of a member
+    classes |= {hole["class"] for data in built.values() for graph in data["graphs"].values() for hole in graph["holes"]
+                if any(hole["class"].startswith(head) and hole["class"].endswith(tail) for head, tail in inactive)}
     violations = collections.defaultdict(list)
     for name, data in sorted(built.items()):
         graphs = data["graphs"].values()
@@ -654,6 +658,60 @@ def test_clang_a_file_the_snapshot_cannot_read_is_a_declared_gap_and_its_occurre
     assert unread["split.c"]["reason"] == "syntax error: line 5"
     kinds = {edge["kind"] for edge in graph["edges"] if edge["site"].startswith("split.c:")}
     assert kinds == {"unknown"} and unread["split.c"]["references"] >= 2
+
+
+MACRO_C = ("#define CHECK(x) do { if (!(x)) abort(); } while (0)\n"
+           "struct pair { int first; };\n"
+           "int twice(int v) { return v * 2; }\n"
+           "int run(struct pair *p, int n) {\n"
+           "    CHECK(p->first == twice(n));\n"
+           "#if defined(_MSC_VER)\n"
+           "    return _msc_only(n);\n"
+           "#elif defined(__APPLE__)\n"
+           "    return _apple_only(n);\n"
+           "#else\n"
+           "    return n;\n"
+           "#endif\n"
+           "}\n")
+
+
+def test_clang_a_macros_arguments_take_the_symbols_the_index_writes_at_the_macro(tmp_path):
+    """tinyxml2's `TIXMLASSERT( other->_flags == 0 )`: scip-clang writes every reference at its expansion location
+    (Indexer.cc, `saveReference`), so what a macro's argument names sits at the macro's name. `prepare` places each
+    symbol of the argument's name there back at the argument (the macro keeps its body's own); a name two symbols
+    there could be stays a hole. `p` of `p->first` has no reference of its own in the snapshot, its local still
+    moves to it. A
+    branch of `#if` with no occurrence at all is one the build does not compile: the hole says so."""
+    import snapshot
+    from indexers import clang
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "run.c").write_text(MACRO_C, encoding="utf-8")
+    manifest = tmp_path / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    macro, pair, first, twice, run = ("cxx . . $ `run.c:1:9`!", "cxx . project 0$ pair#", "cxx . project 0$ pair#first.",
+                                      "cxx . project 0$ twice(1a).", "cxx . project 0$ run(2b).")
+    (tmp_path / "index.scip").write_bytes(document("run.c", [
+        occurrence(1, 8, 13, macro, True), occurrence(2, 7, 11, pair, True), occurrence(2, 18, 23, first, True),
+        occurrence(3, 4, 9, twice, True), occurrence(3, 14, 15, "local 0", True), occurrence(3, 26, 27, "local 0"),
+        occurrence(4, 4, 7, run, True), occurrence(4, 21, 22, "local 1", True), occurrence(4, 28, 29, "local 2", True),
+        *(occurrence(5, 4, 9, key) for key in (macro, "local 1", first, twice, "local 2")),
+        occurrence(11, 11, 12, "local 2")]))
+    with code_graph.Snapshot(manifest) as snap:
+        index = code_graph.Index(snap.root)
+        index.load(tmp_path / "index.scip")
+        hops, traversal, prepared = code_graph.adapter_traversal(clang, index, snap)
+        _graph, references = code_graph.build(index, snap, "c", hops, {}, None, traversal)
+    assert prepared["macro_arguments"] == 4
+    found = {(row["site"], row["name"]): (row["hole"], sorted(end.key for end in row["ends"]))
+             for row in references.values() if row["site"].split(":")[1] in ("5", "7", "9")}
+    assert found == {("run.c:5", "p.first"): ("", [first]),
+                     ("run.c:5", "twice"): ("", [twice]), ("run.c:5", "n"): ("", ["run.c#local 2"]),
+                     ("run.c:5", "CHECK"): ("", [macro]),
+                     ("run.c:7", "_msc_only"): (clang.INACTIVE.format("#if defined(_MSC_VER)"), []),
+                     ("run.c:7", "n"): (clang.INACTIVE.format("#if defined(_MSC_VER)"), []),
+                     **{("run.c:9", name): (clang.INACTIVE.format("#elif defined(__APPLE__)` of `#if defined(_MSC_VER)"),
+                                            []) for name in ("_apple_only", "n")}}
 
 
 def test_clang_an_operator_call_is_an_edge_of_kind_unknown(built):

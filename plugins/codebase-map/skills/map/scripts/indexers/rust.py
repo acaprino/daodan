@@ -135,20 +135,122 @@ def tasks(configs) -> dict:
     return configs if isinstance(configs, dict) else {}
 
 
+# The configuration rust-analyzer reads (`CONFIG`): every feature on, the host's target, no build script, so no
+# cfg one sets (`cargo:rustc-cfg`, tauri's `desktop`). A site the index answers nothing at under a `cfg` false
+# there is code rust-analyzer leaves out; one of the cfgs it may set (`UNDECIDED`) or of another target key decides
+# nothing.
+CONFIGURATION = "every feature on, the host's target, no build script"
+CFG_OFF = "its `#![cfg({})]` is false in the configuration rust-analyzer reads (" + CONFIGURATION + ")"
+MOD_OFF = "the `mod` item that loads it is under `#[cfg({})]`, false in the configuration rust-analyzer reads (" \
+    + CONFIGURATION + ")"
+INACTIVE = "under `#[cfg({})]`, false in the configuration rust-analyzer reads (" + CONFIGURATION + \
+    "): nothing is written"
+UNDECIDED = frozenset({"test", "debug_assertions", "miri", "doc", "doctest", "docsrs", "proc_macro",
+                       "overflow_checks", "ub_checks", "fmt_debug", "panic", "relocation_model", "sanitize"})
+TARGET = ("target_endian", "target_family", "target_os", "target_pointer_width")
+
+
+def _host() -> dict[str, str]:
+    """The host's target cfgs rust-analyzer reads with no target set: endian, family, os, pointer width."""
+    import sys
+    system = {"win32": "windows", "darwin": "macos"}.get(sys.platform, sys.platform.split("-")[0].rstrip("0123456789"))
+    family = "windows" if system == "windows" else "unix"
+    return {"target_endian": sys.byteorder, "target_family": family, "target_os": system,
+            "target_pointer_width": "64" if sys.maxsize > 2**32 else "32", family: ""}
+
+
+def _cfg(text: str):
+    """The value of a `cfg` predicate in the configuration rust-analyzer reads; None where it decides nothing."""
+    import re
+    text = text.strip()
+    if re.fullmatch(r'feature\s*=\s*"[^"]*"', text):
+        return True
+    named = re.fullmatch(r'(\w+)\s*=\s*"([^"]*)"', text)
+    if named:
+        return _host()[named.group(1)] == named.group(2) if named.group(1) in TARGET else None
+    if re.fullmatch(r"\w+", text):
+        return text in _host() if text in ("unix", "windows") else None if text in UNDECIDED else False
+    found = re.fullmatch(r"(not|all|any)\s*\((.*)\)", text, re.S)
+    if not found:
+        return None
+    depth, items, start = 0, [], 0
+    for at, char in enumerate(found.group(2)):
+        depth += char == "("
+        depth -= char == ")"
+        if char == "," and depth == 0:
+            items.append(found.group(2)[start:at])
+            start = at + 1
+    values = [_cfg(item) for item in [*items, found.group(2)[start:]] if item.strip()]
+    if found.group(1) == "not":
+        return None if len(values) != 1 or values[0] is None else not values[0]
+    if found.group(1) == "all":
+        return False if False in values else None if None in values else True
+    return True if True in values else None if None in values else False
+
+
+def _cfgs(node, inner: bool = False) -> list[str]:
+    """The predicates of the `#[cfg(...)]` attributes written before a node (`#![cfg]` inside it, with `inner`)."""
+    out, sibling = [], node.prev_named_sibling if not inner else None
+    attributes = [child for child in node.named_children if child.type == "inner_attribute_item"] if inner else []
+    while sibling is not None and sibling.type in ("attribute_item", "line_comment", "block_comment"):
+        attributes.append(sibling)
+        sibling = sibling.prev_named_sibling
+    for item in attributes:
+        text = item.text.decode("utf-8", errors="replace")
+        start = text.find("cfg(")
+        if start != -1 and text[:start].strip("#![ ") == "":
+            out.append(text[start + 4:text.rfind(")")].strip())
+    return out
+
+
+def _off(node) -> str | None:
+    """The first `cfg` written before `node` or a node enclosing it that is false in the configuration."""
+    while node is not None:
+        for predicate in _cfgs(node):
+            if _cfg(predicate) is False:
+                return predicate
+        node = node.parent
+    return None
+
+
+def unanswered(index):
+    """Why the index has no occurrence at a site: a `cfg` written before an enclosing item, statement or
+    expression is false in the configuration rust-analyzer reads (`INACTIVE`)."""
+    def cause(position: tuple) -> str | None:
+        rel, line, column = position
+        tree = index.tree(rel, "rust") if rel.endswith(".rs") and column is not None else None
+        point = (line - 1, column)
+        off = _off(tree.root_node.descendant_for_point_range(point, (line - 1, column + 1))) if tree else None
+        return INACTIVE.format(off) if off else None
+    return cause
+
+
 def missing(index, rels: list[str], configs: dict | None = None) -> dict:
     """Why a Rust file has no document: the run of its crate wrote no index and no other run read the crate;
-    else no `mod` item of an indexed file loads it, so no crate includes it."""
+    else no `mod` item of an indexed file loads it, so no crate includes it; else each `mod` item that loads it is
+    under a `cfg` false in the configuration rust-analyzer reads (`MOD_OFF`), or the file's own `#![cfg]` is
+    (`CFG_OFF`)."""
     roots, failed = set((configs or {}).get("roots") or ()), (configs or {}).get("failed") or {}
     read = {code_graph.owner(rel, roots) for rel in index.documents}
-    loaded = {candidate for rel, name in _mod_items(index) for candidate in _module_files(rel, name.text.decode("utf-8"))}
+    loaded = collections.defaultdict(list)  # a file a `mod` item loads: the false cfg of each such item
+    for rel, name in _mod_items(index):
+        for candidate in _module_files(rel, name.text.decode("utf-8")):
+            loaded[candidate].append(_off(name.parent))
     reasons = {}
     for rel in rels:
         root = code_graph.owner(rel, roots)
+        tree = index.tree(rel, "rust")
+        own = [predicate for predicate in (_cfgs(tree.root_node, inner=True) if tree is not None else ())
+               if _cfg(predicate) is False]
         if root in failed and root not in read:
             reasons[rel] = f"the rust-analyzer run of its crate {root or '.'} wrote no index ({failed[root]})"
         elif rel not in loaded and PurePosixPath(rel).name not in ("lib.rs", "main.rs", "build.rs") \
                 and PurePosixPath(rel).parent.name not in ROOT_DIRECTORIES:
             reasons[rel] = "no crate includes it: no `mod` item of an indexed file loads it"
+        elif rel in loaded and all(loaded[rel]):
+            reasons[rel] = MOD_OFF.format(loaded[rel][0])
+        elif own:
+            reasons[rel] = CFG_OFF.format(own[0])
     return reasons
 
 

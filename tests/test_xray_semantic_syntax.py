@@ -305,6 +305,14 @@ class CalleeSpanTests(unittest.TestCase):
                 self.assertEqual(member[0]["parts"][1].lower(), "run")
                 self.assertEqual(self.callee_text(source, member[0]).split(".")[-1].lower(), "run")
 
+    def test_a_rust_method_with_type_arguments_keeps_its_name(self):
+        """`x.f::<T>()` calls `f` (semver's benches: `black_box(text).parse::<Version>()`): the turbofish is no
+        part of the callee, on a named receiver or on a computed one; the span ends on the name."""
+        source = "fn go(t: &str) { make(t).parse::<u8>(); t.parse::<u8>(); }\n"
+        calls = [r for r in self.parse(source, "rust", "rs")["references"] if r["kind"] == "call"]
+        self.assertEqual([(r["parts"], self.callee_text(source, r).split(".")[-1]) for r in calls],
+                         [(["make"], "make"), (["(expr)", "parse"], "parse"), (["t", "parse"], "parse")])
+
     def test_a_call_through_the_parent_or_the_instance_names_its_receiver(self):
         """`base.Run()`, `super.run()` and `this.run()` name the keyword they are written with, so an analyzer can
         tell a call through the parent (bound statically) from any other. Two are computed values, whose member keeps

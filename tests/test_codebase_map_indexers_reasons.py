@@ -5,6 +5,7 @@ no adapter reads is a declared gap, never a silent one. No indexer, no server, n
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -62,6 +63,40 @@ def test_a_rust_file_of_a_crate_whose_run_wrote_no_index_says_so(tmp_path):
     # Without what the run brought back, only the `mod` items speak.
     assert rust.missing(_index(tmp_path, ["src/lib.rs"]), ["src/orphan.rs", "src/used.rs"]) == {"src/orphan.rs": NO_MOD}
     assert rust.tasks(None) == {}
+
+
+FEATURES = ("pub fn first_newline(haystack: &[u8]) -> Option<usize> {\n"
+            "    #[cfg(feature = \"fast\")]\n    {\n        memchr::memchr(b'\\n', haystack)\n    }\n"
+            "    #[cfg(not(feature = \"fast\"))]\n    {\n        haystack.iter().position(|&b| b == b'\\n')\n    }\n}\n"
+            "#[cfg(any(unix, not(feature = \"fast\")))]\nfn other() { helper(); }\n"
+            "#[cfg(all(unix, not(feature = \"fast\")))]\nfn third() { helper(); }\n"
+            "#[cfg(target_endian = \"big\")]\nfn fourth() { helper(); }\n")
+
+
+def test_rust_code_a_cfg_leaves_out_says_so(tmp_path):
+    """rust-analyzer reads one configuration (`CONFIG`): every feature on, the host's target, no build script, so
+    no cfg one sets; it writes nothing of the code a `cfg` false there leaves out. sys-rust-features: the
+    `not(feature = "fast")` block; semver: `#[cfg(target_endian = "big")]` and tests/node/mod.rs, whose
+    `#![cfg(test_node_semver)]` only RUSTFLAGS sets; hoppscotch: `#[cfg(target_os = "macos")] mod macos;` and
+    tauri's `#[cfg(desktop)]`, set by its build script. A cfg rust-analyzer may set (`test`) decides nothing."""
+    _project(tmp_path, {"src/lib.rs": "mod node;\nmod plain;\n" + FEATURES
+                        + '#[cfg(target_os = "macos")]\nmod macos;\n#[cfg(desktop)]\nmod desktop;\n'
+                          "#[cfg(test)]\nmod checks;\n",
+                        "src/node.rs": "//! Compared with node-semver.\n#![cfg(test_node_semver)]\nuse x::Y;\n",
+                        "src/plain.rs": "", "src/macos.rs": "", "src/desktop.rs": "", "src/checks.rs": ""})
+    index = _index(tmp_path, ["src/lib.rs"])
+    absent = ["src/node.rs", "src/plain.rs", "src/macos.rs", "src/desktop.rs", "src/checks.rs"]
+    assert rust.missing(index, absent) == {
+        "src/node.rs": rust.CFG_OFF.format("test_node_semver"), "src/desktop.rs": rust.MOD_OFF.format("desktop"),
+        **({"src/macos.rs": rust.MOD_OFF.format('target_os = "macos"')} if sys.platform != "darwin" else {})}
+    cause = rust.unanswered(index)
+    assert cause(("src/lib.rs", 10, 17)) == rust.INACTIVE.format('not(feature = "fast")')  # haystack.iter
+    assert cause(("src/lib.rs", 6, 8)) is None  # memchr: the feature is on
+    assert cause(("src/lib.rs", 14, 13)) == (None if os.name == "posix" else  # `any`: unix holds on the host
+                                             rust.INACTIVE.format('any(unix, not(feature = "fast"))'))
+    assert cause(("src/lib.rs", 16, 13)) == rust.INACTIVE.format('all(unix, not(feature = "fast"))')  # `all`: false
+    assert cause(("src/lib.rs", 18, 14)) == (rust.INACTIVE.format('target_endian = "big"') if sys.byteorder == "little"
+                                            else None)
 
 
 def test_a_go_file_left_out_by_its_name_or_by_a_run_without_index_says_so(tmp_path, monkeypatch):
