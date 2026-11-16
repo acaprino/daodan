@@ -1,5 +1,5 @@
 {
- "source": "jvm-gradle-groovy-wrapper: gradle 9.9.1 on Temurin 17.0.21, eclipse-temurin (Ubuntu 24.04), recorded once in a Linux container",
+ "source": "jvm-gradle-groovy-wrapper: gradle 9.9.1 on Temurin 17.0.21, Modal's Debian (tests/modal_pytest.py), recorded once in a Linux container",
  "runs": [
   {
    "command": {
@@ -20,7 +20,7 @@
    },
    "result": {
     "returncode": 0,
-    "stdout": "\u001e{\"kind\":\"build\",\"root\":\"/work/jvm-gradle-groovy-wrapper\",\"name\":\"hello-groovy\",\"nested\":false,\"gradle\":\"9.9.1\",\"projects\":[{\"path\":\":\",\"dir\":\"/work/jvm-gradle-groovy-wrapper\",\"buildFile\":\"/work/jvm-gradle-groovy-wrapper/build.gradle\",\"buildFileExists\":true}]}\n\u001e{\"kind\":\"project\",\"build\":null,\"path\":\":\",\"buildFile\":\"/work/jvm-gradle-groovy-wrapper/build.gradle\",\"uses\":[],\"facts\":{\"java.sourceCompatibility\":\"17\",\"java.targetCompatibility\":\"17\"}}\n\nWelcome to Gradle 9.9.1.\n\nTo run a build, run gradle <task> ...\n\nTo see a list of available tasks, run gradle tasks\n\nTo see more detail about a task, run gradle help --task <task>\n\nTo see a list of command-line options, run gradle --help\n\nFor more detail on using Gradle, see https://docs.gradle.org/9.9.1/userguide/command_line_interface.html\n\nFor troubleshooting, visit https://help.gradle.org\n",
+    "stdout": "\u001e{\"kind\":\"build\",\"root\":\"/work/jvm-gradle-groovy-wrapper\",\"name\":\"hello-groovy\",\"nested\":false,\"gradle\":\"9.9.1\",\"projects\":[{\"path\":\":\",\"dir\":\"/work/jvm-gradle-groovy-wrapper\",\"buildFile\":\"/work/jvm-gradle-groovy-wrapper/build.gradle\",\"buildFileExists\":true}],\"repositories\":[]}\n\u001e{\"kind\":\"project\",\"build\":null,\"path\":\":\",\"buildFile\":\"/work/jvm-gradle-groovy-wrapper/build.gradle\",\"uses\":[],\"facts\":{\"java.sourceCompatibility\":\"17\",\"java.targetCompatibility\":\"17\"},\"repositories\":[\"https://repo.maven.apache.org/maven2/\",\"https://plugins.gradle.org/m2\"]}\n\nWelcome to Gradle 9.9.1.\n\nTo run a build, run gradle <task> ...\n\nTo see a list of available tasks, run gradle tasks\n\nTo see more detail about a task, run gradle help --task <task>\n\nTo see a list of command-line options, run gradle --help\n\nFor more detail on using Gradle, see https://docs.gradle.org/9.9.1/userguide/command_line_interface.html\n\nFor troubleshooting, visit https://help.gradle.org\n",
     "stderr": "",
     "root": "/work/jvm-gradle-groovy-wrapper"
    }
