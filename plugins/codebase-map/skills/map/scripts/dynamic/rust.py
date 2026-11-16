@@ -21,17 +21,17 @@ callee, the call site's position) in an unprivileged container (no ptrace, perf 
 `plan` reads the pre-map alone: `cargo test --workspace --no-fail-fast` at the root of each Cargo workspace,
 and of each crate outside one, whose crates hold a test (a `#[test]`-like attribute, or a file in `tests/`); the
 Rust a `rust-toolchain` file names, else Daodan's (`rust-version` is a minimum, never installed). `observe` is
-one container run (`IMAGE`). The preparation, with the registries: Rust, Valgrind unpacked, `cargo fetch` in each
-root. The execution, with no network: Cargo runs each test executable under Callgrind (its runner,
+one container run (`IMAGE`). The preparation, with the registries: Rust (preparation's rustc and cargo, and the
+standard library they compile against, `RUST_STD`), Valgrind unpacked, `cargo fetch` in each root. The
+execution, with no network: Cargo runs each test executable under Callgrind (its runner,
 `CARGO_TARGET_<triple>_RUNNER`, which `cargo test` applies to the executables it runs, never to build scripts),
 with line tables in every build (`ENV`), each root stopped after `LIMIT` seconds; Valgrind writes its trace
 when the process ends, a stopped one included. Then the traces are read in the container (`callgrind.symbolize`).
 
 A crate's root is the folder the pre-map names, `.` or the empty path for the project's. Not observed, beside
 what `callgrind.py` says: a doctest's calls (its code is in a doc comment, where no call expression is read); a
-closure that
-the standard library calls (its call site is there: the closure is entered with no site); a closure made a
-function pointer, which a shim of `core` enters (the site's callee is the shim, external).
+closure that the standard library calls (its call site is there: the closure is entered with no site); a closure
+made a function pointer, which a shim of `core` enters (the site's callee is the shim, external).
 """
 from __future__ import annotations
 
@@ -52,6 +52,11 @@ RUNNER, ARGV = "cargo test", ["cargo", "test", "--workspace", "--no-fail-fast"]
 ENV = {"CARGO_NET_OFFLINE": "true", "CARGO_TERM_COLOR": "never", "CARGO_PROFILE_DEV_DEBUG": "line-tables-only",
        "CARGO_PROFILE_TEST_DEBUG": "line-tables-only"}  # the execution's: Callgrind's columns need line tables
 RUNNER_VARIABLE = "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER"
+RUST_STD = ("https://static.rust-lang.org/dist/2026-10-15/rust-std-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
+            "109b074225bf5b9ea3820890876bfdf4ed161adbfaf94b2b4b5984c85ee5d958", "rust-std.tar.xz")  # of `preparation.RUST`
+STD_SETUP = (f"{{ mkdir -p {preparation.T}/x && tar -xJf {preparation.IN}/rust-std.tar.xz -C {preparation.T}/x"
+             f" && cp -R {preparation.T}/x/rust-std-*/rust-std-*/. {preparation.T}/rust/ && rm -rf {preparation.T}/x"
+             f" ; }} >&2 || echo 'DAODAN-MISSING rust-std@{preparation.NEEDS['rust']['version']}' >&2")
 RUSTUP_FILES = ("rust-toolchain", "rust-toolchain.toml")  # rustup reads the first where both are
 TEST = re.compile(r"#\[[\w:]*test\b")
 MEMORY = 6 * 2**30
@@ -120,7 +125,7 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
     chains = preparation.toolchains(planned.get("toolchains") or [])
     needs = preparation.setup(["rust"])  # Daodan's Rust runs the tests where no rustup file names one
     prepare = ["# dynamic-rust prepare", "set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}",
-               *needs["lines"], callgrind.SETUP, *chains["lines"], preparation.restore("cargo", roots)]
+               *needs["lines"], STD_SETUP, callgrind.SETUP, *chains["lines"], preparation.restore("cargo", roots)]
     runner = " ".join([callgrind.VALGRIND_BIN, *callgrind.OPTIONS])
     execute = ["# dynamic-rust execute", "set -u", *(f"export {key}={value}" for key, value in ENV.items()),
                f"export {RUNNER_VARIABLE}={shlex.quote(runner)}", f"OUT={OUT}", "mkdir -p $OUT",
@@ -130,7 +135,7 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
         execute += callgrind.timed(number, f"( cd {folder} && exec timeout -k 30 {LIMIT} {shlex.join(run['argv'])} )")
     execute += [f"  {line}" for line in callgrind.symbolize("$OUT")]
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "fi", "exit 0"]) + "\n",
-            {"files": [*needs["files"], *chains["files"]], "hosts": (*needs["hosts"], *chains["hosts"]),
+            {"files": [*needs["files"], RUST_STD, *chains["files"]], "hosts": (*needs["hosts"], *chains["hosts"]),
              "gaps": chains["gaps"]})
 
 

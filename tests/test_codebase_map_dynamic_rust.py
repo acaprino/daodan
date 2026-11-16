@@ -589,9 +589,13 @@ class ObserveTest(unittest.TestCase):
         carried = self.state / "containers" / prepare[prepare.index("--name") + 1] / "fs"
         self.assertEqual((carried / preparation.IN.lstrip("/") / "callgrind_sites.py").read_bytes(),
                          callgrind.READER.read_bytes())
-        for name in ("valgrind.deb", "pyelftools.whl"):
-            self.assertTrue((carried / preparation.IN.lstrip("/") / name).is_file())
+        for name in ("valgrind.deb", "pyelftools.whl", "rustc.tar.xz", "cargo.tar.xz", "rust-std.tar.xz"):
+            self.assertTrue((carried / preparation.IN.lstrip("/") / name).is_file(), name)
         self.assertEqual((carried / "work/src/lib.rs").read_text(encoding="utf-8"), SOURCE)
+        prepared = self.script("prepare")  # rustc and cargo alone compile nothing: the standard library beside them
+        self.assertIn(observer.STD_SETUP, prepared)
+        self.assertIn("rust-std-*/rust-std-*/.", observer.STD_SETUP)
+        self.assertLess(prepared.index("for c in rustc cargo"), prepared.index(observer.STD_SETUP))
 
     def test_a_rust_version_a_rustup_file_names_is_installed_by_the_preparation(self):
         self.play_run()
@@ -654,6 +658,30 @@ class ObserveTest(unittest.TestCase):
         self.assertEqual([gap["kind"] for gap in result["gaps"]], ["recorder_failed", "recorder_messages"])
         self.assertIn("elftools", result["gaps"][0]["detail"])
         self.assertIn("unhandled instruction", result["gaps"][1]["detail"])
+        self.assertNotIn("SEGV_ACCERR", result["gaps"][1]["detail"])
+
+    def test_a_valgrind_that_cannot_grow_the_main_stack_under_gvisor_names_the_cause(self):
+        """What a Modal Sandbox gives (measured on 16 November 2026): the traced `true` dies in ld.so."""
+        died = ("==24== \n==24== Process terminating with default action of signal 11 (SIGSEGV)\n"
+                "==24==  Bad permissions for mapped region at address 0x1FFEFFEFF0\n"
+                "==24==    at 0x4007A20: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)\n"
+                + "".join(f"==24==    by 0x{n:X}: ???\n" for n in range(1, 12)))
+        for kernel, named in (("4.19.0-gvisor\n", "gVisor (4.19.0-gvisor)"),  # Modal's
+                              ("4.4.0\n[    0.000000] Starting gVisor...\n", "gVisor (4.4.0)"),  # gVisor's own release
+                              ("6.8.0-48-generic\n[    0.000000] Linux version 6.8.0-48-generic\n", None)):
+            self.play_run(**{"recorder.code": "139\n", "recorder.log": died, "kernel": kernel, "tests-0.log": None,
+                             "tests-0.code": None, "calls.json": None, "sites.code": None})
+            [gap] = self.observe()["gaps"]
+            self.assertEqual(gap["kind"], "recorder_failed")
+            self.assertEqual("SEGV_ACCERR" in gap["detail"], named is not None)
+            if named:
+                self.assertIn(named, gap["detail"])
+                self.assertIn("Bad permissions for mapped region", gap["detail"])  # Valgrind's own words follow
+        self.assertIn("{ uname -r; dmesg | head -n 1; } > $OUT/kernel", self.script("execute"))
+        self.play_run(**{"kernel": "4.19.0-gvisor\n", "valgrind.log": died.split("\n", 1)[1]})
+        [gap] = self.observe()["gaps"]  # a program the tests start dies the same way
+        self.assertEqual(gap["kind"], "recorder_messages")
+        self.assertIn("cannot grow that stack", gap["detail"])
 
     def test_a_restore_that_fails_is_a_gap_and_the_run_goes_on(self):
         self.play("prepare", text="DAODAN-RESTORE-FAILED cargo .\nerror: failed to get `rand` as a dependency\n"

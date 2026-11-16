@@ -7,7 +7,14 @@ tracing (it runs the program in its own process), so an unprivileged container r
 the C library's symbols (`m_redir.c`), and Callgrind is not Memcheck. Valgrind is adopted as Ubuntu builds it
 for the image's release (`VALGRIND`: the image is Ubuntu 24.04), pinned by version and sha256, GPL-2.0-or-later,
 unpacked in the preparation and never installed in the system. Its cost: a run is tens of times slower, and its
-threads run one at a time.
+threads run one at a time. It maps a program's main stack down to one page below its arguments
+(initimg-linux.c, `setup_client_stack`) and grows it on a fault below only when the kernel reports SEGV_MAPERR,
+as Linux does (m_signals.c, `extend_stack_if_appropriate`); no option changes either. The gVisor of a Modal
+Sandbox reports SEGV_ACCERR there (`--trace-signals`, measured on 16 November 2026; gVisor's KVM platform does
+so for any write, pkg/sentry/platform/kvm/machine_amd64.go), and --main-stacksize, --max-stackframe,
+--aspace-minaddr or the stack's ulimit change nothing: a program dies at its start, in ld.so, once its main
+stack outgrows those pages, and `recorder_failed` and `gaps` say why (`_cause`). Modal's Functions (measured),
+Docker, Podman and Kiri (runc, Linux's semantics) report SEGV_MAPERR.
 
 Each traced process writes `callgrind.out.<pid>` (`OPTIONS`); after the tests `callgrind_sites.py`, in the
 container, turns them into call sites with their columns, which Callgrind does not write, by the objects' DWARF
@@ -58,6 +65,7 @@ REGISTRY = re.compile(r"/registry/src/[^/]+/([^/]+)-(\d+\.\d+\.\d+[^/]*)/")
 CHECKOUT = re.compile(r"/git/checkouts/([^/]+)-[0-9a-f]+/[^/]+/")
 OUTSIDE, NOT_READ, NOT_AT_CALL, AMBIGUOUS = ("made outside the project", "a file tree-sitter does not read",
                                              "not at a call expression", "more than one call at the position")
+ACCERR = "Bad permissions for mapped region"  # how Valgrind words a fatal SIGSEGV whose code is SEGV_ACCERR
 
 
 def inputs() -> dict:
@@ -70,7 +78,7 @@ def recorder(out: str) -> list[str]:
     """The execution's lines before the tests: Valgrind from its unpacked folder, and a traced `true` that says
     whether it runs here (`recorder.code`, `recorder.log`)."""
     return [f"export VALGRIND_LIB=$(dirname \"$(find {T}/valgrind -name callgrind-amd64-linux | head -n 1)\")",
-            f"mkdir -p {TRACES}",
+            f"mkdir -p {TRACES}", f"{{ uname -r; dmesg | head -n 1; }} > {out}/kernel 2>/dev/null",
             f"{VALGRIND_BIN} -q --tool=callgrind --vgdb=no --callgrind-out-file=/dev/null true"
             f" > {out}/recorder.log 2>&1",
             f"echo $? > {out}/recorder.code"]
@@ -91,20 +99,37 @@ def gaps(back: Path) -> list[dict]:
     if _text(back / "sites.code").strip() != "0":
         said = " | ".join(_text(back / "sites.log").strip().splitlines()[-6:])[-600:]
         out.append({"kind": "recorder_failed", "detail": f"the traces were not read, so no call is observed: {said}"})
-    said = [line.strip() for line in _text(back / "valgrind.log").splitlines() if line.strip()]
+    text = _text(back / "valgrind.log")
+    said = [line.strip() for line in text.splitlines() if line.strip()]
     if said:
         out.append({"kind": "recorder_messages",
                     "detail": f"Valgrind wrote {len(said)} lines, a process it could not run among the causes: "
-                              + " | ".join(said[:6])[:600]})
+                              + _cause(back, text) + " | ".join(said[:6])[:600]})
     return out
+
+
+def _cause(back: Path, said: str) -> str:
+    """The sentence that names why Valgrind stopped a program at its start, where its words and the kernel say it
+    (`uname -r` and the first line of dmesg, which gVisor fills): a fault below the main stack reported as
+    SEGV_ACCERR under gVisor (the module's docstring)."""
+    kernel = _text(back / "kernel")
+    if ACCERR not in said or "gvisor" not in kernel.lower():
+        return ""
+    return (f"under gVisor ({kernel.split(chr(10), 1)[0].strip()}) a fault below a program's main stack comes as "
+            "SEGV_ACCERR, where Linux says SEGV_MAPERR, so Valgrind cannot grow that stack and the program dies at "
+            "its start; Docker, Podman and Kiri (runc) run it: ")
 
 
 def recorder_failed(back: Path, state: str) -> dict | None:
     """The gap of a Valgrind that does not run here, None where it does."""
     if _text(back / "recorder.code").strip() == "0":
         return None
-    said = " | ".join(line.strip() for line in _text(back / "recorder.log").strip().splitlines()[-8:])[-600:]
-    return {"kind": "recorder_failed", "detail": f"Valgrind did not run here, so no test ran ({state}): {said}"}
+    text = _text(back / "recorder.log")
+    lines = [line.strip() for line in text.strip().splitlines()]  # from Valgrind's verdict, its backtrace after
+    start = next((n for n, line in enumerate(lines) if "Process terminating" in line), max(len(lines) - 8, 0))
+    said = " | ".join(lines[start:start + 8])[-600:]
+    return {"kind": "recorder_failed",
+            "detail": f"Valgrind did not run here, so no test ran ({state}): {_cause(back, text)}{said}"}
 
 
 def _text(path: Path) -> str:
