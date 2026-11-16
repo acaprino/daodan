@@ -30,6 +30,10 @@ PLAIN = diff_of("app/orders/pricing.go")
 SENSITIVE = diff_of("app/payments/gateway.go")
 
 
+SNAPSHOT = {"root": "/project", "target": "."}
+BOUND = {"candidate": dict(SNAPSHOT)}
+
+
 def compute(diff=PLAIN, shape="branch", kind="changeset", **extra):
     deeper = extra.pop("deeper", False)
     return review_roster.compute(shape, diff, None, None, deeper, kind, "r1", "standalone", **extra)
@@ -72,25 +76,31 @@ class RigorTest(unittest.TestCase):
         self.assertEqual(compute(rigor="deep", deeper=True)["rigor"], "deep")
 
     def test_a_technology_of_the_files_build_unit_adds_its_specialist(self):
-        technologies = {"units": [{"paths": ["."], "technologies": ["react"]},
+        technologies = {**SNAPSHOT, "units": [{"paths": ["."], "technologies": ["react"]},
                                   {"paths": ["desktop"], "technologies": ["tauri"]},
                                   {"paths": ["api"], "technologies": ["fastapi"]}]}
-        shell = compute(diff_of("desktop/ui/state.ts"), technologies=technologies)
+        shell = compute(diff_of("desktop/ui/state.ts"), technologies=technologies, context=BOUND)
         self.assertEqual(shell["signals"]["technologies"], ["tauri"])
         self.assertIn("senior-review:tauri-auditor", shell["roster"])
         self.assertNotIn("senior-review:react-auditor", shell["roster"])
-        self.assertIn("senior-review:react-auditor", compute(diff_of("web/hooks.ts"), technologies=technologies)["roster"])
-        api = compute(diff_of("api/routes.go"), technologies=technologies)
+        self.assertIn("senior-review:react-auditor", compute(diff_of("web/hooks.ts"), technologies=technologies, context=BOUND)["roster"])
+        api = compute(diff_of("api/routes.go"), technologies=technologies, context=BOUND)
         self.assertEqual((api["signals"]["technologies"], api["roster"]), (["fastapi"], review_roster.STANDARD_ROSTER))
         self.assertEqual(compute(diff_of("web/hooks.ts"))["signals"]["technologies"], [])
+        other = compute(diff_of("desktop/ui/state.ts"), technologies={**technologies, "root": "/elsewhere"}, context=BOUND)
+        self.assertEqual(other["signals"]["technologies"], [])
+        self.assertIn("technologies record is not of the candidate snapshot", " ".join(other["gaps"]))
 
     def test_python_and_stripe_add_their_specialists(self):
         python = compute(diff_of("app/orders/pricing.py"))
         self.assertEqual(python["roster"], review_roster.STANDARD_ROSTER + ["senior-review:python-auditor"])
         hook = compute(diff_of("api/hooks.go").replace("+x = 2", "+event = stripe.Webhook.construct_event(body, sig, key)"))
         self.assertIn("senior-review:stripe-auditor", hook["roster"])
-        units = {"units": [{"paths": ["."], "technologies": ["stripe"]}]}
-        self.assertIn("senior-review:stripe-auditor", compute(technologies=units)["roster"])
+        units = {**SNAPSHOT, "units": [{"paths": ["."], "technologies": ["stripe"]}]}
+        self.assertIn("senior-review:stripe-auditor", compute(technologies=units, context=BOUND)["roster"])
+        for text in ("+.row.stripe { background: #eee }", "+// zebra stripe rows", "+Add a Stripe section to the page"):
+            plain = compute(diff_of("web/table.go").replace("+x = 2", text))
+            self.assertNotIn("senior-review:stripe-auditor", plain["roster"], text)
 
     def test_a_tauri_test_or_workspace_path_adds_its_specialist(self):
         tauri = compute(diff_of("src-tauri/src/commands.rs"))
