@@ -1,0 +1,533 @@
+{
+ "cases": {
+  "run": 2,
+  "failed": {},
+  "seconds": {
+   "total": 1908.6,
+   "median": 954.3,
+   "slowest": [
+    [
+     "mix-real-tududi",
+     1350.9
+    ],
+    [
+     "real-app-full-stack-fastapi",
+     557.7
+    ]
+   ]
+  }
+ },
+ "languages": {
+  "javascript": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 1038,
+    "indexed": 1038
+   },
+   "sites": 134949,
+   "answered": {
+    "external": 49895,
+    "lexical": 1,
+    "observed": 2329,
+    "project-callable": 14378,
+    "project-value": 33856
+   },
+   "holes": {
+    "(() => Promise<{ enabled: boolean; email_enabled: boolean; }>) | ((token: any) = declares no such member: only execution knows it": 1,
+    "() => Promise<any> declares no such member: only execution knows it": 3,
+    "() => Promise<boolean> declares no such member: only execution knows it": 1,
+    "() => boolean declares no such member: only execution knows it": 11,
+    "(...args: any[]) => void declares no such member: only execution knows it": 4,
+    "(changes: any, project: any, action: any, projectPropagation: any) => Promise<vo declares no such member: only execution knows it": 2,
+    "(config: any, { requireHttps }?: { requireHttps?: boolean; }) => Promise<AxiosRe declares no such member: only execution knows it": 11,
+    "(email: any) => Promise<\"Please sign up with a permanent email address. Temporar declares no such member: only execution knows it": 1,
+    "(email: any) => Promise<any> declares no such member: only execution knows it": 2,
+    "(email: any, password: any, language: any) => Promise<{ message: string; }> declares no such member: only execution knows it": 1,
+    "(email: any, password: any, req: any) => Promise<{ user: { role: string; capabil declares no such member: only execution knows it": 3,
+    "(email: any, password: any, transaction?: any, { language }?: {}) => Promise<{ u declares no such member: only execution knows it": 2,
+    "(expectedHash: any, bindingToken: any) => boolean declares no such member: only execution knows it": 3,
+    "(id: any, attributes?: string[]) => Promise<any> declares no such member: only execution knows it": 5,
+    "(identityId: any, userId: any) => Promise<{ canUnlink: boolean; reason: string;  declares no such member: only execution knows it": 1,
+    "(ids: any) => Promise<any> declares no such member: only execution knows it": 2,
+    "(issuer: string) => Promise<Issuer<BaseClient>> declares no such member: only execution knows it": 4,
+    "(options?: csrfOptions) => RequestHandler<ParamsDictionary, any, any, qs.ParsedQ declares no such member: only execution knows it": 2,
+    "(providerSlug: any, callbackParams: any, bindingToken: any) => Promise<{ claims: declares no such member: only execution knows it": 4,
+    "(providerSlug: any, claims: any, req: any) => Promise<{ user: any; isNewUser: bo declares no such member: only execution knows it": 1,
+    "(providerSlug: any, linkMode?: boolean, userId?: any) => Promise<{ authUrl: any; declares no such member: only execution knows it": 2,
+    "(providerSlug: any, redirectUri?: any, { userId, codeVerifier }?: { userId?: any declares no such member: only execution knows it": 4,
+    "(req: any, res: any, user: any) => Promise<void> declares no such member: only execution knows it": 3,
+    "(resourceType: any, resourceUid: any) => Promise<any> declares no such member: only execution knows it": 5,
+    "(resourceType: any, resourceUid: any) => Promise<any[]> declares no such member: only execution knows it": 1,
+    "(resourceType: any, resourceUid: any) => Promise<boolean> declares no such member: only execution knows it": 2,
+    "(resourceType: any, resourceUid: any) => Promise<{ uid: any; user_id: any; name: declares no such member: only execution knows it": 3,
+    "(session: any) => Promise<any> declares no such member: only execution knows it": 1,
+    "(session: any) => Promise<{ user: { has_collaborators: boolean; onboarded_at: an declares no such member: only execution knows it": 1,
+    "(slug: any) => Promise<any> declares no such member: only execution knows it": 14,
+    "(state: any) => Promise<boolean> declares no such member: only execution knows it": 3,
+    "(state: any) => Promise<{ nonce: any; providerSlug: any; redirectUri: any; codeV declares no such member: only execution knows it": 4,
+    "(subscription: PushSubscription, payload?: string | Buffer<ArrayBufferLike>, opt declares no such member: only execution knows it": 4,
+    "(taskId: any, calendarId: any, options?: {}) => Promise<any> declares no such member: only execution knows it": 2,
+    "(token: any) => Promise<JWTPayload> declares no such member: only execution knows it": 11,
+    "(token: any) => Promise<any> declares no such member: only execution knows it": 1,
+    "(token: any) => Promise<{ member: any; issuedByUserId: any; }> declares no such member: only execution knows it": 1,
+    "(token: any, password: any) => Promise<any> declares no such member: only execution knows it": 1,
+    "(tokenValue: any) => Promise<any> declares no such member: only execution knows it": 2,
+    "(uid: any) => Promise<any> declares no such member: only execution knows it": 2,
+    "(url: URL, options?: RemoteJWKSetOptions) => RemoteJWKSet declares no such member: only execution knows it": 1,
+    "(url: any) => Promise<string> declares no such member: only execution knows it": 5,
+    "(user: any, verificationToken: any, { reminder, triggeredBy }?: { reminder?: boo declares no such member: only execution knows it": 1,
+    "(userId: any) => Promise<any> declares no such member: only execution knows it": 9,
+    "(userId: any) => Promise<any[]> declares no such member: only execution knows it": 1,
+    "(userId: any, resourceType: any, resourceUid: any) => Promise<any> declares no such member: only execution knows it": 3,
+    "(userId: any, resourceType: any, resourceUid: any) => any declares no such member: only execution knows it": 21,
+    "(where: any) => Promise<any> declares no such member: only execution knows it": 3,
+    "(where: any, attributes: any, status?: string) => Promise<any[]> declares no such member: only execution knows it": 3,
+    "({ to, subject, text, html, replyTo }: { to: any; subject: any; text: any; html: declares no such member: only execution knows it": 13,
+    "AxiosStatic declares no such member: only execution knows it": 52,
+    "BodyInit declares no such member: only execution knows it": 1,
+    "CellValue declares no such member: only execution knows it": 1,
+    "Error declares no such member: only execution knows it": 9,
+    "Event declares no such member: only execution knows it": 15,
+    "EventTarget declares no such member: only execution knows it": 2,
+    "Issuer<BaseClient>'s index signature: only execution knows the value": 1,
+    "MessageEvent<any> declares no such member: only execution knows it": 1,
+    "Model<any, any> declares no such member: only execution knows it": 2,
+    "NodeJS.ProcessEnv's index signature: only execution knows the value": 307,
+    "Number declares no such member: only execution knows it": 2,
+    "ObjectConstructor declares no such member: only execution knows it": 2,
+    "Partial<RawAxiosHeaders & { Server: AxiosHeaderValue; \"Content-Type\": AxiosHeade's index signature: only execution knows the value": 3,
+    "Record<string, ReactFlatConfig>'s index signature: only execution knows the value": 1,
+    "Request<ParamsDictionary, any, any, qs.ParsedQs, Record<string, any>> declares no such member: only execution knows it": 1,
+    "Request<{ attachmentUid: string; }, any, any, qs.ParsedQs, Record<string, any>> declares no such member: only execution knows it": 1,
+    "Request<{ taskUid: string; } & { attachmentUid: string; }, any, any, qs.ParsedQs declares no such member: only execution knows it": 1,
+    "Request<{ taskUid: string; }, any, any, qs.ParsedQs, Record<string, any>> declares no such member: only execution knows it": 1,
+    "Request<{ uid: string; }, any, any, qs.ParsedQs, Record<string, any>> declares no such member: only execution knows it": 1,
+    "Request<{ username: string; }, any, any, qs.ParsedQs, Record<string, any>> declares no such member: only execution knows it": 1,
+    "Request<{}, any, any, qs.ParsedQs, Record<string, any>> declares no such member: only execution knows it": 2,
+    "Sequelize declares no such member: only execution knows it": 3,
+    "Session & Partial<SessionData> declares no such member: only execution knows it": 2,
+    "String's index signature: only execution knows the value": 6,
+    "SyncStateRepository declares no such member: only execution knows it": 1,
+    "Transaction declares no such member: only execution knows it": 4,
+    "Window & typeof globalThis's index signature: only execution knows the value": 4,
+    "a member of a value of type any: only execution knows it": 32671,
+    "a member of an anonymous type, an object literal or an index signature another file declares: the index names it with a local of this file it defines nowhere": 410,
+    "call-result": 131,
+    "computed-callee": 2,
+    "dangling-local": 56,
+    "element": 20,
+    "no-occurrence": 12,
+    "string | Date declares no such member: only execution knows it": 3,
+    "string | URL declares no such member: only execution knows it": 1,
+    "string | number declares no such member: only execution knows it": 1,
+    "string | number | string[] declares no such member: only execution knows it": 2,
+    "super-call": 51,
+    "typeof Resolver's member has no declaration, the checker made it: the index names nothing there": 7,
+    "typeof import(\"@types/lusca\") declares no such member: only execution knows it": 2,
+    "typeof import(\"backend/services/logService\") declares no such member: only execution knows it": 2,
+    "typeof import(\"ical.js\") declares no such member: only execution knows it": 23,
+    "typeof import(\"openai\") declares no such member: only execution knows it": 10,
+    "undefined declares no such member: only execution knows it": 9,
+    "undefined-project-symbol": 5,
+    "{ (data: string | Buffer<ArrayBufferLike>, encrypted: string): Promise<boolean>; declares no such member: only execution knows it": 2,
+    "{ (hostname: string, family: number): Promise<LookupAddress>; (hostname: string, declares no such member: only execution knows it": 1,
+    "{ (input: URL | RequestInfo, init?: RequestInit): Promise<Response>; (input: str declares no such member: only execution knows it": 1,
+    "{ (options: string | URL | RequestOptions, callback?: (res: IncomingMessage) =>  declares no such member: only execution knows it": 1,
+    "{ <PayloadType = JWTPayload>(jwt: string | Uint8Array<ArrayBufferLike>, key: Key declares no such member: only execution knows it": 2,
+    "{ [k: string]: any; }'s index signature: only execution knows the value": 2,
+    "{ allowedOrigins: string[]; legacySqliteFiles: string[]; disableScheduler: boole declares no such member: only execution knows it": 1,
+    "{ attachments: any[]; } declares no such member: only execution knows it": 6,
+    "{ calendarId: any; userId: any; direction: any; dryRun: any; startTime: Date; ph declares no such member: only execution knows it": 18,
+    "{ created_task_ids: any[]; created_project_ids: any[]; created_area_ids: any[];  declares no such member: only execution knows it": 1,
+    "{ due_date: Date; } declares no such member: only execution knows it": 1,
+    "{ due_has_time: boolean; } declares no such member: only execution knows it": 1,
+    "{ getNoteUid: () => Promise<any>; setNoteUid(userId: any, input: any): Promise<s declares no such member: only execution knows it": 1,
+    "{ message_id: number; chat: { id: number; }; } declares no such member: only execution knows it": 1,
+    "{ name: any; priority: any; due_date: Date; defer_until: Date; status: any; note declares no such member: only execution knows it": 2,
+    "{ name: any; priority: any; status: any; note: any; recurrence_type: any; recurr declares no such member: only execution knows it": 10,
+    "{ name: string; description: string; priority: number; status: number; note: str declares no such member: only execution knows it": 1,
+    "{ name: string; } declares no such member: only execution knows it": 1,
+    "{ order: number; } declares no such member: only execution knows it": 2,
+    "{ parent_task_id?: any; } declares no such member: only execution knows it": 1,
+    "{ pathFor: (title: any) => string; title: any; slug: string; content: any; excer declares no such member: only execution knows it": 9,
+    "{ ranked: any[]; suggested_total: any; inbox: any; inbox_count: any; } declares no such member: only execution knows it": 5,
+    "{ reminder_sent_at: Date; } declares no such member: only execution knows it": 1,
+    "{ row_number: any; index: any; level: any; action: string; uid: string; existing declares no such member: only execution knows it": 1,
+    "{ slug: string; }'s member has no declaration, the checker made it: the index names nothing there": 1,
+    "{ start_date_at?: undefined; start_has_time?: undefined; } | { start_date_at: Da declares no such member: only execution knows it": 3,
+    "{ success: boolean; } declares no such member: only execution knows it": 1,
+    "{ superadmin: boolean; } declares no such member: only execution knows it": 1,
+    "{ to: any; subject: any; text: any; html: any; replyTo: any; }'s member has no declaration, the checker made it: the index names nothing there": 6,
+    "{ type: StringDataType; allowNull: boolean; unique: boolean; set(value: any): vo declares no such member: only execution knows it": 1,
+    "{ type: TextDataTypeConstructor; allowNull: boolean; defaultValue: any; get(): a declares no such member: only execution knows it": 1,
+    "{ type: TextDataTypeConstructor; allowNull: boolean; get(): any; set(value: any) declares no such member: only execution knows it": 11,
+    "{ uid: any; name: any; note: any; due_date: any; due_has_time: boolean; defer_un declares no such member: only execution knows it": 2,
+    "{ uid: string; } & { relationUid: string; }'s member has no declaration, the checker made it: the index names nothing there": 1,
+    "{ uid: string; }'s member has no declaration, the checker made it: the index names nothing there": 25,
+    "{ user: { role: string; capabilities: any; uid: any; email: any; name: any; surn declares no such member: only execution knows it": 1,
+    "{ username: string; }'s member has no declaration, the checker made it: the index names nothing there": 1,
+    "{ version: string; format: number; exported_at: string; user: { uid: any; email: declares no such member: only execution knows it": 2,
+    "{} declares no such member: only execution knows it": 325
+   },
+   "share": 0.7444
+  },
+  "python": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 42,
+    "indexed": 42
+   },
+   "sites": 2497,
+   "answered": {
+    "external": 1005,
+    "project-callable": 316,
+    "project-value": 1009
+   },
+   "holes": {
+    "dangling-local": 4,
+    "no-occurrence": 98,
+    "undefined-project-symbol": 65
+   },
+   "share": 0.9331
+  },
+  "stylesheet": {
+   "cases": 2,
+   "states": {
+    "fresh": 2
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 1822,
+    "indexed": 1822
+   },
+   "sites": 38871,
+   "answered": {
+    "external": 37835,
+    "namespace": 31,
+    "project-value": 482
+   },
+   "holes": {
+    "call": 176,
+    "css-in-js": 24,
+    "ejs": 4,
+    "ejs-glued": 5,
+    "element-access": 5,
+    "no-font-face": 28,
+    "no-rule": 163,
+    "parameter": 72,
+    "property": 37,
+    "template": 2,
+    "undeclared": 3,
+    "unresolved-import": 3,
+    "variable": 1
+   },
+   "share": 0.9865
+  },
+  "typescript": {
+   "cases": 2,
+   "states": {
+    "fresh": 2
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 759,
+    "indexed": 759
+   },
+   "sites": 82243,
+   "answered": {
+    "external": 29489,
+    "observed": 777,
+    "project-callable": 11602,
+    "project-value": 37860
+   },
+   "holes": {
+    "AnyData's index signature: only execution knows the value": 10,
+    "Client's member has no declaration, the checker made it: the index names nothing there": 23,
+    "Event & Record<\"clientY\", unknown>'s member has no declaration, the checker made it: the index names nothing there": 2,
+    "FireFunction & FireObject's member has no declaration, the checker made it: the index names nothing there": 1,
+    "NodeJS.ProcessEnv's index signature: only execution knows the value": 55,
+    "React.SyntheticEvent<HTMLInputElement | HTMLTextAreaElement, Event> & Record<\"ke's member has no declaration, the checker made it: the index names nothing there": 2,
+    "Record<CalloutType, CalloutConfig>'s member has no declaration, the checker made it: the index names nothing there": 2,
+    "Record<TaskStatusString, { label: string; Icon: React.ComponentType<React.SVGPro's member has no declaration, the checker made it: the index names nothing there": 1,
+    "Record<string, number>'s index signature: only execution knows the value": 1,
+    "Record<string, string>'s index signature: only execution knows the value": 17,
+    "Record<string, unknown>'s index signature: only execution knows the value": 8,
+    "SyntheticListenerMap's index signature: only execution knows the value": 3,
+    "a member of a value of type any: only execution knows it": 1968,
+    "a member of an anonymous type, an object literal or an index signature another file declares: the index names it with a local of this file it defines nowhere": 309,
+    "call-result": 19,
+    "computed-callee": 7,
+    "dangling-local": 18,
+    "dynamic-import": 38,
+    "element": 7,
+    "no-occurrence": 4,
+    "no-position": 1,
+    "readonly [\"favorites\", \"projects\", \"areas\", \"goals\", \"notes\", \"tags\", \"people\", 's member has no declaration, the checker made it: the index names nothing there": 1,
+    "readonly [{ readonly key: \"inbox.captureThought\"; readonly fallback: \"Capture a 's member has no declaration, the checker made it: the index names nothing there": 1,
+    "super-call": 13,
+    "{ [x: string]: string | number; }'s index signature: only execution knows the value": 4
+   },
+   "share": 0.9694
+  }
+ },
+ "missing": [],
+ "no_analyzer": {},
+ "premap": {
+  "languages": {
+   "given": 2,
+   "not_given": 0,
+   "found": 16,
+   "expected": 16,
+   "extra": 13,
+   "wrong": 0
+  },
+  "languages.files": {
+   "given": 0,
+   "not_given": 2,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "excluded": {
+   "given": 2,
+   "not_given": 0,
+   "found": 43,
+   "expected": 53,
+   "extra": 14,
+   "wrong": 1
+  },
+  "units": {
+   "given": 2,
+   "not_given": 0,
+   "found": 6,
+   "expected": 6,
+   "extra": 2,
+   "wrong": 0
+  },
+  "units.depends_on": {
+   "given": 2,
+   "not_given": 0,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.source_roots": {
+   "given": 0,
+   "not_given": 2,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.config": {
+   "given": 2,
+   "not_given": 0,
+   "found": 3,
+   "expected": 13,
+   "extra": 0,
+   "wrong": 1
+  },
+  "workspace": {
+   "given": 2,
+   "not_given": 0,
+   "found": 1,
+   "expected": 2,
+   "extra": 0,
+   "wrong": 1
+  },
+  "workspace.members": {
+   "given": 1,
+   "not_given": 1,
+   "found": 3,
+   "expected": 3,
+   "extra": 0,
+   "wrong": 0
+  },
+  "toolchains": {
+   "given": 2,
+   "not_given": 0,
+   "found": 7,
+   "expected": 19,
+   "extra": 2,
+   "wrong": 0
+  },
+  "dependencies": {
+   "given": 0,
+   "not_given": 2,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "frameworks": {
+   "given": 0,
+   "not_given": 2,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "services": {
+   "given": 1,
+   "not_given": 1,
+   "found": 1,
+   "expected": 10,
+   "extra": 0,
+   "wrong": 0
+  },
+  "needs": {
+   "given": 0,
+   "not_given": 2,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  }
+ },
+ "gaps": [
+  {
+   "step": "scan",
+   "kind": "model_failed",
+   "count": 5,
+   "examples": [
+    "mix-real-tududi: docker-compose.yml: buildkit: time=\"2026-11-16T17:16:13Z\" level=warning msg=\"The \\\"DB_PASSWORD\\\" variable is not set. Defaulting to a blank string.\"\nerror while interpolating services.db.environment.POSTGRES_PASSWORD: required variable DB_PASSWORD is missing a value: set DB_PASSWORD in .env",
+    "real-app-full-stack-fastapi: .github/workflows/deploy-docker-compose.yml#jobs.deploy.steps.3: .github/workflows/deploy-docker-compose.yml#jobs.deploy.steps.3: docker compose config in .: set\nerror while interpolating services.backend.environment.PROJECT_NAME: required variable PROJECT_NAME is missing a value: Variable not set\nerror while interpolating services.backend.environment.SECRET_KEY: required variable SECRET_KEY is missing a value: Variable not set\nerror while interpolating services.db.environment.[]: required variable POSTGRES_PASSWORD is missing a value: Variable not set",
+    "real-app-full-stack-fastapi: .github/workflows/test-backend.yml#jobs.test-backend.steps.4: .github/workflows/test-backend.yml#jobs.test-backend.steps.4: docker compose config in .: set\nerror while interpolating services.backend.environment.PROJECT_NAME: required variable PROJECT_NAME is missing a value: Variable not set\nerror while interpolating services.backend.environment.SECRET_KEY: required variable SECRET_KEY is missing a value: Variable not set\nerror while interpolating services.db.environment.[]: required variable POSTGRES_PASSWORD is missing a value: Variable not set"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "no_analyzer",
+   "count": 3,
+   "examples": [
+    "mix-real-tududi: 10 Shell files and no analyzer lists the language: their code is in no graph",
+    "real-app-full-stack-fastapi: 1 Mako files and no analyzer lists the language: their code is in no graph",
+    "real-app-full-stack-fastapi: 8 Shell files and no analyzer lists the language: their code is in no graph"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_partial",
+   "count": 1,
+   "examples": [
+    "real-app-full-stack-fastapi: .: npm query answered without the lockfile: no workspace member before an install"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "not_executed",
+   "count": 1,
+   "examples": [
+    "mix-real-tududi: package.json: install scripts are not run (@scarf/scarf, @swc/core, bcrypt, core-js-pure, fsevents): what they generate is unknown"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "ownership_ambiguous",
+   "count": 1,
+   "examples": [
+    "real-app-full-stack-fastapi: .: Directory scope cannot distinguish build ownership: fastapi-full-stack-template, real-app-full-stack-fastapi"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "toolchain_unavailable",
+   "count": 1,
+   "examples": [
+    "real-app-full-stack-fastapi: backend/pyproject.toml: python >=3.14,<4.0: a range, not a version to install"
+   ]
+  }
+ ],
+ "containers": {
+  "runs": 34,
+  "seconds": 1148.5,
+  "phases": {
+   "ci_step": {
+    "runs": 4,
+    "seconds": 58.0
+   },
+   "execute": {
+    "runs": 15,
+    "seconds": 746.3
+   },
+   "prepare": {
+    "runs": 13,
+    "seconds": 332.9
+   },
+   "service": {
+    "runs": 2,
+    "seconds": 11.3
+   }
+  },
+  "not_zero": [
+   {
+    "phase": "service",
+    "image": "postgres:16-alpine",
+    "outcome": "ready",
+    "exit_code": null,
+    "cause": null,
+    "count": 2,
+    "cases": [
+     "mix-real-tududi"
+    ]
+   },
+   {
+    "phase": "ci_step",
+    "image": "",
+    "outcome": "exited",
+    "exit_code": 1,
+    "cause": "it exited with code 1:  | For further information visit https://errors.pydantic.dev/2.13/v/missing | FIRST_SUPERUSER | Field required [type=missing, input_value={}, input_type=dict] | For further information visit https://errors.pydantic.dev/2.13/v/missing | FIRST_SUPERUSER_PASSWORD | Field required [type=missing, input_value={}, input_type=dict] | For further information visit https://errors.pydantic.dev/2.13/v/missing",
+    "count": 1,
+    "cases": [
+     "real-app-full-stack-fastapi"
+    ]
+   }
+  ]
+ },
+ "by_case": {
+  "mix-real-tududi": {
+   "seconds": 1350.9,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 34490
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 374
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 2392
+    }
+   }
+  },
+  "real-app-full-stack-fastapi": {
+   "seconds": 557.7,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 167
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 149
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 123
+    }
+   }
+  }
+ }
+}

@@ -19,6 +19,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import uuid
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -506,6 +507,37 @@ def test_an_observer_s_runs_get_the_steps_before_their_tests_and_a_gap_for_each_
     assert (gap["kind"], gap["path"]) == ("ci_step_not_run", "ci.yml#jobs.t.steps.4")
     assert "Cache" in gap["detail"] and "actions/cache@v4" in gap["detail"]
     assert dynamic.ci_steps({}, [{"root": ".", "runner": "go"}]) == {"steps": [], "gaps": []}
+
+
+def test_on_the_host_the_readers_start_no_program_and_run_nothing_of_the_project(tmp_path):
+    """AGENTS.md's rule: on the host Daodan reads the project's CI, its scripts and its compose files as text, and
+    Compose, Renovate and its YAML library run in the container (the runner's commands). Each file here leaves a
+    mark if run; with every way to start a program refused, the reading states its facts and no mark appears."""
+    mark = tmp_path / "mark"
+    leave = f'touch "{mark.as_posix()}"'
+    files = {"package.json": json.dumps({"scripts": {"pretest": "bash scripts/ci.sh", "test": "jest"}}),
+             "scripts/ci.sh": f"#!/bin/sh\n{leave}\ndocker compose up -d db\n", ".github/workflows/ci.yml": WORKFLOW}
+    workflow = {"jobs": {"test": {"steps": [{"run": "bash scripts/ci.sh"}, {"run": "npm test"}]}}}
+    config = {"services": {"db": {"image": "postgres:16", "healthcheck": {"test": ["CMD-SHELL", leave]},
+                                  "command": ["sh", "-c", leave]}}}
+    refused = mock.Mock(side_effect=AssertionError("a program started on the host"))
+    with context_of(tmp_path / "p", files) as context, mock.patch.object(subprocess, "run", refused), \
+            mock.patch.object(subprocess, "Popen", refused), mock.patch.object(os, "system", refused):
+        context.stated = {"tests": [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"}]}
+        commands = renovate.commands(context)
+        report = {"repositories": {"local": {"packageFiles": {}}}}
+        out = renovate.read(context, commands, [{"returncode": 0, "stdout": json.dumps(report), "stderr": ""}, {
+            "returncode": 0, "stdout": f".github/workflows/ci.yml\n{json.dumps(workflow)}\n", "stderr": ""}])
+        context.stated = {**context.stated, **out["facts"]}
+        described = compose.commands(context)
+        services = compose.read(context, described, [{"returncode": 0, "stdout": json.dumps(config), "stderr": "",
+                                                      "root": "/work"}] * len(described))["facts"]["services"]
+        planned = dynamic.services({"services": services}), dynamic.ci_steps(out["facts"], context.stated["tests"])
+    assert {item["declared_in"] for item in out["facts"]["compose"]} == {"scripts/ci.sh"}
+    assert all(item["network"] == "none" for item in [*commands, *described])  # what the container runs
+    assert planned[0]["services"][0]["args"][:2] == ["--health-cmd", leave]  # the engine runs it, in the service
+    assert [step["run"] for step in planned[1]["steps"]] == ["bash scripts/ci.sh"]
+    assert not mark.exists() and refused.call_count == 0
 
 
 def test_a_command_source_reads_what_the_sources_before_it_state(tmp_path):
@@ -1218,28 +1250,32 @@ print(json.dumps(said))
 
 @contextlib.contextmanager
 def the_driver():
-    """The benchmark driver, its volume's `commit` sending what a test wrote under /results (the driver's
-    function holds the volume there, a test does not); this run's scratch folder removed afterwards, never another
-    run's: Docker's binaries stay, as the driver keeps them."""
+    """The benchmark driver with a scratch folder of this test's own (`SCRATCH`), so tests that run at once (`-n`)
+    share none; its volume's `commit` sends what the test wrote there, and Docker's binaries (the driver's function
+    holds the volume at /results, a test does not). The folder is removed afterwards; the binaries stay, as the
+    driver keeps them."""
     sys.path.insert(0, str(HERE.parent / "benchmarks/project-model"))
     import modal_pipeline
     volume, sent = modal_pipeline.volume, set()
+    own = f"{modal_pipeline.SCRATCH}/test-{uuid.uuid4().hex[:12]}"
+    bundle = f"project-model/{Path(modal_pipeline.DOCKER[0]).name}"
 
     def commit():
         root = Path("/results")
-        with volume.batch_upload(force=True) as batch:
-            for path in sorted(root.rglob("*")):
-                if path.is_file():
-                    sent.add("/" + path.relative_to(root).as_posix())
-                    batch.put_file(str(path), "/" + path.relative_to(root).as_posix())
+        new = [rel for rel in (path.relative_to(root).as_posix() for path in sorted(root.rglob("*")) if path.is_file())
+               if rel not in sent and (rel.startswith(own + "/") or rel == bundle)]
+        if new:
+            with volume.batch_upload(force=True) as batch:
+                for rel in new:
+                    batch.put_file(str(root / rel), "/" + rel)
+            sent.update(new)
 
     try:
-        with mock.patch.object(volume, "commit", commit):
+        with mock.patch.object(volume, "commit", commit), mock.patch.object(modal_pipeline, "SCRATCH", own):
             yield modal_pipeline
     finally:
-        scratch = f"/{modal_pipeline.SCRATCH}/"
-        for folder in sorted({scratch + path[len(scratch):].split("/")[0] for path in sent if path.startswith(scratch)}):
-            volume.remove_file(folder, recursive=True)
+        if any(rel.startswith(own + "/") for rel in sent):
+            volume.remove_file("/" + own, recursive=True)
 
 
 @pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")

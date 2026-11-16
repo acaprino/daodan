@@ -21,7 +21,7 @@ same image, pinned by the same digest:
 
 A family's fixtures run in groups of `--chunk` (4), each group in a function call of its own; each real repository (its clone from the archive `modal_native.py
 prepare` keeps on the volume) has its own. Per case the result holds the pre-map's score against
-`expected.json`, each source's state, the gaps, each step's result, the events by kind and the seconds.
+`expected.json`, each source's state, the gaps, each step's result, the dynamic step's gaps, the events by kind and the seconds.
 
     python -m modal run benchmarks/project-model/modal_pipeline.py --cases js-npm-single,sys-meson --out OUT.json
     python -m modal run benchmarks/project-model/modal_pipeline.py --cases js,py,jvm,sys,mix,real --out OUT.json
@@ -421,10 +421,13 @@ def run_cases(names: list) -> dict:
             manifest = Path("/runs") / name / "manifest.sqlite"
             shutil.rmtree(manifest.parent, ignore_errors=True)
             snapshot.write_snapshot(project, manifest)
-            seen, clock = [], {}
+            seen, clock, said = [], {}, []
 
-            def listen(event, seen=seen, clock=clock, started=started):
+            def listen(event, seen=seen, clock=clock, said=said, started=started):
                 seen.append(event["kind"])
+                if event["kind"] == "gap" and event["step"] == "dynamic":  # its gaps: no record keeps them
+                    gap = (event.get("data") or {}).get("gap") or {}
+                    said.append({key: gap[key] for key in ("kind", "path", "name", "image", "detail") if key in gap})
                 if event["kind"].startswith("step."):
                     clock.setdefault(event["step"], []).append(round(time.monotonic() - started, 1))
 
@@ -435,10 +438,12 @@ def run_cases(names: list) -> dict:
                     for line in file.read_text(encoding="utf-8").splitlines() if line.strip()]
             out[name] = {"premap": scorer.score(expected, record), "sources": record["sources"],
                          "gaps": record["gaps"], "units": len(record["units"]), "toolchains": record.get("toolchains", []),
-                         "steps": json.loads(json.dumps(steps, default=str)),
+                         "steps": json.loads(json.dumps(steps, default=str)), "dynamic_gaps": said,
                          "events": dict(collections.Counter(seen)), "step_seconds": clock,
-                         "containers": [{key: run.get(key) for key in ("phase", "image", "outcome", "exit_code",
-                                                                        "duration_seconds", "cause")} for run in runs],
+                         "containers": [{**{key: run.get(key) for key in ("phase", "image", "outcome", "exit_code",
+                                                                          "duration_seconds", "cause")},
+                                         **{key: run[key] for key in ("name", "declared_in") if key in run}}
+                                        for run in runs],
                          "logs": {file.relative_to(manifest.parent).as_posix():
                                   file.read_text(encoding="utf-8", errors="replace")[-3000:]
                                   for pattern in ("engine-pass*.log", "premap-runs/*/prepare.log",
