@@ -110,7 +110,7 @@ def brief_case(name: str, case: dict, archive: bytes | None, rules: str, links: 
              for cap in CAPS for holders in HOLDERS}
     result = {"case": name, "seconds": round(time.time() - started, 1),
               "externals": [{k: e[k] for k in ("id", "name", "from", "paths")} for e in value["externals"]],
-              "stack_analyser": value["stack_analyser"], "entries": value["entries"], "stores": value["stores"],
+              "entries": value["entries"], "stores": value["stores"],
               "groups": len(value["groups"]), "alone": len(value["alone"]), "sizes": sizes}
     _save(tag, f"brief-{name}.json", result)
     volume.commit()
@@ -324,7 +324,7 @@ def brief(phazly_tar: str = "", phazly_links: str = "", cases: str = "phazly,pol
             continue
         (RESULTS / f"brief-{result['case']}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n",
                                                               encoding="utf-8")
-        print(result["case"], len(result["externals"]), "externals", result["stack_analyser"].get("status"),
+        print(result["case"], len(result["externals"]), "externals",
               result["groups"], "groups", result["sizes"])
 
 

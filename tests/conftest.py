@@ -13,7 +13,6 @@ import pytest
 if not any(name.startswith("DAODAN_") and name.endswith("_SMOKE") and value == "1"
            for name, value in os.environ.items()):
     os.environ.setdefault("DAODAN_CONTAINER", "off")
-os.environ.setdefault("DAODAN_STACK", "off")  # the stack step installs and runs no stack-analyser in the suites
 
 
 @pytest.fixture(scope="session", autouse=True)

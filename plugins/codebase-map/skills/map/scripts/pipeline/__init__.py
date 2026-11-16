@@ -7,7 +7,7 @@ snapshot is the pipeline's input; the flows read the complete graph after it.
 1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
    commands run in Daodan's container (`premap.container_runner`).
 2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
-   signs and stack-analyser (`technologies.ensure`). `DAODAN_STACK=off` leaves stack-analyser out.
+   signs (`technologies.ensure`).
 3. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
 4. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
@@ -95,14 +95,8 @@ class Stack:
 
     @staticmethod
     def run(context: Context) -> dict:
-        import os
         import technologies
-        record = technologies.ensure(context.manifest, tool=os.environ.get("DAODAN_STACK") != "off")
-        tool = record["stack_analyser"]
-        if tool["status"] != "ok":
-            detail = f"stack-analyser did not answer ({tool.get('reason') or tool['status']}): the registry's signs only"
-            context.bus.emit("gap", detail, step=Stack.NAME, gap={"kind": "stack_analyser_" + tool["status"],
-                                                                   "detail": detail})
+        record = technologies.ensure(context.manifest)
         return {"technologies": len(record["technologies"]), "units": len(record["units"]),
                 "path": str(technologies.path(context.manifest))}
 

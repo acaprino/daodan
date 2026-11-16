@@ -130,10 +130,10 @@ def _groups(links: dict) -> tuple[list[dict], list[str]]:
     return groups, [e for e in entries if not touched[e] & shared]
 
 
-def _externals(graph: dict, record: dict) -> tuple[list[dict], dict]:
-    """The stack step's technologies and the external modules of the graph, by id; and stack-analyser's status."""
+def _externals(graph: dict, record: dict) -> list[dict]:
+    """The stack step's technologies and the external modules of the graph, by id."""
     out = {found["id"]: {"id": found["id"], "name": found["name"], "kind": found["kind"],
-                         "type": found["type"] or "altro", "from": found["from"],
+                         "type": found["type"] or "altro", "from": ["registry"],
                          "paths": sorted({s["path"] for s in found["signs"] if s["path"]})}
            for found in record["technologies"]}
     for module in graph["modules"]:
@@ -143,7 +143,7 @@ def _externals(graph: dict, record: dict) -> tuple[list[dict], dict]:
                                    "paths": sorted({str(e.get("path") if isinstance(e, dict) else e).split("#")[0]
                                                     for e in module.get("evidence", [])})})
             out[ident]["from"] = sorted(set(out[ident]["from"]) | {"modules"})
-    return sorted(out.values(), key=lambda e: system_map.key(e["name"])), record["stack_analyser"]
+    return sorted(out.values(), key=lambda e: system_map.key(e["name"]))
 
 
 def _text(value: dict, cap: int, holders: int) -> tuple[str, int]:
@@ -197,8 +197,8 @@ def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, holders: int = H
         files = sorted(dict(store.iter_file_headers_only()))
         source = flows.Source(store)
         texts = {rel: source.lines(rel) or [] for rel in files}
-    record = technologies.ensure(manifest, tool=True)
-    externals, stack = _externals(graph, record)
+    record = technologies.ensure(manifest)
+    externals = _externals(graph, record)
     known = {s["value"] for e in record["technologies"] for s in e["signs"] if s["sign"] == "package"}
     other = {}
     for module in graph["modules"]:
@@ -221,7 +221,7 @@ def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, holders: int = H
              "directories": dict(sorted(Counter(f.split("/", 1)[0] if "/" in f else "." for f in files).items())),
              "entries": len({e["symbol"] for e in links["entries"]}), "stores": len(links["stores"]),
              "routes": links["routes"], "links": dict(sorted(Counter(e["origin"] for e in links["edges"]).items())),
-             "externals": externals, "stack_analyser": stack, "other_dependencies": other, "runtime_files": runtime,
+             "externals": externals, "other_dependencies": other, "runtime_files": runtime,
              "declared": [d for rel in runtime for d in _declared(rel, texts[rel])],
              "groups": groups, "alone": alone,
              "confirmed": [n["name"] for n in (system or {}).get("nodes", []) if n["status"] == "confirmed"],

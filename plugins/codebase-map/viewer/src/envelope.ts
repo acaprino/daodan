@@ -12,7 +12,7 @@ export type Entity = {
   technologies?: string[];
 };
 // A framework, library, tool or service the stack step recognized, with the files that show it.
-export type Technology = { id: string; name: string; type: string; from: string[]; paths: string[] };
+export type Technology = { id: string; name: string; type: string; paths: string[] };
 export type Relation = {
   ref: string; kind: string; source: string; target: string; status: string;
   counts?: Record<string, number>; evidence: Evidence[];

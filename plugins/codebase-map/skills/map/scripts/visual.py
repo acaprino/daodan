@@ -209,7 +209,7 @@ def build_envelope(run_dir: Path) -> dict:
         "memberships": sorted(memberships, key=lambda item: (item["view"], item["group"], item["member"])),
         "gaps": gaps,
         "flows": envelope_flows,
-        "technologies": [{"id": item["id"], "name": item["name"], "type": item["type"] or "altro", "from": item["from"],
+        "technologies": [{"id": item["id"], "name": item["name"], "type": item["type"] or "altro",
                           "paths": sorted({sign["path"] for sign in item["signs"] if sign["path"]})[:LIMIT]}
                          for item in stack["technologies"]],
     }
