@@ -40,7 +40,9 @@
 | TypeScript/type contracts | `senior-review:typescript-auditor` |
 | Tauri desktop shell | `senior-review:tauri-auditor` |
 | Browser, PWA and mobile compatibility | no platform specialist beyond Tauri exists; record activation evidence and declare the gap |
-| Python / dependencies | `senior-review:dependency-auditor` for manifests/lockfiles; no Python-specific specialist exists; a declared gap |
+| Python semantics | `senior-review:python-auditor` |
+| Stripe payments and webhooks | `senior-review:stripe-auditor` |
+| Dependencies | `senior-review:dependency-auditor` for manifests/lockfiles |
 
 ### Reviewer prompt template (context-aware)
 

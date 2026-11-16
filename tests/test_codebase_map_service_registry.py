@@ -140,7 +140,11 @@ class RecognizeTests(unittest.TestCase):
             subprocess.run(command, cwd=project, check=True, capture_output=True)
         manifest = cls.work / "snapshot/manifest.sqlite"
         snapshot.main(["write", str(project), "--out", str(manifest), "--no-engine", "--no-index"])
+        cls.manifest = manifest
         cls.found = {r["id"]: r for r in service_registry.recognize(manifest)}
+        import technologies
+        cls.record = technologies.ensure(manifest)
+        cls.units = {u["name"]: u for u in cls.record["units"]}
 
     @classmethod
     def tearDownClass(cls):
@@ -161,3 +165,26 @@ class RecognizeTests(unittest.TestCase):
 
     def test_a_package_of_the_project_is_not_external(self):
         self.assertNotIn("resend", self.found)
+
+    def test_a_unit_holds_the_technologies_its_files_show(self):
+        self.assertEqual(self.units["web"]["paths"], ["web"])
+        self.assertEqual(self.units["web"]["technologies"], ["nodejs", "react", "stripe"])
+        self.assertEqual(self.units["resend"]["technologies"], ["nodejs"])
+        self.assertTrue({"docker", "fastapi", "stripe"} <= set(self.units["root"]["technologies"]))
+        self.assertNotIn("react", self.units["root"]["technologies"])
+
+    def test_the_record_is_fresh_until_the_snapshot_changes(self):
+        import technologies
+        self.assertEqual(technologies.state(self.manifest), "fresh")
+        self.assertEqual(technologies.ensure(self.manifest), self.record)
+
+    def test_a_service_of_the_premap_is_a_sign_at_the_file_declaring_it(self):
+        import service_registry
+        ensure, workflow = service_registry.premap.ensure, ".github/workflows/ci.yml"
+        service_registry.premap.ensure = lambda manifest: {"services": [
+            {"name": "db", "image": "postgres:16-alpine", "declared_in": workflow + "#jobs.test.services.db"}]}
+        try:
+            found = {r["id"]: r for r in service_registry.recognize(self.manifest)}
+        finally:
+            service_registry.premap.ensure = ensure
+        self.assertEqual(found["postgresql"]["signs"], [{"sign": "package", "value": "postgres", "path": workflow, "line": None}])

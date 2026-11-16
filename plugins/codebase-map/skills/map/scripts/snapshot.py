@@ -16,6 +16,7 @@ Subcommands:
     scope <target>
         Count what a run would analyze and name what its perimeter leaves out. Parses nothing.
     files <manifest> --out <FILES.json>
+    technologies <manifest> --out <TECHNOLOGIES.json>
         List the snapshot inventory: path, sha256 of the bytes, size, lines, language.
     write <target> --out <manifest.json> [--reuse <previous.json>]
         Write a structural snapshot; reuse parses only after checking file bytes.
@@ -1551,6 +1552,18 @@ def cmd_files(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_technologies(args: argparse.Namespace) -> int:
+    import technologies
+    try:
+        payload = technologies.ensure(Path(args.manifest))
+    except (OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+    Path(args.out).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    print(json.dumps({"technologies": len(payload["technologies"]), "units": len(payload["units"])}))
+    return 0
+
+
 def cmd_scope(args: argparse.Namespace) -> int:
     """
     The figures a scope confirmation shows, from the same walk the manifest
@@ -1915,6 +1928,11 @@ def _add_tree_commands(sub) -> None:
     files_parser.add_argument("manifest")
     files_parser.add_argument("--out", required=True)
     files_parser.set_defaults(func=cmd_files)
+
+    technologies_parser = sub.add_parser("technologies", help="copy the stack step's record: frameworks, libraries, tools and services, per build unit")
+    technologies_parser.add_argument("manifest")
+    technologies_parser.add_argument("--out", required=True)
+    technologies_parser.set_defaults(func=cmd_technologies)
 
     write_parser = sub.add_parser("write", help="write a manifest for a target tree")
     write_parser.add_argument("target")

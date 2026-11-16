@@ -115,8 +115,12 @@ class FlowFixtureTests(unittest.TestCase):
         shutil.copytree(BENCH / "app", project / "app")
         subprocess.run(["git", "init", "-q", str(project)], check=True, capture_output=True)
         service = mcp_service.MapService(project)
+        (project / "app/web/package.json").write_text('{"name": "web", "dependencies": {"express": "5"}}', encoding="utf-8")
         service.create_run("app", "flows", engine=False)
-        self.assertEqual(service.flows("flows")["status"], "needs_rules")
+        asked = service.flows("flows")
+        self.assertEqual(asked["status"], "needs_rules")
+        self.assertEqual([(unit["paths"], unit["technologies"]) for unit in asked["technologies"]],
+                         [(["app/web"], ["express", "nodejs"])])
         rules = json.loads((BENCH / "rules.json").read_text(encoding="utf-8"))["rules"]
         rules = [{**rule, "callee": "app/" + rule["callee"]} for rule in rules]
         with self.assertRaisesRegex(ValueError, "unknown field"):
