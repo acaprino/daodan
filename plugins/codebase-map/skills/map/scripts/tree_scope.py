@@ -53,12 +53,17 @@ GIT_OPTIONS = ("-c", "core.fsmonitor=false", "-c", "core.hooksPath=/dev/null")
 
 
 def git_executable() -> str | None:
+    return program("git")
+
+
+def program(name: str) -> str | None:
     """
-    Absolute git from absolute PATH entries only. Windows process creation
-    searches the working directory before PATH, and a server's working
-    directory is the analyzed project, so a bare `git` could run its git.exe.
+    The absolute path of `name` from absolute PATH entries only. Windows process
+    creation and `shutil.which` search the working directory before PATH, and a
+    server's working directory is the analyzed project, so a bare `git`, `docker`
+    or `uv` could run the project's own.
     """
-    names = ["git.exe", "git.cmd", "git.bat"] if os.name == "nt" else ["git"]
+    names = [name + suffix for suffix in (".exe", ".cmd", ".bat")] if os.name == "nt" and "." not in name else [name]
     for entry in os.environ.get("PATH", "").split(os.pathsep):
         entry = entry.strip('"')
         if not entry or not os.path.isabs(entry):

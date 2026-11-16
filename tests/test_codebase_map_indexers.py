@@ -62,8 +62,8 @@ class Fake:
 
     def __call__(self, command, *args, **kwargs):
         command = [str(part) for part in command]
-        if len(command) > 3 and command[0] == sys.executable and command[1] == "-c":
-            command = command[3:]  # code_graph.measured's memory probe
+        if len(command) > 4 and command[0] == sys.executable and command[1:3] == ["-I", "-c"]:
+            command = command[4:]  # code_graph.measured's memory probe
         cwd, env = kwargs.get("cwd"), kwargs.get("env") or {}
         self.calls.append((command, str(cwd) if cwd else None))
         self.envs.append(kwargs.get("env"))

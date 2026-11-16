@@ -31,8 +31,6 @@ from __future__ import annotations
 
 import logging
 import re
-import shutil
-import subprocess
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -355,49 +353,10 @@ def _validate_output_path(output_path: Path, source_path: Path) -> Path:
     return resolved
 
 
-def _run_formatter(file_path: Path, language: str) -> None:
-    """
-    Best-effort formatter run after rewriting.
-
-    The executable is resolved with shutil.which so that npm-installed tools
-    (prettier, biome) are found through their Windows .cmd shims, which
-    subprocess will not locate on its own. A missing formatter is skipped
-    silently; one that runs and fails is reported, because a non-zero exit
-    means the rewritten file may have been left unformatted or half-written.
-    """
-    candidates: list[list[str]] = []
-    if language == "python":
-        candidates = [["ruff", "format", str(file_path)], ["black", "-q", str(file_path)]]
-    elif language == "java":
-        candidates = [["google-java-format", "-i", str(file_path)]]
-    elif language in ("javascript", "typescript"):
-        candidates = [["prettier", "--write", str(file_path)], ["biome", "format", "--write", str(file_path)]]
-    elif language in ("sql", "plsql"):
-        candidates = [["sqlfluff", "fix", "--dialect", "ansi" if language == "sql" else "oracle", str(file_path)]]
-    elif language == "rust":
-        candidates = [["rustfmt", str(file_path)]]
-    elif language == "go":
-        candidates = [["gofmt", "-w", str(file_path)]]
-
-    for cmd in candidates:
-        executable = shutil.which(cmd[0])
-        if executable is None:
-            continue
-        try:
-            proc = subprocess.run(
-                [executable, *cmd[1:]],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-        except (OSError, subprocess.SubprocessError) as e:
-            logger.warning("Formatter %s could not run on %s: %s", cmd[0], file_path, e)
-            return
-        if proc.returncode != 0:
-            detail = (proc.stderr or proc.stdout or "").strip().splitlines()
-            reason = detail[0] if detail else f"exit code {proc.returncode}"
-            logger.warning("Formatter %s failed on %s: %s", cmd[0], file_path, reason)
-        return
+# A formatter reads the project's configuration, which can be code (prettier.config.js and its plugins), and the
+# project's code runs only in Daodan's container (AGENTS.md): the rewrite leaves formatting to the user.
+FORMAT_UNDONE = ("Formatting left undone: a formatter runs the project's configuration (prettier.config.js, its "
+                 "plugins), and Daodan runs no project code outside its container")
 
 
 # ---------------------------------------------------------------------------
@@ -815,7 +774,7 @@ class CommentRewriter:
             else:
                 _write_preserving_newlines(target, rewritten, newline)
             changes.append(f"Wrote changes to: {target}")
-            _run_formatter(target, language)
+            changes.append(FORMAT_UNDONE)
 
         return rewritten, changes
 

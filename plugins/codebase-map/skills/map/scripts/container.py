@@ -82,7 +82,7 @@ from embedding_worker import shared_cache_dir  # noqa: E402
 from resolve_edges import _platform, _process_alive, download, free_memory, shared_engine_dir  # noqa: E402
 from snapshot import is_forbidden  # noqa: E402
 from source_files import FORBIDDEN_GLOBS  # noqa: E402
-from tree_scope import GIT_OPTIONS, Perimeter, git_executable  # noqa: E402
+from tree_scope import GIT_OPTIONS, Perimeter, git_executable, program  # noqa: E402
 
 RECORD_NAME = "container-runs.jsonl"
 WORKDIR = "/work"
@@ -313,7 +313,7 @@ def engine_home() -> Path:
 
 
 def wsl_executable() -> str | None:
-    found = shutil.which("wsl.exe")
+    found = program("wsl.exe")
     system = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "wsl.exe"
     return found or (str(system) if system.is_file() else None)
 
@@ -361,7 +361,7 @@ def find_engine(*, own: bool = True) -> Engine:
         raise Gap("container engine off (DAODAN_CONTAINER=off)", "unset DAODAN_CONTAINER to run in a container")
     for name, probe in (("docker", ("version", "--format", "{{.Server.Os}}")),
                         ("podman", ("info", "--format", "{{.Host.Os}}"))):
-        path = shutil.which(name)
+        path = program(name)  # never the project's own, from the working directory
         if not path:
             continue
         try:

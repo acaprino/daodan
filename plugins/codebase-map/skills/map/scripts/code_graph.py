@@ -1049,7 +1049,8 @@ def measured(command: list[str], cwd: str, env: dict | None, timeout: int) -> di
              "print('DAODAN_MAXRSS_KB=%d' % resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss, file=sys.stderr);"
              "sys.exit(r.returncode)")
     begun = time.time()
-    wrapped = [sys.executable, "-c", probe, *command] if sys.platform != "win32" else command
+    # Isolated (`-I`): with `-c` the folder it starts in, the project's or its mirror, would come first on sys.path.
+    wrapped = [sys.executable, "-I", "-c", probe, *command] if sys.platform != "win32" else command
     try:
         done = subprocess.run(wrapped, cwd=cwd, env=env, capture_output=True, text=True, timeout=timeout,
                               stdin=subprocess.DEVNULL)

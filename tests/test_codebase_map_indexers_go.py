@@ -172,8 +172,8 @@ def test_a_file_the_indexers_build_leaves_out_is_indexed_under_a_configuration_t
 
     def run(command, *args, **kwargs):
         command, env = [str(part) for part in command], kwargs.get("env") or {}
-        if len(command) > 3 and command[0] == sys.executable and command[1] == "-c":
-            command = command[3:]  # code_graph.measured's memory probe
+        if len(command) > 4 and command[0] == sys.executable and command[1:3] == ["-I", "-c"]:
+            command = command[4:]  # code_graph.measured's memory probe
         if command[1:3] == ["env", "CGO_ENABLED"]:
             return subprocess.CompletedProcess(command, 0, "1\n", "")
         if command[1:2] == ["list"]:
@@ -222,8 +222,8 @@ def test_a_configuration_the_go_tool_does_not_list_the_file_under_is_said_and_ru
 
     def run(command, *args, **kwargs):
         command, env = [str(part) for part in command], kwargs.get("env") or {}
-        if len(command) > 3 and command[0] == sys.executable and command[1] == "-c":
-            command = command[3:]
+        if len(command) > 4 and command[0] == sys.executable and command[1:3] == ["-I", "-c"]:
+            command = command[4:]
         if command[1:3] == ["env", "CGO_ENABLED"]:
             return subprocess.CompletedProcess(command, 0, "0\n", "")
         if command[1:2] == ["list"]:  # an error of the go tool: no package listed

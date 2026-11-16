@@ -16,6 +16,7 @@ import time
 from pathlib import Path, PurePosixPath
 
 from embedding_worker import shared_cache_dir
+from tree_scope import program
 
 
 def shared_engine_dir(name: str) -> Path:
@@ -220,7 +221,7 @@ def npm_modules(root: Path, failed: list | None = None, npm: str | None = None) 
     of the last two.
     """
     root = Path(root).resolve()
-    key, npm = npm_key(root), npm or shutil.which("npm")
+    key, npm = npm_key(root), npm or program("npm")
     if key is None or npm is None:
         if key is not None and failed is not None:
             failed.append("npm is not on the PATH")
@@ -372,64 +373,6 @@ def go_environment() -> dict:
     return environment
 
 RUST_VERSION = "1.99.1"
-
-
-RUST_TARGETS = {"win-x64": "x86_64-pc-windows-msvc", "win-arm64": "aarch64-pc-windows-msvc",
-                "linux-x64": "x86_64-unknown-linux-gnu", "linux-arm64": "aarch64-unknown-linux-gnu",
-                "osx-x64": "x86_64-apple-darwin", "osx-arm64": "aarch64-apple-darwin"}
-
-
-def rust_toolchain() -> Path | None:
-    """The directory whose `bin` holds cargo and rustc and whose sysroot holds the standard library's sources.
-
-    The toolchain on PATH when it is complete; otherwise cargo, rustc and rust-src
-    at the pinned release, downloaded from static.rust-lang.org into the shared
-    directory and checked against the sha256 of the release manifest. Without the
-    standard library's sources every call into `std` stays unresolved (semver:
-    88.8% instead of 97.7%). None when the download fails.
-    """
-    cargo, rustc = shutil.which("cargo"), shutil.which("rustc")
-    if cargo and rustc:
-        try:
-            sysroot = subprocess.run([rustc, "--print", "sysroot"], capture_output=True, text=True, timeout=60,
-                                     stdin=subprocess.DEVNULL).stdout.strip()
-        except (OSError, subprocess.SubprocessError):
-            sysroot = ""
-        if sysroot and (Path(sysroot) / "lib" / "rustlib" / "src" / "rust" / "library").is_dir():
-            return Path(cargo).parent.parent
-    home = shared_engine_dir("rust") / RUST_VERSION
-    if (home / ".installed").is_file():
-        return home
-    import tomllib
-    import tarfile
-    print(f"installing Rust {RUST_VERSION} (cargo, rustc, rust-src) into {home} (first use)", flush=True)
-    partial = home.with_name(f".{RUST_VERSION}.partial")
-    shutil.rmtree(partial, ignore_errors=True)
-    partial.mkdir(parents=True)
-    try:
-        with open_url(f"https://static.rust-lang.org/dist/channel-rust-{RUST_VERSION}.toml",
-                      timeout=120) as response:
-            packages = tomllib.loads(response.read().decode("utf-8"))["pkg"]
-        target = RUST_TARGETS[_platform()]
-        for component in ("rustc", "cargo", "rust-src"):
-            entry = packages[component]["target"]
-            entry = entry.get(target) or entry["*"]
-            archive = download(entry["xz_url"], partial / f"{component}.tar.xz", sha256=entry["xz_hash"])
-            unpacked = partial / f"unpack-{component}"
-            with tarfile.open(archive, "r:xz") as bundle:
-                bundle.extractall(unpacked, filter="data")
-            archive.unlink()
-            top = next(child for child in unpacked.iterdir() if child.is_dir())
-            shutil.copytree(top / component, partial, dirs_exist_ok=True)
-            shutil.rmtree(unpacked, ignore_errors=True)
-        (partial / ".installed").write_text(RUST_VERSION, encoding="utf-8")
-        shutil.rmtree(home, ignore_errors=True)
-        os.replace(partial, home)
-    except Exception as error:
-        print(f"the Rust toolchain was not installed: {type(error).__name__}: {error}", flush=True)
-        shutil.rmtree(partial, ignore_errors=True)
-        return None
-    return home
 
 
 # The Kotlin Analysis API in standalone mode with the platform it runs on, as KSP publishes it on
@@ -725,19 +668,3 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
                                   "python": version, "failed": failed}) + "\n", encoding="utf-8")
     print(f"installed {installed} of {len(requirements)} declared Python packages", flush=True)
     return destination
-
-
-def fetch_rust_analyzer(partial: Path) -> None:
-    """The rust-analyzer release Daodan pins, for this platform, into `partial`, verified."""
-    asset, digest = RUST_ANALYZER_ASSETS[_platform()]
-    archive = download("https://github.com/rust-lang/rust-analyzer/releases/download/"
-                       f"{RUST_ANALYZER_RELEASE}/rust-analyzer-{asset}", partial / asset, sha256=digest)
-    binary = partial / executable_name("rust-analyzer")
-    if archive.suffix == ".zip":
-        unpack(archive, partial)
-    else:
-        import gzip
-        with gzip.open(archive) as source, binary.open("wb") as target:
-            shutil.copyfileobj(source, target)
-        binary.chmod(0o755)
-    archive.unlink()

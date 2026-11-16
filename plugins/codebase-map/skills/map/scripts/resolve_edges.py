@@ -72,12 +72,12 @@ from snapshot_store import open_snapshot  # noqa: E402
 # before the pass: an adapter imports this module back while the pass builds `ENGINES` (`indexers/runtime.py`).
 from source_positions import (byte_to_char, byte_to_utf16, char_to_byte, EngineFailure, Location,  # noqa: E402,F401
                               SourceLines, utf16_to_byte)
-from engine_tools import (_declared_requirements, _platform, download, executable_name, fetch_rust_analyzer,  # noqa: E402,F401
+from engine_tools import (_declared_requirements, _platform, download, executable_name,  # noqa: E402,F401
                           free_memory, GO_ASSETS, go_environment, go_jobs, go_toolchain, GO_VERSION,
                           KOTLIN_ANALYSIS, KOTLIN_COMPILER, KOTLIN_OPT_INS, KOTLIN_RUNTIME, maven_artifact,
                           MAVEN_CENTRAL, maven_central_dir, node_environment, npm_key, npm_manifests,
                           npm_modules, open_url, package_directories, python_environment,
-                          python_manifests, RUST_ANALYZER_RELEASE, rust_toolchain, RUST_VERSION,
+                          python_manifests, RUST_ANALYZER_RELEASE, RUST_VERSION,
                           shared_cache_dir, shared_engine_dir, unpack, USER_AGENT)
 from language_servers import (_multilspy_pins, ENGINE_THREADS, LSP_REQUEST_TIMEOUT, LspEngine,  # noqa: E402,F401
                               MirroredEngine, SERVER_MEMORY_MB)
