@@ -649,15 +649,39 @@ def test_clang_prepare_keeps_each_occurrence_once_and_encloses_definitions(built
 
 
 def test_clang_a_file_the_snapshot_cannot_read_is_a_declared_gap_and_its_occurrences_are_kept(built):
-    """split.c has a statement split by `#ifdef`: the snapshot reads it lexically, without references. The graph
-    names it among the files it could not measure, with the cause, and keeps the index's references there as
-    edges of kind `unknown`."""
+    """split.c has a statement split by `#ifdef`: the snapshot reads it around the error. The graph names it among
+    the files it could not measure whole, with the cause and the lines it could not read, measures its sites
+    outside its ERROR nodes (`add` on line 4) and keeps the index's references inside as edges of kind `unknown`."""
     graph = built["c"]["graphs"]["c"]
     unread = {item["path"]: item for item in graph["files"]["unread"]}
     assert set(unread) == {"split.c"}
     assert unread["split.c"]["reason"] == "syntax error: line 5"
-    kinds = {edge["kind"] for edge in graph["edges"] if edge["site"].startswith("split.c:")}
-    assert kinds == {"unknown"} and unread["split.c"]["references"] >= 2
+    lines = unread["split.c"]["lines"]
+    assert any(first <= 5 <= last for first, last in lines) and not any(first <= 4 <= last for first, last in lines)
+    kinds = {int(edge["site"].split(":")[1]): edge["kind"] for edge in graph["edges"]
+             if edge["site"].startswith("split.c:")}
+    assert kinds[4] == "call" and "unknown" in kinds.values() and unread["split.c"]["references"] >= 1
+
+
+def test_a_file_two_translation_units_compile_keeps_each_local_apart(tmp_path):
+    """scip-clang writes a document per translation unit, each numbering its locals: tinyxml2.cpp's `local 371`
+    was `error` in one and `lineNum` in the other. A later document's local takes the key the earlier ones give
+    the local defined at the same place, else one of its own: one key, one variable."""
+    (tmp_path / "util.c").write_text("int a = 1;\nint b = 2;\nint c = a + b;\nint d = c;\n", encoding="utf-8")
+    first = document("util.c", [occurrence(1, 4, 5, "local 0", True), occurrence(2, 4, 5, "local 1", True),
+                                occurrence(4, 4, 5, "local 2", True), occurrence(3, 8, 9, "local 0")])
+    second = document("util.c", [occurrence(2, 4, 5, "local 0", True), occurrence(1, 4, 5, "local 1", True),
+                                 occurrence(3, 4, 5, "local 2", True), occurrence(3, 8, 9, "local 1"),
+                                 occurrence(3, 12, 13, "local 0"), occurrence(4, 8, 9, "local 2")])
+    index = load(tmp_path, first, second)
+    places = {key: {(occurrence.line, occurrence.start) for _rel, occurrence in defs}
+              for key, defs in index.defs.items()}
+    # `c`: the first unit defines its number at `d`, so it takes a key of its own
+    assert places == {"util.c#local 0": {(1, 4)}, "util.c#local 1": {(2, 4)}, "util.c#local 2": {(4, 4)},
+                      "util.c#local 2~2": {(3, 4)}}
+    assert {item.key for item in index.at[("util.c", 3, 8)]} == {"util.c#local 0"}  # `a`, in both
+    assert {item.key for item in index.at[("util.c", 3, 12)]} == {"util.c#local 1"}  # `b`
+    assert {item.key for item in index.at[("util.c", 4, 8)]} == {"util.c#local 2~2"}  # `c`
 
 
 MACRO_C = ("#define CHECK(x) do { if (!(x)) abort(); } while (0)\n"

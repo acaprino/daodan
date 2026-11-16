@@ -252,8 +252,8 @@ class JavaScriptSemanticTests(unittest.TestCase):
         self.assertFalse(any(r["parts"] == ["ns"] for r in semantic["references"]))
 
     def test_malformed_and_no_grammar_do_not_claim_ast_semantics(self):
-        if ts.get_parser("javascript") is not None:
-            self.assertIsNone(javascript.adapter.parse("function broken( {", "x.js").semantic)
+        if ts.get_parser("javascript") is not None:  # read around its error, the lines it could not read named
+            self.assertTrue(javascript.adapter.parse("function broken( {", "x.js").semantic["unread"])
         with mock.patch.object(javascript, "get_parser", return_value=None):
             self.assertIsNone(getattr(javascript.adapter.parse("save()", "x.js"), "semantic", "missing"))
 

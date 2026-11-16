@@ -190,8 +190,13 @@ def _source_entries(manifest: dict, observations: dict | None):
                 problem = _validate(payload, data)
                 if problem:
                     record.update(status="malformed", reason=problem)
-                elif entry.get("status") != "parsed":
+                elif entry.get("status") != "parsed" and not payload.get("unread"):
                     record.update(status="lexical", reason="source-not-successfully-parsed")
+                elif entry.get("status") != "parsed":  # read around a syntax error: its facts but those lines
+                    record.update(status="partial", reason="syntax-error", backend=payload["backend"],
+                                  unread=payload["unread"], reference_count=len(payload["references"]),
+                                  notes=list(payload.get("notes", [])))
+                    payloads[rel] = payload
                 else:
                     record.update(status="ast", reason=None, backend=payload["backend"],
                                   reference_count=len(payload["references"]), notes=list(payload.get("notes", [])))

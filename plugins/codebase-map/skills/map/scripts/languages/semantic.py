@@ -397,8 +397,37 @@ def python_semantics(tree):
     return evidence.finish()
 
 
+def _around(payload, root):
+    """A file with a syntax error, read around it: the walkers skip each ERROR node, a reference one overlaps is
+    dropped, and `unread` names the lines of each ERROR node and missing token, merged (`snapshot` keeps the facts
+    and declares those lines a gap)."""
+    if payload is None or not getattr(root, "has_error", False):
+        return payload
+    errors, lines, stack = [], [], [root]
+    while stack:
+        node = stack.pop()
+        if node.type == "ERROR" or node.is_missing or (node.has_error and not node.children):  # a missing token
+            if node.type == "ERROR":
+                errors.append(((node.start_point[0] + 1, node.start_point[1]), (node.end_point[0] + 1,
+                                                                                 node.end_point[1])))
+            lines.append([node.start_point[0] + 1, node.end_point[0] + 1])
+        elif node.has_error:
+            stack.extend(node.children)
+    # A reference an ERROR node overlaps, or one of no width (a token the parser made up), is none.
+    payload["references"] = [ref for ref in payload["references"] if ref["span"][:2] != ref["span"][2:] and not any(
+        (ref["span"][0], ref["span"][1]) < stop and (ref["span"][2], ref["span"][3]) > start for start, stop in errors)]
+    merged = []
+    for first, last in sorted(lines):
+        if merged and first <= merged[-1][1] + 1:
+            merged[-1][1] = max(merged[-1][1], last)
+        else:
+            merged.append([first, last])
+    payload["unread"] = merged
+    return payload
+
+
 def javascript_semantics(root, src, language):
-    return _JavaScriptEvidence(src, language).extract(root)
+    return _around(_JavaScriptEvidence(src, language).extract(root), root)
 
 
 class _JavaScriptEvidence(_Evidence):
@@ -708,8 +737,8 @@ class _JavaScriptEvidence(_Evidence):
         if t in ("interface_declaration", "type_alias_declaration"):
             self.contracts(node)
             return
-        if t in ("comment", "string", "regex", "string_fragment", "escape_sequence", "type_annotation",
-                 "type_arguments", "type_parameters"):
+        if t in ("ERROR", "comment", "string", "regex", "string_fragment", "escape_sequence", "type_annotation",
+                 "type_arguments", "type_parameters"):  # ERROR: what the parser could not read (`_around`)
             return
         if t == "jsx_closing_element":
             return
@@ -914,7 +943,7 @@ class _JavaScriptEvidence(_Evidence):
 
 
 def treesitter_semantics(root, src, language):
-    return _TreeSitterEvidence(src, language).extract(root)
+    return _around(_TreeSitterEvidence(src, language).extract(root), root)
 
 
 def java_semantics(root, src):
@@ -938,14 +967,15 @@ def csharp_semantics(root, src):
 
 
 def c_semantics(root, src, statics=()):
-    return _CFamilyEvidence(src, "c", statics).extract(root)
+    return _around(_CFamilyEvidence(src, "c", statics).extract(root), root)
 
 
 def cpp_semantics(root, src, statics=()):
-    return _CFamilyEvidence(src, "cpp", statics).extract(root)
+    return _around(_CFamilyEvidence(src, "cpp", statics).extract(root), root)
 
 
 _TS_SKIP_NODES = frozenset({
+    "ERROR",  # what the parser could not read: `_around`
     "line_comment", "block_comment", "doc_comment", "comment",
     "package_declaration", "package_clause", "package_header", "modifiers", "modifier",
     "marker_annotation", "annotation", "attribute_item", "inner_attribute_item",

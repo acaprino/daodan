@@ -27,7 +27,8 @@ MEMORY_EXHAUSTED = re.compile(r"MemoryError|out of memory|OutOfMemoryError|bad_a
 
 def snapshot_languages(connection) -> list[str]:
     return [row[0] for row in connection.execute(
-        "SELECT DISTINCT language FROM sem_coverage WHERE status='ast' AND language IS NOT NULL ORDER BY language")]
+        "SELECT DISTINCT language FROM sem_coverage WHERE status IN ('ast', 'partial') AND language IS NOT NULL "
+        "ORDER BY language")]
 
 
 def engine_languages(engine, connection) -> tuple[str, ...]:

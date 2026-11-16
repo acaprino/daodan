@@ -402,10 +402,11 @@ def test_a_call_through_a_pointer_names_the_pointer_and_stays_dynamic():
                      (["cb"], "dynamic-callee", source.index("(cb)(v)") + 1)]
 
 
-def test_a_broken_file_keeps_its_outline_and_gives_no_semantic_facts():
+def test_a_broken_file_keeps_its_outline_and_its_facts_around_the_error():
+    """The facts outside the parser's ERROR nodes stay, the lines of each named unread (`semantic._around`)."""
     result = get_adapter("c").parse("int ok(void) { return 1; }\nint broken( { return; \n", "a.c")
     assert [f.name for f in result.functions][:1] == ["ok"]
-    assert result.semantic is None and any(note.startswith("syntax error:") for note in result.notes)
+    assert result.semantic["unread"] and any(note.startswith("syntax error:") for note in result.notes)
 
 
 
@@ -424,6 +425,11 @@ def _sources(root: Path) -> dict:
 def _contexts(root: Path) -> dict:
     """Each file's include context, as the snapshot hands it to the reader."""
     return snapshot.c_family_contexts({rel: text.encode("utf-8") for rel, text in _sources(root).items()})
+
+
+def _whole(result) -> bool:
+    """The reader read every line of the file: its facts, and none it could not read."""
+    return result.semantic is not None and not result.semantic.get("unread")
 
 
 def _parse(root: Path, rel: str, context: bool = True):
@@ -453,7 +459,7 @@ def test_each_cause_parses_whole_with_the_macros_of_its_headers():
     """An included header's annotation macro (`local`, `far_ptr`, `zextern`), the file's own (`api_local`), an
     includer's (`local` in tables.h, from crc.c), a comment in a continued `#define`, a null directive, the
     `__cplusplus` guards and a K&R definition. A statement split by `#ifdef` branches still breaks the grammar."""
-    whole = {rel: _parse(MACROS, rel).semantic is not None for rel in _sources(MACROS)}
+    whole = {rel: _whole(_parse(MACROS, rel)) for rel in _sources(MACROS)}
     assert whole == {"checksum.c": True, "crc.c": True, "guard.hpp": True, "kr.c": True, "own.c": True,
                      "split.c": False, "tables.h": True, "zdefs.h": True}
 
@@ -480,9 +486,9 @@ def test_the_annotation_guess_is_left_out_when_the_include_context_is_known():
         b"static BOOL set_pointer(HANDLE h);\nint         inflate(int v);\n"
 
 
-def test_without_its_headers_a_file_using_their_macros_is_not_read():
+def test_without_its_headers_a_file_using_their_macros_is_not_read_whole():
     result = _parse(MACROS, "checksum.c", context=False)
-    assert result.semantic is None and any(note.startswith("syntax error:") for note in result.notes)
+    assert not _whole(result) and any(note.startswith("syntax error:") for note in result.notes)
 
 
 def _functions(result) -> dict:
@@ -524,7 +530,7 @@ def macro_snapshot(tmp_path_factory):
 def test_the_snapshot_reads_each_file_with_its_include_context(macro_snapshot):
     """checksum.c needs the macros of zdefs.h, tables.h those of crc.c: the snapshot hands both to the reader."""
     assert macro_snapshot["status"] == {"checksum.c": "ast", "crc.c": "ast", "guard.hpp": "ast", "kr.c": "ast",
-                                        "own.c": "ast", "split.c": "lexical", "tables.h": "ast", "zdefs.h": "ast"}
+                                        "own.c": "ast", "split.c": "partial", "tables.h": "ast", "zdefs.h": "ast"}
     assert _outcome(macro_snapshot, _found(macro_snapshot, "checksum.c", "call", "15 fold")) == "checksum.c:10"
     assert macro_snapshot["exports"]["checksum.c"] == {"checksum"}
     assert _outcome(macro_snapshot, _found(macro_snapshot, "own.c", "call", "5 helper")) == "own.c:3"
@@ -629,10 +635,10 @@ def test_a_wrapper_call_keeps_its_argument_and_every_position():
 
 
 def test_every_annotated_file_parses_whole_with_the_macros_of_its_headers():
-    assert {rel: _parse(ANNOTATED, rel).semantic is not None for rel in _sources(ANNOTATED)} == dict.fromkeys(
+    assert {rel: _whole(_parse(ANNOTATED, rel)) for rel in _sources(ANNOTATED)} == dict.fromkeys(
         _sources(ANNOTATED), True)
     # Without its headers, what uses their macros breaks: the reader alone cannot know `local` or `ZEXPORT`.
-    assert {rel for rel in _sources(ANNOTATED) if _parse(ANNOTATED, rel, context=False).semantic is None} == {
+    assert {rel for rel in _sources(ANNOTATED) if not _whole(_parse(ANNOTATED, rel, context=False))} == {
         "c/zmini.c", "include/zmini.h"}
 
 

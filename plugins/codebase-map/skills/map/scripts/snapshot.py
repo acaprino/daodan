@@ -165,9 +165,11 @@ def _record_parse(entry: dict, result, text: str, lines: list[str], profile: dic
     if getattr(result, "default_export", None):
         entry["default_export"] = result.default_export
     # Semantic facts belong to these exact bytes and the same parser
-    # identity. A damaged parse cannot certify complete reference coverage.
+    # identity. A damaged parse cannot certify complete reference coverage:
+    # its facts are kept only read around the error, with the lines it could
+    # not read (`unread`, languages/semantic.py `_around`).
     semantic = getattr(result, "semantic", None)
-    if entry["status"] == "parsed" and isinstance(semantic, dict):
+    if isinstance(semantic, dict) and (entry["status"] == "parsed" or semantic.get("unread")):
         entry["semantic"] = copy.deepcopy(semantic)
     if result.language == "css" and max((len(text) for text in lines), default=0) > MAX_STYLESHEET_LINE:
         entry["status"] = "file-level"

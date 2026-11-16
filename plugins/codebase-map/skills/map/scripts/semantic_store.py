@@ -22,6 +22,7 @@ import resolution
 import semantic_index
 
 RESOLVER_VERSION = 3
+READ = ("ast", "partial")  # the coverage statuses whose facts the store keeps: a whole file, or one read around
 # The resolution policy and its reason vocabulary live in resolution.py, shared with
 # semantic_index so the two owners of the source graph cannot disagree. Re-exported
 # here because consumers and tests read both names from this module.
@@ -195,8 +196,12 @@ def observed_coverage(entry, data):
             problem = semantic_index._validate(payload, data)
             if problem:
                 record.update(status="malformed", reason=problem)
-            elif entry.get("status") != "parsed":
+            elif entry.get("status") != "parsed" and not payload.get("unread"):
                 record.update(status="lexical", reason="source-not-successfully-parsed")
+            elif entry.get("status") != "parsed":  # read around a syntax error: its facts but those lines
+                record.update(status="partial", reason="syntax-error", backend=payload["backend"],
+                              unread=payload["unread"], reference_count=len(payload["references"]),
+                              notes=list(payload.get("notes", [])))
             else:
                 record.update(status="ast", reason=None, backend=payload["backend"],
                               reference_count=len(payload["references"]), notes=list(payload.get("notes", [])))
@@ -226,7 +231,7 @@ def _coverage(store, rel, entry, root, target, perimeter, fingerprint, observed=
         record = observed
     if store.get("parser_fingerprint") != fingerprint and record.get("verified_source"):
         record.update(status="fingerprint-mismatch", reason="helper-fingerprint-mismatch", verified_source=False)
-    return record, entry.get("semantic") if record["status"] == "ast" else None
+    return record, entry.get("semantic") if record["status"] in READ else None
 
 
 class _Resolver:
@@ -320,7 +325,7 @@ class _Resolver:
 
     def exported_target(self, rel, exported):
         row = self.db.execute("SELECT status,language,module_scope FROM sem_coverage WHERE file=?", (rel,)).fetchone()
-        if row is None or row[0] != "ast":
+        if row is None or row[0] not in READ:
             return None, "import-target-" + (row[0] if row else "unavailable")
         if row[1] == "python":
             local = exported
@@ -908,9 +913,10 @@ def build_semantic_store(
                 SELECT * FROM prev_snap.sem_reference_candidates
                 WHERE reference IN (SELECT id FROM main.sem_references WHERE file IN (SELECT file FROM _sem_ref_reused))
             """)
-            ast_query = "SELECT file FROM sem_coverage WHERE status='ast' AND file NOT IN (SELECT file FROM _sem_ref_reused) ORDER BY file"
+            ast_query = ("SELECT file FROM sem_coverage WHERE status IN ('ast','partial') AND file NOT IN "
+                         "(SELECT file FROM _sem_ref_reused) ORDER BY file")
         else:
-            ast_query = "SELECT file FROM sem_coverage WHERE status='ast' ORDER BY file"
+            ast_query = "SELECT file FROM sem_coverage WHERE status IN ('ast','partial') ORDER BY file"
 
         resolver = _Resolver(db)
         for (rel,) in db.execute(ast_query):

@@ -344,11 +344,10 @@ def _ts_parse(content: str) -> ParseResult | None:
         notes.append(syn_err)
 
     semantic = None
-    if not root.has_error:
-        try:
-            semantic = java_semantics(root, src)
-        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
-            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
+    try:  # a syntax error is read around (`semantic._around`)
+        semantic = java_semantics(root, src)
+    except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+        notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
 
     return ParseResult(
         file_path="",

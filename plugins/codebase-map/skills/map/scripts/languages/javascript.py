@@ -443,11 +443,10 @@ def _ts_parse(
         notes.append(syn_err)
 
     semantic = None
-    if not tree.root_node.has_error:
-        try:
-            semantic = javascript_semantics(tree.root_node, src, language)
-        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
-            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
+    try:  # a syntax error is read around (`semantic._around`)
+        semantic = javascript_semantics(tree.root_node, src, language)
+    except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+        notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
     if semantic is not None:
         existing_mods = {imp.module for imp in imports}
         for item in semantic.get("imports", ()):

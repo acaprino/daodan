@@ -301,17 +301,36 @@ class Index:
             rel = f"{prefix}/{rel}"
         self.repeated[rel] += 1
         self.units[rel] = UNITS.get(unit, "utf-16")
+        parsed = [occurrence for occurrence in map(lambda item: self._occurrence(item, rel), raw) if occurrence]
+        locals_ = self._locals(rel, parsed) if self.repeated[rel] > 1 else {}
         occurrences = self.documents.setdefault(rel, [])
-        for item in raw:
-            occurrence = self._occurrence(item, rel)
-            if occurrence is None:
-                continue
+        for occurrence in parsed:
+            if occurrence.key in locals_:
+                occurrence = occurrence._replace(key=locals_[occurrence.key])
             occurrences.append(occurrence)
             self.at[(rel, occurrence.line, occurrence.start)].append(occurrence)
             if occurrence.definition:
                 self.defs[occurrence.key].append((rel, occurrence))
         for item in informations:
-            self._information(item, rel)
+            self._information(item, rel, locals_)
+
+    def _locals(self, rel: str, parsed: list[Occurrence]) -> dict[str, str]:
+        """A later document of a file already read (one per translation unit that compiles it, scip-clang's):
+        its locals are numbered in its own unit, so its `local 3` may be another variable than the earlier
+        ones'. A local it defines takes the key the earlier documents give the local defined at the same place;
+        one whose key they define elsewhere takes one of its own (`~n`, the document's number); any other keeps
+        its key."""
+        mine = f"{rel}#local "
+        at = {(item.line, item.start): item.key for item in self.documents.get(rel, ())
+              if item.definition and item.key.startswith(mine)}
+        defined = set(at.values())
+        out = {}
+        for item in parsed:
+            if item.definition and item.key.startswith(mine) and item.key not in out:
+                place = (item.line, item.start)
+                out[item.key] = (at[place] if place in at else f"{item.key}~{self.repeated[rel]}"
+                                 if item.key in defined else item.key)
+        return {key: value for key, value in out.items() if key != value}
 
     def _occurrence(self, data: bytes, rel: str) -> Occurrence | None:
         place = enclosing = None
@@ -335,8 +354,9 @@ class Index:
             return None
         return Occurrence(*place, self.key(symbol, rel), bool(roles & 1), enclosing)
 
-    def _information(self, data: bytes, rel: str | None) -> None:
+    def _information(self, data: bytes, rel: str | None, locals_: dict | None = None) -> None:
         entry = {"kind": 0, "display": "", "enclosing": "", "documentation": "", "signature": ""}
+        locals_ = locals_ or {}
         symbol = ""
         for number, wire, value in _fields(data):
             if number == 1 and wire == 2:
@@ -360,10 +380,12 @@ class Index:
                     elif field == 3 and kind == 0:
                         implementation = bool(item)
                 if implementation and target:
-                    entry.setdefault("implements", []).append(self.key(target, rel))
+                    found = self.key(target, rel)
+                    entry.setdefault("implements", []).append(locals_.get(found, found))
         if not symbol:
             return
         key = self.key(symbol, rel)
+        key = locals_.get(key, key)
         self.info[key] = entry
         for target in entry.get("implements", ()):
             self.implementers[target].add(key)
@@ -678,7 +700,8 @@ class Traversal:
 
 def unread(index: Index, snapshot: Snapshot, language: str) -> list[dict]:
     """The language's files the snapshot holds but could not read whole, with the cause, and how many references
-    the index holds in each: their edges are of kind `unknown`, measured against no snapshot reference. A
+    the index holds in each: their edges are of kind `unknown`, measured against no snapshot reference. A file read
+    around its syntax error (`partial`) names the `lines` it could not read, and counts the references there. A
     stand-in snapshot without a store (the tests', the benchmarks') reads every file it lists."""
     out = []
     if getattr(snapshot, "connection", None) is None:
@@ -691,8 +714,12 @@ def unread(index: Index, snapshot: Snapshot, language: str) -> list[dict]:
             continue
         notes = (snapshot.store.get_file_header(rel) or {}).get("parser_notes") or []
         reason = next((note for note in notes if note.startswith(("syntax error:", "grammar unavailable:"))), None)
-        out.append({"path": checkout, "reason": reason or (snapshot._unpack(blob) or {}).get("reason") or status,
-                    "references": sum(1 for item in index.documents.get(checkout, ()) if not item.definition)})
+        record = snapshot._unpack(blob) or {}
+        lines = record.get("unread") if status == "partial" else None
+        out.append({"path": checkout, "reason": reason or record.get("reason") or status,
+                    **({"lines": lines} if lines else {}),
+                    "references": sum(1 for item in index.documents.get(checkout, ()) if not item.definition
+                                      and (not lines or any(first <= item.line <= last for first, last in lines)))})
     return out
 
 

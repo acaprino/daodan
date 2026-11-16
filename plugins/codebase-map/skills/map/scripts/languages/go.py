@@ -262,11 +262,10 @@ def _ts_parse(content: str) -> tuple[ParseResult | None, str | None]:
     if syntax_error is not None:
         notes.append(syntax_error)
     semantic = None
-    if not tree.root_node.has_error:
-        try:
-            semantic = go_semantics(tree.root_node, src)
-        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
-            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
+    try:  # a syntax error is read around (`semantic._around`)
+        semantic = go_semantics(tree.root_node, src)
+    except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+        notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
     return ParseResult(
         file_path="",
         language=_LANGUAGE_NAME,

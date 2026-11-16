@@ -127,7 +127,7 @@ def symbol_table(connection, rel: str, source: str) -> tuple[dict, set]:
 
 def inventory_files(connection) -> set[str]:
     return {row[0] for row in connection.execute(
-        "SELECT file FROM sem_coverage WHERE status='ast'")}
+        "SELECT file FROM sem_coverage WHERE status IN ('ast', 'partial')")}
 
 
 def grade(definition, inventory: set[str], tables: dict, root: Path,

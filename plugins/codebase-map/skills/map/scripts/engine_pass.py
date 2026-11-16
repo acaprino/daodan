@@ -69,7 +69,7 @@ def unparsed(connection) -> dict[str, str]:
     out = {}
     for language, files in _statuses(connection).items():
         rest = {status: count for status, count in sorted(files.items()) if status != "excluded"}
-        if rest and "ast" not in rest:
+        if rest and not {"ast", "partial"} & set(rest):  # a partial file is read around its syntax error
             out[language] = (f"none of the {sum(rest.values())} {language} files was parsed by the snapshot ("
                              + ", ".join(f"{status}: {count}" for status, count in rest.items()) + ")")
     return out

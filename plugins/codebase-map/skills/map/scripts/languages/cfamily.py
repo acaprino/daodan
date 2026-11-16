@@ -11,8 +11,8 @@ before parsing, positions unchanged, when the sources define it as a decoration 
 prototype wrapper (`OF((args))`): the file's own macros and, given its include context, those of the files it
 shares a translation unit with (`include_contexts`). Without that context an upper-case word where an annotation
 stands (`int ZEXPORT inflate(`, `class TINYXML2_LIB XMLNode {`) is taken for one. Any other macro the grammar
-cannot read leaves a syntax error: the outline keeps what parses and the file gets no semantic facts, as for
-every language.
+cannot read leaves a syntax error: the outline keeps what parses and the semantic facts are read around it,
+the lines of each ERROR node declared unread (`semantic._around`), as for every tree-sitter language.
 """
 
 from __future__ import annotations
@@ -519,11 +519,10 @@ def _ts_parse(content: str, language: str, macros: dict | None) -> tuple[ParseRe
     if syntax_error is not None:
         notes.append(syntax_error)
     semantic = None
-    if not tree.root_node.has_error:
-        try:
-            semantic = (c_semantics if language == "c" else cpp_semantics)(tree.root_node, src, statics)
-        except (RecursionError, ValueError, TypeError, AttributeError) as exc:
-            notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
+    try:  # a syntax error is read around (`semantic._around`)
+        semantic = (c_semantics if language == "c" else cpp_semantics)(tree.root_node, src, statics)
+    except (RecursionError, ValueError, TypeError, AttributeError) as exc:
+        notes.append(f"semantic unavailable: {type(exc).__name__}: {exc}")
     return ParseResult(
         file_path="",
         language=language,
