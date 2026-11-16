@@ -241,10 +241,18 @@ def test_suffixes_name_the_two_languages():
 
 def test_a_header_is_cpp_only_when_its_text_has_what_c_lacks():
     cpp = ["namespace geo {\nint f();\n}\n", "class Node {\n public:\n  int x;\n};\n",
-           "template <typename T> T twice(T v);\n", "using namespace std;\n"]
+           "template <typename T> T twice(T v);\n", "using namespace std;\n",
+           # otel-demo's meter_common.h: a namespace alias, an anonymous namespace, `std::` names; a standard
+           # library header, as Linguist's own rule for `.h` has it.
+           "namespace sdk = opentelemetry::sdk;\nnamespace\n{\nstd::shared_ptr<int> init();\n}\n",
+           "std::size_t bound(std::size_t n);\n", "#include <vector>\nint f(void);\n"]
     c = ["#ifdef __cplusplus\nextern \"C\" {\n#endif\nint f(void);\n#ifdef __cplusplus\n}\n#endif\n",
          "/* a class of errors */\nstruct node { int x; };\n", "const char *s = \"namespace x {\";\n",
-         "// template <typename T>\nint f(void);\n"]
+         "// template <typename T>\nint f(void);\n", "#include <string.h>\n[[gnu::unused]] static int x;\n",
+         "int namespace_count; /* std::x */\n",
+         # `namespace` as a C name: a struct tag, a member, a variable.
+         "struct namespace {\n  int id;\n};\n", "union namespace { int a; };\n", "p->namespace = name;\n",
+         "int namespace = 0;\n"]
     assert [detect_language(Path("a.h"), text) for text in cpp] == ["cpp"] * len(cpp)
     assert [detect_language(Path("a.h"), text) for text in c] == ["c"] * len(c)
 

@@ -178,9 +178,14 @@ _PLSQL_ROWTYPE_RE = re.compile(r"\w%(?:rowtype|type)\b", re.IGNORECASE)
 # `__cplusplus` is a C header's own guard. One with a directive of Objective-C's is
 # Objective-C, which the snapshot does not read.
 _C_NOISE_RE = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'', re.DOTALL)
+# What C lacks: a namespace (an anonymous one or an alias opening a line: C names a struct tag or a variable
+# `namespace`), a class, a template, an access specifier, `using namespace`, a name of `std::`, and a C++ standard
+# library header (the last two are Linguist's own rule for `.h`).
 _CPP_HEADER_RE = re.compile(
-    r"\bnamespace\s+\w+(?:\s*::\s*(?:inline\s+)?\w+)*\s*\{|\bclass\s+\w+[^;(){}]*\{|\btemplate\s*<"
-    r"|^\s*(?:public|private|protected)\s*:|\busing\s+namespace\b",
+    r"\bnamespace\s+\w+(?:\s*::\s*(?:inline\s+)?\w+)*\s*\{|^[ \t]*namespace\s*\{|^[ \t]*namespace\s+\w+\s*=(?!=)"
+    r"|\bclass\s+\w+[^;(){}]*\{|\btemplate\s*<|^\s*(?:public|private|protected)\s*:|\busing\s+namespace\b|\bstd::\w"
+    r"|^\s*#\s*include\s*<(?:cstdint|string|vector|map|list|array|bitset|queue|stack|forward_list|unordered_map"
+    r"|unordered_set|(?:i|o|io)stream)>",
     re.MULTILINE,
 )
 _OBJC_HEADER_RE = re.compile(r"^\s*@(?:interface|implementation|protocol|class|property|end)\b", re.MULTILINE)
