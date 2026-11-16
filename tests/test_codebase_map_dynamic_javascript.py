@@ -128,9 +128,10 @@ def test_a_package_without_a_test_script_states_nothing(tmp_path):
         "broken/package.json": "{not json"}) == []
 
 
-def test_scripts_that_start_a_runner_where_the_test_script_does_not_are_a_gap(tmp_path):
-    """tududi's scripts: `npm test` runs Jest in backend/ (`cd backend`); the frontend's Jest runs at the root,
-    from scripts no declared command runs: they are named, never run."""
+def test_a_runner_the_test_script_does_not_reach_runs_through_its_plainest_script(tmp_path):
+    """tududi's scripts: `npm test` runs Jest in backend/ (`cd backend`); the frontend's Jest at the root runs once,
+    through the script with the fewest arguments after `jest` that does not watch. Where every one watches (or waits
+    for a debugger), they are a gap that names them."""
     record = premapped(tmp_path, {
         "package.json": package("npm run backend:test", **{
             "backend:test": "cd backend && cross-env NODE_ENV=test jest --maxWorkers=4",
@@ -140,15 +141,26 @@ def test_scripts_that_start_a_runner_where_the_test_script_does_not_are_a_gap(tm
             "test:watch": "npm run frontend:test:watch",
             "test:coverage": "npm run frontend:test:coverage && npm run backend:test:coverage",
             "test:ui": "bash e2e/bin/run-e2e.sh && echo \"Success!\"", "lint": "eslint ."}),
-        "web/package.json": package(None, **{"test:unit": "vitest run"})})
-    assert [{k: v for k, v in item.items() if k != "sources"} for item in record["tests"]] == [entry(".", "jest")]
-    gaps = [gap for gap in record["gaps"] if gap["kind"] == "tests_not_declared"]
-    assert [(gap["path"], gap["runner"], gap["scripts"]) for gap in gaps] == [
-        ("package.json", "jest",
-         ["frontend:test", "frontend:test:coverage", "frontend:test:watch", "test:coverage", "test:watch"]),
-        ("web/package.json", "vitest", ["test:unit"])]
-    assert "jest in ." in gaps[0]["detail"] and "it starts jest in backend" in gaps[0]["detail"]
-    assert "vitest in web" in gaps[1]["detail"] and "no `test` script" in gaps[1]["detail"]
+        # Vitest without `run` watches; `-w` is Jest's --maxWorkers, --watchAll=false turns its watch off
+        "web/package.json": package(None, **{"test:unit": "vitest run --coverage", "check": "vitest run",
+                                             "test:dev": "vitest", "spec": "jest -w 2 --watchAll=false"}),
+        "watch/package.json": package("mocha", **{
+            "spec:watch": "jest --watchAll", "spec:dev": "npm run spec:once -- --watch", "spec:once": "jest --ci",
+            "spec:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"})})
+    assert [{k: v for k, v in item.items() if k != "sources"} for item in record["tests"]] == [
+        entry(".", "jest"), {**entry(".", "jest"), "declared_in": "package.json#scripts.frontend:test"},
+        {**entry("watch", "mocha")}, {**entry("watch", "jest"), "declared_in": "watch/package.json#scripts.spec:once"},
+        {**entry("web", "jest"), "declared_in": "web/package.json#scripts.spec"},
+        {**entry("web", "vitest"), "declared_in": "web/package.json#scripts.check"}]
+    assert not [gap for gap in record["gaps"] if gap["kind"] == "tests_not_declared"]
+    record = premapped(tmp_path / "only", {"package.json": package("mocha", **{
+        "spec:watch": "jest --watchAll", "spec:dev": "npm run spec:watch -- --coverage",
+        "spec:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"})})
+    assert [item["declared_in"] for item in record["tests"]] == ["package.json#scripts.test"]
+    [gap] = [gap for gap in record["gaps"] if gap["kind"] == "tests_not_declared"]
+    assert (gap["path"], gap["runner"], gap["scripts"]) == ("package.json", "jest",
+                                                            ["spec:debug", "spec:dev", "spec:watch"])
+    assert "jest in ." in gap["detail"] and "it starts mocha in ." in gap["detail"] and "watch" in gap["detail"]
 
 
 # --- the plan: from the pre-map alone --------------------------------------------------------------------------
@@ -190,6 +202,22 @@ def test_a_runner_the_recorder_cannot_observe_is_a_gap_with_its_cause():
     [gap] = planned["gaps"]
     assert gap["kind"] == "runner_not_observed" and gap["path"] == "package.json#scripts.test"
     assert gap["runner"] == "bun" and "JavaScriptCore" in gap["detail"]
+
+
+def test_a_run_declared_by_another_script_runs_that_script(tmp_path):
+    frontend = {**entry(".", "jest"), "declared_in": "package.json#scripts.frontend:test"}
+    planned = observer.plan(record([entry(".", "jest"), frontend]), [], None)
+    assert planned["runs"] == [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"},
+                               {"root": ".", "runner": "jest", "declared_in": "package.json#scripts.frontend:test"}]
+    played = Played({"tests-1.log": "No tests found, exiting with code 1\n"},
+                    {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\nDAODAN-DYNAMIC 1 exit 1 2\n"})
+    result = observe(tmp_path, played, runs=planned["runs"])
+    execute = played.given["command"][-1]
+    assert f'timeout -k 30 {observer.LIMIT} npm run "$3"' in execute
+    assert "\nrun 0 . test\n" in execute and "\nrun 1 . frontend:test\n" in execute
+    assert [test["declared_in"] for test in result["runs"]] == ["package.json#scripts.test",
+                                                                 "package.json#scripts.frontend:test"]
+    assert any(gap["detail"].startswith("npm run frontend:test in . exited with code 1") for gap in result["gaps"])
 
 
 def test_tests_no_declared_command_runs_are_said_with_the_runs_or_in_their_place(tmp_path):
@@ -263,7 +291,7 @@ def test_the_tests_run_as_declared_under_the_recorder_and_only_in_the_container(
     assert 'NODE_OPTIONS="--require /daodan/state/in/javascript_record.js"' in execute
     assert "DYN_ROOT=/work" in execute and "DYN_BABEL=/daodan/state/tools/npm/lib/node_modules/@babel/core" in execute
     assert "TURBO_ENV_MODE=loose" in execute  # Turborepo's tasks get the recorder's variables too
-    assert f"timeout -k 30 {observer.LIMIT} npm test" in execute and "\nrun 0 .\n" in execute
+    assert f'timeout -k 30 {observer.LIMIT} npm run "$3"' in execute and "\nrun 0 . test\n" in execute
     assert "npm ci" not in execute and "npm install" not in execute
     assert played.inputs["/daodan/state/in/javascript_record.js"] == observer.RECORDER
     assert given["outputs"] == ["/daodan/out"] and given["env"]["CI"] == "true"

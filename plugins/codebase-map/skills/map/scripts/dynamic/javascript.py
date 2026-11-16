@@ -16,12 +16,12 @@ that kind is Bun's, which is not V8, and the files the recorder misses are said 
 takes it.
 
 `plan` reads the pre-map alone. The command is the one the project declares: the `test` script of each package
-(its `tests` entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, Turborepo, any other), run as
-`npm test` in the package's folder; a project where no package declares one is a `no_test_command` gap, never a
-command of ours. A script whose runner the recorder cannot hook (`NOT_OBSERVED`) is a `runner_not_observed` gap,
-and it does not run. The scripts that start a runner where `test` starts none (the pre-map's `tests_not_declared`:
-only their names say they run tests) never run: their gaps come back with the runs', which explain a language's
-outcome.
+and, for a folder and runner it does not reach, the package's script that starts that runner (its `tests`
+entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, Turborepo, any other), run as `npm run`
+of the script `declared_in` names in the package's folder; a project where no package declares one is a
+`no_test_command` gap, never a command of ours. A script whose runner the recorder cannot hook (`NOT_OBSERVED`) is
+a `runner_not_observed` gap, and it does not run. Where every script of a runner watches (the pre-map's
+`tests_not_declared`), none runs: their gaps come back with the runs', which explain a language's outcome.
 
 `observe` is one container run (`container.run_in_container`, the TypeScript analyzer's image). The preparation,
 with the registries: Daodan's Node, the Babel the recorder prints with (from npm without its install scripts),
@@ -62,7 +62,7 @@ from indexers import typescript  # the image, the unit kinds and the restores of
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
 ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "1", ("javascript", "typescript")
 RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
-RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest", "turbo")  # the pre-map's runners, each run as `npm test`
+RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest", "turbo")  # the pre-map's runners, run through their script
 NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, where a Node preload and V8's "
                        "inspector do not exist"}
 BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the code it records
@@ -117,6 +117,15 @@ def plan(record: dict, files: list[str], read) -> dict:
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "node"]}
 
 
+def _script(run: dict) -> str:
+    """The package script a run starts: the one its `declared_in` names (`package.json#scripts.<name>`)."""
+    return (run.get("declared_in") or "").rpartition("#scripts.")[2] or "test"
+
+
+def _command(run: dict) -> str:
+    return "npm test" if _script(run) == "test" else f"npm run {_script(run)}"
+
+
 def scripts(planned: dict, restores: list[str]) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and the stated Node's install (`preparation.toolchains`):
     `restores` are the lines of the project's own restore."""
@@ -133,9 +142,11 @@ def scripts(planned: dict, restores: list[str]) -> tuple[str, str, dict]:
                "run() {",  # $1 the run, $2 its folder
                "  start=$(date +%s)",
                f'  ( cd "/work/$2" && NODE_OPTIONS="--require {IN}/{RECORDER.name}"'
-               f" DYN_OUT={OUT}/observed-$1-%p.json exec timeout -k 30 {LIMIT} npm test ) > {OUT}/tests-$1.log 2>&1",
+               f' DYN_OUT={OUT}/observed-$1-%p.json exec timeout -k 30 {LIMIT} npm run "$3" )'
+               f" > {OUT}/tests-$1.log 2>&1",
                '  echo "DAODAN-DYNAMIC $1 exit $? $(( $(date +%s) - start ))"', "}",
-               *(f"run {number} {shlex.quote(run['root'])}" for number, run in enumerate(planned["runs"]))]
+               *(f"run {number} {shlex.quote(run['root'])} {shlex.quote(_script(run))}"
+                 for number, run in enumerate(planned["runs"]))]
     return "\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n", chains
 
 
@@ -194,7 +205,7 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
     def gap(kind: str, detail: str, **more) -> dict:
         return {"kind": kind, "path": run["root"], **more, "detail": detail}
 
-    command = f"npm test in {run['root']}"
+    command = f"{_command(run)} in {run['root']}"
     if not code:
         return entry, [gap("tests_not_started", f"{command}: the run ended before the tests' exit ({ended})")]
     gaps = []
