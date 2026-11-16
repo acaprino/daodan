@@ -11,6 +11,8 @@ FROM, and their instructions up to that stage's last RUN, the build itself, whic
   contents into the destination; a file into a destination folder (one ending in `/` or `.`, or for several
   sources), else as the destination itself.
 
+The build is not a step: the plan keeps its words in the stage's shell (`build.argv`) and the stage's ENV and ARG
+values (`env`), for an analyzer that runs it where it would (`command`) or runs its own tool in its place.
 The image is the first stage's FROM, run by the digest its registry gives (`pinned`); the hosts the preparation opens beside the registries are those the RUN
 instructions name in a URL. What the steps write (a `go.mod`, a generated source) is no file of the checkout:
 `origin` maps back only what a COPY brought. An instruction it cannot reproduce is a `not_reproduced` gap naming
@@ -59,17 +61,23 @@ GLIBC = [  # Debian 13's glibc and GCC runtime (glibc 2.41, libstdc++ of GCC 14.
 MULTIARCH, LOADER = "usr/lib/x86_64-linux-gnu", "lib64/ld-linux-x86-64.so.2"
 
 
-def glibc(target: Path) -> Path:
-    """One tar at `target` of what `GLIBC`'s packages hold in the multiarch folder, each package checked by its
-    sha256 (`preparation.fetched`), with the loader also at /lib64, where a glibc program names it: unpacked at
-    `/` of a base without glibc (Alpine's musl), the libraries sit where only glibc's loader looks."""
+def glibc(target: Path | None = None) -> Path:
+    """One tar at `target` (default: in the shared directory, named by the packages' digests) of what `GLIBC`'s
+    packages hold in the multiarch folder (/usr/lib/x86_64-linux-gnu, or /lib/x86_64-linux-gnu before Debian's
+    move to /usr), each package checked by its sha256 (`preparation.fetched`), with the loader also at /lib64,
+    where a glibc program names it: unpacked at `/` of a base without glibc (Alpine's musl), the libraries sit
+    where only glibc's loader looks."""
     import copy
+    import hashlib
     import io
     import tarfile
     import preparation
-    target = Path(target)
+    from engine_tools import shared_engine_dir
+    named = hashlib.sha256("".join(digest for _url, digest, _name in GLIBC).encode()).hexdigest()[:16]
+    target = Path(target or shared_engine_dir("preparation") / "glibc" / f"{named}.tar")
     if target.is_file():
         return target
+    target.parent.mkdir(parents=True, exist_ok=True)
     partial = target.with_suffix(".partial")
     with tarfile.open(partial, "w") as out:
         for url, digest, name in GLIBC:
@@ -79,9 +87,11 @@ def glibc(target: Path) -> Path:
                 if member.startswith("data.tar"):
                     with tarfile.open(fileobj=io.BytesIO(data[at + 60:at + 60 + size])) as package:
                         for entry in package.getmembers():
-                            entry.name = posixpath.normpath(entry.name)
-                            if posixpath.dirname(entry.name) != MULTIARCH or not (entry.isfile() or entry.issym()):
+                            folder, base = posixpath.split(posixpath.normpath(entry.name))
+                            if folder not in (MULTIARCH, MULTIARCH[len("usr/"):]) or not (entry.isfile()
+                                                                                          or entry.issym()):
                                 continue
+                            entry.name = posixpath.join(MULTIARCH, base)
                             out.addfile(entry, package.extractfile(entry) if entry.isfile() else None)
                             if posixpath.basename(entry.name) == posixpath.basename(LOADER) and entry.isfile():
                                 loader = copy.copy(entry)
@@ -207,6 +217,8 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
                         gap(item, f"{key} has no value: no default and no build argument gives one")
                     else:
                         lines.append(f"export {key}={shlex.quote(value)}")
+                        if any(item is mine for mine in own):  # in scope where the build runs; an ENV wins
+                            env.setdefault(key, value)
         elif kind == "ENV":
             for key, value in item["env"]:
                 env[key] = value
@@ -273,8 +285,37 @@ def plan(build: dict, project: Path, wanted: list[str], builds: str, *, work: st
     gaps.sort(key=lambda g: int(g["path"].rsplit(":", 1)[1]))
     return {"dockerfile": dockerfile, "stage": name, "image": image, "workdir": workdir,
             "env": [[key, value] for key, value in env.items()], "lines": [] if gaps else lines,
-            "ran": ran, "build": {"line": runs[-1]["line"], "original": runs[-1]["original"]} if runs else None,
+            "ran": ran, "build": {"line": runs[-1]["line"], "original": runs[-1]["original"],
+                                  "argv": [*shell, *runs[-1]["cmd"]] if runs[-1].get("shell") else runs[-1]["cmd"]}
+            if runs else None,
             "copies": copies, "hosts": sorted(hosts), "gaps": gaps}
+
+
+FAILED = re.compile(r"DAODAN-DOCKERFILE-FAILED (\S+)")  # what a step of the plan's lines prints when it fails
+
+
+def last_line(log: str, end: int | None = None) -> str:
+    """The last line with words before `end` in a log."""
+    return next((line.rstrip() for line in reversed(log[:end].splitlines()) if line.strip()), "")[:400]
+
+
+def failed_step(plan: dict, build: dict, log: str, error=last_line) -> dict | None:
+    """The step of `plan` that the preparation's `log` says failed, else None: its `path` (the Dockerfile and its
+    line), its `original` instruction and the tool's `error`, the line `error(log, at)` picks before the mark,
+    with its gaps: `restore_failed`, and `host_unreachable` for each host the preparation opened (the registries
+    and the plan's hosts) that the error says it could not reach (`preparation.unreached`)."""
+    import container
+    import preparation
+    step = FAILED.search(log)
+    if step is None:
+        return None
+    line = int(step.group(1).rsplit(":", 1)[1])
+    original = next((c["original"] for s in build["stages"] for c in s["commands"] if c["line"] == line), "")
+    said = error(log, step.start())
+    gap = {"kind": "restore_failed", "path": step.group(1), "detail": f"{original}: {said}"}
+    where = {host: [plan["dockerfile"]] for host in (*plan["hosts"], *container.REGISTRIES)}
+    return {"path": step.group(1), "original": original, "error": said,
+            "gaps": [gap, *preparation.unreached([gap], {"hosts": sorted(where), "where": where})]}
 
 
 def origin(plan: dict, path: str) -> str | None:

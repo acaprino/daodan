@@ -543,7 +543,6 @@ def structure(record: dict) -> dict:
 
 GO_BUILD = r"\bgo\s+(build|install)\b"  # the RUN of a Dockerfile's stage that builds its Go module
 SCIP_GO_OUT = "/daodan/out"
-FAILED_STEP = re.compile(r"DAODAN-DOCKERFILE-FAILED (\S+)")
 
 
 PROGRESS = re.compile(r"go: (downloading|creating|finding|added|upgraded|found|to add|extracting) |"
@@ -565,7 +564,6 @@ def _docker(project: Path, work_dir: Path, files: list[str], roots: set[str], bu
     its documents name the checkout's files. Each run carries the Dockerfile, the stage and the `go.mod` and
     `go.sum` the steps resolved (`go get` resolves at run time). Also `{file: why}` for the files whose stage is
     not reproduced or did not run, and the gaps of a step that failed."""
-    import container
     import docker_build
     import preparation
     outside = [rel for rel in files if code_graph.owner(rel, roots) is None]
@@ -595,21 +593,16 @@ def _docker(project: Path, work_dir: Path, files: list[str], roots: set[str], bu
                                   timeout=1800)
         log = out_dir / "prepare.log"
         said = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
-        step = FAILED_STEP.search(said)
+        step = docker_build.failed_step(plan, build, said, _first_error)
         if step:
-            line = int(step.group(1).rsplit(":", 1)[1])
-            original = next((c["original"] for s in build["stages"] for c in s["commands"] if c["line"] == line), "")
-            error = _first_error(said, step.start())
-            reasons.update({rel: f"no Go module holds it: {step.group(1)} `{original}` failed: {error}"
-                            for rel in covered})
-            failed = {"kind": "restore_failed", "path": step.group(1), "detail": f"{original}: {error}"}
-            where = {host: [plan["dockerfile"]] for host in (*plan["hosts"], *container.REGISTRIES)}
-            gaps += [failed, *preparation.unreached([failed], {"hosts": sorted(where), "where": where})]
+            reasons.update({rel: f"no Go module holds it: {step['path']} `{step['original']}` failed: "
+                                 f"{step['error']}" for rel in covered})
+            gaps += step["gaps"]
             continue
         if result["state"] != "done":
-            last = next((line.strip() for line in reversed(said.splitlines()) if line.strip()), "")
+            last = docker_build.last_line(said).strip()
             reasons.update({rel: f"no Go module holds it, and its Dockerfile's build stage did not run: "
-                                 f"{result.get('cause')}" + (f": {last[:400]}" if last else "") for rel in covered})
+                                 f"{result.get('cause')}" + (f": {last}" if last else "") for rel in covered})
             continue
         written, index = out_dir / "out" / "index.scip", Path(work_dir) / f"scip-go-docker-{len(runs)}.scip"
         kept = docker_build.rewritten(written, plan, index) if written.is_file() else 0

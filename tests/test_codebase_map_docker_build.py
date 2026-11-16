@@ -61,7 +61,8 @@ def test_dispatch_runs_its_stage_up_to_the_go_install_that_builds_it(tmp_path):
     plan = docker_build.plan(build, work, ["dispatch/main.go"], GO_BUILD, work=str(work), root=str(root))
     assert not plan["gaps"]
     assert plan["image"] == "golang:1.17" and plan["stage"] == "0" and plan["workdir"] == "/go/src/app"
-    assert plan["ran"] == [3, 5, 7] and plan["build"] == {"line": 8, "original": "RUN go install"}
+    assert plan["ran"] == [3, 5, 7] and plan["build"] == {"line": 8, "original": "RUN go install",
+                                                          "argv": ["/bin/sh", "-c", "go install"]}
     assert plan["copies"] == {"/go/src/app/main.go": "dispatch/main.go", "/go/src/app/queue.go": "dispatch/queue.go"}
     assert plan["hosts"] == []
     done = run(plan["lines"], tmp_path, work, {"go": 'echo "go $* in $(pwd)" >> "$CALLS"\n'
@@ -95,6 +96,11 @@ def test_currency_runs_base_then_builder_with_compose_s_argument_and_maps_each_c
     assert plan["copies"]["/currency/src/main.cpp"] == "src/currency/src/main.cpp"
     assert plan["copies"]["/currency/proto/demo.proto"] == "pb/demo.proto"
     assert plan["copies"]["/currency/CMakeLists.txt"] == "src/currency/CMakeLists.txt"
+    # The build, which an analyzer runs where it would: in the stage's shell, with the stage's ARG values, as
+    # BuildKit gives a RUN its arguments.
+    assert plan["build"]["argv"] == ["/bin/sh", "-c", "mkdir -p build && cd build     && cmake ..     && make "
+                                     "-j$(nproc || sysctl -n hw.ncpu || echo 1) install"]
+    assert ["OPENTELEMETRY_CPP_VERSION", "1.28.0"] in plan["env"]
     done = run(plan["lines"], tmp_path, work, {
         "apk": 'echo "apk $*" >> "$CALLS"\n',
         "git": 'echo "git $* ver=$OPENTELEMETRY_CPP_VERSION" >> "$CALLS"\nmkdir -p opentelemetry-cpp\n',
@@ -393,3 +399,49 @@ def test_a_stage_it_cannot_reproduce_leaves_its_go_files_with_the_instruction_th
     reasons = go.missing(code_graph.Index(project), ["dispatch/main.go"], go.tasks(result["configs"]))
     assert reasons["dispatch/main.go"].startswith("no Go module holds it, and its Dockerfile's build stage is not "
                                                   "reproduced: dispatch/Dockerfile:2: ARG TOKEN: TOKEN has no value")
+
+
+# ------------------------------------------------------------------ scip-clang in the stage
+
+
+def currency(sandbox):
+    project = sandbox["root"] / "project"
+    for rel, text in {"src/currency/src/server.cpp": "int main() { return 0; }\n",
+                      "src/currency/src/other.cpp": "int other() { return 1; }\n",
+                      "src/currency/CMakeLists.txt": "project(currency CXX)\n", "src/currency/genproto/CMakeLists.txt": "",
+                      "src/currency/build/.keep": "", "src/currency/proto/.keep": "", "pb/demo.proto": "",
+                      "src/currency/Dockerfile": ""}.items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8")
+    return project
+
+
+def clang_runs(monkeypatch, docker, roots=("src/currency",)):
+    """`container.run_in_container` for the C and C++ index: its own run, whose configure of each of `roots`
+    fails as the finale's did (Protobuf's CMake package is not in Daodan's image), then `docker(out_dir)`."""
+    from indexers import clang
+    calls = []
+
+    def run_in_container(project_dir, command, *, image, out_dir, **options):
+        calls.append({"image": image, "command": command, **options})
+        out = Path(out_dir) / "out"
+        out.mkdir(parents=True, exist_ok=True)
+        if image != clang.IMAGE:
+            return docker(Path(out_dir))
+        (out / "result.json").write_text(json.dumps({"units": [{
+            "root": root, "state": "failed", "cause": "the configure ended with exit code 1",
+            "steps": [{"step": "configure", "returncode": 1, "seconds": 1.0,
+                       "tail": 'Could not find a package configuration file provided by "Protobuf"'}],
+            "compiled": {}, "index": None} for root in roots], "peak_mb": 90}), encoding="utf-8")
+        return {"state": "done", "exit_code": 0, "outputs": []}
+
+    monkeypatch.setattr(container, "run_in_container", run_in_container)
+    monkeypatch.setattr(container, "architecture", lambda: "x64")
+    monkeypatch.setattr(docker_build, "pinned", lambda image, timeout=60: image)
+    return calls
+
+
+CURRENCY = fact("otel-demo-currency.json", "src/currency/Dockerfile", ".", {"OPENTELEMETRY_CPP_VERSION": "1.28.0"})
+UNITS = [{"root": "src/currency", "kind": "cmake-target"}]
+
+
