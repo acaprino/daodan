@@ -31,7 +31,7 @@ Convenzioni:
   - «solo test»: lo confermano solo le suite, che dal commit `233618aa1` girano su Modal;
   - «da verificare»: nessun commit o risultato lo prova ancora;
   - «in stage»: il lavoro è nell'indice di git, non ancora in un commit.
-- La regola invalicabile di `AGENTS.md` (`2753088a3`, poi `ae7fd8270`): il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host, e ogni strumento che Daodan lancia sull'host ha un test con un file del progetto che, se eseguito, lascia un segno. Le schede del codice del progetto sull'host: D-161 (Tailwind), D-239 (rust-analyzer), D-245 e D-250 (Git), D-248 e D-253 (l'ambiente Python), D-256 (i formattatori), D-257 (Go), D-258 (Vue e Svelte), D-263 (i programmi nella cartella del progetto), D-264 (la sonda della memoria), D-276 (l'avvio del plugin).
+- La regola invalicabile di `AGENTS.md` (`2753088a3`, poi `ae7fd8270`): il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host, e ogni strumento che Daodan lancia sull'host ha un test con un file del progetto che, se eseguito, lascia un segno. Le schede del codice del progetto sull'host: D-161 (Tailwind), D-239 (rust-analyzer), D-245 e D-250 (Git), D-248 e D-253 (l'ambiente Python), D-256 (i formattatori), D-257 (Go), D-258 (Vue e Svelte), D-263 (i programmi nella cartella del progetto), D-264 (la sonda della memoria), D-276 (l'avvio del plugin), D-281 (lo store che arriva con il progetto), D-282 (i programmi per nome nudo).
 - Tag: ogni scheda ha una riga con cinque voci, che l'«Indice dei tag» raccoglie:
   - lingua: i linguaggi del difetto, `tutti` se non dipende da un linguaggio;
   - area: `pre-mappa`, `snapshot`, `preparazione`, `host`, `parser`, `analizzatore`, `passo dinamico`, `container`, `servizi`, `driver Modal`, `explorer`, `benchmark` o `documenti`;
@@ -46,7 +46,7 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (70): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280
+- `tutti` (73): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283
 - `java` (45): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
@@ -72,10 +72,10 @@ Convenzioni:
 - `analizzatore` (122): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278
 - `pre-mappa` (39): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062
 - `passo dinamico` (36): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274
+- `host` (14): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282
 - `servizi` (14): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261, D-275
+- `container` (13): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279, D-283
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
-- `container` (12): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279
-- `host` (12): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276
 - `preparazione` (11): D-044, D-045, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-063
 - `snapshot` (10): D-031, D-032, D-033, D-034, D-035, D-059, D-245, D-250, D-252, D-265
 - `documenti` (6): D-222, D-227, D-229, D-230, D-231, D-232
@@ -88,18 +88,18 @@ Convenzioni:
 
 - `completezza` (150): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279
 - `correttezza` (87): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280
-- `sicurezza` (24): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276
+- `sicurezza` (27): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
 - `prestazioni` (3): D-123, D-187, D-189
 
 ### Origine
 
-- `commit` (122): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280
+- `commit` (123): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (30): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264
-- `prova su Modal` (20): D-089, D-102, D-103, D-104, D-115, D-116, D-117, D-118, D-119, D-120, D-169, D-179, D-236, D-237, D-239, D-249, D-255, D-271, D-272, D-276
+- `prova su Modal` (22): D-089, D-102, D-103, D-104, D-115, D-116, D-117, D-118, D-119, D-120, D-169, D-179, D-236, D-237, D-239, D-249, D-255, D-271, D-272, D-276, D-281, D-282
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
 - `conferma` (5): D-057, D-058, D-136, D-158, D-187
@@ -179,6 +179,7 @@ Convenzioni:
 - `gcc` (1): D-257
 - `gofmt` (1): D-256
 - `Google Services` (1): D-109
+- `grep` (1): D-282
 - `Helm` (1): D-029
 - `Jedi` (1): D-231
 - `Launchpad` (1): D-176
@@ -191,23 +192,26 @@ Convenzioni:
 - `pub` (1): D-015
 - `python` (1): D-264
 - `Renovate` (1): D-046
+- `ripgrep` (1): D-282
 - `ruff` (1): D-256
 - `rustfmt` (1): D-256
 - `SvelteKit` (1): D-156
 - `SwiftPM` (1): D-030
+- `taskkill` (1): D-282
 - `Terraform` (1): D-029
 - `tox` (1): D-183
 - `typescript-language-server` (1): D-258
 - `Vitest` (1): D-194
 - `wsl` (1): D-263
+- `WSL` (1): D-282
 
 ## Indice
 
-280 schede: 220 risolte, 19 aperte, 41 buchi dichiarati.
+283 schede: 225 risolte, 16 aperte, 42 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
-72 schede: 66 risolto, 0 aperto, 6 buco dichiarato.
+74 schede: 68 risolto, 0 aperto, 6 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -283,10 +287,12 @@ Convenzioni:
 | D-264 | La sonda della memoria importava i moduli della cartella del progetto | sonda della memoria | risolto | `5dcb466fe` | tutti · host · sicurezza · review · python |
 | D-265 | Un file con un errore di sintassi si perdeva intero | il corpus | risolto | `ba8a1920f` | go, rust, java, javascript, typescript, c, cpp · snapshot · completezza · finale · tree-sitter |
 | D-276 | Le righe che avviano il plugin eseguivano sull'host il `.venv` del progetto | avvio del plugin | risolto su Linux | `624561af1` | python · host · sicurezza · prova su Modal · uv, Claude Code |
+| D-281 | Uno store che arriva con il progetto sceglieva il processo da terminare e la cartella da leggere | lo store nel progetto | risolto su Linux | `398adf80e` | tutti · host · sicurezza · prova su Modal |
+| D-282 | Sull'host taskkill, wsl.exe, rg e grep si avviavano per nome nudo | gli strumenti dell'host | risolto su Linux | `fd76f2d7d` | tutti · host · sicurezza · prova su Modal · taskkill, WSL, ripgrep, grep |
 
 ### Analizzatori
 
-125 schede: 89 risolto, 11 aperto, 25 buco dichiarato.
+125 schede: 91 risolto, 8 aperto, 26 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -336,8 +342,8 @@ Convenzioni:
 | D-108 | Android: classpath dei test unitari non risolti, nessun compito Android | jvm-android-app-lib, mix-poly-firebase | aperto (dynamic-jvm-2) | `39805f5e7` | java, kotlin · analizzatore · completezza · finale · scip-java, Gradle, Android SDK |
 | D-109 | Android: build fermo su `google-services.json` mancante | jvm-android-app-lib, mix-poly-firebase | buco dichiarato (`build_input_missing`) | `39805f5e7` | java, kotlin · analizzatore · completezza · jvm-otel-android · Gradle, Google Services |
 | D-110 | kotlinconf: «Task with name 'compileKotlinJvm' not found in project ':app:adminApp'» | kotlinconf (`146e891c150c`) | risolto | `a13d55787` | kotlin · analizzatore · correttezza · jvm-kotlinconf · scip-java, Gradle |
-| D-111 | jhipster: 14 file Java con il documento senza occorrenze | jhipster-sample (`6b000b5d23a3`) | aperto finché non è committato | — | java · analizzatore · completezza · finale · scip-java, Maven |
-| D-112 | Un file Java senza documento in due fixture: nessun javac del build lo compila | jvm-maven-multi-bom-profile, jvm-protobuf-generated | aperto finché non è committato | — | java · analizzatore · completezza · finale · Maven, Gradle, protoc |
+| D-111 | jhipster: 14 file Java con il documento senza occorrenze | jhipster-sample (`6b000b5d23a3`) | risolto | `1c68cbde4`, `f1124a748` | java · analizzatore · completezza · finale · scip-java, Maven |
+| D-112 | Un file Java senza documento in due fixture: nessun javac del build lo compila | jvm-maven-multi-bom-profile, jvm-protobuf-generated | buco dichiarato (il motivo di `missing`) | `f1124a748` | java · analizzatore · completezza · finale · Maven, Gradle, protoc |
 | D-113 | C#: un progetto che Msbuild rifiuta ferma il ripristino intero | zlib (`51b7f2abdade`) | risolto | `73b645531`, `0cdbae9b2` | csharp · analizzatore · correttezza · giro-2 · scip-dotnet, Roslyn, MSBuild, dotnet |
 | D-114 | C#: 56,1 % di risposta | mix-dotnet-central, eShop (`913acea66708`), otel-demo, voting-app (`63e9150ca17a`) | aperto (csharp-dotnet) | `56e65e114`, `73b645531`, `0cdbae9b2` | csharp · analizzatore · completezza · finale · scip-dotnet |
 | D-115 | La colonna della riga 1 di un file con il BOM | i casi C# | risolto | `0cdbae9b2` | tutti · analizzatore · correttezza · prova su Modal · Roslyn, tsc |
@@ -387,8 +393,8 @@ Convenzioni:
 | D-159 | Template di Vue e Svelte non letti | hoppscotch, js-vue-pnpm, js-sveltekit | risolto | `64edfb930`, `b9aeca1fb` | vue, svelte · analizzatore · completezza · finale |
 | D-160 | TypeScript: un file senza documento | hoppscotch, memos (`509e41bd1a1b`) | aperto | — | typescript · analizzatore · completezza · finale · scip-typescript |
 | D-161 | Tailwind caricato sull'host con la configurazione del progetto | analyzer dei fogli di stile | risolto | `3595d571b` | css · analizzatore · sicurezza · commit · Tailwind |
-| D-162 | Fogli di stile: buchi `no-rule` | il corpus | aperto (ts-container-2) | — | css · analizzatore · completezza · finale · Tailwind |
-| D-163 | hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto | hoppscotch | aperto (ts-container-2) | — | css · analizzatore · correttezza · giro-2 |
+| D-162 | Fogli di stile: buchi `no-rule` | il corpus | aperto (ts-container-2) | `efac75599` | css · analizzatore · completezza · finale · Tailwind |
+| D-163 | hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto | hoppscotch | risolto | `efac75599` | css · analizzatore · correttezza · giro-2 |
 | D-164 | Fogli remoti senza testo | il corpus | buco dichiarato (`remote-sheet`) | `9c719fc1a` | css · analizzatore · completezza · finale |
 | D-165 | Parser: `base` di C# non letto | parser | risolto | `d94f92470` | csharp · parser · completezza · commit |
 | D-166 | Parser: `this` e `super` di Kotlin non letti | parser | risolto | `d94f92470` | kotlin · parser · completezza · commit |
@@ -464,7 +470,7 @@ Convenzioni:
 
 ### Container, servizi e driver Modal
 
-25 schede: 19 risolto, 2 aperto, 4 buco dichiarato.
+26 schede: 20 risolto, 2 aperto, 4 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -493,6 +499,7 @@ Convenzioni:
 | D-269 | Due installazioni dello stesso strumento si toglievano i file a vicenda | cartella condivisa degli strumenti, macchina nuova | risolto da `2057bbafc` e `24e6682c9` | `2057bbafc`, `24e6682c9`, `c13d51732` | tutti · host · correttezza · commit · uv, Node, scip-python, Pyright, npm |
 | D-275 | I passi della CI si leggevano solo nei workflow con servizi o Compose | pre-mappa della CI | risolto | `bd133fe94` | tutti · servizi · completezza · commit · GitHub Actions, GitLab CI |
 | D-279 | I valori del `.env` non arrivavano all'esecuzione di uno stadio | container | risolto | `4a999670e` | tutti · container · completezza · commit · Docker, BuildKit |
+| D-283 | Un valore del `.env` restava negli output JSON e binari e dentro parole più lunghe | container | risolto | `a41823a06`, `124c63440` | tutti · container · sicurezza · commit |
 
 ### Benchmark e documenti
 
@@ -660,7 +667,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `giro-2` → `finale` | 8 | 20 | 20 |
 | `finale` → `jvm-otel-android` | 1 | 0 | 0 |
 
-- `no-document`: un file Java che nessun javac del build compila, in due fixture: un modulo fuori dal reactor predefinito di Maven e l'output di protoc fuori da ogni source set di Gradle; ogni file ha la sua causa nel motivo, non committato (D-112). Su jhipster, i 14 documenti senza occorrenze sono `package-info.java`, e un file lo esclude il build stesso (D-111, non committato).
+- `no-document`: un file Java che nessun javac del build compila, in due fixture: un modulo fuori dal reactor predefinito di Maven e l'output di protoc fuori da ogni source set di Gradle; ogni file ha la sua causa nel motivo (D-112, `f1124a748`). Su jhipster, i 14 documenti senza occorrenze sono `package-info.java`, contati come indicizzati da `1c68cbde4`, e un file lo esclude il build stesso, che lo dice (D-111, `f1124a748`).
 - `undefined-project-symbol`: nessuna scheda.
 - Le versioni di Java sotto il 17, e un build che scavalca il plugin di scip-java, non danno buchi ma nessun indice: D-099–D-104 (`jdk_unsupported`, `build_edited`).
 
@@ -874,7 +881,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `conferma` → `ci-steps` | 2 | 38.210 | 523 |
 | `ci-steps` → `dotenv` | 2 | 523 | 523 |
 
-- `no-rule`: un riferimento di classe, id o composes senza una regola che lo definisca (D-162), fra cui le classi Tailwind. Da `3595d571b` Tailwind gira nel container (D-161). Sugli stessi due casi, tududi e fastapi, da 38.210 buchi nella conferma a 523 in `ci-steps`: nessuno dei due giri registra il proprio codice, così il salto non si lega a un commit (D-251).
+- `no-rule`: un riferimento di classe, id o composes senza una regola che lo definisca (D-162), fra cui le classi Tailwind. Da `3595d571b` Tailwind gira nel container (D-161). Sugli stessi due casi, tududi e fastapi, da 38.210 buchi nella conferma a 523 in `ci-steps`: nessuno dei due giri registra il proprio codice, così il salto non si lega a un commit (D-251). Da `efac75599` Tailwind trova i fogli di un pacchetto come il suo build: memos da 5.073 a 652, fastapi da 688 a 11 (D-162).
 - `remote-sheet`: un foglio remoto senza testo (D-164), buco dichiarato.
 - Le altre classi sono le cause del lettore (`scripts/indexers/css.py`); nessuna scheda le spiega una per una.
 
@@ -1090,11 +1097,11 @@ Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-
 | mix-real-tinyxml2 | github.com/leethomason/tinyxml2 `9148bdf719e9` | 11 | D-043, D-137, D-209, D-236, D-266, D-271, D-272, D-278 | D-230, D-255, D-265, D-275 |
 | mix-real-tududi | github.com/chrisvel/tududi `71da9d7b34df` | 9 | D-145, D-146, D-147, D-182, D-185, D-186, D-187, D-270, D-274 | D-189, D-213, D-240, D-251 |
 | mix-real-zlib | github.com/madler/zlib `51b7f2abdade` | 15 | D-043, D-113, D-130, D-133, D-134, D-209, D-220, D-267, D-268, D-271 | D-010, D-065, D-230, D-275 |
-| real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254, D-260 | D-171, D-213, D-251, D-253, D-270 |
-| real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237 | D-080, D-239 |
+| real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254, D-260 | D-162, D-171, D-213, D-251, D-253, D-270 |
+| real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237 | D-080, D-162, D-239 |
 | real-app-jhipster-sample | github.com/jhipster/jhipster-sample-app `6b000b5d23a3` | 17 | D-111, D-194 | D-275 |
 | real-app-kotlinconf | github.com/JetBrains/kotlinconf-app `146e891c150c` | 18 | D-055, D-057, D-058, D-110, D-158 | D-275 |
-| real-app-memos | github.com/usememos/memos `509e41bd1a1b` | 10 | D-160 | D-275 |
+| real-app-memos | github.com/usememos/memos `509e41bd1a1b` | 10 | D-160 | D-162, D-163, D-275 |
 | real-svc-eshop | github.com/dotnet/eShop `913acea66708` | 16 | D-018, D-059, D-113, D-114, D-116, D-118, D-119, D-120, D-198, D-241, D-249 | — |
 | real-svc-otel-demo | github.com/open-telemetry/opentelemetry-demo `b825c7c25726` | 26 | D-059, D-094, D-105, D-106, D-107, D-114, D-132, D-135, D-240, D-255, D-259, D-272, D-277 | D-071 |
 | real-svc-petclinic-microservices | github.com/spring-petclinic/spring-petclinic-microservices `e8b747ab5227` | 17 | — | — |
@@ -1951,6 +1958,26 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Stato:** risolto su Linux; Windows non è misurato.
 - **Note:** D-248, D-253, D-264, lo stesso difetto per gli interpreti Python che Daodan avvia sull'host.
 
+#### D-281 Uno store che arriva con il progetto sceglieva il processo da terminare e la cartella da leggere
+- **Tag:** lingua tutti · area host · tipo sicurezza · origine prova su Modal · strumento —
+- **Descrizione:** lo store di Daodan sta nella cartella del progetto, quindi un repository può portarne uno: l'hook PostToolUse leggeva il processo da terminare da `.daodan/map/runs/working/snapshot/engine-pass.running`, e uno `state.json` pubblicato poteva nominare un `target` assoluto, che l'aggiornamento fotografava (dal commit `398adf80e`).
+- **Spiegazione:** su Modal un file che nominava un processo canarino l'ha fatto terminare con una modifica; con `{"pid": 1}` la chiamata è `os.killpg(1, SIGTERM)`, su Linux tutti i processi dell'utente. Il `target` portava l'aggiornamento su una cartella fuori dal progetto.
+- **Progetto e caso:** lo store nel progetto — prova di host-guard-2, commit `398adf80e`, 17 novembre 2026.
+- **Rimedio:** `398adf80e` (17 novembre, host-guard-2): il passo registra il suo processo nella cartella condivisa di Daodan (`passes/<digest del percorso del manifest>.json`, `engine_pass.running_record` in `scripts/engine_pass.py`), e un aggiornamento rifiuta un target fuori dal progetto con le parole di `_bound_manifest`.
+- **Verifica:** `tests/test_codebase_map_working_run.py` (`test_6_a_store_that_comes_with_the_project_names_no_process_to_end`, `test_6_a_store_that_comes_with_the_project_names_no_folder_outside_it`), rossi prima del commit.
+- **Stato:** risolto su Linux; Windows non è misurato.
+- **Note:** un passo partito prima del commit e ancora in corso non si vede in corso, una volta sola. D-282.
+
+#### D-282 Sull'host taskkill, wsl.exe, rg e grep si avviavano per nome nudo
+- **Tag:** lingua tutti · area host · tipo sicurezza · origine prova su Modal · strumento taskkill, WSL, ripgrep, grep
+- **Descrizione:** con il progetto come cartella corrente, un nome senza percorso avvia il file del progetto (su Windows dalla cartella corrente, su Linux se il `PATH` contiene `.`): `engine_pass._terminate_tree` avviava `taskkill`, `container.wsl` e `distro_argv` ripiegavano su un `wsl.exe` nudo, `usage_finder` avviava `rg` e `grep` (dal commit `fd76f2d7d`).
+- **Spiegazione:** D-263 aveva fissato la ricerca dei programmi (`tree_scope.program`) ma questi quattro la saltavano.
+- **Progetto e caso:** gli strumenti dell'host — prova di host-guard-2, commit `fd76f2d7d`, 17 novembre 2026.
+- **Rimedio:** `fd76f2d7d` (17 novembre, host-guard-2): `scripts/engine_pass.py` prende `taskkill` da `tree_scope.program` e dice quando il `PATH` non lo ha; `scripts/container.py` (`wsl`, `distro_argv`) dà il buco «WSL is not installed» invece di ripiegare; `scripts/usage_finder.py` prende `rg` e `grep` da `tree_scope.program`.
+- **Verifica:** `tests/test_codebase_map_host_programs.py` (`test_a_pass_is_ended_by_the_taskkill_of_the_path_never_by_the_project_s`, `test_without_wsl_nothing_named_wsl_is_started`, `test_usages_are_searched_by_a_tool_of_the_path_or_by_python_never_by_the_project_s`), a segni, veri su Linux con `.` nel `PATH`: prima partivano il `taskkill`, il `wsl.exe` e l'`rg` del progetto, e l'`rg` finto faceva rispondere «nessun uso».
+- **Stato:** risolto su Linux; Windows non è misurato.
+- **Note:** D-263.
+
 ### Analizzatori
 
 #### D-065 Un linguaggio con 0 file indicizzati risultava `fresh`
@@ -2498,11 +2525,11 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - i 14 «document without occurrences» sono `package-info.java` (javadoc e la riga `package`), che scip-java scrive come documenti senza occorrenze: la copertura li contava mancanti;
   - `DatabaseTestcontainer.java` lo lascia fuori il build di jhipster: il profilo `dev`, `activeByDefault` (`pom.xml:855-898`), dà a maven-compiler-plugin `<testExclude>io/github/jhipster/sample/config/DatabaseTestcontainer.java</testExclude>`; misurato con Maven 3.10.0 `help:effective-pom` su Modal.
 - **Progetto e caso:** jhipster-sample (`6b000b5d23a3`) — finale, 16 novembre 2026.
-- **Rimedio:** non committato (android-sdk):
-  - `scripts/code_graph.py` (`build`): un documento vuoto conta come indicizzato dove lo snapshot non trova niente a cui rispondere (nessun sito di riferimento, nessuna funzione, metodo o classe);
-  - `scripts/premap/maven.py` registra per ogni `maven-module` i `compile_excludes` di maven-compiler-plugin (`excludes`, `testExcludes`); `scripts/indexers/java.py` (`missing`) dice «the build leaves it out: maven-compiler-plugin excludes `<pattern>` from <folder> (<pom>, as Maven's effective model gives it)».
+- **Rimedio:** android-sdk:
+  - `1c68cbde4`, `scripts/code_graph.py` (`build`): un documento vuoto conta come indicizzato dove lo snapshot non trova niente a cui rispondere (nessun sito di riferimento, nessuna funzione, metodo o classe): i 14 `package-info.java`;
+  - `f1124a748`: `scripts/premap/maven.py` registra per ogni `maven-module` i `compile_excludes` di maven-compiler-plugin (`excludes`, `testExcludes`) dal modello effettivo di Maven che la pre-mappa ha nel suo container; `scripts/indexers/java.py` (`missing`) dice «the build leaves it out: maven-compiler-plugin excludes `<pattern>` from <folder> (<pom>, as Maven's effective model gives it)».
 - **Verifica:** solo test (`tests/test_codebase_map_code_graph.py`, `test_a_document_without_occurrences_of_a_file_that_holds_nothing_to_answer_is_indexed`; `tests/test_codebase_map_premap_maven.py`, `test_the_files_the_compiler_plugin_leaves_out_are_the_module_s`; `tests/test_codebase_map_indexers_jvm.py`, `test_a_java_file_the_compiler_plugin_excludes_says_so`); atteso su jhipster Java 135 file su 136, non ancora rimisurato.
-- **Stato:** aperto finché non è committato; poi risolto, e il 136° file è un'esclusione dichiarata con il suo motivo.
+- **Stato:** risolto; il 136° file è un'esclusione dichiarata con il suo motivo.
 - **Note:** android-sdk ha aggiunto `excluded` a `structure()` e a `index()` di `scripts/indexers/java.py`.
 #### D-112 Un file Java senza documento in due fixture: nessun javac del build lo compila
 - **Tag:** lingua java · area analizzatore · tipo completezza · origine finale · strumento Maven, Gradle, protoc
@@ -2511,13 +2538,13 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - jvm-maven-multi-bom-profile: `cli/pom.xml` entra nel reactor solo con il profilo `cli` (la proprietà `with-cli`, `pom.xml:86-95`), quindi il modello effettivo di Maven non ne ha il progetto;
   - jvm-protobuf-generated: `GreetingProto.java` è l'output di protoc committato in `src/generated/java`, che nessun source set di Gradle contiene.
 - **Progetto e caso:** jvm-maven-multi-bom-profile, jvm-protobuf-generated — finale, 16 novembre 2026.
-- **Rimedio:** non committato (android-sdk), `scripts/indexers/java.py` (`missing`): ogni file Java senza documento ha la sua causa, in quest'ordine:
+- **Rimedio:** `f1124a748` (17 novembre, android-sdk), `scripts/indexers/java.py` (`missing`): ogni file Java senza documento ha la sua causa, in quest'ordine:
   - le esclusioni del compilatore (D-111);
   - «its module <root> (<pom>) is in no reactor of Maven's default build: Maven's effective model holds no project of it, so no javac task compiles it»;
   - «the build of <root> wrote no index: …»;
   - altrimenti «no javac task of the build compiles it: scip-java writes a document for every file javac compiles».
 - **Verifica:** solo test (`tests/test_codebase_map_indexers_jvm.py`, `test_a_java_file_no_javac_task_compiles_says_why`).
-- **Stato:** aperto finché non è committato; poi buco dichiarato (il motivo di `missing`).
+- **Stato:** buco dichiarato (il motivo di `missing`).
 - **Note:** D-111; android-sdk ha aggiunto anche `outside` a `structure()` e `configs` (excluded, outside, failed) a `index()` di `scripts/indexers/java.py`.
 #### D-113 C#: un progetto che Msbuild rifiuta ferma il ripristino intero
 - **Tag:** lingua csharp · area analizzatore · tipo correttezza · origine giro-2 · strumento scip-dotnet, Roslyn, MSBuild, dotnet
@@ -2876,7 +2903,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 
 #### D-143 Rust: file senza documento
 - **Tag:** lingua rust · area analizzatore · tipo completezza · origine finale · strumento rust-analyzer
-- **Descrizione:** «no document in the index» per 6 file Rust su 105 in hoppscotch (finale) e 1 su 19 in semver (finale e conferma).
+- **Descrizione:** finale: 8 file Rust su 105 senza documento in hoppscotch, 6 con «no document in the index» e i due `posit.rs` con «no crate includes it»; 1 su 19 in semver (finale e conferma).
 - **Spiegazione:** ognuno dei file mancanti è dietro un cfg falso su Linux, nessuno è un difetto dell'indicizzatore; ma un file caricato solo da file che un cfg lascia fuori diceva «no crate includes it», senza il file che lo carica né la causa.
 - **Progetto e caso:** hoppscotch (`55908a76a1d0`), semver (`280ebcb6edac`) — finale e conferma, 16 novembre 2026.
 - **Rimedio:** `1c68cbde4` (16 novembre, dynamic-step-2), `scripts/indexers/rust.py`: un file caricato solo da file che un cfg lascia fuori nomina il file che lo carica e quella causa (`LOADER_OFF`); i file dietro un `mod` con cfg falso dicono perché da `a3801beed` (D-237).
@@ -3086,9 +3113,9 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** conferma: 42.757 buchi no-rule su 58.534 siti dei fogli di stile, 26,3 % di risposta; nel finale 48.808.
 - **Spiegazione:** un riferimento di classe, id o composes senza una regola che lo definisca è `no-rule` (`scripts/indexers/css.py`); fra questi le classi Tailwind (`ee1e83fc8`). Da verificare quanti sono classi che nessun foglio definisce e quanti un difetto.
 - **Progetto e caso:** il corpus — finale e conferma, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (ts-container-2).
+- **Rimedio:** `efac75599` (17 novembre, ts-container-2), `scripts/indexers/css_tailwind.js`: i fogli di un pacchetto si trovano come li trova il build (D-163), e gli argomenti di `cn`/`clsx`, compresa la funzione fatta con `extendTailwindMerge`, sono siti di classe.
+- **Verifica:** dal commit, su Modal ai commit fissati: memos da 1,3 % a 88,5 % (6.494 su 7.339), `no-rule` da 5.073 a 652; fastapi da 6,4 % a 93,1 % (1.954 su 2.098), `no-rule` da 688 a 11, `call` da 109 a 0; hoppscotch 97,2 % (D-163).
+- **Stato:** aperto (ts-container-2): restano le classi di un pacchetto che solo il ripristino nel container porta (`mu-*` di memos), i marcatori `group`/`peer` di Tailwind e le funzioni del progetto, per il passo dinamico.
 - **Note:** D-161.
 
 #### D-163 hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto
@@ -3096,9 +3123,9 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** giro-2 e finale: «the stylesheet stage exited with code 1 without a report; see engine-pass.log».
 - **Spiegazione:** da verificare.
 - **Progetto e caso:** hoppscotch — giro-2 e finale, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (ts-container-2).
+- **Rimedio:** `efac75599` (17 novembre, ts-container-2), `scripts/indexers/css_tailwind.js`: i fogli che Tailwind importa da un pacchetto si trovano come li trova `@tailwindcss/node`, dagli `exports` del pacchetto con le condizioni `style` e poi `default`, risalendo dalla cartella reale del foglio che importa; prima si cercavano per percorso nudo, e Tailwind 4 si fermava («cannot load stylesheet», misurato su memos).
+- **Verifica:** dal commit, su Modal al commit fissato: hoppscotch da stadio fallito a fresh, 97,2 % dei siti con risposta (16.207 su 16.676); `tests/test_codebase_map_css_graph.py` (`test_a_sheet_tailwind_imports_from_a_package_is_found_as_its_build_finds_it`). Il commit non dice quale foglio fermava lo stadio di hoppscotch.
+- **Stato:** risolto.
 - **Note:** —
 
 #### D-164 Fogli remoti senza testo
@@ -4140,6 +4167,20 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - su Modal (`test_on_modal_a_stage_s_arg_from_the_tracked_env_reaches_both_sandboxes_and_nothing_the_run_keeps`): il file letto dice «prep=[.env:VERSION] arg=[.env:VERSION]», e il valore non compare da nessuna parte.
 - **Stato:** risolto.
 - **Note:** D-135, D-240.
+
+#### D-283 Un valore del `.env` restava negli output JSON e binari e dentro parole più lunghe
+- **Tag:** lingua tutti · area container · tipo sicurezza · origine commit · strumento —
+- **Descrizione:** il mascheramento dei valori del `.env` (D-240, D-279) copriva solo i log e gli output di testo (`.log`, `.txt`) e solo le parole intere: un valore compilato nel build (`-DVERSION=…`) restava in un `compile_commands.json` o in un indice SCIP, e `-DVERSION=1.28.0x` restava leggibile (dai commit `a41823a06` e `124c63440`).
+- **Spiegazione:** la regola del proprietario: nessun valore del `.env` arriva a fatti, risultati, archivi o testi conservati di Daodan.
+- **Progetto e caso:** container — commit `a41823a06` e `124c63440` di test-services, 17 novembre 2026.
+- **Rimedio:** `scripts/container.py`, test-services:
+  - `a41823a06`: gli output JSON si mascherano restando JSON valido; un output binario non si tocca mai a byte: se vi compaiono i byte di un valore si trattiene come buco `output_withheld`, che nomina la variabile e l'output, e non si conserva;
+  - `124c63440`: un valore di quattro o più caratteri si maschera dovunque compaia, uno più corto solo come parola intera (`/app/` sì, `application` no), e booleani e numeri fino a cinque cifre restano; ogni esecuzione lo dice una volta con un buco `mask_partial` che nomina quelle variabili, e un output di testo con un valore dentro una parola si maschera e si tiene.
+- **Verifica:**
+  - `tests/test_codebase_map_dynamic_services.py` (`test_an_output_that_holds_a_value_after_masking_is_withheld_with_a_gap_and_off_the_record`, `test_a_run_says_once_which_values_it_masks_only_as_whole_words_or_not_at_all`);
+  - dal commit `a41823a06`, su Modal con g++ e `-DVERSION=<valore>`: il database di compilazione torna mascherato e l'indice che porta il valore è un buco.
+- **Stato:** risolto; i valori corti, i booleani e i numeri non mascherati sono il buco dichiarato `mask_partial`.
+- **Note:** D-240, D-279.
 
 ### Benchmark e documenti
 
