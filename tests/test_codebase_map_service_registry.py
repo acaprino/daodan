@@ -122,6 +122,8 @@ class RecognizeTests(unittest.TestCase):
         "api/requirements.txt": "stripe==7.0\nfastapi>=0.110  # the API\n",
         "api/pay.py": "import os\n\nKEY = os.environ['STRIPE_SECRET_KEY']\n",
         "api/Dockerfile": "FROM python:3.12-slim\n",
+        "api/known.json": '{"schema": "daodan/service-registry/v1", "entries": [{"env": ["STRIPE_KEY"]}]}',
+        "web/dist.js": "var a=1;" * 2000 + "STRIPE_KEY\n",
     }
 
     @classmethod

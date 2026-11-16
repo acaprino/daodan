@@ -7,8 +7,10 @@
 Signs: the dependencies of each build unit, in the registry ecosystem of the unit;
 the packages of `requirements*.txt`; the images of Dockerfiles and compose files and
 of the services the pre-map states (a CI job's, those Compose starts);
-the names of configuration variables and the hosts written in the files; the file
-names the registry knows. A dependency that names a build unit of the project is
+the names of configuration variables and the hosts written in the files, where the
+project writes them: not in a file the pre-map excludes (generated, vendored,
+documentation), a minified line or a registry of Daodan itself; the file names the
+registry knows. A dependency that names a build unit of the project is
 the project's own, never external.
 """
 from __future__ import annotations
@@ -32,6 +34,8 @@ REGISTRY = SCRIPT_DIR.parent / "data" / "service-registry.json"
 ECOSYSTEMS = {"npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "deno": "npm", "python": "pypi",
               "cargo": "crates", "go": "go", "composer": "composer", "bundler": "rubygems", "rubygems": "rubygems",
               "terraform": "terraform"}
+# A registry lists every service's variables and hosts: it shows the use of none.
+OWN = ('"daodan/service-registry/', '"daodan/registry-additions/')
 _REQUIREMENT = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])?\s*(?:[<>=!~;@#]|$)")
 _FROM = re.compile(r"^\s*FROM\s+(?:--\S+\s+)*([^\s]+)", re.I)
 _IMAGE = re.compile(r"^\s*image:\s*['\"]?([^\s'\"#]+)")
@@ -145,8 +149,14 @@ def recognize(manifest: Path, registry: dict | None = None) -> list[dict]:
     words = re.compile(r"\b(" + "|".join(sorted(map(re.escape, prefixes), key=len, reverse=True)) + r")[A-Z0-9_]*\b") \
         if prefixes else None
     places = re.compile("|".join(sorted(map(re.escape, hosts), key=len, reverse=True))) if hosts else None
+    left_out = tuple(item["path"] for item in premap.ensure(manifest).get("excluded", []))
     for rel, lines in texts.items():
+        if any(rel == path or rel.startswith(path.rstrip("/") + "/") for path in left_out) \
+                or any(mark in line for line in lines[:3] for mark in OWN):
+            continue
         for number, line in enumerate(lines, 1):
+            if len(line) > flows.snapshot.MAX_STYLESHEET_LINE:  # minified: no line of it is written by the project
+                continue
             for match in words.finditer(line) if words else ():
                 add(prefixes[match.group(1)], "env", match.group(0), rel, number)
             for match in places.finditer(line) if places else ():
