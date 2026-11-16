@@ -101,7 +101,7 @@ The caller supplies shape; the helper computes rigor.
 Before any dispatch:
 
 ```text
-python "${CLAUDE_PLUGIN_ROOT}/skills/review-preparation/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json [--rigor quick|standard|deep] [--deeper] --id ID --stage STAGE --out ROSTER.json
+python "${CLAUDE_PLUGIN_ROOT}/skills/review-preparation/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] [--technologies TECHNOLOGIES.json] --context CONTEXT.json [--rigor quick|standard|deep] [--deeper] --id ID --stage STAGE --out ROSTER.json
 ```
 
 Complete the roster through
@@ -110,6 +110,10 @@ bind deliveries to its `id`. The protocol refuses roles outside `roster` and
 `support`. Changed public interfaces, sensitive paths, manifests/contracts or
 many callers force `deep`, even when `quick` was asked; size alone raises nothing.
 `--deeper` raises one rigor in a new entry; nothing lowers it. Report red baselines.
+
+`TECHNOLOGIES.json` is `snapshot.py technologies` on the candidate's map run:
+the frameworks, libraries and services the registry recognizes, per build unit;
+without a usable run, omit it.
 
 The technical context carries the prepared `review_basis`
 (`changeset`, `content`, or `claims`), `scope_id`, `conclusion_paths`,

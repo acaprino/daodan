@@ -141,6 +141,7 @@ class RecognizeTests(unittest.TestCase):
         manifest = cls.work / "snapshot/manifest.sqlite"
         snapshot.main(["write", str(project), "--out", str(manifest), "--no-engine", "--no-index"])
         cls.found = {r["id"]: r for r in service_registry.recognize(manifest)}
+        cls.units = {u["name"]: u for u in service_registry.technologies(manifest)["units"]}
 
     @classmethod
     def tearDownClass(cls):
@@ -161,3 +162,10 @@ class RecognizeTests(unittest.TestCase):
 
     def test_a_package_of_the_project_is_not_external(self):
         self.assertNotIn("resend", self.found)
+
+    def test_a_unit_holds_the_technologies_its_files_show(self):
+        self.assertEqual(self.units["web"]["paths"], ["web"])
+        self.assertEqual(self.units["web"]["technologies"], ["nodejs", "react", "stripe"])
+        self.assertEqual(self.units["resend"]["technologies"], ["nodejs"])
+        self.assertTrue({"docker", "fastapi", "stripe"} <= set(self.units["root"]["technologies"]))
+        self.assertNotIn("react", self.units["root"]["technologies"])

@@ -70,6 +70,19 @@ class RigorTest(unittest.TestCase):
         self.assertEqual(compute(rigor="quick", deeper=True)["rigor"], "standard")
         self.assertEqual(compute(rigor="deep", deeper=True)["rigor"], "deep")
 
+    def test_a_technology_of_the_files_build_unit_adds_its_specialist(self):
+        technologies = {"units": [{"paths": ["."], "technologies": ["react"]},
+                                  {"paths": ["desktop"], "technologies": ["tauri"]},
+                                  {"paths": ["api"], "technologies": ["fastapi"]}]}
+        shell = compute(diff_of("desktop/ui/state.ts"), technologies=technologies)
+        self.assertEqual(shell["signals"]["technologies"], ["tauri"])
+        self.assertIn("senior-review:tauri-auditor", shell["roster"])
+        self.assertNotIn("senior-review:react-auditor", shell["roster"])
+        self.assertIn("senior-review:react-auditor", compute(diff_of("web/hooks.ts"), technologies=technologies)["roster"])
+        api = compute(diff_of("api/routes.py"), technologies=technologies)
+        self.assertEqual((api["signals"]["technologies"], api["roster"]), (["fastapi"], review_roster.STANDARD_ROSTER))
+        self.assertEqual(compute(diff_of("web/hooks.ts"))["signals"]["technologies"], [])
+
     def test_a_tauri_test_or_workspace_path_adds_its_specialist(self):
         tauri = compute(diff_of("src-tauri/src/commands.rs"))
         self.assertIn("senior-review:tauri-auditor", tauri["roster"])

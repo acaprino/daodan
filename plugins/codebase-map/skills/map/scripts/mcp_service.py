@@ -626,8 +626,11 @@ class MapService:
             if rules is not None:
                 _write(recorded, {"schema": flow_model.RULES_SCHEMA, "rules": rules})
             if not recorded.is_file():
+                import service_registry
                 return {"status": "needs_rules", "run_id": run_id,
-                        "format": flow_model.__doc__.split("    python flows.py")[0].strip()}
+                        "format": flow_model.__doc__.split("    python flows.py")[0].strip(),
+                        "technologies": [unit for unit in service_registry.technologies(manifest.path)["units"]
+                                         if unit["technologies"]]}
             if brief or map is not None or about is not None:
                 return {"status": "ok", "run_id": run_id,
                         **self._system_map(manifest.path, flow_model.load_rules(recorded), brief, map, about, levels)}
