@@ -57,6 +57,7 @@ under a Node with neither module hook), the project callees the recorder could n
 """
 from __future__ import annotations
 
+import collections
 import json
 import re
 import shlex
@@ -99,7 +100,7 @@ LIMIT = 3600  # the seconds one run of the tests may take
 OUT = "/daodan/out"
 IN, T = preparation.IN, preparation.T
 CORE = f"{T}/npm/lib/node_modules/@babel/core"
-UNREACHABLE = re.compile(r"ECONNREFUSED|ENOTFOUND|EAI_AGAIN|ENETUNREACH")
+UNREACHABLE = re.compile(r"(?:ECONNREFUSED|ENOTFOUND|EAI_AGAIN|ENETUNREACH)(?:[ \t]+([^\s,;'\"()]+))?")  # and where
 NO_TESTS = re.compile(r"^[ℹ#] tests 0$", re.M)  # Node's runner, spec or TAP reporter, that found no test file
 # Why a runner's tests may run where the recorder's preload does not reach, beside the script's own NODE_OPTIONS.
 UNREACHED = {"turbo": "Turborepo gives its tasks only the variables its env mode lets through, and strict, its "
@@ -262,11 +263,13 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
                         f"{command}: {len(unobserved)} files of the project ran unrecorded (printed by another "
                         f"tool with no source map inline, or loaded where the recorder has no hook): "
                         f"{', '.join(unobserved[:5])}", files=len(unobserved), examples=unobserved[:5]))
-    refused = len(UNREACHABLE.findall(log))
+    refused = UNREACHABLE.findall(log)
     if refused:
+        where = collections.Counter(address for address in refused if address).most_common(3)
         gaps.append(gap("services_unreachable",
-                        f"{command}: {refused} lines of its log report a refused connection or an unreachable "
-                        "host: the tests run with no network and with only the services the project's CI declares"))
+                        f"{command}: {len(refused)} lines of its log report a refused connection or an unreachable "
+                        "host" + (f" ({', '.join(f'{address} ×{count}' for address, count in where)})" if where else "")
+                        + ": the tests run with no network and with only the services the project's CI declares"))
     return entry, gaps
 
 

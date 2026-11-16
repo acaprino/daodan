@@ -395,7 +395,7 @@ def test_the_sites_of_every_process_are_one_observation(tmp_path):
      "not_observed", "ran", "2 files"),
     ("exit 1 2", {"tests-0.log": "Error: connect ECONNREFUSED 127.0.0.1:5432\n",
                   "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
-     "services_unreachable", "ran", "only the services the project's CI declares"),
+     "services_unreachable", "ran", "(127.0.0.1:5432 ×1): the tests run with no network and with only the services"),
     (None, {}, "tests_not_started", "not_started", "before the tests' exit"),
     ("exit 0 1", {"tests-0.log": "ℹ tests 0\nℹ suites 0\nℹ pass 0\n"}, "no_tests", "no_tests", "no test"),
 ])

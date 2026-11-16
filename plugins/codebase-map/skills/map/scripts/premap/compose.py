@@ -6,8 +6,10 @@ the workflows, and from the npm test scripts with `scripts`; `started` follows t
 `docker-compose <the step's options> config --format json <its services>`
 where the step runs it, in Daodan's container with no network and no engine: Compose itself finds the files that
 step's `up` finds, merges them, interpolates the variables the step sets and the project's `.env`, and keeps the
-services `up` starts with those they depend on. `read` states each of them as a `services` fact: `declared_in`
-`<step>.services.<name>`, `host` localhost (the job's later steps reach what they publish on its runner),
+services `up` starts with those they depend on. A tracked `.env` holds there each value's name, not the value
+(`container.named`): a fact keeps `${NAME}` where Compose put one and, in `dotenv`, the file each name is read
+from, which the container that starts the service reads again. `read` states each service as a `services` fact:
+`declared_in` `<step>.services.<name>`, `host` localhost (the job's later steps reach what they publish on its runner),
 `environment` as `env`, `ports` as `published:target`, `healthcheck`, `command` and `entrypoint` as Compose gives
 them, `depends_on` as `after` (each name with the condition `up` waits for), the bind mounts as `binds` (relative
 to the project where they lie inside it), `build` where Compose builds the image, `ignored` the keys it sets that no
@@ -29,6 +31,7 @@ import re
 import shlex
 
 import confinement
+from source_files import is_forbidden
 
 NAME, VERSION, RANK = "compose", "5.6.1", "model"  # Compose's own command reads its files
 # Docker Compose's static binary (Apache-2.0), checked by the sha256 its release publishes
@@ -48,6 +51,9 @@ UNSET = re.compile(r"variable is not set", re.I)  # Compose's warning for a vari
 SHELL = re.compile(r"#!\s*\S*/(?:env\s+)?(?:ba|da|a|k|z)?sh\b")  # a shell script's first line
 MOVES = re.compile(r"(?:^|[;&|({]|\bthen|\bdo|\belse)\s*(?:cd|pushd)(?:\s|$)", re.M)  # a command that changes folder
 DEPTH = 3  # the shell scripts a script runs, followed this deep
+# What Compose gives where a tracked .env file holds a value: the file and the name the pre-map's container writes
+# in place of the value (`container.named`)
+PLACEHOLDER = re.compile(r"(?:\./)?daodan-dotenv-((?:[0-9a-f]{2})+)-((?:[0-9a-f]{2})+)")
 
 
 def _split(argv: list[str]) -> tuple[dict, list[str], str | None, list[str]]:
@@ -67,6 +73,12 @@ def _split(argv: list[str]) -> tuple[dict, list[str], str | None, list[str]]:
 def simple_commands(script: str) -> list[list[str]]:
     """Each simple command of a shell `script` as its words, from the program on (past the shell's keywords and the
     variables it sets); a line the shell's words do not split is none."""
+    return [words for _, words in assigned(script)]
+
+
+def assigned(script: str) -> list[tuple[dict, list[str]]]:
+    """Each simple command of a shell `script` as the variables it sets for its program (`NAME=value` before it,
+    as the shell's words give them) and its words from the program on."""
     found = []
     for line in script.replace("\\\n", " ").splitlines():
         try:
@@ -82,7 +94,8 @@ def simple_commands(script: str) -> list[list[str]]:
                 continue
             start = next((n for n, w in enumerate(command) if w not in LEADERS and not ASSIGNMENT.match(w)),
                          len(command))
-            found += [command[start:]] if command[start:] else []
+            sets = dict(word.split("=", 1) for word in command[:start] if ASSIGNMENT.match(word))
+            found += [(sets, command[start:])] if command[start:] else []
             command = []
     return found
 
@@ -203,14 +216,17 @@ def facts(found: list[tuple[str, list[str]]], cwd: str, **more) -> list[dict]:
 
 def reader(context):
     """A checkout file's text by its path: the snapshot's, else the file on disk the snapshot leaves out (a script
-    with no suffix), links not followed; None for no file."""
+    with no suffix), links not followed; None for no file, and for one Daodan never reads (an `.env` file among
+    them), which only the container's copy holds."""
     def read(rel: str) -> str | None:
         try:
             if rel in context.inventory.headers:
                 return context.inventory.text(rel)
             path = Path(context.root) / rel
             confinement.reject_link_chain(path)
-            return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else None
+            if not path.is_file() or is_forbidden(path.name, path):
+                return None
+            return path.read_text(encoding="utf-8", errors="replace")
         except (OSError, ValueError):
             return None
     return read
@@ -252,7 +268,23 @@ def _relative(path: str, root: str) -> str:
     return posixpath.relpath(path, root) if inside else path
 
 
+def _named(value, files: dict):
+    """`value` with `${NAME}` where Compose gave a tracked .env file's placeholder (`PLACEHOLDER`), each name's
+    file in `files`."""
+    if isinstance(value, str):
+        def name(found) -> str:
+            file, named = (bytes.fromhex(part).decode("utf-8", "replace") for part in found.groups())
+            files.setdefault(named, file)
+            return "${" + named + "}"
+        return PLACEHOLDER.sub(name, value)
+    if isinstance(value, list):
+        return [_named(item, files) for item in value]
+    return {key: _named(item, files) for key, item in value.items()} if isinstance(value, dict) else value
+
+
 def _service(path: str, name: str, service: dict, root: str, job_env) -> dict:
+    files: dict[str, str] = {}
+    service = _named(service, files)
     ports = [(f"{port['published']}:{port['target']}" if port.get("published") else str(port["target"]))
              + ("" if port.get("protocol", "tcp") == "tcp" else f"/{port['protocol']}")
              for port in service.get("ports") or ()]
@@ -268,7 +300,8 @@ def _service(path: str, name: str, service: dict, root: str, job_env) -> dict:
             **{key: service[key] for key in ("healthcheck", "command", "entrypoint") if service.get(key)},
             **({"binds": binds} if binds else {}), **({"after": after} if after else {}),
             **({"build": _relative(build.get("context") or ".", root)} if isinstance(build, dict) else {}),
-            **({"ignored": ignored} if ignored else {}), **({"job_env": job_env} if job_env else {})}
+            **({"ignored": ignored} if ignored else {}), **({"job_env": job_env} if job_env else {}),
+            **({"dotenv": files} if files else {})}
 
 
 def read(context, commands, results):

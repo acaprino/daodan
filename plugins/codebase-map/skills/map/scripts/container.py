@@ -9,7 +9,10 @@ sections 2-4). Its guarantees:
 2. The container gets a copy of the files the snapshot perimeter walks and of those Git
    tracks, dot directories included, minus the files the snapshot never reads, as a tar
    through `cp -`; what Git ignores stays out, and a link Git tracks is that link only when
-   it leads inside the project (`copy_perimeter`). The project is never mounted or written;
+   it leads inside the project (`copy_perimeter`). The `.env` files Git tracks are in it, as
+   in the CI's checkout: their values are read only in a container of Daodan's
+   (`dotenv_values`) and masked in what the run keeps (`masker`); any other file the snapshot
+   never reads stays out, a `file_withheld` gap. The project is never mounted or written;
    declared outputs come back through `cp <container>:<path> -` into a folder outside it.
 3. Execution runs with `--network none`; an optional preparation runs before it on an
    internal network whose only way out is a proxy that opens CONNECT to package registries
@@ -51,6 +54,7 @@ from __future__ import annotations
 import base64
 import contextlib
 import contextvars
+import fnmatch
 import hashlib
 import io
 import json
@@ -77,6 +81,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from embedding_worker import shared_cache_dir  # noqa: E402
 from resolve_edges import _platform, _process_alive, download, free_memory, shared_engine_dir  # noqa: E402
 from snapshot import is_forbidden  # noqa: E402
+from source_files import FORBIDDEN_GLOBS  # noqa: E402
 from tree_scope import GIT_OPTIONS, Perimeter, git_executable  # noqa: E402
 
 RECORD_NAME = "container-runs.jsonl"
@@ -118,10 +123,86 @@ DURATION = re.compile(r"(\d+(?:\.\d*)?|\.\d+)(ns|us|µs|ms|s|m|h)")  # Go's `tim
 UNITS = {"ns": 1e-9, "us": 1e-6, "µs": 1e-6, "ms": 1e-3, "s": 1.0, "m": 60.0, "h": 3600.0}
 REACH = ("import socket, sys\nfor port in sys.argv[1:]:\n"
          "    socket.create_connection(('127.0.0.1', int(port)), 2).close()")  # `reached`: each port answers
-# Runs in its own container; argv: port, then the allowed hosts. Prints "ready <port>".
+DOTENV = (".env", ".env.*")  # of the names Daodan never reads, those the copy carries where Git tracks the file
+TEXTS = (".log", ".txt")  # the outputs that are a run's text, masked as its logs are (`masker`)
+UNMASKED = re.compile(r"(?i)true|false|yes|no|on|off|\d{1,5}")  # values the text's own words and ports would be
+DOTENV_VALUES = STATE + "/dotenv-values.json"  # in the pre-map's container only (`named`), never an output
+MARKER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_.-]*)\}")  # where a fact names a variable of a tracked .env file
+# Runs in a container of Daodan's (`dotenv_values`), in the folder of the copy, over the tracked .env files its
+# arguments name: each variable's value as Compose's reader gives it (quotes, comments, references to those
+# before it and their defaults), on one line after its mark.
+RESOLVE = r'''import json, os, re, sys
+LINE = re.compile(r"[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.-]*)[ \t]*=[ \t]*(.*)")
+REF = re.compile(r"\$(?:\{([A-Za-z_][A-Za-z0-9_]*)(?:(:?[-+?])([^}]*))?\}|([A-Za-z_][A-Za-z0-9_]*))")
+ESCAPES = {"n": "\n", "t": "\t", "r": "\r"}
+
+
+def expand(text, known):
+    def one(found):
+        name, how, other = found.group(1) or found.group(4), found.group(2) or "", found.group(3) or ""
+        value = known.get(name)
+        unset = value is None or (how.startswith(":") and value == "")
+        return (other if unset else value) if how.endswith("-") else ("" if unset else other) if how.endswith(
+            "+") else value or ""
+    return REF.sub(one, text)
+
+
+def values(text):
+    known, lines, i = {}, text.splitlines(), 0
+    while i < len(lines):
+        found, i = LINE.fullmatch(lines[i]), i + 1
+        if not found:
+            continue
+        name, rest = found.groups()
+        if rest[:1] in ("'", '"'):
+            quote, body = rest[0], rest[1:]
+            closing = re.compile(r"(?<!\\)" + quote)
+            while not closing.search(body) and i < len(lines):  # a value over the next lines
+                body, i = body + "\n" + lines[i], i + 1
+            end = closing.search(body)
+            body = body[:end.start()] if end else body
+            known[name] = body if quote == "'" else expand(
+                re.sub(r"\\(.)", lambda m: ESCAPES.get(m.group(1), m.group(1)), body), known)
+        else:
+            known[name] = expand(re.sub(r"[ \t]+#.*$", "", rest).strip(), known)
+    return known
+
+
+print("@@daodan-dotenv " + json.dumps({os.path.normpath(path): values(open(path, encoding="utf-8", errors="replace").read())
+                                       for path in sys.argv[1:]}))
+'''
+# Runs in its own container; argv: port, then the allowed hosts, CONNECT to their port 443; a host given as
+# `http://<host>` (the apt sources a base image names over plain HTTP) is reached by plain HTTP at its port 80, only
+# for a GET or HEAD of apt's archive (`dists/`, `pool/`: apt checks the signed Release files and each package's
+# hash), one request a connection. Prints "ready <port>".
 PROXY_SCRIPT = r'''
-import select, socket, sys, threading
-allowed = {host.lower() for host in sys.argv[2:]}
+import re, select, socket, sys, threading
+allowed = {host.lower() for host in sys.argv[2:] if not host.startswith("http://")}
+archives = {host[len("http://"):].lower() for host in sys.argv[2:] if host.startswith("http://")}
+ARCHIVE = re.compile(r"(?:/[^/?#\s]+)*/(?:dists|pool)/[^?#\s]*")
+HOP = {b"connection", b"proxy-connection", b"keep-alive", b"proxy-authorization", b"te", b"upgrade"}
+def fetch(client, method, host, path, head):
+    """One request to an apt archive, at its port 80, and its answer back: the next ones never leave."""
+    lines = [line for line in head.split(b"\r\n\r\n", 1)[0].split(b"\r\n")[1:]
+             if line and line.split(b":", 1)[0].strip().lower() not in HOP | {b"host"}]
+    request = b"\r\n".join([method + b" " + path.encode("latin-1") + b" HTTP/1.1", b"Host: " + host.encode("latin-1"),
+                            *lines, b"Connection: close", b"", b""])
+    try:
+        upstream = socket.create_connection((host, 80), timeout=30)
+    except OSError:
+        client.sendall(b"HTTP/1.1 502 Bad Gateway\r\n\r\n"); client.close(); return
+    try:
+        upstream.settimeout(300)
+        upstream.sendall(request)
+        while True:
+            data = upstream.recv(65536)
+            if not data:
+                break
+            client.sendall(data)
+    except OSError:
+        pass
+    finally:
+        upstream.close(); client.close()
 def relay(a, b):
     try:
         while True:
@@ -145,6 +226,11 @@ def serve(client):
             client.close(); return
         head += chunk
     words = head.split(b"\r\n", 1)[0].split()
+    if len(words) == 3 and words[0] in (b"GET", b"HEAD") and words[1].startswith(b"http://"):
+        place, _, path = words[1].decode("latin-1")[len("http://"):].partition("/")
+        path = "/" + path
+        if place.lower() in archives and ARCHIVE.fullmatch(path) and "/../" not in path + "/":
+            return fetch(client, words[0], place.lower(), path, head)
     host, _, port = words[1].decode("latin-1").rpartition(":") if len(words) == 3 and words[0] == b"CONNECT" else ("", "", "")
     if host.lower() not in allowed or port != "443":
         print("refused", words[:2], flush=True)
@@ -514,6 +600,58 @@ def _within(relative: str, target: str) -> bool:
     return not PureWindowsPath(target).anchor and resolved != ".." and not resolved.startswith("../")
 
 
+def dotenv(name: str) -> bool:
+    """Whether a file of this name is an `.env` file (`DOTENV`), as Daodan's names are matched: in any case."""
+    return any(fnmatch.fnmatchcase(name.lower(), pattern) for pattern in DOTENV)
+
+
+def _withheld(relative: str, path: Path, mode: int | None) -> dict:
+    """The gap of a file the copy leaves out because Daodan never reads it, with the rule its name or content
+    meets."""
+    pattern = next((glob for glob in FORBIDDEN_GLOBS if fnmatch.fnmatchcase(path.name.lower(), glob)), None)
+    rule = f"its name matches {pattern}" if pattern else "its name speaks of secrets and it holds a generated value"
+    why = ("Git does not track it, so the CI's checkout has no such file" if mode is None and dotenv(path.name)
+           else "only the .env files Git tracks reach the copy")
+    return {"kind": "file_withheld", "path": relative,
+            "detail": f"{relative} is a file Daodan never reads ({rule}) and {why}: the copy leaves it out, and what "
+                      "reads it there finds nothing"}
+
+
+def carried(project: Path) -> tuple[set[str], list[tuple[str, Path, int | None]], list[tuple[str, Path, str]],
+                                    list[dict]]:
+    """What the copy of `project` carries (`copy_perimeter`), relative to it: the folders the snapshot perimeter
+    walks (`.` the root), the files `(relative, path, mode)`, the `.env` files Git tracks among them, the links Git
+    tracks inside it `(relative, path, target)`, and the gaps of what it leaves out: `link_outside`, and
+    `file_withheld` for any other file the snapshot never reads."""
+    modes = tracked(project)
+    folders, files = {"."}, dict.fromkeys(modes)
+    for directory, names in Perimeter(project).walk():
+        relative = directory.relative_to(project).as_posix()
+        folders.add(relative)
+        files.update((name if relative == "." else f"{relative}/{name}", None) for name in names)
+    kept, links, gaps = [], [], []
+    for relative in sorted(files):
+        path = project / relative
+        mode, sha = modes.get(relative, (None, ""))
+        plain = path.is_file() and not path.is_symlink()
+        if is_forbidden(path.name, path if plain else None):
+            if plain and mode not in (None, LINK) and dotenv(path.name):  # as the CI's checkout holds it
+                kept.append((relative, path, mode))
+            elif plain or path.is_symlink():
+                gaps.append(_withheld(relative, path, mode))
+            continue
+        link = _link(path, sha) if mode == LINK else None
+        if link is not None and _within(relative, link):
+            links.append((relative, path, link))
+        elif link is not None:
+            gaps.append({"kind": "link_outside", "path": relative, "target": link,
+                         "detail": f"{relative} is a link Git tracks to {link}, outside the project: the copy leaves "
+                                   "it out, and what reads it there finds nothing"})
+        elif plain:
+            kept.append((relative, path, None if mode == LINK else mode))
+    return folders, kept, links, gaps
+
+
 def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None = None) -> dict:
     """A tar of what a build may need: under `work/`, the files the snapshot perimeter walks and the files Git
     tracks (dot directories included), minus the files the snapshot never reads; `inputs` at their own paths.
@@ -521,26 +659,14 @@ def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None =
     What Git ignores stays out. A tracked file keeps the executable bit Git records, also where the disk has none.
     A link Git tracks whose target lies inside the project is that link in the copy, never followed; one whose
     target lies outside stays out, a `link_outside` gap of the returned `gaps`, which the run's result carries.
+    The `.env` files Git tracks are in it, `dotenv` naming them; any other file the snapshot never reads is a
+    `file_withheld` gap.
     """
-    modes = tracked(project)
-    folders, files = {"work"}, dict.fromkeys(modes)
-    for directory, names in Perimeter(project).walk():
-        relative = directory.relative_to(project).as_posix()
-        folders.add("work" if relative == "." else f"work/{relative}")
-        files.update((name if relative == "." else f"{relative}/{name}", None) for name in names)
-    kept, links, gaps = [], [], []
-    for relative in sorted(files):
-        path = project / relative
-        mode, sha = modes.get(relative, (None, ""))
-        link = _link(path, sha) if mode == LINK and not is_forbidden(path.name) else None
-        if link is not None and _within(relative, link):
-            links.append((f"work/{relative}", path, link))
-        elif link is not None:
-            gaps.append({"kind": "link_outside", "path": relative, "target": link,
-                         "detail": f"{relative} is a link Git tracks to {link}, outside the project: the copy leaves "
-                                   "it out, and what reads it there finds nothing"})
-        elif not (path.is_symlink() or not path.is_file() or is_forbidden(path.name, path)):
-            kept.append((f"work/{relative}", path, None if mode == LINK else mode))
+    walked, files, tracked_links, gaps = carried(project)
+    secrets = [relative for relative, path, _ in files if dotenv(path.name)]
+    folders = {"work", *(f"work/{folder}" for folder in walked if folder != ".")}
+    kept = [(f"work/{relative}", path, mode) for relative, path, mode in files]
+    links = [(f"work/{relative}", path, link) for relative, path, link in tracked_links]
     for destination, path in sorted((inputs or {}).items()):
         kept.append((destination.strip("/"), Path(path), 0o644))
     for name, _, _ in (*kept, *links):
@@ -564,7 +690,118 @@ def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None =
             bundle.addfile(entry)
     with target.open("rb") as handle:
         return {"files": len(kept) - len(inputs or {}), "inputs": len(inputs or {}), "links": len(links),
-                "sha256": hashlib.file_digest(handle, "sha256").hexdigest(), "gaps": gaps}
+                "sha256": hashlib.file_digest(handle, "sha256").hexdigest(), "gaps": gaps,
+                **({"dotenv": secrets} if secrets else {})}
+
+
+def named(root: str = WORKDIR, values: str | None = None) -> str:
+    """POSIX sh that writes in each `.env` file under `root`, the copy in a container, a placeholder in place of
+    each value naming the file and the variable, `./daodan-dotenv-<file>-<name>` both in hexadecimal (no colon or
+    brace a short syntax of Compose splits on; a path, so a volume's source stays a bind mount), which a tool
+    interpolates as it would the value; comments
+    and blank lines stay, any other line goes (the rest of a value over several). The pre-map's commands run after
+    it (`run_commands`): what they print holds no value of those files. With `values`, a path outside the copy,
+    the files' values are written there first (`RESOLVE`, by file), once: the container's own, never an output,
+    for Daodan's helper that resolves a placeholder to a path of the checkout (`docker_build`)."""
+    awk = ('function hex(s, out, i) { out = ""; for (i = 1; i <= length(s); i++) '
+           'out = out sprintf("%02x", ord[substr(s, i, 1)]); return out } '
+           'BEGIN { for (i = 1; i < 256; i++) ord[sprintf("%c", i)] = i; file = hex(ENVIRON["REL"]) } '
+           '/^[ \\t]*(#.*)?$/ { print; next } '
+           'match($0, /^[ \\t]*(export[ \\t]+)?[A-Za-z_][A-Za-z0-9_.-]*[ \\t]*=/) { head = substr($0, 1, RLENGTH); '
+           'name = head; sub(/^[ \\t]*(export[ \\t]+)?/, "", name); sub(/[ \\t]*=$/, "", name); '
+           'print head "./daodan-dotenv-" file "-" hex(name) }')
+    found = "find . -type f \\( -iname .env -o -iname '.env.*' \\)"
+    into = shlex.quote(values or "")
+    kept = "" if values is None else (
+        f"[ -e {into} ] || {{ mkdir -p {shlex.quote(posixpath.dirname(values))} && (cd {shlex.quote(root)} && "
+        f"DAODAN_RESOLVE={shlex.quote(RESOLVE)} {found} -exec sh -c 'exec python3 -c \"$DAODAN_RESOLVE\" \"$@\"' sh "
+        f"{{}} +) | sed -n 's/^@@daodan-dotenv //p' > {into}; "
+        f"[ -s {into} ] || echo '{{}}' > {into}; }}\n")
+    return kept + (f"find {shlex.quote(root)} -type f \\( -iname .env -o -iname '.env.*' \\) | while IFS= read -r f; "
+                   f"do REL=\"${{f#{root}/}}\" awk '{awk}' \"$f\" > \"$f.daodan\" && mv -f \"$f.daodan\" \"$f\"; done\n")
+
+
+def dotenv_values(run: Callable, copy: Path, files: list[str], token: str) -> dict[str, dict[str, str]]:
+    """The variables of the tracked `.env` files of the copy (`files`, relative to the project), by file, read in a
+    container of Daodan's: `RESOLVE` in the proxy's image with no network, over those files alone at their place
+    under /work; `run` is the engine's command line. The values live in the run, for the services that name them
+    (`filled`) and the masks (`masker`), never on record. RuntimeError when the container does not answer."""
+    box = f"daodan-dotenv-{token}"
+    try:
+        checked(run("create", "--name", box, "--network", "none", "--memory", str(64 * 2**20), "--pids-limit", "16",
+                    "--security-opt", "no-new-privileges", "-w", WORKDIR, PROXY_IMAGE, "python3", "-c", RESOLVE,
+                    *files), "create of the reader of the .env files")
+        with bound(copy, [[rel, f"{WORKDIR}/{rel}"] for rel in files]) as handle:
+            checked(run("cp", "-", f"{box}:/", stdin=handle), "cp of the .env files")
+        said = run("start", "-a", box, timeout=120)
+    finally:
+        run("rm", "-f", box)
+    return dotenv_answer(said.stdout.decode("utf-8", "replace"), said.returncode)
+
+
+def dotenv_answer(stdout: str, code: int | None) -> dict[str, dict[str, str]]:
+    """`RESOLVE`'s answer, the line its mark begins; RuntimeError, saying nothing of what it printed, without one."""
+    for line in stdout.splitlines():
+        if line.startswith("@@daodan-dotenv "):
+            return json.loads(line[len("@@daodan-dotenv "):])
+    raise RuntimeError(f"the reader of the tracked .env files answered with code {code} and no values: the run, which "
+                       "could not mask them in what it keeps, does not start")
+
+
+def masker(values: dict[str, dict[str, str]]) -> Callable[[str], str] | None:
+    """A text with each value of the tracked `.env` files (`dotenv_values`) replaced by `[<file>:<name>]`, the names
+    of all that hold it, where it stands whole, not inside a longer word; the longer first. None when no value is
+    masked: one shorter than four characters, a boolean word or a number of five digits at most stays, as the
+    text's own words and ports would be masked with it."""
+    labels: dict[str, list[str]] = {}
+    for path, found in values.items():
+        for name, value in found.items():
+            if len(value) >= 4 and not UNMASKED.fullmatch(value):
+                labels.setdefault(value, []).append(f"{path}:{name}")
+    if not labels:
+        return None
+
+    def whole(value: str) -> str:
+        edge = r"[A-Za-z0-9_]"
+        return ((f"(?<!{edge})" if re.fullmatch(edge, value[0]) else "") + re.escape(value)
+                + (f"(?!{edge})" if re.fullmatch(edge, value[-1]) else ""))
+
+    pattern = re.compile("|".join(whole(value) for value in sorted(labels, key=len, reverse=True)))
+    return lambda text: pattern.sub(lambda found: f"[{','.join(sorted(labels[found.group()]))}]", text)
+
+
+def mask_file(path, hide: Callable[[str], str] | None) -> None:
+    """A text file of the run written again with `hide`'s masks (`masker`), its bytes otherwise as they were."""
+    if hide and path and Path(path).is_file():
+        text = Path(path).read_bytes().decode("utf-8", "surrogateescape")
+        masked = hide(text)
+        if masked != text:
+            Path(path).write_bytes(masked.encode("utf-8", "surrogateescape"))
+
+
+def mask_row(row: dict, hide: Callable[[str], str] | None) -> dict:
+    """`row` with what the run printed in it, its `cause` and an engine's answer, masked in place (`masker`)."""
+    for key in ("cause", "commit_failed"):
+        if hide and isinstance(row.get(key), str):
+            row[key] = hide(row[key])
+    return row
+
+
+def filled(service: dict, values: dict[str, dict[str, str]]) -> dict:
+    """A service whose `dotenv` names the tracked `.env` file of each variable it reads, with each value in place
+    of its `${NAME}` (`MARKER`), as Compose interpolates it, in its variables, options and command: only in the run
+    that starts it."""
+    names = service.get("dotenv") or {}
+    if not names:
+        return service
+
+    def put(text: str) -> str:
+        return MARKER.sub(lambda found: values.get(names[found.group(1)], {}).get(found.group(1), found.group())
+                          if found.group(1) in names else found.group(), str(text))
+
+    return {**service, "env": {key: put(value) for key, value in (service.get("env") or {}).items()},
+            "args": [put(arg) for arg in service.get("args") or ()],
+            "command": [put(word) for word in service.get("command") or ()]}
 
 
 def proxy_environment(address: str) -> dict[str, str]:
@@ -1121,7 +1358,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                      cpus: float | None = None, registries: tuple[str, ...] = REGISTRIES,
                      engine: Engine | str | None = None,
                      inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None,
-                     keep_root: bool = False) -> dict:
+                     keep_root: bool = False, dotenv_env: list[tuple[str, str]] = ()) -> dict:
     """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
@@ -1135,7 +1372,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     runs without a service that failed. Within `beside` with steps, they run at the end of the preparation
     (`steps_script`), with the services beside them where the engine takes the pod off the preparation's network
     before the execution (`leaves`); `ci_steps` gives each one's `{declared_in, name, outcome, exit_code,
-    duration_seconds, cause}` (`stepped`). With `keep_root`, execution starts from everything the preparation wrote
+    duration_seconds, cause}` (`stepped`). `dotenv_env`, `(name, file)` of tracked .env files, reach the preparation
+    with their values (`dotenv_values`), never on record: a Dockerfile stage's `${NAME}` words. With `keep_root`, execution starts from everything the preparation wrote
     (a Dockerfile's build stage installs into the image's own folders: `docker_build.py`): its container committed
     as `daodan-prepared-<token>`, on record before it exists and removed by name as the volumes are; an engine that
     does not commit it is a gap with its answer.
@@ -1163,6 +1401,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     cleanup: list[tuple[str, ...]] = []
     held: tuple[Path, list[str]] | None = None
     kept_image: str | None = None  # `keep_root`'s image, on record with the volumes
+    hide: Callable[[str], str] | None = None  # the masks of the tracked .env files' values (`masker`)
     result = {"state": "failed", "exit_code": None, "outputs": [], "record": str(record), "engine": found.name}
     try:
         sweep(found)
@@ -1185,8 +1424,32 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             digest = copy_perimeter(project, copy, given)
             if digest["gaps"]:  # what the copy left out of the project (`copy_perimeter`)
                 result["gaps"] = digest["gaps"]
+            values = dotenv_values(engine_cli, copy, digest["dotenv"], token) if digest.get("dotenv") else {}
+            hide = masker(values)
+            pinned = [filled(item, values) for item in pinned]  # the values only here, never on record
+            exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
             run_copy, mounts, env = copy, [], {"HOME": HOME, **(env or {})} if prepare else dict(env or {})
-            joined, said_steps, steps = None, [], list(steps) if prepare else []
+            joined, said_steps, steps = None, [], list(steps)
+
+            def hidden(row: dict) -> dict:  # what the run printed, masked in its log and its row
+                mask_file(row.get("log"), hide)
+                for path in row.get("outputs") or ():
+                    if str(path).endswith(TEXTS):
+                        mask_file(path, hide)
+                return mask_row(row, hide)
+
+            def unrun(cause: str) -> list[dict]:
+                return [{"phase": "ci_step", "declared_in": step["declared_in"],
+                         **({"name": step["name"]} if step.get("name") else {}), "outcome": "not_run",
+                         "exit_code": None, "duration_seconds": 0, "cause": cause} for step in steps]
+
+            def tell() -> None:  # the steps' rows, and what the dynamic step reads of them
+                for item in said_steps:
+                    append_record(record, {**mask_row(item, hide), "engine": found.name})
+                if said_steps:
+                    result["ci_steps"] = [{key: value for key, value in item.items() if key != "phase"}
+                                          for item in said_steps]
+                    said.ci_steps.extend(result["ci_steps"])
 
             def unstarted(cause: str) -> list[dict]:
                 return [{"phase": "service", "name": s["name"], "image": s["image"], "pinned": s["pinned"],
@@ -1194,12 +1457,15 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
 
             def report() -> None:  # the services' rows, and what the dynamic step reads of them
                 for item in served:
-                    append_record(record, {**item, "engine": found.name})
+                    append_record(record, {**mask_row(item, hide), "engine": found.name})
                 if services:
                     result["services"] = [{key: item[key] for key in ("name", "image", "pinned", "outcome", "cause")
                                            if key in item} for item in served]
                     said.services.extend(result["services"])
 
+            if steps and not prepare:  # they run at the end of a preparation, which this run has not
+                said_steps, steps = unrun("the run has no preparation, at whose end Daodan runs the CI's steps"), []
+                tell()
             if prepare:
                 names = [f"daodan-work-{token}", f"daodan-state-{token}"]
                 kept_image = f"daodan-prepared-{token}" if keep_root else None
@@ -1214,13 +1480,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 start_proxy(found, proxy, network, tuple(registries))
                 refused = leaves(engine_cli, network, token) if steps and pinned else None
                 if refused:  # the pod could not leave the network: no step runs beside the services
-                    said_steps = [{"phase": "ci_step", "declared_in": step["declared_in"],
-                                   **({"name": step["name"]} if step.get("name") else {}), "outcome": "not_run",
-                                   "exit_code": None, "duration_seconds": 0,
-                                   "cause": f"{found.name} cannot take the pod of the services off the preparation's "
-                                            f"network before the tests, so no step runs beside them: {refused}"}
-                                  for step in steps]
-                    steps = []
+                    said_steps, steps = unrun(f"{found.name} cannot take the pod of the services off the preparation's "
+                                              f"network before the tests, so no step runs beside them: {refused}"), []
                 elif steps and pinned:  # the services first, in a pod on the preparation's network
                     pod, failure = start_pod(found, pinned, network, token, prepare_timeout + 2 * timeout, cleanup)
                     if pod:
@@ -1231,19 +1492,14 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         served, pinned = served + unstarted(failure), []
                 row = phase(found, "prepare", image=image, network=joined or network,
                             command=["sh", "-c", steps_script(steps, timeout, token), "sh", *prepare] if steps
-                            else prepare, env={**env, **proxy_environment(f"http://proxy:{PROXY_PORT}")},
+                            else prepare, env={**env, **exported, **proxy_environment(f"http://proxy:{PROXY_PORT}")},
                             limits=limits, timeout=prepare_timeout + (timeout if steps else 0), copy=copy, outputs=[],
                             out_dir=out_dir, volumes=mounts, commit=kept_image)
-                append_record(record, {**row, "copy": digest})
+                append_record(record, {**hidden(row), "copy": digest})
                 if steps:
                     log = Path(row["log"]).read_bytes().decode("utf-8", "replace") if row.get("log") else ""
                     said_steps = stepped(log, steps, token, timeout)
-                for item in said_steps:
-                    append_record(record, {**item, "engine": found.name})
-                if said_steps:
-                    result["ci_steps"] = [{key: value for key, value in item.items() if key != "phase"}
-                                          for item in said_steps]
-                    said.ci_steps.extend(result["ci_steps"])
+                tell()
                 if row["outcome"] != "exited" or row["exit_code"] != 0:
                     result["cause"] = row.get("cause") or (f"preparation {row['outcome']}" + (
                         f" with code {row['exit_code']}" if row["exit_code"] is not None else "") + f"; see {row['log']}")
@@ -1269,7 +1525,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             row = phase(found, "execute", image=image, command=command, network=joined,
                         env={**env, **proxy_environment("")}, limits=limits, timeout=timeout,
                         copy=run_copy, outputs=list(outputs), out_dir=out_dir, volumes=mounts)
-            append_record(record, {**row, "copy": digest, **({"from": based} if kept_image else {})})
+            append_record(record, {**hidden(row), "copy": digest, **({"from": based} if kept_image else {})})
             result.update(exit_code=row.get("exit_code"), outputs=row["outputs"],
                           state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))
             if "cause" in row:
@@ -1281,6 +1537,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
         result["cause"] = str(error)
         return result
     finally:
+        if hide and isinstance(result.get("cause"), str):
+            result["cause"] = hide(result["cause"])
         for args in cleanup:
             try:
                 cli(found, *args)
@@ -1311,7 +1569,8 @@ def run_commands(project: Path, commands: list[dict], *, image: str, out_dir: Pa
     those whose `network` is "registries" in the preparation, the others ("none", the default) in execution.
     `cwd` is relative to the copy. The result of `run_in_container` (`options` are its own), with `root`, the
     copy's folder, and `results`: each command's `returncode` (None when it did not run), `stdout` and `stderr`,
-    in the given order."""
+    in the given order. The commands describe the project and keep no value of its tracked `.env` files: those
+    hold each value's name before they run (`named`)."""
     for item in commands:
         target = posixpath.normpath(posixpath.join(WORKDIR, item.get("cwd") or "."))
         inside = target == WORKDIR or target.startswith(WORKDIR + "/")
@@ -1321,12 +1580,13 @@ def run_commands(project: Path, commands: list[dict], *, image: str, out_dir: Pa
     early = [(n, item) for n, item in enumerate(commands) if item.get("network") == "registries"]
     late = [(n, item) for n, item in enumerate(commands) if item.get("network", "none") == "none"]
     kept_results = f"{STATE}/results"
-    carry = f"mkdir -p {RESULTS}\n" + (f"cp -R {kept_results}/. {RESULTS}/ 2>/dev/null\n" if early else "")
+    carry = named(values=DOTENV_VALUES) + f"mkdir -p {RESULTS}\n" + (f"cp -R {kept_results}/. {RESULTS}/ 2>/dev/null\n" if early else "")
     out_dir = Path(out_dir)
     shutil.rmtree(out_dir / Path(RESULTS).name, ignore_errors=True)
     result = run_in_container(project, ["sh", "-c", carry + command_lines(late, RESULTS)], image=image,
-                              out_dir=out_dir, prepare=["sh", "-c", command_lines(early, kept_results)] if early else None,
-                              outputs=[RESULTS], **options)
+                              out_dir=out_dir, outputs=[RESULTS], **options,
+                              prepare=["sh", "-c", named(values=DOTENV_VALUES) + command_lines(early, kept_results)]
+                              if early else None)
     folder, results = out_dir / Path(RESULTS).name, []
     for number in range(len(commands)):
         read = {name: (folder / str(number) / name).read_text(encoding="utf-8", errors="replace")

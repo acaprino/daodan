@@ -320,8 +320,9 @@ def _healthcheck(check) -> list[str]:
 def services(record: dict) -> dict:
     """What the project's CI starts beside its tests, from the pre-map's `services` (GitHub Actions' service
     containers, GitLab's services, those Compose starts for a step), as `container.beside` takes it: `services`,
-    each `{name, image, host, env, args, command}`, with `aliases`, `wait` and `after` (Compose's `depends_on`) where
-    the fact has them and `files`, `[source in the project, target]` of its bind mounts inside it; `env`, the
+    each `{name, image, host, env, args, command}`, with `aliases`, `wait`, `after` (Compose's `depends_on`) and
+    `dotenv` (the tracked .env file of each `${NAME}` it holds, whose value the run puts in place: `container.filled`)
+    where the fact has them and `files`, `[source in the project, target]` of its bind mounts inside it; `env`, the
     variables the jobs that declare them give their steps, for the tests, without those the fact says the CI
     computes (`computed`); `gaps`, what cannot run as declared, each naming the service, its image and its
     declaration (`path`): `service_unavailable` for one that does not start (an image the CI computes or Compose
@@ -390,7 +391,8 @@ def services(record: dict) -> dict:
                 "env": {key: value for key, value in given.items() if value is not None},
                 "args": [*args, *(("--entrypoint", entry_point[0]) if entry_point else ())],
                 "command": [*entry_point[1:], *command], **({"wait": entry["wait"]} if entry.get("wait") else {}),
-                **({"after": dict(entry["after"])} if entry.get("after") else {}), **({"files": files} if files else {})}
+                **({"after": dict(entry["after"])} if entry.get("after") else {}), **({"files": files} if files else {}),
+                **({"dotenv": dict(entry["dotenv"])} if entry.get("dotenv") else {})}
         if name in first and first[name][0] != spec:
             gap("service_unavailable", [f"the service of {first[name][1]} has its name and starts: this one does "
                                         "not"])
@@ -422,35 +424,53 @@ def _service_gaps(started: list[dict], planned: list[dict], paths: dict, entry: 
 def ci_steps(record: dict, runs: list[dict]) -> dict:
     """The steps the project's CI jobs run before the tests of `runs` (the pre-map's `ci_steps` whose `tests` is a
     run's `declared_in`), as `container.beside` takes them, once each and in each job's order: `steps`, each
-    `{declared_in, cwd, run}` with `name`, `env` and `shell` where the fact has them; `gaps`, a `ci_step_not_run`
-    for one the fact gives a `cause`."""
+    `{declared_in, cwd, run}` with `name`, `env` and `shell` where the fact has them; `env`, the variables their
+    test steps (`test`) give the tests, as the CI gives its runner, for every run of the observer; `gaps`, a
+    `ci_step_not_run` for one the fact gives a `cause`, a `ci_step_incomplete` for a test step whose variables
+    the tests do not all get (one the CI or the shell computes, one two test steps give apart)."""
     wanted = {run.get("declared_in") for run in runs} - {None}
 
     def order(item: dict) -> tuple:
         where, _, number = item["declared_in"].rpartition(".steps.")
         return where, int(number) if number.isdigit() else 0
 
-    steps, gaps, seen = [], [], set()
+    steps, gaps, seen, env, apart = [], [], set(), {}, set()
     for item in sorted((item for item in record.get("ci_steps") or () if item.get("tests") in wanted), key=order):
         if item["declared_in"] in seen:
             continue
         seen.add(item["declared_in"])
-        if item.get("cause"):
+        if item.get("test"):
+            notes, computed = [], set(item.get("computed") or ())
+            for key, value in (item.get("env") or {}).items():
+                text = None if key in computed else _given(value)
+                if text is None:
+                    notes.append(f"the tests do not get {key}, which the CI or the shell computes ({value})")
+                elif key in env and env[key] != text:
+                    notes.append(f"the tests get no {key}: this step gives them {text}, another {env.pop(key)}")
+                    apart.add(key)
+                elif key not in apart:
+                    env[key] = text
+            if notes:
+                gaps.append({"kind": "ci_step_incomplete", "path": item["declared_in"],
+                             "detail": f"{item['declared_in']}: {'; '.join(notes)}"})
+        elif item.get("cause"):
             name = f" ({item['name']})" if item.get("name") else ""
             gaps.append({"kind": "ci_step_not_run", "path": item["declared_in"],
                          "detail": f"{item['declared_in']}{name}: {item['cause']}: it does not run before the tests"})
         else:
             steps.append({key: item[key] for key in ("declared_in", "name", "cwd", "run", "env", "shell")
                           if item.get(key)})
-    return {"steps": steps, "gaps": gaps}
+    return {"steps": steps, "gaps": gaps, "env": env}
 
 
 def _step_gaps(stepped: list[dict]) -> list[dict]:
     """The gaps of the CI's steps an observer's container runs ran (`container.Said.ci_steps`), once per cause:
-    `ci_step_failed` for one that did not end with code 0, `ci_step_not_run` for one that did not start."""
+    `ci_step_failed` for one that did not end with code 0, `ci_step_not_run` for one that started in none of them."""
     found: dict = {}
+    started = {row["declared_in"] for row in stepped if row.get("outcome") != "not_run"}
     for row in stepped:
-        if row.get("outcome") == "exited" and row.get("exit_code") == 0:
+        if row.get("outcome") == "exited" and row.get("exit_code") == 0 or (
+                row.get("outcome") == "not_run" and row["declared_in"] in started):
             continue
         kind = "ci_step_not_run" if row.get("outcome") == "not_run" else "ci_step_failed"
         name = f" ({row['name']})" if row.get("name") else ""
@@ -564,7 +584,8 @@ def run(manifest: Path, bus) -> dict:
             if result is None:
                 bus.progress(STEP, number, len(waiting), analyzer=entry, phase="tests",
                              message=f"{entry}: {len(planned['runs'])} runs of the tests in the container")
-                with container.beside(declared["services"], declared["env"], stepped["steps"]) as said:
+                with container.beside(declared["services"], {**declared["env"], **stepped["env"]},
+                                      stepped["steps"]) as said:
                     result = module.observe(snapshot.root, planned, manifest.parent / RUNS / entry,
                                             asked.pop("engine", None))
             broken = malformed(result)

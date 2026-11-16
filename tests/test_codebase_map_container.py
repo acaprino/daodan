@@ -121,6 +121,9 @@ elif verb == "start":
         time.sleep(float(command[1]))
     elif command[:1] == ["exit"]:
         sys.exit(int(command[1]))
+    elif command[:1] == ["python3"]:  # a script of Daodan's (the reader of the .env files), run for real in /work
+        import subprocess
+        sys.exit(subprocess.run([sys.executable, *command[1:]], cwd=box(name) / "fs" / "work").returncode)
 elif verb == "commit":
     if (state / "no-commit").exists():
         sys.exit("docker: 'commit' is not a docker command.")
@@ -404,10 +407,11 @@ class FakeEngineTest(unittest.TestCase):
                        check=True)
         subprocess.run([*git, "add", "--chmod=+x", "mvnw"], check=True)
         self.run_operation(["exit", "0"])
-        name = self.created()[0][self.created()[0].index("--name") + 1]
+        [run] = [call for call in self.created() if container.PROXY_IMAGE not in call]  # not the .env reader's
+        name = run[run.index("--name") + 1]
         with tarfile.open(self.state / "containers" / name / "copy.tar") as bundle:
             files = {member.name: member.mode for member in bundle.getmembers() if member.isfile()}
-        self.assertEqual(sorted(files), ["work/.gitignore", "work/.mvn/jvm.config",
+        self.assertEqual(sorted(files), ["work/.env", "work/.gitignore", "work/.mvn/jvm.config",  # .env: tracked
                                          "work/.mvn/wrapper/maven-wrapper.properties", "work/data/fixture.csv",
                                          "work/mvnw", "work/package.json", "work/src/app.js"])
         self.assertEqual(files["work/mvnw"], 0o755)
@@ -447,9 +451,12 @@ class FakeEngineTest(unittest.TestCase):
         self.assertTrue(members["work/docs/advanced/coerce.py"].isfile() and members["work/tests"].isdir())
         self.assertNotIn("work/tests/up.py", members)
         self.assertNotIn("work/tests/root.py", members)
-        self.assertEqual([(gap["kind"], gap["path"], gap["target"]) for gap in result["gaps"]], [
+        self.assertEqual({gap["path"] for gap in result["gaps"] if gap["kind"] == "file_withheld"},
+                         {".env", "src/secrets.json"})  # files Daodan never reads, which Git does not track
+        self.assertEqual([(gap["kind"], gap["path"], gap["target"]) for gap in result["gaps"]
+                          if gap["kind"] == "link_outside"], [
             ("link_outside", "tests/root.py", "/etc/passwd"), ("link_outside", "tests/up.py", "../../outside.py")])
-        self.assertIn("../../outside.py", result["gaps"][1]["detail"])
+        self.assertIn("../../outside.py", [gap for gap in result["gaps"] if gap["kind"] == "link_outside"][1]["detail"])
 
     def test_a_work_tree_git_does_not_answer_for_is_a_gap_not_a_copy_of_ignored_files(self):
         (self.project / ".git").mkdir(exist_ok=True)
@@ -702,6 +709,61 @@ class FakeEngineTest(unittest.TestCase):
         self.assertTrue(ask(b"CONNECT registry.npmjs.org:80 HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
         self.assertTrue(ask(b"GET http://registry.npmjs.org/ HTTP/1.1\r\n\r\n").startswith(b"HTTP/1.1 403"))
 
+    def test_proxy_forwards_plain_http_to_an_apt_host_only_for_its_archive(self):
+        """A base image's apt sources name their archive over plain HTTP, and apt checks the signed Release files and
+        each package's hash: for a host given as `http://<host>` the proxy forwards a GET or HEAD of a `dists/` or
+        `pool/` path to its port 80, one request a connection, and refuses any other path, method, port or host."""
+        import http.server
+        seen = []
+
+        class Archive(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                seen.append((self.command, self.path, self.headers.get("Connection")))
+                self.send_response(200)
+                self.send_header("Content-Length", "2")
+                self.end_headers()
+                self.wfile.write(b"ok" if self.command == "GET" else b"")
+
+            do_HEAD, do_POST = do_GET, do_GET
+
+            def log_message(self, *_):
+                pass
+
+        try:
+            archive = http.server.ThreadingHTTPServer(("127.0.0.1", 80), Archive)
+        except OSError as error:
+            self.skipTest(f"an archive at 127.0.0.1:80 is needed: {error}")
+        threading.Thread(target=archive.serve_forever, daemon=True).start()
+        self.addCleanup(archive.server_close)
+        self.addCleanup(archive.shutdown)
+        server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "registry.npmjs.org",
+                                   "http://127.0.0.1"], stdout=subprocess.PIPE, text=True)
+        self.addCleanup(server.wait)
+        self.addCleanup(server.kill)
+        port = int(server.stdout.readline().split()[1])
+
+        def ask(request: bytes) -> bytes:
+            with socket.create_connection(("127.0.0.1", port), timeout=5) as client:
+                client.sendall(request)
+                answer = b""
+                while chunk := client.recv(4096):
+                    answer += chunk
+                return answer
+
+        index = ask(b"GET http://127.0.0.1/debian/dists/trixie/InRelease HTTP/1.1\r\nHost: 127.0.0.1\r\n"
+                    b"Connection: keep-alive\r\n\r\nGET http://127.0.0.1/debian/evil HTTP/1.1\r\nHost: 127.0.0.1\r\n\r\n")
+        self.assertTrue(index.startswith(b"HTTP/1.0 200") and index.endswith(b"ok"), index)
+        self.assertTrue(ask(b"HEAD http://127.0.0.1/debian/pool/main/c/cmake/cmake_3.31.deb HTTP/1.1\r\n\r\n")
+                        .startswith(b"HTTP/1.0 200"))
+        for refused in (b"GET http://127.0.0.1/debian/evil HTTP/1.1", b"POST http://127.0.0.1/debian/dists/x HTTP/1.1",
+                        b"GET http://127.0.0.1:8080/debian/dists/x HTTP/1.1",
+                        b"GET http://127.0.0.1/debian/dists/../../secret HTTP/1.1",
+                        b"GET http://127.0.0.1/debian/dists/x?y=1 HTTP/1.1",
+                        b"GET http://registry.npmjs.org/debian/dists/x HTTP/1.1", b"CONNECT 127.0.0.1:443 HTTP/1.1"):
+            self.assertTrue(ask(refused + b"\r\n\r\n").startswith(b"HTTP/1.1 403"), refused)
+        self.assertEqual(seen, [("GET", "/debian/dists/trixie/InRelease", "close"),  # the next request goes nowhere
+                                ("HEAD", "/debian/pool/main/c/cmake/cmake_3.31.deb", "close")])
+
     # Guarantee 3: limits.
     def test_limits_are_passed_and_a_timed_out_container_is_removed(self):
         result = self.run_operation(["sleep", "30"], timeout=2, memory=512 * 2**20, pids=64, cpus=1.5)
@@ -878,6 +940,32 @@ class FakeEngineTest(unittest.TestCase):
         flat = [token for call in self.calls() for token in call]
         self.assertNotIn("context", flat)
         self.assertNotIn("--context", flat)
+
+
+@unittest.skipUnless(os.environ.get("MODAL_TASK_ID"), "a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_apt_updates_and_downloads_from_debian_s_plain_http_archive_through_the_proxy(tmp_path):
+    """Debian's own apt, its sources plain HTTP as the image names them, through the proxy with deb.debian.org given
+    as `http://deb.debian.org`: the signed indexes and a package come, and the proxy refuses nothing apt asks."""
+    server = subprocess.Popen([sys.executable, "-I", "-c", container.PROXY_SCRIPT, "0", "http://deb.debian.org"],
+                              stdout=subprocess.PIPE, text=True)
+    try:
+        port = int(server.stdout.readline().split()[1])
+        for folder in ("lists/partial", "cache/archives/partial"):
+            (tmp_path / folder).mkdir(parents=True)
+        options = ["-o", f"Acquire::http::Proxy=http://127.0.0.1:{port}", "-o", f"Dir::State::Lists={tmp_path}/lists",
+                   "-o", f"Dir::Cache={tmp_path}/cache", "-o", "APT::Sandbox::User=root", "-o", "Debug::NoLocking=1"]
+        update = subprocess.run(["apt-get", *options, "update"], capture_output=True, text=True, timeout=600)
+        print(update.stdout[-2000:], update.stderr[-2000:], flush=True)
+        assert update.returncode == 0 and "InRelease" in update.stdout
+        got = subprocess.run(["apt-get", *options, "download", "hello"], cwd=tmp_path, capture_output=True, text=True,
+                             timeout=600)
+        print(got.stdout[-1000:], got.stderr[-1000:], flush=True)
+        assert got.returncode == 0 and list(tmp_path.glob("hello_*.deb"))
+    finally:
+        server.kill()
+        refused = [line for line in server.stdout.read().splitlines() if line.startswith("refused")]
+        server.wait()
+    assert refused == []
 
 
 SMOKE = os.environ.get("DAODAN_CONTAINER_SMOKE") == "1"

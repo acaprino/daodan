@@ -159,6 +159,23 @@ def _hosts(box, pinned) -> None:
         box.exec("sh", "-c", f"echo 127.0.0.1 {shlex.quote(name)} >> /etc/hosts").wait()
 
 
+def _dotenv(token: str, files: list, options: dict) -> dict:
+    """`container.dotenv_values` on Modal: `container.RESOLVE` in a Sandbox of Python's with no network, over the
+    tracked .env files alone of this run's copy on the volume."""
+    import container
+    box = modal.Sandbox.create(image=modal.Image.debian_slim(python_version="3.13"), block_network=True,
+                               app=options["app"], volumes=options["volumes"], timeout=600, cpu=0.25, memory=256)
+    try:
+        members = " ".join(shlex.quote(f"work/{rel}") for rel in files)
+        process = box.exec("sh", "-c", f"tar -xf /results/{SCRATCH}/{token}/copy.tar -C / {members} && cd "
+                           f"{container.WORKDIR} && exec python3 -c {shlex.quote(container.RESOLVE)} "
+                           + " ".join(map(shlex.quote, files)), timeout=300)
+        said = process.stdout.read()
+        return container.dotenv_answer(said, process.wait())
+    finally:
+        box.terminate()
+
+
 def vm(command, services) -> bool:
     """Whether a run takes a VM Sandbox, with a Linux kernel of its own: with services (Docker runs only there), or
     when its execution starts Valgrind (the Rust and the C and C++ observers, `dynamic/callgrind.py`), which grows a
@@ -168,7 +185,7 @@ def vm(command, services) -> bool:
 
 
 def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), env=None, timeout=600,
-                prepare_timeout=1800, memory=2 * 2**30, inputs=None, **_):
+                prepare_timeout=1800, memory=2 * 2**30, inputs=None, dotenv_env=(), **_):
     """`container.run_in_container` on Modal Sandboxes: the same arguments and result (the module's docstring),
     `container.beside`'s services, variables and steps included. With steps and services, the services start in
     the preparation's sandbox, the steps beside them, and start again from what they kept (the snapshot holds
@@ -181,6 +198,12 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
     token = uuid.uuid4().hex[:12]
     scratch = Path("/results") / SCRATCH / token
     services, variables, steps, said = container.BESIDE.get() or ((), {}, (), container.Said([], []))
+    if steps and not prepare:  # they run at the end of a preparation, which this run has not
+        result["ci_steps"] = [{"declared_in": step["declared_in"], **({"name": step["name"]} if step.get("name") else {}),
+                               "outcome": "not_run", "exit_code": None, "duration_seconds": 0,
+                               "cause": "the run has no preparation, at whose end Daodan runs the CI's steps"}
+                              for step in steps]
+        said.ci_steps.extend(result["ci_steps"])
     steps = list(steps) if prepare else []
     env = {**variables, **(env or {})}
     env = {"HOME": container.HOME, **env} if prepare else env
@@ -191,6 +214,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
     unpack = f"tar -xf /results/{SCRATCH}/{token}/copy.tar -C / && mkdir -p {container.WORKDIR} && cd {container.WORKDIR}"
     boxes, pinned, served, kept = [], [], [], False  # `kept`: the services started beside the steps
     limits = {"memory": int(memory), "pids": 1024}
+    hide = None  # the masks of the tracked .env files' values (`container.masker`)
 
     def failed(items, error) -> list[dict]:
         cause = f"{type(error).__name__}: {error}"
@@ -211,6 +235,10 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         scratch.mkdir(parents=True)
         digest = container.copy_perimeter(Path(project), scratch / "copy.tar", given)
         volume.commit()
+        values = _dotenv(token, digest["dotenv"], options) if digest.get("dotenv") else {}
+        hide = container.masker(values)
+        services = [container.filled(item, values) for item in services]  # the values only here, never on record
+        exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
         base = modal.Image.from_registry(image)
         if prepare or bundle:
             boxes.append(modal.Sandbox.create(image=base, **options))
@@ -230,24 +258,26 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                         early = container.start_services(_docker(boxes[-1]), pinned, "host", limits, token,
                                                          copy=scratch / "copy.tar")
                         for item in early:
-                            container.append_record(record, {**item, "engine": "modal"})
+                            container.append_record(record, {**container.mask_row(item, hide), "engine": "modal"})
                         unready = {item["name"] for item in early if item["outcome"] != "ready"}
                         served += [item for item in early if item["name"] in unready]
                         pinned, kept = [s for s in pinned if s["name"] not in unready], True
                     else:
                         _quiet(boxes[-1])
                 except (RuntimeError, subprocess.TimeoutExpired) as error:
-                    said = {item["name"] for item in served}
-                    served += failed([s for s in services if s["name"] not in said], error)
+                    told = {item["name"] for item in served}
+                    served += failed([s for s in services if s["name"] not in told], error)
                     pinned = []
             if prepare:
                 run = ["sh", "-c", container.steps_script(steps, timeout, token), "sh", *prepare] if steps else prepare
                 row = _phase(boxes[-1], "prepare", f"{unpack} && mkdir -p \"$HOME\" && exec {shlex.join(run)}",
-                             env, prepare_timeout + (timeout if steps else 0), out_dir)
-                container.append_record(record, {**row, "image": image, "command": list(prepare), "copy": digest})
+                             {**env, **exported}, prepare_timeout + (timeout if steps else 0), out_dir)
+                container.mask_file(row["log"], hide)
+                container.append_record(record, {**container.mask_row(row, hide), "image": image,
+                                                 "command": list(prepare), "copy": digest})
                 for item in container.stepped(Path(row["log"]).read_text(encoding="utf-8", errors="replace")
                                               if Path(row["log"]).is_file() else "", steps, token, timeout):
-                    container.append_record(record, {**item, "engine": "modal"})
+                    container.append_record(record, {**container.mask_row(item, hide), "engine": "modal"})
                     result.setdefault("ci_steps", []).append({key: item[key] for key in item if key != "phase"})
                 said.ci_steps.extend(result.get("ci_steps", ()))
                 if row["outcome"] != "exited" or row["exit_code"] != 0:
@@ -268,13 +298,15 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
             except (RuntimeError, subprocess.TimeoutExpired) as error:
                 served += failed(pinned, error)
         for item in served:
-            container.append_record(record, {**item, "engine": "modal"})
+            container.append_record(record, {**container.mask_row(item, hide), "engine": "modal"})
         if services:
             result["services"] = [{key: item[key] for key in ("name", "image", "pinned", "outcome", "cause")
                                    if key in item} for item in served]
             said.services.extend(result["services"])
         row = _phase(boxes[-1], "execute", f"{unpack} && exec {shlex.join(command)}", env, timeout, out_dir)
-        container.append_record(record, {**row, "image": image, "command": list(command), "copy": digest})
+        container.mask_file(row["log"], hide)
+        container.append_record(record, {**container.mask_row(row, hide), "image": image, "command": list(command),
+                                         "copy": digest})
         if outputs and row["outcome"] != "failed":
             pack = " ; ".join(f"[ -e {shlex.quote(path)} ] && tar -rf {PACKED} -C {shlex.quote(posixpath.dirname(path))}"
                               f" {shlex.quote(posixpath.basename(path))}" for path in outputs)
@@ -283,6 +315,9 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                 members = [m for m in bundle.getmembers() if m.isfile() or m.isdir()]
                 bundle.extractall(out_dir, members=members, filter="data")
                 result["outputs"] = [str(out_dir / m.name) for m in members if m.isfile()]
+            for path in result["outputs"]:  # the text a run printed there, masked as its logs are
+                if path.endswith(container.TEXTS):
+                    container.mask_file(path, hide)
         result.update(exit_code=row.get("exit_code"),
                       state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))
         if "cause" in row:
@@ -292,6 +327,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         result["cause"] = f"{type(error).__name__}: {error}"
         return result
     finally:
+        if hide and isinstance(result.get("cause"), str):
+            result["cause"] = hide(result["cause"])
         for box in boxes:
             try:
                 box.terminate()

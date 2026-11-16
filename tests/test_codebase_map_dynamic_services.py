@@ -17,6 +17,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 import uuid
@@ -448,7 +449,9 @@ def test_the_steps_a_job_runs_before_its_tests_are_facts_with_where_and_how_gith
     too (FastAPI's `uv run bash scripts/tests-start.sh`, whose `scripts/test.sh` runs pytest). Each `run:` step
     before it is a fact: its folder, its text, the variables the workflow, the job and the step give it. The
     checkout, a toolchain's setup action and Docker Compose's `up` and `down` (its services are the `compose`
-    facet's) are not; nothing after the tests is."""
+    facet's) are not; nothing after the tests is. The test step is a fact with `test` and the variables it gives
+    the tests: the workflow's, the job's, the step's and those set on the command that starts the runner, in the
+    scripts it runs too (FastAPI's `FASTAPI_ENV=development coverage run -m pytest tests/`)."""
     tests = [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"},
              {"root": ".", "runner": "jest", "declared_in": "package.json#scripts.frontend:test"},
              {"root": "backend", "runner": "pytest", "declared_in": "backend/pyproject.toml"}]
@@ -456,8 +459,12 @@ def test_the_steps_a_job_runs_before_its_tests_are_facts_with_where_and_how_gith
     out = read_steps(tmp_path, files, tests, {".github/workflows/ci.yml": CI,
                                               ".github/workflows/test-backend.yml": BACKEND})
     assert out["facts"]["ci_steps"] == [*TUDUDI_STEPS, {
+        "declared_in": ".github/workflows/ci.yml#jobs.test.steps.5", "tests": "package.json#scripts.test",
+        "name": "Run backend tests", "test": True, "env": {"DATABASE_URL": DATABASE_URL}}, {
         "declared_in": ".github/workflows/test-backend.yml#jobs.test-backend.steps.5", "tests": "backend/pyproject.toml",
-        "name": "Migrate DB", "cwd": "backend", "run": "uv run bash scripts/prestart.sh"}]
+        "name": "Migrate DB", "cwd": "backend", "run": "uv run bash scripts/prestart.sh"}, {
+        "declared_in": ".github/workflows/test-backend.yml#jobs.test-backend.steps.6", "tests": "backend/pyproject.toml",
+        "name": "Run tests", "test": True, "env": {"FASTAPI_ENV": "development"}}]
     assert "gaps" not in out
 
 
@@ -475,13 +482,17 @@ def test_a_step_before_the_tests_that_daodan_does_not_run_is_a_fact_with_its_cau
             {"name": "Query", "run": "docker compose exec -T db psql -c 'select 1'"},
             {"name": "Build", "run": "npm run build", "env": {"MODE": "ci"}},
             {"run": "docker compose up -d db"},
-            {"name": "Tests", "run": "npm test"}]}}}
+            {"name": "Tests", "run": "LEVEL=debug SHA=$GITHUB_SHA npm test",
+             "env": {"KEY": "${{ secrets.KEY }}"}}]}}}
     tests = [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"}]
     files = {"package.json": json.dumps({"scripts": {"test": "jest", "lint": "eslint .", "build": "tsc"}})}
     out = read_steps(tmp_path, files, tests, {".github/workflows/unit.yml": workflow})
     path = ".github/workflows/unit.yml#jobs.unit.steps."
     facts = {item["declared_in"].removeprefix(path): item for item in out["facts"]["ci_steps"]}
-    assert sorted(facts, key=int) == ["2", "3", "4", "5", "6", "7"]
+    assert sorted(facts, key=int) == ["2", "3", "4", "5", "6", "7", "9"]
+    assert facts["9"] == {"declared_in": path + "9", "tests": "package.json#scripts.test", "name": "Tests", "test": True,
+                          "env": {"TOKEN": "x", "KEY": "${{ secrets.KEY }}", "LEVEL": "debug",
+                                  "SHA": "$GITHUB_SHA"}, "computed": ["SHA"]}  # a value the shell computes
     assert facts["7"] == {"declared_in": path + "7", "tests": "package.json#scripts.test", "name": "Build", "cwd": ".",
                           "run": "npm run build", "env": {"TOKEN": "x", "MODE": "ci"}, "shell": "bash"}
     for number, said in (("2", "actions/cache@v4"), ("3", "github.event_name == 'push'"),
@@ -492,21 +503,181 @@ def test_a_step_before_the_tests_that_daodan_does_not_run_is_a_fact_with_its_cau
 
 def test_an_observer_s_runs_get_the_steps_before_their_tests_and_a_gap_for_each_that_does_not_run():
     """The steps before the tests an observer runs (`declared_in` of its runs), once each, in the job's order;
-    a `ci_step_not_run` gap for one with a `cause`."""
+    a `ci_step_not_run` gap for one with a `cause`. The variables their test steps give the tests reach them,
+    but one the CI or the shell computes, or two test steps give apart, which is a `ci_step_incomplete` gap."""
     def fact(number: int, tests: str, **more) -> dict:
         return {"declared_in": f"ci.yml#jobs.t.steps.{number}", "tests": tests, "cwd": ".", "run": f"echo {number}",
                 **more}
     record = {"ci_steps": [fact(10, "a"), fact(2, "a"), fact(2, "b"), fact(3, "c"),
                            {"declared_in": "ci.yml#jobs.t.steps.4", "tests": "b", "name": "Cache",
-                            "cause": "it uses actions/cache@v4: Daodan runs no action"}]}
+                            "cause": "it uses actions/cache@v4: Daodan runs no action"},
+                           {"declared_in": "ci.yml#jobs.t.steps.11", "tests": "a", "test": True,
+                            "env": {"MODE": "test", "KEY": "${{ secrets.KEY }}", "SHA": "$(git rev-parse HEAD)",
+                                    "LEVEL": "1", "PORT": 1}, "computed": ["SHA"]},
+                           {"declared_in": "ci.yml#jobs.u.steps.3", "tests": "b", "test": True,
+                            "env": {"MODE": "test", "LEVEL": "2"}}]}
     planned = dynamic.ci_steps(record, [{"root": ".", "runner": "jest", "declared_in": "a"},
                                         {"root": ".", "runner": "jest", "declared_in": "b"}])
     assert [step["run"] for step in planned["steps"]] == ["echo 2", "echo 10"]
     assert planned["steps"][0] == {"declared_in": "ci.yml#jobs.t.steps.2", "cwd": ".", "run": "echo 2"}
-    [gap] = planned["gaps"]
+    gap, first, second = planned["gaps"]
     assert (gap["kind"], gap["path"]) == ("ci_step_not_run", "ci.yml#jobs.t.steps.4")
     assert "Cache" in gap["detail"] and "actions/cache@v4" in gap["detail"]
-    assert dynamic.ci_steps({}, [{"root": ".", "runner": "go"}]) == {"steps": [], "gaps": []}
+    assert planned["env"] == {"MODE": "test", "PORT": "1"}
+    assert [(item["kind"], item["path"]) for item in (first, second)] == [
+        ("ci_step_incomplete", "ci.yml#jobs.t.steps.11"), ("ci_step_incomplete", "ci.yml#jobs.u.steps.3")]
+    assert "KEY" in first["detail"] and "SHA" in first["detail"] and "LEVEL" in second["detail"]
+    assert dynamic.ci_steps({}, [{"root": ".", "runner": "go"}]) == {"steps": [], "gaps": [], "env": {}}
+
+
+PLAYWRIGHT = {"jobs": {"test-playwright": {"steps": [  # the template's playwright.yml, its job's steps
+    {"uses": "actions/checkout@v7"}, {"uses": "oven-sh/setup-bun@v2"},
+    {"name": "Setup tmate session", "uses": "mxschmitt/action-tmate@v3",
+     "if": "${{ github.event_name == 'workflow_dispatch' }}"},
+    {"run": "uv sync", "working-directory": "backend"}, {"run": "bun ci", "working-directory": "frontend"},
+    {"run": "docker compose build"}, {"run": "docker compose run --rm backend bash scripts/prestart.sh"},
+    {"name": "Run Playwright tests", "run": "docker compose run --rm playwright bunx playwright test "
+                                            "--fail-on-flaky-tests --shard=${{ matrix.shardIndex }}/4"},
+    {"run": "docker compose down -v --remove-orphans"}]}}}
+
+
+def test_a_job_that_runs_its_tests_inside_docker_compose_says_its_test_step_and_each_step_before_it_not_run(tmp_path):
+    """FastAPI's playwright job runs the frontend's tests in `docker compose run … playwright`, in a container
+    Compose builds: Daodan does not read inside it, so the job's test step is a fact with its cause, naming the
+    service and the command, and each step before it one that does not run, with its own cause or that one."""
+    frontend = {"root": "frontend", "runner": "npm", "declared_in": "frontend/package.json#scripts.test"}
+    files = {"frontend/package.json": json.dumps({"scripts": {"test": "bunx playwright test"}})}
+    out = read_steps(tmp_path, files, [frontend], {".github/workflows/playwright.yml": PLAYWRIGHT})
+    path = ".github/workflows/playwright.yml#jobs.test-playwright.steps."
+    facts = {item["declared_in"].removeprefix(path): item for item in out["facts"]["ci_steps"]}
+    assert sorted(facts, key=int) == ["2", "3", "4", "6", "7"] and all("run" not in item for item in facts.values())
+    assert all(item["tests"] == frontend["declared_in"] for item in facts.values())
+    tested = facts["7"]
+    assert tested["name"] == "Run Playwright tests" and "Compose service playwright" in tested["cause"]
+    assert "bunx playwright test --fail-on-flaky-tests" in tested["cause"]
+    assert "action-tmate" in facts["2"]["cause"] and "docker compose run --rm backend" in facts["6"]["cause"]
+    assert facts["3"]["cause"] == facts["4"]["cause"] and path + "7" in facts["3"]["cause"]
+    planned = dynamic.ci_steps(out["facts"], [frontend])
+    assert planned["steps"] == [] and [gap["path"] for gap in planned["gaps"]] == [path + n for n in "23467"]
+
+
+# ------------------------------------------------------------------ the .env files Git tracks
+
+def git_project(root: Path, files: dict, tracked: list[str]) -> Path:
+    for rel, text in files.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8", newline="\n")
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "add", "--", *tracked], check=True)
+    return root
+
+
+def test_the_copy_carries_the_env_files_git_tracks_and_names_each_file_it_withholds(tmp_path):
+    """As the CI's checkout: the `.env` files Git tracks reach the container's copy (`dotenv` names them); a file
+    Daodan never reads that Git does not track, or that is no `.env` file, stays out as a `file_withheld` gap
+    naming it and the rule; what Git ignores is no checkout's, and no gap."""
+    project = git_project(tmp_path / "p", {
+        ".env": DOTENV, "backend/.env.test": "MODE=test\n", "certs/server.pem": "x\n", ".env.local": "TOKEN=mine\n",
+        ".env.prod": "TOKEN=prod\n", ".gitignore": ".env.prod\n", "app.py": "print(1)\n"},
+        [".env", "backend/.env.test", "certs/server.pem", ".gitignore", "app.py"])
+    digest = container.copy_perimeter(project, tmp_path / "copy.tar")
+    with tarfile.open(tmp_path / "copy.tar") as bundle:
+        assert {member.name for member in bundle.getmembers() if member.isfile()} == {
+            "work/.env", "work/backend/.env.test", "work/.gitignore", "work/app.py"}
+    assert digest["dotenv"] == [".env", "backend/.env.test"]
+    withheld = {gap["path"]: gap["detail"] for gap in digest["gaps"] if gap["kind"] == "file_withheld"}
+    assert sorted(withheld) == [".env.local", "certs/server.pem"] and len(digest["gaps"]) == 2
+    assert "*.pem" in withheld["certs/server.pem"] and "Git does not track it" in withheld[".env.local"]
+
+
+def test_in_the_pre_map_s_container_each_value_of_a_tracked_env_file_is_its_name(tmp_path):
+    """The pre-map keeps no value of a tracked `.env` file: before its commands, its container writes in each such
+    file of the copy, in place of each value, a placeholder naming the file and the variable (`container.named`),
+    which Compose interpolates as it would the value; comments stay, the further lines of a value over several go."""
+    work = tmp_path / "work"
+    (work / "deploy").mkdir(parents=True)
+    (work / ".env").write_text("# the stack\nexport SECRET_KEY='s3cr3t value'\nMULTI=\"a\nb=c\nd\"\n\nPORT = 8000\n",
+                               encoding="utf-8", newline="\n")
+    (work / "deploy" / ".env.ci").write_text("TOKEN=abc\n", encoding="utf-8", newline="\n")
+    kept = tmp_path / "state" / "dotenv-values.json"
+    subprocess.run(["sh", "-c", container.named(str(work), str(kept))], check=True)
+    assert json.loads(kept.read_text(encoding="utf-8")) == {  # in the container only, before the names
+        ".env": {"SECRET_KEY": "s3cr3t value", "MULTI": "a\nb=c\nd", "PORT": "8000"}, "deploy/.env.ci": {"TOKEN": "abc"}}
+    subprocess.run(["sh", "-c", container.named(str(work), str(kept))], check=True)  # again: the values stay
+    assert json.loads(kept.read_text(encoding="utf-8"))[".env"]["SECRET_KEY"] == "s3cr3t value"
+    assert (work / ".env").read_text(encoding="utf-8") == (
+        f"# the stack\nexport SECRET_KEY={placed('.env', 'SECRET_KEY')}\nMULTI={placed('.env', 'MULTI')}\n"
+        f"b={placed('.env', 'b')}\n\nPORT ={placed('.env', 'PORT')}\n")
+    assert (work / "deploy" / ".env.ci").read_text(encoding="utf-8") == f"TOKEN={placed('deploy/.env.ci', 'TOKEN')}\n"
+    with mock.patch.object(container, "run_in_container", return_value={"state": "done"}) as ran:
+        container.run_commands(tmp_path / "p", [{"tool": "t", "argv": ["true"], "network": "registries"},
+                                                {"tool": "t", "argv": ["true"]}], image="i", out_dir=tmp_path / "out")
+    assert ran.call_args.args[1][2].startswith(container.named(values=container.DOTENV_VALUES)) and ran.call_args.kwargs["prepare"][2].startswith(
+        container.named(values=container.DOTENV_VALUES))
+
+
+def placed(file: str, name: str) -> str:
+    """What the pre-map's container writes in place of a value (`container.named`): no colon Compose splits on."""
+    return f"./daodan-dotenv-{file.encode().hex()}-{name.encode().hex()}"
+
+
+PLACED = json.loads(json.dumps(CONFIG).replace('"changethis"', f'"{placed(".env", "POSTGRES_PASSWORD")}"'))
+
+
+def test_a_value_compose_takes_from_a_tracked_env_file_is_a_fact_with_its_name_and_its_file():
+    """Compose's `config` over the placeholders: the fact keeps `${NAME}` where the value stood and, in `dotenv`,
+    the file each name comes from; the plan carries both, and the run puts the value in place where it starts the
+    service (`container.filled`)."""
+    context = SimpleNamespace(stated={"compose": [UP]})
+    out = compose.read(context, compose.commands(context), [
+        {"returncode": 0, "stdout": json.dumps(PLACED), "stderr": "", "root": "/work"}])
+    db = out["facts"]["services"][0]
+    assert db == {**COMPOSE_DB, "env": {"POSTGRES_DB": "app", "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD}"},
+                  "dotenv": {"POSTGRES_PASSWORD": ".env"}}
+    spec = dynamic.services({"services": [db]})["services"][0]
+    assert spec["env"]["POSTGRES_PASSWORD"] == "${POSTGRES_PASSWORD}" and spec["dotenv"] == {"POSTGRES_PASSWORD": ".env"}
+    filled = container.filled({**spec, "args": ["--health-cmd", "pg_isready -U ${POSTGRES_PASSWORD} ${OTHER}"]},
+                              {".env": {"POSTGRES_PASSWORD": "changethis"}})
+    assert filled["env"]["POSTGRES_PASSWORD"] == "changethis" and filled["args"][1] == "pg_isready -U changethis ${OTHER}"
+    assert container.filled(SPEC, {".env": {"POSTGRES_PASSWORD": "x"}}) == SPEC
+
+
+def test_the_values_of_a_tracked_env_file_are_read_as_compose_reads_them(tmp_path):
+    """`container.RESOLVE`, which runs in a container of Daodan's over the copy's tracked `.env` files: each
+    variable's value as Compose's own reader gives it, quotes, comments and references to those before it read."""
+    (tmp_path / ".env").write_text(
+        DOTENV + 'PROJECT_NAME="Full Stack FastAPI Project" # its name\nexport KEY=\'a ${B}\'\nMULTI="one\\ntwo\n'
+        'three"\nPLAIN=x y # a comment\nDEFAULT=${MISSING:-fallback}\n', encoding="utf-8", newline="\n")
+    said = subprocess.run([sys.executable, "-c", container.RESOLVE, ".env"], cwd=tmp_path, capture_output=True,
+                          text=True, timeout=60)
+    assert container.dotenv_answer(said.stdout, said.returncode) == {".env": {
+        "POSTGRES_PASSWORD": "changethis", "DATABASE_URL": "postgresql://postgres:changethis@localhost:5432/app",
+        "PROJECT_NAME": "Full Stack FastAPI Project", "KEY": "a ${B}", "MULTI": "one\ntwo\nthree", "PLAIN": "x y",
+        "DEFAULT": "fallback"}}
+    with pytest.raises(RuntimeError, match=r"\.env"):
+        container.dotenv_answer("Traceback (most recent call last):\n", 1)
+
+
+def test_each_value_of_a_tracked_env_file_is_masked_where_it_stands_as_a_whole():
+    """What a run keeps names the variable in place of its value; a value shorter than four characters, a boolean
+    word or a number of five digits at most stays, as the output's own words and ports would be masked with it."""
+    hide = container.masker({".env": {
+        "SECRET_KEY": "changethis", "FIRST_SUPERUSER_PASSWORD": "changethis", "SMTP_TLS": "False", "SMTP_PORT": "1025",
+        "DB": "app", "MAIL": "admin@example.com", "DATABASE_URL": "postgresql://postgres:changethis@db:5432/app"}})
+    assert hide("url postgresql://postgres:changethis@db:5432/app, key changethis, admin@example.com; False 1025 app "
+                "notchangethis") == ("url [.env:DATABASE_URL], key [.env:FIRST_SUPERUSER_PASSWORD,.env:SECRET_KEY], "
+                                     "[.env:MAIL]; False 1025 app notchangethis")
+    assert container.masker({".env": {"TLS": "False", "PORT": "5432"}}) is None and container.masker({}) is None
+
+
+def test_the_readers_on_the_host_never_read_a_file_daodan_never_reads(tmp_path):
+    """A step that sources `./.env` does not make the host read it: the readers have no such file."""
+    with context_of(tmp_path, {"ci.sh": "#!/bin/sh\n. ./.env\ndocker compose up -d db\n",
+                               ".env": "#!/bin/sh\ndocker compose up -d x\n"}) as context:
+        read = compose.reader(context)
+        assert read(".env") is None and read("./.env") is None and "docker compose" in read("ci.sh")
+        found, said = compose.started("ci.sh", read("ci.sh"), ".", read)
+    assert [argv[-1] for _, argv in found] == ["db"] and not said
 
 
 def test_on_the_host_the_readers_start_no_program_and_run_nothing_of_the_project(tmp_path):
@@ -556,27 +727,41 @@ def test_a_command_source_reads_what_the_sources_before_it_state(tmp_path):
 
 @pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
 def test_on_modal_compose_s_own_config_gives_the_services_the_fastapi_template_s_step_starts(tmp_path):
-    """Compose 5.6.1 itself (`compose.DOWNLOAD`, checked by its sha256), with no engine, on the template's files."""
+    """Compose 5.6.1 itself (`compose.DOWNLOAD`, checked by its sha256), with no engine, on the template's files,
+    its tracked `.env` with the names the pre-map's container writes in place of the values (`container.named`):
+    the facts name each variable a value comes from, as interpolated and as an `env_file` gives it, and hold no
+    value of the file."""
     binary = tmp_path / "bin" / "docker-compose"
     binary.parent.mkdir()
     shutil.copy(container_runner.fetched(*compose.DOWNLOAD, "docker-compose"), binary)
     binary.chmod(0o755)
     project = tmp_path / "work"
-    for rel, text in {"compose.yml": COMPOSE_YML, "compose.override.yml": OVERRIDE_YML, ".env": DOTENV,
-                      "init.sql": "select 1;\n"}.items():
+    for rel, text in {"compose.yml": COMPOSE_YML, "compose.override.yml": OVERRIDE_YML,
+                      ".env": DOTENV + "HOST_FILESYSTEM=/\n",
+                      "init.sql": "select 1;\n", "files.yml": "services:\n  app:\n    image: app:1\n    env_file: .env\n"
+                      "    volumes:\n      - ${HOST_FILESYSTEM}:/hostfs:ro\n"}.items():  # as otel-demo's short syntax
         (project / rel).parent.mkdir(parents=True, exist_ok=True)
         (project / rel).write_text(text, encoding="utf-8")
-    context = SimpleNamespace(stated={"compose": [UP]})
+    subprocess.run(["sh", "-c", container.named(str(project))], check=True)
+    files = {**UP, "declared_in": "files", "argv": ["docker", "compose", "-f", "files.yml", "up", "-d", "app"]}
+    context = SimpleNamespace(stated={"compose": [UP, files]})
     commands = compose.commands(context)
     results = []
     for command in commands:
         said = subprocess.run([str(binary), *command["argv"][1:]], cwd=project / command["cwd"], capture_output=True,
                               text=True, timeout=120, env={"PATH": "/usr/bin:/bin", **command["env"]})
+        print(said.stdout, said.stderr, flush=True)
         results.append({"returncode": said.returncode, "stdout": said.stdout, "stderr": said.stderr,
                         "root": str(project)})
     out = compose.read(context, commands, results)
     print(json.dumps(out, indent=1), flush=True)
-    assert out["facts"]["services"] == [COMPOSE_DB, COMPOSE_MAILPIT] and not out.get("gaps")
+    db, mailpit, app = out["facts"]["services"]
+    assert [db, mailpit] == [{**COMPOSE_DB, "env": {"POSTGRES_DB": "app", "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD}"},
+                              "dotenv": {"POSTGRES_PASSWORD": ".env"}}, COMPOSE_MAILPIT] and not out.get("gaps")
+    assert app["env"] == {"POSTGRES_PASSWORD": "${POSTGRES_PASSWORD}", "DATABASE_URL": "${DATABASE_URL}",
+                          "HOST_FILESYSTEM": "${HOST_FILESYSTEM}"}
+    assert app["dotenv"] == {"POSTGRES_PASSWORD": ".env", "DATABASE_URL": ".env", "HOST_FILESYSTEM": ".env"}
+    assert app["binds"] == ["${HOST_FILESYSTEM}:/hostfs:ro"] and "changethis" not in str(results)
 
 
 # ------------------------------------------------------------------ the plan
@@ -709,15 +894,18 @@ if _args[:2] == ["network", "disconnect"] and (_state / "no-disconnect").exists(
 if _args[:2] == ["start", "-a"]:
     _command = _state / "containers" / _args[-1] / "command.json"
     _command = _json.loads(_command.read_text()) if _command.is_file() else []
-    if _command[:1] == ["sh"]:  # a shell script, run by a real shell in the container's /work, with its variables
+    if _command[:1] in (["sh"], ["python3"]):  # a shell or Python script, run for real in the container's /work
         import os as _os
         import subprocess as _subprocess
         _log()
         print("started", _args[-1], flush=True)
+        if _command[:1] == ["python3"] and (_state / "no-dotenv").exists():  # the reader of .env files fails
+            _sys.exit("Traceback (most recent call last):")
         _created = [_json.loads(_line) for _line in (_state / "calls.jsonl").read_text().splitlines()]
         _created = next(_c for _c in _created if _c[:1] == ["create"] and _c[_c.index("--name") + 1] == _args[-1])
         _given = dict(_created[_n + 1].split("=", 1) for _n, _a in enumerate(_created) if _a == "-e")
-        _sys.exit(_subprocess.run(_command, cwd=_state / "containers" / _args[-1] / "fs" / "work",
+        _program = [_sys.executable, *_command[1:]] if _command[:1] == ["python3"] else _command
+        _sys.exit(_subprocess.run(_program, cwd=_state / "containers" / _args[-1] / "fs" / "work",
                                   env={**_os.environ, **_given}).returncode)
 if _args[:1] == ["create"] and _mine:
     _log()
@@ -1045,6 +1233,14 @@ class PodTest(unittest.TestCase):
         self.assertEqual((second["outcome"], second["duration_seconds"]), ("timeout", 0))
         self.assertLess(first["duration_seconds"], 20)
 
+    def test_a_run_without_a_preparation_runs_no_step_and_says_each(self):
+        result = self.run_operation([], None, self.STEPS[2:])
+        self.assertEqual(result["state"], "done", result)
+        [step] = result["ci_steps"]
+        self.assertEqual((step["outcome"], step["declared_in"]), ("not_run", "ci.yml#jobs.test.steps.6"))
+        self.assertIn("no preparation", step["cause"])
+        self.assertEqual(self.said.ci_steps, result["ci_steps"])
+
     def test_without_services_the_steps_run_in_the_preparation_s_own_network(self):
         result = self.run_operation([], None, self.STEPS[2:], prepare=["true"])
         self.assertEqual([s["outcome"] for s in result["ci_steps"]], ["exited"])
@@ -1070,6 +1266,51 @@ class PodTest(unittest.TestCase):
         [prepare, _execute] = self.phases()
         self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
         self.assertEqual([s["outcome"] for s in result["services"]], ["ready"])
+
+    def dotenv_project(self) -> Path:
+        return git_project(self.scratch / "tracked", {".env": "SECRET_KEY=changethis\nPOSTGRES_PASSWORD=changethis\n",
+                                                      "app.js": "module.exports = 1;\n"}, [".env", "app.js"])
+
+    def test_a_tracked_env_file_s_values_start_the_service_and_never_reach_what_the_run_keeps(self):
+        """The values are read in a container of Daodan's (`RESOLVE` in the proxy's image, with no network); the
+        service starts with them in place of its names; the logs, the outputs that are text, the record and the
+        result name the variable where the run printed its value."""
+        self.states(PINNED, "exited ", logs="FATAL: password changethis rejected")
+        spec = {**SPEC, "env": {"POSTGRES_PASSWORD": "${POSTGRES_PASSWORD}"}, "dotenv": {"POSTGRES_PASSWORD": ".env"}}
+        script = ("mkdir -p ../daodan/out && echo key $(sed -n 's/^SECRET_KEY=//p' .env) > ../daodan/out/tests-0.log"
+                  " && cat .env")
+        with container.beside([spec], {}) as said:
+            result = container.run_in_container(self.dotenv_project(), ["sh", "-c", script], image="fake/runtime:1",
+                                                out_dir=self.out, engine=self.engine, outputs=["/daodan/out"])
+        reader = [call for call in self.created("daodan-dotenv-")]
+        assert len(reader) == 1 and container.PROXY_IMAGE in reader[0] and reader[0][-2:] == [container.RESOLVE, ".env"]
+        assert "none" == reader[0][reader[0].index("--network") + 1]
+        [service] = self.created("daodan-svc-")
+        assert "POSTGRES_PASSWORD=changethis" in service
+        kept = "\n".join(path.read_text(encoding="utf-8") for path in self.out.rglob("*") if path.is_file())
+        assert "changethis" not in kept and (self.out / "out" / "tests-0.log").is_file()
+        assert "[.env:POSTGRES_PASSWORD,.env:SECRET_KEY]" in (self.out / "execute.log").read_text(encoding="utf-8")
+        assert "changethis" not in json.dumps(result) and "changethis" not in json.dumps(said)
+        assert result["state"] == "done" and "[.env:" in result["services"][0]["cause"]
+
+    def test_the_variables_a_caller_names_reach_the_preparation_with_their_values_and_never_the_record(self):
+        """`dotenv_env`: a Dockerfile stage's `${NAME}` words expand in the preparation's shell, as BuildKit's would."""
+        result = container.run_in_container(self.dotenv_project(), ["exit", "0"], image="fake/runtime:1",
+                                            out_dir=self.out, engine=self.engine, prepare=["exit", "0"],
+                                            dotenv_env=[("SECRET_KEY", ".env"), ("MISSING", ".env")])
+        [prepared, executed] = [call for call in self.created("daodan-") if "fake/runtime:1" in call]
+        assert "SECRET_KEY=changethis" in prepared and "SECRET_KEY=changethis" not in executed
+        assert not any(word.startswith("MISSING=") for word in prepared)
+        assert result["state"] == "done" and "changethis" not in (self.out / container.RECORD_NAME).read_text()
+
+    def test_a_tracked_env_file_whose_values_cannot_be_read_stops_the_run_with_its_cause(self):
+        (self.state / "no-dotenv").write_text("", encoding="utf-8")
+        result = container.run_in_container(self.dotenv_project(), ["exit", "0"], image="fake/runtime:1",
+                                            out_dir=self.out, engine=self.engine)
+        assert result["state"] == "failed" and ".env" in result["cause"]
+        assert not [call for call in self.calls() if call[0] == "create" and "fake/runtime:1" in call]
+        assert not [call for call in self.created("daodan-dotenv-") if not [
+            other for other in self.calls() if other[:2] == ["rm", "-f"] and other[-1] == call[call.index("--name") + 1]]]
 
     def test_without_services_nothing_of_a_pod(self):
         self.run_operation(())
@@ -1156,9 +1397,16 @@ def test_the_step_runs_the_ci_s_steps_before_each_observer_s_tests_and_says_thos
               "run": "npm ci"}]
     failed = [{"declared_in": "ci.yml#jobs.test.steps.2", "name": "Migrate", "outcome": "exited", "exit_code": 1,
                "duration_seconds": 3, "cause": "it exited with code 1: FATAL: no such table"}]
-    seen, events = run_step(tmp_path, [], [], ci_steps=facts, stepped=[failed, failed])
+    unprepared = [{**failed[0], "outcome": "not_run", "exit_code": None, "duration_seconds": 0,
+                   "cause": "the run has no preparation, at whose end Daodan runs the CI's steps"}]
+    facts.append({"declared_in": "ci.yml#jobs.test.steps.4", "tests": "pyproject.toml", "name": "Tests", "test": True,
+                  "env": {"FASTAPI_ENV": "development", "KEY": "${{ secrets.KEY }}"}})
+    seen, events = run_step(tmp_path, [], [], ci_steps=facts, stepped=[failed, unprepared, failed])
     assert seen["steps"] == [{"declared_in": "ci.yml#jobs.test.steps.2", "name": "Migrate", "cwd": ".",
                               "run": "alembic upgrade head"}]
+    assert seen["env"] == {"FASTAPI_ENV": "development"}  # the test step's, as the CI gives them its runner
+    [unset] = gaps(events, "ci_step_incomplete")
+    assert unset["path"] == "ci.yml#jobs.test.steps.4" and "KEY" in unset["detail"]
     [said] = gaps(events, "ci_step_failed")
     assert said["path"] == "ci.yml#jobs.test.steps.2" and "Migrate" in said["detail"] and "no such table" in said["detail"]
     [skipped] = gaps(events, "ci_step_not_run")
@@ -1170,11 +1418,12 @@ def test_the_step_runs_the_ci_s_steps_before_each_observer_s_tests_and_says_thos
 
 def test_the_javascript_observer_says_a_refused_connection_without_saying_no_service_starts(tmp_path):
     from test_codebase_map_dynamic_javascript import Played, observe
-    played = Played({"tests-0.log": "Error: connect ECONNREFUSED 127.0.0.1:6379\n"},
+    played = Played({"tests-0.log": "Error: connect ECONNREFUSED 127.0.0.1:6379\nError: getaddrinfo ENOTFOUND redis\n"
+                                    "Error: connect ECONNREFUSED 127.0.0.1:6379\n"},
                     {"execute.log": "DAODAN-DYNAMIC 0 exit 1 3\n"})
     result = observe(tmp_path, played)
     [gap] = [gap for gap in result["gaps"] if gap["kind"] == "services_unreachable"]
-    assert "starts no service" not in gap["detail"]
+    assert "starts no service" not in gap["detail"] and "(127.0.0.1:6379 ×2, redis ×1)" in gap["detail"]
     assert "only the services the project's CI declares" in gap["detail"]
 
 
@@ -1334,6 +1583,33 @@ def test_on_modal_the_ci_s_steps_run_beside_the_services_and_the_tests_find_what
     found = json.loads((tmp_path / "out" / "out" / "sql.json").read_text())
     print(found, flush=True)
     assert found["rows"] == [["7"]] and found["outside"] != "reached"
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_a_tracked_env_file_s_value_reaches_the_service_and_nothing_the_run_keeps(tmp_path):
+    """The driver's Sandboxes over a project whose `.env` Git tracks: the value is read in a Sandbox of the proxy's
+    image, the service starts with it (PostgreSQL makes the database it names), the tests find that database, and
+    the logs, the text outputs, the record and the result name the variable where the tests printed its value."""
+    from indexers import typescript
+    secret = "s3cr3t" + uuid.uuid4().hex[:8]
+    fact = {"name": "db", "image": "postgres:16-alpine", "declared_in": "ci.yml#jobs.t.steps.1.services.db",
+            "host": "localhost", "env": {"POSTGRES_DB": "${DB_NAME}", "POSTGRES_HOST_AUTH_METHOD": "trust"},
+            "dotenv": {"DB_NAME": ".env"}, "job_env": {"DATABASE_URL": f"postgres://postgres@localhost:5432/{secret}"},
+            "healthcheck": {"test": ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME}"], "interval": "1s",
+                            "retries": 60}}
+    planned = dynamic.services({"services": [fact]})
+    project = git_project(tmp_path / "proj", {".env": f"DB_NAME={secret}\n", "sql.py": SQL}, [".env", "sql.py"])
+    with the_driver() as modal_pipeline, container.beside(planned["services"], planned["env"]) as said:
+        result = modal_pipeline.sandbox_run(project, ["python3", "/work/sql.py", "SELECT current_database()",
+                                                      "/daodan/out/sql.txt"], image=typescript.IMAGE,
+                                            out_dir=tmp_path / "out", outputs=["/daodan/out"],
+                                            env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=600)
+    kept = {path.name: path.read_text(encoding="utf-8") for path in (tmp_path / "out").rglob("*") if path.is_file()}
+    print(json.dumps(kept, indent=1), flush=True)
+    assert result["state"] == "done" and result["exit_code"] == 0, result
+    assert [item["outcome"] for item in said.services] == ["ready"]
+    assert json.loads(kept["sql.txt"])["rows"] == [["[.env:DB_NAME]"]]  # the database the value names, masked
+    assert secret not in json.dumps([kept, result, said])
 
 
 POD = r'''import json, sys

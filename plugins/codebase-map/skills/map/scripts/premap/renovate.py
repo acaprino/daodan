@@ -78,6 +78,9 @@ CHECKOUT = "actions/checkout"  # the checkout of a job: Daodan's copy of the pro
 SETUP = re.compile(r"(?:^|[-_])setup(?:$|[-_])")  # a toolchain's setup action (`setup-node`, `action-setup`)
 PACKAGE_MANAGERS = ("npm", "yarn", "pnpm", "bun", "npx")  # programs that run a package's scripts, not tests
 COMPOSE_KEPT = ("up", "down", "pull", "build", "ps", "logs", "config", "stop", "rm")  # what `compose` reads, or none
+COMPOSE_RUN_VALUED = {"-e", "--env", "--env-from-file", "--entrypoint", "-l", "--label", "--name", "-p", "--publish",
+                      "-u", "--user", "-v", "--volume", "-w", "--workdir", "--pull", "--cap-add", "--cap-drop",
+                      "--index"}  # the options of `compose run` and `compose exec` that take a value
 EXPRESSION = re.compile(r"\$\{\{.*?\}\}")  # an expression of GitHub Actions
 SERVICE_KEYS = ("env", "ports", "options", "command", "entrypoint", "volumes")  # what a service's job writes for it
 # GitLab's global keywords (docs.gitlab.com/ci/yaml): every other top-level key not starting with `.` is a job
@@ -224,13 +227,46 @@ def _inside(path: str, folder: str) -> bool:
     return folder == "." or path == folder or path.startswith(folder + "/")
 
 
-def _tests_of(script: str, cwd: str, tests: list[dict], read) -> list[dict]:
-    """The `tests` entries a step's shell `script` run from `cwd` runs: a package script that starts what an
-    entry's script starts (`npm_tests._starts`), or an entry's runner as a program, there or in the shell scripts
-    of the checkout it runs (`compose.followed`), from a folder inside the entry's or holding it."""
-    commands = [command for text in (script, *map(read, compose.followed(script, cwd, read)))
-                for command in compose.simple_commands(text or "")]
-    programs = {word.rsplit("/", 1)[-1] for command in commands for word in command}
+def _composed(command: list[str]) -> tuple[str, list[str]] | None:
+    """The service and the command `docker compose run|exec [options] <service> <command…>` runs in that service's
+    container; None for any other command."""
+    if command[:2] != ["docker", "compose"] and command[:1] != ["docker-compose"]:
+        return None
+    _, _, verb, rest = compose._split(command)
+    i = 0
+    while verb in ("run", "exec") and i < len(rest) and rest[i].startswith("-"):
+        i += 2 if rest[i] in COMPOSE_RUN_VALUED else 1
+    return (rest[i], rest[i + 1:]) if verb in ("run", "exec") and i < len(rest) else None
+
+
+def _composed_tests(script: str, tests: list[dict], read) -> list[tuple[dict, str, list[str]]]:
+    """The `tests` entries a step's shell `script` runs inside a Compose service's container, each with the service
+    and the command: one that starts the words of the entry's package script, or the entry's runner."""
+    found = []
+    for command in compose.simple_commands(script):
+        service, words = _composed(command) or ("", [])
+        programs = {word.rsplit("/", 1)[-1] for word in words}
+        for entry in tests if words else ():
+            rel, _, name = str(entry.get("declared_in") or "").partition("#scripts.")
+            try:
+                text = (json.loads(read(rel) or "{}").get("scripts") or {}).get(name) if name else None
+                own = shlex.split(text) if isinstance(text, str) else []
+            except (ValueError, AttributeError):
+                own = []
+            if (own and words[:len(own)] == own) or (entry.get("runner") not in (None, *PACKAGE_MANAGERS) and
+                                                     entry["runner"] in programs):
+                found.append((entry, service, command))
+    return found
+
+
+def _tests_of(script: str, cwd: str, tests: list[dict], read) -> list[tuple[dict, dict]]:
+    """The `tests` entries a step's shell `script` run from `cwd` runs, each with the variables the commands that
+    run it set for their program: a package script that starts what an entry's script starts
+    (`npm_tests._starts`), or an entry's runner as a program, there or in the shell scripts of the checkout it runs
+    (`compose.followed`), from a folder inside the entry's or holding it; not inside a Compose service's container
+    (`_composed_tests`)."""
+    commands = [(sets, command) for text in (script, *map(read, compose.followed(script, cwd, read)))
+                for sets, command in compose.assigned(text or "") if not _composed(command)]
     package = posixpath.normpath(posixpath.join(cwd, "package.json"))
     try:
         scripts = json.loads(read(package) or "{}").get("scripts") or {}
@@ -245,12 +281,17 @@ def _tests_of(script: str, cwd: str, tests: list[dict], read) -> list[dict]:
     found = []
     for entry in tests:
         rel, _, name = str(entry.get("declared_in") or "").partition("#scripts.")
-        if name and rel == package and any(run == name or starts(name) & starts(run) for run in (
-                _npm_script(command, scripts) for command in commands) if run):
-            found.append(entry)
-        elif entry.get("runner") not in (None, *PACKAGE_MANAGERS) and entry["runner"] in programs and (
+        if name and rel == package:
+            running = [sets for sets, command in commands for run in [_npm_script(command, scripts)]
+                       if run and (run == name or starts(name) & starts(run))]
+        elif entry.get("runner") not in (None, *PACKAGE_MANAGERS) and (
                 _inside(cwd, entry.get("root") or ".") or _inside(entry.get("root") or ".", cwd)):
-            found.append(entry)
+            running = [sets for sets, command in commands
+                       if entry["runner"] in {word.rsplit("/", 1)[-1] for word in command}]
+        else:
+            running = []
+        if running:
+            found.append((entry, {key: value for sets in running for key, value in sets.items()}))
     return found
 
 
@@ -293,7 +334,11 @@ def _step_fact(path: str, step: dict, cwd: str, env: dict, shell: str | None) ->
 def _ci_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[dict]:
     """The steps a job of the workflow `doc` runs before its tests, as the `ci_steps` facet states them: for each
     `tests` entry not in `claimed`, the first job step that runs it (`_tests_of`) is its test step, and each step
-    before it that runs no entry is a fact (`_step_fact`) with `tests` the entry's `declared_in`."""
+    before it that runs no entry is a fact (`_step_fact`) with `tests` the entry's `declared_in`. A test step that
+    runs the entry inside a Compose service's container (`_composed_tests`) is a fact with its `cause`, and so is
+    each step before it, with its own or that one: Daodan runs no step of that job. The test step itself is a fact
+    with `test` and the variables it gives the tests (`env`: the workflow's, the job's, the step's and those the
+    commands that run the entry set, `_tests_of`), `computed` naming those whose value the shell computes."""
     if not tests or not isinstance(doc, dict) or not isinstance(doc.get("jobs"), dict):
         return []
     facts, top, where, default = [], _env(doc), _directory(doc), _shell(doc)
@@ -305,16 +350,35 @@ def _ci_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[dict
         cwds = [posixpath.normpath(str(step.get("working-directory") or folder or ".")) for step in steps]
         tested = [_tests_of(step["run"], cwd, tests, read) if isinstance(step.get("run"), str) else []
                   for step, cwd in zip(steps, cwds)]
-        for index, entries in enumerate(tested):
-            for entry in entries:
+        inside = [_composed_tests(step["run"], tests, read) if isinstance(step.get("run"), str) else []
+                  for step in steps]
+        for index in range(len(steps)):
+            here = f"{rel}#jobs.{job_id}.steps.{index}"
+            for entry, service, command, sets in [(entry, None, None, sets) for entry, sets in tested[index]] + [
+                    (*item, {}) for item in inside[index]]:
                 if entry["declared_in"] in claimed:
                     continue
                 claimed.add(entry["declared_in"])
+                why = service and (f"the job runs its tests in `{shlex.join(command)}`, inside the container of its "
+                                   f"Compose service {service}, which Daodan does not start")
                 for number in range(index):
                     fact = None if tested[number] else _step_fact(
                         f"{rel}#jobs.{job_id}.steps.{number}", steps[number], cwds[number],
                         {**top, **_env(job), **_env(steps[number])}, shell)
+                    if fact and why:  # no step of that job runs
+                        fact = {key: fact[key] for key in ("declared_in", "name") if key in fact} | {
+                            "cause": fact.get("cause") or f"{why} ({here}): Daodan runs no step of the job"}
                     facts += [{**fact, "tests": entry["declared_in"]}] if fact else []
+                name = {"name": str(steps[index]["name"])} if steps[index].get("name") else {}
+                if why:
+                    facts.append({"declared_in": here, **name, "cause": f"{why}: the tests Daodan runs are not the "
+                                  "job's", "tests": entry["declared_in"]})
+                    continue
+                env = {key: _text(value) for key, value in {**top, **_env(job), **_env(steps[index]), **sets}.items()}
+                computed = [key for key, value in sets.items() if "$" in value or "`" in value]
+                if env:  # what the test step gives the tests, which Daodan's own command for them gets too
+                    facts.append({"declared_in": here, "tests": entry["declared_in"], **name, "test": True,
+                                  "env": env, **({"computed": computed} if computed else {})})
     return facts
 
 
