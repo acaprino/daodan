@@ -9,6 +9,8 @@ same image, pinned by the same digest:
   host: the registries-only proxy of Daodan's container is not reproduced here), its filesystem is snapshotted
   and a second sandbox starts from the snapshot with the network blocked for the execution;
 - without one, a single sandbox with the network blocked;
+- a run whose execution starts Valgrind (the native observers) takes VM Sandboxes (`vm`): Valgrind grows a
+  program's stack only on Linux's SEGV_MAPERR, and gVisor reports SEGV_ACCERR;
 - with services (`container.beside`), both are VM Sandboxes, where Docker runs
   (modal.com/docs/guide/docker-in-sandboxes; a gVisor sandbox has no Docker and mounts nothing, and a Sidecar is
   reached by name on a bridge that `block_network` does not allow): the first, with the network, starts Docker's static binaries (`DOCKER`, from the volume),
@@ -145,6 +147,14 @@ def _quiet(box) -> None:
                          " done", timeout=120).wait()
 
 
+def vm(command, services) -> bool:
+    """Whether a run takes a VM Sandbox, with a Linux kernel of its own: with services (Docker runs only there), or
+    when its execution starts Valgrind (the Rust and the C and C++ observers, `dynamic/callgrind.py`), which grows a
+    program's stack only on Linux's SEGV_MAPERR, where gVisor reports SEGV_ACCERR."""
+    from dynamic import callgrind
+    return bool(services) or callgrind.VALGRIND_BIN in " ".join(command)
+
+
 def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), env=None, timeout=600,
                 prepare_timeout=1800, memory=2 * 2**30, inputs=None, **_):
     """`container.run_in_container` on Modal Sandboxes: the same arguments and result (the module's docstring),
@@ -162,7 +172,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
     options = {"app": modal.App.lookup("daodan-pipeline-sandboxes", create_if_missing=True),
                "volumes": {"/results": volume},
                "memory": int(memory / 2**20), "cpu": SANDBOX_CPU, "timeout": int(prepare_timeout + timeout + 900),
-               **({"experimental_options": VM} if services else {})}
+               **({"experimental_options": VM} if vm(command, services) else {})}
     unpack = f"tar -xf /results/{SCRATCH}/{token}/copy.tar -C / && mkdir -p {container.WORKDIR} && cd {container.WORKDIR}"
     boxes, pinned, served = [], [], []
 

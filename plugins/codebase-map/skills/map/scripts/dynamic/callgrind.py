@@ -14,7 +14,8 @@ as Linux does (m_signals.c, `extend_stack_if_appropriate`); no option changes ei
 Sandbox reports SEGV_ACCERR there (`--trace-signals`, measured on 16 November 2026; gVisor's KVM platform does
 so for any write, pkg/sentry/platform/kvm/machine_amd64.go), and --main-stacksize, --max-stackframe,
 --aspace-minaddr or the stack's ulimit change nothing: a program dies at its start, in ld.so, once its main
-stack outgrows those pages, and `recorder_failed` and `gaps` say why (`_cause`). Modal's Functions (measured),
+stack outgrows those pages, and `recorder_failed` and `gaps` say why (`_cause`). Modal's Functions and its VM
+Sandboxes (measured; the pipeline's driver gives the native observers those, `modal_pipeline.vm`),
 Docker, Podman and Kiri (runc, Linux's semantics) report SEGV_MAPERR.
 
 Each traced process writes `callgrind.out.<pid>` (`OPTIONS`); after the tests `callgrind_sites.py`, in the
