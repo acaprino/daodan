@@ -30,7 +30,7 @@
   "hops": 1
  },
  "call src/api/jobs.js:11 controller.webhook": {
-  "end": "dangling-local"
+  "end": "a member of an anonymous type, an object literal or an index signature another file declares: the index names it with a local of this file it defines nowhere"
  },
  "call src/api/jobs.js:12 controller.list": {
   "end": [
@@ -98,7 +98,7 @@
   "end": "project-value"
  },
  "call src/web/client.ts:6 api.load": {
-  "end": "dangling-local"
+  "end": "a member of an anonymous type, an object literal or an index signature another file declares: the index names it with a local of this file it defines nowhere"
  },
  "call src/web/client.ts:7 api.save": {
   "end": [

@@ -15,6 +15,8 @@ the index defines it. An adapter may add, each passed by its driver to `Traversa
                      | the cause of a dead end, for a key the index defines nowhere
     static(index) -> {(rel, line, byte column)}  member references dispatched statically
     refine(index, graph) -> None                 holes added, edges marked `uncertain` or `removed`
+    unanswered(index) -> f((rel, line, column)) -> the cause of a hole where the index has no occurrence, or None
+                     (`no-occurrence`); what the indexer's run brought back sits beside its index (`Index.sources`)
 
 and, run before anything reads the index (see `adapter_traversal`):
 
@@ -244,6 +246,7 @@ class Index:
         self.implementers: dict[str, set] = collections.defaultdict(set)
         self.repeated = collections.Counter()
         self.unknown = collections.Counter()
+        self.sources: list[tuple[Path, str]] = []  # the index files loaded, with their prefix
         self._lines: dict[str, list[str]] = {}
         self._trees: dict = {}
 
@@ -252,6 +255,7 @@ class Index:
         return f"{rel}#{symbol}" if rel is not None and symbol.startswith("local ") else symbol
 
     def load(self, path: Path, prefix: str = "") -> None:
+        self.sources.append((Path(path), prefix))
         for number, wire, value in _fields(Path(path).read_bytes()):
             if number == 1 and wire == 2:
                 tool = ["", ""]
@@ -526,9 +530,9 @@ class Traversal:
     """
 
     def __init__(self, index: Index, snapshot: Snapshot, hops: dict, same_range: dict | None = None,
-                 classify=None):
+                 classify=None, unanswered=None):
         self.index, self.snapshot, self.hops = index, snapshot, hops
-        self.same_range, self.classify = same_range or {}, classify
+        self.same_range, self.classify, self.unanswered = same_range or {}, classify, unanswered
         self.own = {tuple(parts[1:4]) for parts in map(split_symbol, map(_global, index.defs)) if parts}
         self.memo: dict[str, list[End]] = {}
         self.active: set = set()
@@ -638,13 +642,14 @@ def unread(index: Index, snapshot: Snapshot, language: str) -> list[dict]:
     return out
 
 
-TRAVERSAL_HOOKS = ("prepare", "same_range", "classify")  # what `adapter_traversal` reaches; the driver the rest
+# What `adapter_traversal` reaches; the driver the rest.
+TRAVERSAL_HOOKS = ("prepare", "same_range", "classify", "unanswered")
 
 
 def adapter_traversal(module, index: Index, snapshot: Snapshot) -> tuple[dict, Traversal, dict | None]:
     """What a driver passes from an indexer module before building: `prepare(index, snapshot)` first, when the
-    module defines it, then its hops, and the traversal with its `same_range` and `classify`, each when the
-    module defines it. Returns the hops, the traversal and what `prepare` reported (None without it)."""
+    module defines it, then its hops, and the traversal with its `same_range`, `classify` and `unanswered`, each
+    when the module defines it. Returns the hops, the traversal and what `prepare` reported (None without it)."""
     prepared = module.prepare(index, snapshot) if hasattr(module, "prepare") else None
     hops = module.hops(index)
     options = {name: getattr(module, name)(index) for name in TRAVERSAL_HOOKS[1:] if hasattr(module, name)}
@@ -712,7 +717,8 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
         if site is None:
             cls = "no-position"
         elif not entries:
-            cls = "no-occurrence" if checkout in index.documents else "no-document"
+            cls = "no-document" if checkout not in index.documents else (
+                traversal.unanswered(position) if traversal.unanswered else None) or "no-occurrence"
         elif all(end.cls == "dead-end" for end in found):
             cls = found[0].detail if found else "no-occurrence"
         else:

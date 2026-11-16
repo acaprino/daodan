@@ -914,3 +914,47 @@ def test_a_failed_run_leaves_its_files_missing_with_the_runner_reason(tmp_path):
     graph = css.run(project, runner)
     reasons = {item["reason"] for item in graph["files"]["missing"]}
     assert graph["files"]["missing"] and reasons == {"not parsed: exit code 1: TypeError at css_sass.js:17"}
+
+
+# Project code runs only in Daodan's container: the project's Tailwind, its config and its plugins.
+def test_the_projects_tailwind_runs_in_the_container_and_never_on_the_host(tmp_path):
+    """Loading the project's `tailwindcss`, its config and its plugins runs the project's code: the Tailwind engine
+    runs in the container, its packages restored the project's own way in the preparation, the script in the copy
+    with no network; nothing of it starts on the host. Without a container its run says why, and the rest of the
+    graph goes on."""
+    from unittest import mock
+    import code_graph
+    import container
+    import preparation
+    from indexers import css_tailwind
+    project = tmp_path / "proj"
+    (project / "src").mkdir(parents=True)
+    (project / "package.json").write_text('{"devDependencies": {"tailwindcss": "^3.4.0"}}', encoding="utf-8")
+    (project / "package-lock.json").write_text("{}", encoding="utf-8")
+    (project / "tailwind.config.js").write_text("module.exports = {}\n", encoding="utf-8")
+    seen = {}
+
+    def run_in_container(copy, command, **options):
+        seen.update(options, command=command, copy=copy)
+        out = Path(options["out_dir"]) / "out"
+        out.mkdir(parents=True)
+        (out / "css_tailwind-out.json").write_text(json.dumps(
+            {"version": "3.4.19", "valid": {"flex": 1}, "error": None}), encoding="utf-8")
+        return {"state": "done", "exit_code": 0, "outputs": ["css_tailwind-out.json"]}
+    with mock.patch.object(container, "run_in_container", run_in_container), \
+            mock.patch.object(code_graph, "measured", side_effect=AssertionError("Tailwind ran on the host")), \
+            mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)):
+        found = css_tailwind.index(project, css.tailwind_runner(project, tmp_path / "work"), ["flex", "nope"])
+        inputs = seen["inputs"]()
+    assert (found["version"], found["valid"], found["config"]) == ("3.4.19", {"flex": 1}, "tailwind.config.js")
+    prepare, execute = seen["prepare"][-1], seen["command"][-1]
+    assert "npm ci" in prepare and "node-v" in prepare and "css_tailwind" not in prepare
+    assert "css_tailwind.js" in execute and "npm" not in execute
+    assert set(preparation.NODE_REGISTRIES) <= set(seen["registries"])
+    assert inputs[f"{preparation.IN}/css_tailwind.js"] == css_tailwind.SCRIPT
+    gap = {"state": "gap", "cause": "no container engine answers", "remedy": "start one"}
+    with mock.patch.object(container, "run_in_container", return_value=gap):
+        found = css_tailwind.index(project, css.tailwind_runner(project, tmp_path / "again"), ["flex"])
+    assert found["valid"] is None and "only in a container: no container engine answers" in found["error"]
+    (project / "package.json").write_text('{"dependencies": {"react": "^19"}}', encoding="utf-8")
+    assert css_tailwind.index(project, None, ["flex"])["error"] == "tailwindcss not declared"  # nothing runs

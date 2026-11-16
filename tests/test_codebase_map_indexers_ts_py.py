@@ -66,11 +66,12 @@ def _written(root: Path, files: dict) -> Path:
 class Container:
     """`container.run_in_container`: with `gap`, no engine answers; else it asks for the inputs, as a run does
     once an engine answers, and plays the two phases: each one's log, exit code (`codes`; None: cut off) and record
-    row, and `index` brought back when the execution exits with 0."""
+    row, and `index` brought back when the execution exits with 0, with the checker's `unbound` lines when given."""
 
     def __init__(self, index: Path | None = None, gap: tuple[str, str] | None = None, prepare: str = "",
-                 execute: str = "", codes: tuple = (0, 0)):
+                 execute: str = "", codes: tuple = (0, 0), unbound: str | None = None):
         self.index, self.gap, self.logs, self.codes, self.asked = index, gap, (prepare, execute), codes, []
+        self.unbound = unbound
 
     def __call__(self, project, command, **options):
         self.asked.append({"project": Path(project), "command": command, **options})
@@ -94,6 +95,9 @@ class Container:
                 (out / "out").mkdir()
                 shutil.copyfile(self.index, out / "out/index.scip")
                 result["outputs"] = ["out/index.scip"]
+                if self.unbound is not None:
+                    (out / "out/unbound.jsonl").write_text(self.unbound, encoding="utf-8")
+                    result["outputs"].append("out/unbound.jsonl")
         (out / container.RECORD_NAME).write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
         return result
 
@@ -155,7 +159,8 @@ def test_the_generated_tsconfig_carries_the_aliases_from_the_copys_root(tmp_path
 
 def test_the_packages_are_restored_the_projects_own_way_and_the_index_follows_in_the_same_container(sandbox):
     project = _written(sandbox["root"] / "project" / "mono", {**MONOREPO, "pnpm-lock.yaml": "lockfileVersion: 9\n"})
-    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
+    unbound = '["packages/web/src/main.ts", 3, 20, "index", "NodeJS.ProcessEnv"]\n'
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip", unbound=unbound)
     before, engine, work = base._hashes(project), object(), sandbox["root"] / "work"
     result = typescript.index(project, work, engine=engine, **typescript.structure(RECORD))
     assert "state" not in result, result.get("reason")
@@ -182,9 +187,14 @@ def test_the_packages_are_restored_the_projects_own_way_and_the_index_follows_in
     assert "mv tsconfig.json tsconfig.project.json" in execute and f"cp {typescript.CONFIG} tsconfig.json" in execute
     assert (f'{T}/node/bin/node "$(readlink -f {T}/npm/bin/scip-typescript)" index --cwd /work'
             f" --output {typescript.OUT}/index.scip --no-progress-bar") in execute
+    # After the index, the checker's pass over the same program: the members it binds no declaration to, and why;
+    # the run's exit code stays the indexer's.
+    assert (f'{T}/node/bin/node {typescript.UNBOUND} /work "$(readlink -f {T}/npm/bin/scip-typescript)"'
+            f" > {typescript.OUT}/unbound.jsonl") in execute and execute.rstrip().endswith('exit "$indexed"')
     assert "install" not in execute
     inputs = asked["inputs"]
-    assert set(inputs) == {f"{IN}/node.tar.gz", typescript.CONFIG, typescript.TYPES}
+    assert set(inputs) == {f"{IN}/node.tar.gz", typescript.CONFIG, typescript.TYPES, typescript.UNBOUND}
+    assert Path(inputs[typescript.UNBOUND]) == Path(typescript.__file__).with_name("typescript_unbound.js")
     assert sandbox["fetched"] == ["node.tar.gz"]
     config = json.loads(Path(inputs[typescript.CONFIG]).read_text(encoding="utf-8"))
     assert config["extends"] == "./tsconfig.base.json" == result["tsconfig_extends"]
@@ -195,6 +205,7 @@ def test_the_packages_are_restored_the_projects_own_way_and_the_index_follows_in
     # The contract: the index, a run per phase, the restores, and what no restore serves.
     assert result["indexes"] == [[str(work / "scip-typescript-0.scip"), ""]]
     assert (work / "scip-typescript-0.scip").read_bytes() == (FIXTURES / "ts/index.scip").read_bytes()
+    assert (work / "scip-typescript-0.unbound.jsonl").read_text(encoding="utf-8") == unbound  # beside its index
     assert [(run["phase"], run["returncode"], run["seconds"], run["peak_mb"]) for run in result["runs"]] == [
         ("prepare", 0, 40.0, 300), ("execute", 0, 12.5, 900)]
     assert result["indexer"] == {"name": "scip-typescript", "version": typescript.VERSION, "seconds": 52.5,
@@ -443,7 +454,8 @@ def test_the_project_runs_on_the_node_it_states_and_the_indexer_on_daodans(sandb
     assert prepare.index("mise install node@20.11.1") < prepare.index(preparation.restore("npm", ["."], scripts=True))
     assert f"{T}/node/bin/node " in asked["command"][2]
     assert asked["registries"] == (*preparation.NODE_REGISTRIES, *chains["hosts"])
-    assert set(asked["inputs"]) == {f"{IN}/node.tar.gz", f"{IN}/mise", typescript.CONFIG, typescript.TYPES}
+    assert set(asked["inputs"]) == {f"{IN}/node.tar.gz", f"{IN}/mise", typescript.CONFIG, typescript.TYPES,
+                                    typescript.UNBOUND}
     typescript.index(project, sandbox["root"] / "work", roots={""}, toolchains=stated[1:])
     assert "mise" not in box.asked[1]["prepare"][2] and f"{IN}/mise" not in box.asked[1]["inputs"]
 
@@ -540,6 +552,84 @@ def test_the_module_of_a_commonjs_export_is_nodes_module_object(tmp_path):
         graphs.occurrence(1, 9, 10, REQUIRE)]))
     _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
     assert [end.cls for end in traversal.ends("src/index.js#local 0")] == ["project-value"]
+    # tududi's backend/app.js: `require.main === module` reads the same object, wherever the file names it.
+    _written(tmp_path, {"src/index.js": "if (require.main === module) {}\n"})
+    index = graphs.load(tmp_path, graphs.document("src/index.js", [
+        graphs.occurrence(1, 4, 11, REQUIRE), graphs.occurrence(1, 21, 27, "local 3")]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert [(end.cls, end.detail) for end in traversal.ends("src/index.js#local 3")] == [
+        ("external", "npm @types/node@24.10.1")]
+
+
+def test_a_name_bound_to_a_member_the_index_names_nowhere_ends_at_its_own_definition(tmp_path):
+    """tududi: `const { t } = useTranslation()`, `const { person: result } = await update()` and
+    `const width = size().width` bind a name to a member of an anonymous type another file declares, which the
+    index names with a local of this file it defines nowhere (the shorthand's key shares the name's range). That
+    alias leads nowhere: the name ends at its own definition, a value, as a name bound to what the index does not
+    name."""
+    import test_codebase_map_code_graph as graphs
+    _written(tmp_path, {"a.ts": "const { t } = useTranslation();\nconst { person: result } = await update();\n"
+                                "const width = size().width;\nt(result, width);\n"})
+    index = graphs.load(tmp_path, graphs.document("a.ts", [
+        graphs.occurrence(1, 8, 9, "local 1", True), graphs.occurrence(1, 8, 9, "local 2"),
+        graphs.occurrence(2, 8, 14, "local 3"), graphs.occurrence(2, 16, 22, "local 4", True),
+        graphs.occurrence(3, 6, 11, "local 5", True), graphs.occurrence(3, 21, 26, "local 6"),
+        graphs.occurrence(4, 0, 1, "local 1"), graphs.occurrence(4, 2, 8, "local 4"),
+        graphs.occurrence(4, 10, 15, "local 5")]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert {local: [end.cls for end in traversal.ends(f"a.ts#local {local}")] for local in (1, 4, 5)} == {
+        1: ["project-value"], 4: ["project-value"], 5: ["project-value"]}
+
+
+def test_a_member_the_index_names_with_a_local_it_defines_nowhere_is_a_hole_with_the_cause(tmp_path):
+    """tududi's routes: `controller.list` reads a member of the object literal controller.js exports, which the index
+    names with a local of this file it defines nowhere, as it names a member of an anonymous type or an index
+    signature another file declares. A name the file reads bare keeps the default rule."""
+    import test_codebase_map_code_graph as graphs
+    _written(tmp_path, {"routes.js": 'router.get("/x", controller.list);\nx;\n'})
+    index = graphs.load(tmp_path, graphs.document("routes.js", [
+        graphs.occurrence(1, 17, 27, "scip-typescript npm fx 1.0.0 `controller.js`/controller."),
+        graphs.occurrence(1, 28, 32, "local 7"), graphs.occurrence(2, 0, 1, "local 9")]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert [(end.cls, end.detail) for end in traversal.ends("routes.js#local 7")] == [("dead-end", typescript.MEMBER)]
+    assert [(end.cls, end.detail) for end in traversal.ends("routes.js#local 9")] == [("dead-end", "dangling-local")]
+
+
+def test_a_member_the_checker_binds_no_declaration_to_is_the_hole_it_says(tmp_path):
+    """tududi: `process.env.APP_URL` reads NodeJS.ProcessEnv's index signature, `req.body.title` a member of an any;
+    the index has no occurrence there, and the checker's pass in the container says why, beside the index
+    (`unbound.jsonl`); a site it says nothing of stays `no-occurrence`."""
+    import test_codebase_map_code_graph as graphs
+    _written(tmp_path, {"a.ts": "process.env.APP_URL;\nreq.body.title;\nfire.click;\nuser.nick;\nz.w;\n"})
+    (tmp_path / "index.unbound.jsonl").write_text("\n".join(json.dumps(line) for line in (
+        ["a.ts", 1, 12, "index", "NodeJS.ProcessEnv"], ["a.ts", 2, 9, "any", ""], ["a.ts", 3, 5, "mapped", "FireObject"],
+        ["a.ts", 4, 5, "undeclared", "Model<any, any>"])) + "\n", encoding="utf-8")
+    index = graphs.load(tmp_path, graphs.document("a.ts", [graphs.occurrence(5, 0, 1, "local 1", True)]))
+    snapshot = graphs.Snapshot({}, [(n, "a.ts", "read", line, column) for n, (line, column) in enumerate(
+        ((1, 12), (2, 9), (3, 5), (4, 5), (5, 2)))])
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, snapshot)
+    graph, _ = code_graph.build(index, snapshot, "x", {}, {}, traversal=traversal)
+    assert [(hole["site"], hole["class"]) for hole in graph["holes"]] == [
+        ("a.ts:1", "NodeJS.ProcessEnv's index signature: only execution knows the value"),
+        ("a.ts:2", "a member of a value of type any: only execution knows it"),
+        ("a.ts:3", "FireObject's member has no declaration, the checker made it: the index names nothing there"),
+        ("a.ts:4", "Model<any, any> declares no such member: only execution knows it"),
+        ("a.ts:5", "no-occurrence")]
+
+
+LINK = {"kind": "link_outside", "path": "shared", "detail": "a tracked link to a path outside the project"}
+
+
+def test_a_gap_the_container_run_reports_is_a_gap_of_the_index_run(sandbox):
+    """A tracked link the copy left out, since it points outside the project, is the run's own gap: the index
+    run's contract carries it beside the preparation's."""
+    project = _project(sandbox, "ts")
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
+    sandbox["monkeypatch"].setattr(container, "run_in_container",
+                                   lambda *args, **options: {**box(*args, **options), "gaps": [LINK]})
+    result = typescript.index(project, sandbox["root"] / "work", roots={""})
+    assert "state" not in result, result.get("reason")
+    assert LINK in result["gaps"]
 
 
 def test_without_a_container_engine_typescript_is_unavailable_with_the_gaps_cause_and_remedy(sandbox):
@@ -630,7 +720,9 @@ def test_python_takes_its_runs_roots_and_manifests_and_states_what_its_environme
         import container
         sandbox["web"].pages.update(_node_release(platform=f"linux-{container.architecture()}"))
         sandbox["monkeypatch"].setattr(python, "RUNS_HERE", False)
-        sandbox["monkeypatch"].setattr(container, "run_in_container", Box(FIXTURES / "python/index.scip"))
+        box = Box(FIXTURES / "python/index.scip")
+        sandbox["monkeypatch"].setattr(container, "run_in_container",
+                                       lambda *args, **options: {**box(*args, **options), "gaps": [LINK]})
     else:
         sandbox["fake"].index = FIXTURES / "python/index.scip"
     result = python.index(project, sandbox["root"] / "work", units=units)
@@ -640,9 +732,12 @@ def test_python_takes_its_runs_roots_and_manifests_and_states_what_its_environme
     [run] = result["runs"]
     assert run["pyrightconfig"] == {"executionEnvironments": [{"root": "lib"}, {"root": ".", "extraPaths": ["lib"]}]}
     assert "gaps" not in run
-    assert [(gap["kind"], gap["path"]) for gap in result["gaps"]] == [("manifest_unread", "svc/setup.py"),
-                                                                     ("restore_failed", "svc")]
-    assert result["gaps"][1]["manager"] == "uv" and "no room for the environment" in result["gaps"][1]["detail"]
+    # A gap the container run reports itself (a tracked link it did not copy) rides on the contract.
+    assert (LINK in result["gaps"]) == contained
+    gaps = [gap for gap in result["gaps"] if gap != LINK]
+    assert [(gap["kind"], gap["path"]) for gap in gaps] == [("manifest_unread", "svc/setup.py"),
+                                                            ("restore_failed", "svc")]
+    assert gaps[1]["manager"] == "uv" and "no room for the environment" in gaps[1]["detail"]
     # The folders the runs read reach `missing` the way the stage hands them (`tasks`).
     roots = python.tasks(result["configs"])
     assert python.missing(None, ["svc/lib/app/late.py", "tools/x.py"], roots) == {

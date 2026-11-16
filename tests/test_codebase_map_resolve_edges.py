@@ -2054,13 +2054,14 @@ class IndexerStageTests(unittest.TestCase):
         hooks = {"prepare": lambda index, snap: calls.append("prepare"),
                  "hops": lambda index: calls.append("hops") or hops(index),
                  "same_range": lambda index: calls.append("same_range") or {},
-                 "classify": lambda index: calls.append("classify") or (lambda key: None)}
+                 "classify": lambda index: calls.append("classify") or (lambda key: None),
+                 "unanswered": lambda index: calls.append("unanswered") or (lambda position: None)}
         self.assertEqual(set(hooks), {"hops", *code_graph.TRAVERSAL_HOOKS})
         with mock.patch.multiple(go, create=True, **hooks):
             result, _started, _indexed = self.run_stage(
                 "scip-go", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("go"))
         self.assertEqual(result["languages"]["go"], {"state": "fresh", "engine": "scip-go@v0.2.9"})
-        self.assertEqual((calls[:2], sorted(calls[2:])), (["prepare", "hops"], ["classify", "same_range"]))
+        self.assertEqual((calls[:2], sorted(calls[2:])), (["prepare", "hops"], ["classify", "same_range", "unanswered"]))
 
     def test_the_stage_gives_the_indexer_the_folders_the_pre_map_names(self):
         """The stage reads the pre-map and hands the indexer its structure: the indexer looks for no manifest."""

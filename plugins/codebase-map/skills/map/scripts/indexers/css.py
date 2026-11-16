@@ -31,12 +31,14 @@ its utilities. `run` wires them; `graph` resolves and assembles; `rows` gives th
 
 An analyzer of the engine pass (`indexers.analyzers`) with a graph of its own, no SCIP index: `index` runs it over
 the snapshot's files the stage hands it (`READS`) with the engines through `node_runner`, and the stage writes `rows`
-(`resolve_edges.index_stage`). Its entry is in the pass when the snapshot holds a file of `SNAPSHOT_LANGUAGES`.
+(`resolve_edges.index_stage`). The engines are Daodan's pinned ones and read the project's files as data: none loads
+the project's code, but Tailwind, whose package, config and plugins are the project's: its runner is the container's
+(`tailwind_runner`). Its entry is in the pass when the snapshot holds a file of `SNAPSHOT_LANGUAGES`.
 
 What the code loads together is an input, never discovered here: `units`, the units of code the pre-map states
 (the files and sheets each one loads together), beside the pages and bundles the graph's own imports state; and
 `remote`, the text of the sheets the markup links from a CDN, which the caller takes from the package registry.
-Nothing here reads the network or runs a program.
+Nothing here reads the network, and nothing of the project runs on the host.
 """
 from __future__ import annotations
 
@@ -147,7 +149,8 @@ def index(project_dir: Path, work_dir: Path, *, files: list[str]) -> dict:
              if not any(part in DEPENDENCY_DIRS or part.startswith(".") for part in rel.split("/"))]
     try:
         runtime.memory(ENTRY, MIN_FREE)
-        built = run(project_dir, node_runner(project_dir, Path(work_dir)), files)
+        built = run(project_dir, node_runner(project_dir, Path(work_dir)), files,
+                    tailwind=tailwind_runner(project_dir, Path(work_dir)))
     except runtime.Unavailable as error:
         return runtime.refused(ENTRY, None, error)
     versions = built["indexer"]["version"]
@@ -186,6 +189,67 @@ def node_runner(project_dir: Path, work_dir: Path):
     return runner
 
 
+LOCKS = ("package.json", "package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "pnpm-workspace.yaml",
+         "yarn.lock", ".yarnrc.yml")  # what `preparation.node_prepare` reads of a Node package
+OUT = "/daodan/out"  # where Tailwind's run writes, brought back by the container
+
+
+def tailwind_runner(project_dir: Path, work_dir: Path):
+    """The runner of the project's Tailwind (`css_tailwind`): its package, its config and its plugins are the
+    project's code, so the script runs only in Daodan's container (`container.run_in_container`). The preparation,
+    with the registries, installs Node and restores the project's packages its own way (`preparation.node_prepare`,
+    as the TypeScript analyzer does); the execution, with no network, runs `node <script> IN OUT` in the copy. A run
+    that cannot happen there (no engine, a failed restore) gives no data and says why: Tailwind's tokens are
+    unknown, and the rest of the graph goes on."""
+    import shutil
+    import container
+    import preparation
+    from .typescript import IMAGE
+    project_dir, work_dir = Path(project_dir), Path(work_dir)
+
+    def runner(script, payload):
+        script = Path(script)
+        work_dir.mkdir(parents=True, exist_ok=True)
+        settings = work_dir / f"{script.stem}-in.json"
+        settings.write_text(json.dumps(payload), encoding="utf-8")
+        files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
+                       if path.name in LOCKS and not any(part in DEPENDENCY_DIRS or part.startswith(".")
+                                                         for part in path.relative_to(project_dir).parent.parts))
+        restored = preparation.node_prepare(files, lambda rel: (project_dir / rel).read_text(encoding="utf-8",
+                                                                                           errors="replace"))
+        node = preparation.setup(["node"])
+        prepare = "\n".join(["set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}", *node["lines"],
+                             *restored["lines"], "exit 0"])
+        execute = (f"mkdir -p {OUT} && exec node {preparation.IN}/{script.name} {preparation.IN}/{settings.name}"
+                   f" {OUT}/{script.stem}-out.json")
+        box = work_dir / f"{script.stem}-container"
+        shutil.rmtree(box, ignore_errors=True)
+        started = time.monotonic()
+        result = container.run_in_container(
+            project_dir, ["sh", "-c", execute], image=IMAGE, out_dir=box, prepare=["sh", "-c", prepare],
+            outputs=[OUT], env={**preparation.ENV, "NODE_OPTIONS": NODE_OPTIONS}, timeout=TIMEOUT,
+            prepare_timeout=3600, memory=3 * 2**30,
+            registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *node["hosts"]])),
+            inputs=lambda: {f"{preparation.IN}/{script.name}": script, f"{preparation.IN}/{settings.name}": settings,
+                            **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
+                               for url, digest, name in node["files"]}})
+        measured = {"seconds": round(time.monotonic() - started, 1), "peak_mb": None,
+                    "returncode": result.get("exit_code"), "stderr_tail": ""}
+        if result["state"] == "gap":
+            return None, {**measured, "state": "failed",
+                          "reason": f"the project's Tailwind runs only in a container: {result['cause']}"}
+        output = box / Path(OUT).name / f"{script.stem}-out.json"
+        if output.is_file():
+            return json.loads(output.read_text(encoding="utf-8")), measured
+        logs = {phase: (box / f"{phase}.log").read_text(encoding="utf-8", errors="replace")
+                if (box / f"{phase}.log").is_file() else "" for phase in ("prepare", "execute")}
+        said = "; ".join(gap["detail"] for gap in preparation.restore_gaps(logs["prepare"]))
+        return None, {**measured, "state": "failed", "stderr_tail": logs["execute"][-2500:],
+                      "reason": f"the container run ended {result['state']}"
+                                f"{f' ({said})' if said else ''}: {logs['execute'].strip()[-300:]}"}
+    return runner
+
+
 def walk(project_dir: Path) -> list[str]:
     """The project's stylesheet, markup and script files, outside dot and dependency directories (the snapshot's
     perimeter, `tree_scope.DEPENDENCY_DIRS`); the ones no reader takes included, to be listed as missing."""
@@ -196,10 +260,10 @@ def walk(project_dir: Path) -> list[str]:
 
 
 def run(project_dir: Path, runner, files: list[str] | None = None, units: list | None = None,
-        remote: dict | None = None) -> dict:
+        remote: dict | None = None, tailwind=None) -> dict:
     """The adapters over a project, then the graph. `runner` runs an engine script in the project's root
-    (`css_sass`), and raises `runtime.Unavailable` when an engine cannot run; `units` and `remote` as `graph` takes
-    them."""
+    (`css_sass`), and raises `runtime.Unavailable` when an engine cannot run; `tailwind`, the runner of the project's
+    Tailwind (`tailwind_runner`), else `runner`; `units` and `remote` as `graph` takes them."""
     project_dir = Path(project_dir).resolve()
     files = walk(project_dir) if files is None else files
     own = parse(project_dir, files)
@@ -214,7 +278,7 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
                scripts["records"])
     entries = sorted({r["file"] for r in records if r["t"] == "ref" and r["kind"] == "import"
                       and r["name"] == "tailwindcss" and r["file"].lower().endswith(STYLESHEETS)})
-    tailwind = css_tailwind.index(project_dir, runner, sorted(class_tokens(records)), entries)
+    tailwind = css_tailwind.index(project_dir, tailwind or runner, sorted(class_tokens(records)), entries)
     engines = [engine for engine in (own["indexer"], sass["indexer"], less["indexer"], stylus["indexer"],
                                      *components["indexers"], scripts["indexer"], tailwind["indexer"]) if engine]
     return graph(project_dir, records, tailwind, files, engines,

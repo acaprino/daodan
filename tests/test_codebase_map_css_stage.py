@@ -36,7 +36,9 @@ def project(tmp_path):
 
 
 def stage(root, manifest, runner):
-    with mock.patch.object(css, "node_runner", return_value=runner):
+    """The stage with `runner` for the engines on the host and for Tailwind's, the container's (`tailwind_runner`)."""
+    with mock.patch.object(css, "node_runner", return_value=runner), \
+            mock.patch.object(css, "tailwind_runner", return_value=runner):
         return resolve_edges.index_stage(SPEC, manifest, root)
 
 

@@ -342,6 +342,7 @@ class IndexStoreTests(unittest.TestCase):
 
     RESOLVER = "scip-typescript@0.5.2"
     ENDS = json.loads((Path(__file__).resolve().parent / "fixtures/code-graph/ts-ends.json").read_text(encoding="utf-8"))
+    MEMBER = __import__("indexers.typescript", fromlist=["MEMBER"]).MEMBER  # the adapter's cause of a member's hole
     UNCERTAIN = "call src/web/tag.ts:5 closeTag"  # marked uncertain below, as an adapter's refine would
 
     @classmethod
@@ -414,9 +415,9 @@ class IndexStoreTests(unittest.TestCase):
                                      ("unresolved", None, self.RESOLVER))
                     self.assertEqual(ref["external"], {"manager": manager, "package": package.rsplit("@", 1)[0],
                                                        "version": package.rsplit("@", 1)[1]})
-                elif end == "dangling-local":
+                elif end in ("dangling-local", self.MEMBER):  # a hole: the lexical answer stands, with its class
                     self.assertEqual((ref["resolution"], ref["hole"], ref["resolver"]),
-                                     ("unresolved", "dangling-local", resolve_edges.resolution.LEXICAL_RESOLVER))
+                                     ("unresolved", end, resolve_edges.resolution.LEXICAL_RESOLVER))
                 else:
                     self.assertEqual((ref["resolution"], ref["reason"], ref["resolver"]),
                                      ("unresolved", "project-value", self.RESOLVER))

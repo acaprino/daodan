@@ -17,12 +17,14 @@ are `unavailable`, with the gap's cause and remedy.
   and `@types/<package>` for a declared package that ships no types, each installed apart and linked where
   TypeScript looks last, Node's named in a file the generated tsconfig includes (`REFERENCES`); the indexer's
   record lists those added (`types`).
-- Execution, with no network: scip-typescript on Daodan's Node (0.5.2 needs Node 22.13 or later, whatever the
+- Execution, with no network: scip-typescript on Daodan's Node (0.6.2 needs Node 22.23.4 or later, whatever the
   project runs on), with a generated tsconfig in place of the project's: it holds every JS/TS file of the
   snapshot (`allowJs`) and extends the project's own, or without a root `tsconfig.json` the one the pre-map
   names. One program has one `paths`: the generated tsconfig carries the aliases every unit's tsconfig states
   and the name of each package another reaches by name (a workspace's member, a unit's dependency) on its
-  folder. The index comes back as the run's output.
+  folder. Then the checker's pass over the same program (`typescript_unbound.js`): the members it binds no
+  declaration to, where the index has no occurrence, and why (`unanswered`). Both come back as the run's
+  output.
 
 What the run lacks is a gap of its contract (`gaps`): a restore that failed (`preparation.restore_gaps`), an
 install whose lifecycle scripts failed (`preparation.generation_gaps`), a Node the preparation could not install,
@@ -33,9 +35,12 @@ install step generated (`_not_generated`).
 to the symbol the index references at the value or the key (CommonJS `module.exports = { f }` needs none: the
 index states it as a shared range); a function value leads to the function the snapshot declares there. A
 library function whose documented contract returns its argument is a declared hop, tagged
-`declared:<package>.<function>`. `classify` names why a local the index defines nowhere is a dead end when an
-import of a module TypeScript does not read binds it (a component: no declaration of `*.vue` modules), and ends
-the `module` of `module.exports = …`, which the index names with such a local, on Node's module object.
+`declared:<package>.<function>`. scip-typescript names a member of an anonymous type, an object literal or an
+index signature another file declares with a local of the file that reads it, defined nowhere: no hop or shared
+range leads there (`same_range`), and the name bound to it ends at its own definition. `classify` names why such
+a local is a dead end: a member (`MEMBER`), or a name an import of a module TypeScript does not read binds (a
+component: no declaration of `*.vue` modules); it ends `module`, which the index names with such a local, on
+Node's module object. `unanswered` names why a member's site has no occurrence: the checker's pass says it.
 """
 from __future__ import annotations
 
@@ -51,7 +56,10 @@ from pathlib import Path
 import code_graph
 import preparation
 
-VERSION = "0.5.2"  # @sourcegraph/scip-typescript on npm
+# @sourcegraph/scip-typescript on npm. From 0.6.1 a package.json without a name no longer ends the search for a
+# file's package (sourcegraph/scip-typescript#527): before, a package's files below one (`24/outline/` of
+# @heroicons/react, a `dist/cjs/` of `{"type": "commonjs"}`) were the anonymous package's, defined nowhere.
+VERSION = "0.6.2"
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-typescript", ("typescript", "javascript"), frozenset({"npm-package"}), True
@@ -63,6 +71,7 @@ IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e330
 WORK, OUT = "/work", "/daodan/out"  # the copy (`container.WORKDIR`), and where the index is brought back from
 CONFIG = f"{preparation.STATE}/scip-typescript/tsconfig.json"  # the generated tsconfig, carried with the copy
 TYPES = f"{preparation.STATE}/scip-typescript/typescript_types.py"  # carried with the copy; installs into `TYPES_DIR`
+UNBOUND = f"{preparation.STATE}/scip-typescript/typescript_unbound.js"  # carried with the copy; the checker's pass
 TYPES_DIR = f"{preparation.STATE}/types"
 REFERENCES = f"{TYPES_DIR}/references.d.ts"  # where it names the type packages the program loads (Node's)
 # A folder a framework generates its tsconfig in -> the command that writes it; the scripts an install runs.
@@ -70,6 +79,15 @@ GENERATORS = {".svelte-kit": "svelte-kit sync"}
 LIFECYCLE = ("preinstall", "install", "postinstall", "prepare")
 UNREAD = re.compile(r"error TS5083: Cannot read file '/work/([^']+)'")
 NODE_TYPES = "scip-typescript npm @types/node "  # the symbols of the Node types, before their version
+# A member name's nodes, and the cause of one the index names with a local it defines nowhere (`classify`).
+MEMBERS = ("property_identifier", "private_property_identifier", "shorthand_property_identifier_pattern")
+MEMBER = ("a member of an anonymous type, an object literal or an index signature another file declares: the index "
+          "names it with a local of this file it defines nowhere")
+# Why the checker binds no declaration to a member (`typescript_unbound.js`), by its kind, with the receiver's type.
+UNBOUND_CAUSES = {"any": "a member of a value of type any: only execution knows it",
+                  "index": "{}'s index signature: only execution knows the value",
+                  "mapped": "{}'s member has no declaration, the checker made it: the index names nothing there",
+                  "undeclared": "{} declares no such member: only execution knows it"}
 T = preparation.T
 MANAGERS = ("npm", "pnpm", "yarn")  # the Node managers of `preparation.RESTORES`
 PEAK = "trap 'echo \"DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)\"' EXIT"
@@ -97,6 +115,10 @@ if [ -f tsconfig.json ]; then mv tsconfig.json tsconfig.project.json || exit 70;
 cp {CONFIG} tsconfig.json || exit 70
 NODE_OPTIONS=--max-old-space-size={{heap}} {T}/node/bin/node "$(readlink -f {T}/npm/bin/scip-typescript)" index\
  --cwd {WORK} --output {OUT}/index.scip --no-progress-bar
+indexed=$?
+NODE_OPTIONS=--max-old-space-size={{heap}} {T}/node/bin/node {UNBOUND} {WORK}\
+ "$(readlink -f {T}/npm/bin/scip-typescript)" > {OUT}/unbound.jsonl
+exit "$indexed"
 '''
 SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
 WORKSPACES = {"npm", "pnpm", "yarn", "lerna"}  # the pre-map's workspace tools whose members are packages
@@ -187,8 +209,15 @@ def _declared(index, rel: str, call) -> list:
     return []
 
 
+def _unnamed(index, key) -> bool:
+    """Whether a key is a local the index defines nowhere: a member of an anonymous type, an object literal or an
+    index signature another file declares, which scip-typescript names with a local of the file that reads it."""
+    return isinstance(key, str) and "#local " in key and not index.defs.get(key)
+
+
 def hops(index) -> dict:
-    """Alias edges from the statements that define the names of JS/TS documents."""
+    """Alias edges from the statements that define the names of JS/TS documents; none to a local the index
+    defines nowhere (`_unnamed`), where an alias leads nowhere: the name ends at its own definition."""
     out = collections.defaultdict(list)
     for rel, occurrences in index.documents.items():
         grammar = GRAMMARS.get(Path(rel).suffix.lower())
@@ -208,8 +237,21 @@ def hops(index) -> dict:
                 found = _value(index, rel, value, "initializer")
             else:
                 found = []
-            out[occurrence.key] += [item for item in found if item[0] != occurrence.key]
+            out[occurrence.key] += [item for item in found if item[0] != occurrence.key
+                                    and not _unnamed(index, item[0])]
     return {key: list(dict.fromkeys(items)) for key, items in out.items() if items}
+
+
+def same_range(index) -> dict:
+    """A definition that shares its range with a local the index defines nowhere (the key of `{ t } = …`, a member
+    of the value's type) is no alias of it: the name ends at its own definition."""
+    pairs = {}
+    for items in index.at.values():
+        for item in items:
+            if not item.definition and _unnamed(index, item.key):
+                pairs.update({(other.key, item.key): False for other in items if other.definition
+                              and (other.end_line, other.end) == (item.end_line, item.end)})
+    return pairs
 
 
 def _imported(root, name: str) -> str | None:
@@ -229,20 +271,13 @@ def _imported(root, name: str) -> str | None:
     return None
 
 
-def _exported_object(node) -> bool:
-    """Whether an identifier is the `module` of `module.exports = …`."""
-    member = node.parent
-    return node.text == b"module" and member is not None and member.type == "member_expression" \
-        and member.child_by_field_name("object") == node and member.parent is not None \
-        and member.parent.type == "assignment_expression" and member.parent.child_by_field_name("left") == member \
-        and getattr(member.child_by_field_name("property"), "text", None) == b"exports"
-
-
 def classify(index):
-    """Two locals the index defines nowhere. One bound by an import of a module whose extension TypeScript does
-    not read (a `.vue` or `.svelte` component) ends on why: no declaration of such modules types the import. The
-    `module` of `module.exports = …`, which TypeScript reads as the file's own export in a JavaScript file and
-    the index names with such a local, is Node's module object: external, of the Node types that declare it with
+    """The cause of a local the index defines nowhere. A member, of an anonymous type, an object literal or an
+    index signature another file declares, which the index names with such a local, ends on that (`MEMBER`).
+    One bound by an import of a module whose extension TypeScript does not read (a `.vue` or `.svelte`
+    component) ends on why: no declaration of such modules types the import. `module`, which TypeScript reads in
+    a JavaScript file as the file's own module (`module.exports = …`, `require.main === module`) and the index
+    names with such a local, is Node's module object: external, of the Node types that declare it with
     `require`, at the version the index references (`NODE_TYPES`), else a dead end that says none is referenced.
     Any other key keeps the default rule."""
     causes, objects, versions = {}, set(), collections.Counter()
@@ -251,13 +286,16 @@ def classify(index):
         for occurrence in occurrences if grammar else ():
             if occurrence.key.startswith(NODE_TYPES):
                 versions[occurrence.key.split(" ")[3]] += 1
-            if not occurrence.key.startswith(f"{rel}#local ") or occurrence.key in index.defs \
+            if not occurrence.key.startswith(f"{rel}#local ") or index.defs.get(occurrence.key) \
                     or occurrence.key in causes or occurrence.key in objects:
                 continue
             node = index.node(rel, occurrence, grammar)
+            if node is not None and node.type in MEMBERS:
+                causes[occurrence.key] = MEMBER
+                continue
             if node is None or node.type != "identifier":
                 continue
-            if _exported_object(node):
+            if node.text == b"module":
                 objects.add(occurrence.key)
                 continue
             root = node
@@ -271,6 +309,22 @@ def classify(index):
         else "module.exports: the index names `module` with a local it defines nowhere, and references no Node " \
              "types that declare it"
     causes.update(dict.fromkeys(objects, declared))
+    return causes.get
+
+
+def unanswered(index):
+    """Why the index has no occurrence at a member's site: the checker's pass in the container binds no
+    declaration there, and says why (`UNBOUND_CAUSES`), in the file beside the index (`<index>.unbound.jsonl`)."""
+    causes = {}
+    for path, prefix in index.sources:
+        side = path.with_suffix(".unbound.jsonl")
+        for line in side.read_text(encoding="utf-8").splitlines() if side.is_file() else ():
+            try:
+                rel, row, column, kind, receiver = json.loads(line)
+                causes[(posixpath.join(prefix, rel) if prefix else rel, row, column)] = \
+                    UNBOUND_CAUSES[kind].format(receiver)
+            except (ValueError, KeyError, TypeError):  # a line the pass cut short says nothing
+                continue
     return causes.get
 
 
@@ -446,6 +500,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
         registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"],
                                         *(declared or {}).get("hosts", ())])),
         inputs=lambda: {CONFIG: config, TYPES: Path(__file__).with_name("typescript_types.py"),
+                        UNBOUND: Path(__file__).with_name("typescript_unbound.js"),
                         **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                            for url, digest, name in (preparation.NODE, *chains["files"])}})
     if result["state"] == "gap":
@@ -459,12 +514,15 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
         cause = f"scip-typescript {VERSION} could not be installed in the container: {runtime.excerpt(prepared)}"
         return runtime.refused("scip-typescript", VERSION, runtime.Unavailable(
             cause, "check the network: Daodan installs scip-typescript from the npm registry"))
+    gaps += result.get("gaps") or []  # what the container run reports itself (a tracked link it did not copy)
     gaps += chains["gaps"] + missing + preparation.restore_gaps(prepared) + preparation.generation_gaps(prepared)
     log = out_dir / "execute.log"
     gaps += _not_generated(project_dir, log.read_text(encoding="utf-8", errors="replace") if log.is_file() else "")
     output = work_dir / "scip-typescript-0.scip"
     if (out_dir / "out/index.scip").is_file():
         os.replace(out_dir / "out/index.scip", output)
+    if (out_dir / "out/unbound.jsonl").is_file():  # beside its index, where `unanswered` reads it
+        os.replace(out_dir / "out/unbound.jsonl", output.with_suffix(".unbound.jsonl"))
     if runs and runs[-1]["phase"] == "execute":
         runs[-1].update(index=str(output) if output.is_file() else None,
                         index_bytes=output.stat().st_size if output.is_file() else 0)

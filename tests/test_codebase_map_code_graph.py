@@ -35,6 +35,7 @@ SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import code_graph  # noqa: E402
+from indexers import typescript  # noqa: E402
 
 P = "scip-x mgr pkg 1.0 "  # a project symbol's prefix
 
@@ -292,7 +293,7 @@ def test_adapter_traversal_runs_prepare_first_and_passes_only_what_the_module_de
     assert prepared is None and traversal.same_range == {} and traversal.classify is None
 
 
-HOOKS = ("prepare", "same_range", "classify", "static", "refine", "missing", "tasks")  # the optional ones
+HOOKS = ("prepare", "same_range", "classify", "unanswered", "static", "refine", "missing", "tasks")  # the optional ones
 
 
 def test_an_indexer_takes_the_folders_it_runs_in_from_the_pre_map():
@@ -466,8 +467,8 @@ def test_ts_fixture_end(fixture_rows, site):
     elif want["end"].startswith("external"):
         assert not targets and any(end.cls == "external" and want["end"].split(" ", 1)[1] in end.detail
                                    for end in row["ends"])
-    elif want["end"] == "dangling-local":
-        assert row["hole"] == "dangling-local"
+    elif want["end"] in (*code_graph.HOLES, typescript.MEMBER):  # a hole, with its class
+        assert row["hole"] == want["end"]
     else:
         assert not targets and any(end.cls == want["end"] for end in row["ends"])
 
@@ -560,7 +561,7 @@ def test_fixture_case(built, name, case):
 # The invariant: every call and read of a snapshot ends in graph ends or in a hole with a class.
 
 def test_every_reference_ends_or_is_a_hole(built):
-    classes = set(code_graph.HOLES) | {"implicit-operator"}
+    classes = set(code_graph.HOLES) | {"implicit-operator", typescript.MEMBER}  # the TS adapter's cause of a member
     violations = collections.defaultdict(list)
     for name, data in sorted(built.items()):
         graphs = data["graphs"].values()
