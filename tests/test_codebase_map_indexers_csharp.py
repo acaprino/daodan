@@ -647,7 +647,7 @@ def test_a_constructor_call_written_without_a_name_is_a_hole(shop):
 def test_every_reference_of_the_snapshot_ends_or_is_a_hole_the_index_explains(shop):
     """No dead end the index's own scheme causes is left: what remains unanswered is a generic or implicit name."""
     assert {hole["class"] for hole in shop["graph"]["holes"]} <= {"unnamed-constructor", "no-occurrence",
-                                                                 "no-position"}
+                                                                 "no-position", "computed-callee"}
     assert not [edge for edge in shop["graph"]["edges"] if edge["end"] == "dead-end"]
     assert shop["graph"]["files"]["indexed"] == len(SOURCES) and not shop["graph"]["files"]["missing"]
 

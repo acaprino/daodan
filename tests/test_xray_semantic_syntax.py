@@ -159,6 +159,19 @@ class JavaScriptSemanticTests(unittest.TestCase):
         dynamic = [r["parts"] for r in calls if r.get("reason") == "dynamic-callee"]
         self.assertEqual(dynamic, [[], ["(expr)", "save"]])
 
+    def test_a_typescript_callee_keeps_its_name_through_a_non_null_assertion_and_type_arguments(self):
+        """`x.f!()` calls `x.f`: the assertion changes no value. tree-sitter reads `await f<T>(x)` as a call of
+        `await f` (a bare `await` callee is only that, `(await f)(x)` has parentheses): the callee is `f`, and
+        its name ends the span, where an engine is asked."""
+        source = ("const toast = {onUndo: () => 1};\ntoast.onUndo!();\n"
+                  "async function g() { await load<{ a: string[] }>(1); await load(2); (await make)(3); }\n")
+        for suffix in ("ts", "tsx"):
+            with self.subTest(suffix=suffix):
+                calls = [r for r in self.parse(source, typescript.adapter, suffix)["references"] if r["kind"] == "call"]
+                self.assertEqual([(r["parts"], r["span"], r.get("reason")) for r in calls],
+                                 [(["toast", "onUndo"], [2, 0, 2, 12], None), (["load"], [3, 27, 3, 31], None),
+                                  (["load"], [3, 59, 3, 63], None), ([], [3, 68, 3, 80], "dynamic-callee")])
+
     def test_for_bindings_and_var_arrow_capture_keep_lexical_scope(self):
         semantic = self.parse('import {save} from "./core"; function run(){\n'
                               ' for(let save of values) save();\n'

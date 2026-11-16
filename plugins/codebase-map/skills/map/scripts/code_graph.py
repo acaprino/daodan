@@ -35,6 +35,12 @@ facets of one declaration, never aliases), an adapter hop, and the implementatio
 SymbolInformation states (`is_implementation`). It ends on a function, method or class the snapshot declares
 (a constructor names its class), an external symbol, a namespace the adapter names, a project value with no
 stated alias, or a dead end: a `local` or project symbol the index defines nowhere, a cycle.
+
+A call whose callee has no name is read from its expression (`Snapshot.computed`): a function literal called
+where it is written reaches that literal, a certain edge with the chain `literal`; `super(x)` the constructor
+the index names at the keyword; any other is a hole of its class, `call-result` (`f(x)(y)`), `element`
+(`handlers[i]()`), `dynamic-import` (`import(x)`, a module loaded), `super-call`, `computed-callee`, which the
+dynamic step answers by position: a declared type gives a signature, never which function a value is.
 """
 from __future__ import annotations
 
@@ -451,11 +457,15 @@ class Snapshot:
             self.rel[checkout], self.checkout[rel] = rel, checkout
         self._lines: dict = {}
         self.functions = collections.defaultdict(dict)
+        self._ends = {}  # a function's start -> its end, for a literal called where it is written (`computed`)
         declarations = self.connection.execute(
-            "SELECT id, file, name, kind, l0, c0, payload FROM sem_declarations "
+            "SELECT id, file, name, kind, l0, c0, payload, l1, c1 FROM sem_declarations "
             "WHERE kind IN ('function','method','class')").fetchall()
-        for identity, rel, _name, _kind, line, column, _blob in declarations:
+        for identity, rel, _name, kind, line, column, _blob, end_line, end_column in declarations:
             self.functions[rel][(line, column)] = identity
+            if kind == "function":
+                self._ends[(rel, line, column)] = (end_line, end_column)
+        declarations = [row[:7] for row in declarations]
         # A constructor names its class (requirement 14 of the engine specification): a function a class
         # declares under the class's own name. JavaScript's `constructor` is marked by the snapshot itself.
         classes = {identity: name for identity, _rel, name, kind, *_rest in declarations if kind == "class"}
@@ -493,6 +503,44 @@ class Snapshot:
             return None
         column = self._rx.callee_column(text[l1 - 1], list(span), parts[-1])
         return None if column is None else (l1, column)
+
+    def computed(self, rel: str, span: tuple) -> tuple[str, str | None]:
+        """What a callee with no name is, from its expression (`span`, bytes): a function literal called where it
+        is written (`literal`, with its declaration), a call's result (`call-result`), an element (`element`),
+        or another computed value (`computed-callee`)."""
+        self.callee(rel, span, [""])  # reads the file's lines
+        text, (l0, c0, l1, c1) = self._lines.get(rel), span
+        if text is None or not 1 <= l0 <= l1 <= len(text):
+            return "computed-callee", None
+        lines = [line.encode("utf-8") for line in text[l0 - 1:l1]]
+        lines[-1] = lines[-1][:c1]
+        lines[0] = lines[0][c0:]
+        body = b"\n".join(lines)
+        opened = len(body) - len(body.lstrip(b"( \t"))
+        for start in ((l0, c0 + at) for at in range(opened + 1)):  # an arrow's own `(` is the literal's start
+            identity = self.functions.get(rel, {}).get(start)
+            end_line, end_column = self._ends.get((rel, *start), (None, None))
+            if identity is not None and end_line == l1 and text[l1 - 1].encode("utf-8")[end_column:c1].strip(
+                    b") \t") == b"":
+                return "literal", identity
+        inner = body.strip()
+        while inner.startswith(b"(") and _closes(inner) == len(inner) - 1:
+            inner = inner[1:-1].strip()
+        if inner in KEYWORDS:  # `super(x)`, the parent's constructor; `import(x)`, a module loaded, not a call
+            return KEYWORDS[inner], None
+        depth, outside = 0, bytearray()  # what stands outside every bracket: a postfix chain has no operator
+        for byte in inner:
+            depth += byte in b"([{"
+            if depth == 0:
+                outside.append(byte)
+            depth -= byte in b")]}"
+        if any(byte in b" \t\n|&?:+-*/%=<>!,~^" for byte in outside):
+            return "computed-callee", None
+        if inner.endswith(b")"):
+            return "call-result", None
+        if inner.endswith(b"]"):
+            return "element", None
+        return "computed-callee", None
 
     def grade(self, rel: str, line: int, column: int | None) -> tuple[str, str | None]:
         """`callable` with the declaration the snapshot names there, `outside` the snapshot, or `value`."""
@@ -678,7 +726,23 @@ def _enclosing(occurrences: list[Occurrence]) -> dict[int, str]:
     return out
 
 
-HOLES = ("no-position", "no-document", "no-occurrence", "dangling-local", "undefined-project-symbol", "cycle")
+KEYWORDS = {b"super": "super-call", b"import": "dynamic-import"}  # a callee that is a keyword (`computed`)
+
+
+def _closes(text: bytes) -> int:
+    """Where the bracket opening `text` closes, -1 when it does not (strings are not told apart)."""
+    depth = 0
+    for at, byte in enumerate(text):
+        depth += byte in b"([{"
+        depth -= byte in b")]}"
+        if depth == 0:
+            return at
+    return -1
+
+
+HOLES = ("no-position", "no-document", "no-occurrence", "dangling-local", "undefined-project-symbol", "cycle",
+         "call-result", "element", "computed-callee", "super-call", "dynamic-import")  # these: no callee name
+
 
 
 def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: dict,
@@ -714,7 +778,16 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
             by_position[position].append(kind)
         keys = [item.key for item in entries if not item.definition] or [item.key for item in entries]
         found = ends(position, keys)
-        if site is None:
+        computed, literal = snapshot.computed(rel, span) if not parts and kind == "call" else (None, None)
+        if literal is not None:  # the function literal is the callee: the edge is in the expression itself
+            found, cls = [End("project-callable", literal, literal, "", ("literal",))], ""
+        elif computed is not None:
+            # `super(x)`: the index's occurrence of the keyword, where it gives one, names the parent's constructor
+            start = (checkout, span[0], index.from_bytes(checkout, span[0], span[1]))
+            found = ends(start, [item.key for item in index.at.get(start, []) if not item.definition]) \
+                if computed == "super-call" else []
+            cls = "" if any(end.cls != "dead-end" for end in found) else computed
+        elif site is None:
             cls = "no-position"
         elif not entries:
             cls = "no-document" if checkout not in index.documents else (

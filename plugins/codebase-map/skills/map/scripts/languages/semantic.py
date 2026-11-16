@@ -832,6 +832,12 @@ class _JavaScriptEvidence(_Evidence):
             return
         if t in ("call_expression", "new_expression"):
             function = node.child_by_field_name("function") or node.child_by_field_name("constructor")
+            # `x.f!()` calls `x.f`; tree-sitter reads `await f<T>(x)` as a call of `await f`, which `(await f)(x)`
+            # would write in parentheses: the callee is `f`, awaited with the call.
+            while function is not None and function.named_children and (
+                    function.type == "non_null_expression" or function.type == "await_expression"
+                    and node.child_by_field_name("type_arguments") is not None):
+                function = function.named_children[0]
             if function is not None:
                 parts = self.parts(function)
                 call_parts = parts

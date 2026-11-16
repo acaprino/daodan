@@ -376,6 +376,45 @@ def test_a_constructor_end_names_its_class(tmp_path):
         [("project-callable", "fx/Box.java::class@3:0")]
 
 
+CALLED = {
+    # chi's shapes: a literal called where it is written, a call's result called, an element called.
+    "app.go": "package app\n\nfunc Deprecation(x int) func(int) int {\n\treturn func(y int) int { return x + y }\n}\n\n"
+              "func Run(handlers []func()) {\n\tfunc() {}()\n\tdefer func() {}()\n\tgo func(i int) {}(1)\n"
+              "\t_ = Deprecation(1)(2)\n\thandlers[len(handlers)-1]()\n}\n",
+    # tududi's: an IIFE, an arrow called in place, a call's result, an element, a conditional.
+    "app.js": "(function () { return 1; })();\n(() => 2)();\nconst f = () => () => 3;\nf()();\n"
+              "const table = [() => 4];\ntable[0]();\n(f || table[0])();\n"
+              "class A {}\nclass B extends A {\n  constructor() {\n    super();\n  }\n}\nconst lazy = () => import('./x');\n"}
+
+
+def test_a_call_with_no_callee_name_is_answered_by_its_literal_or_named_by_its_callee(tmp_path):
+    """A call whose callee has no name: a function literal called where it is written reaches that literal, a
+    certain static edge from the snapshot's own declaration; a call of a call's result (`Deprecation(x)(y)`), of an
+    element (`handlers[i]()`) or of another computed value is a hole of that class, the dynamic step's to answer:
+    a declared type says a signature, never which function a value is. `super(x)` is answered where the index
+    names the keyword's constructor, else a `super-call` hole; `import(x)` loads a module: `dynamic-import`."""
+    import snapshot
+    project = tmp_path / "proj"
+    project.mkdir()
+    for rel, text in CALLED.items():
+        (project / rel).write_text(text, encoding="utf-8")
+    manifest = tmp_path / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    found = {}
+    with code_graph.Snapshot(manifest) as snap:
+        for language in ("go", "javascript"):
+            _graph, references = code_graph.build(code_graph.Index(snap.root), snap, language, {}, {})
+            found.update({row["site"]: (row["hole"], [(end.cls, end.target) for end in row["ends"]])
+                          for row in references.values() if row["kind"] == "call" and not row["name"]})
+    literal = lambda rel, at: [("project-callable", f"{rel}::function@{at}")]  # noqa: E731
+    assert found == {"app.go:8": ("", literal("app.go", "8:1")), "app.go:9": ("", literal("app.go", "9:7")),
+                     "app.go:10": ("", literal("app.go", "10:4")), "app.go:11": ("call-result", []),
+                     "app.go:12": ("element", []),
+                     "app.js:1": ("", literal("app.js", "1:1")), "app.js:2": ("", literal("app.js", "2:1")),
+                     "app.js:4": ("call-result", []), "app.js:6": ("element", []), "app.js:7": ("computed-callee", []),
+                     "app.js:11": ("super-call", []), "app.js:14": ("dynamic-import", [])}
+
+
 # The fixtures: one small project per indexer in `fixtures/code-graph/<name>/`, with the index its engine wrote.
 # `ts-ends.json` and `RUST_ENDS` hold the ends of `ts` and `rust`; each other fixture has `expected.json`, ends
 # written from its sources before any index existed: `"FILE:LINE NAME"` (the snapshot reference whose name ends
