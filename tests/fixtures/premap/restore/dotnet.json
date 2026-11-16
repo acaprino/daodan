@@ -2,8 +2,8 @@
  "versions": {
   "dotnet": "10.0.404"
  },
- "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
- "line": "export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1; for f in 'good' 'bad'; do ( cd \"$f\" && dotnet restore $(ls *.slnx *.sln 2>/dev/null | head -n 1) ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED dotnet %s\\n' \"$f\"; { grep -E 'error' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+ "image": "modal debian_slim python 3.13 (tests/modal_pytest.py)",
+ "line": "export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1; for f in 'good' 'bad'; do ( cd \"$f\" && { s=$(ls *.slnx *.sln 2>/dev/null | head -n 1); dotnet restore $s || { [ -n \"$s\" ] && dotnet sln \"$s\" list | tail -n +3 | tr '\\\\' / | while read -r p; do dotnet restore \"$p\"; done; false; }; } ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED dotnet %s\\n' \"$f\"; { grep -E 'error' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
  "result": {
   "returncode": 0,
   "stdout": "",

@@ -1000,6 +1000,13 @@ _CALLEE_NAME_NODES = frozenset({"identifier", "type_identifier", "field_identifi
                                  "property_identifier", "name"})
 
 
+def _generic_name(node):
+    """C#'s `Name<T>` is named by `Name`, the identifier before its type arguments; any other node is itself."""
+    if node is not None and node.type == "generic_name":
+        return next((child for child in node.named_children if child.type == "identifier"), None)
+    return node
+
+
 class _TreeSitterEvidence(_Evidence):
     """Unified Tree-sitter semantic extractor backed by ._treesitter helpers and tags.scm."""
 
@@ -1065,6 +1072,11 @@ class _TreeSitterEvidence(_Evidence):
         if node.type == "generic_type":
             first = next((c for c in node.named_children if c.type != "type_arguments"), None)
             return self.parts(first)
+        if node.type == "generic_name":
+            return self.parts(_generic_name(node))
+        if node.type == "qualified_name" and len(node.named_children) >= 2:  # C#'s `A.B.Name` written as a type
+            prefix, last = self.parts(node.named_children[0]), self.parts(node.named_children[-1])
+            return prefix + last[-1:] if prefix and last else []
         if node.type in _TS_MEMBER_NODES:
             obj = (node.child_by_field_name("object") or node.child_by_field_name("expression")
                    or node.child_by_field_name("scope") or node.child_by_field_name("path")
@@ -1072,6 +1084,7 @@ class _TreeSitterEvidence(_Evidence):
             field = node.child_by_field_name("field") or node.child_by_field_name("name")
             if obj is None and len(node.named_children) >= 2:
                 obj, field = node.named_children[0], node.named_children[-1]
+            field = _generic_name(field)
             prefix = self.parts(obj)
             if prefix and field is not None and field.type in ("identifier", "type_identifier", "field_identifier", "simple_identifier"):
                 return prefix + [self.text(field)]
@@ -1086,6 +1099,7 @@ class _TreeSitterEvidence(_Evidence):
             field = node.named_children[-1]
             if field.type == "navigation_suffix":
                 field = next((c for c in field.named_children if c.type in _CALLEE_NAME_NODES), None)
+        field = _generic_name(field)
         return field if field is not None and field.type in _CALLEE_NAME_NODES else None
 
     def last_name(self, node, name):

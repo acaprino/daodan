@@ -52,6 +52,9 @@ from pathlib import Path
 from typing import NamedTuple
 
 UNITS = {1: "utf-8", 2: "utf-16", 3: "utf-32"}
+# A UTF-8 byte order mark: the snapshot's byte columns of line 1 count its three bytes, an indexer's UTF-16 or
+# UTF-32 columns start after it (Roslyn's, tsc's).
+BOM = "﻿"
 # SymbolInformation.Kind numbers, grouped into the kinds a graph reports.
 KINDS = {
     "function": {17},
@@ -382,14 +385,16 @@ class Index:
             return None
         if unit == "utf-8" or text.isascii():
             return column
+        skipped = 3 if line == 1 and text.startswith(BOM) else 0  # the mark's bytes
+        text = text[1:] if skipped else text
         if unit == "utf-32":
-            return len(text[:column].encode("utf-8"))
+            return skipped + len(text[:column].encode("utf-8"))
         units = 0
         for at, char in enumerate(text):
             if units >= column:
-                return len(text[:at].encode("utf-8"))
+                return skipped + len(text[:at].encode("utf-8"))
             units += 2 if ord(char) > 0xFFFF else 1
-        return len(text.encode("utf-8"))
+        return skipped + len(text.encode("utf-8"))
 
     def from_bytes(self, rel: str, line: int, column: int) -> int | None:
         text, unit = self.line(rel, line), self.units.get(rel, "utf-16")
@@ -398,6 +403,7 @@ class Index:
         if unit == "utf-8" or text.isascii():
             return column
         head = text.encode("utf-8")[:column].decode("utf-8", errors="ignore")
+        head = head[1:] if line == 1 and head.startswith(BOM) else head
         return len(head) if unit == "utf-32" else len(head.encode("utf-16-le")) // 2
 
     def tree(self, rel: str, grammar: str):

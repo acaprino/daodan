@@ -268,6 +268,42 @@ def test_a_dotnet_solution_restores_the_projects_below_it():
     assert preparation.restores(["a/A.csproj", "b/B.vbproj"]) == {"dotnet": ["a", "b"]}
 
 
+# What `dotnet` does in a folder whose solution lists a project that needs a workload the container lacks: the
+# solution's restore fails whole and restores nothing; each project restores on its own, but that one.
+FAKE_DOTNET = r"""#!/bin/sh
+echo "dotnet $*" >> "$CALLS"
+case "$*" in
+  "restore App.slnx") echo "Maui.csproj : error NETSDK1147: the following workloads must be installed: maui-tizen"
+                      exit 1;;
+  "sln App.slnx list") printf '%s\n' 'Project(s)' '----------' 'src\App\App.csproj' 'src\Maui\Maui.csproj';;
+  "restore src/App/App.csproj") echo "Restored src/App/App.csproj";;
+  *) echo "$2 : error NETSDK1147: the following workloads must be installed: maui-android"; exit 1;;
+esac
+"""
+
+
+def test_a_dotnet_solution_that_does_not_restore_restores_each_of_its_projects_and_stays_a_gap(tmp_path):
+    """eShop: one project of the solution needs a workload the container lacks (NETSDK1147), and the solution's
+    restore restores nothing; each project the solution lists is then restored on its own, and the failure stays
+    a gap with the error lines of both."""
+    import os
+    import subprocess
+    tools, work, calls = tmp_path / "bin", tmp_path / "work", tmp_path / "calls.txt"
+    for folder in (tools, work):
+        folder.mkdir()
+    (tools / "dotnet").write_text(FAKE_DOTNET, encoding="utf-8", newline="\n")
+    (tools / "dotnet").chmod(0o755)
+    (work / "App.slnx").write_text("<Solution />\n", encoding="utf-8")
+    done = subprocess.run(["bash", "-c", preparation.restore("dotnet", ["."])], cwd=work, capture_output=True,
+                          text=True, env={**os.environ, "PATH": f"{tools}:{os.environ['PATH']}", "CALLS": str(calls)})
+    assert calls.read_text(encoding="utf-8").splitlines() == [
+        "dotnet restore App.slnx", "dotnet sln App.slnx list", "dotnet restore src/App/App.csproj",
+        "dotnet restore src/Maui/Maui.csproj"]
+    [gap] = preparation.restore_gaps(done.stderr)
+    assert (gap["kind"], gap["manager"], gap["path"]) == ("restore_failed", "dotnet", ".")
+    assert "maui-tizen" in gap["detail"] and "src/Maui/Maui.csproj : error NETSDK1147" in gap["detail"]
+
+
 # What Google's sdkmanager does here: it accepts the licences it is answered `y` to, and installs a package only
 # then, into its folder under the SDK (two folders above its own `bin`), its progress redrawn on one line.
 FAKE_SDKMANAGER = """#!/bin/sh

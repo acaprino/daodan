@@ -468,6 +468,10 @@ public partial class Summary
     }
 
     public static Summary Current => Default;
+
+    public static Summary Make<T>() => new Summary();
+
+    public static Summary Both() => Make<Summary>() ?? Summary.Make<Order>();
 }
 """,
 }
@@ -559,7 +563,13 @@ OCCURRENCES = {
         (8, "row", "local 0", False), (8, "Total", "local 1", False),
         # `Default` is what System.Text.Json's source generator writes into the partial class
         (11, "Summary", C + "Core/Summary#", False), (11, "Current", C + "Core/Summary#Current.", True),
-        (11, "Default", C + "Core/Summary#Default.", False)],
+        (11, "Default", C + "Core/Summary#Default.", False),
+        (13, "Summary", C + "Core/Summary#", False), (13, "Make", C + "Core/Summary#Make().", True),
+        (13, "T", "local 2", True), (13, "Summary@2", C + "Core/Summary#", False),
+        # a name written with type arguments has no occurrence (`VisitIdentifierName` only); its arguments have
+        (15, "Summary", C + "Core/Summary#", False), (15, "Both", C + "Core/Summary#Both().", True),
+        (15, "Summary@2", C + "Core/Summary#", False), (15, "Summary@3", C + "Core/Summary#", False),
+        (15, "Order", C + "Core/Order#", False)],
 }
 # A definition's relationships, as `ScipDocumentIndexer.VisitOccurrence` writes them: a type's base types and
 # interfaces, a method's overridden methods and the interface members it implements.
@@ -757,11 +767,42 @@ def test_a_name_with_type_arguments_has_no_occurrence_and_says_so(tmp_path):
     assert unanswered(("src/Lists.cs", 1, 22)) is None and unanswered(("src/Other.cs", 1, 0)) is None
 
 
+def test_a_call_written_with_type_arguments_is_named_by_its_name_and_its_hole_says_why(shop):
+    """`Make<Summary>()` and `Summary.Make<Order>()` are named by the name before their type arguments, where
+    scip-dotnet writes no occurrence: holes with that cause, not callees without a name."""
+    holes = {f"{row['site']} {row['name']}": row["hole"] for row in shop["references"].values()}
+    assert holes["src/Core/Summary.cs:15 Make"] == csharp.TYPE_ARGUMENTS
+    assert holes["src/Core/Summary.cs:15 Summary.Make"] == csharp.TYPE_ARGUMENTS
+
+
+def test_a_type_written_with_its_namespace_is_named_by_it(shop):
+    """`new Shop.Core.Models.User()` names its type through its namespace, at the type's name: each declaration
+    under its symbol is an end."""
+    places = {"src/Api/Models/User.cs:3", "src/Core/Models/User.Greet.cs:3", "src/Core/Models/User.cs:3"}
+    assert _ends(shop, "src/Api/Program.cs:8 Shop.Core.Models.User") == {("project-callable", place, ())
+                                                                          for place in places}
+
+
+def test_a_byte_order_mark_moves_no_column_of_the_first_line(tmp_path):
+    """Roslyn's columns start after a UTF-8 byte order mark, the snapshot's byte columns count its three bytes:
+    on line 1 one converts to the other without it."""
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/Program.cs").write_bytes("\N{ZERO WIDTH NO-BREAK SPACE}var b = Make(args);\nvar é = 1;\n".encode("utf-8"))
+    index = graph_tests.load(tmp_path, graph_tests.document("src/Program.cs", [
+        graph_tests.occurrence(1, 8, 12, C + "``/Program#Make().")], unit=2))
+    assert index.from_bytes("src/Program.cs", 1, 11) == 8 and index.to_bytes("src/Program.cs", 1, 8) == 11
+    assert index.from_bytes("src/Program.cs", 2, 9) == 8 and index.to_bytes("src/Program.cs", 2, 8) == 9
+    index.units["src/Program.cs"] = "utf-32"
+    assert index.from_bytes("src/Program.cs", 1, 11) == 8 and index.to_bytes("src/Program.cs", 1, 8) == 11
+
+
 def test_every_reference_of_the_snapshot_ends_or_is_a_hole_the_index_explains(shop):
     """No dead end the index's own scheme causes is left: what remains unanswered is a generic or implicit name,
     or says its cause."""
     classes = {hole["class"] for hole in shop["graph"]["holes"]}
-    assert {csharp.EXTENSION, csharp.GENERATED, csharp.TOP_LEVEL, "unnamed-constructor"} <= classes
+    assert {csharp.EXTENSION, csharp.GENERATED, csharp.TOP_LEVEL, csharp.TYPE_ARGUMENTS,
+            "unnamed-constructor"} <= classes
+    assert "computed-callee" not in classes
     assert not classes & {"dangling-local", "undefined-project-symbol", "cycle", "no-document"}
     assert {edge["to"] for edge in shop["graph"]["edges"] if edge["end"] == "dead-end"} == {
         "src/Api/Program.cs#local 4", C + "Core/Summary#Default.", C + "``/Program#`<Main>$`().(args)"}

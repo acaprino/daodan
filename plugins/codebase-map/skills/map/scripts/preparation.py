@@ -270,8 +270,12 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
            "line": "go mod download"},  # each module is its own; the toolchain go.mod names comes from its proxy
     "dotnet": {"marks": (), "suffixes": (".sln", ".slnx", ".csproj", ".fsproj", ".vbproj"), "needs": ["dotnet"],
                "before": "export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1",
-               "error": "error", "hosts": (),  # a folder's solution, else its one project
-               "line": "dotnet restore $(ls *.slnx *.sln 2>/dev/null | head -n 1)"},
+               # a folder's solution, else its one project; a solution that does not restore (one project needs
+               # what the container lacks, a workload) restores each project it lists, and its failure stays a gap
+               "error": "error", "hosts": (),
+               "line": "{ s=$(ls *.slnx *.sln 2>/dev/null | head -n 1); dotnet restore $s || { [ -n \"$s\" ] &&"
+                       " dotnet sln \"$s\" list | tail -n +3 | tr '\\\\' / | while read -r p; do dotnet restore"
+                       " \"$p\"; done; false; }; }"},
     "cargo": {"marks": ("Cargo.toml",), "needs": ["rust"], "error": "^error|^Caused by|^  ", "hosts": (),
               "line": "if [ -f Cargo.lock ]; then cargo fetch --locked; else cargo fetch; fi"},
 }
