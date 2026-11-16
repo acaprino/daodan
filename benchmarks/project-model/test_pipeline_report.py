@@ -168,12 +168,18 @@ class Render(unittest.TestCase):
         self.assertIn("| x | a \\| b c |", pipeline_report.render(report, ["a.json"]).splitlines())
 
 
+CODE = {"commit": "c" * 40, "tree": "a" * 40, "differs": []}
+EDITED = {"commit": "c" * 40, "tree": "b" * 40, "differs": ["x/1.py", "x/2.py", "x/3.py", "x/4.py"]}
+UNKNOWN = "Codice non registrato in un giro: non registrato → non registrato."
+
+
 class Compare(unittest.TestCase):
     def test_state_changes_and_holes_per_language_and_case(self):
         old = pipeline_report.build(ROUND)
         new = pipeline_report.build({**{name: case for name, case in ROUND.items() if name != "py-three"},
                                      **LATER, "sys-new": {"seconds": 1.0, "steps": {}}})
         self.assertEqual(pipeline_report.compare(old, new), [
+            UNKNOWN,
             "Per linguaggio:",
             "- java: fresh 0 → 1, failed 1 → 0",
             "- kotlin: buchi 10 → 3 (-7)",
@@ -184,31 +190,54 @@ class Compare(unittest.TestCase):
 
     def test_no_difference(self):
         report = pipeline_report.build(ROUND)
-        self.assertEqual(pipeline_report.compare(report, report), ["Nessuna differenza."])
+        self.assertEqual(pipeline_report.compare(report, report), [UNKNOWN, "Nessuna differenza."])
+
+    def test_a_comparison_says_first_whether_the_two_rounds_ran_the_same_code(self):
+        """The tree of the copy each round uploaded decides: a commit alone does not, the copy may differ from it."""
+        report = pipeline_report.build(ROUND)
+        same, edited = {**report, "code": {"a.json": CODE}}, {**report, "code": {"b.json": EDITED}}
+        self.assertEqual(pipeline_report.compare(same, {**report, "code": {"c.json": CODE}}),
+                         ["Stesso codice: commit `cccccccccccc`, albero `aaaaaaaaaaaa`, uguale al commit.",
+                          "Nessuna differenza."])
+        self.assertEqual(pipeline_report.compare(same, edited)[0],
+                         "Codice diverso: commit `cccccccccccc`, albero `aaaaaaaaaaaa`, uguale al commit → commit "
+                         "`cccccccccccc`, albero `bbbbbbbbbbbb`, diverso dal commit in 4 percorsi (`x/1.py`, "
+                         "`x/2.py`, `x/3.py`, …).")
+        self.assertEqual(pipeline_report.compare(same, {**report, "code": {"b.json": None}})[0],
+                         "Codice non registrato in un giro: commit `cccccccccccc`, albero `aaaaaaaaaaaa`, uguale al "
+                         "commit → non registrato.")
+        mixed = {**report, "code": {"a.json": CODE, "b.json": EDITED}}  # a round made of files of two codes
+        self.assertTrue(pipeline_report.compare(same, mixed)[0].startswith("Codice diverso: "))
 
 
 class Main(unittest.TestCase):
     def test_later_files_replace_cases_and_the_numbers_are_written_beside_the_markdown(self):
         with tempfile.TemporaryDirectory() as folder:
             first, second, out = Path(folder) / "a.json", Path(folder) / "b.json", Path(folder) / "round.md"
-            first.write_text(json.dumps(ROUND), encoding="utf-8")
-            second.write_text(json.dumps(LATER), encoding="utf-8")
+            first.write_text(json.dumps({"code": EDITED, **ROUND}), encoding="utf-8")  # the driver's code beside
+            second.write_text(json.dumps(LATER), encoding="utf-8")  # a round from before the driver wrote it
             pipeline_report.main([str(first), str(second), "--out", str(out)])
             report = json.loads(out.with_suffix(".json").read_text(encoding="utf-8"))
             self.assertEqual(report["by_case"]["jvm-two"]["languages"]["java"], {"state": "fresh", "holes": 0})
             self.assertEqual(report["cases"]["run"], 3)
-            self.assertEqual(out.read_text(encoding="utf-8"), pipeline_report.render(report, ["a.json", "b.json"]))
+            self.assertEqual(report["code"], {"a.json": EDITED, "b.json": None})
+            text = out.read_text(encoding="utf-8")
+            self.assertEqual(text, pipeline_report.render(report, ["a.json", "b.json"]))
+            self.assertIn("Codice di `a.json`: commit `cccccccccccc`, albero `bbbbbbbbbbbb`, diverso dal commit in 4 "
+                          "percorsi (`x/1.py`, `x/2.py`, `x/3.py`, …).", text.splitlines())
+            self.assertIn("Codice di `b.json`: non registrato.", text.splitlines())
 
     def test_the_comparison_prints_on_a_console_that_is_not_utf8(self):
         with tempfile.TemporaryDirectory() as folder:
             first, second = Path(folder) / "a.json", Path(folder) / "b.json"
-            first.write_text(json.dumps(ROUND), encoding="utf-8")
-            second.write_text(json.dumps({**ROUND, **LATER}), encoding="utf-8")
+            first.write_text(json.dumps({"code": CODE, **ROUND}), encoding="utf-8")
+            second.write_text(json.dumps({"code": EDITED, **ROUND, **LATER}), encoding="utf-8")
             done = subprocess.run([sys.executable, pipeline_report.__file__, str(second), "--compare", str(first)],
                                   capture_output=True, env={**os.environ, "PYTHONIOENCODING": "cp1252"})
             self.assertEqual(done.returncode, 0, done.stderr.decode(errors="replace"))
-            self.assertIn("- jvm-two: java failed → fresh; kotlin buchi 10 → 3 (-7)",
-                          done.stdout.decode("utf-8").splitlines())
+            said = done.stdout.decode("utf-8").splitlines()
+            self.assertIn("- jvm-two: java failed → fresh; kotlin buchi 10 → 3 (-7)", said)
+            self.assertTrue(said[1].startswith("Codice diverso: commit `cccccccccccc`, albero `aaaaaaaaaaaa`"), said)
 
 
 if __name__ == "__main__":

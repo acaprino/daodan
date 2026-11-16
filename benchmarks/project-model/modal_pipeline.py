@@ -22,6 +22,8 @@ same image, pinned by the same digest:
 A family's fixtures run in groups of `--chunk` (4), each group in a function call of its own; each real repository (its clone from the archive `modal_native.py
 prepare` keeps on the volume) has its own. Per case the result holds the pre-map's score against
 `expected.json`, each source's state, the gaps, each step's result, the dynamic step's gaps, the events by kind and the seconds.
+Beside the cases, `code` names the Daodan code the round ran (`code`): the checkout's commit, the tree of the copy
+it uploaded and the paths where the two differ.
 
     python -m modal run benchmarks/project-model/modal_pipeline.py --cases js-npm-single,sys-meson --out OUT.json
     python -m modal run benchmarks/project-model/modal_pipeline.py --cases js,py,jvm,sys,mix,real --out OUT.json
@@ -65,20 +67,50 @@ DOCKER = ("https://download.docker.com/linux/static/stable/x86_64/docker-29.10.0
 ENGINE = "/daodan/engine"  # where its binaries lie in a sandbox
 VM = {"vm_runtime": True}  # the `experimental_options` of a VM Sandbox (client 1.5: no `runtime` argument yet)
 
+SCRIPTS = "plugins/codebase-map/skills/map/scripts"
+# what a round uploads, each with its path in the repository: DAODAN_SCRIPTS names the tool's scripts to run when
+# not the checkout's (a committed copy while files are edited); the driver itself goes with its function
+UPLOADED = ((Path(os.environ.get("DAODAN_SCRIPTS") or REPO / SCRIPTS), SCRIPTS),
+            (HERE / "fixtures", "benchmarks/project-model/fixtures"),
+            (HERE / "score.py", "benchmarks/project-model/score.py"),
+            (HERE / "modal_pipeline.py", "benchmarks/project-model/modal_pipeline.py"))
+
 image = (modal.Image.debian_slim(python_version="3.13")
          .apt_install("git", "ca-certificates", "xz-utils")
          .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"))
 if LOCAL:
-    # DAODAN_SCRIPTS: the tool's scripts to run, when not the checkout's (a committed copy while files are edited).
-    image = (image.add_local_dir(os.environ.get("DAODAN_SCRIPTS") or REPO / "plugins/codebase-map/skills/map/scripts",
-                                 REMOTE_SCRIPTS, ignore=["**/__pycache__/**"])
-             .add_local_dir(HERE / "fixtures", f"{REMOTE_PM}/fixtures")
-             .add_local_file(HERE / "score.py", f"{REMOTE_PM}/score.py"))
+    image = (image.add_local_dir(UPLOADED[0][0], REMOTE_SCRIPTS, ignore=["**/__pycache__/**"])
+             .add_local_dir(UPLOADED[1][0], f"{REMOTE_PM}/fixtures")
+             .add_local_file(UPLOADED[2][0], f"{REMOTE_PM}/score.py"))
     if os.environ.get("DAODAN_FOLDER"):  # a folder of this PC as one more case (`--folder-out`)
         image = image.add_local_dir(os.environ["DAODAN_FOLDER"], REMOTE_FOLDER,
                                     ignore=["**/__pycache__/**", "**/node_modules/**", "**/.git/**"])
 app = modal.App("daodan-pipeline", image=image)
 volume = modal.Volume.from_name("daodan-flow-results")
+
+
+def code(repo: Path, parts) -> dict:
+    """The Daodan code a round runs: the checkout's `commit`, the `tree` git makes of the copy it uploads (`parts`,
+    each a local file or folder and its path in the repository: what git tracks or would, with the checkout's line
+    endings, `__pycache__` aside, wherever the copy lies) and the paths where that copy `differs` from the commit."""
+    def git(*args, index: str = "index", cwd: Path = repo) -> str:
+        return subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True,
+                              env={**os.environ, "GIT_INDEX_FILE": str(Path(temp) / index)}).stdout.strip()
+
+    skip = ":(exclude,glob)**/__pycache__/**"
+    with tempfile.TemporaryDirectory() as temp:
+        commit, store = git("rev-parse", "HEAD"), git("rev-parse", "--absolute-git-dir")
+        for local, rel in parts:
+            if Path(local).resolve() == (repo / rel).resolve():
+                git("add", "-A", "--", rel, skip)
+            else:  # elsewhere: its own tree, read under its path
+                git(f"--git-dir={store}", f"--work-tree={local}", "-c",
+                    f"core.attributesFile={repo / '.gitattributes'}", "add", "-A", "--", ".", skip, index="own",
+                    cwd=Path(local))
+                git("read-tree", f"--prefix={rel}/", git("write-tree", index="own"))
+        tree = git("write-tree")
+        differs = git("diff-index", "--cached", "--name-only", commit, "--", *(rel for _, rel in parts))
+    return {"commit": commit, "tree": tree, "differs": differs.splitlines()}
 
 
 def _phase(sandbox, name: str, script: str, env: dict, timeout: float, out_dir: Path) -> dict:
@@ -508,6 +540,7 @@ def main(cases: str = "", out: str = "", chunk: int = 4, folder_out: str = ""):
             print(line, flush=True)
         print("ran the folder in", answer["seconds"], "s ->", target, flush=True)
         return
+    ran = code(REPO, UPLOADED)  # as uploaded when the app started, just before
     fixtures = sorted(p.name for p in (HERE / "fixtures").iterdir() if (p / "expected.json").is_file())
     real = {n for n in fixtures if (HERE / "fixtures" / n / "source.json").is_file()}
     batches = []
@@ -527,5 +560,5 @@ def main(cases: str = "", out: str = "", chunk: int = 4, folder_out: str = ""):
         results.update(answer)
         for name, result in answer.items():
             print(name, result.get("error") or {key: result[key] for key in ("units", "seconds")}, flush=True)
-    Path(out).write_text(json.dumps(results, indent=1), encoding="utf-8")
+    Path(out).write_text(json.dumps({"code": ran, **results}, indent=1), encoding="utf-8")
     print("ran", len(results), "->", out, flush=True)

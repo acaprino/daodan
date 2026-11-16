@@ -5,7 +5,9 @@
 The files are the driver's outputs; a case in a later file replaces the same case of an earlier one. The report is
 written as Markdown and, beside it with the suffix `.json`, as the same numbers (default: `<last file>.report.md`).
 `--compare` takes the `.json` of an earlier report, or an earlier round's output, and prints what changed per
-language and per case: states, and holes up or down.
+language and per case: states, and holes up or down. The report names the Daodan code each file ran (the
+driver's `code`: commit, tree of the copy it uploaded, paths where they differ), and a comparison says first
+whether the two rounds ran the same code: the same tree, not the same commit.
 """
 from __future__ import annotations
 
@@ -126,6 +128,17 @@ def build(round_: dict) -> dict:
     }
 
 
+def _code(code: dict | None) -> str:
+    """The Daodan code of a round's file, as the report names it."""
+    if not code:
+        return "non registrato"
+    differs = code.get("differs") or []
+    return f"commit `{code['commit'][:12]}`, albero `{code['tree'][:12]}`, " + (
+        f"diverso dal commit in {len(differs)} percorsi ("
+        + ", ".join([*(f"`{path}`" for path in differs[:TOP]), *(["…"] if len(differs) > TOP else [])]) + ")"
+        if differs else "uguale al commit")
+
+
 def num(value) -> str:
     """A number the Italian way: 1.234 and 1.234,5."""
     text = f"{value:,.1f}" if isinstance(value, float) else f"{value:,}"
@@ -159,6 +172,8 @@ def render(report: dict, files: list) -> str:
     states = STATES + tuple(sorted({state for total in languages.values() for state in total["states"]}
                                    - set(STATES)))
     lines = ["# Giro della pipeline sul corpus", "", "File: " + ", ".join(f"`{name}`" for name in files) + ".", "",
+             *[f"Codice di `{name}`: {_code(code)}." for name, code in (report.get("code") or {}).items()],
+             *([""] if report.get("code") else []),
              "## Casi", "",
              f"- Eseguiti: {num(cases['run'])}; falliti: {num(len(cases['failed']))}.",
              f"- Secondi: {num(float(cases['seconds']['total']))} in totale; mediana "
@@ -215,7 +230,14 @@ def _moved(label: str, old: int, new: int) -> str:
 
 
 def compare(old: dict, new: dict) -> list[str]:
-    """What changed from the report `old` to `new`, per language and per case: states, holes up or down."""
+    """What changed from the report `old` to `new`, after whether they ran the same Daodan code (one tree each);
+    per language and per case: states, holes up or down."""
+    codes = [list((report.get("code") or {"": None}).values()) for report in (old, new)]
+    trees = [{(code or {}).get("tree") for code in each} for each in codes]
+    named = ["; ".join(map(_code, each)) for each in codes]
+    head = (f"Stesso codice: {named[1]}." if trees[0] == trees[1] and len(trees[0]) == 1 and None not in trees[0]
+            else f"{'Codice non registrato in un giro' if None in trees[0] | trees[1] else 'Codice diverso'}: "
+                 f"{named[0]} → {named[1]}.")
     by_language, by_case = [], []
     for language in sorted(set(old["languages"]) | set(new["languages"])):
         before, after = (report["languages"].get(language) or {"states": {}, "holes": {}} for report in (old, new))
@@ -244,8 +266,8 @@ def compare(old: dict, new: dict) -> list[str]:
                 parts.append(_moved(f"{language} buchi", was["holes"], now["holes"]))
         if parts:
             by_case.append(f"- {name}: " + "; ".join(parts))
-    return [*(["Per linguaggio:", *by_language] if by_language else []),
-            *(["Per caso:", *by_case] if by_case else [])] or ["Nessuna differenza."]
+    return [head, *(["Per linguaggio:", *by_language] if by_language else []),
+            *(["Per caso:", *by_case] if by_case else []), *([] if by_language or by_case else ["Nessuna differenza."])]
 
 
 def main(argv: list) -> None:
@@ -254,17 +276,21 @@ def main(argv: list) -> None:
     parser.add_argument("--out", help="the Markdown to write; the numbers go beside it as .json")
     parser.add_argument("--compare", help="the .json of an earlier report, or an earlier round's output")
     args = parser.parse_args(argv)
-    round_ = {}
+    round_, code = {}, {}
     for file in args.files:
-        round_.update(json.loads(Path(file).read_text(encoding="utf-8")))
-    report = build(round_)
+        cases = json.loads(Path(file).read_text(encoding="utf-8"))
+        code[Path(file).name] = cases.pop("code", None)  # the driver's, beside the cases
+        round_.update(cases)
+    report = {**build(round_), "code": code}
     out = Path(args.out) if args.out else Path(args.files[-1]).with_suffix(".report.md")
     out.with_suffix(".json").write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding="utf-8")
     out.write_text(render(report, [Path(file).name for file in args.files]), encoding="utf-8")
     print(out, out.with_suffix(".json"))
     if args.compare:
         old = json.loads(Path(args.compare).read_text(encoding="utf-8"))
-        print("\n".join(compare(old if "by_case" in old else build(old), report)))
+        if "by_case" not in old:  # a round's output, its code beside its cases
+            old = {"code": {Path(args.compare).name: old.pop("code", None)}, **build(old)}
+        print("\n".join(compare(old, report)))
 
 
 if __name__ == "__main__":
