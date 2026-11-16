@@ -982,19 +982,21 @@ class PreparedEnvironmentTests(unittest.TestCase):
             "tool @ file:///tmp/tool\n\n# note\n", encoding="utf-8")
         self.names = ["pyproject.toml", "api/requirements.txt", "api/app.py"]
         self.cache = Path(self.temp.name).resolve() / "cache"
-        self.commands = []
+        self.commands, self.refused = [], None
 
     def run_uv(self, command, **_kwargs):
         self.commands.append(command[1:])
         if command[1] == "venv":
+            if self.refused:
+                return subprocess.CompletedProcess(command, 2, "", self.refused)
             Path(command[2]).mkdir(parents=True)
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    def prepare(self):
+    def prepare(self, python=None, names=None):
         with mock.patch.object(engine_tools, "shared_cache_dir", return_value=self.cache), \
                 mock.patch.object(shutil, "which", return_value="uv"), \
                 mock.patch.object(subprocess, "run", side_effect=self.run_uv):
-            return resolve_edges.python_environment(self.root, self.names)
+            return resolve_edges.python_environment(self.root, names or self.names, python)
 
     def test_only_package_lines_are_declared_requirements(self):
         manifests = resolve_edges.python_manifests(self.root, self.names)
@@ -1018,6 +1020,24 @@ class PreparedEnvironmentTests(unittest.TestCase):
         (self.root / "api/requirements.txt").write_text("fastapi==0.116.0\n", encoding="utf-8")
         self.assertNotEqual(self.prepare(), first)
         self.assertIsNone(resolve_edges.python_environment(self.root, ["api/app.py"]))
+
+    def test_a_python_the_project_states_is_the_one_uv_resolves_for_its_environment(self):
+        """The Python the run's folder states where Daodan's interpreter is not one it admits: uv resolves the
+        statement as `uv sync` does (an installed Python that matches, else its download) into another
+        environment, which a project that declares no package gets too. What uv cannot provide fails with its
+        words."""
+        own = self.prepare()
+        stated = self.prepare(">=3.14,<4.0")
+        self.assertNotEqual(stated, own)
+        self.assertEqual([command for command in self.commands if command[0] == "venv"][-1],
+                         ["venv", str(stated), "--python", ">=3.14,<4.0"])
+        self.assertEqual(self.prepare(">=3.14,<4.0"), stated)
+        bare = self.prepare("3.14", ["api/app.py"])
+        self.assertTrue(bare.is_relative_to(self.cache / "python"))
+        self.assertEqual(self.commands[-1], ["venv", str(bare), "--python", "3.14"])  # nothing to install
+        self.refused = "error: No interpreter found for Python 3.99 in managed installations or search path"
+        with self.assertRaisesRegex(subprocess.SubprocessError, "uv could not provide Python 3.99: error: No interp"):
+            self.prepare("3.99")
 
 
 class MultiLanguageTests(unittest.TestCase):

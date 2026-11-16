@@ -108,3 +108,39 @@ def test_the_checker_pass_reads_the_hover_at_each_member_s_name():
     assert python_unbound.kind("```python\n(function) def exit(\n    status: int = None,\n    /\n) -> NoReturn\n```") \
         == ("bound", "function exit")
     assert python_unbound.kind("") is None and python_unbound.kind("class list(): ...") is None
+
+
+def test_a_name_an_annotation_reads_before_its_definition_is_the_module_s_one_definition(tmp_path):
+    """real-app-full-stack-fastapi: `items: list[Item]` in `User`, `Item` defined below it. Python 3.14 evaluates an
+    annotation when it is read (PEP 649), and scip-python 0.6.8, whose Pyright predates 3.14, gives `Item` a local
+    it defines nowhere: the name is the module's one top-level definition of it. A name outside an annotation is
+    evaluated where it is written and keeps no hop."""
+    user, item = APP + "`app.models`/User#", APP + "`app.models`/Item#"
+    text = "class User:\n    items: list[Item] = []\nalias = Item\n\n\nclass Item:\n    pass\n"
+    index = run(tmp_path, {"app/models.py": text}, [document("app/models.py", [
+        occurrence(1, 6, 10, user, True), occurrence(2, 4, 9, user + "items.", True),
+        occurrence(2, 11, 15, STDLIB + "builtins/list#"), occurrence(2, 16, 20, "local 1"),
+        occurrence(3, 0, 5, APP + "`app.models`/alias.", True), occurrence(3, 8, 12, "local 2"),
+        occurrence(6, 6, 10, item, True)])])
+    hops = python.hops(index)
+    assert hops["app/models.py#local 1"] == [(item, "deferred-annotation")]
+    assert "app/models.py#local 2" not in hops
+    assert [cls for cls, _detail, _chain in ends(index, "app/models.py#local 1", hops)] == ["project-value"]
+
+
+def test_each_run_takes_the_python_its_folder_states_first_as_uv_reads_it():
+    """real-app-full-stack-fastapi: the workspace's `.python-version` states 3.14 before its member's requires-python;
+    without it, the member's requires-python. The image a Dockerfile names is not what uv reads."""
+    record = {"units": [{"kind": "python-project", "root": "backend", "manifest": "backend/pyproject.toml",
+                         "sources": [], "name": "app"}],
+              "workspace": [{"tool": "uv", "root": "."}],
+              "toolchains": [{"tool": "python", "version": "3.14", "declared_in": "backend/Dockerfile"},
+                             {"tool": "python", "version": ">=3.14,<4.0", "declared_in": "backend/pyproject.toml"},
+                             {"tool": "python", "version": "3.14", "declared_in": ".python-version"}]}
+    [unit] = python.structure(record)["units"]
+    assert unit["root"] == "" and unit["python"] == {"version": "3.14", "declared_in": ".python-version"}
+    record["toolchains"].pop()
+    [unit] = python.structure(record)["units"]
+    assert unit["python"] == {"version": ">=3.14,<4.0", "declared_in": "backend/pyproject.toml"}
+    record["toolchains"] = []
+    assert "python" not in python.structure(record)["units"][0]

@@ -581,20 +581,23 @@ def _declared_requirements(project_root: Path, manifests: list[str], uv: str) ->
     return sorted(set(kept))
 
 
-def python_environment(project_root: Path, names) -> Path | None:
+def python_environment(project_root: Path, names, python: str | None = None) -> Path | None:
     """The project's declared Python packages in an environment of the shared directory.
 
     Built once per set of manifests and interpreter, from wheels only: no package
     build script and no project code runs, and nothing is written into the project.
-    None when the project declares no package, uv is missing, the disk is short or
-    no package could be installed.
+    The interpreter is Daodan's, else `python`, the Python the project states, which
+    uv resolves as `uv sync` does (an installed one that matches, else its download):
+    a project that declares no package then gets the interpreter alone, and one uv
+    cannot provide fails with uv's words. None when the project declares no package,
+    uv is missing, the disk is short or no package could be installed.
     """
     project_root = Path(project_root).resolve()
     manifests = python_manifests(project_root, names)
     uv = shutil.which("uv")
-    if not manifests or uv is None:
+    if not (manifests or python) or uv is None:
         return None
-    version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    version = python or f"{sys.version_info.major}.{sys.version_info.minor}"
     digest = hashlib.sha256(f"{version}\0{_platform()}\0".encode("utf-8"))
     for name in manifests:
         digest.update(name.encode("utf-8") + b"\0" + (project_root / name).read_bytes() + b"\0")
@@ -608,8 +611,8 @@ def python_environment(project_root: Path, names) -> Path | None:
         print(f"the project's Python packages were not installed: {free / 2**30:.1f} GB free in "
               f"{destination.parent}, at least {ENVIRONMENT_MIN_FREE / 2**30:.0f} GB are needed", flush=True)
         return None
-    requirements = _declared_requirements(project_root, manifests, uv)
-    if not requirements:
+    requirements = _declared_requirements(project_root, manifests, uv) if manifests else []
+    if not (requirements or python):
         return None
     print(f"installing the project's Python packages into {destination} (first use)", flush=True)
     shutil.rmtree(destination, ignore_errors=True)
@@ -618,16 +621,21 @@ def python_environment(project_root: Path, names) -> Path | None:
         return subprocess.run([uv, *arguments], stdin=subprocess.DEVNULL, capture_output=True, text=True,
                               timeout=timeout)
 
-    if run("venv", str(destination), "--python", version).returncode != 0:
+    made = run("venv", str(destination), "--python", version)
+    if made.returncode != 0:
+        if python:
+            raise subprocess.SubprocessError(f"uv could not provide Python {python}: {made.stderr.strip()[-400:]}")
         return None
-    install = ("pip", "install", "--python", str(destination), "--only-binary", ":all:")
-    listed = destination / "daodan-requirements.txt"
-    listed.write_text("\n".join(requirements) + "\n", encoding="utf-8")
     installed = len(requirements)
-    if run(*install, "-r", str(listed)).returncode != 0:
-        # One package without a wheel must not cost the others.
-        installed = sum(1 for requirement in requirements if run(*install, requirement, timeout=600).returncode == 0)
-    if installed == 0:
+    if requirements:
+        install = ("pip", "install", "--python", str(destination), "--only-binary", ":all:")
+        listed = destination / "daodan-requirements.txt"
+        listed.write_text("\n".join(requirements) + "\n", encoding="utf-8")
+        if run(*install, "-r", str(listed)).returncode != 0:
+            # One package without a wheel must not cost the others.
+            installed = sum(1 for requirement in requirements
+                            if run(*install, requirement, timeout=600).returncode == 0)
+    if installed == 0 and not python:
         shutil.rmtree(destination, ignore_errors=True)
         return None
     marker.write_text(json.dumps({"manifests": manifests, "requirements": len(requirements), "installed": installed,

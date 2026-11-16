@@ -711,7 +711,7 @@ def test_python_takes_its_runs_roots_and_manifests_and_states_what_its_environme
               "source_roots": ["lib"]}]
     asked = []
 
-    def environment(root, names):
+    def environment(root, names, python=None):
         asked.append((Path(root), list(names)))
         raise OSError("no room for the environment")
 
@@ -752,3 +752,51 @@ def test_a_run_of_the_whole_checkout_leaves_no_python_file_outside(sandbox):
     assert result["configs"] == [""] and "gaps" not in result
     assert python.missing(None, ["tools/x.py"], python.tasks(result["configs"])) == {}
     assert python.missing(None, ["tools/x.py"]) == {}
+
+
+@pytest.mark.parametrize("contained", [False, True])
+def test_python_reads_the_project_on_the_python_its_folder_states_and_says_which(sandbox, contained):
+    """Where Daodan's interpreter is not one the run's folder states (`python`, from `structure`), the environment
+    is built on the statement (uv resolves it, `rx.python_environment`), and the run says the version it ran with
+    and the statement it came from; the checker's pass parses the project with that interpreter. In a container
+    the image's Python reads the copy, the checker's pass beside scip-python: a statement it does not admit is a
+    gap."""
+    project = _project(sandbox, "python")
+    _tools(project, "python")
+    built, env = [], _environment(sandbox["root"])
+    (env / "pyvenv.cfg").write_text("home = /opt/python/bin\nversion_info = 3.99.1\n", encoding="utf-8")
+
+    def environment(root, names, python=None):
+        built.append(python)
+        return env
+
+    sandbox["monkeypatch"].setattr(rx, "python_environment", environment)
+    stated = {"version": "3.99", "declared_in": ".python-version"}
+    units = [{"root": "", "manifests": [], "python": stated}]
+    unbound = '["app.py", 1, 2, "Unknown", ""]\n'
+    if contained:
+        sandbox["web"].pages.update(_node_release(platform=f"linux-{container.architecture()}"))
+        sandbox["monkeypatch"].setattr(python, "RUNS_HERE", False)
+        box = _contained(sandbox, index=FIXTURES / "python/index.scip", execute="DAODAN_PYTHON 3.13.18\n",
+                         unbound=unbound)
+    else:
+        sandbox["fake"].index = FIXTURES / "python/index.scip"
+    work = sandbox["root"] / "work"
+    result = python.index(project, work, units=units)
+    [run] = result["runs"]
+    assert built == ["3.99"]
+    if not contained:
+        assert run["python"] == "3.99.1" and run["python_request"] == stated and "gaps" not in result
+        checker = next(command for command, _cwd in sandbox["fake"].calls if str(python.UNBOUND) in command)
+        assert checker[:4] == [str(env / "bin" / "python"), "-I", "-S", str(python.UNBOUND)]
+        return
+    assert run["python"] == "3.13.18" and "python_request" not in run
+    [gap] = result["gaps"]
+    assert gap["kind"] == "python_unavailable" and gap["path"] == ".python-version"
+    assert "3.99" in gap["detail"] and "3.13.18" in gap["detail"]
+    inputs = box.asked[0]["inputs"]
+    assert inputs["/daodan/tools/python_unbound.py"] == python.UNBOUND
+    langserver = Path(inputs["/daodan/tools/pyright.path"]).read_text(encoding="utf-8")
+    assert langserver == "/daodan/pyright/node_modules/pyright/langserver.index.js"
+    assert "/daodan/pyright/node_modules/pyright/package.json" in inputs
+    assert (work / "scip-python-0.unbound.jsonl").read_text(encoding="utf-8") == unbound  # beside its index

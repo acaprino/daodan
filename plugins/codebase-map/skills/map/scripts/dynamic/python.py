@@ -155,17 +155,21 @@ def _python(stated: list[dict], picked: bool = False) -> tuple[dict | None, dict
     return None, None if picked else install
 
 
-def _request(stated: list[dict], env: str) -> dict | None:
-    """The stated Python uv sync reads first in `env`, its folder, when the image's is not it: the nearest version
-    file there or above, else the nearest requires-python."""
+def stated_python(stated: list[dict], env: str) -> dict | None:
+    """The stated Python uv sync reads first in `env`, its folder: the nearest version file there or above, else
+    the nearest requires-python. The Python analyzer reads the project on it too (`indexers.python`)."""
     def read(names, where=None):
         found = [item for item in stated if posixpath.basename(item["declared_in"].split("#", 1)[0]) in names
                  and (where is None or _above(where, item["declared_in"]))]
         return sorted(found, key=lambda item: -item["declared_in"].count("/"))
     item = next(iter(read(VERSION_FILES, env) or read(("pyproject.toml",))), None)
-    if item is None or admits(str(item["version"]), PYTHON) is not False:
-        return None
-    return {"version": item["version"], "declared_in": item["declared_in"]}
+    return {"version": item["version"], "declared_in": item["declared_in"]} if item else None
+
+
+def _request(stated: list[dict], env: str) -> dict | None:
+    """`stated_python` when the image's Python is not one it admits."""
+    item = stated_python(stated, env)
+    return item if item and admits(str(item["version"]), PYTHON) is False else None
 
 
 def plan(record: dict, files: list[str], read) -> dict:

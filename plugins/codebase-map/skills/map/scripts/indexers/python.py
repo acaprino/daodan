@@ -6,7 +6,10 @@ that project's folder. A file outside every project has no document (`missing` s
 project itself. Run from the root, a Python project kept in a folder (`svc/app`, imported as `app`) would name
 its modules differently where they are defined and where they are imported. Each run has that project's
 declared packages, from the manifests its unit states (`manifests`), in the engine pass's environment
-(`python_environment`: wheels only) described to it as an environment file, so it never asks pip. A source
+(`python_environment`: wheels only) described to it as an environment file, so it never asks pip. The
+environment's interpreter is Daodan's, else, where Daodan's is not one it admits, the Python the unit's folder
+states first as uv reads it (`structure`: a version file, else requires-python), which uv resolves as `uv sync`
+does; the run says the version it ran with (`python`) and that statement (`python_request`). A source
 root is not found unless Pyright is told: without it no absolute import of the project's own package resolves.
 The mirror gets a `pyrightconfig.json` with the source roots the unit states (`source_roots`), else `src`
 where it holds a package, each as a root and an extra path, unless the project declares a Pyright
@@ -16,8 +19,10 @@ is part of each project symbol, so node ids stay the same from one snapshot to t
 
 Where scip-python cannot start (Windows: `RUNS_HERE`), it runs in a container (`container.run_in_container`,
 `IMAGE`) over the copy of the project, with no network: the copy carries Node for Linux, checked like the
-host's, scip-python as npm installed it on the host, and the site-packages of the host's environment, which the
-image's Python adds to its path. Without a container engine Python is `unavailable`, and nothing is downloaded.
+host's, scip-python and Pyright as npm installed them on the host, and the site-packages of the host's
+environment, which the image's Python adds to its path. The image's Python reads the copy, the checker's pass
+after the index too: a Python the unit states that it is not is a gap. Without a container engine Python is
+`unavailable`, and nothing is downloaded.
 
 `hops` reads, from `code_graph.Index`, what scip-python leaves implicit; each hop carries its own tag:
 - `import-binding`: an imported name (`from m import a`, `a as b`) is a `local` the index defines nowhere, with
@@ -36,13 +41,16 @@ image's Python adds to its path. Without a container engine Python is `unavailab
   them.
 - `source-root`: a module imported through a source root the run tells Pyright (`semver`, under `src`) is named
   by its import where it is imported and by its path (`src.semver`) where it is defined: it leads to that one.
+- `deferred-annotation`: a bare name in an annotation that the module defines once at its top level, below it
+  (`items: list[Item]` above `class Item`), is a `local` the index defines nowhere: Python 3.14 evaluates an
+  annotation when it is read (PEP 649), and scip-python's Pyright predates 3.14. It leads to that definition.
 
 `classify` reads what scip-python labels wrongly (0.6.8): a symbol of the project's package whose module is a
 file of a distribution the run's environment lists (a name the package's `__init__` re-exports: `sa.UUID`,
 `typer.Typer`, `pytest.fail`) is that distribution's; the namespace alone of a module, which it gives the
 attributes the interpreter sets on every module (`__name__`, `__file__`, `__doc__`), is the interpreter's
-(`python-stdlib`). After the index, where scip-python runs here, the checker's pass (`python_unbound.py`:
-Pyright `PYRIGHT`'s language server over the same environment) says of each member the project reads what the
+(`python-stdlib`). After the index, the checker's pass (`python_unbound.py`: Pyright `PYRIGHT`'s language server
+over the same environment, the files parsed by its interpreter) says of each member the project reads what the
 checker gives it, beside the index (`<index>.unbound.jsonl`): a member where the index has no occurrence
 (`unanswered`) or gives a local it defines nowhere (`classify`) carries that cause (`UNBOUND_CAUSES`).
 """
@@ -79,20 +87,27 @@ IMAGE = "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134c
 CONTAINER_MEMORY = 2 * 2**30
 OUT = "/daodan/out"
 # The container's script: $1 the project's name, $2 its version, $3 its folder. The image's Python adds the host
-# environment's site-packages (`/daodan/env`), where Pyright asks it for its search paths.
+# environment's site-packages (`/daodan/env`), where Pyright asks it for its search paths; after the index, the
+# checker's pass, where its Pyright was carried (`pyright.path`).
 BOX = r'''set -u
 mkdir -p /daodan/node /daodan/out || exit 70
 tar -xzf /daodan/tools/node.tar.gz -C /daodan/node --strip-components=1 || exit 70
 site=$(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])') || exit 70
 echo "import site; site.addsitedir('/daodan/env')" > "$site/daodan-env.pth" || exit 70
+echo "DAODAN_PYTHON $(python3 -c 'import platform; print(platform.python_version())')"
 cd "/work/$3" || exit 70
 if [ -f /daodan/tools/pyrightconfig.json ] && [ ! -e pyrightconfig.json ]; then
   cp /daodan/tools/pyrightconfig.json . || exit 70
 fi
-NODE_OPTIONS=--max-old-space-size=1536 /daodan/node/bin/node "$(cat /daodan/tools/scip-python.path)" index . \
+export NODE_OPTIONS=--max-old-space-size=1536
+/daodan/node/bin/node "$(cat /daodan/tools/scip-python.path)" index . \
   --project-name "$1" --project-version "$2" --output /daodan/out/index.scip --environment /daodan/tools/environment.json
 code=$?
 echo "DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)"
+if [ $code -eq 0 ] && [ -f /daodan/tools/pyright.path ]; then
+  python3 -I -S /daodan/tools/python_unbound.py /daodan/node/bin/node "$(cat /daodan/tools/pyright.path)" . \
+    "$(command -v python3)" > /daodan/out/unbound.jsonl || echo "DAODAN_UNBOUND $?"
+fi
 exit $code
 '''
 ASSIGNED_TYPE = re.compile(r"^\s*(\w+)\s*=\s*type\(\s*(\w+)\s*\)\s*(#.*)?$")
@@ -301,6 +316,14 @@ def _rooted(index) -> dict:
     return out
 
 
+def _annotation(index, rel: str, occurrence) -> bool:
+    """Whether an occurrence lies in an annotation: tree-sitter's `type`, a variable's, a parameter's, a return's."""
+    node = index.node(rel, occurrence, "python")
+    while node is not None and node.type != "type":
+        node = node.parent
+    return node is not None
+
+
 def hops(index) -> dict:
     """Hops `{key: [(target key, tag)]}` for what scip-python leaves implicit; see the module's docstring."""
     import builtins
@@ -334,6 +357,12 @@ def hops(index) -> dict:
                                                                          implementation.start)), "rebinding"))
         for target, o in _initialized(index, rel, ordered, by_line):
             out[o.key].append((target, "initializer"))
+        top = collections.defaultdict(set)  # a name -> the keys the module defines it with at its top level
+        for o in ordered:
+            split = _module(o.key) if o.definition and "#local " not in o.key else None
+            named = code_graph.descriptors(split[2]) if split and split[2] else []
+            if len(named) == 1 and named[0][1] in ("type", "method", "term"):
+                top[named[0][0]].add(o.key)
         seen = set()
         for position, o in enumerate(ordered):
             if "#local " not in o.key:
@@ -353,6 +382,9 @@ def hops(index) -> dict:
                           and not m.definition]
                 if module:
                     out[o.key].append((module[-1], "import-binding"))
+                continue
+            if len(top.get(name, ())) == 1 and _annotation(index, rel, o):
+                out[o.key].append((next(iter(top[name])), "deferred-annotation"))
                 continue
             begin = index.to_bytes(rel, o.line, o.start) or 0
             before = line.encode("utf-8")[:begin].decode("utf-8", errors="ignore").rstrip()[-1:]
@@ -444,13 +476,19 @@ def _pyright_config(root: Path, target: Path, source_roots=(), unit_roots=()) ->
     return config
 
 
-def _prepared(project_dir: Path, unit: dict, environment: Path | None) -> tuple[Path | None, list[dict]]:
+def _prepared(project_dir: Path, unit: dict, environment: Path | None) -> tuple[Path | None, list[dict],
+                                                                                 dict | None]:
     """`environment`, else the one `python_environment` builds from the manifests the unit states, named from
-    the checkout's root (without them, from the ones under its folder); and its gaps: a stated manifest the
-    environment does not read, an environment that failed."""
+    the checkout's root (without them, from the ones under its folder), on the Python the unit states where
+    Daodan's interpreter is not one it admits; its gaps: a stated manifest the environment does not read, an
+    environment that failed; and that statement, where it chose the interpreter."""
     import resolve_edges as rx
+    from dynamic import python as observer  # it imports this module: imported here, once this one is loaded
     if environment is not None:
-        return Path(environment), []
+        return Path(environment), [], None
+    stated = unit.get("python")
+    if not stated or observer.admits(str(stated["version"]), sys.version_info[:3]) is not False:
+        stated = None
     here = project_dir / unit["root"]
     root, names = (project_dir, unit["manifests"]) if "manifests" in unit else (here, _manifests(here))
     read = rx.python_manifests(root, names)
@@ -458,26 +496,50 @@ def _prepared(project_dir: Path, unit: dict, environment: Path | None) -> tuple[
              "detail": "the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this "
                        "file declares are not installed"} for name in names if name not in read]
     try:
-        return rx.python_environment(root, names), gaps
+        used = rx.python_environment(root, names, stated and str(stated["version"]))
+        return used, gaps, stated if used else None
     except (OSError, subprocess.SubprocessError) as error:
         return None, gaps + [{"kind": "restore_failed", "manager": "uv", "path": unit["root"] or ".",
-                              "detail": str(error)[:600]}]
+                              "detail": str(error)[:600]}], None
 
 
-def _facts(environment: Path | None, packages: list[dict], config: dict | None, project: tuple[str, str]) -> dict:
-    """What one run read: its project's name and version, environment, declared requirements, packages and
-    Pyright configuration."""
+def _version(environment: Path | None) -> str | None:
+    """The version of an environment's interpreter, as its `pyvenv.cfg` records it (uv and virtualenv write
+    `version_info`, venv `version`)."""
+    try:
+        text = (Path(environment) / "pyvenv.cfg").read_text(encoding="utf-8")
+    except (OSError, TypeError):
+        return None
+    found = re.search(r"^version(?:_info)?\s*=\s*(\S+)", text, re.M)
+    return found.group(1) if found else None
+
+
+def _facts(environment: Path | None, packages: list[dict], config: dict | None, project: tuple[str, str],
+           stated: dict | None = None) -> dict:
+    """What one run read: its project's name and version, environment and its Python (`python`; the statement
+    that chose it, `python_request`), declared requirements, packages and Pyright configuration."""
     listed = Path(environment) / "daodan-requirements.txt" if environment else None
     return {"project": list(project), "environment": str(environment) if environment else None,
+            "python": _version(environment), **({"python_request": stated} if stated else {}),
             "requirements": listed.read_text(encoding="utf-8").splitlines() if listed and listed.is_file() else [],
             "packages": {package["name"]: package["version"] for package in packages}, "pyrightconfig": config}
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: one run per outermost Python project, with its manifests and
-    source roots."""
+    """What `index` takes from the pre-map: one run per outermost Python project, with its manifests, source
+    roots and the Python its folder states first as uv reads it (`python`, `dynamic.python.stated_python`, of the
+    statements at or above its folder and in its manifests)."""
     import premap
-    return {"units": premap.python_runs(record)}
+    from dynamic import python as observer  # it imports this module: imported here, once this one is loaded
+    stated = [item for item in record.get("toolchains", []) if item.get("tool") == "python" and item.get("version")
+              and item.get("declared_in")]
+    units = []
+    for unit in premap.python_runs(record):
+        folder = unit["root"] or "."
+        python = observer.stated_python([item for item in stated if observer._above(folder, item["declared_in"])
+                                         or item["declared_in"].split("#", 1)[0] in unit["manifests"]], folder)
+        units.append({**unit, **({"python": python} if python else {})})
+    return {"units": units}
 
 
 def tasks(configs) -> list[str]:
@@ -529,7 +591,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
         for number, unit in enumerate(units):
             prefix = unit["root"]
             here, cwd = project_dir / prefix, mirror / prefix
-            used, gaps = _prepared(project_dir, unit, environment)
+            used, gaps, stated = _prepared(project_dir, unit, environment)
             packages = _packages(used)
             described = work_dir / f"scip-python-environment-{number}.json"
             described.write_text(json.dumps(packages), encoding="utf-8")
@@ -551,21 +613,23 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
             run["index_bytes"] = output.stat().st_size if output.is_file() else 0
             if run["index"]:
                 gaps += _unbound(project_dir, directory, cwd, used, env, output.with_suffix(".unbound.jsonl"), prefix)
-            runs.append({**run, **_facts(used, packages, config, (name, version)), "gaps": gaps})
+            runs.append({**run, **_facts(used, packages, config, (name, version), stated), "gaps": gaps})
     return _outcome(runs, units)
 
 
 def _unbound(project_dir: Path, directory: Path, cwd: Path, used: Path | None, env: dict, target: Path,
              prefix: str) -> list[dict]:
     """The checker's pass over the run's folder `cwd` (`python_unbound.py`), its lines written to `target`; a gap
-    when it could not run, and the holes keep `no-occurrence`."""
+    when it could not run, and the holes keep `no-occurrence`. It parses the project with the environment's
+    interpreter, the project's Python, without `site` (`-I -S`): no package's code runs."""
     import resolve_edges as rx
     from indexers import runtime
+    python = Path(used) / "bin" / "python" if used else None
     try:
         langserver = runtime.npm_package(project_dir, directory, "pyright", PYRIGHT).with_name("langserver.index.js")
-        done = subprocess.run([sys.executable, str(UNBOUND), str(directory / rx.executable_name("node")), str(langserver),
-                               str(cwd), str(Path(used) / "bin" / "python") if used else "-"],
-                              capture_output=True, text=True, timeout=1800, env=env)
+        done = subprocess.run([str(python or sys.executable), "-I", "-S", str(UNBOUND),
+                               str(directory / rx.executable_name("node")), str(langserver), str(cwd),
+                               str(python or "-")], capture_output=True, text=True, timeout=1800, env=env)
     except (runtime.Unavailable, OSError, subprocess.SubprocessError) as error:
         return [{"kind": "checker_not_run", "path": prefix or ".",
                  "detail": f"Pyright {PYRIGHT}'s pass did not run ({error}): a member the index names nothing at "
@@ -590,8 +654,10 @@ def _contained(project_dir: Path, work_dir: Path, environment: Path | None, engi
 
 def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environment: Path | None, engine) -> dict:
     """One project's run in a container (`IMAGE`, `BOX`), with what the copy carries prepared on the host only
-    once an engine answers; Unavailable when none answers."""
+    once an engine answers; Unavailable when none answers. The image's Python reads the copy: a Python the unit
+    states that it is not is a gap."""
     import container
+    from dynamic import python as observer  # it imports this module: imported here, once this one is loaded
     from indexers import runtime
     prefix = unit["root"]
     here = project_dir / prefix
@@ -605,7 +671,7 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
             archive = runtime.node_archive(project_dir, f"linux-{container.architecture()}")
         except runtime.Unavailable as error:
             raise container.Gap(error.reason, error.install) from error
-        held["environment"], held["gaps"] = _prepared(project_dir, unit, environment)
+        held["environment"], held["gaps"], _stated = _prepared(project_dir, unit, environment)
         held["packages"] = _packages(held["environment"])
         described = work_dir / f"scip-python-environment-{number}.json"
         described.write_text(json.dumps(held["packages"]), encoding="utf-8")
@@ -626,6 +692,21 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
             for path in site.rglob("*"):
                 if path.is_file() and "__pycache__" not in path.relative_to(site).parts:
                     carried[f"/daodan/env/{path.relative_to(site).as_posix()}"] = path
+        try:  # the checker's pass, as on the host: without its Pyright the index still runs
+            langserver = runtime.npm_package(project_dir, directory, "pyright", PYRIGHT).with_name(
+                "langserver.index.js")
+        except runtime.Unavailable as error:
+            held["gaps"].append({"kind": "checker_not_run", "path": prefix or ".",
+                                 "detail": f"Pyright {PYRIGHT}'s pass did not run ({error.reason}): a member the "
+                                           "index names nothing at keeps no cause"})
+            return carried
+        checker = runtime.Tool(project_dir, "pyright", PYRIGHT).home()
+        served = work_dir / "pyright.path"
+        served.write_text(f"/daodan/pyright/{langserver.relative_to(checker).as_posix()}", encoding="utf-8")
+        carried.update({"/daodan/tools/pyright.path": served, "/daodan/tools/python_unbound.py": UNBOUND})
+        for path in (checker / "node_modules").rglob("*"):
+            if path.is_file():
+                carried[f"/daodan/pyright/{path.relative_to(checker).as_posix()}"] = path
         return carried
 
     out = work_dir / f"container-{number}"
@@ -648,6 +729,18 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
     output = work_dir / f"scip-python-{number}.scip"
     if (out / "out/index.scip").is_file():
         os.replace(out / "out/index.scip", output)
+    if (out / "out/unbound.jsonl").is_file():  # beside its index, where `unanswered` reads it
+        os.replace(out / "out/unbound.jsonl", output.with_suffix(".unbound.jsonl"))
+    gaps = [{"kind": "checker_not_run", "path": prefix or ".",
+             "detail": f"Pyright {PYRIGHT}'s pass ended with code {code} in the container: a member the index names "
+                       "nothing at keeps no cause"} for code in re.findall(r"DAODAN_UNBOUND (\d+)", text)]
+    ran = (re.findall(r"DAODAN_PYTHON (\S+)", text) or [None])[-1]
+    stated, numbers = unit.get("python"), tuple(int(n) for n in re.findall(r"\d+", ran or "")[:3])
+    if stated and numbers and observer.admits(str(stated["version"]), numbers) is False:
+        gaps.append({"kind": "python_unavailable", "path": stated["declared_in"],
+                     "detail": f"the project states Python {stated['version']} ({stated['declared_in']}) and the "
+                               f"container reads it on the image's {ran}: the copy runs with no network to bring "
+                               "another"})
     done = result["state"] == "done" and result.get("exit_code") == 0 and output.is_file()
     run = {"prefix": prefix, "command": command[:2] + ["BOX", *command[3:]], "returncode": result.get("exit_code"),
            "seconds": rows[-1].get("duration_seconds", 0) if rows else 0,
@@ -656,5 +749,5 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
            "stderr_errors": len(errors), "stderr_error_examples": list(dict.fromkeys(errors))[:5],
            "image": IMAGE, "index": str(output) if done else None,
            "index_bytes": output.stat().st_size if output.is_file() else 0}
-    return {**run, **_facts(held["environment"], held["packages"], held["config"], (name, version)),
-            "gaps": [*held["gaps"], *(result.get("gaps") or ())]}  # and what the copy left out
+    return {**run, **_facts(held["environment"], held["packages"], held["config"], (name, version)), "python": ran,
+            "gaps": [*held["gaps"], *(result.get("gaps") or ()), *gaps]}  # and what the copy left out
