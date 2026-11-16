@@ -215,6 +215,84 @@ def test_each_service_a_gitlab_job_runs_with_is_a_fact_with_the_names_and_variab
         ("include_not_read", ".gitlab-ci.yml", "ci/extra.yml")]
 
 
+def mark(*path):
+    """A `!reference [path]` as the reader's visitor of Renovate's YAML library prints it (`renovate.REFERENCE`)."""
+    return {"!reference": list(path)}
+
+
+REFERENCED = {  # a pipeline that reuses its templates' sections with `!reference`
+    ".setup": {"script": ["npm ci"], "services": ["postgres:16"], "variables": {"DB": "app"}},
+    ".snippets": {"one": ["node scripts/migrate.js"], "two": [mark(".snippets", "one"), "node scripts/seed.js"],
+                  "three": [mark(".snippets", "two")]},
+    "test": {"services": mark(".setup", "services"), "variables": mark(".setup", "variables"),
+             "script": [mark(".setup", "script"), mark(".snippets", "three"), "npm test"]},
+    "lint": {"services": [mark(".setup", "services")], "script": ["npm run lint"]},
+    "e2e": {"services": mark(".from_an_include", "services"), "script": ["npm run frontend:test"]}}
+
+
+def test_a_gitlab_reference_is_the_section_it_names_and_one_not_in_the_file_is_a_gap(tmp_path):
+    """GitLab resolves `!reference [<job>, <key>, ...]` when it loads the pipeline, before `extends`: the value at
+    that path, its own references resolved too (ten levels at most), a list in a script's lines flattened
+    (docs.gitlab.com/ci/yaml/yaml_optimization). Renovate's YAML library does not know the tag and would print
+    its path as the value (`[".setup", "services"]`, a service named `.setup`): the reader's visitor marks it, and
+    the reader resolves it. A list built from references is only a script's, so a `services:` one gives none, as
+    GitLab rejects it; a path the file does not hold (in a file it includes, which Daodan does not read) is a gap
+    naming the job, and nothing of that job is stated."""
+    assert "--visit" in renovate.EACH and "!reference" in renovate.REFERENCE
+    tests = [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"},
+             {"root": "frontend", "runner": "jest", "declared_in": "package.json#scripts.frontend:test"}]
+    files = {"package.json": json.dumps({"scripts": {"test": "jest", "frontend:test": "cd frontend && jest",
+                                                     "lint": "eslint ."}})}
+    out = read_steps(tmp_path, files, tests, {".gitlab-ci.yml": {"include": "ci/e2e.yml", **REFERENCED}})
+    assert [(service["name"], service["image"], service["declared_in"], service["env"])
+            for service in out["facts"]["services"]] == [
+        ("postgres", "postgres:16", ".gitlab-ci.yml#test.services.0", {"DB": "app"})]
+    assert out["facts"]["ci_steps"] == [
+        {"declared_in": ".gitlab-ci.yml#test.script.0", "tests": "package.json#scripts.test", "name": "test",
+         "cwd": ".", "run": "npm ci\nnode scripts/migrate.js\nnode scripts/seed.js", "env": {"DB": "app"}},
+        {"declared_in": ".gitlab-ci.yml#test.script.2", "tests": "package.json#scripts.test", "name": "test",
+         "test": True, "env": {"DB": "app"}}]
+    [gap] = [gap for gap in out["gaps"] if gap["kind"] == "reference_not_found"]
+    assert (gap["path"], gap["reference"]) == (".gitlab-ci.yml#e2e", [".from_an_include", "services"])
+    assert gap["detail"] == (".gitlab-ci.yml#e2e references [.from_an_include, services], which .gitlab-ci.yml does "
+                             "not hold: it may be in a file it includes, which Daodan does not read; Daodan reads "
+                             "nothing of the job")
+    loop = {".a": {"script": [mark(".b", "script")]}, ".b": {"script": [mark(".a", "script")]},
+            "t": {"script": [mark(".a", "script"), "npm test"]}}
+    out = read_steps(tmp_path / "loop", files, tests, {".gitlab-ci.yml": loop})
+    assert "ci_steps" not in out["facts"] and [gap["detail"] for gap in out["gaps"]
+                                               if gap["kind"] == "reference_not_found"] == [
+        ".gitlab-ci.yml#t references [.a, script], which nests more than ten references: GitLab does not resolve "
+        "it; Daodan reads nothing of the job"]
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="runs in the Modal test container")
+def test_on_modal_renovate_s_yaml_library_with_the_reader_s_visitor_marks_each_gitlab_reference():
+    """yaml 2.9.1, the library Renovate 44.239.1 pins, run as `EACH` runs it on a pipeline with `!reference`: its
+    JSON holds the marks the reader resolves, and its warning stays on stderr."""
+    import modal
+    pipeline = ("include: ci/e2e.yml\n.setup:\n  script: [npm ci]\n  services: ['postgres:16']\n"
+                "test:\n  services: !reference [.setup, services]\n  script:\n    - !reference [.setup, script]\n"
+                "    - npm test\n")
+    app = modal.App.lookup("daodan-pipeline-sandboxes", create_if_missing=True)
+    box = modal.Sandbox.create(image=modal.Image.from_registry("node:22-bookworm-slim"), app=app, timeout=600)
+    try:
+        each = renovate.EACH.replace(renovate.YAML, "/tmp/node_modules/yaml/bin.mjs")
+        script = (f"cd /tmp && npm install --silent yaml@2.9.1 >/dev/null 2>&1 && mkdir -p /p && cd /p && "
+                  f"cat > {renovate.GITLAB} <<'EOF'\n{pipeline}EOF\n{each}")
+        run = box.exec("sh", "-c", script)
+        stdout, stderr = run.stdout.read(), run.stderr.read()
+        run.wait()
+    finally:
+        box.terminate()
+    print(stdout, stderr[:400], flush=True)
+    assert run.returncode == 0 and stdout.splitlines()[0] == renovate.GITLAB, stderr
+    doc = json.loads(stdout.splitlines()[1])
+    assert doc["test"] == {"services": mark(".setup", "services"), "script": [mark(".setup", "script"), "npm test"]}
+    found, gaps = renovate._gitlab(renovate.GITLAB, renovate._referenced(doc))
+    assert [service["image"] for service in found] == ["postgres:16"]
+
+
 def test_a_service_is_one_fact_per_declaration():
     part = {"source": "renovate", "rank": "reader", "facts": {"services": [TUDUDI, {**TUDUDI, "image": "postgres:17"}]}}
     assert premap.join([part])["services"] == [{**TUDUDI, "sources": ["renovate"]}, {

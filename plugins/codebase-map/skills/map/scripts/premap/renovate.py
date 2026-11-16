@@ -72,10 +72,18 @@ RUN = re.compile(r"""(?m)^[\s-]*["']?run["']?\s*:""")  # a step that runs a scri
 SCRIPT = re.compile(r"""(?m)^\s*["']?(?:before_)?script["']?\s*:""")  # a GitLab job's lines
 # Renovate's YAML library, beside the Renovate on the path: yaml 2.9.1, the version Renovate 44.239.1 pins
 YAML = '"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/yaml/bin.mjs"'
+# The library's visitor (its CLI's `--visit`) that prints GitLab's `!reference [path]`, a tag the library does
+# not know and would print as the path itself, as `{"!reference": [path]}`, which the reader resolves.
+REFERENCE = ('export default { Seq(_, node) { if (node.tag !== "!reference") return;'
+             ' const Scalar = node.items[0]?.constructor;'
+             ' if (Scalar) return new Scalar({ "!reference": node.toJSON() }); } };')
+VISITOR = "/tmp/daodan-reference.mjs"
 # Each workflow of the copy, then its document as JSON, or `null` and the library's message on stderr.
-EACH = (f'for f in {WORKFLOWS}/*.yml {WORKFLOWS}/*.yaml {GITLAB}; do [ -f "$f" ] || continue; echo "$f"; '
-        f'node {YAML} --json --single --strict --merge < "$f" 2> /tmp/daodan-yaml.err'
+EACH = (f"cat > {VISITOR} <<'EOF'\n{REFERENCE}\nEOF\n"
+        f'for f in {WORKFLOWS}/*.yml {WORKFLOWS}/*.yaml {GITLAB}; do [ -f "$f" ] || continue; echo "$f"; '
+        f'node {YAML} --json --single --strict --merge --visit {VISITOR} < "$f" 2> /tmp/daodan-yaml.err'
         ' || { echo null; sed "s|^|$f: |" /tmp/daodan-yaml.err >&2; }; done')
+NESTING = 10  # the references GitLab resolves within one another
 CHECKOUT = "actions/checkout"  # the checkout of a job: Daodan's copy of the project
 SETUP = re.compile(r"(?:^|[-_])setup(?:$|[-_])")  # a toolchain's setup action (`setup-node`, `action-setup`)
 PACKAGE_MANAGERS = ("npm", "yarn", "pnpm", "bun", "npx")  # programs that run a package's scripts, not tests
@@ -427,6 +435,49 @@ def _expand(text: str, variables: dict) -> tuple[str, list[str]]:
     return "".join(out) + text[i:], unknown
 
 
+def _referenced(doc, value=None, depth: int = 0):
+    """GitLab's pipeline `doc` with each `!reference [path]` (as `REFERENCE` prints it) the value at that path, its
+    own references resolved too, as GitLab resolves them when it loads the file, before `extends`; one whose path
+    the file does not hold, or that nests more than `NESTING`, stays, with `unresolved` its cause."""
+    value = doc if depth == 0 and value is None else value
+    if isinstance(value, dict) and set(value) == {"!reference"} and isinstance(value["!reference"], list):
+        path, target = value["!reference"], doc
+        if depth >= NESTING:
+            return {**value, "unresolved": "nests"}
+        for key in path:
+            if not isinstance(target, dict) or key not in target:
+                return {**value, "unresolved": "missing"}
+            target = target[key]
+        return _referenced(doc, target, depth + 1)
+    if isinstance(value, dict):
+        return {key: _referenced(doc, item, depth) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_referenced(doc, item, depth) for item in value]
+    return value
+
+
+def _unresolved(value) -> dict | None:
+    """The first reference `_referenced` left in `value`."""
+    if isinstance(value, dict):
+        if "unresolved" in value and "!reference" in value:
+            return value
+        value = list(value.values())
+    for item in value if isinstance(value, list) else ():
+        if found := _unresolved(item):
+            return found
+    return None
+
+
+def _unread(rel: str, doc: dict, job_id: str, found: dict) -> dict:
+    """The gap of a job holding a reference `_referenced` could not resolve (`found`)."""
+    path = f"[{', '.join(map(str, found['!reference']))}]"
+    cause = ("which nests more than ten references: GitLab does not resolve it" if found["unresolved"] == "nests" else
+             f"which {rel} does not hold" + (": it may be in a file it includes, which Daodan does not read"
+                                              if doc.get("include") else ""))
+    return {"kind": "reference_not_found", "path": f"{rel}#{job_id}", "reference": found["!reference"],
+            "detail": f"{rel}#{job_id} references {path}, {cause}; Daodan reads nothing of the job"}
+
+
 def _merged(base: dict, over: dict) -> dict:
     out = dict(base)
     for key, value in over.items():
@@ -504,7 +555,7 @@ def _gitlab_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[
         if job_id in GITLAB_KEYWORDS or str(job_id).startswith(".") or not isinstance(job, dict):
             continue
         job = _extended(doc, job)
-        if "script" not in job:
+        if "script" not in job or _unresolved(job):  # `_gitlab` says the reference
             continue
         before = job["before_script"] if "before_script" in job else default.get("before_script") if _inherits(
             job, "default", "before_script") else None
@@ -549,6 +600,9 @@ def _gitlab(rel: str, doc) -> tuple[list[dict], list[dict]]:
         if job_id in GITLAB_KEYWORDS or str(job_id).startswith(".") or not isinstance(job, dict):
             continue
         job = _extended(doc, job)
+        if unresolved := _unresolved(job):
+            gaps.append(_unread(rel, doc, job_id, unresolved))
+            continue
         scripts = [job.get("before_script", default.get("before_script") if _inherits(job, "default",
                                                                                         "before_script") else None),
                    job.get("script")]
@@ -595,6 +649,7 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
             gaps.append({"kind": "model_failed", "path": rel,
                          "detail": f"{rel}: Renovate's YAML library does not read it: {said[:400]}"})
         elif rel == GITLAB:
+            doc = _referenced(doc)
             found, said = _gitlab(rel, doc)
             services, gaps = services + found, gaps + said
             before += _gitlab_steps(rel, doc, list(tests), read, claimed)
