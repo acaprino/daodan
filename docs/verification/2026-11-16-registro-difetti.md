@@ -201,7 +201,7 @@ Convenzioni:
 
 ## Indice
 
-274 schede: 214 risolte, 21 aperte, 39 buchi dichiarati.
+274 schede: 214 risolte, 20 aperte, 40 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -283,7 +283,7 @@ Convenzioni:
 
 ### Analizzatori
 
-123 schede: 86 risolto, 13 aperto, 24 buco dichiarato.
+123 schede: 86 risolto, 12 aperto, 25 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -329,7 +329,7 @@ Convenzioni:
 | D-104 | Gradle con livello 6: nessun indice | jvm-ver-* | buco dichiarato (`build_edited`) | `21b3cb39b` | java · analizzatore · completezza · prova su Modal · Gradle, javac |
 | D-105 | otel-demo: «Cannot invoke method toPath() on null object» in ad e recommendation | otel-demo (`b825c7c25726`) | risolto | `39805f5e7` | java, kotlin · analizzatore · correttezza · finale · scip-java, Gradle |
 | D-106 | otel-demo fraud-detection sul JDK 21 di un altro build | otel-demo | risolto | `39805f5e7` | java, kotlin · analizzatore · correttezza · finale · Gradle |
-| D-107 | otel-demo fraud-detection: protos che solo il Dockerfile copia | otel-demo (`b825c7c25726`) | aperto (android-sdk) | `f024ba3a3`, `f04dab9d5` | kotlin · analizzatore · completezza · jvm-otel-android · Gradle, Docker, protoc |
+| D-107 | otel-demo fraud-detection: protos che solo il Dockerfile copia | otel-demo (`b825c7c25726`) | buco dichiarato (`build_not_indexed`, con la causa nel motivo) | — | kotlin · analizzatore · completezza · jvm-otel-android · Gradle, Docker, protoc |
 | D-108 | Android: classpath dei test unitari non risolti, nessun compito Android | jvm-android-app-lib, mix-poly-firebase | aperto (dynamic-jvm-2) | `39805f5e7` | java, kotlin · analizzatore · completezza · finale · scip-java, Gradle, Android SDK |
 | D-109 | Android: build fermo su `google-services.json` mancante | jvm-android-app-lib, mix-poly-firebase | buco dichiarato (`build_input_missing`) | `39805f5e7` | java, kotlin · analizzatore · completezza · jvm-otel-android · Gradle, Google Services |
 | D-110 | kotlinconf: «Task with name 'compileKotlinJvm' not found in project ':app:adminApp'» | kotlinconf (`146e891c150c`) | risolto | `a13d55787` | kotlin · analizzatore · correttezza · jvm-kotlinconf · scip-java, Gradle |
@@ -2423,9 +2423,9 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - quella cartella la riempie solo il Dockerfile del servizio: `src/fraud-detection/Dockerfile:10`, `COPY ./pb/ ./src/main/proto/`;
   - il build dichiarato, girato sul checkout, non genera quelle classi.
 - **Progetto e caso:** otel-demo (`b825c7c25726`) — giro `jvm-otel-android`, 16 novembre 2026.
-- **Rimedio:** —. Gli stadi di un Dockerfile si leggono da `f024ba3a3`, ma oggi indicizza dentro uno stadio solo Go (`f04dab9d5`, D-141); la via per C e C++ è in corso (D-135), e la JVM non la usa.
-- **Verifica:** —
-- **Stato:** aperto (android-sdk): build dichiarata solo in un Dockerfile.
+- **Rimedio:** decisione di team-lead (16 novembre, riportata da android-sdk): nessuna via dello stadio per la JVM, un file non la giustifica; il build resta un buco che dice perché. Non committato (dynamic-jvm-2), `scripts/indexers/jvm.py` (`GENERATES`, `ungenerated`, `failed`): un build che si ferma su nomi che non trova («Unresolved reference», «cannot find symbol», «package … does not exist»), i cui script applicano il plugin protobuf di Gradle e la cui cartella non ha nessun `.proto`, ha nel motivo di `build_not_indexed` il plugin, `src/main/proto` e la riga del Dockerfile della cartella che li copia lì; i file si leggono, non si eseguono.
+- **Verifica:** solo test (`tests/test_codebase_map_indexers_jvm.py`, `test_a_build_whose_protobuf_sources_only_its_dockerfile_copies_says_so_in_its_reason`, per Java e Kotlin): il motivo nomina `com.google.protobuf`, `src/main/proto`, `Dockerfile:4` e `COPY ./pb/ ./src/main/proto/`; con un `.proto` nella cartella non lo dice.
+- **Stato:** buco dichiarato (`build_not_indexed`, con la causa nel motivo): il build è completo solo nell'immagine del suo Dockerfile.
 - **Note:** D-135, D-141.
 
 #### D-108 Android: classpath dei test unitari non risolti, nessun compito Android

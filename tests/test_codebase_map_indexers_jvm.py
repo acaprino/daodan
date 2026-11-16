@@ -290,6 +290,26 @@ class EachBuildTests:
         for said in ("google-services.json", "com.google.gms.google-services"):
             self.assertIn(said, gap["detail"])
 
+    def test_a_build_whose_protobuf_sources_only_its_dockerfile_copies_says_so_in_its_reason(self):
+        """otel-demo's src/fraud-detection: the protobuf Gradle plugin generates the classes `main.kt` imports from
+        src/main/proto, which the checkout has not: only the build's Dockerfile copies them there, from pb/."""
+        (self.project / "build.gradle.kts").write_text(
+            'plugins {\n    id("com.google.protobuf") version "0.10.1"\n}\n', encoding="utf-8")
+        (self.project / "Dockerfile").write_text(
+            "FROM gradle:9.8.2-jdk17 AS builder\nWORKDIR /usr/src/app/\nCOPY ./src/fraud-detection/ ./\n"
+            "COPY ./pb/ ./src/main/proto/\nRUN gradle shadowJar\n", encoding="utf-8")
+        error = ("e: file:///work/src/main/kotlin/frauddetection/main.kt:14:8 Unresolved reference 'oteldemo'.\n"
+                 "* What went wrong:\nExecution failed for task ':compileKotlin'.")
+        self.play("prepare", text=log(("index", 1, error)), code=1)
+        reason = self.index(tools={"": ["gradle"]})["reason"]
+        for said in ("com.google.protobuf", "src/main/proto", "Dockerfile:4", "COPY ./pb/ ./src/main/proto/",
+                     "Unresolved reference 'oteldemo'"):
+            self.assertIn(said, reason)
+        with self.subTest("a checkout with its .proto files: another cause"):
+            (self.project / "src/main/proto").mkdir(parents=True)
+            (self.project / "src/main/proto/demo.proto").write_text('syntax = "proto3";\n', encoding="utf-8")
+            self.assertNotIn("com.google.protobuf", self.index(tools={"": ["gradle"]})["reason"])
+
     def test_a_gradle_build_that_asks_for_a_newer_jvm_than_it_states_runs_again_on_the_one_its_error_names(self):
         """real-app-kotlinconf without its devcontainer: a plugin needs JVM 21, the project states no JDK and the
         build runs on the image's 17. It runs once more on JDK 21, the version Gradle's error names, and says so."""

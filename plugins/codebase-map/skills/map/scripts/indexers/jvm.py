@@ -390,6 +390,47 @@ def missing_inputs(runs: list[dict], root: str) -> list[dict]:
             for words, file, plugin, what in INPUTS if words.search(said)]
 
 
+# What a plugin a build script applies generates the build's code from: (the plugin's id, the folder it reads by
+# default, the plugin, the files' suffix). A checkout without those files lacks the classes they give.
+GENERATES = (("com.google.protobuf", "src/main/proto", "the protobuf Gradle plugin (com.google.protobuf)", ".proto"),)
+UNRESOLVED = re.compile(r"Unresolved reference|cannot find symbol|package \S+ does not exist")  # kotlinc's, javac's
+
+
+def ungenerated(folder: Path, checkout: Path, runs: list[dict]) -> str:
+    """Why a build that stopped on names it does not find lacks them, when a plugin of `GENERATES` its scripts
+    apply makes them from files the build folder has none of: the plugin, the folder, and the line of the folder's
+    Dockerfile that copies them there; '' otherwise. Its files are read, never run."""
+    if not any(UNRESOLVED.search(run.get("stderr_tail") or "") for run in runs):
+        return ""
+    scripts = "".join(path.read_text(encoding="utf-8", errors="replace")
+                      for path in folder.glob("build.gradle*") if path.is_file())
+    for plugin, sources, name, suffix in GENERATES:
+        if plugin not in scripts or next(folder.rglob(f"*{suffix}"), None):
+            continue
+        why = f"the build applies {name}, which generates the classes its code uses from the {suffix} files of {sources}"
+        copied = next((f"{path.relative_to(checkout).as_posix()}:{line} copies them there ({words})"
+                       for path, line, words in _copies(folder)
+                       if words.split()[-1].removeprefix("./").strip("/") == sources), "")
+        return why + (f", and the checkout has none: {copied}; Daodan does not build that image for Java and Kotlin"
+                      if copied else ", and the checkout has none")
+    return ""
+
+
+def _copies(folder: Path):
+    """Each COPY and ADD of the folder's Dockerfiles: the file, the line it starts on, its words."""
+    for path in sorted(folder.glob("*Dockerfile*")):
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines() if path.is_file() else []
+        number = 0
+        while number < len(lines):
+            start, words = number, lines[number].strip()
+            while words.endswith("\\") and number + 1 < len(lines):
+                number += 1
+                words = words[:-1].rstrip() + " " + lines[number].strip()
+            number += 1
+            if words.split()[:1] and words.split()[0].upper() in ("COPY", "ADD"):
+                yield path, start + 1, " ".join(words.split())
+
+
 def build_jdk(run: dict, stated) -> dict | None:
     """The JDK a build `{root, tool}` states, None for the image's: one `stated` above the image's (`wanted_jdk`);
     for Maven, which compiles with the JDK that runs it, else the JDK of the newest level the build's poms declare
@@ -616,12 +657,14 @@ def unavailable(cause: str, remedy: str) -> dict:
 
 
 def failed(result: dict, runs: list[dict]) -> dict:
-    """No index: the cause the run gives, with the output tail of its last step."""
+    """No index: the cause the run gives, why where `run` knows it (`ungenerated`), with the output tail of its
+    last step."""
     last = runs[-1] if runs else {}
     tail = (last.get("stderr_tail") or "").strip()[-800:]
     cause = result.get("cause") or f"exit code {last.get('returncode')}"
+    why = f"{result['why']}. The build said: " if result.get("why") else ""
     return {"indexes": [], "runs": runs, "indexer": code_graph.indexer("scip-java", VERSION, runs),
-            "state": "failed", "reason": f"scip-java wrote no index ({cause}): {tail}",
+            "state": "failed", "reason": f"scip-java wrote no index ({cause}): {why}{tail}",
             "errors": sum(run.get("stderr_errors") or 0 for run in runs)}
 
 
@@ -702,7 +745,9 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
                                inputs=inputs_given, jdk=asked[0], hosts=hosts, checkout=checkout)
         said = [{**asked[1], "path": root or "."}] if asked[1] else []
         return {**again, "gaps": [*said, *again.get("gaps", ())]}, runs + more, out
-    return {**judged(result, prepared, used), **({"gaps": gaps} if gaps else {})}, runs, out
+    why = ungenerated(Path(project_dir), checkout, runs)
+    return ({**judged(result, prepared, used), **({"gaps": gaps} if gaps else {}), **({"why": why} if why else {})},
+            runs, out)
 
 
 def with_gaps(part: dict, result: dict) -> dict:
