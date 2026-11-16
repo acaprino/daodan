@@ -1,0 +1,1896 @@
+{
+ "cases": {
+  "run": 104,
+  "failed": {},
+  "seconds": {
+   "total": 13182.0,
+   "median": 106.0,
+   "slowest": [
+    [
+     "sys-cmake-presets",
+     431.4
+    ],
+    [
+     "mix-poly-firebase",
+     424.7
+    ],
+    [
+     "sys-rust-shared-test-module",
+     386.7
+    ],
+    [
+     "jvm-android-app-lib",
+     307.5
+    ],
+    [
+     "jvm-gradle-kts-catalog-composite",
+     302.5
+    ]
+   ]
+  }
+ },
+ "languages": {
+  "c": {
+   "cases": 8,
+   "states": {
+    "fresh": 2,
+    "unavailable": 6
+   },
+   "reasons": {
+    "unavailable": [
+     [
+      "none of the 1 c files was parsed by the snapshot (lexical: 1)",
+      2
+     ],
+     [
+      "no C or C++ unit built with CMake in the pre-map",
+      2
+     ],
+     [
+      "no C or C++ unit built with CMake in the pre-map; built with make: Daodan configures C and C++ units with CMake only",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 8,
+    "indexed": 7
+   },
+   "sites": 18,
+   "answered": {
+    "external": 2,
+    "lexical": 1,
+    "project-callable": 4,
+    "project-value": 11
+   },
+   "holes": {},
+   "share": 1.0
+  },
+  "cpp": {
+   "cases": 6,
+   "states": {
+    "unavailable": 1,
+    "fresh": 3,
+    "failed": 2
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-clang wrote no index (.: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded): -- The CXX compiler identification is GNU 13.3.0\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:9 (find_package):\n  Could not find a package configuration file provided by \"fmt\" with any of\n  the following names:\n\n    fmtConfig.cmake\n    fmt-config.cmake\n\n  Add the installation prefix of \"fmt\" to CMAKE_PREFIX_PATH or set \"fmt_DIR\"\n  to a directory containing one of the above files.  If \"fmt\" provides a\n  separate development package or SDK, be sure it has been installed.\n\n\n-- Configuring incomplete, errors occurred!",
+      1
+     ],
+     [
+      "scip-clang wrote no index (.: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded): -- The CXX compiler identification is GNU 13.3.0\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:7 (add_subdirectory):\n  add_subdirectory given source \"third_party/fmt\" which is not an existing\n  directory.\n\n\n-- Configuring incomplete, errors occurred!",
+      1
+     ]
+    ],
+    "unavailable": [
+     [
+      "no C or C++ unit built with CMake in the pre-map; built with bazel: Daodan configures C and C++ units with CMake only",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 10,
+    "indexed": 10
+   },
+   "sites": 67,
+   "answered": {
+    "external": 23,
+    "project-callable": 9,
+    "project-value": 31
+   },
+   "holes": {
+    "no-occurrence": 4
+   },
+   "share": 0.9403
+  },
+  "csharp": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 2,
+    "indexed": 2
+   },
+   "sites": 20,
+   "answered": {
+    "external": 10,
+    "project-callable": 2,
+    "project-value": 3
+   },
+   "holes": {
+    "no-occurrence": 2,
+    "no-position": 2,
+    "undefined-project-symbol": 1
+   },
+   "share": 0.75
+  },
+  "go": {
+   "cases": 10,
+   "states": {
+    "fresh": 10
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 34,
+    "indexed": 28
+   },
+   "sites": 165,
+   "answered": {
+    "external": 33,
+    "project-callable": 22,
+    "project-value": 70
+   },
+   "holes": {
+    "no-document": 17,
+    "no-occurrence": 21,
+    "no-position": 2
+   },
+   "share": 0.7576
+  },
+  "java": {
+   "cases": 12,
+   "states": {
+    "fresh": 9,
+    "failed": 2,
+    "unavailable": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-java wrote no index (preparation exited with code 1): Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nerror: No build tool detected in workspace '/work'. At the moment, the only supported build tools are: Maven, Gradle.",
+      1
+     ],
+     [
+      "scip-java wrote no index (preparation exited with code 1): Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nno maven-compiler-plugin in pom.xml",
+      1
+     ]
+    ],
+    "unavailable": [
+     [
+      "no Gradle or Maven build in the pre-map: nothing builds these files",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 22,
+    "indexed": 20
+   },
+   "sites": 105,
+   "answered": {
+    "external": 34,
+    "lexical": 5,
+    "observed": 1,
+    "project-callable": 12,
+    "project-value": 29
+   },
+   "holes": {
+    "no-document": 24
+   },
+   "share": 0.7714
+  },
+  "javascript": {
+   "cases": 20,
+   "states": {
+    "fresh": 19,
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-typescript wrote no index (exit code 1): error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'.\n\nerror: no files got indexed. To fix this problem, make sure that the TypeScript projects [\"/work\"] contain input files or reference other projects.\nDAODAN_PEAK -",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 34,
+    "indexed": 34
+   },
+   "sites": 174,
+   "answered": {
+    "external": 101,
+    "project-callable": 7,
+    "project-value": 24
+   },
+   "holes": {
+    "dangling-local": 10,
+    "module.exports: the index names `module` with a local it defines nowhere, and references no Node types that declare it": 2,
+    "no-occurrence": 28,
+    "no-position": 2
+   },
+   "share": 0.7586
+  },
+  "kotlin": {
+   "cases": 8,
+   "states": {
+    "failed": 5,
+    "fresh": 3
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-java wrote no index (preparation exited with code 1): tion 'releaseUnitTestRuntimeClasspath' due to resolution failure: Could not resolve all artifacts for configuration ':core:releaseUnitTestRuntimeClasspath'.\n\n> Task :scipCompileAll UP-TO-DATE\n> Task :app:scipCompileAll UP-TO-DATE\n> Task :core:scipCompileAll UP-TO-DATE\n[Incubating] Problems report is available at: file:///work/build/reports/problems/problems-report.html\n\nBUILD SUCCESSFUL in 29s\n5 actionable tasks: 3 executed, 2 up-to-date\nerror: No SCIP shards found. This typically means that `scip-java` is unable to automatically index this codebase. If you are using Gradle or Maven, please report an issue to https://github.com/scip-code/scip-java and include steps to reproduce. If you are using a different build tool, make sure that you have followed all of the manual configuration steps.",
+      1
+     ],
+     [
+      "scip-java wrote no index (preparation exited with code 1): Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nerror: No build tool detected in workspace '/work'. At the moment, the only supported build tools are: Maven, Gradle.",
+      1
+     ],
+     [
+      "scip-java wrote no index (preparation exited with code 1): Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nerror: Multiple build tools detected: Maven, Gradle. To fix this problem, use the '--build-tool=BUILD_TOOL_NAME' flag to specify which build tool to run.",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 12,
+    "indexed": 7
+   },
+   "sites": 101,
+   "answered": {
+    "external": 17,
+    "project-callable": 8,
+    "project-value": 7
+   },
+   "holes": {
+    "no-document": 69
+   },
+   "share": 0.3168
+  },
+  "python": {
+   "cases": 28,
+   "states": {
+    "fresh": 28
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 81,
+    "indexed": 81
+   },
+   "sites": 260,
+   "answered": {
+    "external": 133,
+    "observed": 1,
+    "project-callable": 22,
+    "project-value": 39
+   },
+   "holes": {
+    "dangling-local": 16,
+    "no-occurrence": 27,
+    "undefined-project-symbol": 22
+   },
+   "share": 0.75
+  },
+  "rust": {
+   "cases": 10,
+   "states": {
+    "fresh": 10
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 23,
+    "indexed": 23
+   },
+   "sites": 73,
+   "answered": {
+    "external": 54,
+    "project-callable": 5,
+    "project-value": 11
+   },
+   "holes": {
+    "no-occurrence": 3
+   },
+   "share": 0.9589
+  },
+  "stylesheet": {
+   "cases": 10,
+   "states": {
+    "fresh": 10
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 51,
+    "indexed": 50
+   },
+   "sites": 23,
+   "answered": {
+    "external": 4,
+    "namespace": 8
+   },
+   "holes": {
+    "no-rule": 7,
+    "remote-sheet": 2,
+    "unresolved-import": 2
+   },
+   "share": 0.5217
+  },
+  "svelte": {
+   "cases": 1,
+   "states": {
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "nothing of the 2 svelte files is read: template not read: calls and bindings in it are not sites (2); none of their 2 calls is asked: builtin (2)",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 2,
+    "indexed": 0
+   },
+   "sites": 2,
+   "answered": {},
+   "holes": {
+    "not-asked": 2
+   },
+   "share": 0.0
+  },
+  "typescript": {
+   "cases": 15,
+   "states": {
+    "fresh": 13,
+    "failed": 1,
+    "unavailable": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-typescript wrote no index (exit code 1): error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'.\n\nerror: no files got indexed. To fix this problem, make sure that the TypeScript projects [\"/work\"] contain input files or reference other projects.\nDAODAN_PEAK -",
+      1
+     ]
+    ],
+    "unavailable": [
+     [
+      "none of the 1 typescript files was parsed by the snapshot (lexical: 1)",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 43,
+    "indexed": 43
+   },
+   "sites": 119,
+   "answered": {
+    "external": 64,
+    "lexical": 1,
+    "project-callable": 11,
+    "project-value": 23
+   },
+   "holes": {
+    "dangling-local": 11,
+    "no declaration of *.vue modules: the import is not typed": 1,
+    "no-occurrence": 7,
+    "no-position": 1
+   },
+   "share": 0.8319
+  },
+  "vue": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 3,
+    "indexed": 0
+   },
+   "sites": 3,
+   "answered": {},
+   "holes": {
+    "engine-unresolved": 1,
+    "not-asked": 2
+   },
+   "share": 0.0
+  }
+ },
+ "missing": [
+  {
+   "case": "js-vue-pnpm",
+   "language": "vue",
+   "missing": 3,
+   "snapshot": 3,
+   "reasons": {
+    "template not read: calls and bindings in it are not sites": 3
+   }
+  },
+  {
+   "case": "jvm-kmp-common-jvm",
+   "language": "kotlin",
+   "missing": 2,
+   "snapshot": 5,
+   "reasons": {
+    "Gradle script: no KotlinCompile task compiles it": 2
+   }
+  },
+  {
+   "case": "jvm-kotlin-source-sets",
+   "language": "kotlin",
+   "missing": 3,
+   "snapshot": 5,
+   "reasons": {
+    "Gradle script: no KotlinCompile task compiles it": 2,
+    "no Kotlin compile task of the build lists it": 1
+   }
+  },
+  {
+   "case": "jvm-maven-multi-bom-profile",
+   "language": "java",
+   "missing": 1,
+   "snapshot": 4,
+   "reasons": {
+    "no document in the index": 1
+   }
+  },
+  {
+   "case": "jvm-protobuf-generated",
+   "language": "java",
+   "missing": 1,
+   "snapshot": 2,
+   "reasons": {
+    "no document in the index": 1
+   }
+  },
+  {
+   "case": "sys-cmake-presets",
+   "language": "c",
+   "missing": 1,
+   "snapshot": 4,
+   "reasons": {
+    "no compile command: not built by the default configuration": 1
+   }
+  },
+  {
+   "case": "sys-go-buildtags",
+   "language": "go",
+   "missing": 4,
+   "snapshot": 9,
+   "reasons": {
+    "build constraint `//go:build !linux && !windows`": 1,
+    "file name constraint `windows`: the indexer's build is linux/amd64": 1,
+    "build constraint `//go:build ignore`": 1
+   }
+  },
+  {
+   "case": "sys-go-cgo",
+   "language": "go",
+   "missing": 2,
+   "snapshot": 3,
+   "reasons": {
+    "build constraint `//go:build cgo`": 1,
+    "build constraint `//go:build !cgo`": 1
+   }
+  },
+  {
+   "case": "mix-ruby-rails",
+   "language": "stylesheet",
+   "missing": 1,
+   "snapshot": 1,
+   "reasons": {
+    "template language: no reader": 1
+   }
+  }
+ ],
+ "no_analyzer": {
+  "plsql": {
+   "cases": 1,
+   "files": 1
+  },
+  "sql": {
+   "cases": 1,
+   "files": 4
+  }
+ },
+ "premap": {
+  "languages": {
+   "given": 104,
+   "not_given": 0,
+   "found": 165,
+   "expected": 169,
+   "extra": 133,
+   "wrong": 0
+  },
+  "languages.files": {
+   "given": 0,
+   "not_given": 104,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "excluded": {
+   "given": 104,
+   "not_given": 0,
+   "found": 25,
+   "expected": 37,
+   "extra": 27,
+   "wrong": 3
+  },
+  "units": {
+   "given": 104,
+   "not_given": 0,
+   "found": 156,
+   "expected": 175,
+   "extra": 1,
+   "wrong": 6
+  },
+  "units.depends_on": {
+   "given": 93,
+   "not_given": 11,
+   "found": 36,
+   "expected": 45,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.source_roots": {
+   "given": 43,
+   "not_given": 61,
+   "found": 68,
+   "expected": 86,
+   "extra": 2,
+   "wrong": 0
+  },
+  "units.config": {
+   "given": 54,
+   "not_given": 50,
+   "found": 108,
+   "expected": 247,
+   "extra": 0,
+   "wrong": 17
+  },
+  "workspace": {
+   "given": 104,
+   "not_given": 0,
+   "found": 16,
+   "expected": 18,
+   "extra": 16,
+   "wrong": 1
+  },
+  "workspace.members": {
+   "given": 31,
+   "not_given": 73,
+   "found": 38,
+   "expected": 38,
+   "extra": 2,
+   "wrong": 0
+  },
+  "toolchains": {
+   "given": 104,
+   "not_given": 0,
+   "found": 99,
+   "expected": 169,
+   "extra": 41,
+   "wrong": 15
+  },
+  "dependencies": {
+   "given": 0,
+   "not_given": 104,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "frameworks": {
+   "given": 0,
+   "not_given": 104,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "services": {
+   "given": 0,
+   "not_given": 104,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "needs": {
+   "given": 0,
+   "not_given": 104,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  }
+ },
+ "gaps": [
+  {
+   "step": "scan",
+   "kind": "toolchain_unavailable",
+   "count": 20,
+   "examples": [
+    "js-npm-single: package.json: node >=18: a range, not a version to install",
+    "js-pnpm-workspace: package.json: node >=20: a range, not a version to install",
+    "js-pnpm-workspace: package.json: node >=20: a range, not a version to install"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "no_analyzer",
+   "count": 16,
+   "examples": [
+    "jvm-sbt-two-subprojects: 5 Scala files and no analyzer lists the language: their code is in no graph",
+    "mix-dart-flutter: 4 Dart files and no analyzer lists the language: their code is in no graph",
+    "mix-edge-extensions: 1 MATLAB files and no analyzer lists the language: their code is in no graph"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "code_outside_units",
+   "count": 15,
+   "examples": [
+    "js-deno: .: 3 TypeScript files that no unit of kind npm-package holds",
+    "js-node-scripts: scripts: 3 JavaScript files that no unit of kind npm-package holds",
+    "js-static-html: .: 1 JavaScript files that no unit of kind npm-package holds"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "toolchain_undeclared",
+   "count": 12,
+   "examples": [
+    "jvm-android-app-lib: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "jvm-gradle-computed-deps: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "jvm-gradle-groovy-wrapper: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_partial",
+   "count": 6,
+   "examples": [
+    "js-turborepo: .: npm query answered without the lockfile: no workspace member before an install",
+    "js-yarn-berry: .: npm query answered without the lockfile: no workspace member before an install",
+    "sys-rust-path-git: helper: registries unknown: cargo metadata --locked: error: cannot create the lock file /work/helper/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead."
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "not_executed",
+   "count": 5,
+   "examples": [
+    "py-setup-py-dynamic: setup.py: setup.py is read, not run: what it computes at run time (dependencies, packages) is unknown",
+    "py-setup-py-static: setup.py: setup.py is read, not run: what it computes at run time (dependencies, packages) is unknown",
+    "sys-rust-buildrs: build.rs: a build script is present and Daodan's index does not run it: the code it generates and the cfg flags it sets are unknown"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_failed",
+   "count": 4,
+   "examples": [
+    "js-sveltekit: tsconfig.json: tsc --showConfig: error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'.",
+    "sys-git-submodule-absent: .: cmake configure: CMake Error at CMakeLists.txt:7 (add_subdirectory): add_subdirectory given source \"third_party/fmt\" which is not an existing directory. -- Configuring incomplete, errors occurred!",
+    "sys-go-toolchain: .: go list -m -json: go: go.mod requires go >= 1.23.4 (running go 1.22.5; GOTOOLCHAIN=local)"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "superseded",
+   "count": 4,
+   "examples": [
+    "sys-c-macro-annotations: .: cmake-target zmini of modules.py@daodan/module-graph/v1: cmake@4.4.5 answers for this folder without it",
+    "sys-cmake-presets: .: cmake-target sensor of modules.py@daodan/module-graph/v1: cmake@4.4.5 answers for this folder without it",
+    "sys-cmake-targets: .: cmake-target calc of modules.py@daodan/module-graph/v1: cmake@4.4.5 answers for this folder without it"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "ownership_ambiguous",
+   "count": 3,
+   "examples": [
+    "jvm-java-version-conflict: .: Directory scope cannot distinguish build ownership: clock@., clock@.+",
+    "mix-edge-submodules: .: Directory scope cannot distinguish build ownership: kiosk, kiosk-sync",
+    "mix-php-laravel: .: Directory scope cannot distinguish build ownership: acme-shop, mix-php-laravel"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "submodule_absent",
+   "count": 3,
+   "examples": [
+    "sys-git-submodule-absent: third_party/fmt: submodule https://github.com/fmtlib/fmt.git is not checked out: its code is not in the project",
+    "mix-edge-submodules: libs/proto-py: submodule ../proto-py.git is not checked out: its code is not in the project",
+    "mix-edge-submodules: vendor/ui-kit: submodule https://github.com/acme/ui-kit.git is not checked out: its code is not in the project"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "dependency_unresolved",
+   "count": 2,
+   "examples": [
+    "mix-edge-submodules: @acme/ui-kit -> vendor/ui-kit: no build unit there",
+    "mix-edge-submodules: proto-py -> libs/proto-py: no build unit there"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "choice",
+   "count": 1,
+   "examples": [
+    "sys-cpp-vcpkg-conan: .: vcpkg and conan declared: vcpkg prepares the configure"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "member_missing",
+   "count": 1,
+   "examples": [
+    "sys-git-submodule-absent: CMakeLists.txt: workspace member third_party/fmt: absent from the tree"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "profiles_not_evaluated",
+   "count": 1,
+   "examples": [
+    "jvm-maven-multi-bom-profile: pom.xml: Only unconditional Maven modules and dependencies are read; profiles are not evaluated"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "restore_failed",
+   "count": 1,
+   "examples": [
+    "js-angular: projects/ui-kit: its packages are not installed: no workspace above names this folder"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "manifest_unread",
+   "count": 6,
+   "examples": [
+    "py-pip-tools: dev-requirements.in: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+    "py-pip-tools: dev-requirements.txt: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+    "py-pip-tools: requirements.in: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "toolchain_unavailable",
+   "count": 4,
+   "examples": [
+    "js-version-conflict: .nvmrc: node 22.1.0: node 20.11.1 runs these commands: one version per tool per run",
+    "mix-infra-compose: node 20.18.1-alpine: the preparation could not install it (its output is in the run's log)",
+    "mix-infra-tool-versions: mise.toml: node 22.12.0: node 20.11.1 runs these commands: one version per tool per run"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "restore_failed",
+   "count": 3,
+   "examples": [
+    "js-angular: projects/ui-kit: its packages are not installed: no workspace above names this folder",
+    "mix-dotnet-central: .: /work/src/Shop.Core/Shop.Core.csproj : error NU1605: Warning As Error: Detected package downgrade: Microsoft.EntityFrameworkCore from 8.0.11 to 8.0.10. Reference the package directly from the project to select a different version.  [/work/Shop.sln] | /work/src/Shop.Core/Shop.Core.csproj : error NU1605:  Shop.Core -> Npgsql.EntityFrameworkCore.PostgreSQL 8.0.11 -> Microsoft.EntityFrameworkCore (>= 8.0.11)  [/work/Shop.sln] | /work/src/Shop.Core/Shop.Core.csproj : error NU1605:  Shop.Core -> Microsoft.EntityFrameworkCore (>= 8.0.10) [/work/Shop.sln] | /work/src/Shop.Api/Shop.Api.csproj : error N",
+    "mix-infra-gha: .: /daodan/state/tools/mise/installs/node/20.18.1/lib/node_modules/corepack/dist/lib/corepack.cjs:21535 | if (key == null || signature == null) throw new Error(`Cannot find matching keyid: ${JSON.stringify({ signatures, keys })}`); | ^ | Error: Cannot find matching keyid: {\"signatures\":[{\"sig\":\"MEYCIQCfJKJEKPWCmE7gRtXVuA3m3Rt+L90cDW4f7/gcyBHnowIhAJS3Ed6W0xEe6ORqnaLilaxumi38L4jQQNfObFby3cg8\",\"keyid\":\"SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U\"}],\"keys\":[{\"expires\":null,\"keyid\":\"SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA\",\"keytype\":\"ecdsa-sha2-nistp256\",\"scheme\":\"ecdsa-sha2-nistp256"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "workspace_failure",
+   "count": 2,
+   "examples": [
+    "mix-dotnet-central: Shop.sln: Msbuild failed when processing the file '/work/src/Shop.Api/Shop.Api.csproj' with message: Warning As Error: Detected package downgrade: Microsoft.EntityFrameworkCore from 8.0.11 to 8.0.10. Reference the package directly from the project to select a different version.   Shop.Api -> Shop.Core -> Npgsql.EntityFrameworkCore.PostgreSQL 8.0.11 -> Microsoft.EntityFrameworkCore (>= 8.0.11)   Shop.Api -> Shop.Core -> Microsoft.EntityFrameworkCore (>= 8.0.10)",
+    "mix-dotnet-central: Shop.sln: Msbuild failed when processing the file '/work/src/Shop.Core/Shop.Core.csproj' with message: Warning As Error: Detected package downgrade: Microsoft.EntityFrameworkCore from 8.0.11 to 8.0.10. Reference the package directly from the project to select a different version.   Shop.Core -> Npgsql.EntityFrameworkCore.PostgreSQL 8.0.11 -> Microsoft.EntityFrameworkCore (>= 8.0.11)   Shop.Core -> Microsoft.EntityFrameworkCore (>= 8.0.10)"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "config_not_generated",
+   "count": 1,
+   "examples": [
+    "js-sveltekit: tsconfig.json: tsconfig.json extends .svelte-kit/tsconfig.json, a file the framework generates (`svelte-kit sync`), which no install step of the project runs (no `prepare` script; it is only in `check`)"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "language_not_indexed",
+   "count": 1,
+   "examples": [
+    "js-sveltekit: nothing of the 2 svelte files is read: template not read: calls and bindings in it are not sites (2); none of their 2 calls is asked: builtin (2)"
+   ]
+  }
+ ],
+ "containers": {
+  "runs": 602,
+  "seconds": 5887.5,
+  "phases": {
+   "execute": {
+    "runs": 316,
+    "seconds": 1158.3
+   },
+   "prepare": {
+    "runs": 286,
+    "seconds": 4729.2
+   }
+  },
+  "not_zero": [
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble",
+    "outcome": "gap",
+    "exit_code": null,
+    "cause": "https://launchpad.net/ubuntu/+archive/primary/+files/valgrind_3.22.0-0ubuntu3_amd64.deb could not be downloaded and verified: HTTP Error 502: Proxy Error",
+    "count": 1,
+    "cases": [
+     "sys-rust-shared-test-module"
+    ]
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble",
+    "outcome": "exited",
+    "exit_code": 1,
+    "cause": null,
+    "count": 1,
+    "cases": [
+     "jvm-kmp-common-jvm"
+    ]
+   }
+  ]
+ },
+ "by_case": {
+  "js-angular": {
+   "seconds": 160.7,
+   "languages": {
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-bun": {
+   "seconds": 121.2,
+   "languages": {
+    "typescript": {
+     "state": "fresh",
+     "holes": 6
+    }
+   }
+  },
+  "js-cjs-esm-exports": {
+   "seconds": 90.6,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-deno": {
+   "seconds": 91.0,
+   "languages": {
+    "typescript": {
+     "state": "fresh",
+     "holes": 6
+    }
+   }
+  },
+  "js-lerna": {
+   "seconds": 105.2,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-local-and-git-deps": {
+   "seconds": 143.8,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-nextjs": {
+   "seconds": 123.1,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "js-node-scripts": {
+   "seconds": 105.6,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "js-npm-single": {
+   "seconds": 121.8,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-npm-workspaces": {
+   "seconds": 121.5,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-nx": {
+   "seconds": 140.9,
+   "languages": {
+    "typescript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-pnpm-workspace": {
+   "seconds": 135.6,
+   "languages": {
+    "typescript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-static-html": {
+   "seconds": 91.7,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 3
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "js-sveltekit": {
+   "seconds": 121.5,
+   "languages": {
+    "javascript": {
+     "state": "failed",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "svelte": {
+     "state": "failed",
+     "holes": 2
+    },
+    "typescript": {
+     "state": "failed",
+     "holes": 0
+    }
+   }
+  },
+  "js-turborepo": {
+   "seconds": 100.2,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 2
+    }
+   }
+  },
+  "js-vendored-generated": {
+   "seconds": 95.3,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 8
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-version-conflict": {
+   "seconds": 139.6,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "js-vite-react-ts": {
+   "seconds": 123.1,
+   "languages": {
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "js-vue-pnpm": {
+   "seconds": 131.3,
+   "languages": {
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "vue": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "js-yarn-berry": {
+   "seconds": 106.7,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "py-conda-env": {
+   "seconds": 90.3,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 6
+    }
+   }
+  },
+  "py-django": {
+   "seconds": 57.1,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 9
+    }
+   }
+  },
+  "py-fastapi-compose": {
+   "seconds": 61.4,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "py-hatch-envs": {
+   "seconds": 78.4,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "py-monorepo-path-deps": {
+   "seconds": 72.9,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "py-namespace-packages": {
+   "seconds": 61.4,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "py-notebooks": {
+   "seconds": 59.7,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 2
+    }
+   }
+  },
+  "py-pdm": {
+   "seconds": 55.4,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "py-pep723-scripts": {
+   "seconds": 85.3,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 4
+    }
+   }
+  },
+  "py-pip-tools": {
+   "seconds": 83.4,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "py-pipenv": {
+   "seconds": 60.6,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 2
+    }
+   }
+  },
+  "py-poetry-groups": {
+   "seconds": 56.3,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "py-requirements-includes": {
+   "seconds": 88.0,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 4
+    }
+   }
+  },
+  "py-setup-cfg-extras": {
+   "seconds": 79.7,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "py-setup-py-dynamic": {
+   "seconds": 63.6,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "py-setup-py-static": {
+   "seconds": 81.9,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 4
+    }
+   }
+  },
+  "py-undeclared-scripts": {
+   "seconds": 73.9,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 10
+    }
+   }
+  },
+  "py-uv-src-layout": {
+   "seconds": 87.4,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "py-uv-workspace": {
+   "seconds": 97.2,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "py-vendored-generated": {
+   "seconds": 67.2,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 6
+    }
+   }
+  },
+  "py-version-disagree": {
+   "seconds": 74.7,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-android-app-lib": {
+   "seconds": 307.5,
+   "languages": {
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-gradle-computed-deps": {
+   "seconds": 146.5,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-gradle-groovy-wrapper": {
+   "seconds": 191.4,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-gradle-kts-catalog-composite": {
+   "seconds": 302.5,
+   "languages": {
+    "java": {
+     "state": "failed",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-gradle-locking": {
+   "seconds": 115.8,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-java-version-conflict": {
+   "seconds": 178.7,
+   "languages": {
+    "java": {
+     "state": "failed",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-kmp-common-jvm": {
+   "seconds": 244.3,
+   "languages": {
+    "kotlin": {
+     "state": "fresh",
+     "holes": 23
+    }
+   }
+  },
+  "jvm-kotlin-source-sets": {
+   "seconds": 261.2,
+   "languages": {
+    "kotlin": {
+     "state": "fresh",
+     "holes": 46
+    }
+   }
+  },
+  "jvm-maven-multi-bom-profile": {
+   "seconds": 159.4,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 7
+    }
+   }
+  },
+  "jvm-maven-release-apt": {
+   "seconds": 146.9,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-maven-wrapper": {
+   "seconds": 127.6,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-mixed-java-kotlin": {
+   "seconds": 185.4,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-no-build": {
+   "seconds": 126.7,
+   "languages": {
+    "java": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-protobuf-generated": {
+   "seconds": 137.1,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 17
+    }
+   }
+  },
+  "jvm-sbt-two-subprojects": {
+   "seconds": 95.7,
+   "languages": {}
+  },
+  "jvm-spring-boot-managed": {
+   "seconds": 282.7,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    }
+   }
+  },
+  "sys-bazel": {
+   "seconds": 115.4,
+   "languages": {
+    "cpp": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "sys-c-macro-annotations": {
+   "seconds": 100.0,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "cpp": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "sys-cmake-presets": {
+   "seconds": 431.4,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-cmake-targets": {
+   "seconds": 78.4,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "cpp": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "sys-cpp-header-only": {
+   "seconds": 283.0,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-cpp-vcpkg-conan": {
+   "seconds": 138.2,
+   "languages": {
+    "cpp": {
+     "state": "failed",
+     "holes": 0
+    }
+   }
+  },
+  "sys-git-submodule-absent": {
+   "seconds": 107.8,
+   "languages": {
+    "cpp": {
+     "state": "failed",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-buildtags": {
+   "seconds": 175.4,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 4
+    }
+   }
+  },
+  "sys-go-cgo": {
+   "seconds": 106.5,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "go": {
+     "state": "fresh",
+     "holes": 14
+    }
+   }
+  },
+  "sys-go-generated": {
+   "seconds": 106.8,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 2
+    }
+   }
+  },
+  "sys-go-nested": {
+   "seconds": 86.2,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-single": {
+   "seconds": 124.5,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-toolchain": {
+   "seconds": 137.3,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-vendor": {
+   "seconds": 99.2,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 2
+    }
+   }
+  },
+  "sys-go-workspace": {
+   "seconds": 99.9,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "sys-make-plain": {
+   "seconds": 77.7,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "sys-meson": {
+   "seconds": 66.2,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-buildrs": {
+   "seconds": 91.8,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-features": {
+   "seconds": 79.4,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "sys-rust-path-git": {
+   "seconds": 88.6,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-shared-test-module": {
+   "seconds": 386.7,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-single": {
+   "seconds": 96.3,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-tauri": {
+   "seconds": 134.3,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 2
+    },
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "sys-rust-toolchain-conflict": {
+   "seconds": 115.2,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-workspace": {
+   "seconds": 140.9,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "mix-dart-flutter": {
+   "seconds": 62.3,
+   "languages": {}
+  },
+  "mix-dotnet-central": {
+   "seconds": 137.0,
+   "languages": {
+    "csharp": {
+     "state": "fresh",
+     "holes": 5
+    }
+   }
+  },
+  "mix-edge-deep-manifest": {
+   "seconds": 261.4,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "mix-edge-empty": {
+   "seconds": 64.3,
+   "languages": {}
+  },
+  "mix-edge-extensions": {
+   "seconds": 82.1,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "typescript": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "mix-edge-scripts": {
+   "seconds": 52.9,
+   "languages": {}
+  },
+  "mix-edge-sql": {
+   "seconds": 66.3,
+   "languages": {}
+  },
+  "mix-edge-submodules": {
+   "seconds": 93.9,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "mix-edge-vendored": {
+   "seconds": 105.6,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 7
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 2
+    }
+   }
+  },
+  "mix-elixir-umbrella": {
+   "seconds": 60.7,
+   "languages": {}
+  },
+  "mix-infra-compose": {
+   "seconds": 110.2,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 9
+    }
+   }
+  },
+  "mix-infra-devcontainer": {
+   "seconds": 94.9,
+   "languages": {
+    "typescript": {
+     "state": "fresh",
+     "holes": 2
+    }
+   }
+  },
+  "mix-infra-gha": {
+   "seconds": 249.6,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 4
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "mix-infra-k8s-helm": {
+   "seconds": 59.5,
+   "languages": {}
+  },
+  "mix-infra-tool-versions": {
+   "seconds": 110.2,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "mix-php-laravel": {
+   "seconds": 98.8,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "mix-poly-firebase": {
+   "seconds": 424.7,
+   "languages": {
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 3
+    },
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "mix-poly-grpc": {
+   "seconds": 129.5,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 16
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 6
+    }
+   }
+  },
+  "mix-poly-openapi": {
+   "seconds": 116.8,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "mix-ruby-rails": {
+   "seconds": 69.5,
+   "languages": {
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "mix-swift-spm": {
+   "seconds": 148.8,
+   "languages": {}
+  },
+  "mix-terraform-modules": {
+   "seconds": 200.3,
+   "languages": {}
+  }
+ }
+}

@@ -168,18 +168,24 @@ Conta come risultato, per linguaggio su tutti i casi: i casi `fresh` sui casi ch
 
 ### Risultati
 
-Giro completo sui 122 casi: non ancora misurato. La colonna dei piloti viene da cinque piloti del 15 e 16 novembre 2026, 11 casi in tutto, con versioni successive del driver: non è un giro.
+Primo giro, 16 novembre 2026, sui 104 progetti in miniatura (`results/pipeline/2026-11-16-fixtures.json`, rapporto in `2026-11-16-fixtures.report.md`), con il passo dinamico. I 18 repository veri: non ancora misurati. 104 casi, nessuno fallito; 13.182 secondi in tutto, mediana 106 per caso; 602 corse di container; circa 1 USD fatturato da Modal.
 
-| Linguaggio | Piloti: casi `fresh` / casi | Piloti: file indicizzati / nello snapshot | Piloti: quota risposta | Giro completo |
+| Linguaggio | Casi `fresh` / casi | File indicizzati / nello snapshot | Quota risposta | Passo dinamico: casi osservati, siti |
 | --- | --- | --- | --- | --- |
-| cpp | 1 / 1 | 4 / 4 | 92,9 % | non ancora misurato |
-| java | 2 / 2 | 3 / 3 | 100,0 % | non ancora misurato |
-| javascript | 0 / 1 | 0 / 0 | — | non ancora misurato |
-| kotlin | 1 / 1 | 2 / 2 | 100,0 % | non ancora misurato |
-| python | 2 / 2 | 7 / 7 | 92,3 % | non ancora misurato |
-| stylesheet | 3 / 3 | 21 / 21 | 50,0 % | non ancora misurato |
-| svelte | 1 / 1 | 0 / 2 | 0,0 % | non ancora misurato |
-| typescript | 3 / 4 | 11 / 11 | 56,5 % | non ancora misurato |
-| vue | 0 / 1 | 0 / 0 | — | non ancora misurato |
+| c | 2 / 8 | 7 / 8 | 100,0 % | 0, 0 |
+| cpp | 3 / 6 | 10 / 10 | 94,0 % | 1, 5 |
+| csharp | 1 / 1 | 2 / 2 | 75,0 % | nessun osservatore |
+| go | 10 / 10 | 28 / 34 | 75,8 % | 2, 4 |
+| java | 9 / 12 | 20 / 22 | 77,1 % | 4, 19 |
+| javascript | 19 / 20 | 34 / 34 | 75,9 % | 1, 6 |
+| kotlin | 3 / 8 | 7 / 12 | 31,7 % | 1, 5 |
+| python | 28 / 28 | 81 / 81 | 75,0 % | 1, 3 |
+| rust | 10 / 10 | 23 / 23 | 95,9 % | 0, 0 |
+| stylesheet | 10 / 10 | 50 / 51 | 52,2 % | nessun osservatore |
+| svelte | 0 / 1 | 0 / 2 | 0,0 % | nessun osservatore |
+| typescript | 13 / 15 | 43 / 43 | 83,2 % | 0, 0 |
+| vue | 1 / 1 | 0 / 3 | 0,0 % | nessun osservatore |
 
-Nei piloti: 11 casi, nessuno fallito, mediana 118,1 secondi per caso; 69 corse di container, tutte con exit 0; C# senza analizzatore (un caso, 2 file).
+- La maggior parte dei progetti in miniatura non dichiara test: il passo dinamico vi è `not-run` con la causa. Dove li dichiara, osserva (JavaScript, Java, Kotlin, Go, C++, Python).
+- Stati diversi da `fresh` e loro cause, dal rapporto: C e C++ costruiti con Meson, Make o Bazel (configura solo CMake), due configure che falliscono (vcpkg/Conan nell'analizzatore, submodule assente), Kotlin su Android (manca l'SDK), Gradle e Maven nella stessa cartella, una build composta, i soli script `.gradle.kts` che avviano lo stadio Kotlin, SvelteKit senza il tsconfig generato, due file letti solo dal lessicale.
+- Rust: Callgrind non parte nei container di Modal (si ferma nel caricatore dinamico) e in un caso il pacchetto di Valgrind non si scarica (502 di Launchpad).
