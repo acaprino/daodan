@@ -413,8 +413,8 @@ def test_the_preparation_reaches_the_hosts_the_project_declares(tmp_path):
 
 
 def test_tests_that_reach_for_a_service_or_the_network_are_said(tmp_path):
-    """The execution has no network and starts no service: a project that needs one must declare how it starts,
-    and the step starts none."""
+    """The execution has no network, only the services the project's CI declares, which the step starts beside
+    it: a test that reaches for another one, or for the network, is said."""
     tests = ("E   ConnectionRefusedError: [Errno 111] Connection refused\n"
              "E   socket.gaierror: [Errno -3] Temporary failure in name resolution\n=== 2 failed, 1 passed ===\n")
     result = observe(tmp_path, Played(execute="DAODAN-DYNAMIC 0 python 3.13.18 1\nDAODAN-DYNAMIC 0 exit 1 4\n",

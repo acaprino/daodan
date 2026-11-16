@@ -31,7 +31,8 @@ interrupt after `LIMIT` seconds so the recorder still writes what it saw. Back c
 per process, and each run's log. What did not happen is a gap with its cause: tests that did not start (the
 log's tail), that failed, that found no test, test modules pytest could not import (`tests_not_collected`, each
 with its error's first line), that outlasted the limit, that reached for a service or the
-network (the execution has none and the step starts no service), a project that could not be installed.
+network (the execution has no network, only the services the project's CI declares, which the step starts beside
+it: `dynamic.services`), a project that could not be installed.
 """
 from __future__ import annotations
 
@@ -398,7 +399,8 @@ def _outcome(run: dict, marks: dict, log: str, processes: int, ended: str) -> tu
     if refused:
         gaps.append(gap("services_unreachable",
                         f"{command}: {refused} lines of its log report a refused connection or an unreachable "
-                        "network: the tests run with no network and the step starts no service"))
+                        "network: the tests run with no network, beside only the services the project's CI "
+                        "declares"))
     if version and tuple(int(number) for number in version.split(".")[:2]) not in VERIFIED:
         gaps.append(gap("recorder_unverified",
                         f"{command} ran on Python {version}: the recorder is verified on CPython 3.12 and 3.13, and "
