@@ -144,3 +144,65 @@ def test_each_run_takes_the_python_its_folder_states_first_as_uv_reads_it():
     assert unit["python"] == {"version": ">=3.14,<4.0", "declared_in": "backend/pyproject.toml"}
     record["toolchains"] = []
     assert "python" not in python.structure(record)["units"][0]
+
+
+def _wheel(path: Path, files: dict) -> None:
+    """A wheel holding `files`, with the metadata and RECORD an installer reads."""
+    import base64
+    import hashlib
+    import zipfile
+    name, version = path.name.split("-")[:2]
+    info = f"{name}-{version}.dist-info"
+    files = {**files, f"{info}/METADATA": f"Metadata-Version: 2.1\nName: {name}\nVersion: {version}\n",
+             f"{info}/WHEEL": "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n"}
+    record = [f"{rel},sha256={base64.urlsafe_b64encode(hashlib.sha256(text.encode()).digest()).rstrip(b'=').decode()},"
+              f"{len(text.encode())}" for rel, text in files.items()]
+    with zipfile.ZipFile(path, "w") as archive:
+        for rel, text in {**files, f"{info}/RECORD": "\n".join([*record, f"{info}/RECORD,,"]) + "\n"}.items():
+            archive.writestr(rel, text)
+
+
+def test_the_analyzer_on_the_host_reads_the_project_and_its_environment_and_runs_none_of_them(tmp_path, monkeypatch):
+    """AGENTS.md: the project's code runs only in the container. On the host uv builds the environment from wheels
+    and starts its interpreter at each install, scip-python's and the checker's Pyright start it to ask its paths,
+    the checker parses with it: a project whose files, and whose environment (a wheel's `.pth` import line and
+    `sitecustomize`), each leave a mark when run is read, its package resolved, and no mark appears. Real uv, Node,
+    scip-python and Pyright (on Modal)."""
+    import subprocess
+    marks = tmp_path / "marks"
+    marks.mkdir()
+
+    def marking(what: str) -> str:
+        return f"open({str(marks / what)!r}, 'w').close()\n"
+
+    wheels = tmp_path / "wheels"
+    wheels.mkdir()
+    _wheel(wheels / "daodanmark-1.0-py3-none-any.whl", {
+        "daodanmark/__init__.py": "VALUE = 1\n", "daodanmark_hook.py": marking("pth"),
+        "daodanmark.pth": "import daodanmark_hook\n", "sitecustomize.py": marking("sitecustomize")})
+    project = tmp_path / "project"
+    project.mkdir()
+    for name in ("setup.py", "conftest.py", "json.py", "sitecustomize.py", "backend.py"):
+        (project / name).write_text(marking(name), encoding="utf-8")
+    (project / "pyproject.toml").write_text(
+        '[build-system]\nrequires = []\nbuild-backend = "backend"\nbackend-path = ["."]\n', encoding="utf-8")
+    # The second has no wheel: installed one at a time, uv starts the interpreter again after the first.
+    (project / "requirements.txt").write_text("daodanmark\nzz-daodan-without-wheel\n", encoding="utf-8")
+    (project / "app.py").write_text("import json\nimport daodanmark\nprint(daodanmark.VALUE, json.dumps(1))\n",
+                                    encoding="utf-8")
+    for name, value in (("UV_FIND_LINKS", str(wheels)), ("UV_NO_INDEX", "1"), ("UV_NO_CACHE", "1")):
+        monkeypatch.setenv(name, value)
+    result = python.index(project, tmp_path / "work",
+                          units=[{"root": "", "manifests": ["pyproject.toml", "requirements.txt"]}])
+    [run] = result["runs"]
+    assert run["index"] and run["packages"] == {"daodanmark": "1.0"}, result
+    index = code_graph.Index(project)
+    index.load(Path(run["index"]))
+    assert any(" daodanmark 1.0 " in o.key for o in index.documents["app.py"])  # read from the environment
+    assert ["app.py", 3, 17, "bound"] in [row[:4] for row in python._beside(Path(run["index"]), "unbound")]
+    assert sorted(path.name for path in marks.iterdir()) == []
+    # The control: run as code, a marking file does leave its mark.
+    environment = Path(run["environment"])
+    subprocess.run([str(environment / "bin/python"), "-c", "import daodanmark_hook"], check=True)
+    subprocess.run([str(environment / "bin/python"), str(project / "setup.py")], check=True)
+    assert sorted(path.name for path in marks.iterdir()) == ["pth", "setup.py"]

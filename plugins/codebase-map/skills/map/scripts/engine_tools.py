@@ -581,11 +581,32 @@ def _declared_requirements(project_root: Path, manifests: list[str], uv: str) ->
     return sorted(set(kept))
 
 
+def _inert(environment: Path) -> None:
+    """What an interpreter of `environment` would run as it starts, by `site`'s rules, removed: a `.pth` file's
+    import lines, `sitecustomize` and `usercustomize`, code of the packages it holds. uv starts that interpreter at
+    each install and the analyzers to ask it its paths: none of the project's environment runs on the host. The
+    folders a `.pth` file names stay."""
+    for site in [*Path(environment).glob("lib/python*/site-packages"), *Path(environment).glob("Lib/site-packages")]:
+        for path in site.iterdir():
+            if path.name.split(".", 1)[0] in ("sitecustomize", "usercustomize"):
+                shutil.rmtree(path) if path.is_dir() else path.unlink()
+            elif path.suffix == ".pth" and path.is_file():
+                try:
+                    lines = path.read_bytes().decode("utf-8-sig").splitlines()
+                except UnicodeDecodeError:  # `site` would read it in the locale's encoding: none of it is kept
+                    path.unlink()
+                    continue
+                kept = [line for line in lines if not line.startswith(("import ", "import\t"))]
+                if kept != lines:
+                    path.write_text("".join(f"{line}\n" for line in kept), encoding="utf-8")
+
+
 def python_environment(project_root: Path, names, python: str | None = None) -> Path | None:
     """The project's declared Python packages in an environment of the shared directory.
 
     Built once per set of manifests and interpreter, from wheels only: no package
-    build script and no project code runs, and nothing is written into the project.
+    build script and no project code runs, and nothing is written into the project;
+    what its interpreter would run as it starts is removed (`_inert`).
     The interpreter is Daodan's, else `python`, the Python the project states, which
     uv resolves as `uv sync` does (an installed one that matches, else its download):
     a project that declares no package then gets the interpreter alone, and one uv
@@ -604,6 +625,7 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
     destination = shared_cache_dir() / "python" / digest.hexdigest()[:16]
     marker = destination / "daodan-environment.json"
     if marker.is_file():
+        _inert(destination)  # one built before it was made inert
         return destination
     destination.parent.mkdir(parents=True, exist_ok=True)
     free = shutil.disk_usage(destination.parent).free
@@ -618,8 +640,14 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
     shutil.rmtree(destination, ignore_errors=True)
 
     def run(*arguments, timeout=1800):
-        return subprocess.run([uv, *arguments], stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                              timeout=timeout)
+        # Outside the project: uv reads no configuration of its (a mirror for the interpreter it downloads).
+        return subprocess.run([uv, *arguments], cwd=destination.parent, stdin=subprocess.DEVNULL,
+                              capture_output=True, text=True, timeout=timeout)
+
+    def install(*arguments, timeout=1800) -> bool:
+        _inert(destination)  # uv starts the environment's interpreter first (`-I`: with `site`)
+        return run("pip", "install", "--python", str(destination), "--only-binary", ":all:", *arguments,
+                   timeout=timeout).returncode == 0
 
     made = run("venv", str(destination), "--python", version)
     if made.returncode != 0:
@@ -628,13 +656,12 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
         return None
     installed = len(requirements)
     if requirements:
-        install = ("pip", "install", "--python", str(destination), "--only-binary", ":all:")
         listed = destination / "daodan-requirements.txt"
         listed.write_text("\n".join(requirements) + "\n", encoding="utf-8")
-        if run(*install, "-r", str(listed)).returncode != 0:
+        if not install("-r", str(listed)):
             # One package without a wheel must not cost the others.
-            installed = sum(1 for requirement in requirements
-                            if run(*install, requirement, timeout=600).returncode == 0)
+            installed = sum(1 for requirement in requirements if install(requirement, timeout=600))
+    _inert(destination)
     if installed == 0 and not python:
         shutil.rmtree(destination, ignore_errors=True)
         return None

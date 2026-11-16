@@ -982,10 +982,11 @@ class PreparedEnvironmentTests(unittest.TestCase):
             "tool @ file:///tmp/tool\n\n# note\n", encoding="utf-8")
         self.names = ["pyproject.toml", "api/requirements.txt", "api/app.py"]
         self.cache = Path(self.temp.name).resolve() / "cache"
-        self.commands, self.refused = [], None
+        self.commands, self.refused, self.cwds = [], None, []
 
-    def run_uv(self, command, **_kwargs):
+    def run_uv(self, command, **kwargs):
         self.commands.append(command[1:])
+        self.cwds.append(kwargs.get("cwd"))
         if command[1] == "venv":
             if self.refused:
                 return subprocess.CompletedProcess(command, 2, "", self.refused)
@@ -1038,6 +1039,42 @@ class PreparedEnvironmentTests(unittest.TestCase):
         self.refused = "error: No interpreter found for Python 3.99 in managed installations or search path"
         with self.assertRaisesRegex(subprocess.SubprocessError, "uv could not provide Python 3.99: error: No interp"):
             self.prepare("3.99")
+
+    def test_what_an_interpreter_would_run_from_the_environment_is_removed_before_uv_starts_it(self):
+        """AGENTS.md: the project's code never runs on the host. uv starts the environment's interpreter at each
+        install (`-I`: with `site`), the analyzers to ask it its paths: a `.pth` file's import lines and
+        `sitecustomize`, which a wheel may install, would run. They are removed before each install and after the
+        last, and from an environment built before, when it is used again; the folders a `.pth` file names stay.
+        uv runs outside the project: a configuration of the project's (a mirror for the interpreter it downloads)
+        is not read."""
+        seen, run = [], self.run_uv
+
+        def installed(command, **kwargs):
+            done = run(command, **kwargs)
+            if command[1:3] != ["pip", "install"]:
+                return done
+            site = Path(command[command.index("--python") + 1]) / "lib/python3.13/site-packages"
+            seen.append({path.name: path.read_text(encoding="utf-8") for path in site.glob("*")})
+            if "-r" in command:  # the whole list fails: one at a time
+                return subprocess.CompletedProcess(command, 1, "", "no wheel for one")
+            site.mkdir(parents=True, exist_ok=True)
+            (site / "mark.pth").write_text("import mark_hook\n# a note\nextra\n\timport kept\n", encoding="utf-8")
+            (site / "sitecustomize.py").write_text("import mark_hook\n", encoding="utf-8")
+            return done
+
+        self.run_uv = installed
+        environment = self.prepare()
+        inert = {"mark.pth": "# a note\nextra\n\timport kept\n"}
+        self.assertEqual(seen, [{}, {}, inert, inert, inert])  # the list, then its four requirements one at a time
+        site = environment / "lib/python3.13/site-packages"
+        self.assertEqual({path.name: path.read_text(encoding="utf-8") for path in site.iterdir()}, inert)
+        (site / "mark.pth").write_text("﻿import old\nkept\n", encoding="utf-8")  # an environment built before
+        (site / "sitecustomize").mkdir()
+        self.run_uv = run
+        self.assertEqual(self.prepare(), environment)
+        self.assertEqual({path.name: path.read_text(encoding="utf-8") for path in site.iterdir()},
+                         {"mark.pth": "kept\n"})
+        self.assertEqual({cwd and Path(cwd) for cwd in self.cwds}, {self.cache / "python"})
 
 
 class MultiLanguageTests(unittest.TestCase):

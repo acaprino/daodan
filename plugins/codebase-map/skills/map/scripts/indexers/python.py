@@ -14,7 +14,9 @@ root is not found unless Pyright is told: without it no absolute import of the p
 The mirror gets a `pyrightconfig.json` with the source roots the unit states (`source_roots`), else `src`
 where it holds a package, each as a root and an extra path, unless the project declares a Pyright
 configuration. What a run lacks is a gap of the contract (`gaps`): an environment that failed, a stated
-manifest the environment does not read. No project code runs. The project's version is `_` in every run: it
+manifest the environment does not read. No project code runs, nor any of its environment's where the checkers
+start its interpreter to ask its paths (`python_environment` removes what it would run as it starts: `.pth`
+import lines, `sitecustomize`). The project's version is `_` in every run: it
 is part of each project symbol, so node ids stay the same from one snapshot to the next.
 
 Where scip-python cannot start (Windows: `RUNS_HERE`), it runs in a container (`container.run_in_container`,
