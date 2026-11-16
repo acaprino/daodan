@@ -68,6 +68,8 @@ WORKFLOWS = ".github/workflows"  # where GitHub reads a repository's workflows
 GITLAB = ".gitlab-ci.yml"  # where GitLab reads a project's pipeline, unless the project's settings name another
 SERVICES = re.compile(r"""["']?\bservices["']?\s*:""")  # a workflow that may declare a service container
 INCLUDE = re.compile(r"""(?m)^["']?include["']?\s*:""")  # a pipeline that includes files, which may declare one
+RUN = re.compile(r"""(?m)^[\s-]*["']?run["']?\s*:""")  # a step that runs a script: the tests, the steps before
+SCRIPT = re.compile(r"""(?m)^\s*["']?(?:before_)?script["']?\s*:""")  # a GitLab job's lines
 # Renovate's YAML library, beside the Renovate on the path: yaml 2.9.1, the version Renovate 44.239.1 pins
 YAML = '"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/yaml/bin.mjs"'
 # Each workflow of the copy, then its document as JSON, or `null` and the library's message on stderr.
@@ -134,12 +136,14 @@ def commands(context):
     folder = context.root / WORKFLOWS  # outside the snapshot: read on disk, as `.gitmodules` is, links left out
     read = compose.reader(context)
     named = folder.is_dir() and not folder.is_symlink() and (any(
-        pattern.search(path.read_text(encoding="utf-8", errors="replace")) for pattern in (SERVICES, compose.MENTION)
+        pattern.search(path.read_text(encoding="utf-8", errors="replace")) for pattern in (
+            SERVICES, compose.MENTION, RUN)
         for path in sorted(folder.glob("*.y*ml")) if path.is_file() and not path.is_symlink()) or any(
         rel.endswith(".sh") and compose.MENTION.search(read(rel) or "") for rel in context.inventory.files))
     pipeline = context.root / GITLAB
     named = named or pipeline.is_file() and not pipeline.is_symlink() and any(
-        pattern.search(pipeline.read_text(encoding="utf-8", errors="replace")) for pattern in (SERVICES, INCLUDE))
+        pattern.search(pipeline.read_text(encoding="utf-8", errors="replace")) for pattern in (
+            SERVICES, INCLUDE, SCRIPT))
     workflows = [{"tool": "renovate", "argv": ["sh", "-c", EACH], "cwd": ".", "env": {}, "network": "none"}] \
         if named else []
     return [{"tool": "renovate", "argv": ["renovate", "--platform=local", "--dry-run=extract", "--report-type=file",
@@ -457,6 +461,77 @@ def _hosts(image: str, alias) -> list[str]:
                                service.replace("/", "__"), service.replace("/", "-")]))
 
 
+def _variables(top: dict, job: dict) -> tuple[dict, list[str], dict]:
+    """The variables GitLab's runner gives `job`: the pipeline's it inherits (`top`) and its own, each expanded
+    once over them as written (`_expand`; `expand: false` keeps it as written), the names of those that reference
+    one the file does not define (the CI's, kept as written), and the values as written."""
+    written = {**{key: value for key, value in top.items() if _inherits(job, "variables", key)},
+               **(job["variables"] if isinstance(job.get("variables"), dict) else {})}
+    given = {key: value.get("value") if isinstance(value, dict) else value for key, value in written.items()}
+    variables, computed = {}, []
+    for key, value in given.items():
+        text, unknown = _expand(value, given) if isinstance(value, str) and not (
+            isinstance(written[key], dict) and written[key].get("expand") is False) else (value, [])
+        variables[key] = value if unknown else text
+        computed += [key] if unknown else []
+    return variables, computed, given
+
+
+def _lines(value) -> list:
+    """A `script` as GitLab runs it: its lines, nested lists flattened (each kept at its own index)."""
+    return [_flat(item) for item in ([value] if isinstance(value, str) else value if isinstance(value, list) else [])]
+
+
+def _flat(item) -> list[str]:
+    return [item] if isinstance(item, str) else [line for part in item for line in _flat(part)] \
+        if isinstance(item, list) else []
+
+
+def _gitlab_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[dict]:
+    """The lines a job of GitLab's pipeline `doc` runs before its tests, as the `ci_steps` facet states them.
+    GitLab runs a job's `before_script` (its own, or `default:`'s when it inherits it) and `script` lines in one
+    shell in the project's folder, stopping at the first that fails: for each `tests` entry not in `claimed`, the
+    first line that runs it (`_tests_of`) is the test step, `{declared_in, tests, name, test, env, computed}` with
+    the job's variables (`_variables`) and those it sets; the lines before it are one step `{declared_in, tests,
+    name, cwd, run, env}` (`<rel>#<job>.<key>.<index>` of its first line), or `{.., cause}` where one starts Docker
+    Compose, which runs on the Docker the job starts: Daodan runs no line of that job."""
+    if not tests or not isinstance(doc, dict):
+        return []
+    default = doc["default"] if isinstance(doc.get("default"), dict) else {}
+    top = doc["variables"] if isinstance(doc.get("variables"), dict) else {}
+    facts = []
+    for job_id, job in doc.items():
+        if job_id in GITLAB_KEYWORDS or str(job_id).startswith(".") or not isinstance(job, dict):
+            continue
+        job = _extended(doc, job)
+        if "script" not in job:
+            continue
+        before = job["before_script"] if "before_script" in job else default.get("before_script") if _inherits(
+            job, "default", "before_script") else None
+        lines = [(f"{rel}#{job_id}.{key}.{index}", line) for key, value in (("before_script", before),
+                                                                             ("script", job["script"]))
+                 for index, item in enumerate(_lines(value)) for line in item]
+        variables, computed, _ = _variables(top, job)
+        for number, (here, line) in enumerate(lines):
+            for entry, sets in _tests_of(line, ".", tests, read):
+                if entry["declared_in"] in claimed:
+                    continue
+                claimed.add(entry["declared_in"])
+                name = {"tests": entry["declared_in"], "name": str(job_id)}
+                if number:
+                    started = next((text for _, text in lines[:number] if compose.MENTION.search(text)), None)
+                    facts.append({"declared_in": lines[0][0], **name, "cause": f"it runs `{started}`, on the Docker "
+                                  "the job starts, which Daodan does not read: Daodan runs no line of the job"}
+                                 if started else {"declared_in": lines[0][0], **name, "cwd": ".",
+                                                  "run": "\n".join(text for _, text in lines[:number]),
+                                                  **({"env": variables} if variables else {})})
+                shell = [key for key, value in sets.items() if "$" in value or "`" in value]
+                env = {**variables, **sets}
+                facts.append({"declared_in": here, **name, "test": True, **({"env": env} if env else {}),
+                              **({"computed": [*computed, *shell]} if computed or shell else {})})
+    return facts
+
+
 def _gitlab(rel: str, doc) -> tuple[list[dict], list[dict]]:
     """Each service a job of GitLab's pipeline `doc` runs with, as GitLab gives it (the module's docstring), and a
     gap for each file the pipeline includes."""
@@ -487,15 +562,7 @@ def _gitlab(rel: str, doc) -> tuple[list[dict], list[dict]]:
             default.get("services", doc.get("services")) if _inherits(job, "default", "services") else None)
         if "script" not in job or not isinstance(declared, list):
             continue
-        written = {**{key: value for key, value in top.items() if _inherits(job, "variables", key)},
-                   **(job["variables"] if isinstance(job.get("variables"), dict) else {})}
-        given = {key: value.get("value") if isinstance(value, dict) else value for key, value in written.items()}
-        variables, computed = {}, []
-        for key, value in given.items():  # `expand: false` keeps a value as written
-            text, unknown = _expand(value, given) if isinstance(value, str) and not (
-                isinstance(written[key], dict) and written[key].get("expand") is False) else (value, [])
-            variables[key] = value if unknown else text
-            computed += [key] if unknown else []
+        variables, computed, given = _variables(top, job)
         for index, service in enumerate(declared):
             service = {"name": service} if isinstance(service, str) else service
             if not isinstance(service, dict) or not service.get("name"):
@@ -530,6 +597,7 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
         elif rel == GITLAB:
             found, said = _gitlab(rel, doc)
             services, gaps = services + found, gaps + said
+            before += _gitlab_steps(rel, doc, list(tests), read, claimed)
         else:
             found, said = _steps(rel, doc, read)
             services, steps, gaps = services + _services(rel, doc), steps + found, gaps + said

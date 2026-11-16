@@ -100,7 +100,8 @@ WORKFLOW = "jobs:\n  test:\n    services:\n      postgres:\n        image: postg
 
 def test_renovate_reads_the_workflows_with_its_own_yaml_library_where_one_names_services(tmp_path):
     """The workflows sit in a dot folder, outside the snapshot and inside the container's copy (Git tracks them):
-    the command reads each one there; a project whose workflows name no service runs Renovate's extraction alone."""
+    the command reads each one there; a project whose workflows name no service, start no Compose and run no step
+    runs Renovate's extraction alone."""
     with context_of(tmp_path / "a", {"package.json": "{}\n", ".github/workflows/ci.yml": WORKFLOW}) as context:
         extract, workflows = renovate.commands(context)
     assert extract["argv"][0] == "renovate" and workflows["network"] == "none" and workflows["cwd"] == "."
@@ -110,6 +111,9 @@ def test_renovate_reads_the_workflows_with_its_own_yaml_library_where_one_names_
                         "c": {"package.json": "{}\n", ".github/workflows/ci.yml": "on: push\n"}}.items():
         with context_of(tmp_path / case, files) as context:
             assert [command["argv"][0] for command in renovate.commands(context)] == ["renovate"]
+    steps = "jobs:\n  t:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm test\n"  # its steps, its tests
+    with context_of(tmp_path / "d", {"package.json": "{}\n", ".github/workflows/ci.yml": steps}) as context:
+        assert [command["argv"][0] for command in renovate.commands(context)] == ["renovate", "sh"]
 
 
 def read_services(tmp_path, documents: str, stderr: str = "") -> dict:
@@ -185,9 +189,10 @@ GITLAB_MAILER = {"name": "registry.example.com__team__mailer", "image": "registr
                  "wait": "ports"}
 
 
-def test_renovate_reads_gitlab_s_pipeline_where_it_names_services_or_includes_files(tmp_path):
+def test_renovate_reads_gitlab_s_pipeline_where_it_names_services_includes_files_or_runs_scripts(tmp_path):
+    """A job's script may run the tests, and the lines before them are the job's steps (`ci_steps`)."""
     for case, text, read in (("a", "test:\n  services: [postgres]\n", True), ("b", "include: ci/x.yml\n", True),
-                             ("c", "test:\n  script: [make]\n", False)):
+                             ("c", "test:\n  script: [make]\n", True), ("d", "stages: [test]\n", False)):
         with context_of(tmp_path / case, {"package.json": "{}\n", ".gitlab-ci.yml": text}) as context:
             commands = renovate.commands(context)
         assert [command["argv"][0] for command in commands] == ["renovate", *(["sh"] if read else [])], case
@@ -549,6 +554,46 @@ def test_a_test_step_without_variables_is_a_fact_too_so_a_run_no_workflow_runs_i
     assert gap["detail"] == ("package.json#scripts.frontend:test: no workflow Daodan reads runs these tests (its CI "
                              "runs package.json#scripts.test): a failure of theirs is one the project's CI never sees")
     assert dynamic.ci_steps({"ci_steps": []}, tests)["gaps"] == []
+
+
+PIPELINE = {  # a GitLab pipeline whose jobs run the tests of two entries
+    "variables": {"POSTGRES_DB": "app", "DATABASE_URL": "postgres://u:p@postgres/$POSTGRES_DB"},
+    "default": {"before_script": ["npm ci"]},
+    "lint": {"script": ["npm run lint"]},
+    "test": {"services": ["postgres:16"], "variables": {"NODE_ENV": "test"},
+             "script": ["node scripts/migrate.js", ["node scripts/seed.js"], "SHA=$CI_COMMIT_SHA npm test",
+                        "npm run build"]},
+    "e2e": {"inherit": {"default": False}, "before_script": ["docker compose up -d"],
+            "script": ["npm run frontend:test"]}}
+
+
+def test_the_lines_a_gitlab_job_runs_before_its_tests_are_one_step_and_its_test_line_the_test_step(tmp_path):
+    """GitLab runs a job's `before_script` (its own or `default:`'s) and `script` lines in one shell in the
+    project's folder, nested lists flattened, stopping at the first that fails: the lines before the first that
+    runs a `tests` entry are one step, with the job's variables as its runner expands them; that line is the test
+    step, with those variables and the ones it sets. A line before the tests that starts Docker Compose, which runs
+    on the Docker the job starts, is a cause: Daodan runs no line of that job."""
+    tests = [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"},
+             {"root": "frontend", "runner": "jest", "declared_in": "package.json#scripts.frontend:test"}]
+    files = {"package.json": json.dumps({"scripts": {"test": "jest", "frontend:test": "cd frontend && jest",
+                                                     "lint": "eslint .", "build": "tsc"}})}
+    out = read_steps(tmp_path, files, tests, {".gitlab-ci.yml": PIPELINE})
+    variables = {"POSTGRES_DB": "app", "DATABASE_URL": "postgres://u:p@postgres/app", "NODE_ENV": "test"}
+    assert out["facts"]["ci_steps"] == [
+        {"declared_in": ".gitlab-ci.yml#test.before_script.0", "tests": "package.json#scripts.test", "name": "test",
+         "cwd": ".", "run": "npm ci\nnode scripts/migrate.js\nnode scripts/seed.js", "env": variables},
+        {"declared_in": ".gitlab-ci.yml#test.script.2", "tests": "package.json#scripts.test", "name": "test",
+         "test": True, "env": {**variables, "SHA": "$CI_COMMIT_SHA"}, "computed": ["SHA"]},
+        {"declared_in": ".gitlab-ci.yml#e2e.before_script.0", "tests": "package.json#scripts.frontend:test",
+         "name": "e2e", "cause": "it runs `docker compose up -d`, on the Docker the job starts, which Daodan does not "
+                                 "read: Daodan runs no line of the job"},
+        {"declared_in": ".gitlab-ci.yml#e2e.script.0", "tests": "package.json#scripts.frontend:test", "name": "e2e",
+         "test": True, "env": {"POSTGRES_DB": "app", "DATABASE_URL": "postgres://u:p@postgres/app"}}]
+    planned = dynamic.ci_steps(out["facts"], tests)
+    assert [step["declared_in"] for step in planned["steps"]] == [".gitlab-ci.yml#test.before_script.0"]
+    assert planned["env"] == {"POSTGRES_DB": "app", "DATABASE_URL": "postgres://u:p@postgres/app", "NODE_ENV": "test"}
+    assert [(gap["kind"], gap["path"]) for gap in planned["gaps"]] == [
+        ("ci_step_incomplete", ".gitlab-ci.yml#test.script.2"), ("ci_step_not_run", ".gitlab-ci.yml#e2e.before_script.0")]
 
 
 PLAYWRIGHT = {"jobs": {"test-playwright": {"steps": [  # the template's playwright.yml, its job's steps
