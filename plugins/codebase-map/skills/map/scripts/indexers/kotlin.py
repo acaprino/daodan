@@ -82,7 +82,7 @@ def missing(index, rels: list[str], compiled: dict[str, str] | None = None) -> d
             continue
         if rel.endswith(".kts"):
             reasons[rel] = "Gradle script: no KotlinCompile task compiles it"
-        elif rel.startswith("buildSrc/"):
+        elif build_logic(rel):
             reasons[rel] = "buildSrc: compiled by its own build, where scip-java's tasks do not run"
         else:
             reasons[rel] = "no Kotlin compile task of the build lists it"
@@ -174,13 +174,15 @@ def refine(index, graph: dict, compiled: dict[str, str]) -> None:
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-kotlin", ("kotlin",), frozenset({"gradle-project", "maven-module"}), True
 MIN_FREE = 5 * 2**30  # the container's memory: 4,688 MB for all its processes on klaxon (13 November 2026)
 # Under Maven scip-java indexes Java only: `jvm.MAVEN_KOTLIN` indexes the modules' Kotlin after its build, and the
-# targetroot is aggregated again into the index.
-PREPARE = r'''if [ -f pom.xml ] && ! ls build.gradle build.gradle.kts settings.gradle settings.gradle.kts >/dev/null 2>&1; then
-  step index "$SCIP_JAVA" index --output "$OUT/index.scip"
+# targetroot is aggregated again into the index. scip-java runs the build tool it is told (`jvm.tool_line`), else
+# the folder's.
+PREPARE = r'''if [ "${DAODAN_TOOL:-}" = maven ] || { [ -z "${DAODAN_TOOL:-}" ] && [ -f pom.xml ] \
+    && ! ls build.gradle build.gradle.kts settings.gradle settings.gradle.kts >/dev/null 2>&1; }; then
+  step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
   maven_kotlin "$OUT/kotlin-configs" \
     && step aggregate "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$WORK/target/scip-targetroot"
 else
-  step index "$SCIP_JAVA" index --output "$OUT/index.scip"
+  step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
 fi
 [ -f "$OUT/index.scip" ]
 '''
@@ -192,30 +194,43 @@ exit 0
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folder of each build, the JDKs it states and, for Maven, each
-    module with the source folders Maven's own model gives it."""
+    """What `index` takes from the pre-map: the folder of each build with its tools, the JDKs it states and, for
+    Maven, each module with the source folders Maven's own model gives it."""
     from indexers import jvm
-    return {"roots": jvm.build_roots(record), "toolchains": jvm.toolchains(record), "modules": jvm.modules(record),
-            "other_builds": jvm.other_builds(record)}
+    return {"roots": jvm.build_roots(record), "tools": jvm.build_tools(record), "toolchains": jvm.toolchains(record),
+            "modules": jvm.modules(record), "other_builds": jvm.other_builds(record)}
 
 
-def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots, toolchains=(),
+READS = (".kt", ".kts")  # the stage hands `index` the checkout's Kotlin files
+
+
+def build_logic(rel: str) -> bool:
+    """A file of the build's own Kotlin: a Gradle script, or buildSrc, the build of the build's logic."""
+    return rel.endswith(".kts") or "buildSrc" in rel.split("/")[:-1]
+
+
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots, tools=None, toolchains=(),
           modules=(), other_builds=(), engine=None, memory: int = MIN_FREE) -> dict:
-    """The forward-only index of each build in `roots` (the pre-map's build folders), each in a container of its
-    own, its runs, the indexer's time and memory, `configs` (the compile tasks `refine` reads, with the build
-    each came from) and `written` (the index as scip-java wrote it); `files` is not used: a build compiles every
-    task. Without a container, `unavailable`; without an index, `failed`."""
+    """The forward-only index of each build in `roots` (the pre-map's build folders, built by their `tools`), each
+    in a container of its own, its runs, the indexer's time and memory, `configs` (the compile tasks `refine`
+    reads, with the build each came from) and `written` (the index as scip-java wrote it). Without a container,
+    `unavailable`; without an index, `failed`. When the Kotlin `files` are all the build's own (`build_logic`),
+    which the pre-map reads through Gradle and no Kotlin compile task compiles, nothing is built: `unavailable`."""
     from indexers import jvm
+    if files is not None and all(build_logic(rel) for rel in files):
+        return jvm.unavailable(f"the build's own Kotlin only ({len(files)} Gradle scripts and buildSrc files): the "
+                               "pre-map reads them through Gradle, and no Kotlin compile task compiles them",
+                               "nothing to do: they are the build's definition, not the program's code")
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    def one(folder: Path, work: Path) -> dict:
-        prepare = jvm.modules_line(modules, jvm.build_root(project_dir, folder)) + PREPARE
+    def one(folder: Path, work: Path, tool: str | None) -> dict:
+        prepare = jvm.modules_line(modules, jvm.build_root(project_dir, folder)) + jvm.tool_line(tool) + PREPARE
         result, runs, out = jvm.run(folder, work, prepare, EXECUTE, memory=memory, engine=engine,
                                     toolchains=toolchains)
         return jvm.with_gaps(finish(work, result, runs, out), result)
 
-    parts = jvm.builds(project_dir, work_dir, roots, one)
+    parts = jvm.builds(project_dir, work_dir, roots, one, tools)
     done = [(root, part) for root, part in parts if part.get("indexes")]
     return jvm.combined(parts, other_builds,
                         configs=[[part["configs"], root] for root, part in done if part.get("configs")],

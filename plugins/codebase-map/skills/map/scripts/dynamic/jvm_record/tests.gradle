@@ -1,0 +1,21 @@
+// Daodan's dynamic step, in the preparation (dynamic/jvm.py): in each project of the build, the Test tasks its
+// tests run with, their classes compiled and their classpath resolved here, where the registries are, and the
+// paths of the tasks to run written to $DAODAN_TESTS for the execution, which runs them offline. A project's
+// tests run by its `test` task (a Test, or Android's task over its unit tests), else, in Kotlin Multiplatform,
+// which has none, by each of its Test tasks (`jvmTest`).
+allprojects { project ->
+    project.tasks.register('daodanTests') { task ->
+        def named = project.tasks.findByName('test')
+        def tests = named instanceof Test ? [named] : project.tasks.withType(Test).toList()
+        def paths = (named != null ? [named] : tests)*.path
+        def classpaths = tests*.classpath
+        def out = System.getenv('DAODAN_TESTS')
+        task.dependsOn(classpaths)
+        task.doLast {
+            classpaths*.files
+            if (out) {
+                paths.each { new File(out) << "${it}\n" }
+            }
+        }
+    }
+}

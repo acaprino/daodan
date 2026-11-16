@@ -64,14 +64,17 @@ def same_range(index) -> dict[tuple[str, str], bool]:
 # How it runs: `indexers.jvm`, with the steps below.
 
 # Under Maven the modules' Kotlin is indexed too (`jvm.MAVEN_KOTLIN`), so a call from Java to a Kotlin member
-# ends where the same index defines it, as it does under Gradle, where scip-java indexes both.
-PREPARE = r'''kotlin_too() {
-  [ -f pom.xml ] && maven_kotlin "$(mktemp -d)" \
+# ends where the same index defines it, as it does under Gradle, where scip-java indexes both. scip-java runs
+# the build tool it is told (`jvm.tool_line`); a folder Gradle and Maven both build is built by each in turn.
+PREPARE = r'''maven() { [ -f pom.xml ] && [ "${DAODAN_TOOL:-maven}" = maven ]; }
+kotlin_too() {
+  maven && maven_kotlin "$(mktemp -d)" \
     && step aggregate-kotlin "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$WORK/target/scip-targetroot"
   [ -s "$OUT/index.scip" ]
 }
-if step index "$SCIP_JAVA" index --output "$OUT/index.scip" && [ -s "$OUT/index.scip" ]; then kotlin_too; exit; fi
-[ -f pom.xml ] || exit 1
+if step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
+  && [ -s "$OUT/index.scip" ]; then kotlin_too; exit; fi
+maven || exit 1
 cat > /tmp/PlainJavac.java <<'JAVA'
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -116,7 +119,8 @@ public class PlainJavac {
 JAVA
 step plain-javac java /tmp/PlainJavac.java || exit 1
 rm -f "$OUT/index.scip"
-step index "$SCIP_JAVA" index --output "$OUT/index.scip" && [ -s "$OUT/index.scip" ] && kotlin_too
+step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
+  && [ -s "$OUT/index.scip" ] && kotlin_too
 '''
 # Maven writes under `target/`, Gradle under `build/`: the build that ran made one of them, in every module.
 EXECUTE = r'''TARGETROOT=target/scip-targetroot
@@ -145,27 +149,29 @@ def execute(external_classes: dict | None = None) -> str:
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folder of each build, the JDKs it states, Maven's modules with
-    their source folders, and the kinds of the JVM builds Daodan does not run."""
-    return {"roots": jvm.build_roots(record), "toolchains": jvm.toolchains(record), "modules": jvm.modules(record),
-            "other_builds": jvm.other_builds(record)}
+    """What `index` takes from the pre-map: the folder of each build with its tools, the JDKs it states, Maven's
+    modules with their source folders, and the kinds of the JVM builds Daodan does not run."""
+    return {"roots": jvm.build_roots(record), "tools": jvm.build_tools(record), "toolchains": jvm.toolchains(record),
+            "modules": jvm.modules(record), "other_builds": jvm.other_builds(record)}
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, external_classes: dict | None = None,
-          *, roots, toolchains=(), modules=(), other_builds=(), engine=None, memory: int = MIN_FREE) -> dict:
-    """The forward index of each build in `roots` (the pre-map's build folders), each in a container of its own,
-    with its runs and the indexer's time and memory (`files` is not used: a build compiles every module); the
-    member order of all of them in `javap.json`. Without a container, `unavailable`; without an index, `failed`."""
+          *, roots, tools=None, toolchains=(), modules=(), other_builds=(), engine=None,
+          memory: int = MIN_FREE) -> dict:
+    """The forward index of each build in `roots` (the pre-map's build folders, built by their `tools`), each in
+    a container of its own, with its runs and the indexer's time and memory (`files` is not used: a build compiles
+    every module); the member order of all of them in `javap.json`. Without a container, `unavailable`; without an
+    index, `failed`."""
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    def one(folder: Path, work: Path) -> dict:
-        prepare = jvm.modules_line(modules, jvm.build_root(project_dir, folder)) + PREPARE
+    def one(folder: Path, work: Path, tool: str | None) -> dict:
+        prepare = jvm.modules_line(modules, jvm.build_root(project_dir, folder)) + jvm.tool_line(tool) + PREPARE
         result, runs, out = jvm.run(folder, work, prepare, execute(external_classes), memory=memory, engine=engine,
                                     toolchains=toolchains)
         return jvm.with_gaps(finish(folder, work, result, runs, out), result)
 
-    parts = jvm.builds(project_dir, work_dir, roots, one)
+    parts = jvm.builds(project_dir, work_dir, roots, one, tools)
     members = {}
     for _root, part in parts:
         listed = Path(part["indexes"][0][0]).parent / "javap.json" if part.get("indexes") else None

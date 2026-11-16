@@ -160,7 +160,9 @@ for tool in /daodan/state/tools/*/*/bin/gradle /daodan/state/tools/*/*/bin/mvn; 
   PATH="${tool%/*}:$PATH"
   wrapper=gradlew
   [ "${tool##*/}" = mvn ] && wrapper=mvnw
-  if [ -e "$wrapper" ]; then
+  # scip-java finds a Gradle build by settings.gradle, gradlew, build.gradle or build.gradle.kts, never by
+  # settings.gradle.kts alone (a composite build's root): there it finds the wrapper.
+  if [ -e "$wrapper" ] || { [ "$wrapper" = gradlew ] && [ -f settings.gradle.kts ]; }; then
     printf '#!/bin/sh\nexec %s "$@"\n' "$tool" > "$wrapper"
     chmod +x "$wrapper"
   fi
@@ -471,18 +473,25 @@ def with_gaps(part: dict, result: dict) -> dict:
 
 BUILDS = ({"gradle-project"}, {"maven-module"})  # a Gradle build and a Maven reactor build the modules inside them
 BUILD_KINDS = frozenset().union(*BUILDS)
+BUILD_TOOLS = ("gradle", "maven")  # the build tool of each of `BUILDS`, in its order
+
+
+def build_tools(record: dict) -> dict[str, list[str]]:
+    """The folder of each build to run, as the pre-map names it, with the tools that build it: per build tool,
+    the outermost unit, '' for the project's root. A module inside one is built by it."""
+    import premap
+    found = {}
+    for kinds, tool in zip(BUILDS, BUILD_TOOLS):
+        roots = premap.roots(record, kinds)
+        for root in sorted(roots):
+            if not any(other != root and (other == "" or root.startswith(f"{other}/")) for other in roots):
+                found.setdefault(root, []).append(tool)
+    return found
 
 
 def build_roots(record: dict) -> set[str]:
-    """The folder of each build to run, as the pre-map names it: per build tool, the outermost unit, '' for the
-    project's root. A module inside one is built by it."""
-    import premap
-    found = set()
-    for kinds in BUILDS:
-        roots = premap.roots(record, kinds)
-        found |= {root for root in roots
-                  if not any(other != root and (other == "" or root.startswith(f"{other}/")) for other in roots)}
-    return found
+    """The folders of `build_tools`."""
+    return set(build_tools(record))
 
 
 OTHER_BUILDS = frozenset({"sbt-project", "bazel-target", "bazel-module"})  # JVM builds Daodan does not run
@@ -518,13 +527,25 @@ def build_root(project_dir: Path, folder: Path) -> str:
     return "" if root == "." else root
 
 
-def builds(project_dir: Path, work_dir: Path, roots, one) -> list[tuple[str, dict]]:
-    """`one(folder, work)` for each build folder, each in a work folder of its own (`build-N`), in order."""
-    out = []
-    for number, root in enumerate(sorted(roots)):
-        work = Path(work_dir) / f"build-{number}"
-        work.mkdir(parents=True, exist_ok=True)
-        out.append((root, one(Path(project_dir) / root if root else Path(project_dir), work)))
+def tool_line(tool: str | None) -> str:
+    """The script line naming the build tool scip-java runs (`--build-tool`); empty, scip-java finds it."""
+    return f"DAODAN_TOOL={tool or ''}\n"
+
+
+def builds(project_dir: Path, work_dir: Path, roots, one, tools=None) -> list[tuple[str, dict]]:
+    """`one(folder, work, tool)` for each build folder, each in a work folder of its own (`build-N`), in order,
+    with each tool `tools` (`build_tools`) names for it. Two tools build the same files of a folder, and a second
+    index of a file would repeat its occurrences: the next tool builds only when the one before gave no index."""
+    out, number = [], 0
+    for root in sorted(roots):
+        for tool in (tools or {}).get(root) or [None]:
+            work = Path(work_dir) / f"build-{number}"
+            work.mkdir(parents=True, exist_ok=True)
+            number += 1
+            part = one(Path(project_dir) / root if root else Path(project_dir), work, tool)
+            out.append((root, {**part, **({"tool": tool} if tool else {})}))
+            if part.get("indexes"):
+                break
     return out
 
 
@@ -545,8 +566,8 @@ def combined(parts: list[tuple[str, dict]], others=(), **joined) -> dict:
     for root, part in parts:
         runs += [{**run, "build": root} for run in part.get("runs", [])]
         indexes += [[path, "/".join(name for name in (root, prefix) if name)] for path, prefix in part["indexes"]]
-        states.append({"root": root, "state": part.get("state", "done"),
-                       **({"reason": part["reason"]} if part.get("state") else {})})
+        states.append({"root": root, **({"tool": part["tool"]} if part.get("tool") else {}),
+                       "state": part.get("state", "done"), **({"reason": part["reason"]} if part.get("state") else {})})
     if not indexes:
         first = next((part for _root, part in parts if part.get("state") == "failed"), parts[0][1])
         return {**first, "runs": runs, "builds": states, **({"gaps": gaps} if gaps else {})}

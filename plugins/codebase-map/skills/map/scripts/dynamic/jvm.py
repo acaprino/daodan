@@ -33,15 +33,20 @@ runs there (buildSrc, an annotation processor of its own) is observed as well. A
 environment (Gradle's `environment`, Surefire's `excludedEnvironmentVariables`) runs them without the agent: the
 `not_observed` gap.
 
-`plan` reads the pre-map: each outermost Gradle or Maven build (`indexers/jvm.py` `build_roots`) that holds a test
-file (one that imports JUnit, TestNG, kotlin.test, Kotest or Spock) runs its build's own `test`: Gradle's `test`
-task in every project that declares it, Maven's `test` phase, Surefire's where the packaging binds it. `observe`
-is one container run per build, `indexers/jvm.py` `run`: its image, JDK, build tools and restore. The
-preparation, with the registries: the agent is built, the tests are compiled, and for Maven Surefire resolves
-its test provider, which it does only when it starts the tests (`dependency:go-offline` does not fetch it): it
-is given a `java` that exits at once (`NO_JVM`), so no test runs there unless the build sets `forkCount` 0. A
-build that does not compile is `failed`, with its output tail. The execution, with no network: the build's
-`test`, offline, under the agent, stopped after `LIMIT` seconds; each fact is on disk as soon as it is seen.
+`plan` reads the pre-map: each outermost Gradle or Maven build (`indexers/jvm.py` `build_tools`) that holds a test
+file (one that imports JUnit, TestNG, kotlin.test, Kotest or Spock) runs its build's own tests: Maven's `test`
+phase, Surefire's where the packaging binds it; under Gradle, in each project, its `test` task, else (Kotlin
+Multiplatform, which has none) each task of type Test it has (`jvmTest`), as Gradle names them once it has
+configured the build. A folder Gradle and Maven both build runs the same tests under each: Maven's run only when
+Gradle's did not. `observe` is one container run per build, `indexers/jvm.py` `run`: its image, JDK, build tools
+and restore. The preparation, with the registries: the agent is built, the tests are compiled and their
+classpath resolved. Under Gradle that is `jvm_record/tests.gradle`, an init script that writes the paths of the
+Test tasks to run: their runtime-only dependencies (a JUnit engine, a JDBC driver) are not on the compile
+classpath, and offline Gradle downloads nothing. Under Maven, `test-compile` resolves the test scope, and
+Surefire resolves its test provider, which it does only when it starts the tests (`dependency:go-offline` does
+not fetch it): it is given a `java` that exits at once (`NO_JVM`), so no test runs there unless the build sets
+`forkCount` 0. A build that does not compile is `failed`, with its output tail. The execution, with no network:
+the tests, offline, under the agent, stopped after `LIMIT` seconds; each fact is on disk as soon as it is seen.
 Back come the recorder's files (one per JVM), the build's log and its JUnit XML reports' counts.
 
 What a site is: a call instruction (`invokevirtual`, `invokespecial`, `invokestatic`, `invokeinterface`) with
@@ -75,10 +80,12 @@ RECORD = Path(__file__).resolve().parent / "jvm_record"
 AGENT = f"{preparation.IN}/dynamic-jvm"  # the agent's sources and ASM, and the jars built from them, in the container
 RELEASE = 11  # the agent's class files: it reads stack frames' descriptors (Java 10), so test JVMs from 11 on
 SYNTHETIC, BRIDGE = 0x1000, 0x40
-BUILDS = {"gradle-project": "gradle", "maven-module": "maven"}
-GRADLE_TEST = ["gradle", "--no-daemon", "--offline", "--continue", "--console=plain", "test"]
+GRADLE_TEST = ["gradle", "--no-daemon", "--offline", "--continue", "--console=plain"]  # + the preparation's tasks
 MAVEN_TEST = ["mvn", "-B", "-o", "-fae", "-Dmaven.test.failure.ignore=true", "test"]
-COMPILE = {"gradle": "gradle --no-daemon --console=plain testClasses", "maven": "mvn -B test-compile"}
+TASKS = "$OUT/test-tasks.txt"  # the Test tasks the preparation's Gradle names, one path per line
+COMPILE = {"gradle": f'env DAODAN_TESTS="{TASKS}" gradle --no-daemon --console=plain --init-script '
+                     f"{AGENT}/tests.gradle daodanTests",
+           "maven": "mvn -B test-compile"}
 NO_JVM = "/tmp/daodan-no-jvm"
 TESTS = re.compile(r"^\s*import\s+(?:static\s+)?(?:org\.junit|junit\.framework|org\.testng|kotlin\.test|io\.kotest"
                    r"|org\.spockframework|spock\.lang)\b", re.M)
@@ -121,17 +128,15 @@ def plan(record: dict, files: list[str], read) -> dict:
     tool, argv}`, a build without a test file a `no_tests` gap; `sources` are the Java and Kotlin files `place`
     reads and `toolchains` the JDKs the pre-map states."""
     common = {"sources": sorted(rel for rel in files if rel.endswith(SOURCES)), "toolchains": jvm.toolchains(record)}
-    roots = jvm.build_roots(record)
-    if not roots:
+    builds = jvm.build_tools(record)
+    if not builds:
         others = ", ".join(sorted({kind.split("-")[0] for kind in jvm.other_builds(record)}))
         detail = (f"built with {others}: Daodan runs the tests of Gradle and Maven builds only" if others else
                   "the pre-map names no Gradle or Maven build: no `test` to run")
         return {"runs": [], "gaps": [{"kind": "no_tests", "detail": detail}], **common}
     runs, gaps = [], []
-    for root in sorted(roots):
-        kinds = {unit["kind"] for unit in record.get("units", [])
-                 if ("" if unit["root"] == "." else unit["root"]) == root}
-        for tool in (tool for kind, tool in BUILDS.items() if kind in kinds):
+    for root, tools in sorted(builds.items()):
+        for tool in tools:
             if any(_inside(rel, root) and rel.endswith((*SOURCES, ".groovy")) and TESTS.search(read(rel) or "")
                    for rel in files):
                 runs.append({"root": root, "tool": tool, "argv": GRADLE_TEST if tool == "gradle" else MAVEN_TEST})
@@ -150,11 +155,15 @@ def scripts(run: dict) -> tuple[str, str]:
                     f" && chmod +x {NO_JVM}/bin/java", f'cp "$JAVA_HOME/release" {NO_JVM}/ 2>/dev/null',
                     f"step providers mvn -B -fae test -Dmaven.test.failure.ignore=true -DforkCount=1"
                     f" -Djvm={NO_JVM}/bin/java"]
+    tests = f"timeout -k 30 {LIMIT} {shlex.join(run['argv'])}"
+    tests = [f"{tests} > $OUT/tests.log 2>&1", "echo $? > $OUT/tests.code"] if run["tool"] == "maven" else [
+        f'if [ -s "{TASKS}" ]; then', f'  {tests} $(sort -u "{TASKS}") > $OUT/tests.log 2>&1',
+        "  echo $? > $OUT/tests.code", "else",
+        "  echo 'the build has no Test task' > $OUT/tests.log && echo 0 > $OUT/tests.code", "fi"]
     execute = ["for tool in /daodan/state/tools/*/*/bin/gradle /daodan/state/tools/*/*/bin/mvn; do",
                '  [ -f "$tool" ] && PATH="${tool%/*}:$PATH"', "done", "export PATH",
                f'JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -javaagent:{AGENT}/agent.jar=out=$OUT/calls,root=$WORK"',
-               "export JAVA_TOOL_OPTIONS", "touch $OUT/tests.start",
-               f"timeout -k 30 {LIMIT} {shlex.join(run['argv'])} > $OUT/tests.log 2>&1", "echo $? > $OUT/tests.code",
+               "export JAVA_TOOL_OPTIONS", "touch $OUT/tests.start", *tests,
                "find \"$WORK\" -name 'TEST-*.xml' -newer $OUT/tests.start"
                " -exec grep -h -m1 -o '<testsuite [^>]*>' {} + > $OUT/suites.txt"]
     return "\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n"
@@ -453,6 +462,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     not run beside one that did is a run `not_started` with its `tests_not_started` gap. `facts` is what the
     recorder and the placing say of themselves."""
     import container
+    import dynamic
     from engine_tools import MAVEN_CENTRAL, maven_central_dir
     runs, out_dir = planned["runs"], Path(out_dir)
     if not runs:
@@ -470,42 +480,63 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     def text(rel: str) -> str:
         return _text(Path(project) / rel)
 
-    sites, entries, gaps, stopped = [], [], [], []
-    facts = {"jvms": 0, "skipped": 0, "recorded": 0, "placed": 0, "ambiguous": {"count": 0, "examples": []},
-             "unplaced": collections.Counter()}
+    def ran(attempt: dict) -> bool:
+        return attempt.get("entry", {}).get("state") in dynamic.TESTS[:3]
+
+    attempts = []  # per run started: its root, its entry or why it stopped, its gaps, sites and placing
     for number, run in enumerate(runs):
+        if any(item["root"] == run["root"] and ran(item) for item in attempts):
+            continue  # the folder's other build ran the same tests
         work = out_dir / f"build-{number}"
         prepare, execute = scripts(run)
         result, steps, back = jvm.run(Path(project) / run["root"] if run["root"] else Path(project), work, prepare,
-                                      execute, memory=MEMORY, engine=engine if number == 0 else None,
+                                      execute, memory=MEMORY, engine=engine,
                                       toolchains=planned.get("toolchains") or (), timeout=LIMIT + 300, inputs=carried)
-        gaps += result.get("gaps", [])
+        attempt = {"root": run["root"], "gaps": list(result.get("gaps", []))}
+        attempts.append(attempt)
         if result["state"] in ("gap", "failed"):
             failing = next((step for step in steps if step["returncode"]), steps[-1] if steps else {})
             tail = (failing.get("stderr_tail") or "").strip()[-800:]
             cause = result.get("cause") or "the container run failed"
-            stopped.append({"root": run["root"], "tool": run["tool"], "argv": run["argv"], "state": result["state"],
-                            "cause": f"{cause}: {tail}" if result["state"] == "failed" and tail else cause,
-                            "remedy": result.get("remedy")
-                            or f"see prepare.log and execute.log in {work / 'container'}"})
+            attempt["stopped"] = {"root": run["root"], "tool": run["tool"], "argv": run["argv"],
+                                  "state": result["state"],
+                                  "cause": f"{cause}: {tail}" if result["state"] == "failed" and tail else cause,
+                                  "remedy": result.get("remedy")
+                                  or f"see prepare.log and execute.log in {work / 'container'}"}
             continue
+        if run["tool"] == "gradle":  # the Test tasks the preparation named
+            run = {**run, "argv": [*run["argv"], *sorted(set(_text(back / "test-tasks.txt").split()))]}
         entry, own = _outcome(run, _text(back / "tests.code"), _text(back / "tests.log"), _text(back / "suites.txt"),
                               result["state"])
         observed = read(back / "calls")
         entry["jvms"] = observed["jvms"]
-        entries.append(entry)
-        gaps += own
+        attempt["entry"] = entry
+        attempt["gaps"] += own
         command = f"{' '.join(run['argv'])} in {run['root'] or '.'}"
         if entry["tests"] and not observed["jvms"]:
-            gaps.append({"kind": "not_observed", "path": run["root"], "detail": f"{command}: {entry['tests']} tests "
-                         "ran and no JVM recorded a call: the build starts its test JVMs without JAVA_TOOL_OPTIONS"})
+            attempt["gaps"].append({"kind": "not_observed", "path": run["root"], "detail": f"{command}: "
+                                    f"{entry['tests']} tests ran and no JVM recorded a call: the build starts its "
+                                    "test JVMs without JAVA_TOOL_OPTIONS"})
         if observed["skipped"]:
             first = observed["skipped"][0]
-            gaps.append({"kind": "classes_unrecorded", "path": run["root"], "detail":
-                         f"{len(observed['skipped'])} classes ran as built, unrecorded: the agent could not rewrite "
-                         f"them ({first['class']}: {first['why'][:200]})"})
-        placed, said = place(observed, run["root"], planned.get("sources") or [], text)
-        sites += placed
+            attempt["gaps"].append({"kind": "classes_unrecorded", "path": run["root"], "detail":
+                                    f"{len(observed['skipped'])} classes ran as built, unrecorded: the agent could "
+                                    f"not rewrite them ({first['class']}: {first['why'][:200]})"})
+        attempt["observed"] = observed
+        attempt["sites"], attempt["said"] = place(observed, run["root"], planned.get("sources") or [], text)
+    # Where a folder's tests ran, the other build's attempt there says nothing of what they call.
+    done = {item["root"] for item in attempts if ran(item)}
+    attempts = [item for item in attempts if item["root"] not in done or ran(item)]
+    sites = [site for item in attempts for site in item.get("sites", ())]
+    entries = [item["entry"] for item in attempts if "entry" in item]
+    gaps = [gap for item in attempts for gap in item["gaps"]]
+    stopped = [item["stopped"] for item in attempts if "stopped" in item]
+    facts = {"jvms": 0, "skipped": 0, "recorded": 0, "placed": 0, "ambiguous": {"count": 0, "examples": []},
+             "unplaced": collections.Counter()}
+    for item in attempts:
+        if "said" not in item:
+            continue
+        observed, said = item["observed"], item["said"]
         facts["jvms"] += observed["jvms"]
         facts["skipped"] += len(observed["skipped"])
         for key in ("recorded", "placed"):
@@ -521,7 +552,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         entries.append({"root": item["root"], "runner": item["tool"], "state": "not_started", "tool": item["tool"],
                         "argv": item["argv"]})
         gaps.append({"kind": "tests_not_started", "path": item["root"],
-                     "detail": f"the build in {item['root'] or '.'} did not run its tests: {item['cause']}"})
+                     "detail": f"the {item['tool']} build in {item['root'] or '.'} did not run its tests: "
+                               f"{item['cause']}"})
     if facts["ambiguous"]["count"]:
         gaps.append({"kind": "sites_ambiguous", "detail": f"{facts['ambiguous']['count']} observed call sites share "
                      "their line with another call of the same name, so the reference each answers is unknown and "

@@ -263,8 +263,44 @@ class EachBuildTests:
         record = {"units": [{"kind": "gradle-project", "root": "."}, {"kind": "gradle-project", "root": "app"},
                             {"kind": "maven-module", "root": "svc"}, {"kind": "maven-module", "root": "svc/core"},
                             {"kind": "gradle-project", "root": "tools/plugin"}, {"kind": "npm-package", "root": "web"}]}
-        self.assertEqual(java.structure(record)["roots"], {"", "svc"})
-        self.assertEqual(kotlin.structure(record)["roots"], {"", "svc"})
+        both = {"units": [{"kind": "gradle-project", "root": "."}, {"kind": "maven-module", "root": "."},
+                          {"kind": "maven-module", "root": "core"}]}  # one folder, two builds
+        for module in (java, kotlin):
+            self.assertEqual(module.structure(record)["roots"], {"", "svc"})
+            self.assertEqual(module.structure(record)["tools"], {"": ["gradle"], "svc": ["maven"]})
+            self.assertEqual(module.structure(both)["tools"], {"": ["gradle", "maven"]})
+
+    def test_a_folder_two_build_tools_build_is_built_by_the_next_only_when_one_gives_no_index(self):
+        """A folder with a Gradle build and a Maven one: scip-java is told which (`--build-tool`), Gradle first;
+        both compile the same files, so Maven builds only when Gradle gave no index, and Gradle's cause stays."""
+        self.play_success()
+        real, tools = jvm.run, []
+
+        def gradle_fails(project_dir, work_dir, prepare, *args, **options):
+            tools.append(re.search(r"^DAODAN_TOOL=(\w*)$", prepare, re.M).group(1))
+            if tools[-1] == "gradle":
+                return {"state": "failed", "cause": "no toolchain"}, [], Path(work_dir) / "nothing"
+            return real(project_dir, work_dir, prepare, *args, **options)
+
+        with mock.patch.object(jvm, "run", gradle_fails):
+            result = self.index(roots={""}, tools={"": ["gradle", "maven"]})
+        self.assertEqual(tools, ["gradle", "maven"])
+        self.assertEqual([prefix for _path, prefix in result["indexes"]], [""])
+        self.assertEqual([(build["tool"], build["state"]) for build in result["builds"]],
+                         [("gradle", "failed"), ("maven", "done")])
+        tools.clear()
+        with mock.patch.object(jvm, "run", gradle_fails):
+            result = self.index(roots={""}, tools={"": ["maven", "gradle"]})
+        self.assertEqual(tools, ["maven"])  # the first gave an index: the second does not build
+        self.assertEqual([build["tool"] for build in result["builds"]], ["maven"])
+
+    def test_scip_java_is_told_the_build_tool_of_the_folder(self):
+        self.play_success()
+        self.index(roots={""}, tools={"": ["maven"]})
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("\nDAODAN_TOOL=maven\n", script)
+        self.assertIn('"$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}',
+                      script)
 
 
 class PreparationTests:
@@ -534,6 +570,19 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
 class KotlinContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
     language = "kotlin"
 
+    def test_kotlin_only_in_the_build_s_own_scripts_starts_no_build(self):
+        """Gradle scripts and buildSrc are the build's definition, which the pre-map reads through Gradle: no
+        Kotlin compile task compiles them, so with no other Kotlin file nothing is built, and the state says why."""
+        self.assertEqual(kotlin.READS, (".kt", ".kts"))
+        result = self.index(files=["build.gradle.kts", "settings.gradle.kts", "libs/money/build.gradle.kts",
+                                   "buildSrc/src/main/kotlin/inventory.java-conventions.gradle.kts",
+                                   "tools/buildSrc/src/main/kotlin/Versions.kt"])
+        self.assertEqual(result["state"], "unavailable")
+        self.assertIn("build's own Kotlin", result["reason"])
+        self.assertEqual(self.created(), [])
+        self.play_success()
+        self.assertTrue(self.index(files=["build.gradle.kts", "src/main/kotlin/fx/A.kt"])["indexes"])
+
     def test_gradle_reaches_only_the_jvm_registries(self):
         JavaContainerTests.test_preparation_reaches_only_the_registries_and_execution_no_network(self)
 
@@ -770,12 +819,70 @@ def test_a_maven_build_gets_its_kotlin_from_the_analysis_indexer():
     preparation runs the Kotlin Analysis API indexer scip-java ships on each module's Kotlin files, with the
     module's classpath, into the build's targetroot, writes the compile task `tasks` reads, and aggregates."""
     maven, gradle = kotlin.PREPARE.split("\nelse\n")
-    assert "pom.xml" in maven.split("\n", 1)[0] and "gradle" in maven.split("\n", 1)[0]
+    condition = maven.split("; then\n", 1)[0]
+    assert "pom.xml" in condition and "build.gradle" in condition and "DAODAN_TOOL" in condition
     assert 'maven_kotlin "$OUT/kotlin-configs"' in maven and 'aggregate --output "$OUT/index.scip"' in maven
     for needed in ("dependency:build-classpath", "org.scip_code.scip_java.kotlin_analysis.MainKt",
                    '--targetroot "$targetroot"', '"$configs/maven-$name.txt"'):
         assert needed in jvm.MAVEN_KOTLIN, needed
     assert "maven_kotlin" not in gradle and '"$SCIP_JAVA" index --output "$OUT/index.scip"' in gradle
+
+
+BASH = shutil.which("bash") if os.name != "nt" else None
+
+
+def _phase(tmp_path: Path, body: str, tool: str, index_code: int, files=("pom.xml", "build.gradle.kts")):
+    """`body` run by bash in a folder holding `files`, with the head's names stubbed: what it hands scip-java,
+    `java` and `maven_kotlin` is recorded; scip-java exits `index_code`, writing an index when it succeeds."""
+    work, out, calls = tmp_path / "work", tmp_path / "out", tmp_path / "calls"
+    work.mkdir(parents=True)
+    out.mkdir()
+    for name in files:
+        (work / name).write_text("", encoding="utf-8")
+    scip = tmp_path / "scip-java"
+    scip.write_text(f'#!/bin/sh\necho "scip-java $*" >> {calls}\n'
+                    + (f'echo index > "{out}/index.scip"\n' if not index_code else "") + f"exit {index_code}\n",
+                    encoding="utf-8")
+    scip.chmod(0o755)
+    head = (f"DAODAN_TOOL={tool}\nOUT={out}\nWORK={work}\nSCIP_JAVA={scip}\nstep() {{ shift; \"$@\"; }}\n"
+            f"java() {{ echo java >> {calls}; return 1; }}\nmaven_kotlin() {{ echo maven_kotlin >> {calls}; }}\n")
+    code = subprocess.run([BASH, "-c", head + body], cwd=work).returncode
+    return code, calls.read_text(encoding="utf-8").replace(str(out), "$OUT").splitlines() if calls.is_file() else []
+
+
+@unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
+def test_each_build_tool_of_a_folder_runs_only_its_own_steps(tmp_path):
+    """In a folder Gradle and Maven both build, scip-java runs the build it is told; only Maven's patches the
+    root pom's compiler plugin when it gives no index, and only Maven's indexes the modules' Kotlin itself."""
+    flag = "--build-tool={}"
+    assert _phase(tmp_path / "1", java.PREPARE, "gradle", 1) == (
+        1, [f"scip-java index --output $OUT/index.scip {flag.format('gradle')}"])
+    assert _phase(tmp_path / "2", java.PREPARE, "maven", 1) == (
+        1, [f"scip-java index --output $OUT/index.scip {flag.format('maven')}", "java"])
+    assert _phase(tmp_path / "3", java.PREPARE, "gradle", 0)[1] == [
+        f"scip-java index --output $OUT/index.scip {flag.format('gradle')}"]
+    assert "maven_kotlin" in _phase(tmp_path / "4", java.PREPARE, "maven", 0)[1]
+    assert _phase(tmp_path / "5", kotlin.PREPARE, "gradle", 0)[1] == [
+        f"scip-java index --output $OUT/index.scip {flag.format('gradle')}"]
+    assert "maven_kotlin" in _phase(tmp_path / "6", kotlin.PREPARE, "maven", 0)[1]
+    assert "maven_kotlin" in _phase(tmp_path / "7", kotlin.PREPARE, "", 0, files=("pom.xml",))[1]  # as before
+
+
+@unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
+def test_a_root_only_settings_gradle_kts_declares_gets_the_wrapper_scip_java_looks_for(tmp_path):
+    """scip-java finds a Gradle build by settings.gradle, gradlew, build.gradle or build.gradle.kts, never by
+    settings.gradle.kts alone (a composite build's root): there the preparation writes the wrapper, which only
+    calls the Gradle Daodan brought."""
+    tools, work = tmp_path / "tools", tmp_path / "work"
+    gradle = tools / "gradle-0.test" / "gradle-0.test" / "bin" / "gradle"
+    gradle.parent.mkdir(parents=True)
+    gradle.write_text("#!/bin/sh\n", encoding="utf-8")
+    work.mkdir()
+    (work / "settings.gradle.kts").write_text('rootProject.name = "x"\n', encoding="utf-8")
+    loop = jvm.PREPARE[jvm.PREPARE.index("for tool in"):jvm.PREPARE.index("export PATH")]
+    subprocess.run([BASH, "-c", loop.replace("/daodan/state/tools", str(tools))], cwd=work, check=True)
+    assert f'exec {gradle} "$@"' in (work / "gradlew").read_text(encoding="utf-8")
+    assert os.access(work / "gradlew", os.X_OK)
 
 
 def test_a_kotlin_file_no_compile_task_lists_says_so_for_any_build():

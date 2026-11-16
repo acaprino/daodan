@@ -463,7 +463,11 @@ class PlanTest(unittest.TestCase):
         gradle = self.plan([{"kind": "gradle-project", "root": ".", "name": ":"}])
         self.assertEqual(gradle["runs"], [{"root": "", "tool": "gradle", "argv": jvm.GRADLE_TEST}])
         self.assertIn("--offline", jvm.GRADLE_TEST)
+        self.assertNotIn("test", jvm.GRADLE_TEST)  # the build's own Test tasks, read in the preparation
         self.assertIn("-o", jvm.MAVEN_TEST)
+        both = self.plan([{"kind": "maven-module", "root": ".", "name": "fx:fx"},
+                          {"kind": "gradle-project", "root": ".", "name": ":"}])
+        self.assertEqual([(run["root"], run["tool"]) for run in both["runs"]], [("", "gradle"), ("", "maven")])
 
     def test_a_build_with_no_test_file_is_a_gap_and_does_not_run(self):
         files = {rel: text for rel, text in self.FILES.items() if "Test" not in rel}
@@ -551,7 +555,7 @@ class ObserveTest(FakeEngineTest):
         arrived = self.arrived() / jvm.AGENT.lstrip("/")
         self.assertEqual((arrived / "asm.jar").read_bytes(), ASM_JAR)
         self.assertEqual(sorted(path.name for path in arrived.iterdir()),
-                         ["Agent.java", "MANIFEST.MF", "Recorder.java", "asm.jar"])
+                         ["Agent.java", "MANIFEST.MF", "Recorder.java", "asm.jar", "tests.gradle"])
         execution = self.created()[2]
         self.assertEqual(execution[execution.index("--network") + 1], "none")
 
@@ -575,6 +579,60 @@ class ObserveTest(FakeEngineTest):
         failed = self.observe(code="1", text="[ERROR] BUILD FAILURE\nCould not resolve dependencies")
         [gap] = [gap for gap in failed["gaps"] if gap["kind"] == "tests_not_started"]
         self.assertIn("Could not resolve dependencies", gap["detail"])
+
+    def test_under_gradle_the_tests_are_the_build_s_own_test_tasks_read_and_resolved_in_the_preparation(self):
+        """Gradle names its Test tasks only once it has configured the build (`jvmTest` in Kotlin Multiplatform,
+        where no `test` exists): the preparation's init script compiles their classes, resolves their classpath
+        where the registries are and writes their paths, which the execution runs offline."""
+        files = {rel: (self.project / rel).read_text(encoding="utf-8") for rel in PROJECT}
+        self.planned = jvm.plan({"units": [{"kind": "gradle-project", "root": ".", "name": ":"}]}, sorted(files),
+                                files.get)
+        out = jvm.jvm.OUT.lstrip("/")
+        self.play("prepare", text=log(("agent", 0, ""), ("compile", 0, "BUILD SUCCESSFUL")))
+        project_calls(self.scratch / "played")
+        self.play("execute", files={f"{out}/tests.code": "0\n", f"{out}/suites.txt": self.suite(2),
+                                    f"{out}/test-tasks.txt": ":jvmTest\n:core:test\n",
+                                    f"{out}/calls": self.scratch / "played"}, text=log(("tests", 0, "")))
+        with mock.patch.object(container, "free_memory", return_value=64 * 2**30):
+            result = jvm.observe(self.project, self.planned, self.work, self.engine)
+        self.assertEqual([(run["runner"], run["state"], run["argv"]) for run in result["runs"]],
+                         [("gradle", "ran", [*jvm.GRADLE_TEST, ":core:test", ":jvmTest"])])
+        prepare = (self.state / "scripts" / "prepare.sh").read_text(encoding="utf-8")
+        execute = (self.state / "scripts" / "execute.sh").read_text(encoding="utf-8")
+        self.assertIn(f'DAODAN_TESTS="$OUT/test-tasks.txt" gradle --no-daemon --console=plain --init-script '
+                      f'{jvm.AGENT}/tests.gradle daodanTests', prepare)
+        self.assertIn('$(sort -u "$OUT/test-tasks.txt")', execute)
+        self.assertIn("tests.gradle", [path.name for path in (self.arrived() / jvm.AGENT.lstrip("/")).iterdir()])
+        script = (jvm.RECORD / "tests.gradle").read_text(encoding="utf-8")
+        for needed in ("withType(Test)", "findByName('test')", "classpath", "DAODAN_TESTS"):
+            self.assertIn(needed, script)
+
+    def test_a_folder_two_builds_build_runs_its_tests_once(self):
+        """Gradle and Maven building one folder run the same tests: Maven's run only when Gradle's did not."""
+        files = {rel: (self.project / rel).read_text(encoding="utf-8") for rel in PROJECT}
+        self.planned = jvm.plan({"units": [{"kind": "gradle-project", "root": ".", "name": ":"},
+                                           {"kind": "maven-module", "root": ".", "name": "fx:fx"}]},
+                                sorted(files), files.get)
+        run, seen = jvm.jvm.run, []
+
+        def gradle_fails(project_dir, work_dir, prepare, *args, **kwargs):
+            seen.append("gradle" if "daodanTests" in prepare else "maven")
+            if seen[-1] == "gradle":
+                return {"state": "failed", "cause": "no JDK 23"}, [], self.work
+            return run(project_dir, work_dir, prepare, *args, **kwargs)
+
+        with mock.patch.object(jvm.jvm, "run", side_effect=gradle_fails):
+            result = self.observe(suites=self.suite(2))
+        self.assertEqual(seen, ["gradle", "maven"])
+        self.assertIsNone(dynamic.malformed(result))
+        self.assertEqual([(item["runner"], item["state"]) for item in result["runs"]], [("maven", "ran")])
+        self.assertNotIn("tests_not_started", self.gaps(result))  # the folder's tests ran
+        seen.clear()
+        with mock.patch.object(jvm.jvm, "run", side_effect=lambda *args, **kwargs: (seen.append(1),
+                                                                                  run(*args, **kwargs))[1]):
+            result = self.observe(suites=self.suite(2))
+        self.assertEqual(seen, [1])  # Gradle's tests ran: Maven's are not run again
+        self.assertEqual([item["runner"] for item in result["runs"]], ["gradle"])
 
     def test_a_build_that_stops_beside_one_that_ran_is_a_run_that_did_not_start(self):
         self.planned["runs"].append({**self.planned["runs"][0], "root": "sub"})
