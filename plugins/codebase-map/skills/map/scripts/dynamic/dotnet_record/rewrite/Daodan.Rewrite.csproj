@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The rewriter, for the runtime of the SDK that builds it (`DaodanRuntime`, its major.minor), with Mono.Cecil
+       from the package Daodan carries (nuget.config). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net$(DaodanRuntime)</TargetFramework>
+    <AssemblyName>Daodan.Rewrite</AssemblyName>
+    <LangVersion>9.0</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Rewrite.cs" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+  </ItemGroup>
+</Project>

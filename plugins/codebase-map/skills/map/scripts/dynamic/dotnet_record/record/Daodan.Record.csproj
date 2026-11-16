@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The recorder: netstandard2.0, so a test process of any .NET from Core 3.0 on loads it. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Daodan.Record</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <LangVersion>7.3</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Record.cs" />
+  </ItemGroup>
+</Project>

@@ -335,13 +335,21 @@ class RunTest(unittest.TestCase):
                          [("toolchain_unavailable", "dotnet", "8.0.404")])
 
     def test_a_container_gap_is_unavailable_with_its_cause_and_remedy(self):
+        """Nothing runs on the host instead: a `dotnet` there, which the restore, MSBuild and scip-dotnet need,
+        would leave its mark."""
         cause, remedy = "no container engine answers: neither docker nor podman", "start Docker or Podman"
         Recorder.calls = []
-        with mock.patch.object(container, "find_engine", side_effect=container.Gap(cause, remedy)):
+        tools, mark = self.scratch / "host-bin", self.scratch / "ran-on-the-host"
+        tools.mkdir()
+        (tools / "dotnet").write_text(f"#!/bin/sh\ntouch '{mark}'\n", encoding="utf-8", newline="\n")
+        (tools / "dotnet").chmod(0o755)
+        with mock.patch.object(container, "find_engine", side_effect=container.Gap(cause, remedy)), \
+                mock.patch.dict(os.environ, {"PATH": f"{tools}{os.pathsep}{os.environ['PATH']}"}):
             result = self.index(engine=None)
         self.assertEqual((result["state"], result["reason"], result["install"]), ("unavailable", cause, remedy))
         self.assertEqual((result["indexes"], Recorder.calls, self.asked), ([], [], []))
         self.assertEqual(result["indexer"]["name"], "scip-dotnet")
+        self.assertFalse(mark.exists())
 
     def test_a_run_that_writes_no_index_is_failed_with_the_cause_and_the_log_tail(self):
         self.play("prepare", text=log(("sdk", 0, ""), ("unpack", 0, ""), ("restore", 0, "")))
@@ -472,6 +480,11 @@ public partial class Summary
     public static Summary Make<T>() => new Summary();
 
     public static Summary Both() => Make<Summary>() ?? Summary.Make<Order>();
+
+#pragma warning disable CS0618
+#if DEBUG
+    public static string Named(Order order) => nameof(order) + nameof(Order.Total) + Current;
+#endif
 }
 """,
 }
@@ -569,7 +582,12 @@ OCCURRENCES = {
         # a name written with type arguments has no occurrence (`VisitIdentifierName` only); its arguments have
         (15, "Summary", C + "Core/Summary#", False), (15, "Both", C + "Core/Summary#Both().", True),
         (15, "Summary@2", C + "Core/Summary#", False), (15, "Summary@3", C + "Core/Summary#", False),
-        (15, "Order", C + "Core/Order#", False)],
+        (15, "Order", C + "Core/Order#", False),
+        # Roslyn binds what `nameof` names, not `nameof`, and no name of a preprocessor directive
+        (19, "Named", C + "Core/Summary#Named().", True), (19, "Order", C + "Core/Order#", False),
+        (19, "order", C + "Core/Summary#Named().(order)", True),
+        (19, "order@2", C + "Core/Summary#Named().(order)", False), (19, "Order@2", C + "Core/Order#", False),
+        (19, "Total", C + "Core/Order#Total.", False), (19, "Current", C + "Core/Summary#Current.", False)],
 }
 # A definition's relationships, as `ScipDocumentIndexer.VisitOccurrence` writes them: a type's base types and
 # interfaces, a method's overridden methods and the interface members it implements.
@@ -781,6 +799,14 @@ def test_a_type_written_with_its_namespace_is_named_by_it(shop):
     places = {"src/Api/Models/User.cs:3", "src/Core/Models/User.Greet.cs:3", "src/Core/Models/User.cs:3"}
     assert _ends(shop, "src/Api/Program.cs:8 Shop.Core.Models.User") == {("project-callable", place, ())
                                                                           for place in places}
+
+
+def test_nameof_and_the_names_of_preprocessor_directives_are_neither_calls_nor_reads(shop):
+    """`nameof(x)` is `x`'s name as a constant, run never; `#pragma` names warnings and `#if` tests symbols of the
+    build, none code: only what runs is a reference, the branch `#if` keeps included."""
+    lines = {f"src/Core/Summary.cs:{line}" for line in range(17, 21)}
+    assert {key for key in shop["references"] if key.split(" ")[0] in lines} == {"src/Core/Summary.cs:19 Current"}
+    assert shop["references"]["src/Core/Summary.cs:19 Current"]["ends"]
 
 
 def test_a_byte_order_mark_moves_no_column_of_the_first_line(tmp_path):

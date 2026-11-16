@@ -1632,6 +1632,17 @@ class _TreeSitterEvidence(_Evidence):
         if t == "macro_invocation":
             self.note("macro expansion bindings are not inferred")
             return
+        if self.language == "csharp" and t.startswith("preproc_"):
+            # `#if` and its branches: every branch is read, never what `#if` tests nor the warnings `#pragma` names
+            if t != "preproc_pragma":
+                for index, child in enumerate(node.children):
+                    if child.is_named and node.field_name_for_child(index) not in _C_CONDITIONS:
+                        self.walk(child)
+            return
+        if self.language == "csharp" and t == "invocation_expression" and (
+                lambda name: name is not None and name.type == "identifier" and self.text(name) == "nameof")(
+                node.child_by_field_name("function")):
+            return  # `nameof(x)` is `x`'s name as a constant: no call and no read (C# calls a `nameof` it declares)
         if t in ("call_expression", "method_invocation", "invocation_expression", "object_creation_expression") or (
             node.start_byte, node.end_byte, t
         ) in self.tag_calls:
