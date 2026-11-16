@@ -440,7 +440,7 @@ class EngineImportTests(unittest.TestCase):
         run = subprocess.run
 
         def no_search_tool(command, *args, **kwargs):
-            if command[0] in {"rg", "grep"}:
+            if Path(command[0]).stem in {"rg", "grep"}:  # the tool is started by its path
                 raise FileNotFoundError(command[0])
             return run(command, *args, **kwargs)
 
@@ -463,7 +463,7 @@ class EngineImportTests(unittest.TestCase):
         run = subprocess.run
 
         def no_search_tool(command, *args, **kwargs):
-            if command[0] in {"rg", "grep"}:
+            if Path(command[0]).stem in {"rg", "grep"}:  # the tool is started by its path
                 raise FileNotFoundError(command[0])
             return run(command, *args, **kwargs)
 

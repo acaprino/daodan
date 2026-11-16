@@ -22,6 +22,7 @@ from snapshot_store import logical_digest, open_snapshot
 from engine_tools import free_memory, node_environment
 from edge_store import default_edge_store, read_edge_store
 from position_stage import MEMORY_EXHAUSTED
+from tree_scope import program
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
@@ -599,7 +600,10 @@ def _spawn_detached(command: list[str], log) -> subprocess.Popen:
 def _terminate_tree(pid: int) -> None:
     """End the pass and the interpreter it started, which a plain kill would orphan."""
     if os.name == "nt":
-        result = subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True, text=True)
+        taskkill = program("taskkill")  # never the name alone: Windows looks for it in the working directory first
+        if taskkill is None:
+            raise OSError("taskkill is in no folder of the PATH")
+        result = subprocess.run([taskkill, "/PID", str(pid), "/T", "/F"], capture_output=True, text=True)
         if result.returncode and _process_alive(pid):
             raise OSError(result.stderr.strip() or result.stdout.strip())
         return

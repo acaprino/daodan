@@ -17,7 +17,9 @@ sys.path.insert(0, str(ROOT / "plugins/codebase-map/skills/map/scripts"))
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import engine_pass  # noqa: E402
 import tree_scope  # noqa: E402
+import usage_finder  # noqa: E402
 
 
 def _planted(folder: Path, name: str) -> Path:
@@ -86,3 +88,73 @@ def test_the_memory_probe_imports_nothing_from_the_folder_it_runs_in(tmp_path):
                                            encoding="utf-8")
     run = code_graph.measured([sys.executable, "-I", "-c", "pass"], str(folder), None, 60)
     assert not marker.exists() and run["returncode"] == 0 and run["peak_mb"] is not None
+
+
+# ------------------------------------------------------------------ a program named without its folder
+
+# The stand-in programs are files that say they started: a file is a program by its mode only where modes count.
+marked = pytest.mark.skipif(os.name == "nt", reason="the stand-in programs are shell scripts")
+
+
+def _marked(folder: Path, name: str, mark: Path, code: int = 0) -> Path:
+    """A program named `name` in `folder` that says in `mark` that it started and with what, then ends with `code`."""
+    path = folder / name
+    path.write_text(f'#!/bin/sh\necho "$0 $*" >> "{mark}"\nexit {code}\n', encoding="utf-8")
+    path.chmod(0o755)
+    return path
+
+
+@pytest.fixture
+def searched(tmp_path, monkeypatch):
+    """A project that is the working directory and is searched for a program's name before the PATH's own folder:
+    what Windows does with every name written without a folder, and any system whose PATH holds a relative entry.
+    `(project, tools, what the project's programs said, what the PATH's said)`."""
+    project, tools = tmp_path / "project", tmp_path / "tools"
+    project.mkdir()
+    tools.mkdir()
+    monkeypatch.chdir(project)
+    monkeypatch.setenv("PATH", os.pathsep.join([".", str(tools)]))
+    return project, tools, tmp_path / "the-project-s-ran", tmp_path / "the-path-s-ran"
+
+
+@marked
+def test_a_pass_is_ended_by_the_taskkill_of_the_path_never_by_the_project_s(searched, monkeypatch):
+    project, tools, ran, own = searched
+    for name in ("taskkill", "taskkill.exe"):
+        _marked(project, name, ran)
+    _marked(tools, "taskkill.exe", own)
+    with monkeypatch.context() as windows:
+        windows.setattr(os, "name", "nt")  # the branch of Windows, on the programs above
+        engine_pass._terminate_tree(4242)
+        (tools / "taskkill.exe").unlink()
+        with pytest.raises(OSError, match="taskkill"):  # no name without a folder is tried instead
+            engine_pass._terminate_tree(4242)
+    assert not ran.exists(), ran.read_text(encoding="utf-8")
+    assert own.read_text(encoding="utf-8").split() == [str(tools / "taskkill.exe"), "/PID", "4242", "/T", "/F"]
+
+
+@marked
+def test_without_wsl_nothing_named_wsl_is_started(searched):
+    project, _tools, ran, _own = searched
+    _marked(project, "wsl.exe", ran)
+    assert container.wsl_executable() is None
+    for start in (lambda: container.wsl("--status"), container.distro_argv):
+        with pytest.raises(container.Gap) as gap:
+            start()
+        assert gap.value.cause == "WSL is not installed"
+    assert not ran.exists(), ran.read_text(encoding="utf-8")
+
+
+@marked
+def test_usages_are_searched_by_a_tool_of_the_path_or_by_python_never_by_the_project_s(searched):
+    """A project's own `rg` or `grep` would also choose the answer: here each says there is no match."""
+    project, tools, ran, own = searched
+    (project / "a.py").write_text("class Engine:\n    pass\n\n\nEngine()\n", encoding="utf-8")
+    for name in ("rg", "grep"):
+        _marked(project, name, ran, code=1)
+    found = usage_finder.find_usages_with_grep("Engine", [project])
+    assert {usage.line_number for usage in found} == {1, 5}  # no tool on the PATH: Python's own search
+    _marked(tools, "rg", own, code=1)
+    assert usage_finder.find_usages_with_grep("Engine", [project]) == []  # the PATH's tool answers
+    assert own.read_text(encoding="utf-8").startswith(f"{tools / 'rg'} -n --with-filename -F -e Engine -- ")
+    assert not ran.exists(), ran.read_text(encoding="utf-8")

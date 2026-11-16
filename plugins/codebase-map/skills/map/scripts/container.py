@@ -318,9 +318,18 @@ def wsl_executable() -> str | None:
     return found or (str(system) if system.is_file() else None)
 
 
+def wsl_program() -> str:
+    """wsl.exe where `wsl_executable` finds it, a Gap without it: never the name alone, which Windows looks for in
+    the working directory, the analyzed project, first."""
+    found = wsl_executable()
+    if not found:
+        raise Gap("WSL is not installed", WSL_ENABLE)
+    return found
+
+
 def wsl(*args: str, timeout: float = 120) -> subprocess.CompletedProcess:
     """wsl.exe with UTF-8 output; the caller checks the outcome."""
-    return subprocess.run([wsl_executable() or "wsl.exe", *args], stdin=subprocess.DEVNULL, capture_output=True,
+    return subprocess.run([wsl_program(), *args], stdin=subprocess.DEVNULL, capture_output=True,
                           timeout=timeout, env={**os.environ, "WSL_UTF8": "1"})
 
 
@@ -470,7 +479,7 @@ def remove_distro() -> None:
 
 
 def distro_argv() -> tuple[str, ...]:
-    return (wsl_executable() or "wsl.exe", "-d", DISTRO, "--cd", "/", "--exec")
+    return (wsl_program(), "-d", DISTRO, "--cd", "/", "--exec")
 
 
 def own_engine() -> Engine:
@@ -478,9 +487,7 @@ def own_engine() -> Engine:
     if os.name != "nt":
         raise Gap("no container engine answers: neither docker nor podman",
                   "install Docker or Podman; Daodan brings its own engine only on Windows")
-    if not wsl_executable():
-        raise Gap("WSL is not installed", WSL_ENABLE)
-    running = wsl("-l", "--running", "-q")
+    running = wsl("-l", "--running", "-q")  # a Gap without WSL (`wsl_program`)
     others = [name for name in running.stdout.decode("utf-8", "replace").split() if "kiri" in name.lower() and name != DISTRO]
     if others:
         raise Gap(f"another Kiri engine runs in WSL ({', '.join(others)}); Daodan's would reset its network rules",

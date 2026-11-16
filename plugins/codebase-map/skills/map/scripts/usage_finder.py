@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 # separately here. Re-exported so callers that imported it from this module
 # keep working.
 from languages import SUPPORTED_EXTENSIONS as _SUPPORTED_EXTENSIONS_MAP
-from tree_scope import Perimeter
+from tree_scope import Perimeter, program
 
 SOURCE_EXTENSIONS: tuple[str, ...] = tuple(_SUPPORTED_EXTENSIONS_MAP.keys())
 
@@ -178,7 +178,12 @@ def _searchable_files(search_path: Path, excludes: list[str]) -> list[Path]:
 
 
 def _search_output(tool: str, symbols: list[str], files: list[Path]) -> str | None:
-    """Search bounded file arguments in batches below Windows' argv limit."""
+    """Search bounded file arguments in batches below Windows' argv limit, with the `tool` (`rg` or `grep`) a
+    folder of the PATH holds: never its name alone, which Windows looks for in the working directory, the analyzed
+    project, first. None without it."""
+    found = program(tool)
+    if found is None:
+        return None
     outputs = []
     batches: list[list[str]] = [[]]
     length = 0
@@ -192,7 +197,7 @@ def _search_output(tool: str, symbols: list[str], files: list[Path]) -> str | No
     for batch in batches:
         if not batch:
             continue
-        command = [tool, "-n", "--with-filename", "-F"] if tool == "rg" else [tool, "-nH", "-F"]
+        command = [found, "-n", "--with-filename", "-F"] if tool == "rg" else [found, "-nH", "-F"]
         for symbol in symbols:
             command += ["-e", symbol]
         command += ["--", *batch]
