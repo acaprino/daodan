@@ -79,8 +79,7 @@ kotlin_too() {
     && step aggregate-kotlin "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$WORK/target/scip-targetroot"
   [ -s "$OUT/index.scip" ]
 }
-if step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
-  && [ -s "$OUT/index.scip" ]; then kotlin_too; exit; fi
+if scip_index && [ -s "$OUT/index.scip" ]; then kotlin_too; exit; fi
 if ! maven; then
   [ -n "${DAODAN_RAISE:-}" ] || exit 1
   raise_levels
@@ -166,8 +165,7 @@ JAVA
 step plain-javac java /tmp/PlainJavac.java || exit 1
 fi
 rm -f "$OUT/index.scip"
-step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
-  && [ -s "$OUT/index.scip" ] && kotlin_too
+scip_index && [ -s "$OUT/index.scip" ] && kotlin_too
 '''
 # Maven writes under `target/`, Gradle under `build/`: the build that ran made one of them, in every module.
 EXECUTE = r'''TARGETROOT=target/scip-targetroot
@@ -225,7 +223,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
                    + jvm.raise_line(toolchains, root, OLDEST_JDK, "all") + PREPARE)
         result, runs, out = jvm.run(folder, work, prepare, execute(external_classes), memory=memory, engine=engine,
                                     toolchains=toolchains, jdk=None if older else jdk,
-                                    hosts=(declared or {}).get("hosts", ()))
+                                    hosts=(declared or {}).get("hosts", ()), checkout=project_dir)
         part = finish(folder, work, result, runs, out)
         said = [unsupported([item], root, tool) for item in [older] if item]
         # A Gradle build the second attempt indexed says its edit (`build_edited`), not a plugin that did not load.

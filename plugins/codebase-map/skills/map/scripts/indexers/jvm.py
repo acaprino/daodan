@@ -107,9 +107,33 @@ LIB, TOOLS, KEPT, OUT = "/daodan/state/scip-java/lib", "/daodan/state/tools", "/
 ENV = {"TERM": "dumb"}
 PIDS = 4096  # threads count: Gradle, the Kotlin daemon and scip-java each start a hundred or more
 
+# scip-java's index of the build, which the analyzers' scripts run (`scip_index`). Its Gradle plugin puts no Android
+# task in `scipCompileAll` (scip-java issue 177, closed as not planned), though it adds its javac plugin to every
+# JavaCompile task of an Android project and dumps the configuration of every KotlinCompile task: with the SDK the
+# preparation installed (ANDROID_HOME), a Gradle build also runs each project's debug variant compiles, main and
+# unit tests, after scip-java's own tasks (its command when none is given).
+ANDROID_INIT = "/tmp/daodan-android.gradle"
+SCIP_INDEX = r'''scip_index() {
+  if [ -n "${ANDROID_HOME:-}" ] && [ "${DAODAN_TOOL:-gradle}" = gradle ] && { [ -f build.gradle ] \
+      || [ -f build.gradle.kts ] || [ -f settings.gradle ] || [ -f settings.gradle.kts ]; }; then
+    cat > ANDROID_INIT <<'GRADLE'
+allprojects { project ->
+    project.tasks.register('daodanAndroidCompile') { task ->
+        task.dependsOn(project.tasks.matching { it.name ==~ /compile\w*Debug(UnitTest)?Sources/ })
+    }
+}
+GRADLE
+    step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
+      -- clean scipPrintDependencies scipCompileAll --init-script ANDROID_INIT daodanAndroidCompile
+  else
+    step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
+  fi
+}
+'''.replace("ANDROID_INIT", ANDROID_INIT)
+
 HEAD = r'''set -u
 export LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
-WORK=${DAODAN_WORK:-/work}
+WORK=${DAODAN_WORK:-/work}${DAODAN_ROOT:+/$DAODAN_ROOT}
 OUT=${DAODAN_OUT:-$PHASE_OUT}
 SCIP_JAVA=/app/scip-java/bin/scip-java
 mkdir -p "$OUT" /app/scip-java/bin "$HOME"
@@ -221,7 +245,7 @@ MAVEN_KOTLIN = r'''maven_kotlin() {
   return 0
 }
 '''
-PREPARE += MAVEN_KOTLIN
+PREPARE += MAVEN_KOTLIN + SCIP_INDEX
 # A Gradle build whose scripts state a Java the JDK it runs on does not compile, or scip-java's compiler plugin does
 # not load on (`raise_line`): `raise_levels` writes an init script, which every later Gradle of the run reads. It
 # raises to 8 the source and target of a JavaCompile task that states less; with DAODAN_RAISE=all, the analyzers',
@@ -281,10 +305,12 @@ def registries(project_dir: Path) -> tuple[str, ...]:
     return READ_ONLY + (PLUGIN_PORTAL if gradle else ())
 
 
-def script(phase: str, body: str, *, setup: str = "", jdk: int = JDK) -> str:
+def script(phase: str, body: str, *, setup: str = "", jdk: int = JDK, root: str = "") -> str:
     """The bash script of one phase: `setup` (the preparation's toolchains, before the head picks the JDK, `jdk`
-    when one was installed), the shared head, the preparation's network setup, then `body`."""
-    first = f"# daodan {phase}\nPHASE_OUT={KEPT if phase == 'prepare' else OUT}\nDAODAN_JDK={jdk}\n"
+    when one was installed), the shared head, which works in the build's folder `root` of the copy, the
+    preparation's network setup, then `body`."""
+    first = (f"# daodan {phase}\nPHASE_OUT={KEPT if phase == 'prepare' else OUT}\nDAODAN_JDK={jdk}\n"
+             + (f"DAODAN_ROOT={root}\n" if root else ""))
     if phase == "prepare":
         return f"{first}{setup}{HEAD}{PREPARE}{body}"
     carry = f'if [ -z "${{DAODAN_OUT:-}}" ] && [ -d {KEPT} ]; then cp -a {KEPT}/. "$OUT"/ || exit 70; fi\n'
@@ -314,6 +340,33 @@ def inside(rel: str, folder: str) -> bool:
     return not folder or folder == "." or rel == folder or rel.startswith(folder.rstrip("/") + "/")
 
 
+def applying(stated, root: str) -> list[dict]:
+    """The toolchains of `stated` that state for the build in `root`: those of its own files and of a file in a
+    folder above it (a `.tool-versions` at the checkout's root), never another build's."""
+    out = []
+    for item in stated or ():
+        file = item.get("declared_in", "").split("#")[0]
+        if inside(file, root) or inside(root, file.rpartition("/")[0]):
+            out.append(item)
+    return out
+
+
+# What a build stops without that the project keeps out of version control: (its words, the file, the plugin that
+# reads it, what the file is). Daodan makes none: the build's index is a gap that names them.
+INPUTS = ((re.compile(r"File google-services\.json is missing"), "google-services.json",
+           "the Google Services Gradle plugin (com.google.gms.google-services)",
+           "the Firebase project's configuration, which a developer downloads from the Firebase console"),)
+
+
+def missing_inputs(runs: list[dict], root: str) -> list[dict]:
+    """A `build_input_missing` gap for each input of `INPUTS` a step of `runs` stopped without."""
+    said = "\n".join(run.get("stderr_tail") or "" for run in runs)
+    return [{"kind": "build_input_missing", "path": root or ".", "file": file,
+             "detail": f"the build stopped without {file}, which {plugin} reads: {what}, kept out of the "
+                       "repository; Daodan makes none, so the build gives nothing"}
+            for words, file, plugin, what in INPUTS if words.search(said)]
+
+
 def build_jdk(run: dict, stated) -> dict | None:
     """The JDK a build `{root, tool}` states, None for the image's: one `stated` above the image's (`wanted_jdk`);
     for Maven, which compiles with the JDK that runs it, else the JDK of the newest level the build's poms declare
@@ -322,7 +375,7 @@ def build_jdk(run: dict, stated) -> dict | None:
     compiler plugin of the pom's time may not read a newer JDK's classes (Error Prone's own javac 9). Not for a pom
     that declares a `release`, which javac 9 or later compiles for it; not for Gradle, which runs on the image's
     JDK and finds the toolchain its scripts ask for."""
-    stated = [item for item in stated or () if item.get("tool") == "java"]
+    stated = [item for item in applying(stated, run["root"]) if item.get("tool") == "java"]
     above = wanted_jdk(stated)
     if above or run["tool"] != "maven":
         return above
@@ -551,18 +604,25 @@ def failed(result: dict, runs: list[dict]) -> dict:
 
 def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory: int, engine=None,
         toolchains=(), prepare_timeout: float = 1800, timeout: float = 600,
-        inputs: dict[str, Path] | None = None, jdk: dict | None = None, hosts=()) -> tuple[dict, list[dict], Path]:
-    """Both phases in one container run over a copy of `project_dir` and the `tools` it needs, the preparation's
-    steps before `prepare` (the JDK it runs on, `jdk` or the newest of `toolchains` above the image's, and each
-    other JDK a Gradle toolchain of `toolchains` asks for; the restore), reaching beside the registries the `hosts`
-    the project declares (`preparation.declared`): the operation's result (`judged`, with the preparation's
-    `gaps`), the runs of both logs, and the folder the outputs came back into."""
+        inputs: dict[str, Path] | None = None, jdk: dict | None = None, hosts=(),
+        checkout: Path | None = None) -> tuple[dict, list[dict], Path]:
+    """Both phases in one container run over a copy of `checkout` (`project_dir`'s when not given: a build reads
+    what lies outside its folder as it does in a checkout) and the `tools` it needs, the steps in the build's
+    folder `project_dir`; the preparation's steps before `prepare` (the JDK it runs on, `jdk` or the newest of
+    `toolchains` above the image's, and each other JDK a Gradle toolchain of `toolchains` asks for, of those that
+    state for that folder, `applying`; the restore), reaching beside the registries the `hosts` the project
+    declares (`preparation.declared`): the operation's result (`judged`, with the preparation's `gaps` and the
+    inputs a build stopped without, `missing_inputs`), the runs of both logs, and the folder the outputs came
+    back into."""
     import container
     out_dir = Path(work_dir) / "container"
     out = out_dir / Path(OUT).name
     shutil.rmtree(out, ignore_errors=True)
     for phase in ("prepare", "execute"):
         (out_dir / f"{phase}.log").unlink(missing_ok=True)
+    checkout = Path(checkout or project_dir)
+    root = Path(project_dir).relative_to(checkout).as_posix().removeprefix(".")
+    toolchains = applying(toolchains, root)
     jdk = jdk or wanted_jdk(toolchains)
     # Each other JDK a Gradle toolchain asks for is installed beside it, for Gradle to find (`HEAD`).
     others, runs_on = {}, _major(jdk["version"]) if jdk else JDK
@@ -589,8 +649,9 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
         return given
 
     result = container.run_in_container(
-        project_dir, ["bash", "-c", script("execute", execute, jdk=used)], image=IMAGE, out_dir=out_dir,
-        prepare=["bash", "-c", script("prepare", restore_lines(project_dir) + prepare, setup=setup, jdk=used)],
+        checkout, ["bash", "-c", script("execute", execute, jdk=used, root=root)], image=IMAGE, out_dir=out_dir,
+        prepare=["bash", "-c", script("prepare", restore_lines(project_dir) + prepare, setup=setup, jdk=used,
+                                      root=root)],
         outputs=[OUT], env=dict(ENV), timeout=timeout, prepare_timeout=prepare_timeout, memory=memory, pids=PIDS,
         registries=tuple(dict.fromkeys(registries(project_dir) + chains["hosts"] + sdk["hosts"] + tuple(hosts))),
         engine=engine, inputs=inputs)
@@ -604,8 +665,9 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
     missing = preparation.missing(prepared)
     if jdk and any(gap["tool"] == "java" and gap["version"] == jdk["version"] for gap in missing):
         used = JDK  # the head ran with the image's JDK
-    gaps = chains["gaps"] + sdk["gaps"] + missing + preparation.restore_gaps(prepared) + list(
-        result.get("gaps") or ())  # and what the copy left out (`container.copy_perimeter`)
+    gaps = (chains["gaps"] + sdk["gaps"] + missing + preparation.restore_gaps(prepared)
+            + list(result.get("gaps") or ())  # and what the copy left out (`container.copy_perimeter`)
+            + missing_inputs(runs, root))
     return {**judged(result, prepared, used), **({"gaps": gaps} if gaps else {})}, runs, out
 
 

@@ -507,7 +507,10 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(jvm.jvm.raise_line(low, "", 8, "levels"), "export DAODAN_RAISE=levels\n")
         self.assertEqual(jvm.jvm.raise_line(java8, "", 8, "levels"), "")
         self.assertEqual(jvm.jvm.raise_line(low, "app", 8, "levels"), "")  # another build's script
-        self.assertIn("raise_levels", jvm.scripts({**gradle, "argv": jvm.GRADLE_TEST})[0])
+        prepare = jvm.scripts({**gradle, "argv": jvm.GRADLE_TEST})[0]
+        # The build compiles as declared first; only when that fails, a second time with the levels raised.
+        self.assertLess(prepare.index("step compile"), prepare.index("raise_levels"))
+        self.assertLess(prepare.index("raise_levels"), prepare.rindex("step compile"))
         self.assertNotIn("raise_levels", jvm.scripts({**maven, "argv": jvm.MAVEN_TEST})[0])
         steps = [{"step": "compile", "build_raised": ["the root project: source 1.6 and target 1.6 -> 8"]}]
         gap = jvm.jvm.edited(steps, "", "does not compile on the JDK it runs on", "its tests ran on a build")[0]
@@ -517,6 +520,13 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(jvm.jvm.build_jdk(maven, newer)["version"], "21")
         self.assertIsNone(jvm.jvm.build_jdk({"root": "app", "tool": "maven"}, java8))  # another build's poms
         self.assertIsNone(jvm.jvm.build_jdk(maven, [{"tool": "android", "version": "35", "declared_in": "pom.xml#x"}]))
+        # A JDK above the image's states for its own build and those below its file, never for another build
+        # (opentelemetry-demo: the ad service's 21 is not fraud-detection's, whose CI builds on 17).
+        fraud = {"root": "src/fraud", "tool": "gradle"}
+        ad = {"tool": "java", "version": "21", "declared_in": "src/ad/build.gradle#sourceCompatibility"}
+        self.assertIsNone(jvm.jvm.build_jdk(fraud, [ad]))
+        for declared_in in ("src/fraud/build.gradle#sourceCompatibility", ".java-version", "src/.tool-versions"):
+            self.assertEqual(jvm.jvm.build_jdk(fraud, [ad, {**ad, "declared_in": declared_in}])["version"], "21")
 
     def test_the_agent_is_built_for_java_8_and_its_jdk_9_and_10_parts_load_only_there(self):
         commands = jvm.agent_commands("src", "out", bin="/jdk/bin/")
@@ -751,6 +761,17 @@ class ObserveTest(FakeEngineTest):
         self.assertEqual(result["state"], "failed")
         self.assertEqual(result["sites"], [])
         self.assertIn("BUILD", result["cause"])
+
+    def test_a_build_s_tests_run_in_its_folder_of_a_copy_of_the_checkout(self):
+        files = {rel: (self.project / rel).read_text(encoding="utf-8") for rel in PROJECT}
+        shutil.copytree(self.project, self.scratch / "app")
+        shutil.move(str(self.scratch / "app"), str(self.project / "app"))
+        self.planned = jvm.plan({"units": [{"kind": "maven-module", "root": "app", "name": "fx:fx"}]},
+                                sorted(f"app/{rel}" for rel in files), lambda rel: files.get(rel.removeprefix("app/")))
+        self.observe(suites=self.suite(1))
+        for phase in ("prepare", "execute"):
+            self.assertIn("\nDAODAN_ROOT=app\n", (self.state / "scripts" / f"{phase}.sh").read_text(encoding="utf-8"))
+        self.assertTrue((self.arrived(1) / "work/app/pom.xml").is_file())
 
     def test_without_a_container_nothing_runs_and_the_cause_is_said(self):
         result = self.observe(memory=2**20)

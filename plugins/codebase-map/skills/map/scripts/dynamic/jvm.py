@@ -153,10 +153,12 @@ def plan(record: dict, files: list[str], read) -> dict:
 def scripts(run: dict) -> tuple[str, str]:
     """The preparation's body and the execution's, each after `indexers/jvm.py`'s head (`jvm.script`)."""
     build = " && ".join(shlex.join(command) for command in agent_commands(AGENT, AGENT, bin=IMAGE_JDK))
-    # A Gradle level under 8, which no JDK here compiles, is raised first (`jvm.RAISE_LEVELS`).
-    prepare = [f"step agent sh -c {shlex.quote(build)} || exit 70",
-               *(['[ -z "${DAODAN_RAISE:-}" ] || raise_levels'] if run["tool"] == "gradle" else []),
-               f"step compile {COMPILE[run['tool']]} || exit $?"]
+    # The build compiles as declared; a Gradle one that fails and states a level under 8, which the image's JDK
+    # does not compile, compiles once more with the levels raised (`jvm.RAISE_LEVELS`), a declared second attempt.
+    compile = f"step compile {COMPILE[run['tool']]}"
+    again = (f' || {{ code=$?; [ -n "${{DAODAN_RAISE:-}}" ] || exit $code; raise_levels; {compile}; }}'
+             if run["tool"] == "gradle" else "")
+    prepare = [f"step agent sh -c {shlex.quote(build)} || exit 70", f"{{ {compile}{again}; }} || exit $?"]
     if run["tool"] == "maven":
         prepare += [f"mkdir -p {NO_JVM}/bin && printf '#!/bin/sh\\nexit 0\\n' > {NO_JVM}/bin/java"
                     f" && chmod +x {NO_JVM}/bin/java", f'cp "$JAVA_HOME/release" {NO_JVM}/ 2>/dev/null',
@@ -501,7 +503,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
                                       execute, memory=MEMORY, engine=engine,
                                       toolchains=planned.get("toolchains") or (), timeout=LIMIT + 300, inputs=carried,
                                       jdk=jvm.build_jdk(run, planned.get("toolchains")),
-                                      hosts=planned.get("declared", {}).get("hosts", ()))
+                                      hosts=planned.get("declared", {}).get("hosts", ()), checkout=Path(project))
         attempt = {"root": run["root"], "gaps": [*result.get("gaps", []), *jvm.edited(
             steps, run["root"], "does not compile on the JDK it runs on", "its tests ran on a build")]}
         attempts.append(attempt)

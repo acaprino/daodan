@@ -246,6 +246,50 @@ class EachBuildTests:
         self.assertIn(left, gaps)
         self.assertIn("toolchain_unavailable", [gap["kind"] for gap in gaps])
 
+    def test_a_build_s_container_holds_the_checkout_and_its_steps_run_in_its_folder(self):
+        """A build reads what lies outside its folder as it does in a checkout (opentelemetry-demo's services read
+        the protos at `../../pb`): its container holds the checkout, and its steps run in the build's folder."""
+        shutil.copytree(self.project, self.scratch / "second")
+        shutil.move(str(self.scratch / "second"), str(self.project / "services/shop"))
+        (self.project / "pb").mkdir()
+        (self.project / "pb/demo.proto").write_text('syntax = "proto3";\n', encoding="utf-8")
+        self.play_success()
+        self.index(roots={"services/shop"})
+        fs = self.arrived(1) / "work"
+        self.assertTrue((fs / "pb/demo.proto").is_file())
+        self.assertTrue(any((fs / "services/shop" / name).is_file() for name in BUILD_FILES))
+        for phase in ("prepare", "execute"):
+            self.assertIn("\nDAODAN_ROOT=services/shop\n",
+                          (self.state / f"scripts/{phase}.sh").read_text(encoding="utf-8"))
+
+    def test_a_build_runs_on_the_jdks_its_own_files_state_not_another_build_s(self):
+        """opentelemetry-demo's fraud-detection states Kotlin's JVM target 17 and no JDK; its ad service states
+        Java 21: fraud-detection runs on the image's 17, as its CI's image does (on 21 its compileJava would target
+        21 against compileKotlin's 17), and the ad service on 21. A file above the build states for it too."""
+        self.serve_mise()
+        shutil.copytree(self.project, self.scratch / "second")
+        shutil.move(str(self.scratch / "second"), str(self.project / "src/fraud"))
+        self.play_success()
+        other = {"tool": "java", "version": "21", "declared_in": "src/ad/build.gradle#sourceCompatibility"}
+        self.index(roots={"src/fraud"}, toolchains=[other])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("\nDAODAN_JDK=17\n", script)
+        self.assertNotIn("install java@21", script)
+        for declared_in in ("src/fraud/build.gradle#sourceCompatibility", ".tool-versions"):
+            self.index(roots={"src/fraud"}, toolchains=[other, {**other, "declared_in": declared_in}])
+            script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+            self.assertIn("\nDAODAN_JDK=21\n", script, declared_in)
+
+    def test_an_android_build_that_stops_on_a_missing_google_services_json_names_the_file_and_its_plugin(self):
+        missing = ("* What went wrong:\nExecution failed for task ':app:processDebugGoogleServices'.\n"
+                   "> File google-services.json is missing. The Google Services Plugin cannot function without it.")
+        self.play("prepare", text=log(("index", 1, missing)), code=1)
+        result = self.index(tools={"": ["gradle"]})
+        gap = next(gap for gap in result.get("gaps", ()) if gap["kind"] == "build_input_missing")
+        self.assertEqual(gap["path"], ".")
+        for said in ("google-services.json", "com.google.gms.google-services"):
+            self.assertIn(said, gap["detail"])
+
     def test_a_build_that_fails_keeps_the_others_and_says_which_failed(self):
         shutil.copytree(self.project, self.scratch / "second")
         shutil.move(str(self.scratch / "second"), str(self.project / "services/shop"))
@@ -340,7 +384,9 @@ class PreparationTests:
         self.assertIn(preparation.JAVA_PROXY, script)
         self.assertNotIn("address=${HTTPS_PROXY", jvm.PREPARE)  # one proxy setup for the JVM: the preparation's
         self.assertIn(line, script)
-        self.assertLess(script.index(line), script.index('"$SCIP_JAVA" index'))
+        called = re.compile(r"\bscip_index\b(?! *\(\))")  # scip-java's index, defined above the restore
+        self.assertIsNone(called.search(script[:script.index(line)]))
+        self.assertIsNotNone(called.search(script[script.index(line):]))
 
     def test_a_restore_that_fails_is_a_gap_and_the_build_goes_on(self):
         self.play_success()
@@ -1039,7 +1085,7 @@ def test_a_maven_build_gets_its_kotlin_from_the_analysis_indexer():
     for needed in ("dependency:build-classpath", "org.scip_code.scip_java.kotlin_analysis.MainKt",
                    '--targetroot "$targetroot"', '"$configs/maven-$name.txt"'):
         assert needed in jvm.MAVEN_KOTLIN, needed
-    assert "maven_kotlin" not in gradle and '"$SCIP_JAVA" index --output "$OUT/index.scip"' in gradle
+    assert "maven_kotlin" not in gradle and "scip_index" in gradle
 
 
 BASH = shutil.which("bash") if os.name != "nt" else None
@@ -1058,7 +1104,7 @@ def _phase(tmp_path: Path, body: str, tool: str, index_code: int, files=("pom.xm
                     + (f'echo index > "{out}/index.scip"\n' if not index_code else "") + f"exit {index_code}\n",
                     encoding="utf-8")
     scip.chmod(0o755)
-    head = (f"DAODAN_TOOL={tool}\nOUT={out}\nWORK={work}\nSCIP_JAVA={scip}\nstep() {{ shift; \"$@\"; }}\n"
+    head = (f"DAODAN_TOOL={tool}\nOUT={out}\nWORK={work}\nSCIP_JAVA={scip}\nstep() {{ shift; \"$@\"; }}\n{jvm.SCIP_INDEX}"
             f"java() {{ echo java >> {calls}; return 1; }}\nmaven_kotlin() {{ echo maven_kotlin >> {calls}; }}\n")
     code = subprocess.run([BASH, "-c", head + body], cwd=work).returncode
     return code, calls.read_text(encoding="utf-8").replace(str(out), "$OUT").splitlines() if calls.is_file() else []
@@ -1080,6 +1126,34 @@ def test_each_build_tool_of_a_folder_runs_only_its_own_steps(tmp_path):
         f"scip-java index --output $OUT/index.scip {flag.format('gradle')}"]
     assert "maven_kotlin" in _phase(tmp_path / "6", kotlin.PREPARE, "maven", 0)[1]
     assert "maven_kotlin" in _phase(tmp_path / "7", kotlin.PREPARE, "", 0, files=("pom.xml",))[1]  # as before
+
+
+@unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
+def test_an_android_gradle_build_also_compiles_its_debug_variants(tmp_path):
+    """scip-java's Gradle plugin puts no Android task in scipCompileAll (it attaches its javac plugin to every
+    JavaCompile task of an Android project and dumps every KotlinCompile's configuration): with the Android SDK
+    of the preparation, the build also runs each project's debug variant compiles, main and unit tests."""
+    android = (f"scip-java index --output $OUT/index.scip --build-tool=gradle -- clean scipPrintDependencies "
+               f"scipCompileAll --init-script {jvm.ANDROID_INIT} daodanAndroidCompile")
+    for module in (java, kotlin):
+        assert _phase(tmp_path / module.__name__ / "android", "ANDROID_HOME=/sdk\n" + module.PREPARE, "gradle", 0,
+                      files=("build.gradle.kts",))[1] == [android]
+        assert _phase(tmp_path / module.__name__ / "plain", module.PREPARE, "gradle", 0,
+                      files=("build.gradle.kts",))[1] == [
+            "scip-java index --output $OUT/index.scip --build-tool=gradle"]
+    script = Path(jvm.ANDROID_INIT).read_text(encoding="utf-8")
+    assert "daodanAndroidCompile" in script and r"compile\w*Debug(UnitTest)?Sources" in script
+
+
+@unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
+def test_the_head_works_in_the_build_s_folder_of_the_checkout(tmp_path):
+    work = tmp_path / "checkout"
+    (work / "src/fraud").mkdir(parents=True)
+    head = jvm.HEAD[jvm.HEAD.index("WORK="):jvm.HEAD.index("step() {")]
+    ran = subprocess.run([BASH, "-c", f"PHASE_OUT={tmp_path / 'out'}\nHOME={tmp_path}\nDAODAN_WORK={work}\n"
+                          f"DAODAN_ROOT=src/fraud\n{head.replace('/app/scip-java/bin', str(tmp_path / 'bin'))}"
+                          'echo "$WORK $PWD"\n'], capture_output=True, text=True)
+    assert ran.stdout.split() == [str(work / "src/fraud")] * 2, ran.stderr
 
 
 @unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")

@@ -179,14 +179,14 @@ MIN_FREE = 5 * 2**30  # the container's memory: 4,688 MB for all its processes o
 # `jvm.RAISE_LEVELS`: its Java compile task loads scip-java's compiler plugin on JDK 17 or newer only.
 PREPARE = r'''if [ "${DAODAN_TOOL:-}" = maven ] || { [ -z "${DAODAN_TOOL:-}" ] && [ -f pom.xml ] \
     && ! ls build.gradle build.gradle.kts settings.gradle settings.gradle.kts >/dev/null 2>&1; }; then
-  step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
+  scip_index
   maven_kotlin "$OUT/kotlin-configs" \
     && step aggregate "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$WORK/target/scip-targetroot"
 else
-  step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
+  scip_index
   if [ ! -f "$OUT/index.scip" ] && [ -n "${DAODAN_RAISE:-}" ]; then  # `jvm.RAISE_LEVELS`
     raise_levels
-    step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
+    scip_index
   fi
 fi
 [ -f "$OUT/index.scip" ]
@@ -235,7 +235,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
         prepare = (jvm.modules_line(modules, root) + jvm.tool_line(tool)
                    + jvm.raise_line(toolchains, root, jvm.JDK, "all") + PREPARE)
         result, runs, out = jvm.run(folder, work, prepare, EXECUTE, memory=memory, engine=engine,
-                                    toolchains=toolchains, hosts=(declared or {}).get("hosts", ()))
+                                    toolchains=toolchains, hosts=(declared or {}).get("hosts", ()),
+                                    checkout=project_dir)
         part = finish(work, result, runs, out)
         said = jvm.edited(runs, root) if part.get("indexes") else []
         return jvm.with_gaps(jvm.with_gaps(part, result), {"gaps": said})
