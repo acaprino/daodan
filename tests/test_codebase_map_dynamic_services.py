@@ -14,6 +14,7 @@ import contextlib
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -31,7 +32,7 @@ import container  # noqa: E402
 import dynamic  # noqa: E402
 import premap  # noqa: E402
 import snapshot  # noqa: E402
-from premap import renovate  # noqa: E402
+from premap import compose, container_runner, renovate  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 from test_codebase_map_container import FAKE_CLI  # noqa: E402
 from test_codebase_map_dynamic import SAMPLED_LIB, gaps, static_store, step, write_project  # noqa: E402
@@ -200,6 +201,192 @@ def test_a_service_is_one_fact_per_declaration():
         **TUDUDI, "image": "postgres:17", "sources": ["renovate"]}]
 
 
+# ------------------------------------------------------------------ a compose file a CI step starts
+
+# fastapi/full-stack-fastapi-template at aabb90126964a164e02aff39e7c385bb0598236d: its backend's job starts two
+# services of its compose files, and its tests read the project's `.env`
+BACKEND = {"name": "Test Backend", "jobs": {"test-backend": {"runs-on": "ubuntu-latest", "steps": [
+    {"name": "Checkout", "uses": "actions/checkout@v7"}, {"name": "Set up Python", "uses": "actions/setup-python@v7"},
+    {"name": "Install uv", "uses": "astral-sh/setup-uv@v10"}, {"run": "docker compose down -v --remove-orphans"},
+    {"run": "docker compose up -d --wait db mailpit"},
+    {"name": "Migrate DB", "run": "uv run bash scripts/prestart.sh", "working-directory": "backend"},
+    {"name": "Run tests", "run": 'uv run bash scripts/tests-start.sh "Coverage for ${{ github.sha }}"',
+     "working-directory": "backend"},
+    {"run": "docker compose down -v --remove-orphans"}]}}}
+STEP = ".github/workflows/test-backend.yml#jobs.test-backend.steps.4"
+UP = {"declared_in": STEP, "cwd": ".", "argv": ["docker", "compose", "up", "-d", "--wait", "db", "mailpit"]}
+COMPOSE_YML = """---
+services:
+  db:
+    image: postgres:18
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - app-db-data:/var/lib/postgresql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Variable not set}
+      - POSTGRES_DB=app
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  app-db-data:
+"""  # the template's, with a bind mount
+OVERRIDE_YML = ('services:\n  db:\n    ports:\n      - "5432:5432"\n  mailpit:\n    image: axllent/mailpit\n'
+                '    ports:\n      - "8025:8025"\n      - "1025:1025"\n')
+DOTENV = "POSTGRES_PASSWORD=changethis\nDATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@localhost:5432/app\n"
+# `docker-compose config --format json db mailpit` (Compose 5.6.1) on those files, the project at /work
+CONFIG = {"name": "work", "networks": {"default": {"name": "work_default", "ipam": {}}}, "services": {
+    "db": {"command": None, "entrypoint": None, "environment": {"POSTGRES_DB": "app", "POSTGRES_PASSWORD": "changethis"},
+           "image": "postgres:18", "networks": {"default": None},
+           "volumes": [{"type": "volume", "source": "app-db-data", "target": "/var/lib/postgresql", "volume": {}},
+                       {"type": "bind", "source": "/work/init.sql", "target": "/docker-entrypoint-initdb.d/init.sql",
+                        "read_only": True, "bind": {}}],
+           "healthcheck": {"test": ["CMD-SHELL", "pg_isready -U postgres -d app"], "timeout": "10s", "interval": "10s",
+                           "retries": 5, "start_period": "30s"},
+           "ports": [{"mode": "ingress", "target": 5432, "published": "5432", "protocol": "tcp"}]},
+    "mailpit": {"command": None, "entrypoint": None, "image": "axllent/mailpit", "networks": {"default": None},
+                "ports": [{"mode": "ingress", "target": 8025, "published": "8025", "protocol": "tcp"},
+                          {"mode": "ingress", "target": 1025, "published": "1025", "protocol": "tcp"}]}},
+    "volumes": {"app-db-data": {"name": "work_app-db-data"}}}
+COMPOSE_DB = {"name": "db", "image": "postgres:18", "declared_in": STEP + ".services.db", "host": "localhost",
+              "env": {"POSTGRES_DB": "app", "POSTGRES_PASSWORD": "changethis"}, "ports": ["5432:5432"],
+              "healthcheck": CONFIG["services"]["db"]["healthcheck"],
+              "volumes": ["init.sql:/docker-entrypoint-initdb.d/init.sql:ro"]}
+COMPOSE_MAILPIT = {"name": "mailpit", "image": "axllent/mailpit", "declared_in": STEP + ".services.mailpit",
+                   "host": "localhost", "ports": ["8025:8025", "1025:1025"]}
+
+
+def test_the_shell_words_of_a_step_say_which_docker_compose_up_it_runs():
+    assert compose.invocations("docker compose down -v --remove-orphans\ndocker compose up -d --wait db mailpit\n") == (
+        [["docker", "compose", "up", "-d", "--wait", "db", "mailpit"]], [])
+    assert compose.invocations("sudo docker-compose -f a.yml -f b.yml up -d && npm test") == (
+        [["docker-compose", "-f", "a.yml", "-f", "b.yml", "up", "-d"]], [])
+    assert compose.invocations("if true; then COMPOSE_PROFILES=ci docker compose --profile x \\\n  up -d redis; fi") == (
+        [["COMPOSE_PROFILES=ci", "docker", "compose", "--profile", "x", "up", "-d", "redis"]], [])
+    assert compose.invocations("echo 'docker compose up' # docker compose up\ndocker compose run --rm test") == ([], [])
+    assert compose.invocations('docker compose -f "$FILE" up -d\ndocker compose -f $(pwd)/a.yml up') == (
+        [], ['docker compose -f "$FILE" up -d', "docker compose -f $(pwd)/a.yml up"])
+    assert compose.options(["CI=1", "docker", "compose", "-f", "a.yml", "--profile", "up", "--dry-run", "up", "-d",
+                            "--wait", "--scale", "db=2", "-t", "5", "--no-deps", "db"]) == (
+        ["-f", "a.yml", "--profile", "up", "--dry-run"], ["db"], True, {"CI": "1"})
+
+
+def test_a_step_that_starts_docker_compose_is_a_fact_with_where_it_runs_and_its_variables(tmp_path):
+    """GitHub runs a step in its `working-directory`, else the job's or the workflow's default; Compose reads the
+    variables the step gets that the workflow writes (an expression is the CI's); the tests' are the job's."""
+    other = {"env": {"MODE": "ci"}, "defaults": {"run": {"working-directory": "deploy"}}, "jobs": {"e2e": {
+        "env": {"TOKEN": "${{ secrets.T }}"}, "steps": [
+            {"run": "docker compose -f stack.yml up -d api", "env": {"TAG": 1}},
+            {"run": 'docker compose -f "$STACK" up -d', "working-directory": "."}]}}}
+    out = read_services(tmp_path, f".github/workflows/test-backend.yml\n{json.dumps(BACKEND)}\n"
+                                  f".github/workflows/e2e.yml\n{json.dumps(other)}\n")
+    assert out["facts"]["compose"] == [UP, {
+        "declared_in": ".github/workflows/e2e.yml#jobs.e2e.steps.0", "cwd": "deploy",
+        "argv": ["docker", "compose", "-f", "stack.yml", "up", "-d", "api"], "env": {"MODE": "ci", "TAG": "1"},
+        "job_env": {"MODE": "ci", "TOKEN": "${{ secrets.T }}"}}]
+    [gap] = out["gaps"]
+    assert (gap["kind"], gap["path"]) == ("compose_not_read", ".github/workflows/e2e.yml#jobs.e2e.steps.1")
+    assert 'docker compose -f "$STACK" up -d' in gap["detail"]
+    with context_of(tmp_path / "b", {"package.json": "{}\n", ".github/workflows/t.yml": "run: docker compose up\n"}) \
+            as context:
+        assert [command["argv"][0] for command in renovate.commands(context)] == ["renovate", "sh"]
+
+
+def test_an_npm_test_script_that_starts_docker_compose_is_a_fact_too(tmp_path):
+    """npm runs a script's `pre` script first, in the package's folder: the one the `tests` entry names starts the
+    services there."""
+    package = json.dumps({"scripts": {"pretest": "docker compose up -d --wait db", "test": "jest",
+                                      "pree2e": "docker compose -f $STACK up -d", "e2e": "playwright test"}})
+    with context_of(tmp_path, {"web/package.json": package, ".github/workflows/ci.yml": WORKFLOW}) as context:
+        context.stated = {"tests": [{"root": "web", "runner": "jest", "declared_in": "web/package.json#scripts.test"},
+                                    {"root": "web", "runner": "npm", "declared_in": "web/package.json#scripts.e2e"}]}
+        commands = renovate.commands(context)
+        report = {"repositories": {"local": {"packageFiles": {}}}}
+        out = renovate.read(context, commands, [{"returncode": 0, "stdout": json.dumps(report), "stderr": ""},
+                                                {"returncode": 0, "stdout": "", "stderr": ""}])
+    assert out["facts"]["compose"] == [{"declared_in": "web/package.json#scripts.pretest", "cwd": "web",
+                                        "argv": ["docker", "compose", "up", "-d", "--wait", "db"]}]
+    [gap] = out["gaps"]
+    assert (gap["kind"], gap["path"]) == ("compose_not_read", "web/package.json#scripts.pree2e")
+
+
+def test_compose_reads_each_step_s_files_with_its_own_config_where_the_step_runs():
+    e2e = {"declared_in": ".github/workflows/e2e.yml#jobs.e2e.steps.0", "cwd": "deploy",
+           "argv": ["CI=1", "docker", "compose", "-f", "stack.yml", "up", "-d", "api"], "env": {"MODE": "ci"}}
+    assert compose.commands(SimpleNamespace(stated={"compose": [UP, e2e]})) == [
+        {"tool": "compose", "argv": ["docker-compose", "config", "--format", "json", "db", "mailpit"], "cwd": ".",
+         "env": {}, "network": "none"},
+        {"tool": "compose", "argv": ["docker-compose", "-f", "stack.yml", "config", "--format", "json", "api"],
+         "cwd": "deploy", "env": {"MODE": "ci", "CI": "1"}, "network": "none"}]
+    assert compose.commands(SimpleNamespace(stated={})) is None
+    assert "compose" in container_runner.TOOLS and compose.DOWNLOAD[0].endswith("/v5.6.1/docker-compose-linux-x86_64")
+
+
+def test_each_service_compose_starts_for_a_step_is_a_fact_as_compose_gives_it():
+    """What `up` starts: the services the step names and those they depend on, as Compose's own `config` gives
+    them; a bind mount relative to the project; a failure, and a variable Compose does not find, are gaps naming
+    the step."""
+    context = SimpleNamespace(stated={"compose": [UP, {**UP, "declared_in": STEP + "x"}, {**UP, "declared_in": "y"}]})
+    warned = 'time="2026-11-16" level=warning msg="The \\"TAG\\" variable is not set. Defaulting to a blank string."'
+    out = compose.read(context, compose.commands(context), [
+        {"returncode": 0, "stdout": json.dumps(CONFIG), "stderr": "", "root": "/work"},
+        {"returncode": 1, "stdout": "", "root": "/work",
+         "stderr": "error while interpolating services.db.environment.[]: required variable POSTGRES_PASSWORD is "
+                   "missing a value: Variable not set\n"},
+        {"returncode": 0, "stdout": json.dumps({"services": {}}), "stderr": warned + "\n", "root": "/work"}])
+    assert out["facts"]["services"] == [COMPOSE_DB, COMPOSE_MAILPIT]
+    failed, partial = out["gaps"]
+    assert (failed["kind"], failed["path"]) == ("model_failed", STEP + "x") and "POSTGRES_PASSWORD" in failed["detail"]
+    assert (partial["kind"], partial["path"]) == ("model_partial", "y") and "TAG" in partial["detail"]
+
+
+def test_a_command_source_reads_what_the_sources_before_it_state(tmp_path):
+    seen = {}
+    first = SimpleNamespace(NAME="steps", VERSION="1", RANK="reader",
+                            commands=lambda context: [{"tool": "t", "argv": ["true"], "cwd": ".", "env": {},
+                                                       "network": "none"}],
+                            read=lambda context, commands, results: {"facts": {"compose": [UP]}})
+    later = SimpleNamespace(NAME="later", VERSION="1", RANK="model",
+                            commands=lambda context: seen.update(context.stated) or None)
+    with context_of(tmp_path, {"package.json": "{}\n"}) as context:
+        premap.derive(context.manifest, context.store, sources=[first, later],
+                      runner=lambda commands: [{"returncode": 0, "stdout": "", "stderr": "", "root": "/work"}])
+    assert seen["compose"] == [{**UP, "sources": ["steps@1"]}]
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_compose_s_own_config_gives_the_services_the_fastapi_template_s_step_starts(tmp_path):
+    """Compose 5.6.1 itself (`compose.DOWNLOAD`, checked by its sha256), with no engine, on the template's files."""
+    binary = tmp_path / "bin" / "docker-compose"
+    binary.parent.mkdir()
+    shutil.copy(container_runner.fetched(*compose.DOWNLOAD, "docker-compose"), binary)
+    binary.chmod(0o755)
+    project = tmp_path / "work"
+    for rel, text in {"compose.yml": COMPOSE_YML, "compose.override.yml": OVERRIDE_YML, ".env": DOTENV,
+                      "init.sql": "select 1;\n"}.items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8")
+    context = SimpleNamespace(stated={"compose": [UP]})
+    commands = compose.commands(context)
+    results = []
+    for command in commands:
+        said = subprocess.run([str(binary), *command["argv"][1:]], cwd=project / command["cwd"], capture_output=True,
+                              text=True, timeout=120, env={"PATH": "/usr/bin:/bin", **command["env"]})
+        results.append({"returncode": said.returncode, "stdout": said.stdout, "stderr": said.stderr,
+                        "root": str(project)})
+    out = compose.read(context, commands, results)
+    print(json.dumps(out, indent=1), flush=True)
+    assert out["facts"]["services"] == [COMPOSE_DB, COMPOSE_MAILPIT] and not out.get("gaps")
+
+
 # ------------------------------------------------------------------ the plan
 
 def test_the_plan_starts_what_the_ci_declares_and_gives_the_tests_the_job_s_variables():
@@ -240,6 +427,26 @@ def test_what_cannot_run_as_declared_is_a_gap_naming_the_service_and_its_image()
     assert path.format("a", "db") in again  # the first declaration of the name starts
     [shared] = [gap["detail"] for gap in planned["gaps"] if "SHARED" in gap["detail"]]
     assert "one" in shared and "two" in shared
+
+
+def test_a_compose_service_starts_with_its_health_check_and_one_compose_builds_does_not():
+    built = {"name": "backend", "image": "", "declared_in": STEP + ".services.backend", "host": "localhost",
+             "build": "backend"}
+    odd = {**COMPOSE_MAILPIT, "name": "zz", "declared_in": STEP + ".services.zz", "ignored": ["privileged", "user"]}
+    planned = dynamic.services({"services": [COMPOSE_DB, COMPOSE_MAILPIT, built, odd]})
+    assert planned["services"][0] == {
+        "name": "db", "image": "postgres:18", "host": "localhost",
+        "env": {"POSTGRES_DB": "app", "POSTGRES_PASSWORD": "changethis"},
+        "args": ["--health-cmd", "pg_isready -U postgres -d app", "--health-interval", "10s", "--health-timeout", "10s",
+                 "--health-retries", "5", "--health-start-period", "30s"], "command": []}
+    assert [spec["name"] for spec in planned["services"]] == ["db", "mailpit", "zz"]
+    said = {(gap["kind"], gap["name"]): gap["detail"] for gap in planned["gaps"]}
+    assert "Compose builds its image from backend" in said[("service_unavailable", "backend")]
+    assert "init.sql:/docker-entrypoint-initdb.d/init.sql:ro" in said[("service_incomplete", "db")]
+    assert "privileged, user" in said[("service_incomplete", "zz")]
+    assert dynamic._healthcheck({"test": ["CMD", "redis-cli", "ping"], "interval": "1s"}) == [
+        "--health-cmd", "redis-cli ping", "--health-interval", "1s"]
+    assert dynamic._healthcheck({"disable": True}) == dynamic._healthcheck({"test": ["NONE"]}) == ["--no-healthcheck"]
 
 
 def test_a_gitlab_service_starts_with_its_names_and_its_runner_s_wait_and_without_what_the_ci_computes():
@@ -695,9 +902,11 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
     gitlab = {"name": "db", "image": "postgres:16-alpine", "declared_in": ".gitlab-ci.yml#test.services.0",
               "host": "db", "aliases": ["postgres"], "env": TUDUDI["env"], "wait": "ports"}
     [planned] = dynamic.services({"services": [gitlab]})["services"]
+    [composed] = dynamic.services({"services": [COMPOSE_DB]})["services"]  # its health check as Compose writes it
     cases = {"localhost": (SPEC, DATABASE_URL),  # on the runner, from a job's container, from a GitLab job
              "postgres": ({**SPEC, "host": "postgres"}, DATABASE_URL.replace("@localhost:", "@postgres:")),
-             "gitlab": (planned, DATABASE_URL.replace("@localhost:", "@db:"))}
+             "gitlab": (planned, DATABASE_URL.replace("@localhost:", "@db:")),
+             "compose": (composed, "postgres://postgres:changethis@localhost:5432/app")}
     image = (modal.Image.debian_slim(python_version="3.13").apt_install("git")
              .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__"]))
     with the_driver() as modal_pipeline:

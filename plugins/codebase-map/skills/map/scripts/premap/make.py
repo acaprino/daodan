@@ -11,7 +11,7 @@ the unit that links it. A unit's sources are the project's files among its
 prerequisites, followed through the steps that are not units; the units among them are its edges. Its manifest
 is the makefile its recipe comes from. A makefile of another dialect (nmake, Watcom, Borland, MMS) or one that
 only a configure script turns into a makefile (`Makefile.in`, `Makefile.am`) is never read: a `not_executed` gap
-per file.
+per file, but for a `Makefile.am` or `Makefile.in` of an Autotools build, which `premap/autotools.py` states.
 """
 from __future__ import annotations
 
@@ -111,7 +111,12 @@ def read(context, commands, results):
             units.append({"name": name, "kind": "make-target", "root": folder, "manifest": manifest,
                           "source_roots": sorted({_folder(s) for s in sources}), "depends_on": sorted(edges),
                           "config": {"sources": sorted(sources)}})
+    from premap import autotools
+    configured = autotools.configures(context)  # an Autotools build reads its folders' Makefile.am
     for rel in sorted(context.inventory.files):
+        if PurePosixPath(rel).name in ("Makefile.am", "Makefile.in") and any(
+                autotools._inside(_folder(rel), folder) for folder in configured):
+            continue
         if OTHERS.match(PurePosixPath(rel).name):
             gaps.append({"kind": "not_executed", "path": rel,
                          "detail": "a makefile GNU Make does not read (another make's dialect, or a template a "

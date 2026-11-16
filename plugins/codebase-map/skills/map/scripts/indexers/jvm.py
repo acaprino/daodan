@@ -641,6 +641,8 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
                     + sdk["lines"])
     used = _major(jdk["version"]) if jdk else JDK
 
+    inputs_given = inputs
+
     def inputs(extra=inputs) -> dict:
         given = tools(project_dir)
         given.update({f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
@@ -668,6 +670,15 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
     gaps = (chains["gaps"] + sdk["gaps"] + missing + preparation.restore_gaps(prepared)
             + list(result.get("gaps") or ())  # and what the copy left out (`container.copy_perimeter`)
             + missing_inputs(runs, root))
+    # A Gradle build whose dependency needs a newer JVM runs once more on the JDK it names (`gradle.asked_jdk`).
+    from premap import gradle
+    asked = gradle.asked_jdk(prepared, toolchains) if result.get("state") != "gap" else None
+    if asked and (_major(asked[0]["version"]) or 0) > used:
+        again, more, out = run(project_dir, work_dir, prepare, execute, memory=memory, engine=engine,
+                               toolchains=toolchains, prepare_timeout=prepare_timeout, timeout=timeout,
+                               inputs=inputs_given, jdk=asked[0], hosts=hosts, checkout=checkout)
+        said = [{**asked[1], "path": root or "."}] if asked[1] else []
+        return {**again, "gaps": [*said, *again.get("gaps", ())]}, runs + more, out
     return {**judged(result, prepared, used), **({"gaps": gaps} if gaps else {})}, runs, out
 
 

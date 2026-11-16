@@ -290,6 +290,30 @@ class EachBuildTests:
         for said in ("google-services.json", "com.google.gms.google-services"):
             self.assertIn(said, gap["detail"])
 
+    def test_a_gradle_build_that_asks_for_a_newer_jvm_than_it_states_runs_again_on_the_one_its_error_names(self):
+        """real-app-kotlinconf without its devcontainer: a plugin needs JVM 21, the project states no JDK and the
+        build runs on the image's 17. It runs once more on JDK 21, the version Gradle's error names, and says so."""
+        self.serve_mise()
+        error = ("> Could not resolve dev.zacsweers.metro:gradle-plugin:1.5.2.\n      > Dependency requires at least"
+                 " JVM runtime version 21. This build uses a Java 17 JVM.")
+        self.play("prepare", text=log(("index", 1, error)), code=1)
+        real = container.run_in_container
+
+        def twice(*given, **options):
+            result = real(*given, **options)
+            if not (self.state / "play/execute").is_dir():
+                self.play_success()  # the second run, on JDK 21, builds
+            return result
+        with mock.patch.object(container, "run_in_container", twice):
+            result = self.index(tools={"": ["gradle"]})
+        self.assertTrue(result["indexes"])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@21", script)
+        self.assertIn("\nDAODAN_JDK=21\n", script)
+        gap = next(gap for gap in result.get("gaps", ()) if gap["kind"] == "jdk_from_build_error")
+        for said in ("JVM runtime version 21", "JDK 21"):
+            self.assertIn(said, gap["detail"])
+
     def test_a_build_that_fails_keeps_the_others_and_says_which_failed(self):
         shutil.copytree(self.project, self.scratch / "second")
         shutil.move(str(self.scratch / "second"), str(self.project / "services/shop"))

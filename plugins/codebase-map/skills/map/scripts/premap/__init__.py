@@ -9,8 +9,9 @@ A model source is a build system's own command: `commands(context)` describes it
 supplies executes it in Daodan's container, and `read(context, commands, results)` reads its output; without a
 runner it is `not_run`. The readers run first: the toolchains they state go to a runner that takes `toolchains`,
 which prepares them, so a model command runs on the version the project declares; the gaps of that preparation
-ride on the answers (`gaps`) and are the source's. The join keeps one entry per fact with the sources that state
-it (`tool@version`).
+ride on the answers (`gaps`) and are the source's. The model sources run in `SOURCES`' order, each reading what
+those before it state (`Context.stated`). The join keeps one entry per fact with the sources that state it
+(`tool@version`).
 Where two sources give a field different values, the value of the source with precedence stays (`RANKS`: a
 model command, a file reader, a scanner; between equals, the earlier in `SOURCES`) and the other goes to the
 entry's `conflicts` with its source; a unit's `registries`, where some of its dependencies come from as each
@@ -37,16 +38,17 @@ import confinement  # noqa: E402
 import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
-from premap import (bazel, cargo, cmake, dotnet, enry, gitmodules, go, gradle, jvm_files, make, maven,  # noqa: E402
-                    meson, module_graph, npm, npm_lock, npm_tests, project_files, python_build, python_tests,
-                    renovate, requirements, sbt, suffix_table, tsc, uv)
+from premap import (autotools, bazel, cargo, cmake, compose, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
+                    jvm_files, make, maven, meson, module_graph, npm, npm_lock, npm_tests, project_files, python_build,
+                    python_tests, renovate, requirements, sbt, suffix_table, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
 RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run` and the coverage gaps
 RANKS = ("model", "reader", "scanner")
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, jvm_files, project_files,
-           gitmodules, enry, renovate, go, cargo, uv, tsc, npm, cmake, meson, bazel, make, gradle, maven, sbt, dotnet)
+           gitmodules, autotools, enry, renovate, compose, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
+           gradle, maven, sbt, dotnet)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
     "languages": (("language",),),
     "excluded": (("path",),),
@@ -55,6 +57,7 @@ IDENTITY = {  # the fields that make two entries one fact, from the strictest to
     "toolchains": (("tool", "declared_in", "version"), ("tool", "declared_in")),
     "tests": (("root", "runner"),),  # how the tests of a folder run: the dynamic step's command
     "services": (("declared_in",),),  # a service container a CI job starts beside its steps: the dynamic step's too
+    "compose": (("declared_in",),),  # a CI step that starts Docker Compose: what `compose` reads
 }
 EXECUTES = {  # unit kinds whose model or index exists only when the build runs project code
     "gradle-project": "Gradle runs the build scripts for the model and the compile tasks the index needs",
@@ -65,6 +68,7 @@ EXECUTES = {  # unit kinds whose model or index exists only when the build runs 
     "cmake-target": "the compile commands come from cmake configure, which runs the project's CMake scripts",
     "meson-target": "the compile commands come from meson setup, which runs meson.build",
     "make-target": "the compile commands come from running make",
+    "autotools-project": "the compile commands come from autoreconf, configure and make, which run its scripts",
     "bazel-target": "Bazel evaluates the BUILD files and runs the repository rules",
     "bazel-module": "Bazel evaluates the BUILD files and runs the repository rules",
     "swift-package": "SwiftPM compiles and runs Package.swift",
@@ -75,13 +79,16 @@ ALSO = {"typescript": ("TSX",)}  # Linguist's other programming languages inside
 
 
 class Context:
-    """What a source reads: the snapshot (`store`, `inventory`, hash-verified text) and the module graph."""
+    """What a source reads: the snapshot (`store`, `inventory`, hash-verified text) and the module graph; for a model
+    command's source, `stated`, the facts the sources that ran before it state, joined (`compose` reads the steps
+    `renovate` reads)."""
 
     def __init__(self, manifest: Path, store):
         self.manifest, self.store = Path(manifest), store
         self.root = Path(store["root"])
         self.inventory = modules._Inventory(store)
         self._graph = None
+        self.stated: dict = {}
 
     @property
     def graph(self) -> dict:
@@ -389,11 +396,6 @@ def _run(source, context: Context, runner, toolchains=()) -> tuple[dict, dict | 
             [{**gap, "source": name} for gap in result.get("gaps") or []])
 
 
-def _stated(ran: dict) -> list[dict]:
-    """The toolchains the readers that ran state, joined: what the runner prepares for the model commands."""
-    return join([part for _, part, _ in ran.values() if part]).get("toolchains", [])
-
-
 def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dict:
     """The pre-map of the snapshot in `store`; `runner(commands) -> results` runs the model commands, each
     `{tool, argv, cwd, env}` under the project's root, each result `{returncode, stdout, stderr, root}` with
@@ -403,7 +405,8 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
     ran: dict[int, tuple] = {}
     readers = [i for i, s in enumerate(sources) if not hasattr(s, "commands")]
     for i in readers + [i for i in range(len(sources)) if i not in readers]:
-        toolchains = () if i in readers else _stated(ran)
+        context.stated = {} if i in readers else join([part for _, part, _ in ran.values() if part])
+        toolchains = context.stated.get("toolchains", ())
         ran[i] = _run(sources[i], context, runner, toolchains)
         if report is not None:  # `report(status, done, total)`: each source as it ends
             report(ran[i][0], len(ran), len(sources))

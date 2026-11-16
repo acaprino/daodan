@@ -225,7 +225,8 @@ def test_a_failed_setup_fails_the_source(tmp_path, no_download):
 
 def test_every_model_source_of_the_premap_has_a_setup():
     tools = {"go": premap.go, "cargo": premap.cargo, "uv": premap.uv, "tsc": premap.tsc, "npm": premap.npm,
-             "renovate": premap.renovate, "daodan-enry": premap.enry, "cmake": premap.cmake, "meson": premap.meson,
+             "renovate": premap.renovate, "compose": premap.compose, "daodan-enry": premap.enry,
+             "cmake": premap.cmake, "meson": premap.meson,
              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
              "sbt": premap.sbt, "dotnet": premap.dotnet}
     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
@@ -406,6 +407,36 @@ def test_the_jvm_build_tools_run_on_the_jdk_image_with_the_proxy_set_for_java(tm
         wrapped = call["commands"][1]["argv"]
         assert preparation.JAVA_PROXY in wrapped[2] and wrapped[-2:] == [call["commands"][1]["tool"], "x"]
     assert calls[3]["commands"][1]["argv"] == ["dotnet", "x"]
+
+
+def test_a_gradle_build_that_asks_for_a_newer_jvm_runs_again_on_the_jdk_the_project_states_or_gradle_names(
+        tmp_path, no_download):
+    """real-app-kotlinconf: a plugin of the build needs JVM 21 and Gradle runs on the image's 17. The model runs
+    again on the JDK the project states at or above 21 (its devcontainer's), else on the 21 Gradle's error names,
+    which is a gap; the second run installs it with mise and Gradle runs on it (JAVA_HOME)."""
+    _, manifest = manifest_of(tmp_path, {"settings.gradle.kts": 'rootProject.name = "k"\n'})
+    asked = {"returncode": 1, "stdout": "", "stderr": "> Dependency requires at least JVM runtime version 21. This "
+                                                      "build uses a Java 17 JVM.\n"}
+    image = {"tool": "java", "version": "21", "declared_in": ".devcontainer/devcontainer.json"}
+    for stated, installed, kinds in (([], "java@21", ["jdk_from_build_error"]),
+                                     ([{**image, "version": "25"}], "java@25", []),
+                                     ([{**image, "version": "17"}], "java@21", ["jdk_from_build_error"])):
+        calls = []
+
+        def run_commands(project, commands, **options):
+            calls.append({"commands": commands, **options})
+            answer = asked if len(calls) == 1 else {"returncode": 0, "stdout": "", "stderr": ""}
+            return {"state": "done", "root": "/work", "results": [{"returncode": 0, "stdout": "", "stderr": ""},
+                                                                  answer]}
+        with mock.patch.object(container, "run_commands", run_commands):
+            [answer] = container_runner.runner(manifest)([command("gradle", "registries")], stated)
+        assert len(calls) == 2, stated
+        assert "install java@" not in calls[0]["commands"][0]["argv"][2]
+        assert f"install {installed}" in calls[1]["commands"][0]["argv"][2]
+        assert "JAVA_HOME" in calls[1]["commands"][1]["argv"][2]
+        assert answer["returncode"] == 0
+        assert [g["kind"] for g in answer.get("gaps", [])] == kinds
+        assert all("JVM runtime version 21" in g["detail"] for g in answer.get("gaps", []))
 
 
 def test_a_gradle_build_that_fails_runs_again_reaching_the_repositories_its_settings_declare(tmp_path, no_download):

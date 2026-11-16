@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import posixpath
+import re
 from pathlib import Path, PurePosixPath
 
 from premap.origins import origin
@@ -40,6 +41,8 @@ IMAGE = "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be
 SETTINGS = ("settings.gradle", "settings.gradle.kts")
 BUILDS = ("build.gradle", "build.gradle.kts")
 SEPARATOR = "\x1e"  # starts each record the init script prints
+# Gradle's words for a dependency of the build (a plugin) that needs a newer JVM than the one Gradle runs on.
+ASKS = re.compile(r"requires at least JVM runtime version (\d+)\. This build uses a Java (\d+) JVM")
 # The Android plugin's facts: the toolchain each states and the SDK package it names (`preparation.ANDROID`).
 ANDROID = {"android.compileSdk": ("android-sdk", "platforms;android-"),
            "android.buildToolsVersion": ("android-build-tools", "build-tools;")}
@@ -77,6 +80,26 @@ def retry(answer: dict) -> list[str]:
         if record.get("kind") == "build":
             found |= {urlsplit(url).hostname for url in record.get("repositories") or ()}
     return sorted(found - {None})
+
+
+def asked_jdk(said: str, stated=()) -> tuple[dict, dict | None] | None:
+    """The JDK a build Gradle could not run on a JVM older than one of its dependencies needs (`ASKS` in `said`):
+    the newest the project states at or above that version, else the version Gradle names, with a
+    `jdk_from_build_error` gap; None when Gradle asked for nothing."""
+    found = ASKS.search(said or "")
+    if not found:
+        return None
+    least = int(found.group(1))
+
+    def major(item) -> int:
+        version = re.match(r"\s*(?:1\.)?(\d+)", str(item.get("version") or ""))
+        return int(version.group(1)) if version else 0
+    newer = [t for t in stated or () if t.get("tool") == "java" and major(t) >= least]
+    if newer:
+        return max(newer, key=major), None
+    return {"tool": "java", "version": str(least), "declared_in": "Gradle's error"}, {
+        "kind": "jdk_from_build_error", "detail": f"Gradle said `{found.group()}` and the project states no JDK "
+        f"at or above {least}: the build ran again on JDK {least}, the version Gradle's error names"}
 
 
 def _name(build: str | None, path: str) -> str:

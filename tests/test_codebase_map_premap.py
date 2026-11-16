@@ -77,8 +77,9 @@ def test_premap_beside_the_manifest_every_fact_with_its_source(tmp_path):
     assert "languages" not in record  # go-enry runs in the container only
     assert {s["source"].split("@")[0]: s["state"] for s in record["sources"]} == {
         "modules.py": "ran", "python-build": "not_needed", "requirements": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
-        "gitmodules": "not_needed", "python-tests": "not_needed", "npm-tests": "not_needed",
-        "go-enry": "not_run", "renovate": "not_run", "go": "not_needed", "cargo": "not_needed", "uv": "not_needed",
+        "gitmodules": "not_needed", "python-tests": "not_needed", "npm-tests": "not_needed", "autotools": "not_needed",
+        "go-enry": "not_run", "renovate": "not_run", "compose": "not_needed", "go": "not_needed", "cargo": "not_needed",
+        "uv": "not_needed",
         "tsc": "not_needed", "npm": "not_run", "cmake": "not_needed", "meson": "not_needed", "bazel": "not_needed",
         "make": "not_needed", "project-files": "not_needed", "gradle": "not_needed", "maven": "not_needed",
         "sbt": "not_needed", "dotnet": "not_needed"}
@@ -683,6 +684,20 @@ def test_an_image_tag_gives_the_version_renovates_docker_versioning_reads_and_on
         "node@22", "python@3.12.4"]
     assert [(g["tool"], g["version"]) for g in plan["gaps"]] == [
         ("java", "21.0.5_11"), ("ruby", "alpine"), ("go", "deadbee"), ("node", "lts-alpine")]
+
+
+def test_a_dev_container_image_s_tag_gives_its_language_s_version_by_that_image_family_s_scheme(tmp_path):
+    """real-app-kotlinconf's devcontainer starts from mcr.microsoft.com/devcontainers/java:1-21. That family's tags
+    are `<image version>-<Java version>[-<OS>]` or `<Java version>[-<OS>]` (devcontainers/images, src/java/README.md:
+    `3.1.9-11-bookworm`, `25-trixie`): Java 21, not the image's own 1."""
+    def image(tag):
+        return {"depName": "mcr.microsoft.com/devcontainers/java", "currentValue": tag, "datasource": "docker",
+                "depType": "image"}
+    facts = _renovate(tmp_path, {".devcontainer/devcontainer.json": "{}\n"}, {"devcontainer": [
+        {"packageFile": ".devcontainer/devcontainer.json",
+         "deps": [image(tag) for tag in ("1-21", "3.1.9-11-bookworm", "25-trixie", "17", "latest")]}]})
+    assert [t["version"] for t in facts["toolchains"]] == ["21", "11", "25", "17", "latest"]
+    assert {t["tool"] for t in facts["toolchains"]} == {"java"}
 
 
 def test_the_same_toolchain_in_one_file_is_one_fact_with_or_without_a_fragment():

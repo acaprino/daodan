@@ -76,9 +76,9 @@ MIN_FREE = 2 * 2**30  # the container's memory
 PIDS = 1024
 CMAKE_UNIT = "cmake-target"
 OTHER_BUILDS = {"meson-target": "meson", "make-target": "make", "bazel-target": "bazel",
-                "msbuild-project": "MSBuild"}  # the native builds beside CMake, which the dynamic step does not run
+                "autotools-project": "autotools", "msbuild-project": "MSBuild"}  # the native builds beside CMake, which the dynamic step does not run
 BUILDS = {"meson-target": "meson", "make-target": "make", "bazel-target": "bazel",
-          "go-module": "go"}  # the builds beside CMake that give a unit's compilation database (`clang_run.py`)
+          "autotools-project": "autotools", "go-module": "go"}  # the builds beside CMake that give a unit's compilation database (`clang_run.py`)
 NO_UNIT = "no C or C++ unit in the pre-map: no build of the project compiles C or C++"
 # Bear 3.1.3 (GPL-3.0-or-later), for Make and cgo: Bear ships no binaries and names the distributions' packages
 # first (its INSTALL.md); these are Ubuntu 24.04's, the image's distribution, from the release pocket, with the
@@ -382,7 +382,7 @@ def _carried(builds) -> list[tuple[str, str, str]]:
     return [*((name, url, digest) for name, (url, digest) in zip(("meson.whl", "ninja.whl"), meson.DOWNLOAD)
               if "meson" in builds),
             *((f"bear/{posixpath.basename(url)}", url, digest) for url, digest in BEAR
-              if {"make", "go"} & set(builds)),
+              if {"make", "go", "autotools"} & set(builds)),
             *([("go.tar.gz", *preparation.GO[:2])] if "go" in builds else []),
             *([("bazel", *bazel.DOWNLOAD[0])] if "bazel" in builds else [])]
 
@@ -526,6 +526,8 @@ def builds(units, workspace, top) -> list[dict]:
             plan.setdefault((root, "make"), {"targets": []})["targets"].append(unit["name"])
         elif kind == "bazel-target":
             plan.setdefault((owner.get(root, root), "bazel"), {})
+        elif kind == "autotools-project":
+            plan.setdefault((root, "autotools"), {})
         elif kind == "go-module" and cgo(unit):
             plan[(root, "go")] = {"packages": cgo(unit), **({"download": True} if unit.get("registries") else {})}
     return [{"root": root, "build": build, **extra} for (root, build), extra in plan.items()]

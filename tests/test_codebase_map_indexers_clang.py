@@ -575,6 +575,29 @@ def test_make_runs_under_bear_with_the_targets_the_pre_map_states(tmp_path):
                      "cause": "make under Bear ended with exit code 1: bear: failed with: Events db open failed"}
 
 
+def test_an_autotools_project_is_regenerated_configured_apart_and_made_under_bear(tmp_path):
+    """mix-real-zlib's contrib/minizip: `autoreconf` writes the configure script a checkout lacks, the configure
+    runs in a build folder of its own (a VPATH build: the copy's own Makefile stays the project's), and make runs
+    there under Bear, going on past an error. A step that fails says which, with the tool's own words."""
+    assert clang.builds([{"name": "minizip", "kind": "autotools-project", "root": "contrib/minizip"}], [],
+                        lambda root: root) == [{"root": "contrib/minizip", "build": "autotools"}]
+    assert "autotools-project" in clang.UNIT_KINDS and "autotools" in clang_run.BEAR_BUILDS
+    build = tmp_path / "build"
+    out = build / "compile_commands.json"
+    unit = {"root": "contrib/minizip", "build": "autotools"}
+    source = clang_run.WORK / "contrib/minizip"
+    run, calls = _tool(0, writes={out: "[]"})
+    steps, state = clang_run.autotools(run, unit, build, 2)
+    assert calls == [(["autoreconf", "-fi"], source), ([str(source / "configure")], build),
+                     (["bear", "--output", str(out), "--", "make", "-k", "-j2"], build)]
+    assert state == {"state": "configured"}
+    assert [step["step"] for step in steps] == ["autoreconf", "configure", "make under Bear"]
+    run, _calls = _tool(1, "configure.ac:7: error: possibly undefined macro: LT_INIT\n")
+    _steps, state = clang_run.autotools(run, unit, tmp_path / "b2", 2)
+    assert state["state"] == "failed" and state["cause"] == (
+        "autoreconf ended with exit code 1: configure.ac:7: error: possibly undefined macro: LT_INIT")
+
+
 def test_cgo_is_built_by_go_under_bear_wrappers_and_only_the_copys_files_are_kept(tmp_path):
     """The go command starts the C compiler without the C library's exec, which Bear's preload intercepts: Bear's
     compiler wrappers on the path see each compile. The standard library's C files and cgo's generated files are

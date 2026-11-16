@@ -13,13 +13,14 @@ catalog states it). A wrapper's entry for itself is not a toolchain: the Maven w
 its own. The other packages a file declares are not the pre-map's: each analyzer's build tool resolves them.
 
 Of a service container a GitHub Actions job declares, Renovate's github-actions manager keeps the image alone
-(`lib/modules/manager/github-actions/schema.ts`). Where a workflow of `.github/workflows` names `services`, a second
-command reads each workflow in the container's copy (Git tracks it; the snapshot leaves dot folders out) with
-Renovate's own YAML library (`YAML`, the `yaml` package Renovate pins, beside the Renovate that runs): `services`,
-each service a job declares
-(`jobs.<id>.services`) as the file writes it, with `host`, where the job's steps reach it (GitHub's rule: localhost
-on the runner, its name from a job that runs in a container), and `job_env`, the variables the workflow and the
-job give the steps. A service whose image is empty does not start, and is none.
+(`lib/modules/manager/github-actions/schema.ts`). Where a workflow of `.github/workflows` names `services` or runs
+Docker Compose, a second command reads each workflow in the container's copy (Git tracks it; the snapshot leaves dot
+folders out) with Renovate's own YAML library (`YAML`, the `yaml` package Renovate pins, beside the Renovate that
+runs): `services`, each service a job declares (`jobs.<id>.services`) as the file writes it, with `host`, where the
+job's steps reach it (GitHub's rule: localhost on the runner, its name from a job that runs in a container), and
+`job_env`, the variables the workflow and the job give the steps; `compose`, each step that runs `docker compose
+up` (`_steps`) and each npm test script that does (`compose.scripts`), which `premap/compose.py` reads with Compose
+itself. A service whose image is empty does not start, and is none.
 
 Where `.gitlab-ci.yml` names `services` or includes files, the same command reads it: each service a job runs with
 (its own, its templates' through `extends`, else `default:`'s unless it inherits none) is a `services` fact as
@@ -28,13 +29,18 @@ it by (its aliases, then its image without tag and registry port, `/` as `__` an
 variables and its own; `job_env`, the job's (the global ones it inherits, its templates', its own), each expanded
 once as the runner expands it, `computed` naming those that reference a variable the file does not define;
 `entrypoint` and `command` as written; `wait` `ports`, the runner's wait for the ports its image exposes. A file
-the pipeline includes is not read: an `include_not_read` gap names it.
+the pipeline includes is not read: an `include_not_read` gap names it; a job that runs Docker Compose, on the Docker
+the job starts, is a `compose_not_read` one.
 """
 from __future__ import annotations
 
 import json
 from pathlib import PurePosixPath
+import posixpath
 import re
+import shlex
+
+from premap import compose
 
 NAME, VERSION, RANK = "renovate", "44.239.1", "reader"  # it reads declared files and runs no project code
 NODE = "24.22.3"  # the Node release Renovate runs on (it needs `RegExp.escape`), installed with `--ignore-scripts`
@@ -81,9 +87,18 @@ TAG_VERSION = re.compile(r"\d+(?:\.\d+)*\w*", re.ASCII)
 TAG_HASH = re.compile(r"[a-f0-9]{7,40}")  # a tag like a commit hash has no version
 
 
-def _image_version(tag: str) -> str:
+# The Dev Container images' tags: `<image version>-<language version>[-<OS>]` or `<language version>[-<OS>]`
+# (devcontainers/images, src/java/README.md: `3.1.9-11-bookworm` is the image 3.1.9 with Java 11, `25-trixie`).
+DEV_CONTAINERS = {"mcr.microsoft.com/devcontainers/java": "java"}
+NUMBER = re.compile(r"\d+(?:\.\d+)*", re.ASCII)
+
+
+def _image_version(tag: str, name: str = "") -> str:
     """The version an image tag holds, else the tag as written (`alpine`, `lts`): no version, which the
-    preparation names as one it cannot install."""
+    preparation names as one it cannot install. A Dev Container image's is its language's (`DEV_CONTAINERS`)."""
+    numbers = [part for part in tag.split("-") if NUMBER.fullmatch(part)]
+    if name in DEV_CONTAINERS and 0 < len(numbers) <= 2:
+        return numbers[-1]
     if TAG_HASH.fullmatch(tag) and not tag.isdigit():
         return tag
     version = re.sub(r"^[vV]", "", tag).split("-")[0]
@@ -108,7 +123,7 @@ def commands(context):
         return None
     folder = context.root / WORKFLOWS  # outside the snapshot: read on disk, as `.gitmodules` is, links left out
     named = folder.is_dir() and not folder.is_symlink() and any(
-        SERVICES.search(path.read_text(encoding="utf-8", errors="replace"))
+        pattern.search(path.read_text(encoding="utf-8", errors="replace")) for pattern in (SERVICES, compose.MENTION)
         for path in sorted(folder.glob("*.y*ml")) if path.is_file() and not path.is_symlink())
     pipeline = context.root / GITLAB
     named = named or pipeline.is_file() and not pipeline.is_symlink() and any(
@@ -138,6 +153,45 @@ def _services(rel: str, doc) -> list[dict]:
                      **{key: service[key] for key in SERVICE_KEYS if service.get(key) not in (None, "", [], {})}}
             found.append({**entry, "job_env": job_env} if job_env else entry)
     return found
+
+
+def _env(item) -> dict:
+    return item["env"] if isinstance(item, dict) and isinstance(item.get("env"), dict) else {}
+
+
+def _directory(item) -> str | None:
+    """The `working-directory` a workflow's or a job's `defaults.run` gives its steps."""
+    run = item["defaults"].get("run") if isinstance(item.get("defaults"), dict) else None
+    return run.get("working-directory") if isinstance(run, dict) else None
+
+
+def _steps(rel: str, doc) -> tuple[list[dict], list[dict]]:
+    """Each step of the workflow `doc` that runs `docker compose up` (`compose.invocations`), as the `compose` facet
+    states it: where GitHub runs it (its `working-directory`, else the job's or the workflow's default), the
+    variables the workflow writes for it (`env`; an expression is the CI's, and stays out), the job's (`job_env`,
+    for the tests); a gap for a step that runs Compose in a way its words do not say."""
+    if not isinstance(doc, dict) or not isinstance(doc.get("jobs"), dict):
+        return [], []
+    found, gaps, top, where = [], [], _env(doc), _directory(doc)
+    for job_id, job in doc["jobs"].items():
+        if not isinstance(job, dict) or not isinstance(job.get("steps"), list):
+            continue
+        job_env, folder = {**top, **_env(job)}, _directory(job) or where
+        for index, step in enumerate(job["steps"]):
+            script = step.get("run") if isinstance(step, dict) else None
+            if not isinstance(script, str) or not compose.MENTION.search(script):
+                continue
+            path = f"{rel}#jobs.{job_id}.steps.{index}"
+            cwd = posixpath.normpath(str(step.get("working-directory") or folder or "."))
+            words, unread = compose.invocations(script)
+            if "${{" in cwd or cwd.startswith(("/", "..")):  # computed, or outside the checkout
+                words, unread = [], [*unread, *map(shlex.join, words)]
+            gaps += [compose.not_read(path, line) for line in unread]
+            env = {key: _text(value) for key, value in {**job_env, **_env(step)}.items() if "${{" not in _text(value)}
+            found += [{"declared_in": path if number == 0 else f"{path}.{number}", "cwd": cwd, "argv": argv,
+                       **({"env": env} if env else {}), **({"job_env": job_env} if job_env else {})}
+                      for number, argv in enumerate(words)]
+    return found, gaps
 
 
 def _shell_name(text: str) -> tuple[str, int]:
@@ -232,6 +286,15 @@ def _gitlab(rel: str, doc) -> tuple[list[dict], list[dict]]:
         if job_id in GITLAB_KEYWORDS or str(job_id).startswith(".") or not isinstance(job, dict):
             continue
         job = _extended(doc, job)
+        scripts = [job.get("before_script", default.get("before_script") if _inherits(job, "default",
+                                                                                        "before_script") else None),
+                   job.get("script")]
+        gaps += [{"kind": "compose_not_read", "path": f"{rel}#{job_id}",
+                  "detail": f"{rel}#{job_id} runs `{line}`: Daodan reads Docker Compose where a GitHub Actions step "
+                            "starts it, not in a GitLab job, whose Compose runs on the Docker the job starts"}
+                 for lines in scripts
+                 for line in ([lines] if isinstance(lines, str) else lines if isinstance(lines, list) else [])
+                 if isinstance(line, str) and compose.MENTION.search(line)]
         declared = job["services"] if "services" in job else (
             default.get("services", doc.get("services")) if _inherits(job, "default", "services") else None)
         if "script" not in job or not isinstance(declared, list):
@@ -262,12 +325,13 @@ def _gitlab(rel: str, doc) -> tuple[list[dict], list[dict]]:
     return found, gaps
 
 
-def _workflows(answer: dict) -> tuple[list[dict], list[dict]]:
-    """The services the workflows' jobs declare, and a gap for a workflow the library could not read."""
+def _workflows(answer: dict) -> tuple[dict, list[dict]]:
+    """The services the workflows' jobs declare and the steps that start Docker Compose, as facets, and a gap for a
+    workflow the library could not read."""
     if answer["returncode"] != 0:
-        return [], [{"kind": "model_failed", "path": WORKFLOWS, "detail": f"yaml: {answer['stderr'].strip()[-400:]}"}]
+        return {}, [{"kind": "model_failed", "path": WORKFLOWS, "detail": f"yaml: {answer['stderr'].strip()[-400:]}"}]
     lines, errors = answer["stdout"].splitlines(), answer["stderr"].splitlines()
-    services, gaps = [], []
+    services, steps, gaps = [], [], []
     for rel, text in zip(lines[::2], lines[1::2]):
         doc = json.loads(text)
         if doc is None:  # the library's message is the line that names the error, above Node's stack
@@ -279,15 +343,19 @@ def _workflows(answer: dict) -> tuple[list[dict], list[dict]]:
             found, said = _gitlab(rel, doc)
             services, gaps = services + found, gaps + said
         else:
-            services += _services(rel, doc)
-    return services, gaps
+            found, said = _steps(rel, doc)
+            services, steps, gaps = services + _services(rel, doc), steps + found, gaps + said
+    return {name: facts for name, facts in (("services", services), ("compose", steps)) if facts}, gaps
 
 
 def read(context, commands, results):
     result, *rest = results
-    services, gaps = _workflows(rest[0]) if rest else ([], [])
+    declared, gaps = _workflows(rest[0]) if rest else ({}, [])
+    started, unread = compose.scripts(context)  # and the test scripts that start Docker Compose
+    declared = {**declared, "compose": [*declared.get("compose", ()), *started]} if started else declared
+    gaps += unread
     if result["returncode"] != 0:
-        return {"facts": {"services": services} if services else {}, "gaps": [*gaps, {
+        return {"facts": declared, "gaps": [*gaps, {
             "kind": "model_failed", "path": ".",
             "detail": f"renovate: {(result['stderr'] or result['stdout']).strip()[-400:]}"}]}
     report = json.loads(result["stdout"])
@@ -311,11 +379,12 @@ def read(context, commands, results):
                 if not name or (manager in WRAPPER_SELF and name in WRAPPER_SELF):
                     continue
                 tool = _tool(name) if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES else (
-                    DOCKER_RUNTIMES.get(name) if manager in IMAGE_MANAGERS else _package_tool(manager, name, dep))
+                    DOCKER_RUNTIMES.get(name, DEV_CONTAINERS.get(name)) if manager in IMAGE_MANAGERS
+                    else _package_tool(manager, name, dep))
                 if tool:
                     item = {"tool": tool, "declared_in": path}
                     if current is not None:
-                        item["version"] = _image_version(current) if manager in IMAGE_MANAGERS else current
+                        item["version"] = _image_version(current, name) if manager in IMAGE_MANAGERS else current
                     if item not in toolchains:  # the Kotlin plugins of one file share one version
                         toolchains.append(item)
             known = {(t["tool"], t["declared_in"]) for t in toolchains}
@@ -324,5 +393,4 @@ def read(context, commands, results):
                 if not key.startswith("%") and (_tool(key), path) not in known and isinstance(value, str) and (
                         value in written):  # a value no file writes is Renovate's deduction
                     toolchains.append({"tool": _tool(key), "version": value, "declared_in": path})
-    return {"facts": {"toolchains": toolchains, **({"services": services} if services else {})},
-            **({"gaps": gaps} if gaps else {})}
+    return {"facts": {"toolchains": toolchains, **declared}, **({"gaps": gaps} if gaps else {})}

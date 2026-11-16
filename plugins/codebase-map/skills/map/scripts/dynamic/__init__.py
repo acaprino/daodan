@@ -297,15 +297,33 @@ def _health(options) -> tuple[list[str], str]:
     return kept, shlex.join(other)
 
 
+def _healthcheck(check) -> list[str]:
+    """A Compose service's `healthcheck` as `create` takes it: `CMD-SHELL`'s line, or `CMD`'s words as one line
+    (the engine runs `--health-cmd` with the image's shell), its times and retries; off where Compose disables it."""
+    if not isinstance(check, dict) or not check:
+        return []
+    test = check.get("test") or []
+    if check.get("disable") or test[:1] == ["NONE"]:
+        return ["--no-healthcheck"]
+    line = test[1] if test[:1] == ["CMD-SHELL"] and len(test) > 1 else shlex.join(test[1:]) if test[:1] == ["CMD"] \
+        else ""
+    return [*(("--health-cmd", line) if line else ()),
+            *(item for key, flag in (("interval", "--health-interval"), ("timeout", "--health-timeout"),
+                                     ("retries", "--health-retries"), ("start_period", "--health-start-period"),
+                                     ("start_interval", "--health-start-interval"))
+              if check.get(key) is not None for item in (flag, str(check[key])))]
+
+
 def services(record: dict) -> dict:
     """What the project's CI starts beside its tests, from the pre-map's `services` (GitHub Actions' service
-    containers, GitLab's services), as `container.beside` takes it: `services`, each `{name, image, host, env, args,
-    command}`, with `aliases` and `wait` where the fact has them; `env`, the variables the jobs that declare them
-    give their steps, for the tests, without those the fact says the CI computes (`computed`); `gaps`, what cannot
-    run as declared, each naming the service, its image and its declaration (`path`): `service_unavailable` for one
-    that does not start (an image the CI computes, a second definition of a name, which the first's start keeps
-    out), `service_incomplete` for one that starts without part of what its job declares (a port mapped to another,
-    volumes, options other than its health check, variables the CI computes or two jobs set apart)."""
+    containers, GitLab's services, those Compose starts for a step), as `container.beside` takes it: `services`,
+    each `{name, image, host, env, args, command}`, with `aliases` and `wait` where the fact has them; `env`, the
+    variables the jobs that declare them give their steps, for the tests, without those the fact says the CI
+    computes (`computed`); `gaps`, what cannot run as declared, each naming the service, its image and its
+    declaration (`path`): `service_unavailable` for one that does not start (an image the CI computes or Compose
+    builds, a second definition of a name, which the first's start keeps out), `service_incomplete` for one that
+    starts without part of what its job declares (a port mapped to another, volumes, options other than its health
+    check, Compose keys no option applies, variables the CI computes or two jobs set apart)."""
     planned, env, gaps, jobs, first, apart = [], {}, [], set(), {}, set()
     for entry in sorted(record.get("services") or [], key=lambda item: item["declared_in"]):
         name, image, path = entry["name"], entry["image"], entry["declared_in"]
@@ -325,6 +343,10 @@ def services(record: dict) -> dict:
             gaps.append({"kind": kind, "name": name, "image": image, "path": path,
                          "detail": f"{name} ({image}), {path}: {'; '.join(said)}"})
 
+        if entry.get("build"):
+            gap("service_unavailable", [f"Compose builds its image from {entry['build']}: Daodan starts no image the "
+                                        "project builds", *notes])
+            continue
         if EXPRESSION.search(image) or "$" in image:  # an expression, or a GitLab variable the CI defines
             gap("service_unavailable", ["the CI computes its image, which Daodan does not evaluate: it does not "
                                         "start", *notes])
@@ -340,8 +362,11 @@ def services(record: dict) -> dict:
         if entry.get("volumes"):
             notes.append("its volumes are not mounted: " + ", ".join(map(str, entry["volumes"])))
         args, other = _health(entry.get("options"))
+        args += _healthcheck(entry.get("healthcheck"))
         if other:
             notes.append(f"options passed to no engine (only the health check is): {other}")
+        if entry.get("ignored"):
+            notes.append(f"its Compose keys apply to no engine here: {', '.join(entry['ignored'])}")
         # GitHub writes a command and an entrypoint as one string each, GitLab as lists: the engine takes one
         # program as the entrypoint, the rest of the list before the command
         entry_point = entry.get("entrypoint")

@@ -9,7 +9,8 @@ caller gives it, never the machine's processor count.
 
 A unit is `{"root", "build"}`, the folder its build runs in and the build, `cmake` when none is given. `meson`:
 `meson setup`, wraps never downloaded, whose Ninja backend writes the database. `make` (`targets`): the project's
-make under Bear, every target remade. `go` (`packages`, `download`): the go command builds the cgo packages under
+make under Bear, every target remade. `autotools`: `autoreconf`, the configure in a build folder of its own,
+and make under Bear there. `go` (`packages`, `download`): the go command builds the cgo packages under
 Bear's compiler wrappers, with the modules the preparation downloaded when the unit requires some; only commands for
 files of the copy are kept. Bear is Ubuntu's package, installed with dpkg from the copy. `bazel`: the compile
 actions of the workspace's own targets, which the preparation's `bazel aquery` gave (it fetches what the analysis
@@ -50,9 +51,9 @@ GOPATH = "/daodan/state/go"  # Go's module cache, which the preparation's downlo
 PREPARED = Path("/daodan/state/clang-prepared")  # what the preparation recorded per unit, for the execution
 BAZEL_QUERY = 'mnemonic("CppCompile", //...)'  # the compile actions of the workspace's own targets
 DEPENDENCY_FILE = ("-MD", "-fno-canonical-system-headers")  # with `-MF FILE`: what writes a Bazel action's .d file
-BEAR_BUILDS = ("make", "go")
+BEAR_BUILDS = ("make", "go", "autotools")
 WHAT = {"cmake": "the configure", "meson": "meson setup", "make": "make under Bear", "bazel": "bazel aquery",
-        "go": "go build under Bear"}  # what writes each build's compilation database
+        "go": "go build under Bear", "autotools": "make under Bear"}  # what writes each build's compilation database
 OUTSIDE = "download-outside-registries"  # the cause the map-driven round counts
 ABSENT = "submodule-absent"  # a folder the configure reads is a submodule the checkout lacks
 ERROR_TAIL = 4000
@@ -288,6 +289,27 @@ def make(runner, unit: dict, build: Path, jobs: int) -> tuple[list[dict], dict]:
     return steps, _recorded(out, "make", code, output)
 
 
+def autotools(runner, unit: dict, build: Path, jobs: int) -> tuple[list[dict], dict]:
+    """An Autotools build: `autoreconf -fi` writes the configure script a checkout lacks, in the unit's folder; the
+    configure runs in a build folder of its own (a VPATH build: the copy's own Makefile, if any, stays the
+    project's), with its defaults; make runs there under Bear, going on past an error."""
+    source = WORK / unit.get("root", ".")
+    steps = []
+    for name, command, cwd in (("autoreconf", ["autoreconf", "-fi"], source),
+                               ("configure", [str(source / "configure")], build)):
+        build.mkdir(parents=True, exist_ok=True)
+        code, output, seconds = runner(command, cwd)
+        steps.append(_step(name, code, output, seconds))
+        if code != 0:
+            return steps, _ended(name, code, output)
+    out = build / "compile_commands.json"
+    made, code, output = _under_bear(runner, "make under Bear", ["bear", "--output", str(out), "--", "make", "-k",
+                                                                  f"-j{jobs}"],
+                                     ["bear", "--append", "--output", str(out), "--", "make", "-k", f"-j{jobs}"],
+                                     build)
+    return steps + made, _recorded(out, "make", code, output)
+
+
 def go(runner, go_path: str, unit: dict, build: Path, prepared: dict | None) -> tuple[list[dict], dict]:
     """The cgo packages built by the go command under Bear's compiler wrappers (the go command starts the C
     compiler without the C library's exec, which Bear's preload intercepts), with the modules the preparation
@@ -464,6 +486,7 @@ def main(argv: list[str]) -> int:
             done, state = (configure(run, cmake, unit, build, SCRATCH / f"fetch-{number}.log") if kind == "cmake"
                            else meson(run, unit, build, meson_env) if kind == "meson"
                            else make(run, unit, build, jobs) if kind == "make"
+                           else autotools(run, unit, build, jobs) if kind == "autotools"
                            else bazel(unit, build, _prepared(number), PREPARED / str(number)) if kind == "bazel"
                            else go(run, go_tool(), unit, build, _prepared(number)))
             steps += done

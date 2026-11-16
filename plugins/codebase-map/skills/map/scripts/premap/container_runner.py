@@ -26,7 +26,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import preparation  # noqa: E402
-from premap import bazel, cmake, gradle, maven, meson, sbt  # noqa: E402
+from premap import bazel, cmake, compose, gradle, maven, meson, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
@@ -69,6 +69,8 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
     "tsc": {"files": [NODE], "setup": [UNPACK["node"], _npm("typescript@6.0.3")], "registries": True,
             "runs_on": ("node",), "restores": "node", "memory": 3},
     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
+    "compose": {"files": [(*compose.DOWNLOAD, "docker-compose")],  # Compose's own binary: it reads, no engine runs
+                "setup": [f"cp {IN}/docker-compose {T}/bin/docker-compose && chmod 755 {T}/bin/docker-compose"]},
     "cmake": {"files": [(*cmake.DOWNLOAD[0], "cmake.tar.gz"), NINJA],
               "setup": [f"tar -xzf {IN}/cmake.tar.gz -C {T} && mv {T}/cmake-4.4.5-linux-x86_64 {T}/cmake",
                         UNPACK["ninja"]]},
@@ -83,7 +85,8 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
     "gradle": {"files": [("https://services.gradle.org/distributions/gradle-9.9.1-bin.zip",
                           "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228", "gradle.zip")],
                "setup": [_jar("gradle.zip", "gradle-9.9.1", "gradle")], "image": maven.IMAGE, "java": True,
-               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3, "retry": gradle.retry},
+               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3, "retry": gradle.retry,
+               "asks": gradle.asked_jdk},
     "sbt": {"files": [(*sbt.DOWNLOAD[0], "sbt.tgz")],
             "setup": [f"tar -xzf {IN}/sbt.tgz -C {T} && ln -sf {T}/sbt/bin/sbt {T}/bin/sbt"], "image": sbt.IMAGE,
             "java": True, "hosts": ("repo.scala-sbt.org", "scala.jfrog.io"), "memory": 3},
@@ -192,6 +195,29 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                         gaps.append({"kind": "declared_hosts_failed", "path": ran[n]["cwd"], "hosts": more,
                                      "detail": f"{tool} failed again reaching the hosts the build declares ({said}):"
                                                f" {(answer['stderr'] or '').strip()[-300:]}"})
+        # A command whose build needs a newer JVM than the image's (`asks`) runs once more on the JDK it names:
+        # mise installs it in the setup, and the command runs with it as JAVA_HOME.
+        asked = [(n, spec["asks"](answers[n]["stderr"] + answers[n]["stdout"], toolchains))
+                 for n, answer in enumerate(answers) if n and answer["returncode"] != 0] if spec.get("asks") else []
+        asked = [(n, found) for n, found in asked if found]
+        if asked:
+            (jdk, said), chains = asked[0][1], preparation.toolchains([asked[0][1][0]])
+            files.extend(item for item in chains["files"] if item not in files)
+            home = (f'for j in {T}/mise/installs/java/*/bin/java; do [ -x "$j" ] && JAVA_HOME="${{j%/bin/java}}"; '
+                    "done; export JAVA_HOME; ")
+            setup = {**ran[0], "network": "registries", "argv": ["sh", "-c", " && ".join(
+                [ran[0]["argv"][2], *(f"( {line} )" for line in chains["lines"])])]}
+            again = contained([setup, *({**ran[n], "argv": [*ran[n]["argv"][:2], home + ran[n]["argv"][2],
+                                                            *ran[n]["argv"][3:]]} for n, _ in asked)],
+                              (*hosts, *more, *chains["hosts"]), f"{tool}-jdk")
+            gaps += chains["gaps"] + ([{**said, "path": ran[asked[0][0]]["cwd"]}] if said else [])
+            if again["state"] != "done" or len(again.get("results") or []) != len(asked) + 1:
+                gaps.append({"kind": "jdk_from_build_error", "detail": f"{tool}: the run again on JDK "
+                             f"{jdk['version']}, which the build asks for, did not happen: {again.get('cause')}"})
+            else:
+                gaps += preparation.missing(again["results"][0]["stderr"])
+                for (n, _), answer in zip(asked, again["results"][1:]):
+                    answers[n], roots[n] = answer, again["root"]
         return [{**answer, "root": roots[n + 1], **({"gaps": gaps} if n == 0 and gaps else {})}
                 for n, answer in enumerate(answers[1:])]
 
