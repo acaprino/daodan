@@ -14,7 +14,8 @@ Convenzioni:
   - `java-versions`: le 18 `jvm-ver-*`, sul codice a `68a846a4a` (`347bc1403`);
   - `conferma`: 32 casi (`828b5413b`);
   - `jvm-otel-android`: otel-demo, jvm-android-app-lib e mix-poly-firebase, sull'albero di lavoro con il codice poi committato in `39805f5e7`;
-  - `jvm-kotlinconf`: kotlinconf, sull'albero di lavoro con il codice poi committato in `22dca6da8`.
+  - `jvm-kotlinconf`: kotlinconf, sull'albero di lavoro con il codice poi committato in `22dca6da8`;
+  - `ci-steps`: tududi e fastapi, con i passi della CI prima dei test (`aea1c8c3b`).
 - I repository veri sono fissati a un commit in `benchmarks/project-model/fixtures/<caso>/source.json`:
   - chi `c64ed7d6635f`, javapoet `b9017a9503b7`, klaxon `1173bdc568a6`, python-semver `b6e83e3e40d3`, semver `280ebcb6edac`, tinyxml2 `9148bdf719e9`, tududi `71da9d7b34df`, zlib `51b7f2abdade`;
   - fastapi `aabb90126964`, hoppscotch `55908a76a1d0`, jhipster-sample `6b000b5d23a3`, kotlinconf `146e891c150c`, memos `509e41bd1a1b`;
@@ -31,7 +32,7 @@ Convenzioni:
 
 ## Indice
 
-238 schede: 177 risolte, 22 aperte, 39 buchi dichiarati.
+244 schede: 181 risolte, 24 aperte, 39 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -106,7 +107,7 @@ Convenzioni:
 
 ### Analizzatori
 
-105 schede: 65 risolto, 14 aperto, 26 buco dichiarato.
+107 schede: 66 risolto, 15 aperto, 26 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit |
 | --- | --- | --- | --- | --- |
@@ -215,10 +216,12 @@ Convenzioni:
 | D-236 | C++: il simbolo di un argomento di macro stava sul nome della macro | tinyxml2 (`9148bdf719e9`) | risolto | `a3801beed` |
 | D-237 | Rust: i riferimenti e i file che un `#[cfg]` esclude non dicevano perché | hoppscotch (`55908a76a1d0`) | buco dichiarato (la causa cfg) | `a3801beed` |
 | D-238 | Rust: il turbofish su un ricevitore calcolato toglieva il nome al chiamato | semver (`280ebcb6edac`) | risolto | `a3801beed` |
+| D-239 | rust-analyzer esegue sull'host build script e macro procedurali del progetto | analizzatore Rust | aperto (dynamic-step-2) | — |
+| D-242 | C#: `nameof` e le direttive del preprocessore erano chiamate o letture | analizzatore C# | risolto | `15960a591` |
 
 ### Passo dinamico e osservatori
 
-36 schede: 29 risolto, 2 aperto, 5 buco dichiarato.
+37 schede: 30 risolto, 2 aperto, 5 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit |
 | --- | --- | --- | --- | --- |
@@ -258,10 +261,11 @@ Convenzioni:
 | D-200 | Python più vecchio del 3.12 | spec del passo dinamico | buco dichiarato (`python_too_old`) | — |
 | D-201 | I servizi che `docker compose up` avvia non partivano | passo dinamico | risolto | `22dca6da8` |
 | D-202 | I servizi di GitLab CI non avviati | passo dinamico | risolto | `23de469c4` |
+| D-241 | C#: nessun osservatore eseguiva i test .NET | eShop (`913acea66708`) | risolto | `15960a591` |
 
 ### Container, servizi e driver Modal
 
-17 schede: 12 risolto, 3 aperto, 2 buco dichiarato.
+19 schede: 13 risolto, 4 aperto, 2 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit |
 | --- | --- | --- | --- | --- |
@@ -282,10 +286,12 @@ Convenzioni:
 | D-217 | GitLab CI: `!reference` | da verificare | aperto (test-services) | — |
 | D-218 | Kiri non stacca un container dalla sua prima rete | motore Kiri | buco dichiarato (`ci_step_not_run`) | `f024ba3a3` |
 | D-219 | Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL | spec del passo dinamico | aperto (da decidere) | — |
+| D-240 | Il `.env` che il progetto traccia non arrivava nel container | fastapi (`aabb90126964`) | aperto (test-services) | — |
+| D-244 | I test reali dei servizi si cancellavano a vicenda | `tests/test_codebase_map_dynamic_services.py` | risolto | `aea1c8c3b` |
 
 ### Benchmark e documenti
 
-16 schede: 13 risolto, 3 aperto, 0 buco dichiarato.
+17 schede: 14 risolto, 3 aperto, 0 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit |
 | --- | --- | --- | --- | --- |
@@ -305,6 +311,7 @@ Convenzioni:
 | D-233 | Due script del benchmark dell'inferenza mai eseguiti | `benchmarks/inference-audit` | aperto | `137512c11` |
 | D-234 | Un file dello snapshot senza dichiarazioni usciva dal progetto nel grafo | `benchmarks/inference-audit` | risolto | `53e219638` |
 | D-235 | Pre-mappa: dipendenze sotto la soglia | corpus della pre-mappa | risolto | `de353d251`, `99112d0b9` |
+| D-243 | Il driver perdeva i buchi del passo dinamico | benchmark project-model | risolto | `aea1c8c3b` |
 
 ## Schede
 
@@ -1485,7 +1492,7 @@ Convenzioni:
   - l'analyzer C# arriva con `56e65e114` (16 novembre);
   - `73b645531` dà una causa a parte dei buchi di eShop (D-116, D-118, D-119, D-120);
   - `0cdbae9b2` corregge il ripristino, il BOM e i nomi (D-113, D-115, D-116, D-117).
-- **Verifica:** nessun giro sul corpus dopo `0cdbae9b2`: la nuova quota di risposta è da verificare.
+- **Verifica:** dal commit `15960a591`, su eShop: risposte C# 86,6 % senza l'osservatore e 87,3 % con l'osservatore (D-241); negli altri casi nessun giro dopo `0cdbae9b2`: da verificare.
 - **Stato:** aperto (csharp-dotnet).
 - **Note:** D-113, D-115, D-116, D-117, D-198.
 
@@ -1957,7 +1964,7 @@ Convenzioni:
   - gli altri motori CSS leggono il progetto come testo e restano dove sono.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-162.
+- **Note:** D-162. Lo stesso difetto, codice del progetto sull'host, in D-239 (rust-analyzer); la regola invalicabile di `AGENTS.md` lo vieta da `2753088a3`.
 
 #### D-162 Fogli di stile: buchi `no-rule`
 - **Descrizione:** conferma: 42.757 buchi no-rule su 58.534 siti dei fogli di stile, 26,3 % di risposta; nel finale 48.808.
@@ -2030,6 +2037,31 @@ Convenzioni:
 - **Verifica:** solo test (`tests/test_xray_semantic_syntax.py`, `test_a_rust_method_with_type_arguments_keeps_its_name`).
 - **Stato:** risolto.
 - **Note:** —
+
+#### D-239 rust-analyzer esegue sull'host build script e macro procedurali del progetto
+- **Descrizione:** dynamic-step-2 ha misurato su Modal che `rust-analyzer scip` esegue sull'host i build script e le macro procedurali del progetto, nonostante `CONFIG` li spenga (riportato da team-lead il 16 novembre; la misura non è ancora in un risultato salvato).
+- **Spiegazione:**
+  - al commit `a3801beed` l'analizzatore Rust lancia `rust-analyzer scip` sull'host, in una copia del progetto (`scripts/indexers/rust.py`, `index`, con `runtime.mirrored`), con `--config-path` e `CONFIG` (`rust.py:30`): `{"cargo": {"buildScripts": {"enable": False}, "features": "all"}, "procMacro": {"enable": False}}`. Il docstring dice «so no project code runs»;
+  - ma alla release fissata (`2026-11-09`) `crates/rust-analyzer/src/cli/scip.rs:51-54` carica il workspace con `load_out_dirs_from_check: true` e `with_proc_macro_server: ProcMacroServerChoice::Sysroot`, qualunque cosa dicano `buildScripts.enable` e `procMacro.enable`: esegue i build script (`cargo check`) e costruisce le macro procedurali;
+  - in più, il ripiego (`rust.py:311`, `fallback=lambda prefix, output: command(prefix, output)[:-2]`) rilancia rust-analyzer senza `--config-path` quando la prima corsa fallisce (`scripts/code_graph.py`, `module_runs`).
+- **Progetto e caso:** analizzatore Rust — misura su Modal di dynamic-step-2, 16 novembre 2026.
+- **Rimedio:** in corso (dynamic-step-2), con priorità massima, non committato (`scripts/indexers/rust.py` nell'albero di lavoro):
+  - build script e macro procedurali girano solo nel container di Daodan (`_boxed`): la preparazione, con i registri aperti, installa la toolchain e fa `cargo fetch`; l'esecuzione, senza rete, lancia il check di rust-analyzer e poi `rust-analyzer scip` con le sue impostazioni predefinite;
+  - sull'host, dove nessun container risponde, il comando che esegue i build script è uno che non esegue nulla (`NO_BUILD`, in `buildScripts.overrideCommand`).
+- **Verifica:** —. La regola chiede un test con un build script e una macro procedurale che, se eseguiti, lasciano un segno.
+- **Stato:** aperto (dynamic-step-2): viola la regola invalicabile di `AGENTS.md` (`2753088a3`).
+- **Note:** D-161 (Tailwind), lo stesso difetto.
+
+#### D-242 C#: `nameof` e le direttive del preprocessore erano chiamate o letture
+- **Descrizione:** `nameof(x)`, i nomi che `#pragma` cita e i simboli che `#if` ed `#elif` provano erano registrati come chiamate o letture.
+- **Spiegazione:** il lettore dei fatti (`scripts/languages/semantic.py`) trattava `nameof(x)` come una chiamata, mentre è il nome di `x` come costante, e leggeva le condizioni delle direttive come codice.
+- **Progetto e caso:** analizzatore C# — commit `15960a591`, 16 novembre 2026.
+- **Rimedio:** `15960a591` (16 novembre), `scripts/languages/semantic.py`:
+  - `nameof(x)` non è una chiamata né una lettura;
+  - di `#if` si leggono tutti i rami, mai ciò che `#if` prova né gli avvisi che `#pragma` nomina.
+- **Verifica:** solo test (`tests/test_codebase_map_indexers_csharp.py`, `test_nameof_and_the_names_of_preprocessor_directives_are_neither_calls_nor_reads`).
+- **Stato:** risolto.
+- **Note:** D-241.
 
 ### Passo dinamico e osservatori
 
@@ -2397,6 +2429,20 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** un file incluso è `include_not_read`, D-216.
 
+#### D-241 C#: nessun osservatore eseguiva i test .NET
+- **Descrizione:** finale, eShop: C# `no-observer`, «no observer runs this language's tests».
+- **Spiegazione:** il passo dinamico non aveva un osservatore per C#. Dal confronto nel docstring di `scripts/dynamic/dotnet.py`, nessuno strumento esistente registra gli archi di chiamata.
+- **Progetto e caso:** eShop (`913acea66708`) — finale, 16 novembre 2026.
+- **Rimedio:** `15960a591` (16 novembre), `scripts/dynamic/dotnet.py` e `scripts/dynamic/dotnet_record/`, il registratore esatto di Daodan:
+  - nella preparazione, dentro il container, il progetto si costruisce, e un riscrittore su Mono.Cecil 0.11.6 (MIT, fissato per sha256) aggiunge le sonde agli assembly del progetto con le righe del PDB;
+  - il registratore (netstandard2.0) si carica con `DOTNET_STARTUP_HOOKS` in ogni processo di `dotnet test --no-build`;
+  - un host Aspire, o un progetto che usa Aspire.Hosting.Testing, non gira: chiederebbe un motore di container dentro i test.
+- **Verifica:**
+  - dal commit, eShop: 4 progetti di test girano, 72 test passati, 2.385 siti registrati, 800 riferimenti uniti in 42 file; le risposte C# salgono dall'86,6 % all'87,3 %;
+  - senza motore, un `dotnet` sul PATH che lascia un segno se chiamato prova che sull'host non gira niente (`tests/test_codebase_map_dynamic_dotnet.py`, `test_without_a_container_nothing_runs_and_the_cause_is_said`).
+- **Stato:** risolto; un progetto di test che avvia i servizi con Aspire è un buco dichiarato (`tests_need_container_engine`).
+- **Note:** D-114, D-242.
+
 ### Container, servizi e driver Modal
 
 #### D-203 Il motore di container dell'utente usato anche se non risponde in locale
@@ -2516,7 +2562,8 @@ Convenzioni:
   - altre azioni, `if:` e `${{ }}` sono `ci_step_not_run`; un passo che fallisce è `ci_step_failed`, con le ultime righe.
 - **Verifica:**
   - dal commit, su Modal e su un Docker vero in un sandbox a macchina virtuale: una migrazione scrive una tabella accanto a postgres, i test la leggono, fuori non si esce (`tests/test_codebase_map_dynamic_services.py`, `test_on_modal_the_ci_s_steps_run_beside_the_services_and_the_tests_find_what_they_wrote`);
-  - il giro della pipeline su tududi e fastapi è in corso (test-services): da verificare.
+  - giro `ci-steps`, tududi: i tre passi del job (installazione 36 s, lint 19 s, bootstrap e migrazioni 1 s) girano accanto a postgres:16-alpine prima dei test; rispetto alla conferma JavaScript va da 3.779 a 13.214 siti e TypeScript da 92 a 20.202, un salto che dal commit viene anche dai bundle in memoria e dalle CPU scalate, non solo dai passi;
+  - giro `ci-steps`, fastapi: «Migrate DB» gira e fallisce sul `.env` che la copia non porta (D-240).
 - **Stato:** risolto; i passi che non si possono eseguire sono un buco dichiarato (`ci_step_not_run`).
 - **Note:** D-218.
 
@@ -2528,7 +2575,7 @@ Convenzioni:
   - i file del progetto montati nei servizi vi sono copiati;
   - quelli fuori dal progetto sono `service_incomplete`;
   - gli script di shell che avviano Compose si leggono fino a tre livelli.
-- **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`: `test_a_service_has_the_project_s_files_its_bind_mounts_name_before_it_starts`, `test_a_shell_script_a_step_or_a_test_script_runs_is_read_for_docker_compose_as_its_caller_is`); il giro su tududi e fastapi è in corso (D-213).
+- **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`: `test_a_service_has_the_project_s_files_its_bind_mounts_name_before_it_starts`, `test_a_shell_script_a_step_or_a_test_script_runs_is_read_for_docker_compose_as_its_caller_is`).
 - **Stato:** risolto; un bind mount fuori dal progetto è un buco dichiarato (`service_incomplete`).
 - **Note:** D-201, D-215.
 
@@ -2579,6 +2626,29 @@ Convenzioni:
 - **Rimedio:** —
 - **Verifica:** —
 - **Stato:** aperto (da decidere).
+- **Note:** —
+
+#### D-240 Il `.env` che il progetto traccia non arrivava nel container
+- **Descrizione:**
+  - giro `ci-steps`, fastapi: «Migrate DB» gira e fallisce, e pytest e Playwright si fermano sulle stesse impostazioni mancanti, che stanno nel `.env` tracciato del template (dal commit `aea1c8c3b`);
+  - otel-demo: lo stadio di currency chiede `ARG OPENTELEMETRY_CPP_VERSION` (`src/currency/Dockerfile:26`), che Compose prende da `.env:8` (`OPENTELEMETRY_CPP_VERSION=1.28.0`); senza, l'istruzione non si riproduce (D-135).
+- **Spiegazione:** `scripts/source_files.py:73-74` (`FORBIDDEN_GLOBS`: `.env`, `.env.*`) e `copy_perimeter` (`scripts/container.py`) tengono fuori dalla copia ogni file che `is_forbidden` nomina, anche quando Git lo traccia.
+- **Progetto e caso:** fastapi (`aabb90126964`) — giro `ci-steps`; otel-demo (`b825c7c25726`); 16 novembre 2026.
+- **Rimedio:** decisione del proprietario (16 novembre, riportata da team-lead), in corso (test-services):
+  - un `.env` che Git traccia entra solo nella copia del container;
+  - uno non tracciato è il buco `file_withheld`;
+  - nessun suo valore arriva ai fatti, agli archivi o ai testi che Daodan tiene.
+- **Verifica:** —
+- **Stato:** aperto (test-services).
+- **Note:** sblocca fastapi (D-213) e currency (D-135).
+
+#### D-244 I test reali dei servizi si cancellavano a vicenda
+- **Descrizione:** i test reali dei servizi, in parallelo, si cancellavano la cartella di lavoro a vicenda.
+- **Spiegazione:** condividevano una cartella di lavoro.
+- **Progetto e caso:** `tests/test_codebase_map_dynamic_services.py` — commit `aea1c8c3b`, 16 novembre 2026.
+- **Rimedio:** `aea1c8c3b` (16 novembre): ognuno ha la sua cartella di lavoro.
+- **Verifica:** solo test.
+- **Stato:** risolto.
 - **Note:** —
 
 ### Benchmark e documenti
@@ -2730,6 +2800,15 @@ Convenzioni:
 - **Verifica:** riproduzione di `99112d0b9`: 785 dipendenze trovate.
 - **Stato:** risolto.
 - **Note:** D-019.
+
+#### D-243 Il driver perdeva i buchi del passo dinamico
+- **Descrizione:** nel risultato di un giro niente nominava i passi della CI.
+- **Spiegazione:** `benchmarks/project-model/modal_pipeline.py` non teneva i buchi del passo dinamico, né il nome e il `declared_in` di ogni riga del registro.
+- **Progetto e caso:** benchmark project-model — commit `aea1c8c3b`, 16 novembre 2026.
+- **Rimedio:** `aea1c8c3b` (16 novembre), `benchmarks/project-model/modal_pipeline.py`: il driver li tiene.
+- **Verifica:** giro `ci-steps`.
+- **Stato:** risolto.
+- **Note:** D-213.
 
 ## Commit feat senza difetto
 
