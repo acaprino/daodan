@@ -16,6 +16,16 @@ La richiesta («rivedi X») diventa l'elenco dei file da rivedere, in quattro pa
 
 Spec: [`docs/specs/2026-11-04-review-scope-resolution.md`](../../docs/specs/2026-11-04-review-scope-resolution.md). Strumenti di Codebase Map, una riga ciascuno: `plugins/codebase-map/skills/map/references/tools-guide.md`. Testo operativo: `skills/review-preparation/references/team-review.md`, sezione "Request to files". Prova: `benchmarks/scope-resolution/`, su 9 casi, una esecuzione per caso: i file indispensabili ci sono sempre, sia su Haiku sia su Opus; l'esito coincide con l'atteso in 7 casi su Haiku e 9 su Opus. Vale per la review di branch (`team-review.md`) e per quella leggera (`light.md`, `code-review.md` caso W). Una review completa con questa Phase 0 non è ancora stata eseguita.
 
+## Review leggera
+
+La light ha un solo reviewer nel roster (`code-auditor` per il codice) e un solo job: `bind` vi piega gli specialisti richiesti. Dividere i membri in più job è stato provato e ritirato: sul [caso Jupiter](../../benchmarks/jupiter-alias/README.md) costava dal 48% al 62% di token in più senza trovare più difetti. Limite misurato sullo stesso caso: un job composto può mancare un difetto che il ruolo da solo trova (J2: 0 run su 7 contro 2 su 2).
+
+La verifica segue il livello del roster: di norma `critical-high`, cioè ogni finding Critical o High con Lens 0 e Lens 1; con rigor `quick`, solo i Critical con Lens 1 ([tabella](skills/review-quality-gates/references/verification-panel.md)).
+
+I controlli di contratto confrontano nuovi validatori con valori reali dei produttori; la ricerca segue i nomi del campo fino al consumatore; il reviewer dei test confronta i valori delle fixture con configurazioni, seed o dati persistiti disponibili. Le evidenze mancanti restano lacune. I mandati operativi sono in `roles/api-contract-auditor.md`, `roles/testing-auditor.md` e `skills/review-quality-gates/references/reviewer-common.md`.
+
+I fatti appresi arrivano solo ai job di discovery e valgono per la stessa base di review; `record` li ricava dagli esiti verificati secondo lo stesso livello. Protocollo: [learned-facts.md](skills/review-consolidation/references/learned-facts.md).
+
 ## Esecuzione: aiutante leggero, chiamate a ondate
 
 **Regola.** Job, lenti 1-3 e critico girano su `senior-review:isolated-worker` (`roles/isolated-worker.md`), che ha solo cinque strumenti: Read, Write, Glob, Grep, Bash. La Lens 0 resta su `premise-auditor`. Il coordinatore chiama gli aiutanti a ondate: ogni passo che non dipende da un altro parte in un solo turno. I passi sono: tutti i job, poi le Lens 0, poi le lenti 1 e 2 di tutti i finding, poi la Lens 3 dei finding sopravvissuti, infine il critico.
@@ -65,7 +75,7 @@ Le chiamate a ondate restano isolate: nessun aiutante vede i finding degli altri
 
 ## Stato
 
-Versione **1.1.1**. Dipendenza richiesta: solo `codebase-map`. I ruoli compositi sono definiti in `[reviewers.compositions]` di `plugin.toml`, non come file ruolo.
+Versione **1.1.3**. Dipendenza richiesta: solo `codebase-map`. I ruoli compositi sono definiti in `[reviewers.compositions]` di `plugin.toml`, non come file ruolo.
 
 Installazione: `claude plugin install senior-review@daodan` (marketplace `acaprino/daodan`; richiede `codebase-map`). Ingresso: la skill `/senior-review:review-method`. Le review eseguite sul benchmark `benchmarks/scope-resolution/` e i loro costi sono registrati nel suo README: il criterio di costo non è ancora raggiunto. Il catalogo dei reviewer è `plugin.toml`: `skills/review-preparation/scripts/composition.py catalog` lo legge e scrive `CATALOG.json`; `bind` lega il roster ai job.
 
@@ -81,7 +91,7 @@ Temi che la review non giudica perché richiedono esecuzione, infrastruttura est
 |---|---|---|
 | Latenza, throughput, P99/tail latency | misura runtime | `algorithmic-cost`, `responsiveness`, `sql-efficiency` |
 | Comportamento del garbage collector | misura runtime | `resource-lifecycle` |
-| Chaos engineering, esecuzione dei test | richiedono di eseguire il sistema; "testing" è lacuna dichiarata in § Stato | — |
+| Chaos engineering, esecuzione dei test | richiedono esecuzione; gli esiti disponibili arrivano dal pacchetto strumenti | `testing-auditor` esamina staticamente test e fixture |
 | Cold start reali, limiti serverless | vincoli di piattaforma | `chicken-egg-detector`, `responsiveness` |
 | WAF, protezione DDoS | controlli perimetrali esterni | `capacity-quota` (backpressure applicativo) |
 | Autoscaling, scaling orizzontale/verticale, multi-region | policy di piattaforma | `capacity-quota`, `recovery` |

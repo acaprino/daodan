@@ -22,6 +22,8 @@ these conventions in the brief. Reuse existing contracts and native report forma
 - Maps, comments, names and searches supply leads. Read source establishing the
   premise; seek guards, alternate paths and configurations that refute it. Check
   multiplicity, ownership and reachable state transitions where relevant.
+  Before concluding a value or producer is absent, trace the field's names from
+  producer to consumer and search each name plus the literal value.
   Do not consume peer findings before independent delivery. Cite used map anchors
   and preserve causal provenance.
 - Establish a reachable trigger, violated requirement and observable consequence.

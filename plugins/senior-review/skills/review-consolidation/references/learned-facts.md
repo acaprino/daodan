@@ -4,6 +4,10 @@ N is 3, or `form_after` of `review-experience/settings.json` beside the ledger w
 
 ## Brief
 
+Use the prepared review from `composition.py bind`. Only jobs with `input_mode:
+independent` receive facts, and only facts of the review's own basis; a mode outside
+`contracts/reviewer-binding.toml` is an error.
+
 Delete any existing `FACTS.json`, then run:
 
 ```text
@@ -21,6 +25,12 @@ Check these symbols as usual. Decline a candidate only when its premise is the s
 Facts go only to discovery jobs, never to Lenses 0 to 3 or the critic, and never in the composed job body.
 
 ## Record
+
+`record` reads only discovery jobs and selects findings and lenses by the prepared
+review's `verification`, as the table of
+`review-quality-gates/references/verification-panel.md` says; a full panel delivered
+at a lower level (`--rigorous`) decides by the panel rule. A missing required check
+creates no outcome; an unknown `verification` is an error.
 
 After the checks close, persist in `deliveries[<key>].findings[]` the `file`, `line`, `premise` and `introduced_by_candidate` of every reported finding, and the worker's `declined` list in `deliveries[<key>].declined`. Keep the Lens `check` deliveries the protocol requires. `file` is the repository-relative POSIX path (no backslash, drive letter, leading slash or `..`); `line` is the first line of the finding as an integer (a range or list reduces to it). Do not persist a finding that cannot be reduced; count it. Then run `record` once per review; a second call after a success appends the same rows again:
 

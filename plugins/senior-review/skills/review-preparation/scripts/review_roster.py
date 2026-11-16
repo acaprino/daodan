@@ -669,8 +669,6 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
         if signals["sensitive_paths"] and "senior-review:security-auditor" not in obligation_roles:
             obligation_roles.append("senior-review:security-auditor")
     required = specialist_obligations(obligation_roles, context, scope_id, map_signals, gaps)
-    if shape == "light" and required:
-        advice.append("required specialist obligations must fit the single discovery; otherwise review-branch is required")
     if not reasons:
         reasons.append("no raising signal")
     review = {} if review_id is None else {"id": review_id, "stage": stage or shape}

@@ -2,13 +2,15 @@
 
 Attua «Come si compone una review» del [disegno comune](2026-11-03-semantic-review-foundation.md) nella shape `branch` di senior-review. La shape `light` resta `review-method/references/light.md`.
 
-## Comportamento attuale
+**Stato:** selezione e Phase 1 implementate. La validazione completa del metodo con reviewer selezionati resta distinta dagli esperimenti sui job di discovery.
+
+## Comportamento precedente (7 novembre 2026)
 
 La Phase 1 di `review-preparation/references/team-review.md` esegue quattro dispatch prima del primo reviewer: 1a nuova analisi Codebase Map sul perimetro (`map-analyst`), 1c derivazione cieca delle premesse (`premise-auditor` Mode 1), 1d join di provenienza, 1b mappa delle interconnessioni (`semantic-interconnect-mapper`). Phase 2 legge `02-interconnect.md` e `01-knowledge-provenance.md`.
 
 Prova del 2026-11-07 (`benchmarks/scope-resolution/results/review-light-943bdc44c/`): la shape `light`, con la mappa completa già prerequisito e i tool MCP, ha trovato il difetto seminato senza nessuna di queste fasi. Costo 217K token, due verifiche incluse.
 
-## Proposta
+## Decisione implementata
 
 La Phase 1 diventa tre passi del coordinatore, nel suo contesto, senza dispatch.
 
@@ -20,6 +22,8 @@ Cade 1a perché la mappa completa è prerequisito e una nuova analisi parziale l
 
 Il rigor è `quick`, `standard` o `deep`. Lo decide il modello leggendo la richiesta intera, senza una tabella di parole; `standard` se la richiesta non dice nulla. Stabilisce la verifica (`verification` del roster): `critical` per `quick`, solo Critical con Lens 1; `critical-high` per `standard` e `light`, Critical e High con Lens 0 e Lens 1; `all-above-floor` per `deep`, ogni finding sopra la soglia con il pannello completo e il critico. Un segnale di rischio (interfaccia pubblica, percorso sensibile, manifest, 20 chiamanti) porta a `deep` anche una richiesta `quick`. File e moduli non alzano più il rigor. Prima il roster dichiarava il livello ma nessun testo lo leggeva: nella misura del `943bdc44c` otto lenti su due finding, e il pacchetto da 9 file di produzione era diventato medio solo per la soglia dei 6 file. Il nome `tier` è sostituito da `rigor` perché `medium` indicava anche una severità.
 
+`brief` e `record` dei fatti appresi leggono i job prodotti da `bind` ([learned-facts.md](../../plugins/senior-review/skills/review-consolidation/references/learned-facts.md)). La light resta a un solo job: il [benchmark Jupiter](../../benchmarks/jupiter-alias/README.md) ne riporta misure e limiti e, senza mappa del candidato, non valida la team-review descritta qui.
+
 ## Criterio
 
 Su una modifica con un difetto verificabile e noto indipendentemente, la review `branch` lo trova con i reviewer scelti al passo 2, meno dei 26 della composizione generica, dichiara le baseline mancanti e costa meno della `light`. Misura in `benchmarks/scope-resolution` sul commit `943bdc44c` (oracolo nel commit successivo `f52f7352c`), confronto con la `light` con tool. È il caso di costruzione: prima di dichiarare il metodo valido servono casi non usati nella costruzione.
@@ -28,7 +32,6 @@ Su una modifica con un difetto verificabile e noto indipendentemente, la review 
 
 - Micro skill e baseline per stack non esistono: la selezione lavora sui ruoli del catalogo, più larghi di un controllo, e ogni review `branch` dichiara la lacuna di baseline.
 - `graph` fallisce sul run attuale (`ValueError: path is missing or inaccessible`, l'inventario precede la rinomina di `skills/map-method`) e `edit_impact` riporta `missing_store`: fuori perimetro.
-- `brief` e `record` di review-preparation non concordano con `bind` (`input_mode`, `job_id`): fuori perimetro.
 
 ## Interventi
 

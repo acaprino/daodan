@@ -52,8 +52,10 @@ Build one `BINDINGS.json` from verified values:
   kinds, which keep the computed roster. A missing value is an error.
 - `knowledge_selection`: fingerprint of the once-prepared selection, `""` for an
   explicit empty selection. Changes invalidate the job; do not select again per member.
-- `output_dir`: job report directory inside the owned run; `input_mode` (default
-  `independent`).
+- `output_dir`: job report directory inside the owned run; `input_mode` is the
+  enum in `contracts/reviewer-binding.toml`: `independent` (default, discovery),
+  `full-context` (Lens 0), or `verification` (other verification). Unknown values
+  fail binding, including scope overrides.
 - Optional `scopes`, keyed by `scope_id`, each with its own `input_mode`,
   `permissions` and `output_dir`. Modes and grants must agree with the member
   brief. Independent modes never share a job.
@@ -127,8 +129,9 @@ the same member on different scopes remains distinct. Premise derivation,
 verification lenses and critic keep independent contexts, inputs, delivery IDs
 and output files. A discovery delivery cannot also satisfy a verification check.
 
-Light requires exactly one discovery job. An insufficient budget fails or asks
-the caller to use branch review; no silent member omission or hidden fan-out.
+Light requires exactly one discovery job: a second roster identity or scope fails
+binding. A job that cannot finish its members reports them incomplete, which
+prevents `PASS`; no silent member omission or hidden fan-out.
 Budget splitting in branch review is `coverage`'s groups: every group keeps its
 job's members, obligations and evidence.
 

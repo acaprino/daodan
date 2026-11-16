@@ -131,6 +131,18 @@ class BindTest(unittest.TestCase):
             composition.leaf_roles("senior-review:x", entries)
 
 
+class InputModeTest(unittest.TestCase):
+    def test_light_obligation_on_a_second_scope_is_an_error(self):
+        required = [{"specialist_id": "senior-review:testing-auditor", "scope_id": "second"}]
+        with self.assertRaisesRegex(ValueError, "exactly one discovery job"):
+            composition.bind(roster(["senior-review:code-auditor"], shape="light", required=required), BINDINGS, PLUGIN_ROOT)
+
+    def test_unknown_input_modes_are_rejected_in_defaults_and_scopes(self):
+        for extra in ({"input_mode": "custom"}, {"scopes": {"candidate": {"input_mode": "custom"}}}):
+            with self.subTest(extra=extra), self.assertRaisesRegex(ValueError, "input_mode.*custom"):
+                composition.bind(roster(["senior-review:code-auditor"]), {**BINDINGS, **extra}, PLUGIN_ROOT)
+
+
 class SelectionTest(unittest.TestCase):
     AUTOMATIC = [
         {"specialist_id": "senior-review:authorization-auditor", "scope_id": "candidate",

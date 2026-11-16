@@ -7,7 +7,7 @@ helper decides how those identities become isolated jobs. Each roster identity b
 focused role files plus the shared conventions, never a merged body. The output
 names files and SHA-256 digests only: role prose is never copied into the plan.
 
-Two commands:
+Commands:
 
 - ``catalog``: the reviewer catalog derived from ``plugin.toml`` (``id``,
   ``kind``, ``members``), the entries ``review_roster.py`` reads from its
@@ -16,7 +16,7 @@ Two commands:
   ``jobs``, ``common`` and ``gaps``. An identity absent from the catalog or a
   missing role file leaves its job ``unbound`` and the exit status non-zero, so
   the dispatch step refuses an incomplete plan. A branch bind must state its
-  ``selection``, so skipping the choice is an error and not 26 silent members.
+  ``selection``, so skipping the choice cannot silently select the generic composition.
   With ``coverage`` (branch review on content basis only), every file of the
   resolved perimeter (``grounding.conclusion_paths``) gets one cell per planned
   reviewer of the default scope, and each such job becomes one job per group of
@@ -40,6 +40,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import json
 import os
@@ -67,6 +68,16 @@ MISSING = "missing from map inventory"
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+@functools.cache
+def input_modes() -> tuple:
+    """The closed `input_mode` enum of this provider's reviewer-binding contract, read once."""
+    contract = DEFAULT_ROOT / "contracts/reviewer-binding.toml"
+    try:
+        return tuple(tomllib.loads(contract.read_text(encoding="utf-8"))["fields"]["input_mode"]["values"])
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        raise ValueError(f"cannot read the input_mode enum of {contract.name}: {error}") from error
 
 
 def load_catalog(plugin_root: Path) -> dict:
@@ -230,6 +241,9 @@ def bind(roster: dict, bindings: dict, plugin_root: Path) -> dict:
     default_mode = bindings.get("input_mode", "independent")
     scopes = bindings.get("scopes", {})
     default_scope = grounding.get("scope_id") or roster.get("id") or "candidate"
+    for mode in [default_mode, *(scope.get("input_mode", default_mode) for scope in scopes.values())]:
+        if mode not in input_modes():
+            raise ValueError(f"unsupported input_mode {mode!r}; expected one of {list(input_modes())}")
 
     catalog = load_catalog(plugin_root)
     entries = {row["id"]: row for row in catalog["entries"]}

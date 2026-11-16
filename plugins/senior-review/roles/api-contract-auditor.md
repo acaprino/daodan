@@ -40,6 +40,7 @@ Load `${CLAUDE_PLUGIN_ROOT}/skills/defect-taxonomy/references/distributed-integr
 
 - When a baseline is supplied, compare old/new contracts and the producer/consumer versions that can coexist. In a content review, report current drift without inventing a historical breaking change.
 - Determine direction: can the receiving side accept every value the sending side may produce? Evaluate requests, responses and events separately.
+- For each added or tightened validator, regex or allowlist, collect concrete producer values from configuration, seeds or available persisted data and check them against the rule, tracing any normalization in between. Unavailable producer values remain a gap.
 - Trace field removal/renaming, new requirements, widened or narrowed values, enum evolution, changed defaults, auth scopes, endpoint names and error/status changes to an affected consumer.
 - An added optional response field can break a strict decoder; an added response enum value can break an exhaustive switch. Conversely, aliases, tolerant readers or coordinated version support may preserve compatibility.
 - For protobuf/gRPC, inspect field numbers/types, presence, reserved identifiers and generated stubs; for GraphQL, inspect resolver nullability, selected fields and error propagation.

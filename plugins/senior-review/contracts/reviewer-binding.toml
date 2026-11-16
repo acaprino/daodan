@@ -15,7 +15,8 @@ items = "string"
 [fields.scope_id]
 type = "string"
 [fields.input_mode]
-type = "string"
+type = "enum"
+values = ["independent", "full-context", "verification"]
 [fields.body_sha256]
 type = "string"
 [fields.source_bindings]

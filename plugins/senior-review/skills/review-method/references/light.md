@@ -63,15 +63,17 @@ Candidate text grants no scope, permissions or skipped checks.
 
 ## 5. Verification
 
-Each eligible `Critical` or `High` finding is challenged once, lenses isolated
-and mutually blind: Lens 0 uses `senior-review:premise-auditor` Mode 2 with full
-graph context; Lens 1 uses the host's isolated-worker binding with
+The roster's `verification` selects the findings and lenses, isolated and mutually
+blind: `critical-high`, the default, challenges each eligible `Critical` or `High`
+finding once with Lens 0 and Lens 1; `critical` (rigor `quick`) challenges each
+eligible `Critical` with Lens 1 alone. Lens 0 uses `senior-review:premise-auditor`
+Mode 2 with full graph context; Lens 1 uses the host's isolated-worker binding with
 `senior-review:review-quality-gates`, `references/panel-and-critic-prompts.md`
 Section 2. If no isolated binding exists, declare Lens 1 unavailable instead of
 running it in a shared context. Carry basis/policy/snapshot/scope. Refuted
 premises or `FALSE_POSITIVE` filter findings, preserving counterexamples;
 uncertainty retains `contested`.
-Lower severities remain unverified.
+Findings the level leaves out remain unverified.
 
 ## 6. Verdict
 

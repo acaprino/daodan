@@ -8,9 +8,9 @@ Apply a three-tier confidence filter to all findings:
 
 | Confidence | Action |
 |------------|--------|
-| **< 0.50 (< 50%)** | **Suppress** -- finding is speculative, discard it. Record suppressed count. |
-| **0.50 - 0.69** | **Flag** -- include in report but mark as low-confidence |
-| **>= 0.70** | **Report** -- full confidence, include normally |
+| **< 50%** | **Suppress** -- finding is speculative, discard it. Record suppressed count. |
+| **50% - 69%** | **Flag** -- include in report but mark as low-confidence |
+| **>= 70%** | **Report** -- full confidence, include normally |
 
 ### 4b. Deduplication
 

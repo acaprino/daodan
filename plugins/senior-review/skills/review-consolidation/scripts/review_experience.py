@@ -10,8 +10,8 @@ review basis, body, interface and effects digests and parser fingerprint, say
 FALSE_POSITIVE, PREMISE_REFUTED or USER_DISMISSED, and no row at that key says
 REAL or USER_CONFIRMED. A symbol with other digests is simply not offered.
 
-`record` derives the outcome rows of one review from the run record alone, with the rule
-of `validate_review_checks` (specification D3, D4 and D7), and appends them. It reads
+`record` derives the outcome rows of one review from the run record alone, using its
+bound verification level and validated lens deliveries, and appends them. It reads
 `<project home>/.daodan/runs/RID/work.json`: `reviews[]` (the review REV with its `jobs[]`,
 `verification`, `review_basis` and `grounding.graph.bound_targets`, the roster path that
 the preparation fills) and `deliveries{}` (`findings[]`, `declined[]` and `check`). It prints
@@ -34,12 +34,14 @@ import argparse
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import errno
+import functools
 import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 import stat
+import tomllib
 import subprocess
 import sys
 import time
@@ -48,6 +50,7 @@ import uuid
 LEDGER_SCHEMA = "daodan/review-outcome/v1"
 FACTS_SCHEMA = "daodan/review-facts/v1"
 REVIEW_BASIS = "changeset"
+VERIFICATION = ("critical", "critical-high", "all-above-floor")  # the values of review_roster.py VERIFICATION
 VERDICTS = frozenset({"REAL", "FALSE_POSITIVE", "PREMISE_REFUTED", "CONTESTED", "DECLINED_BY_FACT",
                       "USER_DISMISSED", "USER_CONFIRMED"})
 FORMING = frozenset({"FALSE_POSITIVE", "PREMISE_REFUTED", "USER_DISMISSED"})
@@ -292,17 +295,33 @@ def _dict(value):
     return value if isinstance(value, dict) else {}
 
 
+@functools.cache
+def input_modes():
+    """The closed `input_mode` enum of the reviewer-binding contract, read once."""
+    contract = Path(__file__).resolve().parents[3] / "contracts/reviewer-binding.toml"
+    try:
+        return tuple(tomllib.loads(contract.read_text(encoding="utf-8"))["fields"]["input_mode"]["values"])
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        raise ExperienceError(f"Cannot read the input_mode enum of {contract.name}: {error}") from error
+
+
 def discovery_jobs(roster):
-    """The prepared roster's discovery jobs as (id, members) pairs."""
+    """The discovery jobs of a prepared review as (id, members) pairs: `brief` and `record` share them.
+
+    A job is discovery when its `input_mode` is `independent`; a mode outside the contract is an error.
+    """
     jobs = _dict(roster).get("jobs")
     found = []
-    for job in jobs if isinstance(jobs, list) else ():
-        members = _dict(job).get("specialist_ids")
-        if (_dict(job).get("input_mode") == "discovery" and isinstance(job.get("id"), str) and job["id"]
+    for job in map(_dict, jobs if isinstance(jobs, list) else ()):
+        if job.get("input_mode") not in input_modes():
+            raise ExperienceError(f"unsupported input_mode {job.get('input_mode')!r}; "
+                                  f"expected one of {list(input_modes())}")
+        members = job.get("specialist_ids")
+        if (job["input_mode"] == "independent" and isinstance(job.get("job_id"), str) and job["job_id"]
                 and isinstance(members, list)):
             members = [member for member in members if isinstance(member, str) and member]
             if members:
-                found.append((job["id"], members))
+                found.append((job["job_id"], members))
     return found
 
 
@@ -313,11 +332,12 @@ def bound_targets(roster):
                                        for name in TARGET_FIELDS)] if isinstance(rows, list) else []
 
 
-def member_facts(targets, groups, specialist, form_after):
-    """A member's active facts for the bound targets: newest first, ties by fact id, at most MAX_FACTS."""
+def member_facts(targets, groups, specialist, form_after, basis=REVIEW_BASIS):
+    """A member's active facts of one review basis for the bound targets: newest first, ties by fact id,
+    at most MAX_FACTS."""
     found = {}
     for target in targets:
-        key = (specialist, target["symbol_id"], REVIEW_BASIS, target["body_hash"],
+        key = (specialist, target["symbol_id"], basis, target["body_hash"],
                target["interface_hash"], target["effects_hash"], target["parser_fingerprint"])
         if key in groups and key not in found:
             found[key] = evaluate(key, groups[key], form_after)
@@ -329,8 +349,10 @@ def job_facts(roster, rows, form_after):
     """The `jobs` list of FACTS.json for already parsed ledger rows."""
     check_form_after(form_after)
     groups, targets = group_rows(rows), bound_targets(roster)
+    basis = _dict(roster).get("review_basis", REVIEW_BASIS)  # a fact of another basis is not offered
     return [{"job_id": job_id,
-             "members": [{"specialist_id": member, "facts": member_facts(targets, groups, member, form_after)}
+             "members": [{"specialist_id": member,
+                          "facts": member_facts(targets, groups, member, form_after, basis)}
                          for member in members]}
             for job_id, members in discovery_jobs(roster)]
 
@@ -488,27 +510,48 @@ def lens_check(review, deliveries, target, lens):
 
 
 def selected(review, finding):
-    """Whether the protocol sends a finding to verification (run_state.py:806-813)."""
+    """Whether the bound verification policy selects this finding, including the confidence floor.
+
+    A missing or null confidence counts as 60, as consolidation treats it; a fraction (0 < c <= 1)
+    is read as a percentage, since a finding below 1% is never reported.
+    """
     severity, confidence = finding.get("severity"), finding.get("confidence")
-    if not isinstance(severity, str) or type(confidence) not in (int, float) or not 0 <= confidence <= 100:
+    if confidence is None:
+        confidence = 60
+    if not isinstance(severity, str) or type(confidence) not in (int, float):
+        return False
+    if 0 < confidence <= 1:
+        confidence *= 100
+    if not 50 <= confidence <= 100:
         return False
     if finding.get("introduced_by_candidate") is False:  # a changeset review: this is the only basis reached
         return False
     if review.get("verification") == "all-above-floor":
-        return confidence >= 50
-    return severity.lower() in ("critical", "high")
+        return True
+    if review.get("verification") == "critical":
+        return severity.lower() == "critical"
+    return review.get("verification") == "critical-high" and severity.lower() in ("critical", "high")
+
+
+def lens_ran(review, deliveries, target, lens):
+    """Whether any delivery of the review holds a check of `lens` on the target, accepted or not."""
+    return any(d.get("review") == review["id"] and _dict(d.get("check")).get("lens") == lens
+               and target in _list(_dict(d.get("check")).get("targets")) for d in map(_dict, deliveries.values()))
 
 
 def disposition(review, deliveries, job_id, finding):
     """The verdict the checks of a selected finding give it, or None when a required check is missing or invalid.
 
-    Lens 0 runs first when the shape is light, the premise is not independent or it holds a universal word,
-    and ends the finding when it refutes the premise (run_state.py:814-824). Then a light review follows
-    Lens 1; any other shape needs Lens 2 and, unless both say FALSE_POSITIVE, Lens 3, which only returns REAL.
+    critical uses Lens 1; critical-high uses Lens 0 then Lens 1, for either shape. The full panel,
+    all-above-floor or `--rigorous` at a lower level (seen as a Lens 2 check on the finding), needs
+    Lens 0 for eligible premises, then Lenses 1 and 2 and, unless both say FALSE_POSITIVE, Lens 3.
+    A located premise refutation ends the finding.
     """
     target = {"job_id": job_id, "finding_id": finding["id"]}
-    provenance, light = finding.get("premise_provenance"), review.get("shape") == "light"
-    if light or provenance != "independent" or UNIVERSAL.search(str(finding.get("premise", ""))):
+    provenance, mode = finding.get("premise_provenance"), review.get("verification")
+    panel = mode == "all-above-floor" or lens_ran(review, deliveries, target, 2)
+    if mode == "critical-high" or panel and (
+            provenance != "independent" or UNIVERSAL.search(str(finding.get("premise", "")))):
         premise = lens_check(review, deliveries, target, 0)
         if premise is None:
             return None
@@ -519,7 +562,7 @@ def disposition(review, deliveries, job_id, finding):
     first = lens_check(review, deliveries, target, 1)
     if first is None:
         return None
-    if light:
+    if not panel:
         return "CONTESTED" if first["verdict"] == "UNCERTAIN" else first["verdict"]
     second = lens_check(review, deliveries, target, 2)
     if second is None:
@@ -573,8 +616,11 @@ def derive_rows(review, deliveries, run_id, recorded_at):
     """
     base = {"schema": LEDGER_SCHEMA, "recorded_at": recorded_at, "run_id": run_id, "review_id": review["id"],
             "review_basis": REVIEW_BASIS}
+    if review.get("verification") not in VERIFICATION:
+        raise ExperienceError(f"unsupported verification {review.get('verification')!r}; "
+                              f"expected one of {list(VERIFICATION)}")
     targets, skipped = record_targets(review)
-    jobs = {job.get("id") for job in map(_dict, _list(review.get("jobs")))}
+    jobs = {job_id for job_id, _ in discovery_jobs(review)}
     rows = []
     for delivery in map(_dict, deliveries.values()):
         job_id = delivery.get("job_id")

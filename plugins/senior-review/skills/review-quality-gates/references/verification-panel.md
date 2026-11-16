@@ -51,7 +51,7 @@ The roster's `verification` sets the work per finding:
 | `verification` | Rigor | Findings | Lenses |
 |---|---|---|---|
 | `critical` | quick | Critical with confidence >= 50% | Lens 1 |
-| `critical-high` | standard, light | Critical and High with confidence >= 50% | Lens 0 and Lens 1 |
+| `critical-high` | standard, light's default | Critical and High with confidence >= 50% | Lens 0 and Lens 1 |
 | `all-above-floor` | deep | Every deduplicated finding with confidence >= 50% | Lens 0 when eligible, Lenses 1 and 2, Lens 3 after survival |
 
 Under `critical` and `critical-high`, a refuted premise or `FALSE_POSITIVE` filters

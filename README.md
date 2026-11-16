@@ -55,7 +55,8 @@ senior-review depends on Codebase Map; Codebase Map stands alone.
 Roles cover one defect class each (authorization, transaction integrity,
 temporal resilience, …) and are composed into larger reviewers in
 `plugins/senior-review/plugin.toml`; the light review and the quick and standard
-automatic rosters use the `code-auditor` composition.
+automatic rosters use the `code-auditor` composition. Light binding folds
+the required specialists into its single job. See [senior-review](plugins/senior-review/README.md#review-leggera).
 
 ## Install
 

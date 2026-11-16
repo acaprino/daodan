@@ -83,7 +83,7 @@ omit it, including from the PR summary. Never infer a score from finding counts.
 Second occurrences (R4), listed without flagging: [one line each, or "none"]
 
 ### Coverage
-- Suppressed: [N] findings below 0.50 confidence
+- Suppressed: [N] findings below 50% confidence
 - Deduplicated: [N] cross-agent duplicates merged
 - Residual risks: [risks noticed but not confirmed as findings]
 - Testing gaps: [missing test coverage identified]
