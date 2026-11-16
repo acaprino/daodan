@@ -312,6 +312,21 @@ def test_a_file_without_a_document_names_its_own_cause():
         "contrib/infback9/infback9.c": "no compile command: no build compiles a file of contrib/infback9"}
 
 
+def test_a_file_nothing_failed_for_is_said_so():
+    """mix-real-zlib's C++, contrib/iostream*, which no build compiles: a language none of whose files is indexed
+    for such reasons only is `unavailable`, not `failed` (`engine_pass.index_stage`). A file a build would compile
+    but the build stopped, or whose unit failed, is no such file; one whose only build cannot run here is."""
+    win = {"root": "win", "state": "unavailable", "kind": "no-database", "cause": MSBUILD}
+    stopped = {"root": "lib", "state": "indexed", "cause": "make ended with exit code 2"}
+    configs = {"compiled": {"lib/a.c": 1}, "units": [win, {"root": "gen", "state": "failed", "cause": "boom"},
+                                                   stopped, {"root": "ok", "state": "indexed"}]}
+    reasons = clang.missing(None, ["win/main.cpp", "tools/x.cc", "ok/x.h", "ok/x.cc", "gen/g.cc", "lib/b.cc",
+                                   "lib/a.c"], configs)
+    assert {rel: clang.nothing_failed(reason) for rel, reason in reasons.items()} == {
+        "win/main.cpp": True, "tools/x.cc": True, "ok/x.h": True, "ok/x.cc": True,
+        "gen/g.cc": False, "lib/b.cc": False, "lib/a.c": False}
+
+
 def test_a_workspace_is_configured_once_at_its_root():
     """Members of a CMake workspace (`add_subdirectory`) are configured from the workspace's root; a unit in no
     workspace from its own; units of other build tools and languages are left to their indexers. The states are
@@ -628,6 +643,27 @@ def test_make_runs_under_bear_with_the_targets_the_pre_map_states(tmp_path):
     state = clang_run.make(run, unit, tmp_path / "b2", 2)[1]
     assert state == {"state": "failed", "error": "bear: failed with: Events db open failed\n",
                      "cause": "make under Bear ended with exit code 1: bear: failed with: Events db open failed"}
+
+
+def test_a_makefile_a_configure_script_writes_is_made_once_the_configure_ran(tmp_path):
+    """mix-real-zlib's root: its own `configure`, no Autotools', writes Makefile from Makefile.in, as the pre-map
+    ran it (`premap.make`): the configure first, with its defaults, in the unit's folder; one that fails says so."""
+    units = [{"name": "libz.a", "kind": "make-target", "root": ".", "config": {"configure": "configure"}},
+             {"name": "infcover", "kind": "make-target", "root": ".", "config": {"configure": "configure"}}]
+    assert clang.builds(units, [], lambda root: root) == [
+        {"root": ".", "build": "make", "targets": ["libz.a", "infcover"], "configure": True}]
+    build, unit = tmp_path / "build", {"root": ".", "build": "make", "targets": ["infcover"], "configure": True}
+    out = build / "compile_commands.json"
+    run, calls = _tool(0, writes={out: "[]"})
+    steps, state = clang_run.make(run, unit, build, 2)
+    assert calls[0] == (["sh", "-c", clang_run.CONFIGURE], clang_run.WORK)
+    assert calls[1][0][:4] == ["bear", "--output", str(out), "--"] and state == {"state": "configured"}
+    assert [step["step"] for step in steps] == ["configure", "make under Bear"]
+    run, calls = _tool(1, "Compiler error reporting is too harsh for ./configure (perhaps remove -Werror).\n")
+    steps, state = clang_run.make(run, unit, tmp_path / "b2", 2)
+    assert len(calls) == 1 and state["cause"] == (
+        "configure ended with exit code 1: Compiler error reporting is too harsh for ./configure (perhaps remove "
+        "-Werror).")
 
 
 def test_an_autotools_project_is_regenerated_configured_apart_and_made_under_bear(tmp_path):

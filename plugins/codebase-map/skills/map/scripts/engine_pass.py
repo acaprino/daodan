@@ -505,9 +505,12 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
                             else {}
                         built[language] = code_graph.build(index, snap, language, hops, indexer, reasons, traversal,
                                                            static, refine=refine)
-                # An index that holds none of a language's files proves nothing of it.
+                # An index that holds none of a language's files proves nothing of it; when the adapter says
+                # nothing failed for any of them (`nothing_failed`: no build compiles one), it is `unavailable`.
                 failed = {language: _none_indexed(language, graph["files"])
                           for language, (graph, _references) in built.items() if not graph["files"]["indexed"]}
+                quiet = {language for language in failed if hasattr(module, "nothing_failed") and all(
+                    module.nothing_failed(item["reason"]) for item in built[language][0]["files"]["missing"])}
                 built = {language: made for language, made in built.items() if language not in failed}
                 if built or rows or not failed:
                     code_graph.write_store(snap, out or default_edge_store(manifest), built, resolver, rows)
@@ -515,9 +518,10 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": str(error)}
         if failed and not (built or rows):
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": "; ".join(failed.values()),
-                    **gaps}
+                    **({"install": "none: no build compiles these files"} if set(failed) <= quiet else {}), **gaps}
         states = {**{language: {"state": "fresh"} for language in {**built, **rows}},
-                  **{language: {"state": "failed", "reason": reason} for language, reason in failed.items()}}
+                  **{language: {"state": "unavailable" if language in quiet else "failed", "reason": reason}
+                     for language, reason in failed.items()}}
         noted = [*gaps.get("gaps", ()), *({"kind": "language_not_indexed", "language": language, "detail": reason}
                                           for language, reason in failed.items())]
         return {"available": True, "engine": resolver, "indexer": indexer, "languages": states,

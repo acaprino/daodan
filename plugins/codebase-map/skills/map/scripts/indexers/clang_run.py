@@ -9,7 +9,7 @@ caller gives it, never the machine's processor count.
 
 A unit is `{"root", "build"}`, the folder its build runs in and the build, `cmake` when none is given. `meson`:
 `meson setup`, wraps never downloaded, whose Ninja backend writes the database. `make` (`targets`): the project's
-make under Bear, every target remade. `autotools`: `autoreconf`, the configure in a build folder of its own,
+make under Bear, every target remade, after the project's own configure with `configure`. `autotools`: `autoreconf`, the configure in a build folder of its own,
 and make under Bear there. `go` (`packages`, `download`): the go command builds the cgo packages under
 Bear's compiler wrappers, with the modules the preparation downloaded when the unit requires some; only commands for
 files of the copy are kept. Bear is Ubuntu's package, installed with dpkg from the copy. `bazel`: the compile
@@ -63,6 +63,8 @@ WHAT = {"cmake": "the configure", "meson": "meson setup", "make": "make under Be
 OUTSIDE = "download-outside-registries"  # the cause the map-driven round counts
 ABSENT = "submodule-absent"  # a folder the configure reads is a submodule the checkout lacks
 OWN_BUILTINS = {"-nostdinc", "-nobuiltininc"}  # a command that drops the builtin headers itself
+# The project's own configure (no Autotools'), as the pre-map ran it (`premap/make.py`, CONFIGURE).
+CONFIGURE = "if [ -x ./configure ]; then ./configure; else sh ./configure; fi"
 ERROR_TAIL = 4000
 UNCOVERED = "FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded"
 PROVIDER = r"""# Written by Daodan: records each dependency the project asks FetchContent_MakeAvailable
@@ -337,15 +339,21 @@ def _under_bear(runner, name: str, first: list[str], again: list[str],
 
 def make(runner, unit: dict, build: Path, jobs: int) -> tuple[list[dict], dict]:
     """The project's make under Bear in the unit's folder: the targets the pre-map states, each remade, the build
-    going on past an error; its second pass makes only what is not made."""
+    going on past an error; its second pass makes only what is not made. With `configure`, the project's own
+    configure first, with its defaults, which writes the Makefile."""
     build.mkdir(parents=True, exist_ok=True)
-    out = build / "compile_commands.json"
+    out, folder, configured = build / "compile_commands.json", WORK / unit.get("root", "."), []
+    if unit.get("configure"):
+        code, output, seconds = runner(["sh", "-c", CONFIGURE], folder)
+        configured.append(_step("configure", code, output, seconds))
+        if code != 0:
+            return configured, _ended("configure", code, output)
     targets = [f"-j{jobs}", *unit.get("targets", ())]
     steps, code, output = _under_bear(runner, "make under Bear",
                                       ["bear", "--output", str(out), "--", "make", "-B", "-k", *targets],
                                       ["bear", "--append", "--output", str(out), "--", "make", "-k", *targets],
-                                      WORK / unit.get("root", "."))
-    return steps, _recorded(out, "make", code, output)
+                                      folder)
+    return configured + steps, _recorded(out, "make", code, output)
 
 
 def autotools(runner, unit: dict, build: Path, jobs: int) -> tuple[list[dict], dict]:

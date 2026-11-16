@@ -1,0 +1,4 @@
+#!/bin/sh
+# A configure script of the project's own, no Autotools': it writes Makefile from Makefile.in, as zlib's does.
+sed -e "s|@CC@|${CC:-cc}|" Makefile.in > Makefile
+echo "Checking for a C compiler... ${CC:-cc}"

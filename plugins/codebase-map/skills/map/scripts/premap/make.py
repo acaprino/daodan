@@ -9,9 +9,12 @@ names it (`$@`, or the target as a word) and at least one prerequisite; neither 
 name (`all`, `install`, `clean`, `check`, ..., and `test`) nor an object file (`.o`, `.obj`, `.lo`), a step of
 the unit that links it. A unit's sources are the project's files among its
 prerequisites, followed through the steps that are not units; the units among them are its edges. Its manifest
-is the makefile its recipe comes from. A makefile of another dialect (nmake, Watcom, Borland, MMS) or one that
-only a configure script turns into a makefile (`Makefile.in`, `Makefile.am`) is never read: a `not_executed` gap
-per file, but for a `Makefile.am` or `Makefile.in` of an Autotools build, which `premap/autotools.py` states.
+is the makefile its recipe comes from. A folder with a `Makefile.in` and a `configure` of the project's own, no
+Autotools' (zlib's), runs that configure first, with its defaults (`CONFIGURE`): the dry run reads the Makefile it
+writes, the units' manifest is the Makefile.in and their `configure` the script. A makefile of another dialect
+(nmake, Watcom, Borland, MMS) or one that only a configure script turns into a makefile (`Makefile.in`,
+`Makefile.am`) is never read: a `not_executed` gap per file, but for a `Makefile.am` or `Makefile.in` of an
+Autotools build, which `premap/autotools.py` states, or of a folder whose configure runs here.
 """
 from __future__ import annotations
 
@@ -30,16 +33,36 @@ STANDARD = frozenset({  # the goals the GNU Coding Standards name (7.2.6), and `
     "check", "installcheck", "installdirs", "test"})
 START, END = "# Make data base, printed on", "# Finished Make data base on"
 RECIPE = re.compile(r"^#  recipe to execute \(from '(.+)', line \d+\):$")
+# The project's own configure, by its own interpreter when Git marks it executable, else by sh (as
+# `indexers/clang_run.py` runs it).
+CONFIGURE = "if [ -x ./configure ]; then ./configure; else sh ./configure; fi"
+DRY_RUN = ["make", "-pnk", "--no-print-directory"]
 
 
 def _folder(rel: str) -> str:
     return PurePosixPath(rel).parent.as_posix() if "/" in rel else "."
 
 
+def configured(context) -> set[str]:
+    """The folders with a `Makefile.in` and a `configure` of the project's own: no Autotools build's
+    (`autotools.configures`), whose configure `indexers/clang_run.py` writes and runs apart."""
+    from premap import autotools
+    from premap.origins import disk_text
+    folders = {_folder(rel) for rel in context.inventory.files if PurePosixPath(rel).name == "Makefile.in"}
+    if not folders:
+        return set()
+    own = set(autotools.configures(context))
+    return {folder for folder in folders if folder not in own
+            and disk_text(context, "configure" if folder == "." else f"{folder}/configure") is not None}
+
+
 def commands(context):
-    folders = sorted({_folder(rel) for rel in context.inventory.files if PurePosixPath(rel).name in MAKEFILES},
+    own = configured(context)
+    folders = sorted({_folder(rel) for rel in context.inventory.files if PurePosixPath(rel).name in MAKEFILES} | own,
                      key=lambda f: (f.count("/"), f))
-    return [{"tool": "make", "argv": ["make", "-pnk", "--no-print-directory"], "cwd": folder,
+    configure = (f"{{ {CONFIGURE} ; }} > /tmp/daodan-configure.log 2>&1"
+                 " || { tail -n 20 /tmp/daodan-configure.log >&2; exit 3; }; exec " + " ".join(DRY_RUN))
+    return [{"tool": "make", "argv": ["sh", "-c", configure] if folder in own else list(DRY_RUN), "cwd": folder,
              "env": {"LC_ALL": "C"}, "network": "none"} for folder in folders] or None
 
 
@@ -74,17 +97,18 @@ def _writes(name: str, entry: dict) -> bool:
 
 
 def read(context, commands, results):
-    files = set(context.inventory.files)
+    files, own = set(context.inventory.files), configured(context)
     units, gaps, places = [], [], {}
     for command, result in zip(commands, results):
         folder, stdout = command["cwd"], result["stdout"] or ""
+        ran = "./configure, then make -pn" if folder in own else "make -pn"
         if START not in stdout:
             gaps.append({"kind": "model_failed", "path": folder,
-                         "detail": f"make -pn: {(result['stderr'] or '').strip()[-300:]}"})
+                         "detail": f"{ran}: {(result['stderr'] or '').strip()[-300:]}"})
             continue
         if result["returncode"] != 0:
             gaps.append({"kind": "model_partial", "path": folder,
-                         "detail": f"make -pn: {(result['stderr'] or '').strip()[-300:]}"})
+                         "detail": f"{ran}: {(result['stderr'] or '').strip()[-300:]}"})
         rules = database(stdout)
         chosen = {name for name, entry in rules.items()
                   if not entry["phony"] and name not in STANDARD and not name.startswith(".") and "%" not in name
@@ -107,15 +131,20 @@ def read(context, commands, results):
                     sources.add(path(item))
                 todo += rules.get(item, {}).get("prerequisites", [])
             manifest = path(rules[name]["from"] or "Makefile")
+            if folder in own and manifest == path("Makefile"):  # the Makefile the configure wrote from it
+                manifest = path("Makefile.in")
             places[path(name)] = name
             units.append({"name": name, "kind": "make-target", "root": folder, "manifest": manifest,
                           "source_roots": sorted({_folder(s) for s in sources}), "depends_on": sorted(edges),
-                          "config": {"sources": sorted(sources)}})
+                          "config": {"sources": sorted(sources),
+                                     **({"configure": path("configure")} if folder in own else {})}})
     from premap import autotools
-    configured = autotools.configures(context)  # an Autotools build reads its folders' Makefile.am
+    built = autotools.configures(context)  # an Autotools build reads its folders' Makefile.am
     for rel in sorted(context.inventory.files):
         if PurePosixPath(rel).name in ("Makefile.am", "Makefile.in") and any(
-                autotools._inside(_folder(rel), folder) for folder in configured):
+                autotools._inside(_folder(rel), folder) for folder in built):
+            continue
+        if PurePosixPath(rel).name == "Makefile.in" and _folder(rel) in own:
             continue
         if OTHERS.match(PurePosixPath(rel).name):
             gaps.append({"kind": "not_executed", "path": rel,

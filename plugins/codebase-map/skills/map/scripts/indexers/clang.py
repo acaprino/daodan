@@ -500,6 +500,17 @@ def missing(index, rels: list[str], configs: dict | None = None) -> dict:
     return reasons
 
 
+def nothing_failed(reason: str) -> bool:
+    """Whether a reason `missing` gives says nothing failed for the file: no build compiles it (a build that stopped
+    says so after `;`), no file a build compiles includes it, or its one build cannot run here (`unavailable`). A
+    language none of whose files is indexed for such reasons only is `unavailable`, not `failed`
+    (`engine_pass.index_stage`)."""
+    return (reason in ("header no indexed translation unit includes in an active branch",
+                       "in no C or C++ unit of the pre-map")
+            or re.fullmatch(r"no compile command: [^;]+", reason) is not None
+            or re.match(r"the index of unit .+? is unavailable: ", reason) is not None)
+
+
 # ---------------------------------------------------------------------------------------------------------
 # Running the indexer
 
@@ -668,7 +679,8 @@ def meson_top(project_dir: Path, root: str) -> str:
 
 def builds(units, workspace, top) -> list[dict]:
     """The builds beside CMake that give a compilation database, each once: Meson's from the top folder of its
-    meson.build files (`top(root)`), Make's per folder with the targets the pre-map states there, Bazel's from its
+    meson.build files (`top(root)`), Make's per folder with the targets the pre-map states there (`configure` when
+    the project's own configure writes its Makefile, `premap.make`), Bazel's from its
     workspace's root, Go's per module with its cgo packages, `download` when the module requires others."""
     owner = {_folder(member): _folder(item["root"]) for item in workspace or () if item.get("tool") == "bazel"
              for member in item.get("members", ())}
@@ -678,7 +690,10 @@ def builds(units, workspace, top) -> list[dict]:
         if kind == "meson-target":
             plan.setdefault((top(root), "meson"), {})
         elif kind == "make-target":
-            plan.setdefault((root, "make"), {"targets": []})["targets"].append(unit["name"])
+            entry = plan.setdefault((root, "make"), {"targets": []})
+            entry["targets"].append(unit["name"])
+            if (unit.get("config") or {}).get("configure"):  # its Makefile is what the project's configure writes
+                entry["configure"] = True
         elif kind == "bazel-target":
             plan.setdefault((owner.get(root, root), "bazel"), {})
         elif kind == "autotools-project":

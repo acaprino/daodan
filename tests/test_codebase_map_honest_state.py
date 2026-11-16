@@ -116,6 +116,31 @@ def test_one_language_of_a_stage_without_a_file_indexed_is_failed_beside_the_fre
     assert (state["go"]["state"], state["c"]["state"]) == ("fresh", "failed")
 
 
+def test_a_language_no_build_compiles_is_unavailable_not_failed(tmp_path):
+    """None of a language's files is in the index because no build compiles one (the adapter's `nothing_failed`
+    says so of each file's reason, `indexers/clang.py`): nothing failed for it, so it is `unavailable`, with the
+    same reason and gap, beside the language that is fresh; and so is a stage whose every language is so."""
+    from indexers import go
+    _project_dir, manifest = _project(tmp_path, {"native/b.c": "int b(void) { return 1; }\n"})
+    unbuilt = mock.patch.object(go, "nothing_failed", lambda reason: reason == "no build compiles it", create=True)
+    missing = mock.patch.object(go, "missing", lambda index, rels, *extra: dict.fromkeys(rels, "no build compiles it"),
+                                create=True)
+    with unbuilt, missing:
+        result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract(), ("go", "c"))
+    languages = result["analyze"]["languages"]
+    assert languages["go"]["state"] == "fresh"
+    assert languages["c"]["state"] == "unavailable" and "none of the 1 c files" in languages["c"]["reason"]
+    [gap] = _gaps(seen, "analyze", "language_not_indexed")
+    assert gap["language"] == "c" and gap["detail"] == languages["c"]["reason"]
+    empty = tmp_path / "empty.scip"
+    empty.write_bytes(b"")
+    _project_dir, manifest = _project(tmp_path / "alone")
+    with unbuilt, missing:
+        result, _seen = _run(manifest, lambda project_dir, work_dir, files=None, **given:
+                             _contract(indexes=[[str(empty), ""]]))
+    assert result["analyze"]["languages"]["go"]["state"] == "unavailable"
+
+
 def test_the_files_the_index_does_not_hold_are_a_gap_of_the_union(tmp_path):
     """One file of three is not in the index: the language is fresh, a lower bound, and the union says how many
     files are missing and why."""

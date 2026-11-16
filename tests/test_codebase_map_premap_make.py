@@ -69,6 +69,39 @@ def test_actions_and_steps_are_no_units_and_other_dialects_are_gaps(tmp_path):
     assert gap["path"] == "win32/Makefile.msc" and gap["source"] == LABEL
 
 
+def test_a_makefile_the_projects_own_configure_writes_is_read_once_the_configure_ran(tmp_path):
+    """mix-real-zlib's root: a `configure` of the project's own, no Autotools', writes Makefile from Makefile.in,
+    and the checked-in Makefile only says to run it. In the container the configure runs first, with its defaults,
+    then the dry run reads the Makefile it wrote: each unit's manifest is Makefile.in, and it says the configure
+    comes first (`indexers/clang_run.py` runs it before make)."""
+    record = build(tmp_path, "configured")
+    units = targets(record)
+    assert {n: (u["root"], u["manifest"], u["config"]["sources"], u["depends_on"]) for n, u in units.items()} == {
+        "libdemo.a": (".", "Makefile.in", ["lib.c"], []), "demo": (".", "Makefile.in", ["main.c"], ["libdemo.a"])}
+    assert {u["config"]["configure"] for u in units.values()} == {"configure"}
+    assert not [g for g in record["gaps"] if g.get("path") == "Makefile.in" or g["kind"].startswith("model_")]
+
+
+def test_a_configure_that_fails_is_the_folders_gap_with_its_own_words():
+    context = _configured_context()
+    [command] = make.commands(context)
+    assert command["argv"][:2] == ["sh", "-c"] and make.CONFIGURE in command["argv"][2]
+    result = {"returncode": 3, "stdout": "", "stderr": "Compiler error reporting is too harsh for ./configure\n"}
+    assert make.read(context, [command], [result])["gaps"] == [
+        {"kind": "model_failed", "path": ".",
+         "detail": "./configure, then make -pn: Compiler error reporting is too harsh for ./configure"}]
+
+
+def _configured_context():
+    class Inventory:
+        files = ["Makefile", "Makefile.in", "zlib.h"]
+        directories = ["."]
+
+    class Context:
+        inventory, root = Inventory(), ANSWERS / "configured"
+    return Context()
+
+
 def test_commands_run_a_dry_run_in_each_folder_with_a_makefile():
     class Inventory:
         files = ["Makefile", "lib/GNUmakefile", "win32/Makefile.msc", "doc/rules.mk"]

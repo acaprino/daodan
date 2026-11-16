@@ -1,0 +1,15 @@
+CC=@CC@
+
+all: libdemo.a demo
+
+libdemo.a: lib.o
+	ar rcs $@ lib.o
+
+lib.o: lib.c
+	$(CC) -c -o $@ lib.c
+
+demo: main.c libdemo.a
+	$(CC) -o $@ main.c libdemo.a
+
+clean:
+	rm -f demo libdemo.a lib.o
