@@ -33,6 +33,7 @@ import hashlib
 import os
 import shutil
 import sys
+import tempfile
 import threading
 from pathlib import Path
 from typing import Any, Callable
@@ -158,21 +159,46 @@ def _fetch(url: str, target: Path, *, sha256: str) -> Path:
 
 
 def _matches(path: Path, digest: str, size: int) -> bool:
-    if not path.is_file() or path.stat().st_size != size:
+    try:
+        if not path.is_file() or path.stat().st_size != size:
+            return False
+        sha = hashlib.sha256()
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                sha.update(chunk)
+    except OSError:
         return False
-    sha = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            sha.update(chunk)
     return sha.hexdigest() == digest
+
+
+def _settle(target: Path, digest: str, size: int, write: Callable[[Path], Any]) -> bool:
+    """Whether `target` holds its pinned file once `write(path)` has written it under a name of this process's own
+    beside it, renamed into place if it matches: another process sees the whole file or none (the pack's own
+    writes do the same), and nothing it may read is removed. The name of its own goes, whatever happens."""
+    target.parent.mkdir(parents=True, exist_ok=True)
+    handle, name = tempfile.mkstemp(dir=target.parent, prefix=f".{target.name}.", suffix=".tmp")
+    os.close(handle)
+    private = Path(name)
+    try:
+        write(private)
+        if not _matches(private, digest, size):
+            return False
+        try:
+            os.replace(private, target)
+        except OSError:  # Windows: a process that placed it holds it open
+            return _matches(target, digest, size)
+        return True
+    finally:
+        private.unlink(missing_ok=True)
 
 
 def place_grammars(home: Path, platform: str, user_home: Path | None, fetch) -> str | None:
     """Put the pinned manifest and the platform's bundle into `home`, each verified by its sha256.
 
-    A file already there is verified and kept, or removed. A missing one is copied from `user_home`, the pack's
+    A file already there is verified and kept, or replaced. A missing one is copied from `user_home`, the pack's
     own cache, which is only read, else fetched through `fetch(url, target, sha256=)`; a copy or a download that
-    does not match its pin is removed. Returns why the release is not in place, or None.
+    does not match its pin never takes the file's place. Several processes may place at once (`_settle`).
+    Returns why the release is not in place, or None.
     """
     if platform not in PACK_BUNDLES:
         return f"no pinned grammar bundle for platform {platform}"
@@ -184,23 +210,15 @@ def place_grammars(home: Path, platform: str, user_home: Path | None, fetch) -> 
         target = home / rel
         if _matches(target, digest, size):
             continue
-        target.unlink(missing_ok=True)
         source = user_home / rel if user_home is not None else None
-        if source is not None and source.is_file():
-            partial = target.with_name(target.name + ".partial")
-            partial.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, partial)
-            if _matches(partial, digest, size):
-                os.replace(partial, target)
-                continue
-            partial.unlink(missing_ok=True)
+        if source is not None and source.is_file() and _settle(
+                target, digest, size, lambda private: shutil.copyfile(source, private)):
+            continue
         try:
-            fetch(url, target, sha256=digest)
+            placed = _settle(target, digest, size, lambda private: fetch(url, private, sha256=digest))
         except (OSError, ValueError) as error:
-            target.unlink(missing_ok=True)
             return f"download failed: {error}"
-        if not _matches(target, digest, size):
-            target.unlink(missing_ok=True)
+        if not placed:
             return f"download failed: checksum mismatch for {url}"
     return None
 

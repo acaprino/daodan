@@ -565,11 +565,8 @@ def test_a_call_through_an_interface_reaches_the_implementations_the_index_state
 
 
 def test_a_call_through_base_takes_no_override(shop):
-    """`base.Price()` runs `Pricing.Price`, never `Discount.Price` that overrides it. The snapshot's names know
-    `this` and not `base` (`languages/semantic.py`, `parts`): the reference is the call of `Price` at that line."""
-    [reference] = [key for key, row in shop["references"].items()
-                   if row["site"] == "src/Core/Order.cs:26" and row["kind"] == "call" and key.endswith(".Price")]
-    assert _ends(shop, reference) == {("project-callable", "src/Core/Order.cs:15", ())}
+    """`base.Price()` runs `Pricing.Price`, never `Discount.Price` that overrides it."""
+    assert _ends(shop, "src/Core/Order.cs:26 base.Price") == {("project-callable", "src/Core/Order.cs:15", ())}
 
 
 def test_new_names_the_class(shop):

@@ -5,8 +5,9 @@ manifest, in Daodan's store, never in the project: what the project holds and
 what each unit's analysis needs, before any indexer. The indexer stage and the
 container read it and decide nothing on their own. It holds the project's
 structure (units, workspaces and their members, the edges between units,
-source roots and configuration, languages, excluded files) and the toolchain
-versions the project declares, with the gaps. It never holds the libraries a
+source roots and configuration, languages, excluded files), the toolchain
+versions the project declares and the command it declares for its tests, with
+the gaps. It never holds the libraries a
 unit uses: each analyzer's build tool resolves them in the container while it
 indexes, and a source that states them fails.
 `premap.ensure(manifest, runner=None)` returns it, derived again when the
@@ -40,7 +41,9 @@ its facts absent, never empty, since an empty value would win the join.
 | `modules.py` | reader | units, workspaces, `depends_on` (`references/modules.md`) |
 | `python-build` | reader | `source_roots` of a Python unit where its build configuration declares the package folder: setuptools `package-dir` and `packages.find.where`, hatch's wheel `packages`, poetry `packages[].from`, pdm `package-dir`, uv's `module-root`, `setup.cfg` `package_dir`, a literal `package_dir` in `setup.py`; a backend's default is no fact of the file |
 | `requirements` | reader | pip's requirements files (`*requirements*.txt` and `.in`, the files of a `requirements/` folder): a folder whose only Python manifest is one is a `python-project` unit without a name (manifest `requirements.in`, else `requirements.txt`), one beside a `pyproject.toml` or below a Python unit adds to that unit; `-r` includes go with the including unit, `-c` constraints with none, `-e` and local paths are `depends_on`, index URLs are `registries`; a pip-compile output goes with its `.in`; every file in `config.requirements` |
+| `python-tests` | reader | how a Python project says its tests run, as `tests` entries. pytest where the project declares or configures it: a pytest configuration (`pytest.ini`, `.pytest.ini`, `pytest.toml`, `.pytest.toml`, `[tool.pytest]` in `pyproject.toml`, `[pytest]` in `tox.ini`, `[tool:pytest]` in `setup.cfg`) or pytest or a plugin of it (`pytest-*`) among the dependencies a manifest declares (the lists of `pyproject.toml`, a requirements file) gives the folder pytest runs in; a `conftest.py` under no such folder gives the folder pytest is given (`args`), run from the nearest folder above it with a Python manifest, else from the root (the outermost `conftest.py` only). unittest only where a file writes the command: a `python -m unittest ...` line of `tox.ini` or a makefile, with its arguments (`{posargs}` dropped; a line with a variable states nothing), and not in a folder where pytest is declared. Test files alone declare nothing |
 | `npm-files` | reader | install scripts of `package.json` and the dependencies `package-lock.json` marks `hasInstallScript` (a `not_executed` gap: Daodan installs with `--ignore-scripts`); `registries`, the origins of the lockfile's `resolved` URLs |
+| `npm-tests` | reader | how a Node package says its tests run, as `tests` entries: the `test` script of its `package.json` and the runner it names, `jest` (also `react-scripts test`), `vitest`, `mocha`, `node:test` (`node --test`), read through a script of the package it runs (`npm run x`, `yarn x`, `pnpm x`); a script that names none of them has the runner `npm`; npm's placeholder (`no test specified`) and a package without the script state nothing |
 | `jvm-files` | reader | the wrapper of a Gradle build or a Maven project (`config.wrapper`: `file`, `distribution_url`, `distribution_sha256`; the build tool's version); the Java release and the Kotlin plugin version a pom writes, with `line`; a Gradle build's Java version is a `toolchain_undeclared` gap (only its scripts state it) |
 | `gitmodules` | reader | `.gitmodules`: submodules as excluded folders |
 | `project-files` | reader | `Package.swift`'s `swift-tools-version` as `swift`; an MSBuild project's or `Directory.Build.props`' `TargetFramework(s)` as `dotnet-target` (the SDK that builds it is `dotnet`, from `global.json`) and `LangVersion` as `c#`, with `line` |
@@ -63,7 +66,7 @@ Two entries are one fact when their identity fields agree, from the strictest
 match to the loosest: units `root`+`kind`+`name`+`manifest`, then
 `root`+`kind`+`name`, then `root`+`kind`; workspaces `root`+`tool` (two
 build systems in one folder are two workspaces); toolchains `tool`+`declared_in`+`version`, then `tool`+`declared_in`;
-languages `language`; excluded `path`. Unit names compare after PEP 503
+languages `language`; excluded `path`; tests `root`+`runner`. Unit names compare after PEP 503
 folding. Two entries of one source never merge.
 A model source may state the folders where it answers for every unit of a kind (`covers`): there a unit of that kind
 no such source states is dropped as a `superseded` gap. When two sources give a field different values, the value of the higher rank
@@ -84,6 +87,7 @@ source does not give is no conflict. `config` joins key by key
 | `units[].run` | `{executes_project_code, reason}`, below |
 | `workspace` | `{tool, root, members}`, members as resolved unit folders; a Gradle build, a Maven reactor or an included build is a workspace with its own `root` |
 | `toolchains` | `{tool, version, declared_in, line}`: `declared_in` the file and, after `#`, the field; a toolchain belongs to the nearest unit whose `root` holds `declared_in` |
+| `tests` | `{root, runner, declared_in, args}`: the command the project declares for the tests of a folder, `python -m <runner> <args>` run in `root` (`runner` `pytest` or `unittest`), or `npm test` there (`runner` `jest`, `vitest`, `mocha`, `node:test` or `npm`, from `npm-tests`); the dynamic step runs it and no other, and a project with no entry has a `no_test_command` gap there |
 | `gaps` | `{kind, source, detail, ...}`, below |
 
 A facet or field no source gives is absent, never empty.

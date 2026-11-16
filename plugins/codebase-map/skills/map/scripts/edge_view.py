@@ -5,7 +5,11 @@ running an engine at query time. Each reference has one source: the edge store's
 rows for it when it has any (a hole is no answer), else the lexical resolver. Two
 answers never merge: where the store names another declaration it wins, and the
 difference is counted in `coverage.lexical_disagreements`; a definition outside the
-project removes the edge. A lexical target the caller overrides stays, and its
+project removes the edge. An end seen in a run (`edge_store.SEEN`) answers only a
+reference that neither the store's proven rows nor the lexical resolver answer, with
+confidence `observed`, or `sampled` where no exact end answers: it proves the call can
+arrive there, never that a proven edge is wrong. A sampled edge between two declarations
+answers no reference. A lexical target the caller overrides stays, and its
 divergence from the store is surfaced in `conflicts`. Candidate answers stay outside
 confirmed edges.
 
@@ -23,6 +27,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import resolution  # noqa: E402
 import resolve_edges  # noqa: E402
+from edge_store import SEEN  # noqa: E402
 import semantic_store  # noqa: E402
 from snapshot_store import SnapshotStore, _unpack, logical_digest, open_snapshot  # noqa: E402
 
@@ -293,12 +298,18 @@ def load_edge_view(
                 "target_kind": target_kinds.get(target_id) if target_id else None,
             }
 
-            answer = _store_answer(rows_by_ref.get(ref_id, ()), target_kinds)
+            found_rows = rows_by_ref.get(ref_id, ())
+            answer = _store_answer([row for row in found_rows if row["confidence"] not in SEEN], target_kinds)
             if answer is None:
-                # No answer from the store: the lexical one stands, and a hole says why the store has none.
+                # No proven answer from the store: the lexical one stands, and a hole says why the store has
+                # none; where the lexical resolver has none either, an end seen in a run answers, the exact first.
                 if ref_id in holes:
                     record["hole"] = holes[ref_id]
-            else:
+                for seen in SEEN:
+                    if answer is not None or res_state == "resolved":
+                        break
+                    answer = _store_answer([row for row in found_rows if row["confidence"] == seen], target_kinds)
+            if answer is not None:
                 found, row = answer["target"], answer["row"]
                 eng_resolver = row.get("resolver")
                 eng_reason = (row.get("payload") or {}).get("reason")
@@ -325,7 +336,7 @@ def load_edge_view(
                         target_id=found,
                         resolution="resolved",
                         resolver=eng_resolver,
-                        confidence="confirmed",
+                        confidence=row["confidence"] if row["confidence"] in SEEN else "confirmed",
                         provenance=[eng_resolver],
                         reason=eng_reason or f"engine-{row.get('verdict')}",
                         target_kind=target_kinds.get(found, "concrete"),

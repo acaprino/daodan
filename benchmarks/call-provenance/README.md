@@ -155,7 +155,7 @@ La memoria è il picco del container, cache dei file compresa. La durata dei tes
 
 ### Registro esatto: parametri, 12 novembre 2026
 
-Il profiler campiona e vede il 35% delle chiamate che servono. `dynamic_record.js` le registra tutte: come plugin Babel, nella copia del container, fa passare da un registratore la funzione di ogni chiamata; come modulo precaricato chiede all'inspector di Node il file dove quella funzione è definita. Un mock di Jest risulta definito in `jest-mock` e non conta.
+Il profiler campiona e vede il 35% delle chiamate che servono. Il registro esatto, oggi nel plugin (`plugins/codebase-map/skills/map/scripts/dynamic/javascript_record.js`, allora `dynamic_record.js` qui), le registra tutte: come plugin Babel, nella copia del container, fa passare da un registratore la funzione di ogni chiamata; come modulo precaricato chiede all'inspector di Node il file dove quella funzione è definita. Un mock di Jest risulta definito in `jest-mock` e non conta.
 
 - **Comando.** `dynamic_tests.sh /work/src backend /out 12 exact`, stessi container e stessa rete della misura con il profiler.
 - **Soglia.** Invariata: 70% con gli archi osservati.
@@ -227,6 +227,8 @@ Prova 5 della spec, solo la parte Linux: un container Modal (gVisor, root, senza
 - **Conseguenza.** Su Modal il passo dinamico usa i container di Modal, come in `modal_dynamic.py`. La parte Windows della prova 5, con una distribuzione WSL propria, è ancora da fare sul PC.
 
 ## Registro esatto per Python su python-semver, 14 novembre 2026
+
+Dal 16 novembre 2026 il registro è del plugin: `dynamic_record.py`, in questa sezione, è `plugins/codebase-map/skills/map/scripts/dynamic/python_record.py`, lo stesso file che l'osservatore Python del passo dinamico porta nel container. `test_dynamic_record.py` e `modal_dynamic_python.py` lo leggono da lì.
 
 **Verdetto.** Il registro esatto chiude ciò che l'analisi statica lascia aperto: 16 mancati veri su 16 ricevono la destinazione osservata, e anche 31 dei 64 buchi. Non contraddice mai un arco statico, né dell'indice né di Jedi. Costa da 6 a 10 volte il tempo della suite: 534 test passano in 16 s invece che in 2,5 s. Tace dove a runtime non gira codice Python: attributi di `__slots__`, attributi semplici, rami che i test non percorrono.
 

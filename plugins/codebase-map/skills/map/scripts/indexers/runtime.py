@@ -23,7 +23,7 @@ import code_graph
 import resolve_edges as rx
 
 MIN_DISK = 2**30
-NODE_VERSION = "v22.23.4"  # nodejs.org; scip-typescript 0.5.2 needs Node 22.13 or later
+NODE_VERSION = "v22.23.4"  # nodejs.org; the host's Node, for scip-python and the stylesheet engines
 NODE_PLATFORMS = {"win-x64": "win-x64", "win-arm64": "win-arm64", "linux-x64": "linux-x64",
                   "linux-arm64": "linux-arm64", "osx-x64": "darwin-x64", "osx-arm64": "darwin-arm64"}
 REAL = ".daodan-real"
@@ -119,17 +119,6 @@ def environment(*paths: Path, **variables: str) -> dict:
             "PATH": os.pathsep.join([*(str(path) for path in paths), os.environ.get("PATH", "")])}
 
 
-@contextlib.contextmanager
-def on_path(directory: Path):
-    """`directory` first on this process's PATH, for a product function that looks a program up there."""
-    before = os.environ.get("PATH", "")
-    os.environ["PATH"] = f"{directory}{os.pathsep}{before}"
-    try:
-        yield
-    finally:
-        os.environ["PATH"] = before
-
-
 def node_directory(home: Path) -> Path:
     """Where Node's release, unpacked in `home`, keeps `node` and `npm`."""
     top = Path(home) / f"node-{NODE_VERSION}-{NODE_PLATFORMS[rx._platform()]}"
@@ -183,17 +172,28 @@ def node_archive(project_dir: Path, platform: str) -> Path:
     return tool.home() / asset
 
 
+def npm(directory: Path) -> str:
+    """The npm of the Node in `directory`, as a program to start."""
+    return str(directory / ("npm.cmd" if os.name == "nt" else "npm"))
+
+
+def npm_install(directory: Path, prefix: Path, packages: list[str]) -> None:
+    """`packages`, each pinned, installed under `prefix` by the npm of the Node in `directory`, without their
+    install scripts (npm checks each tarball against the registry's integrity)."""
+    subprocess.run([str(directory / rx.executable_name("node")), str(_npm_cli(directory)), "install",
+                    "--prefix", str(prefix), "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error",
+                    *packages], check=True, env=environment(directory), stdin=subprocess.DEVNULL,
+                   capture_output=True, text=True, timeout=1800)
+
+
 def npm_package(project_dir: Path, directory: Path, package: str, version: str) -> Path:
-    """An npm package at its pinned version, installed once without its install scripts (npm checks each
-    tarball against the registry's integrity): the script its `bin` names, which `node` runs."""
+    """An npm package at its pinned version, installed once (`npm_install`): the script its `bin` names, which
+    `node` runs."""
     name = package.rsplit("/", 1)[-1]
     tool = Tool(project_dir, name, version)
 
     def fill(partial: Path) -> None:
-        subprocess.run([str(directory / rx.executable_name("node")), str(_npm_cli(directory)), "install",
-                        "--prefix", str(partial), "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error",
-                        f"{package}@{version}"], check=True, env=environment(directory), stdin=subprocess.DEVNULL,
-                       capture_output=True, text=True, timeout=1800)
+        npm_install(directory, partial, [f"{package}@{version}"])
 
     def script() -> Path | None:
         root = tool.home() / "node_modules" / package

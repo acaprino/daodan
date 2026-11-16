@@ -81,6 +81,105 @@ def test_a_setup_that_installs_from_a_registry_runs_in_the_preparation(tmp_path,
     assert calls[0]["commands"][1]["network"] == "none"
 
 
+SVELTEKIT = {"package.json": '{"name": "notes", "devDependencies": {"@sveltejs/kit": "^2.7.0"}}\n',
+             "tsconfig.json": '{"extends": "./.svelte-kit/tsconfig.json"}\n', "src/lib/index.ts": "export {};\n",
+             "docs/package.json": '{"name": "docs", "packageManager": "yarn@4.5.0"}\n', "docs/yarn.lock": "\n"}
+
+
+def test_tsc_reads_the_tsconfigs_after_the_packages_are_restored_with_what_their_install_generates(tmp_path,
+                                                                                                    no_download):
+    """A tsconfig extends a file of an installed package, or one a framework generates when the packages are
+    installed (SvelteKit's `.svelte-kit/tsconfig.json`): the setup restores each package folder of the snapshot the
+    project's own way, lifecycle scripts included, before any `tsc --showConfig`; the commands stay tsc's own."""
+    import preparation
+    from snapshot_store import open_snapshot
+    project, manifest = manifest_of(tmp_path, SVELTEKIT)
+    with open_snapshot(manifest) as store:
+        asked = premap.tsc.commands(premap.Context(manifest, store))
+    assert [c["argv"] for c in asked] == [["tsc", "--showConfig", "-p", "tsconfig.json"]]
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        container_runner.runner(manifest)(asked)
+    first, *rest = calls[0]["commands"]
+    assert [c["argv"] for c in rest] == [c["argv"] for c in asked] and rest[0]["network"] == "none"
+    setup = first["argv"][-1]
+    plan = preparation.node_prepare(["package.json", "docs/package.json", "docs/yarn.lock"],
+                                    lambda rel: (project / rel).read_text(encoding="utf-8"))
+    assert plan["restores"] == {"npm": ["."], "yarn": ["docs"]}
+    assert first["network"] == "registries" and first["cwd"] == "."
+    assert setup.index("typescript@6.0.3") < setup.index(f"( {plan['lines'][0]} )") < setup.index(
+        f"( {plan['lines'][1]} )")
+    assert "npm install --no-audit --no-fund" in plan["lines"][0]  # with its lifecycle scripts, in the container
+    assert set(calls[0]["registries"]) - set(container.REGISTRIES) == {"repo.yarnpkg.com"}
+    assert calls[0]["memory"] == 3 * 2**30
+
+
+FIXTURE = ROOT / "benchmarks/project-model/fixtures/js-sveltekit"
+
+
+def test_a_package_with_only_its_manifest_is_installed_by_npm_with_its_lifecycle_scripts(tmp_path, no_download):
+    """js-sveltekit: a package.json with devDependencies, no lockfile, no `packageManager`. npm, the default
+    manager, resolves and installs there with the lifecycle scripts (SvelteKit's writes the tsconfig the project's
+    extends) before tsc reads it."""
+    import preparation
+    from snapshot_store import open_snapshot
+    files = {path.relative_to(FIXTURE).as_posix(): path.read_text(encoding="utf-8")
+             for path in sorted(FIXTURE.rglob("*")) if path.is_file() and path.name != "expected.json"}
+    assert "package.json" in files and not {"package-lock.json", "yarn.lock", "pnpm-lock.yaml"} & set(files)
+    _, manifest = manifest_of(tmp_path, files)
+    with open_snapshot(manifest) as store:
+        asked = premap.tsc.commands(premap.Context(manifest, store))
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        [answer] = container_runner.runner(manifest)(asked)
+    first = calls[0]["commands"][0]
+    line = preparation.restore("npm", ["."], scripts=True)
+    assert "timeout 600 sh -c 'if [ -f package-lock.json ]" in line and "npm install --no-audit --no-fund" in line
+    assert f"( {line} )" in first["argv"][-1] and first["network"] == "registries"
+    assert "gaps" not in answer
+
+
+def test_a_package_folder_no_restore_installs_is_a_gap_on_the_answers(tmp_path, no_download):
+    """A package under the root's restore that its workspaces do not name declares dependencies nobody installs."""
+    _, manifest = manifest_of(tmp_path, {
+        "package.json": '{"name": "root", "workspaces": ["packages/*"]}\n', "tsconfig.json": "{}\n",
+        "packages/ui/package.json": '{"name": "ui", "dependencies": {"ms": "2.1.3"}}\n',
+        "tools/gen/package.json": '{"name": "gen", "dependencies": {"chalk": "5.3.0"}}\n',
+        "tools/empty/package.json": '{"name": "empty"}\n'})
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        [answer] = container_runner.runner(manifest)([command("tsc")])
+    assert answer["gaps"] == [{"kind": "restore_failed", "manager": "npm", "path": "tools/gen",
+                               "detail": "its packages are not installed: no workspace above names this folder"}]
+
+
+def test_a_restore_or_a_generation_that_fails_before_tsc_is_a_gap_on_the_answers(tmp_path, no_download):
+    _, manifest = manifest_of(tmp_path, SVELTEKIT)
+    setup = {"returncode": 0, "stdout": "", "stderr": (
+        "DAODAN-GENERATE-FAILED npm .\nnpm error command sh -c node postinstall.js\nDAODAN-GENERATE-END\n"
+        "DAODAN-RESTORE-FAILED yarn docs\nYN0001: Error: no lockfile entry\nDAODAN-RESTORE-END\n")}
+    calls, fake = recorder()
+
+    def run_commands(project, commands, **options):
+        result = fake(project, commands, **options)
+        result["results"][0] = setup
+        return result
+
+    with mock.patch.object(container, "run_commands", run_commands):
+        [answer] = container_runner.runner(manifest)([command("tsc")])
+    assert [(g["kind"], g["manager"], g["path"]) for g in answer["gaps"]] == [
+        ("restore_failed", "yarn", "docs"), ("generation_failed", "npm", ".")]
+    assert answer["returncode"] == 0  # the tsconfigs are still read
+
+
+def test_only_tsc_restores_the_packages_before_its_commands(tmp_path, no_download):
+    _, manifest = manifest_of(tmp_path, SVELTEKIT)
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        container_runner.runner(manifest)([command("npm")])
+    assert "install" not in calls[0]["commands"][0]["argv"][-1] and calls[0]["registries"] == container.REGISTRIES
+
+
 def test_bazel_reaches_its_own_hosts_beside_the_registries_and_no_other_tool_does(tmp_path, no_download):
     _, manifest = manifest_of(tmp_path, {"MODULE.bazel": "module(name = 'x')\n"})
     calls, fake = recorder()

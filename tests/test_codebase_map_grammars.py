@@ -173,6 +173,55 @@ def test_a_damaged_file_in_daodans_cache_is_replaced(fake_release):
     assert (home / "bundles" / fake_release["bundle_name"]).read_bytes() == fake_release["bundle"]
 
 
+PLACER = r"""
+import json, sys, time
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from languages import _treesitter
+home, go, pins = Path(sys.argv[2]), Path(sys.argv[3]), json.loads(Path(sys.argv[4]).read_text(encoding="utf-8"))
+_treesitter.PACK_MANIFEST = tuple(pins["manifest"])
+_treesitter.PACK_BUNDLES = {"test-x86_64": tuple(pins["bundle"])}
+data = {_treesitter.manifest_url(): pins["manifest_bytes"].encode(), _treesitter.bundle_url("test-x86_64"): pins["bundle_bytes"].encode()}
+
+def fetch(url, target, *, sha256=None):
+    # Written in pieces, as a download is: another process may look at the file in between.
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with open(target, "wb") as handle:
+        for start in range(0, len(data[url]), 4096):
+            handle.write(data[url][start:start + 4096])
+            handle.flush()
+            time.sleep(0.001)
+    return target
+
+while not go.exists():
+    time.sleep(0.005)
+reason = _treesitter.place_grammars(home, "test-x86_64", None, fetch)
+bundle = home / "bundles" / f"test-x86_64-{pins['bundle'][0]}.tar.zst"
+print(json.dumps([reason, (home / "manifest.json").read_bytes() == data[_treesitter.manifest_url()],
+                  bundle.read_bytes() == data[_treesitter.bundle_url("test-x86_64")]]))
+"""
+
+
+def test_processes_placing_the_release_at_once_each_find_it_whole(tmp_path):
+    """Two analyses on one machine share Daodan's cache: each writes under a name of its own and renames it into
+    place, so none reads a file another is writing, and none removes one another has placed."""
+    manifest, bundle = "m" * 200_000, "b" * 300_000
+    pins = {"manifest": [_sha(manifest.encode()), len(manifest)], "bundle": [_sha(bundle.encode()), len(bundle)],
+            "manifest_bytes": manifest, "bundle_bytes": bundle}
+    home, go = tmp_path / "daodan" / "v1.13.5", tmp_path / "go"
+    script, given = tmp_path / "placer.py", tmp_path / "pins.json"
+    script.write_text(PLACER, encoding="utf-8")
+    given.write_text(json.dumps(pins), encoding="utf-8")
+    placers = [subprocess.Popen([sys.executable, str(script), str(SCRIPTS), str(home), str(go), str(given)],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) for _ in range(6)]
+    go.write_text("", encoding="utf-8")
+    outcomes = [placer.communicate(timeout=120) for placer in placers]
+    assert [json.loads(out.strip().splitlines()[-1]) if out.strip() else err for out, err in outcomes] == \
+        [[None, True, True]] * len(placers)
+    assert sorted(p.relative_to(home).as_posix() for p in home.rglob("*") if p.is_file()) == [
+        f"bundles/test-x86_64-{pins['bundle'][0]}.tar.zst", "manifest.json"]
+
+
 def test_a_platform_without_a_pinned_bundle_is_a_gap(fake_release):
     reason = _treesitter.place_grammars(fake_release["home"], "plan9-mips", None, _no_network)
     assert reason == "no pinned grammar bundle for platform plan9-mips"

@@ -8,17 +8,17 @@ the position stage. The stage runs under uv with multilspy, which pins the serve
 from __future__ import annotations
 
 import re
-import shutil
 import subprocess
 from pathlib import Path, PurePosixPath
 
-from engine_tools import npm_key, npm_modules, package_directories
+from engine_tools import executable_name, npm_key, npm_modules, package_directories
 from language_servers import ENGINE_THREADS, SERVER_MEMORY_MB, MirroredEngine, _multilspy_pins
 
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "typescript", ("vue", "svelte"), frozenset(), False
 MIN_FREE = 2 * 2**30  # one language server at a time, with this much memory free
 REQUIREMENTS, IMPORT = ("multilspy==0.1.1",), "multilspy"
 INSTALL = "install uv, which gives the pass multilspy and its pinned typescript-language-server"
+NO_SCRIPT = "no script block: nothing of the component is read"
 BLOCK_RE = re.compile(r"<(script|style)\b[^>]*>.*?</\1\s*>|<!--.*?-->", re.IGNORECASE | re.DOTALL)
 
 
@@ -48,7 +48,8 @@ class TypeScriptEngine(MirroredEngine):
 
     Without the project's packages a library call is unresolved instead of external
     (ky: 59.1% instead of 90.9%). A project without `node_modules` gets its packages
-    installed once into the shared directory (`npm_modules`), and the server opens a
+    installed once into the shared directory (`npm_modules`, by Daodan's npm: the
+    server and the install run on Daodan's Node, never the host's), and the server opens a
     mirror of the project in a temporary directory: a link per top-level directory,
     a copy of each top-level file and `node_modules` linked to the shared install,
     since TypeScript looks for packages only in the folders above a file.
@@ -69,23 +70,26 @@ class TypeScriptEngine(MirroredEngine):
         return {"version": server.rsplit("@", 1)[1], "packages": packages}
 
     def prepare(self, home: Path) -> tuple[bool, str]:
-        node, npm = shutil.which("node"), shutil.which("npm")
-        if not node or not npm:
-            self.install = "install Node.js 18 or later with npm (https://nodejs.org)"
-            return False, "node and npm are needed to run typescript-language-server"
-
-        def fill(partial):
-            subprocess.run([npm, "install", "--prefix", str(partial), "--no-audit", "--no-fund", "--no-save",
-                            *self.pinned()["packages"]], check=True, stdin=subprocess.DEVNULL,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-
-        self._install(home, fill)
+        """The server installed on Daodan's Node (`runtime.node`), as scip-python is: the host's node and npm are
+        never asked. What cannot be downloaded or installed is the reason, with what to do."""
+        from indexers import runtime
+        try:
+            directory = runtime.node(self.project_root)
+            if not (home / ".installed").is_file():
+                runtime.room()
+            with runtime.fetching(f"{self.server_name} {self.version}", "the npm registry"):
+                self._install(home, lambda partial: runtime.npm_install(directory, partial, self.pinned()["packages"]))
+        except runtime.Unavailable as error:
+            self.install = error.install
+            return False, error.reason
         return True, ""
 
     def command(self, home: Path) -> tuple[list[str], dict]:
         # The npm shim is a shell script on Windows; node runs the entry point itself.
+        from indexers import runtime
         cli = home / "node_modules" / "typescript-language-server" / "lib" / "cli.mjs"
-        return [shutil.which("node"), str(cli), "--stdio"], {"UV_THREADPOOL_SIZE": str(ENGINE_THREADS)}
+        node = runtime.node(self.project_root) / executable_name("node")
+        return [str(node), str(cli), "--stdio"], {"UV_THREADPOOL_SIZE": str(ENGINE_THREADS)}
 
     def initialization_options(self) -> dict:
         return {"disableAutomaticTypingAcquisition": True, "maxTsServerMemory": SERVER_MEMORY_MB,
@@ -97,11 +101,21 @@ class TypeScriptEngine(MirroredEngine):
     mirror_skip = (".git", "node_modules")
 
     def probe(self) -> tuple[bool, str]:
+        from indexers import runtime
         self.mirror = None
+        try:  # the base's own first check: without multilspy no server starts, and nothing is downloaded for one
+            import multilspy.lsp_protocol_handler.server  # noqa: F401
+        except ImportError:
+            return super().probe()
+        try:
+            npm = runtime.npm(runtime.node(self.project_root))  # Daodan's, for the packages and for the server
+        except runtime.Unavailable as error:
+            self.install = error.install
+            return False, error.reason
         links = {}
         for directory in package_directories(self.project_root):
             try:
-                modules = npm_modules(directory)
+                modules = npm_modules(directory, npm=npm)
             except (OSError, subprocess.SubprocessError) as error:
                 print(f"the project's JavaScript packages were not installed: {error}", flush=True)
                 modules = None
@@ -125,6 +139,13 @@ class TypeScriptEngine(MirroredEngine):
         if has_template(path.read_text(encoding="utf-8", errors="replace"), path.suffix.lower()):
             return "template not read: calls and bindings in it are not sites"
         return None
+
+    def nothing_read(self, path: Path) -> str | None:
+        """Why nothing of a file is read, None when a script block of it is: a language none of whose files gives
+        the engine anything is not fresh (`position_stage`)."""
+        from languages.sfc import mask_non_script
+        _text, _typed, has_script = mask_non_script(path.read_text(encoding="utf-8", errors="replace"))
+        return None if has_script else NO_SCRIPT
 
     def context(self) -> str | None:
         """The server version and the project's packages, which decide what is external."""

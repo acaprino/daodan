@@ -17,6 +17,10 @@ prepare` keeps on the volume) has its own. Per case the result holds the pre-map
 
     python -m modal run benchmarks/project-model/modal_pipeline.py --cases js-npm-single,sys-meson --out OUT.json
     python -m modal run benchmarks/project-model/modal_pipeline.py --cases js,py,jvm,sys,mix,real --out OUT.json
+    DAODAN_FOLDER=<folder> python -m modal run benchmarks/project-model/modal_pipeline.py --folder-out DIR
+
+The last form runs the pipeline on a folder of this PC and brings its snapshot, pre-map, edge store and events
+back into DIR.
 """
 from __future__ import annotations
 
@@ -41,6 +45,7 @@ LOCAL = (HERE / "score.py").is_file()
 REPO = HERE.parents[1] if LOCAL else Path("/")
 REMOTE_SCRIPTS = "/daodan/map/scripts"  # container paths: POSIX strings, whatever runs the client
 REMOTE_PM = "/pm"
+REMOTE_FOLDER = "/folder"
 SCRATCH = "project-model/pipeline-scratch"  # on the volume: each run's copy, removed when the run ends
 FAMILIES = ("js", "py", "jvm", "sys", "mix")
 PACKED = "/tmp/daodan-outputs.tar"
@@ -50,10 +55,14 @@ image = (modal.Image.debian_slim(python_version="3.13")
          .apt_install("git", "ca-certificates", "xz-utils")
          .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"))
 if LOCAL:
-    image = (image.add_local_dir(REPO / "plugins/codebase-map/skills/map/scripts", REMOTE_SCRIPTS,
-                                 ignore=["**/__pycache__/**"])
+    # DAODAN_SCRIPTS: the tool's scripts to run, when not the checkout's (a committed copy while files are edited).
+    image = (image.add_local_dir(os.environ.get("DAODAN_SCRIPTS") or REPO / "plugins/codebase-map/skills/map/scripts",
+                                 REMOTE_SCRIPTS, ignore=["**/__pycache__/**"])
              .add_local_dir(HERE / "fixtures", f"{REMOTE_PM}/fixtures")
              .add_local_file(HERE / "score.py", f"{REMOTE_PM}/score.py"))
+    if os.environ.get("DAODAN_FOLDER"):  # a folder of this PC as one more case (`--folder-out`)
+        image = image.add_local_dir(os.environ["DAODAN_FOLDER"], REMOTE_FOLDER,
+                                    ignore=["**/__pycache__/**", "**/node_modules/**", "**/.git/**"])
 app = modal.App("daodan-pipeline", image=image)
 volume = modal.Volume.from_name("daodan-flow-results")
 
@@ -184,15 +193,9 @@ def _project(name: str) -> Path:
     return project
 
 
-# A request and a limit: the function mostly waits for its sandboxes, and is billed for what it uses above the request.
-@app.function(cpu=(0.5, 8.0), memory=(2048, 16384), timeout=7200, volumes={"/results": volume})
-def run_cases(names: list) -> dict:
-    sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM]
+def _engine():
+    """The plugin's `container` with its runs on Modal Sandboxes, in this process and in each stage's."""
     import container
-    import pipeline
-    import premap
-    import score as scorer
-    import snapshot
     engine_on_modal(container)
     site = Path("/site")
     site.mkdir(exist_ok=True)
@@ -209,6 +212,52 @@ def run_cases(names: list) -> dict:
         return argv
 
     engine_pass.stage_command = with_modal
+    return container
+
+
+KEPT = ("manifest.sqlite", "engine-edges.sqlite", "engine-report.json", "premap.json", "pipeline-events.jsonl",
+        "modules.json")
+
+
+@app.function(cpu=(0.5, 8.0), memory=(2048, 16384), timeout=7200, volumes={"/results": volume})
+def run_folder() -> dict:
+    """The pipeline on the folder of `DAODAN_FOLDER`: the steps' results, the events, and the run's files
+    (`KEPT`) as a tar.gz, for whoever reads the graph on the PC."""
+    sys.path[:0] = [REMOTE_SCRIPTS]
+    import pipeline
+    import snapshot
+    _engine()
+    project, manifest = Path("/cases/folder"), Path("/runs/folder/manifest.sqlite")
+    shutil.rmtree(project, ignore_errors=True)
+    shutil.rmtree(manifest.parent, ignore_errors=True)
+    shutil.copytree(REMOTE_FOLDER, project)
+    started, events = time.monotonic(), []
+    snapshot.write_snapshot(project, manifest)
+
+    def listen(event):
+        if event["kind"] != "progress":
+            events.append(f"{time.monotonic() - started:7.1f}s {event['kind']:22} {event.get('step') or '':8} "
+                          f"{str(event.get('message') or '')[:160]}")
+
+    steps = pipeline.run(manifest, listeners=[listen])
+    packed = io.BytesIO()
+    with tarfile.open(fileobj=packed, mode="w:gz") as bundle:
+        for name in KEPT:
+            if (manifest.parent / name).is_file():
+                bundle.add(manifest.parent / name, arcname=name)
+    return {"steps": json.loads(json.dumps(steps, default=str)), "events": events, "files": packed.getvalue(),
+            "seconds": round(time.monotonic() - started, 1)}
+
+
+# A request and a limit: the function mostly waits for its sandboxes, and is billed for what it uses above the request.
+@app.function(cpu=(0.5, 8.0), memory=(2048, 16384), timeout=7200, volumes={"/results": volume})
+def run_cases(names: list) -> dict:
+    sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM]
+    import pipeline
+    import premap
+    import score as scorer
+    import snapshot
+    container = _engine()
     out = {}
     for name in names:
         started = time.monotonic()
@@ -235,8 +284,12 @@ def run_cases(names: list) -> dict:
                          "events": dict(collections.Counter(seen)), "step_seconds": clock,
                          "containers": [{key: run.get(key) for key in ("phase", "image", "outcome", "exit_code",
                                                                         "duration_seconds", "cause")} for run in runs],
-                         "logs": {file.name: file.read_text(encoding="utf-8", errors="replace")[-3000:]
-                                  for file in sorted(manifest.parent.glob("engine-pass*.log"))},
+                         "logs": {file.relative_to(manifest.parent).as_posix():
+                                  file.read_text(encoding="utf-8", errors="replace")[-3000:]
+                                  for pattern in ("engine-pass*.log", "premap-runs/*/prepare.log",
+                                                  "premap-runs/*/results/*/stderr",
+                                                  "premap-runs/*/results/0/stdout")
+                                  for file in sorted(manifest.parent.glob(pattern)) if file.stat().st_size},
                          "seconds": round(time.monotonic() - started, 1)}
         except Exception as error:  # noqa: BLE001 - a case's failure is its result
             import traceback
@@ -246,7 +299,18 @@ def run_cases(names: list) -> dict:
 
 
 @app.local_entrypoint()
-def main(cases: str = "", out: str = "", chunk: int = 4):
+def main(cases: str = "", out: str = "", chunk: int = 4, folder_out: str = ""):
+    if folder_out:  # the folder of DAODAN_FOLDER: its run's files into `folder_out`
+        answer = run_folder.remote()
+        target = Path(folder_out)
+        target.mkdir(parents=True, exist_ok=True)
+        with tarfile.open(fileobj=io.BytesIO(answer.pop("files"))) as bundle:
+            bundle.extractall(target, filter="data")
+        (target / "run.json").write_text(json.dumps(answer, indent=1), encoding="utf-8")
+        for line in answer["events"]:
+            print(line, flush=True)
+        print("ran the folder in", answer["seconds"], "s ->", target, flush=True)
+        return
     fixtures = sorted(p.name for p in (HERE / "fixtures").iterdir() if (p / "expected.json").is_file())
     real = {n for n in fixtures if (HERE / "fixtures" / n / "source.json").is_file()}
     batches = []

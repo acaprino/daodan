@@ -846,11 +846,8 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str, rows:
                 holes.append({"reference_id": None, "file": snapshot.rel.get(rel, rel), "language": language,
                               "kind": hole["kind"], "l0": int(line), "c0": None, "class": hole["class"],
                               "reason": hole["reason"], "resolver": resolver})
-        sites = [{"reference_id": identity, "kind": kind, "site": f"{snapshot.checkout.get(rel, rel)}:{span[0]} "
-                                                                  f"{parts[-1] if parts else ''}".rstrip(),
-                  "lexical": resolution == "resolved"}
-                 for identity, rel, kind, resolution, _target, span, parts, _reason in snapshot.references(language)]
-        coverage = rx.language_coverage(sites, edges[first_edge:], holes[first_hole:], graph["files"])
+        coverage = rx.language_coverage(_sites(snapshot, language), edges[first_edge:], holes[first_hole:],
+                                        graph["files"])
         broken = rx.coverage_violation(language, coverage)
         if broken:
             raise ValueError(broken)
@@ -868,6 +865,47 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str, rows:
     binding = rx.store_binding(snapshot.store, snapshot.manifest, snapshot.store.metadata.get("parser_fingerprint"),
                                {**kept_entries, **entries}, kept_reports)
     return rx.write_edge_store(out, kept_edges + edges, binding, kept_holes + holes)
+
+
+def _sites(snapshot: Snapshot, language: str) -> list[dict]:
+    """Every call and read the snapshot lists for `language`, as `resolve_edges.language_coverage` counts them."""
+    return [{"reference_id": identity, "kind": kind, "site": f"{snapshot.checkout.get(rel, rel)}:{span[0]} "
+                                                             f"{parts[-1] if parts else ''}".rstrip(),
+             "lexical": resolution == "resolved"}
+            for identity, rel, kind, resolution, _target, span, parts, _reason in snapshot.references(language)]
+
+
+def write_observed(snapshot: Snapshot, out: Path, language: str, rows: list[dict], facts: dict) -> dict:
+    """Save a run's rows (`dynamic.join`, `dynamic.join_sampled`) in the store's entry of `language`, in place of
+    the ones of a run it held, and return the entry's coverage, counted again over the same sites: the static
+    rows and the holes stay as the analyzer wrote them, the ends of the run are counted apart by provenance
+    (`resolve_edges.language_coverage`), and `facts`, what the run says of itself (its resolver, its tests, what
+    it did not join or execute, its conflicts with proven edges), join the coverage's `observed`; its `sampled`,
+    what the sampled join says, the coverage's `sampled`. The store must hold the language: an observed edge
+    answers a reference of a graph that is there."""
+    import resolve_edges as rx
+    from edge_store import OBSERVED, SAMPLED, SEEN
+    edges, binding, reason = rx.read_edge_store(out, snapshot.store)
+    if reason is not None or language not in binding["languages"]:
+        raise ValueError(reason or f"the edge store holds no {language} graph")
+    edges = [edge for edge in edges if edge.get("language") != language or edge["confidence"] not in SEEN] + rows
+    holes = rx.read_edge_holes(out)
+    entry = binding["languages"][language]
+    coverage = rx.language_coverage(_sites(snapshot, language),
+                                    [edge for edge in edges if edge.get("language") == language],
+                                    [hole for hole in holes if hole["language"] == language],
+                                    (entry.get("coverage") or {}).get("files"))
+    none = {"sites": 0, "edges": 0, "closed": {}}
+    facts = dict(facts)
+    sampled = facts.pop(SAMPLED, None)
+    coverage[OBSERVED] = {**facts, **coverage.get(OBSERVED, none)}
+    if sampled is not None:
+        coverage[SAMPLED] = {**sampled, **coverage.get(SAMPLED, none)}
+    entries = {**binding["languages"], language: {**entry, "coverage": coverage}}
+    fresh = rx.store_binding(snapshot.store, snapshot.manifest, binding["parser_fingerprint"], entries,
+                             binding.get("engine_reports") or {})
+    rx.write_edge_store(out, edges, fresh, holes)
+    return coverage
 
 
 def _examples(items: list, size: int = 3) -> list:

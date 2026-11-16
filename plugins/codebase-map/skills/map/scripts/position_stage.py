@@ -31,11 +31,12 @@ def snapshot_languages(connection) -> list[str]:
 
 
 def engine_languages(engine, connection) -> tuple[str, ...]:
-    """The snapshot languages an engine answers for: its declared ones, or every parsed one."""
+    """The snapshot languages an engine answers for: its declared ones the snapshot holds a file of, parsed or not
+    (a language of whose files the engine reads nothing is `failed`, never left out), or every parsed one."""
     declared = getattr(engine, "languages", ("python",))
-    present = snapshot_languages(connection)
     if declared is None:
-        return tuple(present)
+        return tuple(snapshot_languages(connection))
+    present = {row[0] for row in connection.execute("SELECT DISTINCT language FROM sem_coverage")}
     return tuple(language for language in declared if language in present) or tuple(declared[:1])
 
 
@@ -289,14 +290,16 @@ class PositionStage:
         return None
 
     def _files(self, language: str) -> dict | None:
-        """A language's files and those the engine reads in part, with what it leaves out (`unread`): the `files`
-        of its coverage. None for an engine that states nothing of it."""
+        """A language's files and those the engine reads in part or not at all, with what it leaves out (`unread`,
+        `nothing_read`): the `files` of its coverage. None for an engine that states nothing of it."""
         unread = getattr(self.engine, "unread", None)
         if unread is None:
             return None
+        nothing_read = getattr(self.engine, "nothing_read", lambda path: None)
         rels = sorted(rel for rel, held in self.connection.execute("SELECT file, language FROM sem_coverage")
                       if held == language and rel in self.source_paths)
-        missing = [{"path": rel, "reason": reason} for rel in rels if (reason := unread(self.source_paths[rel]))]
+        missing = [{"path": rel, "reason": reason} for rel in rels
+                   if (reason := nothing_read(self.source_paths[rel]) or unread(self.source_paths[rel]))]
         return {"snapshot": len(rels), "indexed": len(rels) - len(missing), "missing": missing}
 
     def _population(self) -> None:
@@ -468,8 +471,25 @@ class PositionStage:
             [hole for hole in written_holes if hole["language"] == language], self.files[language])
             for language in self.counts}
 
+    def _none_read(self, language: str) -> str | None:
+        """Why a language is not fresh when the engine reads nothing of any of its files (`nothing_read`: the
+        engine's reason for a file, None when it reads a part): their count and the commonest causes, as
+        `engine_pass.index_stage` fails a language none of whose files is in the index. A file read in part
+        (`unread`) keeps the language fresh, with its coverage a lower bound."""
+        nothing_read = getattr(self.engine, "nothing_read", None)
+        rels = [] if nothing_read is None else sorted(
+            rel for rel, held in self.connection.execute("SELECT file, language FROM sem_coverage")
+            if held == language and rel in self.source_paths)
+        reasons = [nothing_read(self.source_paths[rel]) for rel in rels]
+        if not reasons or not all(reasons):
+            return None
+        import collections
+        return (f"nothing of the {len(rels)} {language} files is read: "
+                + ", ".join(f"{reason} ({count})" for reason, count in collections.Counter(reasons).most_common(3)))
+
     def _entries(self, partial: bool, covered: dict, verified_after) -> dict:
-        """Each language's store entry as the stage stands."""
+        """Each language's store entry as the stage stands: `partial` while the stage runs, then `fresh`, or
+        `failed` with the `reason` for a language of whose files nothing is read (`_none_read`)."""
         created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         entries = {}
         for language, numbers in self.counts.items():
@@ -481,8 +501,10 @@ class PositionStage:
                 no_edges_reason = "not-sampled"
             else:
                 no_edges_reason = "no-project-targets"
+            unread = None if partial else self._none_read(language)
             entries[language] = {
-                "engine": self.identity(), "state": "partial" if partial else "fresh", "coverage": covered[language],
+                "engine": self.identity(), "state": "partial" if partial else "failed" if unread else "fresh",
+                **({"reason": unread} if unread else {}), "coverage": covered[language],
                 **numbers, "stride": self.stride, "verdicts": dict(sorted(numbers["verdicts"].items())),
                 "excluded_classes": dict(sorted(numbers["excluded_classes"].items())),
                 "no_edges_reason": no_edges_reason, "created_at": created,
@@ -711,6 +733,8 @@ class PositionStage:
         totals, verdicts, excluded_classes = self._totals(entries)
         reasons = {entry["no_edges_reason"] for entry in entries.values()} - {None}
         engine_report = self.engine.report() if hasattr(self.engine, "report") else {}
+        unread = [{"kind": "language_not_indexed", "language": language, "detail": entry["reason"]}
+                  for language, entry in entries.items() if entry["state"] == "failed"]
         return {
             "engine": self.identity(),
             "available": True,
@@ -739,6 +763,7 @@ class PositionStage:
             **self._timings(latencies, asked, totals, run_started),
             "dry_run": self.dry_run,
             "edges_store": progress["written"].as_posix() if progress["written"] else None,
+            **({"gaps": unread} if unread else {}),
             "note": "Engine edges live in a derived store bound to this snapshot; the "
                     "snapshot itself is unchanged. Every edge names payload.resolver, so "
                     "engine edges are never counted together with builtin-lexical ones.",

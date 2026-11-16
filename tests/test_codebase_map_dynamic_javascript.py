@@ -1,0 +1,492 @@
+"""The dynamic step's JavaScript observer: the test command a package declares, the container run that observes it,
+the recorder, and the join of what it saw with the snapshot's references.
+
+    python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_dynamic_javascript.py
+
+The container is a fake `container.run_in_container`: it keeps the scripts it is given and plays the files a run
+brings back, so each test checks what the observer sends, keeps and says. The recorder's own tests run the small
+project under a real Node with the recorder preloaded, as the container does; they skip without Node, or without
+a @babel/core to give it (DAODAN_TEST_BABEL names its folder; else one this repository resolves). The join runs
+on the observation recorded from that project, kept here (`RECORDED`), which the recorder's test compares with a
+fresh one.
+"""
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from unittest import mock
+
+import pytest
+
+HERE = Path(__file__).resolve().parent
+SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
+sys.path.insert(0, str(SCRIPTS))
+
+import code_graph  # noqa: E402
+import container  # noqa: E402
+import dynamic  # noqa: E402
+import premap  # noqa: E402
+import preparation  # noqa: E402
+import snapshot  # noqa: E402
+from dynamic import javascript as observer  # noqa: E402
+from premap import npm_tests  # noqa: E402
+
+READERS = tuple(source for source in premap.SOURCES if not hasattr(source, "commands"))
+INDEX = '''const path = require("path");
+class Box { size() { return 1; } static make() { return new Box(); } }
+function first(xs) { return xs[0]; }
+const table = { run: first };
+module.exports = { first, apply: (fn, v) => fn(v), Box, table, base: p => path.basename(p) };
+'''
+MORE = '''export const twice = fn => v => fn(fn(v));
+export function inc(v) { return v + 1; }
+'''
+TEST = '''const test = require("node:test");
+const assert = require("node:assert");
+const lib = require("../src");
+
+test("first", async () => {
+  assert.strictEqual(lib.first([1, 2]), 1);
+  assert.strictEqual(lib.apply(lib.first, [3]), 3);
+  assert.strictEqual(lib.table.run([4]), 4);
+  assert.strictEqual(lib.Box.make().size(), 1);
+  assert.strictEqual(lib.base("a/b.js"), "b.js");
+  const more = await import("../src/more.mjs");
+  assert.strictEqual(more.twice(more.inc)(1), 3);
+});
+'''
+PROJECT = {"package.json": '{"name": "small", "scripts": {"test": "node --test"}}\n', "src/index.js": INDEX,
+           "src/more.mjs": MORE, "test/index.test.js": TEST}
+
+
+def write(folder: Path, files: dict) -> Path:
+    for rel, text in files.items():
+        (folder / rel).parent.mkdir(parents=True, exist_ok=True)
+        (folder / rel).write_text(text, encoding="utf-8", newline="\n")
+    return folder
+
+
+# --- the pre-map: the test script a package declares -----------------------------------------------------------
+
+def declared(tmp_path, files: dict) -> list[dict]:
+    project = write(tmp_path / "proj", files)
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    record = premap.write(manifest, sources=READERS)
+    assert not [gap for gap in record["gaps"] if gap["kind"] == "source_failed"]
+    return [{key: value for key, value in entry.items() if key != "sources"} for entry in record.get("tests", [])]
+
+
+def package(script: str | None = None, **scripts: str) -> str:
+    return json.dumps({"name": "p", "scripts": {**({"test": script} if script is not None else {}), **scripts}})
+
+
+def test_the_reader_is_a_source_of_the_pre_map():
+    assert npm_tests in premap.SOURCES and npm_tests.RANK == "reader"
+
+
+def test_the_test_script_of_a_package_names_its_runner(tmp_path):
+    found = declared(tmp_path, {
+        "package.json": package("cross-env NODE_ENV=test jest --coverage"),
+        "cra/package.json": package("react-scripts test"),
+        "vite/package.json": package("vitest run"),
+        "mocha/package.json": package("c8 mocha --recursive"),
+        "node/package.json": package("node --experimental-vm-modules --test test/"),
+        "tap/package.json": package("tap test/*.js"),
+        "through/package.json": package("npm run lint && yarn test:unit", **{"test:unit": "mocha", "lint": "eslint ."}),
+    })
+    assert found == [
+        {"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test", "args": []},
+        {"root": "cra", "runner": "jest", "declared_in": "cra/package.json#scripts.test", "args": []},
+        {"root": "mocha", "runner": "mocha", "declared_in": "mocha/package.json#scripts.test", "args": []},
+        {"root": "node", "runner": "node:test", "declared_in": "node/package.json#scripts.test", "args": []},
+        # a script that names none of them is npm's to run: the runner is whatever it starts
+        {"root": "tap", "runner": "npm", "declared_in": "tap/package.json#scripts.test", "args": []},
+        {"root": "through", "runner": "mocha", "declared_in": "through/package.json#scripts.test", "args": []},
+        {"root": "vite", "runner": "vitest", "declared_in": "vite/package.json#scripts.test", "args": []}]
+
+
+def test_a_package_without_a_test_script_states_nothing(tmp_path):
+    assert declared(tmp_path, {
+        "package.json": package(None, build="tsc"),
+        "init/package.json": package('echo "Error: no test specified" && exit 1'),
+        "broken/package.json": "{not json"}) == []
+
+
+# --- the plan: from the pre-map alone --------------------------------------------------------------------------
+
+def record(tests: list[dict], units: list[str] = (".",), **more) -> dict:
+    return {"units": [{"name": f"p{n}", "kind": "npm-package", "root": root} for n, root in enumerate(units)],
+            "tests": tests, **more}
+
+
+def entry(root: str, runner: str) -> dict:
+    manifest = "package.json" if root == "." else f"{root}/package.json"
+    return {"root": root, "runner": runner, "declared_in": f"{manifest}#scripts.test", "args": []}
+
+
+def test_the_plan_runs_each_declared_test_script():
+    planned = observer.plan(record([entry("b", "mocha"), entry(".", "jest"), {
+        "root": "py", "runner": "pytest", "declared_in": "py/pytest.ini", "args": []}], units=(".", "b"),
+        toolchains=[{"tool": "node", "version": "20.11.1", "declared_in": ".nvmrc"},
+                    {"tool": "python", "version": "3.12", "declared_in": ".python-version"}]), [], None)
+    assert planned["gaps"] == []
+    assert planned["runs"] == [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"},
+                               {"root": "b", "runner": "mocha", "declared_in": "b/package.json#scripts.test"}]
+    assert planned["roots"] == ["", "b"]  # the package folders the pre-map names: where the restores run
+    assert planned["toolchains"] == [{"tool": "node", "version": "20.11.1", "declared_in": ".nvmrc"}]
+
+
+def test_no_declared_test_script_is_a_gap_and_nothing_runs():
+    planned = observer.plan(record([{"root": ".", "runner": "pytest", "declared_in": "pytest.ini", "args": []}]),
+                            [], None)
+    assert planned["runs"] == []
+    [gap] = planned["gaps"]
+    assert gap["kind"] == "no_test_command" and "test script" in gap["detail"]
+
+
+def test_a_runner_the_recorder_cannot_observe_is_a_gap_with_its_cause():
+    planned = observer.plan(record([entry(".", "vitest"), entry("b", "node:test")], units=(".", "b")), [], None)
+    assert [run["root"] for run in planned["runs"]] == ["b"]
+    [gap] = planned["gaps"]
+    assert gap["kind"] == "runner_not_observed" and gap["path"] == "package.json#scripts.test"
+    assert gap["runner"] == "vitest" and "Vite" in gap["detail"]
+
+
+# --- the observation: one container run ------------------------------------------------------------------------
+
+def site(file: str, line: int, column: int, name: str, *callees: dict) -> dict:
+    return {"file": file, "line": line, "column": column, "name": name, "callees": list(callees)}
+
+
+FIRST = {"kind": "project", "file": "src/index.js", "name": "first", "line": 2, "column": 0, "type": "function"}
+LODASH = {"kind": "package", "module": "lodash", "version": "4.17.21", "name": "head", "line": 10}
+
+
+def observed(*sites: dict, unobserved=()) -> str:
+    return json.dumps({"exact": True, "node": "24.22.3", "stats": {}, "unobserved": list(unobserved),
+                       "sites": list(sites)})
+
+
+class Played:
+    """In place of `container.run_in_container`: keeps what it is given, plays `files` (under the outputs' folder)
+    and `logs` (the phases' logs) into the run's folder, and answers `result`."""
+
+    def __init__(self, files: dict | None = None, logs: dict | None = None, result: dict | None = None):
+        self.files, self.logs, self.result, self.given = files or {}, logs or {}, result, None
+
+    def __call__(self, project, command, **options):
+        self.given = {"project": project, "command": command, **options}
+        out_dir = Path(options["out_dir"])
+        for name, text in self.logs.items():
+            write(out_dir, {name: text})
+        write(out_dir / "out", self.files)
+        return self.result or {"state": "done", "exit_code": 0, "outputs": sorted(self.files)}
+
+
+def observe(tmp_path, played: Played, runs: list[dict] | None = None, files: dict = PROJECT, **planned) -> dict:
+    project = write(tmp_path / "proj", files)
+    runs = runs if runs is not None else [{"root": ".", "runner": "node:test",
+                                           "declared_in": "package.json#scripts.test"}]
+    with mock.patch.object(container, "run_in_container", played), \
+            mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)):
+        result = observer.observe(project, {"runs": runs, "gaps": [], "roots": [""], "toolchains": [], **planned},
+                                  tmp_path / "runs")
+        played.inputs = played.given["inputs"]() if played.given else None
+    return result
+
+
+def test_the_tests_run_as_declared_under_the_recorder_and_only_in_the_container(tmp_path):
+    played = Played({"observed-0-7-0.json": observed(site("test/index.test.js", 5, 25, "first", FIRST)),
+                     "tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
+    result = observe(tmp_path, played, files={**PROJECT, "package-lock.json": "{}"})
+    given = played.given
+    prepare, execute = given["prepare"][-1], given["command"][-1]
+    # the preparation, with the registries: Node, the Babel the recorder prints with, the project's own restore
+    assert "node-v" in prepare and f"@babel/core@{observer.BABEL}" in prepare
+    assert "npm ci" in prepare and "for f in '.'" in prepare
+    assert set(preparation.NODE_REGISTRIES) <= set(given["registries"])
+    # the execution: the declared script, the recorder preloaded, nothing of the project changed
+    assert 'NODE_OPTIONS="--require /daodan/state/in/javascript_record.js"' in execute
+    assert "DYN_ROOT=/work" in execute and "DYN_BABEL=/daodan/state/tools/npm/lib/node_modules/@babel/core" in execute
+    assert f"timeout -k 30 {observer.LIMIT} npm test" in execute and "\nrun 0 .\n" in execute
+    assert "npm ci" not in execute and "npm install" not in execute
+    assert played.inputs["/daodan/state/in/javascript_record.js"] == observer.RECORDER
+    assert given["outputs"] == ["/daodan/out"] and given["env"]["CI"] == "true"
+    assert result["state"] == "ran" and result["gaps"] == []
+    assert result["runs"] == [{"root": ".", "runner": "node:test", "declared_in": "package.json#scripts.test",
+                               "state": "ran", "exit_code": 0, "seconds": 3, "processes": 1}]
+    assert result["sites"] == [{**site("test/index.test.js", 5, 25, "first", FIRST), "role": "call"}]
+
+
+def test_the_sites_of_every_process_are_one_observation(tmp_path):
+    native = {"kind": "native", "name": "map", "line": 0}
+    mocked = {"kind": "package", "module": "jest-mock", "version": "29.7.0", "name": "mockConstructor", "line": 3}
+    unplaced = {"kind": "project", "file": "src/index.js", "name": "first", "line": 2}
+    played = Played({
+        "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST), site("a.js", 2, 0, "map", native)),
+        "observed-0-8-0.json": observed(site("a.js", 1, 2, "f", LODASH, mocked), site("a.js", 3, 0, "g", unplaced)),
+        "observed-0-9-0.json": '{"exact": true, "sites": [',  # a process killed while it wrote
+    }, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 9\n"})
+    result = observe(tmp_path, played)
+    by_place = {(found["line"], found["name"]): found for found in result["sites"]}
+    assert all(found["role"] == "call" for found in result["sites"])
+    callees = by_place[(1, "f")]["callees"]
+    assert FIRST in callees and LODASH in callees and {**mocked, "mock": True} in callees  # a mock stands for another
+    assert by_place[(2, "map")]["callees"] == [{**native, "version": "24.22.3"}]  # the runtime's, at Node's version
+    assert observer.external(native | {"version": "24.22.3"}) == {"manager": "node", "package": "node",
+                                                                  "version": "24.22.3"}
+    assert observer.external(LODASH) == {"manager": "npm", "package": "lodash", "version": "4.17.21"}
+    # a project callee the recorder could not place in its source keeps its line, and it is said
+    assert by_place[(3, "g")]["callees"] == [{**unplaced, "column": None, "type": "function"}]
+    [gap] = result["gaps"]
+    assert gap["kind"] == "callee_unplaced" and gap["count"] == 1
+    assert result["runs"][0]["processes"] == 3
+
+
+@pytest.mark.parametrize("mark, files, kind, state, said", [
+    ("exit 1 4", {"tests-0.log": "sh: 1: jest: not found\n"}, "tests_not_started", "not_started", "jest: not found"),
+    ("exit 1 4", {"tests-0.log": "1 failing\n", "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
+     "tests_failed", "ran", "1 failing"),
+    ("exit 124 3600", {"tests-0.log": "", "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
+     "tests_timeout", "timeout", "3600 s"),
+    ("exit 0 2", {"tests-0.log": "ok\n"}, "nothing_recorded", "ran", "no call"),
+    ("exit 0 2", {"tests-0.log": "ok\n", "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST),
+                                                                         unobserved=["src/a.ts", "src/b.ts"])},
+     "not_observed", "ran", "2 files"),
+    ("exit 1 2", {"tests-0.log": "Error: connect ECONNREFUSED 127.0.0.1:5432\n",
+                  "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
+     "services_unreachable", "ran", "no service"),
+    (None, {}, "tests_not_started", "not_started", "before the tests' exit"),
+])
+def test_what_did_not_happen_is_a_gap_with_its_cause(tmp_path, mark, files, kind, state, said):
+    played = Played(files, {"execute.log": f"DAODAN-DYNAMIC 0 {mark}\n" if mark else ""})
+    result = observe(tmp_path, played)
+    assert result["state"] == "ran" and result["runs"][0]["state"] == state
+    gap = next(gap for gap in result["gaps"] if gap["kind"] == kind)
+    assert gap["path"] == "." and said in gap["detail"]
+
+
+def test_a_restore_that_failed_and_a_missing_tool_are_gaps(tmp_path):
+    played = Played({"tests-0.log": "Cannot find module 'ms'\n"}, {
+        "prepare.log": "DAODAN-RESTORE-FAILED npm .\nnpm error code E404\nDAODAN-RESTORE-END\n",
+        "execute.log": "DAODAN-DYNAMIC 0 exit 1 1\n"})
+    result = observe(tmp_path, played)
+    kinds = [gap["kind"] for gap in result["gaps"]]
+    assert kinds == ["restore_failed", "tests_not_started"]
+    played = Played(logs={"prepare.log": f"DAODAN-MISSING @babel/core@{observer.BABEL}\n"},
+                    result={"state": "failed", "cause": "the preparation exited with code 70"})
+    result = observe(tmp_path, played)
+    assert result["state"] == "failed" and "@babel/core" in result["cause"] and result["sites"] == []
+
+
+def test_without_a_container_the_observation_is_a_gap(tmp_path):
+    played = Played(result={"state": "gap", "cause": "no container engine", "remedy": "install one"})
+    result = observe(tmp_path, played)
+    assert (result["state"], result["cause"], result["remedy"]) == ("gap", "no container engine", "install one")
+    assert result["sites"] == [] and result["runs"] == []
+
+
+def test_a_former_observation_is_not_this_run_s(tmp_path):
+    write(tmp_path / "runs/out", {"observed-0-1-0.json": observed(site("old.js", 1, 2, "f", FIRST))})
+    played = Played({"tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 1\n"})
+    assert observe(tmp_path, played)["sites"] == []
+
+
+# --- the recorder, under a real Node ---------------------------------------------------------------------------
+
+def babel() -> str | None:
+    """The folder of a @babel/core for the recorder: DAODAN_TEST_BABEL, else the one this repository resolves."""
+    named = os.environ.get("DAODAN_TEST_BABEL")
+    if named:
+        return named if (Path(named) / "package.json").is_file() else None
+    found = subprocess.run(["node", "-p", "require('path').dirname(require.resolve('@babel/core/package.json'))"],
+                           cwd=HERE.parent, capture_output=True, text=True)
+    return found.stdout.strip() if found.returncode == 0 else None
+
+
+@pytest.fixture(scope="module")
+def node():
+    if shutil.which("node") is None:
+        pytest.skip("Node is not installed: the recorder runs only under a real Node")
+    found = babel()
+    if found is None:
+        pytest.skip("no @babel/core for the recorder: name its folder in DAODAN_TEST_BABEL")
+    return found
+
+
+def recorded(project: Path, out: Path, babel_dir: str, *command: str, env: dict | None = None) -> list[dict]:
+    """The observation files of `command` (default: `node --test`) run in `project` under the recorder."""
+    out.mkdir(parents=True, exist_ok=True)
+    environment = {key: value for key, value in os.environ.items() if not key.startswith(("NODE_", "DYN_"))}
+    environment.update({"NODE_OPTIONS": f"--require {observer.RECORDER.as_posix()}", "DYN_ROOT": str(project),
+                        "DYN_OUT": str(out / "observed-0-%p.json"), "DYN_BABEL": babel_dir, **(env or {})})
+    done = subprocess.run(["node", *(command or ("--test",))], cwd=project, env=environment, capture_output=True,
+                          text=True)
+    assert done.returncode == 0, done.stdout + done.stderr
+    return [json.loads(path.read_text(encoding="utf-8")) for path in sorted(out.glob("observed-0-*.json"))]
+
+
+def places(sites: list[dict]) -> dict:
+    """`{(file, line, column, name): {callee}}`, a callee as its declaration's place or its module."""
+    def end(callee: dict) -> str:
+        if callee["kind"] == "project":
+            return f"{callee['file']}:{callee['line']}:{callee.get('column')} {callee['name']} {callee.get('type')}"
+        return f"{callee['kind']} {callee.get('module', '')} {callee['name']}".replace("  ", " ")
+    return {(found["file"], found["line"], found["column"], found["name"]): {end(callee) for callee in
+                                                                              found["callees"]} for found in sites}
+
+
+RECORDED = {
+    ("test/index.test.js", 4, 0, "test"): {"runtime node:internal/test_runner/harness test"},
+    ("test/index.test.js", 5, 9, "strictEqual"): {"runtime node:assert strictEqual"},
+    ("test/index.test.js", 5, 25, "first"): {"src/index.js:2:0 first function"},
+    ("test/index.test.js", 6, 9, "strictEqual"): {"runtime node:assert strictEqual"},
+    ("test/index.test.js", 6, 25, "apply"): {"src/index.js:4:33 apply function"},
+    ("src/index.js", 4, 44, "fn"): {"src/index.js:2:0 first function"},  # a callee that is a parameter
+    ("test/index.test.js", 7, 9, "strictEqual"): {"runtime node:assert strictEqual"},
+    ("test/index.test.js", 7, 31, "run"): {"src/index.js:2:0 first function"},  # a method of an object built at run time
+    ("test/index.test.js", 8, 9, "strictEqual"): {"runtime node:assert strictEqual"},
+    ("test/index.test.js", 8, 29, "make"): {"src/index.js:1:33 make function"},
+    ("src/index.js", 1, 60, "Box"): {"src/index.js:1:0 Box class"},
+    ("test/index.test.js", 8, 36, "size"): {"src/index.js:1:12 size function"},  # a method on an untyped value
+    ("test/index.test.js", 9, 9, "strictEqual"): {"runtime node:assert strictEqual"},
+    ("test/index.test.js", 9, 25, "base"): {"src/index.js:4:69 base function"},
+    ("src/index.js", 4, 79, "basename"): {"runtime node:path basename"},
+    ("test/index.test.js", 11, 9, "strictEqual"): {"runtime node:assert strictEqual"},
+    ("test/index.test.js", 11, 26, "twice"): {"src/more.mjs:0:21 twice function"},  # an ES module, as written
+    ("src/more.mjs", 0, 32, "fn"): {"src/more.mjs:1:7 inc function"},
+    ("src/more.mjs", 0, 35, "fn"): {"src/more.mjs:1:7 inc function"},
+}
+
+
+def test_the_recorder_sees_every_call_of_the_sources_node_runs_as_written(tmp_path, node):
+    project = write(tmp_path / "proj", PROJECT)
+    files = recorded(project, tmp_path / "out", node)
+    assert len(files) == 1 and files[0]["exact"] is True and files[0]["unobserved"] == []  # the runner's own
+    # process has no inspector and records nothing; the test file's process is the observation
+    assert places(files[0]["sites"]) == RECORDED
+    assert files[0]["node"] == subprocess.run(["node", "-p", "process.versions.node"], capture_output=True,
+                                              text=True).stdout.strip()
+
+
+def test_code_another_tool_printed_is_not_recorded_and_its_file_is_named(tmp_path, node):
+    project = write(tmp_path / "proj", {
+        "lib.js": "module.exports = () => 1;\n",
+        "main.js": 'const Module = require("module");\nconst path = require("path");\n'
+                   'const file = path.join(__dirname, "lib.js");\nconst loaded = new Module(file);\n'
+                   'loaded._compile("module.exports = () => 2;", file);\nloaded.exports();\n'})
+    [file] = recorded(project, tmp_path / "out", node, "main.js")
+    assert file["unobserved"] == ["lib.js"]
+    assert ("main.js", 5, 7, "exports") in places(file["sites"])  # the caller is a source as written
+
+
+def test_a_babel_the_run_loads_itself_prints_with_the_recorder_in_every_realm(tmp_path, node):
+    """As babel-jest does: the run's own @babel/core prints a source, which runs in a context of its own."""
+    project = write(tmp_path / "proj", {
+        "lib.txt": "const pick = xs => xs.at(0);\npick([1]);\n",
+        "harness.js": 'const fs = require("fs");\nconst path = require("path");\nconst vm = require("vm");\n'
+                      'const file = path.join(__dirname, "lib.txt");\n'
+                      'const printed = require("@babel/core").transformSync(fs.readFileSync(file, "utf8"),\n'
+                      '  { filename: file, babelrc: false, configFile: false, sourceMaps: "both" });\n'
+                      'vm.runInContext(printed.code, vm.createContext({}), { filename: file });\n'})
+    [file] = recorded(project, tmp_path / "out", node, "harness.js",
+                      env={"NODE_PATH": str(Path(node).parent.parent)})
+    found = places(file["sites"])
+    assert found[("lib.txt", 0, 22, "at")] == {"native at"}
+    assert found[("lib.txt", 1, 0, "pick")] == {"lib.txt:0:13 pick function"}  # placed through the run's source map
+    assert file["unobserved"] == []
+
+
+HARNESS = '''const fs = require("fs");
+const path = require("path");
+const vm = require("vm");
+const tool = require(process.env.TOOL);  // a Babel required by its folder: another tool, which is not hooked
+const print = rel => {
+  const file = path.join(__dirname, rel);
+  return [file, tool.transformSync(fs.readFileSync(file, "utf8"),
+    { filename: file, babelrc: false, configFile: false, compact: true, sourceMaps: "inline" }).code];
+};
+const [lib, libCode] = print("src/lib.js");
+const prefix = "'use strict';async (module, exports)=>{{";
+const one = { exports: {} };
+vm.runInThisContext(`${prefix}${libCode}\\n}}`, { filename: lib, columnOffset: -prefix.length })(one, one.exports);
+const [other, otherCode] = print("src/other.js");
+const two = { exports: {} };
+vm.compileFunction(otherCode, ["module", "exports"], { filename: other })(two, two.exports);
+one.exports.run();
+two.exports.go();
+'''
+
+
+def test_code_another_tool_printed_runs_recorded_through_its_inline_map(tmp_path, node):
+    """As Vitest evaluates a module (wrapped, the wrapper's columns taken back by columnOffset) and Jest does
+    (a function's body): another tool printed the code on one line, with its source map inline."""
+    project = write(tmp_path / "proj", {
+        "src/lib.js": "function inc(v) { return v + 1; } const twice = f => x => f(f(x));\n"
+                      "module.exports = { inc, twice, run: () => twice(inc)(1) };\n",
+        "src/other.js": "function half(n) { return n / 2; }\nexports.go = () => half(4);\n",
+        "harness.js": HARNESS})
+    [file] = recorded(project, tmp_path / "out", node, "harness.js", env={"TOOL": node})
+    found = places(file["sites"])
+    assert found[("src/lib.js", 0, 58, "f")] == found[("src/lib.js", 0, 60, "f")] == {"src/lib.js:0:0 inc function"}
+    assert found[("src/lib.js", 1, 42, "twice")] == {"src/lib.js:0:48 twice function"}
+    assert found[("src/other.js", 1, 19, "half")] == {"src/other.js:0:0 half function"}
+    assert file["unobserved"] == []
+
+
+def test_a_file_that_ran_where_the_recorder_has_no_hook_is_named(tmp_path, node):
+    """As under a Node without module.registerHooks (before 22.15): an ES module runs as it is, and is said."""
+    project = write(tmp_path / "proj", PROJECT)
+    hide = write(tmp_path / "tools", {"hide.js": 'const Module = require("module");\ndelete Module.registerHooks;\n'
+                                                 "if (Module.registerHooks) Module.registerHooks = undefined;\n"})
+    [file] = recorded(project, tmp_path / "out", node, env={
+        "NODE_OPTIONS": f"--require {(hide / 'hide.js').as_posix()} --require {observer.RECORDER.as_posix()}"})
+    assert file["unobserved"] == ["src/more.mjs"]
+    assert ("test/index.test.js", 5, 25, "first") in places(file["sites"])
+
+
+# --- the join: what the recorder saw, on the snapshot's references ---------------------------------------------
+
+def test_an_observed_site_joins_the_reference_at_the_same_name_position(tmp_path, monkeypatch):
+    project = write(tmp_path / "proj", PROJECT)
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+
+    def callee(end: str) -> dict:
+        if end.startswith("runtime "):
+            return {"kind": "runtime", "module": end.split()[1], "name": end.split()[2], "line": 0}
+        place, name, kind = end.split()
+        file, line, column = place.split(":")
+        return {"kind": "project", "file": file, "line": int(line), "column": int(column), "name": name, "type": kind}
+
+    sites = [site(*key, *(callee(end) for end in sorted(ends))) for key, ends in RECORDED.items()]
+    played = Played({"observed-0-7-0.json": observed(*sites), "tests-0.log": "ok\n"},
+                    {"execute.log": "DAODAN-DYNAMIC 0 exit 0 1\n"})
+    sites = observe(tmp_path / "run", played)["sites"]
+    with code_graph.Snapshot(manifest) as snap:
+        rows, facts = dynamic.join(snap, "javascript", sites, [], observer)
+        names = {identity: (rel, span[0], parts[-1] if parts else "")
+                 for identity, rel, _kind, _resolution, _target, span, parts, _reason in snap.references("javascript")}
+    assert facts["recorded"] == len(RECORDED) == facts["placed"] and not facts["unjoined"]
+    assert all(row["confidence"] == "observed" and row["resolver"] == dynamic.resolver(observer) for row in rows)
+    found: dict = {}
+    for row in rows:
+        end = row["target_id"] or row["external"]["package"]
+        found.setdefault(names[row["reference_id"]], set()).add((row["verdict"], end))
+    test, index = "test/index.test.js", "src/index.js"
+    assert found[(test, 6, "first")] == {("project-callable", f"{index}::function@3:0")}
+    assert found[(index, 5, "fn")] == {("project-callable", f"{index}::function@3:0")}
+    assert found[(test, 8, "run")] == {("project-callable", f"{index}::function@3:0")}
+    assert found[(test, 9, "size")] == {("project-callable", f"{index}::method@2:12")}
+    assert found[(test, 9, "make")] == {("project-callable", f"{index}::method@2:33")}
+    assert found[(index, 2, "Box")] == {("project-callable", f"{index}::class@2:0")}
+    assert found[(test, 7, "apply")] == {("project-callable", f"{index}::function@5:33")}
+    assert found[(test, 12, "twice")] == {("project-callable", "src/more.mjs::function@1:21")}
+    assert found[("src/more.mjs", 1, "fn")] == {("project-callable", "src/more.mjs::function@2:7")}
+    assert found[(index, 5, "basename")] == {("external", "node")}
+    assert facts["files"]["executed"] == 3

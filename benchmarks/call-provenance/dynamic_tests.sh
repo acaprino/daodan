@@ -2,7 +2,8 @@
 # Runs inside the container, on a network without a route outside.
 # Jest in shards, one process at a time. With an interval each shard runs under the
 # V8 CPU profiler and its profile is mapped to call sites and removed; with `exact`
-# each shard runs under dynamic_record.js, which writes the sites itself.
+# each shard runs under dynamic_record.js (the plugin's dynamic/javascript_record.js, carried beside this
+# script under that name), which writes the sites itself.
 #
 #   dynamic_tests.sh <project root> <test dir> <out dir> <shards> <interval in microseconds | exact> [jest arguments]
 #

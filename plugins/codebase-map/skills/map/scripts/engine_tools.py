@@ -150,7 +150,7 @@ def _install_type_packages(npm: str, directory: Path) -> int:
     def run(names, timeout):
         return subprocess.run([*base, *names], cwd=directory, stdin=subprocess.DEVNULL, capture_output=True,
                               text=True, timeout=timeout, shell=os.name == "nt",
-                              env={**os.environ, **node_environment()}).returncode == 0
+                              env={**os.environ, **node_environment(npm)}).returncode == 0
 
     if run(wanted, 900):
         return len(wanted)
@@ -181,20 +181,6 @@ def _without_local_packages(manifest: Path) -> str | None:
     return json.dumps(data, indent=2) + "\n" if local else None
 
 
-def npm_local_packages(root: Path) -> list[tuple[str, str, str]]:
-    """(manifest from `root`, name, spec) of each package `npm_modules` leaves out of its install."""
-    root, found = Path(root), set()
-    for manifest in npm_manifests(root):
-        if manifest.name != "package.json":
-            continue
-        try:
-            data = json.loads(manifest.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
-        found |= {(manifest.relative_to(root).as_posix(), name, spec) for _table, name, spec in _local_packages(data)}
-    return sorted(found)
-
-
 def package_directories(root: Path, limit: int = 8) -> list[Path]:
     """Directories of the project with their own package.json and no installed packages, nearest first.
 
@@ -213,23 +199,28 @@ def package_directories(root: Path, limit: int = 8) -> list[Path]:
     return sorted(found, key=lambda path: (len(path.relative_to(root).parts), path.as_posix()))[:limit]
 
 
-def node_environment() -> dict:
-    """Where npm and Node keep their caches for a process Daodan starts: in the shared directory."""
+def node_environment(npm: str | None = None) -> dict:
+    """Where npm and Node keep their caches for a process Daodan starts: in the shared directory. With `npm`,
+    also its folder first on the PATH: npm starts the Node beside it."""
     cache = shared_cache_dir()
-    return {"npm_config_cache": str(cache / "npm-cache"), "NODE_COMPILE_CACHE": str(cache / "node-compile-cache")}
+    found = {"npm_config_cache": str(cache / "npm-cache"), "NODE_COMPILE_CACHE": str(cache / "node-compile-cache")}
+    if npm:
+        found["PATH"] = f"{Path(npm).parent}{os.pathsep}{os.environ.get('PATH', '')}"
+    return found
 
 
-def npm_modules(root: Path, failed: list | None = None) -> Path | None:
+def npm_modules(root: Path, failed: list | None = None, npm: str | None = None) -> Path | None:
     """The project's packages installed once into the shared directory, without running any package script.
 
     Only the manifests are copied there, so npm never sees the project's code; the
     lockfile is honoured when there is one. Every project with the same manifests
-    shares the installation, and npm's own cache spares repeated downloads. None
-    when the project has no package.json, npm is missing or the install fails:
-    `failed` then gets the reason of the last two.
+    shares the installation, and npm's own cache spares repeated downloads. `npm` is
+    the npm to start (Daodan's), else the host's. None when the project has no
+    package.json, npm is missing or the install fails: `failed` then gets the reason
+    of the last two.
     """
     root = Path(root).resolve()
-    key, npm = npm_key(root), shutil.which("npm")
+    key, npm = npm_key(root), npm or shutil.which("npm")
     if key is None or npm is None:
         if key is not None and failed is not None:
             failed.append("npm is not on the PATH")
@@ -256,12 +247,12 @@ def npm_modules(root: Path, failed: list | None = None) -> Path | None:
     command = [npm, "ci" if locked else "install", "--ignore-scripts", "--no-audit", "--no-fund",
                "--loglevel=error", *([] if locked else ["--package-lock=false"])]
     completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                               timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment()})
+                               timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment(npm)})
     if completed.returncode != 0 and locked:
         # A lockfile out of step with its manifest still leaves the manifest to install from.
         command = [npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error"]
         completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                                   timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment()})
+                                   timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment(npm)})
     if completed.returncode != 0 or not (partial / "node_modules").is_dir():
         reason = (completed.stderr or "").strip()[-300:] or "npm wrote no node_modules"
         print(f"the project's JavaScript packages were not installed: {reason}", flush=True)

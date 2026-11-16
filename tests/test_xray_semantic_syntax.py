@@ -292,6 +292,30 @@ class CalleeSpanTests(unittest.TestCase):
                 self.assertEqual(member[0]["parts"][1].lower(), "run")
                 self.assertEqual(self.callee_text(source, member[0]).split(".")[-1].lower(), "run")
 
+    def test_a_call_through_the_parent_or_the_instance_names_its_receiver(self):
+        """`base.Run()`, `super.run()` and `this.run()` name the keyword they are written with, so an analyzer can
+        tell a call through the parent (bound statically) from any other. Two are computed values, whose member keeps
+        its name only: JavaScript's `this`, bound by the call, and Python's `super()`, a call whose value follows the
+        instance's MRO."""
+        cases = {"csharp": ("cs", "class D : B { int Go() { return base.Run() + this.Run(); } }\n",
+                            [["base", "Run"], ["this", "Run"]]),
+                 "java": ("java", "class D extends B { int go() { return super.run() + this.run(); } }\n",
+                          [["super", "run"], ["this", "run"]]),
+                 "kotlin": ("kt", "class D : B() { override fun go(): Int = super.run() + this.run() }\n",
+                            [["super", "run"], ["this", "run"]]),
+                 "typescript": ("ts", "class D extends B { go() { return super.run() + this.run(); } }\n",
+                                [["super", "run"], ["(expr)", "run"]]),
+                 "python": ("py", "class D(B):\n    def go(self):\n        return super().run() + self.run()\n",
+                            [["super"], ["(expr)", "run"], ["self", "run"]])}
+        for language, (suffix, source, expected) in cases.items():
+            with self.subTest(language=language):
+                calls = [r for r in self.parse(source, language, suffix)["references"] if r["kind"] == "call"
+                         and r["parts"][-1:] != ["B"]]
+                self.assertEqual([r["parts"] for r in calls], expected)
+                for reference in calls:
+                    self.assertEqual(self.callee_text(source, reference).split(".")[-1].removesuffix("()"),
+                                     reference["parts"][-1])
+
     def test_declarations_record_where_they_are_named(self):
         source = "\n".join(["class Box {", "  Box() {}", "  int open(int x) { return x; }", "}", ""])
         declarations = {(d["name"], d["kind"]): d for d in self.parse(source, "java", "java")["declarations"]}

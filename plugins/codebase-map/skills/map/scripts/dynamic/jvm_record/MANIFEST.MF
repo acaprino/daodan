@@ -1,0 +1,2 @@
+Premain-Class: daodan.agent.Agent
+Boot-Class-Path: record.jar

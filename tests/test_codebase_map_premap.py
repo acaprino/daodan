@@ -77,7 +77,7 @@ def test_premap_beside_the_manifest_every_fact_with_its_source(tmp_path):
     assert "languages" not in record  # go-enry runs in the container only
     assert {s["source"].split("@")[0]: s["state"] for s in record["sources"]} == {
         "modules.py": "ran", "python-build": "not_needed", "requirements": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
-        "gitmodules": "not_needed",
+        "gitmodules": "not_needed", "python-tests": "not_needed", "npm-tests": "not_needed",
         "go-enry": "not_run", "renovate": "not_run", "go": "not_needed", "cargo": "not_needed", "uv": "not_needed",
         "tsc": "not_needed", "npm": "not_run", "cmake": "not_needed", "meson": "not_needed", "bazel": "not_needed",
         "make": "not_needed", "project-files": "not_needed", "gradle": "not_needed", "maven": "not_needed",

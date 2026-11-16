@@ -2272,7 +2272,7 @@ class IndexerStageTests(unittest.TestCase):
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container) for spec in resolve_edges.ENGINES}
         self.assertEqual(indexers, {
             "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", False),
-            "scip-typescript": (("typescript", "javascript"), "typescript", False),
+            "scip-typescript": (("typescript", "javascript"), "typescript", True),
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
             "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True),
             "scip-dotnet": (("csharp",), "csharp", True),

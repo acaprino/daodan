@@ -421,7 +421,8 @@ def failed(result: dict, runs: list[dict]) -> dict:
 
 
 def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory: int, engine=None,
-        toolchains=(), prepare_timeout: float = 1800, timeout: float = 600) -> tuple[dict, list[dict], Path]:
+        toolchains=(), prepare_timeout: float = 1800, timeout: float = 600,
+        inputs: dict[str, Path] | None = None) -> tuple[dict, list[dict], Path]:
     """Both phases in one container run over a copy of `project_dir` and the `tools` it needs, the preparation's
     steps before `prepare` (a JDK of `toolchains` above the image's, the restore): the operation's result
     (`judged`, with the preparation's `gaps`), the runs of both logs, and the folder the outputs came back into."""
@@ -436,10 +437,11 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
     setup = "".join(f"{line}\n" for line in ([f"mkdir -p {preparation.T}/bin"] if jdk else []) + chains["lines"])
     used = _major(jdk["version"]) if jdk else JDK
 
-    def inputs() -> dict:
+    def inputs(extra=inputs) -> dict:
         given = tools(project_dir)
         given.update({f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                       for url, digest, name in chains["files"]})
+        given.update(extra or {})
         return given
 
     result = container.run_in_container(

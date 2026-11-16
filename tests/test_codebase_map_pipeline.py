@@ -80,8 +80,9 @@ def test_a_warning_or_an_error_carries_its_cause_and_remedy():
 
 
 def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_path):
-    """Scan, analysis, then the union: each step starts and finishes, each analyzer of a technology the pre-map
-    found says it started and finished with progress, and the run ends with the complete graph."""
+    """Scan, analysis, the dynamic step, then the union: each step starts and finishes, each analyzer of a
+    technology the pre-map found says it started and finished with progress, and the run ends with the complete
+    graph. No test of the fixture runs (the suites start no container): the union says its graph is static only."""
     import shutil
     from indexers import go
     project = tmp_path / "go"
@@ -114,14 +115,19 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
     assert steps == [("step.started", "scan"), ("step.finished", "scan"), ("step.started", "analyze"),
-                     ("step.finished", "analyze"), ("step.started", "union"), ("step.finished", "union")]
-    analyzers = [(e["kind"], e["analyzer"]) for e in seen if e["kind"].startswith("analyzer.")]
+                     ("step.finished", "analyze"), ("step.started", "dynamic"), ("step.finished", "dynamic"),
+                     ("step.started", "union"), ("step.finished", "union")]
+    analyzers = [(e["kind"], e["analyzer"]) for e in seen if e["kind"].startswith("analyzer.")
+                 and e["step"] == "analyze"]
     assert analyzers == [("analyzer.started", "scip-go"), ("analyzer.finished", "scip-go")]
     assert any(e["kind"] == "progress" and e["step"] == "analyze" and e["data"]["total"] == 1 for e in seen)
     assert any(e["kind"] == "progress" and e["step"] == "scan" for e in seen)
     ready = [e for e in seen if e["kind"] == "graph.ready"]
     assert len(ready) == 1 and ready[0]["data"]["languages"]["go"]["state"] == "fresh"
-    assert any(e["kind"] == "gap" and e["data"].get("language") == "go" for e in seen)  # no observed edges yet
+    unobserved = [e["data"]["gap"] for e in seen if e["kind"] == "gap" and e["step"] == "union"
+                  and e["data"].get("language") == "go"]
+    assert [gap["kind"] for gap in unobserved] == ["not-observed"]  # with the cause the dynamic step gave
+    assert unobserved[0]["detail"] != "no edge observed in a run: the dynamic step has not observed this language"
     assert result["union"]["languages"]["go"]["state"] == "fresh"
     journal, _cursor = events.read(manifest.with_name(events.JOURNAL))
     assert [e["kind"] for e in journal] == [e["kind"] for e in seen]
@@ -143,6 +149,23 @@ def test_a_run_can_start_and_stop_at_a_step_and_a_failed_step_stops_the_rest(tmp
     assert seen[-1]["kind"] == "step.failed" and seen[-1]["data"]["remedy"] == "write it"
 
 
+def test_a_failure_of_the_dynamic_step_is_said_and_the_union_still_ends_the_run(tmp_path):
+    """What a run observes is added to the static graph: a dynamic step that breaks leaves that graph, says why,
+    and the pipeline goes on to the union."""
+    import dynamic
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    (tmp_path / "p").mkdir()
+    (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.write_snapshot(tmp_path / "p", manifest)
+    seen = []
+    with mock.patch.object(dynamic, "run", side_effect=RuntimeError("the recorder's file is gone")):
+        result = pipeline.run(manifest, listeners=[seen.append], start="dynamic")
+    assert list(result) == ["dynamic", "union"] and "the recorder's file is gone" in result["dynamic"]["failed"]
+    [said] = [e for e in seen if e["level"] == "error"]
+    assert said["step"] == "dynamic" and "RuntimeError" in said["data"]["cause"] and said["data"]["remedy"]
+    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "union"}
+
+
 def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs_the_rest():
     """One way in: `snapshot.py write` and a run's refresh run the scan step, the detached pass the analysis
     and the union."""
@@ -153,7 +176,7 @@ def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():
-    assert [step.NAME for step in pipeline.STEPS] == ["scan", "analyze", "union"]
+    assert [step.NAME for step in pipeline.STEPS] == ["scan", "analyze", "dynamic", "union"]
     for step in pipeline.STEPS:
         assert step.INPUTS and step.OUTPUTS and callable(step.run)
 

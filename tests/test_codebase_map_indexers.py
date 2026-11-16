@@ -1,6 +1,7 @@
-"""The indexer runs of `indexers/{go,rust,typescript,python}.py`, with a fake indexer and fake downloads: no
+"""The indexer runs of `indexers/{go,rust,python}.py`, with a fake indexer and fake downloads: no
 network, no toolchain, no project code. Every program an `index()` starts is the stand-in `Fake`; every URL is
 the stand-in `Web`. The committed indexes of `fixtures/code-graph/` are what the fake indexer writes.
+scip-typescript runs only in a container: its runs are in `test_codebase_map_indexers_ts_py.py`.
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_indexers.py
 """
@@ -33,20 +34,19 @@ from indexers import go, python, runtime, rust, typescript  # noqa: E402
 
 FIXTURES = HERE / "fixtures/code-graph"
 GB = 2**30
-MODULES = {"go": go, "rust": rust, "ts": typescript, "python": python}
-LANGUAGES = {"go": ("go",), "rust": ("rust",), "ts": ("javascript", "typescript"), "python": ("python",)}
-NPM = {"ts": "@sourcegraph/scip-typescript", "python": "@sourcegraph/scip-python"}
+MODULES = {"go": go, "rust": rust, "python": python}
+LANGUAGES = {"go": ("go",), "rust": ("rust",), "python": ("python",)}
+NPM = {"python": "@sourcegraph/scip-python"}
 MANIFESTS = ("go.mod", "go.sum", "Cargo.toml", "Cargo.lock", "package.json", "tsconfig.json", "pyproject.toml")
 
 
 def _given(project: Path, which: str) -> dict:
     """The structure the stage hands an indexer, as the pre-map names it for these fixtures: the folders holding
     the language's manifest."""
-    manifest = {"go": "go.mod", "rust": "Cargo.toml", "ts": "package.json"}.get(which)
+    manifest = {"go": "go.mod", "rust": "Cargo.toml"}.get(which)
     if manifest is None:
         return {}
-    found = {path.parent.relative_to(project).as_posix() for path in Path(project).rglob(manifest)
-             if "node_modules" not in path.parts}
+    found = {path.parent.relative_to(project).as_posix() for path in Path(project).rglob(manifest)}
     return {"roots": {"" if root == "." else root for root in found}}
 
 
@@ -173,9 +173,6 @@ def _tools(project: Path, which: str) -> None:
         _installed(rx.shared_engine_dir(bin_name) / module.VERSION,
                    {f"node_modules/{package}/package.json": json.dumps({"bin": {bin_name: "main.js"}}),
                     f"node_modules/{package}/main.js": "// the indexer"})
-        key = rx.npm_key(project)
-        if key:
-            _installed(rx.shared_cache_dir() / "npm" / key, {"daodan-modules.json": "{}", "node_modules/.keep": ""})
 
 
 def _project(sandbox, which: str) -> Path:
@@ -255,10 +252,8 @@ def test_a_run_writes_nothing_in_the_project_removes_its_mirror_and_feeds_the_gr
         assert built[language]["edges"] == expected[language]["edges"]
         assert built[language]["files"] == expected[language]["files"]
         assert built[language]["indexer"]["name"] == {"go": "scip-go", "rust": "rust-analyzer",
-                                                      "ts": "scip-typescript", "python": "scip-python"}[which]
+                                                      "python": "scip-python"}[which]
     assert any(built[language]["edges"] for language in LANGUAGES[which])
-    if which == "ts":
-        assert result["node_modules"] == {"": str(rx.shared_cache_dir() / "npm" / rx.npm_key(project) / "node_modules")}
 
 
 def test_go_runs_every_module_and_names_the_directories_go_ignores(sandbox):
@@ -270,27 +265,6 @@ def test_go_runs_every_module_and_names_the_directories_go_ignores(sandbox):
     assert roots == ["", "tools"]
     first = result["runs"][0]["command"]
     assert "./..." in first and "./_examples/demo" in first
-
-
-def test_without_a_root_package_json_each_outermost_package_gets_its_install(sandbox):
-    project = sandbox["root"] / "project" / "app-only"
-    shutil.copytree(FIXTURES / "ts", project / "app", ignore=shutil.ignore_patterns("index.scip"))
-    (project / "app/tsconfig.json").rename(project / "app/tsconfig.app.json")
-    _tools(project / "app", "ts")
-    sandbox["fake"].index = FIXTURES / "ts/index.scip"
-    seen = {}
-    real_tsconfig = typescript._tsconfig
-
-    def spy(mirror, files, *rest):  # what the mirror holds when the run starts
-        seen["linked"] = os.path.isjunction(mirror / "app/node_modules") or (mirror / "app/node_modules").is_symlink()
-        return real_tsconfig(mirror, files, *rest)
-
-    sandbox["monkeypatch"].setattr(typescript, "_tsconfig", spy)
-    result = typescript.index(project, sandbox["root"] / "work", tsconfig="app/tsconfig.app.json",
-                              **_given(project, "ts"))
-    assert "state" not in result, result.get("reason")
-    assert list(result["node_modules"]) == ["app"] and seen["linked"]
-    assert result["tsconfig_extends"] == "./app/tsconfig.app.json"
 
 
 def test_the_first_use_installs_with_one_log_line(sandbox, capsys):
@@ -342,9 +316,9 @@ def test_node_installs_from_its_release_checked_against_shasums256(sandbox, caps
 
 
 def test_a_wrong_checksum_is_refused(sandbox):
-    project = _project(sandbox, "ts")
+    project = _project(sandbox, "python")
     sandbox["web"].pages.update(_node_release(digest="f" * 64))
-    result = typescript.index(project, sandbox["root"] / "work", **_given(project, "ts"))
+    result = python.index(project, sandbox["root"] / "work")
     assert result["state"] == "unavailable"
     assert "checksum mismatch" in result["reason"] and "nodejs.org" in result["install"]
     assert not (rx.shared_engine_dir("node") / runtime.NODE_VERSION / ".installed").exists()
@@ -594,10 +568,10 @@ def test_where_scip_python_cannot_start_and_no_container_engine_answers_it_is_un
 
 
 def test_less_memory_than_the_indexer_needs_starts_nothing(sandbox):
-    project = _project(sandbox, "ts")
-    _tools(project, "ts")
-    sandbox["monkeypatch"].setattr(rx, "free_memory", lambda: typescript.MIN_FREE - 1)
-    result = typescript.index(project, sandbox["root"] / "work", **_given(project, "ts"))
+    project = _project(sandbox, "python")
+    _tools(project, "python")
+    sandbox["monkeypatch"].setattr(rx, "free_memory", lambda: python.MIN_FREE - 1)
+    result = python.index(project, sandbox["root"] / "work")
     assert result["state"] == "unavailable" and "memory" in result["reason"]
     assert sandbox["fake"].calls == [] and sandbox["web"].asked == []
 
@@ -643,16 +617,19 @@ def test_go_keeps_its_configuration_and_telemetry_in_the_shared_directory_and_tu
 
 
 def test_node_and_npm_keep_their_caches_in_the_shared_directory(sandbox):
-    project = _project(sandbox, "ts")
-    _tools(project, "ts")
-    shutil.rmtree(rx.shared_engine_dir("scip-typescript"))
-    shutil.rmtree(rx.shared_cache_dir() / "npm")
-    sandbox["fake"].index = FIXTURES / "ts/index.scip"
-    typescript.index(project, sandbox["root"] / "work", **_given(project, "ts"))
+    project = _project(sandbox, "python")
+    _tools(project, "python")
+    shutil.rmtree(rx.shared_engine_dir("scip-python"))
+    sandbox["fake"].index = FIXTURES / "python/index.scip"
+    python.index(project, sandbox["root"] / "work")
+    directory = runtime.node_directory(rx.shared_engine_dir("node") / runtime.NODE_VERSION)
+    sandbox["monkeypatch"].setenv("PATH", f"{directory}{os.pathsep}{os.environ.get('PATH', '')}")
+    rx.npm_modules(_project(sandbox, "ts"))  # the position engine's install of a project's packages
     fake = sandbox["fake"]
     started = [(command, env) for (command, _cwd), env in zip(fake.calls, fake.envs)
                if Path(command[0]).stem in ("node", "npm")]
     assert {Path(command[0]).stem for command, _env in started} == {"node", "npm"}  # npm_package, npm_modules
+    assert len(started) == 3  # the indexer's install, its run, the packages' install
     for command, env in started:
         assert env is not None, command
         assert Path(env["npm_config_cache"]).is_relative_to(sandbox["cache"])
@@ -705,7 +682,7 @@ def test_the_peak_is_none_when_no_run_measured_it():
 
 
 def test_every_indexer_declares_the_memory_it_needs():
-    assert [MODULES[name].MIN_FREE // 2**20 for name in ("go", "rust", "ts", "python")] == [512, 1280, 2304, 1920]
+    assert [module.MIN_FREE // 2**20 for module in (go, rust, typescript, python)] == [512, 1280, 3072, 1920]
 
 
 @pytest.mark.parametrize("which, nested, reason", [

@@ -1,6 +1,8 @@
-"""Exact recorder of the calls a Python run executes, on sys.monitoring (Python 3.12+).
+"""Exact recorder of the calls a Python run executes, on sys.monitoring (Python 3.12+): the recorder of the
+dynamic step's Python observer (`dynamic/python.py`), which carries this file into the container. Standard
+library only, and no import of Daodan's: it is loaded by its path, in the project's own interpreter.
 
-    python dynamic_record.py site <dir>
+    python python_record.py site <dir>
     PYTHONPATH=<dir> DYN_ROOT=<project root> DYN_OUT=<out>-%p.json python -m pytest
 
 `site` writes <dir>/sitecustomize.py, which loads this file and then the sitecustomize it shadows. Loaded this
@@ -13,8 +15,9 @@ function that starts, counted only when its caller's current instruction is not 
 such as __lt__, __enter__ or __hash__, a descriptor's __get__. A site is an instruction in a file under DYN_ROOT.
 `co_positions` gives each instruction the span of its expression (start and end line, UTF-8 columns), so two
 calls on one line are two sites; the offset alone does not say where on the line. On exit each site is placed
-with `ast` at the name token of the call whose span it is and written to DYN_OUT in the shape of
-dynamic_record.js, "exact": true, lines from 0, columns in bytes. "role" says how the site is reached: "call",
+with `ast` at the name token of the call whose span it is and written to DYN_OUT as `{"exact": true, "python",
+"stats", "sites"}`, each site `{file, line, column, name, role, end, callees}`, lines from 0, columns in bytes
+(the shape of javascript_record.js beside it). "role" says how the site is reached: "call",
 "decorator" (applying what a decorator call returned), "WITH_EXIT" (a with block's exit, a call instruction on
 the context expression in CPython 3.12-3.13), the instruction's name for an implicit call (LOAD_ATTR,
 COMPARE_OP, BEFORE_WITH...), or the syntax node when no call node has the span (ClassDef for __build_class__,
@@ -32,11 +35,12 @@ from __future__ import annotations
 import os
 import sys
 
+VERSION = "1"  # of the sites this file writes: part of the observed edges' resolver
 TOOL_IDS = (4, 3, 5)
 CALLS = {"CALL", "CALL_KW", "CALL_FUNCTION_EX", "LOAD_SUPER_ATTR"}  # CALL reports their callee
 NOT_CALLS = {"IMPORT_NAME", "IMPORT_FROM", "CALL_INTRINSIC_1", "CALL_INTRINSIC_2"}
 STEPS = 0x20 | 0x80 | 0x200  # CO_GENERATOR, CO_COROUTINE, CO_ASYNC_GENERATOR: a start is a first step
-SITE = '''# Written by dynamic_record.py site: loads the recorder, then the sitecustomize this file shadows.
+SITE = '''# Written by python_record.py site: loads the recorder, then the sitecustomize this file shadows.
 import importlib.machinery
 import importlib.util
 import os
@@ -404,6 +408,6 @@ if __name__ == "__main__":
     if sys.argv[1:2] == ["site"] and len(sys.argv) == 3:
         write_site(sys.argv[2])
     else:
-        sys.exit("usage: dynamic_record.py site <dir>")
+        sys.exit("usage: python_record.py site <dir>")
 elif os.environ.get("DYN_OUT") and os.environ.get("DYN_ROOT") and hasattr(sys, "monitoring"):
     install(os.environ["DYN_ROOT"], os.environ["DYN_OUT"])

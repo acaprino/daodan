@@ -1,21 +1,26 @@
 """Source: TypeScript's own reading of every tsconfig, `tsc --showConfig -p <file>`, run in Daodan's container.
 
 `commands` describes one `tsc --showConfig` per `tsconfig*.json` of the snapshot, in its folder: tsc reads JSON
-only, follows `extends`, and runs nothing of the project. `read` gives each tsconfig to the unit of its nearest
+only, follows `extends`, and runs nothing of the project. Before them the runner's setup restores the project's
+packages the project's own way, lifecycle scripts included (`container_runner.TOOLS`, `preparation.node_prepare`),
+so an `extends` into `node_modules` or into a file a framework generates at install (SvelteKit's
+`.svelte-kit/tsconfig.json`) is there. `read` gives each tsconfig to the unit of its nearest
 folder holding a `project.json` (nx-project), a `deno.json` or `deno.jsonc` (deno-project) or a `package.json`
 (npm-package): the unit's `config.tsconfig` lists its files (the folder's `tsconfig.json`, then the references it
 names in their order, then the others) and `config.paths` merges their `compilerOptions.paths`, each target
-resolved against `baseUrl` when the shown configuration has one, else against the tsconfig's folder, relative to
-the project's root. A tsconfig tsc refuses (an `extends` into an absent `node_modules`) is a `model_failed` gap;
-one no unit holds is a `config_outside_units` gap.
+resolved against `baseUrl` when the shown configuration has one, else against the folder of the tsconfig that
+writes them (`_written_in`: tsc shows an inherited `paths` as written), relative to the project's root. A tsconfig tsc refuses (an `extends` no restore brought) is a `model_failed` gap; one no
+unit holds is a `config_outside_units` gap.
 """
 from __future__ import annotations
 
 import json
 import posixpath
+import re
 from pathlib import PurePosixPath
 
 NAME, VERSION, RANK = "tsc", "6.0.3", "model"  # typescript@6.0.3, pinned by the pre-map
+EXTENDS = re.compile(r'"extends"\s*:\s*"([^"]+)"')  # the one tsconfig a tsconfig extends
 OWNERS = (("project.json", "nx-project"), ("deno.json", "deno-project"), ("deno.jsonc", "deno-project"),
           ("package.json", "npm-package"))
 
@@ -26,6 +31,22 @@ def _parent(rel: str) -> str:
 
 def _join(folder: str, name: str) -> str:
     return posixpath.normpath(name if folder == "." else f"{folder}/{name}")
+
+
+def _written_in(context, rel: str) -> str:
+    """The folder of the tsconfig that writes the `paths` tsc shows for `rel`: its own, or that of the one it
+    extends by a relative path, followed while the snapshot holds the file and it writes none. tsc prints an
+    inherited `paths` as written, and resolves it from the file that writes it."""
+    seen = set()
+    while rel in context.inventory.headers and rel not in seen:
+        seen.add(rel)
+        text = context.inventory.text(rel)
+        extended = EXTENDS.search(text)
+        if '"paths"' in text or not extended or not extended.group(1).startswith("."):
+            break
+        rel = _join(_parent(rel), extended.group(1))
+        rel = rel if rel.endswith(".json") else f"{rel}.json"
+    return _parent(rel)
 
 
 def commands(context):
@@ -87,7 +108,8 @@ def read(context, commands, results):
             options = (shown.get(rel) or {}).get("compilerOptions") or {}
             if not isinstance(options.get("paths"), dict):
                 continue
-            base = _join(_parent(rel), options["baseUrl"]) if isinstance(options.get("baseUrl"), str) else _parent(rel)
+            base = _join(_parent(rel), options["baseUrl"]) if isinstance(options.get("baseUrl"), str) \
+                else _written_in(context, rel)
             for key, targets in options["paths"].items():
                 paths.setdefault(key, [_join(base, t) for t in targets if isinstance(t, str)])
         if paths:

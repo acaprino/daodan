@@ -12,7 +12,7 @@ state; a reference never asked keeps it.
 
 Two counts. Strict: a site alone with its name in its function, whose callees all have
 a source URL. Loose: every matched site, a callee without URL counted as external.
-A site of dynamic_record.js is exact: it counts in both.
+A site of the exact recorder (the plugin's dynamic/javascript_record.js) is exact: it counts in both.
 A callee without URL is a native builtin or code created at runtime, such as the named
 wrappers of jest-mock: it can stand for a mocked project function.
 """

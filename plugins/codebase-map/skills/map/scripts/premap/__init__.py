@@ -37,21 +37,22 @@ import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
 from premap import (bazel, cargo, cmake, dotnet, enry, gitmodules, go, gradle, jvm_files, make, maven,  # noqa: E402
-                    meson, module_graph, npm, npm_lock, project_files, python_build, renovate, requirements, sbt,
-                    suffix_table, tsc, uv)
+                    meson, module_graph, npm, npm_lock, npm_tests, project_files, python_build, python_tests,
+                    renovate, requirements, sbt, suffix_table, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
 RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run` and the coverage gaps
 RANKS = ("model", "reader", "scanner")
-SOURCES = (module_graph, python_build, requirements, npm_lock, jvm_files, project_files, gitmodules, enry, renovate,
-           go, cargo, uv, tsc, npm, cmake, meson, bazel, make, gradle, maven, sbt, dotnet)
+SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, jvm_files, project_files,
+           gitmodules, enry, renovate, go, cargo, uv, tsc, npm, cmake, meson, bazel, make, gradle, maven, sbt, dotnet)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
     "languages": (("language",),),
     "excluded": (("path",),),
     "units": (("root", "kind", "name", "manifest"), ("root", "kind", "name"), ("root", "kind")),
     "workspace": (("root", "tool"),),  # two build systems in one folder are two workspaces
     "toolchains": (("tool", "declared_in", "version"), ("tool", "declared_in")),
+    "tests": (("root", "runner"),),  # how the tests of a folder run: the dynamic step's command
 }
 EXECUTES = {  # unit kinds whose model or index exists only when the build runs project code
     "gradle-project": "Gradle runs the build scripts for the model and the compile tasks the index needs",

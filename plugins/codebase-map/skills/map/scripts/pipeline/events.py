@@ -1,9 +1,10 @@
 """The analysis's events, from the first step to the complete graph: one bus, its listeners, and a journal.
 
-An event is a dict: `step`, `analyzer` (None outside an analyzer), `kind`, `level`, `message` (to read), `data`
-and `at`. A `warning` or an `error` carries `cause` and `remedy` in its data. The journal (`JOURNAL`, beside
-the snapshot) keeps every event as a line, so a listener in another process, or one that comes later, reads
-them with `read` from a cursor. A listener that fails stops nothing: its error becomes an event.
+An event is a dict: `step`, `analyzer` (the analyzer of the analysis or the observer of the dynamic step it comes
+from, None outside one), `kind`, `level`, `message` (to read), `data` and `at`. A `warning` or an `error` carries
+`cause` and `remedy` in its data. The journal (`JOURNAL`, beside the snapshot) keeps every event as a line, so a
+listener in another process, or one that comes later, reads them with `read` from a cursor. A listener that fails
+stops nothing: its error becomes an event.
 """
 from __future__ import annotations
 

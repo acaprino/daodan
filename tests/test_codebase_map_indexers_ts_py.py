@@ -1,24 +1,27 @@
 """scip-typescript and scip-python take the project's structure from the pre-map and state what they could not
 do: the aliases, workspace members, source roots and manifests the pre-map names reach the tools' own
-configuration, and an install or an environment that fails is a gap of the analyzer's contract. Programs and
-URLs are the fakes of `test_codebase_map_indexers`.
+configuration, and a restore or an environment that fails is a gap of the analyzer's contract. scip-typescript
+runs only in a container, after the project's own restore: `Container` stands in for the container operation,
+so each test reads the two scripts it was sent and plays their logs. Programs and URLs are the fakes of
+`test_codebase_map_indexers`.
 """
 from __future__ import annotations
 
 import json
 import shutil
-import subprocess
 from pathlib import Path
 
 import pytest
 
 import test_codebase_map_indexers as base
 from test_codebase_map_indexers import FIXTURES, Box, _environment, _node_release, _project, _tools
-import engine_tools  # noqa: E402
+import container  # noqa: E402
+import preparation  # noqa: E402
 import resolve_edges as rx  # noqa: E402
 from indexers import python, typescript  # noqa: E402
 
 sandbox = base.sandbox  # the fixture, for this module's tests
+T, IN = preparation.T, preparation.IN
 ALIASED = {"extends": "../../tsconfig.base.json", "compilerOptions": {"paths": {"@/*": ["./src/*"]}}}
 
 # A workspace of two packages that share an alias, one reaching the other by name, and a package outside it.
@@ -59,6 +62,54 @@ def _written(root: Path, files: dict) -> Path:
 
 # ------------------------------------------------------------ TypeScript
 
+class Container:
+    """`container.run_in_container`: with `gap`, no engine answers; else it asks for the inputs, as a run does
+    once an engine answers, and plays the two phases: each one's log, exit code (`codes`; None: cut off) and record
+    row, and `index` brought back when the execution exits with 0."""
+
+    def __init__(self, index: Path | None = None, gap: tuple[str, str] | None = None, prepare: str = "",
+                 execute: str = "", codes: tuple = (0, 0)):
+        self.index, self.gap, self.logs, self.codes, self.asked = index, gap, (prepare, execute), codes, []
+
+    def __call__(self, project, command, **options):
+        self.asked.append({"project": Path(project), "command": command, **options})
+        if self.gap:
+            return {"state": "gap", "cause": self.gap[0], "remedy": self.gap[1], "outputs": []}
+        self.asked[-1]["inputs"] = options["inputs"]()
+        out = Path(options["out_dir"])
+        out.mkdir(parents=True, exist_ok=True)
+        rows, result = [], {"state": "failed", "exit_code": None, "outputs": [], "engine": "test"}
+        for phase, text, code, seconds, peak in zip(("prepare", "execute"), self.logs, self.codes, (40.0, 12.5),
+                                                    (300, 900)):
+            (out / f"{phase}.log").write_text(f"{text}DAODAN_PEAK {peak * 2**20}\n", encoding="utf-8")
+            rows.append({"phase": phase, "exit_code": code, "duration_seconds": seconds,
+                         "outcome": "timeout" if code is None else "exited"})
+            if phase == "prepare" and code != 0:
+                result["cause"] = f"preparation {rows[-1]['outcome']}; see {out / 'prepare.log'}"
+                break
+        else:
+            result.update(state="done" if self.codes[1] is not None else "timeout", exit_code=self.codes[1])
+            if self.index is not None and self.codes[1] == 0:
+                (out / "out").mkdir()
+                shutil.copyfile(self.index, out / "out/index.scip")
+                result["outputs"] = ["out/index.scip"]
+        (out / container.RECORD_NAME).write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+        return result
+
+
+def _contained(sandbox, **played) -> Container:
+    """The container operation and the preparation's downloads as fakes; `sandbox["fetched"]` names the downloads."""
+    box, sandbox["fetched"] = Container(**played), []
+
+    def fetched(url, digest, name):
+        sandbox["fetched"].append(name)
+        return sandbox["root"] / "fetched" / name
+
+    sandbox["monkeypatch"].setattr(container, "run_in_container", box)
+    sandbox["monkeypatch"].setattr(preparation, "fetched", fetched)
+    return box
+
+
 def test_typescript_takes_the_tsconfig_the_aliases_and_the_reachable_packages_from_the_pre_map():
     assert typescript.structure(RECORD) == {
         "roots": {"", "packages/ui", "packages/web", "tools/gen"},
@@ -75,81 +126,384 @@ def test_typescript_takes_the_tsconfig_the_aliases_and_the_reachable_packages_fr
               {"kind": "npm-package", "name": "lib", "root": "vendor/lib"}]
     assert typescript.structure({"units": linked}) == {"roots": {"app", "vendor/lib"}, "members": {"lib": "vendor/lib"}}
     assert typescript.structure({"units": [{"kind": "npm-package", "root": "web"}]}) == {"roots": {"web"}}
+    # The Node the pre-map states is the analyzer's toolchain; another tool's is not.
+    stated = [{"tool": "node", "version": "20.11.1", "declared_in": ".nvmrc"},
+              {"tool": "pnpm", "version": "9.12.2", "declared_in": "package.json#packageManager"},
+              {"tool": "go", "version": "1.22", "declared_in": "go.mod"}]
+    assert typescript.structure({"units": [], "toolchains": stated}) == {"roots": set(), "toolchains": stated[:1]}
+    assert typescript.NEEDS_CONTAINER is True
 
 
-def test_the_generated_tsconfig_carries_the_aliases_from_the_mirror(tmp_path):
+def test_the_generated_tsconfig_carries_the_aliases_from_the_copys_root(tmp_path):
     aliases, gaps = typescript._aliases(typescript.structure(RECORD)["paths"], {"@acme/ui": "packages/ui"})
     assert aliases == {"@/*": ["packages/ui/src/*", "packages/web/src/*"], "~lib": ["packages/web/lib/index.ts"],
                        "@acme/ui": ["packages/ui"], "@acme/ui/*": ["packages/ui/*"]}
     assert [(gap["kind"], gap["alias"], gap["paths"]) for gap in gaps] == [
         ("alias_ambiguous", "@/*", ["packages/ui", "packages/web"])]
-    typescript._tsconfig(tmp_path, ["a.ts"], None, aliases)
-    written = json.loads((tmp_path / "tsconfig.json").read_text(encoding="utf-8"))["compilerOptions"]["paths"]
-    # Absolute: an inherited `baseUrl` would move a relative target.
-    assert written == {key: [(tmp_path / target).as_posix() for target in targets] for key, targets in aliases.items()}
-    (tmp_path / "plain").mkdir()
-    typescript._tsconfig(tmp_path / "plain", ["a.ts"])
-    assert "paths" not in json.loads((tmp_path / "plain/tsconfig.json").read_text(encoding="utf-8"))["compilerOptions"]
+    target = tmp_path / "generated.json"
+    typescript._tsconfig(tmp_path, target, ["a.ts"], None, aliases)
+    written = json.loads(target.read_text(encoding="utf-8"))["compilerOptions"]["paths"]
+    # Absolute, under the copy: an inherited `baseUrl` would move a relative target.
+    assert written == {key: [f"/work/{name}" for name in targets] for key, targets in aliases.items()}
+    assert sorted(path.name for path in tmp_path.iterdir()) == ["generated.json"]  # nothing beside it
+    typescript._tsconfig(tmp_path, target, ["a.ts"])
+    assert "paths" not in json.loads(target.read_text(encoding="utf-8"))["compilerOptions"]
 
 
-def test_a_workspace_resolves_its_members_by_alias_and_states_what_no_install_holds(sandbox):
-    project = _written(sandbox["root"] / "project" / "mono", MONOREPO)
-    _tools(project, "ts")
-    sandbox["fake"].index = FIXTURES / "ts/index.scip"
-    seen = {}
-    real = typescript._tsconfig
-
-    def spy(mirror, *rest):
-        extends = real(mirror, *rest)
-        seen.update(mirror=Path(mirror), config=json.loads((mirror / "tsconfig.json").read_text(encoding="utf-8")))
-        return extends
-
-    sandbox["monkeypatch"].setattr(typescript, "_tsconfig", spy)
-    result = typescript.index(project, sandbox["root"] / "work", **typescript.structure(RECORD))
+def test_the_packages_are_restored_the_projects_own_way_and_the_index_follows_in_the_same_container(sandbox):
+    project = _written(sandbox["root"] / "project" / "mono", {**MONOREPO, "pnpm-lock.yaml": "lockfileVersion: 9\n"})
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
+    before, engine, work = base._hashes(project), object(), sandbox["root"] / "work"
+    result = typescript.index(project, work, engine=engine, **typescript.structure(RECORD))
     assert "state" not in result, result.get("reason")
-    mirror, config = seen["mirror"], seen["config"]
+    # Nothing ran or was written on the host: the restore and the indexer are the container's.
+    assert base._hashes(project) == before and sandbox["fake"].calls == [] and sandbox["web"].asked == []
+    [asked] = box.asked
+    assert asked["project"] == project.resolve() and asked["engine"] is engine
+    assert (asked["image"], asked["outputs"], asked["memory"]) == (typescript.IMAGE, [typescript.OUT],
+                                                                 typescript.MIN_FREE)
+    assert asked["registries"] == preparation.NODE_REGISTRIES  # npm's only: no stated Node, no Yarn
+    assert asked["env"]["PATH"] == preparation.PATH and asked["env"]["HOME"] == preparation.ENV["HOME"]
+    (shell, flag, prepare), (_shell, _flag, execute) = asked["prepare"], asked["command"]
+    assert (shell, flag) == ("bash", "-c")
+    # The preparation, with the registries: Daodan's Node, the indexer without its install scripts, then the
+    # workspace's own restore from its root, with the lifecycle scripts where a framework generates its files.
+    lines = prepare.splitlines()
+    assert preparation.setup(["node"])["lines"][0] in lines
+    assert any(f"npm install -g --prefix {T}/npm --ignore-scripts" in line
+               and f"@sourcegraph/scip-typescript@{typescript.VERSION}" in line for line in lines)
+    assert preparation.restore("pnpm", ["."], scripts=True) in lines
+    assert "mise" not in prepare and "npm ci" not in prepare
+    # The execution, without network: the generated tsconfig takes the place of the project's, then the indexer
+    # runs on Daodan's Node and its index goes where the outputs come back from.
+    assert "mv tsconfig.json tsconfig.project.json" in execute and f"cp {typescript.CONFIG} tsconfig.json" in execute
+    assert (f'{T}/node/bin/node "$(readlink -f {T}/npm/bin/scip-typescript)" index --cwd /work'
+            f" --output {typescript.OUT}/index.scip --no-progress-bar") in execute
+    assert "install" not in execute
+    inputs = asked["inputs"]
+    assert set(inputs) == {f"{IN}/node.tar.gz", typescript.CONFIG, typescript.TYPES}
+    assert sandbox["fetched"] == ["node.tar.gz"]
+    config = json.loads(Path(inputs[typescript.CONFIG]).read_text(encoding="utf-8"))
     assert config["extends"] == "./tsconfig.base.json" == result["tsconfig_extends"]
     paths = config["compilerOptions"]["paths"]
-    assert paths["@acme/ui"] == [(mirror / "packages/ui").as_posix()]
-    assert paths["@acme/ui/*"] == [(mirror / "packages/ui/*").as_posix()]
-    assert paths["@/*"] == [(mirror / "packages/ui/src/*").as_posix(), (mirror / "packages/web/src/*").as_posix()]
+    assert paths["@acme/ui"] == ["/work/packages/ui"] and paths["@acme/ui/*"] == ["/work/packages/ui/*"]
+    assert paths["@/*"] == ["/work/packages/ui/src/*", "/work/packages/web/src/*"]
+    assert "packages/web/src/main.ts" in config["include"] and "tools/gen/run.js" in config["include"]
+    # The contract: the index, a run per phase, the restores, and what no restore serves.
+    assert result["indexes"] == [[str(work / "scip-typescript-0.scip"), ""]]
+    assert (work / "scip-typescript-0.scip").read_bytes() == (FIXTURES / "ts/index.scip").read_bytes()
+    assert [(run["phase"], run["returncode"], run["seconds"], run["peak_mb"]) for run in result["runs"]] == [
+        ("prepare", 0, 40.0, 300), ("execute", 0, 12.5, 900)]
+    assert result["indexer"] == {"name": "scip-typescript", "version": typescript.VERSION, "seconds": 52.5,
+                                 "peak_mb": 900}
+    assert result["restores"] == {"pnpm": ["."]}
     gaps = {(gap["kind"], gap.get("path") or gap.get("alias")): gap for gap in result["gaps"]}
-    # `@acme/ui` (workspace:) is left out of the install and resolved by its alias: no gap. `left` is a gap.
-    assert sorted(gaps) == [("alias_ambiguous", "@/*"), ("dependency_not_installed", "packages/web/package.json"),
-                            ("restore_failed", "tools/gen")]
-    assert "left" in gaps["dependency_not_installed", "packages/web/package.json"]["detail"]
-    assert gaps["restore_failed", "tools/gen"]["manager"] == "npm"
+    # `@acme/ui` (workspace:) and `left` (link:) are the manager's to install; `tools/gen` is no member.
+    assert sorted(gaps) == [("alias_ambiguous", "@/*"), ("restore_failed", "tools/gen")]
+    assert gaps["restore_failed", "tools/gen"]["manager"] == "pnpm"
+    assert "no workspace" in gaps["restore_failed", "tools/gen"]["detail"]
 
 
-def test_an_install_that_fails_is_a_gap_with_npms_error(sandbox):
+def test_the_index_the_container_brings_back_feeds_the_graph(sandbox):
     project = _project(sandbox, "ts")
-    _tools(project, "ts")
-    shutil.rmtree(rx.shared_cache_dir() / "npm" / rx.npm_key(project))
-    sandbox["fake"].index = FIXTURES / "ts/index.scip"
-    fake = sandbox["fake"]
-
-    def run(command, *args, **kwargs):
-        command = [str(part) for part in command]
-        if command[1:2] in (["install"], ["ci"]) and "--prefix" not in command:
-            return subprocess.CompletedProcess(command, 1, "", "npm error 404 no-such-package")
-        return fake(command, *args, **kwargs)
-
-    sandbox["monkeypatch"].setattr(subprocess, "run", run)
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
     result = typescript.index(project, sandbox["root"] / "work", roots={""})
     assert "state" not in result, result.get("reason")
-    assert result["node_modules"] == {"": None}
-    assert result["gaps"] == [{"kind": "restore_failed", "manager": "npm", "path": ".",
-                               "detail": "npm error 404 no-such-package"}]
+    assert result["restores"] == {"npm": ["."]}
+    assert preparation.restore("npm", ["."], scripts=True) in box.asked[0]["prepare"][2]
+    assert result["tsconfig_extends"] == "./tsconfig.project.json"  # the project's own, renamed in the copy
+    assert "gaps" not in result
+    languages = ("javascript", "typescript")
+    built = base._graphs(project, result["indexes"], languages, result["indexer"])
+    expected = base._graphs(project, [(FIXTURES / "ts/index.scip", "")], languages, result["indexer"])
+    for language in languages:
+        assert built[language]["edges"] == expected[language]["edges"]
+        assert built[language]["files"] == expected[language]["files"]
+        assert built[language]["indexer"]["name"] == "scip-typescript"
+    assert any(built[language]["edges"] for language in languages)
 
 
-def test_the_local_packages_an_install_leaves_out_are_named(tmp_path):
-    project = _written(tmp_path, MONOREPO)
-    assert engine_tools.npm_local_packages(project) == [
-        ("packages/web/package.json", "@acme/ui", "workspace:*"),
-        ("packages/web/package.json", "left", "link:../../vendor/left")]
-    rewritten = json.loads(engine_tools._without_local_packages(project / "packages/web/package.json"))
-    assert rewritten["dependencies"] == {"react": "18.3.1"}
-    assert engine_tools._without_local_packages(project / "packages/ui/package.json") is None
+FOLDERS = ["api/package-lock.json", "api/package.json", "cli/package.json", "site/package.json", "site/yarn.lock",
+           "web/package.json"]
+
+
+def test_a_folder_without_a_lockfile_restores_with_the_manager_its_manifest_names():
+    named = {"web": "pnpm", "api": "yarn", "cli": "npm"}  # `api` has npm's lockfile: the lockfile names the manager
+    assert preparation.node_restores(FOLDERS, named) == [
+        ("npm", ["api", "cli"], False), ("pnpm", ["web"], True), ("yarn", ["site"], False)]
+    assert preparation.node_restores(FOLDERS) == [("npm", ["api", "cli", "web"], False), ("yarn", ["site"], False)]
+    assert preparation.node_restores(["pom.xml", "go.mod", "svc/pyproject.toml"]) == []
+    # Without a lockfile the manager resolves; with one, the recorded line, which fails where it is out of date.
+    assert "corepack pnpm install --no-frozen-lockfile --ignore-scripts" in preparation.restore("pnpm", ["web"], True)
+    assert "--frozen-lockfile --ignore-scripts" in preparation.restore("pnpm", ["web"])
+    assert "--immutable" not in preparation.restore("yarn", ["site"], True)
+    assert "--mode=skip-build" in preparation.restore("yarn", ["site"], True)
+    assert preparation.restore("npm", ["api"], False) == preparation.restore("npm", ["api"])
+
+
+def _folders(root: Path) -> Path:
+    """`FOLDERS` on disk: `web` names pnpm and `api` Yarn in their manifests (`packageManager`, corepack's field)."""
+    named = {"web": "pnpm@9.12.2", "api": "yarn@4.5.0"}
+    manifests = {rel: {"name": rel.split("/")[0], **({"packageManager": named[rel.split("/")[0]]}
+                                                    if rel.split("/")[0] in named else {})}
+                 for rel in FOLDERS if rel.endswith("package.json")}
+    return _written(root, {**dict.fromkeys(FOLDERS, ""), **manifests,
+                           "web/tsconfig.app.json": {"compilerOptions": {"strict": True}},
+                           "web/src/a.ts": "export const a = 1;\n"})
+
+
+def test_the_node_preparation_restores_each_folder_with_its_manager_and_its_lifecycle_scripts(tmp_path):
+    project = _folders(tmp_path)
+    plan = preparation.node_prepare(FOLDERS, lambda rel: (project / rel).read_text(encoding="utf-8"))
+    assert plan["restores"] == {"npm": ["api", "cli"], "pnpm": ["web"], "yarn": ["site"]}
+    # Each line is whole on its own: Yarn takes the proxy from its own settings, set in its line.
+    assert plan["lines"] == [preparation.restore("npm", ["api", "cli"], scripts=True),
+                             preparation.restore("pnpm", ["web"], True, scripts=True),
+                             f"{preparation.YARN_PROXY}; " + preparation.restore("yarn", ["site"], scripts=True)]
+    assert plan["hosts"] == ("repo.yarnpkg.com",)  # where corepack takes Yarn 2 and later
+    assert preparation.node_prepare(["go.mod"], None) == {"restores": {}, "lines": [], "gaps": [], "hosts": ()}
+    # A manifest that is not JSON names no manager: npm.
+    assert preparation.node_prepare(["package.json"], lambda rel: "{ not json")["restores"] == {"npm": ["."]}
+
+
+def test_a_package_folder_that_declares_dependencies_no_restore_installs_is_a_gap():
+    """A folder whose manifest declares dependencies is restored, or is a member its restore's workspaces name (the
+    manifest's `workspaces`, a `pnpm-workspace.yaml`), or is a gap: never silence."""
+    manifests = {
+        "package.json": {"name": "root", "workspaces": {"packages": ["packages/*", "!packages/legacy"]}},
+        "pnpm-workspace.yaml": "packages:\n  - 'apps/**'\n  - \"libs/core\"  # the core\n\ncatalog:\n  ms: ^2\n",
+        "pnpm-lock.yaml": "",
+        "packages/ui/package.json": {"dependencies": {"ms": "2.1.3"}},
+        "packages/legacy/package.json": {"dependencies": {"ms": "2.1.3"}},
+        "packages/ui/deep/package.json": {"devDependencies": {"ms": "2.1.3"}},
+        "apps/web/site/package.json": {"dependencies": {"ms": "2.1.3"}},
+        "libs/core/package.json": {"optionalDependencies": {"ms": "2.1.3"}},
+        "libs/other/package.json": {"dependencies": {"ms": "2.1.3"}},
+        "libs/bare/package.json": {"name": "bare"},
+        "own/package.json": {"dependencies": {"ms": "2.1.3"}}, "own/yarn.lock": "",
+    }
+    plan = preparation.node_prepare(list(manifests), lambda rel: manifests[rel] if isinstance(manifests[rel], str)
+                                    else json.dumps(manifests[rel]))
+    assert plan["restores"] == {"pnpm": ["."], "yarn": ["own"]}
+    assert [(gap["kind"], gap["manager"], gap["path"]) for gap in plan["gaps"]] == [
+        ("restore_failed", "pnpm", "libs/other"), ("restore_failed", "pnpm", "packages/legacy"),
+        ("restore_failed", "pnpm", "packages/ui/deep")]
+    assert "no workspace above names this folder" in plan["gaps"][0]["detail"]
+
+
+SVELTEKIT = Path(__file__).resolve().parents[1] / "benchmarks/project-model/fixtures/js-sveltekit"
+
+
+def test_a_package_with_only_its_manifest_is_installed_by_npm_with_its_lifecycle_scripts(sandbox):
+    """js-sveltekit: a package.json with devDependencies, no lockfile and no `packageManager`: npm, the default
+    manager, resolves and installs there with the lifecycle scripts, where SvelteKit writes its tsconfig."""
+    project = sandbox["root"] / "project" / "sveltekit"
+    shutil.copytree(SVELTEKIT, project, ignore=shutil.ignore_patterns("expected.json"))
+    units = json.loads((SVELTEKIT / "expected.json").read_text(encoding="utf-8"))["units"]
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
+    result = typescript.index(project, sandbox["root"] / "work", **typescript.structure({"units": units}))
+    assert "state" not in result and "gaps" not in result
+    assert result["restores"] == {"npm": ["."]}
+    assert preparation.restore("npm", ["."], scripts=True) in box.asked[0]["prepare"][2].splitlines()
+
+
+def _package(root: Path, rel: str, manifest: dict, *files: str) -> None:
+    _written(root, {f"{rel}/package.json": manifest, **{f"{rel}/{name}": "" for name in files}})
+
+
+def test_the_type_packages_are_nodes_and_those_of_the_declared_packages_that_ship_none(tmp_path):
+    """`@types/node` unless the copy's root has it; then each package a root declares that is installed with no
+    types of its own and no `@types` package within its reach; never one of the project's own packages."""
+    from indexers import typescript_types
+    work = tmp_path / "work"
+    _written(work, {"package.json": {"dependencies": {
+        "ms": "2", "clsx": "2", "vue": "3", "left": "link:./vendor/left", "@acme/ui": "workspace:*", "@scope/pkg": "1",
+        "lodash": "4", "chalk": "5", "absent": "1", "@types/react": "18"}, "devDependencies": {"typed": "1", "ms": "2"}},
+        "packages/app/package.json": {"dependencies": {"debug": "4", "member": "*"}},
+        "packages/member/package.json": {"name": "member"}})
+    _package(work, "node_modules/ms", {"main": "index.js"})
+    _package(work, "node_modules/clsx", {"types": "clsx.d.ts"})
+    _package(work, "node_modules/vue", {"exports": {".": {"types": "./dist/vue.d.ts", "import": "./index.mjs"}}})
+    _package(work, "node_modules/@scope/pkg", {})
+    _package(work, "node_modules/lodash", {})
+    _package(work, "node_modules/@types/lodash", {})
+    _package(work, "node_modules/chalk", {}, "index.d.ts")
+    _package(work, "node_modules/typed", {"main": "lib/main.js"}, "lib/main.d.ts")
+    _package(work, "packages/app/node_modules/debug", {})  # pnpm's layout: beside the package that declares it
+    (work / "packages/app/node_modules/member").symlink_to(work / "packages/member", target_is_directory=True)
+    assert typescript_types.wanted(str(work), "24", [".", "packages/app"]) == [
+        "@types/node@24", "@types/scope__pkg", "@types/ms", "@types/debug"]
+    _package(work, "node_modules/@types/node", {})  # the project's own
+    assert "@types/node@24" not in typescript_types.wanted(str(work), "24", ["."])
+
+
+NPM = """#!/bin/sh
+while [ $# -gt 0 ]; do [ "$1" = --prefix ] && prefix=$2; p=$1; shift; done
+case "$p" in
+  @types/nope) echo "npm error code E404" >&2; exit 1;;
+  @types/down) echo "npm error code ECONNRESET" >&2; exit 1;;
+esac
+n=$p; case "$n" in @*@*) n=${n%@*};; esac
+mkdir -p "$prefix/node_modules/$n" && printf '{"version": "9.1.0"}' > "$prefix/node_modules/$n/package.json"
+"""
+
+
+def test_each_type_package_is_installed_apart_and_linked_where_typescript_looks_last(tmp_path, monkeypatch, capsys):
+    """npm installs into the folder apart, never into the project's tree; one the registry lacks is no error, one
+    it could not install is what the preparation could not install."""
+    import os
+    from indexers import typescript_types
+    work, types, programs = tmp_path / "work", tmp_path / "types", tmp_path / "bin"
+    _written(work, {"package.json": {"dependencies": {"ms": "2", "nope": "1", "down": "1"}}})
+    for name in ("ms", "nope", "down"):
+        _package(work, f"node_modules/{name}", {})
+    _written(programs, {"npm": NPM})
+    (programs / "npm").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{programs}{os.pathsep}{os.environ['PATH']}")
+    assert typescript_types.main(["typescript_types.py", str(work), "24", str(types), "."]) == 0
+    said = capsys.readouterr().err
+    assert [line for line in said.splitlines() if line.startswith("DAODAN-")] == [
+        "DAODAN-TYPES-ADDED @types/node@9.1.0", "DAODAN-MISSING @types/down@latest",
+        "DAODAN-TYPES-ADDED @types/ms@9.1.0", "DAODAN-TYPES-ABSENT @types/nope"]
+    assert "ECONNRESET" in said
+    for name in ("node", "ms"):
+        assert (work / "node_modules/@types" / name).resolve() == (types / "node_modules/@types" / name).resolve()
+    assert sorted(path.name for path in (work / "node_modules/@types").iterdir()) == ["ms", "node"]
+    assert [gap["tool"] for gap in preparation.missing(said)] == ["@types/down"]
+
+
+def test_a_restore_runs_the_lifecycle_scripts_first_and_falls_back_to_the_install_without_them():
+    """The install's own lifecycle is where a framework generates what the compiler reads (a dependency's
+    `postinstall`, the package's `postinstall` and `prepare`): project code, so for a container only. One that
+    fails, or outlasts the limit, is said and costs the generation only: the folder is restored without scripts."""
+    plain, line = preparation.restore("npm", ["a", "b"]), preparation.restore("npm", ["a", "b"], scripts=True)
+    first = (f"timeout {preparation.LIMIT} sh -c 'if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ];"
+             " then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi'")
+    assert first in line and "DAODAN-GENERATE-FAILED npm %s" in line
+    assert line.index(first) < line.index("DAODAN-GENERATE-FAILED") < line.index("npm ci --ignore-scripts")
+    assert line.index("npm ci --ignore-scripts") < line.index("DAODAN-RESTORE-FAILED") and line.endswith("done; true")
+    assert "timeout" not in plain and "GENERATE" not in plain  # the default is the line without project code
+    assert "corepack pnpm install --frozen-lockfile'" in preparation.restore("pnpm", ["."], scripts=True)
+    berry = preparation.restore("yarn", ["."], scripts=True)
+    assert "corepack yarn install --immutable; else corepack yarn install --frozen-lockfile; fi'" in berry
+    # A manager whose restore runs no project code has one line.
+    assert preparation.restore("go", ["."], scripts=True) == preparation.restore("go", ["."])
+    stderr = ("DAODAN-GENERATE-FAILED npm web/app\nnpm error code 1\nnpm error command sh -c svelte-kit sync\n"
+              "DAODAN-GENERATE-END\nDAODAN-RESTORE-FAILED npm api\nnpm error code E404\nDAODAN-RESTORE-END\n")
+    assert preparation.generation_gaps(stderr) == [{
+        "kind": "generation_failed", "manager": "npm", "path": "web/app",
+        "detail": "npm error code 1 | npm error command sh -c svelte-kit sync"}]
+    assert [gap["path"] for gap in preparation.restore_gaps(stderr)] == ["api"]
+    # An install that fails without its scripts too did not fail for them: one gap, the restore's.
+    assert preparation.generation_gaps(stderr.replace("npm web/app", "npm api")) == []
+
+
+def test_each_package_folder_restores_with_the_manager_its_lockfile_or_its_manifest_names(sandbox):
+    """Without a root package.json each outermost package is restored where it starts, as the pre-map names it."""
+    project = _folders(sandbox["root"] / "project" / "folders")
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
+    result = typescript.index(project, sandbox["root"] / "work", tsconfig="web/tsconfig.app.json",
+                              roots={"api", "cli", "site", "web"})
+    assert "state" not in result, result.get("reason")
+    plan = preparation.node_prepare(FOLDERS, lambda rel: (project / rel).read_text(encoding="utf-8"))
+    assert result["restores"] == plan["restores"] == {"npm": ["api", "cli"], "pnpm": ["web"], "yarn": ["site"]}
+    assert result["tsconfig_extends"] == "./web/tsconfig.app.json" and "gaps" not in result
+    lines = box.asked[0]["prepare"][2].splitlines()
+    assert all(line in lines for line in plan["lines"])
+    assert box.asked[0]["registries"] == (*preparation.NODE_REGISTRIES, "repo.yarnpkg.com")
+
+
+def test_the_project_runs_on_the_node_it_states_and_the_indexer_on_daodans(sandbox):
+    project = _project(sandbox, "ts")
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
+    stated = [{"tool": "node", "version": "20.11.1", "declared_in": ".nvmrc"},
+              {"tool": "node", "version": ">=18", "declared_in": "package.json#engines"}]
+    result = typescript.index(project, sandbox["root"] / "work", roots={""}, toolchains=stated)
+    assert "state" not in result and "gaps" not in result  # a range is no version to install: no gap, the pin
+    chains = preparation.toolchains(stated[:1])
+    asked = box.asked[0]
+    prepare, lines = asked["prepare"][2], asked["prepare"][2].splitlines()
+    assert all(line in lines for line in chains["lines"]) and "mise install node@20.11.1" in prepare
+    # The indexer is installed before the project's Node is first on the path, and runs on Daodan's.
+    assert prepare.index("@sourcegraph/scip-typescript@") < prepare.index("mise install node@20.11.1")
+    assert prepare.index("mise install node@20.11.1") < prepare.index(preparation.restore("npm", ["."], scripts=True))
+    assert f"{T}/node/bin/node " in asked["command"][2]
+    assert asked["registries"] == (*preparation.NODE_REGISTRIES, *chains["hosts"])
+    assert set(asked["inputs"]) == {f"{IN}/node.tar.gz", f"{IN}/mise", typescript.CONFIG, typescript.TYPES}
+    typescript.index(project, sandbox["root"] / "work", roots={""}, toolchains=stated[1:])
+    assert "mise" not in box.asked[1]["prepare"][2] and f"{IN}/mise" not in box.asked[1]["inputs"]
+
+
+def test_the_type_packages_follow_the_restore_and_the_prepare_run_lists_those_added(sandbox):
+    """At the major of the Node the project states, else of Daodan's; the script travels with the copy."""
+    project = _project(sandbox, "ts")
+    log = ("DAODAN-TYPES-ADDED @types/node@20.19.2\nDAODAN-TYPES-ABSENT @types/nope\n"
+           "DAODAN-TYPES-ADDED @types/ms@2.1.0\n")
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip", prepare=log)
+    result = typescript.index(project, sandbox["root"] / "work", roots={"", "web"},
+                              toolchains=[{"tool": "node", "version": "v20.11.1", "declared_in": ".nvmrc"}])
+    asked = box.asked[0]
+    prepare, line = asked["prepare"][2], f"python3 {typescript.TYPES} /work 20 {typescript.TYPES_DIR} . web"
+    assert line in prepare.splitlines()
+    assert prepare.index(preparation.restore("npm", ["."], scripts=True)) < prepare.index(line)
+    assert Path(asked["inputs"][typescript.TYPES]) == Path(typescript.__file__).with_name("typescript_types.py")
+    assert result["runs"][0]["types"] == ["@types/node@20.19.2", "@types/ms@2.1.0"] and "gaps" not in result
+    typescript.index(project, sandbox["root"] / "work", roots={""})
+    major = preparation.NEEDS["node"]["version"].split(".")[0]
+    assert f"python3 {typescript.TYPES} /work {major} {typescript.TYPES_DIR} ." in box.asked[1]["prepare"][2].splitlines()
+
+
+def test_without_a_container_engine_typescript_is_unavailable_with_the_gaps_cause_and_remedy(sandbox):
+    project = _project(sandbox, "ts")
+    _contained(sandbox, gap=("no container engine answers: neither docker nor podman", "start Docker or Podman"))
+    result = typescript.index(project, sandbox["root"] / "work", roots={""})
+    assert (result["state"], result["reason"], result["install"]) == (
+        "unavailable", "no container engine answers: neither docker nor podman", "start Docker or Podman")
+    assert result["indexes"] == [] and result["runs"] == []
+    # Nothing is downloaded or started without an engine.
+    assert sandbox["fetched"] == [] and sandbox["fake"].calls == [] and sandbox["web"].asked == []
+
+
+def test_what_the_preparation_could_not_install_restore_or_generate_is_a_gap_and_the_index_run_goes_on(sandbox):
+    project = _project(sandbox, "ts")
+    generated = "DAODAN-GENERATE-FAILED npm .\nnpm error command sh -c svelte-kit sync\nDAODAN-GENERATE-END\n"
+    log = ("DAODAN-MISSING node@20.11.1\n" + generated.replace("svelte-kit sync", "npm error code E404")
+           + "DAODAN-RESTORE-FAILED npm .\nnpm error code E404\nnpm error 404 no-such-package\nDAODAN-RESTORE-END\n")
+    _contained(sandbox, index=FIXTURES / "ts/index.scip", prepare=log)
+    result = typescript.index(project, sandbox["root"] / "work", roots={""},
+                              toolchains=[{"tool": "node", "version": "20.11.1", "declared_in": ".nvmrc"}])
+    assert "state" not in result and len(result["indexes"]) == 1
+    assert [(gap["kind"], gap.get("tool") or gap.get("manager")) for gap in result["gaps"]] == [
+        ("toolchain_unavailable", "node"), ("restore_failed", "npm")]
+    assert result["gaps"][1] == {"kind": "restore_failed", "manager": "npm", "path": ".",
+                                 "detail": "npm error code E404 | npm error 404 no-such-package"}
+    # A lifecycle script that fails costs the generation only: the folder is restored without it, and it is said.
+    _contained(sandbox, index=FIXTURES / "ts/index.scip", prepare=generated)
+    result = typescript.index(project, sandbox["root"] / "work", roots={""})
+    assert "state" not in result and result["gaps"] == [{
+        "kind": "generation_failed", "manager": "npm", "path": ".", "detail": "npm error command sh -c svelte-kit sync"}]
+
+
+def test_an_indexer_the_preparation_cannot_install_is_unavailable_with_its_cause(sandbox):
+    project = _project(sandbox, "ts")
+    log = f"npm error network ECONNREFUSED\nDAODAN-MISSING scip-typescript@{typescript.VERSION}\n"
+    _contained(sandbox, prepare=log, codes=(70, None))
+    result = typescript.index(project, sandbox["root"] / "work", roots={""})
+    assert result["state"] == "unavailable" and result["indexes"] == []
+    assert f"scip-typescript {typescript.VERSION} could not be installed" in result["reason"]
+    assert "npm error network ECONNREFUSED" in result["reason"] and "npm registry" in result["install"]
+
+
+@pytest.mark.parametrize("codes, said", [((0, 1), "exit code 1"), ((None, None), "preparation timeout")])
+def test_a_run_that_brings_no_index_back_is_failed_with_its_cause_and_last_words(sandbox, codes, said):
+    project = _project(sandbox, "ts")
+    words = "2026-11-16 ERROR one thing\nerror TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'.\n"
+    _contained(sandbox, index=FIXTURES / "ts/index.scip", prepare=words, execute=words, codes=codes)
+    result = typescript.index(project, sandbox["root"] / "work", roots={""})
+    assert result["state"] == "failed" and result["indexes"] == []
+    assert said in result["reason"] and "error TS5083" in result["reason"] and result["errors"] >= 1
+    assert [run["phase"] for run in result["runs"]] == ["prepare", "execute"][:1 if codes[0] is None else 2]
+    assert not list((sandbox["root"] / "work").glob("*.scip"))
 
 
 # ---------------------------------------------------------------- Python

@@ -1,4 +1,5 @@
-"""dynamic_record.py on fixtures/python: every executed call seen, with the callee written here by hand.
+"""The plugin's Python recorder (`dynamic/python_record.py`) on fixtures/python: every executed call seen, with the
+callee written here by hand.
 
     python -m unittest benchmarks/call-provenance/test_dynamic_record.py
 
@@ -20,7 +21,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 FIXTURE = HERE / "fixtures" / "python"
-RECORDER = HERE / "dynamic_record.py"
+RECORDER = HERE.parents[1] / "plugins/codebase-map/skills/map/scripts/dynamic/python_record.py"
 
 
 def lines(name: str) -> list[str]:

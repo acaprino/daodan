@@ -7,17 +7,23 @@ snapshot is the pipeline's input; the flows read the complete graph after it.
 1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
    commands run in Daodan's container (`premap.container_runner`).
 2. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
-3. `union`: the graphs of the technologies as the complete graph. Until the dynamic step and the connection
-   points exist, it is the store of the static graphs, and it says so with a gap per language; it also says what
-   the graph does not hold: the files an index left out, the languages no analyzer lists, the calls between two
-   analyzers' languages.
+3. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
+   Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
+   container engine, no observer for a language or no test command the project declares, it says the gap and
+   the pipeline goes on. `DAODAN_DYNAMIC=off` skips it.
+4. `union`: the graphs of the technologies as the complete graph. Until the connection points exist, it is the
+   store of each technology's graph: it says what a run observed (the sites, the holes closed, the sampled ones
+   apart) and what stayed
+   unobserved (a language with no observed edge, the tests that did not run, the files no test executed, an
+   observed edge against a proven one), and what the graph does not hold: the files an index left out, the
+   languages no analyzer lists, the calls between two analyzers' languages.
 
 See docs/specs/2026-11-15-pipeline-di-analisi.md.
 """
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parents[1]
@@ -32,6 +38,7 @@ class Context:
     manifest: Path
     bus: events.Bus
     report_path: Path | None = None  # the analysis's report, beside the snapshot by default
+    results: dict = field(default_factory=dict)  # each step's result by its name, for the steps after it
 
 
 class Scan:
@@ -93,8 +100,23 @@ class Analyze:
         return report
 
 
+class Dynamic:
+    NAME, INPUTS, OUTPUTS = "dynamic", ("snapshot", "premap", "edges"), ("observed",)
+
+    @staticmethod
+    def run(context: Context) -> dict:
+        import dynamic
+        try:
+            return dynamic.run(context.manifest, context.bus)
+        except Exception as error:  # noqa: BLE001 - what a run observes is added to the static graph, which stays
+            cause = f"{type(error).__name__}: {error}"
+            context.bus.emit("log", f"the dynamic step failed: {error}", step=Dynamic.NAME, level="error",
+                             cause=cause, remedy="the graph is the static one; run the analysis again")
+            return {"languages": {}, "failed": cause}
+
+
 class Union:
-    NAME, INPUTS, OUTPUTS = "union", ("edges",), ("graph",)
+    NAME, INPUTS, OUTPUTS = "union", ("edges", "observed"), ("graph",)
     # Languages two analyzers index apart that call each other (Java and Kotlin in one build, cgo, a Python C
     # extension, JNI): each stage loads only its own index, so no edge joins them.
     APART = (("java", "kotlin"), ("go", "c"), ("python", "c"), ("python", "cpp"), ("java", "c"), ("java", "cpp"))
@@ -109,11 +131,12 @@ class Union:
         def say(message: str, gap: dict, language: str | None = None) -> None:
             context.bus.emit("gap", message, step=Union.NAME, gap=gap, **({"language": language} if language else {}))
 
+        outcomes = (context.results.get(Dynamic.NAME) or {}).get("languages") or {}
         for language, entry in sorted(languages.items()):
             if entry.get("state") != "fresh":
                 continue
-            say(f"{language}: static graph only", {"kind": "not-observed", "detail":
-                "no edge observed in a run: the dynamic step is not built yet"}, language)
+            Union.observed(language, entry.get("coverage") or {}, (outcomes.get(language) or {}).get("reason"),
+                           context.bus, say)
             files = (entry.get("coverage") or {}).get("files") or {}
             if files.get("missing"):
                 reasons = dict(collections.Counter(item["reason"] for item in files["missing"]).most_common(3))
@@ -136,8 +159,49 @@ class Union:
         return {"languages": languages, **({"no_analyzer": unserved} if unserved else {}),
                 **({"not_joined": apart} if apart else {})}
 
+    @staticmethod
+    def observed(language: str, coverage: dict, reason: str | None, bus, say) -> None:
+        """What a run observed for `language` (its `coverage`'s `observed`, and `sampled` apart), and what stayed
+        unobserved, each a gap: no edge of a run at all (with the dynamic step's `reason` when it gave one), the
+        tests that did not run to their end, the files with calls no test executed, the observed edges against a
+        proven one. A sample says nothing of what it did not see."""
+        seen, sampled = coverage.get("observed") or {}, coverage.get("sampled") or {}
+        for test in seen.get("tests") or ():
+            if test["state"] != "ran":
+                detail = (f"{language}: the tests of {test['root']} ({test['runner']}) ended {test['state']}: what "
+                          "they call is not observed")
+                say(detail, {"kind": "tests-not-run", "path": test["root"], "state": test["state"],
+                             "detail": detail}, language)
+        if not seen.get("edges") and not sampled.get("edges"):
+            why = reason or ("a run placed no call on a reference of this language" if seen else
+                             "the dynamic step has not observed this language")
+            say(f"{language}: static graph only", {"kind": "not-observed", "detail":
+                f"no edge observed in a run: {why}"}, language)
+            return
+        if seen.get("edges"):
+            bus.emit("log", f"{language}: {seen['sites']} sites observed in a run, "
+                            f"{sum(seen['closed'].values())} holes closed", step=Union.NAME, language=language,
+                     resolver=seen.get("resolver"), sites=seen["sites"], edges=seen["edges"], closed=seen["closed"])
+        if sampled.get("edges"):
+            bus.emit("log", f"{language}: {sampled['sites']} sites and {sampled['edges']} edges sampled in a run, "
+                            f"{sum(sampled['closed'].values())} holes closed", step=Union.NAME, language=language,
+                     resolver=sampled.get("resolver"), sites=sampled["sites"], edges=sampled["edges"],
+                     closed=sampled["closed"])
+        idle = (seen.get("files") or {}).get("not_executed") or []
+        if idle:
+            detail = (f"{language}: no test executed {len(idle)} files with calls, which stay as the static steps "
+                      f"left them: {', '.join(idle[:5])}")
+            say(detail, {"kind": "files-not-executed", "count": len(idle), "files": idle[:60], "detail": detail},
+                language)
+        conflicts = seen.get("conflicts") or {}
+        if conflicts.get("count"):
+            detail = (f"{language}: {conflicts['count']} observed edges contradict a proven edge at the same call, "
+                      f"a defect of one of the two steps; both are kept: {conflicts['examples'][0]['site']}")
+            say(detail, {"kind": "observed-conflict", "count": conflicts["count"],
+                         "examples": conflicts["examples"], "detail": detail}, language)
 
-STEPS = (Scan, Analyze, Union)
+
+STEPS = (Scan, Analyze, Dynamic, Union)
 
 
 class StepFailed(Exception):
@@ -158,7 +222,7 @@ def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | N
     context = Context(manifest, bus, report_path)
     names = [step.NAME for step in STEPS]
     chosen = STEPS[names.index(start) if start else 0:names.index(stop) + 1 if stop else len(STEPS)]
-    results = {}
+    results = context.results
     for step in chosen:
         bus.emit("step.started", step.NAME, step=step.NAME, inputs=list(step.INPUTS))
         try:

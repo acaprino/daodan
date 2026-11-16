@@ -1,14 +1,31 @@
 """scip-typescript, for JavaScript and TypeScript: how it runs, and the aliases its index states its own way.
 
-`index` runs scip-typescript (npm, without install scripts, on Daodan's Node) in a mirror of the project with
-the engine pass's package install linked as `node_modules` (`npm_modules`: `npm ci --ignore-scripts`; a
-project without a root `package.json` gets it in each outermost directory holding one) and a generated
-tsconfig that holds every JS/TS file of the snapshot (`allowJs`) and extends the project's own, or without a
-root `tsconfig.json` the one the pre-map names. One program has one `paths`: the generated tsconfig carries
-the aliases every unit's tsconfig states and the name of each package another reaches by name (a workspace's
-member, a unit's dependency) on its folder, so neither needs a link in `node_modules`. What the run lacks is
-a gap of its contract (`gaps`): an install that failed, a package no install serves, a local dependency left
-out of the install that no alias reaches, an alias two units give different targets. No project code runs.
+`index` is one container run over a copy of the project (`container.run_in_container`, spec
+`docs/specs/2026-11-12-passo-dinamico.md`, sections 2-4), never on the host: without a container the languages
+are `unavailable`, with the gap's cause and remedy.
+
+- Preparation, on a network that reaches only npm's registry (`preparation.NODE_REGISTRIES`), the hosts a
+  manager names and, for a Node the pre-map states at an exact version, mise's: Daodan's Node
+  (`preparation.NEEDS`), scip-typescript from npm without its install scripts, the stated Node (`mise`,
+  `preparation.toolchains`), then the project's own restore (`preparation.node_prepare`): in each package folder
+  the pre-map names that no other holds, and in each with a lockfile of its own, with the manager the lockfile
+  names, else the one its manifest names (`packageManager`, through corepack), else npm. The install runs with
+  its lifecycle scripts, as a CI's does: there a framework generates what the compiler reads (SvelteKit's
+  `.svelte-kit/tsconfig.json`, Nuxt's `.nuxt`). They are project code, which may run in the preparation and
+  stays in the container (spec, section 4); an install they break is done again without them. Last, the type
+  packages the project lacks (`typescript_types.py`): `@types/node` at the major of the Node the project runs on,
+  and `@types/<package>` for a declared package that ships no types, each installed apart and linked where
+  TypeScript looks last; the prepare run lists those added (`types`).
+- Execution, with no network: scip-typescript on Daodan's Node (0.5.2 needs Node 22.13 or later, whatever the
+  project runs on), with a generated tsconfig in place of the project's: it holds every JS/TS file of the
+  snapshot (`allowJs`) and extends the project's own, or without a root `tsconfig.json` the one the pre-map
+  names. One program has one `paths`: the generated tsconfig carries the aliases every unit's tsconfig states
+  and the name of each package another reaches by name (a workspace's member, a unit's dependency) on its
+  folder. The index comes back as the run's output.
+
+What the run lacks is a gap of its contract (`gaps`): a restore that failed (`preparation.restore_gaps`), an
+install whose lifecycle scripts failed (`preparation.generation_gaps`), a Node the preparation could not install,
+a package folder no restore serves, an alias two units give different targets.
 
 `hops` reads the statement that defines a name: `a = b`, `k: b.c`, `exports.f = g` and `{ k: name } = …` lead
 to the symbol the index references at the value or the key (CommonJS `module.exports = { f }` needs none: the
@@ -20,16 +37,57 @@ from __future__ import annotations
 
 import collections
 import json
-import subprocess
-from pathlib import Path, PurePosixPath
+import os
+import posixpath
+import re
+import shlex
+import shutil
+from pathlib import Path
 
 import code_graph
+import preparation
 
 VERSION = "0.5.2"  # @sourcegraph/scip-typescript on npm
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-typescript", ("typescript", "javascript"), frozenset({"npm-package"}), False
-MIN_FREE = 2304 * 2**20  # 2,264 MB peak on tududi (benchmarks/inference-audit, 13 November 2026)
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-typescript", ("typescript", "javascript"), frozenset({"npm-package"}), True
+# The container's memory: on the host the run peaked at 2,264 MB on tududi (benchmarks/inference-audit, 13 November
+# 2026)
+MIN_FREE = 3 * 2**30
+IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # git, for
+# a package a manifest takes from a repository (`indexers/clang.py` IMAGE)
+WORK, OUT = "/work", "/daodan/out"  # the copy (`container.WORKDIR`), and where the index is brought back from
+CONFIG = f"{preparation.STATE}/scip-typescript/tsconfig.json"  # the generated tsconfig, carried with the copy
+TYPES = f"{preparation.STATE}/scip-typescript/typescript_types.py"  # carried with the copy; installs into `TYPES_DIR`
+TYPES_DIR = f"{preparation.STATE}/types"
+T = preparation.T
+MANAGERS = ("npm", "pnpm", "yarn")  # the Node managers of `preparation.RESTORES`
+PEAK = "trap 'echo \"DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)\"' EXIT"
+# The preparation: Daodan's Node, the indexer (before a stated Node is first on the path), `{chains}`, `{restores}`,
+# then `{types}`.
+PREPARE = f'''set -u
+{PEAK}
+mkdir -p {T}/bin "$HOME"
+{{node}}
+{{{{ npm install -g --prefix {T}/npm --ignore-scripts --no-audit --no-fund --loglevel=error\
+ @sourcegraph/scip-typescript@{VERSION} ; }}}} >&2
+[ -e {T}/npm/bin/scip-typescript ] || {{{{ echo 'DAODAN-MISSING scip-typescript@{VERSION}' >&2; exit 70; }}}}
+{{chains}}
+cd {WORK} || exit 70
+{{restores}}
+{{types}}
+exit 0
+'''
+# The execution: the generated tsconfig in place of the project's, the indexer on Daodan's Node, `{heap}` MB.
+EXECUTE = f'''set -u
+{PEAK}
+mkdir -p {OUT}
+cd {WORK} || exit 70
+if [ -f tsconfig.json ]; then mv tsconfig.json tsconfig.project.json || exit 70; fi
+cp {CONFIG} tsconfig.json || exit 70
+NODE_OPTIONS=--max-old-space-size={{heap}} {T}/node/bin/node "$(readlink -f {T}/npm/bin/scip-typescript)" index\
+ --cwd {WORK} --output {OUT}/index.scip --no-progress-bar
+'''
 SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
 WORKSPACES = {"npm", "pnpm", "yarn", "lerna"}  # the pre-map's workspace tools whose members are packages
 GRAMMARS = {".ts": "typescript", ".mts": "typescript", ".cts": "typescript", ".tsx": "tsx", ".js": "javascript",
@@ -166,32 +224,32 @@ def _aliases(paths, members: dict | None) -> tuple[dict, list[dict]]:
     return merged, gaps
 
 
-def _tsconfig(mirror: Path, files: list[str], base: str | None = None, aliases: dict | None = None) -> str | None:
-    """Every JS/TS file of the snapshot in one program with `allowJs`; the project's own options kept;
-    `aliases` as its `paths`, absolute in the mirror (an inherited `baseUrl` would move a relative target)."""
+def _tsconfig(project: Path, target: Path, files: list[str], base: str | None = None,
+              aliases: dict | None = None) -> str | None:
+    """The tsconfig the run puts at the copy's root, written to `target`: every JS/TS file of the snapshot in one
+    program with `allowJs`; the project's own options kept (its root `tsconfig.json`, which the run renames);
+    `aliases` as its `paths`, absolute in the copy (an inherited `baseUrl` would move a relative target)."""
     options = {"allowJs": True, "checkJs": False, "noEmit": True, "incremental": False, "skipLibCheck": True}
     if aliases:
-        options["paths"] = {key: [(mirror / target).as_posix() for target in targets]
-                            for key, targets in aliases.items()}
+        options["paths"] = {key: [f"{WORK}/{name}" for name in targets] for key, targets in aliases.items()}
     config = {"compilerOptions": options, "include": files, "exclude": []}
-    own = mirror / "tsconfig.json"
-    if own.is_file():
-        own.rename(mirror / "tsconfig.project.json")
+    if (project / "tsconfig.json").is_file():
         config["extends"] = "./tsconfig.project.json"
-    elif base and (mirror / base).is_file():
+    elif base and (project / base).is_file():
         config["extends"] = f"./{base}"
     else:
         options.update({"target": "es2022", "module": "esnext", "moduleResolution": "bundler", "jsx": "preserve",
                         "esModuleInterop": True, "allowSyntheticDefaultImports": True, "resolveJsonModule": True})
-    own.write_text(json.dumps(config, indent=1), encoding="utf-8")
+    target.write_text(json.dumps(config, indent=1), encoding="utf-8")
     return config.get("extends")
 
 
 def structure(record: dict) -> dict:
     """What `index` takes from the pre-map: the folders it runs in (`roots`); the tsconfig a root without one
     extends (`tsconfig`: the root unit's first, else the only unit's that states one, since a program extends
-    one); each unit's aliases (`paths`, with its folder, the root's first); and the folder of each package
-    another reaches by name (`members`): a workspace's member, or one a unit depends on."""
+    one); each unit's aliases (`paths`, with its folder, the root's first); the folder of each package
+    another reaches by name (`members`): a workspace's member, or one a unit depends on; and the Node it states
+    (`toolchains`)."""
     import premap
     units = sorted(record.get("units", []), key=lambda unit: (unit["root"] != ".", unit["root"]))
     stated = [unit for unit in units if (unit.get("config") or {}).get("tsconfig")]
@@ -205,80 +263,105 @@ def structure(record: dict) -> dict:
              "paths": [[unit["root"], unit["config"]["paths"]] for unit in units
                        if (unit.get("config") or {}).get("paths")],
              "members": {unit["name"]: unit["root"] for unit in packages
-                         if unit["root"] in reached or unit["name"] in named}}
+                         if unit["root"] in reached or unit["name"] in named},
+             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "node"]}
     return {key: value for key, value in found.items() if value or key == "roots"}
 
 
-def _package_roots(roots: set[str]) -> list[str]:
-    """'' when the project's root is a package, else each outermost folder that is one."""
-    if "" in roots:
-        return [""]
-    return [root for root in sorted(roots) if not any(root.startswith(f"{other}/") for other in roots)]
+def _prepared(project_dir: Path, roots) -> dict:
+    """The restores of the package folders the pre-map names (`preparation.node_prepare`), from the manifest, the
+    lockfile and the pnpm workspace beside each."""
+    names = ("package.json", "package-lock.json", "npm-shrinkwrap.json", "pnpm-workspace.yaml",
+             *(lock for manager in MANAGERS for lock in preparation.RESTORES[manager].get("locks", ())))
+    files = [posixpath.join(root, name) for root in sorted(roots) for name in names
+             if (project_dir / root / name).is_file()]
+    return preparation.node_prepare(files, lambda rel: (project_dir / rel).read_text(encoding="utf-8",
+                                                                                   errors="replace"))
+
+
+def _runs(out_dir: Path, cause: str | None) -> list[dict]:
+    """A run per phase the container's record holds, with its log's tail, `ERROR` lines and memory peak; the
+    operation's `cause` leads the last one's tail."""
+    record = out_dir / "container-runs.jsonl"  # `container.RECORD_NAME`
+    rows = [json.loads(line) for line in record.read_text(encoding="utf-8").splitlines()
+            if line.strip()] if record.is_file() else []
+    runs = []
+    for row in rows:
+        log = out_dir / f"{row.get('phase')}.log"
+        text = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
+        peak = re.findall(r"DAODAN_PEAK (\d+)", text)
+        errors = [line[line.find(" ERROR ") + 7:][:200] for line in text.splitlines() if " ERROR " in line]
+        runs.append({"prefix": "", "phase": row.get("phase"), "returncode": row.get("exit_code"),
+                     "seconds": row.get("duration_seconds", 0), "image": IMAGE,
+                     "peak_mb": round(int(peak[-1]) / 2**20) if peak else None, "stdout_tail": "",
+                     "stderr_tail": text[-2500:], "stderr_errors": len(errors),
+                     "stderr_error_examples": list(dict.fromkeys(errors))[:5]})
+    if runs and cause:
+        runs[-1]["stderr_tail"] = f"{cause}\n{runs[-1]['stderr_tail']}"
+    return runs
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsconfig: str | None = None, *,
-          roots: set[str], paths=(), members: dict | None = None) -> dict:
+          roots: set[str], paths=(), members: dict | None = None, toolchains=(), engine=None,
+          memory: int = MIN_FREE) -> dict:
     """The scip-typescript index of `project_dir` for `files` (default: every JS/TS file outside
     `node_modules`), `tsconfig` the configuration a root without one extends, `roots` the folders of its packages,
-    `paths` the aliases of its units and `members` the folders of the packages reached by name, all as the
-    pre-map names them (`structure`); see the module's docstring."""
-    import engine_tools
-    import resolve_edges as rx
+    `paths` the aliases of its units, `members` the folders of the packages reached by name and `toolchains` the
+    Node it states, all as the pre-map names them (`structure`); `engine` and `memory` are the container's. See
+    the module's docstring."""
+    import container
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-    tool = runtime.Tool(project_dir, "scip-typescript", VERSION, skip=(".git", "node_modules"))
-    try:
-        runtime.memory("scip-typescript", MIN_FREE)
-        directory = runtime.node(project_dir)
-        script = runtime.npm_package(project_dir, directory, "@sourcegraph/scip-typescript", VERSION)
-        packages, roots = set(roots), _package_roots(set(roots))
-        for root in roots:
-            key = rx.npm_key(project_dir / root)
-            if key and not (rx.shared_cache_dir() / "npm" / key / "daodan-modules.json").is_file():
-                runtime.room()
-    except runtime.Unavailable as error:
-        return runtime.refused("scip-typescript", VERSION, error)
-    installs, links, served = {}, {}, set()
+    runtime.clear(work_dir, "scip-typescript")
     aliases, gaps = _aliases(paths, members)
-    for root in roots:
-        failed = []
-        try:
-            with runtime.on_path(directory):
-                modules = rx.npm_modules(project_dir / root, failed)  # the engine pass's own: npm ci --ignore-scripts
-        except (OSError, subprocess.SubprocessError) as error:
-            modules, failed = None, [str(error)]
-        gaps += [{"kind": "restore_failed", "manager": "npm", "path": root or ".", "detail": reason[:600]}
-                 for reason in failed]
-        installs[root] = str(modules) if modules else None
-        manifests = rx.npm_manifests(project_dir / root)
-        served |= {manifest.parent.relative_to(project_dir).as_posix() for manifest in manifests}
-        for manifest in manifests if modules is not None else ():
-            installed = modules.parent / manifest.parent.relative_to(project_dir / root) / "node_modules"
-            if installed.is_dir():
-                relative = manifest.parent.relative_to(project_dir).as_posix()
-                links[(PurePosixPath(relative) / "node_modules").as_posix()] = installed
-        gaps += [{"kind": "dependency_not_installed", "manager": "npm",
-                  "path": (PurePosixPath(root) / manifest).as_posix(),
-                  "detail": f"{name} ({spec}): a local package, left out of the install, that no alias reaches"}
-                 for manifest, name, spec in engine_tools.npm_local_packages(project_dir / root)
-                 if name not in (members or {})]
-    # A package under an install's root that its `workspaces` do not name: npm installs nothing for it.
-    gaps += [{"kind": "restore_failed", "manager": "npm", "path": root,
-              "detail": "its packages are not installed: the `workspaces` of no package.json above name this folder"}
-             for root in sorted(packages - set(roots) - served) if (project_dir / root / "package.json").is_file()]
+    restored = _prepared(project_dir, roots)
+    plan = restored["restores"]
+    # A package another reaches by name (a member, a `file:` dependency) is installed by the restore that reaches it.
+    reached = set((members or {}).values())
+    gaps += [gap for gap in restored["gaps"] if gap["path"] not in reached]
+    # The project runs on the Node it states at an exact version (mise), else on Daodan's: its `@types/node`.
+    stated = [item for item in toolchains if item.get("tool") == "node"
+              and preparation.EXACT.match(str(item.get("version") or ""))]
+    chains = preparation.toolchains(stated)
+    major = str(stated[0]["version"] if stated else preparation.NEEDS["node"]["version"]).lstrip("v").split(".")[0]
+    types = " ".join(["python3", TYPES, WORK, major, TYPES_DIR, *(shlex.quote(root or ".") for root in sorted(roots))])
     if files is None:
         files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
                        if path.suffix in SUFFIXES and "node_modules" not in path.relative_to(project_dir).parts)
+    config = work_dir / "tsconfig.generated.json"
+    extends = _tsconfig(project_dir, config, [rel for rel in files if rel.endswith(SUFFIXES)], tsconfig, aliases)
+    prepare = PREPARE.format(node="\n".join(preparation.setup(["node"])["lines"]), chains="\n".join(chains["lines"]),
+                             restores="\n".join(restored["lines"]), types=types)
+    out_dir = work_dir / "container"
+    shutil.rmtree(out_dir, ignore_errors=True)
+    result = container.run_in_container(
+        project_dir, ["bash", "-c", EXECUTE.format(heap=memory * 4 // 5 // 2**20)], image=IMAGE, out_dir=out_dir,
+        prepare=["bash", "-c", prepare], outputs=[OUT], env={**preparation.ENV, "TERM": "dumb"}, timeout=3 * 3600,
+        prepare_timeout=3600, memory=memory, engine=engine,
+        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"]])),
+        inputs=lambda: {CONFIG: config, TYPES: Path(__file__).with_name("typescript_types.py"),
+                        **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
+                           for url, digest, name in (preparation.NODE, *chains["files"])}})
+    if result["state"] == "gap":
+        return runtime.refused("scip-typescript", VERSION, runtime.Unavailable(result["cause"], result["remedy"]))
+    cut = "cut off at its time limit" if result["state"] == "timeout" else None
+    runs = _runs(out_dir, result.get("cause") or cut)
+    log = out_dir / "prepare.log"
+    prepared = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
+    missing = preparation.missing(prepared)
+    if any(gap["tool"] == "scip-typescript" for gap in missing):
+        cause = f"scip-typescript {VERSION} could not be installed in the container: {runtime.excerpt(prepared)}"
+        return runtime.refused("scip-typescript", VERSION, runtime.Unavailable(
+            cause, "check the network: Daodan installs scip-typescript from the npm registry"))
+    gaps += chains["gaps"] + missing + preparation.restore_gaps(prepared) + preparation.generation_gaps(prepared)
+    if runs and runs[0]["phase"] == "prepare":
+        runs[0]["types"] = re.findall(r"DAODAN-TYPES-ADDED (\S+)", prepared)
     output = work_dir / "scip-typescript-0.scip"
-    runtime.clear(work_dir, "scip-typescript")
-    env = runtime.environment(directory, NODE_OPTIONS="--max-old-space-size=12288")
-    with runtime.mirrored(tool, links) as mirror:
-        extends = _tsconfig(mirror, [rel for rel in files if rel.endswith(SUFFIXES)], tsconfig, aliases)
-        run = {"prefix": "", **code_graph.measured(
-            [str(directory / rx.executable_name("node")), str(script), "index", "--cwd", str(mirror), "--output",
-             str(output), "--no-progress-bar"], str(mirror), env, 3 * 3600)}
-    run["index"] = str(output) if output.is_file() else None
-    run["index_bytes"] = output.stat().st_size if output.is_file() else 0
-    return {**runtime.outcome("scip-typescript", VERSION, [run]), "node_modules": installs,
-            "tsconfig_extends": extends, **({"gaps": gaps} if gaps else {})}
+    if (out_dir / "out/index.scip").is_file():
+        os.replace(out_dir / "out/index.scip", output)
+    if runs and runs[-1]["phase"] == "execute":
+        runs[-1].update(index=str(output) if output.is_file() else None,
+                        index_bytes=output.stat().st_size if output.is_file() else 0)
+    return {**runtime.outcome("scip-typescript", VERSION, runs), "restores": plan, "tsconfig_extends": extends,
+            **({"gaps": gaps} if gaps else {})}

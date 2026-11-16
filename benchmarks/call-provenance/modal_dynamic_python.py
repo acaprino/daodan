@@ -1,4 +1,5 @@
-"""Dynamic step on Modal, Python: python-semver's pytest suite under dynamic_record.py, joined to the index graph.
+"""Dynamic step on Modal, Python: python-semver's pytest suite under the plugin's recorder
+(`dynamic/python_record.py`), joined to the index graph.
 
     modal deploy benchmarks/call-provenance/modal_dynamic_python.py
     python benchmarks/call-provenance/modal_dynamic_python.py spawn --tag <name>
@@ -34,6 +35,8 @@ STORE = "inference-audit/graph-python/semver"
 ROWS = "inference-audit/strong-python/semver.json"
 GRAPH = "inference-audit/graph-python-semver.json"
 WORK = Path("/work/src")
+# The recorder is the plugin's: the dynamic step's Python observer carries the same file.
+RECORDER = HERE.parents[1] / "plugins/codebase-map/skills/map/scripts/dynamic/python_record.py"
 
 # The 16 calls no static source gives a project target (benchmarks/inference-audit/README.md, Python):
 # file, line, name token ("" for a computed callee), nth occurrence on the line.
@@ -123,8 +126,7 @@ image = (
     modal.Image.debian_slim(python_version="3.13")
     .pip_install("uv==0.9.5")
     .run_function(prepare, volumes={"/results": volume})
-    .add_local_file(HERE / "dynamic_record.py" if LOCAL else Path("/tool/dynamic_record.py"),
-                    "/tool/dynamic_record.py")
+    .add_local_file(RECORDER if LOCAL else Path("/tool/dynamic_record.py"), "/tool/dynamic_record.py")
 )
 app = modal.App("daodan-dynamic-python", image=image)
 

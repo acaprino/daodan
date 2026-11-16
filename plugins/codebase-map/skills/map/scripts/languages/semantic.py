@@ -446,7 +446,8 @@ class _JavaScriptEvidence(_Evidence):
         if node.type == "member_expression":
             obj = node.child_by_field_name("object")
             prop = node.child_by_field_name("property")
-            prefix = self.parts(obj)
+            # `super.m` is bound where it is written; `this` is bound by the call, a computed value.
+            prefix = ["super"] if obj is not None and obj.type == "super" else self.parts(obj)
             if prefix and prop is not None and prop.type in ("property_identifier", "identifier"):
                 return prefix + [self.text(prop)]
         return []
@@ -1038,8 +1039,11 @@ class _TreeSitterEvidence(_Evidence):
     def parts(self, node):
         if node is None:
             return []
-        if node.type in ("identifier", "type_identifier", "simple_identifier", "this", "self", "super", "crate"):
+        if node.type in ("identifier", "type_identifier", "simple_identifier", "this", "self", "super", "base",
+                         "crate"):
             return [self.text(node)]
+        if node.type in ("this_expression", "super_expression"):  # Kotlin's, also `this@Outer`, `super<B>`
+            return [node.type.removesuffix("_expression")]
         if node.type == "navigation_suffix":
             ident = next((c for c in node.named_children if c.type in ("simple_identifier", "identifier", "type_identifier")), None)
             return [self.text(ident)] if ident is not None else []

@@ -15,7 +15,8 @@ from snapshot_store import _pack, _unpack, logical_digest
 EDGE_SCHEMA = 5
 
 
-# One row per end of a reference: `verdict` is the end's class, `confidence` confirmed, uncertain or observed.
+# One row per end of a reference: `verdict` is the end's class, `confidence` confirmed, uncertain, `OBSERVED` or
+# `SAMPLED`.
 EDGE_COLUMNS = ("reference_id", "file", "language", "kind", "caller", "l0", "c0", "verdict", "target_id", "symbol",
                 "resolver", "confidence", "payload")
 
@@ -24,6 +25,14 @@ HOLE_COLUMNS = ("reference_id", "file", "language", "kind", "l0", "c0", "class",
 
 
 EXTERNAL_COLUMNS = ("symbol", "manager", "package", "version")
+
+
+# The confidence of an end seen in a run (the dynamic step): it holds for that run, and proves that the call can
+# arrive there, not that it arrives only there. Its `resolver` names the recorder. `OBSERVED` is an exact
+# recorder's (every call, at its site); `SAMPLED` a pair of a sampling profiler's stack, which may name no call
+# site: then its row has no reference, an edge between two declarations. What a sample did not see is no fact.
+OBSERVED, SAMPLED = "observed", "sampled"
+SEEN = (OBSERVED, SAMPLED)  # the exact one first
 
 
 def default_edge_store(manifest: Path) -> Path:
@@ -220,15 +229,24 @@ def language_coverage(sites, edges, holes, files: dict | None = None) -> dict:
     reason), None without an index. `state` is `complete` when no file is missing, no site is a hole and no call
     ends only in a value, else `lower-bound`. A site the store holds nothing for breaks sites = answered + holes:
     it is listed in `violations`, by kind, and never counted.
+
+    The rows of a run (`SEEN`) are counted apart, by provenance, so what the static steps answer stays
+    comparable: a site keeps its static class whatever a run saw there; a hole with an end of a run is answered
+    `observed`, or `sampled` when no exact end answers it, and leaves `holes`, its class counted in that
+    provenance's `closed`. `observed` and `sampled` (the sites with such an end, the `edges`, those between two
+    declarations included, `closed` by hole class) are there only when the store holds such rows.
     """
     import collections
-    rows = collections.defaultdict(list)
+    rows, seen = collections.defaultdict(list), {provenance: collections.Counter() for provenance in SEEN}
     for edge in edges:
-        if edge.get("reference_id") is not None:
+        if edge.get("confidence") in seen:
+            seen[edge["confidence"]][edge.get("reference_id")] += 1
+        elif edge.get("reference_id") is not None:
             rows[edge["reference_id"]].append(edge)
     holed = {hole["reference_id"]: hole["class"] for hole in holes if hole.get("reference_id") is not None}
     answered, counted, examples = collections.Counter(), collections.Counter(), collections.defaultdict(list)
     externals, violations = collections.Counter(), collections.defaultdict(list)
+    closed = {provenance: collections.Counter() for provenance in SEEN}
     uncertain = values = 0
     for site in sites:
         found = rows.get(site["reference_id"], ())
@@ -245,6 +263,11 @@ def language_coverage(sites, edges, holes, files: dict | None = None) -> dict:
             answered["lexical"] += 1
         elif site["reference_id"] in holed or found:
             name = holed.get(site["reference_id"], "dead-end")
+            run = next((provenance for provenance in SEEN if site["reference_id"] in seen[provenance]), None)
+            if run is not None:
+                answered[run] += 1
+                closed[run][name] += 1
+                continue
             counted[name] += 1
             if len(examples[name]) < 3:
                 examples[name].append(site["site"])
@@ -257,6 +280,10 @@ def language_coverage(sites, edges, holes, files: dict | None = None) -> dict:
            "state": "complete" if complete else "lower-bound"}
     if violations:
         out["violations"] = dict(sorted(violations.items()))
+    for provenance, found in seen.items():
+        if found:
+            out[provenance] = {"sites": len(found.keys() - {None}), "edges": sum(found.values()),
+                               "closed": dict(sorted(closed[provenance].items()))}
     return out
 
 

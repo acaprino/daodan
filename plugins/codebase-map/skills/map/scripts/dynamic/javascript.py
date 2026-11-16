@@ -1,0 +1,242 @@
+"""The JavaScript and TypeScript observer: the project's tests under the exact recorder (`javascript_record.js`).
+
+`plan` reads the pre-map alone. The command is the one the project declares: the `test` script of each package
+(its `tests` entries, from `premap/npm_tests.py`), run as `npm test` in the package's folder; a project where no
+package declares one is a `no_test_command` gap, never a command of ours. A script whose runner compiles the
+code where the recorder has no hook (`NOT_OBSERVED`) is a `runner_not_observed` gap, and it does not run.
+
+`observe` is one container run (`container.run_in_container`, the TypeScript analyzer's image). The preparation,
+with the registries: Daodan's Node, the Babel the recorder prints with (`BABEL`, from npm without its install
+scripts), the Node the project states at an exact version (mise, `preparation.toolchains`), then the project's
+own restore with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The execution, with no
+network: each script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code and
+in every process the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on.
+The project is not changed. The recorder puts its Babel plugin where the code is compiled:
+
+- a source Node runs as written (Mocha, `node --test`, any script on Node's own loaders) is printed by
+  Daodan's Babel;
+- a @babel/core the run loads itself (Jest's babel-jest, @babel/register) gets the plugin in every transform.
+
+Code another tool printed before Node compiles it (ts-jest, a TypeScript loader, a bundler) is not recorded.
+Back come the observation files, one per process, and each run's log. What did not happen is a gap with its
+cause: tests that did not start (the log's tail), that failed, that outlasted the limit, that reached for a
+service or the network (the execution has none and the step starts no service), a run where the recorder saw no
+call, the files that ran as another tool printed them (`not_observed`), the project callees the recorder could
+not place in their source (`callee_unplaced`: no source map of the file in that process), a restore that failed.
+"""
+from __future__ import annotations
+
+import json
+import re
+import shlex
+import shutil
+from pathlib import Path
+
+import preparation
+from indexers import typescript  # the image, the unit kinds and the restores of the analyzer of the same languages
+
+# The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
+ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "1", ("javascript", "typescript")
+RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
+RUNNERS = ("jest", "mocha", "node:test", "npm")  # the runners of the pre-map's `tests` it starts, each as `npm test`
+NOT_OBSERVED = {"vitest": "Vitest compiles the code with Vite's transform, where the recorder has no hook"}
+BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the sources Node runs as written
+MOCKS = ("jest-mock", "sinon", "tinyspy", "@vitest/spy")  # a function of theirs stands for another: no destination
+MEMORY = 4 * 2**30  # a Jest shard of the measure ran in 4 GB (benchmarks/call-provenance)
+LIMIT = 3600  # the seconds one run of the tests may take
+OUT = "/daodan/out"
+IN, T = preparation.IN, preparation.T
+CORE = f"{T}/npm/lib/node_modules/@babel/core"
+UNREACHABLE = re.compile(r"ECONNREFUSED|ENOTFOUND|EAI_AGAIN|ENETUNREACH")
+MARK = re.compile(r"^DAODAN-DYNAMIC (\d+) (\S+) ?(.*)$", re.M)
+
+
+def external(callee: dict) -> dict:
+    """The package of a callee outside the project: an npm package is itself, at the version its `package.json`
+    states (as the static graph names it); Node's modules and the language's builtins are `node` at the
+    version that ran; code of neither is its file, with no version."""
+    if callee["kind"] == "package":
+        return {"manager": "npm", "package": callee["module"], "version": callee.get("version")}
+    package = "node" if callee["kind"] in ("runtime", "native") else callee.get("module") or "unknown"
+    return {"manager": "node", "package": package, "version": callee.get("version")}
+
+
+def plan(record: dict, files: list[str], read) -> dict:
+    """`{runs, gaps, roots, toolchains}` from the pre-map `record`: see the module's docstring. A run is
+    `{root, runner, declared_in}`; `roots` are the package folders the restores run in and `toolchains` the Node
+    the project states."""
+    import premap
+    tests = sorted((test for test in record.get("tests", []) if test.get("runner") in (*RUNNERS, *NOT_OBSERVED)),
+                   key=lambda test: test["root"])
+    if not tests:
+        return {"runs": [], "roots": [], "toolchains": [], "gaps": [{
+            "kind": "no_test_command",
+            "detail": "no package.json of the project declares a test script (`scripts.test`): nothing is "
+                      "observed"}]}
+    gaps = [{"kind": "runner_not_observed", "path": test.get("declared_in"), "runner": test["runner"],
+             "detail": f"{test.get('declared_in')} runs {test['runner']}: {NOT_OBSERVED[test['runner']]}; its "
+                       "tests do not run"} for test in tests if test["runner"] in NOT_OBSERVED]
+    return {"runs": [{"root": test["root"], "runner": test["runner"], "declared_in": test.get("declared_in")}
+                     for test in tests if test["runner"] in RUNNERS], "gaps": gaps,
+            "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
+            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "node"]}
+
+
+def scripts(planned: dict, restores: list[str]) -> tuple[str, str, dict]:
+    """The preparation's script, the execution's, and the stated Node's install (`preparation.toolchains`):
+    `restores` are the lines of the project's own restore."""
+    chains = preparation.toolchains([item for item in planned.get("toolchains") or ()
+                                     if preparation.EXACT.match(str(item.get("version") or ""))])
+    prepare = ["set -u", f'mkdir -p {T}/bin "$HOME"', *preparation.setup(["node"])["lines"],
+               # before a stated Node is first on the path: Daodan's npm installs it
+               f"{{ npm install -g --prefix {T}/npm --ignore-scripts --no-audit --no-fund --loglevel=error"
+               f" @babel/core@{BABEL} ; }} >&2",
+               f"[ -e {CORE}/package.json ] || {{ echo 'DAODAN-MISSING @babel/core@{BABEL}' >&2; exit 70; }}",
+               *chains["lines"], "cd /work || exit 70", *restores]
+    execute = ["set -u", f"mkdir -p {OUT}", f"export DYN_ROOT=/work DYN_BABEL={CORE}",
+               "run() {",  # $1 the run, $2 its folder
+               "  start=$(date +%s)",
+               f'  ( cd "/work/$2" && NODE_OPTIONS="--require {IN}/{RECORDER.name}"'
+               f" DYN_OUT={OUT}/observed-$1-%p.json exec timeout -k 30 {LIMIT} npm test ) > {OUT}/tests-$1.log 2>&1",
+               '  echo "DAODAN-DYNAMIC $1 exit $? $(( $(date +%s) - start ))"', "}",
+               *(f"run {number} {shlex.quote(run['root'])}" for number, run in enumerate(planned["runs"]))]
+    return "\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n", chains
+
+
+def _observations(folder: Path, run: int | None = None) -> list[dict]:
+    """The observation files in `folder` (one per process and thread, `observed-<run>-<pid>-<thread>.json`; of
+    one run or of all), each as the recorder wrote it."""
+    found = []
+    for path in sorted(Path(folder).glob(f"observed-{'*' if run is None else run}-*.json")):
+        try:
+            found.append(json.loads(path.read_text(encoding="utf-8")))
+        except (OSError, ValueError):
+            continue  # a process killed while it wrote: its file is no observation
+    return found
+
+
+def _callee(callee: dict, node: str | None) -> dict:
+    """A callee as the join reads it: a project one with its declaration's `column` (None where the recorder
+    could not place it) and `type`, the runtime's at the version of the Node that ran, a mock marked."""
+    if callee["kind"] == "project":
+        return {"column": None, "type": "function", **callee}
+    if callee["kind"] in ("runtime", "native"):
+        return {**callee, "version": node}
+    return {**callee, "mock": True} if callee.get("module") in MOCKS else callee
+
+
+def sites(folder: Path, run: int | None = None) -> list[dict]:
+    """The sites of the observation files in `folder` (`_observations`), each site once with every callee a
+    process saw there. Every site of the recorder is a call: a call or a `new`."""
+    merged: dict = {}
+    for data in _observations(folder, run):
+        for site in data.get("sites") or ():
+            key = (site["file"], site["line"], site["column"], site["name"])
+            entry = merged.setdefault(key, {**site, "role": "call", "callees": {}})
+            for callee in (_callee(callee, data.get("node")) for callee in site["callees"]):
+                entry["callees"][json.dumps(callee, sort_keys=True)] = callee
+    return [{**entry, "callees": list(entry["callees"].values())} for _key, entry in sorted(merged.items())]
+
+
+def _text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+
+
+def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes: int, ended: str) \
+        -> tuple[dict, list[dict]]:
+    """One run's entry and its gaps, from the mark its script printed, its tests' log and what it recorded."""
+    entry = {key: run[key] for key in ("root", "runner", "declared_in")}
+    code, _, seconds = mark.partition(" ")
+    entry.update(state="not_started", exit_code=int(code) if code else None,
+                 seconds=int(seconds) if seconds.isdigit() else None, processes=processes)
+    tail = " | ".join(line.strip() for line in log.strip().splitlines()[-8:])[-600:]
+    recorded = sum(len(data.get("sites") or ()) for data in observations)
+
+    def gap(kind: str, detail: str, **more) -> dict:
+        return {"kind": kind, "path": run["root"], **more, "detail": detail}
+
+    command = f"npm test in {run['root']}"
+    if not code:
+        return entry, [gap("tests_not_started", f"{command}: the run ended before the tests' exit ({ended})")]
+    gaps = []
+    if entry["exit_code"] in (124, 137):
+        entry["state"] = "timeout"
+        gaps.append(gap("tests_timeout", f"{command} did not end in {LIMIT} s: what ran until then is observed"))
+    elif entry["exit_code"] == 0 or recorded:
+        entry["state"] = "ran"
+        if entry["exit_code"]:
+            gaps.append(gap("tests_failed", f"{command} exited with code {code}: some tests failed, and a test "
+                                            f"that fails may stop before its calls: {tail}"))
+        elif not recorded:
+            gaps.append(gap("nothing_recorded",
+                            f"{command} ended and the recorder saw no call: its runner compiles the code where "
+                            "the recorder has no hook, or the script sets NODE_OPTIONS itself"))
+    else:
+        gaps.append(gap("tests_not_started", f"{command} exited with code {code} and recorded no call: {tail}"))
+    unobserved = sorted({rel for data in observations for rel in data.get("unobserved") or ()})
+    if unobserved:
+        gaps.append(gap("not_observed",
+                        f"{command}: {len(unobserved)} files ran as another tool printed them (a TypeScript "
+                        f"loader, a bundler), not as written, and their calls are not recorded: "
+                        f"{', '.join(unobserved[:5])}", files=len(unobserved), examples=unobserved[:5]))
+    refused = len(UNREACHABLE.findall(log))
+    if refused:
+        gaps.append(gap("services_unreachable",
+                        f"{command}: {refused} lines of its log report a refused connection or an unreachable "
+                        "host: the tests run with no network and the step starts no service"))
+    return entry, gaps
+
+
+def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
+    """The planned runs in one container run over a copy of `project`, read back from `out_dir`:
+    `{state, sites, runs, gaps}`, `state` `ran`, `gap` (no container: `cause`, `remedy`) or `failed` (the
+    preparation or the engine failed: `cause`, `remedy`, and nothing of the run is kept)."""
+    import container
+    project, out_dir = Path(project).resolve(), Path(out_dir)
+    shutil.rmtree(out_dir / Path(OUT).name, ignore_errors=True)  # a former run's outputs are not this one's
+    for phase in ("prepare", "execute"):
+        (out_dir / f"{phase}.log").unlink(missing_ok=True)
+    restored = typescript._prepared(project, planned.get("roots") or ())
+    prepare, execute, chains = scripts(planned, restored["lines"])
+    runs = planned["runs"]
+
+    def inputs() -> dict:
+        return {f"{IN}/{RECORDER.name}": RECORDER,
+                **{f"{IN}/{name}": preparation.fetched(url, digest, name)
+                   for url, digest, name in (preparation.NODE, *chains["files"])}}
+
+    result = container.run_in_container(
+        project, ["sh", "-c", execute], image=typescript.IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare],
+        outputs=[OUT], env={**preparation.ENV, "TERM": "dumb", "CI": "true"}, timeout=len(runs) * (LIMIT + 120),
+        prepare_timeout=3600, memory=MEMORY, engine=engine, inputs=inputs,
+        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"]])))
+    if result["state"] == "gap":
+        return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
+                "gaps": []}
+    prepared = _text(out_dir / "prepare.log")
+    missing = preparation.missing(prepared)
+    gaps = [*chains["gaps"], *missing, *preparation.restore_gaps(prepared), *preparation.generation_gaps(prepared)]
+    if result["state"] == "failed":
+        cause = result.get("cause") or "the container run failed"
+        if any(gap["tool"] == "@babel/core" for gap in missing):
+            cause = f"@babel/core {BABEL} could not be installed in the container (check the network): {cause}"
+        return {"state": "failed", "cause": cause, "remedy": f"see prepare.log and execute.log in {out_dir}",
+                "sites": [], "runs": [], "gaps": gaps}
+    marks = {int(number): rest.strip() for number, mark, rest in MARK.findall(_text(out_dir / "execute.log"))
+             if mark == "exit"}
+    back, entries = out_dir / Path(OUT).name, []
+    for number, run in enumerate(runs):
+        entry, own = _outcome(run, marks.get(number, ""), _text(back / f"tests-{number}.log"),
+                              _observations(back, number), len(list(back.glob(f"observed-{number}-*.json"))),
+                              result["state"])
+        entries.append(entry)
+        gaps += own
+    found = sites(back)
+    unplaced = sum(1 for site in found for callee in site["callees"]
+                   if callee["kind"] == "project" and callee["column"] is None)
+    if unplaced:
+        gaps.append({"kind": "callee_unplaced", "count": unplaced,
+                     "detail": f"{unplaced} observed calls reach a project function the recorder could not place "
+                               "in its source (no source map of its file in the process that called it): the "
+                               "end is said without its declaration"})
+    return {"state": "ran", "sites": found, "runs": entries, "gaps": gaps}

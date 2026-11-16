@@ -1,6 +1,6 @@
 # Passo dinamico: i test del progetto in un container
 
-**Stato:** sezione 2 applicata in `plugins/codebase-map/skills/map/scripts/container.py` (`run_in_container`) e verificata con una riga di comando finta e con un container sul Kiri dell'utente; del motore proprio della sezione 3 è verificato solo lo scaricamento con il checksum; sezioni 5-7 non applicate, nessun passo dell'analisi usa ancora l'operazione. Misurato su tududi, JavaScript: la copertura passa dal 37,9% al 47,1% con il profiler di V8 e al 72,2% con il registro esatto, sopra la soglia del 70%. Dettagli in [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md). **Data:** 12 novembre 2026. **Piano:** [`docs/plans/2026-11-12-passo-dinamico.md`](../plans/2026-11-12-passo-dinamico.md).
+**Stato:** sezione 2 applicata in `plugins/codebase-map/skills/map/scripts/container.py` (`run_in_container`) e verificata con una riga di comando finta e con un container sul Kiri dell'utente; del motore proprio della sezione 3 è verificato solo lo scaricamento con il checksum; le sezioni 5 e 7 sono applicate per Python e Go nello step `dynamic` della pipeline (`plugins/codebase-map/skills/map/scripts/dynamic/`), provate con un container finto e con il registro eseguito davvero; Python anche con una corsa su Modal sugli script e i test di Daodan (1.324 siti osservati, 72 buchi chiusi). Gli altri linguaggi sono in corso; la sezione 6 non è applicata. Misurato su tududi, JavaScript: la copertura passa dal 37,9% al 47,1% con il profiler di V8 e al 72,2% con il registro esatto, sopra la soglia del 70%. Dettagli in [`benchmarks/call-provenance`](../../benchmarks/call-provenance/README.md). **Data:** 12 novembre 2026. **Piano:** [`docs/plans/2026-11-12-passo-dinamico.md`](../plans/2026-11-12-passo-dinamico.md).
 
 Daodan deve saper rispondere a due domande che la lettura del codice lascia aperte: «quale funzione viene chiamata davvero, dove la destinazione si decide in esecuzione?» e «questo difetto si riproduce?». Vale per qualsiasi app o servizio: i casi concreti stanno nei README dei benchmark.
 
@@ -25,7 +25,7 @@ Daodan deve saper rispondere a due domande che la lettura del codice lascia aper
 | --- | --- | --- | --- | --- |
 | 1. Statico | Parser e risolutore lessicale: file, simboli, import, chiamate | No | Con ogni snapshot | Applicato |
 | 2. Inferenza | Il motore del linguaggio risolve le chiamate con le librerie del progetto | No | Con ogni snapshot, in background | Applicato |
-| 3. Dinamico | I test girano in un container; ciò che si osserva entra nel grafo | Sì, solo nel container | Su richiesta | Questa proposta |
+| 3. Dinamico | I test girano in un container; ciò che si osserva entra nel grafo | Sì, solo nel container | Con ogni analisi, dopo il passo 2, quando un motore di container risponde | Applicato per Python e Go |
 | 4. Semantico | Il modello scrive schede e regole di collegamento; i flussi uniscono chi scrive, chi legge e le azioni | No | Con l'analisi richiesta | Applicato; flussi in prova |
 
 Ogni passo legge ciò che gli altri hanno già prodotto. Solo il primo è un prerequisito: il quarto lavora con o senza il terzo.
@@ -133,6 +133,17 @@ Lo stesso container può preparare anche dati per il passo 2: le librerie che gl
 - La destinazione si classifica per la sua provenienza, come chiede il requisito 23: una funzione definita fuori dal progetto è esterna ed esce dal denominatore.
 - Il rapporto «risolte su risolvibili» riporta gli archi osservati a parte, così il valore dei passi 1 e 2 resta confrontabile nel tempo.
 - Un arco osservato che contraddice un arco provato è un difetto di uno dei due passi: si riporta, non si sceglie.
+- Una coppia chiamante-chiamato vista in uno stack campionato è un fatto osservato di una seconda fonte (sezione 7): `confidence` `sampled` e resolver `ENTRY@VERSION:sampled`, distinti da quelli esatti. Non dice mai che una chiamata che nessun campione ha visto non avviene.
+
+Applicato così (`dynamic/__init__.py`, `edge_store.py`, `code_graph.write_observed`, `edge_view.py`):
+
+- **Unione per posizione.** Un sito osservato risponde al riferimento dello snapshot che ha il nome del chiamato nello stesso punto (file, riga, colonna in byte) con lo stesso nome. Un riferimento di chiamata prende i siti raggiunti come chiamate; una lettura qualsiasi sito (una property gira su una lettura); una chiamata con il chiamato calcolato prende il sito che inizia dove inizia lei. I siti senza riferimento (confronti, operatori, ingressi e uscite di `with`) non diventano archi: si contano per ruolo (`unjoined`).
+- **Riga.** Una riga per destinazione nella tabella `edges`, con `confidence` `observed` e `resolver` il registro e la sua versione (`dynamic-record-python@1`). Una funzione del progetto è `project-callable` con la dichiarazione dello snapshot; un wrapper vale la funzione del progetto che avvolge (`chain` `wraps`); un chiamabile del progetto che lo snapshot non dichiara è `project-value`; ogni altra destinazione è `external` con il suo pacchetto. Un mock non è una destinazione.
+- **Copertura.** Le righe osservate si contano a parte: un sito tiene la classe statica che aveva, qualunque cosa la corsa abbia visto. Un buco con una destinazione osservata esce da `holes`, entra in `answered.observed` e la sua classe si conta in `observed.closed`; la riga del buco resta nello store. Vale sempre siti = risposte + buchi. `observed` porta anche i fatti della corsa: registro, test eseguiti con il loro esito, siti non uniti, file con chiamate che nessun test ha eseguito, conflitti.
+- **Conflitto.** Un riferimento con un bersaglio provato (`confirmed`) e nessuna destinazione osservata fra i bersagli, o con un esterno provato dove la corsa arriva nel progetto. Le due righe restano nello store, quella osservata con `conflict`; l'unione lo riporta come lacuna `observed-conflict`.
+- **Campioni.** Un osservatore dà le coppie del profiler in `sampled`, accanto ai siti esatti (contratto in `dynamic/__init__.py`). Con la riga della chiamata, una coppia risponde al riferimento del chiamante che copre quella riga e ha il nome del chiamato, se è uno solo (`dynamic.join_sampled`); altrimenti è una riga senza riferimento, un arco fra due dichiarazioni che non chiude nessun buco, con la causa (`no-line`, `not-found`, `ambiguous`). Si contano a parte, in `answered.sampled` e `sampled`; un buco con una destinazione esatta si chiude come `observed`. Dai campioni non vengono conflitti né file non eseguiti.
+- **Vista.** `edge_view` risponde con un arco osservato solo dove non rispondono né le righe provate né il risolutore lessicale, con `confidence` `observed`, o `sampled` dove nessun arco esatto risponde; il buco resta scritto sul riferimento.
+- **Durata.** Le righe osservate stanno nello store legato allo snapshot: uno snapshot nuovo riscrive il grafo statico e l'osservazione si rifà. Sullo stesso store il passo non gira due volte con lo stesso registro.
 
 ### 6. Chi lo usa
 
@@ -142,21 +153,37 @@ Lo stesso container può preparare anche dati per il passo 2: le librerie che gl
 
 ### 7. Per linguaggio
 
-Operazione e fatti osservati sono gli stessi per ogni linguaggio; l'immagine è la stessa (sezione 3); cambiano gli strumenti che il linguaggio scarica, la preparazione e il registro delle chiamate. Un registro si adotta solo se fa parte del runtime o della sua toolchain e riporta chiamante e chiamato; quello a campioni perde le chiamate brevi.
+Operazione e fatti osservati sono gli stessi per ogni linguaggio; l'immagine è la stessa (sezione 3); cambiano gli strumenti che il linguaggio scarica, la preparazione e il registro delle chiamate. Il registro si sceglie in quest'ordine (deciso dal proprietario il 16 novembre 2026):
 
-| Linguaggio | Preparazione | Registro candidato | Limite noto che può chiudere |
+1. Un registro esatto che esiste già (ogni chiamata, con chiamante, chiamato e posizione del sito) si adotta, fissato per versione e sha256 e con la licenza dichiarata; Daodan scrive solo l'adattatore.
+2. Dove nessuno lo è, Daodan scrive il registro esatto e dice quali candidati esistenti ha scartato e su che cosa.
+3. Il profiler a campioni della toolchain è una seconda fonte dichiarata (sezione 5): di solito dà coppie da funzione a funzione, senza la posizione del sito, e perde le chiamate brevi.
+
+| Linguaggio | Preparazione | Registro | Limite noto che può chiudere |
 | --- | --- | --- | --- |
-| JavaScript, TypeScript | `npm ci` o l'equivalente del lockfile | Profiler di V8 (`--cpu-prof`), a campioni, senza la riga della chiamata | Metodi su valori senza tipo e su oggetti costruiti a runtime |
-| Python | `uv sync` o `pip install` | `sys.monitoring` (Python 3.12+), ogni chiamata con la sua riga | Parametri senza tipo |
-| Java, Kotlin | Gradle o Maven, script compresi | JFR del JDK, a campioni; un agente Java registra ogni chiamata | Librerie calcolate dagli script Gradle (sezione 4) |
-| Go | `go mod download` | pprof (`go test -cpuprofile`), a campioni | Valori di funzione, interfacce anonime |
-| Rust | `cargo fetch`, build script accesi | perf, a campioni; richiede `perf_event_open`, che il profilo seccomp predefinito di Docker blocca | Codice generato dai build script (sezione 4) |
-| C# | `dotnet restore` | dotnet-trace, a campioni | Nessuno: il motore del passo 2 non è ancora scelto |
+| JavaScript, TypeScript | `npm ci` o l'equivalente del lockfile | In corso | Metodi su valori senza tipo e su oggetti costruiti a runtime |
+| Python | `uv sync`, `poetry install` o `pip install`, come dice il lockfile | Adottato (punto 2): il registro di Daodan su `sys.monitoring`, l'API del runtime (Python 3.12+), ogni chiamata con la sua posizione (`dynamic/python_record.py`); `cProfile` dà le coppie per funzione, senza il sito | Parametri senza tipo |
+| Java, Kotlin | Gradle o Maven, script compresi | In corso | Librerie calcolate dagli script Gradle (sezione 4) |
+| Go | `go mod download` | Adottato (punto 2): una riscrittura dei sorgenti nella copia del container (`dynamic/go_record.go`); la toolchain non ha un aggancio che dia chiamante e chiamato, pprof campiona (`dynamic/go.py`) | Valori di funzione, interfacce anonime |
+| Rust | `cargo fetch`, build script accesi | In corso | Codice generato dai build script (sezione 4) |
+| C, C++ | Il ripristino che il progetto dichiara (vcpkg, Conan) | In corso | Puntatori a funzione |
+| C# | `dotnet restore` | Nessun osservatore | Nessuno: il motore del passo 2 non è ancora scelto |
+
+#### Python, applicato
+
+Un osservatore è un modulo di `dynamic/` che si dichiara (`ENTRY`, `VERSION`, `LANGUAGES`), come un analyzer; `dynamic.observers()` li elenca. Quello di Python è `dynamic/python.py`.
+
+- **Comando.** È quello che il progetto dichiara, letto dalla pre-mappa (faccetta `tests`, lettore `premap/python_tests.py`), mai una convenzione di Daodan. pytest dove il progetto lo dichiara o lo configura: una configurazione di pytest, pytest o un suo plugin fra le dipendenze dichiarate, un `conftest.py`. unittest solo dove un file scrive il comando: una riga `python -m unittest ...` in `tox.ini` o in un makefile. I soli file di test non dichiarano nulla: lacuna `no_test_command`, e nessun container parte. Un pytest dichiarato dentro le cartelle che un altro pytest riceve non parte da sé: lo raccoglie quello (un progetto di fixture, un membro).
+- **Python.** Il registro chiede Python 3.12. Un progetto che dichiara un Python più vecchio (una versione, o un intervallo che finisce sotto 3.12) è una lacuna `python_too_old` e i suoi test non girano. Una versione esatta che l'immagine non ha la installa la preparazione (mise). Un intervallo che esclude il Python dell'immagine senza nominare una versione è `python_unavailable`. Nel container il Python dell'ambiente si misura prima dei test.
+- **Preparazione**, con i soli registri: la toolchain, uv, il ripristino condiviso dell'ambiente della cartella che contiene i test (`preparation.restores`); se i test stanno fuori da ogni progetto Python, l'unico ambiente del progetto (un manifest dentro le cartelle dei test è di una fixture), altrimenti uno vuoto. Il progetto stesso si installa nell'ambiente, modificabile e senza dipendenze, dove la cartella ha una configurazione di build: è codice del progetto, quindi sta in questa fase. Dove il progetto dichiara pytest e l'ambiente ripristinato non lo contiene, Daodan porta pytest alla sua versione fissata e lo dice (`runner_brought`).
+- **Esecuzione**, senza rete: ogni comando sotto il registro, caricato da un `sitecustomize.py` sul `PYTHONPATH`. Un'interruzione dopo un'ora lascia al registro il tempo di scrivere ciò che ha visto.
+- **Lacune della corsa:** test che non partono (con la coda del log), che falliscono, che non trovano test, che superano il tempo, che cercano un servizio o la rete (`services_unreachable`), un progetto che non si installa, un ripristino fallito.
 
 ## Limiti
 
 - Il passo vede solo ciò che i test eseguono. Un progetto senza test, o con test che non partono, non dà nulla: è una lacuna dichiarata.
-- I test che richiedono servizi (database, code, API esterne) partono solo se il progetto dichiara come avviarli.
+- I test che richiedono servizi (database, code, API esterne) partono solo se il progetto dichiara come avviarli. Oggi il passo non avvia nessun servizio: quei test falliscono, e la corsa lo dice.
+- Un ambiente Python riceve le dipendenze che il ripristino condiviso installa: gli extra e i gruppi che il gestore non installa da sé mancano, e i test che li importano non partono.
 - Un container protegge l'host da errori e da script comuni, non da un attacco mirato al kernel. Su Linux i container di Kiri condividono il kernel dell'host.
 - La preparazione costa tempo e spazio a ogni progetto: installazione dei pacchetti e, al primo uso di un linguaggio, i suoi strumenti.
 
@@ -172,12 +199,16 @@ Parametri e soglie in [`benchmarks/call-provenance`](../../benchmarks/call-prove
 
 ## Da decidere
 
-- Quale registro adottare per ogni linguaggio (sezione 7). Il profiler di V8 dà coppie di funzioni senza la riga: la chiamata si ritrova dal nome, e due chiamate omonime nella stessa funzione restano ambigue. Su tududi vede il 35% delle chiamate senza risposta che stanno in file eseguiti. Il registro esatto (`benchmarks/call-provenance/dynamic_record.js`) le registra tutte e porta la copertura al 72,2%.
 - Se il motore del passo 2 di un linguaggio gira dentro il container quando deve eseguire codice del progetto, come per le macro procedurali di Rust.
 - Come convivono il motore di Daodan e un Kiri dell'utente. Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL («another Kiri engine is running on this machine»). Anche in distribuzioni diverse i due motori condividono la rete della VM di WSL, e ciascuno ricostruisce all'avvio e toglie all'arresto la stessa tabella nftables `kiri` (`crates/kiri-init/src/linux/net.rs`). Lettura applicata: Daodan usa il motore dell'utente quando risponde e non avvia il proprio accanto a un Kiri attivo; dichiara la lacuna.
-- Quale comando esegue i test e come si avviano i servizi che richiedono.
-- Quanto vale un arco osservato dopo una modifica al file del chiamante o della destinazione.
-- Come si accende il passo: un parametro del run o una domanda al primo uso.
+- Come si avviano i servizi che i test richiedono.
+- Quanto vale un arco osservato dopo una modifica: oggi vale per lo store del suo snapshot (sezione 5); se tenerlo per i file non toccati è da decidere.
 - Se misurare accanto un motore statico per programmi interi. Jelly (`cs-au-dk/jelly`, BSD 3-clause, 0.13.0 dell'11 maggio 2026) copre anche il codice che i test non eseguono; il suo modo dinamico dipende da NodeProf, fermo dal 2023.
+
+Deciso il 16 novembre 2026:
+
+- **Registro:** l'ordine di scelta della sezione 7.
+- **Comando dei test:** quello che il progetto dichiara, dalle voci `tests` della pre-mappa (`premap/python_tests.py`, `premap/npm_tests.py`), mai una convenzione di Daodan.
+- **Accensione:** il passo è uno step della pipeline, fra l'analisi e l'unione, acceso quando un motore di container risponde. Senza motore dichiara la lacuna e la pipeline arriva all'unione. `DAODAN_DYNAMIC=off` lo salta; `pipeline.run(..., stop="analyze")` si ferma prima.
 
 **Per modificare questa spec:** un requisito in più solo per un'esigenza obbligatoria o un esito sbagliato riproducibile.

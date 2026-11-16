@@ -1,4 +1,5 @@
-"""Dynamic step on Modal: tududi's Jest suite in parallel shards under dynamic_record.js.
+"""Dynamic step on Modal: tududi's Jest suite in parallel shards under the plugin's recorder
+(`dynamic/javascript_record.js`, carried as /tool/dynamic_record.js).
 
     modal run --detach benchmarks/call-provenance/modal_dynamic.py --shards 12 --out <dir> --tag <name>
 
@@ -17,6 +18,7 @@ import modal
 
 COMMIT = "71da9d7b34dfd1600657e9c5ddf40420206fd263"
 HERE = Path(__file__).resolve().parent
+RECORDER = HERE.parents[1] / "plugins/codebase-map/skills/map/scripts/dynamic/javascript_record.js"
 
 image = (
     modal.Image.from_registry("node:22-bookworm", add_python="3.12")
@@ -26,7 +28,7 @@ image = (
         " | tar -xz --strip-components=1 -C /work/src",
         "cd /work/src && npm ci --no-audit --no-fund",
     )
-    .add_local_file(HERE / "dynamic_record.js", "/tool/dynamic_record.js")
+    .add_local_file(RECORDER, "/tool/dynamic_record.js")
     .add_local_file(HERE / "dynamic_tests.sh", "/tool/dynamic_tests.sh")
 )
 app = modal.App("daodan-dynamic-step", image=image)

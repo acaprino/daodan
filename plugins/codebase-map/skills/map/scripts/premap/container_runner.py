@@ -6,7 +6,11 @@ analyzers use): those whose `network` is `registries` in the preparation, behind
 package registries (`container.REGISTRIES`) and the hosts a tool names in `TOOLS` (Bazel's), the others with no
 network. Before them, one setup command unpacks into `STATE/tools` the files the tool needs (`TOOLS`): each is
 downloaded once on the host into Daodan's shared directory and checked by sha256, then carried into the container;
-a setup that installs a package from a registry (TypeScript, Renovate, go-enry) runs in the preparation. A run
+a setup that installs a package from a registry (TypeScript, Renovate, go-enry) runs in the preparation. A tool
+that reads what the project's packages hold (`restores`: tsc, whose tsconfigs extend installed and generated
+files) has them restored by the setup, the project's own way (`preparation.node_prepare`); a restore or a
+generation that fails, and a package folder no restore installs, is a gap on the first answer, and the commands
+run. A run
 that does not happen (no engine, too little memory) or a setup that fails raises: the source states nothing and
 its gap says why. Each run's record lands in `premap-runs/<tool>/` beside the manifest.
 """
@@ -58,8 +62,10 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
            "setup": [f"tar -xzf {IN}/uv.tar.gz -C {T} && cp {T}/uv-x86_64-unknown-linux-gnu/uv {T}/bin/"],
            "runs_on": ("python",)},
     "npm": {"files": [NODE], "setup": [UNPACK["node"]], "runs_on": ("node",)},
+    # a tsconfig extends files of the installed packages and files their install generates: `restores`, the
+    # family of `preparation.RESTORES` whose packages the setup restores first, lifecycle scripts included
     "tsc": {"files": [NODE], "setup": [UNPACK["node"], _npm("typescript@6.0.3")], "registries": True,
-            "runs_on": ("node",)},
+            "runs_on": ("node",), "restores": "node", "memory": 3},
     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
     "cmake": {"files": [(*cmake.DOWNLOAD[0], "cmake.tar.gz"), NINJA],
               "setup": [f"tar -xzf {IN}/cmake.tar.gz -C {T} && mv {T}/cmake-4.4.5-linux-x86_64 {T}/cmake",
@@ -95,20 +101,30 @@ def fetched(url: str | None, sha256: str | None, name: str) -> Path:
     return Path(__file__).with_name(name) if url is None else preparation.fetched(url, sha256, name)
 
 
-def plan(tool: str, commands: list[dict], stated: list[dict] = ()) -> tuple[dict, list, tuple, list]:
+def plan(tool: str, commands: list[dict], stated: list[dict] = (), restores=()) -> tuple[dict, list, tuple, list]:
     """The setup command, the files it unpacks, the hosts beside the registries and the gaps known before it runs:
     the tool's own (`TOOLS`), the project's toolchains it runs on (`runs_on`, installed by mise at the version
-    `stated`), and what the commands name in `needs` (`preparation.NEEDS`)."""
+    `stated`), what the commands name in `needs` (`preparation.NEEDS`), then the lines that restore the project's
+    packages (`restores`)."""
     spec = TOOLS[tool]
     chains = preparation.toolchains([t for t in stated if t.get("tool") in spec.get("runs_on", ())])
     needs = preparation.setup({n for c in commands for n in c.get("needs", ())})
-    network = "registries" if spec.get("registries") or needs["registries"] or chains["lines"] or any(
+    network = "registries" if spec.get("registries") or needs["registries"] or chains["lines"] or restores or any(
         c.get("network") == "registries" for c in commands) else "none"
-    lines = [f"mkdir -p {T}/bin {ENV['HOME']}", *spec["setup"], *chains["lines"], *needs["lines"]]
+    lines = [f"mkdir -p {T}/bin {ENV['HOME']}", *spec["setup"], *chains["lines"], *needs["lines"], *restores]
     first = {"tool": tool, "argv": ["sh", "-c", " && ".join(f"( {line} )" for line in lines)], "cwd": ".",
              "env": ENV, "network": network}
     return (first, [*spec["files"], *chains["files"], *needs["files"]],
             (*spec.get("hosts", ()), *chains["hosts"], *needs["hosts"]), chains["gaps"])
+
+
+def _node(project: Path) -> dict:
+    """The restore of the Node packages the copy of the project holds (`preparation.node_prepare`), from the
+    manifests and lockfiles the snapshot perimeter walks: the snapshot itself keeps no `yarn.lock`."""
+    from tree_scope import Perimeter
+    files = sorted((directory / name).relative_to(project).as_posix()
+                   for directory, names in Perimeter(project).walk() for name in names)
+    return preparation.node_prepare(files, lambda rel: (project / rel).read_text(encoding="utf-8", errors="replace"))
 
 
 def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
@@ -129,7 +145,10 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         if tool not in TOOLS or any(c["tool"] != tool for c in commands):
             raise ValueError(f"no container setup for the tool {tool}")
         spec = TOOLS[tool]
-        first, files, hosts, gaps = plan(tool, commands, toolchains)
+        restored = _node(project) if spec.get("restores") == "node" else {"lines": [], "hosts": (), "gaps": []}
+        first, files, hosts, gaps = plan(tool, commands, toolchains, restored["lines"])
+        gaps += restored["gaps"]  # a package folder no restore installs
+        hosts = (*hosts, *restored["hosts"])
         ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
                          **({"argv": ["sh", "-c", f'{preparation.JAVA_PROXY}; exec "$@"', c["tool"], *c["argv"]]}
                             if spec.get("java") else {})} for c in commands)]
@@ -146,7 +165,9 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         if not answers or answers[0]["returncode"] != 0:
             raise RuntimeError(f"the {tool} setup failed: "
                                f"{(answers[0]['stderr'] if answers else '').strip()[-400:] or 'no answer'}")
-        gaps += preparation.missing(answers[0]["stderr"])  # the preparation's gaps ride on the first answer
+        # the preparation's gaps ride on the first answer
+        gaps += (preparation.missing(answers[0]["stderr"]) + preparation.restore_gaps(answers[0]["stderr"])
+                 + preparation.generation_gaps(answers[0]["stderr"]))
         return [{**answer, "root": result["root"], **({"gaps": gaps} if n == 0 and gaps else {})}
                 for n, answer in enumerate(answers[1:])]
 
