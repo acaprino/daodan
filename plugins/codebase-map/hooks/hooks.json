@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run --no-config --no-project --script \"${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py\" --hook",
+            "command": "uv --directory \"${CLAUDE_PLUGIN_ROOT}\" run --no-config --no-project --script \"${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py\" --hook",
             "async": true
           }
         ]

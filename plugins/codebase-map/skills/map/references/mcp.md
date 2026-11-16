@@ -5,13 +5,17 @@
 The declared `codebase-map` server runs over stdio:
 
 ```text
-uv run --no-config --no-project --script <installed-plugin-root>/skills/map/scripts/mcp_server.py --project <project-root>
+uv --directory <installed-plugin-root> run --no-config --no-project --script <installed-plugin-root>/skills/map/scripts/mcp_server.py --project <project-root>
 ```
 
-`--no-config --no-project` keep `uv` from reading the analyzed project's
-`uv.toml`, `pyproject.toml` or `.python-version`: a repository under analysis
-never chooses the package index or interpreter of its own analyzer. Keep both
-flags in any custom registration. `uv` provisions the official MCP Python SDK
+`--directory` takes `uv` out of the analyzed project before it looks for an
+interpreter: started in the project's folder, `uv` runs the interpreter of a
+`.venv` it finds there or above, whatever the other options say. `--no-config
+--no-project` keep it from reading a `uv.toml`, `pyproject.toml` or
+`.python-version`. A repository under analysis never chooses the package index
+or interpreter of its own analyzer: keep the three in any custom registration,
+and pass `--project`, since the working directory is no longer the project. `uv`
+provisions the official MCP Python SDK
 2.x; the server requires Python 3.12 or later (`requires-python` header plus a
 startup check). Parser dependencies stay optional with the CLI's diagnostics
 and fallbacks; `mcp_service.py` and the build stay standard-library-only.
