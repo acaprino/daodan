@@ -229,14 +229,15 @@ def indexed_by() -> dict[str, frozenset]:
 
 def _unlisted(record: dict) -> list[dict]:
     """Each programming language go-enry counts that no analyzer lists: its code is in no graph. A language whose
-    type the answer does not give is no gap: the type is go-enry's, never guessed."""
+    type the answer does not give is no gap: the type is go-enry's, never guessed. Nor is one whose every file is a
+    build definition (`build`, `enry.build_definition`): what it declares is the pre-map's own facts."""
     listed = {name for analyzer in _analyzers() for language in analyzer.LANGUAGES
               for name in (suffix_table.NAMES.get(language, language), *ALSO.get(language, ()))}
     return [{"kind": "no_analyzer", "language": item["language"], "files": item["files"], "source": RULE,
              "detail": f"{item['files']} {item['language']} files and no analyzer lists the language: their code is "
                        "in no graph"}
             for item in record.get("languages", [])
-            if item.get("type") == "programming" and item["language"] not in listed]
+            if item.get("type") == "programming" and not item.get("build") and item["language"] not in listed]
 
 
 def _coverage(record: dict, context: Context) -> list[dict]:

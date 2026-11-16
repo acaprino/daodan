@@ -749,3 +749,23 @@ def test_python_code_outside_every_project_makes_the_checkout_one_run():
                                            "source_roots": ["pkg/src"], "unit_roots": ["pkg"]}]
     record["gaps"] = [{"kind": "code_outside_units", "language": "Go", "path": "tools", "files": 1}]
     assert [run["root"] for run in premap.python_runs(record)] == ["pkg"]
+
+
+def test_a_language_whose_files_are_all_build_definitions_is_no_gap(tmp_path):
+    """CMake, Starlark, Meson and makefiles declare the build the pre-map runs: what they declare is the pre-map's
+    (units, targets, links), and their own code has no call graph to give. A language with any other file stays a
+    gap."""
+    rows = [{"path": "CMakeLists.txt", "language": "CMake", "type": "programming"},
+            {"path": "cmake/FindZ.cmake", "language": "CMake", "type": "programming"},
+            {"path": "tools/defs.bzl", "language": "Starlark", "type": "programming"},
+            {"path": "BUILD.bazel", "language": "Starlark", "type": "programming"},
+            {"path": "Makefile", "language": "Makefile", "type": "programming"},
+            {"path": "scripts/gen.mk", "language": "Makefile", "type": "programming"},
+            {"path": "deploy.sh", "language": "Shell", "type": "programming"}]
+    facts = enry.read(None, [{}], [{"returncode": 0, "stdout": json.dumps(rows), "stderr": ""}])["facts"]
+    by_name = {item["language"]: item for item in facts["languages"]}
+    assert by_name["CMake"]["build"] and by_name["Starlark"]["build"] and "build" not in by_name["Shell"]
+    assert "build" not in by_name["Makefile"]  # gen.mk is a fragment no build tool of the pre-map names
+    counted = fake("counted", "scanner", lambda context: {"facts": {"languages": facts["languages"]}})
+    _, _, record = build(tmp_path, "mixed", sources=(counted,))
+    assert {gap["language"] for gap in gaps(record, "no_analyzer")} == {"Makefile", "Shell"}

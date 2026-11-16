@@ -134,5 +134,5 @@ facts are literal in its files: the pre-map gives no `needs`.
 | `restore_failed` | a dependency restore a model command needs failed (`manager`, its error): the configure runs without it |
 | `submodule_absent` | a submodule `.gitmodules` declares whose folder is missing or empty: its code is not in the project |
 | `code_outside_units` | `{path, language, files}`: code of a language that no unit able to index it holds, per outermost folder (a Python folder without a manifest Daodan reads); the unit kinds able to index a language are the ones its analyzer declares (`UNIT_KINDS`) |
-| `no_analyzer` | `{language, files}`: a language of `type` `programming` that no analyzer lists (`LANGUAGES` of each module of `indexers.analyzers`): its code is in no graph |
+| `no_analyzer` | `{language, files}`: a language of `type` `programming` that no analyzer lists (`LANGUAGES` of each module of `indexers.analyzers`): its code is in no graph. Not raised for a language whose every file is a build definition (CMake, Starlark, a makefile or manifest the snapshot records by name: `enry.build_definition`): what it declares is the pre-map's |
 | module graph gaps | `manifest_unreadable`, `directory_missing`, `member_missing`, `dependency_unresolved`, ... as `modules.py` states them |
