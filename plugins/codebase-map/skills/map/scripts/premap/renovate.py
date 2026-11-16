@@ -337,7 +337,7 @@ def _ci_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[dict
     before it that runs no entry is a fact (`_step_fact`) with `tests` the entry's `declared_in`. A test step that
     runs the entry inside a Compose service's container (`_composed_tests`) is a fact with its `cause`, and so is
     each step before it, with its own or that one: Daodan runs no step of that job. The test step itself is a fact
-    with `test` and the variables it gives the tests (`env`: the workflow's, the job's, the step's and those the
+    with `test` and, when it gives the tests variables, `env` (the workflow's, the job's, the step's and those the
     commands that run the entry set, `_tests_of`), `computed` naming those whose value the shell computes."""
     if not tests or not isinstance(doc, dict) or not isinstance(doc.get("jobs"), dict):
         return []
@@ -376,9 +376,9 @@ def _ci_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[dict
                     continue
                 env = {key: _text(value) for key, value in {**top, **_env(job), **_env(steps[index]), **sets}.items()}
                 computed = [key for key, value in sets.items() if "$" in value or "`" in value]
-                if env:  # what the test step gives the tests, which Daodan's own command for them gets too
-                    facts.append({"declared_in": here, "tests": entry["declared_in"], **name, "test": True,
-                                  "env": env, **({"computed": computed} if computed else {})})
+                # the test step, with what it gives the tests, which Daodan's own command for them gets too
+                facts.append({"declared_in": here, "tests": entry["declared_in"], **name, "test": True,
+                              **({"env": env} if env else {}), **({"computed": computed} if computed else {})})
     return facts
 
 

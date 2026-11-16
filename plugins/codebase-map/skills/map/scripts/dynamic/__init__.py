@@ -447,14 +447,20 @@ def ci_steps(record: dict, runs: list[dict]) -> dict:
     `{declared_in, cwd, run}` with `name`, `env` and `shell` where the fact has them; `env`, the variables their
     test steps (`test`) give the tests, as the CI gives its runner, for every run of the observer; `gaps`, a
     `ci_step_not_run` for one the fact gives a `cause`, a `ci_step_incomplete` for a test step whose variables
-    the tests do not all get (one the CI or the shell computes, one two test steps give apart)."""
+    the tests do not all get (one the CI or the shell computes, one two test steps give apart), a `tests_not_in_ci`
+    for a run no fact names where the CI's jobs run other tests of the project."""
     wanted = {run.get("declared_in") for run in runs} - {None}
+    ran = sorted({item["tests"] for item in record.get("ci_steps") or () if item.get("tests")})
+    gaps = [{"kind": "tests_not_in_ci", "path": tests,
+             "detail": f"{tests}: no workflow Daodan reads runs these tests (its CI runs {', '.join(ran)}): a failure "
+                       "of theirs is one the project's CI never sees"} for tests in sorted(wanted) if ran
+            and tests not in ran]
 
     def order(item: dict) -> tuple:
         where, _, number = item["declared_in"].rpartition(".steps.")
         return where, int(number) if number.isdigit() else 0
 
-    steps, gaps, seen, env, apart = [], [], set(), {}, set()
+    steps, seen, env, apart = [], set(), {}, set()
     for item in sorted((item for item in record.get("ci_steps") or () if item.get("tests") in wanted), key=order):
         if item["declared_in"] in seen:
             continue

@@ -530,6 +530,27 @@ def test_an_observer_s_runs_get_the_steps_before_their_tests_and_a_gap_for_each_
     assert dynamic.ci_steps({}, [{"root": ".", "runner": "go"}]) == {"steps": [], "gaps": [], "env": {}}
 
 
+def test_a_test_step_without_variables_is_a_fact_too_so_a_run_no_workflow_runs_is_said(tmp_path):
+    """Every test step is a fact (`test`), its `env` only when it gives the tests variables: a run whose
+    `declared_in` no fact names, in a project whose workflows run some of its tests, is a `tests_not_in_ci` gap
+    naming those (tududi's `frontend:test`, beside the `test` its CI runs): what fails there the CI never ran.
+    Where no workflow Daodan reads runs a test, nothing is said."""
+    workflow = {"jobs": {"unit": {"steps": [{"uses": "actions/checkout@v5"}, {"name": "Tests", "run": "npm test"}]}}}
+    tests = [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"},
+             {"root": ".", "runner": "jest", "declared_in": "package.json#scripts.frontend:test"}]
+    files = {"package.json": json.dumps({"scripts": {"test": "cd backend && jest", "frontend:test": "jest"}})}
+    out = read_steps(tmp_path, files, tests, {".github/workflows/unit.yml": workflow})
+    assert out["facts"]["ci_steps"] == [{"declared_in": ".github/workflows/unit.yml#jobs.unit.steps.1",
+                                         "tests": "package.json#scripts.test", "name": "Tests", "test": True}]
+    planned = dynamic.ci_steps(out["facts"], tests)
+    assert (planned["steps"], planned["env"]) == ([], {})
+    [gap] = planned["gaps"]
+    assert (gap["kind"], gap["path"]) == ("tests_not_in_ci", "package.json#scripts.frontend:test")
+    assert gap["detail"] == ("package.json#scripts.frontend:test: no workflow Daodan reads runs these tests (its CI "
+                             "runs package.json#scripts.test): a failure of theirs is one the project's CI never sees")
+    assert dynamic.ci_steps({"ci_steps": []}, tests)["gaps"] == []
+
+
 PLAYWRIGHT = {"jobs": {"test-playwright": {"steps": [  # the template's playwright.yml, its job's steps
     {"uses": "actions/checkout@v7"}, {"uses": "oven-sh/setup-bun@v2"},
     {"name": "Setup tmate session", "uses": "mxschmitt/action-tmate@v3",
