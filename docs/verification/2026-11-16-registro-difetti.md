@@ -123,13 +123,13 @@ Convenzioni:
 - `scip-clang` (10): D-123, D-131, D-132, D-236, D-255, D-266, D-271, D-272, D-277, D-278
 - `CMake` (9): D-060, D-061, D-076, D-122, D-124, D-125, D-131, D-132, D-135
 - `Docker` (8): D-046, D-107, D-135, D-140, D-141, D-240, D-277, D-279
+- `git` (8): D-048, D-126, D-197, D-204, D-245, D-250, D-257, D-280
 - `GitHub Actions` (8): D-056, D-182, D-201, D-213, D-260, D-261, D-274, D-275
-- `git` (7): D-048, D-126, D-204, D-245, D-250, D-257, D-280
 - `scip-python` (7): D-084, D-086, D-088, D-246, D-247, D-248, D-269
+- `scip-typescript` (7): D-146, D-147, D-148, D-152, D-156, D-157, D-160
 - `Cargo` (6): D-014, D-021, D-030, D-041, D-175, D-239
 - `Compose` (6): D-201, D-212, D-214, D-215, D-240, D-261
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
-- `scip-typescript` (6): D-146, D-147, D-148, D-152, D-156, D-160
 - `tree-sitter` (6): D-034, D-035, D-036, D-037, D-117, D-265
 - `GitLab CI` (5): D-202, D-212, D-216, D-217, D-275
 - `Modal` (5): D-209, D-210, D-224, D-230, D-251
@@ -187,6 +187,7 @@ Convenzioni:
 - `Mix` (1): D-012
 - `Node` (1): D-269
 - `pip-compile` (1): D-028
+- `Playwright` (1): D-197
 - `podman` (1): D-263
 - `prettier` (1): D-256
 - `pub` (1): D-015
@@ -207,7 +208,7 @@ Convenzioni:
 
 ## Indice
 
-283 schede: 225 risolte, 16 aperte, 42 buchi dichiarati.
+283 schede: 227 risolte, 14 aperte, 42 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -292,7 +293,7 @@ Convenzioni:
 
 ### Analizzatori
 
-125 schede: 91 risolto, 8 aperto, 26 buco dichiarato.
+125 schede: 93 risolto, 6 aperto, 26 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -388,10 +389,10 @@ Convenzioni:
 | D-154 | Vue diverso fra analisi e unione | js-vue-pnpm | risolto | `12775fee3` | vue · analizzatore · correttezza · commit |
 | D-155 | L'import di un `.vue` non tipizzato senza causa | progetti Vue | risolto | `12775fee3` | vue · analizzatore · completezza · commit |
 | D-156 | SvelteKit: «error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'» | js-sveltekit | risolto | `12775fee3`, `b9aeca1fb` | javascript, typescript, svelte · analizzatore · completezza · finale · scip-typescript, SvelteKit |
-| D-157 | TypeScript: i tipi sotto Yarn | TypeScript nel container | aperto (da verificare) | — | typescript · analizzatore · completezza · commit · Yarn |
+| D-157 | TypeScript: i tipi dei pacchetti sotto Yarn Plug'n'Play | TypeScript nel container | risolto | `18248f8d1` | typescript · analizzatore · completezza · commit · Yarn, scip-typescript |
 | D-158 | JavaScript: riceventi non tipizzati | kotlinconf e il corpus JavaScript | buco dichiarato («a member of a value of type any») | `3595d571b` | javascript · analizzatore · completezza · conferma |
 | D-159 | Template di Vue e Svelte non letti | hoppscotch, js-vue-pnpm, js-sveltekit | risolto | `64edfb930`, `b9aeca1fb` | vue, svelte · analizzatore · completezza · finale |
-| D-160 | TypeScript: un file senza documento | hoppscotch, memos (`509e41bd1a1b`) | aperto | — | typescript · analizzatore · completezza · finale · scip-typescript |
+| D-160 | TypeScript: un file senza documento | hoppscotch, memos (`509e41bd1a1b`) | risolto | `a57333c3b` | typescript · analizzatore · completezza · finale · scip-typescript |
 | D-161 | Tailwind caricato sull'host con la configurazione del progetto | analyzer dei fogli di stile | risolto | `3595d571b` | css · analizzatore · sicurezza · commit · Tailwind |
 | D-162 | Fogli di stile: buchi `no-rule` | il corpus | aperto (ts-container-2) | `efac75599` | css · analizzatore · completezza · finale · Tailwind |
 | D-163 | hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto | hoppscotch | risolto | `efac75599` | css · analizzatore · correttezza · giro-2 |
@@ -458,7 +459,7 @@ Convenzioni:
 | D-194 | jhipster: 162 chunk di Vitest in memoria non registrati | jhipster-sample | risolto | `e8bc485d7` | javascript, typescript · passo dinamico · completezza · commit · Vitest, Angular |
 | D-195 | `bun test` non registrato | fastapi | buco dichiarato (`runner_not_observed`) | `5148e8eb3` | javascript · passo dinamico · completezza · commit · Bun |
 | D-196 | Un progetto senza test dichiarati, o con test che non partono | spec del passo dinamico, sezione «Limiti»; i progetti in miniatura del giro `fixtures` | buco dichiarato (`no_test_command`, `tests_not_declared`, `tests-not-run`) | — | tutti · passo dinamico · completezza · fixtures |
-| D-197 | I test di fastapi non ancora girati davvero | fastapi | aperto | `5148e8eb3`, `37c7ee093` | python, typescript · passo dinamico · completezza · finale |
+| D-197 | I test di fastapi non ancora girati davvero | fastapi | aperto | `5148e8eb3`, `37c7ee093`, `a46e5af7d` | python, typescript · passo dinamico · completezza · finale · Playwright, git |
 | D-198 | I test di eShop non ancora girati | eShop | aperto | — | javascript, typescript, csharp · passo dinamico · completezza · finale · npm |
 | D-199 | Python: extra e gruppi che il gestore non installa | spec del passo dinamico | buco dichiarato (test che non partono, `tests-not-run`) | — | python · passo dinamico · completezza · spec |
 | D-200 | Python più vecchio del 3.12 | spec del passo dinamico | buco dichiarato (`python_too_old`) | — | python · passo dinamico · completezza · spec |
@@ -513,7 +514,7 @@ Convenzioni:
 | D-223 | Le risposte attese delle fixture Android senza i build-tools | jvm-android-app-lib, mix-poly-firebase | risolto | `68a846a4a` | java, kotlin · benchmark · benchmark · commit · Gradle, Android SDK |
 | D-224 | I test del registratore JVM saltati: l'immagine dei test senza JDK | `tests/modal_pytest.py` | risolto | `a633ebd72` | java · benchmark · benchmark · commit · Modal |
 | D-225 | Due fixture con `node --test test/` | due fixture JavaScript | risolto | `12775fee3` | javascript · benchmark · benchmark · commit |
-| D-226 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | jvm-ver-* e le fixture Maven | aperto | — | java · benchmark · benchmark · java-versions · Maven |
+| D-226 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | jvm-ver-* e le fixture Maven | aperto finché non è committato | — | java · benchmark · benchmark · java-versions · Maven |
 | D-227 | README del benchmark: Rust, C e C++ «solo dove Valgrind parte» | `benchmarks/project-model/README.md` | aperto | — | c, cpp, rust · documenti · documentazione · commit · Valgrind |
 | D-228 | Il rapporto dichiarava nulla la copertura a runtime | il metodo di codebase-map | risolto | `78c03d6e8` | tutti · benchmark · benchmark · commit |
 | D-229 | Spec: il passo 2 «non esegue codice del progetto» | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` | javascript, typescript, java, kotlin, c, cpp, csharp · documenti · documentazione, sicurezza · spec |
@@ -954,7 +955,7 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 | js-version-conflict | JavaScript | version-disagree, no-lockfile | — | — |
 | js-vite-react-ts | HTML, TSX, TypeScript | path-alias, version-absent, no-lockfile, false-generated | — | — |
 | js-vue-pnpm | HTML, TypeScript, Vue | version-absent, no-lockfile, ambiguous-extension | D-154, D-159 | — |
-| js-yarn-berry | JavaScript | workspace-glob, unit-no-name, version-absent, locked-versions, internal-link | D-148 | — |
+| js-yarn-berry | JavaScript | workspace-glob, unit-no-name, version-absent, locked-versions, internal-link | D-148, D-157 | — |
 
 #### jvm (16)
 
@@ -1064,7 +1065,7 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 
 | Progetto | Cosa dichiara | Rivelate | Citate |
 | --- | --- | --- | --- |
-| jvm-ver-gradle-mixed-tc8 | Gradle, Java e Kotlin con jvmToolchain(8) | — | — |
+| jvm-ver-gradle-mixed-tc8 | Gradle, Java e Kotlin con jvmToolchain(8) | — | D-226 |
 | jvm-ver-gradle-src6 | Gradle, sourceCompatibility 1.6 | — | — |
 | jvm-ver-gradle-src8 | Gradle, sourceCompatibility 1.8 | — | — |
 | jvm-ver-gradle-tc11 | Gradle, toolchain 11 | — | — |
@@ -1080,7 +1081,7 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 | jvm-ver-mvn-7 | Maven, source 1.7 | — | — |
 | jvm-ver-mvn-8 | Maven, source 1.8 | — | — |
 | jvm-ver-mvn-9 | Maven, source 9 | — | — |
-| jvm-ver-mvn-cfg6 | Maven, source 1.6 nel plugin del compilatore | — | — |
+| jvm-ver-mvn-cfg6 | Maven, source 1.6 nel plugin del compilatore | — | D-226 |
 | jvm-ver-mvn-rel8 | Maven, release 8 | — | — |
 
 Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-181, D-226; citate —.
@@ -1140,7 +1141,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - `python` (26): D-006, D-007, D-028, D-047, D-048, D-049, D-052, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-246, D-247, D-248, D-252, D-253
 - `javascript` (24): D-013, D-021, D-046, D-049, D-051, D-053, D-056, D-072, D-147, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-194, D-195, D-198, D-265, D-270
 - `kotlin` (21): D-016, D-027, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-105, D-106, D-107, D-110, D-166
-- `typescript` (19): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-157, D-160, D-170, D-194, D-197, D-198, D-265
+- `typescript` (18): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-160, D-170, D-194, D-197, D-198, D-265
 - `csharp` (14): D-010, D-021, D-049, D-113, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-241, D-242, D-249
 - `go` (13): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-173, D-174, D-257, D-265
 - `rust` (13): D-014, D-021, D-030, D-078, D-143, D-144, D-173, D-175, D-176, D-237, D-238, D-239, D-265
@@ -3052,14 +3053,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Stato:** risolto.
 - **Note:** `d94f92470` lo lasciava aperto come «causa del tsconfig generato».
 
-#### D-157 TypeScript: i tipi sotto Yarn
-- **Tag:** lingua typescript · area analizzatore · tipo completezza · origine commit · strumento Yarn
+#### D-157 TypeScript: i tipi dei pacchetti sotto Yarn Plug'n'Play
+- **Tag:** lingua typescript · area analizzatore · tipo completezza · origine commit · strumento Yarn, scip-typescript
 - **Descrizione:** `d94f92470` lascia aperti «tipi sotto Yarn».
-- **Spiegazione:** da verificare; nessun commit successivo lo nomina.
-- **Progetto e caso:** TypeScript nel container — 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (da verificare).
+- **Spiegazione:** Yarn 2 e successivi dispongono i pacchetti con Plug'n'Play se `.yarnrc.yml` non imposta `nodeLinker`: l'installazione lascia `.pnp.cjs` e nessun `node_modules`. Il resolver di TypeScript non legge `.pnp.cjs`, così scip-typescript non nomina nessun simbolo di un pacchetto, e `typescript_types.py`, che cerca in `node_modules`, non aggiunge nessun `@types`. Misurato su Modal (android-sdk) con Yarn 4.9.1 da corepack e scip-typescript 0.6.2, su un progetto che importa `clsx` e `ms`: sotto pnp nessun simbolo di pacchetto; con `nodeLinker: node-modules`, `scip-typescript npm clsx 2.1.1 clsx.d.mts/clsx().`.
+- **Progetto e caso:** TypeScript nel container — prova su Modal di android-sdk, 17 novembre 2026. Il corpus non ha un caso Plug'n'Play: js-yarn-berry imposta `nodeLinker: node-modules` e i suoi tipi si risolvono (esterni `@types/node`, `@types/ms`).
+- **Rimedio:**
+  - `18248f8d1` (17 novembre, android-sdk), `scripts/indexers/typescript.py` (`_prepared`): per ogni cartella di ripristino Yarn il cui `.yarnrc.yml` non imposta `nodeLinker: node-modules` o `pnpm`, la riga di ripristino dell'indice riceve `export YARN_NODE_LINKER=node-modules`: lo stesso lockfile disposto in `node_modules`, solo nella copia del container, con un buco `build_edited` per cartella che lo dice. Yarn 1 (senza `.yarnrc.yml`) e le cartelle già su `node-modules` non cambiano; il passo dinamico tiene il linker del progetto.
+  - non committato (android-sdk): lo stadio dei fogli di stile segue la stessa regola, perché il suo script Tailwind trova il pacchetto del progetto solo in `node_modules/tailwindcss`: `css.tailwind_runner` dispone un progetto Plug'n'Play in `node_modules` con la nuova `typescript.node_modules()`, che ora chiama anche `_prepared`, e `css.index` restituisce quel buco `build_edited`.
+- **Verifica:** `tests/test_codebase_map_indexers_ts_py.py` (`test_a_yarn_project_on_plug_n_play_is_laid_out_in_node_modules_for_the_index_and_says_so`); su Modal con Yarn 4.9.1 e la variabile: uscita 0, `node_modules/clsx` presente, nessun `.pnp.cjs`, `yarn.lock` identico byte per byte (`--immutable` regge); la suite intera verde (2.663). Per lo stadio dei fogli di stile, `tests/test_codebase_map_css_graph.py` (`test_a_yarn_project_on_plug_n_play_lays_its_tailwind_out_in_node_modules_and_says_so`), non committato. Nessun caso del corpus usa Plug'n'Play.
+- **Stato:** risolto; la disposizione in `node_modules` per l'indice è il buco dichiarato `build_edited`.
 - **Note:** —
 
 #### D-158 JavaScript: riceventi non tipizzati
@@ -3088,11 +3091,11 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 #### D-160 TypeScript: un file senza documento
 - **Tag:** lingua typescript · area analizzatore · tipo completezza · origine finale · strumento scip-typescript
 - **Descrizione:** finale: hoppscotch 1 file TypeScript su 1.115, memos 1 su 620, «no document in the index».
-- **Spiegazione:** da verificare.
+- **Spiegazione:** è la regola di TypeScript stesso: dove un `include` prende sia `x.ts` (o `x.tsx`) sia `x.d.ts`, il programma tiene il `.ts` e lascia fuori il `.d.ts`; in memos `web/src/types/common.d.ts` accanto a `common.ts`, in hoppscotch `packages/hoppscotch-kernel/vite.config.d.ts` accanto a `vite.config.ts`. Provato su Modal con scip-typescript 0.6.2: `common.d.ts` ha il suo documento da solo e nessuno con `common.ts` accanto.
 - **Progetto e caso:** hoppscotch, memos (`509e41bd1a1b`) — finale, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto.
+- **Rimedio:** `a57333c3b` (17 novembre, android-sdk), `scripts/indexers/typescript.py`: `missing()` lo dice e nomina il file tenuto.
+- **Verifica:** solo test (`tests/test_codebase_map_indexers_reasons.py`, `test_a_declaration_file_beside_a_typescript_file_of_its_name_says_typescript_leaves_it_out`) e la prova su Modal della Spiegazione.
+- **Stato:** risolto: il file lo lascia fuori TypeScript, e il motivo lo dice.
 - **Note:** —
 
 #### D-161 Tailwind caricato sull'host con la configurazione del progetto
@@ -3769,15 +3772,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Note:** —
 
 #### D-197 I test di fastapi non ancora girati davvero
-- **Tag:** lingua python, typescript · area passo dinamico · tipo completezza · origine finale · strumento —
+- **Tag:** lingua python, typescript · area passo dinamico · tipo completezza · origine finale · strumento Playwright, git
 - **Descrizione:** finale e conferma, fastapi: TypeScript e Python `not-run` (D-056, D-188).
-- **Spiegazione:** le due cause hanno un rimedio, ma nessun giro le prova insieme.
+- **Spiegazione:**
+  - Python: fastapi 0.141.1 controlla `backend/app/frontend` (ignorata da git, scritta solo dal build vite del frontend: `frontend/vite.config.ts:10`) se `FASTAPI_ENV` non è `development` (`fastapi/routing.py:1888`); nel giro dotenv i test si fermavano alla raccolta con «RuntimeError: Frontend directory '/work/backend/app/frontend' does not exist», e il passo di test della CI imposta `FASTAPI_ENV=development` (`backend/scripts/test.sh`);
+  - TypeScript: i test Playwright (`tests/auth.setup.ts`) vogliono l'intero stack in esecuzione, la lacuna di D-212 e D-261.
 - **Progetto e caso:** fastapi — finale e conferma, 16 novembre 2026.
-- **Rimedio:** `5148e8eb3`, `37c7ee093`.
-- **Verifica:** su Modal `npm test` arriva a Playwright (`5148e8eb3`); Python su 3.14, solo test.
-- **Stato:** aperto.
-- **Note:** D-056, D-188, D-195.
-
+- **Rimedio:** `5148e8eb3`, `37c7ee093`; per Python `a46e5af7d`: le variabili del passo di test della CI arrivano ai test.
+- **Verifica:** su Modal `npm test` arriva a Playwright (`5148e8eb3`); per Python aspetta il prossimo giro reale di fastapi, che vuole il sì del proprietario.
+- **Stato:** aperto: risolto in codice per Python, da misurare; TypeScript resta nella lacuna di D-212 e D-261.
+- **Note:** D-056, D-188, D-195, D-212, D-261.
 #### D-198 I test di eShop non ancora girati
 - **Tag:** lingua javascript, typescript, csharp · area passo dinamico · tipo completezza · origine finale · strumento npm
 - **Descrizione:** finale, eShop: C# `no-observer`; JavaScript e TypeScript «no package.json of the project declares a test script (`scripts.test`): nothing is observed».
@@ -4251,11 +4255,12 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** java-versions: le toolchain delle 11 fixture Maven e della mista contano come sbagliate.
 - **Spiegazione:** il solo frammento di `declared_in` differisce: `pom.xml#properties.maven.compiler.source` contro `pom.xml#maven.compiler.source`, come nelle altre fixture Maven del corpus (README del benchmark).
 - **Progetto e caso:** jvm-ver-* e le fixture Maven — java-versions, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto.
-- **Note:** —
-
+- **Rimedio:** non committato (dynamic-step-2): il campo di una toolchain di un pom è il suo percorso nel pom, con il plugin nominato dal suo artifactId.
+  - nella verità, 28 voci di toolchain in 17 `expected.json` passano a `pom.xml#properties.maven.compiler.*`, `#properties.java.version` e `#properties.kotlin.compiler.jvmTarget` (`ANAGRAFICA.md` rigenerata);
+  - nel lettore, `scripts/premap/jvm_files.py` scrive `maven-compiler-plugin.configuration.<campo>`, come la verità di jvm-ver-mvn-cfg6.
+- **Verifica:** `tests/test_codebase_map_premap.py` (`test_a_compiler_plugin_setting_is_named_by_its_path_in_the_pom`), rosso prima; il giro java-versions conservato, rivalutato: toolchain trovate da 8 a 29 su 30, sbagliate da 22 a 1.
+- **Stato:** aperto finché non è committato; poi risolto.
+- **Note:** la sola toolchain sbagliata che resta è di jvm-ver-gradle-mixed-tc8: il modello di Gradle nomina `java.toolchain.languageVersion` dove la verità ha `kotlin.jvmToolchain`; quella, e la toolchain Kotlin della pre-mappa che il corpus non conta, le decide team-lead.
 #### D-227 README del benchmark: Rust, C e C++ «solo dove Valgrind parte»
 - **Tag:** lingua c, cpp, rust · area documenti · tipo documentazione · origine commit · strumento Valgrind
 - **Descrizione:** il risultato del finale nel README dice ancora che Rust, C e C++ si osservano solo dove Valgrind parte, e che nei sandbox di Modal (gVisor) dipende dalla macchina.
