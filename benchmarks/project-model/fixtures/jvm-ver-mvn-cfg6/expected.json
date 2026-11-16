@@ -1,0 +1,93 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/shapes/Shapes.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/test/java/com/example/shapes/ShapesTest.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "com.example:jvm-ver-mvn-cfg6",
+      "kind": "maven-module",
+      "root": ".",
+      "manifest": "pom.xml",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "maven-compiler-plugin:compile@default-compile",
+          "maven-compiler-plugin:testCompile@default-testCompile"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "1.6",
+      "declared_in": "pom.xml#maven-compiler-plugin.configuration.source"
+    },
+    {
+      "tool": "java",
+      "version": "1.6",
+      "declared_in": "pom.xml#maven-compiler-plugin.configuration.target"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "com.example:jvm-ver-mvn-cfg6",
+      "name": "junit:junit",
+      "declared": "4.13.2",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml"
+    },
+    {
+      "unit": "com.example:jvm-ver-mvn-cfg6",
+      "name": "org.apache.maven.plugins:maven-compiler-plugin",
+      "declared": "3.13.0",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "pom.xml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit",
+      "unit": "com.example:jvm-ver-mvn-cfg6",
+      "evidence": "pom.xml"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Every fact above is literal in the files; no file states the version of Maven."
+  },
+  "traps": [
+    "The level is in the configuration of the compiler plugin, not in a property: no maven.compiler.* names it.",
+    "No javac from JDK 12 on compiles -source 6: the build as declared needs an older JDK.",
+    "No wrapper and no other file states the Maven version: the right answer is none."
+  ],
+  "cases": [
+    "version-absent",
+    "no-lockfile",
+    "build-only-dependency"
+  ]
+}

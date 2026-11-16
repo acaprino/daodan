@@ -1,0 +1,84 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/shapes/Shapes.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/test/java/com/example/shapes/ShapesTest.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": "com.example:jvm-ver-mvn-8",
+      "kind": "maven-module",
+      "root": ".",
+      "manifest": "pom.xml",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "maven-compiler-plugin:compile@default-compile",
+          "maven-compiler-plugin:testCompile@default-testCompile"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "1.8",
+      "declared_in": "pom.xml#maven.compiler.source"
+    },
+    {
+      "tool": "java",
+      "version": "1.8",
+      "declared_in": "pom.xml#maven.compiler.target"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": "com.example:jvm-ver-mvn-8",
+      "name": "junit:junit",
+      "declared": "4.13.2",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "pom.xml"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit",
+      "unit": "com.example:jvm-ver-mvn-8",
+      "evidence": "pom.xml"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Every fact above is literal in the files; no file states the version of Maven."
+  },
+  "traps": [
+    "The level is a compiler level, not a JDK to install: Maven compiles with the JDK that runs it, with -source and -target 1.8 (no --release).",
+    "Java 8 is written 1.8, the old numbering: it is one version, not 1 and 8.",
+    "No wrapper and no other file states the Maven version: the right answer is none."
+  ],
+  "cases": [
+    "version-absent",
+    "no-lockfile"
+  ]
+}

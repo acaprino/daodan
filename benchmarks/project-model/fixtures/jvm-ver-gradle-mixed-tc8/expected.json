@@ -1,0 +1,101 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/shapes/Shapes.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/test/java/com/example/shapes/ShapesTest.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/main/kotlin/com/example/shapes/Report.kt",
+      "language": "Kotlin"
+    },
+    {
+      "path": "src/test/java/com/example/shapes/ReportTest.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle.kts",
+      "source_roots": [
+        "src/main/java",
+        "src/main/kotlin",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/kotlin",
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/kotlin",
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileKotlin",
+          "compileJava",
+          "compileTestKotlin",
+          "compileTestJava"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "8",
+      "declared_in": "build.gradle.kts#kotlin.jvmToolchain"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "junit:junit",
+      "declared": "4.13.2",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "build.gradle.kts"
+    },
+    {
+      "unit": ":",
+      "name": "org.jetbrains.kotlin.jvm",
+      "declared": "2.0.21",
+      "resolved": null,
+      "scope": "build",
+      "declared_in": "build.gradle.kts"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit",
+      "unit": ":",
+      "evidence": "build.gradle.kts"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Every fact above is literal in the files; no file states the version of Gradle."
+  },
+  "traps": [
+    "kotlin.jvmToolchain(8) sets the JDK of the Kotlin and of the Java compile tasks: there is no java block.",
+    "The Kotlin plugin is a build dependency; kotlin-stdlib comes with it and no line names it.",
+    "No wrapper and no other file states the Gradle version: the right answer is none."
+  ],
+  "cases": [
+    "version-absent",
+    "no-lockfile",
+    "build-only-dependency"
+  ]
+}

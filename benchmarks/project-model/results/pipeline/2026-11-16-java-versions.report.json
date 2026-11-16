@@ -1,0 +1,414 @@
+{
+ "cases": {
+  "run": 18,
+  "failed": {},
+  "seconds": {
+   "total": 3526.6,
+   "median": 178.4,
+   "slowest": [
+    [
+     "jvm-ver-gradle-mixed-tc8",
+     393.9
+    ],
+    [
+     "jvm-ver-gradle-tc11",
+     284.2
+    ],
+    [
+     "jvm-ver-gradle-tc21",
+     219.7
+    ],
+    [
+     "jvm-ver-gradle-tc25",
+     208.6
+    ],
+    [
+     "jvm-ver-gradle-tc8",
+     202.0
+    ]
+   ]
+  }
+ },
+ "languages": {
+  "java": {
+   "cases": 18,
+   "states": {
+    "fresh": 18
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 37,
+    "indexed": 37
+   },
+   "sites": 453,
+   "answered": {
+    "external": 127,
+    "project-callable": 128,
+    "project-value": 198
+   },
+   "holes": {},
+   "share": 1.0
+  },
+  "kotlin": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 3,
+    "indexed": 1
+   },
+   "sites": 13,
+   "answered": {
+    "project-callable": 1,
+    "project-value": 1
+   },
+   "holes": {
+    "no-document": 11
+   },
+   "share": 0.1538
+  }
+ },
+ "missing": [
+  {
+   "case": "jvm-ver-gradle-mixed-tc8",
+   "language": "kotlin",
+   "missing": 2,
+   "snapshot": 3,
+   "reasons": {
+    "Gradle script: no KotlinCompile task compiles it": 2
+   }
+  }
+ ],
+ "no_analyzer": {},
+ "premap": {
+  "languages": {
+   "given": 18,
+   "not_given": 0,
+   "found": 19,
+   "expected": 19,
+   "extra": 18,
+   "wrong": 0
+  },
+  "languages.files": {
+   "given": 0,
+   "not_given": 18,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "excluded": {
+   "given": 18,
+   "not_given": 0,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units": {
+   "given": 18,
+   "not_given": 0,
+   "found": 18,
+   "expected": 18,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.depends_on": {
+   "given": 18,
+   "not_given": 0,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.source_roots": {
+   "given": 11,
+   "not_given": 7,
+   "found": 22,
+   "expected": 22,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.config": {
+   "given": 0,
+   "not_given": 18,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "workspace": {
+   "given": 18,
+   "not_given": 0,
+   "found": 0,
+   "expected": 0,
+   "extra": 7,
+   "wrong": 0
+  },
+  "workspace.members": {
+   "given": 7,
+   "not_given": 11,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "toolchains": {
+   "given": 18,
+   "not_given": 0,
+   "found": 8,
+   "expected": 30,
+   "extra": 1,
+   "wrong": 22
+  },
+  "dependencies": {
+   "given": 0,
+   "not_given": 18,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "frameworks": {
+   "given": 0,
+   "not_given": 18,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "services": {
+   "given": 0,
+   "not_given": 18,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "needs": {
+   "given": 0,
+   "not_given": 18,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  }
+ },
+ "gaps": [
+  {
+   "step": "scan",
+   "kind": "toolchain_undeclared",
+   "count": 7,
+   "examples": [
+    "jvm-ver-gradle-mixed-tc8: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "jvm-ver-gradle-src6: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "jvm-ver-gradle-src8: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "build_edited",
+   "count": 8,
+   "examples": [
+    "jvm-ver-gradle-mixed-tc8: .: the build as declared gave no index (* What went wrong: / Execution failed for task ':compileJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin'). / > Compilation failed; see the compiler output below. / * Try: / > Run with --scan to get full insights from a Build Scan (powered by Develocity).): this index is a second build's, with the root project: Java toolchain 8 -> 17",
+    "jvm-ver-gradle-mixed-tc8: .: the build as declared gave no index (* What went wrong: / Deprecated Gradle features were used in this build, making it incompatible with Gradle 10. / Execution failed for task ':compileJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin'). / You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.): this index is a second build's, with the root project: Java toolchain 8 -> 17",
+    "jvm-ver-gradle-src6: .: the build as declared gave no index (* What went wrong: / Execution failed for task ':compileJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin'). / > Compilation failed; see the compiler output below. / error: Source option 6 is no longer supported. Use 7 or later. / error: Target option 6 is no longer supported. Use 7 or later.): this index is a second build's, with the root project: source 1.6 and target 1.6 -> 8"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "jdk_unsupported",
+   "count": 8,
+   "examples": [
+    "jvm-ver-mvn-11: .: the build states Java 11 (pom.xml#properties.maven.compiler.source) and scip-java 0.14.2's compiler plugin runs on javac 17 or newer only: it was indexed on the image's JDK 17, so its calls into the JDK name JDK 17's classes, not those of Java 11",
+    "jvm-ver-mvn-14: .: the build states Java 14 (pom.xml#properties.maven.compiler.source) and scip-java 0.14.2's compiler plugin runs on javac 17 or newer only: it was indexed on the image's JDK 17, so its calls into the JDK name JDK 17's classes, not those of Java 14",
+    "jvm-ver-mvn-5: .: the build states Java 5 (pom.xml#properties.maven.compiler.source) and scip-java 0.14.2's compiler plugin runs on javac 17 or newer only: it was indexed on the image's JDK 17, so its calls into the JDK name JDK 17's classes, not those of Java 5"
+   ]
+  }
+ ],
+ "containers": {
+  "runs": 144,
+  "seconds": 1499.8,
+  "phases": {
+   "execute": {
+    "runs": 72,
+    "seconds": 287.6
+   },
+   "prepare": {
+    "runs": 72,
+    "seconds": 1212.2
+   }
+  },
+  "not_zero": []
+ },
+ "by_case": {
+  "jvm-ver-gradle-mixed-tc8": {
+   "seconds": 393.9,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "fresh",
+     "holes": 11
+    }
+   }
+  },
+  "jvm-ver-gradle-src6": {
+   "seconds": 187.9,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-gradle-src8": {
+   "seconds": 165.2,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-gradle-tc11": {
+   "seconds": 284.2,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-gradle-tc21": {
+   "seconds": 219.7,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-gradle-tc25": {
+   "seconds": 208.6,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-gradle-tc8": {
+   "seconds": 202.0,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-11": {
+   "seconds": 178.3,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-14": {
+   "seconds": 182.8,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-21": {
+   "seconds": 185.0,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-25": {
+   "seconds": 178.5,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-5": {
+   "seconds": 177.4,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-6": {
+   "seconds": 152.2,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-7": {
+   "seconds": 162.4,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-8": {
+   "seconds": 159.5,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-9": {
+   "seconds": 172.9,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-cfg6": {
+   "seconds": 167.1,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-ver-mvn-rel8": {
+   "seconds": 149.0,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  }
+ }
+}

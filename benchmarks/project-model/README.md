@@ -97,6 +97,9 @@ I runner eseguono `real` in un secondo passaggio.
 | jvm | `jvm-maven-multi-bom-profile` | cartelle diverse dagli artifactId; modulo solo sotto un profilo; BOM |
 | jvm | `jvm-maven-release-apt` | proprietà `java.version` che nessuno legge; processori di annotazioni |
 | jvm | `jvm-maven-wrapper` | versione di Maven dichiarata solo dal wrapper |
+| jvm | `jvm-ver-mvn-*` (11) | lo stesso progetto Maven con un livello Java per fixture: `source` e `target` da 1.5 a 25, `release` 8, 1.6 nella configurazione del plugin |
+| jvm | `jvm-ver-gradle-tc*` (4), `-src*` (2) | lo stesso progetto Gradle con toolchain 8, 11, 21, 25 o con `sourceCompatibility` 1.6 e 1.8: un livello non è un JDK da trovare |
+| jvm | `jvm-ver-gradle-mixed-tc8` | Java e Kotlin insieme con `jvmToolchain(8)` |
 | sys | `sys-go-buildtags` | suffissi di piattaforma nei nomi dei file come vincoli di build |
 | sys | `sys-go-cgo` | C compilato dal comando go; flag nei commenti `#cgo` |
 | sys | `sys-go-generated` | file generato ma versionato e compilato |
@@ -158,7 +161,7 @@ Verifica che la pipeline di Daodan (`pipeline.run`: scan, analyze, union) dia il
 
 Dalla cartella del benchmark:
 
-- Corpus: le 122 fixture. `js`, `py`, `jvm`, `sys` e `mix` sono i 104 progetti in miniatura, `real` i 18 repository con `source.json`.
+- Corpus: le 140 fixture. `js`, `py`, `jvm`, `sys` e `mix` sono i 122 progetti in miniatura, `real` i 18 repository con `source.json`. Le 18 `jvm-ver-*` sono del 16 novembre 2026, dopo il giro finale sui 122 casi.
 - Giro, su Modal e mai su questo PC: `python -m modal run modal_pipeline.py --cases js,py,jvm,sys,mix,real --out results/pipeline/<giro>.json`. `--cases` accetta anche nomi di fixture; `--chunk` (4) dice quante fixture di una famiglia vanno in un container.
 - Rapporto: `python pipeline_report.py results/pipeline/<giro>.json [<altro>.json ...] [--compare <precedente>.report.json]`. Un caso di un file successivo sostituisce lo stesso caso dei precedenti. Scrive `<giro>.report.md` e, accanto, gli stessi numeri in `<giro>.report.json`; `--compare` stampa cosa cambia per linguaggio e per caso: stati, buchi in più o in meno.
 
@@ -189,3 +192,11 @@ Giro finale, 16 novembre 2026, sui 122 casi (`results/pipeline/2026-11-16-finale
 - Il passo dinamico osserva 97.069 siti e chiude 4.954 buchi; nei progetti in miniatura quasi sempre non ci sono test da lanciare, e lo dice.
 - Restano aperti: i template di Vue e Svelte (nessun file letto), le classi Tailwind dello stylesheet, C# (56 % e nessun osservatore), il C dei contrib di zlib, i test che vogliono un servizio (un database) e Kotlin su Android, che scip-java non compila.
 - Rust, C e C++ si osservano solo dove Valgrind parte: nei sandbox di Modal (gVisor) dipende dalla macchina, e il caso diventa `not-run` con la causa.
+
+Giro sulle 18 `jvm-ver-*`, 16 novembre 2026 (`results/pipeline/2026-11-16-java-versions.json`, rapporto in `2026-11-16-java-versions.report.md`), sul codice a `68a846a4a`: nessun caso fallito, 3.527 secondi, mediana 178 per caso.
+
+- Java è `fresh` e osservato in tutte le 18: 37 file su 37 nell'indice, 453 siti tutti con risposta, 10-14 siti osservati per caso; Kotlin è `fresh` e osservato nella fixture mista.
+- Prima di `21b3cb39b` sette non davano indice: Maven con livello 5 e 6 (tre), Gradle con toolchain 8 e 11, con livello 1.6 e la mista; con Java 25 i test fallivano sotto il registratore.
+- Lo dicono i buchi: `jdk_unsupported` nelle Maven sotto il 17 (l'indice nomina le classi del JDK 17), `build_edited` dove il build dichiarato non dà indice e il secondo, con livelli o toolchain alzati, sì.
+- Java 9 e 14 non hanno un JDK installabile: il passo dinamico li osserva sul JDK 17 e lo dice (`toolchain_unavailable`).
+- Pre-mappa: le toolchain delle 11 fixture Maven e della mista contano come sbagliate per il solo frammento di `declared_in` (`pom.xml#properties.maven.compiler.source` contro `pom.xml#maven.compiler.source`, come nelle altre fixture Maven del corpus).

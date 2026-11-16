@@ -3,7 +3,7 @@
 Scritta da `catalog.py` con [cases.json](cases.json) e i `fixtures/*/expected.json`: non si modifica a mano.
 Si rigenera con `python catalog.py`.
 
-122 progetti, 61 casi in 7 gruppi.
+140 progetti, 61 casi in 7 gruppi.
 
 ## Dominio dei casi
 
@@ -33,11 +33,11 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 | Versioni | `version-in-wrapper` | La versione del build tool è scritta solo nel wrapper. | 7 | letto |  |
 | Versioni | `version-matrix` | Più versioni da una matrice CI o di ambienti di test, una voce per versione. | 7 | letto |  |
 | Versioni | `version-range` | La versione scritta è un minimo o un intervallo; quella usata sta in un lock, in una regola di selezione o in nessun file. | 11 | letto |  |
-| Versioni | `version-absent` | Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna. | 18 | letto |  |
+| Versioni | `version-absent` | Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna. | 36 | letto |  |
 | Versioni | `version-in-image` | La versione di una toolchain sta solo nell'immagine di un Dockerfile, di un dev container o di un'azione CI. | 12 | letto |  |
 | Versioni | `toolchain-in-dependencies` | L'interprete o l'SDK compare fra le dipendenze (python, php, sdk: flutter), ma è una toolchain. | 6 | letto |  |
 | Versioni | `platform-sdk` | L'unità chiede un SDK di piattaforma (Android, Xcode, MAUI, Flutter) che non è un pacchetto. | 5 | letto | Android Gradle: serve l'SDK di Android e chiama cargo |
-| Dipendenze | `no-lockfile` | Nessun lockfile, quindi le versioni risolte restano vuote. | 54 | letto |  |
+| Dipendenze | `no-lockfile` | Nessun lockfile, quindi le versioni risolte restano vuote. | 72 | letto |  |
 | Dipendenze | `locked-versions` | Le versioni risolte si leggono da un lockfile. | 33 | letto | progetto Python con le versioni in uv.lock |
 | Dipendenze | `transitive-not-direct` | Il lock o il manifesto elenca pacchetti transitivi che non sono dipendenze dirette. | 8 | letto |  |
 | Dipendenze | `version-from-bom` | Nessuna versione è scritta nel progetto: la fissano un BOM, un genitore o un plugin del build esterni al progetto. | 11 | letto |  |
@@ -48,7 +48,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 | Dipendenze | `declared-in-source` | Dipendenze dichiarate dentro un file sorgente: PEP 723, %pip, import map in HTML, #Requires. | 3 | letto |  |
 | Dipendenze | `undeclared-imports` | Pacchetti importati dal codice e dichiarati da nessun file. | 4 | letto |  |
 | Dipendenze | `scope-from-groups` | Lo scope si legge da gruppi, extra o configurazioni del build tool. | 11 | letto |  |
-| Dipendenze | `build-only-dependency` | Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires. | 41 | dai dati |  |
+| Dipendenze | `build-only-dependency` | Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires. | 43 | dai dati |  |
 | Dipendenze | `two-package-managers` | Due gestori di pacchetti dichiarano le dipendenze della stessa unità. | 2 | letto |  |
 | Dipendenze | `included-requirement-files` | Liste divise su file inclusi (-r) o su vincoli (-c) che non aggiungono dipendenze. | 3 | letto |  |
 | Linguaggi e file | `ambiguous-extension` | L'estensione non dice il linguaggio: lo dice il contenuto. | 17 | letto |  |
@@ -760,7 +760,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
 
-### jvm (16 progetti)
+### jvm (34 progetti)
 
 #### jvm-android-app-lib
 
@@ -1062,6 +1062,278 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
   - `needs-build`: Il modello completo esiste solo eseguendo la build, quindi in un container.
   - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+
+#### jvm-ver-gradle-mixed-tc8
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java, Kotlin.
+- Unità: gradle-project.
+- Workspace: nessuno.
+- File delle dipendenze: build.gradle.kts.
+- Versioni dichiarate:
+  - java: 8 (`build.gradle.kts#kotlin.jvmToolchain`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+  - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
+
+#### jvm-ver-gradle-src6
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: gradle-project.
+- Workspace: nessuno.
+- File delle dipendenze: build.gradle.
+- Versioni dichiarate:
+  - java: 1.6 (`build.gradle#java.sourceCompatibility`); 1.6 (`build.gradle#java.targetCompatibility`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-gradle-src8
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: gradle-project.
+- Workspace: nessuno.
+- File delle dipendenze: build.gradle.
+- Versioni dichiarate:
+  - java: 1.8 (`build.gradle#java.sourceCompatibility`); 1.8 (`build.gradle#java.targetCompatibility`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-gradle-tc11
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: gradle-project.
+- Workspace: nessuno.
+- File delle dipendenze: build.gradle.
+- Versioni dichiarate:
+  - java: 11 (`build.gradle#java.toolchain.languageVersion`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-gradle-tc21
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: gradle-project.
+- Workspace: nessuno.
+- File delle dipendenze: build.gradle.
+- Versioni dichiarate:
+  - java: 21 (`build.gradle#java.toolchain.languageVersion`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-gradle-tc25
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: gradle-project.
+- Workspace: nessuno.
+- File delle dipendenze: build.gradle.
+- Versioni dichiarate:
+  - java: 25 (`build.gradle#java.toolchain.languageVersion`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-gradle-tc8
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: gradle-project.
+- Workspace: nessuno.
+- File delle dipendenze: build.gradle.
+- Versioni dichiarate:
+  - java: 8 (`build.gradle#java.toolchain.languageVersion`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-11
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 11 (`pom.xml#maven.compiler.source`); 11 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-14
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 14 (`pom.xml#maven.compiler.source`); 14 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-21
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 21 (`pom.xml#maven.compiler.source`); 21 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-25
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 25 (`pom.xml#maven.compiler.source`); 25 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-5
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 1.5 (`pom.xml#maven.compiler.source`); 1.5 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-6
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 1.6 (`pom.xml#maven.compiler.source`); 1.6 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-7
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 1.7 (`pom.xml#maven.compiler.source`); 1.7 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-8
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 1.8 (`pom.xml#maven.compiler.source`); 1.8 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-9
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 9 (`pom.xml#maven.compiler.source`); 9 (`pom.xml#maven.compiler.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+
+#### jvm-ver-mvn-cfg6
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 1.6 (`pom.xml#maven-compiler-plugin.configuration.source`); 1.6 (`pom.xml#maven-compiler-plugin.configuration.target`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
+  - `build-only-dependency`: Dipendenze che servono solo a costruire: plugin, processori di annotazioni, build-dependencies, tool_requires.
+
+#### jvm-ver-mvn-rel8
+
+- Origine: scritto a mano per il benchmark.
+- Linguaggi: Java.
+- Unità: maven-module.
+- Workspace: nessuno.
+- File delle dipendenze: pom.xml.
+- Versioni dichiarate:
+  - java: 8 (`pom.xml#maven.compiler.release`)
+- Framework: JUnit.
+- Servizi: nessuno.
+- Casi:
+  - `version-absent`: Nessun file dichiara la versione di una toolchain usata, e la risposta giusta è nessuna.
+  - `no-lockfile`: Nessun lockfile, quindi le versioni risolte restano vuote.
 
 ### sys (25 progetti)
 
@@ -2443,11 +2715,11 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - `version-in-wrapper` (7): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-maven-wrapper, mix-real-klaxon, real-app-jhipster-sample, real-svc-petclinic-microservices
 - `version-matrix` (7): mix-infra-gha, mix-real-chi, mix-real-python-semver, mix-real-semver, mix-real-tinyxml2, mix-real-zlib, py-hatch-envs
 - `version-range` (11): js-nextjs, jvm-gradle-locking, mix-dotnet-central, mix-real-zlib, mix-swift-spm, mix-terraform-modules, sys-bazel, sys-cmake-targets, sys-go-single, sys-rust-features, sys-rust-single
-- `version-absent` (18): js-angular, js-lerna, js-node-scripts, js-npm-single, js-npm-workspaces, js-nx, js-vite-react-ts, js-vue-pnpm, js-yarn-berry, jvm-gradle-computed-deps, jvm-gradle-locking, jvm-java-version-conflict, jvm-no-build, jvm-sbt-two-subprojects, py-pdm, py-requirements-includes, sys-cmake-presets, sys-rust-single
+- `version-absent` (36): js-angular, js-lerna, js-node-scripts, js-npm-single, js-npm-workspaces, js-nx, js-vite-react-ts, js-vue-pnpm, js-yarn-berry, jvm-gradle-computed-deps, jvm-gradle-locking, jvm-java-version-conflict, jvm-no-build, jvm-sbt-two-subprojects, jvm-ver-gradle-mixed-tc8, jvm-ver-gradle-src6, jvm-ver-gradle-src8, jvm-ver-gradle-tc11, jvm-ver-gradle-tc21, jvm-ver-gradle-tc25, jvm-ver-gradle-tc8, jvm-ver-mvn-11, jvm-ver-mvn-14, jvm-ver-mvn-21, jvm-ver-mvn-25, jvm-ver-mvn-5, jvm-ver-mvn-6, jvm-ver-mvn-7, jvm-ver-mvn-8, jvm-ver-mvn-9, jvm-ver-mvn-cfg6, jvm-ver-mvn-rel8, py-pdm, py-requirements-includes, sys-cmake-presets, sys-rust-single
 - `version-in-image` (12): mix-infra-compose, mix-infra-devcontainer, mix-infra-gha, mix-real-tududi, py-fastapi-compose, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-svc-otel-demo, real-svc-robot-shop, real-svc-voting-app
 - `toolchain-in-dependencies` (6): mix-dart-flutter, mix-php-laravel, py-conda-env, py-poetry-groups, real-svc-otel-demo, real-svc-robot-shop
 - `platform-sdk` (5): jvm-android-app-lib, mix-dart-flutter, mix-poly-firebase, real-app-kotlinconf, real-svc-eshop
-- `no-lockfile` (54): js-angular, js-cjs-esm-exports, js-deno, js-lerna, js-nextjs, js-nx, js-sveltekit, js-turborepo, js-vendored-generated, js-version-conflict, js-vite-react-ts, js-vue-pnpm, jvm-android-app-lib, jvm-gradle-computed-deps, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-release-apt, jvm-maven-wrapper, jvm-mixed-java-kotlin, jvm-protobuf-generated, jvm-sbt-two-subprojects, mix-dotnet-central, mix-edge-submodules, mix-edge-vendored, mix-infra-compose, mix-infra-devcontainer, mix-infra-k8s-helm, mix-infra-tool-versions, mix-php-laravel, mix-poly-firebase, mix-poly-openapi, mix-real-javapoet, mix-real-klaxon, mix-real-semver, mix-ruby-rails, py-conda-env, py-django, py-fastapi-compose, py-hatch-envs, py-monorepo-path-deps, py-namespace-packages, py-notebooks, py-pep723-scripts, py-requirements-includes, py-setup-cfg-extras, py-setup-py-static, py-vendored-generated, py-version-disagree, real-app-jhipster-sample, real-svc-eshop, real-svc-voting-app, sys-bazel, sys-cmake-targets, sys-rust-tauri
+- `no-lockfile` (72): js-angular, js-cjs-esm-exports, js-deno, js-lerna, js-nextjs, js-nx, js-sveltekit, js-turborepo, js-vendored-generated, js-version-conflict, js-vite-react-ts, js-vue-pnpm, jvm-android-app-lib, jvm-gradle-computed-deps, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-release-apt, jvm-maven-wrapper, jvm-mixed-java-kotlin, jvm-protobuf-generated, jvm-sbt-two-subprojects, jvm-ver-gradle-mixed-tc8, jvm-ver-gradle-src6, jvm-ver-gradle-src8, jvm-ver-gradle-tc11, jvm-ver-gradle-tc21, jvm-ver-gradle-tc25, jvm-ver-gradle-tc8, jvm-ver-mvn-11, jvm-ver-mvn-14, jvm-ver-mvn-21, jvm-ver-mvn-25, jvm-ver-mvn-5, jvm-ver-mvn-6, jvm-ver-mvn-7, jvm-ver-mvn-8, jvm-ver-mvn-9, jvm-ver-mvn-cfg6, jvm-ver-mvn-rel8, mix-dotnet-central, mix-edge-submodules, mix-edge-vendored, mix-infra-compose, mix-infra-devcontainer, mix-infra-k8s-helm, mix-infra-tool-versions, mix-php-laravel, mix-poly-firebase, mix-poly-openapi, mix-real-javapoet, mix-real-klaxon, mix-real-semver, mix-ruby-rails, py-conda-env, py-django, py-fastapi-compose, py-hatch-envs, py-monorepo-path-deps, py-namespace-packages, py-notebooks, py-pep723-scripts, py-requirements-includes, py-setup-cfg-extras, py-setup-py-static, py-vendored-generated, py-version-disagree, real-app-jhipster-sample, real-svc-eshop, real-svc-voting-app, sys-bazel, sys-cmake-targets, sys-rust-tauri
 - `locked-versions` (33): js-bun, js-local-and-git-deps, js-npm-single, js-npm-workspaces, js-pnpm-workspace, js-yarn-berry, jvm-gradle-locking, mix-dart-flutter, mix-elixir-umbrella, mix-real-python-semver, mix-real-tududi, mix-swift-spm, mix-terraform-modules, py-pdm, py-pip-tools, py-pipenv, py-poetry-groups, py-uv-src-layout, py-uv-workspace, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-kotlinconf, real-app-memos, real-svc-otel-demo, sys-cpp-vcpkg-conan, sys-go-single, sys-go-vendor, sys-go-workspace, sys-rust-buildrs, sys-rust-features, sys-rust-path-git, sys-rust-single, sys-rust-workspace
 - `transitive-not-direct` (8): mix-elixir-umbrella, mix-real-chi, py-pip-tools, py-pipenv, py-poetry-groups, py-uv-src-layout, py-uv-workspace, real-svc-otel-demo
 - `version-from-bom` (11): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-gradle-kts-catalog-composite, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-multi-bom-profile, jvm-spring-boot-managed, mix-real-klaxon, real-app-jhipster-sample, real-svc-petclinic-microservices, real-svc-robot-shop
@@ -2458,7 +2730,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - `declared-in-source` (3): js-static-html, py-notebooks, py-pep723-scripts
 - `undeclared-imports` (4): js-node-scripts, mix-edge-vendored, mix-poly-openapi, py-undeclared-scripts
 - `scope-from-groups` (11): jvm-spring-boot-managed, mix-real-python-semver, mix-ruby-rails, py-hatch-envs, py-pdm, py-pipenv, py-poetry-groups, py-setup-cfg-extras, py-uv-src-layout, real-app-full-stack-fastapi, sys-bazel
-- `build-only-dependency` (41): jvm-android-app-lib, jvm-gradle-kts-catalog-composite, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-multi-bom-profile, jvm-maven-release-apt, jvm-maven-wrapper, jvm-mixed-java-kotlin, jvm-protobuf-generated, jvm-sbt-two-subprojects, jvm-spring-boot-managed, mix-edge-submodules, mix-infra-tool-versions, mix-poly-firebase, mix-poly-grpc, mix-poly-openapi, mix-real-javapoet, mix-real-klaxon, mix-real-python-semver, mix-real-zlib, py-fastapi-compose, py-hatch-envs, py-monorepo-path-deps, py-namespace-packages, py-notebooks, py-pdm, py-poetry-groups, py-requirements-includes, py-setup-cfg-extras, py-uv-src-layout, py-uv-workspace, py-vendored-generated, py-version-disagree, real-app-full-stack-fastapi, real-app-kotlinconf, real-svc-petclinic-microservices, real-svc-robot-shop, sys-bazel, sys-cpp-vcpkg-conan, sys-rust-buildrs, sys-rust-tauri
+- `build-only-dependency` (43): jvm-android-app-lib, jvm-gradle-kts-catalog-composite, jvm-kmp-common-jvm, jvm-kotlin-source-sets, jvm-maven-multi-bom-profile, jvm-maven-release-apt, jvm-maven-wrapper, jvm-mixed-java-kotlin, jvm-protobuf-generated, jvm-sbt-two-subprojects, jvm-spring-boot-managed, jvm-ver-gradle-mixed-tc8, jvm-ver-mvn-cfg6, mix-edge-submodules, mix-infra-tool-versions, mix-poly-firebase, mix-poly-grpc, mix-poly-openapi, mix-real-javapoet, mix-real-klaxon, mix-real-python-semver, mix-real-zlib, py-fastapi-compose, py-hatch-envs, py-monorepo-path-deps, py-namespace-packages, py-notebooks, py-pdm, py-poetry-groups, py-requirements-includes, py-setup-cfg-extras, py-uv-src-layout, py-uv-workspace, py-vendored-generated, py-version-disagree, real-app-full-stack-fastapi, real-app-kotlinconf, real-svc-petclinic-microservices, real-svc-robot-shop, sys-bazel, sys-cpp-vcpkg-conan, sys-rust-buildrs, sys-rust-tauri
 - `two-package-managers` (2): py-conda-env, sys-cpp-vcpkg-conan
 - `included-requirement-files` (3): py-conda-env, py-pip-tools, py-requirements-includes
 - `ambiguous-extension` (17): js-cjs-esm-exports, js-node-scripts, js-vue-pnpm, jvm-sbt-two-subprojects, mix-edge-extensions, mix-edge-sql, mix-infra-k8s-helm, mix-php-laravel, mix-poly-openapi, mix-real-tinyxml2, mix-real-zlib, real-app-full-stack-fastapi, real-svc-otel-demo, real-svc-voting-app, sys-c-macro-annotations, sys-cmake-targets, sys-cpp-header-only

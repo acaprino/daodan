@@ -1,0 +1,84 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/shapes/Shapes.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/test/java/com/example/shapes/ShapesTest.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileJava",
+          "compileTestJava"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "1.6",
+      "declared_in": "build.gradle#java.sourceCompatibility"
+    },
+    {
+      "tool": "java",
+      "version": "1.6",
+      "declared_in": "build.gradle#java.targetCompatibility"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "junit:junit",
+      "declared": "4.13.2",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "build.gradle"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit",
+      "unit": ":",
+      "evidence": "build.gradle"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Every fact above is literal in the files; no file states the version of Gradle."
+  },
+  "traps": [
+    "JavaVersion.VERSION_1_6 is a compiler level, not a toolchain: Gradle compiles with the JDK that runs it, with -source and -target 6.",
+    "No javac from JDK 12 on compiles -source 6: the build as declared needs an older JDK.",
+    "No wrapper and no other file states the Gradle version: the right answer is none."
+  ],
+  "cases": [
+    "version-absent",
+    "no-lockfile"
+  ]
+}

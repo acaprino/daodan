@@ -1,0 +1,78 @@
+{
+  "languages": [
+    {
+      "path": "src/main/java/com/example/shapes/Shapes.java",
+      "language": "Java"
+    },
+    {
+      "path": "src/test/java/com/example/shapes/ShapesTest.java",
+      "language": "Java"
+    }
+  ],
+  "excluded": [],
+  "units": [
+    {
+      "name": ":",
+      "kind": "gradle-project",
+      "root": ".",
+      "manifest": "build.gradle",
+      "source_roots": [
+        "src/main/java",
+        "src/test/java"
+      ],
+      "depends_on": [],
+      "config": {
+        "source_sets": {
+          "main": [
+            "src/main/java"
+          ],
+          "test": [
+            "src/test/java"
+          ]
+        },
+        "compile_tasks": [
+          "compileJava",
+          "compileTestJava"
+        ]
+      }
+    }
+  ],
+  "workspace": null,
+  "toolchains": [
+    {
+      "tool": "java",
+      "version": "21",
+      "declared_in": "build.gradle#java.toolchain.languageVersion"
+    }
+  ],
+  "dependencies": [
+    {
+      "unit": ":",
+      "name": "junit:junit",
+      "declared": "4.13.2",
+      "resolved": null,
+      "scope": "test",
+      "declared_in": "build.gradle"
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "JUnit",
+      "unit": ":",
+      "evidence": "build.gradle"
+    }
+  ],
+  "services": [],
+  "needs": {
+    "container": false,
+    "reason": "Every fact above is literal in the files; no file states the version of Gradle."
+  },
+  "traps": [
+    "A toolchain is a JDK to find: Gradle compiles and tests on a JDK 21, whatever JDK runs Gradle itself.",
+    "No wrapper and no other file states the Gradle version: the right answer is none."
+  ],
+  "cases": [
+    "version-absent",
+    "no-lockfile"
+  ]
+}
