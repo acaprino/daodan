@@ -204,6 +204,18 @@ def test_a_runner_the_recorder_cannot_observe_is_a_gap_with_its_cause():
     assert gap["runner"] == "bun" and "JavaScriptCore" in gap["detail"]
 
 
+def test_a_script_that_runs_bun_has_the_bun_the_project_declares(tmp_path):
+    """real-app-full-stack-fastapi: `test` is `bun run --filter frontend test`, and the frontend's `bunx
+    playwright test`; its workflows set up Bun 1.3.12. The preparation installs that Bun with mise beside the
+    stated Node, so the script runs: what Bun's engine runs itself is not recorded, what it starts on Node is."""
+    bun = {"tool": "bun", "version": "1.3.12", "declared_in": ".github/workflows/playwright.yml"}
+    planned = observer.plan(record([entry(".", "npm")], toolchains=[bun, {"tool": "python", "version": "3.14",
+                                                                         "declared_in": ".python-version"}]), [], None)
+    assert planned["runs"] and planned["toolchains"] == [bun]
+    prepare, _execute, chains = observer.scripts(planned, [])
+    assert "install bun@1.3.12" in prepare and set(preparation.GITHUB) <= set(chains["hosts"])
+
+
 def test_a_run_declared_by_another_script_runs_that_script(tmp_path):
     frontend = {**entry(".", "jest"), "declared_in": "package.json#scripts.frontend:test"}
     planned = observer.plan(record([entry(".", "jest"), frontend]), [], None)

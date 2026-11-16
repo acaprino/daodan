@@ -25,7 +25,8 @@ a `runner_not_observed` gap, and it does not run. Where every script of a runner
 
 `observe` is one container run (`container.run_in_container`, the TypeScript analyzer's image). The preparation,
 with the registries: Daodan's Node, the Babel the recorder prints with (from npm without its install scripts),
-the Node the project states at an exact version (mise, `preparation.toolchains`), then the project's own restore
+the Node and the Bun the project states at an exact version (mise, `preparation.toolchains`: a script that runs
+`bun run` or `bunx` runs, and what Bun starts on Node is recorded), then the project's own restore
 with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The execution, with no network: each
 script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code, in every process
 and thread the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on, with
@@ -107,7 +108,7 @@ def external(callee: dict) -> dict:
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, roots, toolchains}` from the pre-map `record`: see the module's docstring. A run is
     `{root, runner, declared_in}`; `roots` are the package folders the restores run in and `toolchains` the Node
-    the project states."""
+    and the Bun the project states (a script may run Bun, which starts its tests' runner on Node)."""
     import premap
     tests = sorted((test for test in record.get("tests", []) if test.get("runner") in (*RUNNERS, *NOT_OBSERVED)),
                    key=lambda test: test["root"])
@@ -125,7 +126,7 @@ def plan(record: dict, files: list[str], read) -> dict:
     return {"runs": [{"root": test["root"], "runner": test["runner"], "declared_in": test.get("declared_in")}
                      for test in tests if test["runner"] in RUNNERS], "gaps": gaps, "unrun": unrun,
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
-            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "node"]}
+            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in ("node", "bun")]}
 
 
 def _script(run: dict) -> str:

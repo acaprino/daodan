@@ -6,7 +6,8 @@ understands, and looks nothing up. `read` keeps, per package file, the toolchain
 managers, the engine fields of manifests, the `go` and `requires-python` directives, the runtime a Dockerfile,
 compose file or devcontainer starts from (the version its tag holds, `_image_version`), the constraints a file
 writes (Poetry's `python`, Composer's `php`, pub's `dart`), and the packages that are the language or its build
-tool (`PACKAGE_TOOLS`: TypeScript in a manifest, Scala and sbt in an sbt build, the Kotlin Gradle plugins). A
+tool (`PACKAGE_TOOLS`: TypeScript in a manifest, Scala and sbt in an sbt build, the Kotlin Gradle plugins, the Bun
+a workflow sets up). A
 constraint is kept only when the file writes its value (Renovate derives `npm` from a lockfile's format and repeats
 a root's `packageManager` on each member), a package only with a version (a pnpm `catalog:` reference has none: the
 catalog states it). A wrapper's entry for itself is not a toolchain: the Maven wrapper gives Maven's version, not
@@ -57,6 +58,7 @@ DOCKER_RUNTIMES = {"node": "node", "python": "python", "golang": "go", "rust": "
                    "gradle": "gradle"}
 PACKAGE_TOOLS = (  # (manager, package, depType or None, tool): a package that is the language or its build tool
     ("npm", "typescript", None, "typescript"), ("bun", "typescript", None, "typescript"),
+    ("github-actions", "bun", "uses-with", "bun"),  # oven-sh/setup-bun's bun-version (known-actions/npm.ts)
     ("sbt", "scala", None, "scala"), ("sbt", "sbt/sbt", None, "sbt"),
     ("gradle", "org.jetbrains.kotlin.", "plugin", "kotlin"))  # a prefix ends with `.`: every Kotlin Gradle plugin
 CANON = {"nodejs": "node", "golang": "go", "rustc": "rust", "cpython": "python", "jdk": "java", "jre": "java",
