@@ -135,15 +135,21 @@ class Union:
         for language, entry in sorted(languages.items()):
             if entry.get("state") != "fresh":
                 continue
-            Union.observed(language, entry.get("coverage") or {}, (outcomes.get(language) or {}).get("reason"),
-                           context.bus, say)
-            files = (entry.get("coverage") or {}).get("files") or {}
-            if files.get("missing"):
-                reasons = dict(collections.Counter(item["reason"] for item in files["missing"]).most_common(3))
-                detail = (f"{len(files['missing'])} of {files['snapshot']} {language} files are not in the index: "
-                          + ", ".join(f"{reason} ({count})" for reason, count in reasons.items()))
-                say(f"{language}: {detail}", {"kind": "files-missing", "files": len(files["missing"]),
-                                              "of": files["snapshot"], "reasons": reasons, "detail": detail}, language)
+            try:
+                Union.observed(language, entry.get("coverage") or {}, (outcomes.get(language) or {}).get("reason"),
+                               context.bus, say)
+                files = (entry.get("coverage") or {}).get("files") or {}
+                if files.get("missing"):
+                    reasons = dict(collections.Counter(item["reason"] for item in files["missing"]).most_common(3))
+                    detail = (f"{len(files['missing'])} of {files['snapshot']} {language} files are not in the "
+                              "index: " + ", ".join(f"{reason} ({count})" for reason, count in reasons.items()))
+                    say(f"{language}: {detail}", {"kind": "files-missing", "files": len(files["missing"]),
+                                                  "of": files["snapshot"], "reasons": reasons, "detail": detail},
+                        language)
+            except Exception as error:  # noqa: BLE001 - one language's report stops no other, nor the graph
+                context.bus.emit("log", f"{language}: its report could not be read: {error!r}", step=Union.NAME,
+                                 level="error", language=language, cause=f"{type(error).__name__}: {error}",
+                                 remedy="analyze again: the step that wrote it writes it again")
         unserved = state.get("no_analyzer") or {}
         for language, files in unserved.items():
             detail = f"{files} {language} files are in the snapshot and no analyzer lists the language: no graph"

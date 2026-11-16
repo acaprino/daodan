@@ -472,20 +472,22 @@ class PositionStage:
             for language in self.counts}
 
     def _none_read(self, language: str) -> str | None:
-        """Why a language is not fresh when the engine reads nothing of any of its files (`nothing_read`: the
-        engine's reason for a file, None when it reads a part): their count and the commonest causes, as
-        `engine_pass.index_stage` fails a language none of whose files is in the index. A file read in part
-        (`unread`) keeps the language fresh, with its coverage a lower bound."""
-        nothing_read = getattr(self.engine, "nothing_read", None)
-        rels = [] if nothing_read is None else sorted(
-            rel for rel, held in self.connection.execute("SELECT file, language FROM sem_coverage")
-            if held == language and rel in self.source_paths)
-        reasons = [nothing_read(self.source_paths[rel]) for rel in rels]
-        if not reasons or not all(reasons):
+        """Why a language is not fresh when the engine reads nothing of any of its files: none is read whole (its
+        `files`, with each missing one's reason) and no call of theirs is one the engine is given (`population`,
+        the lexically bound ones checked), as `engine_pass.index_stage` fails a language none of whose files is
+        in the index. A file read in part, a script block with a call to ask, keeps the language fresh, with its
+        coverage a lower bound."""
+        files, numbers = self.files[language], self.counts[language]
+        if not files or not files["snapshot"] or files["indexed"] or numbers["population"] \
+                or numbers["checked"]["population"]:
             return None
         import collections
-        return (f"nothing of the {len(rels)} {language} files is read: "
-                + ", ".join(f"{reason} ({count})" for reason, count in collections.Counter(reasons).most_common(3)))
+        causes = collections.Counter(item["reason"] for item in files["missing"]).most_common(3)
+        excluded = numbers["excluded_classes"]
+        return (f"nothing of the {files['snapshot']} {language} files is read: "
+                + ", ".join(f"{reason} ({count})" for reason, count in causes)
+                + (f"; none of their {sum(excluded.values())} calls is asked: "
+                   + ", ".join(f"{name} ({count})" for name, count in sorted(excluded.items())) if excluded else ""))
 
     def _entries(self, partial: bool, covered: dict, verified_after) -> dict:
         """Each language's store entry as the stage stands: `partial` while the stage runs, then `fresh`, or

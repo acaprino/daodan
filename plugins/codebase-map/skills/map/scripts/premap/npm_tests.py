@@ -1,9 +1,9 @@
 """Source: how a Node package says its tests run, read from its `package.json`, never run.
 
 The `test` script, the one `npm test` runs, and the runner it names: Jest (`jest`, `react-scripts test`), Vitest,
-Mocha, Node's own (`node --test`); a script that names none of them is npm's to run (`npm`: the runner is
-whatever it starts). A script of the package it runs (`npm run test:unit`, `yarn test:unit`, `pnpm test:unit`)
-is read through. npm's placeholder (`echo "Error: no test specified" && exit 1`) declares nothing.
+Mocha, Node's own (`node --test`), Bun's (`bun test`); a script that names none of them is npm's to run (`npm`:
+the runner is whatever it starts). A script of the package it runs (`npm run test:unit`, `yarn test:unit`,
+`pnpm test:unit`) is read through. npm's placeholder (`echo "Error: no test specified" && exit 1`) declares nothing.
 
 Each is a `tests` entry `{root, runner, declared_in, args}`, `args` empty: the command is `npm test`. A package
 without the script states nothing: the dynamic step's gap, never a guessed command.
@@ -14,12 +14,13 @@ import json
 from pathlib import PurePosixPath
 import re
 
-NAME, VERSION, RANK = "npm-tests", "daodan/premap/v1", "reader"
+NAME, VERSION, RANK = "npm-tests", "daodan/premap/v2", "reader"  # v2: Bun's runner
 WORD = r"(?<![\w.@-]){}(?![\w.-])"  # a program's name alone or at the end of its path, not a part of another's
 RUNNERS = (("jest", re.compile(WORD.format("jest") + "|" + WORD.format(r"react-scripts\s+test"))),
            ("vitest", re.compile(WORD.format("vitest"))),
            ("mocha", re.compile(WORD.format("mocha"))),
-           ("node:test", re.compile(WORD.format(r"node\s(?:[^&|;]*\s)?--test"))))
+           ("node:test", re.compile(WORD.format(r"node\s(?:[^&|;]*\s)?--test"))),
+           ("bun", re.compile(WORD.format(r"bun\s+test"))))
 THROUGH = re.compile(r"(?<![\w./@-])(?:npm|pnpm|yarn)\s+(?:run\s+)?([\w:.-]+)")  # a script that runs another
 
 

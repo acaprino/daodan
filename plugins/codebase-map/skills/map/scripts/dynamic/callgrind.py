@@ -40,7 +40,7 @@ IN, T, WORK = preparation.IN, preparation.T, "/work"
 VALGRIND_BIN = f"{T}/valgrind/usr/bin/valgrind"
 TRACES = "/tmp/daodan-callgrind"  # the traced processes' outputs: large, read in the container and left there
 OPTIONS = ["-q", "--tool=callgrind", "--dump-instr=yes", "--compress-strings=no", "--compress-pos=no",
-           "--trace-children=yes", "--trace-children-skip=/usr/*,/bin/*,/sbin/*",
+           "--trace-children=yes", f"--trace-children-skip=/usr/*,/bin/*,/sbin/*,{T}/*",  # the system's, Daodan's
            f"--callgrind-out-file={TRACES}/callgrind.out.%p", f"--log-file={TRACES}/valgrind.%p.log"]
 SETUP = (f"{{ mkdir -p {T}/valgrind && dpkg-deb -x {IN}/valgrind.deb {T}/valgrind ; }} >&2"
          f" || echo 'DAODAN-MISSING valgrind@{VALGRIND_VERSION}' >&2")
@@ -107,6 +107,32 @@ def recorder_failed(back: Path, state: str) -> dict | None:
 
 def _text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+
+
+def timed(number: int, line: str) -> list[str]:
+    """Run `number`'s execution lines: `line`, its output in `tests-<number>.log`, then its exit code and its
+    seconds in `tests-<number>.code`."""
+    return [f"  s=$(date +%s); {line} > $OUT/tests-{number}.log 2>&1",
+            f'  echo "$? $(( $(date +%s) - s ))" > $OUT/tests-{number}.code']
+
+
+def stopped(entry: dict, given: str, limit: int, memory: int) -> dict | None:
+    """Fill `entry`'s `exit_code` and `seconds` from its code file's text `given`; where the run was stopped, its
+    `state` (`timeout` at the limit, `killed` before it: the memory limit, most often) and the gap that says so."""
+    code, _, seconds = given.strip().partition(" ")
+    entry["exit_code"] = int(code) if code.isdigit() else None
+    entry["seconds"] = int(seconds) if seconds.isdigit() else None
+    command = f"{' '.join(entry['argv'])} in {entry['root']}"
+    if entry["exit_code"] == 124 or (entry["exit_code"] == 137 and (entry["seconds"] or 0) >= limit):
+        entry["state"] = "timeout"
+        return {"kind": "tests_timeout", "path": entry["root"],
+                "detail": f"{command} did not end in {limit} s: what ran until then is observed"}
+    if entry["exit_code"] == 137:
+        entry["state"] = "killed"
+        return {"kind": "tests_killed", "path": entry["root"],
+                "detail": f"{command} was killed after {entry['seconds']} s, as a process is when the container's "
+                          f"memory limit ({memory // 2**30} GB) is reached: a killed process writes no trace"}
+    return None
 
 
 def short(name: str) -> str:

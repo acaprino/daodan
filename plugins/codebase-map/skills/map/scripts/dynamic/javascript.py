@@ -1,28 +1,47 @@
 """The JavaScript and TypeScript observer: the project's tests under the exact recorder (`javascript_record.js`).
 
+The recorder is Daodan's: no existing one qualifies, that is records every call with its caller, its callee and
+the call's place, by their own documentation. njsTrace (MIT, 3.0.0) rewrites through `Module._compile` the entry
+and exit of each function: no call's place, no ES module, nothing a runner evaluates with `vm`. Jalangi2
+(Apache-2.0, 0.2.6 of 2020) has the call's place and the callee, on ECMAScript 5.1 only; NodeProf needs GraalVM's
+Node, not the project's. The Babel and SWC plugins for calls log (babel-plugin-trace) or count coverage
+(babel-plugin-istanbul, swc-plugin-coverage-instrument): statements, branches, functions, no edge. V8's inspector
+samples (Profiler: a function's callers without the call's line) or counts functions and blocks (precise
+coverage); its Debugger would pause at every call. OpenTelemetry's auto-instrumentation patches libraries
+(http, pg, express...): their boundaries only. So the recorder is a Babel plugin that passes every callee
+through a function of its own, and asks the inspector where the function called is defined; it prints with
+@babel/core (`BABEL`, MIT, from npm at that version). V8's sampling profiler (`--cpu-prof`) is the second source
+the step takes (`sampled` pairs, `dynamic.join_sampled`) only where the recorder has no hook: the one runner of
+that kind is Bun's, which is not V8, and the files the recorder misses are said (`not_observed`), so no run
+takes it.
+
 `plan` reads the pre-map alone. The command is the one the project declares: the `test` script of each package
-(its `tests` entries, from `premap/npm_tests.py`), run as `npm test` in the package's folder; a project where no
-package declares one is a `no_test_command` gap, never a command of ours. A script whose runner compiles the
-code where the recorder has no hook (`NOT_OBSERVED`) is a `runner_not_observed` gap, and it does not run.
+(its `tests` entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, any other script), run as
+`npm test` in the package's folder; a project where no package declares one is a `no_test_command` gap, never a
+command of ours. A script whose runner the recorder cannot hook (`NOT_OBSERVED`) is a `runner_not_observed` gap,
+and it does not run.
 
 `observe` is one container run (`container.run_in_container`, the TypeScript analyzer's image). The preparation,
-with the registries: Daodan's Node, the Babel the recorder prints with (`BABEL`, from npm without its install
-scripts), the Node the project states at an exact version (mise, `preparation.toolchains`), then the project's
-own restore with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The execution, with no
-network: each script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code and
-in every process the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on.
-The project is not changed. The recorder puts its Babel plugin where the code is compiled:
+with the registries: Daodan's Node, the Babel the recorder prints with (from npm without its install scripts),
+the Node the project states at an exact version (mise, `preparation.toolchains`), then the project's own restore
+with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The execution, with no network: each
+script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code, in every process
+and thread the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on. The
+project is not changed. The recorder puts its Babel plugin where the code is compiled:
 
 - a source Node runs as written (Mocha, `node --test`, any script on Node's own loaders) is printed by
-  Daodan's Babel;
-- a @babel/core the run loads itself (Jest's babel-jest, @babel/register) gets the plugin in every transform.
+  Daodan's Babel, TypeScript Node strips itself (`node --test "test/*.test.ts"`) once stripped as Node does;
+- a @babel/core the run loads itself (Jest's babel-jest, @babel/register) gets the plugin in every transform;
+- code another tool printed with its source map inline (ts-jest, Vitest's Vite in every pool, a TypeScript
+  loader), on its way to Node's loaders or to the `vm` functions the runners evaluate with, is printed again
+  through that map: a call is a site only where the map leads to the same name in the file as written.
 
-Code another tool printed before Node compiles it (ts-jest, a TypeScript loader, a bundler) is not recorded.
-Back come the observation files, one per process, and each run's log. What did not happen is a gap with its
-cause: tests that did not start (the log's tail), that failed, that outlasted the limit, that reached for a
-service or the network (the execution has none and the step starts no service), a run where the recorder saw no
-call, the files that ran as another tool printed them (`not_observed`), the project callees the recorder could
-not place in their source (`callee_unplaced`: no source map of the file in that process), a restore that failed.
+Back come the observation files, one per process and thread, and each run's log. What did not happen is a gap
+with its cause: tests that did not start (the log's tail), that failed, that outlasted the limit, that reached
+for a service or the network (the execution has none and the step starts no service), a run where the recorder
+saw no call, the project files that ran unrecorded (`not_observed`: printed with no inline map, or ES modules
+under a Node without `module.registerHooks`, before 22.15), the project callees the recorder could not place
+(`callee_unplaced`: the map of their code leads to no function's head in the file as written), a failed restore.
 """
 from __future__ import annotations
 
@@ -38,9 +57,10 @@ from indexers import typescript  # the image, the unit kinds and the restores of
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
 ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "1", ("javascript", "typescript")
 RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
-RUNNERS = ("jest", "mocha", "node:test", "npm")  # the runners of the pre-map's `tests` it starts, each as `npm test`
-NOT_OBSERVED = {"vitest": "Vitest compiles the code with Vite's transform, where the recorder has no hook"}
-BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the sources Node runs as written
+RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest")  # the pre-map's runners it starts, each as `npm test`
+NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, where a Node preload and V8's "
+                       "inspector do not exist"}
+BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the code it records
 MOCKS = ("jest-mock", "sinon", "tinyspy", "@vitest/spy")  # a function of theirs stands for another: no destination
 MEMORY = 4 * 2**30  # a Jest shard of the measure ran in 4 GB (benchmarks/call-provenance)
 LIMIT = 3600  # the seconds one run of the tests may take
@@ -48,6 +68,7 @@ OUT = "/daodan/out"
 IN, T = preparation.IN, preparation.T
 CORE = f"{T}/npm/lib/node_modules/@babel/core"
 UNREACHABLE = re.compile(r"ECONNREFUSED|ENOTFOUND|EAI_AGAIN|ENETUNREACH")
+ERROR = re.compile(r"^\s*(?:[\w.]*Error\b|npm (?:ERR!|error)\b)")  # the first line a thrown error or npm prints
 MARK = re.compile(r"^DAODAN-DYNAMIC (\d+) (\S+) ?(.*)$", re.M)
 
 
@@ -150,6 +171,9 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
     entry.update(state="not_started", exit_code=int(code) if code else None,
                  seconds=int(seconds) if seconds.isdigit() else None, processes=processes)
     tail = " | ".join(line.strip() for line in log.strip().splitlines()[-8:])[-600:]
+    error = next((line.strip() for line in log.splitlines() if ERROR.match(line)), None)
+    if error and error not in tail:  # the cause, above a summary that fills the tail
+        tail = f"{error[:300]} ... {tail}"
     recorded = sum(len(data.get("sites") or ()) for data in observations)
 
     def gap(kind: str, detail: str, **more) -> dict:
@@ -169,15 +193,16 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
                                             f"that fails may stop before its calls: {tail}"))
         elif not recorded:
             gaps.append(gap("nothing_recorded",
-                            f"{command} ended and the recorder saw no call: its runner compiles the code where "
-                            "the recorder has no hook, or the script sets NODE_OPTIONS itself"))
+                            f"{command} ({run['runner']}) ended and the recorder saw no call and no file of the "
+                            "project run: the tests ran in processes the recorder's preload does not reach (the "
+                            "script sets NODE_OPTIONS itself, or starts another engine)", runner=run["runner"]))
     else:
         gaps.append(gap("tests_not_started", f"{command} exited with code {code} and recorded no call: {tail}"))
     unobserved = sorted({rel for data in observations for rel in data.get("unobserved") or ()})
     if unobserved:
         gaps.append(gap("not_observed",
-                        f"{command}: {len(unobserved)} files ran as another tool printed them (a TypeScript "
-                        f"loader, a bundler), not as written, and their calls are not recorded: "
+                        f"{command}: {len(unobserved)} files of the project ran unrecorded (printed by another "
+                        f"tool with no source map inline, or loaded where the recorder has no hook): "
                         f"{', '.join(unobserved[:5])}", files=len(unobserved), examples=unobserved[:5]))
     refused = len(UNREACHABLE.findall(log))
     if refused:
@@ -237,6 +262,6 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     if unplaced:
         gaps.append({"kind": "callee_unplaced", "count": unplaced,
                      "detail": f"{unplaced} observed calls reach a project function the recorder could not place "
-                               "in its source (no source map of its file in the process that called it): the "
-                               "end is said without its declaration"})
+                               "in its source (the source map of the code that defines it leads to no function's "
+                               "head in the file as written): the end is said without its declaration"})
     return {"state": "ran", "sites": found, "runs": entries, "gaps": gaps}

@@ -15,6 +15,7 @@ import pytest
 
 import test_codebase_map_indexers as base
 from test_codebase_map_indexers import FIXTURES, Box, _environment, _node_release, _project, _tools
+import code_graph  # noqa: E402
 import container  # noqa: E402
 import preparation  # noqa: E402
 import resolve_edges as rx  # noqa: E402
@@ -146,6 +147,8 @@ def test_the_generated_tsconfig_carries_the_aliases_from_the_copys_root(tmp_path
     # Absolute, under the copy: an inherited `baseUrl` would move a relative target.
     assert written == {key: [f"/work/{name}" for name in targets] for key, targets in aliases.items()}
     assert sorted(path.name for path in tmp_path.iterdir()) == ["generated.json"]  # nothing beside it
+    # The file that names the type packages the preparation added (`typescript_types.py`), when it is there.
+    assert json.loads(target.read_text(encoding="utf-8"))["include"] == ["a.ts", typescript.REFERENCES]
     typescript._tsconfig(tmp_path, target, ["a.ts"])
     assert "paths" not in json.loads(target.read_text(encoding="utf-8"))["compilerOptions"]
 
@@ -195,7 +198,7 @@ def test_the_packages_are_restored_the_projects_own_way_and_the_index_follows_in
     assert [(run["phase"], run["returncode"], run["seconds"], run["peak_mb"]) for run in result["runs"]] == [
         ("prepare", 0, 40.0, 300), ("execute", 0, 12.5, 900)]
     assert result["indexer"] == {"name": "scip-typescript", "version": typescript.VERSION, "seconds": 52.5,
-                                 "peak_mb": 900}
+                                 "peak_mb": 900, "types": []}  # the preparation added no type package
     assert result["restores"] == {"pnpm": ["."]}
     gaps = {(gap["kind"], gap.get("path") or gap.get("alias")): gap for gap in result["gaps"]}
     # `@acme/ui` (workspace:) and `left` (link:) are the manager's to install; `tools/gen` is no member.
@@ -370,6 +373,15 @@ def test_each_type_package_is_installed_apart_and_linked_where_typescript_looks_
         assert (work / "node_modules/@types" / name).resolve() == (types / "node_modules/@types" / name).resolve()
     assert sorted(path.name for path in (work / "node_modules/@types").iterdir()) == ["ms", "node"]
     assert [gap["tool"] for gap in preparation.missing(said)] == ["@types/down"]
+    # TypeScript 6, scip-typescript's, loads no @types package unless named (`types` defaults to []): Node's own
+    # API is named in a file the generated tsconfig includes, beside the project's `types`, never in their place.
+    assert (types / "references.d.ts").read_text(encoding="utf-8") == '/// <reference types="node" />\n'
+    (work / "node_modules/@types/node").unlink()  # the link
+    (types / "references.d.ts").unlink()
+    _written(programs, {"npm": "#!/bin/sh\necho 'npm error code ECONNRESET' >&2\nexit 1\n"})
+    (programs / "npm").chmod(0o755)  # Node's types not installed: no reference to them
+    typescript_types.main(["typescript_types.py", str(work), "24", str(types)])
+    assert not (types / "references.d.ts").exists()
 
 
 def test_a_restore_runs_the_lifecycle_scripts_first_and_falls_back_to_the_install_without_them():
@@ -447,10 +459,53 @@ def test_the_type_packages_follow_the_restore_and_the_prepare_run_lists_those_ad
     assert line in prepare.splitlines()
     assert prepare.index(preparation.restore("npm", ["."], scripts=True)) < prepare.index(line)
     assert Path(asked["inputs"][typescript.TYPES]) == Path(typescript.__file__).with_name("typescript_types.py")
-    assert result["runs"][0]["types"] == ["@types/node@20.19.2", "@types/ms@2.1.0"] and "gaps" not in result
+    # On the indexer's record, which the stage's report and each language's store entry carry.
+    assert result["indexer"]["types"] == ["@types/node@20.19.2", "@types/ms@2.1.0"] and "gaps" not in result
     typescript.index(project, sandbox["root"] / "work", roots={""})
     major = preparation.NEEDS["node"]["version"].split(".")[0]
     assert f"python3 {typescript.TYPES} /work {major} {typescript.TYPES_DIR} ." in box.asked[1]["prepare"][2].splitlines()
+
+
+def test_a_tsconfig_extending_a_file_no_install_step_generates_is_a_gap_that_names_the_cause(sandbox):
+    """js-sveltekit: the root tsconfig extends `.svelte-kit/tsconfig.json`, which `svelte-kit sync` writes; no
+    lifecycle script of the project runs it (it is only in `check`), so TypeScript cannot read the configuration."""
+    project = sandbox["root"] / "project" / "sveltekit"
+    shutil.copytree(SVELTEKIT, project, ignore=shutil.ignore_patterns("expected.json"))
+    units = json.loads((SVELTEKIT / "expected.json").read_text(encoding="utf-8"))["units"]
+    said = "error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'.\n"
+    _contained(sandbox, index=FIXTURES / "ts/index.scip", execute=said, codes=(0, 1))
+    result = typescript.index(project, sandbox["root"] / "work", **typescript.structure({"units": units}))
+    assert result["state"] == "failed" and "error TS5083" in result["reason"]
+    assert result["gaps"] == [{
+        "kind": "config_not_generated", "path": "tsconfig.json", "file": ".svelte-kit/tsconfig.json",
+        "detail": "tsconfig.json extends .svelte-kit/tsconfig.json, a file the framework generates (`svelte-kit "
+                  "sync`), which no install step of the project runs (no `prepare` script; it is only in `check`)"}]
+    # Without a generator Daodan knows, the gap still names the file no install step wrote.
+    (project / "tsconfig.json").write_text('{"extends": "./gen/base.json"}', encoding="utf-8")
+    _contained(sandbox, execute=said.replace(".svelte-kit/tsconfig", "gen/base"), codes=(0, 1))
+    result = typescript.index(project, sandbox["root"] / "work", **typescript.structure({"units": units}))
+    assert [gap["detail"] for gap in result["gaps"]] == [
+        "tsconfig.json extends gen/base.json, which the snapshot does not hold and no install step wrote"]
+
+
+VUE = {"src/main.ts": 'import { createApp } from "vue";\nimport App from "@/App.vue";\n\ncreateApp(App).mount("#app");\n',
+       "src/App.vue": "<template><p>x</p></template>\n"}
+
+
+def test_a_name_an_untyped_module_binds_is_a_hole_with_the_cause(tmp_path):
+    """js-vue-pnpm: no declaration of `*.vue` modules, so TypeScript types no import of a component; the index
+    references the import's name as a local it defines nowhere. The hole says why, not `dangling-local`."""
+    import test_codebase_map_code_graph as graphs
+    _written(tmp_path, VUE)
+    app, ref = "local 0", "local 1"
+    index = graphs.load(tmp_path, graphs.document("src/main.ts", [
+        graphs.occurrence(4, 10, 13, app), graphs.occurrence(4, 0, 9, "scip-typescript npm vue 3.5.12 createApp()."),
+        graphs.occurrence(1, 9, 18, ref)]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert [(end.cls, end.detail) for end in traversal.ends(f"src/main.ts#{app}")] == [
+        ("dead-end", "no declaration of *.vue modules: the import is not typed")]
+    # A local of a typed module, or of none, stays what the index makes of it.
+    assert [end.detail for end in traversal.ends(f"src/main.ts#{ref}")] == ["dangling-local"]
 
 
 def test_without_a_container_engine_typescript_is_unavailable_with_the_gaps_cause_and_remedy(sandbox):

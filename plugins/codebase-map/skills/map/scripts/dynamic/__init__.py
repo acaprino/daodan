@@ -10,12 +10,16 @@ observed rows' resolver is `ENTRY@VERSION`) and `LANGUAGES`, and gives:
 `plan` takes the command that runs the tests from what the project declares (the pre-map's `tests`), never from a
 convention; with nothing to run it says why, and no container starts. `observe` runs project code, so only through
 `container.run_in_container`: the dependencies restored the project's own way in the preparation, with the
-registries, the tests in the execution, with no network. `state` is `ran`, or `gap` with `cause` and `remedy`
-when no container could run. A site is `{file, line, column, name, role, callees}`: the file from the project's
-root, the line from 0 and the byte column of the callee's name; a callee is `{kind: "project", file, line,
-column, name, type}` (the declaration's line from 0 and byte column, as the snapshot has it; with no column,
-the one function of that name on that line) or one outside the project, and may carry `wraps` (the callee it
-stands for) or `mock`.
+registries, the tests in the execution, with no network. `state` is `ran`, `gap` with `cause` and `remedy`
+when no container could run, or `failed` with `cause` and `remedy` when the preparation or the engine failed.
+`runs` has one entry per planned run, `{root, runner, state, ...}`: the folder from the project's root, what
+ran (`pytest`, `npm test`, `go test`, `gradle`), and how its tests ended, one of `TESTS` (`ran` to their end,
+some failed or not; `timeout` and `killed`, stopped after some ran; `not_started`; `no_tests`); any other key
+is the observer's own (`exit_code`, `seconds`). `gaps` are `{kind, detail, ...}`. A site is `{file, line,
+column, name, role, callees}`: the file from the project's root, the line from 0 and the byte column of the
+callee's name; a callee is `{kind: "project", file, line, column, name, type}` (the declaration's line from 0
+and byte column, as the snapshot has it; with no column, the one function of that name on that line) or one
+outside the project, and may carry `wraps` (the callee it stands for) or `mock`.
 
 `sites` are an exact recorder's: every call, with its caller and callee, at its site. A sampling profiler of
 the toolchain is a second source, declared apart: its pairs are `sampled`, each `{caller, callee, line}` of one
@@ -29,7 +33,9 @@ holds for the run that produced it: it proves that a call can arrive there, not 
 a call no test executed stays as the static steps left it. A sampled one says the same with resolver
 `ENTRY@VERSION:sampled` and confidence `sampled`; it is never set against a proven edge and says nothing of the
 calls and files no sample named. A language with no observer, a project with no declared test command, a run
-with no container engine are gaps, never silence. `DAODAN_DYNAMIC=off` skips the step.
+with no container engine are gaps, never silence; so are a result that breaks this contract (`observer-malformed`,
+`failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`): of
+those nothing is kept, and the next analysis tries again. `DAODAN_DYNAMIC=off` skips the step.
 
 See docs/specs/2026-11-12-passo-dinamico.md, sections 5 and 7.
 """
@@ -44,6 +50,26 @@ from pathlib import Path
 STEP = "dynamic"
 RUNS = "dynamic-runs"  # beside the manifest: each observer's container record, logs and observation files
 EXAMPLES = 20
+TESTS = ("ran", "timeout", "killed", "not_started", "no_tests")  # how a run's tests ended; the first three ran
+KEYS = {"runs": {"root", "runner", "state"}, "sites": {"file", "line", "column", "name", "role", "callees"},
+        "sampled": {"caller", "callee", "line"}, "gaps": {"kind", "detail"}}  # what each item of a result holds
+
+
+def malformed(result) -> str | None:
+    """What an observer's result breaks of the contract (the module's docstring), None when it keeps it."""
+    if not isinstance(result, dict) or result.get("state") not in ("ran", "gap", "failed"):
+        return "its state is none of ran, gap, failed"
+    if result["state"] != "ran":
+        return None if result.get("cause") and result.get("remedy") else f"a {result['state']} without cause and remedy"
+    for key, need in KEYS.items():
+        items = result.get(key, [] if key == "sampled" else None)
+        if not isinstance(items, list) or not all(isinstance(item, dict) for item in items):
+            return f"its {key} is not a list of entries"
+        short = sorted({name for item in items for name in need - item.keys()})
+        if short:
+            return f"an entry of its {key} has no {', '.join(short)}"
+    states = sorted({str(test["state"]) for test in result["runs"]} - set(TESTS))
+    return f"a run's state is {', '.join(states)}, none of {', '.join(TESTS)}" if states else None
 
 
 def observers() -> list:
@@ -236,8 +262,10 @@ def run(manifest: Path, bus) -> dict:
     Each observer whose languages have a static graph in the store plans its runs from the pre-map, runs them in
     the container (the engine is asked once, when the first observer has something to run) and saves what the
     join places. An outcome's `state` is `observed` (with the `sites`, `edges` and `closed` holes of the store's
-    coverage), or why nothing was: `no-observer`, `no-static-graph`, `not-run` (nothing to run: the plan's
-    gaps), `unavailable` (no container), `failed`; those carry the `reason`. A language already observed with
+    coverage, and `sampled` apart), or why nothing was: `no-observer`, `no-static-graph`, `not-run` (nothing to
+    run, the plan's gaps, or no test ran, the run's), `unavailable` (no container), `failed` (the run, or a result
+    that breaks the contract), `not-observed` (the tests ran and placed no row of the language); those carry the
+    `reason`. A language already observed with
     the same recorder is not observed again: the observation holds for its snapshot's store.
     """
     import code_graph
@@ -318,6 +346,15 @@ def run(manifest: Path, bus) -> dict:
                              message=f"{entry}: {len(planned['runs'])} runs of the tests in the container")
                 result = module.observe(snapshot.root, planned, manifest.parent / RUNS / entry,
                                         asked.pop("engine", None))
+            broken = malformed(result)
+            if broken:
+                detail = f"{entry} returned a result that breaks the observer contract: {broken}; nothing is kept"
+                say(detail, {"kind": "observer-malformed", "detail": detail}, entry)
+                bus.emit("analyzer.finished", f"{entry} failed", step=STEP, analyzer=entry, level="error",
+                         cause=detail, remedy="fix the observer's result (the contract is dynamic/__init__.py's)",
+                         languages=wanted)
+                left(wanted, "failed", detail)
+                continue
             if result["state"] != "ran":
                 cause = result["cause"] if result["state"] == "failed" else \
                     f"the tests run only in a container: {result['cause']}"
@@ -331,6 +368,12 @@ def run(manifest: Path, bus) -> dict:
                 continue
             for gap in result["gaps"]:
                 say(gap["detail"], gap, entry)
+            why = "; ".join(gap["detail"] for gap in result["gaps"])
+            if not any(test["state"] in TESTS[:3] for test in result["runs"]):
+                left(wanted, "not-run", f"no test ran: {why or 'the observer ran none'}")
+                bus.emit("analyzer.finished", f"{entry}: no test ran", step=STEP, analyzer=entry, level="warning",
+                         cause=outcomes[wanted[0]]["reason"], remedy="see the gaps of the run", languages=wanted)
+                continue
             sites, pairs = result.get("sites") or [], result.get("sampled") or []
             bus.progress(STEP, number, len(waiting), analyzer=entry, phase="join",
                          message=f"{entry}: {len(sites)} observed sites and {len(pairs)} sampled pairs to place")
@@ -342,6 +385,10 @@ def run(manifest: Path, bus) -> dict:
                 if pairs:
                     more, said = join_sampled(snapshot, language, pairs, module)
                     rows, facts["sampled"] = rows + more, {"resolver": resolver(module, sampled=True), **said}
+                if not rows:  # nothing is kept: the next analysis observes again
+                    placed = f"the tests ran and the recorder placed no call on a reference of {language}"
+                    outcomes[language] = {"state": "not-observed", "reason": placed + (f": {why}" if why else "")}
+                    continue
                 outcomes[language] = _outcome(code_graph.write_observed(snapshot, store, language, rows, facts))
             told = ", ".join(f"{language}: {_told(outcomes[language])}" for language in wanted)
             bus.emit("analyzer.finished", f"{entry}: {told}", step=STEP, analyzer=entry, languages=wanted)
@@ -361,6 +408,8 @@ def _outcome(coverage: dict) -> dict:
 
 
 def _told(outcome: dict) -> str:
+    if outcome["state"] != "observed":
+        return outcome["reason"]
     sampled = outcome.get("sampled")
     return (f"{outcome['sites']} sites observed" + (f", {sampled['sites']} sampled" if sampled else "")
             + f", {outcome['closed'] + (sampled or {}).get('closed', 0)} holes closed")

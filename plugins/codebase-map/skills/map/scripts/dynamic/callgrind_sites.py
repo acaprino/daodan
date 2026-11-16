@@ -6,10 +6,10 @@ after the tests, over Callgrind's outputs and the objects they name, never on th
 Callgrind (`--dump-instr=yes`) writes each call it saw under the caller's object (`ob=`), file and function, as a
 `calls=` line (the count, the address and line the callee was entered at) and the cost line after it (the address
 of the call instruction): valgrind.org/docs/manual/cl-format.html. `cob=` and `cfi=` name the callee's object and
-file where they differ from the caller's. The addresses are where the process had the object mapped: the load
-address of an object is the page-aligned one that makes the addresses entered in it its own function symbols
-(`.symtab`, `.dynsym`), and its DWARF line table (pyelftools, public domain) then gives an address its file, line
-and column. Callgrind's own lines carry no column.
+file where they differ from the caller's (callgrind/dump.c, `fprint_jcc`). The addresses are where the process
+had the object mapped: the load address of an object is the page-aligned one that makes the addresses entered in
+it its own function symbols (`.symtab`, `.dynsym`), and its DWARF line table (pyelftools, public domain) then
+gives an address its file, line and column. Callgrind's own lines carry no column.
 
 Written: `{"processes", "calls", "unread"}`, a call `[file, line, column, callee file, line, column, callee,
 callee object, count]` per call site and callee, lines and columns from 1 as DWARF numbers them, the column 0
@@ -86,8 +86,8 @@ def parse(text: str) -> list[dict]:
         if key == "calls":
             count, *fields = value.split()
             entered = position(fields, cost=False)
-            pending = {"callee_object": target.pop("cob", state["ob"]),
-                       "callee_file": target.pop("cfi", state["fl"]), "callee": target.pop("cfn", ""),
+            pending = {"callee_object": target.pop("cob", state["ob"]),  # dump.c writes them where they differ
+                       "callee_file": target.pop("cfi", state["file"]), "callee": target.pop("cfn", ""),
                        "entered": entered.get("instr"), "entered_line": entered.get("line", 0), "count": int(count)}
         elif key in ("ob", "fl", "fi", "fe", "fn"):
             given = name(key, value)
@@ -106,7 +106,7 @@ def parse(text: str) -> list[dict]:
 
 def load_address(entered: set[int], values: set[int]) -> int | None:
     """The page-aligned load address that makes the most `entered` addresses function symbols of the object
-    (`values`), None where no address or more than one does."""
+    (`values`): 0 among equals (the object is where it was linked), None where no address or more than one does."""
     if not entered or not values:
         return None
     first = min(entered)
@@ -115,14 +115,15 @@ def load_address(entered: set[int], values: set[int]) -> int | None:
         base = first - value
         if base >= 0 and base % PAGE == 0:
             counted[base] = sum(1 for address in entered if address - base in values)
-    best = counted.most_common(2)
-    if not best or (len(best) > 1 and best[1][1] == best[0][1]):
-        return None
-    return best[0][0]
+    most = max(counted.values(), default=0)
+    best = [base for base, count in counted.items() if count == most]
+    return 0 if 0 in best else best[0] if len(best) == 1 else None
 
 
 def _inside(path: str, root: str) -> bool:
-    return path == root or path.startswith(root.rstrip("/") + "/")
+    """Whether `path` can be a file under `root`: one Valgrind left relative is, until its DWARF says otherwise."""
+    return path == root or path.startswith(root.rstrip("/") + "/") or (path not in ("", "???")
+                                                                         and not path.startswith("/"))
 
 
 def document(texts: list[str], root: str, objects) -> dict:
@@ -219,6 +220,8 @@ def _spans(dwarf, unit) -> list[tuple[int, int]] | None:
     attributes = unit.get_top_DIE().attributes
     try:
         if "DW_AT_ranges" in attributes:
+            if attributes["DW_AT_ranges"].form == "DW_FORM_rnglistx":  # an index, not an offset: read it all
+                return None
             low = attributes["DW_AT_low_pc"].value if "DW_AT_low_pc" in attributes else 0
             spans, base = [], low
             for item in dwarf.range_lists().get_range_list_at_offset(attributes["DW_AT_ranges"].value, cu=unit):

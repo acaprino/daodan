@@ -8,6 +8,8 @@ image, the limits) and plays a run's outputs into the output folder, as the engi
 from __future__ import annotations
 
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 from unittest import mock
@@ -46,7 +48,8 @@ def test_pytest_runs_where_the_project_declares_it_in_the_environment_of_its_fol
     found = plan([PYTEST], ["pyproject.toml", "uv.lock", "tests/test_a.py"], texts={"pyproject.toml": PACKAGED})
     assert found["gaps"] == []
     assert found["runs"] == [{"root": ".", "runner": "pytest", "declared_in": PYTEST["declared_in"],
-                              "argv": ["-m", "pytest"], "env": ".", "manager": "uv", "install": True}]
+                              "argv": ["-m", "pytest", observer.KEEP_GOING], "env": ".", "manager": "uv",
+                              "install": True}]
 
 
 def test_a_test_folder_outside_every_python_project_uses_the_only_environment_the_project_restores():
@@ -55,8 +58,8 @@ def test_a_test_folder_outside_every_python_project_uses_the_only_environment_th
     found = plan(tests, ["scripts/requirements.txt", "scripts/lib.py", "tests/conftest.py", "tests/test_a.py"])
     assert found["gaps"] == []
     assert found["runs"] == [{"root": ".", "runner": "pytest", "declared_in": "tests/conftest.py",
-                              "argv": ["-m", "pytest", "tests"], "env": "scripts", "manager": "pip",
-                              "install": False}]
+                              "argv": ["-m", "pytest", "tests", observer.KEEP_GOING], "env": "scripts",
+                              "manager": "pip", "install": False}]
 
 
 def test_manifests_inside_the_test_folders_are_fixtures_not_the_environment_nor_tests_of_their_own():
@@ -246,6 +249,54 @@ def test_tests_that_do_not_run_to_their_end_are_a_gap_with_the_cause(tmp_path, e
     assert result["state"] == "ran" and result["runs"][0]["state"] == state
     [gap] = result["gaps"]
     assert gap["kind"] == kind and said in gap["detail"] and gap["path"] == "."
+
+
+@pytest.mark.parametrize("tests, state, kinds", [
+    ("__ ERROR collecting tests/test_b.py __\nE   ModuleNotFoundError: No module named 'acme'\n"
+     "__ ERROR collecting tests/test_c.py __\nE   RuntimeError: no service\n=== 4 passed, 2 errors in 0.5s ===\n",
+     "ran", ["tests_not_collected"]),
+    ("__ ERROR collecting tests/test_b.py __\nE   ModuleNotFoundError: No module named 'acme'\n"
+     "FAILED tests/test_a.py::test_x\n=== 1 failed, 3 passed, 1 error in 0.5s ===\n",
+     "ran", ["tests_failed", "tests_not_collected"]),
+    ("__ ERROR collecting tests/test_b.py __\nE   ModuleNotFoundError: No module named 'acme'\n"
+     "__ ERROR collecting tests/test_c.py __\nE   RuntimeError: no service\n=== 2 errors in 0.5s ===\n",
+     "not_started", ["tests_not_collected"])])
+def test_test_modules_pytest_could_not_collect_are_one_gap_and_the_others_run(tmp_path, tests, state, kinds):
+    result = observe(tmp_path, Played(execute="DAODAN-DYNAMIC 0 python 3.13.18 1\nDAODAN-DYNAMIC 0 exit 1 3\n",
+                                      tests=tests))
+    assert result["runs"][0]["state"] == state and [gap["kind"] for gap in result["gaps"]] == kinds
+    gap = result["gaps"][-1]
+    assert gap["modules"][0] == {"file": "tests/test_b.py", "error": "ModuleNotFoundError: No module named 'acme'"}
+    assert gap["count"] == len(gap["modules"]) and "tests/test_b.py" in gap["detail"]
+
+
+@pytest.mark.parametrize("runner, args", [("pytest", ["tests"]), ("unittest", ["discover", "-s", "tests"])])
+def test_a_test_module_that_does_not_import_leaves_the_others_running(tmp_path, runner, args):
+    """Real runs of both runners on one module that imports and one that does not. pytest stops at a collection
+    error unless it is told not to, with its own option (`KEEP_GOING`); unittest loads each module apart and makes
+    a failed import a test in error, so it needs nothing."""
+    project = tmp_path / "project"
+    (project / "tests").mkdir(parents=True)
+    (project / "tests" / "test_good.py").write_text(
+        "import unittest\n\n\nclass Good(unittest.TestCase):\n    def test_it(self):\n        self.assertTrue(True)\n",
+        encoding="utf-8")
+    (project / "tests" / "test_bad.py").write_text("import acme_missing\n", encoding="utf-8")
+    test = {"root": ".", "runner": runner, "declared_in": "tox.ini", "args": args}
+    [run] = plan([test], ["tox.ini", "tests/test_good.py", "tests/test_bad.py"])["runs"]
+    env = {key: value for key, value in os.environ.items() if not key.startswith(("PYTEST", "PYTHON"))}
+    done = subprocess.run([sys.executable, *run["argv"]], cwd=project, env=env, capture_output=True, text=True)
+    log = done.stdout + done.stderr
+    assert done.returncode == 1, log  # 2 is pytest's interrupted collection: nothing ran
+    played = Played(execute=f"DAODAN-DYNAMIC 0 python 3.13.18 1\nDAODAN-DYNAMIC 0 exit {done.returncode} 1\n",
+                    tests=log)
+    result = observe(tmp_path, played, tests=[test], files=["tox.ini", "tests/test_good.py"])
+    assert result["runs"][0]["state"] == "ran"
+    if runner == "pytest":
+        [gap] = result["gaps"]
+        assert gap["kind"] == "tests_not_collected" and gap["modules"] == [
+            {"file": "tests/test_bad.py", "error": "ModuleNotFoundError: No module named 'acme_missing'"}]
+    else:
+        assert "Ran 2 tests" in log and [gap["kind"] for gap in result["gaps"]] == ["tests_failed"]
 
 
 def test_what_the_preparation_could_not_do_is_a_gap_of_the_run(tmp_path):

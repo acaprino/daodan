@@ -288,7 +288,7 @@ def run_cases(names: list) -> dict:
                                   file.read_text(encoding="utf-8", errors="replace")[-3000:]
                                   for pattern in ("engine-pass*.log", "premap-runs/*/prepare.log",
                                                   "premap-runs/*/results/*/stderr",
-                                                  "premap-runs/*/results/0/stdout")
+                                                  "premap-runs/*/results/0/stdout", "dynamic-runs/**/*.log")
                                   for file in sorted(manifest.parent.glob(pattern)) if file.stat().st_size},
                          "seconds": round(time.monotonic() - started, 1)}
         except Exception as error:  # noqa: BLE001 - a case's failure is its result

@@ -12,6 +12,7 @@ the index defines it. An adapter may add, each passed by its driver to `Traversa
     missing(index, rels) -> {rel: reason}       snapshot files the index holds no document for
     same_range(index) -> {(definition key, other key): bool}   at a shared range: True alias, False never
     classify(key) -> "project" | "namespace" | {"manager", "package", "version"} | None (the default rule)
+                     | the cause of a dead end, for a key the index defines nowhere
     static(index) -> {(rel, line, byte column)}  member references dispatched statically
     refine(index, graph) -> None                 holes added, edges marked `uncertain` or `removed`
 
@@ -607,6 +608,8 @@ class Traversal:
             return End("namespace", key, None, "")
         if isinstance(stated, dict):
             return End("external", key, None, package_name(stated))
+        if isinstance(stated, str) and stated != "project":  # the adapter's cause of a dead end
+            return End("dead-end", key, None, stated)
         parts = split_symbol(_global(key))
         if parts is None:
             return End("dead-end", key, None, "dangling-local")

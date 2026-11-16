@@ -91,6 +91,11 @@ class TypeScriptEngine(MirroredEngine):
         node = runtime.node(self.project_root) / executable_name("node")
         return [str(node), str(cli), "--stdio"], {"UV_THREADPOOL_SIZE": str(ENGINE_THREADS)}
 
+    def identity(self) -> str:
+        """The stage's entry, then the server and its release: the pass reads a store entry as fresh only when it
+        names the entry that serves the language (`engine_pass.from_source`)."""
+        return f"{self.name}@{super().identity()}"
+
     def initialization_options(self) -> dict:
         return {"disableAutomaticTypingAcquisition": True, "maxTsServerMemory": SERVER_MEMORY_MB,
                 "tsserver": {"useSyntaxServer": "never"}}

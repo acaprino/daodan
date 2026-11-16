@@ -100,12 +100,15 @@ def test_a_language_server_npm_cannot_install_says_npms_error(sandbox):
     assert not engine.home().exists()
 
 
+ASKED = "<script>\nexport function go(x) { return x.run() }\n</script>\n"  # a call the engine is given
+
+
 def test_components_read_in_part_keep_their_language_fresh_with_a_lower_bound(tmp_path):
-    """Every component has a template the engine does not read and a script block it does: the language is
-    fresh, its coverage a lower bound, each file missing with the template's reason; no gap of the stage."""
+    """Every component has a template the engine does not read and a script block whose calls it is given: the
+    language is fresh, its coverage a lower bound, each file missing with the template's reason; no gap."""
     report = reasons._stage(tmp_path, {
-        "Only.vue": SCRIPT + "<template>\n  <p>{{ n }}</p>\n</template>\n",
-        "Card.svelte": SCRIPT + "<button on:click={h}>x</button>\n", "List.svelte": SCRIPT + "<ul></ul>\n"})
+        "Only.vue": ASKED + "<template>\n  <p>{{ n }}</p>\n</template>\n",
+        "Card.svelte": ASKED + "<button on:click={h}>x</button>\n", "List.svelte": SCRIPT + "<ul></ul>\n"})
     assert report["available"], report.get("reason")
     assert "gaps" not in report
     for language, files in (("vue", 1), ("svelte", 2)):
@@ -134,3 +137,44 @@ def test_a_language_of_whose_files_the_engine_reads_nothing_is_failed_with_the_c
     assert refused is None
     assert {language: entry["state"] for language, entry in binding["languages"].items()} == {
         "vue": "fresh", "svelte": "failed"}
+
+
+SVELTEKIT = Path(__file__).resolve().parents[1] / "benchmarks/project-model/fixtures/js-sveltekit/src/routes"
+
+
+def test_components_whose_templates_are_unread_and_whose_calls_none_is_asked_are_failed(tmp_path):
+    """js-sveltekit: each component's template is unread and the only calls of their script blocks are runes no
+    engine is asked (`$props()`): nothing of any file is read, so the language is failed with the cause."""
+    report = reasons._stage(tmp_path, {f"src/routes/{name}": (SVELTEKIT / name).read_text(encoding="utf-8")
+                                       for name in ("+layout.svelte", "+page.svelte")})
+    assert report["available"], report.get("reason")
+    svelte = report["languages"]["svelte"]
+    files, excluded = svelte["coverage"]["files"], svelte["excluded_classes"]
+    assert (files["snapshot"], files["indexed"], svelte["population"], sum(excluded.values())) == (2, 0, 0, 2)
+    assert svelte["state"] == "failed"
+    assert svelte["reason"] == (f"nothing of the 2 svelte files is read: {reasons.TEMPLATE} (2); none of their 2 "
+                                "calls is asked: " + ", ".join(f"{name} ({count})" for name, count in excluded.items()))
+    assert report["gaps"] == [{"kind": "language_not_indexed", "language": "svelte", "detail": svelte["reason"]}]
+
+
+class Served(reasons.Quiet):
+    """The engine as the real one names itself: its entry, then the server and its release."""
+
+    version = "4.3.3"
+    identity = vue_svelte.TypeScriptEngine.identity
+
+
+def test_the_store_entry_names_the_entry_that_serves_the_language_so_the_state_agrees(tmp_path):
+    """The pass reads a store entry as fresh only when it names the entry that serves the language now
+    (`engine_pass.from_source`): the stage's report and the edge state say the same."""
+    import engine_pass
+    import snapshot
+    assert Served().identity() == "typescript@typescript-language-server@4.3.3"
+    root = reasons._project(tmp_path / "proj", {"Only.vue": ASKED + "<template>\n  <p>{{ n }}</p>\n</template>\n"})
+    manifest = tmp_path / "manifest.sqlite"
+    snapshot.write_snapshot(root, manifest)
+    report = rx.resolve_edges(manifest, engine=Served(), limit=None, stride=1, out=tmp_path / "engine-edges.sqlite")
+    assert report["languages"]["vue"]["state"] == "fresh"
+    assert engine_pass.from_source("vue", report["languages"]["vue"])
+    state = rx.edge_state(manifest)["languages"]["vue"]
+    assert (state["state"], state["coverage"]) == ("fresh", report["languages"]["vue"]["coverage"])

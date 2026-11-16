@@ -15,7 +15,8 @@ are `unavailable`, with the gap's cause and remedy.
   stays in the container (spec, section 4); an install they break is done again without them. Last, the type
   packages the project lacks (`typescript_types.py`): `@types/node` at the major of the Node the project runs on,
   and `@types/<package>` for a declared package that ships no types, each installed apart and linked where
-  TypeScript looks last; the prepare run lists those added (`types`).
+  TypeScript looks last, Node's named in a file the generated tsconfig includes (`REFERENCES`); the indexer's
+  record lists those added (`types`).
 - Execution, with no network: scip-typescript on Daodan's Node (0.5.2 needs Node 22.13 or later, whatever the
   project runs on), with a generated tsconfig in place of the project's: it holds every JS/TS file of the
   snapshot (`allowJs`) and extends the project's own, or without a root `tsconfig.json` the one the pre-map
@@ -25,13 +26,15 @@ are `unavailable`, with the gap's cause and remedy.
 
 What the run lacks is a gap of its contract (`gaps`): a restore that failed (`preparation.restore_gaps`), an
 install whose lifecycle scripts failed (`preparation.generation_gaps`), a Node the preparation could not install,
-a package folder no restore serves, an alias two units give different targets.
+a package folder no restore serves, an alias two units give different targets, a tsconfig that extends a file no
+install step generated (`_not_generated`).
 
 `hops` reads the statement that defines a name: `a = b`, `k: b.c`, `exports.f = g` and `{ k: name } = …` lead
 to the symbol the index references at the value or the key (CommonJS `module.exports = { f }` needs none: the
 index states it as a shared range); a function value leads to the function the snapshot declares there. A
 library function whose documented contract returns its argument is a declared hop, tagged
-`declared:<package>.<function>`.
+`declared:<package>.<function>`. `classify` names why a local the index defines nowhere is a dead end when an
+import of a module TypeScript does not read binds it (a component: no declaration of `*.vue` modules).
 """
 from __future__ import annotations
 
@@ -60,6 +63,11 @@ WORK, OUT = "/work", "/daodan/out"  # the copy (`container.WORKDIR`), and where 
 CONFIG = f"{preparation.STATE}/scip-typescript/tsconfig.json"  # the generated tsconfig, carried with the copy
 TYPES = f"{preparation.STATE}/scip-typescript/typescript_types.py"  # carried with the copy; installs into `TYPES_DIR`
 TYPES_DIR = f"{preparation.STATE}/types"
+REFERENCES = f"{TYPES_DIR}/references.d.ts"  # where it names the type packages the program loads (Node's)
+# A folder a framework generates its tsconfig in -> the command that writes it; the scripts an install runs.
+GENERATORS = {".svelte-kit": "svelte-kit sync"}
+LIFECYCLE = ("preinstall", "install", "postinstall", "prepare")
+UNREAD = re.compile(r"error TS5083: Cannot read file '/work/([^']+)'")
 T = preparation.T
 MANAGERS = ("npm", "pnpm", "yarn")  # the Node managers of `preparation.RESTORES`
 PEAK = "trap 'echo \"DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)\"' EXIT"
@@ -202,6 +210,47 @@ def hops(index) -> dict:
     return {key: list(dict.fromkeys(items)) for key, items in out.items() if items}
 
 
+def _imported(root, name: str) -> str | None:
+    """The module an import statement of the document binds `name` from, None when none does."""
+    for statement in root.named_children:
+        source = statement.child_by_field_name("source") if statement.type == "import_statement" else None
+        clause = next((child for child in statement.named_children if child.type == "import_clause"), None)
+        if source is None or clause is None:
+            continue
+        stack = [clause]
+        while stack:
+            node = stack.pop()
+            if node.type == "identifier" and node.text.decode("utf-8", errors="replace") == name and (
+                    node.parent.type != "import_specifier" or node == node.parent.named_children[-1]):
+                return source.text.decode("utf-8", errors="replace").strip("'\"")
+            stack += node.named_children
+    return None
+
+
+def classify(index):
+    """A local the index defines nowhere, bound by an import of a module whose extension TypeScript does not read
+    (a `.vue` or `.svelte` component), ends on why: no declaration of such modules types the import. Any other
+    key keeps the default rule."""
+    causes = {}
+    for rel, occurrences in index.documents.items():
+        grammar = GRAMMARS.get(Path(rel).suffix.lower())
+        for occurrence in occurrences if grammar else ():
+            if not occurrence.key.startswith(f"{rel}#local ") or occurrence.key in index.defs \
+                    or occurrence.key in causes:
+                continue
+            node = index.node(rel, occurrence, grammar)
+            if node is None or node.type != "identifier":
+                continue
+            root = node
+            while root.parent is not None:
+                root = root.parent
+            module = _imported(root, node.text.decode("utf-8", errors="replace"))
+            suffix = posixpath.splitext(module or "")[1]
+            if suffix and suffix not in (*SUFFIXES, ".json"):
+                causes[occurrence.key] = f"no declaration of *{suffix} modules: the import is not typed"
+    return causes.get
+
+
 def _aliases(paths, members: dict | None) -> tuple[dict, list[dict]]:
     """One program's `paths`, targets from the project's root: each unit's aliases in the units' order, then
     each reachable package's name on its folder. An alias two units give different targets keeps them all (the
@@ -232,7 +281,7 @@ def _tsconfig(project: Path, target: Path, files: list[str], base: str | None = 
     options = {"allowJs": True, "checkJs": False, "noEmit": True, "incremental": False, "skipLibCheck": True}
     if aliases:
         options["paths"] = {key: [f"{WORK}/{name}" for name in targets] for key, targets in aliases.items()}
-    config = {"compilerOptions": options, "include": files, "exclude": []}
+    config = {"compilerOptions": options, "include": [*files, REFERENCES], "exclude": []}
     if (project / "tsconfig.json").is_file():
         config["extends"] = "./tsconfig.project.json"
     elif base and (project / base).is_file():
@@ -242,6 +291,38 @@ def _tsconfig(project: Path, target: Path, files: list[str], base: str | None = 
                         "esModuleInterop": True, "allowSyntheticDefaultImports": True, "resolveJsonModule": True})
     target.write_text(json.dumps(config, indent=1), encoding="utf-8")
     return config.get("extends")
+
+
+def _not_generated(project_dir: Path, said: str) -> list[dict]:
+    """A `config_not_generated` gap for each file a tsconfig of the project extends that TypeScript could not read
+    in the run (`said`, its output: TS5083): a file the framework generates (`GENERATORS`) that no lifecycle
+    script of the package runs, with the scripts that do, or else a file no install step wrote."""
+    gaps = []
+    for rel in dict.fromkeys(UNREAD.findall(said)):
+        for config in sorted(project_dir.rglob("tsconfig*.json")):
+            here = config.relative_to(project_dir).as_posix()
+            if "node_modules" in here.split("/"):
+                continue
+            extended = re.search(r'"extends"\s*:\s*"([^"]+)"', config.read_text(encoding="utf-8", errors="replace"))
+            if not extended or posixpath.normpath(posixpath.join(posixpath.dirname(here), extended.group(1))) != rel:
+                continue
+            command = GENERATORS.get(rel.split("/")[0])
+            folder = config.parent
+            while folder != project_dir and not (folder / "package.json").is_file():
+                folder = folder.parent
+            try:
+                scripts = json.loads((folder / "package.json").read_text(encoding="utf-8")).get("scripts") or {}
+            except (OSError, ValueError, AttributeError):
+                scripts = {}
+            named = [name for name, line in scripts.items() if command and command in str(line)]
+            if command and any(name in LIFECYCLE for name in named):
+                continue  # its install runs it: a failure is the generation's own gap
+            detail = (f"{here} extends {rel}, a file the framework generates (`{command}`), which no install step of "
+                      f"the project runs (no `prepare` script"
+                      + (f"; it is only in {', '.join(f'`{name}`' for name in named)})" if named else ")")
+                      if command else f"{here} extends {rel}, which the snapshot does not hold and no install step wrote")
+            gaps.append({"kind": "config_not_generated", "path": here, "file": rel, "detail": detail})
+    return gaps
 
 
 def structure(record: dict) -> dict:
@@ -355,13 +436,15 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
         return runtime.refused("scip-typescript", VERSION, runtime.Unavailable(
             cause, "check the network: Daodan installs scip-typescript from the npm registry"))
     gaps += chains["gaps"] + missing + preparation.restore_gaps(prepared) + preparation.generation_gaps(prepared)
-    if runs and runs[0]["phase"] == "prepare":
-        runs[0]["types"] = re.findall(r"DAODAN-TYPES-ADDED (\S+)", prepared)
+    log = out_dir / "execute.log"
+    gaps += _not_generated(project_dir, log.read_text(encoding="utf-8", errors="replace") if log.is_file() else "")
     output = work_dir / "scip-typescript-0.scip"
     if (out_dir / "out/index.scip").is_file():
         os.replace(out_dir / "out/index.scip", output)
     if runs and runs[-1]["phase"] == "execute":
         runs[-1].update(index=str(output) if output.is_file() else None,
                         index_bytes=output.stat().st_size if output.is_file() else 0)
-    return {**runtime.outcome("scip-typescript", VERSION, runs), "restores": plan, "tsconfig_extends": extends,
-            **({"gaps": gaps} if gaps else {})}
+    out = runtime.outcome("scip-typescript", VERSION, runs)
+    # On the indexer's record, which the stage's report and each language's store entry carry.
+    out["indexer"]["types"] = re.findall(r"DAODAN-TYPES-ADDED (\S+)", prepared)
+    return {**out, "restores": plan, "tsconfig_extends": extends, **({"gaps": gaps} if gaps else {})}

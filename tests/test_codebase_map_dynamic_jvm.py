@@ -121,15 +121,18 @@ def project_calls(folder: Path) -> None:
                 [6, 4, 10, "fx/Circle", "area", "()D"], [7, 4, 11, "fx/Circle", "<init>", "(D)V"],
                 [8, 4, 11, "fx/Main", "twice", "(Lfx/Circle;Lfx/Circle;)D"]]),
         loaded("fx/Discount", "Discount.kt",
-               [[5, "<init>", "(I)V", PUBLIC, 3], [6, "getPercent", "()I", 0x11, 3], [7, "applyTo", "(J)J", 0x11, 4]],
-               []),
+               [[5, "<init>", "(I)V", PUBLIC, 3], [6, "getPercent", "()I", 0x11, 3], [7, "applyTo", "(J)J", 0x11, 4],
+                [10, "applyTo$default", "(Lfx/Discount;JILjava/lang/Object;)J", 0x1009, 4]],
+               [[13, 10, 4, "fx/Discount", "applyTo", "(J)J"]]),
         loaded("fx/DiscountTest", "DiscountTest.kt", [[8, "<init>", "()V", PUBLIC, 5], [9, "applies", "()V", 0x11, 8]],
-               [[9, 9, 8, "fx/Discount", "<init>", "(I)V"], [10, 9, 9, "fx/Discount", "applyTo", "(J)J"],
+               [[9, 9, 8, "fx/Discount", "<init>", "(I)V"],
+                [10, 9, 9, "fx/Discount", "applyTo$default", "(Lfx/Discount;JILjava/lang/Object;)J"],
                 [11, 9, 10, "fx/Discount", "getPercent", "()I"], [12, 9, 10, "java/io/PrintStream", "println",
                                                                   "(I)V"]],
                origin="target/test-classes/"),
         {"outside": 1}, {"call": [2, 2]}, {"call": [3, 2]}, {"call": [4, 1]}, {"outside": 5}, {"call": [6, 2]},
-        {"call": [7, 1]}, {"call": [8, 3]}, {"call": [9, 5]}, {"call": [10, 7]}, {"call": [11, 6]}, {"outside": 12})
+        {"call": [7, 1]}, {"call": [8, 3]}, {"call": [9, 5]}, {"call": [10, 10]}, {"call": [13, 7]},
+        {"call": [11, 6]}, {"outside": 12})
 
 PROGRAM = {
     "Shape.java": """package fx;
@@ -232,7 +235,8 @@ def line_of(file: str, text: str) -> int:
 def asm_jar() -> Path | None:
     import engine_tools
     group, artifact, version = jvm.ASM[0].split(":")
-    shared = engine_tools.maven_central_dir() / group.replace(".", "/") / artifact / version / f"{artifact}-{version}.jar"
+    shared = engine_tools.maven_central_dir() / group.replace(".", "/") / artifact / version / \
+        f"{artifact}-{version}.jar"
     for path in (Path(os.environ.get("DAODAN_ASM_JAR") or shared), shared):
         if path.is_file() and jvm.jvm.sha256(path) == jvm.ASM[1]:
             return path
@@ -414,7 +418,7 @@ class JoinTest(unittest.TestCase):
         self.assertEqual(self.at(main, 10), {("project-callable", "area"), ("external", "java.io")})
         self.assertEqual(self.at(main, 11), {("project-callable", "Circle"), ("project-callable", "twice")})
         test = "src/test/kotlin/fx/DiscountTest.kt"
-        self.assertEqual(self.at(test, 9), {("project-callable", "applyTo")})
+        self.assertEqual(self.at(test, 9), {("project-callable", "applyTo")})  # through `applyTo$default`
         self.assertEqual(self.at(test, 8), {("project-callable", "Discount")})  # Kotlin's primary constructor
 
     def test_a_constructor_is_placed_on_the_new_and_not_on_the_type_beside_it(self):
@@ -431,8 +435,9 @@ class JoinTest(unittest.TestCase):
         self.assertEqual(self.facts["ambiguous"], {"count": 1, "examples": ["src/main/java/fx/Main.java:5 area"]})
 
     def test_a_call_the_source_does_not_write_is_counted_and_not_placed(self):
-        self.assertEqual(self.facts["unplaced"], {"no call of that name on its line": 1})  # Circle's super()
-        self.assertEqual(self.facts["recorded"], len(self.sites) + 2)
+        # Circle's super() and the call `applyTo$default` makes, which the compiler wrote.
+        self.assertEqual(self.facts["unplaced"], {"no call of that name on its line": 2})
+        self.assertEqual(self.facts["recorded"], len(self.sites) + 3)
 
 
 class PlanTest(unittest.TestCase):
@@ -526,8 +531,10 @@ class ObserveTest(FakeEngineTest):
         before = tree_digest(self.project)
         result = self.observe(suites=self.suite(2))
         self.assertEqual(result["state"], "ran")
-        self.assertEqual(result["runs"], [{"root": "", "tool": "maven", "argv": jvm.MAVEN_TEST, "exit_code": 0,
-                                           "tests": 2, "failures": 0, "errors": 0, "skipped": 0, "jvms": 1}])
+        self.assertEqual(result["runs"], [{"root": "", "runner": "maven", "state": "ran", "tool": "maven",
+                                           "argv": jvm.MAVEN_TEST, "exit_code": 0, "tests": 2, "failures": 0,
+                                           "errors": 0, "skipped": 0, "jvms": 1}])
+        self.assertIsNone(dynamic.malformed(result))
         self.assertEqual(self.gaps(result), ["sites_ambiguous"])
         placed = {(site["file"], site["line"], site["name"]) for site in result["sites"]}
         self.assertIn(("src/main/java/fx/Main.java", 9, "area"), placed)  # the site's line, from 0
@@ -549,21 +556,42 @@ class ObserveTest(FakeEngineTest):
         self.assertEqual(execution[execution.index("--network") + 1], "none")
 
     def test_each_way_the_tests_end_is_a_gap_with_its_cause(self):
-        cases = [({"code": "1", "suites": self.suite(3, failures=1)}, ["tests_failed"]),
-                 ({"code": "0", "suites": self.suite(3, errors=2)}, ["tests_failed"]),  # Maven ignores failures
-                 ({"code": "124", "suites": self.suite(1)}, ["tests_timeout"]),
-                 ({"code": None}, ["tests_not_started"]),
-                 ({"code": "1", "text": "[ERROR] BUILD FAILURE"}, ["tests_not_started"]),
-                 ({"code": "0"}, ["no_tests"]),
-                 ({"code": "0", "suites": self.suite(2), "calls": False}, ["not_observed"])]
-        for options, kinds in cases:
+        cases = [({"code": "1", "suites": self.suite(3, failures=1)}, "ran", ["tests_failed"]),
+                 ({"code": "0", "suites": self.suite(3, errors=2)}, "ran", ["tests_failed"]),  # Maven ignores them
+                 ({"code": "124", "suites": self.suite(1)}, "timeout", ["tests_timeout"]),
+                 ({"code": "137", "suites": self.suite(1)}, "killed", ["tests_killed"]),
+                 ({"code": None}, "not_started", ["tests_not_started"]),
+                 ({"code": "1", "text": "[ERROR] BUILD FAILURE"}, "not_started", ["tests_not_started"]),
+                 ({"code": "1", "suites": self.suite(2)}, "ran", ["tests_not_started"]),  # another module's
+                 ({"code": "0"}, "no_tests", ["no_tests"]),
+                 ({"code": "0", "suites": self.suite(2), "calls": False}, "ran", ["not_observed"])]
+        for options, state, kinds in cases:
             with self.subTest(**{key: value for key, value in options.items() if key != "suites"}):
                 result = self.observe(**options)
                 self.assertEqual(result["state"], "ran")
+                self.assertIsNone(dynamic.malformed(result))
+                self.assertEqual([run["state"] for run in result["runs"]], [state])
                 self.assertEqual([kind for kind in self.gaps(result) if kind != "sites_ambiguous"], kinds)
         failed = self.observe(code="1", text="[ERROR] BUILD FAILURE\nCould not resolve dependencies")
         [gap] = [gap for gap in failed["gaps"] if gap["kind"] == "tests_not_started"]
         self.assertIn("Could not resolve dependencies", gap["detail"])
+
+    def test_a_build_that_stops_beside_one_that_ran_is_a_run_that_did_not_start(self):
+        self.planned["runs"].append({**self.planned["runs"][0], "root": "sub"})
+        run = jvm.jvm.run
+
+        def stopping(project_dir, *args, **kwargs):
+            if Path(project_dir).name == "sub":
+                return {"state": "failed", "cause": "the build failed"}, [], self.work
+            return run(project_dir, *args, **kwargs)
+
+        with mock.patch.object(jvm.jvm, "run", side_effect=stopping):
+            result = self.observe(suites=self.suite(2))
+        self.assertIsNone(dynamic.malformed(result))
+        self.assertEqual([(item["root"], item["runner"], item["state"]) for item in result["runs"]],
+                         [("", "maven", "ran"), ("sub", "maven", "not_started")])
+        [gap] = [gap for gap in result["gaps"] if gap["kind"] == "tests_not_started"]
+        self.assertEqual(gap["path"], "sub")
 
     def test_a_class_the_agent_could_not_rewrite_is_a_gap(self):
         project_calls(self.scratch / "played")

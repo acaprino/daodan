@@ -97,10 +97,12 @@ def test_the_test_script_of_a_package_names_its_runner(tmp_path):
         "mocha/package.json": package("c8 mocha --recursive"),
         "node/package.json": package("node --experimental-vm-modules --test test/"),
         "tap/package.json": package("tap test/*.js"),
+        "bun/package.json": package("bun test --coverage"),
         "through/package.json": package("npm run lint && yarn test:unit", **{"test:unit": "mocha", "lint": "eslint ."}),
     })
     assert found == [
         {"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test", "args": []},
+        {"root": "bun", "runner": "bun", "declared_in": "bun/package.json#scripts.test", "args": []},
         {"root": "cra", "runner": "jest", "declared_in": "cra/package.json#scripts.test", "args": []},
         {"root": "mocha", "runner": "mocha", "declared_in": "mocha/package.json#scripts.test", "args": []},
         {"root": "node", "runner": "node:test", "declared_in": "node/package.json#scripts.test", "args": []},
@@ -150,11 +152,12 @@ def test_no_declared_test_script_is_a_gap_and_nothing_runs():
 
 
 def test_a_runner_the_recorder_cannot_observe_is_a_gap_with_its_cause():
-    planned = observer.plan(record([entry(".", "vitest"), entry("b", "node:test")], units=(".", "b")), [], None)
-    assert [run["root"] for run in planned["runs"]] == ["b"]
+    planned = observer.plan(record([entry(".", "bun"), entry("b", "node:test"), entry("v", "vitest")],
+                                   units=(".", "b", "v")), [], None)
+    assert [run["root"] for run in planned["runs"]] == ["b", "v"]  # Vitest's Vite prints with a map: it runs
     [gap] = planned["gaps"]
     assert gap["kind"] == "runner_not_observed" and gap["path"] == "package.json#scripts.test"
-    assert gap["runner"] == "vitest" and "Vite" in gap["detail"]
+    assert gap["runner"] == "bun" and "JavaScriptCore" in gap["detail"]
 
 
 # --- the observation: one container run ------------------------------------------------------------------------
@@ -269,6 +272,18 @@ def test_what_did_not_happen_is_a_gap_with_its_cause(tmp_path, mark, files, kind
     assert result["state"] == "ran" and result["runs"][0]["state"] == state
     gap = next(gap for gap in result["gaps"] if gap["kind"] == kind)
     assert gap["path"] == "." and said in gap["detail"]
+
+
+def test_the_error_above_the_runner_s_summary_is_said(tmp_path):
+    """`node --test test/` on Node 21 and later: a folder is no pattern, Node runs it as a module and fails, and
+    the runner's summary below the error fills the log's tail."""
+    log = ("> node --test test/\n\nnode:internal/modules/cjs/loader:1568\n  throw err;\n  ^\n\n"
+           "Error: Cannot find module '/work/test'\n    at Module._resolveFilename (node:internal/...)\n"
+           + "".join(f"ℹ line {n}\n" for n in range(12)) + "✖ test (239ms)\n  'test failed'\n")
+    played = Played({"tests-0.log": log}, {"execute.log": "DAODAN-DYNAMIC 0 exit 1 0\n"})
+    [gap] = observe(tmp_path, played)["gaps"]
+    assert gap["kind"] == "tests_not_started" and "Error: Cannot find module '/work/test'" in gap["detail"]
+    assert "'test failed'" in gap["detail"]
 
 
 def test_a_restore_that_failed_and_a_missing_tool_are_gaps(tmp_path):
@@ -436,6 +451,26 @@ def test_code_another_tool_printed_runs_recorded_through_its_inline_map(tmp_path
     assert found[("src/lib.js", 0, 58, "f")] == found[("src/lib.js", 0, 60, "f")] == {"src/lib.js:0:0 inc function"}
     assert found[("src/lib.js", 1, 42, "twice")] == {"src/lib.js:0:48 twice function"}
     assert found[("src/other.js", 1, 19, "half")] == {"src/other.js:0:0 half function"}
+    assert file["unobserved"] == []
+
+
+def test_typescript_node_strips_itself_is_recorded_as_written(tmp_path, node):
+    """As `node --test "test/*.test.ts"` on a Node that strips the types itself, an ES module and a CommonJS one."""
+    stripping = subprocess.run(["node", "-p", "Boolean(process.features.typescript)"], capture_output=True, text=True)
+    if stripping.stdout.strip() != "true":
+        pytest.skip("this Node does not strip TypeScript types (22.18, 23.6 and later do)")
+    project = write(tmp_path / "proj", {
+        "package.json": '{"type": "module"}\n',
+        "src/lib.ts": "export function add(a: number, b: number): number { return a + b; }\n",
+        "src/old.cts": "function half(n: number): number { return n / 2; }\nmodule.exports = { half };\n",
+        "test/lib.test.ts": 'import { test } from "node:test";\nimport { add } from "../src/lib.ts";\n'
+                            'import { createRequire } from "node:module";\n'
+                            'const { half } = createRequire(import.meta.url)("../src/old.cts");\n\n'
+                            'test("add", () => { add(1, 2); half(4); });\n'})
+    [file] = recorded(project, tmp_path / "out", node, "--test", "test/*.test.ts")
+    found = places(file["sites"])
+    assert found[("test/lib.test.ts", 5, 20, "add")] == {"src/lib.ts:0:7 add function"}
+    assert found[("test/lib.test.ts", 5, 31, "half")] == {"src/old.cts:0:0 half function"}
     assert file["unobserved"] == []
 
 

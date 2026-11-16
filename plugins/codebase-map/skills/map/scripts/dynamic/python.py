@@ -2,7 +2,8 @@
 
 `plan` reads the pre-map alone. The command is the one the project declares (its `tests` entries, from
 `premap/python_tests.py`): `python -m pytest` or `python -m unittest` with the arguments written, in the folder
-stated; a project that declares neither is a `no_test_command` gap, never a command of ours. A pytest entry
+stated, pytest with its own `KEEP_GOING` so a module that does not import stops no other; a project that
+declares neither is a `no_test_command` gap, never a command of ours. A pytest entry
 inside the folders another one is given is collected by that one, and makes no run. Each run uses the
 environment of the Python folder that holds it (`preparation.restores`: the folder with the manifest, restored
 by uv, Poetry or pip as its lockfile says), else the project's only one (a manifest inside the test folders is
@@ -20,7 +21,8 @@ pin (`PYTEST`) where the project declares it as its runner and its environment d
 `sitecustomize.py` on PYTHONPATH so it starts before any project code and in subprocesses, stopped by an
 interrupt after `LIMIT` seconds so the recorder still writes what it saw. Back come the observation files, one
 per process, and each run's log. What did not happen is a gap with its cause: tests that did not start (the
-log's tail), that failed, that found no test, that outlasted the limit, that reached for a service or the
+log's tail), that failed, that found no test, test modules pytest could not import (`tests_not_collected`, each
+with its error's first line), that outlasted the limit, that reached for a service or the
 network (the execution has none and the step starts no service), a project that could not be installed.
 """
 from __future__ import annotations
@@ -39,6 +41,9 @@ from indexers.python import IMAGE  # the image the Python analyzer runs in
 ENTRY, VERSION, LANGUAGES = "dynamic-record-python", python_record.VERSION, ("python",)
 RECORDER = Path(python_record.__file__).resolve()
 RUNNERS = ("pytest", "unittest")  # the runners of the pre-map's `tests` it starts, each as `python -m <runner>`
+# pytest's own option: a module that does not import (an optional dependency, a service) stops no other one.
+# unittest needs none: it loads each module apart, and a failed import is a test in error.
+KEEP_GOING = "--continue-on-collection-errors"
 PYTHON, PYTHON3 = (3, 13, 18), "/usr/local/bin/python3"  # IMAGE's: its version, and where it is
 MONITORING = (3, 12)  # sys.monitoring, which the recorder is built on
 VERIFIED = ((3, 12), (3, 13))  # the releases the recorder's placing of a `with` block's exit is verified on
@@ -53,6 +58,9 @@ CLAUSE = re.compile(r"\s*(~=|===?|!=|<=|>=|<|>|\^|~)?\s*v?(\d+(?:\.\d+)*)(?:\.\*
 UNREACHABLE = re.compile(r"ConnectionRefusedError|Connection refused|Network is unreachable|"
                          r"Temporary failure in name resolution|Name or service not known")
 MARK = re.compile(r"^DAODAN-DYNAMIC (\d+) (\S+) ?(.*)$", re.M)
+COLLECTING = re.compile(r"^_+ ERROR collecting (.+?) _+$", re.M)  # pytest's header of a module it could not collect
+SUMMARY = re.compile(r"^=*\s*((?:\d+ \w+, )*\d+ \w+) in [\d.]+s\b", re.M)  # pytest's last line: `1 failed, 2 passed`
+RAN = ("passed", "failed", "xfailed", "xpassed")
 NOT_INSTALLED = re.compile(r"DAODAN-DYNAMIC (\d+) not-installed\n((?:.*\n)*?)DAODAN-DYNAMIC-END")
 
 
@@ -175,8 +183,9 @@ def plan(record: dict, files: list[str], read) -> dict:
         packaged = env is not None and (posixpath.normpath(f"{env}/setup.py") in files or (
             manifest in files and "[build-system]" in read(manifest)))
         runs.append({"root": root, "runner": test["runner"], "declared_in": test.get("declared_in"),
-                     "argv": ["-m", test["runner"], *test.get("args", ())], "env": env, "manager": held.get(env),
-                     "install": bool(packaged)})
+                     "argv": ["-m", test["runner"], *test.get("args", ()), *(
+                         [KEEP_GOING] if test["runner"] == "pytest" else [])],
+                     "env": env, "manager": held.get(env), "install": bool(packaged)})
     return {"runs": runs, "gaps": gaps, "toolchains": toolchains}
 
 
@@ -251,10 +260,22 @@ def _text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
 
 
+def _uncollected(log: str) -> list[dict]:
+    """The test modules pytest could not collect, as it names them, each with its error's first line."""
+    headers = list(COLLECTING.finditer(log))
+    found = []
+    for number, header in enumerate(headers):
+        block = log[header.end():headers[number + 1].start() if number + 1 < len(headers) else len(log)]
+        error = next((line[1:].strip() for line in block.splitlines() if line.startswith("E ")), "")
+        found.append({"file": header.group(1), "error": error[:200]})
+    return found
+
+
 def _outcome(run: dict, marks: dict, log: str, processes: int, ended: str) -> tuple[dict, list[dict]]:
     """One run's entry and its gaps, from the marks its script printed and its tests' log. The runner's exit code
-    says how the tests ended (pytest's: 1 some failed, 5 none found, any other the run did not start; `timeout`'s
-    124); a runner the environment does not hold never started them."""
+    says how the tests ended (pytest's: 1 some failed or a module could not be collected, 5 none found, any other
+    the run did not start; `timeout`'s 124); a runner the environment does not hold never started them. The
+    modules pytest could not collect are one gap; with no other test run, the tests did not start."""
     entry = {key: run[key] for key in ("root", "runner", "declared_in")}
     version, _, monitored = marks.get("python", "").partition(" ")
     code, _, seconds = marks.get("exit", "").partition(" ")
@@ -287,9 +308,22 @@ def _outcome(run: dict, marks: dict, log: str, processes: int, ended: str) -> tu
         gaps.append(gap("no_tests", f"{command} found no test to run: {tail}"))
     elif entry["exit_code"] == 0 or (entry["exit_code"] == 1 and f"No module named {run['runner']}" not in log):
         entry["state"] = "ran"
-        if entry["exit_code"]:
+        uncollected = _uncollected(log) if run["runner"] == "pytest" else []
+        summary = SUMMARY.findall(log)
+        counts = {{"errors": "error"}.get(name, name): int(count)
+                  for count, name in re.findall(r"(\d+) (\w+)", summary[-1] if summary else "")}
+        beyond = counts.get("failed") or counts.get("error", 0) > len(uncollected)  # more than the modules' errors
+        if entry["exit_code"] and (not uncollected or beyond):
             gaps.append(gap("tests_failed", f"{command}: some tests failed, and a test that fails may stop before "
                                             f"its calls: {tail}"))
+        if uncollected:
+            if counts and not any(counts.get(name) for name in RAN):
+                entry["state"] = "not_started"
+            said = "; ".join(f"{item['file']} ({item['error']})" for item in uncollected[:5])
+            gaps.append({**gap("tests_not_collected",
+                               f"{command}: {len(uncollected)} test modules could not be imported, so their tests did "
+                               f"not run{'' if entry['state'] == 'ran' else ', nor did any other'}: {said}"),
+                         "count": len(uncollected), "modules": uncollected[:60]})
     else:
         gaps.append(gap("tests_not_started", f"{command} exited with code {code}: {tail}"))
     refused = sum(1 for line in log.splitlines() if UNREACHABLE.search(line))

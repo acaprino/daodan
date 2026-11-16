@@ -513,6 +513,78 @@ def test_the_union_says_what_was_observed_and_what_stayed_unobserved(case):
     assert seen[-1]["kind"] == "graph.ready"
 
 
+def fake(observed: dict, entry: str = "dynamic-fake-python") -> SimpleNamespace:
+    """An observer of Python whose run returns `observed`, planned with one run."""
+    planned = {"runs": [{"root": ".", "runner": "pytest"}], "gaps": []}
+    return SimpleNamespace(ENTRY=entry, VERSION="1", LANGUAGES=("python",), external=observer.external,
+                           plan=lambda record, files, read: planned,
+                           observe=lambda project, given, out_dir, engine: observed)
+
+
+def union(manifest: Path, result: dict) -> list[dict]:
+    seen = []
+    bus = pipeline.events.Bus()
+    bus.subscribe(seen.append)
+    context = pipeline.Context(manifest, bus)
+    context.results["dynamic"] = result
+    pipeline.Union.run(context)
+    return seen
+
+
+@pytest.mark.parametrize("runs, broken", [
+    ([{"root": ".", "argv": ["go", "test", "./..."], "exit_code": 0}], "runner, state"),
+    ([{"root": ".", "runner": "go test", "state": "done"}], "done")])
+def test_an_observer_result_that_breaks_the_contract_is_a_gap_naming_the_observer(tmp_path, runs, broken):
+    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    out = static_store(manifest)
+    observed = {"state": "ran", "sites": [], "runs": runs, "gaps": []}
+    with mock.patch.object(dynamic, "observers", return_value=[fake(observed)]):
+        result, seen, _asked = step(manifest)
+    [gap] = gaps(seen, "observer-malformed")
+    assert broken in gap["detail"] and "dynamic-fake-python" in gap["detail"]
+    [event] = [event for event in seen if event["kind"] == "analyzer.finished"]
+    assert event["level"] == "error" and event["analyzer"] == "dynamic-fake-python" and event["data"]["remedy"]
+    assert result["languages"]["python"]["state"] == "failed"
+    with code_graph.Snapshot(manifest) as snap:
+        edges, _binding, _reason = rx.read_edge_store(out, snap.store)
+    assert not [edge for edge in edges if edge["confidence"] in ("observed", "sampled")]
+    assert union(manifest, result)[-1]["kind"] == "graph.ready"
+
+
+def test_the_union_ends_the_run_whatever_one_language_holds(tmp_path):
+    """A store an older observer wrote, with a test entry that names no state: the union says it and goes on."""
+    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    out = static_store(manifest)
+    with code_graph.Snapshot(manifest) as snap:
+        code_graph.write_observed(snap, out, "python", [], {"resolver": "old@1", "tests": [{"root": "."}]})
+    seen = union(manifest, {"languages": {}})
+    [said] = [event for event in seen if event["level"] == "error"]
+    assert said["step"] == "union" and said["data"]["language"] == "python" and "KeyError" in said["data"]["cause"]
+    assert seen[-1]["kind"] == "graph.ready"
+
+
+@pytest.mark.parametrize("observed, state, why", [
+    ({"state": "ran", "sites": [], "runs": [], "gaps": [{"kind": "recorder_failed", "detail": "no rewrite"}]},
+     "not-run", "no rewrite"),
+    ({"state": "ran", "sites": [], "gaps": [{"kind": "tests_not_started", "detail": "npm test: exit 1"}],
+      "runs": [{"root": ".", "runner": "npm test", "state": "not_started"}]}, "not-run", "npm test: exit 1"),
+    ({"state": "ran", "sites": [], "gaps": [], "runs": [{"root": ".", "runner": "cargo test", "state": "ran"}]},
+     "not-observed", "no call")])
+def test_a_run_that_ran_no_test_or_recorded_nothing_is_not_observed(tmp_path, observed, state, why):
+    """Nothing is kept of it, so the next analysis tries again; the union says the graph is static, and why."""
+    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    out = static_store(manifest)
+    with mock.patch.object(dynamic, "observers", return_value=[fake(observed)]):
+        result, seen, _asked = step(manifest)
+    python = result["languages"]["python"]
+    assert python["state"] == state and why in python["reason"]
+    with code_graph.Snapshot(manifest) as snap:
+        _edges, binding, _reason = rx.read_edge_store(out, snap.store)
+    assert "observed" not in binding["languages"]["python"]["coverage"]
+    [gap] = gaps(union(manifest, result), "not-observed")
+    assert why in gap["detail"]
+
+
 def test_a_profiler_alone_gives_sampled_edges_and_no_claim_on_what_it_did_not_see(tmp_path):
     """An observer whose run returns sampled pairs and no exact site: its edges are counted apart, and nothing is
     said of the files no sample named."""

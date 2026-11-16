@@ -11,6 +11,10 @@ so npm never touches the project's tree, and linked into WORK/node_modules/@type
 lookup reaches from any file of the copy: a package the project resolves itself is never shadowed, and no tsconfig
 changes. Each added package is printed on stderr `DAODAN-TYPES-ADDED name@version`; one the registry does not have,
 `DAODAN-TYPES-ABSENT name`, is not an error; one npm could not install otherwise, `DAODAN-MISSING name@range`.
+
+TypeScript 6, the one scip-typescript runs, loads no `@types` package a program does not name (`types` defaults to
+[]), so Node's own API is named in TYPES/references.d.ts, which the generated tsconfig includes: a file of the
+program beside the project's `types`, never in their place. The other packages are reached by their imports.
 """
 from __future__ import annotations
 
@@ -94,6 +98,9 @@ def main(argv: list[str]) -> int:
             os.makedirs(os.path.dirname(link), exist_ok=True)
             os.symlink(os.path.join(types, "node_modules", name), link)
         print(f"DAODAN-TYPES-ADDED {name}@{installed.get('version')}", file=sys.stderr, flush=True)
+    if os.path.isdir(os.path.join(work, "node_modules", "@types", "node")):
+        with open(os.path.join(types, "references.d.ts"), "w", encoding="utf-8") as handle:
+            handle.write('/// <reference types="node" />\n')
     return 0
 
 

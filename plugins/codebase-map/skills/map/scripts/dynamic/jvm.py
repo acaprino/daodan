@@ -47,8 +47,9 @@ Back come the recorder's files (one per JVM), the build's log and its JUnit XML 
 What a site is: a call instruction (`invokevirtual`, `invokespecial`, `invokestatic`, `invokeinterface`) with
 the line its class file gives it and the method it names. The JVM has no column: `place` puts a site on the call
 of the snapshot's parse of its file that has its line and name (a constructor's is its class's, a Kotlin getter's
-or setter's its property's), as `code_graph.Snapshot.callee` places a reference. Two calls of the same name on
-one line are ambiguous: the site is not placed and the `sites_ambiguous` gap says how many. A call the source
+or setter's its property's, Kotlin's `name$default` is `name`), as `code_graph.Snapshot.callee` places a
+reference. Two calls of the same name on one line are ambiguous: the site is not placed and the `sites_ambiguous`
+gap says how many. A call the source
 does not write (a constructor's `super()`, string concatenation, boxing, an operator) has no call there and is
 counted, never placed. A callee is the declaration of the snapshot's parse whose name it has and which holds its
 first line; a lambda or a getter without one is a project callable the snapshot does not declare. A call that
@@ -128,7 +129,8 @@ def plan(record: dict, files: list[str], read) -> dict:
         return {"runs": [], "gaps": [{"kind": "no_tests", "detail": detail}], **common}
     runs, gaps = [], []
     for root in sorted(roots):
-        kinds = {unit["kind"] for unit in record.get("units", []) if ("" if unit["root"] == "." else unit["root"]) == root}
+        kinds = {unit["kind"] for unit in record.get("units", [])
+                 if ("" if unit["root"] == "." else unit["root"]) == root}
         for tool in (tool for kind, tool in BUILDS.items() if kind in kinds):
             if any(_inside(rel, root) and rel.endswith((*SOURCES, ".groovy")) and TESTS.search(read(rel) or "")
                    for rel in files):
@@ -361,8 +363,9 @@ def place(observed: dict, root: str, sources: list[str], text) -> tuple[list[dic
             unplaced["no line in the class file"] += 1
             continue
         lines, semantic = parse(rel)
-        names = {_simple(site["owner"])} if site["name"] == "<init>" else {site["name"]}
-        reads = set(_properties(site["name"])) if rel.endswith(".kt") else set()
+        called = site["name"].removesuffix("$default")  # Kotlin's call of `name` that leaves arguments to defaults
+        names = {_simple(site["owner"])} if called == "<init>" else {called}
+        reads = set(_properties(called)) if rel.endswith(".kt") else set()
         at = set()
         for reference in semantic.get("references", ()):
             parts, span = reference.get("parts") or [], reference["span"]
@@ -383,7 +386,7 @@ def place(observed: dict, root: str, sources: list[str], text) -> tuple[list[dic
             item = callee(item)
             callees[json.dumps(item, sort_keys=True)] = item
         if site["outside"]:
-            item = {"kind": "external", "module": site["owner"].replace("/", "."), "name": site["name"],
+            item = {"kind": "external", "module": site["owner"].replace("/", "."), "name": called,
                     **({"mock": True} if site["owner"] in project else {})}
             callees[json.dumps(item, sort_keys=True)] = item
     sites = [{"file": rel, "line": line, "column": column, "name": name, "role": "call",
@@ -399,12 +402,13 @@ def _text(path: Path) -> str:
 
 
 def _outcome(run: dict, code: str, log: str, suites: str, ended: str) -> tuple[dict, list[dict]]:
-    """One build's entry and its gaps, from the tests' exit code, their log and the counts of the JUnit XML
-    reports this run wrote (Gradle's and Surefire's are of one format)."""
+    """One build's entry (`root`, `runner`, how its tests ended as `dynamic.TESTS` says) and its gaps, from the
+    tests' exit code, their log and the counts of the JUnit XML reports this run wrote (Gradle's and Surefire's
+    are of one format)."""
     counts = collections.Counter()
     for key, value in SUITE.findall(suites):
         counts[key] += int(value)
-    entry = {"root": run["root"], "tool": run["tool"], "argv": run["argv"],
+    entry = {"root": run["root"], "runner": run["tool"], "state": "ran", "tool": run["tool"], "argv": run["argv"],
              "exit_code": int(code) if code.strip().isdigit() else None,
              **{key: counts[key] for key in ("tests", "failures", "errors", "skipped")}}
     command = f"{' '.join(run['argv'])} in {run['root'] or '.'}"
@@ -416,10 +420,18 @@ def _outcome(run: dict, code: str, log: str, suites: str, ended: str) -> tuple[d
 
     gaps = []
     if exit_code is None:
+        entry["state"] = "not_started"
         gaps.append(gap("tests_not_started", f"{command}: the run ended before the tests' exit ({ended})"))
-    elif exit_code in (124, 137):
+    elif exit_code == 124:
+        entry["state"] = "timeout"
         gaps.append(gap("tests_timeout", f"{command} did not end in {LIMIT} s: what ran until then is observed"))
+    elif exit_code == 137:  # the container's memory limit, or `timeout`'s KILL of a build that outlived its TERM
+        entry["state"] = "killed"
+        gaps.append(gap("tests_killed", f"{command} was killed before its end, at the container's memory limit "
+                                        f"({MEMORY // 2**30} GB) or {LIMIT} s: what ran until then is observed: "
+                                        f"{tail}"))
     elif not tests:
+        entry["state"] = "no_tests" if exit_code == 0 else "not_started"
         gaps.append(gap("no_tests", f"{command} ran no test") if exit_code == 0 else
                     gap("tests_not_started", f"{command}: no test started (exit code {exit_code}): {tail}"))
     elif exit_code and not failed:
@@ -438,8 +450,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     """The planned runs, one container run per build over a copy of its folder, read back from `out_dir`:
     `{state, sites, runs, gaps, facts}`, `state` `ran`, `gap` (no container, or a JDK the image lacks: `cause`,
     `remedy`) or `failed` (the preparation failed: `cause`, `remedy`) when no build's tests ran; a build that did
-    not run beside one that did is its `tests_not_started` gap. `facts` is what the recorder and the placing
-    say of themselves."""
+    not run beside one that did is a run `not_started` with its `tests_not_started` gap. `facts` is what the
+    recorder and the placing say of themselves."""
     import container
     from engine_tools import MAVEN_CENTRAL, maven_central_dir
     runs, out_dir = planned["runs"], Path(out_dir)
@@ -472,9 +484,10 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
             failing = next((step for step in steps if step["returncode"]), steps[-1] if steps else {})
             tail = (failing.get("stderr_tail") or "").strip()[-800:]
             cause = result.get("cause") or "the container run failed"
-            stopped.append({"root": run["root"], "state": result["state"],
+            stopped.append({"root": run["root"], "tool": run["tool"], "argv": run["argv"], "state": result["state"],
                             "cause": f"{cause}: {tail}" if result["state"] == "failed" and tail else cause,
-                            "remedy": result.get("remedy") or f"see prepare.log and execute.log in {work / 'container'}"})
+                            "remedy": result.get("remedy")
+                            or f"see prepare.log and execute.log in {work / 'container'}"})
             continue
         entry, own = _outcome(run, _text(back / "tests.code"), _text(back / "tests.log"), _text(back / "suites.txt"),
                               result["state"])
@@ -505,6 +518,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         return {"state": first["state"], "cause": first["cause"], "remedy": first["remedy"], "sites": [], "runs": [],
                 "gaps": gaps, "facts": {}}
     for item in stopped:
+        entries.append({"root": item["root"], "runner": item["tool"], "state": "not_started", "tool": item["tool"],
+                        "argv": item["argv"]})
         gaps.append({"kind": "tests_not_started", "path": item["root"],
                      "detail": f"the build in {item['root'] or '.'} did not run its tests: {item['cause']}"})
     if facts["ambiguous"]["count"]:
