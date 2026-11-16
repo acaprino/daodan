@@ -766,12 +766,46 @@ def _labels(values: dict[str, dict[str, str]]) -> dict[str, list[str]]:
     return labels
 
 
+def _short(values: dict[str, dict[str, str]]) -> tuple[dict[str, list[str]], list[str]]:
+    """The values shorter than four characters `masker` masks only where they stand whole, with the variables that
+    hold them, and the variables whose value it does not mask (a boolean word, a number of five digits at most)."""
+    short: dict[str, list[str]] = {}
+    unmasked = []
+    for path, found in values.items():
+        for name, value in found.items():
+            if value and UNMASKED.fullmatch(value):
+                unmasked.append(f"{path}:{name}")
+            elif 0 < len(value) < 4:
+                short.setdefault(value, []).append(f"{path}:{name}")
+    return short, unmasked
+
+
+def partial(values: dict[str, dict[str, str]]) -> list[dict]:
+    """The gap that says once which values of the tracked `.env` files a run may keep (`_short`), none without."""
+    short, unmasked = _short(values)
+    whole = sorted(label for said in short.values() for label in said)
+    if not whole and not unmasked:
+        return []
+
+    def named(labels: list[str]) -> str:
+        return f"value{'s' if len(labels) > 1 else ''} of {', '.join(sorted(labels))}"
+
+    said = [f"masks the {named(whole)}, shorter than four characters, only where "
+            f"{'they stand' if len(whole) > 1 else 'it stands'} as a whole word"] if whole else []
+    said += [f"does not mask {'those of ' + ', '.join(sorted(unmasked)) if whole else 'the ' + named(unmasked)}, a "
+             "boolean word or a number of five digits at most"] if unmasked else []
+    return [{"kind": "mask_partial", "variables": sorted([*whole, *unmasked]),
+             "detail": f"Daodan {', and '.join(said)}: what the run keeps may hold them"}]
+
+
 def masker(values: dict[str, dict[str, str]]) -> Callable[[str], str] | None:
     """A text with each value of the tracked `.env` files (`dotenv_values`) replaced by `[<file>:<name>]`, the names
-    of all that hold it, where it stands whole, not inside a longer word; the longer first. None when no value is
-    masked: one shorter than four characters, a boolean word or a number of five digits at most stays, as the
-    text's own words and ports would be masked with it."""
-    labels = _labels(values)
+    of all that hold it, wherever it stands, inside a longer word too; the longer first. One shorter than four
+    characters only where it stands whole, as it would mask the text's own words inside longer ones; a boolean word
+    or a number of five digits at most stays, as the text's own words and ports would be masked with it (`partial`
+    says so). None when no value is masked."""
+    short = _short(values)[0]
+    labels = {**_labels(values), **short}
     if not labels:
         return None
 
@@ -780,7 +814,8 @@ def masker(values: dict[str, dict[str, str]]) -> Callable[[str], str] | None:
         return ((f"(?<!{edge})" if re.fullmatch(edge, value[0]) else "") + re.escape(value)
                 + (f"(?!{edge})" if re.fullmatch(edge, value[-1]) else ""))
 
-    pattern = re.compile("|".join(whole(value) for value in sorted(labels, key=len, reverse=True)))
+    pattern = re.compile("|".join(whole(value) if value in short else re.escape(value)
+                                  for value in sorted(labels, key=len, reverse=True)))
     return lambda text: pattern.sub(lambda found: f"[{','.join(sorted(labels[found.group()]))}]", text)
 
 
@@ -1496,6 +1531,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 result["gaps"] = digest["gaps"]
             values = dotenv_values(engine_cli, copy, digest["dotenv"], token) if digest.get("dotenv") else {}
             hide = masker(values)
+            if said_partial := partial(values):  # what the masks leave, said once
+                result["gaps"] = [*(result.get("gaps") or ()), *said_partial]
             pinned = [filled(item, values) for item in pinned]  # the values only here, never on record
             exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
             run_copy, mounts, env = copy, [], {"HOME": HOME, **(env or {})} if prepare else dict(env or {})

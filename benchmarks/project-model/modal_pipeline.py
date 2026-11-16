@@ -272,6 +272,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         volume.commit()
         values = _dotenv(token, digest["dotenv"], options) if digest.get("dotenv") else {}
         hide = container.masker(values)
+        if said_partial := container.partial(values):  # what the masks leave, said once
+            result["gaps"] = [*(result.get("gaps") or ()), *said_partial]
         services = [container.filled(item, values) for item in services]  # the values only here, never on record
         exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
         base = modal.Image.from_registry(image)

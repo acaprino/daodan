@@ -767,23 +767,35 @@ def test_the_values_of_a_tracked_env_file_are_read_as_compose_reads_them(tmp_pat
         container.dotenv_answer("Traceback (most recent call last):\n", 1)
 
 
-def test_each_value_of_a_tracked_env_file_is_masked_where_it_stands_as_a_whole():
-    """What a run keeps names the variable in place of its value; a value shorter than four characters, a boolean
-    word or a number of five digits at most stays, as the output's own words and ports would be masked with it."""
-    hide = container.masker({".env": {
+def test_each_value_of_a_tracked_env_file_is_masked_wherever_it_stands_and_a_short_one_as_a_whole_word():
+    """What a run keeps names the variable in place of its value wherever it stands, inside a longer word too
+    (`-DVERSION=1.28.0x`); a value shorter than four characters only as a whole word, as it would mask the text's
+    own words inside longer ones; a boolean word or a number of five digits at most stays, as the text's own words
+    and ports would be masked with it. `partial` says once which values a run may keep."""
+    values = {".env": {
         "SECRET_KEY": "changethis", "FIRST_SUPERUSER_PASSWORD": "changethis", "SMTP_TLS": "False", "SMTP_PORT": "1025",
-        "DB": "app", "MAIL": "admin@example.com", "DATABASE_URL": "postgresql://postgres:changethis@db:5432/app"}})
+        "DB": "app", "MAIL": "admin@example.com", "DATABASE_URL": "postgresql://postgres:changethis@db:5432/app",
+        "VERSION": "1.28.0"}}
+    hide = container.masker(values)
     assert hide("url postgresql://postgres:changethis@db:5432/app, key changethis, admin@example.com; False 1025 app "
-                "notchangethis") == ("url [.env:DATABASE_URL], key [.env:FIRST_SUPERUSER_PASSWORD,.env:SECRET_KEY], "
-                                     "[.env:MAIL]; False 1025 app notchangethis")
+                "notchangethis -DVERSION=1.28.0x application /app/") == (
+        "url [.env:DATABASE_URL], key [.env:FIRST_SUPERUSER_PASSWORD,.env:SECRET_KEY], [.env:MAIL]; False 1025 "
+        "[.env:DB] not[.env:FIRST_SUPERUSER_PASSWORD,.env:SECRET_KEY] -DVERSION=[.env:VERSION]x application "
+        "/[.env:DB]/")
     assert container.masker({".env": {"TLS": "False", "PORT": "5432"}}) is None and container.masker({}) is None
+    [gap] = container.partial(values)
+    assert (gap["kind"], gap["variables"]) == ("mask_partial", [".env:DB", ".env:SMTP_PORT", ".env:SMTP_TLS"])
+    assert gap["detail"] == (
+        "Daodan masks the value of .env:DB, shorter than four characters, only where it stands as a whole word, and "
+        "does not mask those of .env:SMTP_PORT, .env:SMTP_TLS, a boolean word or a number of five digits at most: "
+        "what the run keeps may hold them")
+    assert container.partial({".env": {"KEY": "changethis", "EMPTY": ""}}) == []
 
 
 def test_an_output_keeps_no_value_masked_as_text_or_as_json_or_is_withheld(tmp_path):
     """A `-DVERSION=<value>` build: its log is masked as text; its compilation database as JSON, string by string,
     so it stays JSON whatever escapes the value takes there; an output whose bytes still hold a value (an index, an
-    object file, a value inside a longer word, a number) is never patched: it is removed, a gap naming the
-    variables and the output."""
+    object file, a number) is never patched: it is removed, a gap naming the variables and the output."""
     values = {".env": {"VERSION": "clé-1.28.0", "BUILD": "20261116", "DEBUG": "true"}}
     hide = container.masker(values)
     out = tmp_path / "out"
@@ -800,19 +812,20 @@ def test_an_output_keeps_no_value_masked_as_text_or_as_json_or_is_withheld(tmp_p
         (out / rel).write_bytes(data)
     paths = [str(out / rel) for rel in files]
     kept, gaps = container.scrubbed(paths, hide, values, out)
-    assert kept == [str(out / rel) for rel in ("build/build.log", "build/compile_commands.json", "build/clean.json")]
+    assert kept == [str(out / rel) for rel in ("build/build.log", "build/compile_commands.json", "build/notes.txt",
+                                               "build/clean.json")]
+    assert (out / "build/notes.txt").read_text(encoding="utf-8") == "v[.env:VERSION]\n"  # inside a longer word
     assert (out / "build/build.log").read_text(encoding="utf-8") == "-- VERSION [.env:VERSION]\n"
     [database] = json.loads((out / "build/compile_commands.json").read_text(encoding="utf-8"))
     assert database["command"] == 'c++ -DVERSION=\\"[.env:VERSION]\\" -DDEBUG=true -c main.cpp'
     assert (out / "build/clean.json").read_bytes() == files["build/clean.json"]  # nothing masked: as written
     assert [(gap["kind"], gap["path"], gap["variables"]) for gap in gaps] == [
         ("output_withheld", "build/index.scip", [".env:VERSION"]),
-        ("output_withheld", "build/count.json", [".env:BUILD"]),
-        ("output_withheld", "build/notes.txt", [".env:VERSION"])]
+        ("output_withheld", "build/count.json", [".env:BUILD"])]
     assert gaps[0]["detail"] == ("build/index.scip holds the value of .env:VERSION, which Daodan keeps nowhere: the "
                                  "output is not kept")
     assert sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file()) == [
-        "build/build.log", "build/clean.json", "build/compile_commands.json"]
+        "build/build.log", "build/clean.json", "build/compile_commands.json", "build/notes.txt"]
     assert not any(b"cl\xc3\xa9-1.28.0" in p.read_bytes() or b"20261116" in p.read_bytes()
                    for p in out.rglob("*") if p.is_file())
     assert container.scrubbed(paths[:1], None, {}, out) == (paths[:1], [])  # no value: nothing read
@@ -1479,6 +1492,19 @@ class PodTest(unittest.TestCase):
         rows = [json.loads(line) for line in (self.out / container.RECORD_NAME).read_text().splitlines()]
         assert not any("index.scip" in path for row in rows for path in row.get("outputs") or ())
         assert not any(b"changethis" in path.read_bytes() for path in self.out.rglob("*") if path.is_file())
+
+    def test_a_run_says_once_which_values_it_masks_only_as_whole_words_or_not_at_all(self):
+        """A short value is masked where it stands whole (`DB=app` in the log, `application` as it was); the result
+        says so once, as `partial` words it."""
+        project = git_project(self.scratch / "short", {".env": "DB=app\nDEBUG=true\nSECRET_KEY=changethis\n",
+                                                       "app.js": "\n"}, [".env", "app.js"])
+        result = container.run_in_container(project, ["sh", "-c", "cat .env && echo application"],
+                                            image="fake/runtime:1", out_dir=self.out, engine=self.engine)
+        assert result["state"] == "done", result
+        log = (self.out / "execute.log").read_text(encoding="utf-8")
+        assert "DB=[.env:DB]" in log and "application" in log and "SECRET_KEY=[.env:SECRET_KEY]" in log
+        assert [(gap["kind"], gap["variables"]) for gap in result["gaps"] if gap["kind"] == "mask_partial"] == [
+            ("mask_partial", [".env:DB", ".env:DEBUG"])]
 
     def test_a_tracked_env_file_whose_values_cannot_be_read_stops_the_run_with_its_cause(self):
         (self.state / "no-dotenv").write_text("", encoding="utf-8")
