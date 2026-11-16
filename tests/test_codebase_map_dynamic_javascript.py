@@ -555,6 +555,38 @@ def test_code_another_tool_printed_runs_recorded_through_its_inline_map(tmp_path
     assert file["unobserved"] == []
 
 
+BUNDLED = '''const fs = require("fs");
+const path = require("path");
+const vm = require("vm");
+const tool = require(process.env.TOOL);
+const lib = path.join(__dirname, "src/lib.js");
+const code = tool.transformSync(fs.readFileSync(lib, "utf8"), { filename: lib, sourceFileName: "src/lib.js",
+  babelrc: false, configFile: false, compact: true, sourceMaps: "inline" }).code;
+const prefix = "'use strict';async (module, exports)=>{{";
+const one = { exports: {} };
+vm.runInThisContext(`${prefix}${code}\\n}}`, { filename: path.join(__dirname, "chunk-L.js"),
+  columnOffset: -prefix.length })(one, one.exports);
+one.exports.run();
+'''
+
+
+def test_a_bundle_no_file_holds_runs_recorded_in_the_files_its_inline_map_names(tmp_path, node):
+    """real-app-jhipster-sample: Angular's unit-test builder bundles the sources into chunks (`chunk-*.js`, held
+    in memory, no file of the project) that Vitest evaluates with their source map inline, whose sources are the
+    files as written: a call is a site of the file the map leads to, where the same name is written there, and a
+    function the bundle defines is placed in that file."""
+    project = write(tmp_path / "proj", {
+        "src/lib.js": "function inc(v) { return v + 1; } const twice = f => x => f(f(x));\n"
+                      "module.exports = { inc, twice, run: () => twice(inc)(1) };\n",
+        "bundle.js": BUNDLED})
+    [file] = recorded(project, tmp_path / "out", node, "bundle.js", env={"TOOL": node})
+    found = places(file["sites"])
+    assert found[("src/lib.js", 0, 58, "f")] == found[("src/lib.js", 0, 60, "f")] == {"src/lib.js:0:0 inc function"}
+    assert found[("src/lib.js", 1, 42, "twice")] == {"src/lib.js:0:48 twice function"}
+    assert found[("bundle.js", 11, 12, "run")] == {"src/lib.js:1:36 run function"}
+    assert file["unobserved"] == []
+
+
 def test_typescript_node_strips_itself_is_recorded_as_written(tmp_path, node):
     """As `node --test "test/*.test.ts"` on a Node that strips the types itself, an ES module and a CommonJS one."""
     stripping = subprocess.run(["node", "-p", "Boolean(process.features.typescript)"], capture_output=True, text=True)

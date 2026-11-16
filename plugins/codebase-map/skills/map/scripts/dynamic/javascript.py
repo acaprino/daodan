@@ -39,8 +39,9 @@ compiled:
   thread of their own (Node 18.19, 20.6);
 - a @babel/core the run loads itself (Jest's babel-jest, @babel/register) gets the plugin in every transform;
 - code another tool printed with its source map inline (ts-jest, Vitest's Vite in every pool, a TypeScript
-  loader), on its way to Node's loaders or to the `vm` functions the runners evaluate with, is printed again
-  through that map: a call is a site only where the map leads to the same name in the file as written.
+  loader, the chunks Angular's unit-test builder bundles and no file holds), on its way to Node's loaders or to
+  the `vm` functions the runners evaluate with, is printed again through that map: a call is a site only where
+  the map leads to the same name in a project file as written, and a site of that file.
 
 Back come the observation files, one per process and thread, and each run's log. What did not happen is a gap
 with its cause: tests that did not start (the log's tail), that failed, that outlasted the limit, that reached

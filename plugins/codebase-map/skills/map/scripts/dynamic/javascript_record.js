@@ -19,10 +19,11 @@
 //   module.stripTypeScriptTypes) is printed by that Babel;
 // - a @babel/core the run loads itself (babel-jest, @babel/register) gets the plugin
 //   in every transform;
-// - code another tool printed (ts-jest, Vitest's Vite, a TypeScript loader), on its
-//   way to Node's loaders or to the vm module the runners evaluate with, is printed
-//   again by that Babel through the source map inline in it: a call is a site only
-//   where that map leads to the same name in the file as written.
+// - code another tool printed (ts-jest, Vitest's Vite, a TypeScript loader, a bundle
+//   no file holds, as Angular's chunks), on its way to Node's loaders or to the vm
+//   module the runners evaluate with, is printed again by that Babel through the
+//   source map inline in it: a call is a site only where that map leads to the same
+//   name in a project file as written, and a site of that file.
 // A callee is placed through the source map inline in the script that defines it, at
 // the function of the file as written whose head holds that place.
 // Without DYN_BABEL the plugin comes from the project's Babel configuration:
@@ -87,11 +88,16 @@ function decoded(url) {
   return JSON.parse(/;base64$/.test(url.slice(0, comma)) ? Buffer.from(data, 'base64').toString('utf8') : decodeURIComponent(data));
 }
 
-// The project file an `originalSource` of the source map of `file`'s code names (relative to `file`).
-function source(file, original, root) {
+// Where an `originalSource` of the source map of `file`'s code is (relative to `file`), and the project file it is.
+function located(file, original, root) {
   if (!original) return null;
-  if (original.startsWith('file://')) return relative(original);
-  return relative(slash(path.resolve(path.dirname(ROOT + file), (root || '') + original)));
+  return original.startsWith('file://') ? original : slash(path.resolve(path.dirname(ROOT + file), (root || '') + original));
+}
+const source = (file, original, root) => relative(located(file, original, root));
+const lined = new Map();      // project file -> the lines of its text as written, null when it has none
+function lines(file) {
+  if (!lined.has(file)) lined.set(file, written(file) === null ? null : written(file).split('\n'));
+  return lined.get(file);
 }
 
 // A source map with the generated columns of its first line moved right by `by`: the
@@ -120,7 +126,8 @@ function printer(babelPath, unobserved) {
     parserOpts: { allowReturnOutsideFunction: sourceType === 'script', allowAwaitOutsideFunction: true, plugins: ['importAttributes'] },
   }).code;
   // `code` of `filename` as it runs here: printed with the plugin when it is the file as written, or when another
-  // tool printed it with an inline map; else as it is, and named. `prefix`: the columns a wrapper added to line 0.
+  // tool printed it with an inline map, also a bundle no file holds (Angular's chunks), whose map names the files
+  // as written; else as it is, and named. `prefix`: the columns a wrapper added to line 0.
   // TypeScript Node strips itself (`typescript`) is stripped here first, as Node does: the types become blanks,
   // so the code keeps the places of the file as written.
   return (code, filename, sourceType, prefix, typescript) => {
@@ -132,11 +139,11 @@ function printer(babelPath, unobserved) {
       }
       if (typescript) throw new Error('not the file as written');
       const found = [...code.matchAll(MAP)].pop();
-      if (found && written(file) !== null) {
+      if (found) {
         const input = shifted(decoded(found[1]), prefix);
         const map = new Module.SourceMap(input);
         return print(code.slice(0, found.index) + code.slice(found.index + found[0].length), filename, sourceType,
-          { input, map, lines: written(file).split('\n'), same: original => source(file, original, input.sourceRoot) === file });
+          { input, map, file: original => source(file, original, input.sourceRoot) });
       }
     } catch (error) { /* a syntax this Babel does not read: the file runs as it is */ }
     unobserved.add(file);
@@ -324,11 +331,16 @@ function install(outFile) {
     const callee = { ...calleeKind(at ? urls.get(at.scriptId) || '' : ''), name, line: at ? at.lineNumber : 0 };
     // V8 places a function at its parameters, in the code it runs: the script's inline map leads back to the file
     // as written, and the function declared there is the innermost one whose head (start to body) holds the place.
+    // A bundle's function is its source's: of that project file, or of the package the map names.
     const map = callee.kind === 'project' && mapOf(at.scriptId);
     const origin = map ? map.findEntry(at.lineNumber, at.columnNumber) : {};
+    const mapped = map && origin.generatedLine === at.lineNumber && origin.originalLine !== undefined
+      && located(callee.file, origin.originalSource, map.payload.sourceRoot);
+    const kind = mapped ? calleeKind(mapped) : null;
+    if (kind && kind.kind === 'package') { delete callee.file; Object.assign(callee, kind); }
     let start = null;
-    if (map && origin.generatedLine === at.lineNumber && origin.originalLine !== undefined
-        && source(callee.file, origin.originalSource, map.payload.sourceRoot) === callee.file) {
+    if (kind && kind.kind === 'project' && lines(kind.file) !== null) {
+      callee.file = kind.file;
       const place = [origin.originalLine, origin.originalColumn];
       const before = (a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] <= b[1]);
       for (const item of startsOf(callee.file)) {
@@ -423,20 +435,24 @@ function plugin({ types: t }) {
     while (node && (node.type === 'MemberExpression' || node.type === 'CallExpression')) node = node.object || node.callee;
     return node && node.type === 'Identifier' ? node.name : null;
   };
-  // Where a name of the code Babel reads is in the file as written, [line, byte column]: the same place, or the
-  // place the code's inline map leads to when the same name is written there; null elsewhere.
+  // Where a name of the code Babel reads is in a project file as written, [file, line, byte column]: the same
+  // place of its own file, or the place the code's inline map leads to, in the file the map names, when the same
+  // name is written there; null elsewhere.
   const place = (state, loc, name) => {
     const origin = state.opts.origin;
     if (!origin) {
       if (!rows.has(state.file)) rows.set(state.file, state.file.code.split('\n'));
-      return [loc.line - 1, bytes(rows.get(state.file), loc.line - 1, loc.column)];
+      return [relative(state.filename), loc.line - 1, bytes(rows.get(state.file), loc.line - 1, loc.column)];
     }
     const entry = origin.map.findEntry(loc.line - 1, loc.column);
-    if (entry.originalLine === undefined || entry.generatedLine !== loc.line - 1 || !origin.same(entry.originalSource)) return null;
-    const text = origin.lines[entry.originalLine] || '';
+    if (entry.originalLine === undefined || entry.generatedLine !== loc.line - 1) return null;
+    const file = origin.file(entry.originalSource);
+    const written = file && lines(file);
+    if (!written) return null;
+    const text = written[entry.originalLine] || '';
     const column = entry.originalColumn + (/['"]/.test(text[entry.originalColumn] || '') ? 1 : 0);
     if (!text.startsWith(name, column) || /[\w$]/.test(text[column + name.length] || '')) return null;
-    return [entry.originalLine, bytes(origin.lines, entry.originalLine, column)];
+    return [file, entry.originalLine, bytes(written, entry.originalLine, column)];
   };
   return {
     name: 'daodan-dynamic-record',
@@ -468,7 +484,7 @@ function plugin({ types: t }) {
           else name = token.type === 'StringLiteral' ? token.value : null;
           const at = name && token.loc && place(state, token.loc.start, name);
           if (!at) return;
-          const id = t.stringLiteral(`${file}|${at[0]}|${at[1]}|${name}`);
+          const id = t.stringLiteral(`${at[0]}|${at[1]}|${at[2]}|${name}`);
           if (unbound) node.callee.expressions[1] = t.callExpression(helper('__dynC'), [id, callee]);
           else node.callee = member && node.type === 'CallExpression'
             ? t.callExpression(helper('__dynM'), [id, callee.object, callee.computed ? token : t.stringLiteral(name)])
