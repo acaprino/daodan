@@ -660,6 +660,27 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         release = [{"tool": "java", "version": "8", "declared_in": "pom.xml#maven-compiler-plugin.release"}]
         self.assertNotIn("gaps", self.index(tools={"": ["maven"]}, toolchains=release))
 
+    def test_a_gradle_toolchain_scip_java_does_not_run_on_is_compiled_on_and_the_gap_says_why_no_index(self):
+        """Gradle runs on the image's JDK and compiles on the toolchain its scripts ask for, which the preparation
+        installs and hands it: on 11, where scip-java's plugin, of Java 17's class files, does not load, the
+        failure says why. A toolchain of 17 or newer has no such gap."""
+        self.serve_mise()
+        field = "#java.toolchain.languageVersion"
+        stated = [{"tool": "java", "version": "11", "declared_in": f"lib/build.gradle.kts{field}"}]
+        self.play("prepare", text=log(("index", 1, "> Task :lib:compileJava FAILED")), code=1)
+        result = self.index(tools={"": ["gradle"]}, toolchains=stated)
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@11", script)
+        self.assertIn("\nDAODAN_JDK=17\n", script)  # Gradle itself runs on the image's
+        self.assertEqual(result["state"], "failed")
+        gap = next(gap for gap in result.get("gaps", ()) if gap["kind"] == "jdk_unsupported")
+        self.assertEqual(gap["path"], ".")
+        for said in ("Java 11", f"lib/build.gradle.kts{field}", "scip-java", "17", "Gradle"):
+            self.assertIn(said, gap["detail"])
+        self.play_success()
+        newer = [{"tool": "java", "version": "21", "declared_in": f"lib/build.gradle.kts{field}"}]
+        self.assertNotIn("gaps", self.index(tools={"": ["gradle"]}, toolchains=newer))
+
     def test_an_index_of_the_edited_pom_is_a_declared_second_attempt(self):
         """The build as declared gives no index (javapoet's Error Prone 2.3.1 on JDK 17); the second build, with
         the root pom's compiler plugin edited, gives one: the result names what was removed and why the build as

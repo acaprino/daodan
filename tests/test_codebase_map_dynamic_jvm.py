@@ -644,6 +644,35 @@ class ObserveTest(FakeEngineTest):
         for needed in ("withType(Test)", "findByName('test')", "classpath", "DAODAN_TESTS"):
             self.assertIn(needed, script)
 
+    def test_under_gradle_the_tests_run_on_the_toolchain_the_scripts_ask_for_with_gradle_on_the_image_s_jdk(self):
+        """Gradle 9 runs on JDK 17 or newer and compiles and tests on the toolchain its scripts ask for (11 here),
+        which the preparation installs and hands it (`org.gradle.java.installations.paths`): the agent, of Java 8's
+        class files, loads in that test JVM, and scip-java's limit is none of the observer's."""
+        self.served[preparation.MISE[0]] = b"mise"
+        patcher = mock.patch.object(preparation, "MISE", (preparation.MISE[0], digest(b"mise"), "mise"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        files = {rel: (self.project / rel).read_text(encoding="utf-8") for rel in PROJECT}
+        self.planned = jvm.plan({"units": [{"kind": "gradle-project", "root": ".", "name": ":"}]}, sorted(files),
+                                files.get)
+        self.planned["toolchains"] = [{"tool": "java", "version": "11",
+                                       "declared_in": "build.gradle.kts#java.toolchain.languageVersion"}]
+        out = jvm.jvm.OUT.lstrip("/")
+        self.play("prepare", text=log(("agent", 0, ""), ("compile", 0, "BUILD SUCCESSFUL")))
+        project_calls(self.scratch / "played")
+        self.play("execute", files={f"{out}/tests.code": "0\n", f"{out}/suites.txt": self.suite(2),
+                                    f"{out}/test-tasks.txt": ":test\n", f"{out}/calls": self.scratch / "played"},
+                  text=log(("tests", 0, "")))
+        with mock.patch.object(container, "free_memory", return_value=64 * 2**30):
+            result = jvm.observe(self.project, self.planned, self.work, self.engine)
+        self.assertEqual(result["state"], "ran")
+        self.assertNotIn("jdk_unsupported", self.gaps(result))
+        for phase in ("prepare", "execute"):
+            script = (self.state / "scripts" / f"{phase}.sh").read_text(encoding="utf-8")
+            self.assertIn("\nDAODAN_JDK=17\n", script)
+            self.assertIn("org.gradle.java.installations.%s", script)
+        self.assertIn("install java@11", (self.state / "scripts" / "prepare.sh").read_text(encoding="utf-8"))
+
     def test_a_folder_two_builds_build_runs_its_tests_once(self):
         """Gradle and Maven building one folder run the same tests: Maven's run only when Gradle's did not."""
         files = {rel: (self.project / rel).read_text(encoding="utf-8") for rel in PROJECT}

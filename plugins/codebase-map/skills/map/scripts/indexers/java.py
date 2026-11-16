@@ -2,8 +2,9 @@
 
 `index` runs scip-java's Maven or Gradle build in a container (`indexers.jvm`), on the JDK the build states
 (`jvm.build_jdk`). scip-java's compiler plugin runs on javac 17 or newer only (its documentation's Java versions:
-8 and 11 were dropped in 0.13.0), so a build that states an older one is indexed on the image's JDK and says so
-(`jdk_unsupported`). In the preparation, the build as declared, then, when it gives no index, a declared second
+8 and 11 were dropped in 0.13.0), so a build that states an older one says so (`jdk_unsupported`): Maven's is
+indexed on the image's JDK, Gradle's compiles on that toolchain, where the plugin does not load (Gradle itself runs
+on the image's). In the preparation, the build as declared, then, when it gives no index, a declared second
 attempt with the plain javac (the root pom's compiler plugin without its `compilerId`, `forceJavacCompilerUse`
 and `dependencies`: Error Prone 2.3.1 runs only on Java 8 and 9), which the result says (`build_edited`). The
 default aggregation writes each `is_implementation` twice, from child to parent and from parent to child with
@@ -174,12 +175,18 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
         root = jvm.build_root(project_dir, folder)
         jdk = jvm.build_jdk({"root": root, "tool": tool}, toolchains)
         older = jdk if jdk and jvm._major(jdk["version"]) < OLDEST_JDK else None
+        # Gradle compiles on the toolchains its scripts ask for (`jvm.run` installs them), whatever JDK runs it.
+        compiled = [item for item in toolchains if tool == "gradle" and item.get("tool") == "java"
+                    and ".gradle" in item.get("declared_in", "") and jvm.inside(item["declared_in"].split("#")[0], root)
+                    and (jvm._major(item.get("version")) or OLDEST_JDK) < OLDEST_JDK]
         prepare = jvm.modules_line(modules, root) + jvm.tool_line(tool) + PREPARE
         result, runs, out = jvm.run(folder, work, prepare, execute(external_classes), memory=memory, engine=engine,
                                     toolchains=toolchains, jdk=None if older else jdk,
                                     hosts=(declared or {}).get("hosts", ()))
         part = finish(folder, work, result, runs, out)
-        said = [*([unsupported(older, root)] if older else ()), *(edited(runs, root) if part.get("indexes") else ())]
+        said = [unsupported([item], root, tool) for item in [older] if item]
+        said += [unsupported(compiled, root, tool)] if compiled else []
+        said += edited(runs, root) if part.get("indexes") else []
         return jvm.with_gaps(jvm.with_gaps(part, result), {"gaps": said})
 
     parts = jvm.builds(project_dir, work_dir, roots, one, tools)
@@ -222,12 +229,17 @@ def finish(project_dir: Path, work_dir: Path, result: dict, runs: list[dict], ou
             "indexer": code_graph.indexer("scip-java", jvm.VERSION, runs), **({"gaps": gaps} if gaps else {})}
 
 
-def unsupported(jdk: dict, root: str) -> dict:
-    """A build that states a JDK older than scip-java's: the `jdk_unsupported` gap of its index."""
+def unsupported(stated: list[dict], root: str, tool: str | None) -> dict:
+    """The JDKs a build states older than scip-java's: the `jdk_unsupported` gap. Maven compiles on the JDK that
+    runs it, the image's; Gradle on the toolchains, where the plugin does not load."""
+    versions = " and ".join(sorted({item["version"] for item in stated}, key=lambda version: jvm._major(version) or 0))
+    where = ", ".join(item["declared_in"] for item in stated[:3]) + (", ..." if len(stated) > 3 else "")
+    then = (f"Gradle compiles it on that JDK, where the plugin, of Java {OLDEST_JDK}'s class files, does not load"
+            if tool == "gradle" else f"it was indexed on the image's JDK {jvm.JDK}, so its calls into the JDK name "
+            f"JDK {jvm.JDK}'s classes, not those of Java {versions}")
     return {"kind": "jdk_unsupported", "path": root or ".", "detail":
-            f"the build states Java {jdk['version']} ({jdk['declared_in']}) and scip-java {jvm.VERSION}'s compiler "
-            f"plugin runs on javac {OLDEST_JDK} or newer only: it was indexed on the image's JDK {jvm.JDK}, so its "
-            f"calls into the JDK name JDK {jvm.JDK}'s classes, not those of Java {jdk['version']}"}
+            f"the build states Java {versions} ({where}) and scip-java {jvm.VERSION}'s compiler plugin runs on javac "
+            f"{OLDEST_JDK} or newer only: {then}"}
 
 
 def edited(runs: list[dict], root: str) -> list[dict]:
