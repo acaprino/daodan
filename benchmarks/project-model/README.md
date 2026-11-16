@@ -27,7 +27,7 @@ Misura quanto di una **pre-mappa** danno gli strumenti esistenti, prima di ogni 
 
 Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Dalla cartella del benchmark:
 
-1. `python -m unittest test_score.py test_catalog.py`: test del punteggio e dell'anagrafica.
+1. `python -m unittest test_score.py test_catalog.py test_pipeline_report.py`: test del punteggio, dell'anagrafica e del rapporto della pipeline.
 2. `python score.py --check all`: forma di ogni `expected.json`, casi contro `cases.json` e contro i dati, casi che nessun progetto usa.
 3. `python catalog.py`: riscrive ANAGRAFICA.md; `python catalog.py --check` dice solo se è da riscrivere.
 4. Su Modal, il driver `modal_<gruppo>.py` del gruppo toccato: riscrive i suoi `results/<tool>.json`.
@@ -149,3 +149,37 @@ Versioni, comandi e vincoli verificati si leggono in `results/<tool>.json`; la t
 - dipendenze e toolchain dichiarate da Renovate, le versioni bloccate da Trivy;
 - le unità con sorgenti e configurazione solo dai comandi di modello di ogni build tool, parte dei quali va nel container;
 - framework, servizi e bisogno di container restano scoperti.
+
+## Il grafo completo sul corpus
+
+Verifica che la pipeline di Daodan (`pipeline.run`: scan, analyze, union) dia il grafo completo di ogni progetto del corpus: per ogni linguaggio dello snapshot uno stato, i file nell'indice, i siti con risposta e i buchi con la loro classe. È una ricognizione, senza soglie.
+
+### Parametri
+
+Dalla cartella del benchmark:
+
+- Corpus: le 122 fixture. `js`, `py`, `jvm`, `sys` e `mix` sono i 104 progetti in miniatura, `real` i 18 repository con `source.json`.
+- Giro, su Modal e mai su questo PC: `python -m modal run modal_pipeline.py --cases js,py,jvm,sys,mix,real --out results/pipeline/<giro>.json`. `--cases` accetta anche nomi di fixture; `--chunk` (4) dice quante fixture di una famiglia vanno in un container.
+- Rapporto: `python pipeline_report.py results/pipeline/<giro>.json [<altro>.json ...] [--compare <precedente>.report.json]`. Un caso di un file successivo sostituisce lo stesso caso dei precedenti. Scrive `<giro>.report.md` e, accanto, gli stessi numeri in `<giro>.report.json`; `--compare` stampa cosa cambia per linguaggio e per caso: stati, buchi in più o in meno.
+
+I giri stanno in `results/pipeline/`, una sottocartella: `score.py` legge come strumento ogni `.json` di `results/`.
+
+Conta come risultato, per linguaggio su tutti i casi: i casi `fresh` sui casi che lo contengono, i file indicizzati sui file dello snapshot, la quota dei siti con risposta. Il rapporto dà anche casi falliti e secondi, i motivi degli stati diversi da `fresh`, i file fuori dall'indice, i linguaggi senza analizzatore, il punteggio della pre-mappa per faccetta, i gap per tipo e gli esiti dei container.
+
+### Risultati
+
+Giro completo sui 122 casi: non ancora misurato. La colonna dei piloti viene da cinque piloti del 15 e 16 novembre 2026, 11 casi in tutto, con versioni successive del driver: non è un giro.
+
+| Linguaggio | Piloti: casi `fresh` / casi | Piloti: file indicizzati / nello snapshot | Piloti: quota risposta | Giro completo |
+| --- | --- | --- | --- | --- |
+| cpp | 1 / 1 | 4 / 4 | 92,9 % | non ancora misurato |
+| java | 2 / 2 | 3 / 3 | 100,0 % | non ancora misurato |
+| javascript | 0 / 1 | 0 / 0 | — | non ancora misurato |
+| kotlin | 1 / 1 | 2 / 2 | 100,0 % | non ancora misurato |
+| python | 2 / 2 | 7 / 7 | 92,3 % | non ancora misurato |
+| stylesheet | 3 / 3 | 21 / 21 | 50,0 % | non ancora misurato |
+| svelte | 1 / 1 | 0 / 2 | 0,0 % | non ancora misurato |
+| typescript | 3 / 4 | 11 / 11 | 56,5 % | non ancora misurato |
+| vue | 0 / 1 | 0 / 0 | — | non ancora misurato |
+
+Nei piloti: 11 casi, nessuno fallito, mediana 118,1 secondi per caso; 69 corse di container, tutte con exit 0; C# senza analizzatore (un caso, 2 file).
