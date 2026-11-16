@@ -166,9 +166,11 @@ def test_the_analyzer_on_the_host_reads_the_project_and_its_environment_and_runs
     """AGENTS.md: the project's code runs only in the container. On the host uv builds the environment from wheels
     and starts its interpreter at each install, scip-python's and the checker's Pyright start it to ask its paths,
     the checker parses with it: a project whose files, and whose environment (a wheel's `.pth` import line and
-    `sitecustomize`), each leave a mark when run is read, its package resolved, and no mark appears. Real uv, Node,
-    scip-python and Pyright (on Modal)."""
+    `sitecustomize`, a package with only a source distribution), each leave a mark when run is read, its package
+    resolved, and no mark appears; the package without a wheel is a gap naming it. uv reads no configuration file,
+    the project's or the user's (both unreadable here). Real uv, Node, scip-python and Pyright (on Modal)."""
     import subprocess
+    import tarfile
     marks = tmp_path / "marks"
     marks.mkdir()
 
@@ -180,22 +182,36 @@ def test_the_analyzer_on_the_host_reads_the_project_and_its_environment_and_runs
     _wheel(wheels / "daodanmark-1.0-py3-none-any.whl", {
         "daodanmark/__init__.py": "VALUE = 1\n", "daodanmark_hook.py": marking("pth"),
         "daodanmark.pth": "import daodanmark_hook\n", "sitecustomize.py": marking("sitecustomize")})
+    source = tmp_path / "daodansdist-1.0"  # a source distribution alone: building it runs its setup.py
+    source.mkdir()
+    (source / "PKG-INFO").write_text("Metadata-Version: 2.1\nName: daodansdist\nVersion: 1.0\n", encoding="utf-8")
+    (source / "setup.py").write_text(marking("sdist-setup.py") + "from setuptools import setup\nsetup()\n",
+                                     encoding="utf-8")
+    with tarfile.open(wheels / "daodansdist-1.0.tar.gz", "w:gz") as archive:
+        archive.add(source, arcname=source.name)
+    unreadable = "this = is not [ toml\n"
+    (tmp_path / "config/uv").mkdir(parents=True)
+    (tmp_path / "config/uv/uv.toml").write_text(unreadable, encoding="utf-8")  # the user's
     project = tmp_path / "project"
     project.mkdir()
+    (project / "uv.toml").write_text(unreadable, encoding="utf-8")
     for name in ("setup.py", "conftest.py", "json.py", "sitecustomize.py", "backend.py"):
         (project / name).write_text(marking(name), encoding="utf-8")
     (project / "pyproject.toml").write_text(
         '[build-system]\nrequires = []\nbuild-backend = "backend"\nbackend-path = ["."]\n', encoding="utf-8")
-    # The second has no wheel: installed one at a time, uv starts the interpreter again after the first.
-    (project / "requirements.txt").write_text("daodanmark\nzz-daodan-without-wheel\n", encoding="utf-8")
+    # The others have no wheel: installed one at a time, uv starts the interpreter again after the first.
+    (project / "requirements.txt").write_text("daodanmark\ndaodansdist\nzz-daodan-without-wheel\n", encoding="utf-8")
     (project / "app.py").write_text("import json\nimport daodanmark\nprint(daodanmark.VALUE, json.dumps(1))\n",
                                     encoding="utf-8")
-    for name, value in (("UV_FIND_LINKS", str(wheels)), ("UV_NO_INDEX", "1"), ("UV_NO_CACHE", "1")):
+    for name, value in (("UV_FIND_LINKS", str(wheels)), ("UV_NO_INDEX", "1"), ("UV_NO_CACHE", "1"),
+                        ("XDG_CONFIG_HOME", str(tmp_path / "config"))):
         monkeypatch.setenv(name, value)
     result = python.index(project, tmp_path / "work",
                           units=[{"root": "", "manifests": ["pyproject.toml", "requirements.txt"]}])
     [run] = result["runs"]
     assert run["index"] and run["packages"] == {"daodanmark": "1.0"}, result
+    failed = {gap["package"]: gap["detail"] for gap in result.get("gaps", ()) if gap.get("package")}
+    assert set(failed) == {"daodansdist", "zz-daodan-without-wheel"} and "wheel" in failed["daodansdist"], result
     index = code_graph.Index(project)
     index.load(Path(run["index"]))
     assert any(" daodanmark 1.0 " in o.key for o in index.documents["app.py"])  # read from the environment
@@ -205,4 +221,6 @@ def test_the_analyzer_on_the_host_reads_the_project_and_its_environment_and_runs
     environment = Path(run["environment"])
     subprocess.run([str(environment / "bin/python"), "-c", "import daodanmark_hook"], check=True)
     subprocess.run([str(environment / "bin/python"), str(project / "setup.py")], check=True)
-    assert sorted(path.name for path in marks.iterdir()) == ["pth", "setup.py"]
+    subprocess.run([str(environment / "bin/python"), "-c", f"exec(open({str(source / 'setup.py')!r}).readline())"],
+                   check=True)
+    assert sorted(path.name for path in marks.iterdir()) == ["pth", "sdist-setup.py", "setup.py"]

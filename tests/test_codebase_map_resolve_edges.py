@@ -983,6 +983,8 @@ class PreparedEnvironmentTests(unittest.TestCase):
         self.names = ["pyproject.toml", "api/requirements.txt", "api/app.py"]
         self.cache = Path(self.temp.name).resolve() / "cache"
         self.commands, self.refused, self.cwds = [], None, []
+        # Daodan's own uv: no configuration file read (the project's, the user's), its cache Daodan's.
+        self.own = ["--no-config", "--cache-dir", str(self.cache / "uv")]
 
     def run_uv(self, command, **kwargs):
         self.commands.append(command[1:])
@@ -1004,6 +1006,48 @@ class PreparedEnvironmentTests(unittest.TestCase):
         self.assertEqual(manifests, ["api/requirements.txt", "pyproject.toml"])
         self.assertEqual(resolve_edges._declared_requirements(self.root, manifests, "uv"),
                          ["fastapi==0.115.0", "httpx>=0.27", "pytest", "ruff==0.6.0"])
+
+    def test_a_lock_is_exported_by_daodan_s_own_uv_and_nothing_is_built(self):
+        """uv reads the lock as it is (`--frozen`), builds nothing (`--no-build`), reads no configuration file and
+        keeps its cache in Daodan's shared directory."""
+        (self.root / "uv.lock").write_text("version = 1\n", encoding="utf-8")
+        exported = []
+
+        def export(command, **kwargs):
+            exported.append(command[1:])
+            return subprocess.CompletedProcess(command, 0, "httpx==0.27.2\n", "")
+
+        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=self.cache), \
+                mock.patch.object(subprocess, "run", side_effect=export):
+            requirements = resolve_edges._declared_requirements(self.root, ["pyproject.toml", "uv.lock"], "uv")
+        self.assertEqual(requirements, ["httpx==0.27.2"])
+        [command] = exported
+        self.assertEqual(command[:2], ["export", "--frozen"])
+        self.assertIn("--no-build", command)
+        self.assertEqual(command[-3:], self.own)
+
+    def test_a_package_without_a_wheel_is_a_failure_naming_it_and_nothing_is_built(self):
+        """`--only-binary :all:` on every install: uv builds no source distribution and runs none of its code. A
+        package that has no wheel is not installed; the environment records it with uv's words."""
+        def refused(command, **kwargs):
+            done = self.run_uv(command, **kwargs)
+            if command[1:3] == ["pip", "install"]:
+                self.assertIn(":all:", command[command.index("--only-binary") + 1:][:1])
+                if "-r" in command or "fastapi==0.115.0" in command:
+                    return subprocess.CompletedProcess(command, 1, "", "  x No solution found\n  hint: Wheels are "
+                                                       "required for `fastapi` because building from source is "
+                                                       "disabled for all packages")
+            return done
+
+        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=self.cache), \
+                mock.patch.object(shutil, "which", return_value="uv"), \
+                mock.patch.object(subprocess, "run", side_effect=refused):
+            environment = resolve_edges.python_environment(self.root, self.names)
+        built = json.loads((environment / "daodan-environment.json").read_text(encoding="utf-8"))
+        self.assertEqual(built["installed"], 3)
+        self.assertEqual(built["failed"], [{"requirement": "fastapi==0.115.0", "cause": "x No solution found hint: "
+                                            "Wheels are required for `fastapi` because building from source is "
+                                            "disabled for all packages"}])
 
     def test_the_environment_is_built_once_outside_the_project_from_wheels(self):
         before = sorted(path.relative_to(self.root).as_posix() for path in self.root.rglob("*"))
@@ -1031,11 +1075,11 @@ class PreparedEnvironmentTests(unittest.TestCase):
         stated = self.prepare(">=3.14,<4.0")
         self.assertNotEqual(stated, own)
         self.assertEqual([command for command in self.commands if command[0] == "venv"][-1],
-                         ["venv", str(stated), "--python", ">=3.14,<4.0"])
+                         ["venv", str(stated), "--python", ">=3.14,<4.0", *self.own])
         self.assertEqual(self.prepare(">=3.14,<4.0"), stated)
         bare = self.prepare("3.14", ["api/app.py"])
         self.assertTrue(bare.is_relative_to(self.cache / "python"))
-        self.assertEqual(self.commands[-1], ["venv", str(bare), "--python", "3.14"])  # nothing to install
+        self.assertEqual(self.commands[-1], ["venv", str(bare), "--python", "3.14", *self.own])  # nothing to install
         self.refused = "error: No interpreter found for Python 3.99 in managed installations or search path"
         with self.assertRaisesRegex(subprocess.SubprocessError, "uv could not provide Python 3.99: error: No interp"):
             self.prepare("3.99")
@@ -1075,6 +1119,7 @@ class PreparedEnvironmentTests(unittest.TestCase):
         self.assertEqual({path.name: path.read_text(encoding="utf-8") for path in site.iterdir()},
                          {"mark.pth": "kept\n"})
         self.assertEqual({cwd and Path(cwd) for cwd in self.cwds}, {self.cache / "python"})
+        self.assertEqual({tuple(command[-3:]) for command in self.commands}, {tuple(self.own)})
 
 
 class MultiLanguageTests(unittest.TestCase):

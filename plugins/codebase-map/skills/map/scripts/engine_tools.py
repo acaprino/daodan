@@ -550,9 +550,9 @@ def _declared_requirements(project_root: Path, manifests: list[str], uv: str) ->
                     for item in ("pyproject.toml", "uv.lock"):
                         shutil.copyfile(path.parent / item, Path(copy) / item)
                     done = subprocess.run(
-                        [uv, "export", "--frozen", "--no-emit-project", "--no-emit-workspace", "--all-groups",
-                         "--all-extras", "--no-hashes", "--no-header", "--format", "requirements-txt"],
-                        cwd=copy, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=600)
+                        [uv, "export", "--frozen", "--no-build", "--no-emit-project", "--no-emit-workspace",
+                         "--all-groups", "--all-extras", "--no-hashes", "--no-header", "--format", "requirements-txt",
+                         *_own_uv()], cwd=copy, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=600)
                     exported = done.stdout.splitlines() if done.returncode == 0 else None
             if exported is None:
                 try:
@@ -581,6 +581,13 @@ def _declared_requirements(project_root: Path, manifests: list[str], uv: str) ->
     return sorted(set(kept))
 
 
+def _own_uv() -> list[str]:
+    """What makes a uv run Daodan's own: no configuration file read (the project's, the user's: an index, a mirror
+    for the interpreter it downloads, a setting for builds), its cache in Daodan's shared directory, where no wheel
+    built elsewhere from a source distribution is found for `--only-binary`. It runs outside the project too."""
+    return ["--no-config", "--cache-dir", str(shared_cache_dir() / "uv")]
+
+
 def _inert(environment: Path) -> None:
     """What an interpreter of `environment` would run as it starts, by `site`'s rules, removed: a `.pth` file's
     import lines, `sitecustomize` and `usercustomize`, code of the packages it holds. uv starts that interpreter at
@@ -604,9 +611,11 @@ def _inert(environment: Path) -> None:
 def python_environment(project_root: Path, names, python: str | None = None) -> Path | None:
     """The project's declared Python packages in an environment of the shared directory.
 
-    Built once per set of manifests and interpreter, from wheels only: no package
-    build script and no project code runs, and nothing is written into the project;
-    what its interpreter would run as it starts is removed (`_inert`).
+    Built once per set of manifests and interpreter, from wheels only, by Daodan's own
+    uv (`_own_uv`): no package build script and no project code runs, and nothing is
+    written into the project; what its interpreter would run as it starts is removed
+    (`_inert`). A requirement uv could not install, one without a wheel among them, is
+    in its `daodan-environment.json` (`failed`), with uv's words.
     The interpreter is Daodan's, else `python`, the Python the project states, which
     uv resolves as `uv sync` does (an installed one that matches, else its download):
     a project that declares no package then gets the interpreter alone, and one uv
@@ -640,14 +649,20 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
     shutil.rmtree(destination, ignore_errors=True)
 
     def run(*arguments, timeout=1800):
-        # Outside the project: uv reads no configuration of its (a mirror for the interpreter it downloads).
-        return subprocess.run([uv, *arguments], cwd=destination.parent, stdin=subprocess.DEVNULL,
+        return subprocess.run([uv, *arguments, *_own_uv()], cwd=destination.parent, stdin=subprocess.DEVNULL,
                               capture_output=True, text=True, timeout=timeout)
 
+    failed: list[dict] = []
+
     def install(*arguments, timeout=1800) -> bool:
+        """Wheels only (`--only-binary :all:`): uv builds no source distribution, so none of a package's code runs;
+        a requirement it cannot install is recorded with its words."""
         _inert(destination)  # uv starts the environment's interpreter first (`-I`: with `site`)
-        return run("pip", "install", "--python", str(destination), "--only-binary", ":all:", *arguments,
-                   timeout=timeout).returncode == 0
+        done = run("pip", "install", "--python", str(destination), "--only-binary", ":all:", *arguments,
+                   timeout=timeout)
+        if done.returncode != 0 and arguments[0] != "-r":
+            failed.append({"requirement": arguments[0], "cause": " ".join(done.stderr.split())[-400:]})
+        return done.returncode == 0
 
     made = run("venv", str(destination), "--python", version)
     if made.returncode != 0:
@@ -666,7 +681,7 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
         shutil.rmtree(destination, ignore_errors=True)
         return None
     marker.write_text(json.dumps({"manifests": manifests, "requirements": len(requirements), "installed": installed,
-                                  "python": version}) + "\n", encoding="utf-8")
+                                  "python": version, "failed": failed}) + "\n", encoding="utf-8")
     print(f"installed {installed} of {len(requirements)} declared Python packages", flush=True)
     return destination
 

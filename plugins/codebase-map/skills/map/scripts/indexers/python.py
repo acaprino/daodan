@@ -483,7 +483,8 @@ def _prepared(project_dir: Path, unit: dict, environment: Path | None) -> tuple[
     """`environment`, else the one `python_environment` builds from the manifests the unit states, named from
     the checkout's root (without them, from the ones under its folder), on the Python the unit states where
     Daodan's interpreter is not one it admits; its gaps: a stated manifest the environment does not read, an
-    environment that failed; and that statement, where it chose the interpreter."""
+    environment that failed, a declared package it does not hold (one without a wheel is never built), with uv's
+    words; and that statement, where it chose the interpreter."""
     import resolve_edges as rx
     from dynamic import python as observer  # it imports this module: imported here, once this one is loaded
     if environment is not None:
@@ -499,6 +500,12 @@ def _prepared(project_dir: Path, unit: dict, environment: Path | None) -> tuple[
                        "file declares are not installed"} for name in names if name not in read]
     try:
         used = rx.python_environment(root, names, stated and str(stated["version"]))
+        try:
+            failed = json.loads((Path(used) / "daodan-environment.json").read_text(encoding="utf-8"))["failed"]
+        except (OSError, TypeError, ValueError, KeyError):
+            failed = []
+        gaps += [{"kind": "restore_failed", "manager": "uv", "path": unit["root"] or ".", "package": item["requirement"],
+                  "detail": f"{item['requirement']} is not installed: {item['cause']}"} for item in failed]
         return used, gaps, stated if used else None
     except (OSError, subprocess.SubprocessError) as error:
         return None, gaps + [{"kind": "restore_failed", "manager": "uv", "path": unit["root"] or ".",
