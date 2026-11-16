@@ -169,32 +169,47 @@ def repo_root(target: Path) -> Path:
     return work_tree(base) or base
 
 
+FILTERED = "the checkout declares a Git filter, which Daodan does not run on the host"
+UNASKED = "Git did not say which filters the checkout declares"
+
+
 def git_info(root: Path) -> dict | None:
     """
     Commit, branch and dirtiness, as metadata, of the work tree that holds the
     root: none for a root no work tree holds. Nothing in the diff depends on it.
+
+    `git status` reads the content of a changed file through the filter the
+    checkout declares for it (.gitattributes, its configuration's program),
+    which would run the project's code on the host: where a tracked file has
+    one (`check-attr`, which reads attributes and runs nothing), or Git does
+    not say, `dirty` is None and `dirty_unknown` says why. Status asks no
+    submodule (each would run its own filters) and writes no index.
     """
     git = git_executable()
-    if git is None or work_tree(root) is None:
+    top = work_tree(root) if git is not None else None
+    if top is None:
         return None
 
-    def run(*args: str) -> str | None:
+    def run(*args: str, at: Path = root, given: bytes | None = None) -> bytes | None:
         try:
             proc = subprocess.run(
-                [git, *GIT_OPTIONS, "-C", str(root), *args], capture_output=True, text=True, timeout=10
+                [git, *GIT_OPTIONS, "-C", str(at), *args], input=given, capture_output=True, timeout=10
             )
         except (OSError, subprocess.SubprocessError):
             return None
-        return proc.stdout.strip() if proc.returncode == 0 else None
+        return proc.stdout if proc.returncode == 0 else None
 
-    commit = run("rev-parse", "HEAD")
+    commit = (run("rev-parse", "HEAD") or b"").decode().strip()
     if not commit:
         return None
-    return {
-        "commit": commit[:12],
-        "branch": run("rev-parse", "--abbrev-ref", "HEAD"),
-        "dirty": bool(run("status", "--porcelain")),
-    }
+    info = {"commit": commit[:12], "branch": (run("rev-parse", "--abbrev-ref", "HEAD") or b"").decode().strip() or None}
+    listed = run("ls-files", "-z", at=top)
+    said = run("check-attr", "--stdin", "-z", "filter", at=top, given=listed) if listed is not None else None
+    if said is None or any(value not in (b"unspecified", b"unset") for value in said.split(b"\0")[2::3]):
+        return {**info, "dirty": None, "dirty_unknown": UNASKED if said is None else FILTERED}
+    status = run("--no-optional-locks", "status", "--porcelain", "--ignore-submodules=all")
+    return {**info, "dirty": bool(status.strip()) if status is not None else None,
+            **({"dirty_unknown": "git status did not answer"} if status is None else {})}
 
 
 def relative_to_root(path: Path, root: Path) -> str:

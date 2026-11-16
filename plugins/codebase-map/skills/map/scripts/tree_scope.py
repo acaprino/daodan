@@ -43,10 +43,13 @@ from typing import Iterator
 
 __all__ = ["DEPENDENCY_DIRS", "GIT_OPTIONS", "Perimeter", "git_executable", "work_tree"]
 
-# First on every command line of Git on the host: a work tree's own configuration can name a program, core.fsmonitor,
-# which Git runs wherever it reads the index (check-ignore, ls-files, status), and the analyzed project's code runs
-# only in Daodan's container. Git passes the setting on to the commands it starts, a submodule's among them.
-GIT_OPTIONS = ("-c", "core.fsmonitor=false")
+# First on every command line of Git on the host: a work tree's own configuration, and what it includes, can name
+# programs Git runs, and the analyzed project's code runs only in Daodan's container: core.fsmonitor wherever Git
+# reads the index (check-ignore, ls-files, status), and the hooks of core.hooksPath (post-index-change where a
+# command writes the index). A setting given here wins over every configuration file, and Git passes it on to the
+# commands it starts, a submodule's among them. A filter is a program the checkout names too: `source_files.git_info`
+# asks Git which ones it declares before any command that reads a file's content.
+GIT_OPTIONS = ("-c", "core.fsmonitor=false", "-c", "core.hooksPath=/dev/null")
 
 
 def git_executable() -> str | None:

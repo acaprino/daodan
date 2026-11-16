@@ -727,7 +727,7 @@ def _record_meta_changeset(
         """, (
             created_at,
             git_meta.get("head"),
-            1 if git_meta.get("dirty") else 0,
+            -1 if git_meta.get("dirty_unknown") else 1 if git_meta.get("dirty") else 0,  # -1: unknown (`git_info`)
             files_changed,
             counts["added"],
             counts["removed"],
@@ -1284,7 +1284,7 @@ def query_meta_code(
                     "seq": seq,
                     "created_at": created_at,
                     "git_head": git_head,
-                    "git_dirty": bool(git_dirty),
+                    "git_dirty": None if git_dirty < 0 else bool(git_dirty),
                     "files_changed": files_changed,
                     "symbols_added": s_add,
                     "symbols_removed": s_rem,

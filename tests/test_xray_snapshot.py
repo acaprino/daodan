@@ -681,6 +681,95 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(manifest["scope"]["git_ignore"], "applied")
         self.assertEqual(sorted(path.name for path in marks.iterdir()), [])
 
+    def marks(self) -> Path:
+        """Where a program of the project leaves its mark when it runs."""
+        folder = self.tmp / "marks"
+        folder.mkdir(exist_ok=True)
+        return folder
+
+    def touched(self, rel: str) -> None:
+        """The same content, a later time: Git hashes the file again and writes its index (a refresh)."""
+        path = self.project / rel
+        later = path.stat().st_mtime + 10
+        os.utime(path, (later, later))
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_with_a_git_filter_declared_dirty_is_unknown_and_no_filter_runs(self):
+        """A filter the checkout declares (.gitattributes names it, the configuration its program) runs where Git
+        reads a file's content: `git status` passes a changed file through its clean command. With one declared the
+        snapshot does not ask whether the tree is dirty: `dirty` is unknown, with the reason, never a guess."""
+        marks = self.marks()
+        write(self.project, ".gitattributes", "*.py filter=mark\n")
+        git(self.project, "init", "-q")
+        git(self.project, "config", "filter.mark.clean", "cat")
+        self.commit()
+        git(self.project, "config", "filter.mark.clean", f"touch {marks}/clean-filter && cat")
+        write(self.project, "src/app.py", "def run():\n    return 2\n")
+        manifest = self.manifest()
+        self.assertIsNone(manifest["git"]["dirty"])
+        self.assertEqual(manifest["git"]["dirty_unknown"],
+                         "the checkout declares a Git filter, which Daodan does not run on the host")
+        self.assertEqual(sorted(path.name for path in marks.iterdir()), [])
+        # What carries it says unknown, never clean.
+        import change_set
+        changes = {"files": {"modified": [], "added": [], "removed": []}, "totals": {"files_in_snapshot": 1},
+                   "symbols": {}, "importers": [], "transitive_importers": [], "claims": [], "git": manifest["git"]}
+        self.assertIn("(dirty unknown: the checkout declares a Git filter, which Daodan does not run on the host).",
+                      change_set._changes_markdown(changes))
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_git_on_the_host_runs_no_hook_and_nothing_an_included_configuration_names(self):
+        """A configuration file the work tree's includes (include.path, as includeIf does) names a hooks folder of
+        the project and an fsmonitor; a refresh of the index would run its post-index-change hook."""
+        marks = self.marks()
+        hook = write(self.project, "tools/hooks/post-index-change", f"#!/bin/sh\ntouch {marks}/post-index-change\n")
+        monitor = write(self.project, "tools/fsmonitor.sh", f"#!/bin/sh\ntouch {marks}/fsmonitor\n")
+        for program in (hook, monitor):
+            program.chmod(0o755)
+        included = write(self.project, "tools/extra.gitconfig",
+                         f"[core]\n\thooksPath = {hook.parent}\n\tfsmonitor = {monitor}\n")
+        git(self.project, "init", "-q")
+        self.commit()
+        git(self.project, "config", "include.path", str(included))
+        self.touched("src/app.py")
+        manifest = self.manifest()
+        self.assertFalse(manifest["git"]["dirty"])
+        self.assertEqual(sorted(path.name for path in marks.iterdir()), [])
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_git_on_the_host_runs_nothing_a_submodule_s_own_configuration_names(self):
+        """`git status` asks each submodule its own status, which runs the submodule's filters: here an embedded
+        repository the work tree tracks as a submodule, with a filter of its own over a changed file."""
+        marks = self.marks()
+        sub = self.project / "vendor/lib"
+        write(sub, "lib.py", "X = 1\n")
+        write(sub, ".gitattributes", "*.py filter=mark\n")
+        git(sub, "init", "-q")
+        git(sub, "config", "filter.mark.clean", "cat")
+        git(sub, "add", "-A")
+        git(sub, "-c", "user.name=fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false",
+            "commit", "-q", "-m", "fixture")
+        git(sub, "config", "filter.mark.clean", f"touch {marks}/submodule-filter && cat")
+        git(self.project, "init", "-q")
+        self.commit()
+        write(sub, "lib.py", "X = 2\n")
+        self.manifest()
+        self.assertEqual(sorted(path.name for path in marks.iterdir()), [])
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_git_status_runs_no_diff_driver_or_textconv_the_checkout_names(self):
+        """A diff driver and a textconv the checkout declares run where Git shows a diff, never in `status`."""
+        marks = self.marks()
+        write(self.project, ".gitattributes", "*.py diff=mark\n")
+        git(self.project, "init", "-q")
+        self.commit()
+        git(self.project, "config", "diff.mark.textconv", f"touch {marks}/textconv && cat")
+        git(self.project, "config", "diff.mark.command", f"touch {marks}/diff-command")
+        write(self.project, "src/app.py", "def run():\n    return 2\n")
+        manifest = self.manifest()
+        self.assertTrue(manifest["git"]["dirty"])
+        self.assertEqual(sorted(path.name for path in marks.iterdir()), [])
+
     @unittest.skipUnless(HAVE_GIT, "git is not installed")
     def test_a_subdirectory_the_repository_does_not_ignore_keeps_the_repository_root(self):
         git(self.project, "init", "-q")

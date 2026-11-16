@@ -234,7 +234,9 @@ def _changes_markdown(changes: dict) -> str:
     git = changes.get("git") or {}
     head = f"Parent run: {parent}."
     if git.get("commit"):
-        head += f" Worktree at {git['commit']}" + (" (dirty)." if git.get("dirty") else ".")
+        head += f" Worktree at {git['commit']}" + (
+            f" (dirty unknown: {git['dirty_unknown']})." if git.get("dirty_unknown") else " (dirty)." if git.get("dirty")
+            else ".")
     lines += [head, "", "## Code changes", ""]
     lines.append(
         f"{len(files['modified'])} modified, {len(files['added'])} added, "

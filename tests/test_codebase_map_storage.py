@@ -295,6 +295,30 @@ class SnapshotStorageTests(unittest.TestCase):
         self.assertEqual(artifact_digest(bound), before, "inherited artifacts are bound to this digest")
         self.assertTrue((store_root / "cards.sqlite").is_file())
 
+    def test_a_changeset_of_a_tree_whose_dirtiness_git_info_does_not_know_says_unknown(self):
+        """`source_files.git_info` leaves `dirty` unknown where the checkout declares a Git filter: the changeset
+        history says None, never clean."""
+        storage = self.api()
+        import semantic_store
+        (self.root / "pkg").mkdir(exist_ok=True)
+        (self.root / "pkg/b.py").write_text("def helper(value):\n    return value + 1\n", encoding="utf-8")
+        snap_path, cards_path = self.out(), self.out("cards.sqlite")
+        unknown = {"commit": "abc123", "branch": "main", "dirty": None,
+                   "dirty_unknown": "the checkout declares a Git filter, which Daodan does not run on the host"}
+        with mock.patch.object(snapshot, "git_info", return_value=unknown):
+            snapshot.write_snapshot(self.root, snap_path)
+            with storage.open_snapshot(snap_path) as store:
+                semantic_store.upsert_meta_cards(store, cards_path, [
+                    {"file": "pkg/b.py", "symbol": "helper", "purpose": "Increments numeric value"}])
+            (self.root / "pkg/b.py").write_text("def helper(value):\n    step = 2\n    return value + step\n",
+                                                encoding="utf-8")
+            with storage.open_snapshot(snap_path) as prev:
+                snapshot.write_snapshot(self.root, snap_path, previous=prev)
+        with storage.open_snapshot(snap_path) as store:
+            meta = semantic_store.query_meta_code(store, cards_path=cards_path)
+        self.assertEqual(meta["summary"]["changesets"], 1)
+        self.assertIsNone(meta["changesets"][0]["git_dirty"])
+
     def test_meta_code_triple_hash_cards_and_bounded_changesets(self):
         storage = self.api()
         import semantic_store
