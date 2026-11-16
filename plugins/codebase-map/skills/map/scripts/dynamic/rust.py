@@ -27,7 +27,9 @@ root. The execution, with no network: Cargo runs each test executable under Call
 with line tables in every build (`ENV`), each root stopped after `LIMIT` seconds; Valgrind writes its trace
 when the process ends, a stopped one included. Then the traces are read in the container (`callgrind.symbolize`).
 
-Not observed, beside what `callgrind.py` says: a doctest (rustdoc runs it, not Cargo's runner); a closure that
+A crate's root is the folder the pre-map names, `.` or the empty path for the project's. Not observed, beside
+what `callgrind.py` says: a doctest's calls (its code is in a doc comment, where no call expression is read); a
+closure that
 the standard library calls (its call site is there: the closure is entered with no site); a closure made a
 function pointer, which a shim of `core` enters (the site's callee is the shim, external).
 """
@@ -75,15 +77,20 @@ def _toolchain(stated: list[dict], root: str) -> list[dict]:
     return found[:1]
 
 
+def _folder(root: str | None) -> str:
+    """A folder as the pre-map names it, the project's root `.` or the empty path, as one name."""
+    return posixpath.normpath(root or ".")
+
+
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, toolchains}` from the pre-map `record`, the snapshot's `files` and `read(rel)` their text: a
-    run is `{root, argv}`, a root whose crates hold no test a `no_tests` gap."""
-    crates = sorted({unit["root"] for unit in record.get("units", []) if unit["kind"] in UNIT_KINDS})
+    run is `{root, runner, argv}`, a root whose crates hold no test a `no_tests` gap."""
+    crates = sorted({_folder(unit["root"]) for unit in record.get("units", []) if unit["kind"] in UNIT_KINDS})
     if not crates:
         return {"runs": [], "toolchains": [], "gaps": [{
             "kind": "no_tests", "detail": "the pre-map names no Cargo package (a Cargo.toml): no `cargo test` to run"}]}
-    homes = {member: item["root"] for item in record.get("workspace") or [] if item.get("tool") == "cargo"
-             for member in item.get("members") or ()}
+    homes = {_folder(member): _folder(item["root"]) for item in record.get("workspace") or []
+             if item.get("tool") == "cargo" for member in item.get("members") or ()}
     roots = collections.defaultdict(list)
     for crate in crates:
         roots[homes.get(crate, crate)].append(crate)

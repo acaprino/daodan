@@ -308,6 +308,15 @@ def test_a_call_is_a_site_at_its_callee_name_with_the_functions_entered_from_it(
         **UNREAD, "not at a call expression": 2}}  # a call inside `assert_eq!`, a drop at the block's end
 
 
+def test_a_callee_entered_where_no_function_header_is_named_with_no_column(tmp_path):
+    """The framework then takes the one declaration of its name on that line (`dynamic._declared`)."""
+    project = write_project(tmp_path / "project")
+    calls = [[f"/work/{LIB}", 20, 5, f"/work/{LIB}", 1, 1, "<shapes::Square as shapes::Shape>::area", OBJECT, 1]]
+    [site] = callgrind.read(observation(tmp_path / "observed", calls, {}), project)[0]
+    assert site["callees"] == [{"kind": "project", "file": LIB, "line": 0, "column": None, "name": "area",
+                                "type": "function"}]
+
+
 def test_calls_that_start_at_one_place_are_told_apart_by_their_callees_name(tmp_path):
     project = write_project(tmp_path / "project")
     places = by_place(callgrind.read(observation(tmp_path / "observed"), project)[0])
@@ -394,6 +403,35 @@ def test_a_workspace_runs_once_at_its_root_and_a_crate_without_tests_is_a_gap():
     assert [run["root"] for run in planned["runs"]] == ["."]
     [gap] = planned["gaps"]
     assert (gap["kind"], gap["path"]) == ("no_tests", "c") and "#[test]" in gap["detail"]
+
+
+def fixture_plan(name: str, extra_units=()) -> dict:
+    """The plan of a fixture of benchmarks/project-model, from its expected pre-map (which writes one workspace
+    as an object) and its files."""
+    fixture = HERE.parent / "benchmarks/project-model/fixtures" / name
+    record = json.loads((fixture / "expected.json").read_text(encoding="utf-8"))
+    workspace = record.get("workspace") or []
+    record = {**record, "units": [*record["units"], *extra_units],
+              "workspace": [workspace] if isinstance(workspace, dict) else workspace}
+    files = sorted(path.relative_to(fixture).as_posix() for path in fixture.rglob("*") if path.is_file())
+    return observer.plan(record, files, lambda rel: (fixture / rel).read_text(encoding="utf-8"))
+
+
+def test_integration_tests_of_the_root_crate_the_pre_map_names_by_the_empty_path_are_planned():
+    """sys-rust-shared-test-module: one crate at the root, named by the empty path, its tests in tests/."""
+    planned = fixture_plan("sys-rust-shared-test-module")
+    assert [(run["root"], run["runner"], run["argv"]) for run in planned["runs"]] == [(".", "cargo test", observer.ARGV)]
+    assert planned["gaps"] == []
+    again = fixture_plan("sys-rust-shared-test-module", [{"kind": "cargo-crate", "root": ".", "name": "tally"}])
+    assert again["runs"] == planned["runs"] and again["gaps"] == []  # `.` and the empty path are one root
+
+
+def test_a_workspace_at_the_root_runs_once_there_and_a_crate_outside_it_on_its_own():
+    """sys-rust-workspace: three members of the root's workspace, one crate outside it; no test in any."""
+    planned = fixture_plan("sys-rust-workspace")
+    assert planned["runs"] == []
+    assert [(gap["kind"], gap["path"]) for gap in planned["gaps"]] == [("no_tests", "."),
+                                                                     ("no_tests", "crates/experimental")]
 
 
 def test_without_a_cargo_package_the_plan_says_so():

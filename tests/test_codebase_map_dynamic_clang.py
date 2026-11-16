@@ -270,6 +270,17 @@ def test_tests_a_subfolder_adds_run_from_the_top_configure():
     assert [run["root"] for run in planned["runs"]] == ["."] and planned["gaps"] == []
 
 
+def test_the_fixtures_tests_run_from_the_root_the_pre_map_names_by_the_empty_path():
+    """sys-cpp-header-only: a header-only library at the root, named by the empty path, its test in tests/."""
+    fixture = HERE.parent / "benchmarks/project-model/fixtures/sys-cpp-header-only"
+    record = json.loads((fixture / "expected.json").read_text(encoding="utf-8"))
+    assert [unit["root"] for unit in record["units"]] == ["", "tests"]
+    files = sorted(path.relative_to(fixture).as_posix() for path in fixture.rglob("*") if path.is_file())
+    planned = observer.plan({**record, "workspace": []}, files, lambda rel: (fixture / rel).read_text(encoding="utf-8"))
+    assert [(run["root"], run["runner"], run["manager"]) for run in planned["runs"]] == [(".", "ctest", None)]
+    assert planned["gaps"] == []
+
+
 def test_tests_declared_in_an_included_cmake_file_and_by_googletest_count():
     files = {"CMakeLists.txt": "project(a CXX)\ninclude(CTest)\ninclude(cmake/tests.cmake)\n",
              "cmake/tests.cmake": "  gtest_discover_tests(unit_tests)\n"}
@@ -375,7 +386,7 @@ class ObserveTest(unittest.TestCase):
         self.assertIn("-DCMAKE_BUILD_TYPE=Debug", executed)
         self.assertIn(f"{BUILD}", executed)
         self.assertIn("--tool=callgrind", executed)
-        self.assertLess(executed.index("cmake --build"), executed.index("--tool=callgrind --dump-instr"))
+        self.assertLess(executed.index("cmake --build"), executed.index("--dump-instr=yes"))
         self.assertLess(executed.index("recorder.code"), executed.index("-DCMAKE_BUILD_TYPE=Debug"))
         self.assertLess(executed.index("-DCMAKE_BUILD_TYPE=Debug"), executed.index("callgrind_sites.py"))
 

@@ -227,6 +227,19 @@ def test_a_module_without_a_test_file_is_a_gap_and_tests_of_a_nested_module_are_
     assert (gap["kind"], gap["path"]) == ("no_tests", ".") and "_test.go" in gap["detail"]
 
 
+def test_the_root_module_the_pre_map_names_by_the_empty_path_is_planned_once():
+    """The pre-map's units of sys-go-single: the root module's folder is the empty path (module_graph), or `.`."""
+    fixture = HERE.parent / "benchmarks/project-model/fixtures/sys-go-single"
+    units = json.loads((fixture / "expected.json").read_text(encoding="utf-8"))["units"]
+    assert [unit["root"] for unit in units] == [""]
+    files = sorted(path.relative_to(fixture).as_posix() for path in fixture.rglob("*") if path.is_file())
+    assert any(rel.endswith("_test.go") for rel in files)
+    for given in (units, [*units, {**units[0], "root": "."}]):
+        planned = observer.plan({"units": given}, files, None)
+        assert [(run["root"], run["runner"]) for run in planned["runs"]] == [(".", "go test")]
+        assert planned["gaps"] == []
+
+
 def test_without_a_go_module_the_plan_says_so():
     planned = observer.plan({"units": [{"kind": "cargo-package", "root": "."}]}, ["main.go"], None)
     assert planned["runs"] == [] and planned["gaps"][0]["kind"] == "no_tests"
@@ -341,10 +354,12 @@ class ObserveTest(unittest.TestCase):
         self.play_run()
         result = self.observe()
         self.assertEqual(result["state"], "ran")
+        self.assertIsNone(dynamic.malformed(result))
         self.assertEqual(by_place(result["sites"])[(GO, 11, 8, "f")], ["(func)", "Double"])
         self.assertEqual(result["gaps"], [])
         [run] = result["runs"]
-        self.assertEqual((run["root"], run["argv"], run["exit_code"]), (".", ["go", "test", "-vet=off", "./..."], 0))
+        self.assertEqual((run["root"], run["runner"], run["argv"], run["state"], run["exit_code"]),
+                         (".", "go test", ["go", "test", "-vet=off", "./..."], "ran", 0))
         self.assertEqual(run["packages"], {"passed": 1})
         self.assertEqual(result["facts"]["entered"], 6)
 
@@ -406,7 +421,18 @@ class ObserveTest(unittest.TestCase):
         self.assertEqual((gap["kind"], gap["path"]), ("tests_not_started", "."))
         self.assertIn("undefined: Totl", gap["detail"])
         self.assertEqual(result["runs"][0]["packages"], {"passed": 1, "not_built": 1})
+        self.assertEqual(result["runs"][0]["state"], "ran")  # one package's tests ran: the run is kept
         self.assertTrue(result["sites"])  # what the other packages' tests called is kept
+
+    def test_a_module_whose_packages_all_fail_to_build_ran_no_test(self):
+        self.play_run("FAIL\texample.com/app/shapes [build failed]\nFAIL\n", 1)
+        result = self.observe()
+        self.assertEqual((result["runs"][0]["state"], [gap["kind"] for gap in result["gaps"]]),
+                         ("not_started", ["tests_not_started"]))
+        self.play_run("?   \texample.com/app/shapes\t[no test files]\n", 0)
+        result = self.observe()
+        self.assertEqual((result["runs"][0]["state"], [gap["kind"] for gap in result["gaps"]]),
+                         ("no_tests", ["no_tests"]))
 
     def test_files_the_recorder_gave_no_site_numbers_are_a_gap_by_cause(self):
         table = {**TABLE, "skipped": {"shapes/c.go": 'import "C": cgo prints the file again',
@@ -425,13 +451,14 @@ class ObserveTest(unittest.TestCase):
         self.assertEqual((gap["kind"], gap["path"]), ("tests_failed", "."))
         self.assertIn("TestTotal", gap["detail"])
         self.assertEqual((result["runs"][0]["exit_code"], result["runs"][0]["packages"]), (1, {"failed": 1}))
+        self.assertEqual(result["runs"][0]["state"], "ran")
         self.assertTrue(result["sites"])
 
     def test_a_module_that_outlasts_its_time_is_a_gap_and_keeps_what_it_recorded(self):
         self.play_run("", 124)
         result = self.observe()
         [gap] = result["gaps"]
-        self.assertEqual((gap["kind"], gap["path"]), ("tests_timeout", "."))
+        self.assertEqual((gap["kind"], gap["path"], result["runs"][0]["state"]), ("tests_timeout", ".", "timeout"))
         self.assertIn(str(observer.LIMIT), gap["detail"])
         self.assertTrue(result["sites"])
 

@@ -14,8 +14,9 @@ container, turns them into call sites with their columns, which Callgrind does n
 line tables (pyelftools, `PYELFTOOLS`, public domain). `read`, on the host, places each site on the project's
 source as tree-sitter reads it, as the snapshot does: a site is the call expression a compiler's column names
 (its start, its callee's name or its arguments: compilers differ), at its callee's last name; a callee of the
-project is the function or closure whose header holds the line it was entered at, and any other is external,
-with the package its file is in. Not seen, and counted by cause: a call the compiler inlined (no call
+project is the function or closure whose header holds the line it was entered at (with none there, its name on
+that line and no column), and any other is external, with the package its file is in. Valgrind runs with no
+gdbserver (`--vgdb=no`: no FIFO, no polling). Not seen, and counted by cause: a call the compiler inlined (no call
 instruction), a call written inside a macro's arguments or made by an operator or a destructor (no call
 expression there: Rust's `assert_eq!(f(x), y)` is one), code without line tables.
 """
@@ -39,7 +40,7 @@ READER = Path(__file__).with_name("callgrind_sites.py")
 IN, T, WORK = preparation.IN, preparation.T, "/work"
 VALGRIND_BIN = f"{T}/valgrind/usr/bin/valgrind"
 TRACES = "/tmp/daodan-callgrind"  # the traced processes' outputs: large, read in the container and left there
-OPTIONS = ["-q", "--tool=callgrind", "--dump-instr=yes", "--compress-strings=no", "--compress-pos=no",
+OPTIONS = ["-q", "--tool=callgrind", "--vgdb=no", "--dump-instr=yes", "--compress-strings=no", "--compress-pos=no",
            "--trace-children=yes", f"--trace-children-skip=/usr/*,/bin/*,/sbin/*,{T}/*",  # the system's, Daodan's
            f"--callgrind-out-file={TRACES}/callgrind.out.%p", f"--log-file={TRACES}/valgrind.%p.log"]
 SETUP = (f"{{ mkdir -p {T}/valgrind && dpkg-deb -x {IN}/valgrind.deb {T}/valgrind ; }} >&2"
@@ -70,7 +71,8 @@ def recorder(out: str) -> list[str]:
     whether it runs here (`recorder.code`, `recorder.log`)."""
     return [f"export VALGRIND_LIB=$(dirname \"$(find {T}/valgrind -name callgrind-amd64-linux | head -n 1)\")",
             f"mkdir -p {TRACES}",
-            f"{VALGRIND_BIN} -q --tool=callgrind --callgrind-out-file=/dev/null true > {out}/recorder.log 2>&1",
+            f"{VALGRIND_BIN} -q --tool=callgrind --vgdb=no --callgrind-out-file=/dev/null true"
+            f" > {out}/recorder.log 2>&1",
             f"echo $? > {out}/recorder.code"]
 
 
@@ -260,18 +262,17 @@ def read(folder: Path, project: Path, root: str = WORK) -> tuple[list[dict], dic
         return (rel, sources[rel]) if sources[rel] is not None else (None, NOT_READ)
 
     found, unplaced = collections.defaultdict(dict), collections.Counter(data.get("unread") or {})
-    for file, line, column, callee_file, callee_line, callee_column, callee, obj, _count in data["calls"]:
+    for file, line, column, callee_file, callee_line, _callee_column, callee, obj, _count in data["calls"]:
         rel, held = source(file)
         if rel is None:
             unplaced[held] += 1
             continue
-        if callee_file.startswith(prefix):  # the function whose header holds the line, else the line itself
+        if callee_file.startswith(prefix):  # the function whose header holds the line, else the one of its name there
             home, owner = source(callee_file)
             node = owner.callable(callee_line) if home is not None else None
             end = {"kind": "project", "file": callee_file[len(prefix):], "type": "function",
                    **({"line": node.start_point[0], "column": node.start_point[1], "name": owner.declared(node)}
-                      if node is not None else
-                      {"line": callee_line - 1, "column": max(callee_column - 1, 0), "name": short(callee)})}
+                      if node is not None else {"line": callee_line - 1, "column": None, "name": short(callee)})}
         else:
             given = package(callee_file, obj)
             end = {"kind": "external", "module": given["package"], "name": callee, **given}

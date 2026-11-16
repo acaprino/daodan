@@ -38,7 +38,7 @@ from premap.container_runner import IMAGE  # gcc for cgo, git, timeout
 ENTRY, VERSION, LANGUAGES = "dynamic-record-go", "1", ("go",)
 UNIT_KINDS = frozenset({"go-module"})
 RECORDER = Path(__file__).with_name("go_record.go")
-ARGV = ["go", "test", "-vet=off", "./..."]
+RUNNER, ARGV = "go test", ["go", "test", "-vet=off", "./..."]
 MEMORY = 4 * 2**30
 LIMIT = 1800  # the seconds one module's tests may take
 BUILD = 600  # the seconds the recorder's build and its rewrite may take
@@ -57,9 +57,11 @@ def _inside(rel: str, folder: str) -> bool:
 
 
 def plan(record: dict, files: list[str], read) -> dict:
-    """`{runs, gaps, toolchains}` from the pre-map `record` and the snapshot's `files`: a run is `{root, argv}`,
-    a module with no test file of its own a `no_tests` gap."""
-    roots = sorted({unit["root"] for unit in record.get("units", []) if unit["kind"] in UNIT_KINDS})
+    """`{runs, gaps, toolchains}` from the pre-map `record` and the snapshot's `files`: a run is `{root, runner,
+    argv}`, a module with no test file of its own a `no_tests` gap. The pre-map names the project's root `.` or
+    the empty path: one root."""
+    roots = sorted({posixpath.normpath(unit["root"] or ".") for unit in record.get("units", [])
+                    if unit["kind"] in UNIT_KINDS})
     if not roots:
         return {"runs": [], "toolchains": [], "gaps": [{
             "kind": "no_tests", "detail": "the pre-map names no Go module (a go.mod): no `go test` to run"}]}
@@ -69,7 +71,7 @@ def plan(record: dict, files: list[str], read) -> dict:
         tested = any(rel.endswith("_test.go") and _inside(rel, root) and "testdata" not in rel.split("/")
                      and not any(_inside(rel, other) for other in nested) for rel in files)
         if tested:
-            runs.append({"root": root, "argv": ARGV})
+            runs.append({"root": root, "runner": RUNNER, "argv": ARGV})
         else:
             gaps.append({"kind": "no_tests", "path": root,
                          "detail": f"the Go module in {root} holds no _test.go file: no test runs its code"})
@@ -149,14 +151,18 @@ def _text(path: Path) -> str:
 
 def _outcome(run: dict, code: str, log: str, ended: str) -> tuple[dict, list[dict]]:
     """One module's entry and its gaps, from its tests' exit code and their log: `go test` prints a line per
-    package (`ok`, `FAIL`, `?`), `[build failed]` or `[setup failed]` where a package's tests did not start."""
+    package (`ok`, `FAIL`, `?`), `[build failed]` or `[setup failed]` where a package's tests did not start. Its
+    `state` (`dynamic.TESTS`) is `ran` where a package's tests ran, whatever the others did."""
     packages = collections.Counter()
     for mark, _package, rest in PACKAGE.findall(log):
         packages["no_tests" if mark.startswith("?") else "passed" if mark.startswith("ok") else
                  "not_built" if rest.startswith("[") else "failed"] += 1
     packages.pop("no_tests", None)
-    entry = {"root": run["root"], "argv": run["argv"], "exit_code": int(code) if code.strip().isdigit() else None,
-             "packages": dict(sorted(packages.items()))}
+    entry = {"root": run["root"], "runner": run["runner"], "argv": run["argv"],
+             "exit_code": int(code) if code.strip().isdigit() else None, "packages": dict(sorted(packages.items()))}
+    entry["state"] = ("not_started" if entry["exit_code"] is None else "timeout" if entry["exit_code"] in (124, 137)
+                      else "ran" if packages["passed"] or packages["failed"] else
+                      "no_tests" if entry["exit_code"] == 0 else "not_started")
     command, tail = f"{' '.join(run['argv'])} in {run['root']}", " | ".join(
         line.strip() for line in log.strip().splitlines() if not line.startswith(("ok  ", "?   ")))[-600:]
 
@@ -171,6 +177,8 @@ def _outcome(run: dict, code: str, log: str, ended: str) -> tuple[dict, list[dic
     elif packages["not_built"] or (entry["exit_code"] and not packages["failed"]):
         gaps.append(gap("tests_not_started", f"{command}: {packages['not_built'] or 'its'} packages' tests did not "
                                              f"start (exit code {entry['exit_code']}): {tail}"))
+    elif entry["state"] == "no_tests":
+        gaps.append(gap("no_tests", f"{command}: no package had a test to run"))
     if packages["failed"]:
         gaps.append(gap("tests_failed", f"{command}: the tests of {packages['failed']} packages failed, and a test "
                                         f"that fails may stop before its calls: {tail}"))
