@@ -187,7 +187,7 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
         stat = path.stat()
         mtime = round(stat.st_mtime, 3) if mtime is None else mtime
     data = path.read_bytes() if data is None else data
-    text = data.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
+    text = _text(data)
     lines = text.split("\n")
     language = detect_language(path, text)
     profile = parser_profile(path, language)
@@ -226,6 +226,36 @@ def file_entry(path: Path, data: bytes | None = None, mtime: float | None = None
             return entry
         return _record_parse(entry, result, text, lines, profile)
     return entry
+
+
+def _text(data: bytes) -> str:
+    """The text a parser reads: decoded, its line ends `\\n`."""
+    return data.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _rejected(entry: dict | None) -> bool:
+    """A Python file Daodan's interpreter could not parse: read again with the Python its project states."""
+    return bool(entry) and entry.get("language") == "python" and entry.get("status") == "parse-error" and any(
+        note.startswith("syntax error:") for note in entry.get("parser_notes", ()))
+
+
+def _newer_python(root: Path, rejected: list[tuple]) -> list[tuple[str, dict, bytes]]:
+    """`(rel, entry, data)` of each `(path, rel, mtime, data, entry)` Daodan's interpreter rejected: parsed by the
+    Python its project states where that one is newer (`languages/python_newer.py`), else its entry, whose syntax
+    error says why not."""
+    from languages import python_newer
+    read = python_newer.reread(root, [(rel, _text(data)) for _path, rel, _mtime, data, _entry in rejected])
+    out = []
+    for path, rel, mtime, data, entry in rejected:
+        tree, note = read.get(rel, (None, None))
+        if tree is not None:
+            entry = file_entry(path, data, mtime, parse_result=get_adapter("python").parse_tree(
+                _text(data), str(path), tree, ["parser=stdlib-ast", note]))
+        elif note:
+            entry["parser_notes"] = [f"{item} ({note})" if item.startswith("syntax error:") else item
+                                     for item in entry["parser_notes"]]
+        out.append((rel, entry, data))
+    return out
 
 
 _REUSABLE_STATUSES = {"parsed", "file-level", "parse-skipped"}
@@ -367,6 +397,10 @@ def build_manifest(target: Path, previous: dict | None = None, *, parse_results:
     pending, ordered_rels, reused_entries = _manifest_inventory(target, root, perimeter, supplied, old_files,
                                                                 metrics, source_observations)
     parsed_entries = _parse_pending(pending, metrics)
+    rejected = [(path, rel, mtime, data, parsed_entries[rel]) for rel, path, data, mtime, _parsed, _macros in pending
+                if _rejected(parsed_entries.get(rel))]
+    for rel, entry, _data in _newer_python(root, rejected) if rejected else ():
+        parsed_entries[rel] = entry
     files: dict[str, dict] = {}
     for rel in ordered_rels:
         if rel in reused_entries:
@@ -397,7 +431,8 @@ _RESERVED_METADATA = {"schema", "target", "root", "created_at", "git", "scope", 
 class _SnapshotPass:
     """One streaming pass of the perimeter into a snapshot writer: reuse what still holds, parse the rest.
 
-    Each source is released once its entry is written; C and C++ files wait for their include context.
+    Each source is released once its entry is written; C and C++ files wait for their include context, and a
+    Python file Daodan's interpreter rejects for the Python its project states (`newer`).
     """
 
     def __init__(self, format: str, previous, reusable: bool, fast_reuse: bool, metrics: dict, progress):
@@ -413,6 +448,7 @@ class _SnapshotPass:
         self.exact_reused_paths: list[str] = []
         self.touched_reused_headers: dict[str, dict] = {}
         self.profiles: list[dict] = []
+        self.rejected: list[tuple] = []  # `(path, rel, mtime, data, entry)` of the Python files `newer` reads again
 
     def _advance(self) -> None:
         self.count += 1
@@ -487,10 +523,19 @@ class _SnapshotPass:
                 self._advance()
                 continue
             entry = self._entry(path, rel, data, raw_digest, mtime, parsed)
-            self._put(rel, entry, data)
+            if _rejected(entry):
+                self.rejected.append((path, rel, mtime, data, entry))
+            else:
+                self._put(rel, entry, data)
             del entry, data
             self._advance()
         return deferred
+
+    def newer(self, root: Path) -> None:
+        """The Python files Daodan's interpreter rejected, each read with the Python its project states."""
+        for rel, entry, data in _newer_python(root, self.rejected) if self.rejected else ():
+            self._put(rel, entry, data)
+        self.rejected = []
 
     def c_family(self, deferred: list[tuple]) -> None:
         contexts = c_family_contexts({rel: data for _, rel, _, data, _ in deferred})
@@ -585,6 +630,7 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
             if format == "sqlite":
                 writer.connection.execute("CREATE TABLE observed_coverage(file TEXT PRIMARY KEY,payload BLOB)")
             run.c_family(run.sources(target, root, perimeter, supplied))
+            run.newer(root)
             run.close_sources()
             metadata_record = {
                 **extra_metadata,

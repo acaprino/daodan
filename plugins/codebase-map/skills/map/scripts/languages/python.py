@@ -33,7 +33,8 @@ __all__ = ["adapter", "MINIMUM_PYTHON", "require_minimum_interpreter"]
 # monotonic: every syntax a version adds is rejected by the older ones, and no
 # file is accepted by an older interpreter with a different reading. A too-old
 # interpreter therefore fails loudly, one `parse-error` per file, rather than
-# putting an invented symbol into the graph. 3.12 is the minimum at which every
+# putting an invented symbol into the graph; the snapshot reads such a file again
+# with a newer Python its project states (`python_newer.py`). 3.12 is the minimum at which every
 # file of the measured corpus parses: three used `type X = ...` (PEP 695) and one
 # a nested-quote f-string (PEP 701), both new in 3.12. Measured over 22,536 files
 # in evals/codebase-map/python-parser/RESULTS.md, sections 2 and 6.
@@ -663,6 +664,10 @@ class _PythonAdapter:
         except SyntaxError as error:
             return self._recover(content, file_path, error)
         return _build_result(content, file_path, tree, ["parser=stdlib-ast"])
+
+    def parse_tree(self, content: str, file_path: str, tree: ast.AST, notes: list[str]) -> ParseResult:
+        """The result of a tree another interpreter parsed: the Python the project states (`python_newer.py`)."""
+        return _build_result(content, file_path, tree, notes)
 
     def _recover(self, content: str, file_path: str, error: SyntaxError) -> ParseResult:
         """Salvage the closed definitions before the damage instead of returning nothing.
