@@ -18,7 +18,7 @@ Convenzioni:
   - `jvm-kotlinconf-kmp`: kotlinconf, sull'albero di lavoro delle 20:18 con il codice poi committato in `a13d55787`;
   - `dotenv`: tududi e fastapi, con i `.env` tracciati nella copia del container (`b1f14ac08`);
   - `ci-steps`: tududi e fastapi, con i passi della CI prima dei test (`aea1c8c3b`).
-- Nessun risultato registra il codice di Daodan su cui il giro è girato (D-251): il codice del `finale` lo dice il README del benchmark (`benchmarks/project-model/README.md:174`), quello di `java-versions` il commit `347bc1403`, quello dei due giri JVM chi li ha fatti; degli altri giri, nessun testo.
+- Fino a `cbc219663` nessun risultato registrava il codice di Daodan su cui il giro era girato (D-251); da quel commit ogni giro scrive `code` (commit, albero caricato su Modal, percorsi diversi). Per i giri già registrati: il codice del `finale` lo dice il README del benchmark (`benchmarks/project-model/README.md:174`), quello di `java-versions` il commit `347bc1403`, quello dei due giri JVM chi li ha fatti; degli altri giri, nessun testo.
 - I repository veri sono fissati a un commit in `benchmarks/project-model/fixtures/<caso>/source.json`:
   - chi `c64ed7d6635f`, javapoet `b9017a9503b7`, klaxon `1173bdc568a6`, python-semver `b6e83e3e40d3`, semver `280ebcb6edac`, tinyxml2 `9148bdf719e9`, tududi `71da9d7b34df`, zlib `51b7f2abdade`;
   - fastapi `aabb90126964`, hoppscotch `55908a76a1d0`, jhipster-sample `6b000b5d23a3`, kotlinconf `146e891c150c`, memos `509e41bd1a1b`;
@@ -48,11 +48,11 @@ Convenzioni:
 
 - `tutti` (66): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269
 - `java` (45): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265
-- `c` (35): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268
+- `c` (36): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271
+- `cpp` (35): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272
 - `kotlin` (34): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229
-- `cpp` (33): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268
 - `python` (33): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256
-- `javascript` (31): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265
+- `javascript` (32): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270
 - `typescript` (22): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265
 - `rust` (19): D-014, D-021, D-030, D-040, D-041, D-078, D-143, D-144, D-173, D-175, D-176, D-209, D-227, D-230, D-237, D-238, D-239, D-256, D-265
 - `csharp` (17): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249
@@ -69,9 +69,9 @@ Convenzioni:
 
 ### Area
 
-- `analizzatore` (117): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268
+- `analizzatore` (119): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272
 - `pre-mappa` (39): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062
-- `passo dinamico` (34): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241
+- `passo dinamico` (35): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270
 - `servizi` (13): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
 - `container` (11): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262
@@ -85,7 +85,7 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (141): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267
+- `completezza` (144): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272
 - `correttezza` (86): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269
 - `sicurezza` (23): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
@@ -94,11 +94,11 @@ Convenzioni:
 
 ### Origine
 
-- `commit` (114): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269
+- `commit` (115): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (30): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264
-- `prova su Modal` (17): D-089, D-102, D-103, D-104, D-115, D-116, D-117, D-118, D-119, D-120, D-169, D-179, D-236, D-237, D-239, D-249, D-255
+- `prova su Modal` (19): D-089, D-102, D-103, D-104, D-115, D-116, D-117, D-118, D-119, D-120, D-169, D-179, D-236, D-237, D-239, D-249, D-255, D-271, D-272
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
 - `conferma` (5): D-057, D-058, D-136, D-158, D-187
@@ -120,13 +120,13 @@ Convenzioni:
 - `uv` (11): D-042, D-047, D-049, D-184, D-188, D-246, D-248, D-252, D-253, D-254, D-269
 - `scip-java` (10): D-089, D-096, D-098, D-099, D-100, D-101, D-103, D-105, D-108, D-110
 - `CMake` (9): D-060, D-061, D-076, D-122, D-124, D-125, D-131, D-132, D-135
+- `scip-clang` (8): D-123, D-131, D-132, D-236, D-255, D-266, D-271, D-272
 - `scip-python` (7): D-084, D-086, D-088, D-246, D-247, D-248, D-269
 - `Cargo` (6): D-014, D-021, D-030, D-041, D-175, D-239
 - `Compose` (6): D-201, D-212, D-214, D-215, D-240, D-261
 - `Docker` (6): D-046, D-107, D-135, D-140, D-141, D-240
 - `git` (6): D-048, D-126, D-204, D-245, D-250, D-257
 - `GitHub Actions` (6): D-056, D-182, D-201, D-213, D-260, D-261
-- `scip-clang` (6): D-123, D-131, D-132, D-236, D-255, D-266
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
 - `scip-typescript` (6): D-146, D-147, D-148, D-152, D-156, D-160
 - `tree-sitter` (6): D-034, D-035, D-036, D-037, D-117, D-265
@@ -144,6 +144,7 @@ Convenzioni:
 - `Android SDK` (3): D-044, D-108, D-223
 - `Bazel` (3): D-029, D-060, D-092
 - `Bear` (3): D-133, D-210, D-267
+- `Jest` (3): D-185, D-187, D-270
 - `Kiri` (3): D-043, D-218, D-219
 - `MSBuild` (3): D-076, D-113, D-120
 - `rustup` (3): D-040, D-041, D-239
@@ -151,7 +152,6 @@ Convenzioni:
 - `Bun` (2): D-056, D-195
 - `Deno` (2): D-008, D-029
 - `dotnet` (2): D-113, D-241
-- `Jest` (2): D-185, D-187
 - `NuGet` (2): D-021, D-049
 - `pip` (2): D-049, D-188
 - `protoc` (2): D-107, D-112
@@ -201,7 +201,7 @@ Convenzioni:
 
 ## Indice
 
-269 schede: 208 risolte, 23 aperte, 38 buchi dichiarati.
+272 schede: 212 risolte, 22 aperte, 38 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -283,7 +283,7 @@ Convenzioni:
 
 ### Analizzatori
 
-120 schede: 83 risolto, 13 aperto, 24 buco dichiarato.
+122 schede: 85 risolto, 13 aperto, 24 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -357,7 +357,7 @@ Convenzioni:
 | D-132 | `file(DOWNLOAD)` ed ExternalProject non annotati | otel-demo src/currency | buco dichiarato (`failed` con la frase citata) | `6c2aa069e` | c, cpp · analizzatore · completezza · finale · scip-clang, CMake |
 | D-133 | zlib: file C e C++ che nessun build compila | zlib | buco dichiarato (`no compile command`) | `d4e6d9046` | c, cpp · analizzatore · completezza · finale · Make, Bear |
 | D-134 | zlib minizip: il build autotools non eseguito | zlib contrib/minizip | risolto | `22dca6da8` | c · analizzatore · completezza · commit · autotools |
-| D-135 | otel-demo currency: il build dichiarato solo nel Dockerfile | otel-demo (`b825c7c25726`) | aperto (android-sdk) | `f024ba3a3` | cpp · analizzatore · completezza · finale · Docker, BuildKit, CMake |
+| D-135 | otel-demo currency: il build dichiarato solo nel Dockerfile | otel-demo (`b825c7c25726`) | risolto | `841cfe14f`, `f024ba3a3` | cpp · analizzatore · completezza · finale · Docker, BuildKit, CMake |
 | D-136 | C: 5.147 buchi `no-document` | i casi C della conferma | aperto | — | c · analizzatore · completezza · conferma |
 | D-137 | File C e C++ fuori dalla configurazione predefinita | sys-cmake-presets, tinyxml2 (`9148bdf719e9`) | buco dichiarato (`no compile command | `2bc7c7459` | c, cpp · analizzatore · completezza · finale |
 | D-138 | Go: i builtin erano buchi | indicizzatore Go | risolto | `a633ebd72` | go · analizzatore · completezza · commit |
@@ -400,17 +400,19 @@ Convenzioni:
 | D-249 | C#: un gruppo di metodi passato come `System.Delegate` non aveva occorrenza | eShop (`913acea66708`) | risolto | `9290d446a` | csharp · analizzatore · completezza · prova su Modal · scip-dotnet, Roslyn |
 | D-253 | uv sull'host poteva installare una ruota costruita da un sdist e leggeva configurazioni altrui | analizzatore Python | risolto | `a9b4e1df2` | python · analizzatore · sicurezza · commit · uv |
 | D-254 | L'uv dell'host non era fissato | fastapi (`aabb90126964`) | risolto da `5e3757031` e `2057bbafc` | `5e3757031`, `2057bbafc` | python · host · correttezza · review · uv |
-| D-255 | scip-clang leggeva i database di GCC con gli header builtin di GCC | otel-demo currency (`b825c7c25726`), riprodotto da android-sdk | risolto da `125ab9ebd` nella via principale | `125ab9ebd` | c, cpp · analizzatore · correttezza · prova su Modal · scip-clang, GCC |
+| D-255 | scip-clang leggeva i database di GCC con gli header builtin di GCC | otel-demo currency (`b825c7c25726`), riprodotto da android-sdk | risolto da `125ab9ebd` nella via principale e da `841cfe14f` in quella degli stadi del Dockerfile | `125ab9ebd` | c, cpp · analizzatore · correttezza · prova su Modal · scip-clang, GCC |
 | D-257 | L'analizzatore Go esegue sull'host `go mod download` e il compilatore C | analizzatore Go | aperto (host-guard-2) | — | go · analizzatore · sicurezza · review · go, git, gcc |
 | D-258 | Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto | analizzatore di Vue e Svelte | risolto | `b9aeca1fb` | vue, svelte · analizzatore · sicurezza · review · npm, typescript-language-server |
 | D-259 | Un header `.h` di C++ letto come C | otel-demo (`b825c7c25726`) | risolto | `bdfd7797b` | c, cpp · analizzatore · correttezza · commit |
 | D-266 | Le variabili locali di unità di traduzione diverse condividevano una chiave | tinyxml2 (`9148bdf719e9`) | risolto | `ba8a1920f` | c, cpp · analizzatore · correttezza · commit · scip-clang |
 | D-267 | zlib: il configure scritto a mano non girava prima di make | zlib (`51b7f2abdade`) | risolto | `60e3590b3` | c · analizzatore · completezza · commit · Make, Bear |
 | D-268 | Un linguaggio che nessun build compila era `failed` | zlib (`51b7f2abdade`) | risolto | `60e3590b3` | c, cpp · analizzatore · correttezza · commit |
+| D-271 | C e C++: buchi senza occorrenza senza la loro causa | zlib (`51b7f2abdade`), tinyxml2 (`9148bdf719e9`) | risolto | `5cc88ec62` | c, cpp · analizzatore · completezza · prova su Modal · scip-clang |
+| D-272 | scip-clang non scrive occorrenze per le funzioni `extern "C"` in C++ | tinyxml2 (`9148bdf719e9`), otel-demo currency (`b825c7c25726`) | aperto (strumento esterno) | — | cpp · analizzatore · completezza · prova su Modal · scip-clang |
 
 ### Passo dinamico e osservatori
 
-37 schede: 30 risolto, 2 aperto, 5 buco dichiarato.
+38 schede: 31 risolto, 2 aperto, 5 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -451,6 +453,7 @@ Convenzioni:
 | D-201 | I servizi che `docker compose up` avvia non partivano | passo dinamico | risolto | `22dca6da8` | tutti · servizi · completezza · commit · npm, Compose, GitHub Actions |
 | D-202 | I servizi di GitLab CI non avviati | passo dinamico | risolto | `23de469c4` | tutti · servizi · completezza · commit · GitLab CI |
 | D-241 | C#: nessun osservatore eseguiva i test .NET | eShop (`913acea66708`) | risolto | `15960a591` | csharp · passo dinamico · completezza · finale · dotnet |
+| D-270 | `services_unreachable` non diceva a quale indirizzo nessun servizio rispondeva | tududi (`71da9d7b34df`) | risolto | `e6a49324b` | javascript · passo dinamico · completezza · commit · Jest |
 
 ### Container, servizi e driver Modal
 
@@ -484,7 +487,7 @@ Convenzioni:
 
 ### Benchmark e documenti
 
-18 schede: 14 risolto, 4 aperto, 0 buco dichiarato.
+18 schede: 15 risolto, 3 aperto, 0 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -505,7 +508,7 @@ Convenzioni:
 | D-234 | Un file dello snapshot senza dichiarazioni usciva dal progetto nel grafo | `benchmarks/inference-audit` | risolto | `53e219638` | tutti · benchmark · benchmark · commit |
 | D-235 | Pre-mappa: dipendenze sotto la soglia | corpus della pre-mappa | risolto | `de353d251`, `99112d0b9` | tutti · benchmark · benchmark · corpus della pre-mappa |
 | D-243 | Il driver perdeva i buchi del passo dinamico | benchmark project-model | risolto | `aea1c8c3b` | tutti · benchmark · benchmark · commit |
-| D-251 | I risultati di un giro non registrano il codice di Daodan su cui è girato | giro `ci-steps` | aperto | — | tutti · benchmark · benchmark · review · Modal |
+| D-251 | I risultati di un giro non registravano il codice di Daodan su cui era girato | giro `ci-steps` | risolto per i giri dopo `cbc219663` | `cbc219663` | tutti · benchmark · benchmark · review · Modal |
 
 ## Buchi trovati
 
@@ -1074,16 +1077,16 @@ Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-
 | mix-real-klaxon | github.com/cbeust/klaxon `1173bdc568a6` | 10 | D-098 | — |
 | mix-real-python-semver | github.com/python-semver/python-semver `b6e83e3e40d3` | 10 | D-031, D-088, D-183, D-206, D-248 | — |
 | mix-real-semver | github.com/dtolnay/semver `280ebcb6edac` | 8 | D-143, D-209, D-238 | D-176, D-230 |
-| mix-real-tinyxml2 | github.com/leethomason/tinyxml2 `9148bdf719e9` | 11 | D-043, D-137, D-209, D-236, D-266 | D-230, D-255, D-265 |
-| mix-real-tududi | github.com/chrisvel/tududi `71da9d7b34df` | 9 | D-145, D-146, D-147, D-182, D-185, D-186, D-187 | D-189, D-213, D-240, D-251 |
-| mix-real-zlib | github.com/madler/zlib `51b7f2abdade` | 15 | D-043, D-113, D-130, D-133, D-134, D-209, D-220, D-267, D-268 | D-010, D-065, D-230 |
-| real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254, D-260 | D-171, D-213, D-251, D-253 |
+| mix-real-tinyxml2 | github.com/leethomason/tinyxml2 `9148bdf719e9` | 11 | D-043, D-137, D-209, D-236, D-266, D-271, D-272 | D-230, D-255, D-265 |
+| mix-real-tududi | github.com/chrisvel/tududi `71da9d7b34df` | 9 | D-145, D-146, D-147, D-182, D-185, D-186, D-187, D-270 | D-189, D-213, D-240, D-251 |
+| mix-real-zlib | github.com/madler/zlib `51b7f2abdade` | 15 | D-043, D-113, D-130, D-133, D-134, D-209, D-220, D-267, D-268, D-271 | D-010, D-065, D-230 |
+| real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254, D-260 | D-171, D-213, D-251, D-253, D-270 |
 | real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237 | D-080, D-239 |
 | real-app-jhipster-sample | github.com/jhipster/jhipster-sample-app `6b000b5d23a3` | 17 | D-111, D-194 | — |
 | real-app-kotlinconf | github.com/JetBrains/kotlinconf-app `146e891c150c` | 18 | D-055, D-057, D-058, D-110, D-158 | — |
 | real-app-memos | github.com/usememos/memos `509e41bd1a1b` | 10 | D-160 | — |
 | real-svc-eshop | github.com/dotnet/eShop `913acea66708` | 16 | D-018, D-059, D-113, D-114, D-116, D-118, D-119, D-120, D-198, D-241, D-249 | — |
-| real-svc-otel-demo | github.com/open-telemetry/opentelemetry-demo `b825c7c25726` | 26 | D-059, D-094, D-105, D-106, D-107, D-114, D-132, D-135, D-240, D-255, D-259 | D-071 |
+| real-svc-otel-demo | github.com/open-telemetry/opentelemetry-demo `b825c7c25726` | 26 | D-059, D-094, D-105, D-106, D-107, D-114, D-132, D-135, D-240, D-255, D-259, D-272 | D-071 |
 | real-svc-petclinic-microservices | github.com/spring-petclinic/spring-petclinic-microservices `e8b747ab5227` | 17 | — | — |
 | real-svc-robot-shop | github.com/instana/robot-shop `55292e2199f2` | 14 | D-094, D-140, D-141 | — |
 | real-svc-voting-app | github.com/dockersamples/example-voting-app `63e9150ca17a` | 12 | D-114 | — |
@@ -1115,10 +1118,10 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 
 - `tutti` (34): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-037, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-182, D-196, D-201, D-202, D-245, D-250
 - `java` (27): D-003, D-016, D-025, D-026, D-027, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-099, D-100, D-101, D-105, D-106, D-111, D-178, D-265
+- `c` (26): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-177, D-236, D-259, D-265, D-266, D-267, D-268, D-271
 - `python` (26): D-006, D-007, D-028, D-047, D-048, D-049, D-052, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-246, D-247, D-248, D-252, D-253
-- `c` (25): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-177, D-236, D-259, D-265, D-266, D-267, D-268
-- `cpp` (23): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-177, D-236, D-259, D-265, D-266, D-268
-- `javascript` (23): D-013, D-021, D-046, D-049, D-051, D-053, D-056, D-072, D-147, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-194, D-195, D-198, D-265
+- `cpp` (25): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-177, D-236, D-259, D-265, D-266, D-268, D-271, D-272
+- `javascript` (24): D-013, D-021, D-046, D-049, D-051, D-053, D-056, D-072, D-147, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-194, D-195, D-198, D-265, D-270
 - `kotlin` (21): D-016, D-027, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-105, D-106, D-107, D-110, D-166
 - `typescript` (19): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-157, D-160, D-170, D-194, D-197, D-198, D-265
 - `csharp` (14): D-010, D-021, D-049, D-113, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-241, D-242, D-249
@@ -2752,12 +2755,15 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** finale e giro `jvm-otel-android`: il configure di src/currency esce con 1 (D-132), con «CMake Error at CMakeLists.txt:7 (find_package): Could not find a package configuration file provided by "Protobuf"».
 - **Spiegazione:** Protobuf e le altre dipendenze del servizio le installa il suo Dockerfile, che è l'unico a dichiarare come si costruisce; il configure sul checkout non le trova.
 - **Progetto e caso:** otel-demo (`b825c7c25726`) — finale e giro `jvm-otel-android`, 16 novembre 2026.
-- **Rimedio:** in corso (android-sdk). Da `f024ba3a3` (16 novembre) la lettura e il piano ci sono, ma nessun analizzatore C/C++ li usa:
-  - la pre-mappa legge ogni Dockerfile con il parser di BuildKit v0.34.2 (fatto `docker_builds`), con il contesto e gli argomenti di build da Compose (`scripts/premap/dockerfile.py`);
-  - `scripts/docker_build.py` pianifica lo stadio fino al suo ultimo RUN, con l'immagine di base fissata per digest, e ogni istruzione non riproducibile è un buco `not_reproduced` con la sua riga;
-  - la via per C e C++ non è in un commit (`scripts/indexers/clang.py`, non committato): scip-clang gira sull'Alpine dello stadio attraverso il loader di glibc in una prova; mancano le sorgenti dei pacchetti dell'immagine di base e `.dockerignore`.
-- **Verifica:** del piano solo test (`tests/test_codebase_map_docker_build.py`, `test_currency_runs_base_then_builder_with_compose_s_argument_and_maps_each_copy_back`); dell'indice, —.
-- **Stato:** aperto (android-sdk).
+- **Rimedio:** `841cfe14f` (16 novembre, android-sdk), `scripts/docker_build.py`, `scripts/indexers/clang.py`, `scripts/premap/dockerfile.py`, `scripts/premap/dockerfile_stages.go`, su `f024ba3a3` (la lettura dei Dockerfile con il parser di BuildKit v0.34.2 e il piano dello stadio, D-141):
+  - un servizio C o C++ che si costruisce solo nel suo Dockerfile si costruisce come lo dichiara: `docker_build.py` riproduce lo stadio fino al build, e scip-clang legge il suo database;
+  - ogni cartella di include è nominata dal pacchetto apk o dpkg che ne possiede la maggior parte dei file, e ciò che un'installazione CMake ha scritto (`install_manifest.txt`) dal progetto e dalla versione del suo CMakeCache;
+  - un Dockerfile o un contesto nominati da una variabile del `.env` si usano solo quando danno un percorso tracciato del checkout, altrimenti sono un buco che nomina la variabile; gli argomenti restano `${NOME}`, e lo stadio riceve i valori solo nel container (`dotenv_env`, D-240);
+  - le sorgenti apt in `http://` passano dal proxy, solo per l'archivio dichiarato (D-262); il driver Modal riporta ogni output con un tar a sé, che anche il tar di busybox sa fare.
+- **Verifica:**
+  - dal commit, currency sul `compose.yaml` e sul `.env` tracciati veri: C++ da `failed` (0 file) a `fresh`, 4 file su 4, 323 siti, 185 esterni con il pacchetto (`opentelemetry-cpp@1.28.0`, `libstdc++-dev`, `grpc-dev`, `musl-dev`); `premap.json` non contiene nessun valore del `.env`;
+  - `tests/test_codebase_map_docker_build.py` (`test_a_cmake_unit_daodan_cannot_configure_is_built_and_indexed_in_its_dockerfile_s_stage`, `test_the_stage_names_each_system_header_folder_by_the_package_that_owns_most_of_its_files`, `test_on_modal_an_alpine_stage_brings_its_outputs_back`), `tests/test_codebase_map_premap_dockerfile.py` (`test_a_build_s_values_from_a_tracked_env_file_are_named_never_given`).
+- **Stato:** risolto; restano 11 buchi su chiamate alla libreria C da C++ (D-272).
 - **Note:** D-107, D-141.
 
 #### D-136 C: 5.147 buchi `no-document`
@@ -3246,7 +3252,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:**
   - dal commit, con `clang.index()` vero nell'immagine su Modal: libdeflate v1.23 da 11.150 errori a 0 (indicizzazione da 20,0 s a 2,3 s), una sonda C e C++ su `_mm_pause` da 3.492 a 0, tinyxml2 e sys-make-plain da 0 a 0;
   - `tests/test_codebase_map_indexers_clang.py` (`test_a_gcc_command_reads_the_builtin_headers_of_the_clang_scip_clang_is_built_on`, `test_scip_clang_reads_the_database_with_clangs_builtin_headers_and_names_their_package`, `test_clangs_builtin_headers_come_from_its_release_source_packed_once`).
-- **Stato:** risolto da `125ab9ebd` nella via principale; la via degli stadi del Dockerfile legge ancora gli header di GCC, ed è in corso (android-sdk).
+- **Stato:** risolto da `125ab9ebd` nella via principale e da `841cfe14f` in quella degli stadi del Dockerfile: `-idirafter` su musl, dove il driver di clang 21.1.8 mette gli header builtin dopo `/usr/include`, `-isystem` su glibc (`tests/test_codebase_map_docker_build.py`, `test_a_compiler_that_is_not_clang_reads_clang_s_builtin_headers`).
 - **Note:** D-135 (otel-demo currency); il commit è successivo ai commit dei risultati di tutti i giri.
 
 #### D-257 L'analizzatore Go esegue sull'host `go mod download` e il compilatore C
@@ -3313,6 +3319,26 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** solo test: `tests/test_codebase_map_honest_state.py` (`test_a_language_no_build_compiles_is_unavailable_not_failed`), `tests/test_codebase_map_indexers_clang.py` (`test_a_file_nothing_failed_for_is_said_so`).
 - **Stato:** risolto.
 - **Note:** D-065, D-133.
+
+#### D-271 C e C++: buchi senza occorrenza senza la loro causa
+- **Tag:** lingua c, cpp · area analizzatore · tipo completezza · origine prova su Modal · strumento scip-clang
+- **Descrizione:** rimisurati con gli header di GCC corretti (D-255), in un replay su Modal al commit di ogni fixture: zlib 161 buchi no-occurrence, tinyxml2 102, senza una causa nominata (dal commit `5cc88ec62`).
+- **Spiegazione:** cause che `clang.unanswered` non conosceva: un argomento che l'espansione di una macro scarta (`Assert` e `Trace*` di zlib fuori da `ZLIB_DEBUG`, 127); un argomento il cui nome hanno due simboli nella macro (`DROPBITS(here.bits)` accanto al `bits` locale, 25); un `#ifdef` dentro un'espressione che l'albero del lettore colloca male (`gzlib.c:233`, `WIDECHAR`); una conversione a un tipo predefinito (`unsigned(100)`, 7); un `#ifdef` in un inizializzatore.
+- **Progetto e caso:** zlib (`51b7f2abdade`), tinyxml2 (`9148bdf719e9`) — replay su Modal di clang-builds, 16 novembre 2026.
+- **Rimedio:** `5cc88ec62` (16 novembre, clang-builds), `scripts/indexers/clang.py`: le cause nuove in `clang.unanswered`, l'`#ifdef` dentro un'espressione trovato dalle righe delle direttive.
+- **Verifica:** dal commit, buchi senza causa: zlib da 161 a 0, tinyxml2 da 102 a 3 (due chiamate esplicite a un distruttore e un membro di un tipo dipendente in un template); `tests/test_codebase_map_code_graph.py` (`test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing`) e la fixture `tests/fixtures/code-graph/cpp/expected.json`.
+- **Stato:** risolto; i 3 di tinyxml2 restano buchi con la sola causa.
+- **Note:** D-236, D-272.
+
+#### D-272 scip-clang non scrive occorrenze per le funzioni `extern "C"` in C++
+- **Tag:** lingua cpp · area analizzatore · tipo completezza · origine prova su Modal · strumento scip-clang
+- **Descrizione:** i 91 richiami alla libreria C di tinyxml2 (`printf`, `fopen`, `strlen`) restano buchi con la causa EXTERN_C, e currency ne ha 11 (dal commit `5cc88ec62`).
+- **Spiegazione:** in C++ scip-clang v0.4.1 non scrive occorrenze per una funzione dichiarata in `extern "C"` (`SymbolFormatter.cc`, `getContextSymbol`: «Pending: LinkageSpecDecl»).
+- **Progetto e caso:** tinyxml2 (`9148bdf719e9`), otel-demo currency (`b825c7c25726`) — commit `5cc88ec62` e `841cfe14f`, 16 novembre 2026.
+- **Rimedio:** —: va corretto a monte o con una build di scip-clang con patch, come scip-dotnet.
+- **Verifica:** —.
+- **Stato:** aperto (strumento esterno).
+- **Note:** D-236, D-271.
 
 ### Passo dinamico e osservatori
 
@@ -3730,6 +3756,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - senza motore, un `dotnet` sul PATH che lascia un segno se chiamato prova che sull'host non gira niente (`tests/test_codebase_map_dynamic_dotnet.py`, `test_without_a_container_nothing_runs_and_the_cause_is_said`).
 - **Stato:** risolto; un progetto di test che avvia i servizi con Aspire è un buco dichiarato (`tests_need_container_engine`).
 - **Note:** D-114, D-242.
+
+#### D-270 `services_unreachable` non diceva a quale indirizzo nessun servizio rispondeva
+- **Tag:** lingua javascript · area passo dinamico · tipo completezza · origine commit · strumento Jest
+- **Descrizione:** il buco dell'osservatore JavaScript per le connessioni rifiutate non diceva a quale indirizzo locale nessun servizio dichiarato rispondeva: in tududi i test del frontend chiedono `127.0.0.1:80` (dal commit `e6a49324b`).
+- **Spiegazione:** il buco contava le connessioni rifiutate senza i loro indirizzi.
+- **Progetto e caso:** tududi (`71da9d7b34df`) — commit `e6a49324b` di test-services, 16 novembre 2026.
+- **Rimedio:** `e6a49324b` (16 novembre, test-services), `scripts/dynamic/javascript.py` e `scripts/dynamic/__init__.py` (`_unanswered`): il buco porta `addresses` {indirizzo: conteggio}, e il dettaglio aggiunge gli indirizzi locali (localhost, 127.0.0.1, ::1, il nome o l'alias di un servizio) a cui nessun servizio che la CI dichiara risponde, con le porte dei container prese dai fatti. tududi: «…; no service the project's CI declares answers at 127.0.0.1:80 (postgres on 5432)».
+- **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`, `test_a_refused_local_address_no_declared_service_answers_at_is_said_with_the_ports_they_answer_on`).
+- **Stato:** risolto; restano buchi dichiarati: i test del frontend di tududi, che la sua CI non esegue e che falliscono su ogni macchina (`fetch is not defined` sotto jest-environment-jsdom 29, e l'axios relativo va all'URL di default di jsdom, porta 80), e il job Playwright di fastapi, `ci_step_not_run`: eseguirlo come la CI chiederebbe un'immagine da 944 MiB, un host fuori da ogni registro (bun.sh) e `ipc: host`, per osservare solo il runner Node.
+- **Note:** D-185, D-213.
 
 ### Container, servizi e driver Modal
 
@@ -4176,7 +4212,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Stato:** risolto.
 - **Note:** D-213.
 
-#### D-251 I risultati di un giro non registrano il codice di Daodan su cui è girato
+#### D-251 I risultati di un giro non registravano il codice di Daodan su cui era girato
 - **Tag:** lingua tutti · area benchmark · tipo benchmark · origine review · strumento Modal
 - **Descrizione:** docs-writer, sul giro `ci-steps`: la quota di risposta dei fogli di stile è al 98,7 %, contro il 26,3 % della conferma, e sugli stessi due casi, tududi e fastapi, i buchi passano da 38.210 a 523; nulla nel risultato dice su quale codice di Daodan il giro è girato (riportato da team-lead il 16 novembre). Così nessun numero di un giro si lega a un commit.
 - **Spiegazione:**
@@ -4184,9 +4220,11 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - un caso registra le versioni degli strumenti (`steps.analyze.engines.<motore>.indexer.version`): quella del motore dei fogli di stile, un'impronta delle sue versioni (`scripts/indexers/css.py:164-166`), è `145560a4592a` per tududi e fastapi nella conferma, `45b68b725df0` e `2a5e4ddac1b8` in `ci-steps`, e non nomina un commit;
   - il codice dei giri lo dicono solo testi accanto al risultato (Convenzioni).
 - **Progetto e caso:** giro `ci-steps` — review di docs-writer, 16 novembre 2026.
-- **Rimedio:** —.
-- **Verifica:** —.
-- **Stato:** aperto.
+- **Rimedio:** `cbc219663` (16 novembre, test-services), `benchmarks/project-model/modal_pipeline.py` e `pipeline_report.py`:
+  - il driver scrive accanto ai casi `code`: il commit del checkout, l'albero di ciò che carica su Modal (gli script, le fixture, `score.py` e il driver stesso, calcolato da git su un indice temporaneo, senza cache né file ignorati) e i percorsi in cui differisce dal commit;
+  - il rapporto lo mostra in testa, e `--compare` dice per prima cosa se i due giri hanno girato lo stesso codice, per albero.
+- **Verifica:** solo test: `benchmarks/project-model/test_modal_pipeline.py` (`test_a_round_records_its_commit_the_tree_of_the_copy_it_uploaded_and_the_paths_where_they_differ`), `benchmarks/project-model/test_pipeline_report.py` (`test_a_comparison_says_first_whether_the_two_rounds_ran_the_same_code`).
+- **Stato:** risolto per i giri dopo `cbc219663`; i giri già registrati non hanno `code`, e il loro codice resta quello che dicono le Convenzioni.
 - **Note:** i confronti fra giri di «Buchi trovati» ne dipendono; D-243, l'altro difetto del driver.
 
 ## Commit feat senza difetto
