@@ -4,7 +4,7 @@
     python tests/modal_pytest.py -q                      # every suite under tests/
 
 The launcher starts `modal run` on this file with the arguments as given; the container holds the checkout as it
-is on disk (plugins, tests, benchmarks without their results), runs `python -B -m pytest -p no:cacheprovider` in
+is on disk (plugins, tests, benchmarks), runs `python -B -m pytest -p no:cacheprovider` in
 it, streams the output and ends with pytest's exit code. Several suites at once: `-n 4` (pytest-xdist is there).
 """
 from __future__ import annotations
@@ -34,7 +34,8 @@ image = (modal.Image.debian_slim(python_version="3.13")
          .pip_install("pytest", "pytest-xdist", "uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30"))
 if LOCAL:
-    skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "**/results/**"]
+    # The results stay: suites replay the recorded answers kept there. The explorer's sources are no suite's.
+    skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "codebase-explorer/**"]
     for folder in ("plugins", "tests", "benchmarks"):
         image = image.add_local_dir(REPO / folder, f"{REMOTE}/{folder}", ignore=skipped)
     image = image.add_local_file(REPO / "AGENTS.md", f"{REMOTE}/AGENTS.md")
