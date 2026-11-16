@@ -244,13 +244,19 @@ def test_a_file_without_a_document_names_its_own_cause():
                        "tools/gen.c": "in no C or C++ unit of the pre-map",
                        "tools/gen.h": "header no indexed translation unit includes in an active branch",
                        "lib/a.c": "compiled, yet no document in the index",
-                       "lib/unused.c": "no compile command: not built by the default configuration"}
+                       "lib/unused.c": "no compile command: the build compiles other files of lib, not this one"}
     # Another build's file beside the CMakeLists.txt CMake indexed does not speak for the folder.
     both = {"units": [{**win, "root": "."}, {"root": ".", "state": "indexed"}]}
-    assert clang.missing(None, ["a.c"], both) == {"a.c": "no compile command: not built by the default configuration"}
-    # A build that stopped before compiling a file says so.
-    stopped = {"units": [{"root": "c", "build": "make", "state": "indexed", "cause": "make ended with exit code 2"}]}
-    assert clang.missing(None, ["c/late.c"], stopped) == {"c/late.c": "no compile command: make ended with exit code 2"}
+    assert clang.missing(None, ["a.c"], both) == {"a.c": "no compile command: no build compiles a file of the root"}
+    # A build that stopped says so beside what it compiled. mix-real-zlib: contrib/minizip's makefile compiles
+    # neither mztools.c nor iowin32.c (only its autotools build does), and contrib/infback9 has no build at all.
+    stopped = {"compiled": {"contrib/minizip/zip.c": 1},
+               "units": [{"root": "contrib/minizip", "build": "make", "state": "indexed",
+                          "cause": "make ended with exit code 2"}, {"root": ".", "state": "indexed"}]}
+    assert clang.missing(None, ["contrib/minizip/mztools.c", "contrib/infback9/infback9.c"], stopped) == {
+        "contrib/minizip/mztools.c": "no compile command: the build compiles other files of contrib/minizip, not this "
+                                     "one; make ended with exit code 2",
+        "contrib/infback9/infback9.c": "no compile command: no build compiles a file of contrib/infback9"}
 
 
 def test_a_workspace_is_configured_once_at_its_root():
@@ -335,7 +341,7 @@ def test_one_run_with_no_network_indexes_the_units_that_configure_and_states_the
     reasons = clang.missing(None, ["vendor/app.cpp", "m/x.c", "orphan.c"], clang.tasks(result["configs"]))
     assert reasons["vendor/app.cpp"] == f"the index of unit vendor is unavailable: {UNAVAILABLE['cause']}"
     assert reasons["m/x.c"] == f"the index of unit m is unavailable: {MSBUILD}"
-    assert reasons["orphan.c"] == "no compile command: not built by the default configuration"
+    assert reasons["orphan.c"] == "no compile command: the build compiles other files of the root, not this one"
 
 
 def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_index(tmp_path):

@@ -354,8 +354,14 @@ def missing(index, rels: list[str], configs: dict | None = None) -> dict:
             reasons[rel] = "header no indexed translation unit includes in an active branch"
         elif units and unit is None:
             reasons[rel] = "in no C or C++ unit of the pre-map"
-        else:  # an indexed unit's build that stopped says so
-            reasons[rel] = f"no compile command: {(unit or {}).get('cause') or 'not built by the default configuration'}"
+        else:  # the folder no build compiles, or the files of it the build left out; a build that stopped says so
+            folder = posixpath.dirname(rel)
+            named = folder or "the root"
+            where = (f"the build compiles other files of {named}, not this one"
+                     if any(posixpath.dirname(other) == folder for other in compiled)
+                     else f"no build compiles a file of {named}")
+            cause = (unit or {}).get("cause")
+            reasons[rel] = f"no compile command: {where}" + (f"; {cause}" if cause else "")
     return reasons
 
 

@@ -81,6 +81,10 @@ def test_a_go_file_left_out_by_its_name_or_by_a_run_without_index_says_so(tmp_pa
     assert go.missing(_index(tmp_path, ["a.go"]), ["a_windows.go"]) == {
         "a_windows.go": "file name constraint `windows`: the indexer's build is linux/amd64"}
     assert go.tasks(None) == {}
+    # real-svc-robot-shop's dispatch: Go files and no go.mod, which its Dockerfile writes at build time.
+    _project(tmp_path, {"dispatch/main.go": "package main\n"})
+    assert go.missing(_index(tmp_path, []), ["dispatch/main.go"], go.tasks({"roots": [], "failed": {}})) == {
+        "dispatch/main.go": go.NO_MODULE}
 
 
 # ---------------------------------------------------------------------------------------------------------------

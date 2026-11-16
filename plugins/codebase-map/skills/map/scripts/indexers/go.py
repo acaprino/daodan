@@ -199,15 +199,22 @@ def _named(rel: str) -> list[str]:
     return words[-1:] if words and words[-1] in GOOS | GOARCH else []
 
 
+NO_MODULE = ("no Go module holds it: no go.mod in its folder or above, and the go tool builds a package only in a"
+             " module (a build that writes one, `go mod init` in a Dockerfile, is not the project's declaration)")
+
+
 def missing(index, rels: list[str], configs: dict | None = None) -> dict:
-    """Why a Go file has no document: the run of its module wrote no index, a build constraint, or a file name
-    the indexer's build leaves out."""
+    """Why a Go file has no document: no module holds it, the run of its module wrote no index, a build
+    constraint, or a file name the indexer's build leaves out."""
     roots, failed = set((configs or {}).get("roots") or ()), (configs or {}).get("failed") or {}
     constraints = (configs or {}).get("constraints") or {}
     read = {code_graph.owner(rel, roots) for rel in index.documents}
     reasons, target = {}, _target()
     for rel in rels:
         root, named = code_graph.owner(rel, roots), _named(rel)
+        if root is None and "roots" in (configs or {}):
+            reasons[rel] = NO_MODULE
+            continue
         if root in failed and root not in read:
             reasons[rel] = f"the scip-go run of its module {root or '.'} wrote no index ({failed[root]})"
             continue
