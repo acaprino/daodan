@@ -445,7 +445,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pyproject.toml.
 - Versioni dichiarate:
-  - python: >=3.11 (`pyproject.toml`); 3.12-slim (`Dockerfile`)
+  - python: >=3.11 (`pyproject.toml`); 3.12 (`Dockerfile`)
 - Framework: FastAPI.
 - Servizi: PostgreSQL, Redis.
 - Casi:
@@ -770,6 +770,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: gradle.
 - File delle dipendenze: app/build.gradle.kts, build.gradle.kts, core/build.gradle.kts.
 - Versioni dichiarate:
+  - android-build-tools: 34.0.0 (`app/build.gradle.kts`); 34.0.0 (`core/build.gradle.kts`)
   - android-sdk: 35 (`app/build.gradle.kts`); 35 (`core/build.gradle.kts`)
   - gradle: 8.11.1 (`gradle/wrapper/gradle-wrapper.properties`)
   - java: 17 (`app/build.gradle.kts`); 17 (`core/build.gradle.kts`)
@@ -1656,7 +1657,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: package.json.
 - Versioni dichiarate:
-  - node: >=20 (`package.json`); 20.18.1-alpine (`Dockerfile`)
+  - node: >=20 (`package.json`); 20.18.1 (`Dockerfile`)
 - Framework: Express.
 - Servizi: PostgreSQL, RabbitMQ, Redis.
 - Casi:
@@ -1772,6 +1773,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: gradle.
 - File delle dipendenze: android/app/build.gradle.kts, android/build.gradle.kts, functions-python/pyproject.toml, functions/package.json, react-app/package.json, react-app/src-tauri/Cargo.toml.
 - Versioni dichiarate:
+  - android-build-tools: 34.0.0 (`android/app/build.gradle.kts`)
   - android-sdk: 35 (`android/app/build.gradle.kts`)
   - gradle: 8.10.2 (`android/gradle/wrapper/gradle-wrapper.properties`)
   - java: 17 (`android/app/build.gradle.kts`)
@@ -1975,7 +1977,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: package.json.
 - Versioni dichiarate:
-  - node: 22-alpine (`Dockerfile`); 22 (`.github/workflows/ci.yml`)
+  - node: 22 (`Dockerfile`); 22 (`.github/workflows/ci.yml`)
 - Framework: Express, Jest, Playwright, React, Sequelize, Tailwind CSS, webpack.
 - Servizi: Apprise, Lemon Squeezy, OpenAI, OpenID Connect provider, Paddle, PostgreSQL, SMTP, Stripe, Telegram Bot API, Web Push.
 - Casi:
@@ -2155,7 +2157,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: angular.
 - File delle dipendenze: package.json.
 - Versioni dichiarate:
-  - java: 21 (`pom.xml#properties.java.version`); 25-jre-noble (`pom.xml#properties.jib-maven-plugin.image`); 17.x (`.github/workflows/github-actions.yml`); 21-bullseye (`.devcontainer/devcontainer.json#build.args.VARIANT`); 17 (`.devcontainer/Dockerfile`)
+  - java: 21 (`pom.xml#properties.java.version`); 25-jre-noble (`pom.xml#properties.jib-maven-plugin.image`); 17.x (`.github/workflows/github-actions.yml`); 21 (`.devcontainer/devcontainer.json#build.args.VARIANT`); 17 (`.devcontainer/Dockerfile`)
   - maven: 3.9.16 (`.mvn/wrapper/maven-wrapper.properties`); 3.2.5 (`pom.xml#properties.maven.version`)
   - node: v24.21.0 (`pom.xml#properties.node.version`); >=24.21.0 (`package.json#engines`); 20.15.0 (`.github/workflows/github-actions.yml`); 24.21.0 (`.devcontainer/devcontainer.json#build.args.NODE_VERSION`)
   - npm: 12.0.2 (`pom.xml#properties.npm.version`)
@@ -2225,7 +2227,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: go.mod, web/package.json.
 - Versioni dichiarate:
-  - go: 1.27.2 (`go.mod`); 1.27.2-alpine (`scripts/Dockerfile`)
+  - go: 1.27.2 (`go.mod`); 1.27.2 (`scripts/Dockerfile`)
   - golangci-lint: v2.14.0 (`.github/workflows/backend-tests.yml`)
   - node: >=24 (`web/package.json#engines`); 24 (`.github/actions/setup-web/action.yml`)
   - pnpm: 11.0.1 (`web/package.json#packageManager`)
@@ -2284,19 +2286,19 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - cmake: 3.26 (`src/currency/CMakeLists.txt#cmake_minimum_required`); 3.26 (`src/currency/genproto/CMakeLists.txt#cmake_minimum_required`)
   - composer: 2.11.1 (`src/quote/Dockerfile`)
   - cypress: 16.2.1 (`src/frontend/Dockerfile.cypress`)
-  - dotnet: 10.0.403 (`src/accounting/Dockerfile#builder`); 10.0.14 (`src/accounting/Dockerfile#stage 2`); 10.0.403 (`src/cart/src/Dockerfile#base`); 10.0.12-alpine3.23 (`src/cart/src/Dockerfile#stage 4`)
-  - elixir: 1.20.1-erlang-28.5-debian-trixie-20260610-slim (`src/flagd-ui/Dockerfile`); ~> 1.20 (`src/flagd-ui/mix.exs`); 1.20.1 (`.github/workflows/fossa.yml`)
+  - dotnet: 10.0.403 (`src/accounting/Dockerfile#builder`); 10.0.14 (`src/accounting/Dockerfile#stage 2`); 10.0.403 (`src/cart/src/Dockerfile#base`); 10.0.12 (`src/cart/src/Dockerfile#stage 4`)
+  - elixir: 1.20.1 (`src/flagd-ui/Dockerfile`); ~> 1.20 (`src/flagd-ui/mix.exs`); 1.20.1 (`.github/workflows/fossa.yml`)
   - erlang: 28.5 (`src/flagd-ui/Dockerfile`); 28.4 (`.github/workflows/fossa.yml`)
-  - go: 1.27.3-bookworm (`src/checkout/Dockerfile`); 1.27.3-alpine (`src/checkout/genproto/Dockerfile`); 1.27.3-bookworm (`src/product-catalog/Dockerfile`); 1.27.3-alpine (`src/product-catalog/genproto/Dockerfile`); 1.27.1-alpine (`src/opamp-server/Dockerfile`); 1.26.0 (`src/checkout/go.mod`); 1.26.0 (`src/product-catalog/go.mod`); 1.12 (`internal/tools/go.mod`); 1.27.1 (`.github/workflows/checks.yml`); 1.27.1 (`.github/workflows/codeql-analysis.yml`); 1.27.1 (`.github/workflows/changelog.yml`)
-  - gradle: 9.9.0 (`src/ad/gradle/wrapper/gradle-wrapper.properties`); 9.9.0 (`src/recommendation/gradle/wrapper/gradle-wrapper.properties`); 9.8.2-jdk17 (`src/fraud-detection/Dockerfile`); 9.9.0 (`src/fraud-detection/gradle/wrapper/gradle-wrapper.properties`)
-  - java: 24.0.2_12-jdk (`src/ad/Dockerfile#builder`); 24.0.2_12-jre (`src/ad/Dockerfile#stage 1`); 21.0 (`src/ad/.java-version`); 21 (`src/ad/build.gradle#sourceCompatibility`); 21 (`src/ad/build.gradle#targetCompatibility`); 24.0.2_12-jdk (`src/recommendation/Dockerfile#builder`); 24.0.2_12-jre (`src/recommendation/Dockerfile#stage 1`); 21 (`src/recommendation/build.gradle#options.release`); 17 (`src/fraud-detection/Dockerfile`); 17 (`src/fraud-detection/build.gradle.kts#kotlin.compilerOptions.jvmTarget`)
-  - node: 26.12.1-slim (`src/frontend/Dockerfile#builder`); 24 (`src/frontend/Dockerfile#stage 2`); 26.12.1-alpine (`src/frontend/genproto/Dockerfile`); 26.12.1-slim (`src/payment/Dockerfile#builder`); 24 (`src/payment/Dockerfile#stage 2`); 24 (`.github/workflows/react-native-build.yml`)
+  - go: 1.27.3 (`src/checkout/Dockerfile`); 1.27.3 (`src/checkout/genproto/Dockerfile`); 1.27.3 (`src/product-catalog/Dockerfile`); 1.27.3 (`src/product-catalog/genproto/Dockerfile`); 1.27.1 (`src/opamp-server/Dockerfile`); 1.26.0 (`src/checkout/go.mod`); 1.26.0 (`src/product-catalog/go.mod`); 1.12 (`internal/tools/go.mod`); 1.27.1 (`.github/workflows/checks.yml`); 1.27.1 (`.github/workflows/codeql-analysis.yml`); 1.27.1 (`.github/workflows/changelog.yml`)
+  - gradle: 9.9.0 (`src/ad/gradle/wrapper/gradle-wrapper.properties`); 9.9.0 (`src/recommendation/gradle/wrapper/gradle-wrapper.properties`); 9.8.2 (`src/fraud-detection/Dockerfile`); 9.9.0 (`src/fraud-detection/gradle/wrapper/gradle-wrapper.properties`)
+  - java: 24.0.2_12 (`src/ad/Dockerfile#builder`); 24.0.2_12 (`src/ad/Dockerfile#stage 1`); 21.0 (`src/ad/.java-version`); 21 (`src/ad/build.gradle#sourceCompatibility`); 21 (`src/ad/build.gradle#targetCompatibility`); 24.0.2_12 (`src/recommendation/Dockerfile#builder`); 24.0.2_12 (`src/recommendation/Dockerfile#stage 1`); 21 (`src/recommendation/build.gradle#options.release`); 17 (`src/fraud-detection/Dockerfile`); 17 (`src/fraud-detection/build.gradle.kts#kotlin.compilerOptions.jvmTarget`)
+  - node: 26.12.1 (`src/frontend/Dockerfile#builder`); 24 (`src/frontend/Dockerfile#stage 2`); 26.12.1 (`src/frontend/genproto/Dockerfile`); 26.12.1 (`src/payment/Dockerfile#builder`); 24 (`src/payment/Dockerfile#stage 2`); 24 (`.github/workflows/react-native-build.yml`)
   - npm: 11 (`src/react-native-app/android.Dockerfile`)
-  - php: 8.5.12-cli-alpine3.24 (`src/quote/Dockerfile`); >= 8.5 (`src/quote/composer.json#require.php`)
-  - python: 3.14-slim (`src/agent/Dockerfile`); 3.14-slim (`src/chatbot/Dockerfile`); 3.14-slim (`src/mcp/Dockerfile`); 3.15.0-slim-bookworm (`src/load-generator/Dockerfile`); 3.15.0-slim-bookworm (`src/telemetry-docs/Dockerfile`); 3.12-alpine (`test/telemetry/Dockerfile`); 3.14 (`src/agent/requirements.txt`); 3.14 (`src/chatbot/requirements.txt`); 3.14 (`src/mcp/requirements.txt`); 3.14 (`src/load-generator/requirements.txt`); 3.14 (`src/telemetry-docs/requirements.txt`); 3.14 (`test/telemetry/requirements.txt`); 3.x (`.github/workflows/checks.yml`)
-  - ruby: 4.0.5-alpine3.22 (`src/email/Dockerfile`); 4.0.5 (`src/react-native-app/.ruby-version`)
+  - php: 8.5.12 (`src/quote/Dockerfile`); >= 8.5 (`src/quote/composer.json#require.php`)
+  - python: 3.14 (`src/agent/Dockerfile`); 3.14 (`src/chatbot/Dockerfile`); 3.14 (`src/mcp/Dockerfile`); 3.15.0 (`src/load-generator/Dockerfile`); 3.15.0 (`src/telemetry-docs/Dockerfile`); 3.12 (`test/telemetry/Dockerfile`); 3.14 (`src/agent/requirements.txt`); 3.14 (`src/chatbot/requirements.txt`); 3.14 (`src/mcp/requirements.txt`); 3.14 (`src/load-generator/requirements.txt`); 3.14 (`src/telemetry-docs/requirements.txt`); 3.14 (`test/telemetry/requirements.txt`); 3.x (`.github/workflows/checks.yml`)
+  - ruby: 4.0.5 (`src/email/Dockerfile`); 4.0.5 (`src/react-native-app/.ruby-version`)
   - rust: 1.99.1 (`src/shipping/Dockerfile`)
-  - weaver: v0.28.0 (`src/telemetry-docs/Dockerfile`)
+  - weaver: 0.28.0 (`src/telemetry-docs/Dockerfile`)
 - Framework: Actix Web, ASP.NET Core, Cypress, Entity Framework Core, Expo, FastAPI, FastMCP, Gradio, gRPC, LangChain, Locust, MkDocs, Next.js, Phoenix, Phoenix LiveView, Playwright, pytest, React, React Native, Sinatra, Slim, Spring Boot, Tailwind CSS, xUnit.
 - Servizi: Envoy, Firepit, flagd, Grafana, Jaeger, Kafka, NGINX, OpAMP server, OpenAI API, OpenSearch, OpenTelemetry Collector, OpenTelemetry eBPF Profiler, PostgreSQL, Prometheus, Valkey.
 - Casi:
@@ -2367,9 +2369,9 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - File delle dipendenze: cart/package.json, catalogue/package.json, load-gen/requirements.txt, payment/requirements.txt, ratings/html/composer.json, shipping/pom.xml, user/package.json.
 - Versioni dichiarate:
   - go: 1.17 (`dispatch/Dockerfile`)
-  - java: 8-jdk (`shipping/Dockerfile`); 1.8 (`shipping/pom.xml#properties.java.version`)
+  - java: 8 (`shipping/Dockerfile`); 1.8 (`shipping/pom.xml#properties.java.version`)
   - node: 14 (`cart/Dockerfile`); 14 (`catalogue/Dockerfile`); 14 (`user/Dockerfile`)
-  - php: 7.4-apache (`ratings/Dockerfile`); ^7.4 (`ratings/html/composer.json`)
+  - php: 7.4 (`ratings/Dockerfile`); ^7.4 (`ratings/html/composer.json`)
   - python: 3.9 (`payment/Dockerfile`); 3.9 (`load-gen/Dockerfile`)
 - Framework: AngularJS, Express, Flask, Hibernate, Locust, Spring Boot, Spring Data JPA, Spring MVC, Symfony.
 - Servizi: DC/OS, Docker Swarm, Elasticsearch, Fluentd, Instana, Instana EUM, Istio, Kubernetes, MongoDB, MySQL, nginx, OpenShift, PayPal, RabbitMQ, Redis.
@@ -2398,8 +2400,8 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - File delle dipendenze: result/package.json, vote/requirements.txt, worker/Worker.csproj.
 - Versioni dichiarate:
   - dotnet: 7.0 (`worker/Dockerfile`)
-  - node: 18-slim (`result/Dockerfile`); 8.9-slim (`result/tests/Dockerfile`)
-  - python: 3.11-slim (`vote/Dockerfile`); 3.9-slim (`seed-data/Dockerfile`)
+  - node: 18 (`result/Dockerfile`); 8.9 (`result/tests/Dockerfile`)
+  - python: 3.11 (`vote/Dockerfile`); 3.9 (`seed-data/Dockerfile`)
 - Framework: AngularJS, Express, Flask, Socket.IO.
 - Servizi: PostgreSQL, Redis.
 - Casi:
