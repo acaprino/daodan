@@ -386,14 +386,32 @@ def run(manifest: Path, bus) -> dict:
                     more, said = join_sampled(snapshot, language, pairs, module)
                     rows, facts["sampled"] = rows + more, {"resolver": resolver(module, sampled=True), **said}
                 if not rows:  # nothing is kept: the next analysis observes again
-                    placed = f"the tests ran and the recorder placed no call on a reference of {language}"
-                    outcomes[language] = {"state": "not-observed", "reason": placed + (f": {why}" if why else "")}
+                    placed = _unplaced(snapshot, language, sites, facts)
+                    outcomes[language] = {"state": "not-observed", "reason": placed + (f"; {why}" if why else "")}
                     continue
                 outcomes[language] = _outcome(code_graph.write_observed(snapshot, store, language, rows, facts))
             told = ", ".join(f"{language}: {_told(outcomes[language])}" for language in wanted)
             bus.emit("analyzer.finished", f"{entry}: {told}", step=STEP, analyzer=entry, languages=wanted)
         bus.progress(STEP, len(waiting), len(waiting))
     return {"languages": outcomes}
+
+
+def _unplaced(snapshot, language: str, sites: list[dict], facts: dict) -> str:
+    """Why tests that ran gave no row of `language`, from what the recorder saw: sites in its files at no
+    reference, sites only in files the snapshot does not hold, or no call from its files at all."""
+    if facts.get("recorded"):
+        roles = ", ".join(f"{role} {count}" for role, count in facts["unjoined"].items())
+        return (f"the tests ran and the recorder saw {facts['recorded']} call sites in {language} files, none at a "
+                f"reference of the static graph ({roles})")
+    if not sites and "sampled" in facts:
+        return f"the tests ran and no sampled pair has its caller in a {language} file of the snapshot"
+    said = f"the tests ran and made no call from a {language} file of the project"
+    outside = sorted({site["file"] for site in sites if site["file"] not in snapshot.rel})
+    if outside:
+        listed = ", ".join(outside[:3])
+        said += f" (the recorder saw calls in {len(outside)} files the snapshot does not hold: {listed})"
+    missed = (facts.get("files") or {}).get("not_executed")
+    return said + (f"; the files with calls, which no test executed: {', '.join(missed[:5])}" if missed else "")
 
 
 def _outcome(coverage: dict) -> dict:

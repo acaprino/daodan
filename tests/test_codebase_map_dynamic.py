@@ -585,6 +585,28 @@ def test_a_run_that_ran_no_test_or_recorded_nothing_is_not_observed(tmp_path, ob
     assert why in gap["detail"]
 
 
+SITE = {"line": 13, "column": 15, "name": "get", "role": "call", "callees": [frame("get", 5, 4)]}
+
+
+@pytest.mark.parametrize("sites, said", [
+    ([], "made no call from a python file of the project; the files with calls, which no test executed: lib.py"),
+    ([{**SITE, "file": "venv/lib/python3.13/site-packages/lib.py"}],
+     "the recorder saw calls in 1 files the snapshot does not hold: venv/lib/python3.13/site-packages/lib.py"),
+    ([{**SITE, "file": "lib.py", "line": 0, "column": 0, "name": "", "role": "ClassDef"}],
+     "saw 1 call sites in python files, none at a reference of the static graph (ClassDef 1)")])
+def test_a_run_that_placed_nothing_says_what_its_recorder_saw(tmp_path, sites, said):
+    """Tests that call nothing of the project (an import and an assert) leave nothing to place: the reason says
+    so, with the files with calls that no test executed, apart from a recorder that saw calls in files the snapshot
+    does not hold or at no reference."""
+    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    static_store(manifest)
+    observed = {"state": "ran", "sites": sites, "gaps": [], "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]}
+    with mock.patch.object(dynamic, "observers", return_value=[fake(observed)]):
+        result, _seen, _asked = step(manifest)
+    python = result["languages"]["python"]
+    assert python["state"] == "not-observed" and said in python["reason"]
+
+
 def test_a_profiler_alone_gives_sampled_edges_and_no_claim_on_what_it_did_not_see(tmp_path):
     """An observer whose run returns sampled pairs and no exact site: its edges are counted apart, and nothing is
     said of the files no sample named."""
