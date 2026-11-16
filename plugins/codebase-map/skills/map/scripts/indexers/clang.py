@@ -17,6 +17,15 @@ manager's toolchain file; a restore that fails is a `restore_failed` gap. The im
 (`IMAGE`) gives gcc and g++ with their headers, which scip-clang needs to read the system includes, glibc 2.39
 (scip-clang v0.4.1 needs 2.38), dpkg, whose file lists name the package of each system header, and python3.
 
+The other builds give the database from their own run (`builds`), the ways scip-clang's README names: Meson's
+setup, whose Ninja backend writes it; the project's make under Bear, with the targets the pre-map states; a Go
+module's cgo packages built by the go command under Bear; Bazel's compile actions, from `bazel aquery` (what
+hedron's extractor reads), run in the preparation with Bazel's hosts open since it fetches what the analysis reads.
+Meson, make and the go build run the project's code: in the execution, with no network; the preparation downloads
+the modules a cgo build requires. Bear is Ubuntu's package (`BEAR`); a Bazel the project states and a Go minimum
+above the pin are installed by mise in the preparation (`wanted`). Each unit states the build that gave its
+commands; a build that writes no database is a gap with the tool's own output; MSBuild gives none (`unbuilt`).
+
 Symbols carry no file: a function declared in a header and defined in a source file is one symbol, defined at
 its body; the declaration is a reference. Two `static` functions of one name in two files are one symbol too.
 scip-clang writes what a macro expands to at the expansion: the call `SQUARE(n)` references the macro and the
@@ -67,7 +76,36 @@ MIN_FREE = 2 * 2**30  # the container's memory
 PIDS = 1024
 CMAKE_UNIT = "cmake-target"
 OTHER_BUILDS = {"meson-target": "meson", "make-target": "make", "bazel-target": "bazel",
-                "msbuild-project": "MSBuild"}  # not configured yet
+                "msbuild-project": "MSBuild"}  # the native builds beside CMake, which the dynamic step does not run
+BUILDS = {"meson-target": "meson", "make-target": "make", "bazel-target": "bazel",
+          "go-module": "go"}  # the builds beside CMake that give a unit's compilation database (`clang_run.py`)
+NO_UNIT = "no C or C++ unit in the pre-map: no build of the project compiles C or C++"
+# Bear 3.1.3 (GPL-3.0-or-later), for Make and cgo: Bear ships no binaries and names the distributions' packages
+# first (its INSTALL.md); these are Ubuntu 24.04's, the image's distribution, from the release pocket, with the
+# libraries Bear needs that the image lacks. dpkg installs them in the execution.
+BEAR = [(f"https://archive.ubuntu.com/ubuntu/pool/{path}", digest) for path, digest in (
+    ("universe/b/bear/bear_3.1.3-1build4_amd64.deb",
+     "3ff4fed98a4328a02993adf2d4ebde25685bb28ff29c78791fe4fbe9023ec6f0"),
+    ("universe/b/bear/libear_3.1.3-1build4_amd64.deb",
+     "b011fd461189bc30340196bdaf6c2f5835057d952e9b1ca99d292c88cb7de1a0"),
+    ("main/a/abseil/libabsl20220623t64_20220623.1-3.1ubuntu3_amd64.deb",
+     "eafc5f26ba910468a6d5d5f154ed8fcf4beed2d5bc45619907ea9f517cdaf401"),
+    ("main/c/c-ares/libcares2_1.27.0-1.0ubuntu1_amd64.deb",
+     "f84475f79e5b95c4caf98a7aef781bada3de44e9db05438b45b231da8fc7fc04"),
+    ("universe/f/fmtlib/libfmt9_9.1.0+ds1-2_amd64.deb",
+     "0a9dd337aea7ae59aba44994a92dd2780365b534a714518477c4e906f0efd297"),
+    ("universe/g/grpc/libgrpc++1.51t64_1.51.1-4.1build5_amd64.deb",
+     "7f0b9e0498bd74bd4ebb40a1d972d66a3652ecae4cbc9d6da32627613d453c83"),
+    ("universe/g/grpc/libgrpc29t64_1.51.1-4.1build5_amd64.deb",
+     "afd30f8d573a88dd74d5b2439cfade615d1c1829fd9fa7aa66ff90a2091be341"),
+    ("main/p/protobuf/libprotobuf32t64_3.21.12-8.2build1_amd64.deb",
+     "2e6875c5467e4d4e823886c91caccfa972ad7b4166531a3a48ebf0561850391a"),
+    ("main/p/protobuf/libprotoc32t64_3.21.12-8.2build1_amd64.deb",
+     "a2594bf74e2ba5b15347e37084a66908376d0e7c87d439f548aad9d85121d80f"),
+    ("main/r/re2/libre2-10_20230301-3build1_amd64.deb",
+     "4ce429c1254f57c96feb80536fe4418ea326603fa797d8311a50f946273fd29b"),
+    ("universe/s/spdlog/libspdlog1.12_1.12.0+ds-2build1_amd64.deb",
+     "e69e315e1596b6cf97a714ae797e55d42765664a739a0b30beac35164a4edaff"))]
 C_SOURCES = {".c"}
 CPP_SOURCES = {".cc", ".cpp", ".cxx", ".c++"}
 CALLABLES = ("function", "method", "class")
@@ -315,9 +353,9 @@ def missing(index, rels: list[str], configs: dict | None = None) -> dict:
         elif Path(rel).suffix.lower() not in C_SOURCES | CPP_SOURCES:
             reasons[rel] = "header no indexed translation unit includes in an active branch"
         elif units and unit is None:
-            reasons[rel] = "in no CMake unit of the pre-map"
-        else:
-            reasons[rel] = "no compile command: not built by the default configuration"
+            reasons[rel] = "in no C or C++ unit of the pre-map"
+        else:  # an indexed unit's build that stopped says so
+            reasons[rel] = f"no compile command: {(unit or {}).get('cause') or 'not built by the default configuration'}"
     return reasons
 
 
@@ -331,10 +369,22 @@ def _sha256(path: Path) -> str:
         return hashlib.file_digest(handle, "sha256").hexdigest()
 
 
-def tools() -> dict[str, Path]:
+def _carried(builds) -> list[tuple[str, str, str]]:
+    """`(name, url, sha256)` of what the other `builds` run: Meson and Ninja, its backend; Bear for Make and cgo;
+    the Go and Bazel pins, which a version the project states, installed by the preparation, replaces."""
+    from premap import bazel, meson
+    return [*((name, url, digest) for name, (url, digest) in zip(("meson.whl", "ninja.whl"), meson.DOWNLOAD)
+              if "meson" in builds),
+            *((f"bear/{posixpath.basename(url)}", url, digest) for url, digest in BEAR
+              if {"make", "go"} & set(builds)),
+            *([("go.tar.gz", *preparation.GO[:2])] if "go" in builds else []),
+            *([("bazel", *bazel.DOWNLOAD[0])] if "bazel" in builds else [])]
+
+
+def tools(builds=()) -> dict[str, Path]:
     """The container paths and host files the copy carries: CMake and scip-clang, downloaded once into the shared
-    directory and checked by sha256 each time, and `clang_run.py`. A Gap when one cannot be downloaded and
-    verified."""
+    directory and checked by sha256 each time, `clang_run.py`, and what the other `builds` run (`_carried`). A
+    Gap when one cannot be downloaded and verified."""
     import container
     from resolve_edges import download, shared_engine_dir
     version, cmake_url, cmake_sha = CMAKE
@@ -352,6 +402,8 @@ def tools() -> dict[str, Path]:
                                 "check the network, then index again") from error
         inputs[f"{TOOLS}/{name}"] = target
     inputs[f"{TOOLS}/clang_run.py"] = Path(__file__).with_name("clang_run.py")
+    for name, url, digest in _carried(builds):
+        inputs[f"{TOOLS}/{name}"] = preparation.fetched(url, digest, posixpath.basename(url))
     return inputs
 
 
@@ -371,7 +423,7 @@ def _folder(path: str | None) -> str:
     return (path or ".").strip("/").removeprefix("./") or "."
 
 
-NATIVE = frozenset({CMAKE_UNIT, *OTHER_BUILDS})  # the units that build C and C++
+NATIVE = frozenset({CMAKE_UNIT, *OTHER_BUILDS, *BUILDS})  # the units that build C and C++ (a go-module through cgo)
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATIVE, True
@@ -381,20 +433,39 @@ ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATI
 def structure(record: dict) -> dict:
     """What `index` takes from the pre-map: its native units, the workspaces that hold them, the CMake versions
     it states and the submodules it finds not checked out."""
-    return {"units": [unit for unit in record.get("units", []) if unit["kind"] in NATIVE],
+    return {"units": [unit for unit in record.get("units", []) if unit["kind"] in NATIVE
+                      and (unit["kind"] != "go-module" or cgo(unit))],
             "workspace": record.get("workspace", []),
-            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "cmake"],
+            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in STATED],
             "absent": [gap["path"] for gap in record.get("gaps", []) if gap.get("kind") == "submodule_absent"]}
 
 
+STATED = ("cmake", "bazel", "go")  # the toolchains of the pre-map a build here runs with
+
+
 def _version(text) -> tuple[int, ...]:
-    return tuple(int(part) for part in str(text or "").split(".")[:3] if part.isdigit())
+    return tuple(int(part) for part in str(text or "").removeprefix("go").split(".")[:3] if part.isdigit())
+
+
+def newest_above(stated, pin: str) -> dict | None:
+    """The newest minimum `stated` above `pin`, which the pin does not meet; None when it meets them all."""
+    above = [item for item in stated or () if _version(item.get("version")) > _version(pin)]
+    return max(above, key=lambda item: _version(item["version"])) if above else None
 
 
 def wanted_cmake(stated) -> dict | None:
     """The newest CMake minimum `stated` above `CMAKE`, which the pin does not meet; None when it meets them all."""
-    above = [item for item in stated or () if _version(item.get("version")) > _version(CMAKE[0])]
-    return max(above, key=lambda item: _version(item["version"])) if above else None
+    return newest_above(stated, CMAKE[0])
+
+
+def wanted(stated, builds) -> list[dict]:
+    """The toolchains the preparation installs with mise for these `builds`: the newest CMake and Go minimums above
+    the pins, and the Bazel the project states, exactly (`.bazelversion`: Bazel's releases are not compatible)."""
+    of = {tool: [item for item in stated or () if item.get("tool") == tool] for tool in STATED}
+    cmake = wanted_cmake(of["cmake"])
+    go = newest_above(of["go"], preparation.NEEDS["go"]["version"]) if "go" in builds else None
+    return [*([cmake] if cmake else []), *([{**go, "version": str(go["version"]).removeprefix("go")}] if go else []),
+            *(of["bazel"] if "bazel" in builds else [])]
 
 
 def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
@@ -410,6 +481,48 @@ def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
                "cause": f"built with {build}: Daodan configures C and C++ units with CMake only"}
               for root, build in others]
     return roots, states
+
+
+def unbuilt(units) -> list[dict]:
+    """The state of each folder a build declares that gives no compilation database here, once per build."""
+    return [{"root": root, "state": "unavailable", "kind": "no-database",
+             "cause": f"built with {build}: Daodan takes no compilation database from {build}"}
+            for root, build in dict.fromkeys((_folder(unit.get("root")), OTHER_BUILDS[unit["kind"]])
+                                             for unit in units or () if unit.get("kind") in OTHER_BUILDS
+                                             and unit["kind"] not in BUILDS)]
+
+
+def cgo(unit: dict) -> list[str]:
+    """The packages of a `go-module` whose C files cgo compiles."""
+    return [item["package"] for item in (unit.get("config") or {}).get("cgo", ()) if item.get("c_files")]
+
+
+def meson_top(project_dir: Path, root: str) -> str:
+    """The folder Meson configures a meson.build of `root` from: the outermost one holding a meson.build, from the
+    checkout's root down to `root` (a subdir's meson.build is read only from its project's)."""
+    parts = [] if root == "." else root.split("/")
+    return next((folder for folder in ("/".join(parts[:depth]) or "." for depth in range(len(parts) + 1))
+                 if (Path(project_dir) / folder / "meson.build").is_file()), root)
+
+
+def builds(units, workspace, top) -> list[dict]:
+    """The builds beside CMake that give a compilation database, each once: Meson's from the top folder of its
+    meson.build files (`top(root)`), Make's per folder with the targets the pre-map states there, Bazel's from its
+    workspace's root, Go's per module with its cgo packages, `download` when the module requires others."""
+    owner = {_folder(member): _folder(item["root"]) for item in workspace or () if item.get("tool") == "bazel"
+             for member in item.get("members", ())}
+    plan: dict[tuple[str, str], dict] = {}
+    for unit in units or ():
+        kind, root = unit.get("kind"), _folder(unit.get("root"))
+        if kind == "meson-target":
+            plan.setdefault((top(root), "meson"), {})
+        elif kind == "make-target":
+            plan.setdefault((root, "make"), {"targets": []})["targets"].append(unit["name"])
+        elif kind == "bazel-target":
+            plan.setdefault((owner.get(root, root), "bazel"), {})
+        elif kind == "go-module" and cgo(unit):
+            plan[(root, "go")] = {"packages": cgo(unit), **({"download": True} if unit.get("registries") else {})}
+    return [{"root": root, "build": build, **extra} for (root, build), extra in plan.items()]
 
 
 def restores(project_dir: Path, roots) -> dict[str, dict]:
@@ -450,46 +563,54 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     """The index of each configured root, with its runs and each root's state; `units`, `workspace` and the
     submodules not checked out (`absent`) are the pre-map's (`files` is not used: a unit's compilation database
     decides what is indexed). `cpus` is the container's share, as the caller gives it: its limit and scip-clang's
-    jobs. A unit built otherwise than with CMake, or whose configure needs a download outside the allowed
-    registries or an absent submodule, is `unavailable`; one whose configure fails otherwise, `failed`; either
+    jobs. A unit whose build gives no database (`unbuilt`), or whose configure needs a download outside the
+    allowed registries or an absent submodule, is `unavailable`; one whose build fails otherwise, `failed`; either
     keeps its static facts from the snapshot. Without a unit indexed, or without a container, the result's state
     is `unavailable` (no unit failed) or `failed`. `gaps` says what the preparation could not install: a CMake of
     `toolchains`, a root's dependencies (`restores`)."""
     import container
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
-    roots, states = configure_roots(units, workspace)
-    if not roots:
-        return unavailable("no C or C++ unit built with CMake in the pre-map" + (
-            "; " + "; ".join(dict.fromkeys(item["cause"] for item in states)) if states else ""),
-            "none: the project's C and C++ files keep their static facts")
+    roots, _observed = configure_roots(units, workspace)  # its states are the dynamic step's: these builds run here
+    others = builds(units, workspace, lambda root: meson_top(project_dir, root))
+    states = unbuilt(units)
+    if not roots and not others:
+        return unavailable("; ".join(dict.fromkeys(item["cause"] for item in states)) or NO_UNIT,
+                           "none: the project's C and C++ files keep their static facts")
     if container.architecture() != "x64":
         return unavailable(f"scip-clang {VERSION} has an x86_64 Linux build only", "index on an x86_64 machine")
     restored = restores(project_dir, roots)
-    chosen = [{"root": root, **({"init": restored[root]["init"]} if root in restored else {}),
-               **({"absent": list(absent)} if absent else {})} for root in roots]
+    chosen = [*({"root": root, **({"init": restored[root]["init"]} if root in restored else {}),
+                 **({"absent": list(absent)} if absent else {})} for root in roots), *others]
     plan = work_dir / "units.json"
     plan.write_text(json.dumps(chosen, indent=1) + "\n", encoding="utf-8")
     out_dir = work_dir / "container"
     back = out_dir / Path(OUT).name
     shutil.rmtree(back, ignore_errors=True)
-    cmake = wanted_cmake(toolchains)
-    chains = preparation.toolchains([cmake] if cmake else [])
+    kinds = {item["build"] for item in others}
+    fetches = "bazel" in kinds or any(item.get("download") for item in others)  # Bazel's aquery, Go's modules
+    cmake = wanted_cmake([item for item in toolchains or () if item.get("tool") == "cmake"])
+    chains = preparation.toolchains(wanted(toolchains, kinds))
     needs = preparation.setup(sorted({item["manager"] for item in restored.values()}))
     lines = [*chains["lines"], *needs["lines"], *([CMAKE_ON_PATH] if restored else []),
-             *(item["line"] for item in restored.values())]
+             *(item["line"] for item in restored.values()),
+             *([f"python3 {TOOLS}/clang_run.py prepare {TOOLS}/units.json || true"] if fetches else [])]
+    from premap.container_runner import TOOLS as RUNNERS
     command = ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT, str(cpus)]
     options = {"prepare": ["sh", "-c", "\n".join([f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}", *lines])],
-               "registries": tuple(dict.fromkeys([*(container.REGISTRIES if needs["registries"] else ()),
-                                                  *chains["hosts"], *needs["hosts"]])),
+               "registries": tuple(dict.fromkeys([*(container.REGISTRIES if needs["registries"] or fetches else ()),
+                                                  *chains["hosts"], *needs["hosts"],
+                                                  *(RUNNERS["bazel"]["hosts"] if "bazel" in kinds else ())])),
                "env": {**preparation.ENV, "TERM": "dumb"}} if lines else {"env": {"TERM": "dumb"}}
     if cmake:
         command.append(f"{preparation.T}/bin/cmake")  # mise's, linked there; the pin when it is not
+    if "bazel" in kinds:  # the memory Bazel's server needs, as the pre-map's runner gives it
+        memory = max(memory, int(RUNNERS["bazel"]["memory"] * 2**30))
     (out_dir / "prepare.log").unlink(missing_ok=True)
     result = container.run_in_container(
         project_dir, command, image=IMAGE, out_dir=out_dir, outputs=[OUT], timeout=timeout,
         memory=memory, pids=PIDS, cpus=cpus, engine=engine, **options,
-        inputs=lambda: {**tools(), f"{TOOLS}/units.json": plan,
+        inputs=lambda: {**tools(kinds), f"{TOOLS}/units.json": plan,
                         **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                            for url, digest, name in [*chains["files"], *needs["files"]]}})
     log = out_dir / "prepare.log"
@@ -513,7 +634,7 @@ def _contract(result: dict, back: Path, work_dir: Path, states: list[dict]) -> d
             runs.append({"unit": unit["root"], "step": step["step"], "returncode": step["returncode"],
                          "seconds": step["seconds"], "peak_mb": data.get("peak_mb"), "stderr_tail": step["tail"],
                          **({"diagnostics": step["diagnostics"]} if "diagnostics" in step else {})})
-        states.append({key: unit[key] for key in ("root", "state", "kind", "cause", "fetched", "error")
+        states.append({key: unit[key] for key in ("root", "build", "state", "kind", "cause", "fetched", "error")
                        if key in unit})
         compiled.update(unit["compiled"])
         if unit["index"] and (back / unit["index"]).is_file():
