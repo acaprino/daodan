@@ -79,7 +79,7 @@
                             "spring-petclinic-visits-service", "spring-petclinic-genai-service", "spring-petclinic-config-server",
                             "spring-petclinic-discovery-server", "spring-petclinic-api-gateway"]},
   "toolchains": [
-    {"tool": "java", "version": "17", "declared_in": "pom.xml#java.version"},
+    {"tool": "java", "version": "17", "declared_in": "pom.xml#properties.java.version"},
     {"tool": "maven", "version": "3.9.8", "declared_in": ".mvn/wrapper/maven-wrapper.properties"},
     {"tool": "java", "version": "17", "declared_in": "docker/Dockerfile"},
     {"tool": "java", "version": "17", "declared_in": ".github/workflows/maven-build.yml#jobs.build.strategy.matrix.java"},

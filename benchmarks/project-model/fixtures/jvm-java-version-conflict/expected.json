@@ -77,7 +77,7 @@
     {
       "tool": "java",
       "version": "11",
-      "declared_in": "pom.xml#maven.compiler.release"
+      "declared_in": "pom.xml#properties.maven.compiler.release"
     },
     {
       "tool": "java",

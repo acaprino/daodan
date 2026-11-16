@@ -42,7 +42,7 @@
     {
       "tool": "java",
       "version": "8",
-      "declared_in": "pom.xml#maven.compiler.release"
+      "declared_in": "pom.xml#properties.maven.compiler.release"
     }
   ],
   "dependencies": [

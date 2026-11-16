@@ -47,12 +47,12 @@
     {
       "tool": "java",
       "version": "17",
-      "declared_in": "pom.xml#maven.compiler.release"
+      "declared_in": "pom.xml#properties.maven.compiler.release"
     },
     {
       "tool": "java",
       "version": "17",
-      "declared_in": "pom.xml#kotlin.compiler.jvmTarget"
+      "declared_in": "pom.xml#properties.kotlin.compiler.jvmTarget"
     }
   ],
   "dependencies": [

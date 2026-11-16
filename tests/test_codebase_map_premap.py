@@ -366,6 +366,21 @@ def test_the_jvm_files_give_the_wrapper_and_the_java_a_pom_declares(tmp_path):
     assert "${jdk}" in undeclared["api/pom.xml"] and "Gradle" in undeclared["."]
 
 
+def test_a_compiler_plugin_setting_is_named_by_its_path_in_the_pom(tmp_path):
+    """D-226: a toolchain's field is its path in the pom, as `properties.maven.compiler.release` is, the plugin
+    named by its artifactId: `<configuration><source>` of maven-compiler-plugin is
+    `maven-compiler-plugin.configuration.source` (jvm-ver-mvn-cfg6's expected.json)."""
+    pom = ('<project xmlns="http://maven.apache.org/POM/4.0.0">\n  <modelVersion>4.0.0</modelVersion>\n'
+           '  <groupId>acme</groupId>\n  <artifactId>legacy</artifactId>\n  <version>1</version>\n  <build>\n'
+           '    <plugins>\n      <plugin>\n        <artifactId>maven-compiler-plugin</artifactId>\n'
+           '        <configuration>\n          <source>1.6</source>\n          <target>1.6</target>\n'
+           '        </configuration>\n      </plugin>\n    </plugins>\n  </build>\n</project>\n')
+    _, _, record = build(tmp_path, "jvm_files", extra={"legacy/pom.xml": pom})
+    versions = {(t["tool"], t["declared_in"]): (t["version"], t["line"]) for t in record["toolchains"]}
+    assert versions[("java", "legacy/pom.xml#maven-compiler-plugin.configuration.source")] == ("1.6", 11)
+    assert versions[("java", "legacy/pom.xml#maven-compiler-plugin.configuration.target")] == ("1.6", 12)
+
+
 # ------------------------------------------------- model readers, stored outputs
 
 def test_go_reader_gives_the_nested_module_and_what_the_build_leaves_out(tmp_path):

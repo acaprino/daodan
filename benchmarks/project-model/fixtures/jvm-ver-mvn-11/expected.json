@@ -42,12 +42,12 @@
     {
       "tool": "java",
       "version": "11",
-      "declared_in": "pom.xml#maven.compiler.source"
+      "declared_in": "pom.xml#properties.maven.compiler.source"
     },
     {
       "tool": "java",
       "version": "11",
-      "declared_in": "pom.xml#maven.compiler.target"
+      "declared_in": "pom.xml#properties.maven.compiler.target"
     }
   ],
   "dependencies": [

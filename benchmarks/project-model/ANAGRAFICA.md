@@ -874,7 +874,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: nessuno.
 - Versioni dichiarate:
-  - java: 17 (`.java-version`); 21.0.5-tem (`.sdkmanrc`); 11 (`pom.xml#maven.compiler.release`); 23 (`build.gradle.kts`)
+  - java: 17 (`.java-version`); 21.0.5-tem (`.sdkmanrc`); 11 (`pom.xml#properties.maven.compiler.release`); 23 (`build.gradle.kts`)
 - Framework: nessuno.
 - Servizi: nessuno.
 - Casi:
@@ -925,7 +925,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: maven.
 - File delle dipendenze: model/pom.xml, pom.xml, service/pom.xml.
 - Versioni dichiarate:
-  - java: 21 (`pom.xml#maven.compiler.release`); 17 (`model/pom.xml#maven.compiler.release`)
+  - java: 21 (`pom.xml#properties.maven.compiler.release`); 17 (`model/pom.xml#properties.maven.compiler.release`)
 - Framework: Jackson, JUnit Jupiter, picocli.
 - Servizi: nessuno.
 - Casi:
@@ -946,7 +946,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 21 (`pom.xml#maven-compiler-plugin.configuration.release`); 17 (`pom.xml#java.version`)
+  - java: 21 (`pom.xml#maven-compiler-plugin.configuration.release`); 17 (`pom.xml#properties.java.version`)
 - Framework: JUnit Jupiter, Lombok, MapStruct.
 - Servizi: nessuno.
 - Casi:
@@ -964,7 +964,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 17 (`pom.xml#maven.compiler.release`)
+  - java: 17 (`pom.xml#properties.maven.compiler.release`)
   - maven: 3.9.9 (`.mvn/wrapper/maven-wrapper.properties`)
 - Framework: JUnit Jupiter.
 - Servizi: nessuno.
@@ -982,7 +982,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 17 (`pom.xml#maven.compiler.release`); 17 (`pom.xml#kotlin.compiler.jvmTarget`)
+  - java: 17 (`pom.xml#properties.maven.compiler.release`); 17 (`pom.xml#properties.kotlin.compiler.jvmTarget`)
 - Framework: JUnit Jupiter.
 - Servizi: nessuno.
 - Casi:
@@ -1177,7 +1177,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 11 (`pom.xml#maven.compiler.source`); 11 (`pom.xml#maven.compiler.target`)
+  - java: 11 (`pom.xml#properties.maven.compiler.source`); 11 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1192,7 +1192,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 14 (`pom.xml#maven.compiler.source`); 14 (`pom.xml#maven.compiler.target`)
+  - java: 14 (`pom.xml#properties.maven.compiler.source`); 14 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1207,7 +1207,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 21 (`pom.xml#maven.compiler.source`); 21 (`pom.xml#maven.compiler.target`)
+  - java: 21 (`pom.xml#properties.maven.compiler.source`); 21 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1222,7 +1222,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 25 (`pom.xml#maven.compiler.source`); 25 (`pom.xml#maven.compiler.target`)
+  - java: 25 (`pom.xml#properties.maven.compiler.source`); 25 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1237,7 +1237,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 1.5 (`pom.xml#maven.compiler.source`); 1.5 (`pom.xml#maven.compiler.target`)
+  - java: 1.5 (`pom.xml#properties.maven.compiler.source`); 1.5 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1252,7 +1252,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 1.6 (`pom.xml#maven.compiler.source`); 1.6 (`pom.xml#maven.compiler.target`)
+  - java: 1.6 (`pom.xml#properties.maven.compiler.source`); 1.6 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1267,7 +1267,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 1.7 (`pom.xml#maven.compiler.source`); 1.7 (`pom.xml#maven.compiler.target`)
+  - java: 1.7 (`pom.xml#properties.maven.compiler.source`); 1.7 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1282,7 +1282,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 1.8 (`pom.xml#maven.compiler.source`); 1.8 (`pom.xml#maven.compiler.target`)
+  - java: 1.8 (`pom.xml#properties.maven.compiler.source`); 1.8 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1297,7 +1297,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 9 (`pom.xml#maven.compiler.source`); 9 (`pom.xml#maven.compiler.target`)
+  - java: 9 (`pom.xml#properties.maven.compiler.source`); 9 (`pom.xml#properties.maven.compiler.target`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -1328,7 +1328,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 8 (`pom.xml#maven.compiler.release`)
+  - java: 8 (`pom.xml#properties.maven.compiler.release`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -2136,7 +2136,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: pom.xml.
 - Versioni dichiarate:
-  - java: 1.8 (`pom.xml#java.version`); 8 (`.github/workflows/build.yml`)
+  - java: 1.8 (`pom.xml#properties.java.version`); 8 (`.github/workflows/build.yml`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:
@@ -2609,7 +2609,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: maven.
 - File delle dipendenze: pom.xml, spring-petclinic-admin-server/pom.xml, spring-petclinic-config-server/pom.xml, spring-petclinic-discovery-server/pom.xml.
 - Versioni dichiarate:
-  - java: 17 (`pom.xml#java.version`); 17 (`docker/Dockerfile`); 17 (`.github/workflows/maven-build.yml#jobs.build.strategy.matrix.java`); 17 (`.devcontainer/devcontainer.json`)
+  - java: 17 (`pom.xml#properties.java.version`); 17 (`docker/Dockerfile`); 17 (`.github/workflows/maven-build.yml#jobs.build.strategy.matrix.java`); 17 (`.devcontainer/devcontainer.json`)
   - maven: 3.9.8 (`.mvn/wrapper/maven-wrapper.properties`)
 - Framework: Bootstrap, Hibernate, JUnit Jupiter, Resilience4j, Spring AI, Spring Boot, Spring Boot Admin, Spring Cloud Config, Spring Cloud Gateway, Spring Cloud Netflix, Spring Data JPA, Spring MVC, Spring WebFlux, Vue Router, Vue.js.
 - Servizi: Grafana, HSQLDB, MySQL, OpenAI, Prometheus, Zipkin.

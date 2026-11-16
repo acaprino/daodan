@@ -42,7 +42,7 @@
     {
       "tool": "java",
       "version": "1.8",
-      "declared_in": "pom.xml#java.version"
+      "declared_in": "pom.xml#properties.java.version"
     },
     {
       "tool": "java",

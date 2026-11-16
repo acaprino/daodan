@@ -4,8 +4,9 @@ The wrapper (`gradle/wrapper/gradle-wrapper.properties`, `.mvn/wrapper/maven-wra
 `config.wrapper` and the build tool's version in the distribution's file name. A pom: the Java release it asks
 for (`maven.compiler.release`, `source` and `target` properties, `java.version`, the `maven-compiler-plugin`'s
 `release`, `source` and `target`) and the version of the `kotlin-maven-plugin`, each a property of the same pom
-or a literal. A value naming a property the pom does not define, and a Gradle build's Java version, which lives
-in build scripts only Gradle runs, are `toolchain_undeclared` gaps.
+or a literal, its field the path in the pom with the plugin by its artifactId (`properties.java.version`,
+`maven-compiler-plugin.configuration.source`). A value naming a property the pom does not define, and a Gradle
+build's Java version, which lives in build scripts only Gradle runs, are `toolchain_undeclared` gaps.
 """
 from __future__ import annotations
 
@@ -64,7 +65,8 @@ def _pom(rel: str, text: str, toolchains: list, gaps: list) -> None:
         if artifact == "maven-compiler-plugin" and "configuration" in fields:
             for child in fields["configuration"]:
                 if _local(child.tag) in COMPILER_FIELDS and child.text:
-                    wanted.append((f"maven-compiler-plugin.{_local(child.tag)}", f"<{_local(child.tag)}>", child.text.strip()))
+                    wanted.append((f"maven-compiler-plugin.configuration.{_local(child.tag)}", f"<{_local(child.tag)}>",
+                                   child.text.strip()))
         if artifact == "kotlin-maven-plugin" and "version" in fields and fields["version"].text:
             value = fields["version"].text.strip()
             wanted.append(("kotlin-maven-plugin.version", "kotlin-maven-plugin", value))

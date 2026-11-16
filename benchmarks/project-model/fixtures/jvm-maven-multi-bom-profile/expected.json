@@ -122,12 +122,12 @@
     {
       "tool": "java",
       "version": "21",
-      "declared_in": "pom.xml#maven.compiler.release"
+      "declared_in": "pom.xml#properties.maven.compiler.release"
     },
     {
       "tool": "java",
       "version": "17",
-      "declared_in": "model/pom.xml#maven.compiler.release"
+      "declared_in": "model/pom.xml#properties.maven.compiler.release"
     }
   ],
   "dependencies": [
