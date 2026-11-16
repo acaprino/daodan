@@ -1,0 +1,1016 @@
+{
+ "cases": {
+  "run": 32,
+  "failed": {},
+  "seconds": {
+   "total": 6344.0,
+   "median": 132.8,
+   "slowest": [
+    [
+     "mix-real-tududi",
+     1584.9
+    ],
+    [
+     "real-app-kotlinconf",
+     619.5
+    ],
+    [
+     "real-app-full-stack-fastapi",
+     327.3
+    ],
+    [
+     "mix-real-tinyxml2",
+     223.3
+    ],
+    [
+     "sys-go-cgo",
+     205.6
+    ]
+   ]
+  }
+ },
+ "languages": {
+  "c": {
+   "cases": 7,
+   "states": {
+    "fresh": 6,
+    "unavailable": 1
+   },
+   "reasons": {
+    "unavailable": [
+     [
+      "no C or C++ unit in the pre-map: no build of the project compiles C or C++",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 72,
+    "indexed": 49
+   },
+   "sites": 10271,
+   "answered": {
+    "external": 440,
+    "lexical": 372,
+    "project-callable": 226,
+    "project-value": 3144
+   },
+   "holes": {
+    "no-document": 5147,
+    "no-occurrence": 941,
+    "no-position": 1
+   },
+   "share": 0.4072
+  },
+  "cpp": {
+   "cases": 8,
+   "states": {
+    "fresh": 6,
+    "unavailable": 1,
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "none of the 8 cpp files is in the index: no compile command: not built by the default configuration (5), header no indexed translation unit includes in an active branch (3)",
+      1
+     ]
+    ],
+    "unavailable": [
+     [
+      ".: the configure reads third_party/fmt: a git submodule not checked out (git submodule update --init)",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 19,
+    "indexed": 18
+   },
+   "sites": 2651,
+   "answered": {
+    "external": 43,
+    "observed": 26,
+    "project-callable": 663,
+    "project-value": 1658
+   },
+   "holes": {
+    "no-document": 25,
+    "no-occurrence": 236
+   },
+   "share": 0.9015
+  },
+  "csharp": {
+   "cases": 1,
+   "states": {
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-dotnet wrote no index (no documents were indexed; Msbuild failed when processing the file '/work/contrib/dotzlib/DotZLib/DotZLib.csproj' with message: The project file \"\" must be opened in a version of Visual Studio IDE that supports it and converted to the latest version before it can be built by MSBuild. More info: https://aka.ms/DeprecatedProjectConversion): 15:19:32 warn: ScipDotnet.IndexCommandOptions[0] Indexing finished without error but no documents were indexed.\n15:19:32 info: ScipDotnet.IndexCommandOptions[0] done: /daodan/out/index-2.scip 1.3s",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 0,
+    "indexed": 0
+   },
+   "sites": 0,
+   "answered": {},
+   "holes": {},
+   "share": null
+  },
+  "go": {
+   "cases": 8,
+   "states": {
+    "fresh": 8
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 30,
+    "indexed": 29
+   },
+   "sites": 109,
+   "answered": {
+    "external": 28,
+    "project-callable": 18,
+    "project-value": 46
+   },
+   "holes": {
+    "no-document": 10,
+    "no-occurrence": 1,
+    "no-position": 1,
+    "undefined-project-symbol": 5
+   },
+   "share": 0.844
+  },
+  "javascript": {
+   "cases": 4,
+   "states": {
+    "fresh": 4
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 1103,
+    "indexed": 1103
+   },
+   "sites": 147548,
+   "answered": {
+    "external": 50607,
+    "lexical": 1,
+    "observed": 691,
+    "project-callable": 15266,
+    "project-value": 40392
+   },
+   "holes": {
+    "dangling-local": 732,
+    "no-occurrence": 39563,
+    "no-position": 250,
+    "undefined-project-symbol": 46
+   },
+   "share": 0.7249
+  },
+  "kotlin": {
+   "cases": 1,
+   "states": {
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-java wrote no index (preparation exited with code 1): ort.html\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nA problem occurred configuring root project 'KotlinConfApp'.\n> Could not resolve all artifacts for configuration 'classpath'.\n   > Could not resolve dev.zacsweers.metro:gradle-plugin:1.5.2.\n     Required by:\n         buildscript of root project 'KotlinConfApp' > dev.zacsweers.metro:dev.zacsweers.metro.gradle.plugin:1.5.2\n      > Dependency requires at least JVM runtime version 21. This build uses a Java 17 JVM.\n\n* Try:\n> Run this build using a Java 21 or newer JVM.\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 4s",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 0,
+    "indexed": 0
+   },
+   "sites": 0,
+   "answered": {},
+   "holes": {},
+   "share": null
+  },
+  "python": {
+   "cases": 3,
+   "states": {
+    "fresh": 3
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 76,
+    "indexed": 76
+   },
+   "sites": 4936,
+   "answered": {
+    "external": 1838,
+    "observed": 32,
+    "project-callable": 922,
+    "project-value": 1944
+   },
+   "holes": {
+    "dangling-local": 9,
+    "no-occurrence": 117,
+    "undefined-project-symbol": 74
+   },
+   "share": 0.9595
+  },
+  "rust": {
+   "cases": 9,
+   "states": {
+    "fresh": 9
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 38,
+    "indexed": 37
+   },
+   "sites": 1556,
+   "answered": {
+    "external": 408,
+    "lexical": 2,
+    "project-callable": 501,
+    "project-value": 620
+   },
+   "holes": {
+    "no-document": 16,
+    "no-occurrence": 4,
+    "no-position": 5
+   },
+   "share": 0.9839
+  },
+  "stylesheet": {
+   "cases": 7,
+   "states": {
+    "fresh": 7
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 2019,
+    "indexed": 2019
+   },
+   "sites": 58534,
+   "answered": {
+    "external": 110,
+    "namespace": 997,
+    "project-value": 14295
+   },
+   "holes": {
+    "call": 177,
+    "concatenation": 3,
+    "css-in-js": 24,
+    "ejs": 4,
+    "ejs-glued": 5,
+    "element-access": 5,
+    "expression": 1,
+    "no-font-face": 34,
+    "no-rule": 42757,
+    "parameter": 73,
+    "property": 37,
+    "template": 2,
+    "undeclared": 3,
+    "unresolved-import": 5,
+    "variable": 2
+   },
+   "share": 0.2631
+  },
+  "typescript": {
+   "cases": 2,
+   "states": {
+    "fresh": 2
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 759,
+    "indexed": 759
+   },
+   "sites": 82246,
+   "answered": {
+    "external": 28436,
+    "project-callable": 11581,
+    "project-value": 33876
+   },
+   "holes": {
+    "dangling-local": 4311,
+    "no-occurrence": 2880,
+    "no-position": 109,
+    "undefined-project-symbol": 1053
+   },
+   "share": 0.8984
+  }
+ },
+ "missing": [
+  {
+   "case": "sys-cmake-presets",
+   "language": "c",
+   "missing": 1,
+   "snapshot": 4,
+   "reasons": {
+    "no compile command: not built by the default configuration": 1
+   }
+  },
+  {
+   "case": "sys-go-cgo",
+   "language": "go",
+   "missing": 1,
+   "snapshot": 3,
+   "reasons": {
+    "a cgo file (`import \"C\"`): scip-go indexes the copy cgo writes into the build cache, not the file": 1
+   }
+  },
+  {
+   "case": "mix-real-semver",
+   "language": "rust",
+   "missing": 1,
+   "snapshot": 19,
+   "reasons": {
+    "no document in the index": 1
+   }
+  },
+  {
+   "case": "mix-real-tinyxml2",
+   "language": "cpp",
+   "missing": 1,
+   "snapshot": 3,
+   "reasons": {
+    "no compile command: not built by the default configuration": 1
+   }
+  },
+  {
+   "case": "mix-real-zlib",
+   "language": "c",
+   "missing": 22,
+   "snapshot": 54,
+   "reasons": {
+    "no compile command: not built by the default configuration": 12,
+    "header no indexed translation unit includes in an active branch": 8,
+    "no compile command: make ended with exit code 2": 2
+   }
+  }
+ ],
+ "no_analyzer": {
+  "sql": {
+   "cases": 1,
+   "files": 4
+  }
+ },
+ "premap": {
+  "languages": {
+   "given": 32,
+   "not_given": 0,
+   "found": 81,
+   "expected": 82,
+   "extra": 66,
+   "wrong": 0
+  },
+  "languages.files": {
+   "given": 0,
+   "not_given": 32,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "excluded": {
+   "given": 32,
+   "not_given": 0,
+   "found": 93,
+   "expected": 110,
+   "extra": 60,
+   "wrong": 2
+  },
+  "units": {
+   "given": 32,
+   "not_given": 0,
+   "found": 121,
+   "expected": 195,
+   "extra": 2,
+   "wrong": 1
+  },
+  "units.depends_on": {
+   "given": 32,
+   "not_given": 0,
+   "found": 47,
+   "expected": 103,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.source_roots": {
+   "given": 28,
+   "not_given": 4,
+   "found": 64,
+   "expected": 140,
+   "extra": 3,
+   "wrong": 0
+  },
+  "units.config": {
+   "given": 31,
+   "not_given": 1,
+   "found": 105,
+   "expected": 420,
+   "extra": 0,
+   "wrong": 30
+  },
+  "workspace": {
+   "given": 32,
+   "not_given": 0,
+   "found": 6,
+   "expected": 9,
+   "extra": 5,
+   "wrong": 1
+  },
+  "workspace.members": {
+   "given": 11,
+   "not_given": 21,
+   "found": 22,
+   "expected": 23,
+   "extra": 1,
+   "wrong": 0
+  },
+  "toolchains": {
+   "given": 32,
+   "not_given": 0,
+   "found": 34,
+   "expected": 93,
+   "extra": 19,
+   "wrong": 7
+  },
+  "dependencies": {
+   "given": 0,
+   "not_given": 32,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "frameworks": {
+   "given": 0,
+   "not_given": 32,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "services": {
+   "given": 1,
+   "not_given": 31,
+   "found": 1,
+   "expected": 10,
+   "extra": 0,
+   "wrong": 0
+  },
+  "needs": {
+   "given": 0,
+   "not_given": 32,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  }
+ },
+ "gaps": [
+  {
+   "step": "scan",
+   "kind": "not_executed",
+   "count": 25,
+   "examples": [
+    "sys-rust-buildrs: build.rs: a build script is present and Daodan's index does not run it: the code it generates and the cfg flags it sets are unknown",
+    "sys-rust-tauri: src-tauri/build.rs: a build script is present and Daodan's index does not run it: the code it generates and the cfg flags it sets are unknown",
+    "mix-real-semver: build.rs: a build script is present and Daodan's index does not run it: the code it generates and the cfg flags it sets are unknown"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "no_analyzer",
+   "count": 15,
+   "examples": [
+    "mix-real-tinyxml2: 2 Meson files and no analyzer lists the language: their code is in no graph",
+    "mix-real-zlib: 10 Ada files and no analyzer lists the language: their code is in no graph",
+    "mix-real-zlib: 1 Assembly files and no analyzer lists the language: their code is in no graph"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_partial",
+   "count": 10,
+   "examples": [
+    "sys-rust-path-git: helper: registries unknown: cargo metadata --locked: error: cannot create the lock file /work/helper/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.",
+    "sys-rust-tauri: src-tauri: registries unknown: cargo metadata --locked: Updating crates.io index\nerror: cannot create the lock file /work/src-tauri/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.",
+    "sys-rust-workspace: crates/experimental: registries unknown: cargo metadata --locked: error: cannot create the lock file /work/crates/experimental/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead."
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "ownership_ambiguous",
+   "count": 7,
+   "examples": [
+    "mix-real-zlib: contrib/vstudio/vc10: Directory scope cannot distinguish build ownership: miniunz@contrib/vstudio/vc10, minizip@contrib/vstudio/vc10, testzlib@contrib/vstudio/vc10, testzlibdll@contrib/vstudio/vc10, zlibstat@contrib/vstudio/vc10, zlibvc@contrib/vstudio/vc10, zlibvc@contrib/vstudio/vc10+",
+    "mix-real-zlib: contrib/vstudio/vc11: Directory scope cannot distinguish build ownership: miniunz@contrib/vstudio/vc11, minizip@contrib/vstudio/vc11, testzlib@contrib/vstudio/vc11, testzlibdll@contrib/vstudio/vc11, zlibstat@contrib/vstudio/vc11, zlibvc@contrib/vstudio/vc11, zlibvc@contrib/vstudio/vc11+",
+    "mix-real-zlib: contrib/vstudio/vc12: Directory scope cannot distinguish build ownership: miniunz@contrib/vstudio/vc12, minizip@contrib/vstudio/vc12, testzlib@contrib/vstudio/vc12, testzlibdll@contrib/vstudio/vc12, zlibstat@contrib/vstudio/vc12, zlibvc@contrib/vstudio/vc12, zlibvc@contrib/vstudio/vc12+"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "code_outside_units",
+   "count": 5,
+   "examples": [
+    "sys-c-macro-annotations: include: 2 C files that no unit of kind bazel-target, cmake-target, go-module, make-target, meson-target, msbuild-project holds",
+    "mix-real-tinyxml2: .: 1 Python files that no unit of kind python-project holds",
+    "real-app-kotlinconf: app/iosApp/KotlinMultiplatformLinkedPackage/Sources/KotlinMultiplatformLinkedPackage/include: 1 C files that no unit of kind bazel-target, cmake-target, go-module, make-target, meson-target, msbuild-project holds"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_failed",
+   "count": 4,
+   "examples": [
+    "sys-git-submodule-absent: .: cmake configure: CMake Error at CMakeLists.txt:7 (add_subdirectory): add_subdirectory given source \"third_party/fmt\" which is not an existing directory. -- Configuring incomplete, errors occurred!",
+    "mix-real-tinyxml2: test: cmake configure: CMake Error at CMakeLists.txt:6 (find_package): By not providing \"Findtinyxml2.cmake\" in CMAKE_MODULE_PATH this project has asked CMake to find a package configuration file provided by \"tinyxml2\", but CMake did not find one. Could not find a package configuration file provided by \"tinyxml2\" with any of the following names: tinyxml2.cps tinyxml2Config.cmake tinyxml2-config.cmake Add the installation prefix of \"tinyxml2\" to CMAKE_PREFIX_PATH or set \"tinyxml2_DIR\" to a directory containing one of the above files. If \"tinyxml2\" provides a separate development package or SDK, be sure it has been in",
+    "mix-real-zlib: contrib/nuget/nuget.csproj: dotnet msbuild: ndex for source https://api.nuget.org/v3/index.json.\n/work/contrib/nuget/nuget.csproj : warning : Unable to load the service index for source https://api.nuget.org/v3/index.json.\n/work/contrib/nuget/nuget.csproj : error MSB4236: The SDK 'Microsoft.Build.NoTargets/3.5.6' specified could not be found."
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "superseded",
+   "count": 4,
+   "examples": [
+    "sys-c-macro-annotations: .: cmake-target zmini of modules.py@daodan/module-graph/v1: cmake@4.4.5 answers for this folder without it",
+    "sys-cmake-presets: .: cmake-target sensor of modules.py@daodan/module-graph/v1: cmake@4.4.5 answers for this folder without it",
+    "sys-cmake-targets: .: cmake-target calc of modules.py@daodan/module-graph/v1: cmake@4.4.5 answers for this folder without it"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "toolchain_unavailable",
+   "count": 3,
+   "examples": [
+    "sys-rust-toolchain-conflict: rust-toolchain.toml: rust 1.82.0: rust 1.79.0 runs these commands: one version per tool per run",
+    "mix-real-python-semver: pyproject.toml: python >=3.10: a range, not a version to install",
+    "real-app-full-stack-fastapi: backend/pyproject.toml: python >=3.14,<4.0: a range, not a version to install"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "choice",
+   "count": 1,
+   "examples": [
+    "sys-cpp-vcpkg-conan: .: vcpkg and conan declared: vcpkg prepares the configure"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "member_missing",
+   "count": 1,
+   "examples": [
+    "sys-git-submodule-absent: CMakeLists.txt: workspace member third_party/fmt: absent from the tree"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "submodule_absent",
+   "count": 1,
+   "examples": [
+    "sys-git-submodule-absent: third_party/fmt: submodule https://github.com/fmtlib/fmt.git is not checked out: its code is not in the project"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "toolchain_undeclared",
+   "count": 1,
+   "examples": [
+    "real-app-kotlinconf: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "build_not_indexed",
+   "count": 7,
+   "examples": [
+    "mix-real-tinyxml2: test: test: failed: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded",
+    "mix-real-zlib: contrib/vstudio/vc10: contrib/vstudio/vc10: unavailable: built with MSBuild: Daodan takes no compilation database from MSBuild",
+    "mix-real-zlib: contrib/vstudio/vc11: contrib/vstudio/vc11: unavailable: built with MSBuild: Daodan takes no compilation database from MSBuild"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "restore_failed",
+   "count": 2,
+   "examples": [
+    "mix-real-zlib: contrib/dotzlib: MSBUILD : error MSB4025: The project file could not be loaded. Root element is missing.",
+    "real-app-kotlinconf: .: * What went wrong: | > Could not resolve all artifacts for configuration 'classpath'. | > Could not resolve dev.zacsweers.metro:gradle-plugin:1.5.2."
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "language_not_indexed",
+   "count": 1,
+   "examples": [
+    "mix-real-zlib: none of the 8 cpp files is in the index: no compile command: not built by the default configuration (5), header no indexed translation unit includes in an active branch (3)"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "workspace_failure",
+   "count": 1,
+   "examples": [
+    "mix-real-zlib: contrib/dotzlib/DotZLib.sln: Msbuild failed when processing the file '/work/contrib/dotzlib/DotZLib/DotZLib.csproj' with message: The project file \"\" must be opened in a version of Visual Studio IDE that supports it and converted to the latest version before it can be built by MSBuild. More info: https://aka.ms/DeprecatedProjectConversion"
+   ]
+  }
+ ],
+ "containers": {
+  "runs": 216,
+  "seconds": 3331.4,
+  "phases": {
+   "execute": {
+    "runs": 116,
+    "seconds": 1555.0
+   },
+   "prepare": {
+    "runs": 99,
+    "seconds": 1770.1
+   },
+   "service": {
+    "runs": 1,
+    "seconds": 6.3
+   }
+  },
+  "not_zero": [
+   {
+    "phase": "service",
+    "image": "postgres:16-alpine",
+    "outcome": "ready",
+    "exit_code": null,
+    "cause": null,
+    "count": 1,
+    "cases": [
+     "mix-real-tududi"
+    ]
+   }
+  ]
+ },
+ "by_case": {
+  "sys-bazel": {
+   "seconds": 151.5,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 2
+    }
+   }
+  },
+  "sys-c-macro-annotations": {
+   "seconds": 143.4,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "cpp": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "sys-cmake-presets": {
+   "seconds": 139.6,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-cmake-targets": {
+   "seconds": 108.3,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "sys-cpp-header-only": {
+   "seconds": 116.0,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-cpp-vcpkg-conan": {
+   "seconds": 193.1,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "sys-git-submodule-absent": {
+   "seconds": 88.1,
+   "languages": {
+    "cpp": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-buildtags": {
+   "seconds": 156.1,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 5
+    }
+   }
+  },
+  "sys-go-cgo": {
+   "seconds": 205.6,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "go": {
+     "state": "fresh",
+     "holes": 11
+    }
+   }
+  },
+  "sys-go-generated": {
+   "seconds": 79.4,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-nested": {
+   "seconds": 94.2,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-single": {
+   "seconds": 133.0,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-toolchain": {
+   "seconds": 143.7,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-vendor": {
+   "seconds": 83.6,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-go-workspace": {
+   "seconds": 156.8,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "sys-make-plain": {
+   "seconds": 105.3,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "sys-meson": {
+   "seconds": 96.4,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "sys-rust-buildrs": {
+   "seconds": 102.4,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-features": {
+   "seconds": 94.1,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "sys-rust-path-git": {
+   "seconds": 126.2,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-shared-test-module": {
+   "seconds": 136.2,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-single": {
+   "seconds": 91.0,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-tauri": {
+   "seconds": 132.6,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 2
+    },
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "sys-rust-toolchain-conflict": {
+   "seconds": 124.1,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "sys-rust-workspace": {
+   "seconds": 118.5,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "mix-real-semver": {
+   "seconds": 140.5,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 22
+    }
+   }
+  },
+  "mix-real-tinyxml2": {
+   "seconds": 223.3,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 254
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 4374
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 4910
+    }
+   }
+  },
+  "mix-real-zlib": {
+   "seconds": 201.0,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 6086
+    },
+    "cpp": {
+     "state": "failed",
+     "holes": 0
+    },
+    "csharp": {
+     "state": "failed",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "mix-real-python-semver": {
+   "seconds": 128.3,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 32
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "mix-real-tududi": {
+   "seconds": 1584.9,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 36205
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 37383
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 8109
+    }
+   }
+  },
+  "real-app-full-stack-fastapi": {
+   "seconds": 327.3,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 167
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 827
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 244
+    }
+   }
+  },
+  "real-app-kotlinconf": {
+   "seconds": 619.5,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 10
+    },
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 8
+    }
+   }
+  }
+ }
+}
