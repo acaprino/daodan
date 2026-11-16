@@ -495,7 +495,8 @@ def _declared_requirements(project_root: Path, manifests: list[str], uv: str) ->
                     done = subprocess.run(
                         [uv, "export", "--frozen", "--no-build", "--no-emit-project", "--no-emit-workspace",
                          "--all-groups", "--all-extras", "--no-hashes", "--no-header", "--format", "requirements-txt",
-                         *_own_uv()], cwd=copy, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=600)
+                         *uv_options()], cwd=copy, stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                        timeout=600)
                     exported = done.stdout.splitlines() if done.returncode == 0 else None
             if exported is None:
                 try:
@@ -549,23 +550,42 @@ def uv_binary(fetch: bool = True) -> Path | None:
         raise OSError(f"Daodan pins no uv {UV_VERSION} build for {_platform()}")
     asset, digest = UV_ASSETS[_platform()]
     print(f"installing uv {UV_VERSION} into {home} (first use)", flush=True)
-    partial = home.with_name(f".{UV_VERSION}.partial")
-    shutil.rmtree(partial, ignore_errors=True)
-    partial.mkdir(parents=True)
-    try:
+
+    def fill(partial: Path) -> None:
         archive = download(f"https://github.com/astral-sh/uv/releases/download/{UV_VERSION}/{asset}", partial / asset,
                            sha256=digest)
         unpack(archive, partial)
         archive.unlink()
         os.replace(next(partial.rglob(executable_name("uv"))), partial / executable_name("uv"))
+
+    try:
+        publish(home, fill, UV_VERSION)
     except (ValueError, StopIteration) as error:
         raise OSError(f"uv {UV_VERSION} was not installed: {error or 'its archive holds no uv'}") from error
-    shutil.rmtree(home, ignore_errors=True)
-    os.replace(partial, home)
     return binary
 
 
-def _own_uv() -> list[str]:
+def publish(home: Path, fill, installed: str) -> None:
+    """`fill` a folder of its own beside `home`, then publish it whole as `home`, marked `.installed`: an
+    interrupted install leaves nothing usable, and of two at once (the server and the pass, two workers) the first
+    published stays and the other's is dropped."""
+    home.parent.mkdir(parents=True, exist_ok=True)
+    partial = Path(tempfile.mkdtemp(prefix=f".{home.name}.", suffix=".partial", dir=home.parent))
+    try:
+        fill(partial)
+        (partial / ".installed").write_text(installed, encoding="utf-8")
+        try:
+            os.replace(partial, home)
+        except OSError:
+            if (home / ".installed").is_file():
+                return  # another install published first
+            shutil.rmtree(home, ignore_errors=True)  # an interrupted install's
+            os.replace(partial, home)
+    finally:
+        shutil.rmtree(partial, ignore_errors=True)
+
+
+def uv_options() -> list[str]:
     """What makes a uv run Daodan's own: no configuration file read (the project's, the user's: an index, a mirror
     for the interpreter it downloads, a setting for builds), its cache in Daodan's shared directory, where no wheel
     built elsewhere from a source distribution is found for `--only-binary`. It runs outside the project too."""
@@ -596,10 +616,11 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
     """The project's declared Python packages in an environment of the shared directory.
 
     Built once per set of manifests and interpreter, from wheels only, by Daodan's own
-    uv (`uv_binary`, `_own_uv`; OSError without it): no package build script and no project code runs, and nothing is
-    written into the project; what its interpreter would run as it starts is removed
-    (`_inert`). A requirement uv could not install, one without a wheel among them, is
-    in its `daodan-environment.json` (`failed`), with uv's words.
+    uv (`uv_binary`, `uv_options`; OSError without it): no package build script and no
+    project code runs, and nothing is written into the project; what its interpreter
+    would run as it starts is removed (`_inert`). A requirement uv could not install,
+    one without a wheel among them, is in its `daodan-environment.json` (`failed`), with
+    uv's words.
     The interpreter is Daodan's, else `python`, the Python the project states, which
     uv resolves as `uv sync` does (an installed one that matches, else its download):
     a project that declares no package then gets the interpreter alone, and one uv
@@ -633,7 +654,7 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
     shutil.rmtree(destination, ignore_errors=True)
 
     def run(*arguments, timeout=1800):
-        return subprocess.run([uv, *arguments, *_own_uv()], cwd=destination.parent, stdin=subprocess.DEVNULL,
+        return subprocess.run([uv, *arguments, *uv_options()], cwd=destination.parent, stdin=subprocess.DEVNULL,
                               capture_output=True, text=True, timeout=timeout)
 
     failed: list[dict] = []

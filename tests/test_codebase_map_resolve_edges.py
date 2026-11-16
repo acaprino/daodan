@@ -690,7 +690,8 @@ class PassLifecycleTests(unittest.TestCase):
         self.assertEqual(resolve_edges.edge_state(self.manifest)["state"], "stale")
 
     def test_a_missing_engine_is_unavailable_and_starts_no_process(self):
-        with mock.patch.object(shutil, "which", return_value=None), \
+        with mock.patch.object(engine_tools, "uv_binary", side_effect=OSError("no network")), \
+                mock.patch.object(shutil, "which", side_effect=AssertionError("the PATH's uv")), \
                 mock.patch.object(importlib.util, "find_spec", return_value=None), \
                 mock.patch.object(engine_pass, "_spawn_detached") as spawn:
             result = resolve_edges.ensure_edges(self.manifest)
@@ -707,15 +708,21 @@ class PassLifecycleTests(unittest.TestCase):
                 return "0.25.2"
             raise metadata.PackageNotFoundError(name)
 
-        with mock.patch.object(shutil, "which", return_value="uv"), \
+        # Daodan's pinned uv, never the PATH's: no configuration file, its cache Daodan's.
+        with mock.patch.object(engine_tools, "uv_binary", return_value=Path("/daodan/uv")), \
+                mock.patch.object(shutil, "which", side_effect=AssertionError("the PATH's uv")), \
                 mock.patch.object(metadata, "version", side_effect=version):
             command = resolve_edges.stage_command(engine_pass.ENGINE_LANGUAGES["python"], self.manifest, report)
         python = f"{sys.version_info[0]}.{sys.version_info[1]}"
-        self.assertEqual(command[:7], ["uv", "run", "--quiet", "--no-config", "--no-project", "--python", python])
-        self.assertEqual(command[7:11], ["--with", "multilspy==0.1.1", "--with", "tree-sitter==0.25.2"])
-        self.assertEqual(command[11:15], ["python", "-B", "-X", "faulthandler"])
+        self.assertEqual(command[:9], [str(Path("/daodan/uv")), "run", "--quiet", *engine_tools.uv_options(),
+                                       "--no-project", "--python", python])
+        self.assertEqual(command[3:6], ["--no-config", "--cache-dir", str(engine_tools.shared_cache_dir() / "uv")])
+        self.assertEqual(command[9:13], ["--with", "multilspy==0.1.1", "--with", "tree-sitter==0.25.2"])
+        self.assertEqual(command[13:17], ["python", "-B", "-X", "faulthandler"])
         self.assertIn(str(report), command)
-        with mock.patch.object(shutil, "which", return_value=None), \
+        # Without the pin, this interpreter, when it holds the engine.
+        with mock.patch.object(engine_tools, "uv_binary", side_effect=OSError("no network")), \
+                mock.patch.object(shutil, "which", side_effect=AssertionError("the PATH's uv")), \
                 mock.patch.object(importlib.util, "find_spec", return_value=object()):
             self.assertEqual(resolve_edges.stage_command(engine_pass.ENGINE_LANGUAGES["python"], self.manifest,
                                                          report)[:4],
@@ -1045,6 +1052,34 @@ class PreparedEnvironmentTests(unittest.TestCase):
                                     f"{asset}", digest)])
         self.assertEqual(first, again)
         self.assertEqual(first, self.cache / "engines/uv" / engine_tools.UV_VERSION / engine_tools.executable_name("uv"))
+
+    def test_two_first_downloads_of_the_pinned_uv_at_once_both_end_with_it(self):
+        """As every pinned release: each download fills its own folder, the first published wins."""
+        import contextlib
+        import io
+        import tarfile
+        calls = []
+
+        def download(url, target, *, sha256=None, sha1_url=None):
+            calls.append(target.parent)
+            source = target.parent / "uv-x86_64-unknown-linux-gnu" / engine_tools.executable_name("uv")
+            source.parent.mkdir(parents=True)
+            source.write_text(f"#!/bin/sh\n# {len(calls)}\n", encoding="utf-8")
+            with tarfile.open(target, "w:gz") as archive:
+                archive.add(source.parent, arcname=source.parent.name)
+            shutil.rmtree(source.parent)
+            if len(calls) == 1:  # the other process, done while this one is half-way
+                engine_tools.uv_binary()
+            return target
+
+        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=self.cache), \
+                mock.patch.object(engine_tools, "_platform", return_value="linux-x64"), \
+                mock.patch.object(engine_tools, "download", side_effect=download), \
+                contextlib.redirect_stdout(io.StringIO()):
+            binary = engine_tools.uv_binary()
+        self.assertEqual(len(set(calls)), 2)
+        self.assertIn("# 2", binary.read_text(encoding="utf-8"))  # the first one published
+        self.assertEqual(sorted(path.name for path in binary.parent.parent.iterdir()), [engine_tools.UV_VERSION])
 
     def test_a_lock_is_exported_by_daodan_s_own_uv_and_nothing_is_built(self):
         """uv reads the lock as it is (`--frozen`), builds nothing (`--no-build`), reads no configuration file and
@@ -1519,11 +1554,21 @@ class OfflineStageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             manifest, report = Path(temp) / "manifest.sqlite", Path(temp) / "report.json"
             spec = resolve_edges.ENGINES[1]
-            with mock.patch.object(shutil, "which", return_value="uv"):
+            asked = []
+
+            def run(command, **kwargs):
+                asked.append(kwargs.get("cwd"))
+                return subprocess.CompletedProcess(command, 0)
+
+            with mock.patch.object(engine_tools, "uv_binary", return_value=Path("uv")), \
+                    mock.patch.object(subprocess, "run", side_effect=run):
                 online = resolve_edges.stage_command(spec, manifest, report)
                 offline = resolve_edges.stage_command(spec, manifest, report, offline=True)
+                self.assertTrue(engine_pass.cached_offline(spec, manifest, report))
             self.assertNotIn("--offline", online)
-            self.assertEqual(offline[:6], ["uv", "run", "--quiet", "--no-config", "--no-project", "--offline"])
+            self.assertEqual(offline[:8], ["uv", "run", "--quiet", *engine_tools.uv_options(), "--no-project",
+                                           "--offline"])
+            self.assertEqual(asked, [str(engine_pass.SCRIPT_DIR)])  # outside the project, as the stage runs
 
 
 class LanguageServerTests(unittest.TestCase):
@@ -1533,6 +1578,30 @@ class LanguageServerTests(unittest.TestCase):
             source.write_bytes(b"class App {\r\n  void run() {}\r\n}\r\n")
             _served, text = resolve_edges.LspEngine(Path(temp)).served_text(source)
         self.assertEqual(text.count("\r\n"), 3)
+
+    def test_two_first_installs_of_one_release_at_once_both_end_with_it_installed(self):
+        """The server and the pass, or two workers, may install one pinned release at once (Node, scip-python):
+        each fills its own folder, the first published wins, the other's is dropped and no install fails."""
+        import contextlib
+        import io
+        class Engine(resolve_edges.LspEngine):
+            version = "1"
+
+        with tempfile.TemporaryDirectory() as temp:
+            engine, other = (Engine(Path(temp), install_dir=Path(temp) / "engines") for _ in "12")
+            home = engine.install_root / "1"
+
+            def fill(partial, inner=True):
+                (partial / "tool").write_text("one" if inner else "two", encoding="utf-8")
+                if inner:  # the other process, done while this one is half-way
+                    other._install(home, lambda folder: fill(folder, inner=False))
+                (partial / "more").write_text("x", encoding="utf-8")
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                engine._install(home, fill)
+            self.assertTrue((home / ".installed").is_file())
+            self.assertEqual((home / "tool").read_text(encoding="utf-8"), "two")  # the first one published
+            self.assertEqual(sorted(path.name for path in home.parent.iterdir()), ["1"])
 
 
 class TypeScriptMirrorTests(unittest.TestCase):
@@ -1971,7 +2040,9 @@ class CommandLineTests(unittest.TestCase):
         payload = json.loads(stdout.getvalue())
         self.assertFalse(payload["available"])
         self.assertIn("multilspy is not installed", payload["reason"])
-        self.assertEqual(payload["install"], "install uv, which gives the pass multilspy")
+        # Daodan downloads its own uv (`engine_tools.uv_binary`): none on the PATH is ever asked for.
+        self.assertEqual(payload["install"],
+                         "check the network: Daodan downloads its uv, which gives the pass multilspy")
 
 
 class CoverageTests(unittest.TestCase):

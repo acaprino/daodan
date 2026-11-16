@@ -268,6 +268,7 @@ def test_a_venv_the_project_s_pyright_configuration_names_is_read_and_never_star
     subprocess.run([str(engine_tools.uv_binary()), "venv", "-q", str(environment), "--python", sys.executable],
                    check=True)
     result = python.index(project, tmp_path / "work", environment=environment, units=[{"root": ""}])
+    assert len(result["runs"]) == 1, (result.get("reason"), result.get("install"))
     [run] = result["runs"]
     rows = {tuple(row[:3]): row[3] for row in python._beside(Path(run["index"]), "unbound")}
     assert rows[("app.py", 2, 11)] == ("bound" if site else "Unknown"), rows  # the venv's files, else Daodan's

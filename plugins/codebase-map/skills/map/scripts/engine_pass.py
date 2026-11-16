@@ -220,7 +220,7 @@ def edge_state(manifest: Path) -> dict:
         return result
 
 
-INDEXER_INSTALL = "install uv, which runs the pass with the snapshot's parser"
+INDEXER_INSTALL = "check the network: Daodan downloads its uv, which runs the pass with the snapshot's parser"
 
 
 class EngineSpec(NamedTuple):
@@ -262,13 +262,21 @@ def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, *, offlin
     interpreter's Python minor and exact parser packages, so the stage reproduces
     the parser fingerprint of the snapshot whichever environment wrote it, and the
     environment lives exactly as long as the stage. `offline` keeps uv from the
-    network, for an environment already in its cache. Without uv, this interpreter
-    runs the stage when it can import the engine. None when neither can.
+    network, for an environment already in its cache. uv is Daodan's pin, never the
+    PATH's, run as Daodan's own (`engine_tools.uv_options`) outside the project (the
+    stage's folder). Without the pin, this interpreter runs the stage when it can
+    import the engine. None when neither can.
     """
+    import contextlib
+    import engine_tools
     import snapshot
     script = [str(SCRIPT_DIR / "resolve_edges.py"), str(manifest), "--engine", spec.name, "--compact",
               "--report-out", str(report_path)]
-    uv = shutil.which("uv")
+    try:
+        with contextlib.redirect_stdout(sys.stderr):  # its first install's line is no server's output
+            uv = str(engine_tools.uv_binary())
+    except OSError:
+        uv = None
     if uv:
         pins = []
         for package in snapshot.PARSER_PACKAGES:
@@ -277,7 +285,8 @@ def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, *, offlin
             except metadata.PackageNotFoundError:
                 continue
         requirements = [item for requirement in spec.requirements for item in ("--with", requirement)]
-        return [uv, "run", "--quiet", "--no-config", "--no-project", *(["--offline"] if offline else []),
+        return [uv, "run", "--quiet", *engine_tools.uv_options(), "--no-project",
+                *(["--offline"] if offline else []),
                 "--python", f"{sys.version_info[0]}.{sys.version_info[1]}",
                 *requirements, *pins, "python", "-B", "-X", "faulthandler", *script]
     if importlib.util.find_spec(spec.module) is not None:
@@ -296,7 +305,7 @@ def cached_offline(spec: EngineSpec, manifest: Path, report_path: Path) -> bool:
         return False
     head = command[:command.index("python") + 1]
     try:
-        return subprocess.run([*head, "-c", f"import {spec.module}"], stdin=subprocess.DEVNULL,
+        return subprocess.run([*head, "-c", f"import {spec.module}"], cwd=str(SCRIPT_DIR), stdin=subprocess.DEVNULL,
                               capture_output=True, timeout=120).returncode == 0
     except (OSError, subprocess.TimeoutExpired):
         return False

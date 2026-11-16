@@ -16,7 +16,7 @@ from pathlib import Path, PurePosixPath
 
 from source_positions import (byte_to_char, byte_to_utf16, char_to_byte, EngineFailure, Location, SourceLines,
                               utf16_to_byte)
-from engine_tools import shared_engine_dir
+from engine_tools import publish, shared_engine_dir
 
 
 # Bounds that keep one server from taking a shared machine.
@@ -111,18 +111,15 @@ class LspEngine:
         return asyncio.run_coroutine_threadsafe(coroutine, self.loop).result(timeout=timeout)
 
     def _install(self, home: Path, fill) -> None:
-        """Fill a sibling directory, then publish it whole, so an interrupted install leaves nothing usable."""
+        """Fill a sibling directory, then publish it whole, so an interrupted install leaves nothing usable.
+
+        Each install fills its own: the server and the pass, or two workers, may install one release at once;
+        the first published stays and the other's is dropped."""
         if (home / ".installed").is_file():
             return
         self.installed_now = True
         print(f"installing {self.server_name} {self.version} into {home} (first use)", flush=True)
-        partial = home.with_name(f".{home.name}.partial")
-        shutil.rmtree(partial, ignore_errors=True)
-        partial.mkdir(parents=True)
-        fill(partial)
-        (partial / ".installed").write_text(self.version or "", encoding="utf-8")
-        shutil.rmtree(home, ignore_errors=True)
-        os.replace(partial, home)
+        publish(home, fill, self.version or "")
 
     def workspace_root(self) -> Path:
         """The folder the server opens as its workspace: the project, unless the engine describes one elsewhere."""
@@ -149,7 +146,7 @@ class LspEngine:
         try:
             from multilspy.lsp_protocol_handler.server import LanguageServerHandler, ProcessLaunchInfo
         except ImportError as error:
-            self.install = "install uv, which gives the pass multilspy"
+            self.install = "check the network: Daodan downloads its uv, which gives the pass multilspy"
             return False, f"multilspy is not installed: {error}"
         if self.version is None:
             return False, f"multilspy pins no {self.server_name} release"
@@ -157,7 +154,6 @@ class LspEngine:
         try:
             ready, reason = self.prepare(home)
         except Exception as error:
-            shutil.rmtree(home.with_name(f".{home.name}.partial"), ignore_errors=True)
             return False, f"could not install {self.server_name}: {type(error).__name__}: {error}"
         if not ready:
             return False, reason
