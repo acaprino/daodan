@@ -1,0 +1,22 @@
+{
+  "python": "3.13.14",
+  "system": "Windows",
+  "parameters": {
+    "repeat": 3,
+    "requests_per_repeat": 4,
+    "consumers": 2
+  },
+  "passed": true,
+  "elapsed_seconds": 2.477,
+  "checks": [
+    "core_without_mcp_or_ui_import",
+    "independent_http_bootstrap",
+    "loopback_and_token",
+    "origin_refusal",
+    "persistent_request_roundtrip",
+    "concurrent_claim_once",
+    "release_and_complete",
+    "clean_shutdown",
+    "no_child_process"
+  ]
+}

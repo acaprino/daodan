@@ -59,6 +59,14 @@ def test_the_analyzer_declares_itself_and_its_units_index_the_language():
     assert premap.indexed_by()["C#"] == frozenset({"dotnet-project"})
 
 
+def test_a_package_resource_of_any_culture_loads_without_icu():
+    """Globalization is invariant (the image holds no ICU), which rejects every culture but the invariant one: MSBuild
+    then fails on a package that brings resources per culture (NETSDK1188, Catalog.API's Microsoft.CodeAnalysis)
+    unless cultures are not restricted to the predefined ones."""
+    assert csharp.ENV["DOTNET_SYSTEM_GLOBALIZATION_INVARIANT"] == "1"
+    assert csharp.ENV["DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY"] == "false"
+
+
 def test_the_tool_is_pinned_by_version_and_sha256():
     url, sha256, name = csharp.TOOL
     assert url == f"https://api.nuget.org/v3-flatcontainer/scip-dotnet/{csharp.VERSION}/scip-dotnet.{csharp.VERSION}.nupkg"
@@ -103,6 +111,34 @@ def test_the_targets_are_each_solution_and_each_project_no_solution_lists(tmp_pa
     assert wanted == [("Shop.sln", ""), ("legacy/New.sln", "legacy"), ("legacy/Old.slnx", "legacy"),
                       ("tools/T/T.csproj", "tools/T/T.csproj"), ("tools/V/V.vbproj", "tools/V/V.vbproj")]
     assert states == [{"root": "gone", "state": "failed", "reason": "no solution file in the folder of this workspace"}]
+
+
+LEGACY = '<VisualStudioProject>\n    <CSHARP ProjectType = "Local" ProductVersion = "7.10.3077">\n'
+
+
+def test_a_project_of_visual_studio_net_s_own_format_is_unavailable_and_not_run(tmp_path):
+    """Visual Studio .NET 2002 and 2003 wrote projects as `<VisualStudioProject>`, which MSBuild does not read (zlib's
+    contrib/dotzlib): no run is planned for one, nor for a solution that lists only such projects."""
+    files = {"contrib/dotzlib/DotZLib.sln": 'Microsoft Visual Studio Solution File, Format Version 8.00\nProject('
+                                            '"{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotZLib", '
+                                            '"DotZLib\\DotZLib.csproj", "{BB1EE0B1}"\nEndProject\n',
+             "contrib/dotzlib/DotZLib/DotZLib.csproj": "﻿" + LEGACY,
+             "tools/Old/Old.csproj": '<?xml version="1.0"?>\n' + LEGACY,
+             "Shop.slnx": '<Solution><Project Path="src/A/A.csproj" /></Solution>',
+             "src/A/A.csproj": '<Project Sdk="Microsoft.NET.Sdk" />'}
+    for rel, text in files.items():
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).write_text(text, encoding="utf-8")
+    units = [{"root": "contrib/dotzlib/DotZLib", "manifest": "contrib/dotzlib/DotZLib/DotZLib.csproj",
+              "solution": "contrib/dotzlib"},
+             {"root": "tools/Old", "manifest": "tools/Old/Old.csproj", "solution": None}]
+    wanted, states = csharp.targets(tmp_path, {"", "contrib/dotzlib"}, units)
+    assert wanted == [("Shop.slnx", "")]
+    assert states == [
+        {"root": "contrib/dotzlib/DotZLib.sln", "state": "unavailable", "reason": csharp.legacy(
+            ["contrib/dotzlib/DotZLib/DotZLib.csproj"])},
+        {"root": "tools/Old/Old.csproj", "state": "unavailable", "reason": csharp.legacy(["tools/Old/Old.csproj"])}]
+    assert "Visual Studio .NET 2002 or 2003" in states[1]["reason"] and "MSBuild" in states[1]["reason"]
 
 
 # ---------------------------------------------------------------------------------------------------------
@@ -349,6 +385,17 @@ class RunTest(unittest.TestCase):
         self.assertIn("no solution or C# project in the pre-map", result["reason"])
         self.assertEqual(self.created(), [])
 
+    def test_where_every_project_is_of_visual_studio_net_s_format_the_language_is_unavailable(self):
+        """Not `failed`: no build of Daodan's can read the project, and the cause names its format."""
+        (self.project / "tools/T/T.csproj").write_text(LEGACY, encoding="utf-8")
+        result = self.index(roots=set(), units=[UNITS[1]])
+        self.assertEqual(result["state"], "unavailable")
+        self.assertEqual(result["reason"], csharp.legacy(["tools/T/T.csproj"]))
+        self.assertIn("convert", result["install"])
+        self.assertEqual(result["builds"], [{"root": "tools/T/T.csproj", "state": "unavailable",
+                                             "reason": csharp.legacy(["tools/T/T.csproj"])}])
+        self.assertEqual(self.created(), [])
+
 
 # ---------------------------------------------------------------------------------------------------------
 # What the index leaves to the reader
@@ -407,6 +454,21 @@ Console.WriteLine(order.Twice());
 Pricing plain = new(3);
 var user = new Shop.Core.Models.User();
 Console.WriteLine(user.Greet());
+Console.WriteLine(args);
+Console.WriteLine(order.Describe());
+""",
+    "src/Core/Summary.cs": """namespace Shop.Core;
+
+public partial class Summary
+{
+    public decimal Of(Order order)
+    {
+        var row = new { Total = order.Total };
+        return row.Total;
+    }
+
+    public static Summary Current => Default;
+}
 """,
 }
 C = "scip-dotnet nuget . . "  # the package scip-dotnet gives every symbol defined in source
@@ -479,7 +541,25 @@ OCCURRENCES = {
         (8, "user", "local 3", True), (8, "Shop", C + "Shop/", False), (8, "Core", C + "Core/", False),
         (8, "Models", C + "Models/", False), (8, "User", C + "Models/User#", False),
         (9, "Console", CONSOLE, False), (9, "WriteLine", CONSOLE + "WriteLine(+11).", False),
-        (9, "user", "local 3", False), (9, "Greet", C + "Models/User#Greet().", False)],
+        (9, "user", "local 3", False), (9, "Greet", C + "Models/User#Greet().", False),
+        # the parameter the compiler declares for top-level statements, and a package's member of an `extension`
+        # block (C# 14), which scip-dotnet names a local: its block has an empty name (`IsLocalSymbol`)
+        (10, "Console", CONSOLE, False), (10, "WriteLine", CONSOLE + "WriteLine(+11).", False),
+        (10, "args", C + "``/Program#`<Main>$`().(args)", False),
+        (11, "Console", CONSOLE, False), (11, "WriteLine", CONSOLE + "WriteLine(+11).", False),
+        (11, "order", "local 1", False), (11, "Describe", "local 4", False)],
+    "src/Core/Summary.cs": [
+        (1, "Shop", C + "Shop/", False), (1, "Core", C + "Core/", False),
+        (3, "Summary", C + "Core/Summary#", True),
+        (5, "Of", C + "Core/Summary#Of().", True), (5, "Order", C + "Core/Order#", False),
+        (5, "order", C + "Core/Summary#Of().(order)", True),
+        # an anonymous type's member is a local too, referenced where `new { }` names it and defined nowhere
+        (7, "row", "local 0", True), (7, "Total", "local 1", False), (7, "order", C + "Core/Summary#Of().(order)", False),
+        (7, "Total@2", C + "Core/Order#Total.", False),
+        (8, "row", "local 0", False), (8, "Total", "local 1", False),
+        # `Default` is what System.Text.Json's source generator writes into the partial class
+        (11, "Summary", C + "Core/Summary#", False), (11, "Current", C + "Core/Summary#Current.", True),
+        (11, "Default", C + "Core/Summary#Default.", False)],
 }
 # A definition's relationships, as `ScipDocumentIndexer.VisitOccurrence` writes them: a type's base types and
 # interfaces, a method's overridden methods and the interface members it implements.
@@ -644,11 +724,47 @@ def test_a_constructor_call_written_without_a_name_is_a_hole(shop):
                      ("src/Api/Program.cs:7", "new", "unnamed-constructor", "target-typed new", "refine")}
 
 
+def test_an_anonymous_types_member_is_declared_where_new_names_it(shop):
+    """Roslyn declares an anonymous type's property at the name `new { Total = ... }` gives it; scip-dotnet
+    references it there as a local and defines it nowhere. That first name is its definition: a value."""
+    local = "src/Core/Summary.cs#local 1"
+    assert local in shop["index"].defs and shop["prepared"]["anonymous"] == 1
+    assert _ends(shop, "src/Core/Summary.cs:8 row.Total") == {("project-value", local, ())}
+    assert not shop["references"]["src/Core/Summary.cs:8 row.Total"]["hole"]
+
+
+def test_what_the_index_cannot_name_is_a_hole_with_its_cause(shop):
+    """A dead end the index's scheme leaves says why: a member of a C# 14 `extension` block (a local defined
+    nowhere, its package unknown), a member a source generator writes into a partial type, and the `args` the
+    compiler declares for top-level statements."""
+    holes = {f"{row['site']} {row['name']}": row["hole"] for row in shop["references"].values() if row["hole"]}
+    assert holes["src/Api/Program.cs:11 order.Describe"] == csharp.EXTENSION
+    assert holes["src/Core/Summary.cs:11 Default"] == csharp.GENERATED
+    assert holes["src/Api/Program.cs:10 args"] == csharp.TOP_LEVEL
+
+
+def test_a_name_with_type_arguments_has_no_occurrence_and_says_so(tmp_path):
+    """scip-dotnet visits identifier names only (`ScipCSharpSyntaxWalker.VisitIdentifierName`), none written with
+    type arguments: `List<Order>` and `Add<Order>()` have no occurrence, their type arguments do."""
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/Lists.cs").write_text("var orders = new List<Order>();\norders.Add<Order>(null);\n",
+                                           encoding="utf-8")
+    index = graph_tests.load(tmp_path, graph_tests.document("src/Lists.cs", [
+        graph_tests.occurrence(1, 4, 10, "local 0", True), graph_tests.occurrence(1, 22, 27, C + "Core/Order#")]))
+    unanswered = csharp.unanswered(index)
+    assert unanswered(("src/Lists.cs", 1, 17)) == csharp.TYPE_ARGUMENTS
+    assert unanswered(("src/Lists.cs", 2, 7)) == csharp.TYPE_ARGUMENTS
+    assert unanswered(("src/Lists.cs", 1, 22)) is None and unanswered(("src/Other.cs", 1, 0)) is None
+
+
 def test_every_reference_of_the_snapshot_ends_or_is_a_hole_the_index_explains(shop):
-    """No dead end the index's own scheme causes is left: what remains unanswered is a generic or implicit name."""
-    assert {hole["class"] for hole in shop["graph"]["holes"]} <= {"unnamed-constructor", "no-occurrence",
-                                                                 "no-position", "computed-callee"}
-    assert not [edge for edge in shop["graph"]["edges"] if edge["end"] == "dead-end"]
+    """No dead end the index's own scheme causes is left: what remains unanswered is a generic or implicit name,
+    or says its cause."""
+    classes = {hole["class"] for hole in shop["graph"]["holes"]}
+    assert {csharp.EXTENSION, csharp.GENERATED, csharp.TOP_LEVEL, "unnamed-constructor"} <= classes
+    assert not classes & {"dangling-local", "undefined-project-symbol", "cycle", "no-document"}
+    assert {edge["to"] for edge in shop["graph"]["edges"] if edge["end"] == "dead-end"} == {
+        "src/Api/Program.cs#local 4", C + "Core/Summary#Default.", C + "``/Program#`<Main>$`().(args)"}
     assert shop["graph"]["files"]["indexed"] == len(SOURCES) and not shop["graph"]["files"]["missing"]
 
 

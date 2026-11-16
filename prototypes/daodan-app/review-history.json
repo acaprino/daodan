@@ -1,0 +1,49 @@
+{
+  "review_id": "light-109c1d7",
+  "title": "Esempio storico — sconto applicato due volte",
+  "notice": "Dati dimostrativi tratti dal benchmark scope-resolution, commit 109c1d7. Non descrivono difetti del checkout attuale.",
+  "source_report": "benchmarks/scope-resolution/results/review-light-109c1d7/review-light-109c1d7.md",
+  "candidate": "109c1d7e07b5e594a1bc3310f14f20df8f926b92",
+  "base": "2889c58ebb08bb047077a01ac97f0f686fac3dab",
+  "verdict": "BLOCK",
+  "retained_findings": [
+    {
+      "file": "benchmarks/scope-resolution/app/packages/orders/pricing.py",
+      "line": 19,
+      "title": "Lo sconto cliente viene sottratto due volte",
+      "severity": "High",
+      "confidence": 98,
+      "evidence_class": "reproduced",
+      "premise_provenance": "Docstring invariata di compute_total, pricing.py:18",
+      "reviewer": "senior-review:local-correctness-auditor",
+      "introduced_by_candidate": true,
+      "example": "Un ordine da 100 euro con sconto fedeltà del 10% deve costare 109,80 euro IVA inclusa. Nel commit storico lo sconto viene sottratto due volte: il cliente vede 97,60 euro e questo importo viene scritto in ledger.log. La differenza è di 12,20 euro.",
+      "premise": "La regola documentata richiede netto meno un solo sconto cliente, più IVA. compute_discount è una funzione pura: le due chiamate restituiscono lo stesso sconto.",
+      "trigger": "OrderService.checkout riceve un ordine con loyalty_percent > 0 e richiama pricing.compute_total.",
+      "evidence": "Commit storico 109c1d7, pricing.py:19:\nnet = order.get(\"net\", 0) - compute_discount(order) - compute_discount(order)\n\nBase 2889c58, stessa riga:\nnet = order.get(\"net\", 0) - compute_discount(order)\n\nRiproduzione documentata da Lens 1:\ninput = {\"net\": 100.0, \"loyalty_percent\": 10}\nbase: expected_total=109.8, got=109.8 — PASS\ncandidate: got=97.6 — AssertionError\ncheckout restituisce 97.6 e scrive o1\\t97.6 in ledger.log.",
+      "counterevidence_checked": [
+        "La docstring richiede un solo sconto e non è stata modificata dal candidato.",
+        "L'unico chiamante trovato è OrderService.checkout in service.py:26.",
+        "I test verdi non verificano il valore numerico di compute_total.",
+        "Lens 0: HOLDS. Lens 1: REAL, confidence 98, reproduced."
+      ],
+      "fix": "Ripristinare net = order.get(\"net\", 0) - compute_discount(order). Se il secondo sconto è intenzionale, assegnargli una funzione e una regola esplicite e aggiungere un test numerico.",
+      "verification": {
+        "premise": "HOLDS",
+        "correctness": "REAL",
+        "source": "benchmarks/scope-resolution/results/review-light-109c1d7/verification/F1-lens1.md"
+      }
+    }
+  ],
+  "gaps": [
+    "È un estratto dimostrativo del report storico. Il report originale conserva il perimetro e tutte le lacune della review.",
+    "Nel benchmark non c'era un test numerico che verificasse compute_total: la suite verde non copriva la riga modificata.",
+    "Codebase Map e il pacchetto di impatto non erano disponibili in quella review: il chiamante è stato cercato con git grep.",
+    "Nel checkout attuale la riga usa un solo sconto: questo finding storico non è una diagnosi corrente."
+  ],
+  "filtered_count": 0,
+  "coverage": {
+    "source": "Report storico light-109c1d7 e verifiche Lens 0 / Lens 1",
+    "presentation": "Estratto di un finding, non nuova esecuzione della review"
+  }
+}

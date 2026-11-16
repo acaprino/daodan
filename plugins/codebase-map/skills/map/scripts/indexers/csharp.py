@@ -8,7 +8,9 @@ without a container the language is `unavailable`, with the gap's cause and reme
 
 - What runs: one run per solution file in the folder of each `dotnet` workspace of the pre-map, the build a
   developer runs (a project may read `$(SolutionDir)`), and one per C# or Visual Basic project no solution lists,
-  by its own file (`targets`). Each from the checkout's root, where scip-dotnet names its documents from.
+  by its own file (`targets`). Each from the checkout's root, where scip-dotnet names its documents from. A
+  project in Visual Studio .NET 2002-2003's own format (`<VisualStudioProject>`), which MSBuild does not read, and
+  a solution of such projects only, is `unavailable` and does not run (`legacy`).
 - The tool is its NuGet package at `VERSION` (`TOOL`), not its image (`sourcegraph/scip-dotnet:v<VERSION>`), which
   brings an SDK of its own where `global.json` asks for the project's: a .NET tool holding one build per runtime
   (net8.0, net9.0, net10.0) with every library it needs. Daodan downloads it once on the host into the shared
@@ -41,8 +43,15 @@ range with a reference: no `same_range` rule. The hooks, each for what the index
 
 - `prepare`: two runs that load one project both write its documents, and no definition has an enclosing range:
   each occurrence once, and each definition the body the snapshot declares at its name, so an edge starts at the
-  method that holds it (`clang.dedupe`, `clang.enclose`).
+  method that holds it (`clang.dedupe`, `clang.enclose`). A symbol with an empty name is a local (`IsLocalSymbol`):
+  an anonymous type's member is referenced where `new { Name = ... }` names it, Roslyn's declaration of it, and
+  defined nowhere: that first name becomes its definition (`anonymous`).
 - `classify`: `namespace` and `using` reference every segment as a `. .` symbol nothing defines: a namespace.
+  A dead end the scheme leaves says why: a member of a C# 14 `extension` block, whose block has an empty name, is
+  a local defined nowhere, its package unknown (`EXTENSION`); a member of a partial type defined nowhere is a
+  source generator's (`GENERATED`: only the project's documents are indexed); `args` of top-level statements is
+  the compiler's (`TOP_LEVEL`).
+- `unanswered`: a name written with type arguments has no occurrence (`TYPE_ARGUMENTS`, below).
 - `hops`: a symbol the index references and defines nowhere, whose declaration the language puts elsewhere. A
   record's positional property leads to its parameter (`positional`), a constructor the class does not write to
   the class (`implicit-constructor`: an attribute references it), a setter's `value` to its property or event
@@ -58,11 +67,13 @@ range with a reference: no `same_range` rule. The hooks, each for what the index
 - `missing`: why a file has no document (`tasks` hands it the units and what each run said).
 
 A name with type arguments (`Set<Order>()`, `new List<Order>()`) has no occurrence: scip-dotnet visits
-identifier names only. Those references stay holes.
+identifier names only (`ScipCSharpSyntaxWalker` has no `VisitGenericName`, in 0.2.16 as on its main branch).
+Those references stay holes, with that cause.
 """
 from __future__ import annotations
 
 import collections
+import posixpath
 import re
 import shlex
 import shutil
@@ -81,12 +92,17 @@ IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e330
 HOME, OUT, WORK = f"{preparation.STATE}/scip-dotnet", "/daodan/out", "/work"
 REGISTRIES = ("api.nuget.org",)  # packages are read here and pushed to www.nuget.org, never listed
 ENV = {**preparation.ENV, "TERM": "dumb", "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
+       # invariant globalization rejects every culture but the invariant one, and a package's resources per culture
+       # then fail MSBuild (NETSDK1188) unless any culture name is accepted
+       "DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY": "false",
        "EnableWindowsTargeting": "true"}  # MSBuild reads an environment variable as a property
 MIN_FREE = 4 * 2**30  # the container's memory, not measured yet: Roslyn's workspace and MSBuild's build host
 PIDS = 4096  # threads count: MSBuild starts a node per CPU for the restore
 SOLUTIONS, PROJECTS = (".sln", ".slnx"), (".csproj", ".vbproj")  # what `scip-dotnet index` takes
 NO_DOCUMENTS = "no documents were indexed"  # scip-dotnet's own warning, IndexCommandHandler.cs
 FAILURE = re.compile(r"\bFailure: (.+?)(?: \(occurred \d+ times\))?\s*$")  # a workspace diagnostic, as it logs it
+LEGACY = re.compile(r"^\s*(?:<\?xml[^>]*\?>\s*)?<VisualStudioProject\b")  # Visual Studio .NET 2002-2003's own format
+LISTED = re.compile(r'"([^"]+\.(?:cs|vb)proj)"')  # the projects a solution lists: a .sln's entries, a .slnx's paths
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-dotnet", ("csharp",), frozenset({"dotnet-project"}), True
@@ -101,20 +117,96 @@ METHOD = re.compile(r"^(.*[#/])([^#/().`]+|`[^`]+`)\((\+\d+)?\)\.$")  # owner, n
 CONSTRUCTOR = re.compile(r"^(.*#)`\.ctor`\((?:\+\d+)?\)\.$")
 PARAMETER = re.compile(r"^(.*#)`\.ctor`\((?:\+\d+)?\)\.\((.+)\)$")  # a constructor's parameter: its type, its name
 ACCESSOR = re.compile(r"^(.*#)(?:set|add|remove)_(.+)\((?:\+\d+)?\)\.\(value\)$")
+MEMBER = re.compile(r"^(.*#)[^#/()]+(?:\((?:\+\d+)?\))?\.$")  # a type's field, property or method: its type
+# The causes of what the index cannot name (see the module docstring), each a hole's class.
+EXTENSION = "a member of a C# 14 extension block: scip-dotnet names it a local, with no package or definition"
+GENERATED = "a member a source generator writes: scip-dotnet indexes the project's own documents only"
+TOP_LEVEL = "the args of top-level statements: the compiler declares them"
+TYPE_ARGUMENTS = "a name with type arguments: scip-dotnet writes no occurrence there"
 
 
 def prepare(index, snapshot) -> dict:
-    """Each occurrence once, and each definition the body the snapshot declares at its name (see the module
-    docstring); returns what each step did."""
+    """Each occurrence once, an anonymous type's member defined at its first name, and each definition the body the
+    snapshot declares at its name (see the module docstring); returns what each step did."""
     from indexers import clang
     deduplicated = clang.dedupe(index)
+    anonymous = _anonymous(index)
+    if anonymous:
+        clang.dedupe(index)  # the lookups again, with the definitions
     index.declarations = clang._declarations(index, snapshot)
-    return {"deduplicated": deduplicated, "enclosed": clang.enclose(index)}
+    return {"deduplicated": deduplicated, "anonymous": anonymous, "enclosed": clang.enclose(index)}
+
+
+def _anonymous(index) -> int:
+    """The first reference of each local defined nowhere that is the name `new { Name = ... }` gives an anonymous
+    type's member becomes its definition; returns how many."""
+    defined, done = set(index.defs), 0
+    for rel, occurrences in index.documents.items():
+        for at, item in enumerate(occurrences):
+            if item.definition or item.key in defined or "#local " not in item.key:
+                continue
+            node = _node(index, rel, item)  # the grammar writes `Name =` as the creation's own children
+            above, after = (node.parent, node.next_sibling) if node is not None else (None, None)
+            if above is not None and above.type == "anonymous_object_creation_expression" and after is not None \
+                    and after.type == "=":
+                occurrences[at] = item._replace(definition=True)
+                defined.add(item.key)
+                done += 1
+    return done
 
 
 def classify(index):
-    """A namespace: `namespace` and `using` lines reference each segment, which nothing defines."""
-    return lambda key: "namespace" if key.endswith("/") else None
+    """A namespace: `namespace` and `using` lines reference each segment, which nothing defines. A symbol defined
+    nowhere: the cause the index's scheme leaves, else None (see the module docstring)."""
+    used = collections.defaultdict(list)
+    for rel, occurrences in index.documents.items():
+        for item in occurrences:
+            if "#local " in item.key and item.key not in index.defs:
+                used[item.key].append((rel, item))
+
+    def stated(key: str):
+        if key.endswith("/"):
+            return "namespace"
+        if key in index.defs:
+            return None
+        if key in used:
+            return EXTENSION if any(_member(index, rel, item) for rel, item in used[key]) else None
+        if key.endswith("`<Main>$`().(args)"):
+            return TOP_LEVEL
+        owner, parts = MEMBER.match(key), code_graph.split_symbol(key)
+        return GENERATED if owner and parts and parts[2] == "." and _partial(index, owner.group(1)) else None
+    return stated
+
+
+def _member(index, rel: str, occurrence) -> bool:
+    """Whether an occurrence is the member a member access names (`x.Name`, `x?.Name`): never a local variable."""
+    node = _node(index, rel, occurrence)
+    above = node.parent if node is not None else None
+    if above is not None and above.type == "member_access_expression":
+        return above.child_by_field_name("name") == node
+    return above is not None and above.type == "member_binding_expression" and above.named_children[-1] == node
+
+
+def _partial(index, key: str) -> bool:
+    """Whether a type the index defines is declared `partial`."""
+    for rel, item in index.defs.get(key, ()):
+        node = _node(index, rel, item)
+        above = node.parent if node is not None else None
+        if above is not None and above.type in TYPES and any(
+                child.type == "modifier" and child.text == b"partial" for child in above.children):
+            return True
+    return False
+
+
+def unanswered(index):
+    """Why the index has no occurrence at a site: a name written with type arguments (`TYPE_ARGUMENTS`)."""
+    def cause(position: tuple) -> str | None:
+        rel, line, column = position
+        node = _node(index, rel, code_graph.Occurrence(line, column, line, column + 1, "", False, None))
+        above = node.parent if node is not None else None
+        return TYPE_ARGUMENTS if above is not None and above.type == "generic_name" and node.type == "identifier" \
+            else None
+    return cause
 
 
 def _node(index, rel: str, occurrence):
@@ -348,21 +440,48 @@ def structure(record: dict) -> dict:
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "dotnet"]}
 
 
+def legacy(projects: list[str]) -> str:
+    """Why a run is not planned: its projects are in Visual Studio .NET's own format, which no build here reads."""
+    return (f"{', '.join(projects)}: a project in the format of Visual Studio .NET 2002 or 2003 (<VisualStudioProject>),"
+            " which MSBuild does not read: only Visual Studio's conversion makes it an MSBuild project")
+
+
+def _legacy(project_dir: Path, rel: str) -> bool:
+    try:
+        return bool(LEGACY.match((Path(project_dir) / rel).read_text(encoding="utf-8-sig", errors="replace")[:400]))
+    except OSError:
+        return False
+
+
 def targets(project_dir: Path, roots, units) -> tuple[list[tuple[str, str]], list[dict]]:
     """`(file, key)` of each run, from the checkout: the solution files in each workspace folder of `roots`
     (key: the folder), then each C# or Visual Basic project no solution lists (key: its file). And the state of
-    each workspace folder that holds no solution file."""
+    each workspace folder that holds no solution file, and of each solution or project left out as `unavailable`:
+    a project in Visual Studio .NET's format (`legacy`), a solution that lists only such projects."""
     wanted, states = [], []
     for root in sorted(roots):
         folder = Path(project_dir) / root
         found = sorted(path.name for path in folder.iterdir() if path.suffix.lower() in SOLUTIONS) \
             if folder.is_dir() else []
-        wanted += [(f"{root}/{name}" if root else name, root) for name in found]
+        for name in found:
+            target = f"{root}/{name}" if root else name
+            text = (folder / name).read_text(encoding="utf-8-sig", errors="replace")
+            listed = [posixpath.normpath(posixpath.join(root, path.replace("\\", "/"))) for path in LISTED.findall(text)]
+            old = [rel for rel in listed if _legacy(project_dir, rel)]
+            if old and len(old) == len(listed):
+                states.append({"root": target, "state": "unavailable", "reason": legacy(old)})
+            else:
+                wanted.append((target, root))
         if not found:
             states.append({"root": root, "state": "failed",
                            "reason": "no solution file in the folder of this workspace"})
-    wanted += sorted((unit["manifest"], unit["manifest"]) for unit in units if unit.get("solution") is None
-                     and str(unit.get("manifest") or "").lower().endswith(PROJECTS))
+    for manifest in sorted(str(unit.get("manifest") or "") for unit in units if unit.get("solution") is None):
+        if not manifest.lower().endswith(PROJECTS):
+            continue
+        if _legacy(project_dir, manifest):
+            states.append({"root": manifest, "state": "unavailable", "reason": legacy([manifest])})
+        else:
+            wanted.append((manifest, manifest))
     return wanted, states
 
 
@@ -416,6 +535,10 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
     wanted, states = targets(project_dir, roots, units)
+    old = [item["reason"] for item in states if item["state"] == "unavailable"]
+    if not wanted and old:
+        return {**unavailable("; ".join(old), "convert the projects to MSBuild projects (Visual Studio's upgrade of "
+                                              "an old project)"), "builds": states}
     if not wanted:
         said = "".join(f"; {item['root'] or '.'}: {item['reason']}" for item in states)
         return {**unavailable(f"no solution or C# project in the pre-map: nothing builds these files{said}",
