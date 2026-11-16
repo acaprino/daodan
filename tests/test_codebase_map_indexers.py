@@ -1,7 +1,8 @@
-"""The indexer runs of `indexers/{go,python}.py`, with a fake indexer and fake downloads: no
+"""The indexer runs of `indexers/python.py`, with a fake indexer and fake downloads: no
 network, no toolchain, no project code. Every program an `index()` starts is the stand-in `Fake`; every URL is
 the stand-in `Web`. The committed indexes of `fixtures/code-graph/` are what the fake indexer writes.
-scip-typescript runs only in a container: its runs are in `test_codebase_map_indexers_ts_py.py`.
+scip-typescript, scip-go and rust-analyzer run only in a container: their runs are in
+`test_codebase_map_indexers_ts_py.py`, `test_codebase_map_indexers_go.py` and `test_codebase_map_indexers_rust.py`.
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_indexers.py
 """
@@ -34,20 +35,10 @@ from indexers import go, python, runtime, typescript  # noqa: E402
 
 FIXTURES = HERE / "fixtures/code-graph"
 GB = 2**30
-MODULES = {"go": go, "python": python}  # Rust's runs only in a container: test_codebase_map_indexers_rust.py
+MODULES = {"python": python}  # Go's and Rust's run only in a container: their own suites
 LANGUAGES = {"go": ("go",), "rust": ("rust",), "python": ("python",)}
 NPM = {"python": "@sourcegraph/scip-python"}
 MANIFESTS = ("go.mod", "go.sum", "Cargo.toml", "Cargo.lock", "package.json", "tsconfig.json", "pyproject.toml")
-
-
-def _given(project: Path, which: str) -> dict:
-    """The structure the stage hands an indexer, as the pre-map names it for these fixtures: the folders holding
-    the language's manifest."""
-    manifest = {"go": "go.mod"}.get(which)
-    if manifest is None:
-        return {}
-    found = {path.parent.relative_to(project).as_posix() for path in Path(project).rglob(manifest)}
-    return {"roots": {"" if root == "." else root for root in found}}
 
 
 class Fake:
@@ -174,15 +165,9 @@ def _tools(project: Path, which: str) -> None:
 
 
 def _project(sandbox, which: str) -> Path:
-    """A copy of the fixture's sources, without its index; Go and Rust get a nested module or crate too."""
+    """A copy of the fixture's sources, without its index."""
     project = sandbox["root"] / "project" / which
     shutil.copytree(FIXTURES / which, project, ignore=shutil.ignore_patterns("index.scip", "expected.json"))
-    if which == "go":
-        (project / "tools").mkdir()
-        (project / "tools/go.mod").write_text("module example.com/tools\n\ngo 1.21\n", encoding="utf-8")
-        (project / "tools/tool.go").write_text("package tools\n\nfunc Tool() {}\n", encoding="utf-8")
-        (project / "_examples/demo").mkdir(parents=True)
-        (project / "_examples/demo/main.go").write_text("package main\n\nfunc main() {}\n", encoding="utf-8")
     return project
 
 
@@ -230,7 +215,7 @@ def test_a_run_writes_nothing_in_the_project_removes_its_mirror_and_feeds_the_gr
     _tools(project, which)
     sandbox["fake"].index = FIXTURES / which / "index.scip"
     before = _hashes(project)
-    result = MODULES[which].index(project, sandbox["root"] / "work", **_given(project, which))
+    result = MODULES[which].index(project, sandbox["root"] / "work")
     assert "state" not in result, result.get("reason")
     assert _hashes(project) == before
     runs = sandbox["fake"].runs()
@@ -245,32 +230,8 @@ def test_a_run_writes_nothing_in_the_project_removes_its_mirror_and_feeds_the_gr
     for language in LANGUAGES[which]:
         assert built[language]["edges"] == expected[language]["edges"]
         assert built[language]["files"] == expected[language]["files"]
-        assert built[language]["indexer"]["name"] == {"go": "scip-go", "python": "scip-python"}[which]
+        assert built[language]["indexer"]["name"] == "scip-python"
     assert any(built[language]["edges"] for language in LANGUAGES[which])
-
-
-def test_go_runs_every_module_and_names_the_directories_go_ignores(sandbox):
-    project = _project(sandbox, "go")
-    _tools(project, "go")
-    sandbox["fake"].index = FIXTURES / "go/index.scip"
-    result = go.index(project, sandbox["root"] / "work", **_given(project, "go"))
-    roots = [run["prefix"] for run in result["runs"]]
-    assert roots == ["", "tools"]
-    first = result["runs"][0]["command"]
-    assert "./..." in first and "./_examples/demo" in first
-
-
-def test_the_first_use_installs_with_one_log_line(sandbox, capsys):
-    project = _project(sandbox, "go")
-    _tools(project, "go")
-    shutil.rmtree(rx.shared_engine_dir("scip-go"))
-    sandbox["fake"].index = FIXTURES / "go/index.scip"
-    result = go.index(project, sandbox["root"] / "work", **_given(project, "go"))
-    assert "state" not in result
-    lines = [line for line in capsys.readouterr().out.splitlines() if line.startswith("installing ")]
-    assert lines == [f"installing scip-go {go.VERSION} into {rx.shared_engine_dir('scip-go') / go.VERSION} "
-                     "(first use)"]
-    assert (rx.shared_engine_dir("scip-go") / go.VERSION / ".installed").is_file()
 
 
 def _node_release(digest: str | None = None, platform: str | None = None) -> dict[str, bytes]:
@@ -320,29 +281,29 @@ def test_a_wrong_checksum_is_refused(sandbox):
 
 
 def test_a_download_that_cannot_happen_is_unavailable_with_its_cause(sandbox):
-    project = _project(sandbox, "go")
-    result = go.index(project, sandbox["root"] / "work", **_given(project, "go"))
+    project = _project(sandbox, "python")
+    result = python.index(project, sandbox["root"] / "work")
     assert result["state"] == "unavailable"
-    assert result["reason"].startswith(f"Go {rx.GO_VERSION} and scip-go {go.VERSION} could not be downloaded")
+    assert result["reason"].startswith(f"Node {runtime.NODE_VERSION} could not be downloaded")
     assert "no network in this test" in result["reason"]
     assert result["install"].startswith("check the network")
     assert result["indexes"] == [] and sandbox["fake"].runs() == []
 
 
 def test_an_install_that_crashes_states_the_first_line_of_its_error(sandbox):
-    project = _project(sandbox, "go")
-    _tools(project, "go")
-    shutil.rmtree(rx.shared_engine_dir("scip-go"))
+    project = _project(sandbox, "python")
+    _tools(project, "python")
+    shutil.rmtree(rx.shared_engine_dir("scip-python"))
     trace = "fatal error: out of memory\n" + "runtime.frame()\n\truntime/malloc.go:2141\n" * 60 + "runtime.rt0_go()\n"
     fake = sandbox["fake"]
 
     def crashing(command, *args, **kwargs):
-        if [str(part) for part in command][1:2] == ["install"]:
+        if {"install", "--prefix"} <= {str(part) for part in command}:  # npm's, of the indexer
             raise subprocess.CalledProcessError(2, command, "", trace)
         return fake(command, *args, **kwargs)
 
     sandbox["monkeypatch"].setattr(subprocess, "run", crashing)
-    result = go.index(project, sandbox["root"] / "work", **_given(project, "go"))
+    result = python.index(project, sandbox["root"] / "work")
     assert result["state"] == "unavailable" and "(exit code 2)" in result["reason"]
     assert "fatal error: out of memory" in result["reason"] and result["reason"].endswith("runtime.rt0_go()")
     assert len(result["reason"]) < 1200
@@ -537,36 +498,6 @@ def test_under_one_gigabyte_of_disk_nothing_is_downloaded(sandbox):
     assert sandbox["web"].asked == [] and sandbox["fake"].calls == []
 
 
-@pytest.mark.parametrize(("cpus", "jobs"), [(22, "4"), (2, "2"), (None, "1")])
-def test_scip_go_is_built_with_at_most_four_compilers_at_once(sandbox, cpus, jobs):
-    project = _project(sandbox, "go")
-    _tools(project, "go")
-    shutil.rmtree(rx.shared_engine_dir("scip-go"))
-    sandbox["monkeypatch"].setattr(os, "cpu_count", lambda: cpus)
-    sandbox["fake"].index = FIXTURES / "go/index.scip"
-    assert "state" not in go.index(project, sandbox["root"] / "work", **_given(project, "go"))
-    build = next(command for command, _cwd in sandbox["fake"].calls if command[1:2] == ["install"])
-    assert build[1:4] == ["install", "-p", jobs]
-
-
-def test_go_keeps_its_configuration_and_telemetry_in_the_shared_directory_and_turns_telemetry_off(sandbox):
-    project = _project(sandbox, "go")
-    _tools(project, "go")
-    shutil.rmtree(rx.shared_engine_dir("scip-go"))
-    sandbox["fake"].index = FIXTURES / "go/index.scip"
-    for _ in range(2):
-        assert "state" not in go.index(project, sandbox["root"] / "work", **_given(project, "go"))
-    # The variable Go's os.UserConfigDir reads on this platform.
-    variable = "APPDATA" if os.name == "nt" else "HOME" if sys.platform == "darwin" else "XDG_CONFIG_HOME"
-    fake = sandbox["fake"]
-    started = [(command, env) for (command, _cwd), env in zip(fake.calls, fake.envs)
-               if Path(command[0]).name in (rx.executable_name("go"), rx.executable_name("scip-go"))]
-    assert started
-    for command, env in started:
-        assert Path(env[variable]).is_relative_to(sandbox["cache"]), (command, env[variable])
-    assert [command[1:] for command, _env in started if command[1:2] == ["telemetry"]] == [["telemetry", "off"]]
-
-
 def test_node_and_npm_keep_their_caches_in_the_shared_directory(sandbox):
     project = _project(sandbox, "python")
     _tools(project, "python")
@@ -633,28 +564,4 @@ def test_the_peak_is_none_when_no_run_measured_it():
 
 
 def test_every_indexer_declares_the_memory_it_needs():
-    assert [module.MIN_FREE // 2**20 for module in (go, typescript, python)] == [512, 3072, 1920]
-
-
-@pytest.mark.parametrize("which, nested, reason", [
-    ("go", "tools/tool.go", "the scip-go run of its module tools wrote no index (exit code 2)")])
-def test_a_nested_run_without_an_index_is_the_reason_its_files_have_no_document(sandbox, which, nested, reason):
-    """`configs` is what the stage hands `tasks`, then `missing`: the folders of the runs, and those whose run
-    wrote no index."""
-    project = _project(sandbox, which)
-    _tools(project, which)
-    fake, module = sandbox["fake"], MODULES[which]
-    fake.index = FIXTURES / which / "index.scip"
-
-    def run(*args, **kwargs):
-        fake.code = 2 if fake.runs() else 0  # the root's run writes its index, every later run fails
-        return fake(*args, **kwargs)
-
-    sandbox["monkeypatch"].setattr(subprocess, "run", run)
-    result = module.index(project, sandbox["root"] / "work", **_given(project, which))
-    root = nested.split("/")[0]
-    assert result["configs"] == {"roots": ["", root], "failed": {root: "exit code 2"}}
-    index = code_graph.Index(project)
-    for path, prefix in result["indexes"]:
-        index.load(Path(path), prefix)
-    assert module.missing(index, [nested], module.tasks(result["configs"])) == {nested: reason}
+    assert [module.MIN_FREE // 2**20 for module in (go, typescript, python)] == [4096, 3072, 1920]

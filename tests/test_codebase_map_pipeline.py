@@ -101,7 +101,8 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
     def stage(command, **options):  # the analyzer's stage in this process, as its own process runs it
         if command[1:2] != ["--engine"]:
             return real(command, **options)
-        resolve_edges.main(command)
+        with mock.patch("container.find_engine", return_value="the engine"):  # its build runs in a container
+            resolve_edges.main(command)
         return subprocess.CompletedProcess(command, 0)
 
     with mock.patch.object(engine_pass, "ENGINES", (go_spec,)), \

@@ -2142,6 +2142,9 @@ class IndexerStageTests(unittest.TestCase):
         import contextlib
         import importlib
         import io
+        import container
+        # An analyzer whose build runs only in a container is handed the engine the pass found.
+        patches.setdefault("engine", (container, "find_engine", lambda: container.Engine("fake", ("x",))))
         spec = next(spec for spec in resolve_edges.ENGINES if spec.name == name)
         module = importlib.import_module(f"indexers.{spec.indexer}")
         started, real = [], subprocess.run
@@ -2222,7 +2225,9 @@ class IndexerStageTests(unittest.TestCase):
 
         result, _started, _indexed = self.run_stage("scip-go", manifest, index)
         self.assertEqual(result["languages"]["go"], {"state": "fresh", "engine": "scip-go@v0.2.9"})
-        self.assertEqual(seen, {"roots": {"", "tools"}})
+        self.assertEqual(seen["roots"], {"", "tools"})
+        # Its build runs only in a container: the engine the pass found, and the hosts the project declares.
+        self.assertEqual((seen["engine"].name, seen["declared"]["hosts"]), ("fake", ()))
 
     def test_the_stage_keeps_the_entries_of_the_other_languages(self):
         project, manifest = self.project("go", self.PYTHON)
@@ -2365,7 +2370,7 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual(started, [])
         indexed.assert_not_called()
         self.assertEqual(result["languages"]["go"]["state"], "failed")
-        self.assertIn("0.5 GB of memory free", result["languages"]["go"]["reason"])
+        self.assertIn(f"{(go.MIN_FREE - 1) / 2**30:.1f} GB of memory free", result["languages"]["go"]["reason"])
         # At the indexer's own minimum, the stage starts.
         _result, started, _indexed = self.run_stage(
             "scip-go", manifest,
@@ -2419,7 +2424,7 @@ class IndexerStageTests(unittest.TestCase):
                           "csharp": "scip-dotnet", "stylesheet": "stylesheet"})
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container) for spec in resolve_edges.ENGINES}
         self.assertEqual(indexers, {
-            "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", True),
+            "scip-go": (("go",), "go", True), "scip-rust": (("rust",), "rust", True),
             "scip-typescript": (("typescript", "javascript", "vue", "svelte"), "typescript", True),
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
             "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True),

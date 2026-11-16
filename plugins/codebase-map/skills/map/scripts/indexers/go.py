@@ -1,17 +1,19 @@
 """scip-go: how it runs, and the aliases its index states its own way.
 
-`index` runs scip-go, built once with Daodan's Go (`go install` at `VERSION`, checked by Go's checksum
-database), in a mirror of the project where every directory holding a Go file is real: at the root, then in
-each nested module holding files the root run left out, after `go mod download` there, with Go's ignored
-directories (`_x`, `.x`, `testdata`) named as explicit packages. No project code runs: `go list` and the type
-checker only read it.
+The go command starts what a project names: git for a module no proxy serves, the C compiler for a file that
+imports "C", the Go a `toolchain` line asks for. So the go command and scip-go run only in Daodan's container
+(`NEEDS_CONTAINER`), never on the host: one run over a copy of the project (`_boxed`). The preparation, with the
+registries and the hosts the project declares open, builds scip-go with Daodan's Go (`go install` at `VERSION`,
+checked by Go's checksum database) and runs `go mod download` in each module that holds a Go file. The
+execution, with no network, runs scip-go in each of them under the indexer's own build (`OWN`), with Go's
+ignored directories (`_x`, `.x`, `testdata`) named as explicit packages.
 
 A file the indexer's build leaves out (its `//go:build` line or its name rules out the build's GOOS, GOARCH,
-cgo or tags) is indexed by a further run under the configuration nearest that build which builds it
-(`configuration`), once `go list` there lists it; a file only the `ignore` tag builds is a program `go run`
-names, indexed as one. Such a run indexes the file's whole package: only the left-out files' documents are
-kept. A cgo file has no document (scip-go indexes the copy cgo writes into the build cache), nor has a file no
-configuration builds, nor one past `PASSES` further runs: `missing` says which.
+cgo or tags) is indexed by a further run of the same execution under the configuration nearest that build which
+builds it (`configuration`), once `go list` there lists it; a file only the `ignore` tag builds is a program
+`go run` names, indexed as one. Such a run indexes the file's whole package: only the left-out files' documents
+are kept. A cgo file has no document (scip-go indexes the copy cgo writes into the build cache), nor has a file
+no configuration builds, nor one past `PASSES` further runs: `missing` says which.
 
 Interface implementations need no hop: scip-go states them in `SymbolInformation` (`is_implementation`), which
 the shared traversal follows for members. `hops` reads the statement that defines a name: `x := y.z`,
@@ -24,26 +26,35 @@ from __future__ import annotations
 
 import collections
 import itertools
-import json
 import os
-import platform
 import posixpath
 import re
 import shlex
 import shutil
-import subprocess
-import sys
-import tempfile
 import time
 from pathlib import Path, PurePosixPath
 
 import code_graph
+import preparation
+from premap.container_runner import IMAGE  # gcc for cgo, git, timeout
 
 VERSION = "v0.2.9"  # github.com/scip-code/scip-go
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-go", ("go",), frozenset({"go-module"}), False
-MIN_FREE = 512 * 2**20  # 335 MB peak on chi (benchmarks/inference-audit, 13 November 2026)
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-go", ("go",), frozenset({"go-module"}), True
+# The container's memory, not measured yet: scip-go's build, then its runs (335 MB peak on chi on the host,
+# benchmarks/inference-audit, 13 November 2026).
+MIN_FREE = MEMORY = 4 * 2**30
+OUT = "/daodan/out/scip-go"
+SCIP_GO = f"{preparation.T}/bin/scip-go"
+# The indexer's own build, in every command of the execution: Daodan's Go alone, whatever a `toolchain` line
+# asks; cgo on (the image has gcc); no module fetched, no go.mod rewritten.
+OWN = {"CGO_ENABLED": "1", "GOFLAGS": "-mod=readonly", "GOPROXY": "off", "GOTOOLCHAIN": "local"}
+# What `go list -f` prints for a package: the Go files it builds, tests included and cgo files aside (scip-go reads
+# their copies), one path a line.
+BUILT = "".join('{{range .%s}}{{$.Dir}}/{{.}}{{"\\n"}}{{end}}' % key
+                for key in ("GoFiles", "TestGoFiles", "XTestGoFiles"))
+LIMIT = 3600  # the seconds one run of scip-go may take: the container's limit is their sum (13.9 s on chi)
 PARAMETERS = {"parameter_declaration", "variadic_parameter_declaration"}
 # The operating systems and architectures a file's name restricts it to (go/build's lists, Go 1.27).
 GOOS = frozenset("aix android darwin dragonfly freebsd hurd illumos ios js linux nacl netbsd openbsd plan9 solaris "
@@ -184,10 +195,10 @@ def tasks(configs) -> dict:
 
 
 def _target() -> tuple[str, str]:
-    """GOOS and GOARCH of the indexer's build: the environment's, else Go's defaults, the machine's."""
-    system = {"win32": "windows", "darwin": "darwin"}.get(sys.platform, "linux")
-    machine = "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "amd64"
-    return os.environ.get("GOOS") or system, os.environ.get("GOARCH") or machine
+    """GOOS and GOARCH of the indexer's build: those of the Go the container runs, as its release names them
+    (`go1.27.3.linux-amd64.tar.gz`)."""
+    goos, goarch = re.search(r"\.([a-z0-9]+)-([a-z0-9]+)\.tar\.gz$", preparation.GO[0]).groups()
+    return goos, goarch
 
 
 def _named(rel: str) -> list[str]:
@@ -362,12 +373,12 @@ def _label(config: dict, target: tuple[str, str], cgo: bool) -> str:
     return " ".join([*changed, *([f"-tags={','.join(config['tags'])}"] if config["tags"] else [])])
 
 
-def _environment(env: dict, config: dict) -> dict:
+def _variables(config: dict) -> dict:
+    """The go command's variables a configuration sets over the indexer's own build (`OWN`): none for a program."""
     if "program" in config:
-        return env
-    flags = [env.get("GOFLAGS", ""), f"-tags={','.join(config['tags'])}" if config["tags"] else ""]
-    return {**env, "GOOS": config["GOOS"], "GOARCH": config["GOARCH"], "CGO_ENABLED": config["CGO_ENABLED"],
-            "GOFLAGS": " ".join(flag for flag in flags if flag)}
+        return {}
+    tags = {"GOFLAGS": f"{OWN['GOFLAGS']} -tags={','.join(config['tags'])}"} if config["tags"] else {}
+    return {"GOOS": config["GOOS"], "GOARCH": config["GOARCH"], "CGO_ENABLED": config["CGO_ENABLED"], **tags}
 
 
 def _patterns(prefix: str, rels: list[str], config: dict) -> list[str]:
@@ -378,53 +389,12 @@ def _patterns(prefix: str, rels: list[str], config: dict) -> list[str]:
     return sorted({f"./{posixpath.dirname(rel)}" if posixpath.dirname(rel) else "." for rel in inner})
 
 
-def _cgo(go: str, env: dict, cwd: Path) -> bool:
-    """Whether the indexer's build has cgo (`go env CGO_ENABLED`: 0 where no C compiler is found)."""
-    try:
-        done = subprocess.run([go, "env", "CGO_ENABLED"], cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                              capture_output=True, text=True, timeout=120)
-    except (OSError, subprocess.SubprocessError):
-        return False
-    return (done.stdout or "").strip() == "1"
-
-
-def _listed(go: str, env: dict, cwd: Path, patterns: list[str], bases) -> dict[str, set]:
-    """The Go files `go list` puts in each package of `patterns` under `env`, tests included and cgo files aside
-    (scip-go reads their copies), by the package's folder from the first of `bases` that holds it."""
-    try:
-        done = subprocess.run([go, "list", "-e", "-json", *patterns], cwd=cwd, env=env, stdin=subprocess.DEVNULL,
-                              capture_output=True, text=True, timeout=600)
-    except (OSError, subprocess.SubprocessError):
-        return {}
-    out, text, at, decoder = collections.defaultdict(set), done.stdout or "", 0, json.JSONDecoder()
-    bases = [Path(base).resolve() for base in bases]
-    while True:
-        while at < len(text) and text[at].isspace():
-            at += 1
-        if at >= len(text):
-            return out
-        try:
-            item, at = decoder.raw_decode(text, at)
-        except ValueError:
-            return out
-        folder = None
-        for base in bases:
-            try:
-                folder = Path(item["Dir"]).resolve().relative_to(base).as_posix()
-                break
-            except (KeyError, TypeError, ValueError):
-                continue
-        if folder is not None:
-            for key in ("GoFiles", "TestGoFiles", "XTestGoFiles"):
-                out[folder] |= set(item.get(key) or ())
-
-
 def _document_path(value: bytes) -> str:
     return next((part.decode("utf-8", "replace").replace("\\", "/") for field, kind, part in code_graph._fields(value)
                  if field == 1 and kind == 2), "")
 
 
-def _covered(runs: list[dict], mirror: Path) -> set[str]:
+def _covered(runs: list[dict], project: Path) -> set[str]:
     """The files the runs' indexes hold a document of, named as `code_graph.Index.load` names them."""
     out = set()
     for run in runs:
@@ -432,7 +402,7 @@ def _covered(runs: list[dict], mirror: Path) -> set[str]:
             for number, wire, value in code_graph._fields(Path(run["index"]).read_bytes()):
                 if number == 2 and wire == 2:
                     rel, prefix = _document_path(value), run["prefix"]
-                    out.add(f"{prefix}/{rel}" if prefix and not (Path(mirror) / rel).is_file() else rel)
+                    out.add(f"{prefix}/{rel}" if prefix and not (Path(project) / rel).is_file() else rel)
     return out
 
 
@@ -464,14 +434,15 @@ def _keep(path: Path, names: set[str]) -> int:
     return kept
 
 
-def _configured(go: str, scip_go: str, env: dict, project: Path, mirror: Path, work_dir: Path, files: list[str],
-                roots: set[str], runs: list[dict]) -> tuple[list[dict], dict]:
-    """The further runs for the Go files `runs` left out because the indexer's build does, and `{file: why}` for
-    the files no run indexed: see the module's docstring."""
-    covered, target, cgo = _covered(runs, mirror), _target(), None
+def _planned(project: Path, files: list[str], roots: set[str]) -> tuple[dict, dict, dict]:
+    """The further runs the Go files ask for, read from the files alone: `{(module's folder, label):
+    (configuration, files)}` for those the indexer's own build leaves out and another configuration builds,
+    `{file: why}` for a cgo file and for one no configuration builds, and each constrained file's constraint as a
+    reason says it."""
+    target, cgo = _target(), OWN["CGO_ENABLED"] == "1"
     groups, reasons, said = {}, {}, {}
     for rel in files:
-        if rel in covered or "vendor" in rel.split("/")[:-1]:
+        if "vendor" in rel.split("/")[:-1]:
             continue
         try:
             text = (Path(project) / rel).read_text(encoding="utf-8", errors="replace")
@@ -483,8 +454,6 @@ def _configured(go: str, scip_go: str, env: dict, project: Path, mirror: Path, w
             continue
         if prefix is None or not (line or named):
             continue  # left out for another reason: `missing` says which
-        if cgo is None:
-            cgo = _cgo(go, env, mirror)
         said[rel] = f"build constraint `{line}`" if line else f"file name constraint `{'_'.join(named)}`"
         config = configuration(rel, text, target, cgo)
         if config is None:
@@ -493,52 +462,157 @@ def _configured(go: str, scip_go: str, env: dict, project: Path, mirror: Path, w
         label = _label(config, target, cgo)
         if label:  # the indexer's own build builds it: it is left out for another reason
             groups.setdefault((prefix, label), (config, []))[1].append(rel)
-    out = []
-    for (prefix, label), (config, rels) in groups.items():
-        if len(out) >= PASSES:
+    return groups, reasons, said
+
+
+def scripts(runs: list[tuple], further: list[tuple]) -> tuple[str, str, dict]:
+    """The preparation's script, the execution's, and what the preparation needs beside them (`{files, hosts}`).
+    The preparation: Daodan's Go, scip-go built with it by at most `go_jobs` compilers at once, then `go mod
+    download` in the folder of each of `runs` (`(folder, patterns)`). The execution, with no network and under
+    `OWN`: scip-go on each run's patterns, run `n` leaving `index-n.scip`, its log, its exit code and its seconds;
+    then each of `further` (`(folder, variables, patterns, files)`), numbered after them: `go list` there under
+    `variables`, its files as paths from the folder in `list-n.txt`, and scip-go when one of `files` is among
+    them, for the first `PASSES` of them (`capped` after)."""
+    import container
+    import engine_tools
+    needs = preparation.setup(["go"])
+    build = (f"GOBIN={preparation.T}/bin GOPATH={preparation.STATE}/scip-go GOCACHE={preparation.STATE}/scip-go-cache"
+             f" GOFLAGS= GOTOOLCHAIN=local {preparation.T}/go/bin/go install -p {engine_tools.go_jobs()}"
+             f" github.com/scip-code/scip-go/cmd/scip-go@{VERSION}")  # no build of the project: Daodan's Go alone
+    prepare = ["# scip-go prepare", "set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}",
+               *needs["lines"], f"{{ {build} ; }} >&2 || echo 'DAODAN-MISSING scip-go@{VERSION}' >&2",
+               "export GOFLAGS=-mod=readonly GOTOOLCHAIN=local",  # as the execution: a `toolchain` line brings no Go
+               preparation.restore("go", [folder for folder, _patterns in runs])]
+
+    def at(folder: str) -> str:
+        return shlex.quote(posixpath.normpath(f"{container.WORKDIR}/{folder}"))
+
+    execute = ["# scip-go execute", "set -u", "export " + " ".join(f"{name}={value}" for name, value in OWN.items()),
+               f"OUT={OUT}", "mkdir -p $OUT",
+               f'run() {{ n=$1; d=$2; shift 2; s=$(date +%s); ( cd "$d" && exec timeout -k 30 {LIMIT} "$@" )'
+               " > $OUT/scip-$n.log 2>&1; echo $? > $OUT/scip-$n.code;"
+               " echo $(( $(date +%s) - s )) > $OUT/scip-$n.seconds; }", "passes=0"]
+    # A listed path, from the folder the go command runs in.
+    inner = """awk -v p="$PWD/" 'index($0, p) == 1 { print substr($0, length(p) + 1) }'"""
+
+    def indexed(number: int, patterns: list[str]) -> str:
+        return f"{SCIP_GO} --output=$OUT/index-{number}.scip {shlex.join(patterns)}"
+
+    for number, (folder, patterns) in enumerate(runs):
+        execute.append(f"run {number} {at(folder)} {indexed(number, patterns)}")
+    for number, (folder, variables, patterns, files) in enumerate(further, len(runs)):
+        under = shlex.join(["env", *(f"{name}={value}" for name, value in variables.items())])
+        listed = " ".join(f"-e {shlex.quote(rel)}" for rel in files)
+        execute += [
+            f"if [ $passes -ge {PASSES} ]; then echo capped > $OUT/scip-{number}.code; else",
+            f"  ( cd {at(folder)} && {under} go list -e -f {shlex.quote(BUILT)} {shlex.join(patterns)} | {inner} )"
+            f" > $OUT/list-{number}.txt 2> $OUT/list-{number}.err",
+            f"  if grep -qxF {listed} $OUT/list-{number}.txt; then passes=$((passes + 1));"
+            f" run {number} {at(folder)} {under} {indexed(number, patterns)}; fi",
+            "fi"]
+    return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n",
+            {"files": needs["files"], "hosts": needs["hosts"]})
+
+
+def _said(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+
+
+def _run(back: Path, number: int, work_dir: Path, command: list[str]) -> dict:
+    """Run `number` of the execution as it left it in `back`: how it ended, its seconds, its log's tail and its
+    index, moved to `work_dir`."""
+    code, seconds, log = (_said(back / f"scip-{number}.{name}").strip() for name in ("code", "seconds", "log"))
+    written, index = back / f"index-{number}.scip", Path(work_dir) / f"scip-go-{number}.scip"
+    if written.is_file():
+        os.replace(written, index)
+    errors = [line[line.find(" ERROR ") + 7:][:200] for line in log.splitlines() if " ERROR " in line]
+    return {"command": command, "returncode": int(code) if code.lstrip("-").isdigit() else None,
+            "seconds": float(seconds) if seconds.isdigit() else 0.0, "peak_mb": None, "stdout_tail": "",
+            "stderr_tail": log[-2500:], "stderr_errors": len(errors),
+            "stderr_error_examples": list(dict.fromkeys(errors))[:5], "image": IMAGE,
+            "index": str(index) if index.is_file() else None,
+            "index_bytes": index.stat().st_size if index.is_file() else 0}
+
+
+def _boxed(project_dir: Path, work_dir: Path, files: list[str], roots: set[str], declared: dict, engine) -> dict:
+    """One container run (`scripts`), read back: `{runs, constraints, gaps}`, a run per module of `roots` that
+    holds a Go file, then the further runs made, each with no index where scip-go wrote none, and `{file: why}`
+    for the files a build constraint, a file name or cgo left without a document; without the container run,
+    `{state, reason, gaps}`."""
+    import container
+    out = work_dir / "container"
+    shutil.rmtree(out, ignore_errors=True)
+    held = collections.defaultdict(set)  # each module's folders that hold a Go file, from the module's
+    for rel in files:
+        home = code_graph.owner(rel, roots)
+        if home is not None:
+            held[home].add(posixpath.dirname(rel)[len(home) + 1 if home else 0:])
+    # `./...` leaves out the directories Go ignores (`_x`, `.x`, `testdata`): each is named as a package.
+    runs = [(root or ".", ["./...", *(f"./{folder}" for folder in sorted(held[root]) if any(
+        part.startswith(("_", ".")) or part == "testdata" for part in folder.split("/")))])
+            for root in sorted(roots) if held[root]]
+    if not runs:
+        return {"runs": [], "constraints": {}, "gaps": []}
+    groups, reasons, said = _planned(project_dir, files, roots)
+    further = [(prefix or ".", _variables(config), _patterns(prefix, rels, config),
+                sorted(rel[len(prefix) + 1 if prefix else 0:] for rel in rels))
+               for (prefix, _), (config, rels) in groups.items()]
+    prepare, execute, needs = scripts(runs, further)
+
+    def inputs() -> dict:
+        return {f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
+                for url, digest, name in needs["files"]}
+
+    result = container.run_in_container(
+        project_dir, ["sh", "-c", execute], image=IMAGE, out_dir=out, prepare=["sh", "-c", prepare], outputs=[OUT],
+        env=preparation.ENV, timeout=600 + (len(runs) + min(len(further), PASSES)) * (LIMIT + 60),
+        prepare_timeout=3600, memory=MEMORY, engine=engine, inputs=inputs,
+        registries=container.REGISTRIES + tuple(dict.fromkeys([*needs["hosts"], *declared.get("hosts", ())])))
+    if result["state"] == "gap":
+        return {"state": "unavailable", "reason": f"scip-go runs only in Daodan's container: {result['cause']}",
+                "install": result["remedy"], "gaps": []}
+    prepared = _said(out / "prepare.log")
+    gaps = [*preparation.missing(prepared), *preparation.restore_gaps(prepared),
+            *(result.get("gaps") or ())]  # and what the copy left out (`container.copy_perimeter`)
+    if result["state"] != "done":
+        return {"state": "failed", "gaps": gaps, "reason": f"the container run of scip-go ended {result['state']}"
+                + (f": {result['cause']}" if result.get("cause") else "") + f" (see the logs in {out})"}
+    back = out / Path(OUT).name
+    done = [{"prefix": "" if folder == "." else folder, **_run(back, number, work_dir, [SCIP_GO, *patterns])}
+            for number, (folder, patterns) in enumerate(runs)]
+    covered = _covered(done, project_dir)
+    reasons = {rel: why for rel, why in reasons.items() if rel not in covered}
+    more = []
+    for number, ((prefix, label), (_config, rels)) in enumerate(groups.items(), len(runs)):
+        rels = [rel for rel in rels if rel not in covered]  # the files `done` left out because its build does
+        if _said(back / f"scip-{number}.code").strip() == "capped":
             reasons.update({rel: f"{said[rel]}: not indexed, the further runs of one index stop at {PASSES}"
                             for rel in rels})
             continue
-        here, patterns = _environment(env, config), _patterns(prefix, rels, config)
-        listed = _listed(go, here, Path(mirror) / prefix, patterns, (mirror, project))
-        wanted = [rel for rel in rels if PurePosixPath(rel).name in listed.get(posixpath.dirname(rel) or ".", ())]
+        listed = set(_said(back / f"list-{number}.txt").splitlines())
+        wanted = [rel for rel in rels if rel[len(prefix) + 1 if prefix else 0:] in listed]
         reasons.update({rel: f"{said[rel]}: `go list` under {label} does not list it" for rel in rels
                         if rel not in wanted})
         if not wanted:
             continue
-        output = Path(work_dir) / f"scip-go-{len(runs) + len(out)}.scip"
-        run = {"prefix": prefix, "configuration": label, **code_graph.measured(
-            [scip_go, f"--output={output}", *patterns], str(Path(mirror) / prefix), here, 3 * 3600)}
+        run = {"prefix": prefix, "configuration": label,
+               **_run(back, number, work_dir, [SCIP_GO, *further[number - len(runs)][2]])}
         names = {name for rel in wanted for name in (rel, rel[len(prefix) + 1:] if prefix else rel)}
-        kept = _keep(output, names) if output.is_file() else 0
-        run["index"], run["index_bytes"] = (str(output), output.stat().st_size) if kept else (None, 0)
-        out.append(run)
-        got = _covered([run], mirror)
+        kept = _keep(Path(run["index"]), names) if run["index"] else 0
+        run["index"], run["index_bytes"] = (run["index"], Path(run["index"]).stat().st_size) if kept else (None, 0)
+        more.append(run)
+        got = _covered([run], project_dir)
         reasons.update({rel: f"{said[rel]}: the scip-go run under {label} wrote no document of it (exit code "
                              f"{run['returncode']})" for rel in wanted if rel not in got})
-    return out, reasons
-
-
-def _build(go: str, env: dict, partial: Path, work_dir: Path) -> None:
-    """scip-go into `partial`, its sources and build cache in a scratch directory removed after, with at most
-    `go_jobs` compilers at once."""
-    import resolve_edges as rx
-    scratch = Path(tempfile.mkdtemp(prefix="scip-go-build-", dir=work_dir))
-    try:
-        build = {**env, "GOBIN": str(partial), "GOPATH": str(scratch / "path"), "GOCACHE": str(scratch / "cache"),
-                 "GOFLAGS": ""}
-        subprocess.run([go, "install", "-p", rx.go_jobs(), f"github.com/scip-code/scip-go/cmd/scip-go@{VERSION}"],
-                       check=True, env=build, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=1800)
-    finally:
-        # Go makes its module cache read-only.
-        shutil.rmtree(scratch, onexc=lambda function, path, _error: (os.chmod(path, 0o700), function(path)))
+    return {"runs": [*done, *more], "constraints": reasons, "gaps": gaps}
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folders it runs in, and the Dockerfiles as BuildKit reads them."""
+    """What `index` takes from the pre-map: the folders of its modules, where scip-go runs (a `go.work`'s folder
+    is none: `./...` there names no module's packages), and the Dockerfiles as BuildKit reads them."""
     import premap
     builds = record.get("docker_builds") or []
-    return {"roots": premap.roots(record, UNIT_KINDS, {"go"}), **({"docker": builds} if builds else {})}
+    return {"roots": premap.roots(record, UNIT_KINDS), **({"docker": builds} if builds else {})}
 
 
 GO_BUILD = r"\bgo\s+(build|install)\b"  # the RUN of a Dockerfile's stage that builds its Go module
@@ -622,51 +696,28 @@ def _docker(project: Path, work_dir: Path, files: list[str], roots: set[str], bu
     return runs, reasons, gaps
 
 
-def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str],
-          docker=()) -> dict:
-    """The scip-go index of `project_dir` for `files` (default: every `.go` file), `roots` the folders of its
-    modules as the pre-map names them, `docker` its Dockerfiles as BuildKit reads them (`_docker`); see the
-    module's docstring."""
-    import engine_tools
-    import resolve_edges as rx
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str], docker=(),
+          declared: dict | None = None, engine=None) -> dict:
+    """The scip-go index of `project_dir` for `files` (default: every `.go` file), in Daodan's container with the
+    engine the pass found (`NEEDS_CONTAINER`) and the hosts the project declares (`declared`): `roots` the folders
+    of its modules as the pre-map names them, `docker` its Dockerfiles as BuildKit reads them (`_docker`); see the
+    module's docstring. Nothing of it runs on the host."""
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-    tool = runtime.Tool(project_dir, "scip-go", VERSION)
-    try:
-        runtime.memory("scip-go", MIN_FREE)
-        goroot = rx.shared_engine_dir("go") / rx.GO_VERSION / "go"
-        if not tool.installed() or not (goroot / "bin" / rx.executable_name("go")).is_file():
-            runtime.room()
-        with runtime.fetching(f"Go {rx.GO_VERSION} and scip-go {VERSION}", "go.dev and proxy.golang.org"):
-            env = {**os.environ, **engine_tools.go_environment()}
-            go = str(Path(env["GOROOT"]) / "bin" / rx.executable_name("go"))
-            tool._install(tool.home(), lambda partial: _build(go, env, partial, work_dir))
-    except runtime.Unavailable as error:
-        return runtime.refused("scip-go", VERSION, error)
-    scip_go = str(tool.home() / rx.executable_name("scip-go"))
     if files is None:
         files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*.go"))
     roots = set(roots)
-    packages = {rel.rsplit("/", 1)[0] for rel in files if "/" in rel}
-
-    def command(prefix, output):
-        subprocess.run([go, "mod", "download"], cwd=mirror / prefix, env=env, stdin=subprocess.DEVNULL,
-                       capture_output=True, timeout=1800)
-        skip = len(prefix) + 1 if prefix else 0
-        ignored = sorted({rel.rsplit("/", 1)[0][skip:] for rel in files
-                          if "/" in rel and code_graph.owner(rel, roots) == prefix and any(
-                              part.startswith(("_", ".")) or part == "testdata" for part in rel.split("/")[:-1])})
-        return [scip_go, f"--output={output}", "./...", *[f"./{directory}" for directory in ignored]]
-
     runtime.clear(work_dir, "scip-go")
-    with runtime.mirrored(tool, runtime.real(packages | roots, work_dir)) as mirror:
-        runs = code_graph.module_runs("scip-go", roots, command, files, mirror, work_dir, env)
-        more, constraints = _configured(go, scip_go, env, project_dir, mirror, work_dir, files, roots, runs)
-    runs += more
+    boxed = _boxed(project_dir, work_dir, files, roots, declared or {}, engine)
+    if "state" in boxed:
+        return {"indexes": [], "runs": [], "indexer": code_graph.indexer("scip-go", VERSION, []), **boxed}
     built, docker_reasons, gaps = _docker(project_dir, work_dir, files, roots, docker)
-    runs += built
-    return {**runtime.outcome("scip-go", VERSION, runs),  # `configs` is for `tasks`
+    runs, constraints, gaps = [*boxed["runs"], *built], boxed["constraints"], [*boxed["gaps"], *gaps]
+    found = runtime.outcome("scip-go", VERSION, runs) if runs else runtime.refused(
+        "scip-go", VERSION, runtime.Unavailable("no Go module of the pre-map holds a Go file: no module to index",
+                                                "none: the Go files keep their static facts"))
+    return {**found,  # `configs` is for `tasks`
             "configs": {"roots": sorted(roots), "failed": {run["prefix"]: f"exit code {run['returncode']}"
                                                            for run in runs if not run["index"]
                                                            and "configuration" not in run and "docker" not in run},

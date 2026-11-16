@@ -57,7 +57,8 @@ def _go_pass(index, languages=("go",), **fields):
     def stage(command, **options):
         if command[1:2] != ["--engine"]:
             return real(command, **options)
-        with contextlib.redirect_stdout(io.StringIO()):
+        # Its build runs only in a container: the stage is handed the engine the pass found.
+        with contextlib.redirect_stdout(io.StringIO()), mock.patch("container.find_engine", return_value="the engine"):
             resolve_edges.main(command)
         return subprocess.CompletedProcess(command, 0)
 
