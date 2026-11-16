@@ -6,14 +6,18 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "plugins/codebase-map/skills/map/scripts"))
 
 import code_graph  # noqa: E402
 import container  # noqa: E402
+import engine_tools  # noqa: E402
 import preparation  # noqa: E402
 from indexers import rust  # noqa: E402
 
@@ -60,18 +64,23 @@ Caused by:
 """
 
 
-def test_the_host_runs_no_project_code():
+def test_rust_analyzer_never_runs_on_the_host(tmp_path, monkeypatch):
     """rust-analyzer's `scip` runs `cargo check` for the build scripts and builds the procedural macros whatever
     `buildScripts.enable` and `procMacro.enable` say (cli/scip.rs at the pinned release: `load_out_dirs_from_check:
-    true`, the sysroot's server; measured on Modal: the build script ran, `thiserror-impl` was built and expanded).
-    On the host the command that runs them runs nothing; in the container rust-analyzer's defaults run them."""
-    assert rust.CONFIG["cargo"]["buildScripts"]["overrideCommand"] == rust.NO_BUILD == ["cargo", "--version"]
-    assert rust.CONFIG["procMacro"] == {"enable": False} and rust.BOXED == {"cargo": {"features": "all"}}
+    true`, the sysroot's server; measured on Modal: the build script ran, `thiserror-impl` was built and expanded),
+    and a `rust-project.json` or `.cargo/config.toml` names other programs it starts. So it runs only in Daodan's
+    container: the pass hands it the engine, and nothing of it starts here."""
+    assert rust.NEEDS_CONTAINER and rust.BOXED == {"cargo": {"features": "all"}}
+    started = []
+    monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: started.append(args) or pytest.fail("a process"))
+    monkeypatch.setattr(subprocess, "Popen", lambda *args, **kwargs: started.append(args) or pytest.fail("a process"))
+    result = rust.index(ROOT / "tests/fixtures/code-graph/rust", tmp_path / "work", roots={""}, boxes=[])
+    assert result["state"] == "unavailable" and result["indexes"] == [] and started == []
 
 
-def test_the_structure_names_the_containers_runs_their_rust_and_the_declared_hosts():
+def test_the_structure_names_the_containers_runs_and_their_rust():
     """One run per Cargo workspace's root and per crate outside one, as Cargo builds them; the Rust a rustup file
-    names (a `rust-version` is a minimum, never installed); the hosts the units declare."""
+    names (a `rust-version` is a minimum, never installed)."""
     record = {"units": [{"kind": "cargo-crate", "root": ".", "registries": ["https://gitlab.com/a/b.git"]},
                         {"kind": "cargo-crate", "root": "tools"}, {"kind": "cargo-crate", "root": "ws/x"},
                         {"kind": "cargo-crate", "root": "ws/y"}],
@@ -80,8 +89,8 @@ def test_the_structure_names_the_containers_runs_their_rust_and_the_declared_hos
                              {"tool": "rust", "version": "1.70", "declared_in": "Cargo.toml"}]}
     given = rust.structure(record)
     assert given["boxes"] == [".", "tools", "ws"] and given["roots"] == {"", "tools", "ws", "ws/x", "ws/y"}
-    assert given["toolchains"] == [record["toolchains"][0]]
-    assert given["declared"]["hosts"] == ("gitlab.com",)
+    assert given["toolchains"] == [record["toolchains"][0]] and "declared" not in given  # the pass's, as for every
+    # analyzer whose build runs in a container
 
 
 def test_the_container_prepares_rust_and_the_crates_then_checks_and_indexes_with_no_network():
@@ -140,13 +149,13 @@ class _Engine:
 
 
 def _boxed(tmp_path, monkeypatch, outcome, written):
-    """`rust.index` with an engine that answers and a container run that leaves `written` in its out folder."""
+    """`rust.index` with the engine the pass found and a container run that leaves `written` in its out folder."""
     project = tmp_path / "project"
     shutil.copytree(ROOT / "tests/fixtures/code-graph/rust", project, ignore=shutil.ignore_patterns("index.scip"))
     (project / "tools/src").mkdir(parents=True)
     (project / "tools/Cargo.toml").write_text('[package]\nname = "tools"\nversion = "0.1.0"\n', encoding="utf-8")
     (project / "tools/src/main.rs").write_text("fn main() {}\n", encoding="utf-8")
-    asked, hosted = {}, []
+    asked = {}
 
     def run_in_container(project_dir, command, **options):
         asked.update(options, command=command)
@@ -157,38 +166,33 @@ def _boxed(tmp_path, monkeypatch, outcome, written):
         (Path(options["out_dir"]) / "prepare.log").write_text("", encoding="utf-8")
         return outcome
 
-    def host(project_dir, work_dir, files, roots, prefixes):
-        hosted.append(prefixes)
-        output = Path(work_dir) / f"host-{len(hosted)}.scip"
-        output.write_bytes(b"")
-        return [{"prefix": prefix, "returncode": 0, "seconds": 1.0, "peak_mb": None, "stderr_tail": "",
-                 "index": str(output), "index_bytes": 0} for prefix in prefixes or [""]], "rust-analyzer host"
-
-    monkeypatch.setattr(container, "find_engine", lambda: _Engine())
     monkeypatch.setattr(container, "run_in_container", run_in_container)
-    monkeypatch.setattr(rust, "_on_host", host)
     monkeypatch.setattr(rust, "_analyzer", lambda: tmp_path / "rust-analyzer")
     monkeypatch.setattr(preparation, "fetched", lambda url, digest, name: tmp_path / name)
     result = rust.index(project, tmp_path / "work", roots={"", "tools"}, boxes=[".", "tools"], toolchains=[],
-                        declared={"hosts": ("gitlab.com",), "where": {}})
-    return result, asked, hosted
+                        declared={"hosts": ("gitlab.com",), "where": {}}, engine=_Engine())
+    return result, asked
 
 
-def test_the_index_runs_in_the_container_and_a_root_it_gave_no_index_of_reads_on_the_host(tmp_path, monkeypatch):
+def test_the_index_runs_in_the_container_and_a_root_it_gave_no_index_of_is_a_run_without_one(tmp_path, monkeypatch):
     written = {"version.txt": "rust-analyzer 1.0.0 (abc 2026-11-09)\n", "libexec.txt": "rust-analyzer-proc-macro-srv\n",
                "check-0.code": "101\n", "check-0.json": CHECKED, "check-0.err": FAILED, "scip-0.code": "0\n",
                "scip-0.log": "Generating SCIP finished\n", "index-0.scip": INDEX.read_bytes(),
                "check-1.code": "0\n", "check-1.json": "", "check-1.err": "", "scip-1.code": "1\n",
                "scip-1.log": "error: failed to load workspace\n"}
-    result, asked, hosted = _boxed(tmp_path, monkeypatch, {"state": "done", "exit_code": 0}, written)
+    result, asked = _boxed(tmp_path, monkeypatch, {"state": "done", "exit_code": 0}, written)
     assert "gitlab.com" in asked["registries"] and asked["memory"] == rust.MEMORY and asked["image"] == rust.IMAGE
-    assert hosted == [["tools"]]  # the root the container gave no index of, read on the host with no project code
-    assert [prefix for _path, prefix in result["indexes"]] == ["", "tools"] and result["build"].startswith("rust-ana")
+    assert [prefix for _path, prefix in result["indexes"]] == [""] and result["build"].startswith("rust-ana")
+    assert (result["indexer"]["version"], result["toolchain"], result["config"]) == (
+        engine_tools.RUST_ANALYZER_RELEASE, preparation.NEEDS["rust"]["version"], rust.BOXED)
     kinds = [(gap["kind"], gap.get("path")) for gap in result["gaps"]]
-    assert kinds[:3] == [("build_script_failed", "."), ("build_script_failed", "apps/agent"),
-                         ("proc_macro_not_built", ".")]
-    assert ("container_index_failed", "tools") in kinds  # and its run is the host's, which indexed it
-    assert [(run["prefix"], run.get("where")) for run in result["runs"]] == [("", "container"), ("tools", None)]
+    assert kinds == [("build_script_failed", "."), ("build_script_failed", "apps/agent"),
+                     ("proc_macro_not_built", ".")]
+    # The root rust-analyzer wrote no index of: a run without one, with its words, which the pass makes a gap, and
+    # the reason its files have no document. Nothing reads it on the host.
+    tools = next(run for run in result["runs"] if run["prefix"] == "tools")
+    assert tools["index"] is None and "failed to load workspace" in tools["stderr_tail"]
+    assert result["configs"]["failed"] == {"tools": "exit code 1"}
     # Beside the container's index, what it was built with: the cfgs of the build scripts that ran are set.
     boxed = Path(result["indexes"][0][0])
     assert json.loads(boxed.with_suffix(".cfg.json").read_text(encoding="utf-8")) == {
@@ -199,14 +203,18 @@ def test_the_index_runs_in_the_container_and_a_root_it_gave_no_index_of_reads_on
     assert rust._configuration(index, "src/lib.rs") == (rust.CONTAINER, True, [])
     assert rust._configuration(index, "apps/agent/src/lib.rs") == (rust.CONTAINER, "failed", [])
     assert rust._configuration(index, "apps/app/src/main.rs") == (rust.CONTAINER, True, ["desktop"])
-    assert rust._configuration(index, "tools/src/main.rs") == (rust.HOST, False, [])  # its run's, the host's
+    assert rust._configuration(index, "tools/src/main.rs") == (rust.CONTAINER, True, [])  # the root's run's
     # A cfg a build script that ran did not set is false; one it set, or one rust-analyzer may set, is not.
     assert rust._cfg("desktop", rust.CONTAINER, True, []) is False and rust._cfg("desktop", rust.CONTAINER, True,
                                                                                 ["desktop"]) is True
     assert rust._cfg("test", rust.CONTAINER, True, []) is None and rust._cfg("windows", rust.CONTAINER, True) is False
 
 
-def test_without_a_container_the_host_reads_the_project_with_no_build_script_and_says_so(tmp_path, monkeypatch):
-    result, asked, hosted = _boxed(tmp_path, monkeypatch, {"state": "gap", "cause": "no engine", "remedy": "start"}, {})
-    assert hosted == [None] and [prefix for _path, prefix in result["indexes"]] == [""]
-    assert result["gaps"] == [{"kind": "build_scripts_not_run", "detail": rust.NOT_BOXED.format("no engine")}]
+def test_a_container_that_does_not_run_is_the_cause_and_nothing_runs_on_the_host(tmp_path, monkeypatch):
+    """No step falls back to a host run (AGENTS.md): the language is unavailable, or failed, with the cause."""
+    result, _asked = _boxed(tmp_path, monkeypatch, {"state": "gap", "cause": "no engine", "remedy": "start"}, {})
+    assert (result["state"], result["indexes"], result["install"]) == ("unavailable", [], "start")
+    assert result["reason"] == "rust-analyzer runs only in Daodan's container: no engine"
+    result, _asked = _boxed(tmp_path / "b", monkeypatch, {"state": "timeout"}, {})
+    assert result["state"] == "failed" and result["reason"].startswith("the container run of rust-analyzer ended "
+                                                                         "timeout")

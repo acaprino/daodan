@@ -1,18 +1,18 @@
 """rust-analyzer's SCIP output: how it runs, and the aliases its index states its own way.
 
-`rust-analyzer scip` runs the build scripts (`cargo check`) and builds the procedural macros whatever
+`rust-analyzer scip` runs the build scripts (`cargo check`) and builds and loads the procedural macros whatever
 `buildScripts.enable` and `procMacro.enable` say: at the pinned release cli/scip.rs loads the workspace with
-`load_out_dirs_from_check: true` and the sysroot's proc-macro server. Both run project code, so they run only in
-Daodan's container (`_boxed`): one run over a copy of the project, with Daodan's Rust or the one a rustup file
-names (`toolchains`) and the standard library's sources, which rust-analyzer reads. The preparation, with the
-registries and the hosts the project declares open, installs them and fetches each root's crates (`cargo fetch`);
-the execution, with no network, runs in each Cargo workspace's root and each crate outside one (`boxes`) the
-check rust-analyzer starts, through its own compiler wrapper, then `rust-analyzer scip` with its defaults
-(`BOXED`). A build script that fails, or a procedural macro that does not build, is a gap naming the crate and
-its error (`built`), and rust-analyzer reads that crate as with build scripts off. On the host (`CONFIG`), the
-command that runs the build scripts is one that runs nothing (`NO_BUILD`), so no project code runs there: where
-no container answers, and for a root the container wrote no index of. What a macro generates is seen only in the
-container. Beside each index, `<index>.cfg.json` says where it was read and whether the build scripts ran, which
+`load_out_dirs_from_check: true` and the sysroot's proc-macro server. A `rust-project.json` names the sysroot
+whose server and rustc it starts and the macro libraries it loads, `.cargo/config.toml` the programs cargo starts
+as rustc. So rust-analyzer runs only in Daodan's container (`NEEDS_CONTAINER`), never on the host: one run over a
+copy of the project (`_boxed`), with Daodan's Rust or the one a rustup file names (`toolchains`) and the standard
+library's sources, which rust-analyzer reads. The preparation, with the registries and the hosts the project
+declares open, installs them and fetches each root's crates (`cargo fetch`); the execution, with no network, runs
+in each Cargo workspace's root and each crate outside one (`boxes`) the check rust-analyzer starts, through its
+own compiler wrapper, then `rust-analyzer scip` with its defaults (`BOXED`). A build script that fails, or a
+procedural macro that does not build, is a gap naming the crate and its error (`built`), and rust-analyzer reads
+that crate as with build scripts off; a root it writes no index of is a run without one, with its own words.
+Beside each index, `<index>.cfg.json` says whether the build scripts ran and the cfgs each crate's set, which
 `unanswered` and `missing` read to decide a `cfg`.
 
 `hops` reads `let x = y` (the symbol the index references at the value) and a closure value (the function the
@@ -30,7 +30,6 @@ import posixpath
 import re
 import shlex
 import shutil
-import subprocess
 from pathlib import Path, PurePosixPath
 
 import code_graph
@@ -39,14 +38,8 @@ from premap.container_runner import IMAGE  # Ubuntu 24.04: gcc and the linker th
 
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-rust", ("rust",), frozenset({"cargo-crate"}), False
-MIN_FREE = 1280 * 2**20  # 1,180 MB peak on semver (benchmarks/inference-audit, 13 November 2026)
-# The host's options: all features, and a build-script command that runs nothing (measured on Modal: with only
-# `enable` off the build script ran and `thiserror-impl` was built and expanded), so no procedural macro is built.
-NO_BUILD = ["cargo", "--version"]  # a program every toolchain has, which prints no message cargo would read
-CONFIG = {"cargo": {"buildScripts": {"enable": False, "overrideCommand": NO_BUILD}, "features": "all"},
-          "procMacro": {"enable": False}}
-BOXED = {"cargo": {"features": "all"}}  # the container's: rust-analyzer's defaults, build scripts and proc macros
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-rust", ("rust",), frozenset({"cargo-crate"}), True
+BOXED = {"cargo": {"features": "all"}}  # rust-analyzer's defaults, build scripts and proc macros, all features
 OUT = "/daodan/out/rust-analyzer"
 ANALYZER = f"{preparation.IN}/rust-analyzer"
 RUST_SRC = ("https://static.rust-lang.org/dist/2026-10-15/rust-src-1.99.1.tar.xz",
@@ -57,13 +50,11 @@ SRC_SETUP = (f"{{ mkdir -p {preparation.T}/x && tar -xJf {preparation.IN}/rust-s
 # What rust-analyzer's check runs (project-model's build_command), its compiler wrapper building only the build
 # scripts and procedural macros; `--keep-going` is stable from Cargo 1.74, an older toolchain runs without it.
 CHECK = "cargo check --quiet --workspace --message-format=json --all-features --keep-going --all-targets"
-MEMORY = 8 * 2**30
+MIN_FREE = MEMORY = 8 * 2**30  # the container's memory, for the check and the index
 LIMIT = 3600  # the seconds one root's check, and its index, may take
 BUILD = 600  # the seconds the execution's own lines may take beside them
 FALLBACK = "rust-analyzer reads {} as with build scripts off: without the cfgs they set and the files they write"
 UNEXPANDED = "its macros are not expanded, as with procedural macros off"
-NOT_BOXED = ("no container ran rust-analyzer ({}): it reads the project on the host with no build script and no "
-             "procedural macro, no project code running outside Daodan's container")
 NO_SERVER = ("the sysroot holds no rust-analyzer-proc-macro-srv: rust-analyzer expands no procedural macro, as with "
              "procedural macros off")
 PATTERNS = {"tuple_pattern", "struct_pattern", "tuple_struct_pattern", "field_pattern", "ref_pattern",
@@ -334,10 +325,9 @@ def missing(index, rels: list[str], configs: dict | None = None) -> dict:
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folders it runs in on the host (`roots`); the container's runs,
-    each Cargo workspace's root and each crate outside one, as Cargo builds them (`boxes`), with the Rust a rustup
-    file names (`toolchains`: a `rust-version` is a minimum, never installed) and the hosts the project's units
-    declare (`declared`)."""
+    """What `index` takes from the pre-map: the folders of the crates and workspaces (`roots`, for `missing`); the
+    container's runs, each Cargo workspace's root and each crate outside one, as Cargo builds them (`boxes`), with
+    the Rust a rustup file names (`toolchains`: a `rust-version` is a minimum, never installed)."""
     import premap
     from dynamic import rust as observer
     crates = sorted({observer._folder(unit["root"]) for unit in record.get("units", []) if unit["kind"] in UNIT_KINDS})
@@ -347,8 +337,7 @@ def structure(record: dict) -> dict:
     chains = []
     for root in boxes:
         chains += [item for item in observer._toolchain(record.get("toolchains") or [], root) if item not in chains]
-    return {"roots": premap.roots(record, UNIT_KINDS, {"cargo"}), "boxes": boxes, "toolchains": chains,
-            "declared": preparation.declared(record)}
+    return {"roots": premap.roots(record, UNIT_KINDS, {"cargo"}), "boxes": boxes, "toolchains": chains}
 
 
 def scripts(boxes: list[str], toolchains: list[dict]) -> tuple[str, str, dict]:
@@ -523,11 +512,9 @@ def _code(path: Path) -> int | None:
 
 def _boxed(project_dir: Path, work_dir: Path, boxes: list[str], toolchains: list[dict], declared: dict,
            engine) -> dict:
-    """One container run: each root's check and index (`scripts`), read back. `{runs, gaps, build}`: a run per
-    root, with no index where rust-analyzer wrote none (a gap: that root reads on the host); without a container
-    run, no run and the gap that says why."""
+    """One container run: each root's check and index (`scripts`), read back. `{runs, gaps, build}`, a run per root,
+    with no index where rust-analyzer wrote none; without the container run, `{state, reason, gaps}`."""
     import container
-    from indexers import runtime
     out = work_dir / "container"
     shutil.rmtree(out, ignore_errors=True)
     prepare, execute, needs = scripts(boxes, toolchains)
@@ -541,15 +528,14 @@ def _boxed(project_dir: Path, work_dir: Path, boxes: list[str], toolchains: list
         env=preparation.ENV, timeout=BUILD + len(boxes) * 2 * LIMIT, memory=MEMORY, engine=engine, inputs=inputs,
         registries=container.REGISTRIES + tuple(dict.fromkeys([*needs["hosts"], *declared.get("hosts", ())])))
     if result["state"] == "gap":
-        return {"runs": [], "gaps": [{"kind": "build_scripts_not_run", "detail": NOT_BOXED.format(result["cause"])}],
-                "build": None}
+        return {"state": "unavailable", "reason": f"rust-analyzer runs only in Daodan's container: {result['cause']}",
+                "install": result["remedy"], "gaps": []}
     prepared = _text(out / "prepare.log")
     gaps = [*needs["gaps"], *preparation.missing(prepared), *preparation.restore_gaps(prepared),
             *(result.get("gaps") or ())]  # and what the copy left out (`container.copy_perimeter`)
     if result["state"] != "done":
-        cause = f"the container run ended {result['state']}" + (f": {result['cause']}" if result.get("cause") else "")
-        return {"runs": [], "gaps": [*gaps, {"kind": "build_scripts_not_run", "detail": NOT_BOXED.format(cause)}],
-                "build": None}
+        return {"state": "failed", "gaps": gaps, "reason": f"the container run of rust-analyzer ended {result['state']}"
+                + (f": {result['cause']}" if result.get("cause") else "") + f" (see the logs in {out})"}
     back = out / Path(OUT).name
     if "rust-analyzer-proc-macro-srv" not in _text(back / "libexec.txt"):
         gaps.append({"kind": "proc_macros_not_expanded", "detail": NO_SERVER})
@@ -566,12 +552,8 @@ def _boxed(project_dir: Path, work_dir: Path, boxes: list[str], toolchains: list
             os.replace(written, target)
             said = {"target": CONTAINER, "scripts": True, "failed": failed, "cfgs": cfgs}
             target.with_suffix(".cfg.json").write_text(json.dumps(said), encoding="utf-8")
-        else:
-            gaps.append({"kind": "container_index_failed", "path": root, "detail": (
-                f"rust-analyzer in the container wrote no index of {root} (exit code {code}): "
-                f"{runtime.excerpt(log)}: it reads {root} on the host with no build script and no procedural macro")})
         errors = [line[line.find(" ERROR ") + 7:][:200] for line in log.splitlines() if " ERROR " in line]
-        runs.append({"prefix": "" if root == "." else root, "where": CONTAINER, "returncode": code,
+        runs.append({"prefix": "" if root == "." else root, "returncode": code,
                      "command": [ANALYZER, "scip", ".", "--config-path", "config.json"],
                      "seconds": float(_code(back / f"scip-{number}.seconds") or 0), "peak_mb": None,
                      "stdout_tail": "", "stderr_tail": log[-2500:], "stderr_errors": len(errors),
@@ -581,103 +563,28 @@ def _boxed(project_dir: Path, work_dir: Path, boxes: list[str], toolchains: list
     return {"runs": runs, "gaps": gaps, "build": _text(back / "version.txt").strip() or None}
 
 
-def _on_host(project_dir: Path, work_dir: Path, files: list[str] | None, roots: set[str],
-             prefixes: list[str] | None) -> tuple[list[dict], str]:
-    """rust-analyzer on the host with no project code (`CONFIG`), with the release and the Rust toolchain Daodan
-    pins (`engine_tools`), in a mirror of the project where every directory holding a `Cargo.toml` is real: the
-    checkout's root and each crate holding files that run left out, or each of `prefixes`. `(runs, build)`;
-    runtime.Unavailable when the tools are not there and cannot be installed."""
-    import engine_tools
-    import resolve_edges as rx
-    from indexers import runtime
-    tool = runtime.Tool(project_dir, "rust-analyzer", rx.RUST_ANALYZER_RELEASE)
-    home = tool.home()
-    runtime.memory("rust-analyzer", MIN_FREE)
-    if not tool.installed():
-        runtime.room()
-    with runtime.fetching(f"rust-analyzer {rx.RUST_ANALYZER_RELEASE} and Rust {rx.RUST_VERSION}",
-                          "github.com and static.rust-lang.org"):
-        toolchain = engine_tools.rust_toolchain()
-        if toolchain is None:
-            raise runtime.Unavailable("no Rust toolchain could be installed", "check the network: Daodan "
-                                      "downloads cargo, rustc and rust-src from static.rust-lang.org")
-        tool._install(home, engine_tools.fetch_rust_analyzer)
-    # Crates the project depends on land in the shared directory, not in the user's cargo home.
-    launch = [str(home / rx.executable_name("rust-analyzer"))]
-    overrides = {"PATH": str(toolchain / "bin") + os.pathsep + os.environ.get("PATH", ""),
-                 "CARGO_HOME": str(engine_tools.shared_cache_dir() / "cargo"),
-                 "CARGO_TARGET_DIR": str(work_dir / "rust-target")}
-    # On Windows rust-analyzer leaves a `proc-macro-srv*` directory per load in the temporary folder.
-    temp = work_dir / "rust-analyzer-temp"
-    temp.mkdir(exist_ok=True)
-    env = {**os.environ, **overrides, "TEMP": str(temp), "TMP": str(temp), "TMPDIR": str(temp)}
-    build = subprocess.run([launch[0], "--version"], env=env, stdin=subprocess.DEVNULL, capture_output=True,
-                           text=True, timeout=120).stdout.strip()
-    config = work_dir / "rust-analyzer.json"
-    config.write_text(json.dumps(CONFIG), encoding="utf-8")
-    if files is None:
-        files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*.rs")
-                       if "target" not in path.relative_to(project_dir).parts)
-
-    def command(prefix, output):
-        return [launch[0], "scip", ".", "--output", str(output), "--config-path", str(config)]
-
-    runtime.clear(work_dir, "rust-analyzer")
-    try:
-        with runtime.mirrored(tool, runtime.real(roots, work_dir)) as mirror:
-            if prefixes is None:  # no fallback without the options: rust-analyzer's defaults run the build scripts
-                runs = code_graph.module_runs("rust-analyzer", roots, command, files, mirror, work_dir, env)
-            else:
-                runs = []
-                for prefix in prefixes:
-                    output = work_dir / f"rust-analyzer-{len(runs)}.scip"
-                    run = {"prefix": prefix, **code_graph.measured(command(prefix, output), str(Path(mirror) / prefix),
-                                                                   env, 3 * 3600)}
-                    run.update(index=str(output) if output.is_file() else None,
-                               index_bytes=output.stat().st_size if output.is_file() else 0)
-                    runs.append(run)
-    finally:
-        shutil.rmtree(temp, ignore_errors=True)
-    return [{**run, "where": HOST} for run in runs], build
-
-
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str], boxes=(),
-          toolchains=(), declared: dict | None = None) -> dict:
-    """The rust-analyzer index of `project_dir` for `files` (default: every `.rs` file outside `target`): in
-    Daodan's container for `boxes` (`_boxed`), else, and for each root the container wrote no index of, on the
-    host with no project code (`_on_host`); `roots` the folders of its crates and workspaces as the pre-map names them,
-    `toolchains` and `declared` the container's (`structure`)."""
+          toolchains=(), declared: dict | None = None, engine=None) -> dict:
+    """The rust-analyzer index of each of `boxes` in Daodan's container, with the engine the pass found
+    (`NEEDS_CONTAINER`) and the hosts the project declares (`declared`); `roots` the folders of the crates and
+    workspaces as the pre-map names them (`structure`). Nothing of it runs on the host."""
     import resolve_edges as rx
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-    boxed = {"runs": [], "gaps": [], "build": None}
-    if boxes:
-        import container
-        try:
-            engine = container.find_engine()
-        except container.Gap as gap:
-            boxed["gaps"].append({"kind": "build_scripts_not_run", "detail": NOT_BOXED.format(gap.cause)})
-        else:
-            boxed = _boxed(project_dir, work_dir, list(boxes), list(toolchains), declared or {}, engine)
-    runs, gaps, build = list(boxed["runs"]), list(boxed["gaps"]), boxed["build"]
-    left = [run["prefix"] for run in runs if not run["index"]]
-    if not runs or left:
-        try:
-            hosted, here = _on_host(project_dir, work_dir, files, set(roots), left if runs else None)
-        except runtime.Unavailable as error:
-            if not any(run["index"] for run in runs):
-                return {**runtime.refused("rust-analyzer", rx.RUST_ANALYZER_RELEASE, error),
-                        **({"gaps": gaps} if gaps else {})}
-            hosted, here = [], None
-        runs, build = runs + hosted, build or here
-    indexed = {run["prefix"] for run in runs if run["index"]}
-    runs = [run for run in runs if run["index"] or run["prefix"] not in indexed]  # a root the host read after all
+    if not boxes:
+        return runtime.refused("rust-analyzer", rx.RUST_ANALYZER_RELEASE, runtime.Unavailable(
+            "the pre-map names no Cargo package: no crate to index", "none: the Rust files keep their static facts"))
+    boxed = _boxed(project_dir, work_dir, list(boxes), list(toolchains), declared or {}, engine)
+    if "state" in boxed:
+        return {"indexes": [], "runs": [], "indexer": code_graph.indexer("rust-analyzer", rx.RUST_ANALYZER_RELEASE,
+                                                                           []), **boxed}
+    runs = boxed["runs"]
+    rust = next((item["version"] for item in toolchains if item.get("tool") == "rust"),
+                preparation.NEEDS["rust"]["version"])
     # Named by its pinned release, like every indexer; `build` is what the binary states; `configs` is for `tasks`.
-    return {**runtime.outcome("rust-analyzer", rx.RUST_ANALYZER_RELEASE, runs), "build": build,
-            "toolchain": rx.RUST_VERSION, "config": CONFIG,
-            **({"container": {"config": BOXED, "image": IMAGE}} if boxed["runs"] else {}),
+    return {**runtime.outcome("rust-analyzer", rx.RUST_ANALYZER_RELEASE, runs), "build": boxed["build"],
+            "toolchain": rust, "config": BOXED, "image": IMAGE,
             "configs": {"roots": sorted(roots), "failed": {run["prefix"]: f"exit code {run['returncode']}"
-                                                           for run in runs if not run["index"]
-                                                           and run["prefix"] not in indexed}},
-            **({"gaps": gaps} if gaps else {})}
+                                                           for run in runs if not run["index"]}},
+            **({"gaps": boxed["gaps"]} if boxed["gaps"] else {})}

@@ -2329,7 +2329,7 @@ class IndexerStageTests(unittest.TestCase):
                           "csharp": "scip-dotnet", "stylesheet": "stylesheet"})
         indexers = {spec.name: (spec.languages, spec.indexer, spec.needs_container) for spec in resolve_edges.ENGINES}
         self.assertEqual(indexers, {
-            "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", False),
+            "scip-go": (("go",), "go", False), "scip-rust": (("rust",), "rust", True),
             "scip-typescript": (("typescript", "javascript"), "typescript", True),
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
             "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True),
@@ -2338,10 +2338,12 @@ class IndexerStageTests(unittest.TestCase):
 
     def test_the_resolver_names_the_entry_not_the_indexer(self):
         # rust-analyzer is also the engine of the position pass, and scip-java indexes Kotlin too.
+        import container
         _project, manifest = self.project("rust")
         indexer = {"name": "rust-analyzer", "version": "2026-11-09", "seconds": 1.0, "peak_mb": None}
         result, _started, _indexed = self.run_stage(
-            "scip-rust", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("rust", indexer))
+            "scip-rust", manifest, lambda project_dir, work_dir, files=None, **given: self.contract("rust", indexer),
+            engine=(container, "find_engine", lambda: container.Engine("fake", ("x",))))
         self.assertEqual(result["languages"]["rust"], {"state": "fresh", "engine": "scip-rust@2026-11-09"})
 
     def test_an_entry_from_the_former_source_is_not_fresh(self):

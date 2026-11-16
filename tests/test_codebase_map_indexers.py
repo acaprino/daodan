@@ -1,4 +1,4 @@
-"""The indexer runs of `indexers/{go,rust,python}.py`, with a fake indexer and fake downloads: no
+"""The indexer runs of `indexers/{go,python}.py`, with a fake indexer and fake downloads: no
 network, no toolchain, no project code. Every program an `index()` starts is the stand-in `Fake`; every URL is
 the stand-in `Web`. The committed indexes of `fixtures/code-graph/` are what the fake indexer writes.
 scip-typescript runs only in a container: its runs are in `test_codebase_map_indexers_ts_py.py`.
@@ -30,11 +30,11 @@ if str(SCRIPTS) not in sys.path:
 import code_graph  # noqa: E402
 import resolve_edges as rx  # noqa: E402
 import engine_tools  # noqa: E402
-from indexers import go, python, runtime, rust, typescript  # noqa: E402
+from indexers import go, python, runtime, typescript  # noqa: E402
 
 FIXTURES = HERE / "fixtures/code-graph"
 GB = 2**30
-MODULES = {"go": go, "rust": rust, "python": python}
+MODULES = {"go": go, "python": python}  # Rust's runs only in a container: test_codebase_map_indexers_rust.py
 LANGUAGES = {"go": ("go",), "rust": ("rust",), "python": ("python",)}
 NPM = {"python": "@sourcegraph/scip-python"}
 MANIFESTS = ("go.mod", "go.sum", "Cargo.toml", "Cargo.lock", "package.json", "tsconfig.json", "pyproject.toml")
@@ -43,7 +43,7 @@ MANIFESTS = ("go.mod", "go.sum", "Cargo.toml", "Cargo.lock", "package.json", "ts
 def _given(project: Path, which: str) -> dict:
     """The structure the stage hands an indexer, as the pre-map names it for these fixtures: the folders holding
     the language's manifest."""
-    manifest = {"go": "go.mod", "rust": "Cargo.toml"}.get(which)
+    manifest = {"go": "go.mod"}.get(which)
     if manifest is None:
         return {}
     found = {path.parent.relative_to(project).as_posix() for path in Path(project).rglob(manifest)}
@@ -156,10 +156,6 @@ def _tools(project: Path, which: str) -> None:
         go_bin.parent.mkdir(parents=True)
         go_bin.write_text("fake", encoding="utf-8")
         _installed(rx.shared_engine_dir("scip-go") / go.VERSION, {rx.executable_name("scip-go"): "fake"})
-    elif which == "rust":
-        _installed(rx.shared_engine_dir("rust") / rx.RUST_VERSION)
-        _installed(rx.shared_engine_dir("rust-analyzer") / rx.RUST_ANALYZER_RELEASE,
-                   {rx.executable_name("rust-analyzer"): "fake"})
     else:
         home = rx.shared_engine_dir("node") / runtime.NODE_VERSION
         _installed(home)
@@ -185,10 +181,6 @@ def _project(sandbox, which: str) -> Path:
         (project / "tools/tool.go").write_text("package tools\n\nfunc Tool() {}\n", encoding="utf-8")
         (project / "_examples/demo").mkdir(parents=True)
         (project / "_examples/demo/main.go").write_text("package main\n\nfunc main() {}\n", encoding="utf-8")
-    if which == "rust":
-        (project / "fuzz/src").mkdir(parents=True)
-        (project / "fuzz/Cargo.toml").write_text('[package]\nname = "fuzz"\nversion = "0.1.0"\n', encoding="utf-8")
-        (project / "fuzz/src/main.rs").write_text("fn main() {}\n", encoding="utf-8")
     return project
 
 
@@ -251,8 +243,7 @@ def test_a_run_writes_nothing_in_the_project_removes_its_mirror_and_feeds_the_gr
     for language in LANGUAGES[which]:
         assert built[language]["edges"] == expected[language]["edges"]
         assert built[language]["files"] == expected[language]["files"]
-        assert built[language]["indexer"]["name"] == {"go": "scip-go", "rust": "rust-analyzer",
-                                                      "python": "scip-python"}[which]
+        assert built[language]["indexer"]["name"] == {"go": "scip-go", "python": "scip-python"}[which]
     assert any(built[language]["edges"] for language in LANGUAGES[which])
 
 
@@ -335,37 +326,6 @@ def test_a_download_that_cannot_happen_is_unavailable_with_its_cause(sandbox):
     assert result["indexes"] == [] and sandbox["fake"].runs() == []
 
 
-def test_rust_analyzer_leaves_its_temporary_directories_in_a_folder_removed_after_the_run(sandbox):
-    project = _project(sandbox, "rust")
-    shutil.rmtree(project / "fuzz")
-    _tools(project, "rust")
-    sandbox["fake"].index = FIXTURES / "rust/index.scip"
-    work, fake, seen = sandbox["root"] / "work", sandbox["fake"], []
-
-    def leaving(command, *args, **kwargs):
-        if "scip" in [str(part) for part in command]:
-            env = kwargs["env"]
-            seen.append({name: env.get(name) for name in ("TEMP", "TMP", "TMPDIR")})
-            Path(env["TEMP"], "proc-macro-srv4dc0-0").mkdir()  # what rust-analyzer leaves on Windows
-        return fake(command, *args, **kwargs)
-
-    sandbox["monkeypatch"].setattr(subprocess, "run", leaving)
-    result = rust.index(project, work, **_given(project, "rust"))
-    assert "state" not in result and len(seen) == 1
-    temp = Path(seen[0]["TEMP"])
-    assert set(seen[0].values()) == {str(temp)} and temp.is_relative_to(work)
-    assert not temp.exists()
-
-
-def test_rust_analyzer_is_named_by_its_pinned_release_and_keeps_the_build_it_states(sandbox):
-    project = _project(sandbox, "rust")
-    shutil.rmtree(project / "fuzz")
-    _tools(project, "rust")
-    sandbox["fake"].index = FIXTURES / "rust/index.scip"
-    result = rust.index(project, sandbox["root"] / "work", **_given(project, "rust"))
-    assert (result["indexer"]["version"], result["build"]) == (rx.RUST_ANALYZER_RELEASE, "tool 0.0.0-test")
-
-
 def test_an_install_that_crashes_states_the_first_line_of_its_error(sandbox):
     project = _project(sandbox, "go")
     _tools(project, "go")
@@ -383,18 +343,6 @@ def test_an_install_that_crashes_states_the_first_line_of_its_error(sandbox):
     assert result["state"] == "unavailable" and "(exit code 2)" in result["reason"]
     assert "fatal error: out of memory" in result["reason"] and result["reason"].endswith("runtime.rt0_go()")
     assert len(result["reason"]) < 1200
-
-
-def test_a_failed_run_is_failed_with_the_stderr_tail_and_the_error_count(sandbox):
-    project = _project(sandbox, "rust")
-    shutil.rmtree(project / "fuzz")
-    _tools(project, "rust")
-    sandbox["fake"].code = 101
-    sandbox["fake"].stderr = "start\n2026-11-14 ERROR one thing\n2026-11-14 ERROR another\nthe last words\n"
-    result = rust.index(project, sandbox["root"] / "work", **_given(project, "rust"))
-    assert result["state"] == "failed" and result["indexes"] == []
-    assert "the last words" in result["reason"] and "101" in result["reason"]
-    assert result["errors"] == 2 and len(result["runs"]) == 1  # the fallback run replaces the first one
 
 
 def test_a_long_failure_keeps_the_cause_it_states_first(sandbox):
@@ -682,12 +630,11 @@ def test_the_peak_is_none_when_no_run_measured_it():
 
 
 def test_every_indexer_declares_the_memory_it_needs():
-    assert [module.MIN_FREE // 2**20 for module in (go, rust, typescript, python)] == [512, 1280, 3072, 1920]
+    assert [module.MIN_FREE // 2**20 for module in (go, typescript, python)] == [512, 3072, 1920]
 
 
 @pytest.mark.parametrize("which, nested, reason", [
-    ("go", "tools/tool.go", "the scip-go run of its module tools wrote no index (exit code 2)"),
-    ("rust", "fuzz/src/main.rs", "the rust-analyzer run of its crate fuzz wrote no index (exit code 2)")])
+    ("go", "tools/tool.go", "the scip-go run of its module tools wrote no index (exit code 2)")])
 def test_a_nested_run_without_an_index_is_the_reason_its_files_have_no_document(sandbox, which, nested, reason):
     """`configs` is what the stage hands `tasks`, then `missing`: the folders of the runs, and those whose run
     wrote no index."""
