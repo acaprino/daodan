@@ -11,7 +11,7 @@ same image, pinned by the same digest:
 - without one, a single sandbox with the network blocked;
 - the declared outputs come back as one tar, into the run's folder, as `container.fetch` leaves them.
 
-A family's fixtures share one function call; each real repository (its clone from the archive `modal_native.py
+A family's fixtures run in groups of `--chunk` (4), each group in a function call of its own; each real repository (its clone from the archive `modal_native.py
 prepare` keeps on the volume) has its own. Per case the result holds the pre-map's score against
 `expected.json`, each source's state, the gaps, each step's result, the events by kind and the seconds.
 
@@ -44,6 +44,7 @@ REMOTE_PM = "/pm"
 SCRATCH = "project-model/pipeline-scratch"  # on the volume: each run's copy, removed when the run ends
 FAMILIES = ("js", "py", "jvm", "sys", "mix")
 PACKED = "/tmp/daodan-outputs.tar"
+SANDBOX_CPU = 2.0  # cores a build or an indexer is given: the default share would throttle Gradle and CMake
 
 image = (modal.Image.debian_slim(python_version="3.13")
          .apt_install("git", "ca-certificates", "xz-utils")
@@ -85,7 +86,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
     env = {"HOME": container.HOME, **(env or {})} if prepare else dict(env or {})
     options = {"app": modal.App.lookup("daodan-pipeline-sandboxes", create_if_missing=True),
                "volumes": {"/results": volume},
-               "memory": int(memory / 2**20), "timeout": int(prepare_timeout + timeout + 900)}
+               "memory": int(memory / 2**20), "cpu": SANDBOX_CPU, "timeout": int(prepare_timeout + timeout + 900)}
     unpack = f"tar -xf /results/{SCRATCH}/{token}/copy.tar -C / && mkdir -p {container.WORKDIR} && cd {container.WORKDIR}"
     boxes = []
     try:
@@ -245,13 +246,14 @@ def run_cases(names: list) -> dict:
 
 
 @app.local_entrypoint()
-def main(cases: str = "", out: str = ""):
+def main(cases: str = "", out: str = "", chunk: int = 4):
     fixtures = sorted(p.name for p in (HERE / "fixtures").iterdir() if (p / "expected.json").is_file())
     real = {n for n in fixtures if (HERE / "fixtures" / n / "source.json").is_file()}
     batches = []
     for spec in filter(None, cases.split(",")):
-        if spec in FAMILIES:
-            batches.append([n for n in fixtures if n.startswith(spec + "-") and n not in real])
+        if spec in FAMILIES:  # a family in groups of `chunk`, each in a container of its own: billed the same
+            family = [n for n in fixtures if n.startswith(spec + "-") and n not in real]
+            batches += [family[i:i + chunk] for i in range(0, len(family), chunk)]
         elif spec == "real":
             batches += [[n] for n in sorted(real)]
         else:
