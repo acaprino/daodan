@@ -601,7 +601,9 @@ def test_fixture_case(built, name, case):
 
 def test_every_reference_ends_or_is_a_hole(built):
     from indexers import clang, rust
-    inactive = [cause.split("{}") for cause in (clang.INACTIVE, rust.INACTIVE)]  # code the configuration leaves out
+    causes = (clang.INACTIVE, rust.INACTIVE, clang.DROPPED, clang.AMBIGUOUS, clang.BUILT_IN, clang.EXTERN_C,
+              clang.UNDEFINED)  # the adapters' own causes of a site the index holds nothing at
+    inactive = [cause.split("{}") for cause in causes]
     classes = set(code_graph.HOLES) | {"implicit-operator", typescript.MEMBER}  # the TS adapter's cause of a member
     classes |= {hole["class"] for data in built.values() for graph in data["graphs"].values() for hole in graph["holes"]
                 if any(hole["class"].startswith(parts[0]) and hole["class"].endswith(parts[-1]) for parts in inactive)}
@@ -736,6 +738,92 @@ def test_clang_a_macros_arguments_take_the_symbols_the_index_writes_at_the_macro
                      ("run.c:7", "n"): (clang.INACTIVE.format("#if defined(_MSC_VER)"), []),
                      **{("run.c:9", name): (clang.INACTIVE.format("#elif defined(__APPLE__)` of `#if defined(_MSC_VER)"),
                                             []) for name in ("_apple_only", "n")}}
+
+
+DROPPED_C = ("#define Assert(cond, msg)\n"
+             "#define Trace(x)\n"
+             "#define KEEP(x) (x)\n"
+             "int twice(int v) { return v * 2; }\n"
+             "int run(int n) {\n"
+             "    Assert(n > twice(1), \"small\");\n"
+             "    Trace((n,\n"
+             "           twice(n)));\n"
+             "    int m = KEEP(n);\n"
+             "    m = m + (n > 1 ?\n"
+             "#ifdef WIDE\n"
+             "        wide(n) :\n"
+             "#endif\n"
+             "        0);\n"
+             "    return twice(m);\n"
+             "}\n"
+             "#define DROP(n) (bits -= (n))\n"
+             "struct code { int bits; };\n"
+             "int use(struct code here, int bits) {\n"
+             "    DROP(here.bits);\n"
+             "    static const char *note =\n"
+             "#ifdef UNSET\n"
+             "        \"debug\";\n"
+             "#else\n"
+             "        \"release\";\n"
+             "#endif\n"
+             "    return bits + (note != 0);\n"
+             "}\n")
+CAST_CPP = "unsigned twice(unsigned v) {\n    return v + unsigned(1);\n}\n"
+
+
+def test_clang_the_index_names_no_occurrence_where_the_build_compiles_nothing(tmp_path):
+    """zlib's `Assert(s->lookahead < MIN_LOOKAHEAD, ...)` and `Tracev((stderr, ...))` outside ZLIB_DEBUG, whose
+    expansion is empty: the macro's name has its occurrence and nothing its arguments name, so the build compiles
+    none of them; gzlib.c's `#ifdef WIDECHAR` inside an expression, which the reader parses as no branch: the
+    lines say so, though statements after it hold occurrences; zlib's `DROPBITS(here.bits)`, whose argument's name
+    two symbols written at the macro have; tinyxml2's `#ifdef TINYXML2_DEBUG` inside an initializer, which the
+    reader reads as code, and `unsigned(100)`, a conversion to a type C++ builds in, which has no symbol."""
+    import snapshot
+    from indexers import clang
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "run.c").write_text(DROPPED_C, encoding="utf-8")
+    (project / "cast.cpp").write_text(CAST_CPP, encoding="utf-8")
+    manifest = tmp_path / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    assert_, trace, keep = ("cxx . . $ `run.c:1:9`!", "cxx . . $ `run.c:2:9`!", "cxx . . $ `run.c:3:9`!")
+    twice, run, cast = "cxx . project 0$ twice(1a).", "cxx . project 0$ run(2b).", "cxx . project 0$ twice(3c)."
+    drop, code, field, use = ("cxx . . $ `run.c:17:9`!", "cxx . project 0$ code#", "cxx . project 0$ code#bits.",
+                              "cxx . project 0$ use(4d).")
+    (tmp_path / "index.scip").write_bytes(document("run.c", [
+        occurrence(1, 8, 14, assert_, True), occurrence(2, 8, 13, trace, True), occurrence(3, 8, 12, keep, True),
+        occurrence(4, 4, 9, twice, True), occurrence(4, 14, 15, "local 0", True), occurrence(4, 26, 27, "local 0"),
+        occurrence(5, 4, 7, run, True), occurrence(5, 12, 13, "local 1", True), occurrence(6, 4, 10, assert_),
+        occurrence(7, 4, 9, trace), occurrence(9, 8, 9, "local 2", True), occurrence(9, 12, 16, keep),
+        occurrence(9, 12, 16, "local 1"), *(occurrence(10, column, column + 1, "local 2") for column in (4, 8)),
+        occurrence(10, 13, 14, "local 1"), occurrence(15, 11, 16, twice), occurrence(15, 17, 18, "local 2"),
+        occurrence(17, 8, 12, drop, True), occurrence(18, 7, 11, code, True), occurrence(18, 18, 22, field, True),
+        occurrence(19, 4, 7, use, True), occurrence(19, 20, 24, "local 3", True),
+        occurrence(19, 30, 34, "local 4", True),
+        *(occurrence(20, 4, 8, key) for key in (drop, "local 3", field, "local 4")),
+        occurrence(21, 23, 27, "local 5", True), occurrence(27, 11, 15, "local 4"),
+        occurrence(27, 19, 23, "local 5")]) + document("cast.cpp", [
+        occurrence(1, 9, 14, cast, True), occurrence(1, 24, 25, "local 0", True), occurrence(2, 11, 12, "local 0")]))
+    found = {}
+    with code_graph.Snapshot(manifest) as snap:
+        index = code_graph.Index(snap.root)
+        index.load(tmp_path / "index.scip")
+        hops, traversal, _prepared = code_graph.adapter_traversal(clang, index, snap)
+        for language in ("c", "cpp"):
+            _graph, references = code_graph.build(index, snap, language, hops, {}, None, traversal)
+            found.update({(row["site"], row["name"]): row["hole"] for row in references.values()})
+    dropped = clang.DROPPED.format("Assert", "run.c:1")
+    assert {key: hole for key, hole in found.items() if key[0] in ("run.c:6", "run.c:7", "run.c:8")} == {
+        ("run.c:6", "Assert"): "", ("run.c:6", "n"): dropped, ("run.c:6", "twice"): dropped,
+        ("run.c:7", "Trace"): "", **{key: clang.DROPPED.format("Trace", "run.c:2")
+                                      for key in (("run.c:7", "n"), ("run.c:8", "twice"), ("run.c:8", "n"))}}
+    assert found[("run.c:9", "n")] == "" and found[("run.c:9", "KEEP")] == ""  # an argument the expansion keeps
+    assert {key: hole for key, hole in found.items() if key[0] in ("run.c:11", "run.c:12", "run.c:14")} == \
+        dict.fromkeys((("run.c:12", "wide"), ("run.c:12", "n")), clang.INACTIVE.format("#ifdef WIDE"))
+    # zlib's `DROPBITS(here.bits)`: the expansion's own `bits` and the argument's field, both written at the macro.
+    assert found[("run.c:20", "here.bits")] == clang.AMBIGUOUS.format("DROP", "run.c:17", 2, "bits")
+    assert found[("run.c:22", "UNSET")] == clang.UNDEFINED  # tinyxml2's `#ifdef TINYXML2_DEBUG` in an initializer
+    assert found[("cast.cpp:2", "unsigned")] == clang.BUILT_IN.format("unsigned")
 
 
 def test_clang_an_operator_call_is_an_edge_of_kind_unknown(built):
