@@ -128,10 +128,11 @@ def _workflows(answer: dict) -> tuple[list[dict], list[dict]]:
     services, gaps = [], []
     for rel, text in zip(lines[::2], lines[1::2]):
         doc = json.loads(text)
-        if doc is None:
-            said = " ".join(line.removeprefix(f"{rel}: ") for line in errors if line.startswith(f"{rel}: "))
+        if doc is None:  # the library's message is the line that names the error, above Node's stack
+            said = [line.removeprefix(f"{rel}: ") for line in errors if line.startswith(f"{rel}: ")]
+            said = next((line for line in said if re.match(r"\w+Error: ", line)), said[-1] if said else "")
             gaps.append({"kind": "model_failed", "path": rel,
-                         "detail": f"{rel}: Renovate's YAML library does not read it: {said[-400:]}"})
+                         "detail": f"{rel}: Renovate's YAML library does not read it: {said[:400]}"})
         else:
             services += _services(rel, doc)
     return services, gaps

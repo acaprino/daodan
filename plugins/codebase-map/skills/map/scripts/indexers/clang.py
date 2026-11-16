@@ -559,7 +559,7 @@ def restores(project_dir: Path, roots) -> dict[str, dict]:
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, units: list[dict] | None = None,
           workspace: list[dict] | None = None, toolchains=(), absent=(), engine=None, memory: int = MIN_FREE,
-          cpus: int = 1, timeout: float = 3600) -> dict:
+          cpus: int = 1, timeout: float = 3600, declared: dict | None = None) -> dict:
     """The index of each configured root, with its runs and each root's state; `units`, `workspace` and the
     submodules not checked out (`absent`) are the pre-map's (`files` is not used: a unit's compilation database
     decides what is indexed). `cpus` is the container's share, as the caller gives it: its limit and scip-clang's
@@ -600,7 +600,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     options = {"prepare": ["sh", "-c", "\n".join([f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}", *lines])],
                "registries": tuple(dict.fromkeys([*(container.REGISTRIES if needs["registries"] or fetches else ()),
                                                   *chains["hosts"], *needs["hosts"],
-                                                  *(RUNNERS["bazel"]["hosts"] if "bazel" in kinds else ())])),
+                                                  *(RUNNERS["bazel"]["hosts"] if "bazel" in kinds else ()),
+                                                  *(declared or {}).get("hosts", ())])),
                "env": {**preparation.ENV, "TERM": "dumb"}} if lines else {"env": {"TERM": "dumb"}}
     if cmake:
         command.append(f"{preparation.T}/bin/cmake")  # mise's, linked there; the pin when it is not

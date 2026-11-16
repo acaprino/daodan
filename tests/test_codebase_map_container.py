@@ -409,6 +409,44 @@ class FakeEngineTest(unittest.TestCase):
         self.assertEqual(files["work/mvnw"], 0o755)
         self.assertEqual(files["work/.mvn/jvm.config"], 0o644)
 
+    def test_a_tracked_link_into_the_project_is_copied_as_that_link_and_one_out_of_it_is_a_gap(self):
+        """mix-real-python-semver: tests/coerce.py is a link Git tracks to docs/advanced/coerce.py, and the tests
+        import it. A tracked link whose target lies inside the project enters the copy as that link, never followed;
+        one whose target lies outside it (above it, or an absolute path) stays out, a gap of the run naming the link
+        and its target. Where Git checks a link out as a small file holding its target (core.symlinks false, as on
+        Windows), the copy holds the link all the same."""
+        if not self.git:
+            self.skipTest("git is needed to ask what Git tracks")
+        (self.project / "docs/advanced").mkdir(parents=True)
+        (self.project / "docs/advanced/coerce.py").write_text("def coerce(): pass\n", encoding="utf-8")
+        (self.project / "tests").mkdir()
+        links = {"tests/coerce.py": "../docs/advanced/coerce.py", "tests/plain.py": "../docs/advanced/coerce.py",
+                 "tests/up.py": "../../outside.py", "tests/root.py": "/etc/passwd", "docs/all": "advanced"}
+        git = [self.git, "-C", str(self.project)]
+        for name, target in links.items():
+            path = self.project / name
+            if name == "tests/plain.py":
+                path.write_text(target, encoding="utf-8")  # as Git writes a link it cannot make
+            else:
+                os.symlink(target, path)
+            blob = subprocess.run([*git, "hash-object", "-w", "--stdin"], input=target, capture_output=True,
+                                  text=True, check=True).stdout.strip()
+            subprocess.run([*git, "update-index", "--add", "--cacheinfo", f"120000,{blob},{name}"], check=True)
+        subprocess.run([*git, "add", "docs/advanced/coerce.py"], check=True)
+        result = self.run_operation(["exit", "0"])
+        name = self.created()[0][self.created()[0].index("--name") + 1]
+        with tarfile.open(self.state / "containers" / name / "copy.tar") as bundle:
+            members = {member.name: member for member in bundle.getmembers()}
+        copied = {name: member.linkname for name, member in members.items() if member.issym()}
+        self.assertEqual(copied, {"work/tests/coerce.py": "../docs/advanced/coerce.py",
+                                  "work/tests/plain.py": "../docs/advanced/coerce.py", "work/docs/all": "advanced"})
+        self.assertTrue(members["work/docs/advanced/coerce.py"].isfile() and members["work/tests"].isdir())
+        self.assertNotIn("work/tests/up.py", members)
+        self.assertNotIn("work/tests/root.py", members)
+        self.assertEqual([(gap["kind"], gap["path"], gap["target"]) for gap in result["gaps"]], [
+            ("link_outside", "tests/root.py", "/etc/passwd"), ("link_outside", "tests/up.py", "../../outside.py")])
+        self.assertIn("../../outside.py", result["gaps"][1]["detail"])
+
     def test_a_work_tree_git_does_not_answer_for_is_a_gap_not_a_copy_of_ignored_files(self):
         (self.project / ".git").mkdir(exist_ok=True)
         refusing = self.scratch / ("git.cmd" if os.name == "nt" else "git")

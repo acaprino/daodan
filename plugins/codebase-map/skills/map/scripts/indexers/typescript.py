@@ -407,7 +407,7 @@ def _runs(out_dir: Path, cause: str | None) -> list[dict]:
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsconfig: str | None = None, *,
           roots: set[str], paths=(), members: dict | None = None, toolchains=(), engine=None,
-          memory: int = MIN_FREE) -> dict:
+          memory: int = MIN_FREE, declared: dict | None = None) -> dict:
     """The scip-typescript index of `project_dir` for `files` (default: every JS/TS file outside
     `node_modules`), `tsconfig` the configuration a root without one extends, `roots` the folders of its packages,
     `paths` the aliases of its units, `members` the folders of the packages reached by name and `toolchains` the
@@ -443,7 +443,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
         project_dir, ["bash", "-c", EXECUTE.format(heap=memory * 4 // 5 // 2**20)], image=IMAGE, out_dir=out_dir,
         prepare=["bash", "-c", prepare], outputs=[OUT], env={**preparation.ENV, "TERM": "dumb"}, timeout=3 * 3600,
         prepare_timeout=3600, memory=memory, engine=engine,
-        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"]])),
+        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"],
+                                        *(declared or {}).get("hosts", ())])),
         inputs=lambda: {CONFIG: config, TYPES: Path(__file__).with_name("typescript_types.py"),
                         **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                            for url, digest, name in (preparation.NODE, *chains["files"])}})

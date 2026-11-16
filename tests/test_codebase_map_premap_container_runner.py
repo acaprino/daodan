@@ -394,3 +394,30 @@ def test_the_jvm_build_tools_run_on_the_jdk_image_with_the_proxy_set_for_java(tm
         wrapped = call["commands"][1]["argv"]
         assert preparation.JAVA_PROXY in wrapped[2] and wrapped[-2:] == [call["commands"][1]["tool"], "x"]
     assert calls[3]["commands"][1]["argv"] == ["dotnet", "x"]
+
+
+def test_a_gradle_build_that_fails_runs_again_reaching_the_repositories_its_settings_declare(tmp_path, no_download):
+    """real-app-kotlinconf: a plugin of `pluginManagement` comes from a repository the settings declare, which is
+    no registry. The settings record names it before the configure fails; a second run reaches it, and one that
+    fails too is a gap naming the hosts. A build that does not fail runs once."""
+    _, manifest = manifest_of(tmp_path, {"settings.gradle.kts": 'rootProject.name = "k"\n'})
+    build = "\x1e" + json.dumps({"kind": "build", "root": "/work", "name": "k", "nested": False, "gradle": "9.9.1",
+                                 "projects": [], "repositories": ["https://plugins.gradle.org/m2",
+                                                                  "https://maven.example.dev/releases"]})
+    failed = {"returncode": 1, "stdout": build + "\n", "stderr": "Could not resolve all artifacts for configuration"
+                                                                 " 'classpath'.\n"}
+    for first, second, kinds in ((1, 0, []), (1, 1, ["declared_hosts_failed"]), (0, 0, [])):
+        calls = []
+
+        def run_commands(project, commands, **options):
+            calls.append(options)
+            code = first if len(calls) == 1 else second
+            return {"state": "done", "root": "/work", "results": [{"returncode": 0, "stdout": "", "stderr": ""},
+                                                                  {**failed, "returncode": code}]}
+        with mock.patch.object(container, "run_commands", run_commands):
+            [answer] = container_runner.runner(manifest)([command("gradle", "registries")])
+        assert len(calls) == (2 if first else 1) and "maven.example.dev" not in calls[0]["registries"]
+        assert not first or "maven.example.dev" in calls[1]["registries"]
+        assert answer["returncode"] == (second if first else 0)
+        assert [g["kind"] for g in answer.get("gaps", [])] == kinds
+        assert all("maven.example.dev" in g["detail"] for g in answer.get("gaps", []))

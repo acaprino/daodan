@@ -277,6 +277,12 @@ def observe(tmp_path, played: Played, runs: list[dict] | None = None, files: dic
     return result
 
 
+def test_the_preparation_reaches_the_hosts_the_project_declares(tmp_path):
+    played = Played({"tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
+    observe(tmp_path, played, declared={"hosts": ("npm.corp.example",), "where": {}})  # as dynamic.run adds it
+    assert "npm.corp.example" in played.given["registries"]
+
+
 def test_the_tests_run_as_declared_under_the_recorder_and_only_in_the_container(tmp_path):
     played = Played({"observed-0-7-0.json": observed(site("test/index.test.js", 5, 25, "first", FIRST)),
                      "tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
@@ -338,7 +344,7 @@ def test_the_sites_of_every_process_are_one_observation(tmp_path):
      "not_observed", "ran", "2 files"),
     ("exit 1 2", {"tests-0.log": "Error: connect ECONNREFUSED 127.0.0.1:5432\n",
                   "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
-     "services_unreachable", "ran", "no service"),
+     "services_unreachable", "ran", "only the services the project's CI declares"),
     (None, {}, "tests_not_started", "not_started", "before the tests' exit"),
     ("exit 0 1", {"tests-0.log": "ℹ tests 0\nℹ suites 0\nℹ pass 0\n"}, "no_tests", "no_tests", "no test"),
 ])

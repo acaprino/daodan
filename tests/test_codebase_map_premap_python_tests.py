@@ -50,6 +50,8 @@ def test_a_pytest_configuration_gives_the_folder_pytest_runs_in(tmp_path):
 
 
 def test_pytest_among_the_declared_dependencies_declares_it(tmp_path):
+    """The list that names pytest is where the tests' dependencies are (`deps`): a group, an extra, a requirements
+    file; Poetry's groups are installed by its own restore."""
     found = declared(tmp_path, {
         "pyproject.toml": '[project]\nname = "a"\ndependencies = ["requests"]\n'
                           '[dependency-groups]\ndev = ["ruff", "pytest>=8"]\n',
@@ -58,12 +60,42 @@ def test_pytest_among_the_declared_dependencies_declares_it(tmp_path):
         "pip/requirements.txt": "requests\n", "pip/requirements-dev.txt": "-r requirements.txt\npytest==8.3.1\n",
         "none/pyproject.toml": '[project]\nname = "d"\ndependencies = ["pytestify"]\n'})
     assert found == [
-        {"root": ".", "runner": "pytest", "declared_in": "pyproject.toml#dependency-groups.dev", "args": []},
+        {"root": ".", "runner": "pytest", "declared_in": "pyproject.toml#dependency-groups.dev", "args": [],
+         "deps": {"declared_in": "pyproject.toml#dependency-groups.dev", "groups": ["dev"]}},
         {"root": "extra", "runner": "pytest", "args": [],
-         "declared_in": "extra/pyproject.toml#project.optional-dependencies.test"},
-        {"root": "pip", "runner": "pytest", "declared_in": "pip/requirements-dev.txt", "args": []},
+         "declared_in": "extra/pyproject.toml#project.optional-dependencies.test",
+         "deps": {"declared_in": "extra/pyproject.toml#project.optional-dependencies.test", "extras": ["test"]}},
+        {"root": "pip", "runner": "pytest", "declared_in": "pip/requirements-dev.txt", "args": [],
+         "deps": {"declared_in": "pip/requirements-dev.txt", "requirements": ["-r requirements-dev.txt"]}},
         {"root": "poetry", "runner": "pytest", "args": [],
          "declared_in": "poetry/pyproject.toml#tool.poetry.group.dev.dependencies"}]
+
+
+def test_the_tests_dependencies_are_those_of_the_tox_environment_that_runs_them(tmp_path):
+    """mix-real-python-semver: .pytest.ini configures pytest (its addopts need pytest-cov) and the CI runs the
+    tests through tox, whose [testenv] declares their dependencies; the `test` group names pytest too, and tox's
+    environment is the one that runs. A named environment falls back to [testenv] for what it does not set;
+    `{toxinidir}` is the folder of tox.ini, where the install runs."""
+    found = declared(tmp_path, {
+        ".pytest.ini": "[pytest]\naddopts = --cov=a\n",
+        "tox.ini": "[tox]\nenvlist = checks, py3{12,13}\n[testenv]\nskip_install = true\ncommands = pytest {posargs:}\n"
+                   "deps =\n    pytest\n    # coverage\n    pytest-cov\n    -r{toxinidir}/requirements.txt\n"
+                   "    setuptools>=70\n[testenv:checks]\ndeps = ruff\ncommands = ruff check\n",
+        "pyproject.toml": '[project]\nname = "a"\n[dependency-groups]\ntest = ["pytest<=9.1.1"]\n',
+        "named/pytest.ini": "[pytest]\n",
+        "named/tox.ini": "[testenv]\ndeps = mock\n[testenv:unit]\nextras = test, cli\ndependency_groups = dev\n"
+                         "commands = coverage run -m pytest tests\n",
+        "group/pyproject.toml": '[project]\nname = "b"\n[tool.pytest.ini_options]\n[dependency-groups]\n'
+                                'lint = ["ruff"]\ntest = ["pytest-asyncio"]\n'})
+    assert found == [
+        {"root": ".", "runner": "pytest", "declared_in": ".pytest.ini", "args": [],
+         "deps": {"declared_in": "tox.ini#testenv",
+                  "requirements": ["pytest", "pytest-cov", "-r./requirements.txt", "setuptools>=70"]}},
+        {"root": "group", "runner": "pytest", "declared_in": "group/pyproject.toml#tool.pytest.ini_options",
+         "args": [], "deps": {"declared_in": "group/pyproject.toml#dependency-groups.test", "groups": ["test"]}},
+        {"root": "named", "runner": "pytest", "declared_in": "named/pytest.ini", "args": [],
+         "deps": {"declared_in": "named/tox.ini#testenv:unit", "requirements": ["mock"], "extras": ["test", "cli"],
+                  "groups": ["dev"]}}]
 
 
 def test_a_conftest_alone_gives_its_folder_to_pytest_from_the_nearest_manifest_above_or_the_root(tmp_path):

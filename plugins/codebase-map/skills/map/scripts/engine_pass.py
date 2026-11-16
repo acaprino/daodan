@@ -449,7 +449,14 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
     import premap
     module = importlib.import_module(f"indexers.{spec.indexer}")
     # The pre-map first: an indexer takes the project's structure from it and looks for no manifest itself.
-    options = module.structure(premap.ensure(Path(manifest))) if hasattr(module, "structure") else {}
+    import preparation
+    record = premap.ensure(Path(manifest))
+    options = module.structure(record) if hasattr(module, "structure") else {}
+    # The hosts the project declares for its dependencies, which the preparation of an indexer that builds in a
+    # container reaches, as a CI does.
+    declared = preparation.declared(record)
+    if spec.needs_container:
+        options["declared"] = declared
     if hasattr(module, "READS"):
         with code_graph.Snapshot(manifest) as snap:
             options["files"] = sorted(rel for rel in snap.checkout.values() if Path(rel).suffix.lower() in module.READS)
@@ -468,6 +475,7 @@ def index_stage(spec: EngineSpec, manifest: Path, project_root: Path, out: Path 
         # The entry names the source: rust-analyzer is also an engine, and scip-java indexes Kotlin too.
         resolver = f"{spec.name}@{indexer.get('version')}"
         gaps = [*(result.get("gaps") or ()), *_not_indexed(result, options.get("roots"))]
+        gaps += preparation.unreached(gaps, declared)
         gaps = {"gaps": gaps} if gaps else {}
         if result.get("state"):
             return {"available": False, "engine": resolver, "indexer": indexer, "reason": result.get("reason"),

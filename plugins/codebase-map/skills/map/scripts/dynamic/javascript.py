@@ -42,7 +42,8 @@ compiled:
 
 Back come the observation files, one per process and thread, and each run's log. What did not happen is a gap
 with its cause: tests that did not start (the log's tail), that failed, that outlasted the limit, that reached
-for a service or the network (the execution has none and the step starts no service), that found no test, a run
+for a service or the network (the execution has none, only the services the project's CI declares), that
+found no test, a run
 where the recorder saw no call (`nothing_recorded`, with the runner's reason: `UNREACHED`), the project files that
 ran unrecorded (`not_observed`: printed with no inline map, or ES modules
 under a Node without `module.registerHooks`, before 22.15), the project callees the recorder could not place
@@ -238,7 +239,7 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
     if refused:
         gaps.append(gap("services_unreachable",
                         f"{command}: {refused} lines of its log report a refused connection or an unreachable "
-                        "host: the tests run with no network and the step starts no service"))
+                        "host: the tests run with no network and with only the services the project's CI declares"))
     return entry, gaps
 
 
@@ -264,7 +265,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         project, ["sh", "-c", execute], image=typescript.IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare],
         outputs=[OUT], env={**preparation.ENV, "TERM": "dumb", "CI": "true"}, timeout=len(runs) * (LIMIT + 120),
         prepare_timeout=3600, memory=MEMORY, engine=engine, inputs=inputs,
-        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"]])))
+        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"],
+                                        *(planned.get("declared") or {}).get("hosts", ())])))  # `dynamic.run`'s
     unrun = list(planned.get("unrun") or ())
     if result["state"] == "gap":
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],

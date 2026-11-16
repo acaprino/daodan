@@ -207,8 +207,9 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
 
     result = container.run_in_container(
         project, ["sh", "-c", execute], image=IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare], outputs=[OUT],
-        env=preparation.ENV, timeout=BUILD + len(runs) * (LIMIT + 60), memory=MEMORY,
-        registries=container.REGISTRIES + tuple(dict.fromkeys(needs["hosts"])), engine=engine, inputs=inputs)
+        env=preparation.ENV, timeout=BUILD + len(runs) * (LIMIT + 60), memory=MEMORY, engine=engine, inputs=inputs,
+        registries=container.REGISTRIES + tuple(dict.fromkeys(  # with the hosts the project declares (`dynamic.run`)
+            [*needs["hosts"], *(planned.get("declared") or {}).get("hosts", ())])))
     if result["state"] == "gap":
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
                 "gaps": [], "facts": {}}

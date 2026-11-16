@@ -194,6 +194,11 @@ class RunTest(unittest.TestCase):
         call = self.created()[phase]
         return self.state / "containers" / call[call.index("--name") + 1] / "fs"
 
+    def test_the_preparation_reaches_the_feeds_the_project_declares(self):
+        self.play_success()
+        self.index(declared={"hosts": ("nuget.corp.example",), "where": {}})
+        self.assertIn("nuget.corp.example", self.created()[0])
+
     def test_the_preparation_brings_the_pinned_sdk_and_the_tool_and_restores_the_projects(self):
         """Without an SDK in the pre-map: the SDK the preparation carries, scip-dotnet's package unpacked, then the
         project's own restore in the solution's folder and in the folder of the project no solution lists."""

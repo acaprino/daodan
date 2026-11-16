@@ -353,6 +353,8 @@ class ObserveTest(unittest.TestCase):
             return (self.project / rel).read_text(encoding="utf-8")
 
         planned = observer.plan(record_ or record("."), files, read)
+        if "declared" in options:  # what dynamic.run adds to every plan: the hosts the project declares
+            planned["declared"] = {"hosts": options.pop("declared"), "where": {}}
         return observer.observe(self.project, planned, self.out, options.pop("engine", self.engine), **options)
 
     def created(self) -> list[list[str]]:
@@ -362,6 +364,11 @@ class ObserveTest(unittest.TestCase):
 
     def script(self, phase: str) -> str:
         return (self.state / "scripts" / f"{phase}.sh").read_text(encoding="utf-8")
+
+    def test_the_preparation_reaches_the_hosts_the_project_declares(self):
+        self.play_run()
+        self.observe(declared=("conan.corp.example",))
+        self.assertIn("conan.corp.example", self.created()[0])
 
     def test_the_tests_run_under_the_recorder_and_their_calls_come_back_as_sites(self):
         self.play_run()

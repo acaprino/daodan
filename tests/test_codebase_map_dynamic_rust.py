@@ -562,6 +562,8 @@ class ObserveTest(unittest.TestCase):
             return (self.project / rel).read_text(encoding="utf-8")
 
         planned = observer.plan(record_ or record("."), files, read)
+        if "declared" in options:  # what dynamic.run adds to every plan: the hosts the project declares
+            planned["declared"] = {"hosts": options.pop("declared"), "where": {}}
         return observer.observe(self.project, planned, self.out, options.pop("engine", self.engine), **options)
 
     def calls(self) -> list[list[str]]:
@@ -587,6 +589,11 @@ class ObserveTest(unittest.TestCase):
         self.assertEqual(run["tests"], {"passed": 1, "failed": 0})
         self.assertEqual(result["facts"]["processes"], 1)
         self.assertIn('echo "$? $(( $(date +%s) - s ))" > $OUT/tests-0.code', self.script("execute"))
+
+    def test_the_preparation_reaches_the_hosts_the_project_declares(self):
+        self.play_run()
+        self.observe(declared=("crates.corp.example",))
+        self.assertIn("crates.corp.example", self.created()[0])
 
     def test_the_dependencies_arrive_in_the_preparation_and_the_tests_run_with_no_network(self):
         self.play_run()

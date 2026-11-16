@@ -64,6 +64,21 @@ def commands(context):
             for top in tops] or None
 
 
+def retry(answer: dict) -> list[str]:
+    """The hosts of the repositories a failed answer's builds declare in their settings (a plugin of
+    `pluginManagement`): the runner's second run reaches them (`container_runner`)."""
+    from urllib.parse import urlsplit
+    found = set()
+    for line in (answer.get("stdout") or "").split("\n"):
+        try:
+            record = json.loads(line[1:]) if line.startswith(SEPARATOR) else {}
+        except ValueError:
+            continue
+        if record.get("kind") == "build":
+            found |= {urlsplit(url).hostname for url in record.get("repositories") or ()}
+    return sorted(found - {None})
+
+
 def _name(build: str | None, path: str) -> str:
     """A project's identity path: in an included build, prefixed by the build's name."""
     return path if build is None else f":{build}{'' if path == ':' else path}"

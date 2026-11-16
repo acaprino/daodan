@@ -406,7 +406,7 @@ def workspace_failures(log: str) -> dict[str, list[str]]:
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots, units=(), toolchains=(),
-          engine=None, memory: int = MIN_FREE, timeout: float = 3600) -> dict:
+          engine=None, memory: int = MIN_FREE, timeout: float = 3600, declared: dict | None = None) -> dict:
     """The index of each solution in `roots` and of each project of `units` no solution lists, in one container
     run, with its runs, each run's state (`builds`) and what `missing` reads (`configs`); `files` is not used:
     MSBuild decides what a project compiles. `gaps` says what the preparation could not install or restore and
@@ -432,7 +432,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     result = container.run_in_container(
         project_dir, ["bash", "-c", execute], image=IMAGE, out_dir=out_dir, prepare=["bash", "-c", prepare],
         outputs=[OUT], env=dict(ENV), timeout=timeout, memory=memory, pids=PIDS,
-        registries=(*REGISTRIES, *sdk["hosts"]), engine=engine,
+        registries=(*REGISTRIES, *sdk["hosts"], *(declared or {}).get("hosts", ())), engine=engine,
         inputs=lambda: {f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                         for url, digest, name in (TOOL, *sdk["files"])})
     logs = {phase: (out_dir / f"{phase}.log").read_text(encoding="utf-8", errors="replace")

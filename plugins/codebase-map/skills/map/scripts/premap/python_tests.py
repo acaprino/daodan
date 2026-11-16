@@ -15,6 +15,14 @@ a substitution states nothing, and so does a folder where pytest is declared: py
 
 Each is a `tests` entry `{root, runner, declared_in, args}`. A project with neither states nothing: the dynamic
 step's gap, never a guessed command.
+
+An entry has `deps` where the folder declares the tests' dependencies apart from what its restore installs:
+`{declared_in, requirements, extras, groups}`, each list only when it has names. They are those of the tox
+environment of its `tox.ini` whose commands run the runner, as a CI that runs tox has them ([testenv] first; a
+named one takes from [testenv] what it does not set): its `deps` lines as written, `{toxinidir}` being the
+folder of tox.ini, its `extras` and `dependency_groups`. Else, for pytest, the list that names it first: a
+dependency group, an extra, a requirements file (`-r` it); the project's own dependencies, uv's dev dependencies
+and Poetry's groups are their restore's.
 """
 from __future__ import annotations
 
@@ -34,6 +42,11 @@ PYTEST = re.compile(r"^pytest(-[a-z0-9-]+)?$")  # pytest itself, or a plugin of 
 NAMED = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")  # the name a requirement starts with (PEP 508)
 UNITTEST = re.compile(r"(?:^|[\s;&|=@])python[0-9.]*\s+-m\s+unittest\b([^\n;&|#<>]*)")
 PLAIN = re.compile(r"^[A-Za-z0-9_./:=,*\"'-]+$")  # an argument written as it is given, no variable in it
+RUNS = {"pytest": re.compile(r"(?:^|[\s;&|(])(?:py\.test|pytest)(?=\s|$)|-m\s+pytest\b"),
+        "unittest": re.compile(r"-m\s+unittest\b")}  # a tox command that runs the runner
+TOX_ROOT = re.compile(r"\{(?:toxinidir|tox_root)\}")  # tox's names for the folder of its configuration
+COMMENT = re.compile(r"(?:^|\s+)#.*")  # an ini line's comment: a `#` that starts it or follows a space
+LISTS = (("dependency-groups.", "groups"), ("project.optional-dependencies.", "extras"))  # installed by their name
 
 
 def _folder(rel: str) -> str:
@@ -73,14 +86,50 @@ def _lists(data: dict):
         yield f"tool.hatch.envs.{name}.dependencies", table(env).get("dependencies")
 
 
+def _named(data: dict) -> str | None:
+    """The first list of a `pyproject.toml` that names pytest."""
+    return next((where for where, items in _lists(data)
+                 if isinstance(items, list) and any(_is_pytest(item) for item in items)), None)
+
+
 def _pyproject(text: str) -> str | None:
     """Where a `pyproject.toml` declares pytest: its configuration table, else the first list naming it."""
     data = tomllib.loads(text)
     configured = (data.get("tool") or {}).get("pytest")
     if isinstance(configured, dict):
         return "tool.pytest.ini_options" if "ini_options" in configured else "tool.pytest"
-    return next((where for where, items in _lists(data)
-                 if isinstance(items, list) and any(_is_pytest(item) for item in items)), None)
+    return _named(data)
+
+
+def _tox(rel: str, text: str, runner: str) -> dict | None:
+    """The `deps` of the tox environment whose commands run `runner` (the module's docstring), None when it
+    declares none."""
+    parser = configparser.ConfigParser(interpolation=None, strict=False)
+    parser.read_string(text)
+    base = dict(parser["testenv"]) if parser.has_section("testenv") else {}
+    for name in sorted((name for name in parser.sections() if name == "testenv" or name.startswith("testenv:")),
+                       key=lambda name: name != "testenv"):
+        env = {**base, **parser[name]}
+        if not RUNS[runner].search(env.get("commands", "")):
+            continue
+        lines = [TOX_ROOT.sub(".", line) for line in (COMMENT.sub("", line).strip()
+                                                      for line in env.get("deps", "").splitlines()) if line]
+        names = {key: [word for word in re.split(r"[\s,]+", env.get(option, "")) if word]
+                 for key, option in (("extras", "extras"), ("groups", "dependency_groups"))}
+        found = {key: value for key, value in {"requirements": lines, **names}.items() if value}
+        return {"declared_in": f"{rel}#{name}", **found} if found else None
+    return None
+
+
+def _listed(rel: str, text: str) -> dict | None:
+    """The `deps` a file lists for pytest (the module's docstring), None when its restore installs them."""
+    if requirements.is_requirements(rel):
+        return {"declared_in": rel, "requirements": [f"-r {PurePosixPath(rel).name}"]} if _pytest(rel, text) else None
+    if PurePosixPath(rel).name != "pyproject.toml":
+        return None
+    where = _named(tomllib.loads(text)) or ""
+    return next(({"declared_in": f"{rel}#{where}", key: [where[len(prefix):]]} for prefix, key in LISTS
+                 if where.startswith(prefix)), None)
 
 
 def _section(text: str, name: str) -> bool:
@@ -121,6 +170,8 @@ def run(context):
     inventory = context.inventory
     found: dict[tuple[str, str], dict] = {}
     conftests, manifests = [], set()
+    tox: dict[str, tuple[str, str]] = {}  # folder -> its tox.ini and the text
+    listed: dict[str, dict] = {}  # folder -> the first list that names pytest
     for rel in inventory.files:
         name = PurePosixPath(rel).name
         if name in MANIFESTS:
@@ -138,9 +189,14 @@ def run(context):
             text = inventory.text(rel)
             declared = _pytest(rel, text)
             args = _unittest(text) if name == "tox.ini" or name in MAKEFILES else None
+            named = _listed(rel, text)
         except (ValueError, configparser.Error):
             continue  # an unreadable manifest is the module graph's gap
         root = requirements._home(rel) if requirements.is_requirements(rel) else _folder(rel)
+        if name == "tox.ini":
+            tox[root] = (rel, text)
+        if named:
+            listed.setdefault(root, named)
         if declared:
             entry = found.setdefault((root, "pytest"), {"root": root, "runner": "pytest", "declared_in": declared,
                                                          "args": []})
@@ -164,4 +220,9 @@ def run(context):
             entry["args"].append(folder if root == "." else folder[len(root) + 1:])
     tests = [entry for (root, runner), entry in sorted(found.items())
              if runner == "pytest" or (root, "pytest") not in found]
+    for entry in tests:
+        deps = (_tox(*tox[entry["root"]], entry["runner"]) if entry["root"] in tox else None) or (
+            listed.get(entry["root"]) if entry["runner"] == "pytest" else None)
+        if deps:
+            entry["deps"] = deps
     return {"facts": {"tests": tests}} if tests else None

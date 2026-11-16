@@ -388,6 +388,11 @@ def _index_stated(tmp_path, toolchains, prepared: str = "", files: dict | None =
     return result, seen
 
 
+def test_the_preparation_reaches_the_hosts_the_project_declares(tmp_path):
+    _result, seen = _index_stated(tmp_path, STATED, declared={"hosts": ("conan.corp.example",), "where": {}})
+    assert "conan.corp.example" in seen["registries"]
+
+
 def test_a_cmake_the_pre_map_states_above_the_pin_is_installed_by_the_preparation(tmp_path):
     """A CMake minimum the pin does not meet: mise installs the version stated in the preparation, the only
     phase with a network (mise's hosts), and the configure runs with it, with no network."""

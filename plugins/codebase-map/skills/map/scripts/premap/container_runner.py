@@ -10,7 +10,9 @@ a setup that installs a package from a registry (TypeScript, Renovate, go-enry) 
 that reads what the project's packages hold (`restores`: tsc, whose tsconfigs extend installed and generated
 files) has them restored by the setup, the project's own way (`preparation.node_prepare`); a restore or a
 generation that fails, and a package folder no restore installs, is a gap on the first answer, and the commands
-run. A run
+run. A command that fails where its own answer names hosts the project declares for its build (`retry`: the
+repositories of Gradle's settings, where a `pluginManagement` plugin comes from) runs once more, reaching them; one
+that fails again is a `declared_hosts_failed` gap naming them. A run
 that does not happen (no engine, too little memory) or a setup that fails raises: the source states nothing and
 its gap says why. Each run's record lands in `premap-runs/<tool>/` beside the manifest.
 """
@@ -24,7 +26,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import preparation  # noqa: E402
-from premap import bazel, cmake, maven, meson, sbt  # noqa: E402
+from premap import bazel, cmake, gradle, maven, meson, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
@@ -81,7 +83,7 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
     "gradle": {"files": [("https://services.gradle.org/distributions/gradle-9.9.1-bin.zip",
                           "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228", "gradle.zip")],
                "setup": [_jar("gradle.zip", "gradle-9.9.1", "gradle")], "image": maven.IMAGE, "java": True,
-               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3},
+               "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3, "retry": gradle.retry},
     "sbt": {"files": [(*sbt.DOWNLOAD[0], "sbt.tgz")],
             "setup": [f"tar -xzf {IN}/sbt.tgz -C {T} && ln -sf {T}/sbt/bin/sbt {T}/bin/sbt"], "image": sbt.IMAGE,
             "java": True, "hosts": ("repo.scala-sbt.org", "scala.jfrog.io"), "memory": 3},
@@ -152,11 +154,14 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
                          **({"argv": ["sh", "-c", f'{preparation.JAVA_PROXY}; exec "$@"', c["tool"], *c["argv"]]}
                             if spec.get("java") else {})} for c in commands)]
-        result = container.run_commands(
-            project, ran, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / tool, engine=engine,
-            inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
-            registries=container.REGISTRIES + tuple(dict.fromkeys(hosts)),
-            memory=int(spec.get("memory", 2) * 2**30), timeout=1800)
+        def contained(given: list[dict], allowed: tuple, out: str) -> dict:
+            return container.run_commands(
+                project, given, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / out,
+                engine=engine, inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
+                registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
+                memory=int(spec.get("memory", 2) * 2**30), timeout=1800)
+
+        result = contained(ran, hosts, tool)
         if result["state"] == "gap":
             raise container.Gap(result["cause"], result["remedy"])
         answers = result.get("results") or []
@@ -168,7 +173,25 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         # the preparation's gaps ride on the first answer
         gaps += (preparation.missing(answers[0]["stderr"]) + preparation.restore_gaps(answers[0]["stderr"])
                  + preparation.generation_gaps(answers[0]["stderr"]))
-        return [{**answer, "root": result["root"], **({"gaps": gaps} if n == 0 and gaps else {})}
+        roots = [result["root"]] * len(answers)
+        # A command that failed resolving from hosts its own answer declares (`retry`) runs again reaching them.
+        failed = [n for n, answer in enumerate(answers) if n and answer["returncode"] != 0]
+        more = sorted({h for n in failed for h in spec["retry"](answers[n])} - {*container.REGISTRIES, *hosts}
+                      ) if spec.get("retry") else []
+        if more:
+            again = contained([ran[0], *(ran[n] for n in failed)], (*hosts, *more), f"{tool}-again")
+            said = ", ".join(more)
+            if again["state"] != "done" or len(again.get("results") or []) != len(failed) + 1:
+                gaps.append({"kind": "declared_hosts_failed", "detail": f"{tool}: the second run, reaching the "
+                             f"hosts the build declares ({said}), did not happen: {again.get('cause')}"})
+            else:
+                for n, answer in zip(failed, again["results"][1:]):
+                    answers[n], roots[n] = answer, again["root"]
+                    if answer["returncode"] != 0:
+                        gaps.append({"kind": "declared_hosts_failed", "path": ran[n]["cwd"], "hosts": more,
+                                     "detail": f"{tool} failed again reaching the hosts the build declares ({said}):"
+                                               f" {(answer['stderr'] or '').strip()[-300:]}"})
+        return [{**answer, "root": roots[n + 1], **({"gaps": gaps} if n == 0 and gaps else {})}
                 for n, answer in enumerate(answers[1:])]
 
     return run

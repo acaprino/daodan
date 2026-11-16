@@ -105,6 +105,38 @@ def test_an_exact_python_the_image_does_not_hold_is_installed_at_that_version():
     assert found["toolchains"] == [chains[0]] and len(found["runs"]) == 1 and found["gaps"] == []
 
 
+def test_a_folder_uv_restores_runs_on_the_python_uv_chooses_for_it(tmp_path):
+    """real-app-full-stack-fastapi: a uv workspace whose backend states >=3.14,<4.0 and whose .python-version
+    states 3.14, neither the image's 3.13.18. uv picks the interpreter of a folder it restores as `uv sync` does (a
+    version file, else requires-python; downloaded when none installed has it), so its restore may download it from
+    uv's host; the run says the version uv chose and the specifier it read (a version file uv sync, run in the
+    workspace's folder, does not see is not it). A folder another manager restores names no version to install
+    from a range."""
+    chains = [{"tool": "python", "version": "3.14", "declared_in": "backend/Dockerfile"},
+              {"tool": "python", "version": ">=3.14,<4.0", "declared_in": "backend/pyproject.toml"},
+              {"tool": "python", "version": "3.14", "declared_in": ".python-version"},
+              {"tool": "python", "version": "3.15", "declared_in": "backend/.python-version"}]
+    tests = [{"root": "backend", "runner": "pytest", "args": [],
+              "declared_in": "backend/pyproject.toml#dependency-groups.dev"}]
+    files = ["pyproject.toml", "uv.lock", "backend/pyproject.toml", "backend/tests/conftest.py"]
+    planned = plan(tests, files, chains)
+    assert planned["gaps"] == [] and planned["toolchains"] == []  # no mise: uv picks
+    request = {"version": "3.14", "declared_in": ".python-version"}  # a version file before requires-python
+    assert planned["runs"][0]["python_request"] == request
+    assert plan(tests, files, [*chains[:2], chains[3]])["runs"][0]["python_request"] == {
+        "version": ">=3.14,<4.0", "declared_in": "backend/pyproject.toml"}
+    prepare, _execute, needs = observer.scripts(planned)
+    restore = preparation.restore("uv", ["."])
+    assert restore in prepare and "UV_PYTHON_DOWNLOADS=automatic" in restore
+    assert set(preparation.RESTORES["uv"]["hosts"]) <= set(needs["hosts"])
+    played = Played(execute="DAODAN-DYNAMIC 0 python 3.14.6 1\nDAODAN-DYNAMIC 0 exit 0 3\n")
+    with mock.patch.object(container, "run_in_container", side_effect=played):
+        [run] = observer.observe(tmp_path / "project", planned, tmp_path / "out")["runs"]
+    assert (run["python"], run["python_request"]) == ("3.14.6", request)
+    assert kinds(plan(tests, ["backend/pyproject.toml", "backend/tests/conftest.py"], chains[1:2])) == [
+        "python_unavailable"]
+
+
 # ------------------------------------------------------------------ the two scripts
 
 def scripts_of(tests, files, **given):
@@ -164,6 +196,31 @@ def test_an_empty_environment_is_made_for_tests_no_manifest_holds():
     assert f"uv venv -q --python python3 {venv}" in prepare
     assert f"run 0 old {venv}/bin/python -m unittest" in execute
     assert "pytest" not in prepare
+
+
+def test_the_tests_dependencies_the_project_declares_are_installed_in_their_environment():
+    """mix-real-python-semver: its restore installs no test dependency (`uv sync` takes the `dev` group, which it
+    does not define); its tests' dependencies are tox's. They go in the run's environment after the restore and
+    before the project: the requirements by `uv pip install` from the folder of the file that declares them, the
+    groups and extras by uv sync where uv restores the folder (its lock, its workspace), else by uv pip too. A line
+    with a tox substitution or factor condition, which Daodan does not evaluate, is not installed, and is said."""
+    deps = {"declared_in": "tox.ini#testenv", "requirements": ["pytest", "-r ./requirements.txt", "{env:EXTRA}",
+                                                               "py310: mock"], "extras": ["test"], "groups": ["dev"]}
+    tests = [{**PYTEST, "declared_in": ".pytest.ini", "deps": deps}]
+    planned, prepare, _execute = scripts_of(tests, ["pyproject.toml", "uv.lock", "tox.ini"],
+                                            texts={"pyproject.toml": PACKAGED})
+    venv = f"{preparation.VENVS}/."
+    synced = (f"( cd /work/. && UV_PROJECT_ENVIRONMENT={venv} uv sync -q --locked --inexact --all-packages"
+              " --no-install-project --group dev --extra test )")
+    installed = f"( cd /work/. && uv pip install -q --python {venv}/bin/python pytest -r ./requirements.txt )"
+    assert prepare.index(preparation.restore("uv", ["."])) < prepare.index(synced) < prepare.index(installed) \
+        < prepare.index("--no-deps -e")
+    [gap] = planned["gaps"]
+    assert (gap["kind"], gap["path"]) == ("test_dependencies_not_installed", "tox.ini#testenv")
+    assert "{env:EXTRA}, py310: mock" in gap["detail"] and "mock" not in prepare
+    _planned, prepare, _execute = scripts_of(tests, ["pyproject.toml", "tox.ini"], texts={"pyproject.toml": PACKAGED})
+    assert (f"( cd /work/. && uv pip install -q --python {venv}/bin/python pytest -r ./requirements.txt"
+            " -e '.[test]' --group dev )") in prepare
 
 
 # ------------------------------------------------------------------ the run, played
@@ -330,20 +387,29 @@ def test_what_the_preparation_could_not_do_is_a_gap_of_the_run(tmp_path):
     assert observer.PYTEST in found["runner_brought"]["detail"]
 
 
-def test_the_preparation_reaches_the_hosts_the_project_declares_and_names_one_that_does_not_answer(tmp_path):
-    record = {"tests": [PYTEST], "units": [{"root": ".", "kind": "python-project", "manifest": "requirements.txt",
-                                            "registries": ["https://pypi.corp.example"]}]}
-    planned = observer.plan(record, ["requirements.txt", "tests/test_a.py"], lambda rel: "")
-    prepare = ("DAODAN-RESTORE-FAILED pip .\nerror: Request failed after 3 retries\n"
-               "  Caused by: Failed to fetch: `https://pypi.corp.example/simple/a/`\n  Caused by: dns error\n"
-               "DAODAN-RESTORE-END\n")
-    played = Played(prepare=prepare)
+def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_run(tmp_path):
+    """A link Git tracks whose target lies outside the project stays out of the copy (`container.copy_perimeter`),
+    and the container's result says so."""
+    left = {"kind": "link_outside", "path": "tests/up.py", "target": "../../x.py", "detail": "tests/up.py ..."}
+    assert left in observe(tmp_path, Played(gaps=[left]))["gaps"]
+
+
+def test_test_dependencies_that_cannot_be_installed_are_a_gap_naming_them(tmp_path):
+    deps = {"declared_in": "tox.ini#testenv", "requirements": ["pytest-cov==99"]}
+    prepare = "DAODAN-DYNAMIC 0 deps-failed\n  × No solution found when resolving dependencies:\nDAODAN-DYNAMIC-END\n"
+    [gap] = observe(tmp_path, Played(prepare=prepare), tests=({**PYTEST, "deps": deps},))["gaps"]
+    assert (gap["kind"], gap["path"]) == ("test_dependencies_not_installed", "tox.ini#testenv")
+    assert "pytest-cov==99" in gap["detail"] and "No solution found" in gap["detail"]
+
+
+def test_the_preparation_reaches_the_hosts_the_project_declares(tmp_path):
+    planned = plan([PYTEST], ["requirements.txt", "tests/test_a.py"])
+    planned["declared"] = {"hosts": ("pypi.corp.example",), "where": {}}  # what dynamic.run adds to every plan
+    played = Played()
     with mock.patch.object(container, "run_in_container", side_effect=played):
-        result = observer.observe(tmp_path / "project", planned, tmp_path / "out", engine="the engine")
+        observer.observe(tmp_path / "project", planned, tmp_path / "out", engine="the engine")
     [call] = played.calls
     assert "pypi.corp.example" in call["registries"]
-    [gap] = [gap for gap in result["gaps"] if gap["kind"] == "host_unreachable"]
-    assert gap["host"] == "pypi.corp.example" and gap["declared_in"] == ["requirements.txt"]
 
 
 def test_tests_that_reach_for_a_service_or_the_network_are_said(tmp_path):

@@ -46,11 +46,12 @@ def _contract(**outcome) -> dict:
 
 
 @contextlib.contextmanager
-def _go_pass(index, languages=("go",)):
-    """The pass with scip-go alone, serving `languages`, its stage run in this process and `index` standing in for
-    the indexer."""
+def _go_pass(index, languages=("go",), **fields):
+    """The pass with scip-go alone, serving `languages` (and the spec's other `fields`), its stage run in this
+    process and `index` standing in for the indexer."""
     from indexers import go
-    spec = next(spec for spec in resolve_edges.ENGINES if spec.name == "scip-go")._replace(languages=languages)
+    spec = next(spec for spec in resolve_edges.ENGINES if spec.name == "scip-go")._replace(languages=languages,
+                                                                                           **fields)
     real = subprocess.run
 
     def stage(command, **options):
@@ -71,9 +72,9 @@ def _go_pass(index, languages=("go",)):
         yield spec
 
 
-def _run(manifest: Path, index, languages=("go",), **options) -> tuple[dict, list[dict]]:
+def _run(manifest: Path, index, languages=("go",), fields=None, **options) -> tuple[dict, list[dict]]:
     seen = []
-    with _go_pass(index, languages):
+    with _go_pass(index, languages, **(fields or {})):
         result = pipeline.run(manifest, listeners=[seen.append], start="analyze", **options)
     return result, seen
 
@@ -164,6 +165,30 @@ def test_a_unit_or_a_run_that_gave_no_index_is_a_gap_of_the_stage(tmp_path):
              {"prefix": "tools", "returncode": 0, "index": "x.scip"}]
     _result, seen = _run(manifest, lambda project_dir, work_dir, files=None, **given: _contract(runs=probe))
     assert not _gaps(seen, "analyze", "build_not_indexed")
+
+
+def test_an_indexer_reaches_the_hosts_the_project_declares_and_one_it_could_not_reach_is_a_gap(tmp_path):
+    """The stage hands an indexer that builds in a container (`needs_container`) the hosts the project declares
+    for its dependencies (`preparation.declared`), which its preparation reaches; one that does not build gets
+    none. A failed restore whose words name a declared host it could not reach is a gap naming the host and the
+    files that declare it."""
+    declared = {"hosts": ("proxy.corp.example",), "where": {"proxy.corp.example": ["go.mod"]}}
+    failed = {"kind": "restore_failed", "manager": "go", "path": ".",
+              "detail": "go: example.com/x: Get \"https://proxy.corp.example/x/@v/list\": dial tcp: lookup "
+                        "proxy.corp.example: no such host"}
+    for builds in (True, False):
+        _project_dir, manifest = _project(tmp_path / str(builds))  # a fresh store: the pass runs the stage again
+        given = {}
+
+        def index(project_dir, work_dir, files=None, **options):
+            given.update(options)
+            return _contract(gaps=[failed])
+        with mock.patch("preparation.declared", return_value=declared), \
+                mock.patch("container.find_engine", return_value="the engine"):
+            _result, seen = _run(manifest, index, fields={"needs_container": builds})
+        assert given.get("declared") == (declared if builds else None)
+        [gap] = _gaps(seen, "analyze", "host_unreachable")
+        assert gap["host"] == "proxy.corp.example" and gap["declared_in"] == ["go.mod"]
 
 
 def test_a_wanted_language_the_stage_does_not_report_is_missing(tmp_path):

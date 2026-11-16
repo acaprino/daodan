@@ -220,6 +220,7 @@ COREPACK_INSTALL = (f"export PATH={T}/corepack/bin:$PATH; [ -x {T}/corepack/bin/
 PYTHON = ("pyproject.toml", "requirements.txt")
 VENVS = f"{STATE}/venvs"  # a Python project's environment, per folder
 UV_ENV = "export UV_PYTHON_DOWNLOADS=never UV_NO_PROGRESS=1"
+UV_SYNC = f'UV_PYTHON_DOWNLOADS=automatic UV_PROJECT_ENVIRONMENT="{VENVS}/$f"'  # uv sync: its own Python, $f's venv
 UV_CAUSES = "^ *[×│├╰]|^ *Caused by"  # uv's lines under an error: the requirement, then each cause
 WITHOUT = f"{STATE}/without-vcs.txt"  # the project's VCS requirements, as uv overrides no environment matches
 RESTORES = {  # manager -> the files that mark where its build starts, its own restore, what in its output is an
@@ -247,13 +248,14 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
                      " else corepack yarn install --frozen-lockfile --ignore-scripts; fi",
              "unlocked": "if [ -f .yarnrc.yml ]; then corepack yarn install --mode=skip-build;"
                          " else corepack yarn install --ignore-scripts; fi"},
-    # Python: one family, the lockfile names the manager (none: pip); the environment lives outside the project, and
-    # a Python the project needs comes from the toolchains, never from uv's own downloads; `without` is the install
-    # again without the project's VCS requirements (`restore`)
+    # Python: one family, the lockfile names the manager (none: pip); the environment lives outside the project. uv
+    # picks the Python of a folder it restores as `uv sync` does (a version file, else requires-python), downloading
+    # it from its host when no interpreter installed has it; the others' Python comes from the toolchains. `without`
+    # is the install again without the project's VCS requirements (`restore`)
     "uv": {"marks": PYTHON, "family": "python", "locks": ("uv.lock",), "needs": ["uv"], "before": UV_ENV,
-           "error": f"^error|needs to be updated|No solution|{UV_CAUSES}", "hosts": (),
-           "line": f'UV_PROJECT_ENVIRONMENT="{VENVS}/$f" uv sync --locked --all-packages --no-install-project',
-           "without": f'UV_PROJECT_ENVIRONMENT="{VENVS}/$f" uv sync --locked --all-packages --no-install-project'
+           "error": f"^error|needs to be updated|No solution|{UV_CAUSES}", "hosts": ("releases.astral.sh",),
+           "line": f'{UV_SYNC} uv sync --locked --all-packages --no-install-project',
+           "without": f'{UV_SYNC} uv sync --locked --all-packages --no-install-project'
                       f" $(sed 's/ .*//; s/^/--no-install-package /' {WITHOUT})"},
     "poetry": {"marks": PYTHON, "family": "python", "locks": ("poetry.lock",), "needs": ["poetry"],
                "error": "poetry.lock|Error|error", "hosts": (),
@@ -506,7 +508,8 @@ def declared(record: dict) -> dict:
 
 
 # A tool's words for a host it could not reach: no name, no connection, a refusal, a timeout.
-UNREACHED = re.compile(r"dns error|lookup address|Name or service not known|resolve host|UnknownHost|ENOTFOUND|"
+UNREACHED = re.compile(r"dns error|lookup address|no such host|name resolution|Name or service not known|"
+                       r"resolve host|UnknownHost|ENOTFOUND|"
                        r"EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|Connection refused|Connection reset|timed out|"
                        r"Connect to |client error \(Connect\)|tunnel|proxy|403 Forbidden|status code 403|"
                        r"Unable to load the service index", re.I)

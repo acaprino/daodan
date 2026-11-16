@@ -9,15 +9,20 @@ environment of the Python folder that holds it (`preparation.restores`: the fold
 by uv, Poetry or pip as its lockfile says), else the project's only one (a manifest inside the test folders is
 a fixture's, not the tests'), else an empty one. The recorder needs
 sys.monitoring, Python 3.12 or later: a project that states an older Python (a version, or a range that ends
-below 3.12) is a `python_too_old` gap and its tests do not run; an exact version the image does not hold is
-installed by the preparation (mise, `preparation.toolchains`); a range that excludes the image's Python and
-names no version is a `python_unavailable` gap.
+below 3.12) is a `python_too_old` gap and its tests do not run. In a folder uv restores, uv picks the interpreter
+as `uv sync` does (a version file, else requires-python; downloaded when none installed has it), and a run whose
+request excludes the image's Python says it (`python_request`: a version file's, else the pyproject's) beside the
+version it ran on; elsewhere an exact version the image does not hold is installed by the preparation (mise,
+`preparation.toolchains`), and a range that excludes the image's Python and names no version is a
+`python_unavailable` gap.
 
 `observe` is one container run (`container.run_in_container`, `IMAGE`). The preparation, with the registries and
-the hosts the project declares (`preparation.declared`; one a failed restore could not reach is a
-`host_unreachable` gap): the toolchain, uv, where the project declares VCS requirements git and the hosts their URLs
-name (`preparation.python_vcs`), the restore of each environment (one whose install fails is installed again without
-the VCS requirements, `vcs_not_installed`), the project itself installed in it where the folder has a
+the hosts the project declares (the plan's `declared`, which `dynamic.run` adds): the toolchain, uv, where the
+project declares VCS requirements git and the hosts their URLs name (`preparation.python_vcs`), the restore of
+each environment (one whose install fails is installed again without
+the VCS requirements, `vcs_not_installed`), the tests' dependencies their entry declares apart (`deps`, installed
+by uv sync and uv pip, `_installs`; a line with a tox substitution or factor condition, or an install that fails,
+is `test_dependencies_not_installed`), the project itself installed in it where the folder has a
 build configuration (editable, without dependencies: the tests import it as installed), and pytest at Daodan's
 pin (`PYTEST`) where the project declares it as its runner and its environment does not hold it, which is said
 (`runner_brought`). The execution, with no network: each run under the recorder, loaded through a
@@ -64,7 +69,10 @@ MARK = re.compile(r"^DAODAN-DYNAMIC (\d+) (\S+) ?(.*)$", re.M)
 COLLECTING = re.compile(r"^_+ ERROR collecting (.+?) _+$", re.M)  # pytest's header of a module it could not collect
 SUMMARY = re.compile(r"^=*\s*((?:\d+ \w+, )*\d+ \w+) in [\d.]+s\b", re.M)  # pytest's last line: `1 failed, 2 passed`
 RAN = ("passed", "failed", "xfailed", "xpassed")
-NOT_INSTALLED = re.compile(r"DAODAN-DYNAMIC (\d+) not-installed\n((?:.*\n)*?)DAODAN-DYNAMIC-END")
+# what the preparation could not install for a run: the project, or its tests' dependencies; then the install's tail
+NOT_INSTALLED = re.compile(r"DAODAN-DYNAMIC (\d+) (not-installed|deps-failed)\n((?:.*\n)*?)DAODAN-DYNAMIC-END")
+VERSION_FILES = (".python-version", ".python-versions")  # what uv reads before a pyproject's requires-python
+TOX_ONLY = re.compile(r"\{|^[!\w,.-]+:\s")  # a tox substitution, or a factor's condition: Daodan evaluates neither
 
 
 def external(callee: dict) -> dict:
@@ -116,9 +124,10 @@ def _given(test: dict) -> list[str]:
     return [posixpath.normpath(f"{test['root']}/{arg}") for arg in test.get("args", ())] or [test["root"]]
 
 
-def _python(stated: list[dict]) -> tuple[dict | None, dict | None]:
+def _python(stated: list[dict], picked: bool = False) -> tuple[dict | None, dict | None]:
     """`(gap, toolchain)` of the Pythons a run's folders state: the gap that keeps the run from starting, else
-    the exact version the preparation installs when the image's is not it."""
+    the exact version the preparation installs when the image's is not it. `picked`: uv picks the interpreter,
+    and only a Python older than the recorder's is a gap."""
     install = None
     for item in stated:
         version, where = str(item["version"]), item.get("declared_in")
@@ -138,17 +147,32 @@ def _python(stated: list[dict]) -> tuple[dict | None, dict | None]:
                     "detail": f"the project states Python {version} ({where}): the recorder needs sys.monitoring, "
                               "Python 3.12 or later, and the tests are not run on a Python the project does not "
                               "state"}, None
-        return {"kind": "python_unavailable", "path": where,
-                "detail": f"the project states Python {version} ({where}): a range that excludes the image's "
-                          f"{'.'.join(map(str, PYTHON))} and names no version to install"}, None
-    return None, install
+        if not picked:
+            return {"kind": "python_unavailable", "path": where,
+                    "detail": f"the project states Python {version} ({where}): a range that excludes the image's "
+                              f"{'.'.join(map(str, PYTHON))} and names no version to install"}, None
+    return None, None if picked else install
+
+
+def _request(stated: list[dict], env: str) -> dict | None:
+    """The stated Python uv sync reads first in `env`, its folder, when the image's is not it: the nearest version
+    file there or above, else the nearest requires-python."""
+    def read(names, where=None):
+        found = [item for item in stated if posixpath.basename(item["declared_in"].split("#", 1)[0]) in names
+                 and (where is None or _above(where, item["declared_in"]))]
+        return sorted(found, key=lambda item: -item["declared_in"].count("/"))
+    item = next(iter(read(VERSION_FILES, env) or read(("pyproject.toml",))), None)
+    if item is None or admits(str(item["version"]), PYTHON) is not False:
+        return None
+    return {"version": item["version"], "declared_in": item["declared_in"]}
 
 
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, toolchains}` from the pre-map `record`, the snapshot's `files` and `read(rel)`, a file's
     text: see the module's docstring. A run is `{root, runner, declared_in, argv, env, manager, install}`:
     `argv` follows the environment's Python, `env` is the folder whose environment it uses (None: an empty
-    one), `manager` what restores it, `install` whether the folder's project is installed in it."""
+    one), `manager` what restores it, `install` whether the folder's project is installed in it; `deps` are the
+    entry's, and `python_request` is said where uv picks the Python (`_request`)."""
     tests = sorted((test for test in record.get("tests", []) if test.get("runner") in RUNNERS),
                    key=lambda test: (test["root"], test["runner"]))
     if not tests:
@@ -176,21 +200,30 @@ def plan(record: dict, files: list[str], read) -> dict:
         stated = [item for item in record.get("toolchains", []) if item.get("tool") == "python"
                   and item.get("version") and item.get("declared_in")
                   and (_above(root, item["declared_in"]) or (env is not None and _above(env, item["declared_in"])))]
-        gap, install = _python(stated)
+        picked = held.get(env) == "uv"
+        gap, install = _python(stated, picked)
         if gap:
             gaps.append(gap)
             continue
         if install and install not in toolchains:
             toolchains.append(install)
+        request = _request(stated, env) if picked else None
+        deps = test.get("deps")
+        unexpanded = [line for line in (deps or {}).get("requirements", ()) if TOX_ONLY.search(line)]
+        if unexpanded:
+            gaps.append({"kind": "test_dependencies_not_installed", "path": deps["declared_in"],
+                         "detail": f"{deps['declared_in']} declares {', '.join(unexpanded)} for the tests: a tox "
+                                   "substitution or factor condition Daodan does not evaluate, so it is not "
+                                   "installed"})
         manifest = posixpath.normpath(f"{env}/pyproject.toml") if env is not None else None
         packaged = env is not None and (posixpath.normpath(f"{env}/setup.py") in files or (
             manifest in files and "[build-system]" in read(manifest)))
         runs.append({"root": root, "runner": test["runner"], "declared_in": test.get("declared_in"),
                      "argv": ["-m", test["runner"], *test.get("args", ()), *(
                          [KEEP_GOING] if test["runner"] == "pytest" else [])],
-                     "env": env, "manager": held.get(env), "install": bool(packaged)})
-    return {"runs": runs, "gaps": gaps, "toolchains": toolchains, "vcs": preparation.python_vcs(sorted(files), read),
-            "declared": preparation.declared(record)}
+                     "env": env, "manager": held.get(env), "install": bool(packaged),
+                     **({"deps": deps} if deps else {}), **({"python_request": request} if request else {})})
+    return {"runs": runs, "gaps": gaps, "toolchains": toolchains, "vcs": preparation.python_vcs(sorted(files), read)}
 
 
 def _interpreter(number: int, run: dict) -> str:
@@ -200,6 +233,29 @@ def _interpreter(number: int, run: dict) -> str:
     if run["manager"] == "poetry":
         return f'"$(cd {shlex.quote("/work/" + run["env"])} && poetry env info -e)"'
     return shlex.quote(f"{VENVS}/{run['env']}/bin/python")
+
+
+def _installs(run: dict, python: str) -> list[tuple[str, str]]:
+    """`(folder, command)` of what installs a run's `deps` in its environment. In a folder uv restores, its
+    groups and extras are uv sync's, from the lock and the workspace; the rest is `uv pip install`'s, from the
+    folder of the file that declares them, where its relative paths start: an option line split as a shell would,
+    a requirement as written, the extras with the project, the groups by name. A line `TOX_ONLY` stays out."""
+    deps, found = run.get("deps") or {}, []
+    named = [word for key, flag in (("groups", "--group"), ("extras", "--extra")) for name in deps.get(key, ())
+             for word in (flag, name)]
+    if run["manager"] == "uv" and named:
+        venv = shlex.quote(f"{VENVS}/{run['env']}")
+        found.append((run["env"], f"UV_PROJECT_ENVIRONMENT={venv} uv sync -q --locked --inexact --all-packages"
+                                  f" --no-install-project {shlex.join(named)}"))
+        deps = {"requirements": deps.get("requirements", ())}
+    words = [word for line in deps.get("requirements", ()) if not TOX_ONLY.search(line)
+             for word in (shlex.split(line) if line.startswith("-") else [line])]
+    words += ["-e", f".[{','.join(deps['extras'])}]"] if deps.get("extras") else []
+    words += [word for group in deps.get("groups", ()) for word in ("--group", group)]
+    if words:
+        found.append((posixpath.dirname(run["deps"]["declared_in"].split("#", 1)[0]) or ".",
+                      f"uv pip install -q --python {python} {shlex.join(words)}"))
+    return found
 
 
 def scripts(planned: dict) -> tuple[str, str, dict]:
@@ -233,6 +289,10 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
         python = _interpreter(number, run)
         if run["env"] is None:
             prepare.append(f"uv venv -q --python python3 {VENVS}/.daodan-{number} >&2")
+        for folder, command in _installs(run, python):
+            prepare.append(f"( cd {shlex.quote('/work/' + folder)} && {command} ) > /tmp/daodan-deps.log 2>&1 || {{"
+                           f" echo 'DAODAN-DYNAMIC {number} deps-failed'; tail -n 8 /tmp/daodan-deps.log;"
+                           " echo DAODAN-DYNAMIC-END; } >&2")
         if run["install"]:  # project code (its build backend): the preparation's, with the registries only
             prepare.append(f"uv pip install -q --python {python} --no-deps -e {shlex.quote('/work/' + run['env'])}"
                            f" > /tmp/daodan-install.log 2>&1 || {{ echo 'DAODAN-DYNAMIC {number} not-installed';"
@@ -244,7 +304,8 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
     declared = (planned.get("declared") or {}).get("hosts", ())
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n",
             {"files": [*chains["files"], *needs["files"]], "gaps": chains["gaps"],
-             "hosts": (*chains["hosts"], *needs["hosts"], *vcs["hosts"], *declared)})
+             "hosts": (*chains["hosts"], *needs["hosts"], *vcs["hosts"], *declared,
+                       *(host for manager in restores for host in preparation.RESTORES[manager]["hosts"]))})
 
 
 def sites(folder: Path, run: int | None = None) -> list[dict]:
@@ -283,7 +344,7 @@ def _outcome(run: dict, marks: dict, log: str, processes: int, ended: str) -> tu
     says how the tests ended (pytest's: 1 some failed or a module could not be collected, 5 none found, any other
     the run did not start; `timeout`'s 124); a runner the environment does not hold never started them. The
     modules pytest could not collect are one gap; with no other test run, the tests did not start."""
-    entry = {key: run[key] for key in ("root", "runner", "declared_in")}
+    entry = {key: run[key] for key in ("root", "runner", "declared_in", "python_request") if key in run}
     version, _, monitored = marks.get("python", "").partition(" ")
     code, _, seconds = marks.get("exit", "").partition(" ")
     entry.update(state="not_started", exit_code=int(code) if code else None,
@@ -370,15 +431,23 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
                 "gaps": []}
     prepared = _text(out_dir / "prepare.log")
-    restored = preparation.restore_gaps(prepared)
-    gaps = [*needs["gaps"], *preparation.missing(prepared), *restored,
-            *preparation.unreached(restored, planned.get("declared") or {"hosts": (), "where": {}})]
+    gaps = [*needs["gaps"], *preparation.missing(prepared), *preparation.restore_gaps(prepared)]
+    gaps += result.get("gaps") or []  # what the copy of the project left out (`container.copy_perimeter`)
     if result["state"] == "failed":
         return {"state": "failed", "cause": result.get("cause") or "the container run failed",
                 "remedy": f"see prepare.log and execute.log in {out_dir}", "sites": [], "runs": [], "gaps": gaps}
-    for number, lines in NOT_INSTALLED.findall(prepared):
+    for number, what, lines in NOT_INSTALLED.findall(prepared):
         said = " | ".join(line.strip() for line in lines.splitlines() if line.strip())[:600]
-        gaps.append({"kind": "project_not_installed", "path": runs[int(number)]["env"],
+        run = runs[int(number)]
+        if what == "deps-failed":
+            deps = run["deps"]
+            named = [*deps.get("requirements", ()), *(f"group {name}" for name in deps.get("groups", ())),
+                     *(f"extra {name}" for name in deps.get("extras", ()))]
+            gaps.append({"kind": "test_dependencies_not_installed", "path": deps["declared_in"],
+                         "detail": f"the tests' dependencies {deps['declared_in']} declares ({', '.join(named)}) "
+                                   f"could not be installed: {said}"})
+            continue
+        gaps.append({"kind": "project_not_installed", "path": run["env"],
                      "detail": "the project could not be installed in its environment, so tests that import it as "
                                f"installed fail: {said}"})
     marks: dict[int, dict] = {}

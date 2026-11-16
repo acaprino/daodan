@@ -338,6 +338,8 @@ class ObserveTest(unittest.TestCase):
     def observe(self, record_: dict | None = None, **options) -> dict:
         files = sorted(path.relative_to(self.project).as_posix() for path in self.project.rglob("*") if path.is_file())
         planned = observer.plan(record_ or record("."), files, None)
+        if "declared" in options:  # what dynamic.run adds to every plan: the hosts the project declares
+            planned["declared"] = {"hosts": options.pop("declared"), "where": {}}
         return observer.observe(self.project, planned, self.out, options.pop("engine", self.engine), **options)
 
     def calls(self) -> list[list[str]]:
@@ -362,6 +364,11 @@ class ObserveTest(unittest.TestCase):
                          (".", "go test", ["go", "test", "-vet=off", "./..."], "ran", 0))
         self.assertEqual(run["packages"], {"passed": 1})
         self.assertEqual(result["facts"]["entered"], 6)
+
+    def test_the_preparation_reaches_the_hosts_the_project_declares(self):
+        self.play_run()
+        self.observe(declared=("mirror.corp.example",))
+        self.assertIn("mirror.corp.example", self.created()[0])
 
     def test_the_dependencies_arrive_in_the_preparation_and_the_tests_run_with_no_network(self):
         self.play_run()

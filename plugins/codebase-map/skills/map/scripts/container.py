@@ -8,7 +8,8 @@ sections 2-4). Its guarantees:
 1. The project's code runs only in the container, never on the host.
 2. The container gets a copy of the files the snapshot perimeter walks and of those Git
    tracks, dot directories included, minus the files the snapshot never reads, as a tar
-   through `cp -`; what Git ignores stays out. The project is never mounted or written;
+   through `cp -`; what Git ignores stays out, and a link Git tracks is that link only when
+   it leads inside the project (`copy_perimeter`). The project is never mounted or written;
    declared outputs come back through `cp <container>:<path> -` into a folder outside it.
 3. Execution runs with `--network none`; an optional preparation runs before it on an
    internal network whose only way out is a proxy that opens CONNECT to package registries
@@ -25,6 +26,13 @@ sections 2-4). Its guarantees:
 5. Without an engine that can run, the operation returns a declared gap with cause and
    remedy, and never falls back to the host.
 
+The services a run's tests reach (`beside`: the dynamic step's, for every observer) run beside
+the execution in the shape of a Kubernetes pod: a pod container with `--network none` holds one network namespace, each
+service and the execution join it (`--network container:<pod>`), so the tests reach a
+service at localhost, or at the name the pod's hosts give it, and nothing outside. Each
+image is pulled by the engine before the preparation and runs by the digest its registry
+gave; the execution starts once every service is ready (`start_services`).
+
 The engine is reached only through a Docker-compatible command line (`create`, `cp`,
 `start`, `rm`, `network`, `volume`), so it can be replaced. An engine the user already has
 (`docker`, then `podman`) is used as found: no context, no configuration, no option of
@@ -39,6 +47,8 @@ Standard library only.
 from __future__ import annotations
 
 import base64
+import contextlib
+import contextvars
 import hashlib
 import io
 import json
@@ -55,7 +65,7 @@ import tempfile
 import time
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Callable, NamedTuple
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -92,6 +102,12 @@ PROXY_VARIABLES = ("HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "FTP_PROXY", "ALL_PR
                    "http_proxy", "https_proxy", "no_proxy", "ftp_proxy", "all_proxy")
 PROXY_IMAGE = "python:3.13-alpine@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070557243d54df1a4e57015b960e"
 PROXY_PORT = 3128
+SERVICE_WAIT = 600  # the seconds a service may stay `starting`: GitHub's runner waits as long as its health check
+SERVICE_STATE = "{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}"
+BESIDE = contextvars.ContextVar("beside", default=None)  # `beside`'s services, variables and outcomes
+HEALTH_EVERY = 30.0  # Docker's and Podman's `--health-interval` when a service declares none, in seconds
+DURATION = re.compile(r"(\d+(?:\.\d*)?|\.\d+)(ns|us|µs|ms|s|m|h)")  # Go's `time.ParseDuration`, unsigned
+UNITS = {"ns": 1e-9, "us": 1e-6, "µs": 1e-6, "ms": 1e-3, "s": 1.0, "m": 60.0, "h": 3600.0}
 # Runs in its own container; argv: port, then the allowed hosts. Prints "ready <port>".
 PROXY_SCRIPT = r'''
 import select, socket, sys, threading
@@ -443,9 +459,13 @@ def work_tree_git(project: Path) -> str | None:
     return git
 
 
-def tracked(project: Path) -> dict[str, int]:
-    """The files Git tracks under `project`, dot directories included, with the mode Git records; none outside a
-    work tree. A Gap when Git does not answer inside one (`work_tree_git`)."""
+LINK = 0o120000  # the mode Git records for a symbolic link
+
+
+def tracked(project: Path) -> dict[str, tuple[int, str]]:
+    """The files Git tracks under `project`, dot directories included, with the mode Git records (`LINK` for a
+    link) and the id of their content; none outside a work tree. A Gap when Git does not answer inside one
+    (`work_tree_git`)."""
     git = work_tree_git(project)
     if git is None:
         return {}
@@ -460,9 +480,28 @@ def tracked(project: Path) -> dict[str, int]:
     modes = {}
     for entry in listed.stdout.split(b"\0"):
         info, _, name = entry.partition(b"\t")
-        if info[:6] in (b"100644", b"100755"):
-            modes[name.decode("utf-8", "surrogateescape")] = 0o755 if info[:6] == b"100755" else 0o644
+        mode, sha = (info.split() + [b"", b""])[:2]
+        if mode in (b"100644", b"100755", b"120000"):
+            modes[name.decode("utf-8", "surrogateescape")] = ({b"100755": 0o755, b"120000": LINK}.get(mode, 0o644),
+                                                              sha.decode("ascii"))
     return modes
+
+
+def _link(path: Path, sha: str) -> str | None:
+    """The target of a link Git tracks at `path`, as Git records it: the link's own, or the content of the small file
+    Git checks out where it makes no links (`core.symlinks` false), which keeps the id Git records; None when the
+    work tree holds another file there."""
+    if path.is_symlink():
+        return os.readlink(path).replace(os.sep, "/")
+    content = path.read_bytes() if path.is_file() else b""
+    digest = hashlib.new("sha1" if len(sha) == 40 else "sha256", b"blob %d\0" % len(content) + content)
+    return content.decode("utf-8", "surrogateescape") if digest.hexdigest() == sha else None
+
+
+def _within(relative: str, target: str) -> bool:
+    """Whether a link at `relative` to `target` leads inside the project: no root, no drive, never above it."""
+    resolved = posixpath.normpath(posixpath.join(posixpath.dirname(relative), target))
+    return not PureWindowsPath(target).anchor and resolved != ".." and not resolved.startswith("../")
 
 
 def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None = None) -> dict:
@@ -470,6 +509,8 @@ def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None =
     tracks (dot directories included), minus the files the snapshot never reads; `inputs` at their own paths.
 
     What Git ignores stays out. A tracked file keeps the executable bit Git records, also where the disk has none.
+    A link Git tracks whose target lies inside the project is that link in the copy, never followed; one whose
+    target lies outside stays out, a `link_outside` gap of the returned `gaps`, which the run's result carries.
     """
     modes = tracked(project)
     folders, files = {"work"}, dict.fromkeys(modes)
@@ -477,15 +518,22 @@ def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None =
         relative = directory.relative_to(project).as_posix()
         folders.add("work" if relative == "." else f"work/{relative}")
         files.update((name if relative == "." else f"{relative}/{name}", None) for name in names)
-    kept = []
+    kept, links, gaps = [], [], []
     for relative in sorted(files):
         path = project / relative
-        if path.is_symlink() or not path.is_file() or is_forbidden(path.name, path):
-            continue
-        kept.append((f"work/{relative}", path, modes.get(relative)))
+        mode, sha = modes.get(relative, (None, ""))
+        link = _link(path, sha) if mode == LINK and not is_forbidden(path.name) else None
+        if link is not None and _within(relative, link):
+            links.append((f"work/{relative}", path, link))
+        elif link is not None:
+            gaps.append({"kind": "link_outside", "path": relative, "target": link,
+                         "detail": f"{relative} is a link Git tracks to {link}, outside the project: the copy leaves "
+                                   "it out, and what reads it there finds nothing"})
+        elif not (path.is_symlink() or not path.is_file() or is_forbidden(path.name, path)):
+            kept.append((f"work/{relative}", path, None if mode == LINK else mode))
     for destination, path in sorted((inputs or {}).items()):
         kept.append((destination.strip("/"), Path(path), 0o644))
-    for name, _, _ in kept:
+    for name, _, _ in (*kept, *links):
         folders.update(parent.as_posix() for parent in Path(name).parents if parent != Path("."))
     with tarfile.open(target, "w", format=tarfile.PAX_FORMAT) as bundle:
         for folder in sorted(folders):
@@ -499,9 +547,14 @@ def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None =
             entry.mode = (mode or 0o644) if os.name == "nt" else status.st_mode & 0o777
             with path.open("rb") as handle:
                 bundle.addfile(entry, handle)
+        for name, path, link in links:  # last: no file of the copy is written through one
+            entry = tarfile.TarInfo(name)
+            entry.type, entry.linkname, entry.mode = tarfile.SYMTYPE, link, 0o777
+            entry.mtime = int(path.lstat().st_mtime)
+            bundle.addfile(entry)
     with target.open("rb") as handle:
-        return {"files": len(kept) - len(inputs or {}), "inputs": len(inputs or {}),
-                "sha256": hashlib.file_digest(handle, "sha256").hexdigest()}
+        return {"files": len(kept) - len(inputs or {}), "inputs": len(inputs or {}), "links": len(links),
+                "sha256": hashlib.file_digest(handle, "sha256").hexdigest(), "gaps": gaps}
 
 
 def proxy_environment(address: str) -> dict[str, str]:
@@ -712,6 +765,107 @@ def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, .
     raise RuntimeError("the registry proxy did not start")
 
 
+@contextlib.contextmanager
+def beside(services: list[dict], env: dict[str, str]):
+    """Within it every `run_in_container` starts `services` in the pod its execution joins and gives both phases
+    `env` under its caller's variables: the dynamic step's, so the tests of every observer get the services the
+    project's CI declares and the variables its jobs give them. Each service is `{name, image, host, env, args,
+    command}` (`args` options of `create`, `command` the image's command replaced when not empty); the pod's hosts
+    name 127.0.0.1 for a `host` other than localhost (the module's docstring). It yields the list each run within
+    extends with its result's `services`, wherever its record lies."""
+    started: list[dict] = []
+    token = BESIDE.set((list(services), dict(env), started))
+    try:
+        yield started
+    finally:
+        BESIDE.reset(token)
+
+
+def qualified(image: str) -> str:
+    """`image` with the registry Docker reads into a short name (Docker Hub, `library/` for an official image):
+    Podman resolves a short name only through its own configuration, and never without a terminal."""
+    first, slash, _rest = image.partition("/")
+    if slash and ("." in first or ":" in first or first == "localhost"):
+        return image
+    return f"docker.io/{image}" if slash else f"docker.io/library/{image}"
+
+
+def pin(run: Callable, image: str, timeout: float) -> str:
+    """`image` pulled by the engine, with the engine's own network, and named by the digest its registry gave;
+    `run(*args, timeout=...)` is the engine's command line (`cli`). RuntimeError with the engine's message when
+    it cannot be pulled."""
+    reference = qualified(image)
+    checked(run("pull", reference, timeout=timeout), f"pull of {reference}")
+    answer = checked(run("image", "inspect", "--format", "{{json .RepoDigests}}", reference, timeout=120),
+                     f"image inspect of {reference}")
+    digests = json.loads(answer.stdout or "null") or []
+    if not digests:
+        raise RuntimeError(f"{reference} has no digest of its registry after the pull")
+    return digests[0]
+
+
+def seconds(duration: str, default: float) -> float:
+    """A Go duration (`5s`, `1m30s`, `500ms`), as the engines read `--health-interval`, in seconds; `default` for
+    one that is not."""
+    parts = DURATION.findall(duration)
+    return sum(float(number) * UNITS[unit] for number, unit in parts) \
+        if parts and not DURATION.sub("", duration) else default
+
+
+def start_services(run: Callable, services: list[dict], network: str, limits: dict, token: str,
+                   scheduled: bool = True) -> list[dict]:
+    """The pinned `services` (`beside`'s, each with `pinned`) created in `network` and started, then
+    awaited as GitHub's runner awaits a service container: ready once running, or once healthy where it has a
+    health check; failed, with the cause, when it stops, turns unhealthy or is still starting after
+    `SERVICE_WAIT` seconds. The containers are `daodan-svc-<token>-<n>`; a record row each. `scheduled` False is
+    an engine that may run no check by itself (Podman, on systemd's timers): each check runs from here
+    (`healthcheck run`) at its interval, the engine's timer off, its retries counted by the engine."""
+    rows = []
+    for number, service in enumerate(services):
+        box = f"daodan-svc-{token}-{number}"
+        row = {"phase": "service", "name": service["name"], "image": service["image"], "pinned": service["pinned"],
+               "network": network, "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+        clock = time.monotonic()
+        env = [item for key, value in (service.get("env") or {}).items() for item in ("-e", f"{key}={value}")]
+        args, every = list(service.get("args", ())), None
+        if not scheduled and "--health-cmd" in args and "--no-healthcheck" not in args:
+            at = args.index("--health-interval") + 1 if "--health-interval" in args[:-1] else None
+            every = seconds(args[at], HEALTH_EVERY) if at else HEALTH_EVERY
+            args = [*args[:at], "disable", *args[at + 1:]] if at else [*args, "--health-interval", "disable"]
+        try:
+            checked(run("create", "--name", box, "--network", network, "--memory", str(limits["memory"]),
+                        "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
+                        "--security-opt", "no-new-privileges", *env, *args, service["pinned"],
+                        *service.get("command", ())), "create")
+            checked(run("start", box), "start")
+        except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
+            row.update(outcome="failed", cause=str(error))
+        rows.append((row, box, clock, every))
+    for row, box, clock, every in rows:
+        due = clock  # Podman runs a check as soon as the container starts, then at each interval
+        while "outcome" not in row:
+            if every is not None and time.monotonic() >= due:
+                run("healthcheck", "run", box, timeout=120)  # its code is the check's: the state says it
+                due = time.monotonic() + every
+            said = run("inspect", "--format", SERVICE_STATE, box, timeout=60).stdout.decode("utf-8", "replace")
+            status, _, health = said.strip().partition(" ")
+            if status == "running" and health in ("", "healthy"):
+                row["outcome"] = "ready"
+            elif status != "running" or health == "unhealthy":
+                logs = run("logs", "--tail", "5", box, timeout=60)
+                tail = " | ".join(line.strip() for line in (logs.stdout + logs.stderr).decode("utf-8", "replace")
+                                  .splitlines() if line.strip())
+                cause = "its health check failed" if status == "running" else f"it {status or 'is gone'}"
+                row.update(outcome="failed", cause=f"{cause}: {tail[-400:]}" if tail else cause)
+            elif time.monotonic() - clock > SERVICE_WAIT:
+                row.update(outcome="failed", cause=f"still {health} after {SERVICE_WAIT} s: its health check "
+                                                   "never passed")
+            else:
+                time.sleep(1)
+        row["duration_seconds"] = round(time.monotonic() - clock, 3)
+    return [row for row, *_ in rows]
+
+
 def declared(record: Path, image: str, command: list[str], gap: Gap) -> dict:
     """The result of a run that cannot happen, recorded."""
     append_record(record, {"phase": "execute", "image": image, "command": list(command), "outcome": "gap",
@@ -732,9 +886,12 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
     called once an engine answers, which may raise Gap. With `prepare`, inputs lie under /work or /daodan/state
     and outputs outside them (the engine copies no file out of a volume): ValueError otherwise. `engine` is an
-    Engine, "daodan" for Daodan's own, or None to find one. The result's `state` is
+    Engine, "daodan" for Daodan's own, or None to find one. Within `beside`, its services start in the pod the
+    execution joins and its variables reach both phases under `env`. The result's `state` is
     `done` (the command exited, `exit_code` says how), `timeout`, `failed` (with `cause`) or `gap`
-    (with `cause` and `remedy`); `outputs` lists the files brought back into `out_dir`.
+    (with `cause` and `remedy`); `outputs` lists the files brought back into `out_dir`; `services`, with
+    services, each `{name, image, pinned, outcome}`, `outcome` `ready` or `failed` with `cause`: the execution
+    runs without a service that failed.
     """
     project, out_dir = Path(project).resolve(), Path(out_dir).resolve()
     if out_dir == project or project in out_dir.parents:
@@ -745,6 +902,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     out_dir.mkdir(parents=True, exist_ok=True)
     record = out_dir / RECORD_NAME
     limits = {"memory": int(memory), "pids": int(pids), "cpus": cpus}
+    services, variables, started = BESIDE.get() or ((), {}, [])
+    env = {**variables, **(env or {})}
     try:
         free = free_memory()
         if free is not None and free < memory:
@@ -759,12 +918,25 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     result = {"state": "failed", "exit_code": None, "outputs": [], "record": str(record), "engine": found.name}
     try:
         sweep(found)
+
+        def engine_cli(*args: str, timeout: float = 300) -> subprocess.CompletedProcess:
+            return cli(found, *args, timeout=timeout)
+
+        pinned, served = [], []
+        for service in services:  # pulled with the engine's network, before anything of the project runs
+            try:
+                pinned.append({**service, "pinned": pin(engine_cli, service["image"], prepare_timeout)})
+            except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
+                served.append({"phase": "service", "name": service["name"], "image": service["image"],
+                               "outcome": "failed", "cause": str(error)})
         with tempfile.TemporaryDirectory(prefix="daodan-copy-") as scratch:
             copy = Path(scratch) / "copy.tar"
             given = inputs() if callable(inputs) else inputs
             if prepare and not all(kept(path) for path in given or {}):
                 raise ValueError(f"with a preparation, inputs lie under {WORKDIR} or {STATE}, which execution sees")
             digest = copy_perimeter(project, copy, given)
+            if digest["gaps"]:  # what the copy left out of the project (`copy_perimeter`)
+                result["gaps"] = digest["gaps"]
             run_copy, mounts, env = copy, [], {"HOME": HOME, **(env or {})} if prepare else dict(env or {})
             if prepare:
                 names = [f"daodan-work-{token}", f"daodan-state-{token}"]
@@ -786,7 +958,30 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         f" with code {row['exit_code']}" if row["exit_code"] is not None else "") + f"; see {row['log']}")
                     return result
                 run_copy = None
-            row = phase(found, "execute", image=image, command=command, network="none",
+            joined = "none"
+            if pinned:
+                pod = f"daodan-pod-{token}"
+                cleanup[:0] = [*(("rm", "-f", f"daodan-svc-{token}-{n}") for n in range(len(pinned))),
+                               ("rm", "-f", pod)]
+                hosts = sorted({f"--add-host={s['host']}:127.0.0.1" for s in pinned
+                                if s.get("host") not in (None, "localhost")})
+                try:
+                    checked(cli(found, "create", "--name", pod, "--network", "none", *hosts, "--memory",
+                                str(64 * 2**20), "--pids-limit", "16", PROXY_IMAGE, "sleep", str(int(timeout) + 600)),
+                            "create of the pod")
+                    checked(cli(found, "start", pod), "start of the pod")
+                    joined = f"container:{pod}"
+                    served += start_services(engine_cli, pinned, joined, limits, token, found.name != "podman")
+                except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
+                    served += [{"phase": "service", "name": s["name"], "image": s["image"], "pinned": s["pinned"],
+                                "outcome": "failed", "cause": str(error)} for s in pinned]
+            for row in served:
+                append_record(record, {**row, "engine": found.name})
+            if services:
+                result["services"] = [{key: row[key] for key in ("name", "image", "pinned", "outcome", "cause")
+                                       if key in row} for row in served]
+                started += result["services"]
+            row = phase(found, "execute", image=image, command=command, network=joined,
                         env={**env, **proxy_environment("")}, limits=limits, timeout=timeout,
                         copy=run_copy, outputs=list(outputs), out_dir=out_dir, volumes=mounts)
             append_record(record, {**row, "copy": digest})

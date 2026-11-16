@@ -633,3 +633,26 @@ def test_a_profiler_alone_gives_sampled_edges_and_no_claim_on_what_it_did_not_se
     assert said["message"] == "python: 2 sites and 5 edges sampled in a run, 2 holes closed"
     assert said["data"]["resolver"] == "dynamic-sample-python@1:sampled"
     assert "files" not in union["languages"]["python"]["coverage"]["observed"]
+
+
+def test_every_observer_reaches_the_hosts_the_project_declares_and_one_that_did_not_answer_is_a_gap(tmp_path):
+    """The step gives each plan the hosts the project declares for its dependencies (`preparation.declared`,
+    which the observer's preparation reaches), and turns a failed restore whose words name one it could not reach
+    into a gap naming the host and the files that declare it, whichever observer ran."""
+    _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    static_store(manifest)
+    declared = {"hosts": ("pypi.corp.example",), "where": {"pypi.corp.example": ["requirements.txt"]}}
+    failed = {"kind": "restore_failed", "manager": "pip", "path": ".",
+              "detail": "error: Request failed | Caused by: Failed to fetch: `https://pypi.corp.example/a/` | "
+                        "Caused by: dns error"}
+    planned = []
+    observed = {"state": "ran", "sites": [], "gaps": [failed],
+                "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]}
+    module = fake(observed)
+    module.observe = lambda project, given, out_dir, engine: planned.append(given) or observed
+    with mock.patch.object(dynamic, "observers", return_value=[module]), \
+            mock.patch("preparation.declared", return_value=declared):
+        _result, seen, _asked = step(manifest)
+    assert planned[0]["declared"] == declared
+    [gap] = gaps(seen, "host_unreachable")
+    assert gap["host"] == "pypi.corp.example" and gap["declared_in"] == ["requirements.txt"]

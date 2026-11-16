@@ -37,6 +37,15 @@ with no container engine are gaps, never silence; so are a result that breaks th
 `failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`): of
 those nothing is kept, and the next analysis tries again. `DAODAN_DYNAMIC=off` skips the step.
 
+Every plan also gets `declared` (`preparation.declared`): the hosts the project declares for its dependencies,
+which the observer's preparation reaches beside the registries, as a CI does; a failed restore whose words name one
+it could not reach is a `host_unreachable` gap naming the host and the files that declare it (`preparation.unreached`).
+
+The services the project's CI starts beside its tests (the pre-map's `services`) start beside every container run
+of an observer, with the variables its jobs give the tests (`services()`, `container.beside`), so no observer has
+code of its own for them; a service that did not start, or a run that started none of them, is a gap naming the
+service and its image (`service_unavailable`).
+
 See docs/specs/2026-11-12-passo-dinamico.md, sections 5 and 7.
 """
 from __future__ import annotations
@@ -44,6 +53,8 @@ from __future__ import annotations
 import collections
 import json
 import os
+import re
+import shlex
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -51,6 +62,10 @@ STEP = "dynamic"
 RUNS = "dynamic-runs"  # beside the manifest: each observer's container record, logs and observation files
 EXAMPLES = 20
 TESTS = ("ran", "timeout", "killed", "not_started", "no_tests")  # how a run's tests ended; the first three ran
+HEALTH = ("--health-cmd", "--health-interval", "--health-timeout", "--health-retries", "--health-start-period",
+          "--health-start-interval")  # the options of a service passed to the engine: its health check
+EXPRESSION = re.compile(r"\$\{\{.*?\}\}", re.S)  # GitHub's expressions, which Daodan does not evaluate
+PORT = re.compile(r"\$\{\{\s*job\.services\.[\w-]+\.ports\[\s*['\"]?(\d+)['\"]?\s*\]\s*\}\}")  # but this one
 KEYS = {"runs": {"root", "runner", "state"}, "sites": {"file", "line", "column", "name", "role", "callees"},
         "sampled": {"caller", "callee", "line"}, "gaps": {"kind", "detail"}}  # what each item of a result holds
 
@@ -256,6 +271,108 @@ def join_sampled(snapshot, language: str, pairs: list[dict], observer) -> tuple[
                                  "unplaced": dict(sorted(unplaced.items()))}
 
 
+def _given(value) -> str | None:
+    """A value as GitHub gives it to a process (`true`, `5432`); a service's port where an expression names one,
+    since beside the tests a service answers on its own ports; None where the CI computes the value otherwise."""
+    text = "" if value is None else json.dumps(value) if isinstance(value, bool) else str(value)
+    text = PORT.sub(lambda match: match.group(1), text)
+    return None if EXPRESSION.search(text) else text
+
+
+def _health(options) -> tuple[list[str], str]:
+    """The health check among a service's options, as `create` takes it, and the other options, as written."""
+    try:
+        words = iter(shlex.split(str(options or "")))
+    except ValueError:
+        return [], str(options)
+    kept, other = [], []
+    for word in words:
+        flag, equal, value = word.partition("=")
+        if flag in HEALTH:
+            kept += [flag, value if equal else next(words, "")]
+        elif word == "--no-healthcheck":
+            kept.append(word)
+        else:
+            other.append(word)
+    return kept, shlex.join(other)
+
+
+def services(record: dict) -> dict:
+    """What the project's CI starts beside its tests, from the pre-map's `services` (GitHub Actions' service
+    containers), as `container.beside` takes it: `services`, each `{name, image, host, env, args,
+    command}`; `env`, the variables the jobs that declare them give their steps, for the tests; `gaps`, what cannot
+    run as declared, each naming the service, its image and its declaration (`path`): `service_unavailable` for one
+    that does not start (an image the CI computes, a second definition of a name, which the first's start keeps
+    out), `service_incomplete` for one that starts without part of what its job declares (a port mapped to another,
+    volumes, options other than its health check, variables the CI computes or two jobs set apart)."""
+    planned, env, gaps, jobs, first, apart = [], {}, [], set(), {}, set()
+    for entry in sorted(record.get("services") or [], key=lambda item: item["declared_in"]):
+        name, image, path = entry["name"], entry["image"], entry["declared_in"]
+        notes, job = [], path.split(".services.", 1)[0]
+        for key, value in (entry.get("job_env") or {}).items() if job not in jobs else ():
+            text = _given(value)
+            if text is None:
+                notes.append(f"the tests do not get {key}, which the CI computes ({value})")
+            elif key in env and env[key] != text:
+                notes.append(f"the tests get no {key}: its job gives them {text}, another job {env.pop(key)}")
+                apart.add(key)
+            elif key not in apart:
+                env[key] = text
+        jobs.add(job)
+
+        def gap(kind: str, said: list[str]) -> None:
+            gaps.append({"kind": kind, "name": name, "image": image, "path": path,
+                         "detail": f"{name} ({image}), {path}: {'; '.join(said)}"})
+
+        if EXPRESSION.search(image):
+            gap("service_unavailable", ["the CI computes its image, which Daodan does not evaluate: it does not "
+                                        "start", *notes])
+            continue
+        given = {key: _given(value) for key, value in (entry.get("env") or {}).items()}
+        notes[:0] = [f"it does not get {key}, which the CI computes ({entry['env'][key]})"
+                     for key, value in given.items() if value is None]
+        for port in entry.get("ports") or ():
+            mapped = str(port).split("/")[0].split(":")
+            if len(mapped) > 1 and mapped[-2] != mapped[-1]:
+                notes.append(f"its job maps port {mapped[-2]} to its port {mapped[-1]}: beside the tests it answers "
+                             f"on {mapped[-1]}")
+        if entry.get("volumes"):
+            notes.append("its volumes are not mounted: " + ", ".join(map(str, entry["volumes"])))
+        args, other = _health(entry.get("options"))
+        if other:
+            notes.append(f"options passed to no engine (only the health check is): {other}")
+        spec = {"name": name, "image": image, "host": entry.get("host") or "localhost",
+                "env": {key: value for key, value in given.items() if value is not None},
+                "args": [*args, *(("--entrypoint", str(entry["entrypoint"])) if entry.get("entrypoint") else ())],
+                "command": shlex.split(str(entry["command"])) if entry.get("command") else []}
+        if name in first and first[name][0] != spec:
+            gap("service_unavailable", [f"the service of {first[name][1]} has its name and starts: this one does "
+                                        "not"])
+            if notes:
+                gap("service_incomplete", notes)
+            continue
+        if name not in first:
+            first[name] = (spec, path)
+            planned.append(spec)
+        if notes:
+            gap("service_incomplete", notes)
+    return {"services": planned, "env": env, "gaps": gaps}
+
+
+def _service_gaps(started: list[dict], planned: list[dict], paths: dict, entry: str) -> list[dict]:
+    """The gaps of the services of an observer that ran: one that did not start in one of its container runs
+    (`started`, what `container.beside` yields), once per cause; every one when its runs started none."""
+    def gap(name: str, image: str, said: str) -> dict:
+        return {"kind": "service_unavailable", "name": name, "image": image, "path": paths.get(name),
+                "detail": f"{name} ({image}), {paths.get(name)}: {said}; the tests ran without it"}
+
+    if not started:
+        return [gap(service["name"], service["image"], f"{entry} starts no service") for service in planned]
+    failed = dict.fromkeys((row["name"], row["image"], row.get("cause")) for row in started
+                           if row.get("outcome") != "ready")
+    return [gap(name, image, f"it did not start: {cause}") for name, image, cause in failed]
+
+
 def run(manifest: Path, bus) -> dict:
     """The step on the snapshot `manifest`, said on `bus` (`pipeline.events`): `{"languages": {language: outcome}}`.
 
@@ -271,6 +388,7 @@ def run(manifest: Path, bus) -> dict:
     import code_graph
     import container
     import premap
+    import preparation
     import resolve_edges as rx
     manifest = Path(manifest).resolve()
     outcomes: dict = {}
@@ -288,6 +406,7 @@ def run(manifest: Path, bus) -> dict:
     found = observers()
     served = {language for module in found for language in module.LANGUAGES}
     asked: dict = {}
+    declared, paths = None, {}  # the services of the project's CI (`services`), and where each is declared
     with code_graph.Snapshot(manifest) as snapshot:
         store = rx.default_edge_store(manifest)
         edges, binding, reason = rx.read_edge_store(store, snapshot.store)
@@ -326,13 +445,22 @@ def run(manifest: Path, bus) -> dict:
                 except OSError:
                     return ""
 
-            planned = module.plan(premap.ensure(manifest), sorted(snapshot.checkout.values()), read)
+            record = premap.ensure(manifest)
+            planned = module.plan(record, sorted(snapshot.checkout.values()), read)
+            planned["declared"] = preparation.declared(record)  # the hosts its preparation reaches, as a CI does
             for gap in planned["gaps"]:
                 say(gap["detail"], gap, entry)
             if not planned["runs"]:
                 left(wanted, "not-run", "; ".join(gap["detail"] for gap in planned["gaps"]))
                 bus.emit("analyzer.finished", f"{entry}: nothing to run", step=STEP, analyzer=entry, languages=wanted)
                 continue
+            if declared is None:  # the project's services, the same for every observer: planned and said once
+                declared = services(record)
+                for gap in declared["gaps"]:
+                    say(gap["detail"], gap)
+                for item in sorted(record.get("services") or [], key=lambda item: item["declared_in"]):
+                    paths.setdefault(item["name"], item["declared_in"])
+            started: list[dict] = []  # the outcomes of the services its container runs started
             if not asked:  # the engine found goes to the first run, which ends it; the next ones find their own
                 asked["once"] = True
                 try:
@@ -344,8 +472,9 @@ def run(manifest: Path, bus) -> dict:
             if result is None:
                 bus.progress(STEP, number, len(waiting), analyzer=entry, phase="tests",
                              message=f"{entry}: {len(planned['runs'])} runs of the tests in the container")
-                result = module.observe(snapshot.root, planned, manifest.parent / RUNS / entry,
-                                        asked.pop("engine", None))
+                with container.beside(declared["services"], declared["env"]) as started:
+                    result = module.observe(snapshot.root, planned, manifest.parent / RUNS / entry,
+                                            asked.pop("engine", None))
             broken = malformed(result)
             if broken:
                 detail = f"{entry} returned a result that breaks the observer contract: {broken}; nothing is kept"
@@ -355,6 +484,9 @@ def run(manifest: Path, bus) -> dict:
                          languages=wanted)
                 left(wanted, "failed", detail)
                 continue
+            # a declared host a failed restore of the run could not reach: one gap naming it, whichever observer ran
+            result["gaps"] = [*(result.get("gaps") or ()),
+                              *preparation.unreached(result.get("gaps") or (), planned["declared"])]
             if result["state"] != "ran":
                 cause = result["cause"] if result["state"] == "failed" else \
                     f"the tests run only in a container: {result['cause']}"
@@ -366,6 +498,9 @@ def run(manifest: Path, bus) -> dict:
                          remedy=result["remedy"], languages=wanted)
                 left(wanted, "failed" if result["state"] == "failed" else "unavailable", cause)
                 continue
+            if declared["services"]:
+                for gap in _service_gaps(started, declared["services"], paths, entry):
+                    say(gap["detail"], gap, entry)
             for gap in result["gaps"]:
                 say(gap["detail"], gap, entry)
             why = "; ".join(gap["detail"] for gap in result["gaps"])
