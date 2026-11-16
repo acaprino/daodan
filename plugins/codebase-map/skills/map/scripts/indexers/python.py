@@ -282,7 +282,7 @@ def _identity(project: Path, given: str | None = None) -> tuple[str, str]:
     return name, "_"
 
 
-def _pyright_config(root: Path, target: Path, source_roots=()) -> dict | None:
+def _pyright_config(root: Path, target: Path, source_roots=(), unit_roots=()) -> dict | None:
     """The source roots of the project at `root` declared to Pyright in `target`, unless the project configures
     Pyright: the ones its unit states (`source_roots`, from its folder), else `src` where it holds a package.
     Each is a root that also sees the others, and the project's folder sees them all."""
@@ -293,12 +293,16 @@ def _pyright_config(root: Path, target: Path, source_roots=()) -> dict | None:
         return None
     roots = sorted(set(source_roots) - {"."}) if source_roots else \
         ["src"] if any((root / "src").glob("*/__init__.py")) else []
-    if not roots:
+    units = sorted(set(unit_roots) - {".", *roots})
+    if not roots and not units:
         return None
+    # A project folded into this run (`unit_roots`) is the root of its own imports and sees the declared source
+    # roots; the code outside it does not see it: a module found there by name would be a guess.
     config = {"executionEnvironments": [
         *[{"root": one, **({"extraPaths": others} if others else {})}
           for one in roots for others in [[other for other in roots if other != one]]],
-        {"root": ".", "extraPaths": roots}]}
+        *[{"root": one, **({"extraPaths": roots} if roots else {})} for one in units],
+        {"root": ".", **({"extraPaths": roots} if roots else {})}]}
     target.write_text(json.dumps(config, indent=1), encoding="utf-8")
     return config
 
@@ -395,7 +399,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
             name, version = _identity(here, unit.get("name"))
             output = work_dir / f"scip-python-{number}.scip"
             # Read from the project: the mirror only links its folders, and a walk does not enter a link.
-            config = _pyright_config(here, cwd / "pyrightconfig.json", unit.get("source_roots") or ())
+            config = _pyright_config(here, cwd / "pyrightconfig.json", unit.get("source_roots") or (),
+                                     unit.get("unit_roots") or ())
             paths = [Path(used) / ("Scripts" if os.name == "nt" else "bin")] if used else []
             variables = {"VIRTUAL_ENV": str(used)} if used else {}
             env = runtime.environment(*paths, directory, NODE_OPTIONS="--max-old-space-size=4096", **variables)
@@ -448,7 +453,8 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
         carried = {"/daodan/tools/node.tar.gz": archive, "/daodan/tools/environment.json": described,
                    "/daodan/tools/scip-python.path": located}
         configured = work_dir / f"pyrightconfig-{number}.json"
-        held["config"] = _pyright_config(here, configured, unit.get("source_roots") or ())
+        held["config"] = _pyright_config(here, configured, unit.get("source_roots") or (),
+                                         unit.get("unit_roots") or ())
         if held["config"]:
             carried["/daodan/tools/pyrightconfig.json"] = configured
         for path in (home / "node_modules").rglob("*"):

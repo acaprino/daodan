@@ -285,6 +285,12 @@ def python_runs(record: dict) -> list[dict]:
     units = [u for u in record.get("units", []) if u["kind"] == "python-project"]
     workspaces = [w for w in record.get("workspace", []) if w.get("tool") == "uv"]
     roots = {u["root"] for u in units} | {w["root"] for w in workspaces}
+    # Python files no unit holds (`code_outside_units`) are code too: the checkout is then the run, the projects
+    # inside it folded in, each keeping its folder as the root of its own imports (`unit_roots`).
+    loose = roots and "." not in roots and any(
+        gap["kind"] == "code_outside_units" and gap.get("language") == "Python" for gap in record.get("gaps", []))
+    if loose:
+        folded, roots = sorted(roots), roots | {"."}
     outer = sorted(r for r in roots if not any(other != r and _inside(r, other) for other in roots))
     runs = []
     for root in outer:
@@ -299,7 +305,8 @@ def python_runs(record: dict) -> list[dict]:
         top = next((u for u in held if u["root"] == root), None)
         runs.append({"root": "" if root == "." else root, "name": top.get("name") if top else None,
                      "manifests": sorted(manifests),
-                     "source_roots": sorted({_relative(s, root) for u in held for s in u.get("source_roots", [])})})
+                     "source_roots": sorted({_relative(s, root) for u in held for s in u.get("source_roots", [])}),
+                     **({"unit_roots": folded} if loose else {})})
     return runs
 
 

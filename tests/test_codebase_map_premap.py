@@ -737,3 +737,15 @@ def test_the_unit_kinds_able_to_index_a_language_are_the_ones_its_analyzer_decla
     assert "legacy" in by_root(record, "sbt-project")
     [gap] = [g for g in gaps(record, "code_outside_units") if g["language"] == "Java"]
     assert gap["path"] == "legacy/src/main/java" and "sbt-project" not in gap["detail"]
+
+
+def test_python_code_outside_every_project_makes_the_checkout_one_run():
+    """Tests and scripts beside a Python project are code too: when the pre-map finds Python files no unit
+    holds, the checkout is the run, and each project inside keeps its folder as the root of its own imports."""
+    record = {"units": [{"kind": "python-project", "root": "pkg", "name": "pkg", "manifest": "pkg/pyproject.toml",
+                         "sources": [], "source_roots": ["pkg/src"]}], "workspace": [],
+              "gaps": [{"kind": "code_outside_units", "language": "Python", "path": "tests", "files": 3}]}
+    assert premap.python_runs(record) == [{"root": "", "name": None, "manifests": ["pkg/pyproject.toml"],
+                                           "source_roots": ["pkg/src"], "unit_roots": ["pkg"]}]
+    record["gaps"] = [{"kind": "code_outside_units", "language": "Go", "path": "tools", "files": 1}]
+    assert [run["root"] for run in premap.python_runs(record)] == ["pkg"]
