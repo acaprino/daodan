@@ -1,10 +1,17 @@
-"""Export declared facts for the offline UI preview; never run project tools."""
+"""Export declared facts for the offline UI preview; never run project tools.
+
+Languages, technologies and declared versions are Daodan's own: a snapshot of `plugins/` written to a temporary
+folder, the `stack` step's record (`technologies.py`) and the pre-map's toolchains. Files, units and the versions
+of their dependencies are read from Git and the manifests, which no record of Daodan holds yet.
+"""
 
 from collections import Counter
 from datetime import datetime, timezone
 import json
 from pathlib import Path
 import subprocess
+import sys
+import tempfile
 import tomllib
 
 
@@ -17,12 +24,6 @@ def git(*arguments):
 
 
 files = sorted(path for path in git("ls-files", "-z").split("\0") if path and (ROOT / path).is_file())
-extensions = {".py": "Python", ".js": "JavaScript", ".mjs": "JavaScript", ".cjs": "JavaScript",
-              ".jsx": "JavaScript", ".ts": "TypeScript", ".tsx": "TypeScript", ".css": "CSS",
-              ".html": "HTML", ".go": "Go", ".rs": "Rust", ".java": "Java", ".kt": "Kotlin",
-              ".c": "C", ".h": "C/C++", ".cpp": "C++", ".hpp": "C++", ".cs": "C#",
-              ".vue": "Vue template", ".svelte": "Svelte template", ".astro": "Astro template"}
-counts = Counter(extensions[Path(path).suffix] for path in files if Path(path).suffix in extensions)
 units = []
 technologies = []
 
@@ -39,10 +40,6 @@ for path in files:
             for name, version in sorted(data.get(scope, {}).items()):
                 unit["dependencies"].append({"name": name, "version": version, "scope": scope,
                                              "source": path, "state": "declared"})
-                if root.endswith("/viewer") and name in ("react", "vite", "@xyflow/react", "elkjs"):
-                    technologies.append({"name": {"react": "React", "vite": "Vite", "@xyflow/react": "React Flow", "elkjs": "ELK"}[name],
-                                         "version": version, "category": "UI" if name == "react" else "Build" if name == "vite" else "Grafo",
-                                         "source": path, "unit": root, "state": "declared"})
     else:
         for name in data.get("dependencies", {}).get("required", []):
             unit["dependencies"].append({"name": name, "version": "", "scope": "plugin",
@@ -60,6 +57,34 @@ units.append({"id": runtime, "name": "Runtime Codebase Map", "root": runtime_roo
                   for dependency in metadata["dependencies"]]})
 technologies.append({"name": "Python", "version": metadata["requires-python"], "category": "Runtime",
                      "source": runtime, "unit": runtime, "state": "declared"})
+# What Daodan itself recognizes in `plugins/`, with no tool of the project run.
+sys.path.insert(0, str(ROOT / "plugins/codebase-map/skills/map/scripts"))
+import premap  # noqa: E402
+import snapshot  # noqa: E402
+import technologies as stack  # noqa: E402
+from premap.suffix_table import NAMES  # noqa: E402
+from snapshot_store import open_snapshot  # noqa: E402
+
+with tempfile.TemporaryDirectory(prefix="daodan-preview-") as work:
+    manifest = Path(work) / "manifest.sqlite"
+    snapshot.main(["write", str(ROOT / "plugins"), "--out", str(manifest), "--no-engine", "--no-index"])
+    record, toolchains = stack.ensure(manifest), premap.ensure(manifest).get("toolchains", [])
+    with open_snapshot(manifest) as store:
+        counts = Counter(entry["language"] for _, entry in store.iter_file_headers_only() if entry.get("language"))
+versions = {(unit["root"], dependency["name"]): dependency["version"] for unit in units for dependency in unit["dependencies"]}
+known = {entry["id"]: entry for entry in record["technologies"]}
+for found in record["units"]:
+    owned = tuple("" if path in ("", ".") else path.rstrip("/") + "/" for path in found["paths"])
+    for ident in found["technologies"]:
+        sign = next(s for s in known[ident]["signs"] if s["path"].startswith(owned))
+        technologies.append({"name": known[ident]["name"], "category": {None: "tecnologia", "altro": "tecnologia"}.get(known[ident]["type"], known[ident]["type"]),
+                             "version": versions.get((found["paths"][0], sign["value"]), ""),
+                             "source": sign["path"] + (f":{sign['line']}" if sign["line"] else ""),
+                             "unit": found["paths"][0], "state": "recognized"})
+for item in toolchains:
+    technologies.append({"name": item["tool"], "version": item["version"], "category": "Versione dichiarata",
+                         "source": item["declared_in"] + (f":{item['line']}" if item.get("line") else ""),
+                         "unit": str(Path(item["declared_in"].split("#")[0]).parent).replace("\\", "/"), "state": "declared"})
 for unit in units:
     parents = [other for other in units if other is not unit and unit["root"].startswith(other["root"] + "/")]
     unit["parent"] = max(parents, key=lambda other: len(other["root"]))["id"] if parents else None
@@ -68,11 +93,11 @@ result = {"source": {"kind": "git-inventory-and-declared-manifests", "root": ROO
                      "commit": git("rev-parse", "--short", "HEAD").strip(),
                      "captured_at": datetime.now(timezone.utc).isoformat(), "files_count": len(files),
                      "notice": "Inventario Git tracciato e manifesti correnti. Anteprima dichiarativa: nessuna build o analisi eseguita; grafo storico separato."},
-          "files": files, "languages": [{"name": name, "files": count, "source": "Estensioni dei file tracciati, comprese fixture e benchmark"}
+          "files": files, "languages": [{"name": NAMES.get(name, name.capitalize()), "files": count, "source": "Snapshot di Daodan sulla cartella plugins"}
                                          for name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))],
           "units": units, "technologies": technologies,
-          "gaps": ["Linguaggi da estensioni: la presenza nelle fixture non dimostra uso nel prodotto.",
-                   "Framework e dipendenze dichiarati nei manifesti dei plugin; versioni installate e uso effettivo non verificati.",
+          "gaps": ["Linguaggi e tecnologie dallo snapshot di plugins: benchmark, test e documenti restano fuori.",
+                   "Tecnologie riconosciute dal registro di Daodan per unità di build; versioni installate e uso effettivo non verificati.",
                    "I compiler Vue/Svelte/Astro appartengono al tooling di analisi, non dichiarano il framework dell'app.",
                    "La pre-mappa canonica non contiene librerie risolte: la UI compone inventario e dichiarazioni, da aggiornare con i risultati degli analyzer.",
                    "Il grafo dimostrativo usa uno snapshot storico distinto; i conteggi non descrivono una nuova analisi."]}

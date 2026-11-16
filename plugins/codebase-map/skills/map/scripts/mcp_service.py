@@ -627,10 +627,14 @@ class MapService:
                 _write(recorded, {"schema": flow_model.RULES_SCHEMA, "rules": rules})
             if not recorded.is_file():
                 import technologies
-                return {"status": "needs_rules", "run_id": run_id,
-                        "format": flow_model.__doc__.split("    python flows.py")[0].strip(),
-                        "technologies": [unit for unit in technologies.ensure(manifest.path)["units"]
-                                         if unit["technologies"]]}
+                answer = {"status": "needs_rules", "run_id": run_id,
+                          "format": flow_model.__doc__.split("    python flows.py")[0].strip()}
+                try:
+                    answer["technologies"] = [unit for unit in technologies.ensure(manifest.path)["units"]
+                                              if unit["technologies"]]
+                except Exception as error:  # noqa: BLE001 - the rule format is the answer; the technologies help
+                    answer["technologies_unavailable"] = f"{type(error).__name__}: {error}"
+                return answer
             if brief or map is not None or about is not None:
                 return {"status": "ok", "run_id": run_id,
                         **self._system_map(manifest.path, flow_model.load_rules(recorded), brief, map, about, levels)}

@@ -210,7 +210,7 @@ def build_envelope(run_dir: Path) -> dict:
         "gaps": gaps,
         "flows": envelope_flows,
         "technologies": [{"id": item["id"], "name": item["name"], "type": item["type"] or "altro",
-                          "paths": sorted({sign["path"] for sign in item["signs"] if sign["path"]})[:LIMIT]}
+                          "paths": sorted({sign["path"] for sign in item["signs"] if sign["path"]})}
                          for item in stack["technologies"]],
     }
 

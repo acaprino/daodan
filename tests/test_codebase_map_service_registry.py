@@ -122,6 +122,8 @@ class RecognizeTests(unittest.TestCase):
         "api/requirements.txt": "stripe==7.0\nfastapi>=0.110  # the API\n",
         "api/pay.py": "import os\n\nKEY = os.environ['STRIPE_SECRET_KEY']\n",
         "api/Dockerfile": "FROM python:3.12-slim\n",
+        "api/known.json": '{"schema": "daodan/service-registry/v1", "entries": [{"env": ["STRIPE_KEY"]}]}',
+        "web/dist.js": "var a=1;" * 2000 + "STRIPE_KEY\n",
     }
 
     @classmethod
@@ -173,10 +175,22 @@ class RecognizeTests(unittest.TestCase):
         self.assertTrue({"docker", "fastapi", "stripe"} <= set(self.units["root"]["technologies"]))
         self.assertNotIn("react", self.units["root"]["technologies"])
 
-    def test_the_record_is_fresh_until_the_snapshot_changes(self):
+    def test_the_record_is_read_while_fresh_and_derived_again_when_the_premap_excludes_a_file(self):
         import technologies
         self.assertEqual(technologies.state(self.manifest), "fresh")
         self.assertEqual(technologies.ensure(self.manifest), self.record)
+        self.assertEqual((self.record["target"], self.record["root"] != ""), (".", True))
+        ensure = technologies.premap.ensure
+        technologies.premap.ensure = lambda manifest: {"excluded": [{"path": "api/pay.py", "why": "generated"}]}
+        try:
+            self.assertEqual(technologies.state(self.manifest), "stale")
+            again = technologies.ensure(self.manifest)
+        finally:
+            technologies.premap.ensure = ensure
+            technologies.path(self.manifest).unlink()
+        signs = {(s["sign"], s["path"]) for e in again["technologies"] if e["id"] == "stripe" for s in e["signs"]}
+        self.assertNotIn(("env", "api/pay.py"), signs)
+        self.assertEqual(sorted(p.name for p in Path(self.manifest).parent.glob(".technologies-*")), [])
 
     def test_a_service_of_the_premap_is_a_sign_at_the_file_declaring_it(self):
         import service_registry

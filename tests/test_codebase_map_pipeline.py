@@ -176,6 +176,17 @@ def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs
     assert "pipeline.run(" in inspect.getsource(resolve_edges.main)
 
 
+def test_a_failing_stack_step_says_why_and_does_not_stop_the_steps_after_it(tmp_path):
+    import technologies
+    seen = []
+    context = pipeline.Context(tmp_path / "manifest.sqlite", pipeline.events.Bus(tmp_path / "journal"))
+    context.bus.subscribe(seen.append)
+    with mock.patch.object(technologies, "ensure", side_effect=OSError("disk full")):
+        result = pipeline.Stack.run(context)
+    assert result == {"failed": "OSError: disk full"}
+    assert [(e["kind"], e["level"]) for e in seen] == [("log", "error")]
+
+
 def test_the_pipeline_declares_its_steps_in_one_place():
     assert [step.NAME for step in pipeline.STEPS] == ["scan", "stack", "analyze", "dynamic", "union"]
     for step in pipeline.STEPS:
