@@ -215,7 +215,8 @@ def npm_modules(root: Path, failed: list | None = None, npm: str | None = None) 
 
     Only the manifests are copied there, so npm never sees the project's code; the
     lockfile is honoured when there is one. Every project with the same manifests
-    shares the installation, and npm's own cache spares repeated downloads. `npm` is
+    shares the installation (`publish`: two at once each fill their own folder), and
+    npm's own cache spares repeated downloads. `npm` is
     the npm to start (Daodan's), else the host's. None when the project has no
     package.json, npm is missing or the install fails: `failed` then gets the reason
     of the last two.
@@ -230,48 +231,52 @@ def npm_modules(root: Path, failed: list | None = None, npm: str | None = None) 
     if (destination / "daodan-modules.json").is_file():
         return destination / "node_modules"
     print(f"installing the project's JavaScript packages into {destination} (first use)", flush=True)
-    partial = destination.with_name(f".{key}.partial")
-    shutil.rmtree(partial, ignore_errors=True)
     manifests = npm_manifests(root)
-    local = False
-    for manifest in manifests:
-        target = partial / manifest.relative_to(root)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        text = _without_local_packages(manifest) if manifest.name == "package.json" else None
-        if text is None:
-            shutil.copyfile(manifest, target)
-        else:
-            target.write_text(text, encoding="utf-8")
-            local = True
-    # A lockfile that still names the local packages cannot be honoured to the letter.
-    locked = not local and any(manifest.name in ("package-lock.json", "npm-shrinkwrap.json") for manifest in manifests)
-    command = [npm, "ci" if locked else "install", "--ignore-scripts", "--no-audit", "--no-fund",
-               "--loglevel=error", *([] if locked else ["--package-lock=false"])]
-    completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                               timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment(npm)})
-    if completed.returncode != 0 and locked:
-        # A lockfile out of step with its manifest still leaves the manifest to install from.
-        command = [npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error"]
+
+    def fill(partial: Path) -> None:
+        local = False
+        for manifest in manifests:
+            target = partial / manifest.relative_to(root)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            text = _without_local_packages(manifest) if manifest.name == "package.json" else None
+            if text is None:
+                shutil.copyfile(manifest, target)
+            else:
+                target.write_text(text, encoding="utf-8")
+                local = True
+        # A lockfile that still names the local packages cannot be honoured to the letter.
+        locked = not local and any(manifest.name in ("package-lock.json", "npm-shrinkwrap.json")
+                                   for manifest in manifests)
+        command = [npm, "ci" if locked else "install", "--ignore-scripts", "--no-audit", "--no-fund",
+                   "--loglevel=error", *([] if locked else ["--package-lock=false"])]
         completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
                                    timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment(npm)})
-    if completed.returncode != 0 or not (partial / "node_modules").is_dir():
-        reason = (completed.stderr or "").strip()[-300:] or "npm wrote no node_modules"
-        print(f"the project's JavaScript packages were not installed: {reason}", flush=True)
-        if failed is not None:
-            failed.append(reason)
-        shutil.rmtree(partial, ignore_errors=True)
-        return None
+        if completed.returncode != 0 and locked:
+            # A lockfile out of step with its manifest still leaves the manifest to install from.
+            command = [npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error"]
+            completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True,
+                                       text=True, timeout=1800, shell=os.name == "nt",
+                                       env={**os.environ, **node_environment(npm)})
+        if completed.returncode != 0 or not (partial / "node_modules").is_dir():
+            raise subprocess.CalledProcessError(completed.returncode, command, stderr=(
+                (completed.stderr or "").strip()[-300:] or "npm wrote no node_modules"))
+        try:
+            typed = _install_type_packages(npm, partial)
+        except (OSError, subprocess.SubprocessError):
+            typed = 0
+        if typed:
+            print(f"installed {typed} type packages for declared JavaScript packages without their own", flush=True)
+        (partial / "daodan-modules.json").write_text(json.dumps({"manifests": [m.relative_to(root).as_posix()
+                                                                               for m in manifests],
+                                                                 "type_packages": typed}), encoding="utf-8")
+
     try:
-        typed = _install_type_packages(npm, partial)
-    except (OSError, subprocess.SubprocessError):
-        typed = 0
-    if typed:
-        print(f"installed {typed} type packages for declared JavaScript packages without their own", flush=True)
-    (partial / "daodan-modules.json").write_text(json.dumps({"manifests": [m.relative_to(root).as_posix()
-                                                                           for m in manifests],
-                                                             "type_packages": typed}), encoding="utf-8")
-    shutil.rmtree(destination, ignore_errors=True)
-    os.replace(partial, destination)
+        publish(destination, fill, key)
+    except subprocess.CalledProcessError as error:
+        print(f"the project's JavaScript packages were not installed: {error.stderr}", flush=True)
+        if failed is not None:
+            failed.append(error.stderr)
+        return None
     return destination / "node_modules"
 
 
@@ -416,11 +421,14 @@ def open_url(url: str, timeout: float):
 
 
 def download(url: str, target: Path, *, sha256: str | None = None, sha1_url: str | None = None) -> Path:
-    """Fetch a file into the shared directory through a partial file, verified, with three attempts."""
+    """Fetch a file into the shared directory through a partial file of its own (another process may fetch the
+    same file at once), verified, with three attempts."""
     target.parent.mkdir(parents=True, exist_ok=True)
-    partial = target.with_name(target.name + ".partial")
     last = None
     for attempt in range(3):
+        descriptor, name = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".partial", dir=target.parent)
+        os.close(descriptor)
+        partial = Path(name)
         try:
             expected = sha256
             if sha1_url:

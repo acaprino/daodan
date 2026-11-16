@@ -1652,6 +1652,31 @@ class TypeScriptMirrorTests(unittest.TestCase):
         self.assertEqual(files, ["package.json"])
         self.assertIn("--ignore-scripts", command)
 
+    def test_two_first_installs_of_one_project_s_packages_at_once_both_end_with_them(self):
+        """The server and the pass may install one project's packages at once: each fills its own folder, the
+        first published stays, and neither fails."""
+        import contextlib
+        import io
+        with tempfile.TemporaryDirectory() as temp, \
+                mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"):
+            root = Path(temp) / "proj"
+            root.mkdir()
+            (root / "package.json").write_text('{"name": "demo"}', encoding="utf-8")
+            started, nested = [], []
+
+            def run(command, cwd, **_options):
+                if not started:  # the other process, done while this one is half-way
+                    started.append(cwd)
+                    nested.append(resolve_edges.npm_modules(root, npm="npm"))
+                (Path(cwd) / "node_modules").mkdir()
+                return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+            with mock.patch.object(subprocess, "run", side_effect=run), contextlib.redirect_stdout(io.StringIO()):
+                first = resolve_edges.npm_modules(root, npm="npm")
+            self.assertEqual(nested, [first])
+            self.assertTrue((first.parent / "daodan-modules.json").is_file())
+            self.assertEqual([path.name for path in first.parent.parent.iterdir()], [first.parent.name])
+
 
 class NestedPackageTests(unittest.TestCase):
     """A project whose packages are declared below its root, one of them taken from a local path."""
@@ -1780,6 +1805,32 @@ class MavenArtifactTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     resolve_edges.maven_artifact("org.demo:broken:3.0")
             self.assertFalse((resolve_edges.maven_central_dir() / "org/demo/broken/3.0/broken-3.0.jar").exists())
+
+    def test_two_downloads_of_one_file_at_once_both_end_with_it(self):
+        """Two processes may fetch one file into the shared directory at once (a Maven jar): each writes a partial
+        file of its own, verified, and neither retries nor fails."""
+        import io
+        payload, fetched = b"jar bytes", []
+        digest = hashlib.sha256(payload).hexdigest()
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp) / "lib.jar"
+
+            class Response(io.BytesIO):
+                def read(self, size=-1):
+                    if len(fetched) == 1 and self.tell() == 0:  # the other process, done while this one is half-way
+                        resolve_edges.download("https://repo.example/lib.jar", target, sha256=digest)
+                    return super().read(size)
+
+            def opened(request, timeout=None):
+                fetched.append(request.full_url)
+                return Response(payload)
+
+            with mock.patch("urllib.request.urlopen", side_effect=opened), mock.patch.object(time, "sleep"):
+                self.assertEqual(resolve_edges.download("https://repo.example/lib.jar", target, sha256=digest),
+                                 target)
+            self.assertEqual(len(fetched), 2)
+            self.assertEqual(target.read_bytes(), payload)
+            self.assertEqual([path.name for path in target.parent.iterdir()], ["lib.jar"])
 
 
 class RustGoContractTests(unittest.TestCase):
