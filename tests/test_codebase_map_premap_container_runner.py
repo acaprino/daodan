@@ -71,6 +71,18 @@ def test_one_container_run_per_source_with_its_setup_first_and_its_answers_back(
                        {"returncode": 0, "stdout": "out 1", "stderr": "", "root": "/work"}]
 
 
+def test_what_the_copy_of_the_project_left_out_rides_on_the_first_answer(tmp_path, no_download):
+    """A link Git tracks to outside the project stays out of the copy (`container.copy_perimeter`): a gap of the
+    run, as the preparation's are."""
+    left = {"kind": "link_outside", "path": "x.go", "target": "../y.go", "detail": "x.go links outside"}
+    _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
+    _calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", lambda *given, **options: {**fake(*given, **options),
+                                                                                  "gaps": [left]}):
+        answers = container_runner.runner(manifest)([command("go", "registries")])
+    assert answers[0]["gaps"] == [left]
+
+
 def test_a_setup_that_installs_from_a_registry_runs_in_the_preparation(tmp_path, no_download):
     _, manifest = manifest_of(tmp_path, {"tsconfig.json": "{}\n"})
     calls, fake = recorder()

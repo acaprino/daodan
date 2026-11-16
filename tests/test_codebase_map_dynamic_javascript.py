@@ -283,6 +283,14 @@ def test_the_preparation_reaches_the_hosts_the_project_declares(tmp_path):
     assert "npm.corp.example" in played.given["registries"]
 
 
+def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_run(tmp_path):
+    """A link Git tracks to outside the project stays out of the copy (`container.copy_perimeter`)."""
+    left = {"kind": "link_outside", "path": "x.js", "target": "../y.js", "detail": "x.js links outside"}
+    played = Played({"tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"},
+                    {"state": "done", "exit_code": 0, "outputs": [], "gaps": [left]})
+    assert left in observe(tmp_path, played)["gaps"]
+
+
 def test_the_tests_run_as_declared_under_the_recorder_and_only_in_the_container(tmp_path):
     played = Played({"observed-0-7-0.json": observed(site("test/index.test.js", 5, 25, "first", FIRST)),
                      "tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
@@ -567,13 +575,28 @@ def test_typescript_node_strips_itself_is_recorded_as_written(tmp_path, node):
     assert file["unobserved"] == []
 
 
-def test_a_file_that_ran_where_the_recorder_has_no_hook_is_named(tmp_path, node):
-    """As under a Node without module.registerHooks (before 22.15): an ES module runs as it is, and is said."""
+def hidden(tmp_path, *names: str) -> dict:
+    """The recorder's environment under a Node without the module hooks `names`, as an older Node is."""
+    lines = "".join(f"delete Module.{name};\nif (Module.{name}) Module.{name} = undefined;\n" for name in names)
+    hide = write(tmp_path / "tools", {"hide.js": f'const Module = require("module");\n{lines}'})
+    return {"NODE_OPTIONS": f"--require {(hide / 'hide.js').as_posix()} --require {observer.RECORDER.as_posix()}"}
+
+
+def test_an_es_module_under_a_node_without_register_hooks_is_printed_on_the_hooks_thread(tmp_path, node):
+    """mix-infra-gha: Node 20.18.1, which its .nvmrc states, has no module.registerHooks (22.15): its ES modules
+    are printed by the hooks `module.register` runs on a thread of their own (18.19, 20.6), and recorded."""
     project = write(tmp_path / "proj", PROJECT)
-    hide = write(tmp_path / "tools", {"hide.js": 'const Module = require("module");\ndelete Module.registerHooks;\n'
-                                                 "if (Module.registerHooks) Module.registerHooks = undefined;\n"})
-    [file] = recorded(project, tmp_path / "out", node, env={
-        "NODE_OPTIONS": f"--require {(hide / 'hide.js').as_posix()} --require {observer.RECORDER.as_posix()}"})
+    [file] = recorded(project, tmp_path / "out", node, env=hidden(tmp_path, "registerHooks"))
+    assert file["unobserved"] == []
+    found = places(file["sites"])
+    assert found[("test/index.test.js", 11, 26, "twice")] == {"src/more.mjs:0:21 twice function"}
+    assert found[("src/more.mjs", 0, 32, "fn")] == {"src/more.mjs:1:7 inc function"}
+
+
+def test_a_file_that_ran_where_the_recorder_has_no_hook_is_named(tmp_path, node):
+    """As under a Node with neither module hook (before 18.19 and 20.6): an ES module runs as it is, and is said."""
+    project = write(tmp_path / "proj", PROJECT)
+    [file] = recorded(project, tmp_path / "out", node, env=hidden(tmp_path, "registerHooks", "register"))
     assert file["unobserved"] == ["src/more.mjs"]
     assert ("test/index.test.js", 5, 25, "first") in places(file["sites"])
 

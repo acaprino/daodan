@@ -34,7 +34,9 @@ recorder's own variables). The project is not changed. The recorder puts its Bab
 compiled:
 
 - a source Node runs as written (Mocha, `node --test`, any script on Node's own loaders) is printed by
-  Daodan's Babel, TypeScript Node strips itself (`node --test "test/*.test.ts"`) once stripped as Node does;
+  Daodan's Babel, TypeScript Node strips itself (`node --test "test/*.test.ts"`) once stripped as Node does; an
+  ES module through `module.registerHooks` (Node 22.15), else through the hooks `module.register` runs on a
+  thread of their own (Node 18.19, 20.6);
 - a @babel/core the run loads itself (Jest's babel-jest, @babel/register) gets the plugin in every transform;
 - code another tool printed with its source map inline (ts-jest, Vitest's Vite in every pool, a TypeScript
   loader), on its way to Node's loaders or to the `vm` functions the runners evaluate with, is printed again
@@ -46,7 +48,7 @@ for a service or the network (the execution has none, only the services the proj
 found no test, a run
 where the recorder saw no call (`nothing_recorded`, with the runner's reason: `UNREACHED`), the project files that
 ran unrecorded (`not_observed`: printed with no inline map, or ES modules
-under a Node without `module.registerHooks`, before 22.15), the project callees the recorder could not place
+under a Node with neither module hook), the project callees the recorder could not place
 (`callee_unplaced`: the map of their code leads to no function's head in the file as written), a failed restore.
 """
 from __future__ import annotations
@@ -274,7 +276,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     prepared = _text(out_dir / "prepare.log")
     missing = preparation.missing(prepared)
     gaps = [*unrun, *chains["gaps"], *missing, *preparation.restore_gaps(prepared),
-            *preparation.generation_gaps(prepared)]
+            *preparation.generation_gaps(prepared),
+            *(result.get("gaps") or ())]  # and what the copy left out (`container.copy_perimeter`)
     if result["state"] == "failed":
         cause = result.get("cause") or "the container run failed"
         if any(gap["tool"] == "@babel/core" for gap in missing):

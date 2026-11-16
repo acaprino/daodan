@@ -208,7 +208,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
                 "gaps": [], "facts": {}}
     prepared = _text(out_dir / "prepare.log")
-    gaps = [*needs["gaps"], *preparation.missing(prepared), *preparation.restore_gaps(prepared)]
+    gaps = [*needs["gaps"], *preparation.missing(prepared), *preparation.restore_gaps(prepared),
+            *(result.get("gaps") or ())]  # and what the copy left out (`container.copy_perimeter`)
     if result["state"] == "failed":
         return {"state": "failed", "cause": result.get("cause") or "the container run failed",
                 "remedy": f"see prepare.log and execute.log in {out_dir}", "sites": [], "runs": [], "gaps": gaps,

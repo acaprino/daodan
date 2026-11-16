@@ -338,6 +338,16 @@ def test_one_run_with_no_network_indexes_the_units_that_configure_and_states_the
     assert reasons["orphan.c"] == "no compile command: not built by the default configuration"
 
 
+def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_index(tmp_path):
+    """A link Git tracks to outside the project stays out of the copy (`container.copy_perimeter`), and the
+    container's result says so."""
+    left = {"kind": "link_outside", "path": "x.c", "target": "../y.c", "detail": "x.c links outside"}
+    report = {"peak_mb": 1, "units": [{"root": ".", "state": "indexed", "index": "index-0.scip", "compiled": {},
+                                       "steps": []}]}
+    result, _seen = _index(tmp_path, report, [UNIT], gaps=[left])
+    assert left in result.get("gaps", [])
+
+
 def test_scip_clang_runs_as_many_jobs_as_the_caller_gives_the_container(tmp_path):
     """The share is the caller's: the container's CPU limit and scip-clang's jobs, never the machine's count."""
     assert clang_run.index_command(Path("scip-clang"), Path("cc.json"), Path("pm.json"), 3) == \

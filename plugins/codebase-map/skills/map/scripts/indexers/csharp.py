@@ -441,7 +441,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     failures = workspace_failures(logs["execute"])
     gaps = [*chains["gaps"], *preparation.missing(logs["prepare"]), *preparation.restore_gaps(logs["prepare"]),
             *({"kind": "workspace_failure", "path": wanted[int(step.rsplit("-", 1)[1]) - 1][0], "detail": message}
-              for step, found in failures.items() for message in found)]
+              for step, found in failures.items() for message in found),
+            *(result.get("gaps") or ())]  # and what the copy left out (`container.copy_perimeter`)
     part = _contract(result, runs, back, work_dir, wanted, states, list(units), failures)
     return {**part, **({"gaps": gaps} if gaps else {})}
 

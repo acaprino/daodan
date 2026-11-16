@@ -172,7 +172,8 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                                f"{(answers[0]['stderr'] if answers else '').strip()[-400:] or 'no answer'}")
         # the preparation's gaps ride on the first answer
         gaps += (preparation.missing(answers[0]["stderr"]) + preparation.restore_gaps(answers[0]["stderr"])
-                 + preparation.generation_gaps(answers[0]["stderr"]))
+                 + preparation.generation_gaps(answers[0]["stderr"])
+                 + list(result.get("gaps") or ()))  # and what the copy left out (`container.copy_perimeter`)
         roots = [result["root"]] * len(answers)
         # A command that failed resolving from hosts its own answer declares (`retry`) runs again reaching them.
         failed = [n for n, answer in enumerate(answers) if n and answer["returncode"] != 0]

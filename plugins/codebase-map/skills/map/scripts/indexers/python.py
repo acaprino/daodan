@@ -495,4 +495,4 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
            "image": IMAGE, "index": str(output) if done else None,
            "index_bytes": output.stat().st_size if output.is_file() else 0}
     return {**run, **_facts(held["environment"], held["packages"], held["config"], (name, version)),
-            "gaps": held["gaps"]}
+            "gaps": [*held["gaps"], *(result.get("gaps") or ())]}  # and what the copy left out

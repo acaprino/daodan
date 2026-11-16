@@ -515,7 +515,8 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
     missing = preparation.missing(prepared)
     if jdk and any(gap["tool"] == "java" and gap["version"] == jdk["version"] for gap in missing):
         used = JDK  # the head ran with the image's JDK
-    gaps = chains["gaps"] + sdk["gaps"] + missing + preparation.restore_gaps(prepared)
+    gaps = chains["gaps"] + sdk["gaps"] + missing + preparation.restore_gaps(prepared) + list(
+        result.get("gaps") or ())  # and what the copy left out (`container.copy_perimeter`)
     return {**judged(result, prepared, used), **({"gaps": gaps} if gaps else {})}, runs, out
 
 

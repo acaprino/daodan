@@ -590,6 +590,14 @@ class ObserveTest(unittest.TestCase):
         self.assertEqual(result["facts"]["processes"], 1)
         self.assertIn('echo "$? $(( $(date +%s) - s ))" > $OUT/tests-0.code', self.script("execute"))
 
+    def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_run(self):
+        """A link Git tracks to outside the project stays out of the copy (`container.copy_perimeter`)."""
+        left = {"kind": "link_outside", "path": "x.rs", "target": "../y.rs", "detail": "x.rs links outside"}
+        copied = container.copy_perimeter
+        self.play_run()
+        with mock.patch.object(container, "copy_perimeter", lambda *given: {**copied(*given), "gaps": [left]}):
+            self.assertIn(left, self.observe()["gaps"])
+
     def test_the_preparation_reaches_the_hosts_the_project_declares(self):
         self.play_run()
         self.observe(declared=("crates.corp.example",))

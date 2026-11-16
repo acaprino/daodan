@@ -616,7 +616,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
                            for url, digest, name in [*chains["files"], *needs["files"]]}})
     log = out_dir / "prepare.log"
     prepared = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
-    gaps = chains["gaps"] + preparation.missing(prepared) + preparation.restore_gaps(prepared)
+    gaps = chains["gaps"] + preparation.missing(prepared) + preparation.restore_gaps(prepared) + list(
+        result.get("gaps") or ())  # and what the copy left out (`container.copy_perimeter`)
     return {**_contract(result, back, work_dir, states), **({"gaps": gaps} if gaps else {})}
 
 

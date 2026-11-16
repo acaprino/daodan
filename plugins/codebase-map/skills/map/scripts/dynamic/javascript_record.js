@@ -14,8 +14,9 @@
 // With DYN_BABEL the preload also puts the plugin where the code is compiled, and
 // the project is not changed:
 // - a source Node runs as written (CommonJS through Module._compile, ES modules
-//   through module.registerHooks, where Node has it; TypeScript Node strips itself,
-//   stripped here first by module.stripTypeScriptTypes) is printed by that Babel;
+//   through module.registerHooks, else through the hooks module.register runs on a
+//   thread of their own; TypeScript Node strips itself, stripped here first by
+//   module.stripTypeScriptTypes) is printed by that Babel;
 // - a @babel/core the run loads itself (babel-jest, @babel/register) gets the plugin
 //   in every transform;
 // - code another tool printed (ts-jest, Vitest's Vite, a TypeScript loader), on its
@@ -107,11 +108,10 @@ function shifted(map, by) {
   return { ...map, mappings: out + mappings.slice(at) };
 }
 
-// The plugin where the code is compiled: see the head of the file. A project file whose
-// code runs as it is goes to `unobserved`; `starts` is the cache of the function it returns.
-function hook(babelPath, unobserved, starts) {
+// `recorded(code, filename, sourceType, prefix, typescript)`: `code` of `filename` as it runs here, printed by
+// the Babel at `babelPath` (see `hook`); a project file whose code runs as it is goes to `unobserved`.
+function printer(babelPath, unobserved) {
   const Module = require('module');
-  const vm = require('vm');
   const own = require(babelPath);
   const MAP = /^[ \t]*\/\/[#@] sourceMappingURL=(data:application\/json[^\s,]*,\S+)[ \t]*$/gm;
   const print = (code, filename, sourceType, origin) => own.transformSync(code, {
@@ -123,7 +123,7 @@ function hook(babelPath, unobserved, starts) {
   // tool printed it with an inline map; else as it is, and named. `prefix`: the columns a wrapper added to line 0.
   // TypeScript Node strips itself (`typescript`) is stripped here first, as Node does: the types become blanks,
   // so the code keeps the places of the file as written.
-  const recorded = (code, filename, sourceType, prefix, typescript) => {
+  return (code, filename, sourceType, prefix, typescript) => {
     const file = typeof code === 'string' && typeof filename === 'string' && relative(filename);
     if (!file || code.includes('globalThis.__dyn')) return code;   // not the project's, or printed with the plugin
     try {
@@ -142,6 +142,33 @@ function hook(babelPath, unobserved, starts) {
     unobserved.add(file);
     return code;
   };
+}
+
+// An ES module Node's loader `loaded` at `url`, printed by `recorded` when it is a project file.
+function esm(url, loaded, recorded) {
+  const typescript = loaded.format === 'module-typescript';
+  if ((loaded.format !== 'module' && !typescript) || loaded.source == null || !url.startsWith('file://')) return loaded;
+  const source = String(loaded.source);
+  const printed = recorded(source, fileURLToPath(url), 'module', 0, typescript);
+  return printed === source ? loaded : { ...loaded, format: 'module', source: printed };
+}
+
+// The hooks `module.register` runs on a thread of their own (Node 18.19 and 20.6 to 22.14, before
+// module.registerHooks): they load this file to print there, and install nothing.
+const HOOKS = `import { createRequire } from 'node:module';
+globalThis.__dynHooks = true;
+const own = createRequire(${JSON.stringify(__filename)})(${JSON.stringify(__filename)});
+const recorded = own.printer(process.env.DYN_BABEL, new Set());
+export async function load(url, context, nextLoad) { return own.esm(url, await nextLoad(url, context), recorded); }
+`;
+
+// The plugin where the code is compiled: see the head of the file. A project file whose
+// code runs as it is goes to `unobserved`; `starts` is the cache of the function it returns.
+function hook(babelPath, unobserved, starts) {
+  const Module = require('module');
+  const vm = require('vm');
+  const own = require(babelPath);
+  const recorded = printer(babelPath, unobserved);
   // A TypeScript format of Node's loaders -> the format of the code once stripped, and how Babel reads it.
   const STRIPPED = { 'commonjs-typescript': ['commonjs', 'script'], 'module-typescript': ['module', 'module'],
     typescript: [undefined, 'unambiguous'] };
@@ -152,16 +179,9 @@ function hook(babelPath, unobserved, starts) {
     return compile.call(this, printed, filename, printed === content ? format : stripped, ...rest);
   };
   if (typeof Module.registerHooks === 'function') {
-    Module.registerHooks({
-      load(url, context, nextLoad) {
-        const loaded = nextLoad(url, context);
-        const typescript = loaded.format === 'module-typescript';
-        if ((loaded.format !== 'module' && !typescript) || loaded.source == null || !url.startsWith('file://')) return loaded;
-        const source = String(loaded.source);
-        const printed = recorded(source, fileURLToPath(url), 'module', 0, typescript);
-        return printed === source ? loaded : { ...loaded, format: 'module', source: printed };
-      },
-    });
+    Module.registerHooks({ load: (url, context, nextLoad) => esm(url, nextLoad(url, context), recorded) });
+  } else if (typeof Module.register === 'function') {
+    Module.register(`data:text/javascript,${encodeURIComponent(HOOKS)}`);
   }
   // The vm functions the runners evaluate a module with (Jest's compileFunction, Vitest's runInThisContext and
   // Script): a negative columnOffset is a wrapper's prefix on line 0, which the printed code no longer has.
@@ -459,6 +479,6 @@ function plugin({ types: t }) {
   };
 }
 
-if (process.env.DYN_OUT && ROOT && !globalThis.__dynC) install(process.env.DYN_OUT);
+if (process.env.DYN_OUT && ROOT && !globalThis.__dynC && !globalThis.__dynHooks) install(process.env.DYN_OUT);
 
-module.exports = plugin;
+module.exports = Object.assign(plugin, { printer, esm });   // the plugin, and what the hooks' thread prints with

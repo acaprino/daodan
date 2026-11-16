@@ -233,6 +233,19 @@ class EachBuildTests:
                         for path in fs.rglob(name) if "tools" not in path.parts} - {"."}, key=len)
         self.assertNotIn("services/shop", roots)  # the second run holds only its own folder
 
+    def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_build(self):
+        """A link Git tracks to outside the project stays out of the copy (`container.copy_perimeter`): a gap of
+        the build beside the preparation's own."""
+        left = {"kind": "link_outside", "path": "x.java", "target": "../y.java", "detail": "x.java links outside"}
+        copied = container.copy_perimeter
+        self.play_success()
+        self.play("prepare", files={f"{jvm.KEPT.lstrip('/')}/index.scip": self.fixture / "index.scip"},
+                  text=log(("index", 0, "[INFO] BUILD SUCCESS")) + "DAODAN-MISSING gradle@1.0\n")
+        with mock.patch.object(container, "copy_perimeter", lambda *given: {**copied(*given), "gaps": [left]}):
+            gaps = self.index().get("gaps", [])
+        self.assertIn(left, gaps)
+        self.assertIn("toolchain_unavailable", [gap["kind"] for gap in gaps])
+
     def test_a_build_that_fails_keeps_the_others_and_says_which_failed(self):
         shutil.copytree(self.project, self.scratch / "second")
         shutil.move(str(self.scratch / "second"), str(self.project / "services/shop"))

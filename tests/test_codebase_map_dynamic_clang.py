@@ -381,6 +381,14 @@ class ObserveTest(unittest.TestCase):
         self.assertEqual((run["root"], run["runner"], run["argv"], run["state"], run["exit_code"], run["tests"]),
                          (".", "ctest", observer.ARGV, "ran", 0, {"passed": 1, "failed": 0}))
 
+    def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_run(self):
+        """A link Git tracks to outside the project stays out of the copy (`container.copy_perimeter`)."""
+        left = {"kind": "link_outside", "path": "x.h", "target": "../y.h", "detail": "x.h links outside"}
+        copied = container.copy_perimeter
+        self.play_run()
+        with mock.patch.object(container, "copy_perimeter", lambda *given: {**copied(*given), "gaps": [left]}):
+            self.assertIn(left, self.observe()["gaps"])
+
     def test_the_build_is_a_debug_build_and_ctest_runs_under_callgrind_with_no_network(self):
         self.play_run()
         self.observe()

@@ -596,6 +596,13 @@ class ObserveTest(FakeEngineTest):
         execution = self.created()[2]
         self.assertEqual(execution[execution.index("--network") + 1], "none")
 
+    def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_run(self):
+        """A link Git tracks to outside the project stays out of the copy (`container.copy_perimeter`)."""
+        left = {"kind": "link_outside", "path": "x.java", "target": "../y.java", "detail": "x.java links outside"}
+        copied = container.copy_perimeter
+        with mock.patch.object(container, "copy_perimeter", lambda *given: {**copied(*given), "gaps": [left]}):
+            self.assertIn(left, self.observe(suites=self.suite(2))["gaps"])
+
     def test_each_way_the_tests_end_is_a_gap_with_its_cause(self):
         cases = [({"code": "1", "suites": self.suite(3, failures=1)}, "ran", ["tests_failed"]),
                  ({"code": "0", "suites": self.suite(3, errors=2)}, "ran", ["tests_failed"]),  # Maven ignores them
