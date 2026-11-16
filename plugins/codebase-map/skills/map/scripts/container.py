@@ -108,6 +108,8 @@ BESIDE = contextvars.ContextVar("beside", default=None)  # `beside`'s services, 
 HEALTH_EVERY = 30.0  # Docker's and Podman's `--health-interval` when a service declares none, in seconds
 DURATION = re.compile(r"(\d+(?:\.\d*)?|\.\d+)(ns|us|µs|ms|s|m|h)")  # Go's `time.ParseDuration`, unsigned
 UNITS = {"ns": 1e-9, "us": 1e-6, "µs": 1e-6, "ms": 1e-3, "s": 1.0, "m": 60.0, "h": 3600.0}
+REACH = ("import socket, sys\nfor port in sys.argv[1:]:\n"
+         "    socket.create_connection(('127.0.0.1', int(port)), 2).close()")  # `reached`: each port answers
 # Runs in its own container; argv: port, then the allowed hosts. Prints "ready <port>".
 PROXY_SCRIPT = r'''
 import select, socket, sys, threading
@@ -770,8 +772,9 @@ def beside(services: list[dict], env: dict[str, str]):
     """Within it every `run_in_container` starts `services` in the pod its execution joins and gives both phases
     `env` under its caller's variables: the dynamic step's, so the tests of every observer get the services the
     project's CI declares and the variables its jobs give them. Each service is `{name, image, host, env, args,
-    command}` (`args` options of `create`, `command` the image's command replaced when not empty); the pod's hosts
-    name 127.0.0.1 for a `host` other than localhost (the module's docstring). It yields the list each run within
+    command}` (`args` options of `create`, `command` the image's command replaced when not empty), with `aliases`
+    and `wait` where it has them (`start_services`); the pod's hosts name 127.0.0.1 for a `host` or an alias other
+    than localhost (the module's docstring). It yields the list each run within
     extends with its result's `services`, wherever its record lies."""
     started: list[dict] = []
     token = BESIDE.set((list(services), dict(env), started))
@@ -812,11 +815,30 @@ def seconds(duration: str, default: float) -> float:
         if parts and not DURATION.sub("", duration) else default
 
 
+def exposed(run: Callable, image: str) -> list[str]:
+    """The TCP ports `image` exposes (`EXPOSE`), which GitLab's runner waits for."""
+    answer = run("image", "inspect", "--format", "{{json .Config.ExposedPorts}}", image, timeout=120)
+    ports = json.loads(answer.stdout or "null") if answer.returncode == 0 else None
+    return sorted((key.split("/")[0] for key in ports or {} if key.endswith("/tcp")), key=int)
+
+
+def reached(run: Callable, network: str, ports: list[str]) -> bool:
+    """Whether each of `ports` accepts a connection at the localhost of `network`, asked from a container of the
+    pod's own image in it, as GitLab's runner asks from a container beside the service."""
+    try:
+        return run("run", "--rm", "--network", network, "--memory", str(64 * 2**20), "--pids-limit", "16",
+                   "--security-opt", "no-new-privileges", PROXY_IMAGE, "python3", "-c", REACH, *ports,
+                   timeout=60).returncode == 0
+    except subprocess.TimeoutExpired:
+        return False
+
+
 def start_services(run: Callable, services: list[dict], network: str, limits: dict, token: str,
                    scheduled: bool = True) -> list[dict]:
     """The pinned `services` (`beside`'s, each with `pinned`) created in `network` and started, then
     awaited as GitHub's runner awaits a service container: ready once running, or once healthy where it has a
-    health check; failed, with the cause, when it stops, turns unhealthy or is still starting after
+    health check, and with `wait` `ports` once the ports its image exposes accept a connection (GitLab's runner,
+    `exposed`, `reached`); failed, with the cause, when it stops, turns unhealthy or is still waited for after
     `SERVICE_WAIT` seconds. The containers are `daodan-svc-<token>-<n>`; a record row each. `scheduled` False is
     an engine that may run no check by itself (Podman, on systemd's timers): each check runs from here
     (`healthcheck run`) at its interval, the engine's timer off, its retries counted by the engine."""
@@ -840,9 +862,9 @@ def start_services(run: Callable, services: list[dict], network: str, limits: di
             checked(run("start", box), "start")
         except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
             row.update(outcome="failed", cause=str(error))
-        rows.append((row, box, clock, every))
-    for row, box, clock, every in rows:
-        due = clock  # Podman runs a check as soon as the container starts, then at each interval
+        rows.append((row, box, clock, every, service.get("wait")))
+    for row, box, clock, every, wait in rows:
+        due, ports = clock, None  # Podman runs a check as soon as the container starts, then at each interval
         while "outcome" not in row:
             if every is not None and time.monotonic() >= due:
                 run("healthcheck", "run", box, timeout=120)  # its code is the check's: the state says it
@@ -850,7 +872,15 @@ def start_services(run: Callable, services: list[dict], network: str, limits: di
             said = run("inspect", "--format", SERVICE_STATE, box, timeout=60).stdout.decode("utf-8", "replace")
             status, _, health = said.strip().partition(" ")
             if status == "running" and health in ("", "healthy"):
-                row["outcome"] = "ready"
+                if wait == "ports" and ports is None:
+                    ports = exposed(run, row["pinned"])
+                if not ports or reached(run, network, ports):
+                    row["outcome"] = "ready"
+                elif time.monotonic() - clock > SERVICE_WAIT:
+                    row.update(outcome="failed", cause=f"its ports {' '.join(ports)} accepted no connection in "
+                                                       f"{SERVICE_WAIT} s")
+                else:
+                    time.sleep(1)
             elif status != "running" or health == "unhealthy":
                 logs = run("logs", "--tail", "5", box, timeout=60)
                 tail = " | ".join(line.strip() for line in (logs.stdout + logs.stderr).decode("utf-8", "replace")
@@ -963,8 +993,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 pod = f"daodan-pod-{token}"
                 cleanup[:0] = [*(("rm", "-f", f"daodan-svc-{token}-{n}") for n in range(len(pinned))),
                                ("rm", "-f", pod)]
-                hosts = sorted({f"--add-host={s['host']}:127.0.0.1" for s in pinned
-                                if s.get("host") not in (None, "localhost")})
+                hosts = sorted({f"--add-host={name}:127.0.0.1" for s in pinned
+                                for name in (s.get("host"), *s.get("aliases", ())) if name not in (None, "localhost")})
                 try:
                     checked(cli(found, "create", "--name", pod, "--network", "none", *hosts, "--memory",
                                 str(64 * 2**20), "--pids-limit", "16", PROXY_IMAGE, "sleep", str(int(timeout) + 600)),

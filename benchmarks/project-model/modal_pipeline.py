@@ -207,6 +207,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                                                                               prepare_timeout)})
                         except (RuntimeError, subprocess.TimeoutExpired) as error:
                             served += failed([service], error)
+                    if any(s.get("wait") == "ports" for s in pinned):  # the image their ports are asked from
+                        container.pin(_docker(boxes[-1]), container.PROXY_IMAGE, prepare_timeout)
                     _quiet(boxes[-1])
                 except (RuntimeError, subprocess.TimeoutExpired) as error:
                     said = {item["name"] for item in served}
@@ -226,7 +228,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         if pinned:
             try:
                 _daemon(boxes[-1])
-                names = sorted({s["host"] for s in pinned if s.get("host") not in (None, "localhost")})
+                names = sorted({name for s in pinned for name in (s.get("host"), *s.get("aliases", ()))
+                                if name not in (None, "localhost")})
                 if names:  # a service reached by its name, as the pod's hosts name it
                     boxes[-1].exec("sh", "-c", f"printf '127.0.0.1 %s\\n' {shlex.join(names)} >> /etc/hosts").wait()
                 served += container.start_services(_docker(boxes[-1]), pinned, "host",

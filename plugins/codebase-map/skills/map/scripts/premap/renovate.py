@@ -20,6 +20,15 @@ each service a job declares
 (`jobs.<id>.services`) as the file writes it, with `host`, where the job's steps reach it (GitHub's rule: localhost
 on the runner, its name from a job that runs in a container), and `job_env`, the variables the workflow and the
 job give the steps. A service whose image is empty does not start, and is none.
+
+Where `.gitlab-ci.yml` names `services` or includes files, the same command reads it: each service a job runs with
+(its own, its templates' through `extends`, else `default:`'s unless it inherits none) is a `services` fact as
+GitLab's runner gives it (docs.gitlab.com/ci/services, /ci/yaml): `host` and `aliases`, the names the job reaches
+it by (its aliases, then its image without tag and registry port, `/` as `__` and as `-`); `env`, the job's
+variables and its own; `job_env`, the job's (the global ones it inherits, its templates', its own), each expanded
+once as the runner expands it, `computed` naming those that reference a variable the file does not define;
+`entrypoint` and `command` as written; `wait` `ports`, the runner's wait for the ports its image exposes. A file
+the pipeline includes is not read: an `include_not_read` gap names it.
 """
 from __future__ import annotations
 
@@ -48,14 +57,22 @@ CANON = {"nodejs": "node", "golang": "go", "rustc": "rust", "cpython": "python",
          "temurin": "java", "openjdk": "java", "node.js": "node", "gradle-wrapper": "gradle",
          "hashicorp/terraform": "terraform", "dotnet-sdk": "dotnet"}
 WORKFLOWS = ".github/workflows"  # where GitHub reads a repository's workflows
+GITLAB = ".gitlab-ci.yml"  # where GitLab reads a project's pipeline, unless the project's settings name another
 SERVICES = re.compile(r"""["']?\bservices["']?\s*:""")  # a workflow that may declare a service container
+INCLUDE = re.compile(r"""(?m)^["']?include["']?\s*:""")  # a pipeline that includes files, which may declare one
 # Renovate's YAML library, beside the Renovate on the path: yaml 2.9.1, the version Renovate 44.239.1 pins
 YAML = '"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/yaml/bin.mjs"'
 # Each workflow of the copy, then its document as JSON, or `null` and the library's message on stderr.
-EACH = (f'for f in {WORKFLOWS}/*.yml {WORKFLOWS}/*.yaml; do [ -f "$f" ] || continue; echo "$f"; '
+EACH = (f'for f in {WORKFLOWS}/*.yml {WORKFLOWS}/*.yaml {GITLAB}; do [ -f "$f" ] || continue; echo "$f"; '
         f'node {YAML} --json --single --strict --merge < "$f" 2> /tmp/daodan-yaml.err'
         ' || { echo null; sed "s|^|$f: |" /tmp/daodan-yaml.err >&2; }; done')
 SERVICE_KEYS = ("env", "ports", "options", "command", "entrypoint", "volumes")  # what a service's job writes for it
+# GitLab's global keywords (docs.gitlab.com/ci/yaml): every other top-level key not starting with `.` is a job
+GITLAB_KEYWORDS = {"default", "include", "stages", "variables", "workflow", "image", "services", "cache",
+                   "before_script", "after_script", "spec"}
+NAME_PORT = re.compile(r"^(.*?)(|:[0-9]+)(|/.*)$")  # gitlab-runner's `referenceRegexpNoPort`: a registry's port
+SPECIAL = set("*#$@!?-0123456789")  # the parameters Go's `os.Expand` names with one character
+ALNUM = re.compile(r"[A-Za-z0-9_]*")  # a name after `$`, as `os.Expand` scans it
 
 
 # Renovate's docker versioning (lib/modules/versioning/docker): a tag is a version, past a `v`, up to its first
@@ -93,6 +110,9 @@ def commands(context):
     named = folder.is_dir() and not folder.is_symlink() and any(
         SERVICES.search(path.read_text(encoding="utf-8", errors="replace"))
         for path in sorted(folder.glob("*.y*ml")) if path.is_file() and not path.is_symlink())
+    pipeline = context.root / GITLAB
+    named = named or pipeline.is_file() and not pipeline.is_symlink() and any(
+        pattern.search(pipeline.read_text(encoding="utf-8", errors="replace")) for pattern in (SERVICES, INCLUDE))
     workflows = [{"tool": "renovate", "argv": ["sh", "-c", EACH], "cwd": ".", "env": {}, "network": "none"}] \
         if named else []
     return [{"tool": "renovate", "argv": ["renovate", "--platform=local", "--dry-run=extract", "--report-type=file",
@@ -120,6 +140,128 @@ def _services(rel: str, doc) -> list[dict]:
     return found
 
 
+def _shell_name(text: str) -> tuple[str, int]:
+    """The name after a `$` and the characters it takes, as Go's `os.Expand` reads them (`getShellName`)."""
+    if text[0] == "{":
+        if len(text) > 2 and text[1] in SPECIAL and text[2] == "}":
+            return text[1], 3
+        end = text.find("}", 1)
+        return ("", 1) if end < 0 else ("", 2) if end == 1 else (text[1:end], end + 1)
+    if text[0] in SPECIAL:
+        return text[0], 1
+    name = ALNUM.match(text).group()
+    return name, len(name)
+
+
+def _text(value) -> str:
+    return json.dumps(value) if isinstance(value, bool) else "" if value is None else str(value)
+
+
+def _expand(text: str, variables: dict) -> tuple[str, list[str]]:
+    """`text` as gitlab-runner expands a variable's value (`ExpandValue`: Go's `os.Expand` over the job's
+    variables as written; `$$` is a dollar, another one-character parameter nothing), and the names it references
+    that `variables` does not hold: the CI's own (its predefined variables, the project's settings)."""
+    out, unknown, i, j = [], [], 0, 0
+    while j < len(text):
+        if text[j] == "$" and j + 1 < len(text):
+            out.append(text[i:j])
+            name, width = _shell_name(text[j + 1:])
+            if not name and not width:  # no name: the dollar stays
+                out.append("$")
+            elif name == "$":
+                out.append("$")
+            elif name and name not in SPECIAL:
+                if name in variables:
+                    out.append(_text(variables[name]))
+                else:
+                    unknown.append(name)
+            j += width
+            i = j + 1
+        j += 1
+    return "".join(out) + text[i:], unknown
+
+
+def _merged(base: dict, over: dict) -> dict:
+    out = dict(base)
+    for key, value in over.items():
+        out[key] = _merged(out[key], value) if isinstance(out.get(key), dict) and isinstance(value, dict) else value
+    return out
+
+
+def _extended(doc: dict, job: dict, depth: int = 0) -> dict:
+    """`job` over the jobs it `extends`, as GitLab merges them: hashes key by key, every other value replaced, the
+    later template and then the job itself winning; at most 11 levels."""
+    parents, merged = job.get("extends"), {}
+    for name in [parents] if isinstance(parents, str) else parents if isinstance(parents, list) else []:
+        if isinstance(doc.get(name), dict) and depth < 11:
+            merged = _merged(merged, _extended(doc, doc[name], depth + 1))
+    return _merged(merged, {key: value for key, value in job.items() if key != "extends"})
+
+
+def _inherits(job: dict, kind: str, key: str) -> bool:
+    """Whether `job` takes `key` of the pipeline's `default:` (`kind` default) or global `variables` (`inherit`)."""
+    said = job["inherit"].get(kind, True) if isinstance(job.get("inherit"), dict) else True
+    return key in said if isinstance(said, list) else said is not False
+
+
+def _hosts(image: str, alias) -> list[str]:
+    """The names gitlab-runner gives a service: its aliases (spaces or commas between them), then its image
+    without tag, digest and registry port, with `/` as `__`, then as `-` (`services.SplitNameAndVersion`)."""
+    name = image.split("@", 1)[0]
+    head, colon, tag = name.rpartition(":")
+    match = NAME_PORT.match(head if colon and "/" not in tag else name)
+    service = match.group(1) + match.group(3)
+    return list(dict.fromkeys([*(part for part in re.split(r"[\s,]+", str(alias or "")) if part),
+                               service.replace("/", "__"), service.replace("/", "-")]))
+
+
+def _gitlab(rel: str, doc) -> tuple[list[dict], list[dict]]:
+    """Each service a job of GitLab's pipeline `doc` runs with, as GitLab gives it (the module's docstring), and a
+    gap for each file the pipeline includes."""
+    if not isinstance(doc, dict):
+        return [], []
+    include = doc.get("include")
+    gaps = [{"kind": "include_not_read", "path": rel, "include": item,
+             "detail": f"{rel} includes {json.dumps(item)}: Daodan does not read it, and the services its jobs "
+                       "declare do not start"}
+            for item in ([include] if isinstance(include, (str, dict)) else include if isinstance(include, list) else [])]
+    default = doc["default"] if isinstance(doc.get("default"), dict) else {}
+    top = doc["variables"] if isinstance(doc.get("variables"), dict) else {}
+    found = []
+    for job_id, job in doc.items():
+        if job_id in GITLAB_KEYWORDS or str(job_id).startswith(".") or not isinstance(job, dict):
+            continue
+        job = _extended(doc, job)
+        declared = job["services"] if "services" in job else (
+            default.get("services", doc.get("services")) if _inherits(job, "default", "services") else None)
+        if "script" not in job or not isinstance(declared, list):
+            continue
+        written = {**{key: value for key, value in top.items() if _inherits(job, "variables", key)},
+                   **(job["variables"] if isinstance(job.get("variables"), dict) else {})}
+        given = {key: value.get("value") if isinstance(value, dict) else value for key, value in written.items()}
+        variables, computed = {}, []
+        for key, value in given.items():  # `expand: false` keeps a value as written
+            text, unknown = _expand(value, given) if isinstance(value, str) and not (
+                isinstance(written[key], dict) and written[key].get("expand") is False) else (value, [])
+            variables[key] = value if unknown else text
+            computed += [key] if unknown else []
+        for index, service in enumerate(declared):
+            service = {"name": service} if isinstance(service, str) else service
+            if not isinstance(service, dict) or not service.get("name"):
+                continue
+            image, unknown = _expand(str(service["name"]), given)
+            image = str(service["name"]) if unknown else image
+            hosts = _hosts(image, service.get("alias"))
+            own = service["variables"] if isinstance(service.get("variables"), dict) else {}
+            found.append({"name": hosts[0], "image": image, "declared_in": f"{rel}#{job_id}.services.{index}",
+                          "host": hosts[0], **({"aliases": hosts[1:]} if hosts[1:] else {}),
+                          **({"env": {**variables, **own}} if variables or own else {}),
+                          **{key: service[key] for key in ("entrypoint", "command") if service.get(key)},
+                          **({"job_env": variables} if variables else {}),
+                          **({"computed": computed} if computed else {}), "wait": "ports"})
+    return found, gaps
+
+
 def _workflows(answer: dict) -> tuple[list[dict], list[dict]]:
     """The services the workflows' jobs declare, and a gap for a workflow the library could not read."""
     if answer["returncode"] != 0:
@@ -133,6 +275,9 @@ def _workflows(answer: dict) -> tuple[list[dict], list[dict]]:
             said = next((line for line in said if re.match(r"\w+Error: ", line)), said[-1] if said else "")
             gaps.append({"kind": "model_failed", "path": rel,
                          "detail": f"{rel}: Renovate's YAML library does not read it: {said[:400]}"})
+        elif rel == GITLAB:
+            found, said = _gitlab(rel, doc)
+            services, gaps = services + found, gaps + said
         else:
             services += _services(rel, doc)
     return services, gaps

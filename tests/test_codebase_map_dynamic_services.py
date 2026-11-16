@@ -139,6 +139,61 @@ def test_a_workflow_the_yaml_library_cannot_read_is_a_gap_with_its_message(tmp_p
                                   "column 9:")
 
 
+# A GitLab pipeline as Renovate's YAML library prints it: a job extends a hidden one, others take `default:`'s
+# services or none, one inherits a single global variable; its variables reference each other and GitLab's own.
+GITLAB = {
+    "include": [{"template": "Security/SAST.gitlab-ci.yml"}, "ci/extra.yml"],
+    "stages": ["test"],
+    "variables": {"POSTGRES_DB": "app", "POSTGRES_USER": "runner", "POSTGRES_HOST_AUTH_METHOD": "trust",
+                  "DATABASE_URL": "postgres://$POSTGRES_USER@postgres:5432/${POSTGRES_DB}",
+                  "CACHE_DIR": "$CI_PROJECT_DIR/.cache", "PRICE": "5$$",
+                  "LEVEL": {"value": "debug", "description": "the log level"}, "RAW": {"value": "$HOME", "expand": False}},
+    "default": {"services": ["redis:7"]},
+    ".db": {"services": [{"name": "postgres:16-alpine", "alias": "db, pg"}], "variables": {"NODE_ENV": "test"}},
+    "test": {"extends": ".db", "image": "node:22", "variables": {"NODE_ENV": "ci"}, "script": ["npm test"]},
+    "e2e": {"services": [{"name": "registry.example.com:5000/team/mailer:2", "entrypoint": ["/bin/mailer", "--fast"],
+                          "command": ["serve"], "variables": {"MAIL_PORT": 1025}}],
+            "inherit": {"variables": ["POSTGRES_DB"]}, "script": ["npm run e2e"]},
+    "lint": {"inherit": {"default": False}, "script": ["npm run lint"]},
+    "unit": {"script": ["npm run unit"]}}
+GLOBAL = {"POSTGRES_DB": "app", "POSTGRES_USER": "runner", "POSTGRES_HOST_AUTH_METHOD": "trust",
+          "DATABASE_URL": "postgres://runner@postgres:5432/app", "CACHE_DIR": "$CI_PROJECT_DIR/.cache", "PRICE": "5$",
+          "LEVEL": "debug", "RAW": "$HOME"}
+GITLAB_DB = {"name": "db", "image": "postgres:16-alpine", "declared_in": ".gitlab-ci.yml#test.services.0", "host": "db",
+             "aliases": ["pg", "postgres"], "env": {**GLOBAL, "NODE_ENV": "ci"}, "job_env": {**GLOBAL, "NODE_ENV": "ci"},
+             "computed": ["CACHE_DIR"], "wait": "ports"}
+GITLAB_MAILER = {"name": "registry.example.com__team__mailer", "image": "registry.example.com:5000/team/mailer:2",
+                 "declared_in": ".gitlab-ci.yml#e2e.services.0", "host": "registry.example.com__team__mailer",
+                 "aliases": ["registry.example.com-team-mailer"], "env": {"POSTGRES_DB": "app", "MAIL_PORT": 1025},
+                 "entrypoint": ["/bin/mailer", "--fast"], "command": ["serve"], "job_env": {"POSTGRES_DB": "app"},
+                 "wait": "ports"}
+
+
+def test_renovate_reads_gitlab_s_pipeline_where_it_names_services_or_includes_files(tmp_path):
+    for case, text, read in (("a", "test:\n  services: [postgres]\n", True), ("b", "include: ci/x.yml\n", True),
+                             ("c", "test:\n  script: [make]\n", False)):
+        with context_of(tmp_path / case, {"package.json": "{}\n", ".gitlab-ci.yml": text}) as context:
+            commands = renovate.commands(context)
+        assert [command["argv"][0] for command in commands] == ["renovate", *(["sh"] if read else [])], case
+        assert not read or renovate.GITLAB in commands[1]["argv"][-1]
+
+
+def test_each_service_a_gitlab_job_runs_with_is_a_fact_with_the_names_and_variables_its_runner_gives_it(tmp_path):
+    """GitLab's rules (docs.gitlab.com/ci/services, /ci/yaml): a job's services are its own, its templates'
+    (`extends`) or `default:`'s unless it inherits none; the runner names a service by its aliases and by its
+    image without tag and registry port (`/` as `__`, then as `-`), passes it the job's variables and its own,
+    and awaits the ports its image exposes. Variables expand one another once (the runner's `ExpandValue`, `$$`
+    a dollar); one that references a variable the file does not define is the CI's (`computed`). An included file
+    is not read: a gap names it."""
+    out = read_services(tmp_path, f".gitlab-ci.yml\n{json.dumps(GITLAB)}\n")
+    assert out["facts"]["services"] == [GITLAB_DB, GITLAB_MAILER, {
+        "name": "redis", "image": "redis:7", "declared_in": ".gitlab-ci.yml#unit.services.0", "host": "redis",
+        "env": GLOBAL, "job_env": GLOBAL, "computed": ["CACHE_DIR"], "wait": "ports"}]
+    assert [(gap["kind"], gap["path"], gap["include"]) for gap in out["gaps"]] == [
+        ("include_not_read", ".gitlab-ci.yml", {"template": "Security/SAST.gitlab-ci.yml"}),
+        ("include_not_read", ".gitlab-ci.yml", "ci/extra.yml")]
+
+
 def test_a_service_is_one_fact_per_declaration():
     part = {"source": "renovate", "rank": "reader", "facts": {"services": [TUDUDI, {**TUDUDI, "image": "postgres:17"}]}}
     assert premap.join([part])["services"] == [{**TUDUDI, "sources": ["renovate"]}, {
@@ -187,6 +242,24 @@ def test_what_cannot_run_as_declared_is_a_gap_naming_the_service_and_its_image()
     assert "one" in shared and "two" in shared
 
 
+def test_a_gitlab_service_starts_with_its_names_and_its_runner_s_wait_and_without_what_the_ci_computes():
+    planned = dynamic.services({"services": [GITLAB_DB, GITLAB_MAILER, {**GITLAB_DB, "declared_in": ".gitlab-ci.yml#"
+                                             "x.services.0", "image": "postgres:$PG", "name": "pg2", "host": "pg2"}]})
+    known = {key: value for key, value in GLOBAL.items() if key != "CACHE_DIR"}
+    assert planned["services"] == [  # by declaration: `e2e` before `test`
+        {"name": "registry.example.com__team__mailer", "image": "registry.example.com:5000/team/mailer:2",
+         "host": "registry.example.com__team__mailer", "aliases": ["registry.example.com-team-mailer"],
+         "env": {"POSTGRES_DB": "app", "MAIL_PORT": "1025"}, "args": ["--entrypoint", "/bin/mailer"],
+         "command": ["--fast", "serve"], "wait": "ports"},
+        {"name": "db", "image": "postgres:16-alpine", "host": "db", "aliases": ["pg", "postgres"],
+         "env": {**known, "NODE_ENV": "ci"}, "args": [], "command": [], "wait": "ports"}]
+    assert planned["env"] == {**known, "NODE_ENV": "ci"}
+    said = {(gap["kind"], gap["name"]): gap["detail"] for gap in planned["gaps"]}
+    assert "the CI computes its image" in said[("service_unavailable", "pg2")]
+    assert "it does not get CACHE_DIR, which the CI computes ($CI_PROJECT_DIR/.cache)" in said[("service_incomplete", "db")]
+    assert "the tests do not get CACHE_DIR" in said[("service_incomplete", "db")]
+
+
 # ------------------------------------------------------------------ the container
 
 # Before the container's fake: the service verbs. `registry.json` maps a reference to its RepoDigests (absent: the
@@ -216,8 +289,17 @@ if _args[:1] == ["pull"]:
     _sys.exit(0)
 if _args[:2] == ["image", "inspect"]:
     _log()
-    print(_json.dumps(_read("registry.json", {})[_args[-1]]))
+    _asked = "ports.json" if "{{json .Config.ExposedPorts}}" in _args else "registry.json"
+    print(_json.dumps(_read(_asked, {}).get(_args[-1])))
     _sys.exit(0)
+if _args[:1] == ["run"] and "--rm" in _args:  # a check of a service's ports: `reach.json`, its codes in turn
+    _log()
+    _key = " ".join(_args[_args.index("-c") + 2:])
+    _turns = _state / ("reach-" + _key.replace(" ", "-"))
+    _turn = int(_turns.read_text()) if _turns.is_file() else 0
+    _turns.write_text(str(_turn + 1))
+    _codes = _read("reach.json", {}).get(_key, [0])
+    _sys.exit(_codes[min(_turn, len(_codes) - 1)])
 if _args[:1] == ["create"] and _mine:
     _log()
     (_state / "containers" / _box).mkdir(parents=True)
@@ -360,9 +442,40 @@ class PodTest(unittest.TestCase):
         self.assertEqual([c for c in self.calls() if c[0] == "healthcheck"], [])
 
     def test_a_service_reached_by_name_has_its_name_in_the_pod_s_hosts(self):
-        self.run_operation([{**SPEC, "host": "postgres", "args": []}])
+        self.run_operation([{**SPEC, "host": "postgres", "args": []}, {**SPEC, "name": "cache", "host": "db",
+                                                                         "aliases": ["pg", "postgres"], "args": []}])
         [pod] = self.created("daodan-pod-")
-        self.assertIn("--add-host=postgres:127.0.0.1", pod)
+        self.assertEqual([arg for arg in pod if arg.startswith("--add-host")],
+                         ["--add-host=db:127.0.0.1", "--add-host=pg:127.0.0.1", "--add-host=postgres:127.0.0.1"])
+
+    def test_a_service_of_gitlab_waits_until_the_ports_its_image_exposes_accept_a_connection(self):
+        """GitLab's runner waits for the TCP ports the service's image exposes (docs.gitlab.com/ci/services): a
+        check runs in the pod's namespace, from the pod's own image, until they answer."""
+        waiting = {**SPEC, "args": [], "wait": "ports"}
+        (self.state / "ports.json").write_text(json.dumps({PINNED: {"5432/tcp": {}, "53/udp": {}}}), encoding="utf-8")
+        (self.state / "reach.json").write_text(json.dumps({"5432": [1, 1, 0]}), encoding="utf-8")
+        result = self.run_operation([waiting])
+        self.assertEqual(result["services"][0]["outcome"], "ready", result)
+        checks = [c for c in self.calls() if c[:1] == ["run"]]
+        self.assertEqual(len(checks), 3)  # the ports answer at the third
+        [pod] = self.created("daodan-pod-")
+        self.assertEqual(checks[0][checks[0].index("--network") + 1], f"container:{pod[pod.index('--name') + 1]}")
+        self.assertIn(container.PROXY_IMAGE, checks[0])
+        self.assertEqual(checks[0][-1], "5432")  # TCP only
+        with mock.patch.object(container, "SERVICE_WAIT", 0):
+            shutil.rmtree(self.out)
+            (self.state / "reach.json").write_text(json.dumps({"5432": [1]}), encoding="utf-8")
+            for turns in self.state.glob("reach-*"):
+                turns.unlink()
+            result = self.run_operation([waiting])
+        [service] = result["services"]
+        self.assertEqual(service["outcome"], "failed")
+        self.assertIn("its ports 5432 accepted no connection", service["cause"])
+        shutil.rmtree(self.out)
+        (self.state / "calls.jsonl").unlink()
+        (self.state / "ports.json").write_text(json.dumps({PINNED: None}), encoding="utf-8")
+        self.assertEqual(self.run_operation([waiting])["services"][0]["outcome"], "ready")  # nothing exposed
+        self.assertEqual([c for c in self.calls() if c[:1] == ["run"]], [])
 
     def test_a_service_that_cannot_start_is_recorded_with_its_cause_and_the_tests_run_without_it(self):
         cases = {"pull": ({}, (), "pull access denied"),
@@ -553,17 +666,17 @@ POD = r'''import json, sys
 from pathlib import Path
 sys.path.insert(0, "/daodan/scripts")
 import container
-spec, url, engine = json.loads(sys.argv[1]), sys.argv[2], container.Engine("docker", (sys.argv[3] + "/docker",))
+cases, engine = json.loads(sys.argv[1]), container.Engine("docker", (sys.argv[2] + "/docker",))
 said = {}
-for host in ("localhost", "postgres"):  # on the runner, and from a job's container, by the service's name
-    out = Path(f"/tmp/out-{host}")
-    with container.beside([{**spec, "host": host}], {"DATABASE_URL": url.replace("@localhost:", f"@{host}:")}):
+for label, (spec, url) in cases.items():
+    out = Path(f"/tmp/out-{label}")
+    with container.beside([spec], {"DATABASE_URL": url}):
         result = container.run_in_container(Path("/tmp/project"), ["python3", "/work/probe.py"], engine=engine,
                                             image=container.PROXY_IMAGE, out_dir=out, outputs=["/daodan/out"],
                                             env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=300)
     probe = out / "out" / "probe.json"
-    said[host] = {"result": result, "probe": json.loads(probe.read_text()) if probe.is_file() else None,
-                  "rows": [json.loads(line) for line in (out / container.RECORD_NAME).read_text().splitlines()]}
+    said[label] = {"result": result, "probe": json.loads(probe.read_text()) if probe.is_file() else None,
+                   "rows": [json.loads(line) for line in (out / container.RECORD_NAME).read_text().splitlines()]}
 said["left"] = container.cli(engine, "ps", "-a", "--format", "{{.Names}}").stdout.decode().split()
 print(json.dumps(said))
 '''
@@ -574,10 +687,17 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
     """`container.run_in_container` itself on a real engine: Docker (`modal_pipeline.DOCKER`) in a Modal VM
     Sandbox as the driver starts it. The service of tududi's CI starts in the pod (`--network container:<pod>`) and
     is awaited; the tests, in the pod too, reach it at localhost and, as a job in a container does, by its name
-    (the pod's hosts); the pod has no network; no container stays."""
+    (the pod's hosts); the pod has no network; no container stays. The same service declared in a GitLab job,
+    with no health check, is awaited as GitLab's runner awaits it, until the port its image exposes answers."""
     import base64
 
     import modal
+    gitlab = {"name": "db", "image": "postgres:16-alpine", "declared_in": ".gitlab-ci.yml#test.services.0",
+              "host": "db", "aliases": ["postgres"], "env": TUDUDI["env"], "wait": "ports"}
+    [planned] = dynamic.services({"services": [gitlab]})["services"]
+    cases = {"localhost": (SPEC, DATABASE_URL),  # on the runner, from a job's container, from a GitLab job
+             "postgres": ({**SPEC, "host": "postgres"}, DATABASE_URL.replace("@localhost:", "@postgres:")),
+             "gitlab": (planned, DATABASE_URL.replace("@localhost:", "@db:"))}
     image = (modal.Image.debian_slim(python_version="3.13").apt_install("git")
              .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__"]))
     with the_driver() as modal_pipeline:
@@ -591,21 +711,20 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
             for path, text in (("/tmp/project/probe.py", PROBE), ("/tmp/pod.py", POD)):
                 assert box.exec("sh", "-c", f"mkdir -p {Path(path).parent.as_posix()} && echo "
                                 f"{base64.b64encode(text.encode()).decode()} | base64 -d > {path}").wait() == 0
-            process = box.exec("python3", "/tmp/pod.py", json.dumps(SPEC), DATABASE_URL, modal_pipeline.ENGINE,
-                               timeout=900)
+            process = box.exec("python3", "/tmp/pod.py", json.dumps(cases), modal_pipeline.ENGINE, timeout=900)
             out, err = process.stdout.read(), process.stderr.read()
             assert process.wait() == 0, err[-3000:]
         finally:
             box.terminate()
     said = json.loads(out)
     print(json.dumps(said, indent=1), flush=True)
-    for host in ("localhost", "postgres"):
-        result, probe, rows = said[host]["result"], said[host]["probe"], said[host]["rows"]
+    for label, (spec, url) in cases.items():
+        result, probe, rows = said[label]["result"], said[label]["probe"], said[label]["rows"]
         assert result["state"] == "done" and result["exit_code"] == 0, result
         assert [s["outcome"] for s in result["services"]] == ["ready"], result
         [service, execute] = rows
         assert service["pinned"].startswith("postgres@sha256:") and service["network"].startswith("container:daodan-pod-")
         assert execute["phase"] == "execute" and execute["network"] == service["network"]
-        assert (probe["host"], probe["port"], probe["session"]) == (host, 5432, "ready")
+        assert (probe["host"], probe["port"], probe["session"]) == (spec["host"], 5432, "ready")
         assert probe["outside"] != "reached"
     assert said["left"] == []

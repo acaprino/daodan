@@ -299,8 +299,9 @@ def _health(options) -> tuple[list[str], str]:
 
 def services(record: dict) -> dict:
     """What the project's CI starts beside its tests, from the pre-map's `services` (GitHub Actions' service
-    containers), as `container.beside` takes it: `services`, each `{name, image, host, env, args,
-    command}`; `env`, the variables the jobs that declare them give their steps, for the tests; `gaps`, what cannot
+    containers, GitLab's services), as `container.beside` takes it: `services`, each `{name, image, host, env, args,
+    command}`, with `aliases` and `wait` where the fact has them; `env`, the variables the jobs that declare them
+    give their steps, for the tests, without those the fact says the CI computes (`computed`); `gaps`, what cannot
     run as declared, each naming the service, its image and its declaration (`path`): `service_unavailable` for one
     that does not start (an image the CI computes, a second definition of a name, which the first's start keeps
     out), `service_incomplete` for one that starts without part of what its job declares (a port mapped to another,
@@ -308,9 +309,9 @@ def services(record: dict) -> dict:
     planned, env, gaps, jobs, first, apart = [], {}, [], set(), {}, set()
     for entry in sorted(record.get("services") or [], key=lambda item: item["declared_in"]):
         name, image, path = entry["name"], entry["image"], entry["declared_in"]
-        notes, job = [], path.split(".services.", 1)[0]
+        notes, job, computed = [], path.split(".services.", 1)[0], set(entry.get("computed") or ())
         for key, value in (entry.get("job_env") or {}).items() if job not in jobs else ():
-            text = _given(value)
+            text = None if key in computed else _given(value)
             if text is None:
                 notes.append(f"the tests do not get {key}, which the CI computes ({value})")
             elif key in env and env[key] != text:
@@ -324,11 +325,11 @@ def services(record: dict) -> dict:
             gaps.append({"kind": kind, "name": name, "image": image, "path": path,
                          "detail": f"{name} ({image}), {path}: {'; '.join(said)}"})
 
-        if EXPRESSION.search(image):
+        if EXPRESSION.search(image) or "$" in image:  # an expression, or a GitLab variable the CI defines
             gap("service_unavailable", ["the CI computes its image, which Daodan does not evaluate: it does not "
                                         "start", *notes])
             continue
-        given = {key: _given(value) for key, value in (entry.get("env") or {}).items()}
+        given = {key: None if key in computed else _given(value) for key, value in (entry.get("env") or {}).items()}
         notes[:0] = [f"it does not get {key}, which the CI computes ({entry['env'][key]})"
                      for key, value in given.items() if value is None]
         for port in entry.get("ports") or ():
@@ -341,10 +342,19 @@ def services(record: dict) -> dict:
         args, other = _health(entry.get("options"))
         if other:
             notes.append(f"options passed to no engine (only the health check is): {other}")
+        # GitHub writes a command and an entrypoint as one string each, GitLab as lists: the engine takes one
+        # program as the entrypoint, the rest of the list before the command
+        entry_point = entry.get("entrypoint")
+        entry_point = [str(word) for word in entry_point] if isinstance(entry_point, list) else \
+            [str(entry_point)] if entry_point else []
+        command = entry.get("command")
+        command = [str(word) for word in command] if isinstance(command, list) else \
+            shlex.split(str(command)) if command else []
         spec = {"name": name, "image": image, "host": entry.get("host") or "localhost",
+                **({"aliases": list(entry["aliases"])} if entry.get("aliases") else {}),
                 "env": {key: value for key, value in given.items() if value is not None},
-                "args": [*args, *(("--entrypoint", str(entry["entrypoint"])) if entry.get("entrypoint") else ())],
-                "command": shlex.split(str(entry["command"])) if entry.get("command") else []}
+                "args": [*args, *(("--entrypoint", entry_point[0]) if entry_point else ())],
+                "command": [*entry_point[1:], *command], **({"wait": entry["wait"]} if entry.get("wait") else {})}
         if name in first and first[name][0] != spec:
             gap("service_unavailable", [f"the service of {first[name][1]} has its name and starts: this one does "
                                         "not"])
