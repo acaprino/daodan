@@ -15,7 +15,8 @@ Convenzioni:
   - `conferma`: 32 casi (`828b5413b`);
   - `jvm-otel-android`: otel-demo, jvm-android-app-lib e mix-poly-firebase, sull'albero di lavoro con il codice poi committato in `39805f5e7`;
   - `jvm-kotlinconf`: kotlinconf, sull'albero di lavoro con il codice poi committato in `22dca6da8`;
-  - `jvm-kotlinconf-kmp`: kotlinconf, sull'albero di lavoro delle 20:18 con il rimedio di D-110 non committato;
+  - `jvm-kotlinconf-kmp`: kotlinconf, sull'albero di lavoro delle 20:18 con il codice poi committato in `a13d55787`;
+  - `dotenv`: tududi e fastapi, con i `.env` tracciati nella copia del container (`b1f14ac08`);
   - `ci-steps`: tududi e fastapi, con i passi della CI prima dei test (`aea1c8c3b`).
 - Nessun risultato registra il codice di Daodan su cui il giro è girato (D-251): il codice del `finale` lo dice il README del benchmark (`benchmarks/project-model/README.md:174`), quello di `java-versions` il commit `347bc1403`, quello dei due giri JVM chi li ha fatti; degli altri giri, nessun testo.
 - I repository veri sono fissati a un commit in `benchmarks/project-model/fixtures/<caso>/source.json`:
@@ -30,7 +31,7 @@ Convenzioni:
   - «solo test»: lo confermano solo le suite, che dal commit `233618aa1` girano su Modal;
   - «da verificare»: nessun commit o risultato lo prova ancora;
   - «in stage»: il lavoro è nell'indice di git, non ancora in un commit.
-- La regola invalicabile di `AGENTS.md` (`2753088a3`, poi `ae7fd8270`): il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host, e ogni strumento che Daodan lancia sull'host ha un test con un file del progetto che, se eseguito, lascia un segno. Le schede del codice del progetto sull'host: D-161 (Tailwind), D-239 (rust-analyzer), D-245 e D-250 (Git), D-248 e D-253 (l'ambiente Python), D-256 (i formattatori).
+- La regola invalicabile di `AGENTS.md` (`2753088a3`, poi `ae7fd8270`): il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host, e ogni strumento che Daodan lancia sull'host ha un test con un file del progetto che, se eseguito, lascia un segno. Le schede del codice del progetto sull'host: D-161 (Tailwind), D-239 (rust-analyzer), D-245 e D-250 (Git), D-248 e D-253 (l'ambiente Python), D-256 (i formattatori), D-257 (Go), D-258 (Vue e Svelte).
 - Tag: ogni scheda ha una riga con cinque voci, che l'«Indice dei tag» raccoglie:
   - lingua: i linguaggi del difetto, `tutti` se non dipende da un linguaggio;
   - area: `pre-mappa`, `snapshot`, `preparazione`, `host`, `parser`, `analizzatore`, `passo dinamico`, `container`, `servizi`, `driver Modal`, `explorer`, `benchmark` o `documenti`;
@@ -45,20 +46,20 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (60): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251
+- `tutti` (63): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262
 - `java` (44): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229
 - `kotlin` (34): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229
 - `python` (33): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256
-- `c` (30): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255
+- `c` (31): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259
+- `cpp` (30): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259
 - `javascript` (30): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256
-- `cpp` (29): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255
 - `typescript` (21): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256
 - `rust` (18): D-014, D-021, D-030, D-040, D-041, D-078, D-143, D-144, D-173, D-175, D-176, D-209, D-227, D-230, D-237, D-238, D-239, D-256
 - `csharp` (17): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249
-- `go` (13): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256
+- `go` (14): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256, D-257
+- `svelte` (5): D-080, D-153, D-156, D-159, D-258
+- `vue` (5): D-080, D-154, D-155, D-159, D-258
 - `css` (4): D-161, D-162, D-163, D-164
-- `svelte` (4): D-080, D-153, D-156, D-159
-- `vue` (4): D-080, D-154, D-155, D-159
 - `scala` (2): D-011, D-092
 - `dart` (1): D-015
 - `elixir` (1): D-012
@@ -68,13 +69,13 @@ Convenzioni:
 
 ### Area
 
-- `analizzatore` (111): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255
+- `analizzatore` (114): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259
 - `pre-mappa` (39): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062
 - `passo dinamico` (34): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241
+- `servizi` (13): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
+- `container` (11): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262
 - `preparazione` (11): D-044, D-045, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-063
-- `servizi` (11): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244
-- `container` (10): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219
 - `snapshot` (9): D-031, D-032, D-033, D-034, D-035, D-059, D-245, D-250, D-252
 - `host` (8): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256
 - `documenti` (6): D-222, D-227, D-229, D-230, D-231, D-232
@@ -84,19 +85,19 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (136): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252
-- `correttezza` (82): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255
-- `sicurezza` (19): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256
+- `completezza` (139): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262
+- `correttezza` (83): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259
+- `sicurezza` (21): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
 - `prestazioni` (3): D-123, D-187, D-189
 
 ### Origine
 
-- `commit` (106): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253
+- `commit` (110): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `finale` (31): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241
-- `review` (26): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256
+- `review` (28): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258
 - `prova su Modal` (17): D-089, D-102, D-103, D-104, D-115, D-116, D-117, D-118, D-119, D-120, D-169, D-179, D-236, D-237, D-239, D-249, D-255
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
@@ -115,23 +116,23 @@ Convenzioni:
 
 - `Gradle` (28): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-058, D-063, D-064, D-089, D-090, D-094, D-095, D-097, D-098, D-101, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-180, D-221, D-223
 - `Maven` (16): D-003, D-025, D-026, D-049, D-054, D-063, D-064, D-089, D-090, D-091, D-095, D-100, D-102, D-112, D-221, D-226
-- `npm` (12): D-013, D-017, D-049, D-053, D-056, D-072, D-084, D-185, D-186, D-191, D-198, D-201
+- `npm` (13): D-013, D-017, D-049, D-053, D-056, D-072, D-084, D-185, D-186, D-191, D-198, D-201, D-258
 - `scip-java` (10): D-089, D-096, D-098, D-099, D-100, D-101, D-103, D-105, D-108, D-110
 - `uv` (10): D-042, D-047, D-049, D-184, D-188, D-246, D-248, D-252, D-253, D-254
 - `CMake` (9): D-060, D-061, D-076, D-122, D-124, D-125, D-131, D-132, D-135
 - `Cargo` (6): D-014, D-021, D-030, D-041, D-175, D-239
+- `Compose` (6): D-201, D-212, D-214, D-215, D-240, D-261
 - `Docker` (6): D-046, D-107, D-135, D-140, D-141, D-240
+- `git` (6): D-048, D-126, D-204, D-245, D-250, D-257
+- `GitHub Actions` (6): D-056, D-182, D-201, D-213, D-260, D-261
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
 - `scip-python` (6): D-084, D-086, D-088, D-246, D-247, D-248
 - `scip-typescript` (6): D-146, D-147, D-148, D-152, D-156, D-160
-- `Compose` (5): D-201, D-212, D-214, D-215, D-240
-- `git` (5): D-048, D-126, D-204, D-245, D-250
 - `Modal` (5): D-209, D-210, D-224, D-230, D-251
 - `rust-analyzer` (5): D-041, D-143, D-144, D-237, D-239
 - `scip-clang` (5): D-123, D-131, D-132, D-236, D-255
 - `tree-sitter` (5): D-034, D-035, D-036, D-037, D-117
 - `Conan` (4): D-029, D-061, D-125, D-177
-- `GitHub Actions` (4): D-056, D-182, D-201, D-213
 - `GitLab CI` (4): D-202, D-212, D-216, D-217
 - `javac` (4): D-100, D-101, D-102, D-104
 - `pnpm` (4): D-021, D-049, D-051, D-072
@@ -162,6 +163,7 @@ Convenzioni:
 - `Turborepo` (2): D-190, D-191
 - `vcpkg` (2): D-125, D-177
 - `Angular` (1): D-194
+- `apt` (1): D-262
 - `autotools` (1): D-134
 - `biome` (1): D-256
 - `black` (1): D-256
@@ -170,6 +172,8 @@ Convenzioni:
 - `Corepack` (1): D-051
 - `Error Prone` (1): D-100
 - `GCC` (1): D-255
+- `gcc` (1): D-257
+- `go` (1): D-257
 - `gofmt` (1): D-256
 - `Google Services` (1): D-109
 - `Helm` (1): D-029
@@ -187,11 +191,12 @@ Convenzioni:
 - `SwiftPM` (1): D-030
 - `Terraform` (1): D-029
 - `tox` (1): D-183
+- `typescript-language-server` (1): D-258
 - `Vitest` (1): D-194
 
 ## Indice
 
-256 schede: 193 risolte, 25 aperte, 38 buchi dichiarati.
+262 schede: 201 risolte, 23 aperte, 38 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -270,7 +275,7 @@ Convenzioni:
 
 ### Analizzatori
 
-114 schede: 75 risolto, 14 aperto, 25 buco dichiarato.
+117 schede: 80 risolto, 13 aperto, 24 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -319,7 +324,7 @@ Convenzioni:
 | D-107 | otel-demo fraud-detection: protos che solo il Dockerfile copia | otel-demo (`b825c7c25726`) | aperto (android-sdk) | `f024ba3a3`, `f04dab9d5` | kotlin · analizzatore · completezza · jvm-otel-android · Gradle, Docker, protoc |
 | D-108 | Android: classpath dei test unitari non risolti, nessun compito Android | jvm-android-app-lib, mix-poly-firebase | aperto (dynamic-jvm-2) | `39805f5e7` | java, kotlin · analizzatore · completezza · finale · scip-java, Gradle, Android SDK |
 | D-109 | Android: build fermo su `google-services.json` mancante | jvm-android-app-lib, mix-poly-firebase | buco dichiarato (`build_input_missing`) | `39805f5e7` | java, kotlin · analizzatore · completezza · jvm-otel-android · Gradle, Google Services |
-| D-110 | kotlinconf: «Task with name 'compileKotlinJvm' not found in project ':app:adminApp'» | kotlinconf (`146e891c150c`) | aperto (dynamic-jvm-2) | — | kotlin · analizzatore · correttezza · jvm-kotlinconf · scip-java, Gradle |
+| D-110 | kotlinconf: «Task with name 'compileKotlinJvm' not found in project ':app:adminApp'» | kotlinconf (`146e891c150c`) | risolto | `a13d55787` | kotlin · analizzatore · correttezza · jvm-kotlinconf · scip-java, Gradle |
 | D-111 | jhipster: 14 file Java con il documento senza occorrenze | jhipster-sample (`6b000b5d23a3`) | aperto | — | java · analizzatore · completezza · finale |
 | D-112 | Un file Java senza documento in due fixture Maven | jvm-maven-multi-bom-profile, jvm-protobuf-generated | aperto | — | java · analizzatore · completezza · finale · Maven, protoc |
 | D-113 | C#: un progetto che Msbuild rifiuta ferma il ripristino intero | zlib (`51b7f2abdade`) | risolto | `73b645531`, `0cdbae9b2` | csharp · analizzatore · correttezza · giro-2 · scip-dotnet, Roslyn, MSBuild, dotnet |
@@ -365,10 +370,10 @@ Convenzioni:
 | D-153 | Svelte con nulla di letto non era `failed` | js-sveltekit | risolto | `12775fee3` | svelte · analizzatore · correttezza · commit |
 | D-154 | Vue diverso fra analisi e unione | js-vue-pnpm | risolto | `12775fee3` | vue · analizzatore · correttezza · commit |
 | D-155 | L'import di un `.vue` non tipizzato senza causa | progetti Vue | risolto | `12775fee3` | vue · analizzatore · completezza · commit |
-| D-156 | SvelteKit: «error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'» | js-sveltekit | buco dichiarato (TS5083 nominato nel motivo) | `12775fee3` | javascript, typescript, svelte · analizzatore · completezza · finale · scip-typescript, SvelteKit |
+| D-156 | SvelteKit: «error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'» | js-sveltekit | risolto | `12775fee3`, `b9aeca1fb` | javascript, typescript, svelte · analizzatore · completezza · finale · scip-typescript, SvelteKit |
 | D-157 | TypeScript: i tipi sotto Yarn | TypeScript nel container | aperto (da verificare) | — | typescript · analizzatore · completezza · commit · Yarn |
 | D-158 | JavaScript: riceventi non tipizzati | kotlinconf e il corpus JavaScript | buco dichiarato («a member of a value of type any») | `3595d571b` | javascript · analizzatore · completezza · conferma |
-| D-159 | Template di Vue e Svelte non letti | hoppscotch, js-vue-pnpm, js-sveltekit | aperto (csharp-2) | `64edfb930` | vue, svelte · analizzatore · completezza · finale |
+| D-159 | Template di Vue e Svelte non letti | hoppscotch, js-vue-pnpm, js-sveltekit | risolto | `64edfb930`, `b9aeca1fb` | vue, svelte · analizzatore · completezza · finale |
 | D-160 | TypeScript: un file senza documento | hoppscotch, memos (`509e41bd1a1b`) | aperto | — | typescript · analizzatore · completezza · finale · scip-typescript |
 | D-161 | Tailwind caricato sull'host con la configurazione del progetto | analyzer dei fogli di stile | risolto | `3595d571b` | css · analizzatore · sicurezza · commit · Tailwind |
 | D-162 | Fogli di stile: buchi `no-rule` | il corpus | aperto (ts-container-2) | — | css · analizzatore · completezza · finale · Tailwind |
@@ -388,6 +393,9 @@ Convenzioni:
 | D-253 | uv sull'host poteva installare una ruota costruita da un sdist e leggeva configurazioni altrui | analizzatore Python | risolto | `a9b4e1df2` | python · analizzatore · sicurezza · commit · uv |
 | D-254 | L'uv dell'host non è fissato | fastapi (`aabb90126964`) | risolto | `5e3757031` | python · host · correttezza · review · uv |
 | D-255 | scip-clang leggeva i database di GCC con gli header builtin di GCC | otel-demo currency (`b825c7c25726`), riprodotto da android-sdk | risolto da `125ab9ebd` nella via principale | `125ab9ebd` | c, cpp · analizzatore · correttezza · prova su Modal · scip-clang, GCC |
+| D-257 | L'analizzatore Go esegue sull'host `go mod download` e il compilatore C | analizzatore Go | aperto (host-guard-2) | — | go · analizzatore · sicurezza · review · go, git, gcc |
+| D-258 | Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto | analizzatore di Vue e Svelte | risolto | `b9aeca1fb` | vue, svelte · analizzatore · sicurezza · review · npm, typescript-language-server |
+| D-259 | Un header `.h` di C++ letto come C | otel-demo (`b825c7c25726`) | risolto | `bdfd7797b` | c, cpp · analizzatore · correttezza · commit |
 
 ### Passo dinamico e osservatori
 
@@ -435,7 +443,7 @@ Convenzioni:
 
 ### Container, servizi e driver Modal
 
-19 schede: 13 risolto, 4 aperto, 2 buco dichiarato.
+22 schede: 16 risolto, 3 aperto, 3 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -456,8 +464,11 @@ Convenzioni:
 | D-217 | GitLab CI: `!reference` | da verificare | aperto (test-services) | — | tutti · servizi · completezza · review · GitLab CI |
 | D-218 | Kiri non stacca un container dalla sua prima rete | motore Kiri | buco dichiarato (`ci_step_not_run`) | `f024ba3a3` | tutti · container · completezza · review · Kiri |
 | D-219 | Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL | spec del passo dinamico | aperto (da decidere) | — | tutti · container · correttezza · spec · Kiri |
-| D-240 | Il `.env` che il progetto traccia non arrivava nel container | fastapi (`aabb90126964`) | aperto (test-services) | — | python, cpp · servizi · completezza, sicurezza · ci-steps · Compose, Docker |
+| D-240 | Il `.env` che il progetto traccia non arrivava nel container | fastapi (`aabb90126964`) | risolto | `b1f14ac08` | python, cpp · servizi · completezza, sicurezza · ci-steps · Compose, Docker |
 | D-244 | I test reali dei servizi si cancellavano a vicenda | `tests/test_codebase_map_dynamic_services.py` | risolto | `aea1c8c3b` | tutti · servizi · correttezza · test |
+| D-260 | Il passo di test della CI senza le variabili che la CI gli dà | fastapi (`aabb90126964`) | risolto | `b1f14ac08` | tutti · servizi · completezza · commit · GitHub Actions |
+| D-261 | Un passo di test dentro `docker compose run` | passo dinamico | buco dichiarato (`ci_step_not_run`) | `b1f14ac08` | tutti · servizi · completezza · commit · Compose, GitHub Actions |
+| D-262 | apt dietro il proxy del container: l'archivio su HTTP in chiaro | container | risolto | `b1f14ac08` | tutti · container · completezza · commit · apt |
 
 ### Benchmark e documenti
 
@@ -502,17 +513,18 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 
 ### Python
 
-| Misura | fixtures | giro-2 | finale | conferma | jvm-otel-android | ci-steps |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| casi | 28 | 8 | 34 | 3 | 2 | 1 |
-| file nello snapshot | 81 | 108 | 185 | 76 | 24 | 42 |
-| file indicizzati | 81 | 108 | 185 | 76 | 24 | 42 |
-| siti | 260 | 7.202 | 7.453 | 4.936 | 1.911 | 2.497 |
-| quota di risposta | 75,0 % | 89,6 % | 89,1 % | 96,0 % | 75,6 % | 93,3 % |
-| `no-occurrence` | 27 | 457 | 484 | 117 | 298 | 98 |
-| `undefined-project-symbol` | 22 | 178 | 199 | 74 | 100 | 65 |
-| `dangling-local` | 16 | 103 | 117 | 9 | 58 | 4 |
-| `no-position` | 0 | 13 | 13 | 0 | 11 | 0 |
+| Misura | fixtures | giro-2 | finale | conferma | jvm-otel-android | ci-steps | dotenv |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| casi | 28 | 8 | 34 | 3 | 2 | 1 | 1 |
+| file nello snapshot | 81 | 108 | 185 | 76 | 24 | 42 | 42 |
+| file indicizzati | 81 | 108 | 185 | 76 | 24 | 42 | 42 |
+| siti | 260 | 7.202 | 7.453 | 4.936 | 1.911 | 2.497 | 2.497 |
+| quota di risposta | 75,0 % | 89,6 % | 89,1 % | 96,0 % | 75,6 % | 93,3 % | 96,0 % |
+| `no-occurrence` | 27 | 457 | 484 | 117 | 298 | 98 | 0 |
+| `undefined-project-symbol` | 22 | 178 | 199 | 74 | 100 | 65 | 0 |
+| `dangling-local` | 16 | 103 | 117 | 9 | 58 | 4 | 0 |
+| `no-position` | 0 | 13 | 13 | 0 | 11 | 0 | 0 |
+| altre cause, per testo | 0 (0) | 0 (0) | 0 (0) | 0 (0) | 0 (0) | 0 (0) | 101 (2) |
 
 | Stessi casi | Casi | Buchi prima | Buchi dopo |
 | --- | ---: | ---: | ---: |
@@ -522,6 +534,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `finale` → `jvm-otel-android` | 2 | 467 | 467 |
 | `finale` → `ci-steps` | 1 | 167 | 167 |
 | `conferma` → `ci-steps` | 1 | 167 | 167 |
+| `ci-steps` → `dotenv` | 1 | 167 | 101 |
 
 - `no-occurrence`, `dangling-local`, `no-position`: fino a `a6156b7a2` senza causa (D-088). Da allora ogni buco porta la causa del checker (Pyright 1.1.414): un valore che il checker tipizza Unknown o Any, o un nome che il checker lega e scip-python non nomina. Un nome nudo in un'annotazione, definito più sotto nel modulo, era una `dangling-local`; da `3cef87b5c` porta alla definizione (D-247).
 - `undefined-project-symbol`: tre difetti di scip-python 0.6.8, corretti da `a6156b7a2` (D-088). Sono i nomi che l'`__init__` di una distribuzione riesporta, `__name__` e simili, e gli import attraverso la radice sorgente dichiarata. Da 65 e 10 a 0 su fastapi e python-semver.
@@ -529,22 +542,22 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 
 ### JavaScript
 
-| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | jvm-kotlinconf-kmp | ci-steps |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| casi | 20 | 1 | 13 | 32 | 4 | 1 | 1 | 1 | 1 |
-| file nello snapshot | 34 | 1.038 | 186 | 1.254 | 1.103 | 10 | 1 | 1 | 1.038 |
-| file indicizzati | 34 | 1.038 | 186 | 1.254 | 1.103 | 10 | 1 | 1 | 1.038 |
-| siti | 174 | 134.949 | 38.165 | 173.277 | 147.548 | 276 | 23 | 23 | 134.949 |
-| quota di risposta | 75,9 % | 72,7 % | 73,8 % | 72,9 % | 72,5 % | 70,7 % | 56,5 % | 56,5 % | 74,4 % |
-| `no-occurrence` | 28 | 36.131 | 9.261 | 45.417 | 39.563 | 0 | 0 | 0 | 12 |
-| `dangling-local` | 10 | 496 | 566 | 1.069 | 732 | 2 | 0 | 0 | 56 |
-| `no-position` | 2 | 208 | 158 | 368 | 250 | 0 | 0 | 0 | 0 |
-| `undefined-project-symbol` | 0 | 55 | 6 | 61 | 46 | 0 | 0 | 0 | 5 |
-| `call-result` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 131 |
-| `super-call` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 51 |
-| `element` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 20 |
-| `computed-callee` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 |
-| altre cause, per testo | 2 (1) | 0 (0) | 1 (1) | 3 (2) | 0 (0) | 79 (4) | 10 (1) | 10 (1) | 34.213 (128) |
+| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | jvm-kotlinconf-kmp | ci-steps | dotenv |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| casi | 20 | 1 | 13 | 32 | 4 | 1 | 1 | 1 | 1 | 1 |
+| file nello snapshot | 34 | 1.038 | 186 | 1.254 | 1.103 | 10 | 1 | 1 | 1.038 | 1.038 |
+| file indicizzati | 34 | 1.038 | 186 | 1.254 | 1.103 | 10 | 1 | 1 | 1.038 | 1.038 |
+| siti | 174 | 134.949 | 38.165 | 173.277 | 147.548 | 276 | 23 | 23 | 134.949 | 134.949 |
+| quota di risposta | 75,9 % | 72,7 % | 73,8 % | 72,9 % | 72,5 % | 70,7 % | 56,5 % | 56,5 % | 74,4 % | 74,2 % |
+| `no-occurrence` | 28 | 36.131 | 9.261 | 45.417 | 39.563 | 0 | 0 | 0 | 12 | 12 |
+| `dangling-local` | 10 | 496 | 566 | 1.069 | 732 | 2 | 0 | 0 | 56 | 56 |
+| `no-position` | 2 | 208 | 158 | 368 | 250 | 0 | 0 | 0 | 0 | 0 |
+| `call-result` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 131 | 131 |
+| `undefined-project-symbol` | 0 | 55 | 6 | 61 | 46 | 0 | 0 | 0 | 5 | 5 |
+| `super-call` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 51 | 51 |
+| `element` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 20 | 20 |
+| `computed-callee` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 2 |
+| altre cause, per testo | 2 (1) | 0 (0) | 1 (1) | 3 (2) | 0 (0) | 79 (4) | 10 (1) | 10 (1) | 34.213 (128) | 34.469 (128) |
 
 | Stessi casi | Casi | Buchi prima | Buchi dopo |
 | --- | ---: | ---: | ---: |
@@ -557,6 +570,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `jvm-kotlinconf` → `jvm-kotlinconf-kmp` | 1 | 10 | 10 |
 | `finale` → `ci-steps` | 1 | 36.890 | 34.490 |
 | `conferma` → `ci-steps` | 1 | 36.205 | 34.490 |
+| `ci-steps` → `dotenv` | 1 | 34.490 | 34.746 |
 
 - `no-occurrence`: l'indice non dice perché un riferimento non ha occorrenza (D-147). Da `3595d571b` il checker di TypeScript dà a ogni buco la sua causa: ricevente `any`, firma a indice, membro creato dal checker, non dichiarato. Così in `ci-steps` i `no-occurrence` di tududi sono 12, e 34.213 buchi portano una di 128 cause. Un membro di un valore senza tipo resta un buco dichiarato: lo risolve solo l'esecuzione (D-158).
 - `dangling-local`: `module` di `module.exports` scritto come locale senza definizione (D-148). `eacfad80e` lo lega all'oggetto modulo di Node: js-yarn-berry e js-npm-single completi, 0 buchi.
@@ -565,24 +579,24 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 
 ### TypeScript
 
-| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | ci-steps |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| casi | 15 | 1 | 6 | 21 | 2 | 2 | 2 |
-| file nello snapshot | 43 | 650 | 2.274 | 2.967 | 759 | 144 | 759 |
-| file indicizzati | 43 | 650 | 2.272 | 2.965 | 759 | 144 | 759 |
-| siti | 119 | 77.897 | 194.292 | 272.308 | 82.246 | 8.733 | 82.243 |
-| quota di risposta | 83,2 % | 89,6 % | 89,7 % | 90,4 % | 89,8 % | 70,5 % | 96,9 % |
-| `dangling-local` | 11 | 4.199 | 7.259 | 10.060 | 4.311 | 350 | 18 |
-| `no-occurrence` | 7 | 2.843 | 9.013 | 11.086 | 2.880 | 29 | 4 |
-| `undefined-project-symbol` | 0 | 968 | 2.265 | 3.233 | 1.053 | 0 | 0 |
-| `no-position` | 1 | 99 | 1.542 | 1.642 | 109 | 16 | 1 |
-| `dynamic-import` | 0 | 0 | 0 | 0 | 0 | 0 | 38 |
-| `call-result` | 0 | 0 | 0 | 0 | 0 | 0 | 19 |
-| `super-call` | 0 | 0 | 0 | 0 | 0 | 0 | 13 |
-| `computed-callee` | 0 | 0 | 0 | 0 | 0 | 0 | 7 |
-| `element` | 0 | 0 | 0 | 0 | 0 | 0 | 7 |
-| `no-document` | 0 | 0 | 1 | 1 | 0 | 0 | 0 |
-| altre cause, per testo | 1 (1) | 0 (0) | 10 (6) | 11 (7) | 0 (0) | 2.183 (3) | 2.408 (17) |
+| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | ci-steps | dotenv |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| casi | 15 | 1 | 6 | 21 | 2 | 2 | 2 | 2 |
+| file nello snapshot | 43 | 650 | 2.274 | 2.967 | 759 | 144 | 759 | 759 |
+| file indicizzati | 43 | 650 | 2.272 | 2.965 | 759 | 144 | 759 | 759 |
+| siti | 119 | 77.897 | 194.292 | 272.308 | 82.246 | 8.733 | 82.243 | 82.243 |
+| quota di risposta | 83,2 % | 89,6 % | 89,7 % | 90,4 % | 89,8 % | 70,5 % | 96,9 % | 96,9 % |
+| `dangling-local` | 11 | 4.199 | 7.259 | 10.060 | 4.311 | 350 | 18 | 18 |
+| `no-occurrence` | 7 | 2.843 | 9.013 | 11.086 | 2.880 | 29 | 4 | 4 |
+| `undefined-project-symbol` | 0 | 968 | 2.265 | 3.233 | 1.053 | 0 | 0 | 0 |
+| `no-position` | 1 | 99 | 1.542 | 1.642 | 109 | 16 | 1 | 1 |
+| `dynamic-import` | 0 | 0 | 0 | 0 | 0 | 0 | 38 | 38 |
+| `call-result` | 0 | 0 | 0 | 0 | 0 | 0 | 19 | 19 |
+| `super-call` | 0 | 0 | 0 | 0 | 0 | 0 | 13 | 13 |
+| `computed-callee` | 0 | 0 | 0 | 0 | 0 | 0 | 7 | 7 |
+| `element` | 0 | 0 | 0 | 0 | 0 | 0 | 7 | 7 |
+| `no-document` | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
+| altre cause, per testo | 1 (1) | 0 (0) | 10 (6) | 11 (7) | 0 (0) | 2.183 (3) | 2.408 (17) | 2.408 (17) |
 
 | Stessi casi | Casi | Buchi prima | Buchi dopo |
 | --- | ---: | ---: | ---: |
@@ -593,6 +607,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `finale` → `jvm-otel-android` | 2 | 2.578 | 2.578 |
 | `finale` → `ci-steps` | 2 | 6.167 | 2.515 |
 | `conferma` → `ci-steps` | 2 | 8.353 | 2.515 |
+| `ci-steps` → `dotenv` | 2 | 2.515 | 2.515 |
 
 - `dangling-local`: il join legava `{ t } = useTranslation()` e simili a un simbolo che l'indice non definisce (D-145, `3595d571b`); `module.exports` (D-148).
 - `no-occurrence`: alcuni chiamati che il lettore non nominava, `x.f!()` (D-150) e `await f<T>(x)` (D-151). I pacchetti senza nome, come heroicons, li corregge scip-typescript 0.6.2 (D-146). Da `3595d571b` ogni buco ha la causa del checker (D-147).
@@ -652,7 +667,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
   - Kotlin solo negli script di build (D-097);
   - Kotlin sotto Maven, 0 file su 2 prima di `ea1e2b7d6` (D-089).
 - 0 file indicizzati in `conferma`, `jvm-otel-android` e `jvm-kotlinconf`: Kotlin non ha indice.
-  - kotlinconf: «Task with name 'compileKotlinJvm' not found» (D-110); in `jvm-kotlinconf-kmp`, con il rimedio di D-110 non ancora committato, Kotlin è `fresh` con 226 file su 271 e il 76,0 % di risposta, e i 45 file fuori dall'indice dicono perché (D-098);
+  - kotlinconf: «Task with name 'compileKotlinJvm' not found» (D-110); in `jvm-kotlinconf-kmp`, con il rimedio di D-110 (`a13d55787`), Kotlin è `fresh` con 226 file su 271 e il 76,0 % di risposta, e i 45 file fuori dall'indice dicono perché (D-098);
   - Android: i classpath dei test non risolti (D-108) e `google-services.json` mancante (D-109);
   - otel-demo fraud-detection: i protos che solo il Dockerfile copia (D-107).
 - `no-occurrence`, `no-position`: nessuna scheda.
@@ -794,32 +809,32 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 
 ### Fogli di stile
 
-| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | jvm-kotlinconf-kmp | ci-steps |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| casi | 10 | 1 | 13 | 24 | 7 | 2 | 1 | 1 | 2 |
-| file nello snapshot | 51 | 1.708 | 1.643 | 3.402 | 2.019 | 169 | 3 | 3 | 1.822 |
-| file indicizzati | 50 | 1.708 | 1.578 | 3.336 | 2.019 | 162 | 3 | 3 | 1.822 |
-| siti | 23 | 37.987 | 29.241 | 67.251 | 58.534 | 22 | 45 | 45 | 38.871 |
-| quota di risposta | 52,2 % | 1,6 % | 58,3 % | 26,3 % | 26,3 % | 27,3 % | 82,2 % | 82,2 % | 98,7 % |
-| `no-rule` | 7 | 37.162 | 11.639 | 48.808 | 42.757 | 12 | 1 | 1 | 163 |
-| `call` | 0 | 67 | 341 | 408 | 177 | 0 | 0 | 0 | 176 |
-| `parameter` | 0 | 69 | 27 | 96 | 73 | 2 | 0 | 0 | 72 |
-| `no-font-face` | 0 | 9 | 41 | 50 | 34 | 1 | 5 | 5 | 28 |
-| `property` | 0 | 34 | 12 | 46 | 37 | 0 | 0 | 0 | 37 |
-| `css-in-js` | 0 | 24 | 0 | 24 | 24 | 0 | 0 | 0 | 24 |
-| `undeclared` | 0 | 0 | 45 | 45 | 3 | 0 | 0 | 0 | 3 |
-| `unresolved-import` | 2 | 1 | 36 | 39 | 5 | 1 | 2 | 2 | 3 |
-| `variable` | 0 | 1 | 28 | 29 | 2 | 0 | 0 | 0 | 1 |
-| `remote-sheet` | 2 | 0 | 8 | 10 | 0 | 0 | 0 | 0 | 0 |
-| `ejs-glued` | 0 | 5 | 0 | 5 | 5 | 0 | 0 | 0 | 5 |
-| `element-access` | 0 | 5 | 0 | 5 | 5 | 0 | 0 | 0 | 5 |
-| `ejs` | 0 | 4 | 0 | 4 | 4 | 0 | 0 | 0 | 4 |
-| `template` | 0 | 2 | 2 | 4 | 2 | 0 | 0 | 0 | 2 |
-| `expression` | 0 | 0 | 5 | 5 | 1 | 0 | 0 | 0 | 0 |
-| `concatenation` | 0 | 0 | 3 | 3 | 3 | 0 | 0 | 0 | 0 |
-| `no-keyframes` | 0 | 0 | 4 | 4 | 0 | 0 | 0 | 0 | 0 |
-| `url-path` | 0 | 0 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| `template-tag-glued` | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
+| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | jvm-kotlinconf-kmp | ci-steps | dotenv |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| casi | 10 | 1 | 13 | 24 | 7 | 2 | 1 | 1 | 2 | 2 |
+| file nello snapshot | 51 | 1.708 | 1.643 | 3.402 | 2.019 | 169 | 3 | 3 | 1.822 | 1.822 |
+| file indicizzati | 50 | 1.708 | 1.578 | 3.336 | 2.019 | 162 | 3 | 3 | 1.822 | 1.822 |
+| siti | 23 | 37.987 | 29.241 | 67.251 | 58.534 | 22 | 45 | 45 | 38.871 | 38.871 |
+| quota di risposta | 52,2 % | 1,6 % | 58,3 % | 26,3 % | 26,3 % | 27,3 % | 82,2 % | 82,2 % | 98,7 % | 98,7 % |
+| `no-rule` | 7 | 37.162 | 11.639 | 48.808 | 42.757 | 12 | 1 | 1 | 163 | 163 |
+| `call` | 0 | 67 | 341 | 408 | 177 | 0 | 0 | 0 | 176 | 176 |
+| `parameter` | 0 | 69 | 27 | 96 | 73 | 2 | 0 | 0 | 72 | 72 |
+| `property` | 0 | 34 | 12 | 46 | 37 | 0 | 0 | 0 | 37 | 37 |
+| `no-font-face` | 0 | 9 | 41 | 50 | 34 | 1 | 5 | 5 | 28 | 28 |
+| `css-in-js` | 0 | 24 | 0 | 24 | 24 | 0 | 0 | 0 | 24 | 24 |
+| `undeclared` | 0 | 0 | 45 | 45 | 3 | 0 | 0 | 0 | 3 | 3 |
+| `unresolved-import` | 2 | 1 | 36 | 39 | 5 | 1 | 2 | 2 | 3 | 3 |
+| `variable` | 0 | 1 | 28 | 29 | 2 | 0 | 0 | 0 | 1 | 1 |
+| `ejs-glued` | 0 | 5 | 0 | 5 | 5 | 0 | 0 | 0 | 5 | 5 |
+| `element-access` | 0 | 5 | 0 | 5 | 5 | 0 | 0 | 0 | 5 | 5 |
+| `remote-sheet` | 2 | 0 | 8 | 10 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `ejs` | 0 | 4 | 0 | 4 | 4 | 0 | 0 | 0 | 4 | 4 |
+| `template` | 0 | 2 | 2 | 4 | 2 | 0 | 0 | 0 | 2 | 2 |
+| `expression` | 0 | 0 | 5 | 5 | 1 | 0 | 0 | 0 | 0 | 0 |
+| `concatenation` | 0 | 0 | 3 | 3 | 3 | 0 | 0 | 0 | 0 | 0 |
+| `no-keyframes` | 0 | 0 | 4 | 4 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `url-path` | 0 | 0 | 2 | 2 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `template-tag-glued` | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 | Stessi casi | Casi | Buchi prima | Buchi dopo |
 | --- | ---: | ---: | ---: |
@@ -832,6 +847,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `jvm-kotlinconf` → `jvm-kotlinconf-kmp` | 1 | 8 | 8 |
 | `finale` → `ci-steps` | 2 | 38.210 | 523 |
 | `conferma` → `ci-steps` | 2 | 38.210 | 523 |
+| `ci-steps` → `dotenv` | 2 | 523 | 523 |
 
 - `no-rule`: un riferimento di classe, id o composes senza una regola che lo definisca (D-162), fra cui le classi Tailwind. Da `3595d571b` Tailwind gira nel container (D-161). Sugli stessi due casi, tududi e fastapi, da 38.210 buchi nella conferma a 523 in `ci-steps`: nessuno dei due giri registra il proprio codice, così il salto non si lega a un commit (D-251).
 - `remote-sheet`: un foglio remoto senza testo (D-164), buco dichiarato.
@@ -855,7 +871,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `giro-2` → `finale` | 1 | 18.309 | 18.309 |
 
 - `not-asked`, `engine-unresolved`: una chiamata senza arco, rispettivamente non chiesta al motore o chiesta senza risposta (`scripts/position_stage.py:405`); nessuna scheda ne spiega la causa.
-- I template non sono letti (D-080, D-159), e l'import di un `.vue` non tipizzato non diceva la causa (D-155).
+- I template non erano letti (D-080, D-159), e l'import di un `.vue` non tipizzato non diceva la causa (D-155). Da `b9aeca1fb`, successivo ai commit dei risultati di tutti i giri, Vue passa a scip-typescript nel container, template compresi: le classi di questa tabella sono dello stadio di posizione, che non lo legge più.
 
 ### Svelte
 
@@ -875,7 +891,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `giro-2` → `finale` | 1 | 9 | 9 |
 
 - `not-asked`, `engine-unresolved`: come per Vue (`scripts/position_stage.py:405`); nessuna scheda ne spiega la causa.
-- I template non sono letti (D-080, D-159); il tsconfig che SvelteKit genera manca (D-156); uno Svelte con nulla di letto non era `failed` (D-153).
+- I template non erano letti (D-080, D-159); il tsconfig che SvelteKit genera mancava (D-156); uno Svelte con nulla di letto non era `failed` (D-153). Da `b9aeca1fb` Svelte passa a scip-typescript nel container, come Vue.
 
 ## Progetti di prova
 
@@ -1047,15 +1063,15 @@ Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-
 | mix-real-python-semver | github.com/python-semver/python-semver `b6e83e3e40d3` | 10 | D-031, D-088, D-183, D-206, D-248 | — |
 | mix-real-semver | github.com/dtolnay/semver `280ebcb6edac` | 8 | D-143, D-209, D-238 | D-176, D-230 |
 | mix-real-tinyxml2 | github.com/leethomason/tinyxml2 `9148bdf719e9` | 11 | D-043, D-137, D-209, D-236 | D-230, D-255 |
-| mix-real-tududi | github.com/chrisvel/tududi `71da9d7b34df` | 9 | D-145, D-146, D-147, D-182, D-185, D-186, D-187 | D-189, D-213, D-251 |
+| mix-real-tududi | github.com/chrisvel/tududi `71da9d7b34df` | 9 | D-145, D-146, D-147, D-182, D-185, D-186, D-187 | D-189, D-213, D-240, D-251 |
 | mix-real-zlib | github.com/madler/zlib `51b7f2abdade` | 15 | D-043, D-113, D-130, D-133, D-134, D-209, D-220 | D-010, D-065, D-230 |
-| real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254 | D-171, D-213, D-251, D-253 |
+| real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254, D-260 | D-171, D-213, D-251, D-253 |
 | real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237 | D-080, D-239 |
 | real-app-jhipster-sample | github.com/jhipster/jhipster-sample-app `6b000b5d23a3` | 17 | D-111, D-194 | — |
 | real-app-kotlinconf | github.com/JetBrains/kotlinconf-app `146e891c150c` | 18 | D-055, D-057, D-058, D-110, D-158 | — |
 | real-app-memos | github.com/usememos/memos `509e41bd1a1b` | 10 | D-160 | — |
 | real-svc-eshop | github.com/dotnet/eShop `913acea66708` | 16 | D-018, D-059, D-113, D-114, D-116, D-118, D-119, D-120, D-198, D-241, D-249 | — |
-| real-svc-otel-demo | github.com/open-telemetry/opentelemetry-demo `b825c7c25726` | 26 | D-059, D-094, D-105, D-106, D-107, D-114, D-132, D-135, D-240, D-255 | D-071 |
+| real-svc-otel-demo | github.com/open-telemetry/opentelemetry-demo `b825c7c25726` | 26 | D-059, D-094, D-105, D-106, D-107, D-114, D-132, D-135, D-240, D-255, D-259 | D-071 |
 | real-svc-petclinic-microservices | github.com/spring-petclinic/spring-petclinic-microservices `e8b747ab5227` | 17 | — | — |
 | real-svc-robot-shop | github.com/instana/robot-shop `55292e2199f2` | 14 | D-094, D-140, D-141 | — |
 | real-svc-voting-app | github.com/dockersamples/example-voting-app `63e9150ca17a` | 12 | D-114 | — |
@@ -1077,6 +1093,8 @@ I progetti fuori dal corpus che i commit descrivono:
   - un pacchetto Python, su Modal con gli strumenti veri (`ef6641248`, D-248);
   - un build.rs che scrive un file, su Modal (`293e3bfac`, D-239); un crate con un build script e una macro procedurale che lasciano un segno, e cargo, rustc, rust-analyzer e rustup finti sull'host (`benchmarks/project-model/modal_rust_container.py`, `c714e6298`, D-239);
   - un pacchetto con solo un sdist il cui `setup.py` lascia un segno, con uv vero (`a9b4e1df2`, D-253);
+  - un `svelte.config.js`, lo strumento Vue e svelte-kit che lasciano un segno se eseguiti (`b9aeca1fb`, D-258);
+- un `.env` tracciato il cui valore arriva al servizio e a nulla di ciò che la corsa tiene, su Modal (`b1f14ac08`, D-240);
 - libdeflate v1.23 e una sonda C e C++ su `_mm_pause`, indicizzate con `clang.index()` vero su Modal (`125ab9ebd`, D-255).
 
 ### Difetti che nessuna fixture copre
@@ -1087,20 +1105,20 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - `java` (26): D-003, D-016, D-025, D-026, D-027, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-099, D-100, D-101, D-105, D-106, D-111, D-178
 - `python` (26): D-006, D-007, D-028, D-047, D-048, D-049, D-052, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-246, D-247, D-248, D-252, D-253
 - `javascript` (22): D-013, D-021, D-046, D-049, D-051, D-053, D-056, D-072, D-147, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-194, D-195, D-198
+- `c` (21): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-177, D-236, D-259
 - `kotlin` (21): D-016, D-027, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-105, D-106, D-107, D-110, D-166
-- `c` (20): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-177, D-236
-- `cpp` (19): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-177, D-236
+- `cpp` (20): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-177, D-236, D-259
 - `typescript` (18): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-157, D-160, D-170, D-194, D-197, D-198
 - `csharp` (14): D-010, D-021, D-049, D-113, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-241, D-242, D-249
+- `go` (12): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-173, D-174, D-257
 - `rust` (12): D-014, D-021, D-030, D-078, D-143, D-144, D-173, D-175, D-176, D-237, D-238, D-239
-- `go` (11): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-173, D-174
 - `css` (4): D-161, D-162, D-163, D-164
+- `vue` (3): D-080, D-155, D-258
 - `scala` (2): D-011, D-092
-- `vue` (2): D-080, D-155
+- `svelte` (2): D-080, D-258
 - `dart` (1): D-015
 - `elixir` (1): D-012
 - `php` (1): D-015
-- `svelte` (1): D-080
 - `swift` (1): D-030
 
 ## Schede
@@ -2393,14 +2411,15 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - poi `project.getTasks().create("scipCompileAll").dependsOn(triggers)` li chiede per nome, e Gradle si ferma su un nome che il progetto non ha;
   - in kotlinconf `app/adminApp` dichiara solo `js(IR)` e `app/webApp` solo `wasmJs` e `js`: nessuno dei due ha `compileKotlinJvm`.
 - **Progetto e caso:** kotlinconf (`146e891c150c`) — giro `jvm-kotlinconf`, 16 novembre 2026.
-- **Rimedio:** non committato (dynamic-jvm-2), `scripts/indexers/jvm.py` e `tests/test_codebase_map_indexers_jvm.py`:
+- **Rimedio:** `a13d55787` (16 novembre), `scripts/indexers/jvm.py`:
   - `scip_index` dà a scip-java, per un build Gradle, l'init script di Daodan (`SCIP_GRADLE`, scritto in `${TMPDIR:-/tmp}/daodan-scip.gradle`): dopo la valutazione dei progetti lascia nello `scipCompileAll` di ciascuno solo i compiti che il progetto ha;
   - lo stesso script porta, con l'SDK di Android, i compiti delle varianti debug (`ANDROID_GRADLE`, D-108).
 - **Verifica:**
-  - giro `jvm-kotlinconf-kmp` (`benchmarks/project-model/results/pipeline/2026-11-16-jvm-kotlinconf-kmp.json`), sull'albero di lavoro con questo rimedio: Kotlin da `failed` a `fresh`, 226 file su 271 indicizzati, 16.830 siti, 76,0 % di risposta; buchi no-document 2.214, no-occurrence 1.830, element 1. I 45 file fuori dall'indice dicono perché: «no Kotlin compile task of the build lists it» (34), «Gradle script: no KotlinCompile task compiles it» (11), D-098. Il passo dinamico osserva Kotlin: 984 siti, 988 archi;
+  - giro `jvm-kotlinconf-kmp` (`benchmarks/project-model/results/pipeline/2026-11-16-jvm-kotlinconf-kmp.json`), sull'albero di lavoro con il rimedio poi committato in `a13d55787`: Kotlin da `failed` a `fresh`, 226 file su 271 indicizzati, 16.830 siti, 76,0 % di risposta; buchi no-document 2.214, no-occurrence 1.830, element 1. I 45 file fuori dall'indice dicono perché: «no Kotlin compile task of the build lists it» (34), «Gradle script: no KotlinCompile task compiles it» (11), D-098. Il passo dinamico osserva Kotlin: 984 siti, 988 archi;
   - `tests/test_codebase_map_indexers_jvm.py` (`ScipInitTest`, su un Gradle 9.9.1 vero: `test_a_project_without_the_compile_task_stops_the_build_as_scip_java_s_plugin_leaves_it`, `test_each_project_s_scip_compile_all_asks_only_for_the_compile_tasks_the_project_has`).
-- **Stato:** aperto (dynamic-jvm-2): il rimedio è provato e non ancora committato. Un target JVM di Kotlin Multiplatform con un altro nome (`jvm("desktop")`) resta non compilato.
+- **Stato:** risolto; un target JVM di Kotlin Multiplatform con un altro nome (`jvm("desktop")`) resta non compilato.
 - **Note:** D-058, D-098, D-108.
+
 #### D-111 jhipster: 14 file Java con il documento senza occorrenze
 - **Tag:** lingua java · area analizzatore · tipo completezza · origine finale · strumento —
 - **Descrizione:** finale: 15 file Java su 136 fuori dall'indice, 14 «document without occurrences» e 1 «no document in the index».
@@ -2915,9 +2934,9 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** finale, js-sveltekit: TypeScript e JavaScript `failed`, «scip-typescript wrote no index (exit code 1): error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'. error: no files got indexed.».
 - **Spiegazione:** il tsconfig lo genera SvelteKit, e nessuna installazione lo crea.
 - **Progetto e caso:** js-sveltekit — finale, 16 novembre 2026.
-- **Rimedio:** `12775fee3`: un buco che nomina il tsconfig generato.
-- **Verifica:** finale.
-- **Stato:** buco dichiarato (TS5083 nominato nel motivo).
+- **Rimedio:** `12775fee3`: un buco che nomina il tsconfig generato; `b9aeca1fb` (16 novembre, csharp-2): `svelte-kit sync` gira nella preparazione, nel container, con il kit del progetto, e scrive il tsconfig.
+- **Verifica:** finale per il buco; per `b9aeca1fb` solo test (`tests/test_codebase_map_components.py`, `test_sveltekit_writes_its_tsconfig_in_the_preparation_with_the_projects_kit`), nessun giro dopo il commit.
+- **Stato:** risolto.
 - **Note:** `d94f92470` lo lasciava aperto come «causa del tsconfig generato».
 
 #### D-157 TypeScript: i tipi sotto Yarn
@@ -2948,9 +2967,9 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - js-vue-pnpm 3 su 3.
 - **Spiegazione:** le chiamate e i binding nei template non sono siti.
 - **Progetto e caso:** hoppscotch, js-vue-pnpm, js-sveltekit — finale, 16 novembre 2026.
-- **Rimedio:** dichiarati letti in parte (`64edfb930`, D-080).
-- **Verifica:** —
-- **Stato:** aperto (csharp-2).
+- **Rimedio:** dichiarati letti in parte (`64edfb930`, D-080); poi `b9aeca1fb` (16 novembre, csharp-2): `scripts/languages/sfc.py` legge i template (gestori, interpolazioni, direttive), e `scripts/indexers/components.py` genera il TypeScript dei componenti con lo strumento del progetto (`@vue/language-core` del suo vue-tsc, svelte2tsx), che scip-typescript indicizza nel container.
+- **Verifica:** solo test: `tests/test_codebase_map_sfc_templates.py` (`test_a_vue_templates_calls_reads_and_handlers_are_references_bound_by_the_script_and_the_template`, `test_a_svelte_templates_expressions_blocks_and_snippets_are_references_bound_by_the_script_and_the_template`); nessun giro dopo il commit.
+- **Stato:** risolto.
 - **Note:** D-080, D-153.
 
 #### D-160 TypeScript: un file senza documento
@@ -3181,6 +3200,36 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - `tests/test_codebase_map_indexers_clang.py` (`test_a_gcc_command_reads_the_builtin_headers_of_the_clang_scip_clang_is_built_on`, `test_scip_clang_reads_the_database_with_clangs_builtin_headers_and_names_their_package`, `test_clangs_builtin_headers_come_from_its_release_source_packed_once`).
 - **Stato:** risolto da `125ab9ebd` nella via principale; la via degli stadi del Dockerfile legge ancora gli header di GCC, ed è in corso (android-sdk).
 - **Note:** D-135 (otel-demo currency); il commit è successivo ai commit dei risultati di tutti i giri.
+
+#### D-257 L'analizzatore Go esegue sull'host `go mod download` e il compilatore C
+- **Tag:** lingua go · area analizzatore · tipo sicurezza · origine review · strumento go, git, gcc
+- **Descrizione:** host-guard-2, nella sua revisione dell'host: l'analizzatore Go lancia sull'host `go mod download` con l'ambiente intero dell'utente e senza `GOPROXY`, `GOVCS`, `GOENV` né `GOSUMDB`, così un modulo del progetto può far raggiungere a git il suo host (su Modal è registrato `git ls-remote https://github.com/<modulo>`); e per cgo lancia il compilatore C dell'host (`gcc -E -dM … cgo-gcc-input.c`) (riportato da team-lead il 16 novembre).
+- **Spiegazione:** `scripts/indexers/go.py:652` lancia `go mod download` nella copia del progetto con `env`; `_cgo` (`go.py:381`) chiede `go env CGO_ENABLED`, e Go prova il compilatore C che trova.
+- **Progetto e caso:** analizzatore Go — revisione di host-guard-2, su Modal, 16 novembre 2026.
+- **Rimedio:** in corso (host-guard-2): Go solo nel container di Daodan.
+- **Verifica:** —. La regola chiede un test con un modulo e un compilatore che, se eseguiti, lasciano un segno.
+- **Stato:** aperto (host-guard-2): viola la regola invalicabile di `AGENTS.md` (`2753088a3`).
+- **Note:** D-239, la stessa via per Rust.
+
+#### D-258 Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto
+- **Tag:** lingua vue, svelte · area analizzatore · tipo sicurezza · origine review · strumento npm, typescript-language-server
+- **Descrizione:** host-guard-2: `engine_tools.npm_modules` lancia sull'host `npm ci` con l'ambiente dell'utente e senza rifiutare i pacchetti git o da URL, e il `tsserver.js` del `node_modules/typescript` del progetto è girato sull'host (registrato su Modal) (riportato da team-lead il 16 novembre).
+- **Spiegazione:** lo stadio di Vue e Svelte gira sull'host (`scripts/indexers/vue_svelte.py`, `NEEDS_CONTAINER` falso): installa i pacchetti del progetto con `npm_modules` (`scripts/engine_tools.py:247-250`, `env={**os.environ, ...}`), lega quel `node_modules` alla copia del progetto e chiede le chiamate a typescript-language-server, che carica il TypeScript che trova lì.
+- **Progetto e caso:** analizzatore di Vue e Svelte — revisione di host-guard-2, su Modal, 16 novembre 2026.
+- **Rimedio:** `b9aeca1fb` (16 novembre, csharp-2): Vue e Svelte passano a scip-typescript nel container di Daodan (`scripts/languages/sfc.py` legge i template, `scripts/indexers/components.py` genera il TypeScript dei componenti con lo strumento del progetto, su Node fissato per sha256); la vecchia via di `scripts/indexers/vue_svelte.py` non serve più nessun linguaggio (`LANGUAGES = ()`), resta senza chiamanti e si toglie dopo i giri reali.
+- **Verifica:** solo test, a segni: `svelte.config.js`, lo strumento Vue e svelte-kit lasciano un segno se eseguiti, e dopo un indice intero il progetto non ne ha (`tests/test_codebase_map_components.py`, `test_no_code_of_the_project_runs_on_the_host`); nessun giro dopo il commit.
+- **Stato:** risolto; il codice della vecchia via resta, senza chiamanti, fino ai giri reali.
+- **Note:** D-080 e D-159, i template non letti.
+
+#### D-259 Un header `.h` di C++ letto come C
+- **Tag:** lingua c, cpp · area analizzatore · tipo correttezza · origine commit · strumento —
+- **Descrizione:** `meter_common.h` di otel-demo, un header C++ con un alias di namespace, un namespace anonimo e `std::`, era letto come C, e il parser C falliva (dal commit `bdfd7797b`).
+- **Spiegazione:** `_CPP_HEADER_RE` (`scripts/languages/__init__.py`) non riconosceva alias e namespace anonimi, i nomi `std::` né le inclusioni della libreria standard C++; e il C può usare `namespace` come nome (`struct namespace {`, `p->namespace = x`), come ha misurato clang-reader.
+- **Progetto e caso:** otel-demo (`b825c7c25726`) — commit `bdfd7797b`, 16 novembre 2026.
+- **Rimedio:** `bdfd7797b` (16 novembre), `scripts/languages/__init__.py`: `_CPP_HEADER_RE` riconosce alias e namespace anonimi, i nomi `std::` e le inclusioni della libreria standard C++ della regola di Linguist per `.h`; le forme del namespace contano solo quando `namespace` apre la riga.
+- **Verifica:** solo test (`tests/test_codebase_map_clang_reader.py`, `test_a_header_is_cpp_only_when_its_text_has_what_c_lacks`); i casi C nuovi falliscono senza la correzione.
+- **Stato:** risolto.
+- **Note:** D-128, l'altro caso di un `.h` letto con il linguaggio sbagliato.
 
 ### Passo dinamico e osservatori
 
@@ -3808,12 +3857,14 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - otel-demo: lo stadio di currency chiede `ARG OPENTELEMETRY_CPP_VERSION` (`src/currency/Dockerfile:26`), che Compose prende da `.env:8` (`OPENTELEMETRY_CPP_VERSION=1.28.0`); senza, l'istruzione non si riproduce (D-135).
 - **Spiegazione:** `scripts/source_files.py:73-74` (`FORBIDDEN_GLOBS`: `.env`, `.env.*`) e `copy_perimeter` (`scripts/container.py`) tengono fuori dalla copia ogni file che `is_forbidden` nomina, anche quando Git lo traccia.
 - **Progetto e caso:** fastapi (`aabb90126964`) — giro `ci-steps`; otel-demo (`b825c7c25726`); 16 novembre 2026.
-- **Rimedio:** decisione del proprietario (16 novembre, riportata da team-lead), in corso (test-services):
-  - un `.env` che Git traccia entra solo nella copia del container;
-  - uno non tracciato è il buco `file_withheld`;
-  - nessun suo valore arriva ai fatti, agli archivi o ai testi che Daodan tiene.
-- **Verifica:** —
-- **Stato:** aperto (test-services).
+- **Rimedio:** `b1f14ac08` (16 novembre, test-services), `scripts/container.py`, `scripts/premap/compose.py`, `scripts/premap/renovate.py`, `scripts/dynamic/__init__.py`, secondo la decisione del proprietario («Env tracciato»):
+  - i `.env*` che Git traccia entrano nella copia del progetto nel container, come nel checkout della CI; ogni altro file che Daodan non legge resta fuori come buco `file_withheld`, che nomina il file e la regola;
+  - i valori si leggono solo in un container senza rete e sono mascherati come `[.env:NOME]` in log, uscite di testo, cause del registro e risultato;
+  - il container della pre-mappa scrive un segnaposto al posto di ogni valore, così i fatti di Compose tengono `${NOME}` e `dotenv: {NOME: file}`, e il valore entra solo all'avvio del servizio.
+- **Verifica:**
+  - giro `dotenv` (`benchmarks/project-model/results/pipeline/2026-11-16-dotenv.json`): in fastapi db, mailpit e adminer partono e «Migrate DB» passa, e la password del template compare 0 volte nel risultato; in tududi i tre passi del job escono con 0 accanto a postgres (dal commit);
+  - `tests/test_codebase_map_dynamic_services.py` (`test_the_copy_carries_the_env_files_git_tracks_and_names_each_file_it_withholds`, `test_each_value_of_a_tracked_env_file_is_masked_where_it_stands_as_a_whole`, `test_on_modal_a_tracked_env_file_s_value_reaches_the_service_and_nothing_the_run_keeps`).
+- **Stato:** risolto; un file che Daodan non legge e Git non traccia resta il buco dichiarato `file_withheld`.
 - **Note:** sblocca fastapi (D-213) e currency (D-135).
 
 #### D-244 I test reali dei servizi si cancellavano a vicenda
@@ -3825,6 +3876,36 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** solo test.
 - **Stato:** risolto.
 - **Note:** —
+
+#### D-260 Il passo di test della CI senza le variabili che la CI gli dà
+- **Tag:** lingua tutti · area servizi · tipo completezza · origine commit · strumento GitHub Actions
+- **Descrizione:** i test partivano senza le variabili che il workflow, il job e il passo danno al passo dei test, e senza quelle sul comando che avvia il runner: fastapi lancia i test con `FASTAPI_ENV=development coverage run -m pytest tests/` (dal commit `b1f14ac08`).
+- **Spiegazione:** il passo di test non era un fatto della pre-mappa: i fatti `ci_steps` tenevano solo i passi prima dei test (D-213).
+- **Progetto e caso:** fastapi (`aabb90126964`) — commit `b1f14ac08`, 16 novembre 2026.
+- **Rimedio:** `b1f14ac08` (16 novembre, test-services): il passo di test della CI è un fatto `ci_steps` con `env`, le variabili del workflow, del job, del passo e quelle sul comando che avvia il runner, anche negli script che esegue; un valore che la CI o la shell calcolano è un buco `ci_step_incomplete`.
+- **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`, `test_the_steps_a_job_runs_before_its_tests_are_facts_with_where_and_how_github_runs_them`, `test_an_observer_s_runs_get_the_steps_before_their_tests_and_a_gap_for_each_that_does_not_run`).
+- **Stato:** risolto; un valore calcolato resta il buco dichiarato `ci_step_incomplete`.
+- **Note:** D-213.
+
+#### D-261 Un passo di test dentro `docker compose run`
+- **Tag:** lingua tutti · area servizi · tipo completezza · origine commit · strumento Compose, GitHub Actions
+- **Descrizione:** un job che lancia i suoi test dentro `docker compose run` li fa girare in un container che Compose costruisce (dal commit `b1f14ac08`).
+- **Spiegazione:** il passo dinamico non avvia i container che Compose costruisce (D-212).
+- **Progetto e caso:** passo dinamico — commit `b1f14ac08`, 16 novembre 2026.
+- **Rimedio:** `b1f14ac08` (16 novembre, test-services): il passo di test e ogni passo prima di lui sono il buco `ci_step_not_run`.
+- **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`, `test_a_job_that_runs_its_tests_inside_docker_compose_says_its_test_step_and_each_step_before_it_not_run`).
+- **Stato:** buco dichiarato (`ci_step_not_run`).
+- **Note:** D-212, D-213.
+
+#### D-262 apt dietro il proxy del container: l'archivio su HTTP in chiaro
+- **Tag:** lingua tutti · area container · tipo completezza · origine commit · strumento apt
+- **Descrizione:** il commit `b1f14ac08` fa inoltrare al proxy del container l'HTTP in chiaro per l'archivio apt dichiarato.
+- **Spiegazione:** da verificare: il commit non dice cosa accadeva prima.
+- **Progetto e caso:** container — commit `b1f14ac08`, 16 novembre 2026.
+- **Rimedio:** `b1f14ac08` (16 novembre, test-services), `scripts/container.py`: il proxy inoltra HTTP in chiaro solo per GET e HEAD di `dists/` e `pool/` di un archivio apt dichiarato.
+- **Verifica:** `tests/test_codebase_map_container.py` (`test_proxy_forwards_plain_http_to_an_apt_host_only_for_its_archive`, e su Modal `test_on_modal_apt_updates_and_downloads_from_debian_s_plain_http_archive_through_the_proxy`).
+- **Stato:** risolto.
+- **Note:** D-064, il perimetro di rete.
 
 ### Benchmark e documenti
 
