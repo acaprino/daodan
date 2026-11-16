@@ -1,0 +1,3053 @@
+{
+ "mix-real-chi": {
+  "premap": {
+   "languages": {
+    "given": true,
+    "expected": 2,
+    "found": 2,
+    "found_normalised": 2,
+    "missed": [],
+    "extra": [
+     "Go Checksums",
+     "Go Module",
+     "JSON",
+     "Markdown",
+     "SVG",
+     "Text"
+    ],
+    "wrong": []
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 3
+   },
+   "excluded": {
+    "given": true,
+    "expected": 2,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [
+     "_examples/rest/routes.json",
+     "_examples/rest/routes.md"
+    ],
+    "extra": [
+     ".gitignore",
+     "CHANGELOG.md",
+     "CONTRIBUTING.md",
+     "LICENSE",
+     "README.md",
+     "_examples/README.md"
+    ],
+    "wrong": []
+   },
+   "units": {
+    "given": true,
+    "expected": 3,
+    "found": 3,
+    "found_normalised": 3,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 0,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": true,
+    "expected": 3,
+    "found": 2,
+    "found_normalised": 2,
+    "missed": [
+     "go-module@. > ."
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.config": {
+    "given": true,
+    "expected": 9,
+    "found": 2,
+    "found_normalised": 2,
+    "missed": [
+     "go-module@. > build_tags",
+     "go-module@. > entry_files",
+     "go-module@. > nested_modules",
+     "go-module@. > packages",
+     "go-module@. > skipped_by_pattern",
+     "go-module@_examples/rest > entry_files",
+     "go-module@_examples/versions > entry_files"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace": {
+    "given": true,
+    "expected": 0,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": false,
+    "expected": 0
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 7,
+    "found": 3,
+    "found_normalised": 3,
+    "missed": [
+     "go@.github/workflows/ci.yml#jobs.test.strategy.matrix.go-version",
+     "go@.github/workflows/ci.yml#jobs.test.strategy.matrix.go-version",
+     "go@.github/workflows/ci.yml#jobs.test.strategy.matrix.go-version",
+     "go@.github/workflows/ci.yml#jobs.test.strategy.matrix.go-version"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 5
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 2
+   },
+   "services": {
+    "given": false,
+    "expected": 0
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.009,
+    "source": "modules.py@daodan/module-graph/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "python-build@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "requirements@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.001,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "npm-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "npm-tests@daodan/premap/v2",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "jvm-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "project-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "scanner",
+    "seconds": 18.994,
+    "source": "go-enry@v2.9.6",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 53.963,
+    "source": "renovate@44.239.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 34.189,
+    "source": "go@1.27.3",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "cargo@1.99.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "uv@0.11.28",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "tsc@6.0.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "npm@bundled with Node",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "cmake@4.4.5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 2.458,
+    "source": "make@4.3",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "gradle@9.9.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "maven@3.10.0",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "dotnet@10.0.404",
+    "state": "not_needed"
+   }
+  ],
+  "gaps": [
+   {
+    "detail": "go 1.16: go 1.22 runs these commands: one version per tool per run",
+    "kind": "toolchain_unavailable",
+    "path": "_examples/versions/go.mod",
+    "source": "go@1.27.3",
+    "tool": "go",
+    "version": "1.16"
+   },
+   {
+    "detail": "go 1.24: go 1.22 runs these commands: one version per tool per run",
+    "kind": "toolchain_unavailable",
+    "path": "go.mod",
+    "source": "go@1.27.3",
+    "tool": "go",
+    "version": "1.24"
+   },
+   {
+    "detail": "go list -m -json: go: go.mod requires go >= 1.24 (running go 1.22.12; GOTOOLCHAIN=local)",
+    "kind": "model_failed",
+    "path": ".",
+    "source": "go@1.27.3"
+   },
+   {
+    "detail": "no go command named this module",
+    "kind": "model_failed",
+    "path": ".",
+    "source": "go@1.27.3"
+   }
+  ],
+  "units": 3,
+  "toolchains": [
+   {
+    "declared_in": "_examples/rest/go.mod",
+    "sources": [
+     "go@1.27.3",
+     "renovate@44.239.1"
+    ],
+    "tool": "go",
+    "version": "1.22"
+   },
+   {
+    "declared_in": "_examples/versions/go.mod",
+    "sources": [
+     "go@1.27.3",
+     "renovate@44.239.1"
+    ],
+    "tool": "go",
+    "version": "1.16"
+   },
+   {
+    "declared_in": "go.mod",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "go",
+    "version": "1.24"
+   }
+  ],
+  "steps": {
+   "scan": {
+    "modules": 3,
+    "graph": "/runs/mix-real-chi/modules.json",
+    "action": "rebuilt",
+    "units": 3,
+    "gaps": 4,
+    "premap": "/runs/mix-real-chi/premap.json"
+   },
+   "analyze": {
+    "pass": true,
+    "manifest_digest": "c09a79b689ee383c202eb142e024d0df5b8ace9dcd8ff17e715b8b8423c37dba",
+    "languages": {
+     "go": {
+      "state": "fresh",
+      "engine": "scip-go@v0.2.9"
+     }
+    },
+    "engines": {
+     "scip-go": {
+      "engine": "scip-go@v0.2.9",
+      "available": true,
+      "languages": {
+       "go": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-go",
+       "peak_mb": 297,
+       "seconds": 8.9,
+       "version": "v0.2.9"
+      }
+     }
+    },
+    "started_at": "2026-11-16T11:57:05Z",
+    "available": true,
+    "finished_at": "2026-11-16T11:57:33Z"
+   },
+   "dynamic": {
+    "languages": {
+     "go": {
+      "state": "observed",
+      "sites": 1344,
+      "edges": 1387,
+      "closed": 6
+     }
+    }
+   },
+   "union": {
+    "languages": {
+     "go": {
+      "state": "fresh",
+      "engine": "scip-go@v0.2.9",
+      "coverage": {
+       "sites": 10099,
+       "answered": {
+        "external": 2444,
+        "observed": 6,
+        "project-callable": 2048,
+        "project-value": 5298
+       },
+       "holes": {
+        "no-occurrence": {
+         "count": 266,
+         "examples": [
+          "_examples/fileserver/main.go:50 panic",
+          "_examples/fileserver/main.go:53 len",
+          "_examples/limits/main.go:37 panic"
+         ]
+        },
+        "no-position": {
+         "count": 37,
+         "examples": [
+          "_examples/graceful/main.go:26",
+          "_examples/versions/main.go:75",
+          "middleware/client_ip_test.go:177"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "gomod github.com/golang/go/src@go1.24": 2635,
+        "gomod github.com/go-chi/chi/v5@v5.1.0": 46,
+        "gomod github.com/golang/go/src@go1.22": 45,
+        "gomod github.com/go-chi/chi/v5@v5.2.4": 34,
+        "gomod github.com/golang/go/src@go1.16": 33,
+        "gomod github.com/go-chi/render@v1.0.1": 23,
+        "gomod github.com/go-chi/render@v1.0.3": 9,
+        "gomod github.com/go-chi/docgen@v1.2.0": 3
+       },
+       "files": {
+        "snapshot": 90,
+        "indexed": 90,
+        "missing": []
+       },
+       "state": "lower-bound",
+       "observed": {
+        "resolver": "dynamic-record-go@1",
+        "at": "2026-11-16T11:58:36Z",
+        "tests": [
+         {
+          "root": ".",
+          "runner": "go test",
+          "argv": [
+           "go",
+           "test",
+           "-vet=off",
+           "./..."
+          ],
+          "exit_code": 1,
+          "packages": {
+           "failed": 1,
+           "passed": 1
+          },
+          "state": "ran"
+         }
+        ],
+        "recorded": 1345,
+        "placed": 1344,
+        "joined": 1344,
+        "unjoined": {
+         "call": 1
+        },
+        "agree": 1316,
+        "wider": 0,
+        "mocked": 0,
+        "conflicts": {
+         "count": 0,
+         "examples": []
+        },
+        "files": {
+         "executed": 56,
+         "not_executed": [
+          "_examples/custom-handler/main.go",
+          "_examples/custom-method/main.go",
+          "_examples/fileserver/main.go",
+          "_examples/graceful/main.go",
+          "_examples/hello-world/main.go",
+          "_examples/limits/main.go",
+          "_examples/pathvalue/main.go",
+          "_examples/rest/main.go",
+          "_examples/router-walk/main.go",
+          "_examples/todos-resource/main.go",
+          "_examples/todos-resource/todos.go",
+          "_examples/todos-resource/users.go",
+          "_examples/versions/data/errors.go",
+          "_examples/versions/main.go",
+          "_examples/versions/presenter/v2/article.go",
+          "_examples/versions/presenter/v3/article.go",
+          "middleware/client_ip_bench_test.go",
+          "middleware/content_encoding.go",
+          "middleware/content_type.go",
+          "middleware/deprecation.go",
+          "middleware/heartbeat.go",
+          "middleware/nocache.go",
+          "middleware/page_route.go",
+          "middleware/path_rewrite.go",
+          "middleware/profiler.go",
+          "middleware/request_id.go",
+          "middleware/request_size.go",
+          "middleware/sunset.go",
+          "middleware/terminal.go",
+          "middleware/timeout.go",
+          "middleware/value.go"
+         ]
+        },
+        "sites": 1344,
+        "edges": 1387,
+        "closed": {
+         "no-position": 6
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "events": {
+   "step.started": 4,
+   "log": 2,
+   "progress": 30,
+   "gap": 10,
+   "step.finished": 4,
+   "analyzer.started": 2,
+   "analyzer.finished": 2,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "scan": [
+    2.6,
+    112.3
+   ],
+   "analyze": [
+    112.3,
+    140.0
+   ],
+   "dynamic": [
+    140.0,
+    203.7
+   ],
+   "union": [
+    203.7,
+    203.9
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 11.503,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 37.673,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 11.172,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.287,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 11.279,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.238,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 0.91,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 18.152,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 19.784,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/daodan-enry/results/0/stderr": "go: creating new go.mod: module daodan-enry\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/go-enry/go-enry/v2 v2.9.6\ngo: downloading github.com/go-enry/go-oniguruma v1.2.1\ngo: added github.com/go-enry/go-enry/v2 v2.9.6\ngo: added github.com/go-enry/go-oniguruma v1.2.1\n",
+   "premap-runs/go/results/0/stderr": "mise by @jdx \u2013 installing 1 tool\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591 0/1 \u00b7 3.0s\n  go@1.22.12  extracting  3.0s\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591 0/1 \u00b7 6.0s\n  go@1.22.12  extracting  6.0s\nmise go@1.22.12 go version go1.22.12 linux/amd64\nmise \u2713 go@1.22.12  6.1s  go1.22.12.linux-amd64.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 6.1s\nmise WARN  go installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use go\n",
+   "premap-runs/go/results/10/stderr": "go: go.mod requires go >= 1.24 (running go 1.22.12; GOTOOLCHAIN=local)\n",
+   "premap-runs/go/results/4/stderr": "go: downloading github.com/go-chi/docgen v1.2.0\ngo: downloading github.com/go-chi/chi/v5 v5.2.4\ngo: downloading github.com/go-chi/render v1.0.1\n",
+   "premap-runs/go/results/7/stderr": "go: downloading github.com/go-chi/render v1.0.3\ngo: downloading github.com/go-chi/chi/v5 v5.1.0\ngo: downloading github.com/ajg/form v1.5.1\n",
+   "premap-runs/go/results/9/stderr": "go: go.mod requires go >= 1.24 (running go 1.22.12; GOTOOLCHAIN=local)\n",
+   "premap-runs/renovate/results/1/stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"dd8eb337-7e20-4f05-b2f7-908ed424fe37\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-16T11:56:24.227Z\",\"v\":0}\n{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"dd8eb337-7e20-4f05-b2f7-908ed424fe37\",\"repository\":\"local\",\"githubDeps\":[\"actions/setup-go\",\"actions/checkout\",\"go\"],\"msg\":\"GitHub token is required for some dependencies\",\"time\":\"2026-11-16T11:56:26.201Z\",\"v\":0}\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 15s\n",
+   "dynamic-runs/dynamic-record-go/dynamic-go/tests-0.log": "ok  \tgithub.com/go-chi/chi/v5\t4.952s\n?   \tgithub.com/go-chi/chi/v5/daodanrec\t[no test files]\n2026/11/16 11:58:09 \"GET http://example.com/ HTTP/1.1\" from 192.0.2.1:1234 - 000 0B in 24.526\u00b5s\n2026/11/16 11:58:09 \"GET http://example.com/ HTTP/1.1\" from 192.0.2.1:1234 - 200 9B in 3.019344ms\n--- FAIL: TestWrapWriterHTTP2 (0.10s)\n    middleware_test.go:256: could not get server: Get \"https://localhost:7072\": dial tcp 127.0.0.1:7072: connect: connection refused\nFAIL\nFAIL\tgithub.com/go-chi/chi/v5/middleware\t26.201s\nFAIL\n",
+   "dynamic-runs/dynamic-record-go/prepare.log": "mise by @jdx \u2013 installing 1 tool\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591 0/1 \u00b7 3.0s\n  go@1.22.12  extracting  3.0s\nmise go@1.22.12 go version go1.22.12 linux/amd64\nmise \u2713 go@1.22.12  3.5s  go1.22.12.linux-amd64.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 3.5s\nmise WARN  go installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use go\n"
+  },
+  "seconds": 203.9
+ },
+ "mix-real-javapoet": {
+  "premap": {
+   "languages": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [
+     "JSON",
+     "Markdown",
+     "Maven POM",
+     "XML"
+    ],
+    "wrong": []
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 2
+   },
+   "excluded": {
+    "given": true,
+    "expected": 0,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [],
+    "extra": [
+     ".gitignore",
+     "CHANGELOG.md",
+     "LICENSE.txt",
+     "README.md"
+    ],
+    "wrong": []
+   },
+   "units": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 0,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": true,
+    "expected": 2,
+    "found": 2,
+    "found_normalised": 2,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.config": {
+    "given": false,
+    "expected": 2
+   },
+   "workspace": {
+    "given": true,
+    "expected": 0,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": false,
+    "expected": 0
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 2,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [],
+    "extra": [
+     "java@pom.xml#maven-compiler-plugin.target"
+    ],
+    "wrong": [
+     {
+      "item": "java@pom.xml#java.version",
+      "fields": {
+       "declared_in": {
+        "expected": "pom.xml#java.version",
+        "got": "pom.xml#properties.java.version"
+       }
+      },
+      "same_after_normalisation": false
+     },
+     {
+      "item": "java@.github/workflows/build.yml",
+      "fields": {
+       "version": {
+        "expected": "8",
+        "got": "1.8"
+       },
+       "declared_in": {
+        "expected": ".github/workflows/build.yml",
+        "got": "pom.xml#maven-compiler-plugin.source"
+       }
+      },
+      "same_after_normalisation": false
+     }
+    ]
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 13
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 1
+   },
+   "services": {
+    "given": false,
+    "expected": 0
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.014,
+    "source": "modules.py@daodan/module-graph/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "python-build@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "requirements@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.001,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "npm-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "npm-tests@daodan/premap/v2",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.001,
+    "source": "jvm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "project-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "scanner",
+    "seconds": 23.225,
+    "source": "go-enry@v2.9.6",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 42.124,
+    "source": "renovate@44.239.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.001,
+    "source": "go@1.27.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.018,
+    "source": "cargo@1.99.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "uv@0.11.28",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "tsc@6.0.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "npm@bundled with Node",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "cmake@4.4.5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "make@4.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "gradle@9.9.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 10.516,
+    "source": "maven@3.10.0",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "dotnet@10.0.404",
+    "state": "not_needed"
+   }
+  ],
+  "gaps": [],
+  "units": 1,
+  "toolchains": [
+   {
+    "declared_in": "pom.xml#properties.java.version",
+    "line": 23,
+    "sources": [
+     "jvm-files@daodan/premap/v1"
+    ],
+    "tool": "java",
+    "version": "1.8"
+   },
+   {
+    "declared_in": "pom.xml#maven-compiler-plugin.source",
+    "line": 101,
+    "sources": [
+     "jvm-files@daodan/premap/v1"
+    ],
+    "tool": "java",
+    "version": "1.8"
+   },
+   {
+    "declared_in": "pom.xml#maven-compiler-plugin.target",
+    "line": 102,
+    "sources": [
+     "jvm-files@daodan/premap/v1"
+    ],
+    "tool": "java",
+    "version": "1.8"
+   }
+  ],
+  "steps": {
+   "scan": {
+    "modules": 1,
+    "graph": "/runs/mix-real-javapoet/modules.json",
+    "action": "rebuilt",
+    "units": 1,
+    "gaps": 0,
+    "premap": "/runs/mix-real-javapoet/premap.json"
+   },
+   "analyze": {
+    "pass": true,
+    "manifest_digest": "0587a5e473872bc705ffee5ef50ec3369a65e1c5b0bc5a2d57367740758703dc",
+    "languages": {
+     "java": {
+      "state": "fresh",
+      "engine": "scip-java@0.14.2"
+     }
+    },
+    "engines": {
+     "scip-java": {
+      "engine": "scip-java@0.14.2",
+      "available": true,
+      "languages": {
+       "java": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-java",
+       "peak_mb": null,
+       "seconds": 14.9,
+       "version": "0.14.2"
+      }
+     }
+    },
+    "started_at": "2026-11-16T11:56:34Z",
+    "available": true,
+    "finished_at": "2026-11-16T11:57:19Z"
+   },
+   "dynamic": {
+    "languages": {
+     "java": {
+      "state": "failed",
+      "reason": "preparation exited with code 1: 12.1:compile (default-compile) on project javapoet: Compilation failure\n[ERROR] /work/src/main/java/com/squareup/javapoet/WildcardTypeName.java:[18,15] cannot access java.io.IOException\n[ERROR]   bad class file: /modules/java.base/java/io/IOException.class\n[ERROR]     class file has wrong version 61.0, should be 53.0\n[ERROR]     Please remove or make sure it appears in the correct subdirectory of the classpath.\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException"
+     }
+    }
+   },
+   "union": {
+    "languages": {
+     "java": {
+      "state": "fresh",
+      "engine": "scip-java@0.14.2",
+      "coverage": {
+       "sites": 9142,
+       "answered": {
+        "external": 2626,
+        "project-callable": 4054,
+        "project-value": 2452
+       },
+       "holes": {
+        "undefined-project-symbol": {
+         "count": 10,
+         "examples": [
+          "src/main/java/com/squareup/javapoet/CodeBlock.java:243 length",
+          "src/main/java/com/squareup/javapoet/CodeBlock.java:278 length",
+          "src/main/java/com/squareup/javapoet/CodeBlock.java:279 length"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "maven jdk@17": 1453,
+        "maven maven/com.google.truth/truth@1.4.4": 985,
+        "maven maven/junit/junit@4.13.2": 158,
+        "maven maven/com.google.testing.compile/compile-testing@0.21.0": 29,
+        "maven maven/com.google.guava/guava@33.2.1-android": 14,
+        "maven maven/org.mockito/mockito-core@4.11.0": 12,
+        "maven maven/com.google.jimfs/jimfs@1.3.0": 2,
+        "maven maven/org.eclipse.jdt.core.compiler/ecj@4.6.1": 1
+       },
+       "files": {
+        "snapshot": 39,
+        "indexed": 39,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     }
+    }
+   }
+  },
+  "events": {
+   "step.started": 4,
+   "log": 1,
+   "progress": 29,
+   "step.finished": 4,
+   "analyzer.started": 2,
+   "analyzer.finished": 2,
+   "gap": 1,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "scan": [
+    4.0,
+    80.1
+   ],
+   "analyze": [
+    80.1,
+    125.0
+   ],
+   "dynamic": [
+    125.0,
+    147.7
+   ],
+   "union": [
+    147.7,
+    147.9
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 1,
+    "duration_seconds": 16.389,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 9.694,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.842,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 5.558,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.182,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 18.304,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 5.805,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/daodan-enry/results/0/stderr": "go: creating new go.mod: module daodan-enry\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/go-enry/go-enry/v2 v2.9.6\ngo: downloading github.com/go-enry/go-oniguruma v1.2.1\ngo: added github.com/go-enry/go-enry/v2 v2.9.6\ngo: added github.com/go-enry/go-oniguruma v1.2.1\n",
+   "premap-runs/renovate/results/1/stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"c87d3d34-8141-451d-8537-921a083443de\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-16T11:56:21.981Z\",\"v\":0}\n{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"c87d3d34-8141-451d-8537-921a083443de\",\"repository\":\"local\",\"githubDeps\":[\"actions/checkout\",\"actions/setup-java\"],\"msg\":\"GitHub token is required for some dependencies\",\"time\":\"2026-11-16T11:56:22.758Z\",\"v\":0}\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 15s\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/prepare.log": "ed from central: https://repo.maven.apache.org/maven2/com/google/j2objc/j2objc-annotations/1.1/j2objc-annotations-1.1.jar (8.8 kB at 97 kB/s)\n[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/checkerframework/javacutil/2.5.0/javacutil-2.5.0.jar\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/guava/guava/23.5-jre/guava-23.5-jre.jar (2.7 MB at 27 MB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.14/animal-sniffer-annotations-1.14.jar (3.5 kB at 30 kB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/checkerframework/javacutil/2.5.0/javacutil-2.5.0.jar (88 kB at 749 kB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/checkerframework/checker-qual/2.0.0/checker-qual-2.0.0.jar (343 kB at 2.8 MB/s)\n[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/com/google/errorprone/javac/9+181-r4173-1/javac-9+181-r4173-1.jar (6.9 MB at 34 MB/s)\n[INFO] Recompiling the module because of changed source code.\n[INFO] Compiling 17 source files to /work/target/classes\n[INFO] -------------------------------------------------------------\n[ERROR] COMPILATION ERROR : \n[INFO] -------------------------------------------------------------\n[ERROR] /work/src/main/java/com/squareup/javapoet/WildcardTypeName.java:[18,15] cannot access java.io.IOException\n  bad class file: /modules/java.base/java/io/IOException.class\n    class file has wrong version 61.0, should be 53.0\n    Please remove or make sure it appears in the correct subdirectory of the classpath.\n[INFO] 1 error\n[INFO] -------------------------------------------------------------\n[INFO] ------------------------------------------------------------------------\n[ERROR] BUILD FAILURE\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  2.491 s\n[INFO] Finished at: 2026-11-16T11:57:41Z\n[INFO] ------------------------------------------------------------------------\n[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.12.1:compile (default-compile) on project javapoet: Compilation failure\n[ERROR] /work/src/main/java/com/squareup/javapoet/WildcardTypeName.java:[18,15] cannot access java.io.IOException\n[ERROR]   bad class file: /modules/java.base/java/io/IOException.class\n[ERROR]     class file has wrong version 61.0, should be 53.0\n[ERROR]     Please remove or make sure it appears in the correct subdirectory of the classpath.\n[ERROR] -> [Help 1]\n[ERROR] \n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\n[ERROR] \n[ERROR] For more information about the errors and possible solutions, please read the following articles:\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException\nDAODAN_STEP end compile 1 1794830261.644100318\nDAODAN_PEAK -\n"
+  },
+  "seconds": 148.0
+ },
+ "mix-real-tududi": {
+  "premap": {
+   "languages": {
+    "given": true,
+    "expected": 8,
+    "found": 8,
+    "found_normalised": 8,
+    "missed": [],
+    "extra": [
+     "Ignore List",
+     "JSON",
+     "JSON with Comments",
+     "Markdown",
+     "YAML"
+    ],
+    "wrong": []
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 8
+   },
+   "excluded": {
+    "given": true,
+    "expected": 36,
+    "found": 36,
+    "found_normalised": 36,
+    "missed": [],
+    "extra": [
+     ".gitignore",
+     "CHANGELOG.md",
+     "LICENSE",
+     "README.md",
+     "backend/emails/README.md",
+     "backend/migrations/archive/README.md",
+     "e2e/README.md",
+     "package-lock.json"
+    ],
+    "wrong": []
+   },
+   "units": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 0,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": false,
+    "expected": 3
+   },
+   "units.config": {
+    "given": true,
+    "expected": 3,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [
+     "npm-package@. > entry_files",
+     "npm-package@. > paths"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace": {
+    "given": true,
+    "expected": 0,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": false,
+    "expected": 0
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 2,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [
+     "node@.github/workflows/ci.yml"
+    ],
+    "extra": [
+     "typescript@package.json"
+    ],
+    "wrong": []
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 121
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 7
+   },
+   "services": {
+    "given": false,
+    "expected": 10
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.175,
+    "source": "modules.py@daodan/module-graph/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.008,
+    "source": "python-build@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.086,
+    "source": "requirements@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.024,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.029,
+    "source": "npm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.008,
+    "source": "npm-tests@daodan/premap/v2",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "jvm-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.008,
+    "source": "project-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "scanner",
+    "seconds": 31.124,
+    "source": "go-enry@v2.9.6",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 49.693,
+    "source": "renovate@44.239.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.017,
+    "source": "go@1.27.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.008,
+    "source": "cargo@1.99.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.008,
+    "source": "uv@0.11.28",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 60.128,
+    "source": "tsc@6.0.3",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 20.306,
+    "source": "npm@11.19.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.008,
+    "source": "cmake@4.4.5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.007,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.008,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.007,
+    "source": "make@4.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.007,
+    "source": "gradle@9.9.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.007,
+    "source": "maven@3.10.0",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.001,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.007,
+    "source": "dotnet@10.0.404",
+    "state": "not_needed"
+   }
+  ],
+  "gaps": [
+   {
+    "detail": "install scripts are not run (@scarf/scarf, @swc/core, bcrypt, core-js-pure, fsevents): what they generate is unknown",
+    "kind": "not_executed",
+    "path": "package.json",
+    "source": "npm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "node 22-alpine: the preparation could not install it (its output is in the run's log)",
+    "kind": "toolchain_unavailable",
+    "source": "tsc@6.0.3",
+    "tool": "node",
+    "version": "22-alpine"
+   },
+   {
+    "detail": "node 22-alpine: the preparation could not install it (its output is in the run's log)",
+    "kind": "toolchain_unavailable",
+    "source": "npm@11.19.1",
+    "tool": "node",
+    "version": "22-alpine"
+   },
+   {
+    "detail": "10 Shell files and no analyzer lists the language: their code is in no graph",
+    "files": 10,
+    "kind": "no_analyzer",
+    "language": "Shell",
+    "source": "premap@daodan/premap/v1"
+   }
+  ],
+  "units": 1,
+  "toolchains": [
+   {
+    "declared_in": "Dockerfile",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "node",
+    "version": "22-alpine"
+   },
+   {
+    "declared_in": "package.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "typescript",
+    "version": "^5.6.2"
+   }
+  ],
+  "steps": {
+   "scan": {
+    "modules": 1,
+    "graph": "/runs/mix-real-tududi/modules.json",
+    "action": "rebuilt",
+    "units": 1,
+    "gaps": 4,
+    "premap": "/runs/mix-real-tududi/premap.json"
+   },
+   "analyze": {
+    "pass": true,
+    "manifest_digest": "b39cf2b9afa4c3b96fe35a96f7d8a0fa3617c8368f59612a79b82b6ca6735cc3",
+    "languages": {
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a"
+     },
+     "typescript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.5.2"
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.5.2"
+     }
+    },
+    "engines": {
+     "stylesheet": {
+      "engine": "stylesheet@145560a4592a",
+      "available": true,
+      "languages": {
+       "stylesheet": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "codebase-map stylesheet.py + typescript + tailwindcss",
+       "peak_mb": 781,
+       "seconds": 15.0,
+       "version": "145560a4592a",
+       "versions": "e62b3f368913 + 5.9.3 + None"
+      }
+     },
+     "scip-typescript": {
+      "engine": "scip-typescript@0.5.2",
+      "available": true,
+      "languages": {
+       "javascript": {
+        "state": "fresh"
+       },
+       "typescript": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-typescript",
+       "peak_mb": null,
+       "seconds": 80.0,
+       "types": [
+        "@types/bcrypt@6.0.0",
+        "@types/compression@1.8.1",
+        "@types/cors@2.8.19",
+        "@types/ejs@3.1.5",
+        "@types/express-session@1.19.0",
+        "@types/lodash@4.17.27",
+        "@types/lusca@1.7.5",
+        "@types/multer@2.3.0",
+        "@types/pg@8.23.1",
+        "@types/qrcode@1.5.6",
+        "@types/swagger-jsdoc@6.0.4",
+        "@types/swagger-ui-express@4.1.8",
+        "@types/umzug@2.3.9",
+        "@types/web-push@3.6.4",
+        "@types/xml2js@0.4.14",
+        "@types/babel__preset-env@7.10.0",
+        "@types/eslint@9.6.1",
+        "@types/identity-obj-proxy@3.0.2",
+        "@types/nodemon@1.19.6",
+        "@types/react-refresh@0.14.7",
+        "@types/supertest@7.2.1"
+       ],
+       "version": "0.5.2"
+      },
+      "gaps": [
+       {
+        "detail": "node 22-alpine: the preparation could not install it (its output is in the run's log)",
+        "kind": "toolchain_unavailable",
+        "tool": "node",
+        "version": "22-alpine"
+       }
+      ]
+     }
+    },
+    "started_at": "2026-11-16T11:59:14Z",
+    "available": true,
+    "finished_at": "2026-11-16T12:02:48Z"
+   },
+   "dynamic": {
+    "languages": {
+     "stylesheet": {
+      "state": "no-observer",
+      "reason": "no observer runs this language's tests"
+     },
+     "javascript": {
+      "state": "observed",
+      "sites": 24,
+      "edges": 24,
+      "closed": 6
+     },
+     "typescript": {
+      "state": "not-observed",
+      "reason": "the tests ran and the recorder placed no call on a reference of typescript: node 22-alpine: the preparation could not install it (its output is in the run's log); npm test in . exited with code 1: some tests failed, and a test that fails may stop before its calls: > npm run backend:test |  |  | > tududi@v2.0.0 backend:test | > cd backend && cross-env NODE_ENV=test jest --maxWorkers=4 |  | Error: connect ECONNREFUSED 127.0.0.1:5432 | at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16); npm test in .: 1 lines of its log report a refused connection or an unreachable host: the tests run with no network and the step starts no service"
+     }
+    }
+   },
+   "union": {
+    "languages": {
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.5.2",
+      "coverage": {
+       "sites": 134949,
+       "answered": {
+        "external": 49842,
+        "lexical": 1,
+        "observed": 6,
+        "project-callable": 14374,
+        "project-value": 33836
+       },
+       "holes": {
+        "dangling-local": {
+         "count": 496,
+         "examples": [
+          "backend/app.js:719 module",
+          "backend/migrations/archive/20251224000001-cleanup-unused-task-fields.js:10 uuid",
+          "backend/migrations/archive/20251224000001-cleanup-unused-task-fields.js:17 description"
+         ]
+        },
+        "no-occurrence": {
+         "count": 36131,
+         "examples": [
+          "babel.config.js:8 NODE_ENV",
+          "backend/app.js:21 API_VERSION",
+          "backend/app.js:91 UPGRADE_INSECURE_REQUESTS"
+         ]
+        },
+        "no-position": {
+         "count": 208,
+         "examples": [
+          "backend/app.js:10",
+          "backend/app.js:197",
+          "backend/app.js:209"
+         ]
+        },
+        "undefined-project-symbol": {
+         "count": 55,
+         "examples": [
+          "backend/modules/auth/service.js:37 version",
+          "backend/modules/inbox/nlpParsers.js:240 parse",
+          "backend/modules/inbox/nlpParsers.js:243 start"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "npm @types/jest@29.5.14": 28056,
+        "npm typescript@6.0.3": 9072,
+        "npm @types/node@20.19.43": 6653,
+        "npm @types/superagent@8.1.11": 1782,
+        "npm @types/supertest@7.2.1": 1683,
+        "npm sequelize@6.37.8": 1518,
+        "npm @types/express-serve-static-core@4.19.9": 822,
+        "npm moment@2.31.0": 402,
+        "npm moment-timezone@0.6.3": 162,
+        "npm @types/bcrypt@6.0.0": 81,
+        "npm @types/express@4.17.25": 72,
+        "npm exceljs@4.4.0": 51,
+        "npm @types/multer@2.3.0": 47,
+        "npm axios@1.20.0": 34,
+        "npm jose@6.2.12": 30,
+        "npm express-rate-limit@8.7.0": 24,
+        "npm @faker-js/faker@10.6.0": 14,
+        "npm pino@9.14.0": 13,
+        "npm dotenv@16.5.0": 11,
+        "npm marked@16.4.2": 11,
+        "npm @types/pg@8.23.1": 11,
+        "npm @types/lodash@4.17.27": 10,
+        "npm openid-client@5.7.1": 10,
+        "npm @types/web-push@3.6.4": 9,
+        "npm @types/lusca@1.7.5": 7,
+        "npm @types/xml2js@0.4.14": 6,
+        "npm iconv-lite@0.4.24": 6,
+        "npm jszip@3.10.2": 6,
+        "npm @types/express-session@1.19.0": 5,
+        "npm nanoid@3.3.19": 5,
+        "npm @types/ejs@3.1.5": 5,
+        "npm pino-http@10.5.0": 4,
+        "npm compromise@14.17.0": 4,
+        "npm @types/umzug@2.3.9": 4,
+        "npm @types/express-serve-static-core@5.1.3": 3,
+        "npm @types/swagger-ui-express@4.1.8": 3,
+        "npm node-cron@4.1.1": 3,
+        "npm @types/compression@1.8.1": 2,
+        "npm openai@6.49.0": 2,
+        "npm helmet@8.1.0": 1,
+        "npm @types/cors@2.8.19": 1,
+        "npm connect-session-sequelize@7.1.7": 1,
+        "npm pg-connection-string@2.14.1": 1,
+        "npm @types/swagger-jsdoc@6.0.4": 1,
+        "npm stripe@18.5.0": 1,
+        "npm slugify@1.6.9": 1,
+        "npm @types/qrcode@1.5.6": 1,
+        "npm csv-parse@7.0.3": 1,
+        "npm disposable-email-domains-js@1.26.0": 1,
+        "npm fast-xml-parser@5.11.1": 1,
+        "npm globals@15.15.0": 1,
+        "npm typescript-eslint@8.70.0": 1,
+        "npm @pmmmwh/react-refresh-webpack-plugin@0.5.17": 1,
+        "npm html-webpack-plugin@5.6.8": 1,
+        "npm copy-webpack-plugin@14.0.0": 1
+       },
+       "files": {
+        "snapshot": 1038,
+        "indexed": 1038,
+        "missing": []
+       },
+       "state": "lower-bound",
+       "observed": {
+        "resolver": "dynamic-record-javascript@1",
+        "at": "2026-11-16T12:04:49Z",
+        "tests": [
+         {
+          "root": ".",
+          "runner": "jest",
+          "declared_in": "package.json#scripts.test",
+          "state": "ran",
+          "exit_code": 1,
+          "seconds": 3,
+          "processes": 1
+         }
+        ],
+        "recorded": 24,
+        "placed": 24,
+        "joined": 24,
+        "unjoined": {},
+        "agree": 18,
+        "wider": 0,
+        "mocked": 0,
+        "conflicts": {
+         "count": 0,
+         "examples": []
+        },
+        "files": {
+         "executed": 3,
+         "not_executed": [
+          "babel.config.js",
+          "backend/app.js",
+          "backend/config/authConfig.js",
+          "backend/config/config.js",
+          "backend/config/database.js",
+          "backend/config/db.js",
+          "backend/config/hostedConfig.js",
+          "backend/config/legacySqlite.js",
+          "backend/config/plans.js",
+          "backend/config/swagger.js",
+          "backend/emails/comeBack.js",
+          "backend/emails/deletionWarning.js",
+          "backend/emails/emptyAccount.js",
+          "backend/emails/feedbackReceived.js",
+          "backend/emails/i18n.js",
+          "backend/emails/index.js",
+          "backend/emails/layout.js",
+          "backend/emails/memberInvite.js",
+          "backend/emails/passwordReset.js",
+          "backend/emails/securityNotice.js",
+          "backend/emails/trialReminder.js",
+          "backend/emails/verification.js",
+          "backend/eslint.config.js",
+          "backend/middleware/auth.js",
+          "backend/middleware/authorize.js",
+          "backend/middleware/captcha.js",
+          "backend/middleware/csrf.js",
+          "backend/middleware/demo.js",
+          "backend/middleware/entitlements.js",
+          "backend/middleware/numericIdParam.js",
+          "backend/middleware/queryLogger.js",
+          "backend/middleware/rateLimitStore.js",
+          "backend/middleware/rateLimiter.js",
+          "backend/middleware/roles.js",
+          "backend/middleware/uploadsAccess.js",
+          "backend/migrations/archive/20250116000000-add-first-day-of-week-to-users.js",
+          "backend/migrations/archive/20250615000001-create-users.js",
+          "backend/migrations/archive/20250618000001-enhance-recurring-tasks.js",
+          "backend/migrations/archive/20250619000001-add-recurring-parent-id.js",
+          "backend/migrations/archive/20250619000002-add-project-image-url.js",
+          "backend/migrations/archive/20250620000001-add-task-intelligence-enabled.js",
+          "backend/migrations/archive/20250620000002-add-auto-suggest-next-actions-enabled.js",
+          "backend/migrations/archive/20250621221841-add-completed-at-to-tasks.js",
+          "backend/migrations/archive/20250621223000-create-calendar-tokens.js",
+          "backend/migrations/archive/20250622000001-create-task-events.js",
+          "backend/migrations/archive/20250622053925-add-pomodoro-enabled-to-users.js",
+          "backend/migrations/archive/20250623000001-add-uuid-to-tasks.js",
+          "backend/migrations/archive/20250623000003-create-notes-tags-table.js",
+          "backend/migrations/archive/20250623000004-add-timestamps-to-notes-tags.js",
+          "backend/migrations/archive/20250623000005-add-timestamps-to-projects-tags.js",
+          "backend/migrations/archive/20250711000001-add-suggestion-metadata-to-inbox-items.js",
+          "backend/migrations/archive/20250713072131-add-productivity-assistant-columns.js",
+          "backend/migrations/archive/20250713233301-add-title-to-inbox-items.js",
+          "backend/migrations/archive/20250716085710-add-parent-task-id-to-tasks.js",
+          "backend/migrations/archive/20250722051746-add-today-settings-to-users.js",
+          "backend/migrations/archive/20250722052000-add-task-sorting-columns-to-projects.js",
+          "backend/migrations/archive/20250805000001-standardize-uid-columns.js",
+          "backend/migrations/archive/20250810090000-create-roles.js",
+          "backend/migrations/archive/20250810090100-create-actions.js",
+          "backend/migrations/archive/20250810090200-create-permissions.js",
+          "backend/migrations/archive/20250813103351-add-telegram-allowed-users.js",
+          "backend/migrations/archive/20250920074825-add-project-state-column.js",
+          "backend/migrations/archive/20250920075905-convert-active-to-states.js",
+          "backend/migrations/archive/20250920075916-remove-active-column.js",
+          "backend/migrations/archive/20250924000001-add-uid-to-inbox-items.js",
+          "backend/migrations/archive/20250925000001-add-uid-to-users.js",
+          "backend/migrations/archive/20251011000001-add-surname-to-users.js",
+          "backend/migrations/archive/20251014000001-create-views.js",
+          "backend/migrations/archive/20251014202005-add-sidebar-settings-to-users.js",
+          "backend/migrations/archive/20251017000000-add-email-verification-to-users.js",
+          "backend/migrations/archive/20251019000000-create-settings.js",
+          "backend/migrations/archive/20251020000000-backfill-roles.js",
+          "backend/migrations/archive/20251022000001-add-tags-to-views.js",
+          "backend/migrations/archive/20251023000001-add-unique-constraint-tags.js",
+          "backend/migrations/archive/20251106000001-add-color-to-notes.js",
+          "backend/migrations/archive/20251115000001-create-api-tokens.js",
+          "backend/migrations/archive/20251117013905-add-order-to-tasks.js",
+          "backend/migrations/archive/20251118000001-add-recurring-to-views.js",
+          "backend/migrations/archive/20251119000001-add-recurrence-weekdays.js",
+          "backend/migrations/archive/20251120000001-add-ui-settings-to-users.js",
+          "backend/migrations/archive/20251124000001-add-defer-until-to-tasks.js",
+          "backend/migrations/archive/20251124000002-create-notifications.js",
+          "backend/migrations/archive/20251125000001-add-notification-features.js",
+          "backend/migrations/archive/20251128000001-create-task-attachments.js",
+          "backend/migrations/archive/20251204000001-add-recurring-completions.js",
+          "backend/migrations/archive/20251204000002-migrate-recurring-instances.js",
+          "backend/migrations/archive/20251208000001-create-backups-table.js",
+          "backend/migrations/archive/20251209000001-add-telegram-to-notification-preferences.js",
+          "backend/migrations/archive/20251213000001-add-habit-fields.js",
+          "backend/migrations/archive/20251215000002-upgrade-inbox-content-field.js",
+          "backend/migrations/archive/20251224000001-cleanup-unused-task-fields.js",
+          "backend/migrations/archive/20251227000001-remove-today-column.js",
+          "backend/migrations/archive/20251228000001-update-project-state-enum.js",
+          "backend/migrations/archive/20251228000002-rename-project-state-to-status.js",
+          "backend/migrations/archive/20251229000001-add-task-performance-indexes.js",
+          "backend/migrations/archive/20260201000001-add-defer-and-extras-to-views.js",
+          "backend/migrations/archive/20260201000002-add-keyboard-shortcuts.js",
+          "backend/migrations/archive/20260320000001-add-notification-channel-sent-tracking.js",
+          "backend/migrations/archive/20260413000001-ensure-unlimited-text-fields.js",
+          "backend/migrations/archive/20260420000001-create-caldav-calendars.js",
+          "backend/migrations/archive/20260420000001-create-oidc-identities.js",
+          "backend/migrations/archive/20260420000002-create-caldav-sync-state.js",
+          "backend/migrations/archive/20260420000002-create-oidc-state-nonces.js",
+          "backend/migrations/archive/20260420000003-create-auth-audit-log.js",
+          "backend/migrations/archive/20260420000003-create-caldav-occurrence-overrides.js",
+          "backend/migrations/archive/20260420000004-create-caldav-remote-calendars.js",
+          "backend/migrations/archive/20260420000004-make-password-optional.js",
+          "backend/migrations/archive/20260420000005-add-caldav-indexes.js",
+          "backend/migrations/archive/20260509000001-ensure-notification-preferences.js",
+          "backend/migrations/archive/20260602000001-add-reminder-at-to-tasks.js",
+          "backend/migrations/archive/20260616000001-add-eisenhower-enabled-to-users.js",
+          "backend/migrations/archive/20260616000002-add-features-to-users.js",
+          "backend/migrations/archive/20260617000001-add-tag-type-to-tags.js",
+          "backend/migrations/archive/20260619000001-add-pinned-to-tags.js",
+          "backend/migrations/archive/20260619000002-add-kanban-enabled-to-users.js",
+          "backend/migrations/archive/20260619000003-add-color-to-projects.js",
+          "backend/migrations/archive/20260619000004-add-color-to-areas.js",
+          "backend/migrations/archive/20260619000005-add-color-to-tags.js",
+          "backend/migrations/archive/20260621000001-add-today-system-tag.js",
+          "backend/migrations/archive/20260621000002-pin-system-tags.js",
+          "backend/migrations/archive/20260623000001-add-area-id-to-tasks.js",
+          "backend/migrations/archive/20260624000001-create-goals.js",
+          "backend/migrations/archive/20260624000002-add-goal-columns-to-projects.js",
+          "backend/migrations/archive/20260626000001-add-ai-brief-cache-to-users.js",
+          "backend/migrations/archive/20260626000002-add-ai-insights-to-tasks.js",
+          "backend/migrations/archive/20260626000003-add-ai-insights-to-projects.js",
+          "backend/migrations/archive/20260630000001-create-people.js",
+          "backend/migrations/archive/20260630000002-add-people-to-tasks.js",
+          "backend/migrations/archive/20260630000003-add-color-to-people.js",
+          "backend/migrations/archive/20260714000001-add-template-fields-to-projects.js",
+          "backend/migrations/archive/20260714000001-create-user-project-areas.js",
+          "backend/migrations/archive/20260718000001-add-notification-type-index.js",
+          "backend/migrations/archive/20260720000001-add-linked-user-to-people.js",
+          "backend/migrations/archive/20260721000001-add-id-to-user-project-areas.js",
+          "backend/migrations/archive/20260722000001-add-pin-to-sidebar-to-notes.js",
+          "backend/migrations/archive/20260722000002-backfill-missing-self-persons.js",
+          "backend/migrations/archive/20260726000001-add-ai-profile-to-users.js",
+          "backend/migrations/archive/20260730000001-make-goals-area-id-nullable.js",
+          "backend/migrations/archive/20260730000002-add-goal-id-to-tasks.js",
+          "backend/migrations/archive/20260731000001-add-color-to-goals.js",
+          "backend/migrations/archive/20260731000001-unpin-system-tags.js",
+          "backend/migrations/archive/20260809000001-add-remote-href-to-caldav-sync-state.js",
+          "backend/migrations/archive/20260906000001-lowercase-user-emails.js",
+          "backend/migrations/archive/20260907000001-add-status-to-permissions.js",
+          "backend/migrations/archive/20260907000002-add-password-reset-to-users.js",
+          "backend/migrations/archive/20260907000003-create-rate-limits.js",
+          "backend/migrations/archive/20260907000004-create-billing-accounts.js",
+          "backend/migrations/archive/20260907000005-create-billing-events.js",
+          "backend/migrations/archive/20260907000006-create-usage-counters.js",
+          "backend/migrations/archive/20260907000007-add-search-indexes.js",
+          "backend/migrations/archive/20260908000001-billing-provider-columns.js",
+          "backend/migrations/archive/20260909000001-create-waitlist-subscribers.js",
+          "backend/migrations/archive/20260910000001-add-task-assigned-notification-preference.js",
+          "backend/migrations/archive/20260914000001-add-waitlist-subscriber-ip.js",
+          "backend/migrations/archive/20260916000001-add-ai-settings-to-users.js",
+          "backend/migrations/archive/20260917000001-create-user-groups.js",
+          "backend/migrations/archive/20260920000001-add-role-and-capabilities-to-roles.js",
+          "backend/migrations/archive/20260920000002-make-user-email-nullable.js",
+          "backend/migrations/archive/20260920000003-add-created-by-to-users.js",
+          "backend/migrations/archive/20260920000004-add-binding-to-oidc-state-nonces.js",
+          "backend/migrations/archive/20260921000001-backfill-created-by-from-contact-links.js",
+          "backend/migrations/archive/20260921000002-create-member-sign-in-links.js",
+          "backend/migrations/archive/20260921000003-add-public-sharing-to-notes.js",
+          "backend/migrations/archive/20260922000001-create-comments.js",
+          "backend/migrations/archive/20260922000002-add-deleted-at-to-comments.js",
+          "backend/migrations/archive/20260922000003-add-parent-comment-id-to-comments.js",
+          "backend/migrations/archive/20260922000004-create-comment-reactions.js",
+          "backend/migrations/archive/20260922000005-widen-oidc-identities-picture.js",
+          "backend/migrations/archive/20260924000001-add-estimated-minutes-to-tasks.js",
+          "backend/migrations/archive/20260924000001-create-task-relations.js",
+          "backend/migrations/archive/20260924000002-create-daily-plans.js",
+          "backend/migrations/archive/20260924000003-create-calendar-feeds.js",
+          "backend/migrations/archive/20260924000004-add-ai-wrap-up-to-daily-plans.js",
+          "backend/migrations/archive/20260925000001-create-user-project-orders.js",
+          "backend/migrations/archive/20260925000002-create-user-task-orders.js",
+          "backend/migrations/archive/20260926000001-add-show-on-calendar-to-calendar-feeds.js",
+          "backend/migrations/archive/20260926000002-create-inbox-item-attachments.js",
+          "backend/migrations/archive/20260926000003-create-project-and-note-attachments.js",
+          "backend/migrations/archive/20260927000001-add-habit-tracking-fields.js",
+          "backend/migrations/archive/20260927000002-add-habit-color.js",
+          "backend/migrations/archive/20261001000001-create-feedback.js",
+          "backend/migrations/archive/20261002000001-add-note-backgrounds.js",
+          "backend/migrations/archive/20261002000002-create-push-subscriptions.js",
+          "backend/migrations/archive/20261003000001-add-billing-seats.js",
+          "backend/migrations/archive/20261003000002-create-accounts.js",
+          "backend/migrations/archive/20261005000001-add-task-status-to-views.js",
+          "backend/migrations/archive/20261005000002-add-trial-start-and-canonical-email.js",
+          "backend/migrations/archive/20261005000003-add-trial-deletion-warning-and-verification-reminder.js",
+          "backend/migrations/archive/20261008000001-add-title-to-attachments.js",
+          "backend/migrations/archive/20261008100001-reopen-checked-in-habits.js",
+          "backend/migrations/archive/20261008120000-add-onboarded-at-to-users.js",
+          "backend/migrations/archive/20261009120000-add-onboarding-starter.js",
+          "backend/migrations/archive/20261010100000-create-user-goal-orders.js",
+          "backend/migrations/archive/20261010110000-create-user-area-orders.js",
+          "backend/migrations/archive/20261010120000-add-inline-to-task-attachments.js",
+          "backend/migrations/archive/20261011100000-create-site-visits.js",
+          "backend/migrations/archive/20261015100000-add-apprise-to-users.js",
+          "backend/migrations/archive/20261015100000-add-due-time-to-tasks.js",
+          "backend/migrations/archive/20261018100000-add-trial-reminder-to-billing-accounts.js",
+          "backend/migrations/archive/20261018110000-create-email-deliveries.js",
+          "backend/migrations/archive/20261024100000-create-webhooks.js",
+          "backend/migrations/archive/20261025100000-add-completed-at-to-projects.js",
+          "backend/migrations/archive/20261026100000-add-start-dates-to-tasks-and-projects.js",
+          "backend/migrations/archive/20261027100000-create-import-jobs.js",
+          "backend/migrations/archive/20261027110000-create-user-mfa.js",
+          "backend/migrations/archive/20261027120000-add-visibility-to-projects.js",
+          "backend/models/account.js",
+          "backend/models/action.js",
+          "backend/models/api_token.js",
+          "backend/models/area.js",
+          "backend/models/auth_audit_log.js",
+          "backend/models/backup.js",
+          "backend/models/billing_account.js",
+          "backend/models/billing_event.js",
+          "backend/models/caldav_calendar.js",
+          "backend/models/caldav_occurrence_override.js",
+          "backend/models/caldav_remote_calendar.js",
+          "backend/models/caldav_sync_state.js",
+          "backend/models/calendar_feed.js",
+          "backend/models/calendar_token.js",
+          "backend/models/comment.js",
+          "backend/models/comment_reaction.js",
+          "backend/models/daily_plan.js",
+          "backend/models/daily_plan_item.js",
+          "backend/models/email_delivery.js",
+          "backend/models/feedback.js",
+          "backend/models/goal.js",
+          "backend/models/groupPermission.js",
+          "backend/models/groupShare.js",
+          "backend/models/import_job.js",
+          "backend/models/inbox_item.js",
+          "backend/models/inbox_item_attachment.js",
+          "backend/models/index.js",
+          "backend/models/memberSignInLink.js",
+          "backend/models/note.js",
+          "backend/models/note_attachment.js",
+          "backend/models/notification.js",
+          "backend/models/oidc_identity.js",
+          "backend/models/oidc_state_nonce.js",
+          "backend/models/permission.js",
+          "backend/models/person.js",
+          "backend/models/project.js",
+          "backend/models/project_attachment.js",
+          "backend/models/push_subscription.js",
+          "backend/models/rate_limit.js",
+          "backend/models/recurringCompletion.js",
+          "backend/models/role.js",
+          "backend/models/setting.js",
+          "backend/models/site_visit.js",
+          "backend/models/tag.js",
+          "backend/models/task.js",
+          "backend/models/task_attachment.js",
+          "backend/models/task_event.js",
+          "backend/models/task_relation.js",
+          "backend/models/usage_counter.js",
+          "backend/models/user.js",
+          "backend/models/userGroup.js",
+          "backend/models/userGroupMember.js",
+          "backend/models/user_area_order.js",
+          "backend/models/user_goal_order.js",
+          "backend/models/user_mfa.js",
+          "backend/models/user_project_area.js",
+          "backend/models/user_project_order.js",
+          "backend/models/user_recovery_code.js",
+          "backend/models/user_task_order.js",
+          "backend/models/view.js",
+          "backend/models/waitlist_subscriber.js",
+          "backend/models/webhook.js",
+          "backend/models/webhook_delivery.js",
+          "backend/modules/admin-ai-usage/controller.js",
+          "backend/modules/admin-ai-usage/index.js",
+          "backend/modules/admin-ai-usage/repository.js",
+          "backend/modules/admin-ai-usage/routes.js",
+          "backend/modules/admin-ai-usage/service.js",
+          "backend/modules/admin/controller.js",
+          "backend/modules/admin/index.js",
+          "backend/modules/admin/insights.js",
+          "backend/modules/admin/mfaGate.js",
+          "backend/modules/admin/repository.js",
+          "backend/modules/admin/routes.js",
+          "backend/modules/admin/service.js",
+          "backend/modules/admin/userEmails.js",
+          "backend/modules/admin/validation.js",
+          "backend/modules/ai-assistant/controller.js",
+          "backend/modules/ai-assistant/index.js",
+          "backend/modules/ai-assistant/routes.js",
+          "backend/modules/ai-assistant/service.js",
+          "backend/modules/apprise/controller.js",
+          "backend/modules/apprise/index.js",
+          "backend/modules/apprise/routes.js",
+          "backend/modules/apprise/service.js",
+          "backend/modules/areas/controller.js",
+          "backend/modules/areas/index.js",
+          "backend/modules/areas/repository.js",
+          "backend/modules/areas/routes.js",
+          "backend/modules/areas/service.js",
+          "backend/modules/areas/validation.js",
+          "backend/modules/auth/controller.js",
+          "backend/modules/auth/index.js",
+          "backend/modules/auth/passwordResetService.js",
+          "backend/modules/auth/registrationService.js",
+          "backend/modules/auth/routes.js",
+          "backend/modules/auth/service.js",
+          "backend/modules/backup/controller.js",
+          "backend/modules/backup/index.js",
+          "backend/modules/backup/routes.js",
+          "backend/modules/backup/service.js",
+          "backend/modules/billing/controller.js",
+          "backend/modules/billing/index.js",
+          "backend/modules/billing/payPage.js",
+          "backend/modules/billing/providers/index.js",
+          "backend/modules/billing/providers/lemonsqueezy.js",
+          "backend/modules/billing/providers/paddle.js",
+          "backend/modules/billing/providers/priceCatalog.js",
+          "backend/modules/billing/providers/stripe.js",
+          "backend/modules/billing/repository.js",
+          "backend/modules/billing/routes.js",
+          "backend/modules/billing/service.js",
+          "backend/modules/billing/stripeClient.js",
+          "backend/modules/billing/subscriptionMapper.js",
+          "backend/modules/billing/webhookRoutes.js",
+          "backend/modules/blog/hostSwitch.js",
+          "backend/modules/blog/index.js",
+          "backend/modules/blog/render.js",
+          "backend/modules/blog/routes.js",
+          "backend/modules/blog/service.js",
+          "backend/modules/caldav/access.js",
+          "backend/modules/caldav/api/calendar-controller.js",
+          "backend/modules/caldav/api/remote-calendar-controller.js",
+          "backend/modules/caldav/api/routes.js",
+          "backend/modules/caldav/api/sync-controller.js",
+          "backend/modules/caldav/icalendar/field-mappings.js",
+          "backend/modules/caldav/icalendar/rrule-generator.js",
+          "backend/modules/caldav/icalendar/rrule-parser.js",
+          "backend/modules/caldav/icalendar/vtodo-parser.js",
+          "backend/modules/caldav/icalendar/vtodo-serializer.js",
+          "backend/modules/caldav/middleware/caldav-auth.js",
+          "backend/modules/caldav/middleware/xml-parser.js",
+          "backend/modules/caldav/protocol/capabilities.js",
+          "backend/modules/caldav/protocol/discovery.js",
+          "backend/modules/caldav/repositories/calendar-repository.js",
+          "backend/modules/caldav/repositories/remote-calendar-repository.js",
+          "backend/modules/caldav/repositories/sync-state-repository.js",
+          "backend/modules/caldav/routes.js",
+          "backend/modules/caldav/services/encryption-service.js",
+          "backend/modules/caldav/services/safe-request.js",
+          "backend/modules/caldav/services/sync-scheduler.js",
+          "backend/modules/caldav/services/task-deletion-service.js",
+          "backend/modules/caldav/sync/conflict-resolver.js",
+          "backend/modules/caldav/sync/merge-phase.js",
+          "backend/modules/caldav/sync/pull-phase.js",
+          "backend/modules/caldav/sync/push-phase.js",
+          "backend/modules/caldav/sync/sync-engine.js",
+          "backend/modules/caldav/task-includes.js",
+          "backend/modules/caldav/utils/ctag-generator.js",
+          "backend/modules/caldav/utils/etag-generator.js",
+          "backend/modules/caldav/utils/href-utils.js",
+          "backend/modules/caldav/utils/user-timezone.js",
+          "backend/modules/caldav/webdav/options.js",
+          "backend/modules/caldav/webdav/projects.js",
+          "backend/modules/caldav/webdav/propfind.js",
+          "backend/modules/caldav/webdav/report.js",
+          "backend/modules/caldav/webdav/task-handlers.js",
+          "backend/modules/caldav/webdav/utils.js",
+          "backend/modules/calendar-feeds/controller.js",
+          "backend/modules/calendar-feeds/fetcher.js",
+          "backend/modules/calendar-feeds/icsEvents.js",
+          "backend/modules/calendar-feeds/index.js",
+          "backend/modules/calendar-feeds/routes.js",
+          "backend/modules/calendar-feeds/service.js",
+          "backend/modules/comments/controller.js",
+          "backend/modules/comments/index.js",
+          "backend/modules/comments/repository.js",
+          "backend/modules/comments/routes.js",
+          "backend/modules/comments/service.js",
+          "backend/modules/daily-plan/ai.js",
+          "backend/modules/daily-plan/controller.js",
+          "backend/modules/daily-plan/index.js",
+          "backend/modules/daily-plan/planningSettings.js",
+          "backend/modules/daily-plan/ranking.js",
+          "backend/modules/daily-plan/repository.js",
+          "backend/modules/daily-plan/routes.js",
+          "backend/modules/daily-plan/service.js",
+          "backend/modules/daily-plan/slots.js",
+          "backend/modules/demo/index.js",
+          "backend/modules/demo/routes.js",
+          "backend/modules/demo/seed.js",
+          "backend/modules/demo/service.js",
+          "backend/modules/everyone/controller.js",
+          "backend/modules/everyone/core/columns.js",
+          "backend/modules/everyone/index.js",
+          "backend/modules/everyone/routes.js",
+          "backend/modules/everyone/service.js",
+          "backend/modules/feature-flags/controller.js",
+          "backend/modules/feature-flags/index.js",
+          "backend/modules/feature-flags/routes.js",
+          "backend/modules/feature-flags/service.js",
+          "backend/modules/feedback/controller.js",
+          "backend/modules/feedback/index.js",
+          "backend/modules/feedback/repository.js",
+          "backend/modules/feedback/routes.js",
+          "backend/modules/feedback/service.js",
+          "backend/modules/goals/controller.js",
+          "backend/modules/goals/index.js",
+          "backend/modules/goals/repository.js",
+          "backend/modules/goals/routes.js",
+          "backend/modules/goals/service.js",
+          "backend/modules/groups/controller.js",
+          "backend/modules/groups/index.js",
+          "backend/modules/groups/repository.js",
+          "backend/modules/groups/routes.js",
+          "backend/modules/groups/service.js",
+          "backend/modules/groups/validation.js",
+          "backend/modules/habits/controller.js",
+          "backend/modules/habits/habitEngine.js",
+          "backend/modules/habits/habitReminderService.js",
+          "backend/modules/habits/habitService.js",
+          "backend/modules/habits/index.js",
+          "backend/modules/habits/repository.js",
+          "backend/modules/habits/routes.js",
+          "backend/modules/habits/service.js",
+          "backend/modules/inbox/attachmentRoutes.js",
+          "backend/modules/inbox/controller.js",
+          "backend/modules/inbox/inboxProcessingService.js",
+          "backend/modules/inbox/index.js",
+          "backend/modules/inbox/nlpParsers.js",
+          "backend/modules/inbox/operations/attachments.js",
+          "backend/modules/inbox/repository.js",
+          "backend/modules/inbox/routes.js",
+          "backend/modules/inbox/service.js",
+          "backend/modules/inbox/validation.js",
+          "backend/modules/landing/appHostRobots.js",
+          "backend/modules/landing/i18n.js",
+          "backend/modules/landing/index.js",
+          "backend/modules/landing/routes.js",
+          "backend/modules/landing/stats.js",
+          "backend/modules/mcp/controller.js",
+          "backend/modules/mcp/httpTransport.js",
+          "backend/modules/mcp/index.js",
+          "backend/modules/mcp/middleware.js",
+          "backend/modules/mcp/routes.js",
+          "backend/modules/mcp/server.js",
+          "backend/modules/mcp/toolRegistry.js",
+          "backend/modules/mcp/tools/areaTools.js",
+          "backend/modules/mcp/tools/commentTools.js",
+          "backend/modules/mcp/tools/goalTools.js",
+          "backend/modules/mcp/tools/habitTools.js",
+          "backend/modules/mcp/tools/inboxTools.js",
+          "backend/modules/mcp/tools/miscTools.js",
+          "backend/modules/mcp/tools/noteTools.js",
+          "backend/modules/mcp/tools/peopleTools.js",
+          "backend/modules/mcp/tools/projectTools.js",
+          "backend/modules/mcp/tools/tagResolver.js",
+          "backend/modules/mcp/tools/tagTools.js",
+          "backend/modules/mcp/tools/taskTools.js",
+          "backend/modules/mcp/tools/viewTools.js",
+          "backend/modules/members/controller.js",
+          "backend/modules/members/index.js",
+          "backend/modules/members/routes.js",
+          "backend/modules/members/service.js",
+          "backend/modules/members/signInLinkService.js",
+          "backend/modules/mfa/controller.js",
+          "backend/modules/mfa/index.js",
+          "backend/modules/mfa/routes.js",
+          "backend/modules/mfa/service.js",
+          "backend/modules/mfa/session.js",
+          "backend/modules/mfa/totp.js",
+          "backend/modules/notes/attachmentLinks.js",
+          "backend/modules/notes/attachmentRoutes.js",
+          "backend/modules/notes/controller.js",
+          "backend/modules/notes/index.js",
+          "backend/modules/notes/publicRoutes.js",
+          "backend/modules/notes/publicSharing.js",
+          "backend/modules/notes/repository.js",
+          "backend/modules/notes/routes.js",
+          "backend/modules/notes/service.js",
+          "backend/modules/notes/validation.js",
+          "backend/modules/notifications/controller.js",
+          "backend/modules/notifications/index.js",
+          "backend/modules/notifications/repository.js",
+          "backend/modules/notifications/routes.js",
+          "backend/modules/notifications/service.js",
+          "backend/modules/oauth/protectedResource.js",
+          "backend/modules/oauth/routes.js",
+          "backend/modules/oidc/auditService.js",
+          "backend/modules/oidc/configService.js",
+          "backend/modules/oidc/controller.js",
+          "backend/modules/oidc/errors.js",
+          "backend/modules/oidc/index.js",
+          "backend/modules/oidc/oidcIdentityService.js",
+          "backend/modules/oidc/providerConfig.js",
+          "backend/modules/oidc/provisioningService.js",
+          "backend/modules/oidc/routes.js",
+          "backend/modules/oidc/service.js",
+          "backend/modules/oidc/stateManager.js",
+          "backend/modules/onboarding/controller.js",
+          "backend/modules/onboarding/index.js",
+          "backend/modules/onboarding/routes.js",
+          "backend/modules/onboarding/service.js",
+          "backend/modules/people/controller.js",
+          "backend/modules/people/index.js",
+          "backend/modules/people/repository.js",
+          "backend/modules/people/routes.js",
+          "backend/modules/people/service.js",
+          "backend/modules/projects/attachmentRoutes.js",
+          "backend/modules/projects/controller.js",
+          "backend/modules/projects/dueProjectService.js",
+          "backend/modules/projects/index.js",
+          "backend/modules/projects/repository.js",
+          "backend/modules/projects/routes.js",
+          "backend/modules/projects/service.js",
+          "backend/modules/projects/validation.js",
+          "backend/modules/push/controller.js",
+          "backend/modules/push/index.js",
+          "backend/modules/push/repository.js",
+          "backend/modules/push/routes.js",
+          "backend/modules/push/service.js",
+          "backend/modules/push/vapid.js",
+          "backend/modules/quotes/controller.js",
+          "backend/modules/quotes/index.js",
+          "backend/modules/quotes/quotesService.js",
+          "backend/modules/quotes/routes.js",
+          "backend/modules/reports/index.js",
+          "backend/modules/reports/routes.js",
+          "backend/modules/reports/service.js",
+          "backend/modules/search/controller.js",
+          "backend/modules/search/index.js",
+          "backend/modules/search/repository.js",
+          "backend/modules/search/routes.js",
+          "backend/modules/search/service.js",
+          "backend/modules/search/validation.js",
+          "backend/modules/shares/controller.js",
+          "backend/modules/shares/index.js",
+          "backend/modules/shares/repository.js",
+          "backend/modules/shares/routes.js",
+          "backend/modules/shares/service.js",
+          "backend/modules/spreadsheets/analyze.js",
+          "backend/modules/spreadsheets/core/columns.js",
+          "backend/modules/spreadsheets/core/errors.js",
+          "backend/modules/spreadsheets/core/files.js",
+          "backend/modules/spreadsheets/core/locales.js",
+          "backend/modules/spreadsheets/core/values.js",
+          "backend/modules/spreadsheets/core/zipGuard.js",
+          "backend/modules/spreadsheets/exportService.js",
+          "backend/modules/spreadsheets/importService.js",
+          "backend/modules/spreadsheets/index.js",
+          "backend/modules/spreadsheets/routes.js",
+          "backend/modules/tags/controller.js",
+          "backend/modules/tags/index.js",
+          "backend/modules/tags/repository.js",
+          "backend/modules/tags/routes.js",
+          "backend/modules/tags/service.js",
+          "backend/modules/tags/systemTags.js",
+          "backend/modules/tags/tagsService.js",
+          "backend/modules/tags/validation.js",
+          "backend/modules/tasks/attachments.js",
+          "backend/modules/tasks/core/builders.js",
+          "backend/modules/tasks/core/comparators.js",
+          "backend/modules/tasks/core/parsers.js",
+          "backend/modules/tasks/core/serializers.js",
+          "backend/modules/tasks/deferredTaskService.js",
+          "backend/modules/tasks/dueTaskService.js",
+          "backend/modules/tasks/events.js",
+          "backend/modules/tasks/index.js",
+          "backend/modules/tasks/middleware/access.js",
+          "backend/modules/tasks/operations/assignment.js",
+          "backend/modules/tasks/operations/completion.js",
+          "backend/modules/tasks/operations/deletion.js",
+          "backend/modules/tasks/operations/grouping.js",
+          "backend/modules/tasks/operations/list.js",
+          "backend/modules/tasks/operations/parent-child.js",
+          "backend/modules/tasks/operations/recurring.js",
+          "backend/modules/tasks/operations/sorting.js",
+          "backend/modules/tasks/operations/subtasks.js",
+          "backend/modules/tasks/operations/tags.js",
+          "backend/modules/tasks/order/routes.js",
+          "backend/modules/tasks/order/service.js",
+          "backend/modules/tasks/queries/metrics-computation.js",
+          "backend/modules/tasks/queries/metrics-queries.js",
+          "backend/modules/tasks/queries/query-builders.js",
+          "backend/modules/tasks/recurringTaskService.js",
+          "backend/modules/tasks/relations/routes.js",
+          "backend/modules/tasks/relations/service.js",
+          "backend/modules/tasks/repository.js",
+          "backend/modules/tasks/routes.js",
+          "backend/modules/tasks/taskEventService.js",
+          "backend/modules/tasks/taskReminderService.js",
+          "backend/modules/tasks/taskScheduler.js",
+          "backend/modules/tasks/taskSummaryService.js",
+          "backend/modules/tasks/utils/constants.js",
+          "backend/modules/tasks/utils/logging.js",
+          "backend/modules/tasks/utils/validation.js",
+          "backend/modules/telegram/controller.js",
+          "backend/modules/telegram/index.js",
+          "backend/modules/telegram/routes.js",
+          "backend/modules/telegram/service.js",
+          "backend/modules/telegram/telegramApi.js",
+          "backend/modules/telegram/telegramInitializer.js",
+          "backend/modules/telegram/telegramNotificationService.js",
+          "backend/modules/telegram/telegramPoller.js",
+          "backend/modules/templates/index.js",
+          "backend/modules/templates/repository.js",
+          "backend/modules/templates/routes.js",
+          "backend/modules/templates/service.js",
+          "backend/modules/templates/utils/validation.js",
+          "backend/modules/url/controller.js",
+          "backend/modules/url/index.js",
+          "backend/modules/url/routes.js",
+          "backend/modules/url/service.js",
+          "backend/modules/url/ssrfGuard.js",
+          "backend/modules/users/apiTokenService.js",
+          "backend/modules/users/controller.js",
+          "backend/modules/users/index.js",
+          "backend/modules/users/repository.js",
+          "backend/modules/users/routes.js",
+          "backend/modules/users/service.js",
+          "backend/modules/users/userService.js",
+          "backend/modules/users/validation.js",
+          "backend/modules/views/controller.js",
+          "backend/modules/views/index.js",
+          "backend/modules/views/repository.js",
+          "backend/modules/views/routes.js",
+          "backend/modules/views/service.js",
+          "backend/modules/views/validation.js",
+          "backend/modules/webhooks/controller.js",
+          "backend/modules/webhooks/dispatcher.js",
+          "backend/modules/webhooks/index.js",
+          "backend/modules/webhooks/routes.js",
+          "backend/modules/webhooks/service.js",
+          "backend/modules/webhooks/summary.js",
+          "backend/modules/webhooks/taskEvents.js",
+          "backend/scripts/db-init.js",
+          "backend/scripts/db-migrate.js",
+          "backend/scripts/db-prepare.js",
+          "backend/scripts/db-reset.js",
+          "backend/scripts/db-status.js",
+          "backend/scripts/landing-i18n-check.js",
+          "backend/scripts/migration-create.js",
+          "backend/scripts/preview-emails.js",
+          "backend/scripts/reset-and-seed.js",
+          "backend/scripts/seed-dev-data.js",
+          "backend/scripts/user-create.js",
+          "backend/scripts/with-db-lock.js",
+          "backend/seeders/dev-seeder.js",
+          "backend/seeders/expanded-tasks.js",
+          "backend/seeders/massive-tasks.js",
+          "backend/services/accountErasureService.js",
+          "backend/services/accountsService.js",
+          "backend/services/applyPerms.js",
+          "backend/services/assignmentCleanup.js",
+          "backend/services/backupService.js",
+          "backend/services/containerShareSync.js",
+          "backend/services/emailDeliveryService.js",
+          "backend/services/emailDomainService.js",
+          "backend/services/emailService.js",
+          "backend/services/engagementEmailService.js",
+          "backend/services/entitlementsService.js",
+          "backend/services/entityAttachments.js",
+          "backend/services/execAction.js",
+          "backend/services/groupSharing.js",
+          "backend/services/healthService.js",
+          "backend/services/jobLock.js",
+          "backend/services/logService.js",
+          "backend/services/permissionSources.js",
+          "backend/services/permissionsCalculators.js",
+          "backend/services/permissionsService.js",
+          "backend/services/rolesService.js",
+          "backend/services/scopeService.js",
+          "backend/services/seatsService.js",
+          "backend/services/sessionService.js",
+          "backend/services/trialLifecycleService.js",
+          "backend/services/userDataTransfer.js",
+          "backend/services/visitService.js",
+          "backend/services/waitlistService.js",
+          "backend/services/workspaceMembers.js",
+          "backend/shared/crypto/secretCipher.js",
+          "backend/shared/database/BaseRepository.js",
+          "backend/shared/errors/AppError.js",
+          "backend/shared/errors/index.js",
+          "backend/shared/middleware/errorHandler.js",
+          "backend/tests/helpers/caldav-test-utils.js",
+          "backend/tests/helpers/oidcRealTokenCheck.js",
+          "backend/tests/helpers/setup.js",
+          "backend/tests/helpers/test-db.js",
+          "backend/tests/helpers/testUtils.js",
+          "backend/tests/integration/account-erasure-created-by.test.js",
+          "backend/tests/integration/account-erasure.test.js",
+          "backend/tests/integration/admin-ai-usage.test.js",
+          "backend/tests/integration/admin-dashboard.test.js",
+          "backend/tests/integration/admin-oidc-config.test.js",
+          "backend/tests/integration/admin-user-emails.test.js",
+          "backend/tests/integration/admin-user-invite.test.js",
+          "backend/tests/integration/admin-users-cascade.test.js",
+          "backend/tests/integration/admin-users-no-email.test.js",
+          "backend/tests/integration/admin-users.test.js",
+          "backend/tests/integration/admin.test.js",
+          "backend/tests/integration/ai-assistant-config-hosted.test.js",
+          "backend/tests/integration/ai-assistant-not-configured.test.js",
+          "backend/tests/integration/api-tokens.test.js",
+          "backend/tests/integration/apprise.test.js",
+          "backend/tests/integration/areas-order.test.js",
+          "backend/tests/integration/areas.test.js",
+          "backend/tests/integration/assignment-access-loss.test.js",
+          "backend/tests/integration/attachment-filenames.test.js",
+          "backend/tests/integration/auth.test.js",
+          "backend/tests/integration/backup-instance.test.js",
+          "backend/tests/integration/backup-legacy-priority.test.js",
+          "backend/tests/integration/backup-linked-records.test.js",
+          "backend/tests/integration/backup-restore-fixes.test.js",
+          "backend/tests/integration/backup-roundtrip.test.js",
+          "backend/tests/integration/billing-lemonsqueezy.test.js",
+          "backend/tests/integration/billing-paddle.test.js",
+          "backend/tests/integration/billing.test.js",
+          "backend/tests/integration/blog.test.js",
+          "backend/tests/integration/caldav-auth-hardening.test.js",
+          "backend/tests/integration/caldav-ghost-tasks.test.js",
+          "backend/tests/integration/caldav-projects.test.js",
+          "backend/tests/integration/caldav-protocol.test.js",
+          "backend/tests/integration/caldav-shared-projects.test.js",
+          "backend/tests/integration/caldav-sync-engine.test.js",
+          "backend/tests/integration/caldav-task-associations.test.js",
+          "backend/tests/integration/caldav-timezones.test.js",
+          "backend/tests/integration/caldav-two-way-sync.test.js",
+          "backend/tests/integration/calendar-feeds.test.js",
+          "backend/tests/integration/captcha.test.js",
+          "backend/tests/integration/cloud-account-isolation.test.js",
+          "backend/tests/integration/cloud-accounts.test.js",
+          "backend/tests/integration/cloud-seats.test.js",
+          "backend/tests/integration/cloud-superadmin-isolation.test.js",
+          "backend/tests/integration/cloud-trial.test.js",
+          "backend/tests/integration/comments.test.js",
+          "backend/tests/integration/csrf-enforcement.test.js",
+          "backend/tests/integration/csrf-errors.test.js",
+          "backend/tests/integration/daily-plan-ai.test.js",
+          "backend/tests/integration/daily-plan-suggestions.test.js",
+          "backend/tests/integration/daily-plan.test.js",
+          "backend/tests/integration/db-prepare-upgrade-gate.test.js",
+          "backend/tests/integration/demo.test.js",
+          "backend/tests/integration/engagement-emails.test.js",
+          "backend/tests/integration/entitlements.test.js",
+          "backend/tests/integration/everyone-timeline.test.js",
+          "backend/tests/integration/everyone.test.js",
+          "backend/tests/integration/feedback.test.js",
+          "backend/tests/integration/first-time-setup.test.js",
+          "backend/tests/integration/focus-scope.test.js",
+          "backend/tests/integration/ghost-tasks.test.js",
+          "backend/tests/integration/goals-order.test.js",
+          "backend/tests/integration/goals.test.js",
+          "backend/tests/integration/group-lifecycle.test.js",
+          "backend/tests/integration/group-page.test.js",
+          "backend/tests/integration/group-permissions-read.test.js",
+          "backend/tests/integration/group-shares.test.js",
+          "backend/tests/integration/groups-admin.test.js",
+          "backend/tests/integration/habits-in-task-lists.test.js",
+          "backend/tests/integration/habits.test.js",
+          "backend/tests/integration/health.test.js",
+          "backend/tests/integration/hosted-mode-bootstrap.test.js",
+          "backend/tests/integration/hosted-shared-roster.test.js",
+          "backend/tests/integration/inbox-analyze-area.test.js",
+          "backend/tests/integration/inbox-analyze-nlp.test.js",
+          "backend/tests/integration/inbox-attachments.test.js",
+          "backend/tests/integration/inbox-no-tags.test.js",
+          "backend/tests/integration/inbox.test.js",
+          "backend/tests/integration/landing.test.js",
+          "backend/tests/integration/mcp/mcp-roles.test.js",
+          "backend/tests/integration/mcp/mcp-routing.test.js",
+          "backend/tests/integration/mcp/mcp-tools.test.js",
+          "backend/tests/integration/member-sign-in-link.test.js",
+          "backend/tests/integration/members-removal-created-tasks.test.js",
+          "backend/tests/integration/members-removal-handoff.test.js",
+          "backend/tests/integration/members.test.js",
+          "backend/tests/integration/mfa-oidc.test.js",
+          "backend/tests/integration/mfa.test.js",
+          "backend/tests/integration/monthly-recurrence-current-month.test.js",
+          "backend/tests/integration/notes-public-sharing.test.js",
+          "backend/tests/integration/notes.test.js",
+          "backend/tests/integration/notification-preferences.test.js",
+          "backend/tests/integration/notification-soft-delete.test.js",
+          "backend/tests/integration/notification-telegram-rate-limit.test.js",
+          "backend/tests/integration/numeric-id-lookup.test.js",
+          "backend/tests/integration/oauth.test.js",
+          "backend/tests/integration/oidc-flow-binding.test.js",
+          "backend/tests/integration/oidc-identities.test.js",
+          "backend/tests/integration/onboarding.test.js",
+          "backend/tests/integration/overdue-recurring.test.js",
+          "backend/tests/integration/password-reset.test.js",
+          "backend/tests/integration/people-assignable.test.js",
+          "backend/tests/integration/people-unified.test.js",
+          "backend/tests/integration/permissions-admin.test.js",
+          "backend/tests/integration/permissions-notes.test.js",
+          "backend/tests/integration/permissions-projects.test.js",
+          "backend/tests/integration/permissions-tasks.test.js",
+          "backend/tests/integration/plan-enforcement.test.js",
+          "backend/tests/integration/profile-ai-settings.test.js",
+          "backend/tests/integration/profile-sidebar-settings.test.js",
+          "backend/tests/integration/profile-today-settings.test.js",
+          "backend/tests/integration/profile-ui-settings.test.js",
+          "backend/tests/integration/project-container-access.test.js",
+          "backend/tests/integration/project-note-attachments.test.js",
+          "backend/tests/integration/project-notes-deletion.test.js",
+          "backend/tests/integration/project-priority-names.test.js",
+          "backend/tests/integration/project-recurring-filter.test.js",
+          "backend/tests/integration/project-sharing.test.js",
+          "backend/tests/integration/projects-order.test.js",
+          "backend/tests/integration/projects.test.js",
+          "backend/tests/integration/push-notifications.test.js",
+          "backend/tests/integration/quotes.test.js",
+          "backend/tests/integration/rate-limiting-mounted.test.js",
+          "backend/tests/integration/rate-limiting-sign-in-page.test.js",
+          "backend/tests/integration/recurring-display-fixes.test.js",
+          "backend/tests/integration/recurring-interval-phase.test.js",
+          "backend/tests/integration/recurring-tasks-dst.test.js",
+          "backend/tests/integration/recurring-tasks-timezone-weekday.test.js",
+          "backend/tests/integration/recurring-tasks.test.js",
+          "backend/tests/integration/registration-email-domain.test.js",
+          "backend/tests/integration/registration-email.test.js",
+          "backend/tests/integration/roles-capabilities.test.js",
+          "backend/tests/integration/search-shared.test.js",
+          "backend/tests/integration/search.test.js",
+          "backend/tests/integration/security-headers.test.js",
+          "backend/tests/integration/share-candidates.test.js",
+          "backend/tests/integration/shared-areas-access.test.js",
+          "backend/tests/integration/shared-areas-goals.test.js",
+          "backend/tests/integration/shares-account-admin.test.js",
+          "backend/tests/integration/shares-consent.test.js",
+          "backend/tests/integration/shares-leave.test.js",
+          "backend/tests/integration/shares.test.js",
+          "backend/tests/integration/skip-recurring-occurrence.test.js",
+          "backend/tests/integration/smart-recurring-deletion.test.js",
+          "backend/tests/integration/spreadsheets-formats.test.js",
+          "backend/tests/integration/spreadsheets.test.js",
+          "backend/tests/integration/start-dates.test.js",
+          "backend/tests/integration/static-redirects.test.js",
+          "backend/tests/integration/subscription-required.test.js",
+          "backend/tests/integration/subtask-ordering.test.js",
+          "backend/tests/integration/subtasks-completion.test.js",
+          "backend/tests/integration/subtasks.test.js",
+          "backend/tests/integration/tags.test.js",
+          "backend/tests/integration/task-assignee-validation.test.js",
+          "backend/tests/integration/task-assignment.test.js",
+          "backend/tests/integration/task-attachments.test.js",
+          "backend/tests/integration/task-edit-shared-project.test.js",
+          "backend/tests/integration/task-relations.test.js",
+          "backend/tests/integration/task-user-isolation.test.js",
+          "backend/tests/integration/tasks-metrics.test.js",
+          "backend/tests/integration/tasks-order.test.js",
+          "backend/tests/integration/tasks-pagination.test.js",
+          "backend/tests/integration/tasks-project-filter.test.js",
+          "backend/tests/integration/tasks-today-flag.test.js",
+          "backend/tests/integration/tasks-today-plan.test.js",
+          "backend/tests/integration/tasks.test.js",
+          "backend/tests/integration/telegram-disabled.test.js",
+          "backend/tests/integration/telegram-duplicate-scenario.test.js",
+          "backend/tests/integration/telegram-duplicates.test.js",
+          "backend/tests/integration/telegram.test.js",
+          "backend/tests/integration/timezone-fixes.test.js",
+          "backend/tests/integration/today-delegated-tasks.test.js",
+          "backend/tests/integration/upcoming-due-time.test.js",
+          "backend/tests/integration/uploads-static.test.js",
+          "backend/tests/integration/url.test.js",
+          "backend/tests/integration/user-create-script.test.js",
+          "backend/tests/integration/user-management-hardening.test.js",
+          "backend/tests/integration/user-management-integrity.test.js",
+          "backend/tests/integration/users.test.js",
+          "backend/tests/integration/views.test.js",
+          "backend/tests/integration/visits.test.js",
+          "backend/tests/integration/waitlist.test.js",
+          "backend/tests/integration/webhooks.test.js",
+          "backend/tests/mocks/jose.js",
+          "backend/tests/mocks/nanoid.js",
+          "backend/tests/unit/attachment-filename-decoding.test.js",
+          "backend/tests/unit/config/config.test.js",
+          "backend/tests/unit/config/database-settings.test.js",
+          "backend/tests/unit/config/hostedConfig.test.js",
+          "backend/tests/unit/emails/emails.test.js",
+          "backend/tests/unit/middleware/auth-edge-cases.test.js",
+          "backend/tests/unit/middleware/auth-oidc-bearer.test.js",
+          "backend/tests/unit/middleware/auth.test.js",
+          "backend/tests/unit/middleware/authorize.test.js",
+          "backend/tests/unit/middleware/rateLimitStore.test.js",
+          "backend/tests/unit/middleware/rateLimiter-handlers.test.js",
+          "backend/tests/unit/middleware/rateLimiter.test.js",
+          "backend/tests/unit/middleware/uploadsAccess-edge-cases.test.js",
+          "backend/tests/unit/models/area.test.js",
+          "backend/tests/unit/models/inbox_item.test.js",
+          "backend/tests/unit/models/note.test.js",
+          "backend/tests/unit/models/notification.test.js",
+          "backend/tests/unit/models/oidc_identity.test.js",
+          "backend/tests/unit/models/project.test.js",
+          "backend/tests/unit/models/subtasks.test.js",
+          "backend/tests/unit/models/tag.test.js",
+          "backend/tests/unit/models/task.test.js",
+          "backend/tests/unit/models/task_attachment.test.js",
+          "backend/tests/unit/models/user-hooks.test.js",
+          "backend/tests/unit/models/user-without-email.test.js",
+          "backend/tests/unit/models/user.test.js",
+          "backend/tests/unit/modules/admin/adminService-edge-cases.test.js",
+          "backend/tests/unit/modules/admin/insights.test.js",
+          "backend/tests/unit/modules/ai-assistant/aiCreditsQuota.test.js",
+          "backend/tests/unit/modules/ai-assistant/callWithFallback.test.js",
+          "backend/tests/unit/modules/ai-assistant/dailyBriefLogging.test.js",
+          "backend/tests/unit/modules/ai-assistant/languageRule.test.js",
+          "backend/tests/unit/modules/ai-assistant/maxTokens.test.js",
+          "backend/tests/unit/modules/ai-assistant/resolveAIConfig.test.js",
+          "backend/tests/unit/modules/ai-assistant/ssrfGuard.test.js",
+          "backend/tests/unit/modules/auth/authController-edge-cases.test.js",
+          "backend/tests/unit/modules/auth/authService-edge-cases.test.js",
+          "backend/tests/unit/modules/auth/passwordResetService-edge-cases.test.js",
+          "backend/tests/unit/modules/auth/registrationService-edge-cases.test.js",
+          "backend/tests/unit/modules/blog/excerpt.test.js",
+          "backend/tests/unit/modules/blog/render.test.js",
+          "backend/tests/unit/modules/caldav-safe-request.test.js",
+          "backend/tests/unit/modules/caldav/icalendar/field-mappings.test.js",
+          "backend/tests/unit/modules/caldav/icalendar/round-trip.test.js",
+          "backend/tests/unit/modules/caldav/icalendar/rrule-generator.test.js",
+          "backend/tests/unit/modules/caldav/icalendar/rrule-parser.test.js",
+          "backend/tests/unit/modules/caldav/icalendar/vtodo-floating-time.test.js",
+          "backend/tests/unit/modules/caldav/icalendar/vtodo-parser.test.js",
+          "backend/tests/unit/modules/caldav/icalendar/vtodo-serializer.test.js",
+          "backend/tests/unit/modules/caldav/services/encryption-service.test.js",
+          "backend/tests/unit/modules/caldav/sync/push-phase.test.js",
+          "backend/tests/unit/modules/caldav/utils/etag-generator.test.js",
+          "backend/tests/unit/modules/calendar-feeds-private-hosts.test.js",
+          "backend/tests/unit/modules/calendar-feeds.test.js",
+          "backend/tests/unit/modules/daily-plan-ai.test.js",
+          "backend/tests/unit/modules/daily-plan-planning-settings.test.js",
+          "backend/tests/unit/modules/daily-plan-ranking.test.js",
+          "backend/tests/unit/modules/daily-plan.test.js",
+          "backend/tests/unit/modules/groupsMembers-edge-cases.test.js",
+          "backend/tests/unit/modules/habits/habitEngine.test.js",
+          "backend/tests/unit/modules/mcp/controller.test.js",
+          "backend/tests/unit/modules/mcp/middleware.test.js",
+          "backend/tests/unit/modules/mcp/toolRegistry.test.js",
+          "backend/tests/unit/modules/mfa/totp.test.js",
+          "backend/tests/unit/modules/oauth/protectedResource.test.js",
+          "backend/tests/unit/modules/oidc/audit-edge-cases.test.js",
+          "backend/tests/unit/modules/oidc/auditService.test.js",
+          "backend/tests/unit/modules/oidc/config-edge-cases.test.js",
+          "backend/tests/unit/modules/oidc/configService.test.js",
+          "backend/tests/unit/modules/oidc/controller-edge-cases.test.js",
+          "backend/tests/unit/modules/oidc/identityService-edge-cases.test.js",
+          "backend/tests/unit/modules/oidc/providerConfig.test.js",
+          "backend/tests/unit/modules/oidc/provisioning-edge-cases.test.js",
+          "backend/tests/unit/modules/oidc/provisioningService.test.js",
+          "backend/tests/unit/modules/oidc/service-tokens.test.js",
+          "backend/tests/unit/modules/oidc/service.test.js",
+          "backend/tests/unit/modules/oidc/stateManager.test.js",
+          "backend/tests/unit/modules/projects/dueProjectService.test.js",
+          "backend/tests/unit/modules/sharesService-edge-cases.test.js",
+          "backend/tests/unit/modules/signInLink-edge-cases.test.js",
+          "backend/tests/unit/modules/spreadsheets.test.js",
+          "backend/tests/unit/modules/tasks/biweekly-bug.test.js",
+          "backend/tests/unit/modules/tasks/builders.test.js",
+          "backend/tests/unit/modules/tasks/dueTaskService.test.js",
+          "backend/tests/unit/modules/tasks/dueTime.test.js",
+          "backend/tests/unit/modules/tasks/metricsQueries.escaping.test.js",
+          "backend/tests/unit/modules/tasks/recurringTaskService.test.js",
+          "backend/tests/unit/modules/tasks/recurringTaskService.weekly-timezone.test.js",
+          "backend/tests/unit/modules/url/service.test.js",
+          "backend/tests/unit/modules/url/ssrfGuard.test.js",
+          "backend/tests/unit/scripts/legacy-sqlite-guard.test.js",
+          "backend/tests/unit/services/accessHelpers-edge-cases.test.js",
+          "backend/tests/unit/services/accountsService-edge-cases.test.js",
+          "backend/tests/unit/services/apiTokenCache.test.js",
+          "backend/tests/unit/services/applyPerms.test.js",
+          "backend/tests/unit/services/emailDomainService.test.js",
+          "backend/tests/unit/services/emailService.test.js",
+          "backend/tests/unit/services/entitlementsService.test.js",
+          "backend/tests/unit/services/functional-services.test.js",
+          "backend/tests/unit/services/groupSharing-edge-cases.test.js",
+          "backend/tests/unit/services/inboxNlpParsers.test.js",
+          "backend/tests/unit/services/inboxProcessingService.test.js",
+          "backend/tests/unit/services/inboxRemindMe.test.js",
+          "backend/tests/unit/services/jobLock.test.js",
+          "backend/tests/unit/services/logService.test.js",
+          "backend/tests/unit/services/permissionsCalculators-edge-cases.test.js",
+          "backend/tests/unit/services/permissionsService-edge-cases.test.js",
+          "backend/tests/unit/services/permissionsService.test.js",
+          "backend/tests/unit/services/rolesCapabilities.test.js",
+          "backend/tests/unit/services/rolesService-edge-cases.test.js",
+          "backend/tests/unit/services/rolesService.test.js",
+          "backend/tests/unit/services/scopeService.test.js",
+          "backend/tests/unit/services/telegramAuth.test.js",
+          "backend/tests/unit/services/telegramPoller.test.js",
+          "backend/tests/unit/services/userService.test.js",
+          "backend/tests/unit/services/waitlistService.test.js",
+          "backend/tests/unit/services/workspaceMembers.test.js",
+          "backend/tests/unit/shared/BaseRepository.test.js",
+          "backend/tests/unit/shared/errorHandler.test.js",
+          "backend/tests/unit/utils/appriseNotificationPreferences.test.js",
+          "backend/tests/unit/utils/attachment-utils.test.js",
+          "backend/tests/unit/utils/db-dialect.test.js",
+          "backend/tests/unit/utils/migration-utils.test.js",
+          "backend/tests/unit/utils/notificationPreferences.test.js",
+          "backend/tests/unit/utils/resourcePhrases.test.js",
+          "backend/tests/unit/utils/safe-gunzip.test.js",
+          "backend/tests/unit/utils/searchIndexes.test.js",
+          "backend/tests/unit/utils/selfPersonName.test.js",
+          "backend/tests/unit/utils/timezone-utils.test.js",
+          "backend/tests/unit/utils/uid.test.js",
+          "backend/tests/unit/utils/validation.test.js",
+          "backend/utils/attachment-utils.js",
+          "backend/utils/db-dialect.js",
+          "backend/utils/image-upload.js",
+          "backend/utils/migration-utils.js",
+          "backend/utils/notificationPreferences.js",
+          "backend/utils/resourcePhrases.js",
+          "backend/utils/safe-gunzip.js",
+          "backend/utils/searchIndexes.js",
+          "backend/utils/selfPersonName.js",
+          "backend/utils/slug-utils.js",
+          "backend/utils/timezone-utils.js",
+          "backend/utils/uid.js",
+          "e2e/bin/reset-e2e-db.js",
+          "linguaisync.config.js",
+          "public/sw.js",
+          "scripts/version-plan.js",
+          "webpack.config.js"
+         ]
+        },
+        "sites": 24,
+        "edges": 24,
+        "closed": {
+         "no-occurrence": 6
+        }
+       }
+      }
+     },
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a",
+      "coverage": {
+       "sites": 37987,
+       "answered": {
+        "external": 108,
+        "namespace": 29,
+        "project-value": 467
+       },
+       "holes": {
+        "call": {
+         "count": 67,
+         "examples": [
+          "frontend/components/Admin/AdminFeedbackPage.tsx:270 avatarTint( entry.user?.email || sender )",
+          "frontend/components/Area/AreaDetails.tsx:276 tabClass('projects')",
+          "frontend/components/Area/AreaDetails.tsx:285 tabClass('goals')"
+         ]
+        },
+        "css-in-js": {
+         "count": 24,
+         "examples": [
+          "frontend/components/Note/editor/blockHandle.ts:103 .cm-block-handle-btn",
+          "frontend/components/Note/editor/blockHandle.ts:103 .cm-block-handle-drag",
+          "frontend/components/Note/editor/blockHandle.ts:117 .cm-block-handle-dropline"
+         ]
+        },
+        "ejs": {
+         "count": 4,
+         "examples": [
+          "backend/modules/landing/views/landing.ejs:384 <%= pain.icon %>",
+          "backend/modules/landing/views/landing.ejs:415 <%= step.icon %>",
+          "backend/modules/landing/views/landing.ejs:462 <%= card.icon %>"
+         ]
+        },
+        "ejs-glued": {
+         "count": 5,
+         "examples": [
+          "backend/modules/landing/views/landing.ejs:413 plan-step<%= i % 2 ? ' plan-step-flip' : '' %>",
+          "backend/modules/landing/views/landing.ejs:752 compare-cell<%= i === 0 ? ' compare-us' : '' %>",
+          "backend/modules/landing/views/landing.ejs:910 lang-chip<%= l.code === i18n.locale ? ' is-current' : '' %>"
+         ]
+        },
+        "element-access": {
+         "count": 5,
+         "examples": [
+          "frontend/components/Admin/AdminInsights.tsx:99 DOT[insight.tone]",
+          "frontend/components/Goal/GoalHero.tsx:133 GOAL_STATUS_TINT[goal.status]",
+          "frontend/components/Goal/GoalRow.tsx:87 STATUS_COLORS[goal.status]"
+         ]
+        },
+        "no-font-face": {
+         "count": 9,
+         "examples": [
+          "backend/modules/landing/views/partials/styles.ejs:6 -apple-system",
+          "backend/modules/landing/views/partials/styles.ejs:6 BlinkMacSystemFont",
+          "backend/modules/landing/views/partials/styles.ejs:6 Segoe UI"
+         ]
+        },
+        "no-rule": {
+         "count": 37162,
+         "examples": [
+          "backend/modules/landing/views/cloud.ejs:71 #cloud-pricing",
+          "backend/modules/landing/views/contact.ejs:50 #contact-name",
+          "backend/modules/landing/views/contact.ejs:54 #contact-email"
+         ]
+        },
+        "parameter": {
+         "count": 69,
+         "examples": [
+          "frontend/components/AI/ProjectAIInsights.tsx:410 colorClass",
+          "frontend/components/AI/TaskAIInsights.tsx:71 colorClass",
+          "frontend/components/Admin/SortableTable.tsx:90 className"
+         ]
+        },
+        "property": {
+         "count": 34,
+         "examples": [
+          "frontend/components/Admin/AdminUserStatusTable.tsx:500 status.tone",
+          "frontend/components/Areas.tsx:437 area.uid",
+          "frontend/components/DailyPlan/AgendaList.tsx:251 item.task_uid"
+         ]
+        },
+        "template": {
+         "count": 2,
+         "examples": [
+          "frontend/components/Profile/tabs/OidcProviderConfig.tsx:352 oidc-auto-provision-${index}",
+          "frontend/components/Shared/CalloutBlock.tsx:62 callout-${type.toLowerCase()}"
+         ]
+        },
+        "unresolved-import": {
+         "count": 1,
+         "examples": [
+          "backend/modules/landing/views/partials/head-assets.ejs:10 https://dyneteq.com/admin/s.js"
+         ]
+        },
+        "variable": {
+         "count": 1,
+         "examples": [
+          "frontend/components/Habits/HabitHeatmap.tsx:127 className"
+         ]
+        }
+       },
+       "uncertain": 25,
+       "externals": {
+        "checkout Font Awesome Free@6.4.0": 102,
+        "npm tailwindcss@None": 6
+       },
+       "files": {
+        "snapshot": 1708,
+        "indexed": 1708,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "typescript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.5.2",
+      "coverage": {
+       "sites": 77897,
+       "answered": {
+        "external": 26684,
+        "project-callable": 10643,
+        "project-value": 32461
+       },
+       "holes": {
+        "dangling-local": {
+         "count": 4199,
+         "examples": [
+          "e2e/tests/calendar-toolbar.spec.ts:41 viewportWidth",
+          "frontend/Layout.tsx:351 result",
+          "frontend/Layout.tsx:364 result"
+         ]
+        },
+        "no-occurrence": {
+         "count": 2843,
+         "examples": [
+          "e2e/helpers/testHelpers.ts:13 APP_URL",
+          "e2e/helpers/testHelpers.ts:17 E2E_EMAIL",
+          "e2e/helpers/testHelpers.ts:18 E2E_PASSWORD"
+         ]
+        },
+        "no-position": {
+         "count": 99,
+         "examples": [
+          "e2e/tests/notes-editor.spec.ts:65",
+          "frontend/App.tsx:44",
+          "frontend/App.tsx:79"
+         ]
+        },
+        "undefined-project-symbol": {
+         "count": 968,
+         "examples": [
+          "frontend/components/AI/DailyAssistant.tsx:92 SparklesIcon",
+          "frontend/components/AI/DailyAssistant.tsx:115 ArrowPathIcon",
+          "frontend/components/AI/DailyAssistant.tsx:120 SparklesIcon"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "npm typescript@6.0.3": 10821,
+        "npm @types/jest@29.5.14": 7232,
+        "npm @types/react@18.3.31": 2918,
+        "npm @testing-library/dom@9.3.4": 1787,
+        "npm @types/node@20.19.43": 1131,
+        "npm @testing-library/jest-dom@6.9.1": 1062,
+        "npm react-router@7.18.3": 437,
+        "npm playwright@1.63.0": 415,
+        "npm @testing-library/react@14.3.1": 385,
+        "npm playwright-core@1.63.0": 345,
+        "npm react-i18next@15.7.4": 303,
+        "npm @codemirror/state@6.7.4": 272,
+        "npm @lezer/common@1.5.2": 191,
+        "npm @codemirror/view@6.43.11": 175,
+        "npm @dnd-kit/core@6.3.1": 128,
+        "npm date-fns@4.4.0": 98,
+        "npm @dnd-kit/sortable@10.0.0": 88,
+        "npm i18next@24.2.3": 75,
+        "npm @types/react-dom@18.3.7": 34,
+        "npm @codemirror/lang-markdown@6.5.2": 24,
+        "npm csstype@3.2.3": 20,
+        "npm zustand@5.0.15": 18,
+        "npm @testing-library/user-event@14.6.7": 12,
+        "npm use-debounce@10.1.1": 12,
+        "npm @codemirror/language@6.12.4": 11,
+        "npm @lezer/highlight@1.2.5": 11,
+        "npm @dnd-kit/utilities@3.2.2": 9,
+        "npm mermaid@12.0.0": 4,
+        "npm @codemirror/commands@6.11.0": 3,
+        "npm react-markdown@10.1.0": 3,
+        "npm swr@2.5.1": 3,
+        "npm highlight.js@11.11.2": 2,
+        "npm dotenv@16.5.0": 1,
+        "npm remark-gfm@4.0.1": 1,
+        "npm rehype-highlight@7.0.2": 1,
+        "npm i18next-http-backend@4.0.10": 1,
+        "npm i18next-browser-languagedetector@8.2.1": 1,
+        "npm slugify@1.6.9": 1
+       },
+       "files": {
+        "snapshot": 650,
+        "indexed": 650,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     }
+    }
+   }
+  },
+  "events": {
+   "step.started": 4,
+   "log": 2,
+   "progress": 31,
+   "gap": 12,
+   "step.finished": 4,
+   "analyzer.started": 3,
+   "analyzer.finished": 3,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "scan": [
+    71.8,
+    239.6
+   ],
+   "analyze": [
+    239.6,
+    453.9
+   ],
+   "dynamic": [
+    453.9,
+    603.0
+   ],
+   "union": [
+    603.0,
+    609.1
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 72.415,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 4.487,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 11.131,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.217,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 4.259,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 3.424,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 19.994,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 7.602,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 24.581,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.462,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/daodan-enry/results/0/stderr": "go: creating new go.mod: module daodan-enry\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/go-enry/go-enry/v2 v2.9.6\ngo: downloading github.com/go-enry/go-oniguruma v1.2.1\ngo: added github.com/go-enry/go-enry/v2 v2.9.6\ngo: added github.com/go-enry/go-oniguruma v1.2.1\n",
+   "premap-runs/npm/results/0/stderr": "mise by @jdx \u2013 installing 1 tool\nmise \u2717 node@22-alpine  300ms \u00b7 failed: HTTP status client error (404 Not Found) for url (https://nodejs.org/dist/v22-alpine/node-v22-alpine.tar.gz)\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 0 tools \u00b7 1 failed in 303ms\nmise ERROR Failed to install core:node@22-alpine: HTTP status client error (404 Not Found) for url (https://nodejs.org/dist/v22-alpine/node-v22-alpine.tar.gz)\nmise ERROR Version: 2026.11.8 linux-x64 (2026-11-13)\nmise ERROR Run with --verbose or MISE_VERBOSE=1 for more information\nDAODAN-MISSING node@22-alpine\n",
+   "premap-runs/renovate/results/1/stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"648ef847-9bf0-4ee0-9829-0c2e3448449d\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-16T11:57:49.903Z\",\"v\":0}\n{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"648ef847-9bf0-4ee0-9829-0c2e3448449d\",\"repository\":\"local\",\"githubDeps\":[\"actions/checkout\",\"actions/setup-node\",\"node\",\"docker/setup-buildx-action\",\"docker/login-action\",\"docker/build-push-action\",\"actions/upload-artifact\",\"actions/download-artifact\"],\"msg\":\"GitHub token is required for some dependencies\",\"time\":\"2026-11-16T11:57:50.947Z\",\"v\":0}\n",
+   "premap-runs/tsc/results/0/stderr": "mise by @jdx \u2013 installing 1 tool\nmise \u2717 node@22-alpine  330ms \u00b7 failed: HTTP status client error (404 Not Found) for url (https://nodejs.org/dist/v22-alpine/node-v22-alpine.tar.gz)\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 0 tools \u00b7 1 failed in 334ms\nmise ERROR Failed to install core:node@22-alpine: HTTP status client error (404 Not Found) for url (https://nodejs.org/dist/v22-alpine/node-v22-alpine.tar.gz)\nmise ERROR Version: 2026.11.8 linux-x64 (2026-11-13)\nmise ERROR Run with --verbose or MISE_VERBOSE=1 for more information\nDAODAN-MISSING node@22-alpine\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 17s\n",
+   "premap-runs/tsc/results/0/stdout": "\nadded 1 package in 1s\n",
+   "dynamic-runs/dynamic-record-javascript/execute.log": "DAODAN-DYNAMIC 0 exit 1 3\n",
+   "dynamic-runs/dynamic-record-javascript/out/tests-0.log": "\n> tududi@v2.0.0 test\n> npm run backend:test\n\n\n> tududi@v2.0.0 backend:test\n> cd backend && cross-env NODE_ENV=test jest --maxWorkers=4\n\nError: connect ECONNREFUSED 127.0.0.1:5432\n    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16)\n",
+   "dynamic-runs/dynamic-record-javascript/prepare.log": "\nadded 39 packages in 4s\n\u001b[2mmise\u001b[0m \u001b[2mby @jdx\u001b[0m \u2013 installing 1 tool\n\u001b[2mmise\u001b[0m \u001b[38;5;9m\u2717\u001b[0m \u001b[34mnode\u001b[0m@22-alpine  594ms \u00b7 failed: HTTP status client error (404 Not Found) for url (https://nodejs.org/dist/v22-alpine/node-v22-alpine.tar.gz)\n\u001b[2mmise\u001b[0m \u001b[36m\u001b[0m\u001b[31m\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u001b[0m\u001b[2m\u001b[0m 1/1 \u00b7 installed 0 tools \u00b7 1 failed in 598ms\n\u001b[31mmise\u001b[0m \u001b[31mERROR\u001b[0m Failed to install core:node@22-alpine: HTTP status client error (404 Not Found) for url (https://nodejs.org/dist/v22-alpine/node-v22-alpine.tar.gz)\n\u001b[31mmise\u001b[0m \u001b[31mERROR\u001b[0m Version: 2026.11.8 linux-x64 (2026-11-13)\n\u001b[31mmise\u001b[0m \u001b[31mERROR\u001b[0m \u001b[2mRun with --verbose or MISE_VERBOSE=1 for more information\u001b[0m\nDAODAN-MISSING node@22-alpine\n"
+  },
+  "seconds": 609.1
+ }
+}

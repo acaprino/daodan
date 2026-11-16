@@ -168,7 +168,7 @@ Conta come risultato, per linguaggio su tutti i casi: i casi `fresh` sui casi ch
 
 ### Risultati
 
-Primo giro, 16 novembre 2026, sui 104 progetti in miniatura (`results/pipeline/2026-11-16-fixtures.json`, rapporto in `2026-11-16-fixtures.report.md`), con il passo dinamico. I 18 repository veri: non ancora misurati. 104 casi, nessuno fallito; 13.182 secondi in tutto, mediana 106 per caso; 602 corse di container; circa 1 USD fatturato da Modal.
+Primo giro, 16 novembre 2026, sui 104 progetti in miniatura (`results/pipeline/2026-11-16-fixtures.json`, rapporto in `2026-11-16-fixtures.report.md`), con il passo dinamico. I 18 repository veri: 3 misurati (`2026-11-16-real-3.json`: chi, javapoet, tududi), gli altri 15 no. Nei 3, analisi statica `fresh` con tutti i file nell'indice; passo dinamico: chi osservato (1.344 siti), javapoet fallito (build sul JDK 17 dell'immagine invece dell'8 dichiarato), tududi quasi nullo (i test del backend vogliono PostgreSQL e il passo non avvia servizi). Meno di 0,10 USD in tutto. 104 casi, nessuno fallito; 13.182 secondi in tutto, mediana 106 per caso; 602 corse di container; circa 1 USD fatturato da Modal.
 
 | Linguaggio | Casi `fresh` / casi | File indicizzati / nello snapshot | Quota risposta | Passo dinamico: casi osservati, siti |
 | --- | --- | --- | --- | --- |

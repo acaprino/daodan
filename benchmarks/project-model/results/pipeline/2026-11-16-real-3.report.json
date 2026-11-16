@@ -1,0 +1,377 @@
+{
+ "cases": {
+  "run": 3,
+  "failed": {},
+  "seconds": {
+   "total": 961.0,
+   "median": 203.9,
+   "slowest": [
+    [
+     "mix-real-tududi",
+     609.1
+    ],
+    [
+     "mix-real-chi",
+     203.9
+    ],
+    [
+     "mix-real-javapoet",
+     148.0
+    ]
+   ]
+  }
+ },
+ "languages": {
+  "go": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 90,
+    "indexed": 90
+   },
+   "sites": 10099,
+   "answered": {
+    "external": 2444,
+    "observed": 6,
+    "project-callable": 2048,
+    "project-value": 5298
+   },
+   "holes": {
+    "no-occurrence": 266,
+    "no-position": 37
+   },
+   "share": 0.97
+  },
+  "java": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 39,
+    "indexed": 39
+   },
+   "sites": 9142,
+   "answered": {
+    "external": 2626,
+    "project-callable": 4054,
+    "project-value": 2452
+   },
+   "holes": {
+    "undefined-project-symbol": 10
+   },
+   "share": 0.9989
+  },
+  "javascript": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 1038,
+    "indexed": 1038
+   },
+   "sites": 134949,
+   "answered": {
+    "external": 49842,
+    "lexical": 1,
+    "observed": 6,
+    "project-callable": 14374,
+    "project-value": 33836
+   },
+   "holes": {
+    "dangling-local": 496,
+    "no-occurrence": 36131,
+    "no-position": 208,
+    "undefined-project-symbol": 55
+   },
+   "share": 0.7266
+  },
+  "stylesheet": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 1708,
+    "indexed": 1708
+   },
+   "sites": 37987,
+   "answered": {
+    "external": 108,
+    "namespace": 29,
+    "project-value": 467
+   },
+   "holes": {
+    "call": 67,
+    "css-in-js": 24,
+    "ejs": 4,
+    "ejs-glued": 5,
+    "element-access": 5,
+    "no-font-face": 9,
+    "no-rule": 37162,
+    "parameter": 69,
+    "property": 34,
+    "template": 2,
+    "unresolved-import": 1,
+    "variable": 1
+   },
+   "share": 0.0159
+  },
+  "typescript": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 650,
+    "indexed": 650
+   },
+   "sites": 77897,
+   "answered": {
+    "external": 26684,
+    "project-callable": 10643,
+    "project-value": 32461
+   },
+   "holes": {
+    "dangling-local": 4199,
+    "no-occurrence": 2843,
+    "no-position": 99,
+    "undefined-project-symbol": 968
+   },
+   "share": 0.8959
+  }
+ },
+ "missing": [],
+ "no_analyzer": {},
+ "premap": {
+  "languages": {
+   "given": 3,
+   "not_given": 0,
+   "found": 11,
+   "expected": 11,
+   "extra": 15,
+   "wrong": 0
+  },
+  "languages.files": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "excluded": {
+   "given": 3,
+   "not_given": 0,
+   "found": 36,
+   "expected": 38,
+   "extra": 18,
+   "wrong": 0
+  },
+  "units": {
+   "given": 3,
+   "not_given": 0,
+   "found": 5,
+   "expected": 5,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.depends_on": {
+   "given": 3,
+   "not_given": 0,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.source_roots": {
+   "given": 2,
+   "not_given": 1,
+   "found": 4,
+   "expected": 5,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.config": {
+   "given": 2,
+   "not_given": 1,
+   "found": 3,
+   "expected": 12,
+   "extra": 0,
+   "wrong": 0
+  },
+  "workspace": {
+   "given": 3,
+   "not_given": 0,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "workspace.members": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "toolchains": {
+   "given": 3,
+   "not_given": 0,
+   "found": 4,
+   "expected": 11,
+   "extra": 2,
+   "wrong": 2
+  },
+  "dependencies": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "frameworks": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "services": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "needs": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  }
+ },
+ "gaps": [
+  {
+   "step": "scan",
+   "kind": "toolchain_unavailable",
+   "count": 4,
+   "examples": [
+    "mix-real-chi: _examples/versions/go.mod: go 1.16: go 1.22 runs these commands: one version per tool per run",
+    "mix-real-chi: go.mod: go 1.24: go 1.22 runs these commands: one version per tool per run",
+    "mix-real-tududi: node 22-alpine: the preparation could not install it (its output is in the run's log)"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_failed",
+   "count": 2,
+   "examples": [
+    "mix-real-chi: .: go list -m -json: go: go.mod requires go >= 1.24 (running go 1.22.12; GOTOOLCHAIN=local)",
+    "mix-real-chi: .: no go command named this module"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "no_analyzer",
+   "count": 1,
+   "examples": [
+    "mix-real-tududi: 10 Shell files and no analyzer lists the language: their code is in no graph"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "not_executed",
+   "count": 1,
+   "examples": [
+    "mix-real-tududi: package.json: install scripts are not run (@scarf/scarf, @swc/core, bcrypt, core-js-pure, fsevents): what they generate is unknown"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "toolchain_unavailable",
+   "count": 1,
+   "examples": [
+    "mix-real-tududi: node 22-alpine: the preparation could not install it (its output is in the run's log)"
+   ]
+  }
+ ],
+ "containers": {
+  "runs": 26,
+  "seconds": 325.3,
+  "phases": {
+   "execute": {
+    "runs": 13,
+    "seconds": 90.9
+   },
+   "prepare": {
+    "runs": 13,
+    "seconds": 234.4
+   }
+  },
+  "not_zero": [
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble",
+    "outcome": "exited",
+    "exit_code": 1,
+    "cause": null,
+    "count": 1,
+    "cases": [
+     "mix-real-javapoet"
+    ]
+   }
+  ]
+ },
+ "by_case": {
+  "mix-real-chi": {
+   "seconds": 203.9,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 303
+    }
+   }
+  },
+  "mix-real-javapoet": {
+   "seconds": 148.0,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 10
+    }
+   }
+  },
+  "mix-real-tududi": {
+   "seconds": 609.1,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 36890
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 37383
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 8109
+    }
+   }
+  }
+ }
+}
