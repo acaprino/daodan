@@ -1,0 +1,1752 @@
+{
+ "real-app-kotlinconf": {
+  "premap": {
+   "languages": {
+    "given": true,
+    "expected": 6,
+    "found": 6,
+    "found_normalised": 6,
+    "missed": [],
+    "extra": [
+     "C",
+     "EditorConfig",
+     "Gradle Kotlin DSL",
+     "Java Properties",
+     "JSON",
+     "Markdown",
+     "MATLAB",
+     "Procfile",
+     "Proguard",
+     "SVG",
+     "TOML",
+     "XML",
+     "XML Property List",
+     "YAML"
+    ],
+    "wrong": []
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 7
+   },
+   "excluded": {
+    "given": true,
+    "expected": 46,
+    "found": 42,
+    "found_normalised": 42,
+    "missed": [
+     "app/iosApp/KotlinMultiplatformLinkedPackage/",
+     "app/shared/src/commonMain/composeResources/files/aboutlibraries.json",
+     "CODE_OF_CONDUCT.md",
+     "CLAUDE.md"
+    ],
+    "extra": [
+     ".gitignore",
+     "app/androidApp/proguard-rules.pro",
+     "app/iosApp/KotlinConf.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+     "app/iosApp/KotlinConf.xcworkspace/contents.xcworkspacedata",
+     "app/iosApp/iosApp/Assets.xcassets/KotlinConf 2026 icon.imageset/"
+    ],
+    "wrong": []
+   },
+   "units": {
+    "given": true,
+    "expected": 13,
+    "found": 12,
+    "found_normalised": 12,
+    "missed": [
+     "xcode-target@app/iosApp:iosApp"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 11,
+    "found": 9,
+    "found_normalised": 9,
+    "missed": [
+     "xcode-target@app/iosApp:iosApp > :app:shared",
+     "xcode-target@app/iosApp:iosApp > KotlinMultiplatformLinkedPackage"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": false,
+    "expected": 27
+   },
+   "units.config": {
+    "given": true,
+    "expected": 33,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [
+     "gradle-project@. > applied_scripts",
+     "gradle-project@core > build_tags",
+     "gradle-project@backend > compile_tasks",
+     "gradle-project@backend > entry_files",
+     "gradle-project@backend > ktor_modules",
+     "gradle-project@backend > main_class",
+     "gradle-project@backend > source_sets",
+     "gradle-project@app/shared > apple_framework",
+     "gradle-project@app/shared > build_tags",
+     "gradle-project@app/shared > compose_resources_package",
+     "gradle-project@app/shared > custom_source_sets",
+     "gradle-project@app/ui-components > build_tags",
+     "gradle-project@app/ui-components > compose_resources_package",
+     "gradle-project@app/ui-components > custom_source_sets",
+     "gradle-project@app/androidApp > build_tags",
+     "gradle-project@app/androidApp > compile_tasks",
+     "gradle-project@app/androidApp > entry_files",
+     "gradle-project@app/androidApp > source_sets",
+     "gradle-project@app/desktopApp > compile_tasks",
+     "gradle-project@app/desktopApp > entry_files",
+     "gradle-project@app/desktopApp > main_class",
+     "gradle-project@app/desktopApp > source_sets",
+     "gradle-project@app/webApp > build_tags",
+     "gradle-project@app/webApp > entry_files",
+     "gradle-project@app/adminApp > build_tags",
+     "gradle-project@app/adminApp > entry_files",
+     "xcode-target@app/iosApp:iosApp > entry_files",
+     "xcode-target@app/iosApp:iosApp > scheme",
+     "xcode-target@app/iosApp:iosApp > workspace",
+     "swift-package@app/iosApp/KotlinMultiplatformLinkedPackage > packages",
+     "swift-package@app/iosApp/KotlinMultiplatformLinkedPackage > source_sets",
+     "swift-package@app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2 > packages",
+     "swift-package@app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2 > source_sets"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": true,
+    "expected": 9,
+    "found": 9,
+    "found_normalised": 9,
+    "missed": [],
+    "extra": [
+     "gradle@. > ."
+    ],
+    "wrong": []
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 15,
+    "found": 7,
+    "found_normalised": 7,
+    "missed": [
+     "maven@.devcontainer/devcontainer.json#features.mavenVersion",
+     "node@build.gradle.kts",
+     "xcode@.github/workflows/build-all.yml",
+     "swift@app/iosApp/KotlinConf.xcodeproj/project.pbxproj#SWIFT_VERSION"
+    ],
+    "extra": [
+     "java@app/androidApp/build.gradle.kts#kotlin.compilerOptions.jvmTarget",
+     "android-build-tools@app/androidApp/build.gradle.kts#android.buildToolsVersion",
+     "kotlin@gradle/libs.versions.toml"
+    ],
+    "wrong": [
+     {
+      "item": "java@.devcontainer/devcontainer.json#image",
+      "fields": {
+       "version": {
+        "expected": "1-21",
+        "got": "21"
+       }
+      },
+      "same_after_normalisation": false
+     },
+     {
+      "item": "java@.github/workflows/build-all.yml",
+      "fields": {
+       "version": {
+        "expected": "21",
+        "got": "11"
+       },
+       "declared_in": {
+        "expected": ".github/workflows/build-all.yml",
+        "got": "app/androidApp/build.gradle.kts#sourceCompatibility"
+       }
+      },
+      "same_after_normalisation": false
+     },
+     {
+      "item": "java@.github/workflows/web-deploy.yml",
+      "fields": {
+       "version": {
+        "expected": "21",
+        "got": "11"
+       },
+       "declared_in": {
+        "expected": ".github/workflows/web-deploy.yml",
+        "got": "app/androidApp/build.gradle.kts#targetCompatibility"
+       }
+      },
+      "same_after_normalisation": false
+     },
+     {
+      "item": "android-sdk@gradle/libs.versions.toml#versions.android-compileSdk",
+      "fields": {
+       "version": {
+        "expected": "37",
+        "got": "37.2"
+       },
+       "declared_in": {
+        "expected": "gradle/libs.versions.toml#versions.android-compileSdk",
+        "got": "app/androidApp/build.gradle.kts#android.compileSdk"
+       }
+      },
+      "same_after_normalisation": false
+     }
+    ]
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 12
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 29
+   },
+   "services": {
+    "given": false,
+    "expected": 6
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.019,
+    "source": "modules.py@daodan/module-graph/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "python-build@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.027,
+    "source": "requirements@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.005,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "npm-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "npm-tests@daodan/premap/v5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "jvm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "project-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.01,
+    "source": "autotools@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "scanner",
+    "seconds": 31.463,
+    "source": "go-enry@v2.9.6",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 63.945,
+    "source": "renovate@44.239.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "compose@5.6.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.001,
+    "source": "buildkit@v0.34.2",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.006,
+    "source": "go@1.27.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.003,
+    "source": "cargo@1.99.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.004,
+    "source": "uv@0.11.28",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "tsc@6.0.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.003,
+    "source": "npm@bundled with Node",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "cmake@4.4.5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "make@4.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 145.638,
+    "source": "gradle@9.9.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "maven@3.10.0",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "dotnet@10.0.404",
+    "state": "not_needed"
+   }
+  ],
+  "gaps": [
+   {
+    "detail": "the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "kind": "toolchain_undeclared",
+    "path": ".",
+    "source": "jvm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "1 C files that no unit of kind autotools-project, bazel-target, cmake-target, go-module, make-target, meson-target, msbuild-project holds",
+    "files": 1,
+    "kind": "code_outside_units",
+    "language": "C",
+    "path": "app/iosApp/KotlinMultiplatformLinkedPackage/Sources/KotlinMultiplatformLinkedPackage/include",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 C files that no unit of kind autotools-project, bazel-target, cmake-target, go-module, make-target, meson-target, msbuild-project holds",
+    "files": 1,
+    "kind": "code_outside_units",
+    "language": "C",
+    "path": "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Sources/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/include",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 JavaScript files that no unit of kind npm-package holds",
+    "files": 1,
+    "kind": "code_outside_units",
+    "language": "JavaScript",
+    "path": "app/webApp/src/webMain/resources",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "2 MATLAB files and no analyzer lists the language: their code is in no graph",
+    "files": 2,
+    "kind": "no_analyzer",
+    "language": "MATLAB",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Procfile files and no analyzer lists the language: their code is in no graph",
+    "files": 1,
+    "kind": "no_analyzer",
+    "language": "Procfile",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Shell files and no analyzer lists the language: their code is in no graph",
+    "files": 1,
+    "kind": "no_analyzer",
+    "language": "Shell",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "4 Swift files and no analyzer lists the language: their code is in no graph",
+    "files": 4,
+    "kind": "no_analyzer",
+    "language": "Swift",
+    "source": "premap@daodan/premap/v1"
+   }
+  ],
+  "units": 12,
+  "toolchains": [
+   {
+    "declared_in": "core/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#sourceCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "11"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#targetCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "11"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#kotlin.compilerOptions.jvmTarget",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "11"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#android.compileSdk",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-sdk",
+    "version": "37.2"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#android.buildToolsVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-build-tools",
+    "version": "36.0.0"
+   },
+   {
+    "declared_in": "app/desktopApp/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "app/shared/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "app/ui-components/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "gradle/wrapper/gradle-wrapper.properties#distributionUrl",
+    "line": 4,
+    "sources": [
+     "jvm-files@daodan/premap/v1",
+     "renovate@44.239.1"
+    ],
+    "tool": "gradle",
+    "version": "9.9.1"
+   },
+   {
+    "declared_in": "app/iosApp/KotlinMultiplatformLinkedPackage/Package.swift",
+    "line": 1,
+    "sources": [
+     "project-files@daodan/premap/v1"
+    ],
+    "tool": "swift",
+    "version": "5.9"
+   },
+   {
+    "declared_in": "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Package.swift",
+    "line": 1,
+    "sources": [
+     "project-files@daodan/premap/v1"
+    ],
+    "tool": "swift",
+    "version": "5.9"
+   },
+   {
+    "declared_in": ".devcontainer/devcontainer.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "gradle/libs.versions.toml",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "kotlin",
+    "version": "2.5.0-RC"
+   }
+  ],
+  "steps": {
+   "scan": {
+    "modules": 11,
+    "graph": "/runs/real-app-kotlinconf/modules.json",
+    "action": "rebuilt",
+    "units": 12,
+    "gaps": 8,
+    "premap": "/runs/real-app-kotlinconf/premap.json"
+   },
+   "analyze": {
+    "pass": true,
+    "manifest_digest": "3501d01821bd2757480f18827b71a436e98666c9ecfaf8b7c86e5eb8aacacd20",
+    "languages": {
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a"
+     },
+     "c": {
+      "state": "unavailable",
+      "engine": "scip-clang",
+      "reason": "no C or C++ unit in the pre-map: no build of the project compiles C or C++",
+      "install": "none: the project's C and C++ files keep their static facts"
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2"
+     },
+     "kotlin": {
+      "state": "fresh",
+      "engine": "scip-kotlin@0.14.2"
+     }
+    },
+    "engines": {
+     "stylesheet": {
+      "engine": "stylesheet@145560a4592a",
+      "available": true,
+      "languages": {
+       "stylesheet": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "codebase-map stylesheet.py + typescript + tailwindcss",
+       "peak_mb": 224,
+       "seconds": 0.7,
+       "version": "145560a4592a",
+       "versions": "e62b3f368913 + 5.9.3 + None"
+      }
+     },
+     "scip-clang": {
+      "engine": "scip-clang@v0.4.1",
+      "available": false,
+      "reason": "no C or C++ unit in the pre-map: no build of the project compiles C or C++",
+      "install": "none: the project's C and C++ files keep their static facts",
+      "indexer": {
+       "name": "scip-clang",
+       "peak_mb": null,
+       "seconds": 0,
+       "version": "v0.4.1"
+      }
+     },
+     "scip-typescript": {
+      "engine": "scip-typescript@0.6.2",
+      "available": true,
+      "languages": {
+       "javascript": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-typescript",
+       "peak_mb": null,
+       "seconds": 10.3,
+       "types": [
+        "@types/node@24.19.2"
+       ],
+       "version": "0.6.2"
+      }
+     },
+     "scip-kotlin": {
+      "engine": "scip-kotlin@0.14.2",
+      "available": true,
+      "languages": {
+       "kotlin": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-java",
+       "peak_mb": null,
+       "seconds": 373.3,
+       "version": "0.14.2"
+      }
+     }
+    },
+    "started_at": "2026-11-16T19:26:35Z",
+    "available": true,
+    "finished_at": "2026-11-16T19:41:12Z"
+   },
+   "dynamic": {
+    "languages": {
+     "stylesheet": {
+      "state": "no-observer",
+      "reason": "no observer runs this language's tests"
+     },
+     "c": {
+      "state": "no-static-graph",
+      "reason": "c: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+     },
+     "javascript": {
+      "state": "not-run",
+      "reason": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+     },
+     "kotlin": {
+      "state": "observed",
+      "sites": 984,
+      "edges": 988,
+      "closed": 2
+     }
+    }
+   },
+   "union": {
+    "languages": {
+     "c": {
+      "engine": "scip-clang",
+      "install": "none: the project's C and C++ files keep their static facts",
+      "reason": "no C or C++ unit in the pre-map: no build of the project compiles C or C++",
+      "state": "unavailable"
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2",
+      "coverage": {
+       "sites": 23,
+       "answered": {
+        "external": 10,
+        "project-value": 3
+       },
+       "holes": {
+        "a member of a value of type any: only execution knows it": {
+         "count": 10,
+         "examples": [
+          "app/webApp/src/webMain/resources/service-worker.js:66 command",
+          "app/webApp/src/webMain/resources/service-worker.js:68 showNotification",
+          "app/webApp/src/webMain/resources/service-worker.js:68 title"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "npm typescript@6.0.3": 10,
+        "npm @types/node@24.19.2": 3
+       },
+       "files": {
+        "snapshot": 1,
+        "indexed": 1,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "kotlin": {
+      "state": "fresh",
+      "engine": "scip-kotlin@0.14.2",
+      "coverage": {
+       "sites": 16830,
+       "answered": {
+        "external": 5391,
+        "lexical": 41,
+        "observed": 2,
+        "project-callable": 1517,
+        "project-value": 5834
+       },
+       "holes": {
+        "element": {
+         "count": 1,
+         "examples": [
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/OverviewScreen.kt:309"
+         ]
+        },
+        "no-document": {
+         "count": 2214,
+         "examples": [
+          "app/adminApp/build.gradle.kts:4 plugins",
+          "app/adminApp/build.gradle.kts:5 alias",
+          "app/adminApp/build.gradle.kts:5 kotlinMultiplatform"
+         ]
+        },
+        "no-occurrence": {
+         "count": 1830,
+         "examples": [
+          "app/androidApp/src/main/kotlin/org/jetbrains/kotlinconf/android/KotlinConfApplication.kt:27 appGraph",
+          "app/androidApp/src/main/kotlin/org/jetbrains/kotlinconf/android/KotlinConfApplication.kt:28 platformLogger",
+          "app/androidApp/src/main/kotlin/org/jetbrains/kotlinconf/android/MainActivity.kt:40 appGraph"
+         ]
+        }
+       },
+       "uncertain": 69,
+       "externals": {
+        "unknown androidx/compose/foundation/layout@unknown": 616,
+        "unknown kotlin/collections@unknown": 442,
+        "maven .@.": 304,
+        "maven maven/org.jetbrains.kotlinx/kotlinx-coroutines-core-jvm@1.7.3": 302,
+        "maven maven/org.jetbrains.compose.ui/ui-desktop@1.11.1": 225,
+        "unknown androidx/compose/runtime@unknown": 193,
+        "unknown org/jetbrains/compose/resources@unknown": 187,
+        "maven maven/org.jetbrains.compose.ui/ui-graphics-desktop@1.11.1": 159,
+        "maven maven/org.jetbrains.compose.foundation/foundation-layout-desktop@1.11.1": 158,
+        "unknown androidx/compose/foundation@unknown": 147,
+        "maven maven/org.jetbrains.kotlin/kotlin-stdlib@2.1.21": 141,
+        "unknown androidx/compose/animation@unknown": 122,
+        "unknown kotlin/test@unknown": 121,
+        "unknown kotlin@unknown": 118,
+        "unknown kotlin/text@unknown": 101,
+        "unknown androidx/compose/animation/core@unknown": 88,
+        "maven maven/io.ktor/ktor-http-jvm@3.4.3": 88,
+        "maven jdk@21": 86,
+        "maven maven/org.jetbrains.compose.animation/animation-core-desktop@1.11.1": 76,
+        "maven maven/org.jetbrains.compose.foundation/foundation-desktop@1.11.1": 73,
+        "maven maven/org.jetbrains.compose.ui/ui-geometry-desktop@1.11.1": 73,
+        "maven maven/org.jetbrains.exposed/exposed-core@1.0.0": 72,
+        "maven maven/io.ktor/ktor-client-core-jvm@3.6.1": 69,
+        "maven maven/io.ktor/ktor-server-core-jvm@3.4.3": 69,
+        "maven maven/androidx.compose.runtime/runtime-desktop@1.11.2": 65,
+        "maven maven/org.slf4j/slf4j-api@2.0.20": 64,
+        "maven maven/org.jetbrains.compose.ui/ui-text-desktop@1.11.1": 62,
+        "unknown io/ktor/client/request@unknown": 61,
+        "maven maven/org.jetbrains.kotlinx/kotlinx-datetime-jvm@0.8.0-0.6.x-compat": 56,
+        "unknown androidx/compose/ui/draw@unknown": 51,
+        "maven maven/org.jetbrains.compose.ui/ui-unit-desktop@1.11.1": 48,
+        "maven maven/com.russhwolf/multiplatform-settings-jvm@1.3.0": 48,
+        "unknown androidx/lifecycle/compose@unknown": 45,
+        "unknown kotlinx/coroutines/test@unknown": 45,
+        "maven maven/org.jetbrains.kotlinx/kotlinx-serialization-json-jvm@1.11.0": 32,
+        "unknown io/ktor/server/response@unknown": 32,
+        "maven maven/org.jetbrains.exposed/exposed-jdbc@1.0.0": 29,
+        "unknown androidx/compose/ui/semantics@unknown": 28,
+        "unknown org/koin/ktor/ext@unknown": 28,
+        "unknown org/jetbrains/exposed/v1/jdbc@unknown": 26,
+        "unknown kotlin/io@unknown": 25,
+        "maven maven/androidx.navigation3/navigation3-runtime-desktop@1.2.0": 25,
+        "maven maven/androidx.lifecycle/lifecycle-viewmodel-desktop@2.9.4": 25,
+        "unknown kotlin/math@unknown": 25,
+        "unknown androidx/compose/runtime/saveable@unknown": 22,
+        "unknown org/jetbrains/exposed/v1/jdbc/transactions@unknown": 22,
+        "unknown android/content@unknown": 21,
+        "unknown io/ktor/client/call@unknown": 21,
+        "unknown androidx/compose/foundation/selection@unknown": 20,
+        "unknown kotlin/ranges@unknown": 19,
+        "maven maven/io.ktor/ktor-server-test-host-jvm@3.6.1": 18,
+        "unknown android/app@unknown": 17,
+        "maven maven/org.jetbrains.compose.animation/animation-desktop@1.11.1": 17,
+        "unknown kotlinx/coroutines@unknown": 14,
+        "unknown androidx/compose/ui/graphics@unknown": 14,
+        "unknown androidx/core/app@unknown": 13,
+        "unknown io/ktor/server/application@unknown": 13,
+        "unknown com/russhwolf/settings/coroutines@unknown": 12,
+        "unknown android/os@unknown": 11,
+        "unknown kotlinx/coroutines/flow@unknown": 11,
+        "unknown androidx/compose/foundation/shape@unknown": 11,
+        "unknown dev/zacsweers/metrox/viewmodel@unknown": 10,
+        "maven maven/com.mikepenz/aboutlibraries-core-jvm@15.3.0": 10,
+        "maven maven/com.squareup.okio/okio-jvm@3.18.2": 10,
+        "unknown android/content/res@unknown": 10,
+        "unknown io/ktor/serialization/kotlinx/json@unknown": 9,
+        "maven maven/com.zaxxer/HikariCP@7.0.2": 9,
+        "unknown io/ktor/client/plugins/contentnegotiation@unknown": 8,
+        "unknown org/koin/core/module/dsl@unknown": 8,
+        "maven maven/io.github.mirzemehdi/kmpnotifier-core-jvm@2.0.2": 7,
+        "unknown kotlin/sequences@unknown": 7,
+        "unknown androidx/compose/ui/text@unknown": 6,
+        "unknown androidx/compose/foundation/lazy@unknown": 6,
+        "unknown androidx/navigationevent/compose@unknown": 6,
+        "maven maven/io.ktor/ktor-server-status-pages-jvm@3.6.1": 6,
+        "maven maven/io.ktor/ktor-server-cors-jvm@3.6.1": 6,
+        "maven maven/io.ktor/ktor-utils-jvm@3.4.3": 6,
+        "unknown androidx/activity@unknown": 5,
+        "unknown io/ktor/client/plugins@unknown": 5,
+        "unknown coil3/compose@unknown": 5,
+        "unknown androidx/compose/ui/focus@unknown": 5,
+        "unknown androidx/compose/foundation/text@unknown": 5,
+        "maven maven/io.insert-koin/koin-core-jvm@4.2.2": 5,
+        "unknown org/koin/dsl@unknown": 5,
+        "unknown android@unknown": 4,
+        "unknown com/caverock/androidsvg@unknown": 4,
+        "unknown androidx/navigation3/runtime@unknown": 4,
+        "maven maven/org.jetbrains.androidx.navigation3/navigation3-ui-desktop@1.2.0": 4,
+        "unknown androidx/compose/ui/graphics/vector@unknown": 4,
+        "unknown androidx/compose/ui/window@unknown": 3,
+        "unknown androidx/core/content@unknown": 3,
+        "maven maven/io.ktor/ktor-client-logging-jvm@3.6.1": 3,
+        "maven maven/androidx.savedstate/savedstate-compose-desktop@1.4.0": 3,
+        "unknown androidx/compose/foundation/gestures@unknown": 3,
+        "maven maven/androidx.navigationevent/navigationevent-desktop@1.0.1": 3,
+        "unknown com/mikepenz/markdown/model@unknown": 3,
+        "maven maven/com.mikepenz/multiplatform-markdown-renderer-jvm@0.46.0": 3,
+        "maven maven/io.coil-kt.coil3/coil-core-jvm@3.6.3": 3,
+        "unknown io/ktor/server/request@unknown": 3,
+        "unknown dev/zacsweers/metro@unknown": 2,
+        "unknown android/graphics@unknown": 2,
+        "unknown android/content/pm@unknown": 2,
+        "unknown com/mmk/kmpnotifier/push/firebase@unknown": 2,
+        "unknown androidx/compose/foundation/lazy/grid@unknown": 2,
+        "unknown com/russhwolf/settings/observable@unknown": 2,
+        "maven maven/org.jetbrains.skiko/skiko-awt@0.144.6": 2,
+        "unknown io/ktor/server/auth@unknown": 2,
+        "unknown com/jetbrains/kotlinconf@unknown": 1,
+        "unknown androidx/core/splashscreen@unknown": 1,
+        "unknown androidx/activity/compose@unknown": 1,
+        "unknown android/view@unknown": 1,
+        "unknown com/mmk/kmpnotifier/extensions@unknown": 1,
+        "unknown android/net@unknown": 1,
+        "unknown androidx/core/net@unknown": 1,
+        "unknown androidx/activity/result/contract@unknown": 1,
+        "unknown androidx/activity/result@unknown": 1,
+        "unknown com/russhwolf/settings@unknown": 1,
+        "unknown androidx/preference@unknown": 1,
+        "unknown android/util@unknown": 1,
+        "maven maven/dev.zacsweers.metro/metrox-viewmodel-jvm@1.5.2": 1,
+        "maven maven/io.github.mirzemehdi/kmpnotifier-push-firebase-jvm@2.0.2": 1,
+        "unknown androidx/compose/ui/graphics/layer@unknown": 1,
+        "unknown io/ktor/client/plugins/logging@unknown": 1,
+        "unknown androidx/lifecycle/viewmodel/navigation3@unknown": 1,
+        "maven maven/androidx.lifecycle/lifecycle-runtime-compose-desktop@2.9.4": 1,
+        "unknown androidx/compose/foundation/lazy/staggeredgrid@unknown": 1,
+        "unknown kotlin/comparisons@unknown": 1,
+        "maven maven/androidx.compose.runtime/runtime-saveable-desktop@1.11.2": 1,
+        "unknown androidx/compose/ui/input/pointer@unknown": 1,
+        "maven maven/KotlinConfApp.app/shared@unspecified": 1,
+        "unknown doist/x/normalize@unknown": 1,
+        "maven maven/com.doist.x/normalize-jvm@1.4.0": 1,
+        "maven maven/com.russhwolf/multiplatform-settings-test-jvm@1.3.0": 1,
+        "maven maven/org.jetbrains.kotlinx/kotlinx-coroutines-test-jvm@1.11.0": 1,
+        "unknown io/ktor/utils/io/core@unknown": 1,
+        "unknown androidx/compose/ui/input/key@unknown": 1,
+        "unknown androidx/compose/foundation/relocation@unknown": 1,
+        "unknown androidx/lifecycle/viewmodel/compose@unknown": 1,
+        "unknown androidx/compose/ui/platform@unknown": 1,
+        "unknown com/mikepenz/markdown/compose@unknown": 1,
+        "unknown androidx/compose/ui/unit@unknown": 1,
+        "unknown androidx/compose/ui/layout@unknown": 1,
+        "unknown coil3/request@unknown": 1,
+        "unknown androidx/compose/foundation/text/selection@unknown": 1,
+        "unknown androidx/compose/material/ripple@unknown": 1,
+        "maven maven/org.jetbrains.compose.material/material-ripple-desktop@1.11.1": 1,
+        "unknown org/koin/ktor/plugin@unknown": 1,
+        "maven maven/io.ktor/ktor-events-jvm@3.4.3": 1,
+        "unknown io/ktor/server/plugins/calllogging@unknown": 1,
+        "unknown io/ktor/server/plugins/defaultheaders@unknown": 1,
+        "unknown io/ktor/server/plugins/conditionalheaders@unknown": 1,
+        "unknown io/ktor/server/plugins/compression@unknown": 1,
+        "unknown io/ktor/server/plugins/autohead@unknown": 1,
+        "unknown io/ktor/server/plugins/forwardedheaders@unknown": 1,
+        "unknown io/ktor/server/plugins/statuspages@unknown": 1,
+        "unknown io/ktor/util/logging@unknown": 1,
+        "unknown io/ktor/server/plugins/cors/routing@unknown": 1,
+        "unknown io/ktor/server/plugins/contentnegotiation@unknown": 1,
+        "unknown io/ktor/server/routing@unknown": 1,
+        "maven maven/io.ktor/ktor-server-auth-jvm@3.6.1": 1,
+        "unknown io/ktor/server/http/content@unknown": 1
+       },
+       "files": {
+        "snapshot": 271,
+        "indexed": 226,
+        "missing": [
+         {
+          "path": "app/adminApp/build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/AdminApi.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/AdminModels.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Aggregation.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Charts.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Csv.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Main.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/OverviewScreen.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/PseudoNames.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/UserScreen.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/androidApp/build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "app/desktopApp/build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "app/shared/build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/IOSLocalNotificationService.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/IOSNotifications.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/MapHandler.ios.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/Platform.ios.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/ScrollToTopHandler.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/di/IosAppGraph.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/di/IosBindings.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/main.ios.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/utils/StoreUrl.ios.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/jsMain/kotlin/org/jetbrains/kotlinconf/Platform.js.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/wasmJsMain/kotlin/org/jetbrains/kotlinconf/Platform.wasm.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/JsJodaTimeZone.web.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/MapHandler.web.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/ScrollToTopHandler.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/ServiceWorkerLocalNotificationService.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/di/WebAppGraph.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/di/WebBindings.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/navigation/BrowserIntegration.web.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/storage/SettingsAssetStorage.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/utils/StoreUrl.web.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/utils/WebLogger.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/ui-components/build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "app/ui-components/src/jsMain/kotlin/org/jetbrains/kotlinconf/ui/PlatformContext.js.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/ui-components/src/wasmJsMain/kotlin/org/jetbrains/kotlinconf/ui/PlatformContext.wasmJs.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/ui-components/src/webMain/kotlin/org/jetbrains/kotlinconf/ui/InitCoil.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "app/webApp/build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "app/webApp/src/webMain/kotlin/org/jetbrains/kotlinconf/main.kt",
+          "reason": "no Kotlin compile task of the build lists it"
+         },
+         {
+          "path": "backend/build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "core/build.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "gradle/releases.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         },
+         {
+          "path": "settings.gradle.kts",
+          "reason": "Gradle script: no KotlinCompile task compiles it"
+         }
+        ],
+        "unread": [
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/ThemeChangeAnimation.kt",
+          "reason": "syntax error: line 29",
+          "lines": [
+           [
+            29,
+            30
+           ]
+          ],
+          "references": 3
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/TimeProvider.kt",
+          "reason": "syntax error: line 41",
+          "lines": [
+           [
+            41,
+            41
+           ],
+           [
+            65,
+            65
+           ]
+          ],
+          "references": 4
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/navigation/NavScaffold.kt",
+          "reason": "syntax error: line 96",
+          "lines": [
+           [
+            96,
+            98
+           ],
+           [
+            158,
+            158
+           ]
+          ],
+          "references": 4
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/Feedback.kt",
+          "reason": "syntax error: line 206",
+          "lines": [
+           [
+            206,
+            207
+           ]
+          ],
+          "references": 5
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/FeedbackViewModel.kt",
+          "reason": "syntax error: line 34",
+          "lines": [
+           [
+            34,
+            34
+           ],
+           [
+            37,
+            37
+           ],
+           [
+            42,
+            42
+           ]
+          ],
+          "references": 6
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/PrivacyNoticeViewModel.kt",
+          "reason": "syntax error: line 28",
+          "lines": [
+           [
+            28,
+            28
+           ]
+          ],
+          "references": 2
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/ScheduleViewModel.kt",
+          "reason": "syntax error: line 87",
+          "lines": [
+           [
+            87,
+            87
+           ]
+          ],
+          "references": 3
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/StartNotificationsViewModel.kt",
+          "reason": "syntax error: line 22",
+          "lines": [
+           [
+            22,
+            22
+           ]
+          ],
+          "references": 2
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/AdaptiveDetailLayout.kt",
+          "reason": "syntax error: line 30",
+          "lines": [
+           [
+            30,
+            30
+           ]
+          ],
+          "references": 2
+         },
+         {
+          "path": "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/ErrorLoadingContent.kt",
+          "reason": "syntax error: line 33",
+          "lines": [
+           [
+            33,
+            33
+           ]
+          ],
+          "references": 3
+         },
+         {
+          "path": "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/LargeMainHeader.kt",
+          "reason": "syntax error: line 26",
+          "lines": [
+           [
+            26,
+            26
+           ]
+          ],
+          "references": 2
+         },
+         {
+          "path": "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/MainHeader.kt",
+          "reason": "syntax error: line 140",
+          "lines": [
+           [
+            140,
+            141
+           ]
+          ],
+          "references": 4
+         },
+         {
+          "path": "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/PartyAnimation.kt",
+          "reason": "syntax error: line 113",
+          "lines": [
+           [
+            113,
+            113
+           ]
+          ],
+          "references": 2
+         },
+         {
+          "path": "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/TalkCard.kt",
+          "reason": "syntax error: line 112",
+          "lines": [
+           [
+            112,
+            112
+           ]
+          ],
+          "references": 2
+         },
+         {
+          "path": "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Text.kt",
+          "reason": "syntax error: line 76",
+          "lines": [
+           [
+            76,
+            76
+           ]
+          ],
+          "references": 5
+         },
+         {
+          "path": "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/theme/KotlinConfTheme.kt",
+          "reason": "syntax error: line 70",
+          "lines": [
+           [
+            70,
+            70
+           ]
+          ],
+          "references": 2
+         },
+         {
+          "path": "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/utils/ComponentPreview.kt",
+          "reason": "syntax error: line 13",
+          "lines": [
+           [
+            13,
+            13
+           ]
+          ],
+          "references": 2
+         }
+        ]
+       },
+       "state": "lower-bound",
+       "observed": {
+        "resolver": "dynamic-record-jvm@1",
+        "at": "2026-11-16T19:50:09Z",
+        "tests": [
+         {
+          "root": "",
+          "runner": "gradle",
+          "state": "ran",
+          "tool": "gradle",
+          "argv": [
+           "gradle",
+           "--no-daemon",
+           "--offline",
+           "--continue",
+           "--console=plain",
+           ":app:androidApp:test",
+           ":app:desktopApp:test",
+           ":app:shared:jvmTest",
+           ":app:ui-components:jvmTest",
+           ":backend:test",
+           ":core:jvmTest"
+          ],
+          "exit_code": 1,
+          "tests": 59,
+          "failures": 3,
+          "errors": 0,
+          "skipped": 0,
+          "jvms": 2
+         }
+        ],
+        "recorded": 991,
+        "placed": 991,
+        "joined": 984,
+        "unjoined": {},
+        "agree": 864,
+        "wider": 0,
+        "mocked": 7,
+        "conflicts": {
+         "count": 0,
+         "examples": []
+        },
+        "files": {
+         "executed": 45,
+         "not_executed": [
+          "app/adminApp/build.gradle.kts",
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/AdminApi.kt",
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Aggregation.kt",
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Charts.kt",
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Csv.kt",
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/Main.kt",
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/OverviewScreen.kt",
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/PseudoNames.kt",
+          "app/adminApp/src/jsMain/kotlin/org/jetbrains/kotlinconf/admin/UserScreen.kt",
+          "app/androidApp/build.gradle.kts",
+          "app/androidApp/src/main/kotlin/org/jetbrains/kotlinconf/android/KotlinConfApplication.kt",
+          "app/androidApp/src/main/kotlin/org/jetbrains/kotlinconf/android/MainActivity.kt",
+          "app/desktopApp/build.gradle.kts",
+          "app/desktopApp/src/main/kotlin/org/jetbrains/kotlinconf/main.kt",
+          "app/shared/build.gradle.kts",
+          "app/shared/src/androidMain/kotlin/org/jetbrains/kotlinconf/AndroidLocalNotificationService.kt",
+          "app/shared/src/androidMain/kotlin/org/jetbrains/kotlinconf/MapHandler.android.kt",
+          "app/shared/src/androidMain/kotlin/org/jetbrains/kotlinconf/PermissionHandler.kt",
+          "app/shared/src/androidMain/kotlin/org/jetbrains/kotlinconf/di/AndroidBindings.kt",
+          "app/shared/src/androidMain/kotlin/org/jetbrains/kotlinconf/screens/Svg.android.kt",
+          "app/shared/src/androidMain/kotlin/org/jetbrains/kotlinconf/utils/AndroidLogger.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/App.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/AppInit.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/BaseScreens.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/ConferenceService.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/HideKeyboardOnDragHandler.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/LocalNotificationId.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/MapHandler.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/SessionCardView.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/ThemeChangeAnimation.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/TimeProvider.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/View.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/di/AppBindings.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/flags/FakeGoldenKodeeData.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/flags/Flags.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/flags/FlagsManager.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/navigation/NavHost.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/navigation/NavScaffold.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/navigation/NavState.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/navigation/Navigator.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/ApplicationApi.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/network/YearlyApi.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/AboutAppScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/AboutConference.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/AboutConferenceViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/AppPrivacyNotice.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/AppPrivacyNoticePrompt.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/AppTermsOfUse.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/CodeOfConduct.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/DeveloperMenuScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/DocumentsViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/Feedback.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/FeedbackViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/GoldenKodeeFinalistScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/GoldenKodeeFinalistViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/GoldenKodeeScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/GoldenKodeeViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/InfoScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/InfoViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/MapScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/MapViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/NotificationSettings.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/PartnerDetailScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/PartnerDetailViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/PartnersScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/PartnersViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/PrivacyNoticeViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/ScheduleScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/ScheduleViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/SessionScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/SessionViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/SettingsScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/SettingsViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/SpeakerDetailScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/SpeakerDetailViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/SpeakersScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/SpeakersViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/StartNotificationsScreen.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/StartNotificationsViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/VisitorPrivacyNotice.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/VisitorTermsOfUse.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/licenses/LibraryExtensions.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/licenses/LicenseScreens.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/screens/licenses/LicensesViewModel.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/storage/DefaultValues.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/storage/YearlyStorageImpl.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/AdaptiveDetailLayout.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/AnimatedContentSpec.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/BufferedDelegatingLogger.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/DateTimeFormatting.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/DebugLogger.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/ErrorLoadingContent.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/NotificationBar.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/PaddingValues.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/Search.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/TextUtils.kt",
+          "app/shared/src/commonMain/kotlin/org/jetbrains/kotlinconf/utils/WindowSize.kt",
+          "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/IOSLocalNotificationService.kt",
+          "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/IOSNotifications.kt",
+          "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/MapHandler.ios.kt",
+          "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/ScrollToTopHandler.kt",
+          "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/di/IosBindings.kt",
+          "app/shared/src/iosMain/kotlin/org/jetbrains/kotlinconf/main.ios.kt",
+          "app/shared/src/jvmMain/kotlin/org/jetbrains/kotlinconf/MapHandler.jvm.kt",
+          "app/shared/src/jvmMain/kotlin/org/jetbrains/kotlinconf/di/JvmBindings.kt",
+          "app/shared/src/jvmMain/kotlin/org/jetbrains/kotlinconf/storage/MultiplatformSettingsStorage.jvm.kt",
+          "app/shared/src/nonAndroidMain/kotlin/Svg.nonAndroid.kt",
+          "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/MapHandler.web.kt",
+          "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/ServiceWorkerLocalNotificationService.kt",
+          "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/di/WebBindings.kt",
+          "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/navigation/BrowserIntegration.web.kt",
+          "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/storage/SettingsAssetStorage.kt",
+          "app/shared/src/webMain/kotlin/org/jetbrains/kotlinconf/utils/WebLogger.kt",
+          "app/ui-components/build.gradle.kts",
+          "app/ui-components/src/androidMain/kotlin/org/jetbrains/kotlinconf/ui/theme/KotlinConfTheme.android.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Action.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Button.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/CardTag.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Common.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/DayHeader.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Divider.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/ErrorLoading.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/FeedbackForm.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Filters.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/FiltersTag.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/HeaderToggleButton.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Icon.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Kodee.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/LargeMainHeader.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/LargeSearchBar.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/LargeSwitcher.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/MainHeader.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/MainNavigationBar.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/MainNavigationRail.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/MarkdownView.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/NetworkImage.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/NowButton.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/NowLabel.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/OverlayIconButton.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/OverlayTextButton.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/PageMenuItem.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/PageTitle.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/ParagraphTitle.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/PartnerCard.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/PartyAnimation.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/SearchInput.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/SectionTitle.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/ServiceEvents.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/SettingsItem.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/SpeakerCard.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Switcher.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/TalkCard.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Text.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Toggle.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/Tooltip.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/components/TopMenuButton.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/theme/ColorValues.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/theme/Colors.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/theme/KotlinConfTheme.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/theme/PreviewHelper.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/theme/Ripple.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/theme/Shapes.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/theme/Typography.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/utils/ComponentPreview.kt",
+          "app/ui-components/src/commonMain/kotlin/org/jetbrains/kotlinconf/ui/utils/PreviewInteractionSource.kt",
+          "app/ui-components/src/nonAndroidMain/kotlin/org/jetbrains/kotlinconf/ui/theme/KotlinConfTheme.nonAndroid.kt",
+          "app/ui-components/src/webMain/kotlin/org/jetbrains/kotlinconf/ui/InitCoil.kt",
+          "app/webApp/build.gradle.kts",
+          "app/webApp/src/webMain/kotlin/org/jetbrains/kotlinconf/main.kt",
+          "backend/build.gradle.kts",
+          "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/StartupModule.kt",
+          "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/model/SessionizeData.kt",
+          "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/schema/utils.kt",
+          "backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/services/TimeService.kt",
+          "build.gradle.kts",
+          "core/build.gradle.kts",
+          "core/src/commonMain/kotlin/org/jetbrains/kotlinconf/EventTimeZone.kt",
+          "gradle/releases.gradle.kts",
+          "settings.gradle.kts"
+         ]
+        },
+        "sites": 984,
+        "edges": 988,
+        "closed": {
+         "no-occurrence": 2
+        }
+       }
+      }
+     },
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a",
+      "coverage": {
+       "sites": 45,
+       "answered": {
+        "project-value": 37
+       },
+       "holes": {
+        "no-font-face": {
+         "count": 5,
+         "examples": [
+          "app/adminApp/src/jsMain/resources/index.html:22 -apple-system",
+          "app/adminApp/src/jsMain/resources/index.html:22 BlinkMacSystemFont",
+          "app/adminApp/src/jsMain/resources/index.html:22 Segoe UI"
+         ]
+        },
+        "no-rule": {
+         "count": 1,
+         "examples": [
+          "app/adminApp/src/jsMain/resources/index.html:118 #root"
+         ]
+        },
+        "unresolved-import": {
+         "count": 2,
+         "examples": [
+          "app/adminApp/src/jsMain/resources/index.html:119 /admin/admin.js",
+          "app/webApp/src/webMain/resources/index.html:108 kotlinconf-app.js"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {},
+       "files": {
+        "snapshot": 3,
+        "indexed": 3,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     }
+    },
+    "no_analyzer": {
+     "sql": 4
+    }
+   }
+  },
+  "dynamic_gaps": [
+   {
+    "kind": "no-observer",
+    "detail": "stylesheet: no observer runs its tests, so its graph holds no observed edge"
+   },
+   {
+    "kind": "no-static-graph",
+    "detail": "c: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+   },
+   {
+    "kind": "no_test_command",
+    "detail": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+   },
+   {
+    "kind": "tests_failed",
+    "path": "",
+    "detail": "gradle --no-daemon --offline --continue --console=plain :app:androidApp:test :app:desktopApp:test :app:shared:jvmTest :app:ui-components:jvmTest :backend:test :core:jvmTest in .: 3 of 59 tests failed, and a test that fails may stop before its calls:  | You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins. |  | For more on this, please refer to https://docs.gradle.org/9.9.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation. |  | BUILD FAILED in 4m 7s | 153 actionable tasks: 13 executed, 140 up-to-date | Configuration cache entry stored."
+   },
+   {
+    "kind": "sites_ambiguous",
+    "detail": "8 observed call sites share their line with another call of the same name, so the reference each answers is unknown and they are not placed: backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/repositories/KotlinConfRepository.kt:167 getYear, backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/repositories/KotlinConfRepository.kt:233 getYear, backend/src/main/kotlin/org/jetbrains/kotlinconf/backend/repositories/KotlinConfRepository.kt:74 getString"
+   }
+  ],
+  "events": {
+   "step.started": 4,
+   "log": 2,
+   "progress": 37,
+   "gap": 18,
+   "step.finished": 4,
+   "analyzer.started": 6,
+   "analyzer.finished": 5,
+   "analyzer.unavailable": 1,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "scan": [
+    132.5,
+    498.3
+   ],
+   "analyze": [
+    498.3,
+    1374.8
+   ],
+   "dynamic": [
+    1374.8,
+    1914.3
+   ],
+   "union": [
+    1914.3,
+    1914.9
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 223.751,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 253.947,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 9.876,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.983,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 30.656,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.763,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 63.533,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.851,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 31.096,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 8.047,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/daodan-enry/results/0/stderr": "go: creating new go.mod: module daodan-enry\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/go-enry/go-enry/v2 v2.9.6\ngo: downloading github.com/go-enry/go-oniguruma v1.2.1\ngo: added github.com/go-enry/go-enry/v2 v2.9.6\ngo: added github.com/go-enry/go-oniguruma v1.2.1\n",
+   "premap-runs/gradle/results/1/stderr": "\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nA problem occurred configuring root project 'KotlinConfApp'.\n> Could not resolve all artifacts for configuration 'classpath'.\n   > Could not resolve dev.zacsweers.metro:gradle-plugin:1.5.2.\n     Required by:\n         buildscript of root project 'KotlinConfApp' > dev.zacsweers.metro:dev.zacsweers.metro.gradle.plugin:1.5.2\n      > Dependency requires at least JVM runtime version 21. This build uses a Java 17 JVM.\n\n* Try:\n> Run this build using a Java 21 or newer JVM.\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 27s\n",
+   "premap-runs/gradle-jdk/results/0/stderr": "mise by @jdx \u2013 installing 1 tool\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 0/1 \u00b7 3.0s\n  java@21.0.13+9.0.LTS  extracting  3.0s\nmise java@21.0.13+9.0.LTS openjdk version \"21.0.13\" 2026-10-20 LTS\nmise java@21.0.13+9.0.LTS OpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)\nmise java@21.0.13+9.0.LTS OpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode, sharing)\nmise \u2713 java@21.0.13+9.0.LTS  3.8s  OpenJDK21U-jdk_x64_linux_hotspot_21.0.13_9.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 3.8s\nmise WARN  java installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use java\n",
+   "premap-runs/renovate/results/1/stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":10,\"level\":40,\"logContext\":\"27c3666a-af44-4cce-b2b6-434a6043779b\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-16T19:24:04.902Z\",\"v\":0}\n{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":10,\"level\":40,\"logContext\":\"27c3666a-af44-4cce-b2b6-434a6043779b\",\"repository\":\"local\",\"githubDeps\":[\"actions/checkout\",\"actions/setup-java\",\"actions/upload-pages-artifact\",\"actions/deploy-pages\",\"firebase/firebase-ios-sdk\"],\"msg\":\"GitHub token is required for some dependencies\",\"time\":\"2026-11-16T19:24:07.106Z\",\"v\":0}\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 27s\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/execute.log": "DAODAN_PEAK -\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/out/tests.log": "ne.EmbeddedServer.stop$default(EmbeddedServerJvm.kt:437)\n\tat io.ktor.server.engine.EmbeddedServer.start$lambda$0(EmbeddedServerJvm.kt:390)\n\tat io.ktor.server.engine.ShutdownHook.run(ShutdownHookJvm.kt:37)\n2026-11-16 19:50:04.004 [DefaultDispatcher-worker-4 @request#68] ERROR io.ktor.test - Unhandled server error: \"Job was cancelled\"\nkotlinx.coroutines.JobCancellationException: Job was cancelled; job=JobImpl{Cancelling}@9744d4a\n\tat kotlinx.coroutines.JobSupport.cancel(JobSupport.kt:1682)\n\tat kotlinx.coroutines.Job.cancel$default(Job.kt:207)\n\tat io.ktor.server.testing.TestApplicationEngine.stop(TestApplicationEngine.kt:185)\n\tat io.ktor.server.engine.EmbeddedServer.stop(EmbeddedServerJvm.kt:425)\n\tat io.ktor.server.engine.EmbeddedServer.stop(EmbeddedServerJvm.kt:438)\n\tat io.ktor.server.engine.EmbeddedServer.stop$default(EmbeddedServerJvm.kt:437)\n\tat io.ktor.server.engine.EmbeddedServer.start$lambda$0(EmbeddedServerJvm.kt:390)\n\tat io.ktor.server.engine.ShutdownHook.run(ShutdownHookJvm.kt:37)\n2026-11-16 19:50:04.015 [DefaultDispatcher-worker-4 @request#57] TRACE i.k.s.p.statuspages.StatusPages - Call /2025/conference failed with cause kotlinx.coroutines.JobCancellationException: Job was cancelled; job=JobImpl{Cancelling}@4a2cf02c\n2026-11-16 19:50:04.015 [DefaultDispatcher-worker-4 @request#57] ERROR io.ktor.test - Unhandled server error: \"Job was cancelled\"\nkotlinx.coroutines.JobCancellationException: Job was cancelled; job=JobImpl{Cancelling}@4a2cf02c\n\tat kotlinx.coroutines.JobSupport.cancel(JobSupport.kt:1682)\n\tat kotlinx.coroutines.Job.cancel$default(Job.kt:207)\n\tat io.ktor.server.testing.TestApplicationEngine.stop(TestApplicationEngine.kt:185)\n\tat io.ktor.server.engine.EmbeddedServer.stop(EmbeddedServerJvm.kt:425)\n\tat io.ktor.server.engine.EmbeddedServer.stop(EmbeddedServerJvm.kt:438)\n\tat io.ktor.server.engine.EmbeddedServer.stop$default(EmbeddedServerJvm.kt:437)\n\tat io.ktor.server.engine.EmbeddedServer.start$lambda$0(EmbeddedServerJvm.kt:390)\n\tat io.ktor.server.engine.ShutdownHook.run(ShutdownHookJvm.kt:37)\n\n> Task :backend:test FAILED\n\n49 tests completed, 3 failed\n\n[Incubating] Problems report is available at: file:///work/build/reports/problems/problems-report.html\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':backend:test'.\n> There were failing tests. See the report at: file:///work/backend/build/reports/tests/test/index.html\n\n* Try:\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\n\nBUILD FAILED in 4m 7s\n153 actionable tasks: 13 executed, 140 up-to-date\nConfiguration cache entry stored.\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/prepare.log": " modules 7.64 KiB 10 modules\nmodules with warnings 4.94 MiB [true warnings]\n  ./kotlin/KotlinConfApp-app-adminApp.js 356 KiB [built] [code generated] [17 warnings]\n  ./kotlin/ktor-ktor-client-content-negotiation.js 42.5 KiB [built] [code generated] [5 warnings]\n  ./kotlin/kotlin-kotlin-stdlib.js 655 KiB [built] [code generated] [16 warnings]\n  ./kotlin/kotlinx-coroutines-core.js 383 KiB [built] [code generated] [97 warnings]\n  ./kotlin/ktor-ktor-http.js 137 KiB [built] [code generated] [36 warnings]\n  ./kotlin/ktor-ktor-utils.js 127 KiB [built] [code generated] [58 warnings]\n  ./kotlin/kotlinx-serialization-kotlinx-serialization-core.js 263 KiB [built] [code generated] [64 warnings]\n  ./kotlin/ktor-ktor-client-core.js 371 KiB [built] [code generated] [91 warnings]\n  ./kotlin/kotlinx-serialization-kotlinx-serialization-json.js 223 KiB [built] [code generated] [52 warnings]\n  ./kotlin/ktor-ktor-serialization-kotlinx-json.js 4.33 KiB [built] [code generated] [2 warnings]\n  ./kotlin/KotlinConfApp-core.js 33.4 KiB [built] [code generated] [1 warning]\n  + 15 modules\n../../node_modules/ws/browser.js 176 bytes [built] [code generated]\nwebpack 5.111.1 compiled with 3 warnings in 19806 ms\nasset size limit: The following asset(s) exceed the recommended size limit (244 KiB).\nThis can impact web performance.\nAssets: \n  admin.js (1.29 MiB)\n    Largest modules: ./kotlin/androidx-compose-runtime-runtime.js (1.42 MiB), ./kotlin/kotlin-kotlin-stdlib.js (655 KiB), ./kotlin/kotlinx-coroutines-core.js (383 KiB)\nentrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.\nEntrypoints:\n  main (1.29 MiB)\n      admin.js\nwebpack performance recommendations: \nThe runtime is part of the initial chunk of main. It describes every other chunk, so a change anywhere in the build rewrites these assets and clients download them again.\nSet 'optimization.runtimeChunk' to emit the runtime as its own chunk.\nFor more info visit https://webpack.js.org/configuration/optimization/#optimizationruntimechunk\n\n> Task :app:adminApp:jsBrowserDistribution\n> Task :backend:processResources\n> Task :backend:classes\n> Task :backend:jar\n> Task :backend:compileTestKotlin\n> Task :backend:compileTestJava NO-SOURCE\n> Task :backend:testClasses\n> Task :backend:daodanTests\n\n[Incubating] Problems report is available at: file:///work/build/reports/problems/problems-report.html\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\n\nBUILD SUCCESSFUL in 2m 15s\n161 actionable tasks: 160 executed, 1 from cache\nConfiguration cache entry stored.\nDAODAN_STEP end compile 0 1794858322.408289511\nDAODAN_PEAK -\n"
+  },
+  "seconds": 1914.9
+ }
+}

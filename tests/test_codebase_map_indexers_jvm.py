@@ -1117,10 +1117,12 @@ BASH = shutil.which("bash") if os.name != "nt" else None
 
 def _phase(tmp_path: Path, body: str, tool: str, index_code: int, files=("pom.xml", "build.gradle.kts")):
     """`body` run by bash in a folder holding `files`, with the head's names stubbed: what it hands scip-java,
-    `java` and `maven_kotlin` is recorded; scip-java exits `index_code`, writing an index when it succeeds."""
-    work, out, calls = tmp_path / "work", tmp_path / "out", tmp_path / "calls"
+    `java` and `maven_kotlin` is recorded; scip-java exits `index_code`, writing an index when it succeeds. The
+    phase's temporary folder is the test's own (`$TMPDIR`)."""
+    work, out, calls, temporary = tmp_path / "work", tmp_path / "out", tmp_path / "calls", tmp_path / "tmp"
     work.mkdir(parents=True)
     out.mkdir()
+    temporary.mkdir()
     for name in files:
         (work / name).write_text("", encoding="utf-8")
     scip = tmp_path / "scip-java"
@@ -1128,26 +1130,29 @@ def _phase(tmp_path: Path, body: str, tool: str, index_code: int, files=("pom.xm
                     + (f'echo index > "{out}/index.scip"\n' if not index_code else "") + f"exit {index_code}\n",
                     encoding="utf-8")
     scip.chmod(0o755)
-    head = (f"DAODAN_TOOL={tool}\nOUT={out}\nWORK={work}\nSCIP_JAVA={scip}\nstep() {{ shift; \"$@\"; }}\n{jvm.SCIP_INDEX}"
+    head = (f"DAODAN_TOOL={tool}\nOUT={out}\nWORK={work}\nTMPDIR={temporary}\nSCIP_JAVA={scip}\n"
+            f"step() {{ shift; \"$@\"; }}\n{jvm.SCIP_INDEX}"
             f"java() {{ echo java >> {calls}; return 1; }}\nmaven_kotlin() {{ echo maven_kotlin >> {calls}; }}\n")
     code = subprocess.run([BASH, "-c", head + body], cwd=work).returncode
-    return code, calls.read_text(encoding="utf-8").replace(str(out), "$OUT").splitlines() if calls.is_file() else []
+    said = calls.read_text(encoding="utf-8") if calls.is_file() else ""
+    return code, said.replace(str(out), "$OUT").replace(str(temporary), "$TMPDIR").splitlines()
+
+
+# What a Gradle build hands scip-java: its own tasks, with Daodan's init script.
+GRADLE_INDEX = ("scip-java index --output $OUT/index.scip --build-tool=gradle -- clean scipPrintDependencies "
+                "scipCompileAll{} --init-script $TMPDIR/daodan-scip.gradle")
 
 
 @unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
 def test_each_build_tool_of_a_folder_runs_only_its_own_steps(tmp_path):
     """In a folder Gradle and Maven both build, scip-java runs the build it is told; only Maven's patches the
     root pom's compiler plugin when it gives no index, and only Maven's indexes the modules' Kotlin itself."""
-    flag = "--build-tool={}"
-    assert _phase(tmp_path / "1", java.PREPARE, "gradle", 1) == (
-        1, [f"scip-java index --output $OUT/index.scip {flag.format('gradle')}"])
+    assert _phase(tmp_path / "1", java.PREPARE, "gradle", 1) == (1, [GRADLE_INDEX.format("")])
     assert _phase(tmp_path / "2", java.PREPARE, "maven", 1) == (
-        1, [f"scip-java index --output $OUT/index.scip {flag.format('maven')}", "java"])
-    assert _phase(tmp_path / "3", java.PREPARE, "gradle", 0)[1] == [
-        f"scip-java index --output $OUT/index.scip {flag.format('gradle')}"]
+        1, ["scip-java index --output $OUT/index.scip --build-tool=maven", "java"])
+    assert _phase(tmp_path / "3", java.PREPARE, "gradle", 0)[1] == [GRADLE_INDEX.format("")]
     assert "maven_kotlin" in _phase(tmp_path / "4", java.PREPARE, "maven", 0)[1]
-    assert _phase(tmp_path / "5", kotlin.PREPARE, "gradle", 0)[1] == [
-        f"scip-java index --output $OUT/index.scip {flag.format('gradle')}"]
+    assert _phase(tmp_path / "5", kotlin.PREPARE, "gradle", 0)[1] == [GRADLE_INDEX.format("")]
     assert "maven_kotlin" in _phase(tmp_path / "6", kotlin.PREPARE, "maven", 0)[1]
     assert "maven_kotlin" in _phase(tmp_path / "7", kotlin.PREPARE, "", 0, files=("pom.xml",))[1]  # as before
 
@@ -1157,16 +1162,77 @@ def test_an_android_gradle_build_also_compiles_its_debug_variants(tmp_path):
     """scip-java's Gradle plugin puts no Android task in scipCompileAll (it attaches its javac plugin to every
     JavaCompile task of an Android project and dumps every KotlinCompile's configuration): with the Android SDK
     of the preparation, the build also runs each project's debug variant compiles, main and unit tests."""
-    android = (f"scip-java index --output $OUT/index.scip --build-tool=gradle -- clean scipPrintDependencies "
-               f"scipCompileAll --init-script {jvm.ANDROID_INIT} daodanAndroidCompile")
     for module in (java, kotlin):
-        assert _phase(tmp_path / module.__name__ / "android", "ANDROID_HOME=/sdk\n" + module.PREPARE, "gradle", 0,
-                      files=("build.gradle.kts",))[1] == [android]
-        assert _phase(tmp_path / module.__name__ / "plain", module.PREPARE, "gradle", 0,
-                      files=("build.gradle.kts",))[1] == [
-            "scip-java index --output $OUT/index.scip --build-tool=gradle"]
-    script = Path(jvm.ANDROID_INIT).read_text(encoding="utf-8")
-    assert "daodanAndroidCompile" in script and r"compile\w*Debug(UnitTest)?Sources" in script
+        android, plain = tmp_path / module.__name__ / "android", tmp_path / module.__name__ / "plain"
+        assert _phase(android, "ANDROID_HOME=/sdk\n" + module.PREPARE, "gradle", 0, files=("build.gradle.kts",))[1] \
+            == [GRADLE_INDEX.format(" daodanAndroidCompile")]
+        assert _phase(plain, module.PREPARE, "gradle", 0, files=("build.gradle.kts",))[1] == [GRADLE_INDEX.format("")]
+        script = (android / "tmp/daodan-scip.gradle").read_text(encoding="utf-8")
+        assert script == jvm.SCIP_GRADLE + jvm.ANDROID_GRADLE
+        assert (plain / "tmp/daodan-scip.gradle").read_text(encoding="utf-8") == jvm.SCIP_GRADLE
+    assert "daodanAndroidCompile" in jvm.ANDROID_GRADLE and r"compile\w*Debug(UnitTest)?Sources" in jvm.ANDROID_GRADLE
+
+
+@unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
+def test_a_maven_build_hands_scip_java_no_gradle_init_script(tmp_path):
+    assert _phase(tmp_path, java.PREPARE, "maven", 0, files=("pom.xml",))[1][0] == (
+        "scip-java index --output $OUT/index.scip --build-tool=maven")
+    assert not (tmp_path / "tmp/daodan-scip.gradle").exists()
+
+
+class ScipInitTest(unittest.TestCase):
+    """Daodan's init script on a real Gradle (`jvm.GRADLE`, the one Daodan brings), over a build whose projects ask
+    for compile tasks as scip-java 0.14.2's Gradle plugin does: by name, in `scipCompileAll`, created after the
+    project is evaluated (ScipGradlePlugin.java, `triggers`). kotlinconf's app/adminApp is Kotlin Multiplatform with
+    only a JavaScript target, so it has no compileKotlinJvm, the name the plugin gives every such project."""
+
+    @classmethod
+    def setUpClass(cls):
+        if os.name != "posix" or not shutil.which("java"):
+            raise unittest.SkipTest("no JDK on the PATH, or not a POSIX system: Gradle runs on a JDK, from its script")
+        from resolve_edges import shared_engine_dir
+        name = f"gradle-{jvm.GRADLE[0]}-bin.zip"
+        try:
+            archive = jvm.fetched(f"{jvm.GRADLE_SITE}{name}", shared_engine_dir("gradle") / name, jvm.GRADLE[1])
+        except container.Gap as gap:
+            raise unittest.SkipTest(f"{name} could not be downloaded and verified: {gap}")
+        cls.scratch = Path(tempfile.mkdtemp(prefix="daodan-scip-init-"))
+        cls.addClassCleanup(shutil.rmtree, cls.scratch, ignore_errors=True)
+        import zipfile
+        with zipfile.ZipFile(archive) as unpacked:
+            unpacked.extractall(cls.scratch / "dist")
+        cls.gradle = cls.scratch / "dist" / f"gradle-{jvm.GRADLE[0]}" / "bin" / "gradle"
+        cls.gradle.chmod(0o755)
+        build = cls.scratch / "build"
+        for rel, text in {
+                "settings.gradle": "rootProject.name = 'k'\ninclude 'web', 'shared'\n",
+                "build.gradle": ("subprojects {\n    afterEvaluate { project ->\n"
+                                 "        project.tasks.create('scipCompileAll')"
+                                 ".dependsOn(['compileKotlinJvm', 'compileTestKotlinJvm'])\n    }\n}\n"),
+                "shared/build.gradle": ("tasks.register('compileKotlinJvm') { doLast { println 'compiled shared' } }\n"
+                                        "tasks.register('compileTestKotlinJvm') { doLast { println 'compiled its tests' } }\n"),
+                "web/build.gradle": ""}.items():
+            (build / rel).parent.mkdir(parents=True, exist_ok=True)
+            (build / rel).write_text(text, encoding="utf-8")
+        (cls.scratch / "daodan-scip.gradle").write_text(jvm.SCIP_GRADLE, encoding="utf-8")
+        cls.build = build
+
+    def run_gradle(self, *extra: str) -> subprocess.CompletedProcess:
+        environment = {**os.environ, "GRADLE_USER_HOME": str(self.scratch / "home")}
+        return subprocess.run([str(self.gradle), "--no-daemon", "--offline", "--console=plain", *extra,
+                               "scipCompileAll"], cwd=self.build, env=environment, capture_output=True, text=True,
+                              timeout=600)
+
+    def test_a_project_without_the_compile_task_stops_the_build_as_scip_java_s_plugin_leaves_it(self):
+        ran = self.run_gradle()
+        self.assertNotEqual(ran.returncode, 0)
+        self.assertIn("Task with name 'compileKotlinJvm' not found in project ':web'", ran.stdout + ran.stderr)
+
+    def test_each_project_s_scip_compile_all_asks_only_for_the_compile_tasks_the_project_has(self):
+        ran = self.run_gradle("--init-script", str(self.scratch / "daodan-scip.gradle"))
+        self.assertEqual(ran.returncode, 0, ran.stdout[-2000:] + ran.stderr[-2000:])
+        self.assertIn("compiled shared", ran.stdout)
+        self.assertIn("compiled its tests", ran.stdout)
 
 
 @unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")

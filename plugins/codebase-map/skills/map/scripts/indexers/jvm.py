@@ -107,29 +107,52 @@ LIB, TOOLS, KEPT, OUT = "/daodan/state/scip-java/lib", "/daodan/state/tools", "/
 ENV = {"TERM": "dumb"}
 PIDS = 4096  # threads count: Gradle, the Kotlin daemon and scip-java each start a hundred or more
 
-# scip-java's index of the build, which the analyzers' scripts run (`scip_index`). Its Gradle plugin puts no Android
-# task in `scipCompileAll` (scip-java issue 177, closed as not planned), though it adds its javac plugin to every
-# JavaCompile task of an Android project and dumps the configuration of every KotlinCompile task: with the SDK the
-# preparation installed (ANDROID_HOME), a Gradle build also runs each project's debug variant compiles, main and
-# unit tests, after scip-java's own tasks (its command when none is given).
-ANDROID_INIT = "/tmp/daodan-android.gradle"
-SCIP_INDEX = r'''scip_index() {
-  if [ -n "${ANDROID_HOME:-}" ] && [ "${DAODAN_TOOL:-gradle}" = gradle ] && { [ -f build.gradle ] \
-      || [ -f build.gradle.kts ] || [ -f settings.gradle ] || [ -f settings.gradle.kts ]; }; then
-    cat > ANDROID_INIT <<'GRADLE'
-allprojects { project ->
+# scip-java's index of the build, which the analyzers' scripts run (`scip_index`). A Gradle build runs scip-java's
+# own tasks (its command when none is given) with Daodan's init script, in the phase's temporary folder:
+# - `SCIP_GRADLE` leaves in each project's `scipCompileAll` only the tasks the project has. scip-java 0.14.2's Gradle
+#   plugin names compileKotlinJvm and compileTestKotlinJvm in every Kotlin Multiplatform project, with or without a
+#   jvm() target (ScipGradlePlugin.java, `triggers`), and Gradle stops on a name the project lacks: kotlinconf's
+#   app/adminApp, JavaScript only, "Task with name 'compileKotlinJvm' not found in project ':app:adminApp'".
+# - `ANDROID_GRADLE`, with the SDK the preparation installed (ANDROID_HOME), also runs each project's debug variant
+#   compiles, main and unit tests: the plugin puts no Android task in `scipCompileAll` (scip-java issue 177, closed
+#   as not planned), though it adds its javac plugin to every JavaCompile task of an Android project and dumps the
+#   configuration of every KotlinCompile task.
+SCIP_GRADLE = r'''gradle.projectsEvaluated {
+    gradle.rootProject.allprojects { project ->
+        def all = project.tasks.findByName('scipCompileAll')
+        if (all != null) {
+            all.setDependsOn(all.dependsOn.flatten().findAll {
+                !(it instanceof CharSequence) || project.tasks.findByPath(it.toString()) != null
+            })
+        }
+    }
+}
+'''
+ANDROID_GRADLE = r'''allprojects { project ->
     project.tasks.register('daodanAndroidCompile') { task ->
         task.dependsOn(project.tasks.matching { it.name ==~ /compile\w*Debug(UnitTest)?Sources/ })
     }
 }
-GRADLE
+'''
+SCIP_INDEX = r'''scip_index() {
+  if [ "${DAODAN_TOOL:-gradle}" = gradle ] && { [ -f build.gradle ] || [ -f build.gradle.kts ] \
+      || [ -f settings.gradle ] || [ -f settings.gradle.kts ]; }; then
+    local init="${TMPDIR:-/tmp}/daodan-scip.gradle"
+    set -- clean scipPrintDependencies scipCompileAll
+    cat > "$init" <<'GRADLE'
+@SCIP_GRADLE@GRADLE
+    if [ -n "${ANDROID_HOME:-}" ]; then
+      cat >> "$init" <<'GRADLE'
+@ANDROID_GRADLE@GRADLE
+      set -- "$@" daodanAndroidCompile
+    fi
     step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
-      -- clean scipPrintDependencies scipCompileAll --init-script ANDROID_INIT daodanAndroidCompile
+      -- "$@" --init-script "$init"
   else
     step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
   fi
 }
-'''.replace("ANDROID_INIT", ANDROID_INIT)
+'''.replace("@SCIP_GRADLE@", SCIP_GRADLE).replace("@ANDROID_GRADLE@", ANDROID_GRADLE)
 
 HEAD = r'''set -u
 export LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8

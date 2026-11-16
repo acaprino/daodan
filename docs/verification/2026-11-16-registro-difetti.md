@@ -15,6 +15,7 @@ Convenzioni:
   - `conferma`: 32 casi (`828b5413b`);
   - `jvm-otel-android`: otel-demo, jvm-android-app-lib e mix-poly-firebase, sull'albero di lavoro con il codice poi committato in `39805f5e7`;
   - `jvm-kotlinconf`: kotlinconf, sull'albero di lavoro con il codice poi committato in `22dca6da8`;
+  - `jvm-kotlinconf-kmp`: kotlinconf, sull'albero di lavoro delle 20:18 con il rimedio di D-110 non committato;
   - `ci-steps`: tududi e fastapi, con i passi della CI prima dei test (`aea1c8c3b`).
 - Nessun risultato registra il codice di Daodan su cui il giro è girato (D-251): il codice del `finale` lo dice il README del benchmark (`benchmarks/project-model/README.md:174`), quello di `java-versions` il commit `347bc1403`, quello dei due giri JVM chi li ha fatti; degli altri giri, nessun testo.
 - I repository veri sono fissati a un commit in `benchmarks/project-model/fixtures/<caso>/source.json`:
@@ -528,22 +529,22 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 
 ### JavaScript
 
-| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | ci-steps |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| casi | 20 | 1 | 13 | 32 | 4 | 1 | 1 | 1 |
-| file nello snapshot | 34 | 1.038 | 186 | 1.254 | 1.103 | 10 | 1 | 1.038 |
-| file indicizzati | 34 | 1.038 | 186 | 1.254 | 1.103 | 10 | 1 | 1.038 |
-| siti | 174 | 134.949 | 38.165 | 173.277 | 147.548 | 276 | 23 | 134.949 |
-| quota di risposta | 75,9 % | 72,7 % | 73,8 % | 72,9 % | 72,5 % | 70,7 % | 56,5 % | 74,4 % |
-| `no-occurrence` | 28 | 36.131 | 9.261 | 45.417 | 39.563 | 0 | 0 | 12 |
-| `dangling-local` | 10 | 496 | 566 | 1.069 | 732 | 2 | 0 | 56 |
-| `no-position` | 2 | 208 | 158 | 368 | 250 | 0 | 0 | 0 |
-| `undefined-project-symbol` | 0 | 55 | 6 | 61 | 46 | 0 | 0 | 5 |
-| `call-result` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 131 |
-| `super-call` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 51 |
-| `element` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 20 |
-| `computed-callee` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 |
-| altre cause, per testo | 2 (1) | 0 (0) | 1 (1) | 3 (2) | 0 (0) | 79 (4) | 10 (1) | 34.213 (128) |
+| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | jvm-kotlinconf-kmp | ci-steps |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| casi | 20 | 1 | 13 | 32 | 4 | 1 | 1 | 1 | 1 |
+| file nello snapshot | 34 | 1.038 | 186 | 1.254 | 1.103 | 10 | 1 | 1 | 1.038 |
+| file indicizzati | 34 | 1.038 | 186 | 1.254 | 1.103 | 10 | 1 | 1 | 1.038 |
+| siti | 174 | 134.949 | 38.165 | 173.277 | 147.548 | 276 | 23 | 23 | 134.949 |
+| quota di risposta | 75,9 % | 72,7 % | 73,8 % | 72,9 % | 72,5 % | 70,7 % | 56,5 % | 56,5 % | 74,4 % |
+| `no-occurrence` | 28 | 36.131 | 9.261 | 45.417 | 39.563 | 0 | 0 | 0 | 12 |
+| `dangling-local` | 10 | 496 | 566 | 1.069 | 732 | 2 | 0 | 0 | 56 |
+| `no-position` | 2 | 208 | 158 | 368 | 250 | 0 | 0 | 0 | 0 |
+| `undefined-project-symbol` | 0 | 55 | 6 | 61 | 46 | 0 | 0 | 0 | 5 |
+| `call-result` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 131 |
+| `super-call` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 51 |
+| `element` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 20 |
+| `computed-callee` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 |
+| altre cause, per testo | 2 (1) | 0 (0) | 1 (1) | 3 (2) | 0 (0) | 79 (4) | 10 (1) | 10 (1) | 34.213 (128) |
 
 | Stessi casi | Casi | Buchi prima | Buchi dopo |
 | --- | ---: | ---: | ---: |
@@ -553,6 +554,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `finale` → `conferma` | 4 | 41.276 | 40.591 |
 | `finale` → `jvm-otel-android` | 1 | 81 | 81 |
 | `finale` → `jvm-kotlinconf` | 1 | 10 | 10 |
+| `jvm-kotlinconf` → `jvm-kotlinconf-kmp` | 1 | 10 | 10 |
 | `finale` → `ci-steps` | 1 | 36.890 | 34.490 |
 | `conferma` → `ci-steps` | 1 | 36.205 | 34.490 |
 
@@ -624,16 +626,17 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 
 ### Kotlin
 
-| Misura | fixtures | giro-2 | finale | java-versions | conferma | jvm-otel-android | jvm-kotlinconf |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| casi | 8 | 7 | 11 | 1 | 1 | 3 | 1 |
-| file nello snapshot | 12 | 108 | 115 | 3 | 0 | 0 | 0 |
-| file indicizzati | 7 | 99 | 103 | 1 | 0 | 0 | 0 |
-| siti | 101 | 4.324 | 4.393 | 13 | 0 | 0 | 0 |
-| quota di risposta | 31,7 % | 94,1 % | 93,1 % | 15,4 % | 0,0 % | 0,0 % | 0,0 % |
-| `no-document` | 69 | 249 | 295 | 11 | 0 | 0 | 0 |
-| `no-occurrence` | 0 | 7 | 7 | 0 | 0 | 0 | 0 |
-| `no-position` | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
+| Misura | fixtures | giro-2 | finale | java-versions | conferma | jvm-otel-android | jvm-kotlinconf | jvm-kotlinconf-kmp |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| casi | 8 | 7 | 11 | 1 | 1 | 3 | 1 | 1 |
+| file nello snapshot | 12 | 108 | 115 | 3 | 0 | 0 | 0 | 271 |
+| file indicizzati | 7 | 99 | 103 | 1 | 0 | 0 | 0 | 226 |
+| siti | 101 | 4.324 | 4.393 | 13 | 0 | 0 | 0 | 16.830 |
+| quota di risposta | 31,7 % | 94,1 % | 93,1 % | 15,4 % | 0,0 % | 0,0 % | 0,0 % | 76,0 % |
+| `no-document` | 69 | 249 | 295 | 11 | 0 | 0 | 0 | 2.214 |
+| `no-occurrence` | 0 | 7 | 7 | 0 | 0 | 0 | 0 | 1.830 |
+| `no-position` | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
+| `element` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
 
 | Stessi casi | Casi | Buchi prima | Buchi dopo |
 | --- | ---: | ---: | ---: |
@@ -642,29 +645,30 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `finale` → `conferma` | 1 | 0 | 0 |
 | `finale` → `jvm-otel-android` | 3 | 0 | 0 |
 | `finale` → `jvm-kotlinconf` | 1 | 0 | 0 |
+| `jvm-kotlinconf` → `jvm-kotlinconf-kmp` | 1 | 0 | 4.045 |
 
 - `no-document`:
   - file Kotlin che nessun compito di compilazione compila o elenca (D-098);
   - Kotlin solo negli script di build (D-097);
   - Kotlin sotto Maven, 0 file su 2 prima di `ea1e2b7d6` (D-089).
 - 0 file indicizzati in `conferma`, `jvm-otel-android` e `jvm-kotlinconf`: Kotlin non ha indice.
-  - kotlinconf: «Task with name 'compileKotlinJvm' not found» (D-110);
+  - kotlinconf: «Task with name 'compileKotlinJvm' not found» (D-110); in `jvm-kotlinconf-kmp`, con il rimedio di D-110 non ancora committato, Kotlin è `fresh` con 226 file su 271 e il 76,0 % di risposta, e i 45 file fuori dall'indice dicono perché (D-098);
   - Android: i classpath dei test non risolti (D-108) e `google-services.json` mancante (D-109);
   - otel-demo fraud-detection: i protos che solo il Dockerfile copia (D-107).
 - `no-occurrence`, `no-position`: nessuna scheda.
 
 ### C
 
-| Misura | fixtures | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| casi | 8 | 3 | 9 | 7 | 1 | 1 |
-| file nello snapshot | 8 | 54 | 72 | 72 | 0 | 0 |
-| file indicizzati | 7 | 21 | 49 | 49 | 0 | 0 |
-| siti | 18 | 10.190 | 10.271 | 10.271 | 0 | 0 |
-| quota di risposta | 100,0 % | 28,7 % | 40,7 % | 40,7 % | 0,0 % | 0,0 % |
-| `no-document` | 0 | 6.421 | 5.147 | 5.147 | 0 | 0 |
-| `no-occurrence` | 0 | 839 | 940 | 941 | 0 | 0 |
-| `no-position` | 0 | 1 | 1 | 1 | 0 | 0 |
+| Misura | fixtures | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | jvm-kotlinconf-kmp |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| casi | 8 | 3 | 9 | 7 | 1 | 1 | 1 |
+| file nello snapshot | 8 | 54 | 72 | 72 | 0 | 0 | 0 |
+| file indicizzati | 7 | 21 | 49 | 49 | 0 | 0 | 0 |
+| siti | 18 | 10.190 | 10.271 | 10.271 | 0 | 0 | 0 |
+| quota di risposta | 100,0 % | 28,7 % | 40,7 % | 40,7 % | 0,0 % | 0,0 % | 0,0 % |
+| `no-document` | 0 | 6.421 | 5.147 | 5.147 | 0 | 0 | 0 |
+| `no-occurrence` | 0 | 839 | 940 | 941 | 0 | 0 | 0 |
+| `no-position` | 0 | 1 | 1 | 1 | 0 | 0 | 0 |
 
 | Stessi casi | Casi | Buchi prima | Buchi dopo |
 | --- | ---: | ---: | ---: |
@@ -673,6 +677,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `finale` → `conferma` | 7 | 6.088 | 6.089 |
 | `finale` → `jvm-otel-android` | 1 | 0 | 0 |
 | `finale` → `jvm-kotlinconf` | 1 | 0 | 0 |
+| `jvm-kotlinconf` → `jvm-kotlinconf-kmp` | 1 | 0 | 0 |
 
 - `no-document`:
   - file che nessun build compila, in zlib (D-133) o fuori dalla configurazione predefinita (D-137);
@@ -789,32 +794,32 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 
 ### Fogli di stile
 
-| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | ci-steps |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| casi | 10 | 1 | 13 | 24 | 7 | 2 | 1 | 2 |
-| file nello snapshot | 51 | 1.708 | 1.643 | 3.402 | 2.019 | 169 | 3 | 1.822 |
-| file indicizzati | 50 | 1.708 | 1.578 | 3.336 | 2.019 | 162 | 3 | 1.822 |
-| siti | 23 | 37.987 | 29.241 | 67.251 | 58.534 | 22 | 45 | 38.871 |
-| quota di risposta | 52,2 % | 1,6 % | 58,3 % | 26,3 % | 26,3 % | 27,3 % | 82,2 % | 98,7 % |
-| `no-rule` | 7 | 37.162 | 11.639 | 48.808 | 42.757 | 12 | 1 | 163 |
-| `call` | 0 | 67 | 341 | 408 | 177 | 0 | 0 | 176 |
-| `parameter` | 0 | 69 | 27 | 96 | 73 | 2 | 0 | 72 |
-| `no-font-face` | 0 | 9 | 41 | 50 | 34 | 1 | 5 | 28 |
-| `property` | 0 | 34 | 12 | 46 | 37 | 0 | 0 | 37 |
-| `css-in-js` | 0 | 24 | 0 | 24 | 24 | 0 | 0 | 24 |
-| `undeclared` | 0 | 0 | 45 | 45 | 3 | 0 | 0 | 3 |
-| `unresolved-import` | 2 | 1 | 36 | 39 | 5 | 1 | 2 | 3 |
-| `variable` | 0 | 1 | 28 | 29 | 2 | 0 | 0 | 1 |
-| `remote-sheet` | 2 | 0 | 8 | 10 | 0 | 0 | 0 | 0 |
-| `ejs-glued` | 0 | 5 | 0 | 5 | 5 | 0 | 0 | 5 |
-| `element-access` | 0 | 5 | 0 | 5 | 5 | 0 | 0 | 5 |
-| `ejs` | 0 | 4 | 0 | 4 | 4 | 0 | 0 | 4 |
-| `template` | 0 | 2 | 2 | 4 | 2 | 0 | 0 | 2 |
-| `expression` | 0 | 0 | 5 | 5 | 1 | 0 | 0 | 0 |
-| `concatenation` | 0 | 0 | 3 | 3 | 3 | 0 | 0 | 0 |
-| `no-keyframes` | 0 | 0 | 4 | 4 | 0 | 0 | 0 | 0 |
-| `url-path` | 0 | 0 | 2 | 2 | 0 | 0 | 0 | 0 |
-| `template-tag-glued` | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 |
+| Misura | fixtures | real-3 | giro-2 | finale | conferma | jvm-otel-android | jvm-kotlinconf | jvm-kotlinconf-kmp | ci-steps |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| casi | 10 | 1 | 13 | 24 | 7 | 2 | 1 | 1 | 2 |
+| file nello snapshot | 51 | 1.708 | 1.643 | 3.402 | 2.019 | 169 | 3 | 3 | 1.822 |
+| file indicizzati | 50 | 1.708 | 1.578 | 3.336 | 2.019 | 162 | 3 | 3 | 1.822 |
+| siti | 23 | 37.987 | 29.241 | 67.251 | 58.534 | 22 | 45 | 45 | 38.871 |
+| quota di risposta | 52,2 % | 1,6 % | 58,3 % | 26,3 % | 26,3 % | 27,3 % | 82,2 % | 82,2 % | 98,7 % |
+| `no-rule` | 7 | 37.162 | 11.639 | 48.808 | 42.757 | 12 | 1 | 1 | 163 |
+| `call` | 0 | 67 | 341 | 408 | 177 | 0 | 0 | 0 | 176 |
+| `parameter` | 0 | 69 | 27 | 96 | 73 | 2 | 0 | 0 | 72 |
+| `no-font-face` | 0 | 9 | 41 | 50 | 34 | 1 | 5 | 5 | 28 |
+| `property` | 0 | 34 | 12 | 46 | 37 | 0 | 0 | 0 | 37 |
+| `css-in-js` | 0 | 24 | 0 | 24 | 24 | 0 | 0 | 0 | 24 |
+| `undeclared` | 0 | 0 | 45 | 45 | 3 | 0 | 0 | 0 | 3 |
+| `unresolved-import` | 2 | 1 | 36 | 39 | 5 | 1 | 2 | 2 | 3 |
+| `variable` | 0 | 1 | 28 | 29 | 2 | 0 | 0 | 0 | 1 |
+| `remote-sheet` | 2 | 0 | 8 | 10 | 0 | 0 | 0 | 0 | 0 |
+| `ejs-glued` | 0 | 5 | 0 | 5 | 5 | 0 | 0 | 0 | 5 |
+| `element-access` | 0 | 5 | 0 | 5 | 5 | 0 | 0 | 0 | 5 |
+| `ejs` | 0 | 4 | 0 | 4 | 4 | 0 | 0 | 0 | 4 |
+| `template` | 0 | 2 | 2 | 4 | 2 | 0 | 0 | 0 | 2 |
+| `expression` | 0 | 0 | 5 | 5 | 1 | 0 | 0 | 0 | 0 |
+| `concatenation` | 0 | 0 | 3 | 3 | 3 | 0 | 0 | 0 | 0 |
+| `no-keyframes` | 0 | 0 | 4 | 4 | 0 | 0 | 0 | 0 | 0 |
+| `url-path` | 0 | 0 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
+| `template-tag-glued` | 0 | 0 | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
 
 | Stessi casi | Casi | Buchi prima | Buchi dopo |
 | --- | ---: | ---: | ---: |
@@ -824,6 +829,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `finale` → `conferma` | 7 | 43.132 | 43.132 |
 | `finale` → `jvm-otel-android` | 2 | 16 | 16 |
 | `finale` → `jvm-kotlinconf` | 1 | 8 | 8 |
+| `jvm-kotlinconf` → `jvm-kotlinconf-kmp` | 1 | 8 | 8 |
 | `finale` → `ci-steps` | 2 | 38.210 | 523 |
 | `conferma` → `ci-steps` | 2 | 38.210 | 523 |
 
@@ -2387,11 +2393,14 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - poi `project.getTasks().create("scipCompileAll").dependsOn(triggers)` li chiede per nome, e Gradle si ferma su un nome che il progetto non ha;
   - in kotlinconf `app/adminApp` dichiara solo `js(IR)` e `app/webApp` solo `wasmJs` e `js`: nessuno dei due ha `compileKotlinJvm`.
 - **Progetto e caso:** kotlinconf (`146e891c150c`) — giro `jvm-kotlinconf`, 16 novembre 2026.
-- **Rimedio:** in corso (dynamic-jvm-2).
-- **Verifica:** —
-- **Stato:** aperto (dynamic-jvm-2).
-- **Note:** D-058.
-
+- **Rimedio:** non committato (dynamic-jvm-2), `scripts/indexers/jvm.py` e `tests/test_codebase_map_indexers_jvm.py`:
+  - `scip_index` dà a scip-java, per un build Gradle, l'init script di Daodan (`SCIP_GRADLE`, scritto in `${TMPDIR:-/tmp}/daodan-scip.gradle`): dopo la valutazione dei progetti lascia nello `scipCompileAll` di ciascuno solo i compiti che il progetto ha;
+  - lo stesso script porta, con l'SDK di Android, i compiti delle varianti debug (`ANDROID_GRADLE`, D-108).
+- **Verifica:**
+  - giro `jvm-kotlinconf-kmp` (`benchmarks/project-model/results/pipeline/2026-11-16-jvm-kotlinconf-kmp.json`), sull'albero di lavoro con questo rimedio: Kotlin da `failed` a `fresh`, 226 file su 271 indicizzati, 16.830 siti, 76,0 % di risposta; buchi no-document 2.214, no-occurrence 1.830, element 1. I 45 file fuori dall'indice dicono perché: «no Kotlin compile task of the build lists it» (34), «Gradle script: no KotlinCompile task compiles it» (11), D-098. Il passo dinamico osserva Kotlin: 984 siti, 988 archi;
+  - `tests/test_codebase_map_indexers_jvm.py` (`ScipInitTest`, su un Gradle 9.9.1 vero: `test_a_project_without_the_compile_task_stops_the_build_as_scip_java_s_plugin_leaves_it`, `test_each_project_s_scip_compile_all_asks_only_for_the_compile_tasks_the_project_has`).
+- **Stato:** aperto (dynamic-jvm-2): il rimedio è provato e non ancora committato. Un target JVM di Kotlin Multiplatform con un altro nome (`jvm("desktop")`) resta non compilato.
+- **Note:** D-058, D-098, D-108.
 #### D-111 jhipster: 14 file Java con il documento senza occorrenze
 - **Tag:** lingua java · area analizzatore · tipo completezza · origine finale · strumento —
 - **Descrizione:** finale: 15 file Java su 136 fuori dall'indice, 14 «document without occurrences» e 1 «no document in the index».
