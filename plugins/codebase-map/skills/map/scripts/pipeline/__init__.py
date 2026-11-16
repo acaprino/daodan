@@ -6,12 +6,14 @@ snapshot is the pipeline's input; the flows read the complete graph after it.
 
 1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
    commands run in Daodan's container (`premap.container_runner`).
-2. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
-3. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
+2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
+   signs and stack-analyser (`technologies.ensure`). `DAODAN_STACK=off` leaves stack-analyser out.
+3. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
+4. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
    container engine, no observer for a language or no test command the project declares, it says the gap and
    the pipeline goes on. `DAODAN_DYNAMIC=off` skips it.
-4. `union`: the graphs of the technologies as the complete graph. Until the connection points exist, it is the
+5. `union`: the graphs of the technologies as the complete graph. Until the connection points exist, it is the
    store of each technology's graph: it says what a run observed (the sites, the holes closed, the sampled ones
    apart) and what stayed
    unobserved (a language with no observed edge, the tests that did not run, the files no test executed, an
@@ -86,6 +88,23 @@ def _runner(manifest: Path):
         return container_runner.runner(manifest, engine=asked.pop("engine", None))(commands, toolchains)
 
     return run
+
+
+class Stack:
+    NAME, INPUTS, OUTPUTS = "stack", ("snapshot", "modules", "premap"), ("technologies",)
+
+    @staticmethod
+    def run(context: Context) -> dict:
+        import os
+        import technologies
+        record = technologies.ensure(context.manifest, tool=os.environ.get("DAODAN_STACK") != "off")
+        tool = record["stack_analyser"]
+        if tool["status"] != "ok":
+            detail = f"stack-analyser did not answer ({tool.get('reason') or tool['status']}): the registry's signs only"
+            context.bus.emit("gap", detail, step=Stack.NAME, gap={"kind": "stack_analyser_" + tool["status"],
+                                                                   "detail": detail})
+        return {"technologies": len(record["technologies"]), "units": len(record["units"]),
+                "path": str(technologies.path(context.manifest))}
 
 
 class Analyze:
@@ -207,7 +226,7 @@ class Union:
                          "examples": conflicts["examples"], "detail": detail}, language)
 
 
-STEPS = (Scan, Analyze, Dynamic, Union)
+STEPS = (Scan, Stack, Analyze, Dynamic, Union)
 
 
 class StepFailed(Exception):

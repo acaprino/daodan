@@ -112,7 +112,7 @@ many callers force `deep`, even when `quick` was asked; size alone raises nothin
 `--deeper` raises one rigor in a new entry; nothing lowers it. Report red baselines.
 
 `TECHNOLOGIES.json` is `snapshot.py technologies` on the candidate's map run:
-the frameworks, libraries and services the registry recognizes, per build unit;
+the record of the map's `stack` step, frameworks, libraries, tools and services per build unit;
 without a usable run, omit it.
 
 The technical context carries the prepared `review_basis`

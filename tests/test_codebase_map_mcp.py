@@ -955,8 +955,8 @@ class SystemMapServiceTests(unittest.TestCase):
         cls.needs_rules = cls.service.flows("system", brief=True)["status"]
         rules = json.loads((bench / "rules.json").read_text(encoding="utf-8"))["rules"]
         cls.service.flows("system", rules=[{**rule, "callee": "app/" + rule["callee"]} for rule in rules])
-        cls.stack = system_brief.stack_analyser.run
-        system_brief.stack_analyser.run = lambda *_: {"status": "unavailable", "reason": "not in tests"}
+        cls.stack = system_brief.technologies.stack_analyser.run
+        system_brief.technologies.stack_analyser.run = lambda *_: {"status": "unavailable", "reason": "not in tests"}
 
         def under_app(text):
             return text if text.startswith(("store:", "module:")) else "app/" + text
@@ -972,7 +972,7 @@ class SystemMapServiceTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         import system_brief
-        system_brief.stack_analyser.run = cls.stack
+        system_brief.technologies.stack_analyser.run = cls.stack
         cls.temporary.cleanup()
 
     def test_brief_map_about_and_levels(self):

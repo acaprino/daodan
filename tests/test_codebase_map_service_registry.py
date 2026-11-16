@@ -142,7 +142,9 @@ class RecognizeTests(unittest.TestCase):
         snapshot.main(["write", str(project), "--out", str(manifest), "--no-engine", "--no-index"])
         cls.manifest = manifest
         cls.found = {r["id"]: r for r in service_registry.recognize(manifest)}
-        cls.units = {u["name"]: u for u in service_registry.technologies(manifest)["units"]}
+        import technologies
+        cls.record = technologies.ensure(manifest)
+        cls.units = {u["name"]: u for u in cls.record["units"]}
 
     @classmethod
     def tearDownClass(cls):
@@ -170,6 +172,24 @@ class RecognizeTests(unittest.TestCase):
         self.assertEqual(self.units["resend"]["technologies"], ["nodejs"])
         self.assertTrue({"docker", "fastapi", "stripe"} <= set(self.units["root"]["technologies"]))
         self.assertNotIn("react", self.units["root"]["technologies"])
+
+    def test_the_record_is_fresh_until_the_tool_is_asked_and_joins_what_it_finds(self):
+        import technologies
+        self.assertEqual((self.record["stack_analyser"], technologies.state(self.manifest)), ({"status": "not_run"}, "fresh"))
+        self.assertEqual(technologies.state(self.manifest, tool=True), "stale")
+        run = technologies.stack_analyser.run
+        technologies.stack_analyser.run = lambda *_: {"status": "ok", "version": "x", "found": [
+            {"tech": "react", "name": "react", "paths": ["web/package.json"]},
+            {"tech": "vite", "name": "vite", "paths": ["packages/resend/package.json"]}]}
+        try:
+            record = technologies.ensure(self.manifest, tool=True)
+        finally:
+            technologies.stack_analyser.run = run
+            technologies.path(self.manifest).unlink()
+        found = {e["id"]: e for e in record["technologies"]}
+        self.assertEqual((found["react"]["from"], found["vite"]["from"]), (["registry", "stack-analyser"], ["stack-analyser"]))
+        self.assertIn("vite", {u["name"]: u for u in record["units"]}["resend"]["technologies"])
+        self.assertEqual(record["stack_analyser"], {"status": "ok", "version": "x"})
 
     def test_a_service_of_the_premap_is_a_sign_at_the_file_declaring_it(self):
         import service_registry

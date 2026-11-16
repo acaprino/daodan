@@ -25,7 +25,7 @@ if str(SCRIPT_DIR) not in sys.path:
 import flows  # noqa: E402
 import modules  # noqa: E402
 import service_registry  # noqa: E402
-import stack_analyser  # noqa: E402
+import technologies  # noqa: E402
 import system_map  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
@@ -130,28 +130,12 @@ def _groups(links: dict) -> tuple[list[dict], list[str]]:
     return groups, [e for e in entries if not touched[e] & shared]
 
 
-def _externals(manifest: Path, graph: dict, files: list[str], root: Path, target: str, registry: dict,
-               recognized: list[dict]) -> tuple[list[dict], dict]:
-    by_id = {e["id"]: e for e in registry["entries"]}
-    out = {}
-    for found in recognized:
-        out[found["id"]] = {"id": found["id"], "name": found["name"], "kind": found["kind"], "type": found["type"],
-                            "from": ["registry"], "paths": sorted({s["path"] for s in found["signs"] if s["path"]})}
-    from embedding_worker import shared_cache_dir
-    # The tool names paths from the target it reads; snapshot paths count from the repository root.
-    prefix = "" if target in ("", ".") else target.strip("/") + "/"
-    stack = stack_analyser.run(root, shared_cache_dir() / "stack-analyser",
-                               {f[len(prefix):] for f in files if f.startswith(prefix)})
-    for found in stack.get("found", []):
-        found = {**found, "paths": [prefix + p for p in found["paths"]]}
-        entry = out.get(found["tech"])
-        if entry is None:
-            known = by_id.get(found["tech"], {})
-            entry = out[found["tech"]] = {"id": found["tech"], "name": known.get("name", found["tech"]),
-                                          "kind": known.get("kind"), "type": known.get("type", "altro"),
-                                          "from": [], "paths": []}
-        entry["from"] = sorted(set(entry["from"]) | {"stack-analyser"})
-        entry["paths"] = sorted(set(entry["paths"]) | set(found["paths"]))
+def _externals(graph: dict, record: dict) -> tuple[list[dict], dict]:
+    """The stack step's technologies and the external modules of the graph, by id; and stack-analyser's status."""
+    out = {found["id"]: {"id": found["id"], "name": found["name"], "kind": found["kind"],
+                         "type": found["type"] or "altro", "from": found["from"],
+                         "paths": sorted({s["path"] for s in found["signs"] if s["path"]})}
+           for found in record["technologies"]}
     for module in graph["modules"]:
         if module.get("location") == "external":
             ident = modules.slug(module["name"])
@@ -159,8 +143,7 @@ def _externals(manifest: Path, graph: dict, files: list[str], root: Path, target
                                    "paths": sorted({str(e.get("path") if isinstance(e, dict) else e).split("#")[0]
                                                     for e in module.get("evidence", [])})})
             out[ident]["from"] = sorted(set(out[ident]["from"]) | {"modules"})
-    status = {k: v for k, v in stack.items() if k != "found"}
-    return sorted(out.values(), key=lambda e: system_map.key(e["name"])), status
+    return sorted(out.values(), key=lambda e: system_map.key(e["name"])), record["stack_analyser"]
 
 
 def _text(value: dict, cap: int, holders: int) -> tuple[str, int]:
@@ -211,15 +194,12 @@ def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, holders: int = H
     links = flows.cached_links(manifest, rules)
     graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
     with open_snapshot(manifest) as store:
-        target = store.get("target") or "."
-        root = Path(store["root"]) / target
         files = sorted(dict(store.iter_file_headers_only()))
         source = flows.Source(store)
         texts = {rel: source.lines(rel) or [] for rel in files}
-    registry = service_registry.load()
-    recognized = service_registry.recognize(manifest, registry)
-    externals, stack = _externals(manifest, graph, files, root, target, registry, recognized)
-    known = {s["value"] for e in recognized for s in e["signs"] if s["sign"] == "package"}
+    record = technologies.ensure(manifest, tool=True)
+    externals, stack = _externals(graph, record)
+    known = {s["value"] for e in record["technologies"] for s in e["signs"] if s["sign"] == "package"}
     other = {}
     for module in graph["modules"]:
         if module["provenance"] == "build":

@@ -1553,13 +1553,12 @@ def cmd_files(args: argparse.Namespace) -> int:
 
 
 def cmd_technologies(args: argparse.Namespace) -> int:
-    import service_registry
+    import technologies
     try:
-        payload = service_registry.technologies(Path(args.manifest))
+        payload = technologies.ensure(Path(args.manifest))
     except (OSError, ValueError, KeyError) as error:
         print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
         return 2
-    payload["manifest"] = Path(args.manifest).resolve().as_posix()
     Path(args.out).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps({"technologies": len(payload["technologies"]), "units": len(payload["units"])}))
     return 0
@@ -1918,7 +1917,7 @@ def _add_tree_commands(sub) -> None:
     files_parser.add_argument("--out", required=True)
     files_parser.set_defaults(func=cmd_files)
 
-    technologies_parser = sub.add_parser("technologies", help="frameworks, libraries and services the registry recognizes, per build unit")
+    technologies_parser = sub.add_parser("technologies", help="copy the stack step's record: frameworks, libraries, tools and services, per build unit")
     technologies_parser.add_argument("manifest")
     technologies_parser.add_argument("--out", required=True)
     technologies_parser.set_defaults(func=cmd_technologies)

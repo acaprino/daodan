@@ -29,6 +29,7 @@ Il proprietario chiede (15 novembre 2026) un codice modulare, pulito e manutenib
 | Step | Cosa fa | Uscita |
 | --- | --- | --- |
 | 1. Scansione | Inventario dei file, grafo dei moduli, pre-mappa: moduli, tecnologie, versioni, dipendenze | Snapshot, `modules.json`, `premap.json` |
+| Stack (16 novembre 2026, fra 1 e 2) | Le tecnologie di ogni unità di build: framework, librerie, strumenti e servizi, dai segni del registro e da stack-analyser; ricalcolato quando cambiano snapshot, registro o servizi della pre-mappa | `technologies.json` |
 | 2. Analisi | Un analyzer per ogni tecnologia della pre-mappa, ognuno con le sue unità | Una voce per tecnologia nello store dei collegamenti |
 | 3. Dinamico | I test nel container; ciò che si osserva entra nel grafo della sua tecnologia | Archi osservati, i campionati a parte |
 | 4. Unione | I grafi delle tecnologie in uno solo, ai punti di connessione (rotte, chiamate HTTP, eventi, tabelle) | Il grafo completo |

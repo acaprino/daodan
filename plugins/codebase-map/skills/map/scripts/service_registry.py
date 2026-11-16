@@ -160,16 +160,3 @@ def recognize(manifest: Path, registry: dict | None = None) -> list[dict]:
                     "signs": sorted(signs.values(), key=lambda s: (s["sign"], s["path"] or "", s["line"] or 0, s["value"]))})
     return out
 
-
-def technologies(manifest: Path, registry: dict | None = None) -> dict:
-    """What `recognize` finds and, per build unit, the ids with a sign in a file the unit owns."""
-    manifest = Path(manifest)
-    found = recognize(manifest, registry)
-    graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
-    units = []
-    for unit in graph["modules"]:
-        if unit["provenance"] == "build":
-            files = set(unit.get("files", []))
-            units.append({"name": unit["name"], "kind": unit["kind"], "paths": unit["paths"],
-                          "technologies": [e["id"] for e in found if any(s["path"] in files for s in e["signs"])]})
-    return {"schema": "codebase-map/technologies/v1", "technologies": found, "units": units}

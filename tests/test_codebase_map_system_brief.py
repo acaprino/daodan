@@ -26,13 +26,13 @@ class BriefTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         fixture(cls)
-        cls.run_stack = system_brief.stack_analyser.run
-        system_brief.stack_analyser.run = unavailable
+        cls.run_stack = system_brief.technologies.stack_analyser.run
+        system_brief.technologies.stack_analyser.run = unavailable
         cls.brief = system_brief.brief(cls.manifest, cls.rules)
 
     @classmethod
     def tearDownClass(cls):
-        system_brief.stack_analyser.run = cls.run_stack
+        system_brief.technologies.stack_analyser.run = cls.run_stack
         shutil.rmtree(cls.work, True)
 
     def groups(self, value):
@@ -96,12 +96,12 @@ class DeclaredTests(unittest.TestCase):
             paths = sorted({"pyproject.toml"} & set(files))
             return {"status": "ok", "found": [{"tech": "fastapi", "paths": paths}] if paths else []}
 
-        run = system_brief.stack_analyser.run
-        system_brief.stack_analyser.run = tool
+        run = system_brief.technologies.stack_analyser.run
+        system_brief.technologies.stack_analyser.run = tool
         try:
             value = system_brief.brief(manifest, [])
         finally:
-            system_brief.stack_analyser.run = run
+            system_brief.technologies.stack_analyser.run = run
         fastapi = next(e for e in value["externals"] if e["id"] == "fastapi")
         self.assertEqual((fastapi["from"], fastapi["paths"]), (["registry", "stack-analyser"], ["server/pyproject.toml"]))
 
@@ -119,12 +119,12 @@ class DeclaredTests(unittest.TestCase):
             subprocess.run(command, cwd=project, check=True, capture_output=True)
         manifest = work / "snapshot/manifest.sqlite"
         snapshot.main(["write", str(project), "--out", str(manifest), "--no-engine", "--no-index"])
-        run = system_brief.stack_analyser.run
-        system_brief.stack_analyser.run = unavailable
+        run = system_brief.technologies.stack_analyser.run
+        system_brief.technologies.stack_analyser.run = unavailable
         try:
             value = system_brief.brief(manifest, [])
         finally:
-            system_brief.stack_analyser.run = run
+            system_brief.technologies.stack_analyser.run = run
         declared = {(d["kind"], d["name"]): d for d in value["declared"]}
         self.assertEqual((declared[("service", "db")]["image"], declared[("service", "db")]["file"]),
                          ("postgres", "docker-compose.yml"))
