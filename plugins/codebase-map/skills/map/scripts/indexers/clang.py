@@ -306,9 +306,11 @@ AMBIGUOUS = ("in an argument of macro `{}` ({}), where the index writes {} symbo
 UNDEFINED = ("a name a conditional directive tests, read as code because the directive sits inside an "
              "expression: the index names no symbol there")
 # scip-clang v0.4.1 names no symbol declared in a `LinkageSpecDecl` (SymbolFormatter.cc, getContextSymbol: "Pending:
-# LinkageSpecDecl"), and the C library's headers declare theirs in one under C++ (`__BEGIN_DECLS`).
+# LinkageSpecDecl"), and the C library's headers declare theirs in one under C++ (`__BEGIN_DECLS`). Upstream's
+# issue #544 and its fix, PR #548 (docs/research/2026-11-16-scip-clang-extern-c.md): take the release that has it.
 EXTERN_C = ("`{}`, declared for C++ only in an `extern \"C\"` block (the C library's, or the project's C): "
-            "scip-clang v0.4.1 names no symbol declared there")
+            "scip-clang v0.4.1 names no symbol declared there (scip-clang issue #544; its fix, PR #548, is not "
+            "released)")
 DIRECTIVE = re.compile(rb"\s*#\s*(?:if|ifdef|ifndef|elif|elifdef|elifndef)\b")
 BRANCHES = ("preproc_if", "preproc_ifdef", "preproc_elif", "preproc_elifdef", "preproc_else")
 # The types C and C++ build in, the callee of a conversion like `unsigned(1)` (the reader's grammar reads the
