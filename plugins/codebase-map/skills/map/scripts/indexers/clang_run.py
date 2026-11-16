@@ -26,6 +26,10 @@ URLs it declares, and supplies none. A unit whose configure then fails is not in
 absent submodule CMake's output names, or with what CMake recorded when it asked for a download, else `failed`;
 CMake's own output, unparsed, either way. `file(DOWNLOAD)` and ExternalProject are not recorded.
 
+scip-clang reads each database with the commands of a compiler that is not clang reading the builtin headers of
+the clang scip-clang is built on, which the copy carries (`builtin_headers`): with GCC's, which scip-clang gives
+them, clang stops on the intrinsics.
+
 `OUT_DIR/result.json` holds, per unit, its state, its steps (`returncode`, `seconds`, the output's tail), the
 files of the compilation database with how many commands compile each, and the index it wrote
 (`index-<n>.scip`), with the container's memory peak.
@@ -36,9 +40,11 @@ import collections
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
+import tarfile
 import time
 import zipfile
 from pathlib import Path
@@ -56,6 +62,7 @@ WHAT = {"cmake": "the configure", "meson": "meson setup", "make": "make under Be
         "go": "go build under Bear", "autotools": "make under Bear"}  # what writes each build's compilation database
 OUTSIDE = "download-outside-registries"  # the cause the map-driven round counts
 ABSENT = "submodule-absent"  # a folder the configure reads is a submodule the checkout lacks
+OWN_BUILTINS = {"-nostdinc", "-nobuiltininc"}  # a command that drops the builtin headers itself
 ERROR_TAIL = 4000
 UNCOVERED = "FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded"
 PROVIDER = r"""# Written by Daodan: records each dependency the project asks FetchContent_MakeAvailable
@@ -218,6 +225,58 @@ def _peak() -> int | None:
 def index_command(scip_clang: Path, compdb: Path, packages: Path, jobs: int) -> list[str]:
     return [str(scip_clang), f"--compdb-path={compdb}", f"--package-map-path={packages}", f"--jobs={jobs}",
             "--show-compiler-diagnostics"]
+
+
+def unpack_headers() -> tuple[Path, str]:
+    """Clang's builtin headers, from the tar the copy carries (`indexers/clang.py`, `clang_headers`), unpacked into
+    the scratch folder: their folder, and clang's version, which the tar's name gives."""
+    archive = next(TOOLS.glob("clang-*-headers.tar"))
+    with tarfile.open(archive) as bundle:
+        bundle.extractall(SCRATCH / "clang", filter="data")
+    return SCRATCH / "clang" / "include", archive.name.removeprefix("clang-").removesuffix("-headers.tar")
+
+
+def builtin_headers(runner, compdb: Path, target: Path, headers: Path) -> None:
+    """`compdb` into `target`, each command of a compiler that is not clang reading clang's own builtin headers.
+    scip-clang gives such a command, as clang's resource folder, the GCC install folder, whose builtin headers
+    (mmintrin.h, xmmintrin.h and on) call builtins clang lacks: `-nobuiltininc` drops them, `-isystem` reads
+    clang's (`headers`), and `-idirafter` the compiler's own include folder last, for the headers clang has none
+    of (omp.h, quadmath.h). A clang, which answers `-print-resource-dir`, keeps its own; a command that drops the
+    builtin headers itself is left as it is. Each compiler is asked once."""
+    asked: dict[str, list[str] | None] = {}
+
+    def answer(command: list[str], cwd: Path) -> tuple[int | None, str]:
+        try:
+            code, output, _seconds = runner(command, cwd)
+        except OSError:  # no such compiler, or no such folder
+            return None, ""
+        return code, output
+
+    entries = json.loads(compdb.read_text(encoding="utf-8"))
+    for entry in entries:
+        words = list(entry["arguments"]) if "arguments" in entry else shlex.split(entry.get("command", ""))
+        if not words or OWN_BUILTINS & set(words):
+            continue
+        cwd, compiler = Path(entry.get("directory") or WORK), words[0]
+        key = str(cwd / compiler) if "/" in compiler and not os.path.isabs(compiler) else compiler
+        if key not in asked:
+            if answer([compiler, "-print-resource-dir"], cwd)[0] == 0:
+                asked[key] = None
+            else:
+                code, output = answer([compiler, "-print-file-name=include"], cwd)
+                folder = (output.strip().splitlines() or [""])[-1]
+                asked[key] = ["-nobuiltininc", "-isystem", str(headers),
+                              *(["-idirafter", folder] if code == 0 and os.path.isabs(folder)
+                                and os.path.isdir(folder) else [])]
+        if asked[key] is None:
+            continue
+        at = words.index("--") if "--" in words else len(words)
+        words[at:at] = asked[key]
+        if "arguments" in entry:
+            entry["arguments"] = words
+        else:
+            entry["command"] = shlex.join(words)
+    target.write_text(json.dumps(entries, indent=1) + "\n", encoding="utf-8")
 
 
 def cmake_tool(given: str | None, scratch: Path) -> str:
@@ -471,8 +530,10 @@ def main(argv: list[str]) -> int:
     scip_clang = SCRATCH / "scip-clang"
     shutil.copyfile(TOOLS / "scip-clang", scip_clang)
     scip_clang.chmod(0o755)
+    headers, version = unpack_headers()
     packages = SCRATCH / "package-map.json"
-    packages.write_text(json.dumps(package_map("project@0"), indent=1) + "\n", encoding="utf-8")
+    packages.write_text(json.dumps([*package_map("project@0"), {"path": str(headers), "package": f"clang@{version}"}],
+                                   indent=1) + "\n", encoding="utf-8")
     (SCRATCH / "provider.cmake").write_text(PROVIDER, encoding="utf-8")
     results, installed = [], None  # Bear's install, once, before the first build that runs under it
     for number, unit in enumerate(units):
@@ -502,7 +563,9 @@ def main(argv: list[str]) -> int:
         elif state["state"] == "configured":
             record["compiled"] = compiled(compdb)
             (WORK / "index.scip").unlink(missing_ok=True)
-            code, output, seconds = run(index_command(scip_clang, compdb, packages, jobs), WORK)
+            given = SCRATCH / f"builtin-{number}.json"
+            builtin_headers(run, compdb, given, headers)
+            code, output, seconds = run(index_command(scip_clang, given, packages, jobs), WORK)
             steps.append({"step": "index", "returncode": code, "seconds": seconds, "tail": output[-2500:],
                           "diagnostics": _diagnostics(output)})
             if (WORK / "index.scip").is_file():

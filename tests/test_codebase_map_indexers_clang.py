@@ -8,12 +8,15 @@ real one and only with DAODAN_CLANG_SMOKE=1.
 """
 from __future__ import annotations
 
+import io
 import json
 import os
 import posixpath
 import re
+import shlex
 import shutil
 import sys
+import tarfile
 from pathlib import Path, PurePosixPath
 from unittest import mock
 
@@ -178,13 +181,64 @@ def test_the_compilation_database_counts_the_commands_of_each_file(tmp_path):
     assert clang_run.compiled(compdb) == {"main.c": 1, "util.c": 2}
 
 
+def _tools(folder: Path) -> Path:
+    """The copy's tools folder: scip-clang, and clang's builtin headers as `clang.clang_headers` packs them."""
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "scip-clang").write_bytes(b"")
+    with tarfile.open(folder / f"clang-{clang.CLANG_HEADERS[0]}-headers.tar", "w") as bundle:
+        data = b"typedef __SIZE_TYPE__ size_t;\n"
+        entry = tarfile.TarInfo("include/stddef.h")
+        entry.size = len(data)
+        bundle.addfile(entry, io.BytesIO(data))
+    return folder
+
+
+def test_a_gcc_command_reads_the_builtin_headers_of_the_clang_scip_clang_is_built_on(tmp_path):
+    """scip-clang gives a command of GCC, as clang's resource folder, GCC's install folder: clang then reads GCC's
+    builtin headers, whose intrinsics call builtins clang lacks (3,492 errors from mmintrin.h on, for one C and
+    one C++ file using _mm_pause, measured). So each command of a compiler that is not clang drops them
+    (`-nobuiltininc`), reads clang's own (`-isystem`), and last the compiler's include folder (`-idirafter`), for
+    the headers clang has none of (omp.h, quadmath.h). A clang keeps its own; a command that drops the builtin
+    headers itself is left as it is; a `--` ends the options. Each compiler is asked once."""
+    gcc_include = tmp_path / "gcc/include"
+    gcc_include.mkdir(parents=True)
+    headers, compdb, target = tmp_path / "clang/include", tmp_path / "compile_commands.json", tmp_path / "given.json"
+    entries = [{"directory": "/w", "file": "a.c", "arguments": ["/usr/bin/gcc", "-O2", "-c", "a.c"]},
+               {"directory": "/w/b", "file": "../b.c", "command": 'cc -DX="1 2" -c ../b.c -o b.o'},
+               {"directory": "/w", "file": "c.cc", "arguments": ["clang++", "-c", "c.cc"]},
+               {"directory": "/w", "file": "k.c", "arguments": ["gcc", "-nostdinc", "-c", "k.c"]},
+               {"directory": "/w", "file": "d.c", "arguments": ["/usr/bin/gcc", "-c", "--", "d.c"]},
+               {"directory": "/w", "file": "e.c", "arguments": ["gone-gcc", "-c", "e.c"]}]
+    compdb.write_text(json.dumps(entries), encoding="utf-8")
+    calls = []
+
+    def run(command, cwd, timeout=3600, stdout=None):
+        calls.append(command)
+        if command[0] == "gone-gcc":
+            raise FileNotFoundError(2, "No such file or directory", "gone-gcc")
+        if command[1] == "-print-resource-dir":
+            return (0, "/usr/lib/llvm-18/lib/clang/18\n", 0.1) if command[0].startswith("clang") else \
+                (1, "gcc: error: unrecognized command-line option '-print-resource-dir'\n", 0.1)
+        return 0, f"{gcc_include}\n", 0.1
+    clang_run.builtin_headers(run, compdb, target, headers)
+    extra = ["-nobuiltininc", "-isystem", str(headers), "-idirafter", str(gcc_include)]
+    given = json.loads(target.read_text(encoding="utf-8"))
+    assert given[0]["arguments"] == ["/usr/bin/gcc", "-O2", "-c", "a.c", *extra]
+    assert shlex.split(given[1]["command"]) == ["cc", "-DX=1 2", "-c", "../b.c", "-o", "b.o", *extra]
+    assert given[2:4] == entries[2:4]
+    assert given[4]["arguments"] == ["/usr/bin/gcc", "-c", *extra, "--", "d.c"]
+    assert given[5]["arguments"] == ["gone-gcc", "-c", "e.c", *extra[:3]]
+    assert [command[0] for command in calls] == ["/usr/bin/gcc", "/usr/bin/gcc", "cc", "cc", "clang++", "gone-gcc",
+                                                 "gone-gcc"]
+    assert json.loads(compdb.read_text(encoding="utf-8")) == entries  # the build's own, which `compiled` counts
+
+
 def test_the_report_is_written_into_the_folder_the_caller_names_under_the_scratch_folder(tmp_path):
     """`index()` names the report's folder under the script's scratch folder (`clang.OUT`): emptying the scratch
     folder at the start leaves that folder for the report."""
     scratch, tools, plan = tmp_path / "scratch", tmp_path / "tools", tmp_path / "units.json"
     out = scratch / PurePosixPath(clang.OUT).relative_to(clang_run.SCRATCH.as_posix()).as_posix()
-    tools.mkdir()
-    (tools / "scip-clang").write_bytes(b"")
+    _tools(tools)
     plan.write_text(json.dumps([{"root": "."}]), encoding="utf-8")
     run, _calls = _runner(1, LINK_ERROR, RECORD)
     with mock.patch.multiple(clang_run, SCRATCH=scratch, TOOLS=tools, run=run, package_map=lambda project: []):
@@ -197,8 +251,7 @@ def test_a_unit_that_configures_without_a_compilation_database_failed_and_says_w
     """CMake writes no compile_commands.json for a project without a C or C++ target, or for a generator that
     exports none: the unit is not left `configured`, a state without a cause the host cannot report."""
     scratch, tools, plan, out = tmp_path / "scratch", tmp_path / "tools", tmp_path / "units.json", tmp_path / "out"
-    tools.mkdir()
-    (tools / "scip-clang").write_bytes(b"")
+    _tools(tools)
     plan.write_text(json.dumps([{"root": "docs"}]), encoding="utf-8")
     run, _calls = _runner(0, "-- Generating done\n")
     with mock.patch.multiple(clang_run, SCRATCH=scratch, TOOLS=tools, run=run, package_map=lambda project: []):
@@ -497,13 +550,15 @@ def test_the_tools_are_downloaded_once_and_checked_each_time(tmp_path):
     digest = hashlib.sha256(b"tool").hexdigest()
     with mock.patch("resolve_edges.shared_engine_dir", lambda name: tmp_path / name), \
             mock.patch("resolve_edges.download", download), mock.patch.object(clang, "SHA256", digest), \
-            mock.patch.object(clang, "CMAKE", (clang.CMAKE[0], clang.CMAKE[1], digest)):
+            mock.patch.object(clang, "CMAKE", (clang.CMAKE[0], clang.CMAKE[1], digest)), \
+            mock.patch.object(clang, "clang_headers", lambda: Path("headers.tar")):
         first = clang.tools()
         second = clang.tools()
         (tmp_path / "scip-clang" / clang.VERSION / "scip-clang-x86_64-linux").write_bytes(b"tampered")
         third = clang.tools()
     assert first == second == third and len(calls) == 3  # two first downloads, one for the tampered binary
     assert first[f"{clang.TOOLS}/clang_run.py"] == Path(clang.__file__).with_name("clang_run.py")
+    assert first[f"{clang.TOOLS}/clang-{clang.CLANG_HEADERS[0]}-headers.tar"] == Path("headers.tar")
 
     def broken(url, target, *, sha256=None):
         raise ValueError(f"checksum mismatch for {url}")
@@ -691,9 +746,8 @@ def _main(tmp_path, units, answers):
     """`clang_run.main` over `units` in a scratch copy, each command answered by the first of `answers` (a word of
     the command -> `(code, output, writes)`) it holds; scip-clang writes an index."""
     scratch, tools, work, out, plan = (tmp_path / name for name in ("scratch", "tools", "work", "out", "units.json"))
-    tools.mkdir(parents=True)
+    _tools(tools)
     work.mkdir()
-    (tools / "scip-clang").write_bytes(b"")
     plan.write_text(json.dumps(units), encoding="utf-8")
     calls = []
 
@@ -728,13 +782,33 @@ def test_each_unit_states_the_build_that_gave_its_commands(tmp_path):
         ("m", "meson", "indexed"), ("c", "make", "indexed"), ("g", "go", "failed")]
     assert results[2]["cause"] == "go build under Bear gave no compile command"
     install = ["sh", "-c", f"dpkg -i {tmp_path / 'tools'}/bear/*.deb"]
-    assert calls.count(install) == 1 and calls.index(install) == 2  # after Meson's setup and its index
+    assert calls.count(install) == 1 and calls.index(install) == 3  # after Meson's setup, its compiler asked, its index
     assert [step["step"] for step in results[1]["steps"]] == ["install Bear", "make under Bear", "index"]
     # Bear that does not install: the builds that run under it say so.
     install = f"dpkg -i {tmp_path / 'again/tools'}/bear/*.deb"
     failed, _calls = _main(tmp_path / "again", units[1:2], {install: (1, "dpkg: error: cannot access archive\n", {})})
     assert failed[0]["state"] == "failed"
     assert failed[0]["cause"] == "install Bear ended with exit code 1: dpkg: error: cannot access archive"
+
+
+def test_scip_clang_reads_the_database_with_clangs_builtin_headers_and_names_their_package(tmp_path):
+    """The headers the copy carries are unpacked once; scip-clang reads each database as `builtin_headers` gives
+    it, while the files compiled are counted from the build's own; the headers' folder is the package `clang` at
+    their version, the identity scip-clang writes in their symbols."""
+    work = tmp_path / "work"
+    database = [{"directory": str(work), "file": "a.c", "arguments": ["gcc", "-c", "a.c"]}]
+    answers = {"make": (0, "", {tmp_path / "scratch/build-0/compile_commands.json": json.dumps(database)}),
+               "-print-resource-dir": (1, "gcc: error: unrecognized command-line option\n", {}),
+               "-print-file-name=include": (0, "include\n", {})}  # GCC's answer when it has no such folder
+    results, calls = _main(tmp_path, [{"root": ".", "build": "make", "targets": ["all"]}], answers)
+    headers = tmp_path / "scratch/clang/include"
+    index, = (command for command in calls if any(word.startswith("--compdb-path=") for word in command))
+    given = Path(next(word for word in index if word.startswith("--compdb-path=")).split("=", 1)[1])
+    assert json.loads(given.read_text(encoding="utf-8"))[0]["arguments"] == \
+        ["gcc", "-c", "a.c", "-nobuiltininc", "-isystem", str(headers)]
+    assert results[0]["compiled"] == {"a.c": 1} and (headers / "stddef.h").is_file()
+    packages = json.loads((tmp_path / "scratch/package-map.json").read_text(encoding="utf-8"))
+    assert {"path": str(headers), "package": f"clang@{clang.CLANG_HEADERS[0]}"} in packages
 
 
 def _index_builds(tmp_path, units, workspace=None, toolchains=(), files=None, report=INDEXED):
@@ -848,16 +922,43 @@ def test_each_build_carries_the_tools_it_runs(tmp_path):
     with mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)), \
             mock.patch("resolve_edges.shared_engine_dir", lambda name: tmp_path / name), \
             mock.patch("resolve_edges.download", lambda url, target, *, sha256=None: target), \
-            mock.patch.object(clang, "_sha256", lambda path: ""):
+            mock.patch.object(clang, "_sha256", lambda path: ""), \
+            mock.patch.object(clang, "clang_headers", lambda: Path("headers.tar")):
         carried = clang.tools({"meson", "make", "bazel", "go"})
         cmake_only = clang.tools()
     names = {path.removeprefix(f"{clang.TOOLS}/") for path in carried}
-    assert {"meson.whl", "ninja.whl", "bazel", "go.tar.gz", "scip-clang", "clang_run.py"} <= names
+    headers = f"clang-{clang.CLANG_HEADERS[0]}-headers.tar"
+    assert {"meson.whl", "ninja.whl", "bazel", "go.tar.gz", "scip-clang", "clang_run.py", headers} <= names
+    assert f"{clang.TOOLS}/{headers}" in cmake_only
     assert sorted(name for name in names if name.startswith("bear/")) == sorted(
         f"bear/{posixpath.basename(url)}" for url, _digest in clang.BEAR)
     assert all(url.startswith("https://archive.ubuntu.com/ubuntu/pool/") and len(digest) == 64
                for url, digest in clang.BEAR)
     assert not any(name.startswith("bear/") or name.endswith(".whl") for name in cmake_only)
+
+
+def test_clangs_builtin_headers_come_from_its_release_source_packed_once(tmp_path):
+    """The builtin headers of the clang scip-clang v0.4.1 is built on (LLVM 21.1.8, its Version.h's commit): the
+    folder lib/Headers of clang's release source, which clang installs as its resource folder's include, packed
+    once under `include/` beside the archive, and nothing else of the source. Every run carries them."""
+    version, url, digest = clang.CLANG_HEADERS
+    assert (version, url) == ("21.1.8", "https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.8/"
+                                        "clang-21.1.8.src.tar.xz") and len(digest) == 64
+    source = tmp_path / "fetched" / posixpath.basename(url)
+    source.parent.mkdir()
+    with tarfile.open(source, "w:xz") as bundle:
+        for name in ("lib/Headers/xmmintrin.h", "lib/Headers/cuda_wrappers/new", "lib/Sema/Sema.cpp"):
+            entry = tarfile.TarInfo(f"clang-{version}.src/{name}")
+            entry.size = len(name)
+            bundle.addfile(entry, io.BytesIO(name.encode()))
+    with mock.patch.object(preparation, "fetched", lambda url, digest, name: source):
+        packed = clang.clang_headers()
+        with mock.patch("tarfile.open", side_effect=AssertionError("packed again")):
+            assert clang.clang_headers() == packed
+    assert packed == source.with_name(f"clang-{version}-headers.tar")
+    with tarfile.open(packed) as bundle:
+        assert sorted(bundle.getnames()) == ["include/cuda_wrappers/new", "include/xmmintrin.h"]
+        assert bundle.extractfile("include/xmmintrin.h").read() == b"lib/Headers/xmmintrin.h"
 
 
 # ---------------------------------------------------------------------------------------------------------------

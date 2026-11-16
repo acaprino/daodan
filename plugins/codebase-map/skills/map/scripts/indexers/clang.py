@@ -56,6 +56,7 @@ import posixpath
 import re
 import shlex
 import shutil
+import tarfile
 import time
 from pathlib import Path
 
@@ -65,6 +66,13 @@ import preparation
 VERSION = "v0.4.1"  # github.com/sourcegraph/scip-clang, released 2026-10-22, LLVM 21
 URL = f"https://github.com/sourcegraph/scip-clang/releases/download/{VERSION}/scip-clang-x86_64-linux"
 SHA256 = "a434d26a079fd80e1996ba79276cb1ef86b2b2ad28b13e24386285db32c59046"  # the release asset's digest
+# The builtin headers of the clang scip-clang VERSION is built on (its Version.h's LLVM commit is 21.1.8): the
+# folder lib/Headers of clang's release source (Apache-2.0 WITH LLVM-exception), which clang installs as its
+# resource folder's include (`clang_headers`). scip-clang gives a GCC command, as clang's resource folder, GCC's
+# install folder, whose headers call builtins clang lacks: those commands read these instead (`clang_run.py`).
+CLANG_HEADERS = ("21.1.8",
+                 "https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.8/clang-21.1.8.src.tar.xz",
+                 "6090e3f23720d003cdd84483a47d0eec6d01adbb5e0c714ac0c8b58de546aa62")
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"
 CMAKE = ("3.28.3", "https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-x86_64.tar.gz",
          "804d231460ab3c8b556a42d2660af4ac7a0e21c98a7f8ee3318a74b4a9a187a6")  # Ubuntu 24.04's own CMake
@@ -514,10 +522,29 @@ def _carried(builds) -> list[tuple[str, str, str]]:
             *([("bazel", *bazel.DOWNLOAD[0])] if "bazel" in builds else [])]
 
 
+def clang_headers() -> Path:
+    """A tar of clang's builtin headers (`CLANG_HEADERS`) under `include/`, as the resource folder holds them:
+    the files of lib/Headers in clang's release source, downloaded once and checked by sha256, packed once beside
+    it. A plain tar, which any tar unpacks."""
+    version, url, digest = CLANG_HEADERS
+    source = preparation.fetched(url, digest, posixpath.basename(url))
+    target = source.with_name(f"clang-{version}-headers.tar")
+    if not target.is_file():
+        prefix, partial = f"clang-{version}.src/lib/Headers/", target.with_suffix(".partial")
+        with tarfile.open(source) as bundle, tarfile.open(partial, "w") as packed:
+            for member in bundle:
+                if member.isfile() and member.name.startswith(prefix) and not member.name.endswith("CMakeLists.txt"):
+                    data = bundle.extractfile(member)
+                    member.name = "include/" + member.name.removeprefix(prefix)
+                    packed.addfile(member, data)
+        partial.replace(target)
+    return target
+
+
 def tools(builds=()) -> dict[str, Path]:
     """The container paths and host files the copy carries: CMake and scip-clang, downloaded once into the shared
-    directory and checked by sha256 each time, `clang_run.py`, and what the other `builds` run (`_carried`). A
-    Gap when one cannot be downloaded and verified."""
+    directory and checked by sha256 each time, clang's builtin headers (`clang_headers`), `clang_run.py`, and
+    what the other `builds` run (`_carried`). A Gap when one cannot be downloaded and verified."""
     import container
     from resolve_edges import download, shared_engine_dir
     version, cmake_url, cmake_sha = CMAKE
@@ -534,6 +561,7 @@ def tools(builds=()) -> dict[str, Path]:
             raise container.Gap(f"{url} could not be downloaded and verified: {error}",
                                 "check the network, then index again") from error
         inputs[f"{TOOLS}/{name}"] = target
+    inputs[f"{TOOLS}/clang-{CLANG_HEADERS[0]}-headers.tar"] = clang_headers()
     inputs[f"{TOOLS}/clang_run.py"] = Path(__file__).with_name("clang_run.py")
     for name, url, digest in _carried(builds):
         inputs[f"{TOOLS}/{name}"] = preparation.fetched(url, digest, posixpath.basename(url))
