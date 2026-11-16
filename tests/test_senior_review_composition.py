@@ -47,7 +47,7 @@ class CatalogTest(unittest.TestCase):
     def test_catalog_matches_plugin_toml_and_feeds_review_roster(self):
         catalog = composition.load_catalog(PLUGIN_ROOT)
         entries = {row["id"]: row for row in catalog["entries"]}
-        self.assertEqual(len(entries), 66)
+        self.assertEqual(len(entries), 68)
         self.assertEqual(entries["senior-review:accessibility-auditor"]["members"],
                          ["senior-review:accessible-navigation-auditor", "senior-review:accessible-perception-auditor"])
         self.assertEqual(entries["senior-review:authorization-auditor"]["file"], "roles/authorization-auditor.md")
@@ -222,7 +222,7 @@ class CliTest(unittest.TestCase):
             cat = subprocess.run([sys.executable, str(SCRIPTS / "composition.py"), "catalog", "--out", str(root / "catalog.json")],
                                  capture_output=True, text=True)
             self.assertEqual(cat.returncode, 0, cat.stderr)
-            self.assertEqual(json.loads(cat.stdout)["entries"], 66)
+            self.assertEqual(json.loads(cat.stdout)["entries"], 68)
 
 
 CODE = "senior-review:code-auditor"
@@ -362,6 +362,15 @@ class CoverageBindTest(CoverageCase):
         cells = self.cells(self.bind([TAURI]), TAURI)
         self.assertEqual({path: cell["status"] for path, cell in cells.items()},
                          {"src-tauri/src/main.rs": "open", "web/api.ts": "open", "web/view.ts": "not-applicable"})
+
+    def test_python_keeps_its_language_and_stripe_its_api(self):
+        self.inventory([("api/hooks.py", "python", 0), ("web/view.ts", "typescript", 0)],
+                       contents={"api/hooks.py": b"event = stripe.Webhook.construct_event(body, sig, key)\n",
+                                 "web/view.ts": b"export const view = 1;\n"})
+        for role in ("senior-review:python-auditor", "senior-review:stripe-auditor"):
+            cells = self.cells(self.bind([role]), role)
+            self.assertEqual({path: cell["status"] for path, cell in cells.items()},
+                             {"api/hooks.py": "open", "web/view.ts": "not-applicable"})
 
     def test_reviewer_with_no_open_cell_has_no_job(self):
         self.inventory([("app/a.py", "python", 100), ("app/b.py", "python", 100)])

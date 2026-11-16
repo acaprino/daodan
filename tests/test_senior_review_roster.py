@@ -25,8 +25,9 @@ def diff_of(path):
             "@@ -1,2 +1,2 @@\n-x = 1\n+x = 2\n")
 
 
-PLAIN = diff_of("app/orders/pricing.py")
-SENSITIVE = diff_of("app/payments/gateway.py")
+# Go has no specialist of its own: the roster of these is the rigor's alone.
+PLAIN = diff_of("app/orders/pricing.go")
+SENSITIVE = diff_of("app/payments/gateway.go")
 
 
 def compute(diff=PLAIN, shape="branch", kind="changeset", **extra):
@@ -79,9 +80,17 @@ class RigorTest(unittest.TestCase):
         self.assertIn("senior-review:tauri-auditor", shell["roster"])
         self.assertNotIn("senior-review:react-auditor", shell["roster"])
         self.assertIn("senior-review:react-auditor", compute(diff_of("web/hooks.ts"), technologies=technologies)["roster"])
-        api = compute(diff_of("api/routes.py"), technologies=technologies)
+        api = compute(diff_of("api/routes.go"), technologies=technologies)
         self.assertEqual((api["signals"]["technologies"], api["roster"]), (["fastapi"], review_roster.STANDARD_ROSTER))
         self.assertEqual(compute(diff_of("web/hooks.ts"))["signals"]["technologies"], [])
+
+    def test_python_and_stripe_add_their_specialists(self):
+        python = compute(diff_of("app/orders/pricing.py"))
+        self.assertEqual(python["roster"], review_roster.STANDARD_ROSTER + ["senior-review:python-auditor"])
+        hook = compute(diff_of("api/hooks.go").replace("+x = 2", "+event = stripe.Webhook.construct_event(body, sig, key)"))
+        self.assertIn("senior-review:stripe-auditor", hook["roster"])
+        units = {"units": [{"paths": ["."], "technologies": ["stripe"]}]}
+        self.assertIn("senior-review:stripe-auditor", compute(technologies=units)["roster"])
 
     def test_a_tauri_test_or_workspace_path_adds_its_specialist(self):
         tauri = compute(diff_of("src-tauri/src/commands.rs"))

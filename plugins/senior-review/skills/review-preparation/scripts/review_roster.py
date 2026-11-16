@@ -124,11 +124,13 @@ SUPPORT = ["senior-review:premise-auditor", "senior-review:isolated-worker"]
 LANGUAGE_ROLE = {
     "typescript": "senior-review:typescript-auditor",
     "react": "senior-review:react-auditor",
+    "python": "senior-review:python-auditor",
 }
 # Registry ids the map recognizes in the build unit of a reviewed file (`snapshot.py technologies`).
 TECHNOLOGY_ROLE = {
     "react": "senior-review:react-auditor",
     "tauri": "senior-review:tauri-auditor",
+    "stripe": "senior-review:stripe-auditor",
 }
 SIGNAL_ROLE = {
     "accessibility": "senior-review:accessibility-auditor",
@@ -146,6 +148,7 @@ SIGNAL_ROLE = {
     "persistence": "senior-review:data-integrity-auditor",
     "trust": "senior-review:security-auditor",
     "tauri": "senior-review:tauri-auditor",
+    "stripe": "senior-review:stripe-auditor",
     "workspace": "senior-review:workspace-hygiene-auditor",
     "testing": "senior-review:testing-auditor",
 }
@@ -201,6 +204,7 @@ SIGNAL_PATTERNS = {
     "tauri": re.compile(r"tauri::|#\[tauri|@tauri-apps/|\btauri\.conf\.json\b|\bwithGlobalTauri\b|"
                         r"\b(?:register_uri_scheme_protocol|dangerousRemoteDomainIpcAccess|"
                         r"dangerousDisableAssetCspModification|assetProtocol|externalBin)\b"),
+    "stripe": re.compile(r"\bstripe\b|Stripe-Signature|\bconstruct_?[Ee]vent\b", re.IGNORECASE),
     # Conflict markers; the bare `=======` line alone is also a setext underline.
     "workspace": re.compile(r"^(?:<<<<<<< |>>>>>>> )", re.MULTILINE),
 }
