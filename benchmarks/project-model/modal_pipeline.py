@@ -267,6 +267,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                 served += failed(services, error)
         scratch.mkdir(parents=True)
         digest = container.copy_perimeter(Path(project), scratch / "copy.tar", given)
+        if digest["gaps"]:  # what the copy left out of the project, as `run_in_container` says it
+            result["gaps"] = digest["gaps"]
         volume.commit()
         values = _dotenv(token, digest["dotenv"], options) if digest.get("dotenv") else {}
         hide = container.masker(values)
@@ -352,9 +354,9 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                     members = [m for m in bundle.getmembers() if m.isfile() or m.isdir()]
                     bundle.extractall(out_dir, members=members, filter="data")
                     result["outputs"] += [str(out_dir / m.name) for m in members if m.isfile()]
-            for path in result["outputs"]:  # the text a run printed there, masked as its logs are
-                if path.endswith(container.TEXTS):
-                    container.mask_file(path, hide)
+            # no value of the tracked .env files in what the run keeps (`container.scrubbed`)
+            result["outputs"], withheld = container.scrubbed(result["outputs"], hide, values, out_dir)
+            result["gaps"] = [*(result.get("gaps") or ()), *withheld]
         result.update(exit_code=row.get("exit_code"),
                       state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))
         if "cause" in row:

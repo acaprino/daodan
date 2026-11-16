@@ -125,6 +125,7 @@ REACH = ("import socket, sys\nfor port in sys.argv[1:]:\n"
          "    socket.create_connection(('127.0.0.1', int(port)), 2).close()")  # `reached`: each port answers
 DOTENV = (".env", ".env.*")  # of the names Daodan never reads, those the copy carries where Git tracks the file
 TEXTS = (".log", ".txt")  # the outputs that are a run's text, masked as its logs are (`masker`)
+JSONS = (".json",)  # the outputs that are JSON, masked string by string so they stay JSON (`scrubbed`)
 UNMASKED = re.compile(r"(?i)true|false|yes|no|on|off|\d{1,5}")  # values the text's own words and ports would be
 DOTENV_VALUES = STATE + "/dotenv-values.json"  # in the pre-map's container only (`named`), never an output
 MARKER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_.-]*)\}")  # where a fact names a variable of a tracked .env file
@@ -755,16 +756,22 @@ def dotenv_answer(stdout: str, code: int | None) -> dict[str, dict[str, str]]:
                        "could not mask them in what it keeps, does not start")
 
 
-def masker(values: dict[str, dict[str, str]]) -> Callable[[str], str] | None:
-    """A text with each value of the tracked `.env` files (`dotenv_values`) replaced by `[<file>:<name>]`, the names
-    of all that hold it, where it stands whole, not inside a longer word; the longer first. None when no value is
-    masked: one shorter than four characters, a boolean word or a number of five digits at most stays, as the
-    text's own words and ports would be masked with it."""
+def _labels(values: dict[str, dict[str, str]]) -> dict[str, list[str]]:
+    """Each value `masker` masks, with the `<file>:<name>` of the variables that hold it."""
     labels: dict[str, list[str]] = {}
     for path, found in values.items():
         for name, value in found.items():
             if len(value) >= 4 and not UNMASKED.fullmatch(value):
                 labels.setdefault(value, []).append(f"{path}:{name}")
+    return labels
+
+
+def masker(values: dict[str, dict[str, str]]) -> Callable[[str], str] | None:
+    """A text with each value of the tracked `.env` files (`dotenv_values`) replaced by `[<file>:<name>]`, the names
+    of all that hold it, where it stands whole, not inside a longer word; the longer first. None when no value is
+    masked: one shorter than four characters, a boolean word or a number of five digits at most stays, as the
+    text's own words and ports would be masked with it."""
+    labels = _labels(values)
     if not labels:
         return None
 
@@ -784,6 +791,60 @@ def mask_file(path, hide: Callable[[str], str] | None) -> None:
         masked = hide(text)
         if masked != text:
             Path(path).write_bytes(masked.encode("utf-8", "surrogateescape"))
+
+
+def _mask_json(path: Path, hide: Callable[[str], str]) -> None:
+    """A JSON output written again with `hide`'s masks in each of its strings, keys too, so it stays JSON whatever
+    escapes a value takes there; one that is not JSON is masked as text."""
+    try:
+        document = json.loads(path.read_bytes())
+    except ValueError:
+        return mask_file(path, hide)
+
+    def masked(item):
+        if isinstance(item, str):
+            return hide(item)
+        if isinstance(item, list):
+            return [masked(part) for part in item]
+        return {hide(key): masked(part) for key, part in item.items()} if isinstance(item, dict) else item
+
+    if (written := masked(document)) != document:
+        path.write_bytes((json.dumps(written, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
+
+
+def scrubbed(paths: list[str], hide: Callable[[str], str] | None, values: dict[str, dict[str, str]],
+             root) -> tuple[list[str], list[dict]]:
+    """The outputs `paths` a run keeps, with no value of the tracked `.env` files (`dotenv_values`) in them: a text
+    output masked as the logs are, a JSON one string by string (`_mask_json`); one whose bytes still hold a value
+    (an index, an object file, a value inside a longer word) is never patched: it is removed, and a gap names it by
+    its path under `root` and the variables that hold the value."""
+    labels = _labels(values) if hide else {}
+    if not labels:
+        return list(paths), []
+    kept, gaps = [], []
+    for item in paths:
+        path = Path(item)
+        if not path.is_file():
+            kept.append(item)
+            continue
+        if path.name.endswith(TEXTS):
+            mask_file(path, hide)
+        elif path.name.endswith(JSONS):
+            _mask_json(path, hide)
+        data = path.read_bytes()
+        names = sorted({label for value, said in labels.items() if value.encode("utf-8") in data for label in said})
+        if not names:
+            kept.append(item)
+            continue
+        path.unlink()
+        try:
+            rel = path.relative_to(root).as_posix()
+        except ValueError:
+            rel = path.name
+        gaps.append({"kind": "output_withheld", "path": rel, "variables": names,
+                     "detail": f"{rel} holds the value of {', '.join(names)}, which Daodan keeps nowhere: the output "
+                               "is not kept"})
+    return kept, gaps
 
 
 def mask_row(row: dict, hide: Callable[[str], str] | None) -> dict:
@@ -1440,11 +1501,11 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             run_copy, mounts, env = copy, [], {"HOME": HOME, **(env or {})} if prepare else dict(env or {})
             joined, said_steps, steps = None, [], list(steps)
 
-            def hidden(row: dict) -> dict:  # what the run printed, masked in its log and its row
+            def hidden(row: dict) -> dict:  # what the run printed, masked in its log, its outputs and its row
                 mask_file(row.get("log"), hide)
-                for path in row.get("outputs") or ():
-                    if str(path).endswith(TEXTS):
-                        mask_file(path, hide)
+                if row.get("outputs"):
+                    row["outputs"], withheld = scrubbed(row["outputs"], hide, values, out_dir)
+                    result["gaps"] = [*(result.get("gaps") or ()), *withheld]
                 return mask_row(row, hide)
 
             def unrun(cause: str) -> list[dict]:

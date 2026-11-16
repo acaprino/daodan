@@ -779,6 +779,45 @@ def test_each_value_of_a_tracked_env_file_is_masked_where_it_stands_as_a_whole()
     assert container.masker({".env": {"TLS": "False", "PORT": "5432"}}) is None and container.masker({}) is None
 
 
+def test_an_output_keeps_no_value_masked_as_text_or_as_json_or_is_withheld(tmp_path):
+    """A `-DVERSION=<value>` build: its log is masked as text; its compilation database as JSON, string by string,
+    so it stays JSON whatever escapes the value takes there; an output whose bytes still hold a value (an index, an
+    object file, a value inside a longer word, a number) is never patched: it is removed, a gap naming the
+    variables and the output."""
+    values = {".env": {"VERSION": "clé-1.28.0", "BUILD": "20261116", "DEBUG": "true"}}
+    hide = container.masker(values)
+    out = tmp_path / "out"
+    (out / "build").mkdir(parents=True)
+    files = {"build/build.log": "-- VERSION clé-1.28.0\n".encode(),
+             "build/compile_commands.json": json.dumps(
+                 [{"directory": "/work/build", "file": "main.cpp", "output": "main.o",
+                   "command": 'c++ -DVERSION=\\"clé-1.28.0\\" -DDEBUG=true -c main.cpp'}], indent=2).encode(),
+             "build/index.scip": b"\n\x08main.cpp\x12\x0bcl\xc3\xa9-1.28.0\x00",
+             "build/count.json": json.dumps({"build": 20261116}).encode(),
+             "build/notes.txt": "vclé-1.28.0\n".encode(),
+             "build/clean.json": json.dumps({"ok": True}).encode()}
+    for rel, data in files.items():
+        (out / rel).write_bytes(data)
+    paths = [str(out / rel) for rel in files]
+    kept, gaps = container.scrubbed(paths, hide, values, out)
+    assert kept == [str(out / rel) for rel in ("build/build.log", "build/compile_commands.json", "build/clean.json")]
+    assert (out / "build/build.log").read_text(encoding="utf-8") == "-- VERSION [.env:VERSION]\n"
+    [database] = json.loads((out / "build/compile_commands.json").read_text(encoding="utf-8"))
+    assert database["command"] == 'c++ -DVERSION=\\"[.env:VERSION]\\" -DDEBUG=true -c main.cpp'
+    assert (out / "build/clean.json").read_bytes() == files["build/clean.json"]  # nothing masked: as written
+    assert [(gap["kind"], gap["path"], gap["variables"]) for gap in gaps] == [
+        ("output_withheld", "build/index.scip", [".env:VERSION"]),
+        ("output_withheld", "build/count.json", [".env:BUILD"]),
+        ("output_withheld", "build/notes.txt", [".env:VERSION"])]
+    assert gaps[0]["detail"] == ("build/index.scip holds the value of .env:VERSION, which Daodan keeps nowhere: the "
+                                 "output is not kept")
+    assert sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file()) == [
+        "build/build.log", "build/clean.json", "build/compile_commands.json"]
+    assert not any(b"cl\xc3\xa9-1.28.0" in p.read_bytes() or b"20261116" in p.read_bytes()
+                   for p in out.rglob("*") if p.is_file())
+    assert container.scrubbed(paths[:1], None, {}, out) == (paths[:1], [])  # no value: nothing read
+
+
 def test_the_readers_on_the_host_never_read_a_file_daodan_never_reads(tmp_path):
     """A step that sources `./.env` does not make the host read it: the readers have no such file."""
     with context_of(tmp_path, {"ci.sh": "#!/bin/sh\n. ./.env\ndocker compose up -d db\n",
@@ -1422,6 +1461,25 @@ class PodTest(unittest.TestCase):
         kept = "\n".join(path.read_text(encoding="utf-8") for path in self.out.rglob("*") if path.is_file())
         assert "changethis" not in kept and "changethis" not in json.dumps(result)
 
+    def test_an_output_that_holds_a_value_after_masking_is_withheld_with_a_gap_and_off_the_record(self):
+        """The execution's `-DVERSION=$SECRET_KEY` build writes its compilation database, masked as JSON, and an
+        index that holds the value, which the run neither keeps, nor lists, nor puts on record: a gap names it."""
+        script = ('mkdir -p ../daodan/out && printf \'[{"command": "c++ -DVERSION=%s -c a.cpp"}]\' "$SECRET_KEY" '
+                  '> ../daodan/out/compile_commands.json && printf "scip\\000%s\\001" "$SECRET_KEY" '
+                  '> ../daodan/out/index.scip')
+        result = container.run_in_container(self.dotenv_project(), ["sh", "-c", script], image="fake/runtime:1",
+                                            out_dir=self.out, engine=self.engine, outputs=["/daodan/out"],
+                                            dotenv_env=[("SECRET_KEY", ".env")])
+        assert result["state"] == "done", result
+        assert [Path(path).name for path in result["outputs"]] == ["compile_commands.json"]
+        [database] = json.loads(Path(result["outputs"][0]).read_text(encoding="utf-8"))
+        assert database["command"] == "c++ -DVERSION=[.env:POSTGRES_PASSWORD,.env:SECRET_KEY] -c a.cpp"
+        [gap] = [gap for gap in result["gaps"] if gap["kind"] == "output_withheld"]
+        assert gap["path"].endswith("index.scip") and gap["variables"] == [".env:POSTGRES_PASSWORD", ".env:SECRET_KEY"]
+        rows = [json.loads(line) for line in (self.out / container.RECORD_NAME).read_text().splitlines()]
+        assert not any("index.scip" in path for row in rows for path in row.get("outputs") or ())
+        assert not any(b"changethis" in path.read_bytes() for path in self.out.rglob("*") if path.is_file())
+
     def test_a_tracked_env_file_whose_values_cannot_be_read_stops_the_run_with_its_cause(self):
         (self.state / "no-dotenv").write_text("", encoding="utf-8")
         result = container.run_in_container(self.dotenv_project(), ["exit", "0"], image="fake/runtime:1",
@@ -1759,6 +1817,40 @@ def test_on_modal_a_tracked_env_file_s_value_reaches_the_service_and_nothing_the
     assert [item["outcome"] for item in said.services] == ["ready"]
     assert json.loads(kept["sql.txt"])["rows"] == [["[.env:DB_NAME]"]]  # the database the value names, masked
     assert secret not in json.dumps([kept, result, said])
+
+
+BUILD = r'''g++ -DVERSION="\"$VERSION\"" -c main.cpp -o /daodan/out/main.o && echo "built $VERSION" && python3 -c '
+import json, os
+json.dump([{"directory": "/work", "file": "main.cpp", "output": "main.o",
+            "command": "g++ -DVERSION=\"\\\"%s\\\"\" -c main.cpp" % os.environ["VERSION"]}],
+          open("/daodan/out/compile_commands.json", "w"))'
+'''
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="runs in the Modal test container")
+def test_on_modal_a_minus_d_build_keeps_its_database_masked_and_withholds_the_object_that_holds_the_value(tmp_path):
+    """A real g++ build with `-DVERSION="<value>"` from the tracked .env, in the driver's Sandboxes: its log and its
+    compilation database (JSON, which escapes the value's `é`) keep the variable's name; the object file, which
+    holds the value's bytes, is not kept: a gap names it and the variable."""
+    from indexers import clang
+    secret = "clé-" + uuid.uuid4().hex[:8]
+    project = git_project(tmp_path / "proj", {".env": f"VERSION={secret}\n", "main.cpp": (
+        "const char *version = VERSION;\nint main() { return version[0]; }\n")}, [".env", "main.cpp"])
+    with the_driver() as modal_pipeline:
+        result = modal_pipeline.sandbox_run(project, ["sh", "-c", f"mkdir -p /daodan/out && {BUILD}"],
+                                            image=clang.IMAGE, out_dir=tmp_path / "out",
+                                            outputs=["/daodan/out"], timeout=300, dotenv_env=[("VERSION", ".env")],
+                                            env={"PATH": "/usr/local/bin:/usr/bin:/bin"})
+    kept = {path.name: path.read_bytes() for path in (tmp_path / "out").rglob("*") if path.is_file()}
+    print(json.dumps({"result": result, "kept": sorted(kept)}, indent=1, default=str), flush=True)
+    assert result["state"] == "done" and result["exit_code"] == 0, result
+    [database] = json.loads(kept["compile_commands.json"])
+    assert database["command"] == 'g++ -DVERSION="\\"[.env:VERSION]\\"" -c main.cpp'
+    assert "main.o" not in kept and [Path(path).name for path in result["outputs"]] == ["compile_commands.json"]
+    [gap] = [gap for gap in result["gaps"] if gap["kind"] == "output_withheld"]
+    assert gap["path"].endswith("main.o") and gap["variables"] == [".env:VERSION"]
+    assert b"built [.env:VERSION]" in b"".join(kept.values())
+    assert not any(secret.encode() in data for data in kept.values()) and secret not in json.dumps(result)
 
 
 @pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="runs in the Modal test container")
