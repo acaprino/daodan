@@ -1,13 +1,13 @@
 {
-  "python": "3.13.14",
-  "system": "Windows",
+  "python": "3.12.3",
+  "system": "Linux",
   "parameters": {
     "repeat": 3,
     "requests_per_repeat": 4,
     "consumers": 2
   },
   "passed": true,
-  "elapsed_seconds": 2.477,
+  "elapsed_seconds": 1.665,
   "checks": [
     "core_without_mcp_or_ui_import",
     "independent_http_bootstrap",

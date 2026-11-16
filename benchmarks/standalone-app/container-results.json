@@ -1,0 +1,57 @@
+{
+  "engine": "Kiri, Docker-compatible API 27.5.1",
+  "platform": "Linux/WSL2",
+  "base_image": "mcr.microsoft.com/playwright/python:v1.64.1-noble@sha256:330d401ae23c905896a0c26c66c36fc971b621519e7b11b435a8328d7bf6e031",
+  "playwright": "1.64.1",
+  "source_base": "4a999670efdb6e790ee93f8e0ed67932674c0537",
+  "red_archive_sha256": "2610b3cefaaa811f9bc3df74e625496516eac0af079030d10701738eaad4da25",
+  "green_archive_sha256": "bad519e607d4cc8580572bcfbf6aaa14bc024a804bdaf57332a49308066989fa",
+  "source_overlays": [
+    "benchmarks/standalone-app/ui_flow.py",
+    "prototypes/daodan-app/index.html",
+    "prototypes/daodan-app/assets/premap-workspace.js",
+    "benchmarks/standalone-app/fixtures/execution_canary.py"
+  ],
+  "policy": {
+    "network": "none",
+    "host_mounts": 0,
+    "memory_bytes": 3221225472,
+    "cpus": 2,
+    "pids": 512,
+    "shm_bytes": 536870912,
+    "cap_drop": [
+      "ALL"
+    ],
+    "security": [
+      "no-new-privileges"
+    ]
+  },
+  "red": {
+    "checks": 52,
+    "failed_checks": [
+      "git_paths_with_object_property_names",
+      "retry_branch_change_invalidated",
+      "retry_branch_roundtrip_invalidated",
+      "pending_start_branch_roundtrip_invalidated",
+      "pending_premap_branch_roundtrip_invalidated",
+      "retry_private_logout_invalidated",
+      "calculator_matches_python_pricing",
+      "money_rounding_matches_python_binary_float"
+    ],
+    "exit_code": 1
+  },
+  "green": {
+    "ui_checks": 52,
+    "ui_failed": 0,
+    "http_checks": 9,
+    "exit_code": 0,
+    "oom_killed": false,
+    "html_sha256": "6286984165ea9d2a25b5b9a433c2b558772a27d65356ddec72ca732ad49264ed",
+    "browser": "156.0.8078.4"
+  },
+  "canary": {
+    "input": "benchmarks/standalone-app/fixtures/execution_canary.py",
+    "container_marker": true,
+    "host_marker": false
+  }
+}

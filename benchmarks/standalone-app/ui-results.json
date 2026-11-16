@@ -1,5 +1,7 @@
 {
-  "artifact": "D:\\Projects\\daodan\\prototypes\\daodan-app\\index.html",
+  "artifact": "prototypes/daodan-app/index.html",
+  "system": "Linux",
+  "python": "3.12.3",
   "parameters": {
     "viewports": [
       [
@@ -11,10 +13,10 @@
         844
       ]
     ],
-    "timer": "Playwright clock.run_for; original setInterval callbacks; no state writes",
+    "timer": "Playwright clock.run_for; original setInterval callbacks; no progress state writes",
     "tick_ms": 2200
   },
-  "sha256": "14bc837a61f2530ac81f2a2862f254b41aed7020ee524cfc97ead1fb8e0a376a",
+  "sha256": "6286984165ea9d2a25b5b9a433c2b558772a27d65356ddec72ca732ad49264ed",
   "checks": [
     {
       "name": "initial_repository",
@@ -140,13 +142,20 @@
       "status": "pass",
       "evidence": {
         "counts": {
-          "files": 2592,
-          "languages": 16,
+          "files": 2738,
+          "languages": 9,
           "units": 5,
           "dependencies": 18
         },
-        "commit": "37c7ee093",
-        "summary": "2592\n\nFile del dataset locale\n\nInventario Daodan incorporato\n16\n\nLinguaggi rilevati\n\nDa estensioni dei file\n5\n\nUnità tecniche\n\nConfermate dai manifest\n18\n\nDichiarazioni di dipendenza\n\nManifest, non risoluzione"
+        "displayed": {
+          "files": 2738,
+          "languages": 9,
+          "units": 5,
+          "dependencies": 18
+        },
+        "embedded_matches_export": true,
+        "commit": "5e49ee96e",
+        "summary": "2738\n\nFile del dataset locale\n\nInventario Daodan incorporato\n9\n\nLinguaggi rilevati\n\nDallo snapshot di Daodan\n5\n\nUnità tecniche\n\nConfermate dai manifest\n18\n\nDichiarazioni di dipendenza\n\nManifest, non risoluzione"
       }
     },
     {
@@ -155,10 +164,26 @@
       "evidence": "endencies\tplugins/codebase-map/viewer/package.json\nlucide-react\t1.70.0\tdependencies\tplugins/codebase-map/viewer/package.json\nreact\t19.3.1\tdependencies\tplugins/codebase-map/viewer/package.json\nreact-dom\t19.3.1\tdependencies\tplugins/codebase-map/viewer/package.json\nvite\t8.3.6\tdevDependencies\tplugins/codebase-map/viewer/package.json\ncodebase-map\tNon separata nel manifest\tplugin\tplugins/senior-review/plugin.toml\nmcp>=2.0.0,<3\tNon separata nel manifest\truntime\tplugins/codebase-map/skills/map/scripts/mcp_server.py\ntree-sitter==0.26.0\tNon separata nel manifest\truntime\tplugins/codebase-map/skills/map/scripts/mcp_server.py\ntree-sitter-language-pack==1.13.5\tNon separata nel manifest\truntime\tplugins/codebase-map/skills/map/scripts/mcp_server.py\nsqlglot>=30\tNon separata nel manifest\truntime\tplugins/codebase-map/skills/map/scripts/mcp_server.py\n\nLe dipendenze di libreria sono fuori dal contratto della pre-mappa. Questa sezione legge i manifest: non dimostra che una libreria sia installata, risolta o chiamata. Gli strumenti che analizzano Vue/Svelte non provano che il repository usi quei framework."
     },
     {
+      "name": "git_paths_with_object_property_names",
+      "status": "pass",
+      "evidence": {
+        "paths": [
+          "constructor/nested/probe.ts",
+          "__proto__/probe.ts",
+          "toString/probe.ts"
+        ],
+        "selected": [
+          "__proto__/probe.ts",
+          "constructor/nested/probe.ts",
+          "toString/probe.ts"
+        ]
+      }
+    },
+    {
       "name": "physical_tree_parent_child",
       "status": "pass",
       "evidence": {
-        "nested_directories": 1071
+        "nested_directories": 1303
       }
     },
     {
@@ -394,6 +419,303 @@
       }
     },
     {
+      "name": "retry_branch_change_invalidated",
+      "status": "pass",
+      "evidence": {
+        "progress": 0,
+        "status": "idle",
+        "stage": "repository",
+        "synthesis_disabled": true
+      }
+    },
+    {
+      "name": "retry_branch_roundtrip_invalidated",
+      "status": "pass",
+      "evidence": {
+        "progress": 0,
+        "status": "idle",
+        "stage": "repository",
+        "synthesis_disabled": true
+      }
+    },
+    {
+      "name": "pending_start_branch_roundtrip_invalidated",
+      "status": "pass",
+      "evidence": {
+        "progress": 0,
+        "status": "idle",
+        "stage": "repository",
+        "synthesis_disabled": true
+      }
+    },
+    {
+      "name": "pending_premap_branch_roundtrip_invalidated",
+      "status": "pass",
+      "evidence": {
+        "progress": 0,
+        "status": "idle",
+        "stage": "repository",
+        "synthesis_disabled": true
+      }
+    },
+    {
+      "name": "retry_private_logout_invalidated",
+      "status": "pass",
+      "evidence": {
+        "progress": 0,
+        "status": "idle",
+        "stage": "repository",
+        "synthesis_disabled": true
+      }
+    },
+    {
+      "name": "calculator_matches_python_pricing",
+      "status": "pass",
+      "evidence": [
+        {
+          "net": 100,
+          "discount": 10,
+          "expected": {
+            "expected": 109.8,
+            "candidate": 97.6
+          },
+          "actual": {
+            "expected": 109.8,
+            "candidate": 97.6
+          },
+          "displayed": [
+            "109,80 €",
+            "97,60 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 200,
+          "discount": 10,
+          "expected": {
+            "expected": 219.6,
+            "candidate": 195.2
+          },
+          "actual": {
+            "expected": 219.6,
+            "candidate": 195.2
+          },
+          "displayed": [
+            "219,60 €",
+            "195,20 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 1.25,
+          "discount": 10,
+          "expected": {
+            "expected": 1.38,
+            "candidate": 1.23
+          },
+          "actual": {
+            "expected": 1.38,
+            "candidate": 1.23
+          },
+          "displayed": [
+            "1,38 €",
+            "1,23 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 1.005,
+          "discount": 0,
+          "expected": {
+            "expected": 1.22,
+            "candidate": 1.22
+          },
+          "actual": {
+            "expected": 1.22,
+            "candidate": 1.22
+          },
+          "displayed": [
+            "1,22 €",
+            "1,22 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 0.015,
+          "discount": 0,
+          "expected": {
+            "expected": 0.01,
+            "candidate": 0.01
+          },
+          "actual": {
+            "expected": 0.01,
+            "candidate": 0.01
+          },
+          "displayed": [
+            "0,01 €",
+            "0,01 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 0.03,
+          "discount": 50,
+          "expected": {
+            "expected": 0.02,
+            "candidate": 0.01
+          },
+          "actual": {
+            "expected": 0.02,
+            "candidate": 0.01
+          },
+          "displayed": [
+            "0,02 €",
+            "0,01 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 19.99,
+          "discount": 15,
+          "expected": {
+            "expected": 20.73,
+            "candidate": 17.07
+          },
+          "actual": {
+            "expected": 20.73,
+            "candidate": 17.07
+          },
+          "displayed": [
+            "20,73 €",
+            "17,07 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 99999.99,
+          "discount": 33,
+          "expected": {
+            "expected": 81739.99,
+            "candidate": 41479.99
+          },
+          "actual": {
+            "expected": 81739.99,
+            "candidate": 41479.99
+          },
+          "displayed": [
+            "81.739,99 €",
+            "41.479,99 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 0.7,
+          "discount": 80,
+          "expected": {
+            "expected": 0.17,
+            "candidate": -0.51
+          },
+          "actual": {
+            "expected": 0.17,
+            "candidate": -0.51
+          },
+          "displayed": [
+            "0,17 €",
+            "-0,51 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 100,
+          "discount": 100,
+          "expected": {
+            "expected": 0.0,
+            "candidate": -122.0
+          },
+          "actual": {
+            "expected": 0,
+            "candidate": -122
+          },
+          "displayed": [
+            "0,00 €",
+            "-122,00 €"
+          ],
+          "pass": true
+        },
+        {
+          "net": 0,
+          "discount": 0,
+          "expected": {
+            "expected": 0.0,
+            "candidate": 0.0
+          },
+          "actual": {
+            "expected": 0,
+            "candidate": 0
+          },
+          "displayed": [
+            "0,00 €",
+            "0,00 €"
+          ],
+          "pass": true
+        }
+      ]
+    },
+    {
+      "name": "money_rounding_matches_python_binary_float",
+      "status": "pass",
+      "evidence": {
+        "values": [
+          0.125,
+          0.375,
+          1.005,
+          1.015,
+          2.675,
+          2.685,
+          -0.125,
+          -0.375,
+          -1.005,
+          -2.675,
+          0.001,
+          -0.001,
+          1e+20,
+          1e+308
+        ],
+        "expected": [
+          0.12,
+          0.38,
+          1.0,
+          1.01,
+          2.67,
+          2.69,
+          -0.12,
+          -0.38,
+          -1.0,
+          -2.67,
+          0.0,
+          -0.0,
+          1e+20,
+          1e+308
+        ],
+        "actual": [
+          0.12,
+          0.38,
+          1,
+          1.01,
+          2.67,
+          2.69,
+          -0.12,
+          -0.38,
+          -1,
+          -2.67,
+          0,
+          -0.0,
+          100000000000000000000,
+          1e+308
+        ]
+      }
+    },
+    {
       "name": "no_document_overflow_or_clipping",
       "status": "pass",
       "evidence": [
@@ -580,22 +902,22 @@
     }
   ],
   "screenshots": [
-    "D:\\Projects\\daodan\\.jcode\\local\\mockups\\daodan-app\\verification\\premap-desktop-repository.png",
-    "D:\\Projects\\daodan\\.jcode\\local\\mockups\\daodan-app\\verification\\premap-mobile-repository.png",
-    "D:\\Projects\\daodan\\.jcode\\local\\mockups\\daodan-app\\verification\\premap-desktop-inventory.png",
-    "D:\\Projects\\daodan\\.jcode\\local\\mockups\\daodan-app\\verification\\premap-mobile-inventory.png",
-    "D:\\Projects\\daodan\\.jcode\\local\\mockups\\daodan-app\\verification\\premap-desktop-analysis.png",
-    "D:\\Projects\\daodan\\.jcode\\local\\mockups\\daodan-app\\verification\\premap-mobile-analysis.png",
-    "D:\\Projects\\daodan\\.jcode\\local\\mockups\\daodan-app\\verification\\premap-desktop-synthesis.png",
-    "D:\\Projects\\daodan\\.jcode\\local\\mockups\\daodan-app\\verification\\premap-mobile-synthesis.png"
+    "/out/screenshots/premap-desktop-repository.png",
+    "/out/screenshots/premap-mobile-repository.png",
+    "/out/screenshots/premap-desktop-inventory.png",
+    "/out/screenshots/premap-mobile-inventory.png",
+    "/out/screenshots/premap-desktop-analysis.png",
+    "/out/screenshots/premap-mobile-analysis.png",
+    "/out/screenshots/premap-desktop-synthesis.png",
+    "/out/screenshots/premap-mobile-synthesis.png"
   ],
   "pageerrors": [],
   "console_errors": [],
   "external_requests": [],
-  "browser": "157.0.8103.51",
+  "browser": "156.0.8078.4",
   "limitations": [
-    "Desktop Chrome viewport emulation, not physical mobile hardware.",
-    "No backend/model/container execution: progression uses original prototype timer callbacks accelerated by Playwright clock."
+    "Desktop Chromium viewport emulation, not physical mobile hardware.",
+    "Benchmark and browser run in the Daodan container; no backend/model execution by the prototype. Progression uses original timer callbacks accelerated by Playwright clock."
   ],
   "visual_observations": [
     "Eight canonical desktop/mobile screenshots cover repository, inventory, pipeline and synthesis.",

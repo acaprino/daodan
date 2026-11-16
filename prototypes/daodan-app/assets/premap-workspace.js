@@ -14,6 +14,7 @@ const PREMAP = {
 
 let repositoryError = '';
 let repositoryBusy = false;
+let repositoryGeneration = 0;
 const PRIVATE_REPOSITORY_DEMO = {
   slug: 'organizzazione-demo/progetto-privato',
   visibility: 'private',
@@ -27,6 +28,8 @@ function preferredBranch(branches, defaultBranch) {
 }
 
 function invalidateRepositoryRun() {
+  repositoryGeneration++;
+  runLoading = false;
   state.progress = 0;
   state.runStatus = 'idle';
   state.logs = [];
@@ -158,12 +161,12 @@ function directoryTree() {
   const query = state.treeSearch.trim().toLowerCase();
   const paths = PREMAP.files.filter(p => !query || p.toLowerCase().includes(query));
   if (!paths.length) return '<div class="empty"><p>Nessun percorso corrisponde alla ricerca.</p><button class="textbutton" data-action="clear-tree-search">Azzera ricerca</button></div>';
-  const root = { children: {}, count: paths.length };
+  const root = { children: Object.create(null), count: paths.length };
   for (const path of paths) {
     let node = root;
     const parts = path.split('/');
     parts.forEach((part, i) => {
-      node.children[part] ||= { children: {}, count: 0, path: parts.slice(0, i + 1).join('/'), file: i === parts.length - 1 };
+      node.children[part] ||= { children: Object.create(null), count: 0, path: parts.slice(0, i + 1).join('/'), file: i === parts.length - 1 };
       node = node.children[part];
       node.count++;
     });
@@ -440,9 +443,11 @@ document.addEventListener('click', async event => {
   }
   if (button.dataset.action === 'use-repository') {
     if (!state.repository || (state.repository.visibility === 'private' && !state.mockGithubLogin)) return;
+    const generation = repositoryGeneration;
     button.disabled = true;
     button.innerHTML = icon('spinner') + 'Preparazione anteprima…';
     await new Promise(resolve => setTimeout(resolve, 450));
+    if (generation !== repositoryGeneration) return;
     if (!state.repository || (state.repository.visibility === 'private' && !state.mockGithubLogin)) {
       state.analysisStage = 'repository';
       render();
