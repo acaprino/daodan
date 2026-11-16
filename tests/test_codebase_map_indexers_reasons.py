@@ -20,6 +20,7 @@ import engine_pass  # noqa: E402
 import languages  # noqa: E402
 import resolve_edges  # noqa: E402
 import snapshot  # noqa: E402
+import source_files  # noqa: E402
 from indexers import css, go, rust, vue_svelte  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
@@ -181,8 +182,9 @@ def test_every_markup_suffix_of_the_snapshot_is_read_or_declared_missing_with_it
               if language == languages.Language.MARKUP}
     assert markup <= set(css.READS)
     unread = sorted(markup - set(css.MARKUP) - set(css.COMPONENTS))
-    assert unread == [".cshtml", ".ftl", ".hbs", ".jsp", ".jspx", ".liquid", ".mustache", ".razor", ".twig", ".vm",
-                      ".xhtml"]
+    assert unread == [".cshtml", ".erb", ".ftl", ".handlebars", ".hbs", ".j2", ".jinja", ".jsp", ".jspx",
+                      ".liquid", ".mustache", ".njk", ".razor", ".twig", ".vm", ".xhtml"]
+    assert {".pug", ".jade"} <= source_files.PRESENTATION_EXTENSIONS <= set(css.READS)  # file-level entries
     files = [f"views/page{suffix}" for suffix in unread]
     _project(tmp_path, {rel: "<p class=\"card\">x</p>\n" for rel in files})
     parsed = css.parse(tmp_path, files)

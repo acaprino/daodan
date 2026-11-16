@@ -137,8 +137,9 @@ SUPPORTED_EXTENSIONS: dict[str, str] = {
     ".vue": Language.VUE,
     ".svelte": Language.SVELTE,
     # Markup: the rules of its `<style>` blocks.
-    **dict.fromkeys((".astro", ".cshtml", ".ejs", ".ftl", ".hbs", ".htm", ".html", ".jsp", ".jspx", ".liquid",
-                     ".mustache", ".razor", ".twig", ".vm", ".xhtml"), Language.MARKUP),
+    **dict.fromkeys((".astro", ".cshtml", ".ejs", ".erb", ".ftl", ".handlebars", ".hbs", ".htm", ".html", ".j2",
+                     ".jinja", ".jsp", ".jspx", ".liquid", ".mustache", ".njk", ".razor", ".twig", ".vm",
+                     ".xhtml"), Language.MARKUP),
     # Stylesheets. Indented Sass is read as the SCSS its indentation implies;
     # PostCSS sheets are CSS.
     ".css": Language.CSS,

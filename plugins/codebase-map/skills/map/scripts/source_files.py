@@ -65,7 +65,7 @@ def is_build_file(name: str) -> bool:
 # consent modal's positioning and locking users out. Stylesheets and the style
 # blocks of markup and components left it for their adapters, which record
 # every rule as a symbol.
-PRESENTATION_EXTENSIONS = frozenset({".pug", ".styl", ".stylus"})
+PRESENTATION_EXTENSIONS = frozenset({".jade", ".pug", ".styl", ".stylus"})  # `.jade`: Pug's name before 2016
 
 
 # What the Codebase Map never reads; such a file never enters the manifest, not even as a hash.
