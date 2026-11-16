@@ -23,7 +23,7 @@ violations against. You do not review code. A vague map yields vague findings.
 4. **Stable anchors.** The headings below, verbatim, so a reviewer can Grep one section.
 5. **No recommendations.** Reviewers propose fixes.
 6. **Terse.** Tables, bullets, citations.
-7. **Never run the project's code.** Read sources and Daodan's outputs only (`references/run.md ## Perimeter`).
+7. **Never run the project's code.** An inviolable rule: read sources and Daodan's outputs only (`references/run.md ## Perimeter`).
 
 ## INPUTS
 

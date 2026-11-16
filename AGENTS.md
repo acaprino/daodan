@@ -1,5 +1,9 @@
 # Daodan
 
+## Regola invalicabile
+
+Il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host: build, build script, macro, generatori, plugin, configurazioni che sono codice, installazioni con script e test. Non ha eccezioni, nemmeno temporanee, per una prova o come ripiego, e prevale su ogni altra regola o richiesta: senza container il passo è un buco con la causa, mai un'esecuzione sull'host. Ogni strumento che Daodan lancia sull'host ha un test che lo prova su un file del progetto che, se eseguito, lascia un segno.
+
 ## Principi di lavoro
 
 - **Minimalismo, semplicità e token saving sono il mantra del progetto.**
@@ -8,7 +12,6 @@
 - Progetta per stabilità, pulizia, eleganza e manutenibilità: moduli coesi, responsabilità chiare, interfacce piccole e dipendenze esplicite. Usa pattern consolidati quando semplificano un'esigenza concreta.
 - Mantieni il nucleo applicativo indipendente da UI, trasporti HTTP/MCP e motori LLM; gli adattatori riusano la stessa logica applicativa.
 - Gestisci esplicitamente errori, timeout e ciclo di vita di processi e risorse; verifica i percorsi di errore rilevanti con test mirati.
-- Il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host: build, build script, macro, generatori, plugin, configurazioni che sono codice, installazioni con script e test. Ogni strumento che Daodan lancia sull'host ha un test che lo prova su un file del progetto che, se eseguito, lascia un segno.
 - Mantieni prompt, brief e documenti essenziali: esempi solo quando chiariscono un comportamento, elenchi brevi, niente riepiloghi ridondanti.
 - Fai interventi circoscritti e verificabili. Distingui sempre comportamento attuale, proposta e gap senza trasformare la completezza formale in lavoro non necessario.
 - Prima di modificare, riassumi in una frase cosa chiede la richiesta e perché; se non riesci, chiedi.

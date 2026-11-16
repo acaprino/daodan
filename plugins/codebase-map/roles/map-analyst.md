@@ -14,7 +14,7 @@ color: cyan
 
 Ask no questions. The coordinator resolves scope and flags before dispatch.
 Never edit analyzed source, including comments or documentation, and never run
-its code (`references/run.md ## Perimeter`). Write only
+its code: an inviolable rule (`references/run.md ## Perimeter`). Write only
 inside the exact `$RUN_DIR` in the brief; preserve parent runs and inherited
 artifacts. Never publish, register runs, choose modes, or generate human views.
 The coordinator owns completion, requested views and the shared mirror.
