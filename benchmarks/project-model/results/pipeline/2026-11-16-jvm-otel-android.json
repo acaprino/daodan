@@ -1,0 +1,3937 @@
+{
+ "real-svc-otel-demo": {
+  "premap": {
+   "languages": {
+    "given": true,
+    "expected": 23,
+    "found": 23,
+    "found_normalised": 23,
+    "missed": [],
+    "extra": [
+     "Gemfile.lock",
+     "Gettext Catalog",
+     "Go Checksums",
+     "Go Module",
+     "Gradle",
+     "Gradle Kotlin DSL",
+     "Ignore List",
+     "INI",
+     "Jinja",
+     "JSON",
+     "JSON with Comments",
+     "Markdown",
+     "Pip Requirements",
+     "robots.txt",
+     "SVG",
+     "TOML",
+     "XML",
+     "YAML"
+    ],
+    "wrong": []
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 30
+   },
+   "excluded": {
+    "given": true,
+    "expected": 56,
+    "found": 48,
+    "found_normalised": 48,
+    "missed": [
+     "src/frontend/protos/demo.ts",
+     "src/react-native-app/protos/demo.ts",
+     "src/agent/fixtures/vcr_cassettes/",
+     ".chloggen/",
+     ".github/ISSUE_TEMPLATE/",
+     ".github/PULL_REQUEST_TEMPLATE.md",
+     "AGENTS.md",
+     "CLAUDE.md"
+    ],
+    "extra": [
+     ".gitattributes",
+     ".gitignore",
+     "package-lock.json",
+     "src/accounting/.gitignore",
+     "src/flagd-ui/.gitignore",
+     "src/frontend/package-lock.json",
+     "src/frontend/styles/style.d.ts",
+     "src/payment/package-lock.json",
+     "src/quote/.gitignore",
+     "src/react-native-app/.gitignore",
+     "src/react-native-app/package-lock.json",
+     "src/shipping/Cargo.lock",
+     "src/telemetry-docs/templates/markdown/readme.md.j2"
+    ],
+    "wrong": []
+   },
+   "units": {
+    "given": true,
+    "expected": 27,
+    "found": 25,
+    "found_normalised": 25,
+    "missed": [
+     "source-tree@src/shared"
+    ],
+    "extra": [],
+    "wrong": [
+     {
+      "item": "cmake-target@src/currency/genproto:demo-proto",
+      "fields": {
+       "name": {
+        "expected": "demo-proto",
+        "got": "currency-proto"
+       }
+      },
+      "same_after_normalisation": false
+     }
+    ]
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 4,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [
+     "python-project@src/agent > src/shared",
+     "cmake-target@src/currency:currency > demo-proto",
+     "python-project@src/mcp > src/shared"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": true,
+    "expected": 45,
+    "found": 7,
+    "found_normalised": 7,
+    "missed": [
+     "gradle-project@src/ad > src/ad/src/main/java",
+     "python-project@src/agent > src/agent",
+     "python-project@src/chatbot > src/chatbot",
+     "cmake-target@src/currency:currency > src/currency/src",
+     "cmake-target@src/currency/genproto:demo-proto > src/currency/proto",
+     "bundler-project@src/email > src/email",
+     "mix-project@src/flagd-ui > src/flagd-ui/lib",
+     "mix-project@src/flagd-ui > src/flagd-ui/test",
+     "gradle-project@src/fraud-detection > src/fraud-detection/src/main/kotlin",
+     "npm-package@src/frontend > src/frontend/components",
+     "npm-package@src/frontend > src/frontend/cypress",
+     "npm-package@src/frontend > src/frontend/gateways",
+     "npm-package@src/frontend > src/frontend/pages",
+     "npm-package@src/frontend > src/frontend/protos",
+     "npm-package@src/frontend > src/frontend/providers",
+     "npm-package@src/frontend > src/frontend/services",
+     "npm-package@src/frontend > src/frontend/styles",
+     "npm-package@src/frontend > src/frontend/types",
+     "npm-package@src/frontend > src/frontend/utils",
+     "python-project@src/load-generator > src/load-generator",
+     "python-project@src/mcp > src/mcp",
+     "npm-package@src/payment > src/payment",
+     "composer-package@src/quote > src/quote/app",
+     "composer-package@src/quote > src/quote/public",
+     "composer-package@src/quote > src/quote/src",
+     "npm-package@src/react-native-app > src/react-native-app/app",
+     "npm-package@src/react-native-app > src/react-native-app/components",
+     "npm-package@src/react-native-app > src/react-native-app/constants",
+     "npm-package@src/react-native-app > src/react-native-app/gateways",
+     "npm-package@src/react-native-app > src/react-native-app/hooks",
+     "npm-package@src/react-native-app > src/react-native-app/protos",
+     "npm-package@src/react-native-app > src/react-native-app/providers",
+     "npm-package@src/react-native-app > src/react-native-app/types",
+     "npm-package@src/react-native-app > src/react-native-app/utils",
+     "gradle-project@src/recommendation > src/recommendation/src/main/java",
+     "gradle-project@src/recommendation > src/recommendation/src/test/java",
+     "source-tree@src/shared > src/shared",
+     "python-project@test/telemetry > test/telemetry"
+    ],
+    "extra": [
+     "dotnet-project@src/cart/src > src/cart/src/cartstore",
+     "dotnet-project@src/cart/src > src/cart/src/services"
+    ],
+    "wrong": []
+   },
+   "units.config": {
+    "given": true,
+    "expected": 48,
+    "found": 5,
+    "found_normalised": 5,
+    "missed": [
+     "go-module@internal/tools > build_tags",
+     "dotnet-project@src/accounting > entry_files",
+     "dotnet-project@src/accounting > grpc_services",
+     "dotnet-project@src/accounting > protos",
+     "gradle-project@src/ad > compile_tasks",
+     "gradle-project@src/ad > entry_files",
+     "gradle-project@src/ad > source_sets",
+     "python-project@src/agent > entry_files",
+     "python-project@src/agent > packages",
+     "dotnet-project@src/cart/src > entry_files",
+     "dotnet-project@src/cart/src > grpc_services",
+     "dotnet-project@src/cart/src > protos",
+     "python-project@src/chatbot > entry_files",
+     "python-project@src/chatbot > packages",
+     "go-module@src/checkout > entry_files",
+     "cmake-target@src/currency:currency > entry_files",
+     "cmake-target@src/currency:currency > imported_links",
+     "cmake-target@src/currency:currency > include_dirs",
+     "cmake-target@src/currency:currency > sources",
+     "cmake-target@src/currency:currency > type",
+     "cmake-target@src/currency/genproto:demo-proto > imported_links",
+     "cmake-target@src/currency/genproto:demo-proto > include_dirs",
+     "cmake-target@src/currency/genproto:demo-proto > protos",
+     "cmake-target@src/currency/genproto:demo-proto > sources",
+     "cmake-target@src/currency/genproto:demo-proto > type",
+     "bundler-project@src/email > entry_files",
+     "mix-project@src/flagd-ui > entry_files",
+     "gradle-project@src/fraud-detection > compile_tasks",
+     "gradle-project@src/fraud-detection > entry_files",
+     "gradle-project@src/fraud-detection > source_sets",
+     "python-project@src/load-generator > entry_files",
+     "python-project@src/mcp > entry_files",
+     "python-project@src/mcp > packages",
+     "npm-package@src/payment > protos",
+     "go-module@src/product-catalog > entry_files",
+     "composer-package@src/quote > entry_files",
+     "composer-package@src/quote > paths",
+     "npm-package@src/react-native-app > paths",
+     "gradle-project@src/recommendation > compile_tasks",
+     "gradle-project@src/recommendation > entry_files",
+     "gradle-project@src/recommendation > source_sets",
+     "cargo-crate@src/shipping > entry_files"
+    ],
+    "extra": [],
+    "wrong": [
+     {
+      "item": "go-module@internal/tools > packages",
+      "fields": {
+       "packages": {
+        "expected": [
+         "github.com/open-telemetry/opentelemetry-specification/internal/tools"
+        ],
+        "got": []
+       }
+      },
+      "same_after_normalisation": false
+     }
+    ]
+   },
+   "workspace": {
+    "given": true,
+    "expected": 2,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [
+     "dotnet@src/accounting"
+    ],
+    "extra": [
+     "gradle@src/ad",
+     "gradle@src/fraud-detection",
+     "gradle@src/recommendation",
+     "cmake@src/currency"
+    ],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": true,
+    "expected": 3,
+    "found": 2,
+    "found_normalised": 2,
+    "missed": [
+     "dotnet@src/accounting > src/accounting"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 64,
+    "found": 17,
+    "found_normalised": 17,
+    "missed": [
+     "dotnet@src/accounting/Dockerfile#builder",
+     "dotnet@src/accounting/Dockerfile#stage 2",
+     "dotnet@src/cart/src/Dockerfile#base",
+     "dotnet@src/cart/src/Dockerfile#stage 4",
+     "java@src/ad/Dockerfile#builder",
+     "java@src/ad/Dockerfile#stage 1",
+     "java@src/ad/.java-version",
+     "java@src/recommendation/Dockerfile#builder",
+     "java@src/recommendation/Dockerfile#stage 1",
+     "gradle@src/fraud-detection/Dockerfile",
+     "java@src/fraud-detection/Dockerfile",
+     "python@src/load-generator/Dockerfile",
+     "python@src/telemetry-docs/Dockerfile",
+     "python@src/agent/requirements.txt",
+     "python@src/chatbot/requirements.txt",
+     "python@src/mcp/requirements.txt",
+     "python@src/load-generator/requirements.txt",
+     "python@src/telemetry-docs/requirements.txt",
+     "python@test/telemetry/requirements.txt",
+     "python@.github/workflows/checks.yml",
+     "go@src/checkout/Dockerfile",
+     "go@src/checkout/genproto/Dockerfile",
+     "go@src/product-catalog/Dockerfile",
+     "go@src/product-catalog/genproto/Dockerfile",
+     "go@.github/workflows/checks.yml",
+     "go@.github/workflows/codeql-analysis.yml",
+     "go@.github/workflows/changelog.yml",
+     "node@src/frontend/Dockerfile#builder",
+     "node@src/frontend/Dockerfile#stage 2",
+     "node@src/frontend/genproto/Dockerfile",
+     "node@src/payment/Dockerfile#builder",
+     "node@src/payment/Dockerfile#stage 2",
+     "node@.github/workflows/react-native-build.yml",
+     "npm@src/react-native-app/android.Dockerfile",
+     "cypress@src/frontend/Dockerfile.cypress",
+     "ruby@src/email/Dockerfile",
+     "elixir@src/flagd-ui/Dockerfile",
+     "erlang@src/flagd-ui/Dockerfile",
+     "elixir@src/flagd-ui/mix.exs",
+     "elixir@.github/workflows/fossa.yml",
+     "erlang@.github/workflows/fossa.yml",
+     "php@src/quote/Dockerfile",
+     "composer@src/quote/Dockerfile",
+     "rust@src/shipping/Dockerfile",
+     "cmake@src/currency/CMakeLists.txt#cmake_minimum_required",
+     "cmake@src/currency/genproto/CMakeLists.txt#cmake_minimum_required",
+     "weaver@src/telemetry-docs/Dockerfile"
+    ],
+    "extra": [
+     "rust-edition@src/shipping/Cargo.toml",
+     "dotnet-target@src/accounting/Accounting.csproj#TargetFramework",
+     "dotnet-target@src/cart/src/cart.csproj#TargetFramework",
+     "dotnet-target@src/cart/tests/cart.tests.csproj#TargetFramework",
+     "kotlin@src/fraud-detection/build.gradle.kts",
+     "typescript@src/frontend/package.json",
+     "typescript@src/react-native-app/package.json"
+    ],
+    "wrong": []
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 18
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 30
+   },
+   "services": {
+    "given": false,
+    "expected": 15
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.023,
+    "source": "modules.py@daodan/module-graph/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "python-build@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.078,
+    "source": "requirements@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.049,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.019,
+    "source": "npm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "npm-tests@daodan/premap/v5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "jvm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "project-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "scanner",
+    "seconds": 23.218,
+    "source": "go-enry@v2.9.6",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 71.511,
+    "source": "renovate@44.239.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 36.834,
+    "source": "go@1.27.3",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 26.846,
+    "source": "cargo@1.99.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "uv@0.11.28",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 15.83,
+    "source": "tsc@6.0.3",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 9.089,
+    "source": "npm@11.19.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 10.648,
+    "source": "cmake@4.4.5",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 2.849,
+    "source": "make@4.3",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 81.391,
+    "source": "gradle@9.9.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "maven@3.10.0",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 22.021,
+    "source": "dotnet@10.0.404",
+    "state": "ran"
+   }
+  ],
+  "gaps": [
+   {
+    "detail": "Directory scope cannot distinguish build ownership: react-native-app@src/react-native-app, react-native-app@src/react-native-app+",
+    "kind": "ownership_ambiguous",
+    "path": "src/react-native-app",
+    "source": "modules.py@daodan/module-graph/v1"
+   },
+   {
+    "detail": "install scripts are not run (cypress, protobufjs): what they generate is unknown",
+    "kind": "not_executed",
+    "path": "src/frontend/package.json",
+    "source": "npm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "install scripts are not run (protobufjs): what they generate is unknown",
+    "kind": "not_executed",
+    "path": "src/payment/package.json",
+    "source": "npm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "kind": "toolchain_undeclared",
+    "path": "src/ad",
+    "source": "jvm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "kind": "toolchain_undeclared",
+    "path": "src/fraud-detection",
+    "source": "jvm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "kind": "toolchain_undeclared",
+    "path": "src/recommendation",
+    "source": "jvm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "its packages are not installed: no workspace above names this folder",
+    "kind": "restore_failed",
+    "manager": "npm",
+    "path": "src/frontend",
+    "source": "tsc@6.0.3"
+   },
+   {
+    "detail": "its packages are not installed: no workspace above names this folder",
+    "kind": "restore_failed",
+    "manager": "npm",
+    "path": "src/payment",
+    "source": "tsc@6.0.3"
+   },
+   {
+    "detail": "its packages are not installed: no workspace above names this folder",
+    "kind": "restore_failed",
+    "manager": "npm",
+    "path": "src/react-native-app",
+    "source": "tsc@6.0.3"
+   },
+   {
+    "detail": "tsc --showConfig: tsconfig.json(2,14): error TS6053: File 'expo/tsconfig.base' not found.",
+    "kind": "model_failed",
+    "path": "src/react-native-app/tsconfig.json",
+    "source": "tsc@6.0.3"
+   },
+   {
+    "detail": "cmake configure: CMake Error at CMakeLists.txt:7 (find_package): Could not find a package configuration file provided by \"Protobuf\" with any of the following names: Protobuf.cps protobuf.cps ProtobufConfig.cmake protobuf-config.cmake Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set \"Protobuf_DIR\" to a directory containing one of the above files. If \"Protobuf\" provides a separate development package or SDK, be sure it has been installed. -- Configuring incomplete, errors occurred!",
+    "kind": "model_failed",
+    "path": "src/currency",
+    "source": "cmake@4.4.5"
+   },
+   {
+    "detail": "cmake configure: CMake Error at CMakeLists.txt:4 (find_package): Could not find a package configuration file provided by \"Protobuf\" with any of the following names: Protobuf.cps protobuf.cps ProtobufConfig.cmake protobuf-config.cmake Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set \"Protobuf_DIR\" to a directory containing one of the above files. If \"Protobuf\" provides a separate development package or SDK, be sure it has been installed. -- Configuring incomplete, errors occurred!",
+    "kind": "model_failed",
+    "path": "src/currency/genproto",
+    "source": "cmake@4.4.5"
+   },
+   {
+    "detail": "2 Python files that no unit of kind python-project holds",
+    "files": 2,
+    "kind": "code_outside_units",
+    "language": "Python",
+    "path": "internal/tools",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Python files that no unit of kind python-project holds",
+    "files": 1,
+    "kind": "code_outside_units",
+    "language": "Python",
+    "path": "src/shared",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Batchfile files and no analyzer lists the language: their code is in no graph",
+    "files": 1,
+    "kind": "no_analyzer",
+    "language": "Batchfile",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "30 Dockerfile files and no analyzer lists the language: their code is in no graph",
+    "files": 30,
+    "kind": "no_analyzer",
+    "language": "Dockerfile",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "38 Elixir files and no analyzer lists the language: their code is in no graph",
+    "files": 38,
+    "kind": "no_analyzer",
+    "language": "Elixir",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "6 PHP files and no analyzer lists the language: their code is in no graph",
+    "files": 6,
+    "kind": "no_analyzer",
+    "language": "PHP",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "3 Ruby files and no analyzer lists the language: their code is in no graph",
+    "files": 3,
+    "kind": "no_analyzer",
+    "language": "Ruby",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "3 Shell files and no analyzer lists the language: their code is in no graph",
+    "files": 3,
+    "kind": "no_analyzer",
+    "language": "Shell",
+    "source": "premap@daodan/premap/v1"
+   }
+  ],
+  "units": 26,
+  "toolchains": [
+   {
+    "declared_in": "internal/tools/go.mod",
+    "sources": [
+     "go@1.27.3",
+     "renovate@44.239.1"
+    ],
+    "tool": "go",
+    "version": "1.12"
+   },
+   {
+    "declared_in": "src/checkout/go.mod",
+    "sources": [
+     "go@1.27.3",
+     "renovate@44.239.1"
+    ],
+    "tool": "go",
+    "version": "1.26.0"
+   },
+   {
+    "declared_in": "src/product-catalog/go.mod",
+    "sources": [
+     "go@1.27.3",
+     "renovate@44.239.1"
+    ],
+    "tool": "go",
+    "version": "1.26.0"
+   },
+   {
+    "declared_in": "src/shipping/Cargo.toml",
+    "sources": [
+     "cargo@1.99.1"
+    ],
+    "tool": "rust-edition",
+    "version": "2021"
+   },
+   {
+    "declared_in": "src/ad/build.gradle#sourceCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "src/ad/build.gradle#targetCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "src/fraud-detection/build.gradle.kts#kotlin.compilerOptions.jvmTarget",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "src/recommendation/build.gradle#options.release",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "src/ad/gradle/wrapper/gradle-wrapper.properties#distributionUrl",
+    "line": 3,
+    "sources": [
+     "jvm-files@daodan/premap/v1",
+     "renovate@44.239.1"
+    ],
+    "tool": "gradle",
+    "version": "9.9.0"
+   },
+   {
+    "declared_in": "src/fraud-detection/gradle/wrapper/gradle-wrapper.properties#distributionUrl",
+    "line": 3,
+    "sources": [
+     "jvm-files@daodan/premap/v1",
+     "renovate@44.239.1"
+    ],
+    "tool": "gradle",
+    "version": "9.9.0"
+   },
+   {
+    "declared_in": "src/recommendation/gradle/wrapper/gradle-wrapper.properties#distributionUrl",
+    "line": 3,
+    "sources": [
+     "jvm-files@daodan/premap/v1",
+     "renovate@44.239.1"
+    ],
+    "tool": "gradle",
+    "version": "9.9.0"
+   },
+   {
+    "declared_in": "src/accounting/Accounting.csproj#TargetFramework",
+    "line": 5,
+    "sources": [
+     "project-files@daodan/premap/v1"
+    ],
+    "tool": "dotnet-target",
+    "version": "net10.0"
+   },
+   {
+    "declared_in": "src/cart/src/cart.csproj#TargetFramework",
+    "line": 4,
+    "sources": [
+     "project-files@daodan/premap/v1"
+    ],
+    "tool": "dotnet-target",
+    "version": "net10.0"
+   },
+   {
+    "declared_in": "src/cart/tests/cart.tests.csproj#TargetFramework",
+    "line": 4,
+    "sources": [
+     "project-files@daodan/premap/v1"
+    ],
+    "tool": "dotnet-target",
+    "version": "net10.0"
+   },
+   {
+    "declared_in": "src/quote/composer.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "php",
+    "version": ">= 8.5"
+   },
+   {
+    "declared_in": "src/agent/Dockerfile",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "python",
+    "version": "3.14"
+   },
+   {
+    "declared_in": "src/chatbot/Dockerfile",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "python",
+    "version": "3.14"
+   },
+   {
+    "declared_in": "src/mcp/Dockerfile",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "python",
+    "version": "3.14"
+   },
+   {
+    "declared_in": "src/opamp-server/Dockerfile",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "go",
+    "version": "1.27.1"
+   },
+   {
+    "declared_in": "test/telemetry/Dockerfile",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "python",
+    "version": "3.12"
+   },
+   {
+    "declared_in": "src/fraud-detection/build.gradle.kts",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "kotlin",
+    "version": "2.4.21"
+   },
+   {
+    "declared_in": "src/frontend/package.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "typescript",
+    "version": "6.0.3"
+   },
+   {
+    "declared_in": "src/react-native-app/package.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "typescript",
+    "version": "~6.0.3"
+   },
+   {
+    "declared_in": "src/react-native-app/.ruby-version",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "ruby",
+    "version": "4.0.5"
+   }
+  ],
+  "steps": {
+   "scan": {
+    "modules": 21,
+    "graph": "/runs/real-svc-otel-demo/modules.json",
+    "action": "rebuilt",
+    "units": 26,
+    "gaps": 20,
+    "premap": "/runs/real-svc-otel-demo/premap.json"
+   },
+   "analyze": {
+    "pass": true,
+    "manifest_digest": "40f089225a9920b5fd5836e990837f9d830f37fd371175607aad2cc8beb66547",
+    "languages": {
+     "c": {
+      "state": "unavailable",
+      "engine": "scip-clang",
+      "reason": "none of the 1 c files was parsed by the snapshot (lexical: 1)",
+      "install": "install the snapshot's parser packages (requirements.txt beside snapshot.py) and write the snapshot again"
+     },
+     "go": {
+      "state": "fresh",
+      "engine": "scip-go@v0.2.9"
+     },
+     "rust": {
+      "state": "fresh",
+      "engine": "scip-rust@2026-11-09"
+     },
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a"
+     },
+     "python": {
+      "state": "fresh",
+      "engine": "scip-python@0.6.8"
+     },
+     "cpp": {
+      "state": "failed",
+      "engine": "scip-clang",
+      "reason": "scip-clang wrote no index (src/currency: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded): compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:7 (find_package):\n  Could not find a package configuration file provided by \"Protobuf\" with any\n  of the following names:\n\n    ProtobufConfig.cmake\n    protobuf-config.cmake\n\n  Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set\n  \"Protobuf_DIR\" to a directory containing one of the above files.  If\n  \"Protobuf\" provides a separate development package or SDK, be sure it has\n  been installed.\n\n\n-- Configuring incomplete, errors occurred!"
+     },
+     "java": {
+      "state": "fresh",
+      "engine": "scip-java@0.14.2"
+     },
+     "typescript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2"
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2"
+     },
+     "csharp": {
+      "state": "fresh",
+      "engine": "scip-dotnet@0.2.16"
+     },
+     "kotlin": {
+      "state": "failed",
+      "engine": "scip-kotlin",
+      "reason": "none of the 3 kotlin files is in the index: Gradle script: no KotlinCompile task compiles it (2), no Kotlin compile task of the build lists it (1)"
+     }
+    },
+    "engines": {
+     "scip-go": {
+      "engine": "scip-go@v0.2.9",
+      "available": true,
+      "languages": {
+       "go": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-go",
+       "peak_mb": 314,
+       "seconds": 19.4,
+       "version": "v0.2.9"
+      }
+     },
+     "scip-rust": {
+      "engine": "scip-rust@2026-11-09",
+      "available": true,
+      "languages": {
+       "rust": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "rust-analyzer",
+       "peak_mb": 1949,
+       "seconds": 9.1,
+       "version": "2026-11-09"
+      }
+     },
+     "stylesheet": {
+      "engine": "stylesheet@145560a4592a",
+      "available": true,
+      "languages": {
+       "stylesheet": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "codebase-map stylesheet.py + typescript + tailwindcss",
+       "peak_mb": 266,
+       "seconds": 2.0,
+       "version": "145560a4592a",
+       "versions": "e62b3f368913 + 5.9.3 + None"
+      }
+     },
+     "scip-python": {
+      "engine": "scip-python@0.6.8",
+      "available": true,
+      "languages": {
+       "python": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-python",
+       "peak_mb": 313,
+       "seconds": 6.1,
+       "version": "0.6.8"
+      },
+      "gaps": [
+       {
+        "detail": "the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+        "kind": "manifest_unread",
+        "path": "src/agent/requirements.in"
+       },
+       {
+        "detail": "the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+        "kind": "manifest_unread",
+        "path": "src/chatbot/requirements.in"
+       },
+       {
+        "detail": "the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+        "kind": "manifest_unread",
+        "path": "src/load-generator/requirements.in"
+       },
+       {
+        "detail": "the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+        "kind": "manifest_unread",
+        "path": "src/mcp/requirements.in"
+       },
+       {
+        "detail": "the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+        "kind": "manifest_unread",
+        "path": "src/telemetry-docs/requirements.in"
+       },
+       {
+        "detail": "the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+        "kind": "manifest_unread",
+        "path": "test/telemetry/requirements.in"
+       }
+      ]
+     },
+     "scip-clang": {
+      "engine": "scip-clang@v0.4.1",
+      "available": false,
+      "reason": "scip-clang wrote no index (src/currency: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded): compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:7 (find_package):\n  Could not find a package configuration file provided by \"Protobuf\" with any\n  of the following names:\n\n    ProtobufConfig.cmake\n    protobuf-config.cmake\n\n  Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set\n  \"Protobuf_DIR\" to a directory containing one of the above files.  If\n  \"Protobuf\" provides a separate development package or SDK, be sure it has\n  been installed.\n\n\n-- Configuring incomplete, errors occurred!",
+      "indexer": {
+       "name": "scip-clang",
+       "peak_mb": null,
+       "seconds": 0.4,
+       "version": "v0.4.1"
+      }
+     },
+     "scip-java": {
+      "engine": "scip-java@0.14.2",
+      "available": true,
+      "languages": {
+       "java": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-java",
+       "peak_mb": null,
+       "seconds": 54.1,
+       "version": "0.14.2"
+      },
+      "gaps": [
+       {
+        "detail": "src/fraud-detection: failed: scip-java wrote no index (preparation exited with code 1): eldemo'.\n         Location: /work/src/fraud-detection/src/main/kotlin/frauddetection/main.kt:14\n\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n* Try:\n\n> Run with --stacktrace option to get the stack trace.\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n> Run with --info or --debug option to get more log output.\n\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\nBUILD FAILED in 17s\n10 actionable tasks: 9 executed, 1 up-to-date",
+        "kind": "build_not_indexed",
+        "path": "src/fraud-detection",
+        "state": "failed"
+       }
+      ]
+     },
+     "scip-typescript": {
+      "engine": "scip-typescript@0.6.2",
+      "available": true,
+      "languages": {
+       "javascript": {
+        "state": "fresh"
+       },
+       "typescript": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-typescript",
+       "peak_mb": null,
+       "seconds": 14.7,
+       "types": [
+        "@types/node@24.19.2"
+       ],
+       "version": "0.6.2"
+      },
+      "gaps": [
+       {
+        "detail": "its packages are not installed: no workspace above names this folder",
+        "kind": "restore_failed",
+        "manager": "npm",
+        "path": "src/frontend"
+       },
+       {
+        "detail": "its packages are not installed: no workspace above names this folder",
+        "kind": "restore_failed",
+        "manager": "npm",
+        "path": "src/payment"
+       },
+       {
+        "detail": "its packages are not installed: no workspace above names this folder",
+        "kind": "restore_failed",
+        "manager": "npm",
+        "path": "src/react-native-app"
+       }
+      ]
+     },
+     "scip-dotnet": {
+      "engine": "scip-dotnet@0.2.16",
+      "available": true,
+      "languages": {
+       "csharp": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-dotnet",
+       "peak_mb": null,
+       "seconds": 27.0,
+       "version": "0.2.16"
+      },
+      "gaps": [
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'cs'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'de'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'es'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'fr'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'it'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'ja'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'ko'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'pl'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'pt-br'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'ru'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'tr'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'zh-hans'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'zh-hant'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'cs'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'de'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'es'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'fr'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'it'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'ja'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'ko'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'pl'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'pt-br'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'ru'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'tr'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'zh-hans'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.TestHost 18.11.0 has a resource with the locale 'zh-hant'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package 'System.Formats.Cbor' 8.0.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-vmv3-wvjp-wqpj",
+        "kind": "workspace_failure",
+        "path": "src/cart/cart.slnx"
+       },
+       {
+        "detail": "Msbuild failed when processing the file '/work/src/accounting/Accounting.csproj' with message: src/protos/demo.proto: No such file or directory",
+        "kind": "workspace_failure",
+        "path": "src/accounting/Accounting.csproj"
+       }
+      ]
+     },
+     "scip-kotlin": {
+      "engine": "scip-kotlin@0.14.2",
+      "available": false,
+      "reason": "none of the 3 kotlin files is in the index: Gradle script: no KotlinCompile task compiles it (2), no Kotlin compile task of the build lists it (1)",
+      "indexer": {
+       "name": "scip-java",
+       "peak_mb": null,
+       "seconds": 49.2,
+       "version": "0.14.2"
+      },
+      "gaps": [
+       {
+        "detail": "src/fraud-detection: failed: scip-java wrote no index (preparation exited with code 1): eldemo'.\n         Location: /work/src/fraud-detection/src/main/kotlin/frauddetection/main.kt:14\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\nBUILD FAILED in 18s\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\n10 actionable tasks: 9 executed, 1 up-to-date",
+        "kind": "build_not_indexed",
+        "path": "src/fraud-detection",
+        "state": "failed"
+       }
+      ]
+     }
+    },
+    "started_at": "2026-11-16T15:38:02Z",
+    "available": true,
+    "finished_at": "2026-11-16T15:47:38Z"
+   },
+   "dynamic": {
+    "languages": {
+     "csharp": {
+      "state": "no-observer",
+      "reason": "no observer runs this language's tests"
+     },
+     "stylesheet": {
+      "state": "no-observer",
+      "reason": "no observer runs this language's tests"
+     },
+     "c": {
+      "state": "no-static-graph",
+      "reason": "c: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+     },
+     "cpp": {
+      "state": "no-static-graph",
+      "reason": "cpp: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+     },
+     "rust": {
+      "state": "not-run",
+      "reason": "no test ran: cargo test --workspace --no-fail-fast in src/shipping: the tests did not start (exit code 101): ture-flagd-0.3.0/build.rs:20:14: | called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: \"Could not find `protoc`. If `protoc` is installed, try setting the `PROTOC` environment variable to the path of the `protoc` binary. To install it on Debian, run `apt-get install protobuf-compiler`. It is also available at https://github.com/protocolbuffers/protobuf/releases  For more information: https://docs.rs/prost-build/#sourcing-protoc\" } | note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace | warning: build failed, waiting for other jobs to finish..."
+     },
+     "go": {
+      "state": "observed",
+      "sites": 175,
+      "edges": 175,
+      "closed": 0
+     },
+     "javascript": {
+      "state": "not-run",
+      "reason": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+     },
+     "typescript": {
+      "state": "not-run",
+      "reason": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+     },
+     "kotlin": {
+      "state": "no-static-graph",
+      "reason": "kotlin: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+     },
+     "java": {
+      "state": "observed",
+      "sites": 297,
+      "edges": 297,
+      "closed": 2
+     },
+     "python": {
+      "state": "observed",
+      "sites": 67,
+      "edges": 67,
+      "closed": 15
+     }
+    }
+   },
+   "union": {
+    "languages": {
+     "c": {
+      "engine": "scip-clang",
+      "install": "install the snapshot's parser packages (requirements.txt beside snapshot.py) and write the snapshot again",
+      "reason": "none of the 1 c files was parsed by the snapshot (lexical: 1)",
+      "state": "unavailable"
+     },
+     "cpp": {
+      "engine": "scip-clang",
+      "reason": "scip-clang wrote no index (src/currency: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded): compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:7 (find_package):\n  Could not find a package configuration file provided by \"Protobuf\" with any\n  of the following names:\n\n    ProtobufConfig.cmake\n    protobuf-config.cmake\n\n  Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set\n  \"Protobuf_DIR\" to a directory containing one of the above files.  If\n  \"Protobuf\" provides a separate development package or SDK, be sure it has\n  been installed.\n\n\n-- Configuring incomplete, errors occurred!",
+      "state": "failed"
+     },
+     "csharp": {
+      "state": "fresh",
+      "engine": "scip-dotnet@0.2.16",
+      "coverage": {
+       "sites": 660,
+       "answered": {
+        "external": 355,
+        "project-callable": 46,
+        "project-value": 203
+       },
+       "holes": {
+        "no-occurrence": {
+         "count": 5,
+         "examples": [
+          "src/accounting/Consumer.cs:87 ParseFrom",
+          "src/accounting/Consumer.cs:88 OrderReceivedMessage",
+          "src/accounting/Consumer.cs:101 Items"
+         ]
+        },
+        "no-position": {
+         "count": 49,
+         "examples": [
+          "src/accounting/Consumer.cs:153",
+          "src/accounting/Consumer.cs:159",
+          "src/accounting/Helpers.cs:25"
+         ]
+        },
+        "undefined-project-symbol": {
+         "count": 2,
+         "examples": [
+          "src/accounting/Program.cs:14 args",
+          "src/cart/src/Program.cs:24 args"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "nuget System.Runtime@10.0.0.0": 62,
+        "nuget .@.": 47,
+        "nuget System.Diagnostics.DiagnosticSource@10.0.0.0": 36,
+        "nuget StackExchange.Redis@3.0.0.0": 28,
+        "nuget Microsoft.AspNetCore@10.0.0.0": 14,
+        "nuget Grpc.Core.Api@2.0.0.0": 14,
+        "nuget xunit.assert@2.9.3.0": 13,
+        "nuget OpenTelemetry.OpAmp.Client@0.10.0.1569": 10,
+        "nuget Grpc.HealthCheck@2.0.0.0": 10,
+        "nuget Confluent.Kafka@2.16.0.0": 9,
+        "nuget OpenTelemetry@1.0.0.0": 8,
+        "nuget Microsoft.Extensions.Hosting.Abstractions@10.0.0.0": 7,
+        "nuget Google.Protobuf@3.36.2.0": 7,
+        "nuget Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions@10.0.0.0": 6,
+        "nuget System.Net.Http@10.0.0.0": 6,
+        "nuget Grpc.Net.Client@2.0.0.0": 6,
+        "nuget Microsoft.EntityFrameworkCore@10.0.4.0": 5,
+        "nuget OpenTelemetry.Extensions.Hosting@1.0.0.0": 4,
+        "nuget OpenFeature@2.14.1.0": 4,
+        "nuget Microsoft.AspNetCore.TestHost@10.0.14.0": 4,
+        "nuget Npgsql@10.0.3.0": 3,
+        "nuget System.Linq@10.0.0.0": 3,
+        "nuget System.Console@10.0.0.0": 3,
+        "nuget Microsoft.Extensions.Hosting@10.0.0.0": 3,
+        "nuget OpenTelemetry.Exporter.OpenTelemetryProtocol@1.0.0.0": 3,
+        "nuget OpenTelemetry.Api@1.0.0.0": 3,
+        "nuget OpenTelemetry.Instrumentation.StackExchangeRedis@1.20.1.1510": 3,
+        "nuget Microsoft.AspNetCore.Routing@10.0.0.0": 3,
+        "nuget System.Net.WebSockets.Client@10.0.0.0": 2,
+        "nuget OpenFeature.Hosting@2.14.1.0": 2,
+        "nuget OpenTelemetry.Instrumentation.AspNetCore@1.20.2.1577": 2,
+        "nuget Grpc.AspNetCore.Server@2.0.0.0": 2,
+        "nuget Microsoft.Extensions.Diagnostics.HealthChecks@10.0.0.0": 2,
+        "nuget Microsoft.AspNetCore.Hosting@10.0.0.0": 2,
+        "nuget System.Collections.Concurrent@10.0.0.0": 2,
+        "nuget Npgsql.EntityFrameworkCore.PostgreSQL@10.0.3.0": 1,
+        "nuget EFCore.NamingConventions@10.0.1.0": 1,
+        "nuget System.Text.RegularExpressions@10.0.0.0": 1,
+        "nuget System.Collections.Immutable@10.0.0.0": 1,
+        "nuget Microsoft.Extensions.Logging.Console@10.0.0.0": 1,
+        "nuget OpenFeature.Providers.Flagd@0.8.0.0": 1,
+        "nuget Microsoft.Extensions.DependencyInjection.Abstractions@10.0.0.0": 1,
+        "nuget OpenTelemetry.Resources.Container@1.20.1.1516": 1,
+        "nuget OpenTelemetry.Resources.Host@1.20.1.1517": 1,
+        "nuget OpenTelemetry.Instrumentation.GrpcNetClient@1.20.1.1506": 1,
+        "nuget OpenTelemetry.Instrumentation.Http@1.20.2.1571": 1,
+        "nuget OpenTelemetry.Instrumentation.Process@1.20.1.1526": 1,
+        "nuget OpenTelemetry.Instrumentation.Runtime@1.20.1.1508": 1,
+        "nuget Grpc.AspNetCore.HealthChecks@2.0.0.0": 1,
+        "nuget Microsoft.Extensions.Logging.Abstractions@10.0.0.0": 1,
+        "nuget Microsoft.AspNetCore.Http.Abstractions@10.0.0.0": 1,
+        "nuget Microsoft.AspNetCore.Hosting.Abstractions@10.0.0.0": 1
+       },
+       "files": {
+        "snapshot": 13,
+        "indexed": 13,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "go": {
+      "state": "fresh",
+      "engine": "scip-go@v0.2.9",
+      "coverage": {
+       "sites": 6180,
+       "answered": {
+        "external": 2158,
+        "project-callable": 617,
+        "project-value": 3272
+       },
+       "holes": {
+        "no-occurrence": {
+         "count": 12,
+         "examples": [
+          "src/checkout/genproto/oteldemo/demo.pb.go:2397 Slice",
+          "src/checkout/genproto/oteldemo/demo.pb.go:2397 StringData",
+          "src/checkout/genproto/oteldemo/demo.pb.go:2531 Slice"
+         ]
+        },
+        "no-position": {
+         "count": 121,
+         "examples": [
+          "src/checkout/genproto/oteldemo/demo.pb.go:2404",
+          "src/checkout/genproto/oteldemo/demo.pb.go:2405",
+          "src/checkout/genproto/oteldemo/demo.pb.go:2406"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "gomod google.golang.org/protobuf@v1.36.12": 809,
+        "gomod github.com/golang/go/src@go1.26.0": 585,
+        "gomod google.golang.org/grpc@v1.85.0": 508,
+        "gomod go.opentelemetry.io/otel@v1.47.0": 69,
+        "gomod go.opentelemetry.io/otel/trace@v1.47.0": 40,
+        "gomod go.opentelemetry.io/otel/sdk@v1.47.0": 29,
+        "gomod github.com/IBM/sarama@v1.61.1": 25,
+        "gomod github.com/open-feature/go-sdk@v1.20.0": 20,
+        "gomod github.com/open-telemetry/opamp-go@v0.25.0": 19,
+        "gomod go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc@v0.72.0": 9,
+        "gomod github.com/XSAM/otelsql@v0.44.0": 8,
+        "gomod go.opentelemetry.io/contrib/otelconf@v0.27.0": 7,
+        "gomod go.opentelemetry.io/otel/sdk/metric@v1.47.0": 5,
+        "gomod go.opentelemetry.io/otel/sdk/log@v1.47.0": 4,
+        "gomod go.opentelemetry.io/contrib/instrumentation/runtime@v0.72.0": 4,
+        "gomod github.com/google/uuid@v1.6.0": 4,
+        "gomod go.opentelemetry.io/otel/log@v1.47.0": 2,
+        "gomod go.opentelemetry.io/contrib/bridges/otelslog@v0.21.0": 2,
+        "gomod github.com/open-feature/go-sdk-contrib/providers/flagd@v0.8.0": 2,
+        "gomod github.com/open-feature/go-sdk-contrib/hooks/open-telemetry@v0.3.8": 2,
+        "gomod go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp@v1.47.0": 1,
+        "gomod go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp@v1.47.0": 1,
+        "gomod go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp@v0.23.0": 1,
+        "gomod go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp@v0.72.0": 1,
+        "gomod go.opentelemetry.io/otel/metric@v1.47.0": 1
+       },
+       "files": {
+        "snapshot": 15,
+        "indexed": 15,
+        "missing": []
+       },
+       "state": "lower-bound",
+       "observed": {
+        "resolver": "dynamic-record-go@1",
+        "at": "2026-11-16T15:49:01Z",
+        "tests": [
+         {
+          "root": "src/checkout",
+          "runner": "go test",
+          "argv": [
+           "go",
+           "test",
+           "-vet=off",
+           "./..."
+          ],
+          "exit_code": 0,
+          "packages": {
+           "passed": 2
+          },
+          "state": "ran"
+         },
+         {
+          "root": "src/product-catalog",
+          "runner": "go test",
+          "argv": [
+           "go",
+           "test",
+           "-vet=off",
+           "./..."
+          ],
+          "exit_code": 0,
+          "packages": {
+           "passed": 1
+          },
+          "state": "ran"
+         }
+        ],
+        "recorded": 176,
+        "placed": 175,
+        "joined": 175,
+        "unjoined": {
+         "call": 1
+        },
+        "agree": 173,
+        "wider": 0,
+        "mocked": 0,
+        "conflicts": {
+         "count": 0,
+         "examples": []
+        },
+        "files": {
+         "executed": 8,
+         "not_executed": [
+          "src/checkout/flags/flags_gen.go",
+          "src/checkout/main.go",
+          "src/product-catalog/flags/flags_gen.go",
+          "src/product-catalog/genproto/oteldemo/demo_grpc.pb.go",
+          "src/product-catalog/main.go",
+          "src/product-catalog/opamp.go"
+         ]
+        },
+        "sites": 175,
+        "edges": 175,
+        "closed": {}
+       }
+      }
+     },
+     "java": {
+      "state": "fresh",
+      "engine": "scip-java@0.14.2",
+      "coverage": {
+       "sites": 693,
+       "answered": {
+        "external": 497,
+        "observed": 2,
+        "project-callable": 54,
+        "project-value": 140
+       },
+       "holes": {},
+       "uncertain": 0,
+       "externals": {
+        "maven jdk@21": 137,
+        "maven .@.": 62,
+        "maven maven/io.opentelemetry/opentelemetry-api@1.65.0": 56,
+        "maven maven/org.assertj/assertj-core@3.27.7": 50,
+        "maven maven/io.opentelemetry/opentelemetry-api@1.68.0": 31,
+        "maven maven/io.opentelemetry/opentelemetry-sdk-trace@1.65.0": 26,
+        "maven maven/dev.openfeature/sdk@1.23.0": 24,
+        "maven maven/org.apache.logging.log4j/log4j-api@2.26.1": 20,
+        "maven maven/io.grpc/grpc-api@1.85.1": 10,
+        "maven maven/com.google.guava/guava@33.6.0-jre": 10,
+        "maven maven/io.prometheus/prometheus-metrics-core@1.10.0": 9,
+        "maven maven/dev.openfeature.contrib.providers/flagd@0.15.0": 8,
+        "maven maven/io.grpc/grpc-stub@1.84.1": 7,
+        "maven maven/io.opentelemetry/opentelemetry-sdk-metrics@1.65.0": 7,
+        "maven maven/io.opentelemetry/opentelemetry-sdk-testing@1.65.0": 6,
+        "maven maven/io.prometheus/prometheus-metrics-exporter-httpserver@1.10.0": 5,
+        "maven maven/io.grpc/grpc-services@1.85.1": 5,
+        "maven maven/org.slf4j/slf4j-api@2.0.20": 4,
+        "maven maven/io.grpc/grpc-stub@1.85.1": 3,
+        "maven maven/io.opentelemetry.instrumentation/opentelemetry-grpc-1.6@2.31.1-alpha": 3,
+        "maven maven/org.awaitility/awaitility@4.3.0": 3,
+        "maven maven/io.opentelemetry/opentelemetry-context@1.68.0": 2,
+        "maven maven/io.opentelemetry/opentelemetry-sdk-extension-autoconfigure-spi@1.65.0": 2,
+        "maven maven/io.grpc/grpc-api@1.84.1": 2,
+        "maven maven/dev.openfeature.contrib.hooks/otel@3.3.1": 1,
+        "maven maven/org.springframework.boot/spring-boot@4.1.2": 1,
+        "maven maven/io.opentelemetry/opentelemetry-context@1.65.0": 1,
+        "maven maven/org.junit.jupiter/junit-jupiter-api@6.0.3": 1,
+        "maven maven/org.springframework.grpc/spring-grpc-core@1.1.2": 1
+       },
+       "files": {
+        "snapshot": 9,
+        "indexed": 9,
+        "missing": []
+       },
+       "state": "lower-bound",
+       "observed": {
+        "resolver": "dynamic-record-jvm@1",
+        "at": "2026-11-16T15:50:23Z",
+        "tests": [
+         {
+          "root": "src/recommendation",
+          "runner": "gradle",
+          "state": "ran",
+          "tool": "gradle",
+          "argv": [
+           "gradle",
+           "--no-daemon",
+           "--offline",
+           "--continue",
+           "--console=plain",
+           ":test"
+          ],
+          "exit_code": 0,
+          "tests": 7,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "jvms": 1
+         }
+        ],
+        "recorded": 299,
+        "placed": 299,
+        "joined": 297,
+        "unjoined": {},
+        "agree": 272,
+        "wider": 0,
+        "mocked": 2,
+        "conflicts": {
+         "count": 23,
+         "examples": [
+          {
+           "site": "src/recommendation/src/main/java/oteldemo/recommendation/RecommendationService.java:82 getProductIdsList",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsRequest.class::getProductIdsList"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/main/java/oteldemo/recommendation/RecommendationService.java:88 newBuilder",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsResponse.class::newBuilder"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/main/java/oteldemo/recommendation/RecommendationService.java:88 addAllProductIds",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsResponse$Builder.class::addAllProductIds"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/main/java/oteldemo/recommendation/RecommendationService.java:88 build",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsResponse$Builder.class::build"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/main/java/oteldemo/recommendation/RecommendationService.java:162 listProducts",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/ProductCatalogServiceGrpc$ProductCatalogServiceBlockingStub.class::listProducts"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/main/java/oteldemo/recommendation/RecommendationService.java:162 getProductsList",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListProductsResponse.class::getProductsList"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/main/java/oteldemo/recommendation/RecommendationService.java:163 getDefaultInstance",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$Empty.class::getDefaultInstance"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:86 getProductIdsList",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsResponse.class::getProductIdsList"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:100 getProductIdsList",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsResponse.class::getProductIdsList"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:109 getProductIdsList",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsResponse.class::getProductIdsList"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:201 newBlockingStub",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/RecommendationServiceGrpc.class::newBlockingStub"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:201 listRecommendations",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/RecommendationServiceGrpc$RecommendationServiceBlockingStub.class::listRecommendations"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:204 newBuilder",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsRequest.class::newBuilder"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:204 setUserId",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsRequest$Builder.class::setUserId"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:204 addAllProductIds",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsRequest$Builder.class::addAllProductIds"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:204 build",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListRecommendationsRequest$Builder.class::build"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:278 ProductCatalogServiceImplBase",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/ProductCatalogServiceGrpc$ProductCatalogServiceImplBase.class::ProductCatalogServiceImplBase"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:289 newBuilder",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListProductsResponse.class::newBuilder"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:290 addProducts",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$ListProductsResponse$Builder.class::addProducts"
+           ]
+          },
+          {
+           "site": "src/recommendation/src/test/java/oteldemo/recommendation/RecommendationServiceTests.java:290 newBuilder",
+           "proven": [
+            "."
+           ],
+           "observed": [
+            "src/recommendation/build/classes/java/main/oteldemo/Demo$Product.class::newBuilder"
+           ]
+          }
+         ]
+        },
+        "files": {
+         "executed": 4,
+         "not_executed": [
+          "src/ad/src/main/java/oteldemo/AdService.java",
+          "src/ad/src/main/java/oteldemo/problempattern/CPULoad.java",
+          "src/ad/src/main/java/oteldemo/problempattern/GarbageCollectionTrigger.java",
+          "src/ad/src/main/java/oteldemo/problempattern/MemoryUtils.java",
+          "src/recommendation/src/main/java/oteldemo/recommendation/RecommendationApplication.java"
+         ]
+        },
+        "sites": 297,
+        "edges": 297,
+        "closed": {
+         "undefined-project-symbol": 2
+        }
+       }
+      }
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2",
+      "coverage": {
+       "sites": 276,
+       "answered": {
+        "external": 86,
+        "project-callable": 4,
+        "project-value": 105
+       },
+       "holes": {
+        "NodeJS.ProcessEnv's index signature: only execution knows the value": {
+         "count": 2,
+         "examples": [
+          "src/flagd-ui/assets/js/app.js:38 NODE_ENV",
+          "src/payment/index.js:51 IPV6_ENABLED"
+         ]
+        },
+        "a member of a value of type any: only execution knows it": {
+         "count": 72,
+         "examples": [
+          "src/flagd-ui/assets/js/app.js:24 connect",
+          "src/flagd-ui/assets/js/app.js:42 enableServerLogs",
+          "src/flagd-ui/assets/js/app.js:55 openEditorAtCaller"
+         ]
+        },
+        "a member of an anonymous type, an object literal or an index signature another file declares: the index names it with a local of this file it defines nowhere": {
+         "count": 1,
+         "examples": [
+          "src/payment/index.js:22 charge"
+         ]
+        },
+        "dangling-local": {
+         "count": 2,
+         "examples": [
+          "src/flagd-ui/assets/js/app.js:13 LiveSocket",
+          "src/flagd-ui/assets/js/app.js:13 Socket"
+         ]
+        },
+        "{} declares no such member: only execution knows it": {
+         "count": 4,
+         "examples": [
+          "src/payment/charge.js:107 message",
+          "src/payment/charge.js:108 name",
+          "src/payment/index.js:28 message"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "npm @types/node@24.19.2": 50,
+        "npm typescript@6.0.3": 33,
+        "npm opentelemetry-demo@HEAD": 3
+       },
+       "files": {
+        "snapshot": 10,
+        "indexed": 10,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "kotlin": {
+      "engine": "scip-kotlin",
+      "reason": "none of the 3 kotlin files is in the index: Gradle script: no KotlinCompile task compiles it (2), no Kotlin compile task of the build lists it (1)",
+      "state": "failed"
+     },
+     "python": {
+      "state": "fresh",
+      "engine": "scip-python@0.6.8",
+      "coverage": {
+       "sites": 1895,
+       "answered": {
+        "external": 462,
+        "observed": 15,
+        "project-callable": 134,
+        "project-value": 820
+       },
+       "holes": {
+        "dangling-local": {
+         "count": 58,
+         "examples": [
+          "internal/tools/check_collector_pipelines.py:26 safe_load",
+          "internal/tools/check_collector_pipelines.py:47 exit",
+          "internal/tools/sanitycheck.py:34 format"
+         ]
+        },
+        "no-occurrence": {
+         "count": 298,
+         "examples": [
+          "internal/tools/check_collector_pipelines.py:38 get",
+          "src/agent/run.py:23 init",
+          "src/agent/run.py:29 instrument"
+         ]
+        },
+        "no-position": {
+         "count": 11,
+         "examples": [
+          "src/agent/src/agents/agents.py:43",
+          "src/mcp/src/mcp_server/astronomy_shop_mcp_server.py:26",
+          "src/mcp/src/mcp_server/astronomy_shop_mcp_server.py:27"
+         ]
+        },
+        "undefined-project-symbol": {
+         "count": 97,
+         "examples": [
+          "src/agent/run.py:21 load_dotenv",
+          "src/agent/run.py:29 HTTPXClientInstrumentor",
+          "src/agent/run.py:31 OpenAIInstrumentor"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "python python-stdlib@3.11": 462
+       },
+       "files": {
+        "snapshot": 23,
+        "indexed": 23,
+        "missing": []
+       },
+       "state": "lower-bound",
+       "observed": {
+        "resolver": "dynamic-record-python@1",
+        "at": "2026-11-16T15:53:05Z",
+        "tests": [
+         {
+          "root": "src/load-generator",
+          "runner": "pytest",
+          "declared_in": "src/load-generator/requirements.txt",
+          "state": "no_tests",
+          "exit_code": 5,
+          "seconds": 1,
+          "python": "3.12.16",
+          "processes": 1
+         },
+         {
+          "root": "test/telemetry",
+          "runner": "pytest",
+          "declared_in": "test/telemetry/requirements.txt",
+          "state": "ran",
+          "exit_code": 1,
+          "seconds": 122,
+          "python": "3.12.16",
+          "processes": 1
+         }
+        ],
+        "recorded": 128,
+        "placed": 67,
+        "joined": 67,
+        "unjoined": {
+         "": 49,
+         "BEFORE_WITH": 1,
+         "GeneratorExp": 1,
+         "LOAD_ATTR": 1,
+         "WITH_EXIT": 1,
+         "decorator": 8
+        },
+        "agree": 52,
+        "wider": 0,
+        "mocked": 0,
+        "conflicts": {
+         "count": 0,
+         "examples": []
+        },
+        "files": {
+         "executed": 3,
+         "not_executed": [
+          "internal/tools/check_collector_pipelines.py",
+          "internal/tools/sanitycheck.py",
+          "src/agent/run.py",
+          "src/agent/src/agents/agents.py",
+          "src/agent/src/agents/feature_flags.py",
+          "src/agent/src/agents/llm.py",
+          "src/agent/src/agents/mcp_client.py",
+          "src/agent/src/agents/patch_vcr.py",
+          "src/chatbot/run.py",
+          "src/chatbot/src/chat_interface/chat_interface.py",
+          "src/chatbot/src/opamp.py",
+          "src/load-generator/locustfile.py",
+          "src/mcp/run.py",
+          "src/mcp/src/mcp_server/astronomy_shop_mcp_server.py",
+          "src/shared/tools.py",
+          "test/telemetry/test_collector.py",
+          "test/telemetry/test_logs.py",
+          "test/telemetry/test_metrics.py",
+          "test/telemetry/test_traces.py",
+          "test/telemetry/test_traces_edges.py"
+         ]
+        },
+        "sites": 67,
+        "edges": 67,
+        "closed": {
+         "no-occurrence": 14,
+         "undefined-project-symbol": 1
+        }
+       }
+      }
+     },
+     "rust": {
+      "state": "fresh",
+      "engine": "scip-rust@2026-11-09",
+      "coverage": {
+       "sites": 262,
+       "answered": {
+        "external": 176,
+        "project-callable": 35,
+        "project-value": 48
+       },
+       "holes": {
+        "no-occurrence": {
+         "count": 3,
+         "examples": [
+          "src/shipping/src/shipping_service.rs:113 new",
+          "src/shipping/src/shipping_service.rs:114 expect_resolve_int_value",
+          "src/shipping/src/shipping_service.rs:114 returning"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "cargo core@https://github.com/rust-lang/rust/library/core": 39,
+        "cargo actix-web@4.19.0": 35,
+        "cargo opentelemetry_sdk@0.33.1": 22,
+        "cargo std@https://github.com/rust-lang/rust/library/std": 15,
+        "cargo opentelemetry-otlp@0.33.1": 15,
+        "cargo opentelemetry@0.33.1": 12,
+        "cargo tracing-subscriber@0.3.23": 10,
+        "cargo alloc@https://github.com/rust-lang/rust/library/alloc": 8,
+        "cargo opentelemetry-instrumentation-actix-web@0.25.0": 4,
+        "cargo open-feature@0.3.0": 4,
+        "cargo awc@3.11.0": 3,
+        "cargo anyhow@1.0.104": 3,
+        "cargo open-feature-flagd@0.3.0": 2,
+        "cargo tokio@1.54.1": 1,
+        "cargo tonic@0.14.9": 1,
+        "cargo uuid@1.29.2": 1,
+        "cargo opentelemetry-appender-tracing@0.33.1": 1
+       },
+       "files": {
+        "snapshot": 7,
+        "indexed": 7,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a",
+      "coverage": {
+       "sites": 20,
+       "answered": {
+        "external": 1,
+        "namespace": 4
+       },
+       "holes": {
+        "no-font-face": {
+         "count": 1,
+         "examples": [
+          "src/frontend/styles/globals.css:22 Open Sans"
+         ]
+        },
+        "no-rule": {
+         "count": 11,
+         "examples": [
+          "src/frontend/components/CheckoutForm/CheckoutForm.tsx:107 #zip_code",
+          "src/frontend/components/CheckoutForm/CheckoutForm.tsx:112 #city",
+          "src/frontend/components/CheckoutForm/CheckoutForm.tsx:115 #state"
+         ]
+        },
+        "parameter": {
+         "count": 2,
+         "examples": [
+          "src/frontend/components/Input/Input.tsx:19 id",
+          "src/frontend/components/Input/Input.tsx:25 id"
+         ]
+        },
+        "unresolved-import": {
+         "count": 1,
+         "examples": [
+          "src/flagd-ui/assets/css/app.css:9 tailwindcss"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "checkout unknown@unknown": 1
+       },
+       "files": {
+        "snapshot": 160,
+        "indexed": 153,
+        "missing": [
+         {
+          "path": "src/email/views/confirmation.erb",
+          "reason": "template language: no reader"
+         },
+         {
+          "path": "src/telemetry-docs/templates/markdown/attribute_macros.j2",
+          "reason": "template language: no reader"
+         },
+         {
+          "path": "src/telemetry-docs/templates/markdown/mkdocs_nav.yml.j2",
+          "reason": "template language: no reader"
+         },
+         {
+          "path": "src/telemetry-docs/templates/markdown/readme.md.j2",
+          "reason": "template language: no reader"
+         },
+         {
+          "path": "src/telemetry-docs/templates/markdown/registry.md.j2",
+          "reason": "template language: no reader"
+         },
+         {
+          "path": "src/telemetry-docs/templates/markdown/service.md.j2",
+          "reason": "template language: no reader"
+         },
+         {
+          "path": "src/telemetry-docs/templates/markdown/stability.j2",
+          "reason": "template language: no reader"
+         }
+        ]
+       },
+       "state": "lower-bound"
+      }
+     },
+     "typescript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2",
+      "coverage": {
+       "sites": 8683,
+       "answered": {
+        "external": 572,
+        "lexical": 73,
+        "project-callable": 1072,
+        "project-value": 4389
+       },
+       "holes": {
+        "NodeJS.ProcessEnv's index signature: only execution knows the value": {
+         "count": 2,
+         "examples": [
+          "src/frontend/utils/telemetry/logger.ts:7 LOG_LEVEL",
+          "src/react-native-app/utils/Settings.ts:14 EXPO_PUBLIC_FRONTEND_PROXY_PORT"
+         ]
+        },
+        "a member of a value of type any: only execution knows it": {
+         "count": 2138,
+         "examples": [
+          "src/frontend/components/Ad/Ad.styled.ts:7 section",
+          "src/frontend/components/Ad/Ad.styled.ts:9 otelYellow",
+          "src/frontend/components/Ad/Ad.styled.ts:10 dMedium"
+         ]
+        },
+        "a member of an anonymous type, an object literal or an index signature another file declares: the index names it with a local of this file it defines nowhere": {
+         "count": 42,
+         "examples": [
+          "src/frontend/components/Cart/CartDetail.tsx:14 getSession",
+          "src/frontend/components/CartItems/CartItems.tsx:32 getShippingCost",
+          "src/frontend/components/Footer/Footer.tsx:12 getSession"
+         ]
+        },
+        "dangling-local": {
+         "count": 350,
+         "examples": [
+          "src/frontend/components/Ad/Ad.styled.ts:21 styled",
+          "src/frontend/components/Ad/Ad.styled.ts:21 RouterLink",
+          "src/frontend/components/Banner/Banner.styled.ts:53 styled"
+         ]
+        },
+        "no-occurrence": {
+         "count": 29,
+         "examples": [
+          "src/frontend/cypress/e2e/Checkout.cy.ts:7 describe",
+          "src/frontend/cypress/e2e/Checkout.cy.ts:8 before",
+          "src/frontend/cypress/e2e/Checkout.cy.ts:14 beforeEach"
+         ]
+        },
+        "no-position": {
+         "count": 16,
+         "examples": [
+          "src/frontend/components/Ad/Ad.styled.ts:21",
+          "src/frontend/components/Banner/Banner.styled.ts:18",
+          "src/frontend/components/Banner/Banner.styled.ts:53"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "npm typescript@6.0.3": 481,
+        "npm @types/node@24.19.2": 105
+       },
+       "files": {
+        "snapshot": 136,
+        "indexed": 136,
+        "missing": [],
+        "unread": [
+         {
+          "path": "src/frontend/components/Button/Button.tsx",
+          "reason": "syntax error: line 6",
+          "references": 8
+         },
+         {
+          "path": "src/frontend/components/CartDropdown/CartDropdown.styled.ts",
+          "reason": "syntax error: line 72",
+          "references": 34
+         },
+         {
+          "path": "src/frontend/components/ProductCard/ProductCard.styled.ts",
+          "reason": "syntax error: line 11",
+          "references": 13
+         },
+         {
+          "path": "src/frontend/pages/_document.tsx",
+          "reason": "syntax error: line 53",
+          "references": 52
+         },
+         {
+          "path": "src/frontend/styles/ProductDetail.styled.ts",
+          "reason": "syntax error: line 23",
+          "references": 34
+         }
+        ]
+       },
+       "state": "lower-bound"
+      }
+     }
+    },
+    "no_analyzer": {
+     "sql": 1
+    },
+    "not_joined": [
+     [
+      "java",
+      "kotlin"
+     ],
+     [
+      "go",
+      "c"
+     ],
+     [
+      "python",
+      "c"
+     ],
+     [
+      "python",
+      "cpp"
+     ],
+     [
+      "java",
+      "c"
+     ],
+     [
+      "java",
+      "cpp"
+     ]
+    ]
+   }
+  },
+  "events": {
+   "step.started": 4,
+   "log": 4,
+   "progress": 47,
+   "gap": 91,
+   "step.finished": 4,
+   "analyzer.unavailable": 1,
+   "analyzer.started": 14,
+   "analyzer.finished": 14,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "scan": [
+    10.2,
+    311.5
+   ],
+   "analyze": [
+    311.5,
+    887.1
+   ],
+   "dynamic": [
+    887.1,
+    1215.3
+   ],
+   "union": [
+    1215.3,
+    1215.9
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 10.752,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 9.421,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 15.753,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 18.38,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 41.158,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 19.939,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 10.78,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 124.502,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 12.579,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.909,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 4.055,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 13.825,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.342,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 9.867,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 14.431,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.497,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 63.779,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 4.142,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.007,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 5.922,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 45.33,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 6.382,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 5.062,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.154,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/cargo/results/1/stderr": "11\n  Downloaded const-oid v0.10.3\n  Downloaded cookie v0.16.2\n  Downloaded derive_more v2.1.1\n  Downloaded displaydoc v0.2.7\n  Downloaded errno v0.3.15\n  Downloaded find-msvc-tools v0.1.15\n  Downloaded form_urlencoded v1.2.2\n  Downloaded fragile v2.1.0\n  Downloaded futures-core v0.3.34\n  Downloaded futures-io v0.3.34\n  Downloaded futures-macro v0.3.34\n  Downloaded hashbrown v0.15.5\n  Downloaded http v1.5.0\n  Downloaded http-body-util v0.1.5\n  Downloaded httpdate v1.0.3\n  Downloaded idna_adapter v1.2.2\n  Downloaded pulldown-cmark v0.13.6\n  Downloaded regex v1.13.1\n  Downloaded serde_json v1.0.154\n  Downloaded tracing-subscriber v0.3.23\n  Downloaded zlib-rs v0.6.8\n  Downloaded actix-http v3.21.0\n  Downloaded aho-corasick v1.1.5\n  Downloaded bumpalo v3.20.3\n  Downloaded bytes v1.12.1\n  Downloaded derive_more-impl v2.1.1\n  Downloaded fast-float2 v0.2.4\n  Downloaded fastrand v2.5.0\n  Downloaded fixedbitset v0.5.9\n  Downloaded flagd-evaluation-engine v0.1.0\n  Downloaded foldhash v0.1.5\n  Downloaded foldhash v0.2.0\n  Downloaded futures-channel v0.3.34\n  Downloaded futures-executor v0.3.34\n  Downloaded httparse v1.10.1\n  Downloaded hybrid-array v0.4.15\n  Downloaded hyper-timeout v0.5.2\n  Downloaded impl-more v0.3.10\n  Downloaded objc2-core-foundation v0.3.2\n  Downloaded axum v0.8.9\n  Downloaded futures-util v0.3.34\n  Downloaded h2 v0.4.20\n  Downloaded hashbrown v0.17.1\n  Downloaded icu_provider v2.4.0\n  Downloaded itoa v1.0.19\n  Downloaded webpki-roots v1.0.12\n  Downloaded h2 v0.3.27\n  Downloaded icu_locale_core v2.4.0\n  Downloaded icu_normalizer_data v2.4.0\n  Downloaded inotify v0.11.5\n  Downloaded portable-atomic v1.15.0\n  Downloaded flate2 v1.1.11\n  Downloaded icu_collections v2.4.0\n  Downloaded cc v1.11.1\n  Downloaded time v0.3.55\n  Downloaded hyper-util v0.1.21\n  Downloaded icu_properties v2.4.0\n  Downloaded syn v3.0.10\n  Downloaded zerocopy v0.8.63\n  Downloaded hyper v1.12.0\n  Downloaded idna v1.1.0\n  Downloaded indexmap v2.14.2\n  Downloaded itertools v0.15.0\n  Downloaded icu_properties_data v2.4.0\n  Downloaded regex-syntax v0.8.11\n  Downloaded rustls v0.23.46\n  Downloaded brotli-decompressor v6.3.1\n  Downloaded windows_x86_64_gnullvm v0.52.6\n  Downloaded tracing v0.1.44\n  Downloaded windows_aarch64_gnullvm v0.52.6\n  Downloaded datalogic-rs v5.4.0\n  Downloaded rustix v1.1.6\n  Downloaded windows_i686_gnullvm v0.52.6\n  Downloaded encoding_rs v0.8.44\n  Downloaded regex-automata v0.4.18\n  Downloaded icu_normalizer v2.4.0\n  Downloaded web-sys v0.3.107\n  Downloaded zstd-sys v2.1.3+zstd.1.5.7\n  Downloaded windows_x86_64_msvc v0.52.6\n  Downloaded petgraph v0.8.3\n  Downloaded windows_aarch64_msvc v0.52.6\n  Downloaded brotli v9.1.1\n  Downloaded windows_i686_gnu v0.52.6\n  Downloaded windows_x86_64_gnu v0.52.6\n  Downloaded datavalue-rs v0.2.3\n  Downloaded libc v0.2.191\n  Downloaded tokio v1.54.1\n  Downloaded windows_i686_msvc v0.52.6\n  Downloaded ring v0.17.14\n  Downloaded windows-sys v0.61.2\n  Downloaded windows-sys v0.52.0\n  Downloaded linux-raw-sys v0.12.1\n",
+   "premap-runs/cmake/results/1/stderr": "-- The C compiler identification is GNU 13.3.0\n-- The CXX compiler identification is GNU 13.3.0\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:7 (find_package):\n  Could not find a package configuration file provided by \"Protobuf\" with any\n  of the following names:\n\n    Protobuf.cps\n    protobuf.cps\n    ProtobufConfig.cmake\n    protobuf-config.cmake\n\n  Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set\n  \"Protobuf_DIR\" to a directory containing one of the above files.  If\n  \"Protobuf\" provides a separate development package or SDK, be sure it has\n  been installed.\n\n\n-- Configuring incomplete, errors occurred!\n",
+   "premap-runs/cmake/results/2/stderr": "-- The C compiler identification is GNU 13.3.0\n-- The CXX compiler identification is GNU 13.3.0\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:4 (find_package):\n  Could not find a package configuration file provided by \"Protobuf\" with any\n  of the following names:\n\n    Protobuf.cps\n    protobuf.cps\n    ProtobufConfig.cmake\n    protobuf-config.cmake\n\n  Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set\n  \"Protobuf_DIR\" to a directory containing one of the above files.  If\n  \"Protobuf\" provides a separate development package or SDK, be sure it has\n  been installed.\n\n\n-- Configuring incomplete, errors occurred!\n",
+   "premap-runs/daodan-enry/results/0/stderr": "go: creating new go.mod: module daodan-enry\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/go-enry/go-enry/v2 v2.9.6\ngo: downloading github.com/go-enry/go-oniguruma v1.2.1\ngo: added github.com/go-enry/go-enry/v2 v2.9.6\ngo: added github.com/go-enry/go-oniguruma v1.2.1\n",
+   "premap-runs/go/results/0/stderr": "mise by @jdx \u2013 installing 1 tool\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591 0/1 \u00b7 3.0s\n  go@1.27.1  extracting  3.0s\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591 0/1 \u00b7 6.0s\n  go@1.27.1  extracting  6.0s\nmise go@1.27.1 go version go1.27.1 linux/amd64\nmise \u2713 go@1.27.1  6.2s  go1.27.1.linux-amd64.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 6.2s\nmise WARN  go installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use go\n",
+   "premap-runs/go/results/10/stderr": "go: downloading github.com/XSAM/otelsql v0.44.0\ngo: downloading github.com/lib/pq v1.12.3\ngo: downloading github.com/open-telemetry/opamp-go v0.25.0\ngo: downloading go.opentelemetry.io/contrib/otelconf v0.27.0\ngo: downloading github.com/fxamacker/cbor/v2 v2.9.6\ngo: downloading github.com/elastic/proxy-connect-dialer-go v0.1.1\ngo: downloading github.com/gorilla/websocket v1.5.3\ngo: downloading github.com/stretchr/testify v1.12.1\ngo: downloading github.com/cenkalti/backoff/v4 v4.3.0\ngo: downloading go.yaml.in/yaml/v3 v3.0.6\ngo: downloading go.opentelemetry.io/otel/exporters/stdout/stdoutlog v0.23.0\ngo: downloading go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.47.0\ngo: downloading go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.47.0\ngo: downloading go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.47.0\ngo: downloading go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.23.0\ngo: downloading go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.47.0\ngo: downloading go.opentelemetry.io/contrib/propagators/autoprop v0.72.0\ngo: downloading go.opentelemetry.io/contrib/propagators/ot v1.47.0\ngo: downloading go.opentelemetry.io/contrib/propagators/jaeger v1.47.0\ngo: downloading go.opentelemetry.io/contrib/propagators/b3 v1.47.0\ngo: downloading go.opentelemetry.io/contrib/propagators/aws v1.47.0\n",
+   "premap-runs/go/results/4/stderr": "go: warning: \"./...\" matched no packages\n",
+   "premap-runs/go/results/7/stderr": "oading go.opentelemetry.io/otel/sdk v1.47.0\ngo: downloading go.opentelemetry.io/otel/sdk/metric v1.47.0\ngo: downloading go.opentelemetry.io/otel/trace v1.47.0\ngo: downloading go.opentelemetry.io/otel/metric v1.47.0\ngo: downloading github.com/felixge/httpsnoop v1.1.0\ngo: downloading github.com/go-logr/logr v1.4.4\ngo: downloading github.com/open-feature/flagd/core v0.19.2\ngo: downloading github.com/eapache/go-resiliency v1.7.0\ngo: downloading github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc\ngo: downloading github.com/jcmturner/gofork v1.7.6\ngo: downloading github.com/jcmturner/gokrb5/v8 v8.4.4\ngo: downloading github.com/klauspost/compress v1.20.3\ngo: downloading github.com/pierrec/lz4/v4 v4.1.33\ngo: downloading github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9\ngo: downloading golang.org/x/net v0.62.0\ngo: downloading golang.org/x/sys v0.49.0\ngo: downloading go.opentelemetry.io/proto/otlp v1.11.1\ngo: downloading github.com/hashicorp/golang-lru/v2 v2.0.7\ngo: downloading buf.build/gen/go/open-feature/flagd/grpc/go v1.6.2-20260824202443-4824facda674.1\ngo: downloading buf.build/gen/go/open-feature/flagd/protocolbuffers/go v1.36.12-20260824202443-4824facda674.2\ngo: downloading go.uber.org/zap v1.28.0\ngo: downloading github.com/hashicorp/golang-lru v1.0.2\ngo: downloading buf.build/gen/go/open-feature/flagd/connectrpc/go v1.21.0-20260824202443-4824facda674.1\ngo: downloading connectrpc.com/connect v1.21.1\ngo: downloading connectrpc.com/otelconnect v0.12.0\ngo: downloading google.golang.org/genproto/googleapis/rpc v0.0.0-20261026165753-2ffab32bce7e\ngo: downloading github.com/hashicorp/go-uuid v1.0.4\ngo: downloading github.com/jcmturner/dnsutils/v2 v2.0.0\ngo: downloading github.com/cespare/xxhash/v2 v2.3.0\ngo: downloading github.com/go-logr/stdr v1.2.2\ngo: downloading go.opentelemetry.io/auto/sdk v1.2.1\ngo: downloading github.com/cenkalti/backoff/v5 v5.0.3\ngo: downloading github.com/grpc-ecosystem/grpc-gateway/v2 v2.31.0\ngo: downloading github.com/diegoholiveira/jsonlogic/v3 v3.9.1\ngo: downloading github.com/fxamacker/cbor/v2 v2.7.1\ngo: downloading github.com/open-feature/flagd-schemas v0.2.15\ngo: downloading github.com/santhosh-tekuri/jsonschema/v6 v6.0.3\ngo: downloading github.com/twmb/murmur3 v1.1.8\ngo: downloading golang.org/x/exp v0.0.0-20261014143641-f0251eb4aa3e\ngo: downloading golang.org/x/mod v0.42.0\ngo: downloading github.com/hashicorp/go-memdb v1.3.5\ngo: downloading github.com/fsnotify/fsnotify v1.9.0\ngo: downloading go.uber.org/multierr v1.11.0\ngo: downloading golang.org/x/crypto v0.58.0\ngo: downloading connectrpc.com/connect/v2 v2.0.2\ngo: downloading github.com/jcmturner/rpc/v2 v2.0.3\ngo: downloading github.com/hashicorp/go-immutable-radix v1.3.1\ngo: downloading golang.org/x/text v0.43.0\ngo: downloading gopkg.in/yaml.v3 v3.0.1\ngo: downloading github.com/jcmturner/aescts/v2 v2.0.0\ngo: downloading github.com/x448/float16 v0.8.4\ngo: downloading google.golang.org/genproto/googleapis/api v0.0.0-20261026165753-2ffab32bce7e\n",
+   "premap-runs/renovate/results/1/stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"847518b0-1ef8-4fb0-a126-46e9285f896d\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-16T15:34:35.128Z\",\"v\":0}\n{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"847518b0-1ef8-4fb0-a126-46e9285f896d\",\"repository\":\"local\",\"githubDeps\":[\"php\",\"dyladan/component-owners\",\"open-telemetry/shared-workflows\",\"actions/checkout\",\"actions/setup-python\",\"actions/cache\",\"lycheeverse/lychee-action\",\"actions/setup-go\",\"dorny/paths-filter\",\"python\",\"go\",\"github/codeql-action\",\"docker/login-action\",\"docker/setup-qemu-action\",\"docker/setup-buildx-action\",\"docker/build-push-action\",\"erlef/setup-beam\",\"fossas/fossa-action\",\"erlang/otp\",\"elixir-lang/elixir\",\"gradle/actions\",\"actions/github-script\",\"actions/setup-node\",\"ruby/setup-ruby\",\"node\",\"actions/upload-artifact\",\"actions/download-artifact\",\"actions/stale\",\"heroicons\"],\"msg\":\"GitHub token is required for some dependencies\",\"time\":\"2026-11-16T15:34:36.315Z\",\"v\":0}\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 39s\n",
+   "premap-runs/tsc/results/0/stdout": "\nadded 1 package in 1s\n",
+   "dynamic-runs/dynamic-callgrind-rust/dynamic-rust/tests-0.log": "walkdir v2.5.0\n   Compiling tracing-log v0.2.0\n   Compiling notify-types v2.3.0\n   Compiling thread_local v1.1.10\n   Compiling opentelemetry-resource-detectors v0.13.0\n   Compiling actix-router v0.5.5\n   Compiling semver v1.0.28\n   Compiling murmurhash3 v0.0.5\n   Compiling nu-ansi-term v0.50.3\n   Compiling opentelemetry-semantic-conventions v0.33.1\n   Compiling notify v8.2.2\n   Compiling lru v0.18.5\n   Compiling uuid v1.29.2\n   Compiling matchers v0.2.0\n   Compiling tokio-macros v2.7.2\n   Compiling tracing-attributes v0.1.31\n   Compiling futures-macro v0.3.34\n   Compiling zerofrom-derive v0.1.8\n   Compiling yoke-derive v0.8.4\n   Compiling zerovec-derive v0.11.7\n   Compiling displaydoc v0.2.7\n   Compiling zerocopy-derive v0.8.63\n   Compiling prost-derive v0.14.6\n   Compiling serde_derive v1.0.229\n   Compiling thiserror-impl v2.0.21\n   Compiling async-trait v0.1.92\n   Compiling derive_more-impl v2.1.1\n   Compiling tokio v1.54.1\n   Compiling futures-util v0.3.34\n   Compiling typed-builder-macro v0.22.0\n   Compiling pin-project-internal v1.1.13\n   Compiling actix-macros v0.2.5\n   Compiling zerofrom v0.1.8\n   Compiling actix-web-codegen v4.5.0\n   Compiling yoke v0.8.4\n   Compiling tracing-subscriber v0.3.23\n   Compiling zerovec v0.11.9\n   Compiling zerotrie v0.2.5\n   Compiling opentelemetry v0.33.1\n   Compiling prost v0.14.6\n   Compiling tinystr v0.8.5\n   Compiling potential_utf v0.1.6\n   Compiling zstd v0.14.4\n   Compiling prost-types v0.14.6\n   Compiling typed-builder v0.22.0\n   Compiling pin-project v1.1.13\n   Compiling icu_collections v2.4.0\n   Compiling icu_locale_core v2.4.0\n   Compiling derive_more v2.1.1\n   Compiling opentelemetry-appender-tracing v0.33.1\n   Compiling icu_provider v2.4.0\n   Compiling prost-build v0.14.6\n   Compiling futures-executor v0.3.34\n   Compiling serde_urlencoded v0.7.1\n   Compiling datavalue-rs v0.2.3\n   Compiling icu_normalizer v2.4.0\n   Compiling icu_properties v2.4.0\n   Compiling datalogic-rs v5.4.0\n   Compiling tonic-prost-build v0.14.9\n   Compiling open-feature-flagd v0.3.0\nerror: failed to run custom build command for `open-feature-flagd v0.3.0`\n\nCaused by:\n  process didn't exit successfully: `/work/src/shipping/target/debug/build/open-feature-flagd-31e6f898493112de/build-script-build` (exit status: 101)\n  --- stderr\n\n  thread 'main' (4829) panicked at /daodan/state/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/open-feature-flagd-0.3.0/build.rs:20:14:\n  called `Result::unwrap()` on an `Err` value: Custom { kind: NotFound, error: \"Could not find `protoc`. If `protoc` is installed, try setting the `PROTOC` environment variable to the path of the `protoc` binary. To install it on Debian, run `apt-get install protobuf-compiler`. It is also available at https://github.com/protocolbuffers/protobuf/releases  For more information: https://docs.rs/prost-build/#sourcing-protoc\" }\n  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nwarning: build failed, waiting for other jobs to finish...\n",
+   "dynamic-runs/dynamic-record-go/dynamic-go/tests-0.log": "ok  \tgithub.com/open-telemetry/opentelemetry-demo/src/checkout\t0.024s\n?   \tgithub.com/open-telemetry/opentelemetry-demo/src/checkout/daodanrec\t[no test files]\n?   \tgithub.com/open-telemetry/opentelemetry-demo/src/checkout/flags\t[no test files]\n?   \tgithub.com/open-telemetry/opentelemetry-demo/src/checkout/genproto/oteldemo\t[no test files]\n?   \tgithub.com/open-telemetry/opentelemetry-demo/src/checkout/kafka\t[no test files]\nok  \tgithub.com/open-telemetry/opentelemetry-demo/src/checkout/money\t0.011s\n",
+   "dynamic-runs/dynamic-record-go/dynamic-go/tests-1.log": "ok  \tgithub.com/opentelemetry/opentelemetry-demo/src/product-catalog\t0.010s\n?   \tgithub.com/opentelemetry/opentelemetry-demo/src/product-catalog/daodanrec\t[no test files]\n?   \tgithub.com/opentelemetry/opentelemetry-demo/src/product-catalog/flags\t[no test files]\n?   \tgithub.com/opentelemetry/opentelemetry-demo/src/product-catalog/genproto/oteldemo\t[no test files]\n",
+   "dynamic-runs/dynamic-record-go/prepare.log": "mise by @jdx \u2013 installing 1 tool\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591 0/1 \u00b7 3.0s\n  go@1.27.1  extracting  3.0s\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591 0/1 \u00b7 6.0s\n  go@1.27.1  extracting  6.0s\nmise go@1.27.1 go version go1.27.1 linux/amd64\nmise \u2713 go@1.27.1  6.4s  go1.27.1.linux-amd64.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 6.4s\nmise WARN  go installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use go\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/execute.log": "DAODAN_PEAK -\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/out/tests.log": "Picked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home -javaagent:/daodan/state/in/dynamic-jvm/agent.jar=out=/daodan/out/calls,root=/work/src/recommendation\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.9.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n> Task :copyProtos UP-TO-DATE\n> Task :protobufDummy UP-TO-DATE\n> Task :extractIncludeProto UP-TO-DATE\n> Task :extractProto UP-TO-DATE\n> Task :generateProto UP-TO-DATE\n> Task :compileJava UP-TO-DATE\n> Task :processProtoResources UP-TO-DATE\n> Task :processResources UP-TO-DATE\n> Task :classes UP-TO-DATE\n> Task :extractIncludeTestProto UP-TO-DATE\n> Task :extractTestProto UP-TO-DATE\n> Task :generateTestProto NO-SOURCE\n> Task :compileTestJava UP-TO-DATE\n> Task :processTestProtoResources UP-TO-DATE\n> Task :processTestResources NO-SOURCE\n> Task :testClasses UP-TO-DATE\n\n> Task :test\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home -javaagent:/daodan/state/in/dynamic-jvm/agent.jar=out=/daodan/out/calls,root=/work/src/recommendation\n\nOpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended\n2026-11-16T15:50:22.625Z  INFO 350 --- [recommendation] [ionShutdownHook] o.s.g.s.lifecycle.GrpcServerLifecycle    : Completed gRPC server shutdown\n\nBUILD SUCCESSFUL in 17s\n12 actionable tasks: 1 executed, 11 up-to-date\nConsider enabling configuration cache to speed up this build: https://docs.gradle.org/9.9.0/userguide/configuration_cache_enabling.html\n",
+   "dynamic-runs/dynamic-record-jvm/build-0/container/prepare.log": "mise by @jdx \u2013 installing 1 tool\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 0/1 \u00b7 3.0s\n  java@21.0.13+9.0.LTS  extracting  3.0s\nmise java@21.0.13+9.0.LTS openjdk version \"21.0.13\" 2026-10-20 LTS\nmise java@21.0.13+9.0.LTS OpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)\nmise java@21.0.13+9.0.LTS OpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode, sharing)\nmise \u2713 java@21.0.13+9.0.LTS  3.2s  OpenJDK21U-jdk_x64_linux_hotspot_21.0.13_9.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 3.2s\nmise WARN  java installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use java\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nDAODAN_STEP begin agent 1794844180.359131910\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\nDAODAN_STEP end agent 0 1794844182.560290335\nDAODAN_STEP begin compile 1794844182.562451608\nPicked up JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=/daodan/state/home\n\nWelcome to Gradle 9.9.0!\n\nHere are the highlights of this release:\n - Performance improvements for Kotlin DSL compilation\n - Test filtering for non-method JUnit Platform tests\n - Wrapper settings preserved on upgrade\n - Predefined groups in the Problems API\n\nFor more details see https://docs.gradle.org/9.9.0/release-notes.html\n\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.9.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n> Task :copyProtos\n> Task :protobufDummy UP-TO-DATE\n> Task :extractIncludeProto\n> Task :extractProto\n> Task :generateProto\n> Task :compileJava\n> Task :processProtoResources\n> Task :processResources\n> Task :classes\n> Task :extractIncludeTestProto\n> Task :extractTestProto\n> Task :generateTestProto NO-SOURCE\n> Task :compileTestJava\n> Task :processTestProtoResources\n> Task :processTestResources NO-SOURCE\n> Task :testClasses\n> Task :daodanTests\n\nBUILD SUCCESSFUL in 13s\n12 actionable tasks: 12 executed\nConsider enabling configuration cache to speed up this build: https://docs.gradle.org/9.9.0/userguide/configuration_cache_enabling.html\nDAODAN_STEP end compile 0 1794844196.461980078\nDAODAN_PEAK -\n",
+   "dynamic-runs/dynamic-record-python/execute.log": "DAODAN-DYNAMIC 0 python 3.12.16 1\nDAODAN-DYNAMIC 0 exit 5 1\nDAODAN-DYNAMIC 1 python 3.12.16 1\nDAODAN-DYNAMIC 1 exit 1 122\n",
+   "dynamic-runs/dynamic-record-python/out/tests-0.log": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.1.1, pluggy-1.7.0\nrootdir: /work/src/load-generator\nplugins: locust-2.47.0\ncollected 0 items\n\n============================ no tests ran in 0.02s =============================\n",
+   "dynamic-runs/dynamic-record-python/out/tests-1.log": ".\nERROR test_metrics.py::test_service_has_metrics[frontend] - Failed: Warmup pr...\nERROR test_metrics.py::test_service_has_metrics[frontend-proxy] - Failed: War...\nERROR test_metrics.py::test_service_has_metrics[image-provider] - Failed: War...\nERROR test_metrics.py::test_service_has_metrics[payment] - Failed: Warmup pro...\nERROR test_metrics.py::test_service_has_metrics[product-catalog] - Failed: Wa...\nERROR test_metrics.py::test_service_has_metrics[quote] - Failed: Warmup probe...\nERROR test_metrics.py::test_service_has_metrics[recommendation] - Failed: War...\nERROR test_metrics.py::test_service_has_metrics[shipping] - Failed: Warmup pr...\nERROR test_metrics.py::test_service_has_metrics[load-generator] - Failed: War...\nERROR test_traces.py::test_service_has_traces[ad] - Failed: Warmup probe comp...\nERROR test_traces.py::test_service_has_traces[cart] - Failed: Warmup probe co...\nERROR test_traces.py::test_service_has_traces[checkout] - Failed: Warmup prob...\nERROR test_traces.py::test_service_has_traces[currency] - Failed: Warmup prob...\nERROR test_traces.py::test_service_has_traces[email] - Failed: Warmup probe c...\nERROR test_traces.py::test_service_has_traces[frontend] - Failed: Warmup prob...\nERROR test_traces.py::test_service_has_traces[frontend-proxy] - Failed: Warmu...\nERROR test_traces.py::test_service_has_traces[image-provider] - Failed: Warmu...\nERROR test_traces.py::test_service_has_traces[payment] - Failed: Warmup probe...\nERROR test_traces.py::test_service_has_traces[product-catalog] - Failed: Warm...\nERROR test_traces.py::test_service_has_traces[quote] - Failed: Warmup probe c...\nERROR test_traces.py::test_service_has_traces[recommendation] - Failed: Warmu...\nERROR test_traces.py::test_service_has_traces[shipping] - Failed: Warmup prob...\nERROR test_traces.py::test_service_has_traces[load-generator] - Failed: Warmu...\nERROR test_traces_edges.py::test_service_edge_exists[frontend->ad] - Failed: ...\nERROR test_traces_edges.py::test_service_edge_exists[frontend->recommendation]\nERROR test_traces_edges.py::test_service_edge_exists[frontend->product-catalog]\nERROR test_traces_edges.py::test_service_edge_exists[frontend->cart] - Failed...\nERROR test_traces_edges.py::test_service_edge_exists[frontend->checkout] - Fa...\nERROR test_traces_edges.py::test_service_edge_exists[checkout->cart] - Failed...\nERROR test_traces_edges.py::test_service_edge_exists[checkout->payment] - Fai...\nERROR test_traces_edges.py::test_service_edge_exists[checkout->shipping] - Fa...\nERROR test_traces_edges.py::test_service_edge_exists[checkout->email] - Faile...\nERROR test_traces_edges.py::test_service_edge_exists[checkout->product-catalog]\nERROR test_traces_edges.py::test_service_edge_exists[checkout->currency] - Fa...\nERROR test_traces_edges.py::test_service_edge_exists[recommendation->product-catalog]\nERROR test_traces_edges.py::test_service_edge_exists[shipping->quote] - Faile...\n================== 1 skipped, 55 errors in 121.00s (0:02:00) ===================\n",
+   "dynamic-runs/dynamic-record-python/prepare.log": "mise by @jdx \u2013 installing 1 tool\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 0/1 \u00b7 3.0s\n  python@3.12.16  extracting  3.0s  34.7/34.7 MB \u00b7 14.7 MB/s\nmise python@3.12.16 Python 3.12.16\nmise \u2713 python@3.12.16  3.5s  cpython-3.12.16+20261110-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 3.5s\nmise WARN  python installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use python\n"
+  },
+  "seconds": 1215.9
+ },
+ "jvm-android-app-lib": {
+  "premap": {
+   "languages": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [
+     "Gradle Kotlin DSL",
+     "Java Properties",
+     "XML"
+    ],
+    "wrong": []
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 3
+   },
+   "excluded": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units": {
+    "given": true,
+    "expected": 3,
+    "found": 3,
+    "found_normalised": 3,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": false,
+    "expected": 4
+   },
+   "units.config": {
+    "given": true,
+    "expected": 7,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [
+     "gradle-project@app > build_tags",
+     "gradle-project@app > compile_tasks",
+     "gradle-project@app > entry_files",
+     "gradle-project@app > source_sets",
+     "gradle-project@core > build_tags",
+     "gradle-project@core > compile_tasks",
+     "gradle-project@core > source_sets"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": true,
+    "expected": 2,
+    "found": 2,
+    "found_normalised": 2,
+    "missed": [],
+    "extra": [
+     "gradle@. > ."
+    ],
+    "wrong": []
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 5,
+    "found": 5,
+    "found_normalised": 5,
+    "missed": [],
+    "extra": [
+     "java@app/build.gradle.kts#sourceCompatibility",
+     "java@app/build.gradle.kts#targetCompatibility",
+     "android-build-tools@app/build.gradle.kts#android.buildToolsVersion",
+     "java@core/build.gradle.kts#sourceCompatibility",
+     "java@core/build.gradle.kts#targetCompatibility",
+     "android-build-tools@core/build.gradle.kts#android.buildToolsVersion",
+     "kotlin@build.gradle.kts"
+    ],
+    "wrong": []
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 9
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 3
+   },
+   "services": {
+    "given": false,
+    "expected": 1
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "modules.py@daodan/module-graph/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "python-build@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.004,
+    "source": "requirements@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "npm-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "npm-tests@daodan/premap/v5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.001,
+    "source": "jvm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "project-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "scanner",
+    "seconds": 39.945,
+    "source": "go-enry@v2.9.6",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 47.507,
+    "source": "renovate@44.239.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "go@1.27.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "cargo@1.99.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "uv@0.11.28",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "tsc@6.0.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "npm@bundled with Node",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "cmake@4.4.5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "make@4.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 83.663,
+    "source": "gradle@9.9.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "maven@3.10.0",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "dotnet@10.0.404",
+    "state": "not_needed"
+   }
+  ],
+  "gaps": [
+   {
+    "detail": "the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "kind": "toolchain_undeclared",
+    "path": ".",
+    "source": "jvm-files@daodan/premap/v1"
+   }
+  ],
+  "units": 3,
+  "toolchains": [
+   {
+    "declared_in": "app/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "app/build.gradle.kts#sourceCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "app/build.gradle.kts#targetCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "app/build.gradle.kts#android.compileSdk",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-sdk",
+    "version": "35"
+   },
+   {
+    "declared_in": "app/build.gradle.kts#android.buildToolsVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-build-tools",
+    "version": "34.0.0"
+   },
+   {
+    "declared_in": "core/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "core/build.gradle.kts#sourceCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "core/build.gradle.kts#targetCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "core/build.gradle.kts#android.compileSdk",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-sdk",
+    "version": "35"
+   },
+   {
+    "declared_in": "core/build.gradle.kts#android.buildToolsVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-build-tools",
+    "version": "34.0.0"
+   },
+   {
+    "declared_in": "gradle/wrapper/gradle-wrapper.properties#distributionUrl",
+    "line": 3,
+    "sources": [
+     "jvm-files@daodan/premap/v1",
+     "renovate@44.239.1"
+    ],
+    "tool": "gradle",
+    "version": "8.11.1"
+   },
+   {
+    "declared_in": "build.gradle.kts",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "kotlin",
+    "version": "2.0.21"
+   }
+  ],
+  "steps": {
+   "scan": {
+    "modules": 3,
+    "graph": "/runs/jvm-android-app-lib/modules.json",
+    "action": "rebuilt",
+    "units": 3,
+    "gaps": 1,
+    "premap": "/runs/jvm-android-app-lib/premap.json"
+   },
+   "analyze": {
+    "pass": true,
+    "manifest_digest": "c82baaa998ba2e428758bb63f2e4a0865213cc723ffa59fcc97beddc093928c9",
+    "languages": {
+     "kotlin": {
+      "state": "failed",
+      "engine": "scip-kotlin",
+      "reason": "scip-java wrote no index (preparation exited with code 1): lems/problems-report.html\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\n8 actionable tasks: 6 executed, 2 up-to-date\nExecution failed for task ':app:processFreeDebugGoogleServices'.\n> File google-services.json is missing. \n  The Google Services Plugin cannot function without it. \n  Searched locations: /work/app/src/free/debug/google-services.json, /work/app/src/debug/free/google-services.json, /work/app/src/free/google-services.json, /work/app/src/debug/google-services.json, /work/app/src/freeDebug/google-services.json, /work/app/google-services.json\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 34s"
+     }
+    },
+    "engines": {
+     "scip-kotlin": {
+      "engine": "scip-kotlin@0.14.2",
+      "available": false,
+      "reason": "scip-java wrote no index (preparation exited with code 1): lems/problems-report.html\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\n8 actionable tasks: 6 executed, 2 up-to-date\nExecution failed for task ':app:processFreeDebugGoogleServices'.\n> File google-services.json is missing. \n  The Google Services Plugin cannot function without it. \n  Searched locations: /work/app/src/free/debug/google-services.json, /work/app/src/debug/free/google-services.json, /work/app/src/free/google-services.json, /work/app/src/debug/google-services.json, /work/app/src/freeDebug/google-services.json, /work/app/google-services.json\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 34s",
+      "indexer": {
+       "name": "scip-java",
+       "peak_mb": null,
+       "seconds": 35.5,
+       "version": "0.14.2"
+      },
+      "gaps": [
+       {
+        "detail": "the build stopped without google-services.json, which the Google Services Gradle plugin (com.google.gms.google-services) reads: the Firebase project's configuration, which a developer downloads from the Firebase console, kept out of the repository; Daodan makes none, so the build gives nothing",
+        "file": "google-services.json",
+        "kind": "build_input_missing",
+        "path": "."
+       }
+      ]
+     }
+    },
+    "started_at": "2026-11-16T15:35:43Z",
+    "available": false,
+    "finished_at": "2026-11-16T15:37:56Z"
+   },
+   "dynamic": {
+    "languages": {
+     "kotlin": {
+      "state": "no-static-graph",
+      "reason": "kotlin: the store holds no static graph of it (no engine edge store at /runs/jvm-android-app-lib/engine-edges.sqlite): an observed edge answers a reference of a graph that is there"
+     }
+    }
+   },
+   "union": {
+    "languages": {
+     "kotlin": {
+      "engine": "scip-kotlin",
+      "reason": "scip-java wrote no index (preparation exited with code 1): lems/problems-report.html\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\n8 actionable tasks: 6 executed, 2 up-to-date\nExecution failed for task ':app:processFreeDebugGoogleServices'.\n> File google-services.json is missing. \n  The Google Services Plugin cannot function without it. \n  Searched locations: /work/app/src/free/debug/google-services.json, /work/app/src/debug/free/google-services.json, /work/app/src/free/google-services.json, /work/app/src/debug/google-services.json, /work/app/src/freeDebug/google-services.json, /work/app/google-services.json\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 34s",
+      "state": "failed"
+     }
+    }
+   }
+  },
+  "events": {
+   "step.started": 4,
+   "log": 1,
+   "progress": 27,
+   "gap": 3,
+   "step.finished": 4,
+   "analyzer.started": 1,
+   "analyzer.finished": 1,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "scan": [
+    0.8,
+    172.0
+   ],
+   "analyze": [
+    172.0,
+    305.3
+   ],
+   "dynamic": [
+    305.3,
+    305.4
+   ],
+   "union": [
+    305.4,
+    305.4
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 23.376,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.864,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 56.086,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.222,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 22.567,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 8.875,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/daodan-enry/results/0/stderr": "go: creating new go.mod: module daodan-enry\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/go-enry/go-enry/v2 v2.9.6\ngo: downloading github.com/go-enry/go-oniguruma v1.2.1\ngo: added github.com/go-enry/go-enry/v2 v2.9.6\ngo: added github.com/go-enry/go-oniguruma v1.2.1\n",
+   "premap-runs/renovate/results/1/stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"d3818be3-845b-4e55-8dad-01767891998d\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-16T15:34:17.470Z\",\"v\":0}\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 19s\n"
+  },
+  "seconds": 305.4
+ },
+ "mix-poly-firebase": {
+  "premap": {
+   "languages": {
+    "given": true,
+    "expected": 6,
+    "found": 6,
+    "found_normalised": 6,
+    "missed": [],
+    "extra": [
+     "Cloud Firestore Security Rules",
+     "Gradle Kotlin DSL",
+     "JSON",
+     "JSON with Comments",
+     "TOML",
+     "XML"
+    ],
+    "wrong": []
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 8
+   },
+   "excluded": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [
+     "android/gradle/"
+    ],
+    "wrong": []
+   },
+   "units": {
+    "given": true,
+    "expected": 7,
+    "found": 6,
+    "found_normalised": 6,
+    "missed": [
+     "source-tree@shared"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 3,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [
+     "npm-package@react-app > shared",
+     "cargo-crate@react-app/src-tauri > shop-web",
+     "npm-package@functions > shared"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": true,
+    "expected": 6,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [
+     "source-tree@shared > shared",
+     "npm-package@react-app > react-app/src",
+     "npm-package@functions > functions/src",
+     "python-project@functions-python > functions-python",
+     "gradle-project@android/app > android/app/src/main/java"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.config": {
+    "given": true,
+    "expected": 11,
+    "found": 2,
+    "found_normalised": 2,
+    "missed": [
+     "npm-package@react-app > entry_files",
+     "cargo-crate@react-app/src-tauri > entry_files",
+     "python-project@functions-python > entry_files",
+     "gradle-project@android/app > build_tags",
+     "gradle-project@android/app > compile_tasks",
+     "gradle-project@android/app > entry_files",
+     "gradle-project@android/app > source_sets"
+    ],
+    "extra": [],
+    "wrong": [
+     {
+      "item": "npm-package@react-app > paths",
+      "fields": {
+       "paths": {
+        "expected": {
+         "@shared/*": [
+          "shared/*"
+         ],
+         "@shared": [
+          "shared"
+         ]
+        },
+        "got": {
+         "@shared/*": [
+          "shared/*"
+         ]
+        }
+       }
+      },
+      "same_after_normalisation": false
+     },
+     {
+      "item": "npm-package@functions > entry_files",
+      "fields": {
+       "entry_files": {
+        "expected": [
+         "functions/src/index.ts"
+        ],
+        "got": [
+         "functions/lib/functions/src/index.js"
+        ]
+       }
+      },
+      "same_after_normalisation": false
+     }
+    ]
+   },
+   "workspace": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": true,
+    "expected": 2,
+    "found": 2,
+    "found_normalised": 2,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 8,
+    "found": 5,
+    "found_normalised": 5,
+    "missed": [
+     "node@firebase.json",
+     "python@firebase.json",
+     "python@functions-python/pyproject.toml"
+    ],
+    "extra": [
+     "rust-edition@react-app/src-tauri/Cargo.toml",
+     "java@android/app/build.gradle.kts#targetCompatibility",
+     "java@android/app/build.gradle.kts#kotlin.compilerOptions.jvmTarget",
+     "android-build-tools@android/app/build.gradle.kts#android.buildToolsVersion",
+     "kotlin@android/build.gradle.kts",
+     "typescript@functions/package.json",
+     "typescript@react-app/package.json"
+    ],
+    "wrong": []
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 30
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 8
+   },
+   "services": {
+    "given": false,
+    "expected": 5
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "modules.py@daodan/module-graph/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.001,
+    "source": "python-build@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "requirements@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.001,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.001,
+    "source": "npm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "npm-tests@daodan/premap/v5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.001,
+    "source": "jvm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "project-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "scanner",
+    "seconds": 26.487,
+    "source": "go-enry@v2.9.6",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 52.468,
+    "source": "renovate@44.239.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "go@1.27.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 25.51,
+    "source": "cargo@1.99.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.001,
+    "source": "uv@0.11.28",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 67.713,
+    "source": "tsc@6.0.3",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 21.52,
+    "source": "npm@10.8.2",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "cmake@4.4.5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "make@4.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 58.155,
+    "source": "gradle@9.9.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "maven@3.10.0",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "dotnet@10.0.404",
+    "state": "not_needed"
+   }
+  ],
+  "gaps": [
+   {
+    "detail": "the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "kind": "toolchain_undeclared",
+    "path": "android",
+    "source": "jvm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "registries unknown: cargo metadata --locked: Updating crates.io index\nerror: cannot create the lock file /work/react-app/src-tauri/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.",
+    "kind": "model_partial",
+    "path": "react-app/src-tauri",
+    "source": "cargo@1.99.1"
+   },
+   {
+    "detail": "a build script is present and Daodan's index does not run it: the code it generates and the cfg flags it sets are unknown",
+    "kind": "not_executed",
+    "path": "react-app/src-tauri/build.rs",
+    "source": "premap@daodan/premap/v1",
+    "unit": "shop-desktop"
+   },
+   {
+    "detail": "2 TypeScript files that no unit of kind npm-package holds",
+    "files": 2,
+    "kind": "code_outside_units",
+    "language": "TypeScript",
+    "path": "shared",
+    "source": "premap@daodan/premap/v1"
+   }
+  ],
+  "units": 6,
+  "toolchains": [
+   {
+    "declared_in": "react-app/src-tauri/Cargo.toml",
+    "sources": [
+     "cargo@1.99.1"
+    ],
+    "tool": "rust",
+    "version": "1.77.2"
+   },
+   {
+    "declared_in": "react-app/src-tauri/Cargo.toml",
+    "sources": [
+     "cargo@1.99.1"
+    ],
+    "tool": "rust-edition",
+    "version": "2021"
+   },
+   {
+    "declared_in": "android/app/build.gradle.kts#sourceCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "android/app/build.gradle.kts#targetCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "android/app/build.gradle.kts#kotlin.compilerOptions.jvmTarget",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "17"
+   },
+   {
+    "declared_in": "android/app/build.gradle.kts#android.compileSdk",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-sdk",
+    "version": "35"
+   },
+   {
+    "declared_in": "android/app/build.gradle.kts#android.buildToolsVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-build-tools",
+    "version": "34.0.0"
+   },
+   {
+    "declared_in": "android/gradle/wrapper/gradle-wrapper.properties#distributionUrl",
+    "line": 3,
+    "sources": [
+     "jvm-files@daodan/premap/v1",
+     "renovate@44.239.1"
+    ],
+    "tool": "gradle",
+    "version": "8.10.2"
+   },
+   {
+    "declared_in": "android/build.gradle.kts",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "kotlin",
+    "version": "2.0.21"
+   },
+   {
+    "declared_in": "functions/package.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "typescript",
+    "version": "~5.6.3"
+   },
+   {
+    "declared_in": "functions/package.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "node",
+    "version": "20"
+   },
+   {
+    "declared_in": "react-app/package.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "typescript",
+    "version": "~5.6.2"
+   }
+  ],
+  "steps": {
+   "scan": {
+    "modules": 6,
+    "graph": "/runs/mix-poly-firebase/modules.json",
+    "action": "rebuilt",
+    "units": 6,
+    "gaps": 4,
+    "premap": "/runs/mix-poly-firebase/premap.json"
+   },
+   "analyze": {
+    "pass": true,
+    "manifest_digest": "4c0b40a43ed640db95e56436b5a00edcd0c635c128903857d297e03190e9c8a4",
+    "languages": {
+     "rust": {
+      "state": "fresh",
+      "engine": "scip-rust@2026-11-09"
+     },
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a"
+     },
+     "python": {
+      "state": "fresh",
+      "engine": "scip-python@0.6.8"
+     },
+     "typescript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2"
+     },
+     "kotlin": {
+      "state": "failed",
+      "engine": "scip-kotlin",
+      "reason": "scip-java wrote no index (preparation exited with code 1): \n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:processDebugGoogleServices'.\n> File google-services.json is missing. \n  The Google Services Plugin cannot function without it. \n  Searched locations: /work/android/app/src/debug/google-services.json, /work/android/app/src/debug/google-services.json, /work/android/app/src/google-services.json, /work/android/app/src/debug/google-services.json, /work/android/app/src/Debug/google-services.json, /work/android/app/google-services.json\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n6 actionable tasks: 5 executed, 1 up-to-date\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 38s"
+     }
+    },
+    "engines": {
+     "scip-rust": {
+      "engine": "scip-rust@2026-11-09",
+      "available": true,
+      "languages": {
+       "rust": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "rust-analyzer",
+       "peak_mb": 2249,
+       "seconds": 12.1,
+       "version": "2026-11-09"
+      }
+     },
+     "stylesheet": {
+      "engine": "stylesheet@145560a4592a",
+      "available": true,
+      "languages": {
+       "stylesheet": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "codebase-map stylesheet.py + typescript + tailwindcss",
+       "peak_mb": 213,
+       "seconds": 1.0,
+       "version": "145560a4592a",
+       "versions": "e62b3f368913 + 5.9.3 + None"
+      }
+     },
+     "scip-python": {
+      "engine": "scip-python@0.6.8",
+      "available": true,
+      "languages": {
+       "python": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-python",
+       "peak_mb": 261,
+       "seconds": 2.1,
+       "version": "0.6.8"
+      }
+     },
+     "scip-typescript": {
+      "engine": "scip-typescript@0.6.2",
+      "available": true,
+      "languages": {
+       "typescript": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-typescript",
+       "peak_mb": null,
+       "seconds": 45.4,
+       "types": [
+        "@types/node@20.19.43"
+       ],
+       "version": "0.6.2"
+      }
+     },
+     "scip-kotlin": {
+      "engine": "scip-kotlin@0.14.2",
+      "available": false,
+      "reason": "scip-java wrote no index (preparation exited with code 1): \n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:processDebugGoogleServices'.\n> File google-services.json is missing. \n  The Google Services Plugin cannot function without it. \n  Searched locations: /work/android/app/src/debug/google-services.json, /work/android/app/src/debug/google-services.json, /work/android/app/src/google-services.json, /work/android/app/src/debug/google-services.json, /work/android/app/src/Debug/google-services.json, /work/android/app/google-services.json\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n6 actionable tasks: 5 executed, 1 up-to-date\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 38s",
+      "indexer": {
+       "name": "scip-java",
+       "peak_mb": null,
+       "seconds": 39.4,
+       "version": "0.14.2"
+      },
+      "gaps": [
+       {
+        "detail": "the build stopped without google-services.json, which the Google Services Gradle plugin (com.google.gms.google-services) reads: the Firebase project's configuration, which a developer downloads from the Firebase console, kept out of the repository; Daodan makes none, so the build gives nothing",
+        "file": "google-services.json",
+        "kind": "build_input_missing",
+        "path": "android"
+       }
+      ]
+     }
+    },
+    "started_at": "2026-11-16T15:37:10Z",
+    "available": true,
+    "finished_at": "2026-11-16T15:41:05Z"
+   },
+   "dynamic": {
+    "languages": {
+     "stylesheet": {
+      "state": "no-observer",
+      "reason": "no observer runs this language's tests"
+     },
+     "rust": {
+      "state": "not-run",
+      "reason": "the crates of react-app/src-tauri hold no test (no #[test] attribute, no file in tests/): no test runs their code"
+     },
+     "typescript": {
+      "state": "not-run",
+      "reason": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+     },
+     "kotlin": {
+      "state": "no-static-graph",
+      "reason": "kotlin: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+     },
+     "python": {
+      "state": "not-run",
+      "reason": "no test ran: python -m pytest --continue-on-collection-errors in functions-python found no test to run: ============================= test session starts ============================== | platform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0 | rootdir: /work/functions-python | configfile: pyproject.toml | plugins: anyio-4.16.0 | collected 0 items |  | ============================ no tests ran in 0.03s ============================="
+     }
+    }
+   },
+   "union": {
+    "languages": {
+     "kotlin": {
+      "engine": "scip-kotlin",
+      "reason": "scip-java wrote no index (preparation exited with code 1): \n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:processDebugGoogleServices'.\n> File google-services.json is missing. \n  The Google Services Plugin cannot function without it. \n  Searched locations: /work/android/app/src/debug/google-services.json, /work/android/app/src/debug/google-services.json, /work/android/app/src/google-services.json, /work/android/app/src/debug/google-services.json, /work/android/app/src/Debug/google-services.json, /work/android/app/google-services.json\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n6 actionable tasks: 5 executed, 1 up-to-date\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 38s",
+      "state": "failed"
+     },
+     "python": {
+      "state": "fresh",
+      "engine": "scip-python@0.6.8",
+      "coverage": {
+       "sites": 16,
+       "answered": {
+        "external": 13
+       },
+       "holes": {
+        "undefined-project-symbol": {
+         "count": 3,
+         "examples": [
+          "functions-python/main.py:13 create",
+          "functions-python/main.py:18 id",
+          "functions-python/main.py:19 url"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "python firebase-functions@0.4.3": 5,
+        "python python-stdlib@3.11": 3,
+        "python firebase_admin@7.8.0": 2,
+        "python google-cloud-firestore@2.34.1": 2,
+        "python stripe@17.0.0": 1
+       },
+       "files": {
+        "snapshot": 1,
+        "indexed": 1,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "rust": {
+      "state": "fresh",
+      "engine": "scip-rust@2026-11-09",
+      "coverage": {
+       "sites": 7,
+       "answered": {
+        "external": 6,
+        "project-callable": 1
+       },
+       "holes": {},
+       "uncertain": 0,
+       "externals": {
+        "cargo tauri@2.12.6": 3,
+        "cargo core@https://github.com/rust-lang/rust/library/core": 2,
+        "cargo tauri-build@2.7.5": 1
+       },
+       "files": {
+        "snapshot": 3,
+        "indexed": 3,
+        "missing": []
+       },
+       "state": "complete"
+      }
+     },
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a",
+      "coverage": {
+       "sites": 2,
+       "answered": {
+        "namespace": 1
+       },
+       "holes": {
+        "no-rule": {
+         "count": 1,
+         "examples": [
+          "react-app/index.html:8 #root"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {},
+       "files": {
+        "snapshot": 9,
+        "indexed": 9,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "typescript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2",
+      "coverage": {
+       "sites": 50,
+       "answered": {
+        "external": 28,
+        "lexical": 1,
+        "project-callable": 4,
+        "project-value": 16
+       },
+       "holes": {
+        "NodeJS.ProcessEnv's index signature: only execution knows the value": {
+         "count": 1,
+         "examples": [
+          "functions/src/index.ts:8 STRIPE_SECRET_KEY"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "npm typescript@6.0.3": 5,
+        "npm @firebase/firestore@4.8.0": 5,
+        "npm @types/react@18.3.31": 3,
+        "npm stripe@17.7.0": 2,
+        "npm @firebase/functions@0.12.9": 2,
+        "npm @types/react-dom@18.3.7": 2,
+        "npm @types/node@20.19.43": 2,
+        "npm firebase-admin@12.7.0": 1,
+        "npm firebase-functions@6.6.0": 1,
+        "npm @google-cloud/firestore@7.11.6": 1,
+        "npm @stripe/stripe-js@4.10.0": 1,
+        "npm @firebase/app@0.13.2": 1,
+        "npm vite@5.4.21": 1,
+        "npm @vitejs/plugin-react@4.7.0": 1
+       },
+       "files": {
+        "snapshot": 8,
+        "indexed": 8,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     }
+    }
+   }
+  },
+  "events": {
+   "step.started": 4,
+   "log": 1,
+   "progress": 35,
+   "gap": 14,
+   "step.finished": 4,
+   "analyzer.started": 8,
+   "analyzer.finished": 8,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "scan": [
+    4.8,
+    256.7
+   ],
+   "analyze": [
+    256.7,
+    492.3
+   ],
+   "dynamic": [
+    492.3,
+    515.9
+   ],
+   "union": [
+    515.9,
+    515.9
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 10.232,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.199,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 11.647,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.255,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 12.144,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.078,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 41.446,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.623,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 5.575,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 4.015,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 23.554,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 6.275,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 36.104,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.402,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/cargo/results/1/stderr": "    Updating crates.io index\nerror: cannot create the lock file /work/react-app/src-tauri/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.\n",
+   "premap-runs/daodan-enry/results/0/stderr": "go: creating new go.mod: module daodan-enry\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/go-enry/go-enry/v2 v2.9.6\ngo: downloading github.com/go-enry/go-oniguruma v1.2.1\ngo: added github.com/go-enry/go-enry/v2 v2.9.6\ngo: added github.com/go-enry/go-oniguruma v1.2.1\n",
+   "premap-runs/npm/results/0/stderr": "mise by @jdx \u2013 installing 1 tool\nmise node@20.20.2 v20.20.2\nmise node@20.20.2 10.8.2\nmise \u2713 node@20.20.2  2.3s  node-v20.20.2-linux-x64.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 2.3s\nmise WARN  node installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use node\n",
+   "premap-runs/npm/results/2/stderr": "npm error code EUSAGE\nnpm error\nnpm error A package lock or shrinkwrap file is required in package-lock-only mode\nnpm error\nnpm error Retrieve a filtered list of packages\nnpm error\nnpm error Usage:\nnpm error npm query <selector>\nnpm error\nnpm error Options:\nnpm error [-g|--global]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [-ws|--workspaces] [--include-workspace-root] [--package-lock-only]\nnpm error [--expect-results|--expect-result-count <count>]\nnpm error\nnpm error Run \"npm help query\" for more info\nnpm error A complete log of this run can be found in: /daodan/state/npm-cache/_logs/2026-11-16T15_36_08_525Z-debug-0.log\n",
+   "premap-runs/npm/results/4/stderr": "npm error code EUSAGE\nnpm error\nnpm error A package lock or shrinkwrap file is required in package-lock-only mode\nnpm error\nnpm error Retrieve a filtered list of packages\nnpm error\nnpm error Usage:\nnpm error npm query <selector>\nnpm error\nnpm error Options:\nnpm error [-g|--global]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [-ws|--workspaces] [--include-workspace-root] [--package-lock-only]\nnpm error [--expect-results|--expect-result-count <count>]\nnpm error\nnpm error Run \"npm help query\" for more info\nnpm error A complete log of this run can be found in: /daodan/state/npm-cache/_logs/2026-11-16T15_36_09_382Z-debug-0.log\n",
+   "premap-runs/npm/results/5/stderr": "npm error code EUSAGE\nnpm error\nnpm error A package lock or shrinkwrap file is required in package-lock-only mode\nnpm error\nnpm error Retrieve a filtered list of packages\nnpm error\nnpm error Usage:\nnpm error npm query <selector>\nnpm error\nnpm error Options:\nnpm error [-g|--global]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [-ws|--workspaces] [--include-workspace-root] [--package-lock-only]\nnpm error [--expect-results|--expect-result-count <count>]\nnpm error\nnpm error Run \"npm help query\" for more info\nnpm error A complete log of this run can be found in: /daodan/state/npm-cache/_logs/2026-11-16T15_36_09_801Z-debug-0.log\n",
+   "premap-runs/npm/results/7/stderr": "npm error code EUSAGE\nnpm error\nnpm error A package lock or shrinkwrap file is required in package-lock-only mode\nnpm error\nnpm error Retrieve a filtered list of packages\nnpm error\nnpm error Usage:\nnpm error npm query <selector>\nnpm error\nnpm error Options:\nnpm error [-g|--global]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [-ws|--workspaces] [--include-workspace-root] [--package-lock-only]\nnpm error [--expect-results|--expect-result-count <count>]\nnpm error\nnpm error Run \"npm help query\" for more info\nnpm error A complete log of this run can be found in: /daodan/state/npm-cache/_logs/2026-11-16T15_36_10_635Z-debug-0.log\n",
+   "premap-runs/renovate/results/1/stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"49c755b2-7846-411a-a425-43345b9ffc3c\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-16T15:34:13.804Z\",\"v\":0}\n",
+   "premap-runs/tsc/results/0/stderr": "mise by @jdx \u2013 installing 1 tool\nmise node@20.20.2 v20.20.2\nmise node@20.20.2 10.8.2\nmise \u2713 node@20.20.2  2.4s  node-v20.20.2-linux-x64.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 2.4s\nmise WARN  node installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use node\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 19s\n",
+   "premap-runs/tsc/results/0/stdout": "\nadded 1 package in 890ms\n",
+   "dynamic-runs/dynamic-record-python/execute.log": "DAODAN-DYNAMIC 0 python 3.13.18 1\nDAODAN-DYNAMIC 0 exit 5 1\n",
+   "dynamic-runs/dynamic-record-python/out/tests-0.log": "============================= test session starts ==============================\nplatform linux -- Python 3.13.18, pytest-9.2.0, pluggy-1.7.0\nrootdir: /work/functions-python\nconfigfile: pyproject.toml\nplugins: anyio-4.16.0\ncollected 0 items\n\n============================ no tests ran in 0.03s =============================\n"
+  },
+  "seconds": 516.0
+ }
+}

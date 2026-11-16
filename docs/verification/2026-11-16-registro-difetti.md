@@ -4,6 +4,7 @@ Ogni difetto e buco trovato nel plugin codebase-map dal 13 novembre 2026, con la
 
 Convenzioni:
 
+- Gli id non cambiano: una scheda nuova prende il numero libero successivo e sta nella sua area.
 - I percorsi `scripts/…` stanno sotto `plugins/codebase-map/skills/map/`.
 - I giri della pipeline, tutti del 16 novembre 2026, stanno in `benchmarks/project-model/results/pipeline/2026-11-16-<giro>.json`, con il rapporto `.report.md` accanto:
   - `fixtures`: 104 progetti in miniatura (`68d8f4c59`);
@@ -11,7 +12,9 @@ Convenzioni:
   - `giro-2`: i 15 repository veri restanti e 12 fixture corrette (`b41e0d6e8`);
   - `finale`: 122 casi, sul codice fino a `492a7b212` (`ee1e83fc8`);
   - `java-versions`: le 18 `jvm-ver-*`, sul codice a `68a846a4a` (`347bc1403`);
-  - `conferma`: 32 casi (`828b5413b`).
+  - `conferma`: 32 casi (`828b5413b`);
+  - `jvm-otel-android`: otel-demo, jvm-android-app-lib e mix-poly-firebase, sull'albero di lavoro con il codice poi committato in `39805f5e7`;
+  - `jvm-kotlinconf`: kotlinconf, sull'albero di lavoro con il codice poi committato in `22dca6da8`.
 - I repository veri sono fissati a un commit in `benchmarks/project-model/fixtures/<caso>/source.json`:
   - chi `c64ed7d6635f`, javapoet `b9017a9503b7`, klaxon `1173bdc568a6`, python-semver `b6e83e3e40d3`, semver `280ebcb6edac`, tinyxml2 `9148bdf719e9`, tududi `71da9d7b34df`, zlib `51b7f2abdade`;
   - fastapi `aabb90126964`, hoppscotch `55908a76a1d0`, jhipster-sample `6b000b5d23a3`, kotlinconf `146e891c150c`, memos `509e41bd1a1b`;
@@ -23,249 +26,285 @@ Convenzioni:
 - Verifica:
   - «solo test»: lo confermano solo le suite, che dal commit `233618aa1` girano su Modal;
   - «da verificare»: nessun commit o risultato lo prova ancora;
-  - «corsa su Modal, fuori da `results/`»: il risultato non è salvato nel repository.
+  - «in stage»: il lavoro è nell'indice di git, non ancora in un commit.
 - Il commit `b6f276fee` e il benchmark `f63ed542d` sono di senior-review e restano fuori. I commit feat che non correggono nulla sono elencati in fondo.
 
 ## Indice
 
-234 schede: 168 risolte, 30 aperte, 36 buchi dichiarati.
+238 schede: 177 risolte, 22 aperte, 39 buchi dichiarati.
 
-| Id | Nome | Area | Progetto o caso | Stato | Commit |
-| --- | --- | --- | --- | --- | --- |
-| D-001 | Due build system nella stessa cartella fusi in un'unità | pre-mappa e preparazione | corpus della pre-mappa | risolto | `708eae48f` |
-| D-002 | Go: requisiti indiretti letti e moduli legati fuori da un workspace | pre-mappa e preparazione | corpus della pre-mappa | risolto | `708eae48f` |
-| D-003 | Maven: dipendenze non lette come gruppo:artefatto e profili taciuti | pre-mappa e preparazione | corpus della pre-mappa | risolto | `708eae48f` |
-| D-004 | Un glob di workspace crea un'unità per cartella | pre-mappa e preparazione | corpus della pre-mappa | risolto | `708eae48f` |
-| D-005 | Un bersaglio ambiguo scelto invece che dichiarato | pre-mappa e preparazione | corpus della pre-mappa | risolto | `708eae48f` |
-| D-006 | Gruppi di sviluppo di pyproject non letti | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-007 | setup.cfg non letto | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-008 | Import map di Deno non lette | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-009 | angular.json non letto | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-010 | Soluzioni .NET fuori dalla radice non lette | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-011 | Sottoprogetti sbt non letti | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-012 | Umbrella di Mix non letto | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-013 | Dipendenze `file:` di npm non lette dal lettore dei moduli | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-014 | Rinomina e tabelle target di Cargo non lette | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-015 | Requisiti di piattaforma di Composer e SDK di pub contati come dipendenze | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-016 | Un build incluso contato come membro del workspace | pre-mappa e preparazione | corpus della pre-mappa | risolto | `a04ab36e1` |
-| D-017 | Pacchetti locali `file:` di npm senza archi nella pre-mappa | pre-mappa e preparazione | js-local-and-git-deps | risolto | `db45bcc93` |
-| D-018 | Una dipendenza di un file centrale data all'unità più vicina | pre-mappa e preparazione | eShop e il corpus della pre-mappa | risolto | `de353d251` |
-| D-019 | Un arco fra unità contato anche come dipendenza | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-020 | Go: un arco fra moduli senza replace né go.work | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-021 | Una versione scritta in un file centrale non completava la voce dell'unità | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-022 | Un vincolo dichiarato contato come pacchetto | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-023 | Script, task, replace e import verso un percorso contati come pacchetti | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-024 | Una toolchain diversa da quella che il file scrive | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-025 | Il wrapper Maven dava sé stesso invece di Maven | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-026 | POM genitore e BOM importato senza scope parent e bom | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-027 | Uno scope dato alle dipendenze di Gradle | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-028 | Un file di pip-compile contato come dichiarazione | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-029 | Pacchetti di Bazel, Helm, Terraform, Conan e Deno non dichiarati | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-030 | Cargo e SwiftPM: il pacchetto con un nome diverso da quello del build tool | pre-mappa e preparazione | corpus della pre-mappa | risolto | `99112d0b9` |
-| D-031 | Un collegamento simbolico a un file del progetto: «UNIQUE constraint failed: files.path» | pre-mappa e preparazione | python-semver (`b6e83e3e40d3`) | risolto | `ea92f3fed` |
-| D-032 | Un collegamento verso l'esterno portava dentro un file di fuori | pre-mappa e preparazione | snapshot | risolto | `ea92f3fed` |
-| D-033 | Un collegamento rotto spariva senza traccia | pre-mappa e preparazione | snapshot | risolto | `ea92f3fed` |
-| D-034 | Grammatiche scaricate da GitHub al primo uso, senza versione fissata | pre-mappa e preparazione | snapshot | risolto | `d6545b074` |
-| D-035 | Senza rete un file passava in silenzio al lettore a espressioni regolari | pre-mappa e preparazione | snapshot | risolto | `d6545b074` |
-| D-036 | Grammatiche scelte senza l'architettura del processo | pre-mappa e preparazione | host Windows | risolto | `68e39dcde` |
-| D-037 | Grammatiche piazzate fra processi senza sicurezza | pre-mappa e preparazione | parser | risolto | `d94f92470` |
-| D-038 | La cartella condivisa di Daodan chiedeva la versione a Windows | pre-mappa e preparazione | host Windows | risolto | `bfdca190b` |
-| D-039 | Il sistema e l'architettura chiesti a Windows con il modulo platform | pre-mappa e preparazione | host Windows | risolto | `b5d218801` |
-| D-040 | Un rustup vecchio installava per conto di un progetto | pre-mappa e preparazione | host con rustup vecchio | buco dichiarato (Rust `unavailable`) | `b5d218801` |
-| D-041 | Cargo, rustc e rust-analyzer installavano nella home dell'utente | pre-mappa e preparazione | host | risolto | `6856a0980` |
-| D-042 | uv scaricava interpreti e leggeva la configurazione del progetto | pre-mappa e preparazione | host | risolto | `6856a0980` |
-| D-043 | I makefile erano «tipo di file non inventariato» | pre-mappa e preparazione | zlib e tinyxml2 su Kiri | risolto | `c6767743f` |
-| D-044 | Android: compileSdk e buildToolsVersion non letti, SDK non installato | pre-mappa e preparazione | jvm-android-app-lib, mix-poly-firebase | risolto | `a633ebd72` |
-| D-045 | Go: girava una versione diversa dalla più alta dichiarata | pre-mappa e preparazione | preparazione Go | risolto | `a633ebd72` |
-| D-046 | `node:22-alpine` non letto come Node 22 | pre-mappa e preparazione | pre-mappa delle immagini | risolto | `a633ebd72` |
-| D-047 | Gli errori di uv troncati | pre-mappa e preparazione | preparazione Python | risolto | `a633ebd72` |
-| D-048 | Dipendenze git di Python senza l'host né git | pre-mappa e preparazione | preparazione Python | risolto | `a633ebd72` |
-| D-049 | I registri dichiarati assenti dalla pre-mappa | pre-mappa e preparazione | pre-mappa | risolto | `a633ebd72` |
-| D-050 | Gradle avrebbe scaricato i JDK delle toolchain | pre-mappa e preparazione | build composte con toolchain 17 e 21 | risolto | `a633ebd72` |
-| D-051 | pnpm e Yarn: «Cannot find matching keyid» | pre-mappa e preparazione | preparazione Node | risolto | `a94de85fb` |
-| D-052 | Preparazione Python senza gli host dichiarati e senza il loro nome | pre-mappa e preparazione | preparazione Python | risolto | `2f0353c03` |
-| D-053 | Dipendenze GitHub di npm senza gli host di download | pre-mappa e preparazione | preparazione Node | risolto | `2f0353c03` |
-| D-054 | Build JVM senza gli host che il progetto dichiara | pre-mappa e preparazione | javapoet (`b9017a9503b7`) | risolto | `609ca96dd` |
-| D-055 | Il modello di Gradle senza i repository dei plugin delle impostazioni | pre-mappa e preparazione | kotlinconf (`146e891c150c`) | risolto | `17babc624` |
-| D-056 | Bun dichiarato solo nei workflow non era una toolchain | pre-mappa e preparazione | fastapi (`aabb90126964`) | risolto | `5148e8eb3` |
-| D-057 | L'immagine `devcontainers/java:1-21` letta come Java 1 | pre-mappa e preparazione | kotlinconf | risolto | `22dca6da8` |
-| D-058 | «Dependency requires at least JVM runtime version 21. This build uses a Java 17 JVM.» | pre-mappa e preparazione | kotlinconf | risolto | `22dca6da8` |
-| D-059 | Template ERB, Handlebars, Jinja e Nunjucks fuori dallo snapshot | pre-mappa e preparazione | snapshot | buco dichiarato (`template language | `e15f2ff88` |
-| D-060 | Avviso «senza analyzer» per i linguaggi fatti solo di file di build | pre-mappa e preparazione | pre-mappa | risolto | `d14200dce` |
-| D-061 | Un profilo Conan che chiede una build dal sorgente | pre-mappa e preparazione | pre-mappa CMake con profili Conan | buco dichiarato (`restore_failed`) | `7b1e9ee9f` |
-| D-062 | Senza container le fonti di modello non girano | pre-mappa e preparazione | scansione | buco dichiarato (`model_not_run`) | `8e85b2c1e` |
-| D-063 | Un wrapper Gradle o Maven che punta a un host non ufficiale | pre-mappa e preparazione | build JVM | buco dichiarato (`unavailable`) | `f48df5c7d` |
-| D-064 | Gradle raggiunge anche il Plugin Portal | pre-mappa e preparazione | perimetro di rete, dopo la revisione indipendente | buco dichiarato (perimetro di rete di Gradle) | `177dcae02` |
-| D-065 | Un linguaggio con 0 file indicizzati risultava `fresh` | analizzatori | audit della copertura | risolto | `2bc7c7459` |
-| D-066 | I file mancanti di un linguaggio riuscito taciuti | analizzatori | audit della copertura | risolto | `2bc7c7459` |
-| D-067 | Un build o un run fallito accanto a uno riuscito spariva | analizzatori | audit della copertura | risolto | `2bc7c7459` |
-| D-068 | Un linguaggio letto dallo snapshot senza analyzer non era dichiarato | analizzatori | audit della copertura | risolto | `2bc7c7459` |
-| D-069 | Le coppie di linguaggi che si chiamano non erano unite né dichiarate | analizzatori | audit della copertura | buco dichiarato (`not-joined`) | `2bc7c7459` |
-| D-070 | La tabella «chi indicizza cosa» della pre-mappa scritta a mano | analizzatori | audit della copertura | risolto | `2bc7c7459` |
-| D-071 | Linguaggio senza file con AST, e un linguaggio non elencato `fresh` per difetto | analizzatori | audit della copertura | risolto | `2bc7c7459` |
-| D-072 | TypeScript: alias di percorso e membri del workspace non presi dalla pre-mappa | analizzatori | audit della copertura, «stessa famiglia di Kotlin sotto Maven» | risolto | `64edfb930` |
-| D-073 | TypeScript: installazione fallita e dipendenza locale scartata taciute | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-074 | Python: cartelle sorgenti e manifest dichiarati non passati a Pyright | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-075 | Python: un file fuori da ogni progetto senza motivo | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-076 | C/C++: MSBuild trattato a parte | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-077 | C/C++: un configure senza compile_commands.json faceva morire lo stadio | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-078 | Rust e Go: un file senza documento non diceva se il run era fallito | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-079 | Go: la regola dei nomi dei file (_GOOS, _GOARCH) non conosciuta | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-080 | Vue e Svelte: un componente con template non dichiarato letto in parte | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-081 | Lo stadio di posizione rispondeva per linguaggi non suoi | analizzatori | audit della copertura | risolto | `64edfb930` |
-| D-082 | Markup senza lettore non dichiarato (Razor, JSP, Freemarker, Velocity, XHTML) | analizzatori | audit della copertura | buco dichiarato (markup senza lettore) | `64edfb930` |
-| D-083 | Le correzioni degli adattatori Java e Kotlin le usava solo il banco | analizzatori | stadio del grafo | risolto | `d06df0522` |
-| D-084 | scip-python: «Cannot find module» | analizzatori | PC di sviluppo | risolto | `faf7a3b22` |
-| D-085 | 80 file Python su 211 senza documento | analizzatori | il codice di Daodan | risolto | `118689f69` |
-| D-086 | scip-python 0.6.8 non parte su Windows | analizzatori | host Windows | risolto | `626ebb3a2` |
-| D-087 | phazly: bersagli Python diversi da quelli del passaggio per posizione | analizzatori | phazly | risolto | `09537b2b9` |
-| D-088 | Buchi Python senza causa | analizzatori | corpus Python | aperto (python-env) | — |
-| D-089 | Kotlin sotto Maven: 0 file su 2 indicizzati | analizzatori | il pilota su 5 casi del driver Modal | risolto | `ea1e2b7d6` |
-| D-090 | Java sotto Gradle: aggregazione in avanti e javap sulla cartella sbagliata | analizzatori | build JVM | risolto | `7b1a77e8d` |
-| D-091 | Sotto Maven l'indice Java senza il Kotlin dei moduli | analizzatori | Maven misto Java e Kotlin | risolto | `7b1a77e8d` |
-| D-092 | Un build JVM che Daodan non esegue (sbt, Bazel) non era nominato | analizzatori | build JVM | buco dichiarato (sbt e Bazel non eseguiti) | `7b1a77e8d` |
-| D-093 | Un indice lasciato da un build finito in errore non lo diceva | analizzatori | build JVM | risolto | `7b1a77e8d` |
-| D-094 | Java e Kotlin giravano solo alla radice del progetto | analizzatori | robot-shop (`55292e2199f2`), otel-demo (`b825c7c25726`) | risolto | `1dcfba42a` |
-| D-095 | Maven e Gradle nella stessa cartella: occorrenze doppie | analizzatori | jvm-java-version-conflict | risolto | `9fe650a3a` |
-| D-096 | Una radice con solo settings.gradle.kts non riconosciuta da scip-java | analizzatori | jvm-gradle-kts-catalog-composite | risolto | `9fe650a3a` |
-| D-097 | Kotlin presente solo negli script di build dato `failed` | analizzatori | jvm-gradle-kts-catalog-composite, jvm-java-version-conflict, jvm-spring-boot-managed | buco dichiarato («the build's own Kotlin only») | `9fe650a3a` |
-| D-098 | File Kotlin che nessun compito di compilazione compila o elenca | analizzatori | jvm-kmp-common-jvm, jvm-kotlin-source-sets, klaxon (`1173bdc568a6`) | buco dichiarato (i motivi citati) | `2bc7c7459` |
-| D-099 | javapoet: scip-java 0.14.2 non indicizza Java 8 | analizzatori | javapoet (`b9017a9503b7`) | buco dichiarato (`jdk_unsupported`) | `492a7b212` |
-| D-100 | javapoet: il compilerId di Error Prone scavalca il wrapper di javac | analizzatori | javapoet | buco dichiarato (`build_edited`) | `492a7b212` |
-| D-101 | Una toolchain Gradle sotto il 17 compilava sul JDK dell'immagine | analizzatori | build Gradle con toolchain 8 e 11 | buco dichiarato (`jdk_unsupported`) | `0997b5d4f` |
-| D-102 | Maven con Java 5 e 6: nessun indice | analizzatori | jvm-ver-* | buco dichiarato (`build_edited`, `jdk_unsupported`) | `21b3cb39b` |
-| D-103 | Gradle con toolchain 8 e 11, anche con Kotlin accanto: nessun indice | analizzatori | jvm-ver-* | buco dichiarato (`build_edited`) | `21b3cb39b` |
-| D-104 | Gradle con livello 6: nessun indice | analizzatori | jvm-ver-* | buco dichiarato (`build_edited`) | `21b3cb39b` |
-| D-105 | otel-demo: «Cannot invoke method toPath() on null object» in ad e recommendation | analizzatori | otel-demo (`b825c7c25726`) | risolto | `39805f5e7` |
-| D-106 | otel-demo fraud-detection sul JDK 21 di un altro build | analizzatori | otel-demo | risolto | `39805f5e7` |
-| D-107 | otel-demo fraud-detection: protos che solo il Dockerfile copia | analizzatori | otel-demo | aperto (android-sdk) | — |
-| D-108 | Android: classpath dei test unitari non risolti, nessun compito Android | analizzatori | jvm-android-app-lib, mix-poly-firebase | aperto (dynamic-jvm-2) | `39805f5e7` |
-| D-109 | Android: build fermo su `google-services.json` mancante | analizzatori | jvm-android-app-lib, mix-poly-firebase | buco dichiarato (`build_input_missing`) | `39805f5e7` |
-| D-110 | kotlinconf: «Task with name 'compileKotlinJvm' not found in project ':app:adminApp'» | analizzatori | kotlinconf | aperto (dynamic-jvm-2) | — |
-| D-111 | jhipster: 14 file Java con il documento senza occorrenze | analizzatori | jhipster-sample (`6b000b5d23a3`) | aperto | — |
-| D-112 | Un file Java senza documento in due fixture Maven | analizzatori | jvm-maven-multi-bom-profile, jvm-protobuf-generated | aperto | — |
-| D-113 | C#: un progetto che Msbuild rifiuta ferma il ripristino intero | analizzatori | zlib (`51b7f2abdade`) | aperto (csharp-dotnet) | `73b645531` |
-| D-114 | C#: 56,1 % di risposta | analizzatori | mix-dotnet-central, eShop (`913acea66708`), otel-demo, voting-app (`63e9150ca17a`) | aperto (csharp-dotnet) | `56e65e114` |
-| D-115 | C#: la colonna con il BOM | analizzatori | da verificare. | aperto (csharp-dotnet) | — |
-| D-116 | C#: nomi del chiamato con argomenti di tipo | analizzatori | eShop | buco dichiarato (`TYPE_ARGUMENTS`) | `73b645531` |
-| D-117 | C#: i membri dei tipi anonimi erano locali senza definizione | analizzatori | eShop | risolto | `73b645531` |
-| D-118 | C#: membri dei source generator e `args` dei top-level statement senza causa | analizzatori | eShop | buco dichiarato (GENERATED, TOP_LEVEL) | `73b645531` |
-| D-119 | C#: Catalog.API non si caricava sotto la globalizzazione invariante | analizzatori | eShop | risolto | `73b645531` |
-| D-120 | Lo script di C e C++ cancellava la cartella in cui scrive il risultato | analizzatori | indicizzatore C/C++ | risolto | `c089b3540` |
-| D-121 | CMake: il fornitore delle dipendenze nominato prima di essere definito | analizzatori | prova reale di C e C++ nel container | risolto | `a3dad5e39` |
-| D-122 | scip-clang usava i processori della macchina | analizzatori | indicizzatore C/C++ | risolto | `d28dc1442` |
-| D-123 | L'errore di CMake riscritto con righe ricavate dal testo | analizzatori | indicizzatore C/C++ | risolto | `377925c52` |
-| D-124 | vcpkg e Conan: il configure senza l'installazione del gestore | analizzatori | sys-cpp-vcpkg-conan | risolto | `f9fde7c1e` |
-| D-125 | Un configure che legge un submodule non scaricato | analizzatori | sys-git-submodule-absent | buco dichiarato (`unavailable`) | `f9fde7c1e` |
-| D-126 | `namespace a::b {` non letto come C++17 | analizzatori | lettura C/C++ | risolto | `f9fde7c1e` |
-| D-127 | Un `.h` con una direttiva Objective-C letto come C | analizzatori | lettura C/C++ | risolto | `f9fde7c1e` |
-| D-128 | Un `.ts` di Qt Linguist letto come TypeScript | analizzatori | lettura | risolto | `f9fde7c1e` |
-| D-129 | C: macro di decorazione e nomi da header non risolti | analizzatori | zlib | risolto | `8054a410c` |
-| D-130 | Un configure che ha bisogno di ciò che l'unità scarica fuori dai registri | analizzatori | indicizzatore C/C++ | buco dichiarato (`unavailable`) | `98743babd` |
-| D-131 | `file(DOWNLOAD)` ed ExternalProject non annotati | analizzatori | otel-demo src/currency | buco dichiarato (`failed` con la frase citata) | `6c2aa069e` |
-| D-132 | zlib: file C e C++ che nessun build compila | analizzatori | zlib | buco dichiarato (`no compile command`) | `d4e6d9046` |
-| D-133 | zlib minizip: il build autotools non eseguito | analizzatori | zlib contrib/minizip | risolto | `22dca6da8` |
-| D-134 | otel-demo currency: il build dichiarato solo nel Dockerfile | analizzatori | otel-demo | aperto (android-sdk) | — |
-| D-135 | C: 5.147 buchi `no-document` | analizzatori | i casi C della conferma | aperto | — |
-| D-136 | File C e C++ fuori dalla configurazione predefinita | analizzatori | sys-cmake-presets, tinyxml2 (`9148bdf719e9`) | buco dichiarato (`no compile command | `2bc7c7459` |
-| D-137 | Go: i builtin erano buchi | analizzatori | indicizzatore Go | risolto | `a633ebd72` |
-| D-138 | Go: file esclusi dai vincoli di build senza indice | analizzatori | indicizzatore Go | risolto | `a633ebd72` |
-| D-139 | Go: un file senza go.mod non diceva perché | analizzatori | robot-shop (`55292e2199f2`) | risolto | `d4e6d9046` |
-| D-140 | robot-shop dispatch: il modulo Go dichiarato solo nel Dockerfile | analizzatori | robot-shop | aperto (android-sdk) | — |
-| D-141 | Un file cgo fuori dall'indice Go | analizzatori | sys-go-cgo | buco dichiarato («a cgo file») | — |
-| D-142 | Rust: file senza documento | analizzatori | hoppscotch (`55908a76a1d0`), semver (`280ebcb6edac`) | aperto | — |
-| D-143 | Rust: file che nessun crate carica | analizzatori | hoppscotch | buco dichiarato («no crate includes it») | — |
-| D-144 | TypeScript: `{ t } = useTranslation()` legato a un simbolo che l'indice non definisce | analizzatori | tududi (`71da9d7b34df`) | risolto | `3595d571b` |
-| D-145 | TypeScript: pacchetti senza nome (heroicons) | analizzatori | tududi | risolto | `3595d571b` |
-| D-146 | TypeScript e JavaScript: buchi senza causa | analizzatori | tududi | risolto | `3595d571b` |
-| D-147 | `module` di `module.exports` come locale senza definizione | analizzatori | js-yarn-berry, js-npm-single | risolto | `eacfad80e` |
-| D-148 | Una chiamata senza nome del chiamato era sempre un buco `no-position` | analizzatori | chi (`c64ed7d6635f`) e il corpus | risolto | `334ea4d96` |
-| D-149 | TypeScript: `x.f!()` non nominava `x.f` | analizzatori | lettura TypeScript | risolto | `334ea4d96` |
-| D-150 | TypeScript: `await f<T>(x)` non nominava `f` | analizzatori | lettura TypeScript | risolto | `334ea4d96` |
-| D-151 | TypeScript 6: i tipi di Node non caricati | analizzatori | TypeScript nel container | risolto | `12775fee3` |
-| D-152 | Svelte con nulla di letto non era `failed` | analizzatori | js-sveltekit | risolto | `12775fee3` |
-| D-153 | Vue diverso fra analisi e unione | analizzatori | js-vue-pnpm | risolto | `12775fee3` |
-| D-154 | L'import di un `.vue` non tipizzato senza causa | analizzatori | progetti Vue | risolto | `12775fee3` |
-| D-155 | SvelteKit: «error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'» | analizzatori | js-sveltekit | buco dichiarato (TS5083 nominato nel motivo) | `12775fee3` |
-| D-156 | TypeScript: i tipi sotto Yarn | analizzatori | TypeScript nel container | aperto (da verificare) | — |
-| D-157 | JavaScript: riceventi non tipizzati | analizzatori | kotlinconf e il corpus JavaScript | buco dichiarato («a member of a value of type any») | `3595d571b` |
-| D-158 | Template di Vue e Svelte non letti | analizzatori | hoppscotch, js-vue-pnpm, js-sveltekit | aperto (csharp-2) | `64edfb930` |
-| D-159 | TypeScript: un file senza documento | analizzatori | hoppscotch, memos (`509e41bd1a1b`) | aperto | — |
-| D-160 | Tailwind caricato sull'host con la configurazione del progetto | analizzatori | analyzer dei fogli di stile | risolto | `3595d571b` |
-| D-161 | Fogli di stile: buchi `no-rule` | analizzatori | il corpus | aperto (ts-container-2) | — |
-| D-162 | hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto | analizzatori | hoppscotch | aperto (ts-container-2) | — |
-| D-163 | Fogli remoti senza testo | analizzatori | il corpus | buco dichiarato (`remote-sheet`) | `9c719fc1a` |
-| D-164 | Parser: `base` di C# non letto | analizzatori | parser | risolto | `d94f92470` |
-| D-165 | Parser: `this` e `super` di Kotlin non letti | analizzatori | parser | risolto | `d94f92470` |
-| D-166 | «Osservato» con zero osservazioni | passo dinamico | passo dinamico | risolto | `12775fee3` |
-| D-167 | Un risultato malformato di un osservatore fermava la pipeline | passo dinamico | passo dinamico | risolto | `12775fee3` |
-| D-168 | pytest fermo agli errori di raccolta | passo dinamico | il codice di Daodan, senza `benchmarks/` | risolto | `12775fee3` |
-| D-169 | JavaScript: il TypeScript che Node toglie da solo | passo dinamico | osservatore JavaScript | risolto | `12775fee3` |
-| D-170 | Un comando di test fallito senza l'errore vero nel buco | passo dinamico | osservatore JavaScript | risolto | `12775fee3` |
-| D-171 | `not-observed` non diceva cosa aveva visto il registratore | passo dinamico | py-setup-cfg-extras, il cui unico test non chiama nulla e dove cli.py non gira | risolto | `0c57a839a` |
-| D-172 | Go e Rust non pianificavano i test della radice | passo dinamico | osservatori Go e Rust | risolto | `a491415e6` |
-| D-173 | Go fuori dal contratto dell'osservatore | passo dinamico | osservatore Go | risolto | `a491415e6` |
-| D-174 | Rust: «can't find crate for std» | passo dinamico | osservatore Rust | risolto | `ef69774f9` |
-| D-175 | Launchpad 502: Rust perde l'osservazione | passo dinamico | giro `fixtures` | risolto | `d5964e7b9` |
-| D-176 | L'osservatore C/C++ installava con vcpkg dove l'analizzatore usa Conan | passo dinamico | progetti con vcpkg e Conan insieme | risolto | `a8a1ebdb5` |
-| D-177 | L'osservatore JVM compilava sul JDK dell'immagine | passo dinamico | javapoet | risolto | `a633ebd72` |
-| D-178 | Java 25: «No access to RETAIN_CLASS_REFERENCE» | passo dinamico | jvm-ver-* | risolto | `21b3cb39b` |
-| D-179 | Test JVM multipiattaforma: nessun compito `test` | passo dinamico | jvm-kmp-common-jvm | risolto | `9fe650a3a` |
-| D-180 | Java 9 e 14 senza un JDK installabile | passo dinamico | jvm-ver-* | buco dichiarato (`toolchain_unavailable`) | — |
-| D-181 | I servizi della CI non avviati: tududi chiede PostgreSQL | passo dinamico | tududi | risolto | `17babc624` |
-| D-182 | Python: le dipendenze dei test non venivano dall'ambiente del runner | passo dinamico | python-semver (`b6e83e3e40d3`) | risolto | `17babc624` |
-| D-183 | Python: l'interprete non veniva da requires-python o .python-version | passo dinamico | osservatore Python | risolto | `17babc624` |
-| D-184 | tududi: `test` non arriva ai test del frontend | passo dinamico | tududi | risolto con D-185 | `4ee44da0a` |
-| D-185 | L'osservatore JavaScript non lanciava gli script di test che `test` non raggiunge | passo dinamico | tududi | risolto | `7e5eb092e` |
-| D-186 | tududi: i worker di Jest uccisi per memoria | passo dinamico | tududi | risolto | `37c7ee093` |
-| D-187 | fastapi: uv.lock non visto, l'intervallo di Python rifiutato | passo dinamico | fastapi | risolto | `37c7ee093` |
-| D-188 | I test JavaScript con 16 GB fissi anche dove la macchina non li ha | passo dinamico | osservatore JavaScript | risolto | `a42dc1d86` |
-| D-189 | Turborepo: il registratore non partiva | passo dinamico | osservatore JavaScript | risolto | `cdc1660dd` |
-| D-190 | npm-tests non riconosceva `turbo run … test` | passo dinamico | pre-mappa dei test npm | risolto | `cdc1660dd` |
-| D-191 | Un run di Node senza test letto come un registratore che non raggiunge i processi | passo dinamico | osservatore JavaScript | risolto | `cdc1660dd` |
-| D-192 | ES module non registrati su Node prima della 22.15 | passo dinamico | mix-infra-gha | risolto | `756ebbcb3` |
-| D-193 | jhipster: 162 chunk di Vitest in memoria non registrati | passo dinamico | jhipster-sample | risolto | `e8bc485d7` |
-| D-194 | `bun test` non registrato | passo dinamico | fastapi | buco dichiarato (`runner_not_observed`) | `5148e8eb3` |
-| D-195 | Un progetto senza test dichiarati, o con test che non partono | passo dinamico | spec del passo dinamico, sezione «Limiti»; i progetti in miniatura del giro `fixtures`. | buco dichiarato (`no_test_command`, `tests_not_declared`, `tests-not-run`) | — |
-| D-196 | I test di fastapi non ancora girati davvero | passo dinamico | fastapi | aperto | `5148e8eb3` |
-| D-197 | I test di eShop non ancora girati | passo dinamico | eShop | aperto | — |
-| D-198 | Python: extra e gruppi che il gestore non installa | passo dinamico | spec del passo dinamico. | buco dichiarato (test che non partono, `tests-not-run`) | — |
-| D-199 | Python più vecchio del 3.12 | passo dinamico | spec del passo dinamico. | buco dichiarato (`python_too_old`) | — |
-| D-200 | I servizi che `docker compose up` avvia non partivano | passo dinamico | passo dinamico | risolto | `22dca6da8` |
-| D-201 | I servizi di GitLab CI non avviati | passo dinamico | passo dinamico | risolto | `23de469c4` |
-| D-202 | Il motore di container dell'utente usato anche se non risponde in locale | container e Modal | container | risolto | `177dcae02` |
-| D-203 | Con un .git e Git che non risponde si copiavano i file ignorati | container e Modal | container | risolto | `177dcae02` |
-| D-204 | Ciò che torna dal container non controllato | container e Modal | container | risolto | `177dcae02` |
-| D-205 | Link simbolici tracciati seguiti nella copia del container | container e Modal | python-semver | risolto | `17babc624` |
-| D-206 | I link lasciati fuori dalla copia non arrivavano ai buchi delle corse | container e Modal | container | risolto | `756ebbcb3` |
-| D-207 | JVM: i buchi della preparazione sovrascrivevano quelli del container | container e Modal | analisi JVM | risolto | `756ebbcb3` |
-| D-208 | Valgrind muore all'avvio nei sandbox di Modal (gVisor) | container e Modal | semver, tinyxml2, zlib e le fixture Rust e C/C++ | risolto | `8ef21896f` |
-| D-209 | Bear sotto gVisor fallisce circa una build su dieci | container e Modal | build Make sotto Bear | risolto | `f829df4b0` |
-| D-210 | Il server visuale resettava la connessione su una POST rifiutata | container e Modal | suite su Modal | risolto | `426626fbe` |
-| D-211 | Servizi di Compose che il passo non avvia | container e Modal | spec del passo dinamico. | buco dichiarato (`compose_not_read` e lacune dei servizi) | — |
-| D-212 | I passi del job della CI prima dei test | container e Modal | da verificare. | aperto (test-services) | — |
-| D-213 | Compose: i bind mount dei servizi | container e Modal | passo dinamico | aperto (test-services) | — |
-| D-214 | Compose: `depends_on` | container e Modal | passo dinamico | aperto (test-services) | — |
-| D-215 | GitLab CI: i file che `.gitlab-ci.yml` include | container e Modal | passo dinamico | aperto (test-services) | `23de469c4` |
-| D-216 | GitLab CI: `!reference` | container e Modal | da verificare. | aperto (test-services) | — |
-| D-217 | Kiri senza `network connect` | container e Modal | motore Kiri | aperto (test-services, in verifica) | — |
-| D-218 | Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL | container e Modal | spec del passo dinamico. | aperto (da decidere) | — |
-| D-219 | Risposte attese: il workspace di javapoet e le soluzioni .NET di zlib | benchmark e documenti | javapoet, zlib | risolto | `a04ab36e1` |
-| D-220 | Lo schema del banco senza BOM, POM genitore e versioni centrali | benchmark e documenti | dieci progetti del corpus | risolto | `1420247ad` |
-| D-221 | `test_catalog` rosso: ANAGRAFICA.md non era l'uscita del generatore | benchmark e documenti | benchmark project-model | risolto | `68a846a4a` |
-| D-222 | Le risposte attese delle fixture Android senza i build-tools | benchmark e documenti | jvm-android-app-lib, mix-poly-firebase | risolto | `68a846a4a` |
-| D-223 | I test del registratore JVM saltati: l'immagine dei test senza JDK | benchmark e documenti | `tests/modal_pytest.py` | risolto | `a633ebd72` |
-| D-224 | Due fixture con `node --test test/` | benchmark e documenti | due fixture JavaScript | risolto | `12775fee3` |
-| D-225 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | benchmark e documenti | jvm-ver-* e le fixture Maven | aperto | — |
-| D-226 | README del benchmark: Rust, C e C++ «solo dove Valgrind parte» | benchmark e documenti | `benchmarks/project-model/README.md` | aperto | — |
-| D-227 | Il rapporto dichiarava nulla la copertura a runtime | benchmark e documenti | il metodo di codebase-map | risolto | `78c03d6e8` |
-| D-228 | Spec: il passo 2 «non esegue codice del progetto» | benchmark e documenti | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` |
-| D-229 | Spec: Rust, C e C++ «non provati» su Modal | benchmark e documenti | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` |
-| D-230 | README, SKILL e riferimenti dicevano Jedi e «solo statica» | benchmark e documenti | README, SKILL, `references/snapshot.md` | risolto | `e617127c3` |
-| D-231 | L'osservatore Python diceva che il passo non avvia servizi | benchmark e documenti | `scripts/dynamic/python.py` | risolto | `0ca9f1650` |
-| D-232 | Due script del benchmark dell'inferenza mai eseguiti | benchmark e documenti | `benchmarks/inference-audit` | aperto | `137512c11` |
-| D-233 | Un file dello snapshot senza dichiarazioni usciva dal progetto nel grafo | benchmark e documenti | `benchmarks/inference-audit` | risolto | `53e219638` |
-| D-234 | Pre-mappa: dipendenze sotto la soglia | benchmark e documenti | corpus della pre-mappa | risolto | `de353d251` |
+### Pre-mappa, snapshot e preparazione
+
+64 schede: 58 risolto, 0 aperto, 6 buco dichiarato.
+
+| Id | Nome | Progetto o caso | Stato | Commit |
+| --- | --- | --- | --- | --- |
+| D-001 | Due build system nella stessa cartella fusi in un'unità | corpus della pre-mappa | risolto | `708eae48f` |
+| D-002 | Go: requisiti indiretti letti e moduli legati fuori da un workspace | corpus della pre-mappa | risolto | `708eae48f` |
+| D-003 | Maven: dipendenze non lette come gruppo:artefatto e profili taciuti | corpus della pre-mappa | risolto | `708eae48f` |
+| D-004 | Un glob di workspace crea un'unità per cartella | corpus della pre-mappa | risolto | `708eae48f` |
+| D-005 | Un bersaglio ambiguo scelto invece che dichiarato | corpus della pre-mappa | risolto | `708eae48f` |
+| D-006 | Gruppi di sviluppo di pyproject non letti | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-007 | setup.cfg non letto | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-008 | Import map di Deno non lette | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-009 | angular.json non letto | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-010 | Soluzioni .NET fuori dalla radice non lette | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-011 | Sottoprogetti sbt non letti | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-012 | Umbrella di Mix non letto | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-013 | Dipendenze `file:` di npm non lette dal lettore dei moduli | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-014 | Rinomina e tabelle target di Cargo non lette | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-015 | Requisiti di piattaforma di Composer e SDK di pub contati come dipendenze | corpus della pre-mappa | risolto | `a04ab36e1` |
+| D-016 | Un build incluso contato come membro del workspace | corpus della pre-mappa | risolto | `a04ab36e1`, `9c17c7686` |
+| D-017 | Pacchetti locali `file:` di npm senza archi nella pre-mappa | js-local-and-git-deps | risolto | `db45bcc93` |
+| D-018 | Una dipendenza di un file centrale data all'unità più vicina | eShop e il corpus della pre-mappa | risolto | `de353d251` |
+| D-019 | Un arco fra unità contato anche come dipendenza | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-020 | Go: un arco fra moduli senza replace né go.work | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-021 | Una versione scritta in un file centrale non completava la voce dell'unità | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-022 | Un vincolo dichiarato contato come pacchetto | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-023 | Script, task, replace e import verso un percorso contati come pacchetti | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-024 | Una toolchain diversa da quella che il file scrive | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-025 | Il wrapper Maven dava sé stesso invece di Maven | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-026 | POM genitore e BOM importato senza scope parent e bom | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-027 | Uno scope dato alle dipendenze di Gradle | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-028 | Un file di pip-compile contato come dichiarazione | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-029 | Pacchetti di Bazel, Helm, Terraform, Conan e Deno non dichiarati | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-030 | Cargo e SwiftPM: il pacchetto con un nome diverso da quello del build tool | corpus della pre-mappa | risolto | `99112d0b9` |
+| D-031 | Un collegamento simbolico a un file del progetto: «UNIQUE constraint failed: files.path» | python-semver (`b6e83e3e40d3`) | risolto | `ea92f3fed` |
+| D-032 | Un collegamento verso l'esterno portava dentro un file di fuori | snapshot | risolto | `ea92f3fed` |
+| D-033 | Un collegamento rotto spariva senza traccia | snapshot | risolto | `ea92f3fed` |
+| D-034 | Grammatiche scaricate da GitHub al primo uso, senza versione fissata | snapshot | risolto | `d6545b074` |
+| D-035 | Senza rete un file passava in silenzio al lettore a espressioni regolari | snapshot | risolto | `d6545b074` |
+| D-036 | Grammatiche scelte senza l'architettura del processo | host Windows | risolto | `68e39dcde` |
+| D-037 | Grammatiche piazzate fra processi senza sicurezza | parser | risolto | `d94f92470` |
+| D-038 | La cartella condivisa di Daodan chiedeva la versione a Windows | host Windows | risolto | `bfdca190b` |
+| D-039 | Il sistema e l'architettura chiesti a Windows con il modulo platform | host Windows | risolto | `b5d218801` |
+| D-040 | Un rustup vecchio installava per conto di un progetto | host con rustup vecchio | buco dichiarato (Rust `unavailable`) | `b5d218801` |
+| D-041 | Cargo, rustc e rust-analyzer installavano nella home dell'utente | host | risolto | `6856a0980` |
+| D-042 | uv scaricava interpreti e leggeva la configurazione del progetto | host | risolto | `6856a0980` |
+| D-043 | I makefile erano «tipo di file non inventariato» | zlib e tinyxml2 su Kiri | risolto | `c6767743f` |
+| D-044 | Android: compileSdk e buildToolsVersion non letti, SDK non installato | jvm-android-app-lib, mix-poly-firebase | risolto | `a633ebd72` |
+| D-045 | Go: girava una versione diversa dalla più alta dichiarata | preparazione Go | risolto | `a633ebd72` |
+| D-046 | `node:22-alpine` non letto come Node 22 | pre-mappa delle immagini | risolto | `a633ebd72` |
+| D-047 | Gli errori di uv troncati | preparazione Python | risolto | `a633ebd72` |
+| D-048 | Dipendenze git di Python senza l'host né git | preparazione Python | risolto | `a633ebd72` |
+| D-049 | I registri dichiarati assenti dalla pre-mappa | pre-mappa | risolto | `a633ebd72` |
+| D-050 | Gradle avrebbe scaricato i JDK delle toolchain | build composte con toolchain 17 e 21 | risolto | `a633ebd72` |
+| D-051 | pnpm e Yarn: «Cannot find matching keyid» | preparazione Node | risolto | `a94de85fb` |
+| D-052 | Preparazione Python senza gli host dichiarati e senza il loro nome | preparazione Python | risolto | `2f0353c03` |
+| D-053 | Dipendenze GitHub di npm senza gli host di download | preparazione Node | risolto | `2f0353c03` |
+| D-054 | Build JVM senza gli host che il progetto dichiara | javapoet (`b9017a9503b7`) | risolto | `609ca96dd` |
+| D-055 | Il modello di Gradle senza i repository dei plugin delle impostazioni | kotlinconf (`146e891c150c`) | risolto | `17babc624` |
+| D-056 | Bun dichiarato solo nei workflow non era una toolchain | fastapi (`aabb90126964`) | risolto | `5148e8eb3` |
+| D-057 | L'immagine `devcontainers/java:1-21` letta come Java 1 | kotlinconf | risolto | `22dca6da8` |
+| D-058 | «Dependency requires at least JVM runtime version 21. This build uses a Java 17 JVM.» | kotlinconf | risolto | `22dca6da8` |
+| D-059 | Template ERB, Handlebars, Jinja e Nunjucks fuori dallo snapshot | snapshot | buco dichiarato (`template language | `e15f2ff88` |
+| D-060 | Avviso «senza analyzer» per i linguaggi fatti solo di file di build | pre-mappa | risolto | `d14200dce` |
+| D-061 | Un profilo Conan che chiede una build dal sorgente | pre-mappa CMake con profili Conan | buco dichiarato (`restore_failed`) | `7b1e9ee9f` |
+| D-062 | Senza container le fonti di modello non girano | scansione | buco dichiarato (`model_not_run`) | `8e85b2c1e` |
+| D-063 | Un wrapper Gradle o Maven che punta a un host non ufficiale | build JVM | buco dichiarato (`unavailable`) | `f48df5c7d` |
+| D-064 | Gradle raggiunge anche il Plugin Portal | perimetro di rete, dopo la revisione indipendente | buco dichiarato (perimetro di rete di Gradle) | `177dcae02` |
+
+### Analizzatori
+
+105 schede: 65 risolto, 14 aperto, 26 buco dichiarato.
+
+| Id | Nome | Progetto o caso | Stato | Commit |
+| --- | --- | --- | --- | --- |
+| D-065 | Un linguaggio con 0 file indicizzati risultava `fresh` | audit della copertura | risolto | `2bc7c7459` |
+| D-066 | I file mancanti di un linguaggio riuscito taciuti | audit della copertura | risolto | `2bc7c7459` |
+| D-067 | Un build o un run fallito accanto a uno riuscito spariva | audit della copertura | risolto | `2bc7c7459` |
+| D-068 | Un linguaggio letto dallo snapshot senza analyzer non era dichiarato | audit della copertura | risolto | `2bc7c7459` |
+| D-069 | Le coppie di linguaggi che si chiamano non erano unite né dichiarate | audit della copertura | buco dichiarato (`not-joined`) | `2bc7c7459` |
+| D-070 | La tabella «chi indicizza cosa» della pre-mappa scritta a mano | audit della copertura | risolto | `2bc7c7459` |
+| D-071 | Linguaggio senza file con AST, e un linguaggio non elencato `fresh` per difetto | audit della copertura | risolto | `2bc7c7459` |
+| D-072 | TypeScript: alias di percorso e membri del workspace non presi dalla pre-mappa | audit della copertura, «stessa famiglia di Kotlin sotto Maven» | risolto | `64edfb930` |
+| D-073 | TypeScript: installazione fallita e dipendenza locale scartata taciute | audit della copertura | risolto | `64edfb930` |
+| D-074 | Python: cartelle sorgenti e manifest dichiarati non passati a Pyright | audit della copertura | risolto | `64edfb930` |
+| D-075 | Python: un file fuori da ogni progetto senza motivo | audit della copertura | risolto | `64edfb930` |
+| D-076 | C/C++: MSBuild trattato a parte | audit della copertura | risolto | `64edfb930` |
+| D-077 | C/C++: un configure senza compile_commands.json faceva morire lo stadio | audit della copertura | risolto | `64edfb930` |
+| D-078 | Rust e Go: un file senza documento non diceva se il run era fallito | audit della copertura | risolto | `64edfb930` |
+| D-079 | Go: la regola dei nomi dei file (_GOOS, _GOARCH) non conosciuta | audit della copertura | risolto | `64edfb930` |
+| D-080 | Vue e Svelte: un componente con template non dichiarato letto in parte | audit della copertura | risolto | `64edfb930` |
+| D-081 | Lo stadio di posizione rispondeva per linguaggi non suoi | audit della copertura | risolto | `64edfb930` |
+| D-082 | Markup senza lettore non dichiarato (Razor, JSP, Freemarker, Velocity, XHTML) | audit della copertura | buco dichiarato (markup senza lettore) | `64edfb930` |
+| D-083 | Le correzioni degli adattatori Java e Kotlin le usava solo il banco | stadio del grafo | risolto | `d06df0522` |
+| D-084 | scip-python: «Cannot find module» | PC di sviluppo | risolto | `faf7a3b22` |
+| D-085 | 80 file Python su 211 senza documento | il codice di Daodan | risolto | `118689f69` |
+| D-086 | scip-python 0.6.8 non parte su Windows | host Windows | risolto | `626ebb3a2` |
+| D-087 | phazly: bersagli Python diversi da quelli del passaggio per posizione | phazly | risolto | `09537b2b9` |
+| D-088 | Buchi Python senza causa | corpus Python | risolto | `a6156b7a2` |
+| D-089 | Kotlin sotto Maven: 0 file su 2 indicizzati | il pilota su 5 casi del driver Modal | risolto | `ea1e2b7d6` |
+| D-090 | Java sotto Gradle: aggregazione in avanti e javap sulla cartella sbagliata | build JVM | risolto | `7b1a77e8d` |
+| D-091 | Sotto Maven l'indice Java senza il Kotlin dei moduli | Maven misto Java e Kotlin | risolto | `7b1a77e8d` |
+| D-092 | Un build JVM che Daodan non esegue (sbt, Bazel) non era nominato | build JVM | buco dichiarato (sbt e Bazel non eseguiti) | `7b1a77e8d` |
+| D-093 | Un indice lasciato da un build finito in errore non lo diceva | build JVM | risolto | `7b1a77e8d` |
+| D-094 | Java e Kotlin giravano solo alla radice del progetto | robot-shop (`55292e2199f2`), otel-demo (`b825c7c25726`) | risolto | `1dcfba42a` |
+| D-095 | Maven e Gradle nella stessa cartella: occorrenze doppie | jvm-java-version-conflict | risolto | `9fe650a3a` |
+| D-096 | Una radice con solo settings.gradle.kts non riconosciuta da scip-java | jvm-gradle-kts-catalog-composite | risolto | `9fe650a3a` |
+| D-097 | Kotlin presente solo negli script di build dato `failed` | jvm-gradle-kts-catalog-composite, jvm-java-version-conflict, jvm-spring-boot-managed | buco dichiarato («the build's own Kotlin only») | `9fe650a3a` |
+| D-098 | File Kotlin che nessun compito di compilazione compila o elenca | jvm-kmp-common-jvm, jvm-kotlin-source-sets, klaxon (`1173bdc568a6`) | buco dichiarato (i motivi citati) | `2bc7c7459` |
+| D-099 | javapoet: scip-java 0.14.2 non indicizza Java 8 | javapoet (`b9017a9503b7`) | buco dichiarato (`jdk_unsupported`) | `492a7b212` |
+| D-100 | javapoet: il compilerId di Error Prone scavalca il wrapper di javac | javapoet | buco dichiarato (`build_edited`) | `492a7b212` |
+| D-101 | Una toolchain Gradle sotto il 17 compilava sul JDK dell'immagine | build Gradle con toolchain 8 e 11 | buco dichiarato (`jdk_unsupported`) | `0997b5d4f` |
+| D-102 | Maven con Java 5 e 6: nessun indice | jvm-ver-* | buco dichiarato (`build_edited`, `jdk_unsupported`) | `21b3cb39b` |
+| D-103 | Gradle con toolchain 8 e 11, anche con Kotlin accanto: nessun indice | jvm-ver-* | buco dichiarato (`build_edited`) | `21b3cb39b` |
+| D-104 | Gradle con livello 6: nessun indice | jvm-ver-* | buco dichiarato (`build_edited`) | `21b3cb39b` |
+| D-105 | otel-demo: «Cannot invoke method toPath() on null object» in ad e recommendation | otel-demo (`b825c7c25726`) | risolto | `39805f5e7` |
+| D-106 | otel-demo fraud-detection sul JDK 21 di un altro build | otel-demo | risolto | `39805f5e7` |
+| D-107 | otel-demo fraud-detection: protos che solo il Dockerfile copia | otel-demo (`b825c7c25726`) | aperto (android-sdk) | `f024ba3a3`, `f04dab9d5` |
+| D-108 | Android: classpath dei test unitari non risolti, nessun compito Android | jvm-android-app-lib, mix-poly-firebase | aperto (dynamic-jvm-2) | `39805f5e7` |
+| D-109 | Android: build fermo su `google-services.json` mancante | jvm-android-app-lib, mix-poly-firebase | buco dichiarato (`build_input_missing`) | `39805f5e7` |
+| D-110 | kotlinconf: «Task with name 'compileKotlinJvm' not found in project ':app:adminApp'» | kotlinconf (`146e891c150c`) | aperto (dynamic-jvm-2) | — |
+| D-111 | jhipster: 14 file Java con il documento senza occorrenze | jhipster-sample (`6b000b5d23a3`) | aperto | — |
+| D-112 | Un file Java senza documento in due fixture Maven | jvm-maven-multi-bom-profile, jvm-protobuf-generated | aperto | — |
+| D-113 | C#: un progetto che Msbuild rifiuta ferma il ripristino intero | zlib (`51b7f2abdade`) | risolto | `73b645531`, `0cdbae9b2` |
+| D-114 | C#: 56,1 % di risposta | mix-dotnet-central, eShop (`913acea66708`), otel-demo, voting-app (`63e9150ca17a`) | aperto (csharp-dotnet) | `56e65e114`, `73b645531`, `0cdbae9b2` |
+| D-115 | La colonna della riga 1 di un file con il BOM | i casi C# | risolto | `0cdbae9b2` |
+| D-116 | C#: nomi del chiamato con argomenti di tipo | eShop | buco dichiarato (`TYPE_ARGUMENTS`) | `73b645531`, `0cdbae9b2` |
+| D-117 | C#: nomi del chiamato qualificati | i casi C# | risolto | `0cdbae9b2` |
+| D-118 | C#: i membri dei tipi anonimi erano locali senza definizione | eShop | risolto | `73b645531` |
+| D-119 | C#: membri dei source generator e `args` dei top-level statement senza causa | eShop | buco dichiarato (GENERATED, TOP_LEVEL) | `73b645531` |
+| D-120 | C#: Catalog.API non si caricava sotto la globalizzazione invariante | eShop | risolto | `73b645531` |
+| D-121 | Lo script di C e C++ cancellava la cartella in cui scrive il risultato | indicizzatore C/C++ | risolto | `c089b3540` |
+| D-122 | CMake: il fornitore delle dipendenze nominato prima di essere definito | prova reale di C e C++ nel container | risolto | `a3dad5e39` |
+| D-123 | scip-clang usava i processori della macchina | indicizzatore C/C++ | risolto | `d28dc1442` |
+| D-124 | L'errore di CMake riscritto con righe ricavate dal testo | indicizzatore C/C++ | risolto | `377925c52` |
+| D-125 | vcpkg e Conan: il configure senza l'installazione del gestore | sys-cpp-vcpkg-conan | risolto | `f9fde7c1e` |
+| D-126 | Un configure che legge un submodule non scaricato | sys-git-submodule-absent | buco dichiarato (`unavailable`) | `f9fde7c1e` |
+| D-127 | `namespace a::b {` non letto come C++17 | lettura C/C++ | risolto | `f9fde7c1e` |
+| D-128 | Un `.h` con una direttiva Objective-C letto come C | lettura C/C++ | risolto | `f9fde7c1e` |
+| D-129 | Un `.ts` di Qt Linguist letto come TypeScript | lettura | risolto | `f9fde7c1e` |
+| D-130 | C: macro di decorazione e nomi da header non risolti | zlib | risolto | `8054a410c` |
+| D-131 | Un configure che ha bisogno di ciò che l'unità scarica fuori dai registri | indicizzatore C/C++ | buco dichiarato (`unavailable`) | `98743babd` |
+| D-132 | `file(DOWNLOAD)` ed ExternalProject non annotati | otel-demo src/currency | buco dichiarato (`failed` con la frase citata) | `6c2aa069e` |
+| D-133 | zlib: file C e C++ che nessun build compila | zlib | buco dichiarato (`no compile command`) | `d4e6d9046` |
+| D-134 | zlib minizip: il build autotools non eseguito | zlib contrib/minizip | risolto | `22dca6da8` |
+| D-135 | otel-demo currency: il build dichiarato solo nel Dockerfile | otel-demo (`b825c7c25726`) | aperto (android-sdk) | `f024ba3a3` |
+| D-136 | C: 5.147 buchi `no-document` | i casi C della conferma | aperto | — |
+| D-137 | File C e C++ fuori dalla configurazione predefinita | sys-cmake-presets, tinyxml2 (`9148bdf719e9`) | buco dichiarato (`no compile command | `2bc7c7459` |
+| D-138 | Go: i builtin erano buchi | indicizzatore Go | risolto | `a633ebd72` |
+| D-139 | Go: file esclusi dai vincoli di build senza indice | indicizzatore Go | risolto | `a633ebd72` |
+| D-140 | Go: un file senza go.mod non diceva perché | robot-shop (`55292e2199f2`) | risolto | `d4e6d9046` |
+| D-141 | robot-shop dispatch: il modulo Go dichiarato solo nel Dockerfile | robot-shop (`55292e2199f2`) | buco dichiarato (`restore_failed` a `dispatch/Dockerfile:7`) | `f024ba3a3`, `f04dab9d5` |
+| D-142 | Un file cgo fuori dall'indice Go | sys-go-cgo | buco dichiarato («a cgo file») | — |
+| D-143 | Rust: file senza documento | hoppscotch (`55908a76a1d0`), semver (`280ebcb6edac`) | aperto | `a3801beed` |
+| D-144 | Rust: file che nessun crate carica | hoppscotch | buco dichiarato («no crate includes it») | — |
+| D-145 | TypeScript: `{ t } = useTranslation()` legato a un simbolo che l'indice non definisce | tududi (`71da9d7b34df`) | risolto | `3595d571b` |
+| D-146 | TypeScript: pacchetti senza nome (heroicons) | tududi | risolto | `3595d571b` |
+| D-147 | TypeScript e JavaScript: buchi senza causa | tududi | risolto | `3595d571b` |
+| D-148 | `module` di `module.exports` come locale senza definizione | js-yarn-berry, js-npm-single | risolto | `eacfad80e` |
+| D-149 | Una chiamata senza nome del chiamato era sempre un buco `no-position` | chi (`c64ed7d6635f`) e il corpus | risolto | `334ea4d96` |
+| D-150 | TypeScript: `x.f!()` non nominava `x.f` | lettura TypeScript | risolto | `334ea4d96` |
+| D-151 | TypeScript: `await f<T>(x)` non nominava `f` | lettura TypeScript | risolto | `334ea4d96` |
+| D-152 | TypeScript 6: i tipi di Node non caricati | TypeScript nel container | risolto | `12775fee3` |
+| D-153 | Svelte con nulla di letto non era `failed` | js-sveltekit | risolto | `12775fee3` |
+| D-154 | Vue diverso fra analisi e unione | js-vue-pnpm | risolto | `12775fee3` |
+| D-155 | L'import di un `.vue` non tipizzato senza causa | progetti Vue | risolto | `12775fee3` |
+| D-156 | SvelteKit: «error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'» | js-sveltekit | buco dichiarato (TS5083 nominato nel motivo) | `12775fee3` |
+| D-157 | TypeScript: i tipi sotto Yarn | TypeScript nel container | aperto (da verificare) | — |
+| D-158 | JavaScript: riceventi non tipizzati | kotlinconf e il corpus JavaScript | buco dichiarato («a member of a value of type any») | `3595d571b` |
+| D-159 | Template di Vue e Svelte non letti | hoppscotch, js-vue-pnpm, js-sveltekit | aperto (csharp-2) | `64edfb930` |
+| D-160 | TypeScript: un file senza documento | hoppscotch, memos (`509e41bd1a1b`) | aperto | — |
+| D-161 | Tailwind caricato sull'host con la configurazione del progetto | analyzer dei fogli di stile | risolto | `3595d571b` |
+| D-162 | Fogli di stile: buchi `no-rule` | il corpus | aperto (ts-container-2) | — |
+| D-163 | hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto | hoppscotch | aperto (ts-container-2) | — |
+| D-164 | Fogli remoti senza testo | il corpus | buco dichiarato (`remote-sheet`) | `9c719fc1a` |
+| D-165 | Parser: `base` di C# non letto | parser | risolto | `d94f92470` |
+| D-166 | Parser: `this` e `super` di Kotlin non letti | parser | risolto | `d94f92470` |
+| D-236 | C++: il simbolo di un argomento di macro stava sul nome della macro | tinyxml2 (`9148bdf719e9`) | risolto | `a3801beed` |
+| D-237 | Rust: i riferimenti e i file che un `#[cfg]` esclude non dicevano perché | hoppscotch (`55908a76a1d0`) | buco dichiarato (la causa cfg) | `a3801beed` |
+| D-238 | Rust: il turbofish su un ricevitore calcolato toglieva il nome al chiamato | semver (`280ebcb6edac`) | risolto | `a3801beed` |
+
+### Passo dinamico e osservatori
+
+36 schede: 29 risolto, 2 aperto, 5 buco dichiarato.
+
+| Id | Nome | Progetto o caso | Stato | Commit |
+| --- | --- | --- | --- | --- |
+| D-167 | «Osservato» con zero osservazioni | passo dinamico | risolto | `12775fee3` |
+| D-168 | Un risultato malformato di un osservatore fermava la pipeline | passo dinamico | risolto | `12775fee3` |
+| D-169 | pytest fermo agli errori di raccolta | il codice di Daodan, senza `benchmarks/` | risolto | `12775fee3` |
+| D-170 | JavaScript: il TypeScript che Node toglie da solo | osservatore JavaScript | risolto | `12775fee3` |
+| D-171 | Un comando di test fallito senza l'errore vero nel buco | osservatore JavaScript | risolto | `12775fee3` |
+| D-172 | `not-observed` non diceva cosa aveva visto il registratore | py-setup-cfg-extras, il cui unico test non chiama nulla e dove cli.py non gira | risolto | `0c57a839a` |
+| D-173 | Go e Rust non pianificavano i test della radice | osservatori Go e Rust | risolto | `a491415e6` |
+| D-174 | Go fuori dal contratto dell'osservatore | osservatore Go | risolto | `a491415e6` |
+| D-175 | Rust: «can't find crate for std» | osservatore Rust | risolto | `ef69774f9` |
+| D-176 | Launchpad 502: Rust perde l'osservazione | giro `fixtures` | risolto | `d5964e7b9` |
+| D-177 | L'osservatore C/C++ installava con vcpkg dove l'analizzatore usa Conan | progetti con vcpkg e Conan insieme | risolto | `a8a1ebdb5` |
+| D-178 | L'osservatore JVM compilava sul JDK dell'immagine | javapoet | risolto | `a633ebd72` |
+| D-179 | Java 25: «No access to RETAIN_CLASS_REFERENCE» | jvm-ver-* | risolto | `21b3cb39b` |
+| D-180 | Test JVM multipiattaforma: nessun compito `test` | jvm-kmp-common-jvm | risolto | `9fe650a3a` |
+| D-181 | Java 9 e 14 senza un JDK installabile | jvm-ver-* | buco dichiarato (`toolchain_unavailable`) | — |
+| D-182 | I servizi della CI non avviati: tududi chiede PostgreSQL | tududi | risolto | `17babc624` |
+| D-183 | Python: le dipendenze dei test non venivano dall'ambiente del runner | python-semver (`b6e83e3e40d3`) | risolto | `17babc624` |
+| D-184 | Python: l'interprete non veniva da requires-python o .python-version | osservatore Python | risolto | `17babc624` |
+| D-185 | tududi: `test` non arriva ai test del frontend | tududi | risolto con D-186 | `4ee44da0a` |
+| D-186 | L'osservatore JavaScript non lanciava gli script di test che `test` non raggiunge | tududi | risolto | `7e5eb092e` |
+| D-187 | tududi: i worker di Jest uccisi per memoria | tududi | risolto | `37c7ee093` |
+| D-188 | fastapi: uv.lock non visto, l'intervallo di Python rifiutato | fastapi | risolto | `37c7ee093` |
+| D-189 | I test JavaScript con 16 GB fissi anche dove la macchina non li ha | osservatore JavaScript | risolto | `a42dc1d86` |
+| D-190 | Turborepo: il registratore non partiva | osservatore JavaScript | risolto | `cdc1660dd` |
+| D-191 | npm-tests non riconosceva `turbo run … test` | pre-mappa dei test npm | risolto | `cdc1660dd` |
+| D-192 | Un run di Node senza test letto come un registratore che non raggiunge i processi | osservatore JavaScript | risolto | `cdc1660dd` |
+| D-193 | ES module non registrati su Node prima della 22.15 | mix-infra-gha | risolto | `756ebbcb3` |
+| D-194 | jhipster: 162 chunk di Vitest in memoria non registrati | jhipster-sample | risolto | `e8bc485d7` |
+| D-195 | `bun test` non registrato | fastapi | buco dichiarato (`runner_not_observed`) | `5148e8eb3` |
+| D-196 | Un progetto senza test dichiarati, o con test che non partono | spec del passo dinamico, sezione «Limiti»; i progetti in miniatura del giro `fixtures` | buco dichiarato (`no_test_command`, `tests_not_declared`, `tests-not-run`) | — |
+| D-197 | I test di fastapi non ancora girati davvero | fastapi | aperto | `5148e8eb3`, `37c7ee093` |
+| D-198 | I test di eShop non ancora girati | eShop | aperto | — |
+| D-199 | Python: extra e gruppi che il gestore non installa | spec del passo dinamico | buco dichiarato (test che non partono, `tests-not-run`) | — |
+| D-200 | Python più vecchio del 3.12 | spec del passo dinamico | buco dichiarato (`python_too_old`) | — |
+| D-201 | I servizi che `docker compose up` avvia non partivano | passo dinamico | risolto | `22dca6da8` |
+| D-202 | I servizi di GitLab CI non avviati | passo dinamico | risolto | `23de469c4` |
+
+### Container, servizi e driver Modal
+
+17 schede: 12 risolto, 3 aperto, 2 buco dichiarato.
+
+| Id | Nome | Progetto o caso | Stato | Commit |
+| --- | --- | --- | --- | --- |
+| D-203 | Il motore di container dell'utente usato anche se non risponde in locale | container | risolto | `177dcae02` |
+| D-204 | Con un .git e Git che non risponde si copiavano i file ignorati | container | risolto | `177dcae02` |
+| D-205 | Ciò che torna dal container non controllato | container | risolto | `177dcae02` |
+| D-206 | Link simbolici tracciati seguiti nella copia del container | python-semver | risolto | `17babc624` |
+| D-207 | I link lasciati fuori dalla copia non arrivavano ai buchi delle corse | container | risolto | `756ebbcb3` |
+| D-208 | JVM: i buchi della preparazione sovrascrivevano quelli del container | analisi JVM | risolto | `756ebbcb3` |
+| D-209 | Valgrind muore all'avvio nei sandbox di Modal (gVisor) | semver, tinyxml2, zlib e le fixture Rust e C/C++ | risolto | `8ef21896f` |
+| D-210 | Bear sotto gVisor fallisce circa una build su dieci | build Make sotto Bear | risolto | `f829df4b0` |
+| D-211 | Il server visuale resettava la connessione su una POST rifiutata | suite su Modal | risolto | `426626fbe` |
+| D-212 | Servizi di Compose che il passo non avvia | spec del passo dinamico | buco dichiarato (`compose_not_read` e lacune dei servizi) | — |
+| D-213 | I passi del job della CI prima dei test non giravano | passo dinamico | risolto | `f024ba3a3` |
+| D-214 | Compose: i file del progetto montati nei servizi | passo dinamico | risolto | `f024ba3a3` |
+| D-215 | Compose: `depends_on` | passo dinamico | risolto | `f024ba3a3` |
+| D-216 | GitLab CI: i file che `.gitlab-ci.yml` include | passo dinamico | aperto (test-services) | `23de469c4` |
+| D-217 | GitLab CI: `!reference` | da verificare | aperto (test-services) | — |
+| D-218 | Kiri non stacca un container dalla sua prima rete | motore Kiri | buco dichiarato (`ci_step_not_run`) | `f024ba3a3` |
+| D-219 | Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL | spec del passo dinamico | aperto (da decidere) | — |
+
+### Benchmark e documenti
+
+16 schede: 13 risolto, 3 aperto, 0 buco dichiarato.
+
+| Id | Nome | Progetto o caso | Stato | Commit |
+| --- | --- | --- | --- | --- |
+| D-220 | Risposte attese: il workspace di javapoet e le soluzioni .NET di zlib | javapoet, zlib | risolto | `a04ab36e1` |
+| D-221 | Lo schema del banco senza BOM, POM genitore e versioni centrali | dieci progetti del corpus | risolto | `1420247ad` |
+| D-222 | `test_catalog` rosso: ANAGRAFICA.md non era l'uscita del generatore | benchmark project-model | risolto | `68a846a4a` |
+| D-223 | Le risposte attese delle fixture Android senza i build-tools | jvm-android-app-lib, mix-poly-firebase | risolto | `68a846a4a` |
+| D-224 | I test del registratore JVM saltati: l'immagine dei test senza JDK | `tests/modal_pytest.py` | risolto | `a633ebd72` |
+| D-225 | Due fixture con `node --test test/` | due fixture JavaScript | risolto | `12775fee3` |
+| D-226 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | jvm-ver-* e le fixture Maven | aperto | — |
+| D-227 | README del benchmark: Rust, C e C++ «solo dove Valgrind parte» | `benchmarks/project-model/README.md` | aperto | — |
+| D-228 | Il rapporto dichiarava nulla la copertura a runtime | il metodo di codebase-map | risolto | `78c03d6e8` |
+| D-229 | Spec: il passo 2 «non esegue codice del progetto» | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` |
+| D-230 | Spec: Rust, C e C++ «non provati» su Modal | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` |
+| D-231 | README, SKILL e riferimenti dicevano Jedi e «solo statica» | README, SKILL, `references/snapshot.md` | risolto | `e617127c3` |
+| D-232 | L'osservatore Python diceva che il passo non avvia servizi | `scripts/dynamic/python.py` | risolto | `0ca9f1650` |
+| D-233 | Due script del benchmark dell'inferenza mai eseguiti | `benchmarks/inference-audit` | aperto | `137512c11` |
+| D-234 | Un file dello snapshot senza dichiarazioni usciva dal progetto nel grafo | `benchmarks/inference-audit` | risolto | `53e219638` |
+| D-235 | Pre-mappa: dipendenze sotto la soglia | corpus della pre-mappa | risolto | `de353d251`, `99112d0b9` |
 
 ## Schede
 
@@ -326,7 +365,7 @@ Convenzioni:
 - **Rimedio:** `a04ab36e1` (15 novembre), `scripts/modules.py`.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** dallo stesso commit vengono D-007–D-016 e D-219.
+- **Note:** dallo stesso commit vengono D-007–D-016 e D-220.
 
 #### D-007 setup.cfg non letto
 - **Descrizione:** una delle undici cause misurate sui 122 progetti di prova.
@@ -362,7 +401,7 @@ Convenzioni:
 - **Rimedio:** `a04ab36e1`, `scripts/modules.py`.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** la risposta attesa delle soluzioni .NET di zlib è corretta nello stesso commit (D-219).
+- **Note:** la risposta attesa delle soluzioni .NET di zlib è corretta nello stesso commit (D-220).
 
 #### D-011 Sottoprogetti sbt non letti
 - **Descrizione:** una delle undici cause misurate sui 122 progetti di prova.
@@ -416,7 +455,7 @@ Convenzioni:
 - **Rimedio:** `a04ab36e1`, `scripts/modules.py`. Anche l'adattatore del banco non lo conta più fra i membri (`9c17c7686`).
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-219.
+- **Note:** D-220.
 
 #### D-017 Pacchetti locali `file:` di npm senza archi nella pre-mappa
 - **Descrizione:** in js-local-and-git-deps la risposta di npm copriva un arco verso un pacchetto locale che `modules.py` trova; la misura del 15 novembre lo dava come aperto (`22524b57b`).
@@ -478,7 +517,7 @@ Convenzioni:
 - **Rimedio:** `99112d0b9`, `scripts/premap/renovate.py`.
 - **Verifica:** la riproduzione del commit, in D-019.
 - **Stato:** risolto.
-- **Note:** D-018; lo schema del banco ha la stessa regola (`1420247ad`, D-220).
+- **Note:** D-018; lo schema del banco ha la stessa regola (`1420247ad`, D-221).
 
 #### D-022 Un vincolo dichiarato contato come pacchetto
 - **Descrizione:** toolchain in più o sbagliate fra le dipendenze.
@@ -523,7 +562,7 @@ Convenzioni:
 - **Rimedio:** `99112d0b9`.
 - **Verifica:** la riproduzione del commit, in D-019.
 - **Stato:** risolto.
-- **Note:** lo schema del banco ha la stessa regola (`1420247ad`, D-220).
+- **Note:** lo schema del banco ha la stessa regola (`1420247ad`, D-221).
 
 #### D-027 Uno scope dato alle dipendenze di Gradle
 - **Descrizione:** dipendenze Gradle con uno scope che il build non dice.
@@ -571,7 +610,7 @@ Convenzioni:
   - ogni file ha il nome del posto in cui sta.
 - **Verifica:** python-semver dà 95 file.
 - **Stato:** risolto.
-- **Note:** D-032, D-033; nella copia del container, D-205.
+- **Note:** D-032, D-033; nella copia del container, D-206.
 
 #### D-032 Un collegamento verso l'esterno portava dentro un file di fuori
 - **Descrizione:** un file fuori dal progetto entrava nello snapshot.
@@ -701,9 +740,9 @@ Convenzioni:
   - la preparazione installa da Google gli strumenti a riga di comando fissati per sha256;
   - accetta le licenze come fa una CI e installa solo i pacchetti dichiarati;
   - ANDROID_HOME vale in entrambe le fasi.
-- **Verifica:** le risposte attese dichiarano android-build-tools 34.0.0 (`68a846a4a`, D-222); per il resto, solo test.
+- **Verifica:** le risposte attese dichiarano android-build-tools 34.0.0 (`68a846a4a`, D-223); per il resto, solo test.
 - **Stato:** risolto.
-- **Note:** dallo stesso commit vengono D-045–D-050, D-137, D-138, D-177 e D-223. Dopo il rimedio le build Android si fermano su `google-services.json`, D-109.
+- **Note:** dallo stesso commit vengono D-045–D-050, D-138, D-139, D-178 e D-224. Dopo il rimedio le build Android si fermano su `google-services.json`, D-109.
 
 #### D-045 Go: girava una versione diversa dalla più alta dichiarata
 - **Descrizione:** con più righe `go`, la preparazione non installava la più alta.
@@ -719,9 +758,9 @@ Convenzioni:
 - **Spiegazione:** il versioning docker di Renovate legge `node:22-alpine` come Node 22; la pre-mappa non lo faceva.
 - **Progetto e caso:** pre-mappa delle immagini — 16 novembre 2026.
 - **Rimedio:** `a633ebd72`; le risposte attese del benchmark sono corrette di conseguenza.
-- **Verifica:** solo test. ANAGRAFICA.md, da rigenerare dopo questa modifica, resta rossa fino a `68a846a4a` (D-221).
+- **Verifica:** solo test. ANAGRAFICA.md, da rigenerare dopo questa modifica, resta rossa fino a `68a846a4a` (D-222).
 - **Stato:** risolto.
-- **Note:** D-221.
+- **Note:** D-222.
 
 #### D-047 Gli errori di uv troncati
 - **Descrizione:** l'errore di un ripristino Python arrivava tagliato.
@@ -828,16 +867,16 @@ Convenzioni:
 - **Rimedio:** `5148e8eb3` (16 novembre), `scripts/premap/renovate.py` e `scripts/dynamic/javascript.py`:
   - la pre-mappa tiene la versione che Renovate già riporta;
   - l'osservatore JavaScript la installa accanto a Node.
-- **Verifica:** su Modal `npm test` arriva a Playwright sotto il registratore.
+- **Verifica:** su Modal `npm test` arriva a Playwright sotto il registratore; dalla pre-mappa, `tests/test_codebase_map_premap.py` (`test_the_bun_a_workflow_sets_up_is_the_bun_toolchain`, in `f024ba3a3`).
 - **Stato:** risolto.
-- **Note:** `bun test` resta `runner_not_observed`, D-194; il resto dei test di fastapi in D-196.
+- **Note:** `bun test` resta `runner_not_observed`, D-195; il resto dei test di fastapi in D-197.
 
 #### D-057 L'immagine `devcontainers/java:1-21` letta come Java 1
 - **Descrizione:** kotlinconf dichiara nel devcontainer `mcr.microsoft.com/devcontainers/java:1-21`, e la pre-mappa ne leggeva la versione `1`.
 - **Spiegazione:** i tag di quella famiglia di immagini sono `<versione dell'immagine>-<versione di Java>[-<OS>]` oppure `<versione di Java>[-<OS>]`, come dice il README di devcontainers/images (src/java). La pre-mappa ne prendeva il primo numero.
 - **Progetto e caso:** kotlinconf — conferma, 16 novembre 2026.
 - **Rimedio:** `22dca6da8` (16 novembre), `scripts/premap/renovate.py`: `DEV_CONTAINERS` e `_image_version(tag, name)`, che per queste immagini prendono l'ultimo di al massimo due numeri del tag.
-- **Verifica:** corsa su Modal di kotlinconf, fuori da `results/`: la toolchain `java 21` è dichiarata in `.devcontainer/devcontainer.json`.
+- **Verifica:** giro `jvm-kotlinconf`: la toolchain `java 21` è dichiarata in `.devcontainer/devcontainer.json` (fonte renovate@44.239.1).
 - **Stato:** risolto.
 - **Note:** D-058.
 
@@ -849,8 +888,9 @@ Convenzioni:
   - file: `scripts/premap/gradle.py` (`asked_jdk`), `scripts/premap/container_runner.py`, `scripts/indexers/jvm.py`;
   - la pre-mappa e l'analisi ripartono sul JDK dichiarato a quel livello o sopra;
   - se nessuno lo è, ripartono sulla versione che l'errore nomina, con la lacuna `jdk_from_build_error`.
-- **Verifica:** corsa su Modal di kotlinconf, 754 secondi, fuori da `results/`:
-  - il modello di Gradle riparte su mise java@21.0.13 e dà le toolchain del build (core 21, androidApp 11, android-sdk 37.2);
+- **Verifica:** giro `jvm-kotlinconf`, 754 secondi:
+  - il modello di Gradle riparte su mise java@21.0.13 (`premap-runs/gradle-jdk`) e dà le toolchain del build (core 21, androidApp 11, android-sdk 37.2);
+  - nessun `jdk_from_build_error`, perché il devcontainer dichiara il 21;
   - l'analisi passa la configurazione del progetto radice.
 - **Stato:** risolto.
 - **Note:** l'analisi Kotlin si ferma poi su un altro errore, D-110.
@@ -910,7 +950,7 @@ Convenzioni:
 - **Rimedio:** `177dcae02` (15 novembre), `scripts/container.py`; il limite è scritto nella spec del passo dinamico.
 - **Verifica:** solo test.
 - **Stato:** buco dichiarato (perimetro di rete di Gradle).
-- **Note:** D-202.
+- **Note:** D-203.
 
 ### Analizzatori
 
@@ -1055,7 +1095,7 @@ Convenzioni:
 - **Rimedio:** `64edfb930`, `scripts/indexers/go.py`.
 - **Verifica:** solo test locali.
 - **Stato:** risolto.
-- **Note:** D-138.
+- **Note:** D-139.
 
 #### D-080 Vue e Svelte: un componente con template non dichiarato letto in parte
 - **Descrizione:** un componente con template risultava letto per intero.
@@ -1063,8 +1103,8 @@ Convenzioni:
 - **Progetto e caso:** audit della copertura — 16 novembre 2026.
 - **Rimedio:** `64edfb930`: il componente è dichiarato letto in parte.
 - **Verifica:** finale, hoppscotch: «template not read: calls and bindings in it are not sites (400)».
-- **Stato:** risolto; il template resta non letto, D-158.
-- **Note:** D-158.
+- **Stato:** risolto; il template resta non letto, D-159.
+- **Note:** D-159.
 
 #### D-081 Lo stadio di posizione rispondeva per linguaggi non suoi
 - **Descrizione:** lo stadio di posizione dava risposte fuori dai suoi linguaggi.
@@ -1141,11 +1181,15 @@ Convenzioni:
 - **Descrizione:** buchi Python che non dicono perché:
   - conferma, 3 casi: no-occurrence 117, undefined-project-symbol 74, dangling-local 9 (96,0 % di risposta);
   - finale: no-occurrence 484, undefined-project-symbol 199, dangling-local 117, no-position 13.
-- **Spiegazione:** da verificare.
-- **Progetto e caso:** corpus Python — finale e conferma, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (python-env).
+- **Spiegazione:** dal commit `a6156b7a2`:
+  - undefined-project-symbol: tre difetti di scip-python 0.6.8. Un nome che l'`__init__` di una distribuzione riesporta (`sa.Column`, `typer.Typer`, `pytest.fail`) non andava alla distribuzione; `__name__`, `__file__`, `__package__` e `__doc__` non erano della libreria standard; `import semver`, definito come `src.semver`, non passava per la radice sorgente dichiarata;
+  - no-occurrence e dangling-local: un valore che il checker tipizza Unknown o Any, oppure un nome che il checker lega e scip-python non nomina.
+- **Progetto e caso:** corpus Python — finale e conferma; fastapi (`aabb90126964`) e python-semver (`b6e83e3e40d3`) nella misura del commit; 16 novembre 2026.
+- **Rimedio:** `a6156b7a2` (16 novembre), `scripts/indexers/python.py` e `scripts/indexers/python_unbound.py`:
+  - l'adattatore risolve i tre difetti; la distribuzione si cerca nel file d'ambiente della corsa;
+  - una passata del checker (l'hover del language server di Pyright 1.1.414 su ogni membro) dà a ogni buco restante la sua causa.
+- **Verifica:** dal commit, su Modal ai commit fissati: fastapi da 167 a 102 buchi (risposte dal 93,3 % al 95,9 %), python-semver da 64 a 54 (dal 97,2 % al 97,7 %); undefined-project-symbol da 65 e 10 a 0.
+- **Stato:** risolto; i buchi restanti sono dichiarati con la causa del checker.
 - **Note:** —
 
 #### D-089 Kotlin sotto Maven: 0 file su 2 indicizzati
@@ -1220,7 +1264,7 @@ Convenzioni:
   - gira Gradle, e Maven solo se Gradle non dà indice.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** dallo stesso commit vengono D-096, D-097 e D-179.
+- **Note:** dallo stesso commit vengono D-096, D-097 e D-180.
 
 #### D-096 Una radice con solo settings.gradle.kts non riconosciuta da scip-java
 - **Descrizione:** scip-java non partiva su una build composta con solo `settings.gradle.kts` alla radice.
@@ -1263,7 +1307,7 @@ Convenzioni:
   - un JDK dichiarato sotto il 17 si indicizza sul 17, con il buco `jdk_unsupported`.
 - **Verifica:** su Modal, javapoet: indice Java `fresh` con i buchi `jdk_unsupported` e `build_edited` (`609ca96dd`).
 - **Stato:** buco dichiarato (`jdk_unsupported`).
-- **Note:** D-100, D-177.
+- **Note:** D-100, D-178.
 
 #### D-100 javapoet: il compilerId di Error Prone scavalca il wrapper di javac
 - **Descrizione:** la build di javapoet non dava l'indice.
@@ -1301,7 +1345,7 @@ Convenzioni:
   - java-versions, sul codice a `68a846a4a`: Java `fresh` e osservato in tutte le 18 fixture, 37 file su 37 e 453 siti tutti con risposta;
   - prima di `21b3cb39b` sette non davano indice (README del benchmark).
 - **Stato:** buco dichiarato (`build_edited`, `jdk_unsupported`).
-- **Note:** dallo stesso commit vengono D-103, D-104 e D-178.
+- **Note:** dallo stesso commit vengono D-103, D-104 e D-179.
 
 #### D-103 Gradle con toolchain 8 e 11, anche con Kotlin accanto: nessun indice
 - **Descrizione:** stessa misura di D-102.
@@ -1330,7 +1374,9 @@ Convenzioni:
 - **Rimedio:** `39805f5e7` (16 novembre), `scripts/indexers/jvm.py`, `java.py` e `kotlin.py`, `scripts/dynamic/jvm.py`:
   - il container di ogni build contiene l'intero checkout (`jvm.run(..., checkout=)`);
   - il build gira nella sua cartella (`DAODAN_ROOT`, `WORK=/work/$DAODAN_ROOT`).
-- **Verifica:** corsa su Modal, fuori da `results/`: Java `fresh`, e l'osservatore registra 297 siti.
+- **Verifica:** giro `jvm-otel-android`, otel-demo:
+  - Java `fresh`, 9 file su 9, 693 siti tutti con risposta (in finale: `failed`, senza indice);
+  - l'osservatore Java registra 297 siti e 297 archi, e chiude 2 buchi.
 - **Stato:** risolto.
 - **Note:** dallo stesso commit vengono D-106, D-108 e D-109.
 
@@ -1342,18 +1388,22 @@ Convenzioni:
   - compileJava puntava al 21, e il plugin di Kotlin falliva.
 - **Progetto e caso:** otel-demo — finale, 16 novembre 2026.
 - **Rimedio:** `39805f5e7`, `scripts/indexers/jvm.py` (`applying`): un JDK conta per un build solo se lo dichiarano i suoi file o un file in una cartella sopra; vale anche per l'osservatore (`build_jdk`).
-- **Verifica:** corsa su Modal, fuori da `results/`: fraud-detection non dà più quell'errore e si ferma su D-107.
+- **Verifica:** giro `jvm-otel-android`: l'errore di compatibilità non c'è più, e fraud-detection si ferma su D-107.
 - **Stato:** risolto.
 - **Note:** D-107.
 
 #### D-107 otel-demo fraud-detection: protos che solo il Dockerfile copia
-- **Descrizione:** dopo D-106 fraud-detection non compila: `main.kt:14` importa `oteldemo.Demo.*`.
-- **Spiegazione:** quelle classi nascono dai protos che solo il Dockerfile del servizio copia in `src/main/proto`; il repository non ha quella cartella, così il build dichiarato non le genera.
-- **Progetto e caso:** otel-demo — corsa su Modal, fuori da `results/`, 16 novembre 2026.
-- **Rimedio:** —
+- **Descrizione:** giro `jvm-otel-android`, otel-demo: Kotlin `failed`, «none of the 3 kotlin files is in the index: Gradle script: no KotlinCompile task compiles it (2), no Kotlin compile task of the build lists it (1)».
+- **Spiegazione:**
+  - `src/fraud-detection/src/main/kotlin/frauddetection/main.kt:14` importa `oteldemo.Demo.*`, le classi che il plugin protobuf genera dai proto;
+  - il blocco `protobuf { }` di `src/fraud-detection/build.gradle.kts:78-99` non nomina una cartella dei proto, quindi usa `src/main/proto`;
+  - quella cartella la riempie solo il Dockerfile del servizio: `src/fraud-detection/Dockerfile:10`, `COPY ./pb/ ./src/main/proto/`;
+  - il build dichiarato, girato sul checkout, non genera quelle classi.
+- **Progetto e caso:** otel-demo (`b825c7c25726`) — giro `jvm-otel-android`, 16 novembre 2026.
+- **Rimedio:** —. Gli stadi di un Dockerfile si leggono da `f024ba3a3`, ma oggi indicizza dentro uno stadio solo Go (`f04dab9d5`, D-141); la via per C e C++ è in corso (D-135), e la JVM non la usa.
 - **Verifica:** —
 - **Stato:** aperto (android-sdk): build dichiarata solo in un Dockerfile.
-- **Note:** D-134, D-140.
+- **Note:** D-135, D-141.
 
 #### D-108 Android: classpath dei test unitari non risolti, nessun compito Android
 - **Descrizione:** finale: Kotlin `failed` con «Could not resolve all artifacts for configuration ':core:releaseUnitTestRuntimeClasspath'» e «':app:debugUnitTestCompileClasspath'».
@@ -1364,26 +1414,29 @@ Convenzioni:
 - **Rimedio:** `39805f5e7`:
   - `scripts/indexers/jvm.py` (`SCIP_INDEX`, `ANDROID_INIT`), `java.py` e `kotlin.py`;
   - con l'SDK installato, un build Gradle lancia dopo i compiti di scip-java `daodanAndroidCompile`, che dipende dai compiti `compile*Debug(UnitTest)?Sources` di ogni progetto.
-- **Verifica:** corsa su Modal, fuori da `results/`: i due casi lanciano le compilazioni debug e si fermano su `google-services.json` (D-109). Che le varianti diano l'indice è da verificare.
+- **Verifica:** giro `jvm-otel-android`: i due casi non si fermano più sui classpath e lanciano le compilazioni debug, fino a `:app:processFreeDebugGoogleServices` e `:app:processDebugGoogleServices`, dove si fermano su `google-services.json` (D-109). Che le varianti diano l'indice è da verificare.
 - **Stato:** aperto (dynamic-jvm-2): manca la prova su un build con il suo `google-services.json`.
 - **Note:** D-109.
 
 #### D-109 Android: build fermo su `google-services.json` mancante
-- **Descrizione:** jvm-android-app-lib e mix-poly-firebase si fermano con «File google-services.json is missing»:
-  - jvm-android-app-lib cerca, fra gli altri, `/work/app/src/free/debug/` e `/work/app/google-services.json`;
-  - mix-poly-firebase cerca in `/work/android/app/…`.
+- **Descrizione:** giro `jvm-otel-android`, Kotlin `failed`: «Execution failed for task ':app:processFreeDebugGoogleServices'. > File google-services.json is missing. The Google Services Plugin cannot function without it.»:
+  - jvm-android-app-lib cerca da `/work/app/src/free/debug/google-services.json` fino a `/work/app/google-services.json`;
+  - mix-poly-firebase si ferma in `:app:processDebugGoogleServices` e cerca in `/work/android/app/…`.
 - **Spiegazione:** il plugin Google Services (com.google.gms.google-services) legge la configurazione del progetto Firebase, che lo sviluppatore scarica dalla console e il repository non tiene; le fixture non l'hanno.
-- **Progetto e caso:** jvm-android-app-lib, mix-poly-firebase — corsa su Modal, fuori da `results/`, 16 novembre 2026.
-- **Rimedio:** `39805f5e7`, `scripts/indexers/jvm.py` (`INPUTS`, `missing_inputs`). Il buco `build_input_missing` nomina il file e il plugin; Daodan non ne crea nessuno.
-- **Verifica:** la stessa corsa: il buco ha percorso «.» e «android».
+- **Progetto e caso:** jvm-android-app-lib, mix-poly-firebase — giro `jvm-otel-android`, 16 novembre 2026.
+- **Rimedio:** `39805f5e7`, `scripts/indexers/jvm.py` (`INPUTS`, `missing_inputs`). Il buco `build_input_missing` dice: «the build stopped without google-services.json, which the Google Services Gradle plugin (com.google.gms.google-services) reads: the Firebase project's configuration, which a developer downloads from the Firebase console, kept out of the repository; Daodan makes none, so the build gives nothing».
+- **Verifica:** giro `jvm-otel-android`: il buco è in `steps.analyze.engines.scip-kotlin.gaps` di entrambi i casi.
 - **Stato:** buco dichiarato (`build_input_missing`).
 - **Note:** D-108.
 
 #### D-110 kotlinconf: «Task with name 'compileKotlinJvm' not found in project ':app:adminApp'»
-- **Descrizione:** dopo D-058 Kotlin fallisce mentre determina le dipendenze di `:app:adminApp:scipCompileAll`.
-- **Spiegazione:** da verificare. L'ipotesi è che `scipCompileAll` chieda il compito JVM a un modulo multipiattaforma senza target JVM.
-- **Progetto e caso:** kotlinconf — corsa su Modal, fuori da `results/`, 16 novembre 2026.
-- **Rimedio:** —
+- **Descrizione:** giro `jvm-kotlinconf`, Kotlin `failed`: «scip-java wrote no index (preparation exited with code 1): determine the dependencies of task ':app:adminApp:scipCompileAll'. > Task with name 'compileKotlinJvm' not found in project ':app:adminApp'.».
+- **Spiegazione:**
+  - il plugin Gradle di scip-java 0.14.2 (`scip-gradle-plugin/src/main/java/org/scip_code/scip_java/gradle/ScipGradlePlugin.java`) mette in `triggers`, per ogni progetto con il plugin Kotlin Multiplatform, i nomi `compileKotlinJvm` e `compileTestKotlinJvm`, senza guardare se il progetto ha un target `jvm()`;
+  - poi `project.getTasks().create("scipCompileAll").dependsOn(triggers)` li chiede per nome, e Gradle si ferma su un nome che il progetto non ha;
+  - in kotlinconf `app/adminApp` dichiara solo `js(IR)` e `app/webApp` solo `wasmJs` e `js`: nessuno dei due ha `compileKotlinJvm`.
+- **Progetto e caso:** kotlinconf (`146e891c150c`) — giro `jvm-kotlinconf`, 16 novembre 2026.
+- **Rimedio:** in corso (dynamic-jvm-2).
 - **Verifica:** —
 - **Stato:** aperto (dynamic-jvm-2).
 - **Note:** D-058.
@@ -1408,43 +1461,64 @@ Convenzioni:
 
 #### D-113 C#: un progetto che Msbuild rifiuta ferma il ripristino intero
 - **Descrizione:** zlib in giro-2, finale e conferma: «scip-dotnet wrote no index (no documents were indexed; Msbuild failed when processing the file '/work/contrib/dotzlib/DotZLib/DotZLib.csproj' with message: The project file "" must be opened in a version of Visual Studio IDE that supports it and converted to the latest version before it can be built».
-- **Spiegazione:** DotZLib.csproj è un progetto `<VisualStudioProject>` del vecchio formato, e un solo progetto che Msbuild rifiuta fa fallire il ripristino di tutti.
-- **Progetto e caso:** zlib (`51b7f2abdade`) — giro-2, finale, conferma, 16 novembre 2026.
-- **Rimedio:** `73b645531` (16 novembre), `scripts/indexers/csharp.py`: un progetto `<VisualStudioProject>`, o una soluzione che ha solo quelli, è `unavailable` con il formato nominato, e non viene lanciato.
-- **Verifica:** nessun giro su zlib dopo il commit: da verificare.
-- **Stato:** aperto (csharp-dotnet): un progetto rifiutato ferma ancora il ripristino degli altri. Il progetto legacy è un buco dichiarato (`unavailable`).
+- **Spiegazione:** un solo progetto che non si può trattare fermava tutti gli altri:
+  - in zlib è DotZLib.csproj, un progetto `<VisualStudioProject>` del vecchio formato, che Msbuild rifiuta;
+  - in eShop `dotnet restore eShop.slnx` falliva per intero su un solo progetto che vuole un workload MAUI (NETSDK1147): nessun progetto aveva i suoi pacchetti, Roslyn non legava nessun simbolo di pacchetto, e ne venivano circa 4.400 buchi no-occurrence (dal commit `0cdbae9b2`).
+- **Progetto e caso:** zlib (`51b7f2abdade`) — giro-2, finale, conferma; eShop (`913acea66708`) — misura di csharp-dotnet; 16 novembre 2026.
+- **Rimedio:**
+  - `73b645531` (16 novembre), `scripts/indexers/csharp.py`: un progetto `<VisualStudioProject>`, o una soluzione che ha solo quelli, è `unavailable` con il formato nominato, e non viene lanciato;
+  - `0cdbae9b2` (16 novembre), `scripts/preparation.py` (`RESTORES`): se la soluzione non si ripristina, si ripristina ogni progetto che `dotnet sln list` nomina, e il fallimento resta il buco `restore_failed`.
+- **Verifica:** solo test (`tests/test_codebase_map_preparation.py`, `test_a_dotnet_solution_that_does_not_restore_restores_each_of_its_projects_and_stays_a_gap`); nessun giro su zlib o eShop dopo i commit: da verificare.
+- **Stato:** risolto; il progetto legacy è un buco dichiarato (`unavailable`), e un progetto che non si ripristina resta `restore_failed`.
 - **Note:** D-114.
 
 #### D-114 C#: 56,1 % di risposta
 - **Descrizione:** finale: C# `fresh` in 4 casi su 5, 561 file su 561, quota di risposta 56,1 %.
   - buchi: no-occurrence 5.358, no-position 1.021, dangling-local 144, undefined-project-symbol 20;
   - casi `fresh`: mix-dotnet-central, eShop, otel-demo, voting-app.
-- **Spiegazione:** da verificare; per i nomi con argomenti di tipo, D-116.
+- **Spiegazione:** le cause misurate da csharp-dotnet, poi corrette in `0cdbae9b2`:
+  - il ripristino falliva intero per un solo progetto di workload (D-113): circa 4.400 buchi no-occurrence in eShop;
+  - la colonna della riga 1 di un file con il BOM (D-115);
+  - i nomi del chiamato qualificati (D-117) e con argomenti di tipo (D-116).
 - **Progetto e caso:** mix-dotnet-central, eShop (`913acea66708`), otel-demo, voting-app (`63e9150ca17a`) — finale, 16 novembre 2026.
-- **Rimedio:** l'analyzer C# arriva con `56e65e114` (16 novembre); `73b645531` dà una causa a parte dei buchi di eShop (D-116–D-119).
-- **Verifica:** nessun giro sul corpus dopo `73b645531`: da verificare.
+- **Rimedio:**
+  - l'analyzer C# arriva con `56e65e114` (16 novembre);
+  - `73b645531` dà una causa a parte dei buchi di eShop (D-116, D-118, D-119, D-120);
+  - `0cdbae9b2` corregge il ripristino, il BOM e i nomi (D-113, D-115, D-116, D-117).
+- **Verifica:** nessun giro sul corpus dopo `0cdbae9b2`: la nuova quota di risposta è da verificare.
 - **Stato:** aperto (csharp-dotnet).
-- **Note:** D-115, D-116, D-197.
+- **Note:** D-113, D-115, D-116, D-117, D-198.
 
-#### D-115 C#: la colonna con il BOM
-- **Descrizione:** segnalato da team-lead.
-- **Spiegazione:** da verificare: nessun commit né risultato lo descrive ancora.
-- **Progetto e caso:** da verificare.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (csharp-dotnet).
+#### D-115 La colonna della riga 1 di un file con il BOM
+- **Descrizione:** csharp-dotnet ha misurato riferimenti della riga 1 senza risposta nei file che iniziano con il BOM.
+- **Spiegazione:** un BOM UTF-8 in testa al file spostava di uno le colonne della riga 1 fra lo snapshot, che conta i suoi tre byte, e Roslyn o tsc, le cui colonne UTF-16 iniziano dopo di esso.
+- **Progetto e caso:** i casi C# — misura di csharp-dotnet, 16 novembre 2026; vale per ogni linguaggio.
+- **Rimedio:** `0cdbae9b2` (16 novembre), `scripts/code_graph.py` (`BOM`): `Index.to_bytes` e `from_bytes` lo saltano, per ogni linguaggio.
+- **Verifica:** solo test (`tests/test_codebase_map_indexers_csharp.py`, `test_a_byte_order_mark_moves_no_column_of_the_first_line`).
+- **Stato:** risolto.
 - **Note:** D-114.
 
 #### D-116 C#: nomi del chiamato con argomenti di tipo
 - **Descrizione:** un chiamato scritto con argomenti di tipo non ha occorrenza nell'indice ed è un buco.
 - **Spiegazione:** `ScipCSharpSyntaxWalker` non ha `VisitGenericName`, nella 0.2.16 come sul suo ramo main: scip-dotnet scrive occorrenze solo per i nomi semplici.
 - **Progetto e caso:** eShop — misura su Modal al suo commit, con scip-dotnet 0.2.16, 16 novembre 2026.
-- **Rimedio:** `73b645531` (16 novembre), `scripts/indexers/csharp.py`: il buco porta la causa `TYPE_ARGUMENTS`.
-- **Verifica:** la misura su eShop del commit.
+- **Rimedio:**
+  - `73b645531` (16 novembre), `scripts/indexers/csharp.py`: il buco porta la causa `TYPE_ARGUMENTS`;
+  - `0cdbae9b2` (16 novembre), `scripts/languages/semantic.py` (`_generic_name`): una chiamata come `AddSingleton<A, B>()` è nominata dal suo nome, e resta un buco della classe giusta.
+- **Verifica:** la misura su eShop di `73b645531`; `tests/test_codebase_map_indexers_csharp.py` (`test_a_call_written_with_type_arguments_is_named_by_its_name_and_its_hole_says_why`).
 - **Stato:** buco dichiarato (`TYPE_ARGUMENTS`).
-- **Note:** dallo stesso commit vengono D-117–D-119.
+- **Note:** dallo stesso commit vengono D-118–D-120; i nomi qualificati, D-117.
 
-#### D-117 C#: i membri dei tipi anonimi erano locali senza definizione
+#### D-117 C#: nomi del chiamato qualificati
+- **Descrizione:** csharp-dotnet ha misurato, fra le cause del 56,1 % (D-114), i nomi del chiamato qualificati, come `new Shop.Core.Models.User()`.
+- **Spiegazione:** il lettore dei nomi del chiamato (`_TreeSitterEvidence.parts`, `scripts/languages/semantic.py`) non trattava il `qualified_name` di C#, il tipo scritto con il suo namespace.
+- **Progetto e caso:** i casi C# — misura di csharp-dotnet, 16 novembre 2026.
+- **Rimedio:** `0cdbae9b2` (16 novembre), `scripts/languages/semantic.py`: un `qualified_name` di C# è nominato attraverso il suo namespace, e si risolve.
+- **Verifica:** solo test (`tests/test_codebase_map_indexers_csharp.py`, `test_a_type_written_with_its_namespace_is_named_by_it`).
+- **Stato:** risolto.
+- **Note:** D-114, D-116.
+
+#### D-118 C#: i membri dei tipi anonimi erano locali senza definizione
 - **Descrizione:** eShop: 138 buchi dangling-local.
 - **Spiegazione:** scip-dotnet chiama locali i membri dei tipi anonimi e non li definisce.
 - **Progetto e caso:** eShop — misura su Modal, 16 novembre 2026.
@@ -1455,7 +1529,7 @@ Convenzioni:
 - **Stato:** risolto; i membri dei blocchi di estensione sono un buco dichiarato (EXTENSION).
 - **Note:** —
 
-#### D-118 C#: membri dei source generator e `args` dei top-level statement senza causa
+#### D-119 C#: membri dei source generator e `args` dei top-level statement senza causa
 - **Descrizione:** eShop: 17 buchi undefined-project-symbol.
 - **Spiegazione:** scip-dotnet indicizza solo i documenti del progetto, quindi non i membri generati, e `args` dei top-level statement lo dichiara il compilatore.
 - **Progetto e caso:** eShop — misura su Modal, 16 novembre 2026.
@@ -1464,7 +1538,7 @@ Convenzioni:
 - **Stato:** buco dichiarato (GENERATED, TOP_LEVEL).
 - **Note:** —
 
-#### D-119 C#: Catalog.API non si caricava sotto la globalizzazione invariante
+#### D-120 C#: Catalog.API non si caricava sotto la globalizzazione invariante
 - **Descrizione:** eShop: NETSDK1188 su Catalog.API.
 - **Spiegazione:** la globalizzazione invariante rifiuta ogni cultura salvo quella invariante, e le risorse per cultura di un pacchetto fanno fallire MSBuild.
 - **Progetto e caso:** eShop — misura su Modal, 16 novembre 2026.
@@ -1473,25 +1547,25 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-120 Lo script di C e C++ cancellava la cartella in cui scrive il risultato
+#### D-121 Lo script di C e C++ cancellava la cartella in cui scrive il risultato
 - **Descrizione:** l'indice C/C++ finiva `failed` senza una run.
 - **Spiegazione:** la cartella del risultato sta dentro quella di lavoro, e lo script la creava prima di svuotare quella di lavoro, così il risultato non veniva mai scritto.
 - **Progetto e caso:** indicizzatore C/C++ — 15 novembre 2026.
 - **Rimedio:** `c089b3540` (15 novembre), `scripts/indexers/clang_run.py`: la crea dopo.
-- **Verifica:** la prova reale nel container passa con `a3dad5e39` (D-121).
+- **Verifica:** la prova reale nel container passa con `a3dad5e39` (D-122).
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-121 CMake: il fornitore delle dipendenze nominato prima di essere definito
+#### D-122 CMake: il fornitore delle dipendenze nominato prima di essere definito
 - **Descrizione:** la configurazione moriva a `project()` e non registrava nulla.
 - **Spiegazione:** CMake accetta come fornitore delle dipendenze solo un comando già definito, e lo script lo nominava prima.
 - **Progetto e caso:** prova reale di C e C++ nel container — 15 novembre 2026.
 - **Rimedio:** `a3dad5e39` (15 novembre), `scripts/indexers/clang_run.py`: l'ordine è giusto.
 - **Verifica:** la prova nel container dà l'unità `unavailable` con fmt e il suo URL, come deve.
 - **Stato:** risolto.
-- **Note:** D-131.
+- **Note:** D-132.
 
-#### D-122 scip-clang usava i processori della macchina
+#### D-123 scip-clang usava i processori della macchina
 - **Descrizione:** scip-clang lanciava tanti compilatori quanti processori ha la macchina.
 - **Spiegazione:** `--jobs` veniva dalla macchina, non dalla parte che il chiamante dà al container.
 - **Progetto e caso:** indicizzatore C/C++ — 15 novembre 2026.
@@ -1500,7 +1574,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-123 L'errore di CMake riscritto con righe ricavate dal testo
+#### D-124 L'errore di CMake riscritto con righe ricavate dal testo
 - **Descrizione:** l'errore di CMake arrivava con righe ricostruite, non com'è scritto.
 - **Spiegazione:** lo script estraeva righe dal testo dell'errore.
 - **Progetto e caso:** indicizzatore C/C++ — 14 novembre 2026.
@@ -1509,7 +1583,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-124 vcpkg e Conan: il configure senza l'installazione del gestore
+#### D-125 vcpkg e Conan: il configure senza l'installazione del gestore
 - **Descrizione:** in sys-cpp-vcpkg-conan il configure falliva; con `ee456d55a` (15 novembre) quel caso restava «invariato, perché il suo configure fallisce».
 - **Spiegazione:** il configure dell'analizzatore non eseguiva l'installazione del gestore né leggeva la cache iniziale che questa scrive.
 - **Progetto e caso:** sys-cpp-vcpkg-conan — 15 e 16 novembre 2026.
@@ -1520,9 +1594,9 @@ Convenzioni:
   - un'installazione fallita è `restore_failed`.
 - **Verifica:** finale e conferma: sys-cpp-vcpkg-conan, cpp `fresh`.
 - **Stato:** risolto.
-- **Note:** dallo stesso commit vengono D-125–D-128; per l'osservatore, D-176.
+- **Note:** dallo stesso commit vengono D-126–D-129; per l'osservatore, D-177.
 
-#### D-125 Un configure che legge un submodule non scaricato
+#### D-126 Un configure che legge un submodule non scaricato
 - **Descrizione:** finale e conferma: «.: the configure reads third_party/fmt: a git submodule not checked out (git submodule update --init)».
 - **Spiegazione:** il submodule non è nel checkout.
 - **Progetto e caso:** sys-git-submodule-absent — finale e conferma, 16 novembre 2026.
@@ -1531,7 +1605,7 @@ Convenzioni:
 - **Stato:** buco dichiarato (`unavailable`).
 - **Note:** —
 
-#### D-126 `namespace a::b {` non letto come C++17
+#### D-127 `namespace a::b {` non letto come C++17
 - **Descrizione:** il lettore non riconosceva il namespace annidato di C++17.
 - **Spiegazione:** la lettura non lo trattava come C++17.
 - **Progetto e caso:** lettura C/C++ — 16 novembre 2026.
@@ -1540,7 +1614,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-127 Un `.h` con una direttiva Objective-C letto come C
+#### D-128 Un `.h` con una direttiva Objective-C letto come C
 - **Descrizione:** un header Objective-C entrava nel grafo come C.
 - **Spiegazione:** l'estensione `.h` decideva da sola il linguaggio.
 - **Progetto e caso:** lettura C/C++ — 16 novembre 2026.
@@ -1549,7 +1623,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-128 Un `.ts` di Qt Linguist letto come TypeScript
+#### D-129 Un `.ts` di Qt Linguist letto come TypeScript
 - **Descrizione:** un file XML di traduzione di Qt entrava nel grafo come TypeScript.
 - **Spiegazione:** l'estensione `.ts` decideva da sola il linguaggio.
 - **Progetto e caso:** lettura — 16 novembre 2026.
@@ -1558,7 +1632,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-129 C: macro di decorazione e nomi da header non risolti
+#### D-130 C: macro di decorazione e nomi da header non risolti
 - **Descrizione:** su zlib 37 file C su 66 non avevano fatti semantici, e le chiamate risolte erano 303.
 - **Spiegazione:**
   - il lettore non toglieva le macro che il sorgente definisce come decorazione o come involucro di un prototipo, anche quando arrivano da un file incluso;
@@ -1569,18 +1643,18 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-130 Un configure che ha bisogno di ciò che l'unità scarica fuori dai registri
+#### D-131 Un configure che ha bisogno di ciò che l'unità scarica fuori dai registri
 - **Descrizione:** l'indice C/C++ di un'unità non si fa senza i download che la sua configurazione chiede.
 - **Spiegazione:** la configurazione gira senza rete, con CMake e scip-clang portati da Daodan e fissati per sha256.
 - **Progetto e caso:** indicizzatore C/C++ — 14 novembre 2026.
 - **Rimedio:** `98743babd` (14 novembre):
   - l'indice di quell'unità è `unavailable`, con gli indirizzi e la riga d'errore di CMake;
   - l'unità tiene i fatti statici.
-- **Verifica:** provato su un container finto; la prova vera in D-121.
+- **Verifica:** provato su un container finto; la prova vera in D-122.
 - **Stato:** buco dichiarato (`unavailable`).
-- **Note:** D-131.
+- **Note:** D-132.
 
-#### D-131 `file(DOWNLOAD)` ed ExternalProject non annotati
+#### D-132 `file(DOWNLOAD)` ed ExternalProject non annotati
 - **Descrizione:** finale, otel-demo: «scip-clang wrote no index (src/currency: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded)».
 - **Spiegazione:**
   - un fornitore di dipendenze passato a CMake annota nome e indirizzi di ciò che il progetto chiede a FetchContent, senza scaricare;
@@ -1591,9 +1665,9 @@ Convenzioni:
   - senza annotazione è `failed`, e lo dice.
 - **Verifica:** finale.
 - **Stato:** buco dichiarato (`failed` con la frase citata).
-- **Note:** D-134.
+- **Note:** D-135.
 
-#### D-132 zlib: file C e C++ che nessun build compila
+#### D-133 zlib: file C e C++ che nessun build compila
 - **Descrizione:** conferma, zlib:
   - C con 22 file su 54 fuori dall'indice: 12 «not built by the default configuration», 8 header che nessuna unità indicizzata include in un ramo attivo, 2 con «make ended with exit code 2»;
   - C++ `failed`: nessuno degli 8 file nell'indice.
@@ -1605,9 +1679,9 @@ Convenzioni:
 - **Rimedio:** `d4e6d9046` (16 novembre), `scripts/indexers/clang.py`: il motivo nomina la cartella invece di «not built by the default configuration».
 - **Verifica:** dopo `d4e6d9046` nessun giro: da verificare.
 - **Stato:** buco dichiarato (`no compile command`).
-- **Note:** D-133; il build autotools di minizip ora c'è.
+- **Note:** D-134; il build autotools di minizip ora c'è.
 
-#### D-133 zlib minizip: il build autotools non eseguito
+#### D-134 zlib minizip: il build autotools non eseguito
 - **Descrizione:** mztools.c di contrib/minizip non era indicizzato.
 - **Spiegazione:** Daodan non eseguiva i build autotools.
 - **Progetto e caso:** zlib contrib/minizip — 16 novembre 2026.
@@ -1616,27 +1690,30 @@ Convenzioni:
   - clang lancia autoreconf, configure in una cartella sua e make sotto Bear.
 - **Verifica:** provato su contrib/minizip di zlib: mztools.c è indicizzato.
 - **Stato:** risolto.
-- **Note:** D-132.
+- **Note:** D-133.
 
-#### D-134 otel-demo currency: il build dichiarato solo nel Dockerfile
-- **Descrizione:** il configure di src/currency esce con 1 (D-131).
-- **Spiegazione:** il servizio si costruisce nel suo Dockerfile; da verificare cosa manca al configure.
-- **Progetto e caso:** otel-demo — finale, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
+#### D-135 otel-demo currency: il build dichiarato solo nel Dockerfile
+- **Descrizione:** finale e giro `jvm-otel-android`: il configure di src/currency esce con 1 (D-132), con «CMake Error at CMakeLists.txt:7 (find_package): Could not find a package configuration file provided by "Protobuf"».
+- **Spiegazione:** Protobuf e le altre dipendenze del servizio le installa il suo Dockerfile, che è l'unico a dichiarare come si costruisce; il configure sul checkout non le trova.
+- **Progetto e caso:** otel-demo (`b825c7c25726`) — finale e giro `jvm-otel-android`, 16 novembre 2026.
+- **Rimedio:** in corso (android-sdk). Da `f024ba3a3` (16 novembre) la lettura e il piano ci sono, ma nessun analizzatore C/C++ li usa:
+  - la pre-mappa legge ogni Dockerfile con il parser di BuildKit v0.34.2 (fatto `docker_builds`), con il contesto e gli argomenti di build da Compose (`scripts/premap/dockerfile.py`);
+  - `scripts/docker_build.py` pianifica lo stadio fino al suo ultimo RUN, con l'immagine di base fissata per digest, e ogni istruzione non riproducibile è un buco `not_reproduced` con la sua riga;
+  - la via per C e C++ non è in un commit (`scripts/indexers/clang.py`, non committato): scip-clang gira sull'Alpine dello stadio attraverso il loader di glibc in una prova; mancano le sorgenti dei pacchetti dell'immagine di base e `.dockerignore`.
+- **Verifica:** del piano solo test (`tests/test_codebase_map_docker_build.py`, `test_currency_runs_base_then_builder_with_compose_s_argument_and_maps_each_copy_back`); dell'indice, —.
 - **Stato:** aperto (android-sdk).
-- **Note:** D-107, D-140.
+- **Note:** D-107, D-141.
 
-#### D-135 C: 5.147 buchi `no-document`
+#### D-136 C: 5.147 buchi `no-document`
 - **Descrizione:** conferma, C su 7 casi: 10.271 siti, 40,7 % di risposta; fra i buchi, no-document 5.147 e no-occurrence 941.
 - **Spiegazione:** da verificare.
 - **Progetto e caso:** i casi C della conferma — 16 novembre 2026.
 - **Rimedio:** —
 - **Verifica:** —
 - **Stato:** aperto.
-- **Note:** D-132.
+- **Note:** D-133.
 
-#### D-136 File C e C++ fuori dalla configurazione predefinita
+#### D-137 File C e C++ fuori dalla configurazione predefinita
 - **Descrizione:** sys-cmake-presets ha 1 file C su 4 e tinyxml2 1 file C++ su 3 «no compile command: not built by the default configuration».
 - **Spiegazione:** la configurazione predefinita del build non li compila.
 - **Progetto e caso:** sys-cmake-presets, tinyxml2 (`9148bdf719e9`) — finale e conferma, 16 novembre 2026.
@@ -1645,7 +1722,7 @@ Convenzioni:
 - **Stato:** buco dichiarato (`no compile command: not built by the default configuration`).
 - **Note:** —
 
-#### D-137 Go: i builtin erano buchi
+#### D-138 Go: i builtin erano buchi
 - **Descrizione:** le chiamate ai builtin di Go non avevano risposta.
 - **Spiegazione:** non erano esterni di nessun pacchetto.
 - **Progetto e caso:** indicizzatore Go — 16 novembre 2026.
@@ -1654,7 +1731,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-138 Go: file esclusi dai vincoli di build senza indice
+#### D-139 Go: file esclusi dai vincoli di build senza indice
 - **Descrizione:** i file esclusi da un vincolo di build mancavano dall'indice.
 - **Spiegazione:** scip-go indicizza la sola configurazione corrente.
 - **Progetto e caso:** indicizzatore Go — 16 novembre 2026.
@@ -1663,25 +1740,33 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** D-079.
 
-#### D-139 Go: un file senza go.mod non diceva perché
+#### D-140 Go: un file senza go.mod non diceva perché
 - **Descrizione:** finale, robot-shop: «go failed: none of the 1 go files is in the index: no document in the index (1)».
 - **Spiegazione:** il file non ha un go.mod nella sua cartella né sopra; il go.mod lo scrive il Dockerfile al build.
 - **Progetto e caso:** robot-shop (`55292e2199f2`) — finale, 16 novembre 2026.
 - **Rimedio:** `d4e6d9046`, `scripts/indexers/go.py`: il motivo dice «no Go module holds it».
 - **Verifica:** dopo `d4e6d9046` nessun giro: da verificare.
-- **Stato:** risolto; il build resta D-140.
-- **Note:** D-140.
+- **Stato:** risolto; il build resta D-141.
+- **Note:** D-141.
 
-#### D-140 robot-shop dispatch: il modulo Go dichiarato solo nel Dockerfile
-- **Descrizione:** il servizio dispatch non entra nel grafo Go.
-- **Spiegazione:** il suo go.mod lo scrive il Dockerfile al build.
-- **Progetto e caso:** robot-shop — finale, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (android-sdk).
-- **Note:** D-107, D-134, D-139.
+#### D-141 robot-shop dispatch: il modulo Go dichiarato solo nel Dockerfile
+- **Descrizione:** finale: «go failed: none of the 1 go files is in the index: no document in the index (1)»; il servizio dispatch non entra nel grafo Go.
+- **Spiegazione:**
+  - il go.mod lo scrive il Dockerfile al build: `WORKDIR /go/src/app`, `COPY *.go .`, `RUN go mod init dispatch && go get`, `RUN go install`;
+  - quel Dockerfile oggi non costruisce più: `go get` senza versione prende un go-sensor che chiede Go 1.21 (dal commit).
+- **Progetto e caso:** robot-shop (`55292e2199f2`) — finale, 16 novembre 2026.
+- **Rimedio:** `f024ba3a3` e `f04dab9d5` (16 novembre, android-sdk), `scripts/indexers/go.py` e `scripts/docker_build.py`:
+  - `f024ba3a3` legge il Dockerfile e ne pianifica lo stadio;
+  - `f04dab9d5` indicizza: un file Go che nessun modulo contiene, ma che uno stadio del Dockerfile copia, ha una corsa di scip-go dentro quello stadio, che registra Dockerfile, stadio, comandi eseguiti, go.mod e go.sum risolti; gli ARG dello stadio arrivano dove gira il build;
+  - il passo che fallisce è il buco `restore_failed`, con `dispatch/Dockerfile:7` e la riga d'errore dello strumento, non il progresso di go.
+- **Verifica:**
+  - `tests/test_codebase_map_docker_build.py` (`test_dispatch_runs_its_stage_up_to_the_go_install_that_builds_it`, `test_go_files_no_module_holds_are_indexed_in_the_stage_their_dockerfile_builds`);
+  - dal commit `f04dab9d5`: su uno stadio della stessa forma che costruisce, da 0 a 1 file indicizzato, completo, con le versioni che `go get` ha risolto;
+  - su robot-shop il commit riporta l'errore vero del Dockerfile di oggi.
+- **Stato:** buco dichiarato (`restore_failed` a `dispatch/Dockerfile:7`): è il Dockerfile del progetto a non costruire.
+- **Note:** D-107, D-135, D-140.
 
-#### D-141 Un file cgo fuori dall'indice Go
+#### D-142 Un file cgo fuori dall'indice Go
 - **Descrizione:** finale e conferma, sys-go-cgo 1 file su 3: «a cgo file (`import "C"`): scip-go indexes the copy cgo writes into the build cache, not the file».
 - **Spiegazione:** scip-go indicizza la copia che cgo scrive nella cache del build, non il file.
 - **Progetto e caso:** sys-go-cgo — finale e conferma, 16 novembre 2026.
@@ -1690,16 +1775,16 @@ Convenzioni:
 - **Stato:** buco dichiarato («a cgo file»).
 - **Note:** il C di cgo entra nel grafo con `f829df4b0` (Bear attorno a `go build`).
 
-#### D-142 Rust: file senza documento
+#### D-143 Rust: file senza documento
 - **Descrizione:** «no document in the index» per 6 file Rust su 105 in hoppscotch (finale) e 1 su 19 in semver (finale e conferma).
 - **Spiegazione:** da verificare.
 - **Progetto e caso:** hoppscotch (`55908a76a1d0`), semver (`280ebcb6edac`) — finale e conferma, 16 novembre 2026.
-- **Rimedio:** —
+- **Rimedio:** —. Da `a3801beed` un file dietro un `mod` con cfg falso dice perché manca (D-237); quanti dei 7 lo siano è da verificare.
 - **Verifica:** —
 - **Stato:** aperto.
-- **Note:** D-143.
+- **Note:** D-144, D-237.
 
-#### D-143 Rust: file che nessun crate carica
+#### D-144 Rust: file che nessun crate carica
 - **Descrizione:** finale, hoppscotch: 2 file «no crate includes it: no `mod` item of an indexed file loads it».
 - **Spiegazione:** nessun `mod` di un file indicizzato li carica.
 - **Progetto e caso:** hoppscotch — finale, 16 novembre 2026.
@@ -1708,16 +1793,16 @@ Convenzioni:
 - **Stato:** buco dichiarato («no crate includes it»).
 - **Note:** —
 
-#### D-144 TypeScript: `{ t } = useTranslation()` legato a un simbolo che l'indice non definisce
+#### D-145 TypeScript: `{ t } = useTranslation()` legato a un simbolo che l'indice non definisce
 - **Descrizione:** in tududi i nomi presi per destrutturazione finivano su un simbolo senza definizione.
 - **Spiegazione:** il join legava il nome a un simbolo che l'indice non definisce.
 - **Progetto e caso:** tududi (`71da9d7b34df`) — 16 novembre 2026.
 - **Rimedio:** `3595d571b` (16 novembre), `scripts/indexers/typescript.py` e `scripts/code_graph.py`: il nome finisce alla sua definizione.
-- **Verifica:** tududi, insieme a D-146.
+- **Verifica:** tududi, insieme a D-147.
 - **Stato:** risolto.
-- **Note:** dallo stesso commit vengono D-145, D-146 e D-160.
+- **Note:** dallo stesso commit vengono D-146, D-147 e D-161.
 
-#### D-145 TypeScript: pacchetti senza nome (heroicons)
+#### D-146 TypeScript: pacchetti senza nome (heroicons)
 - **Descrizione:** i riferimenti ai pacchetti senza nome, come heroicons, non avevano un esterno valido.
 - **Spiegazione:** un difetto di scip-typescript, corretto nella 0.6.2.
 - **Progetto e caso:** tududi — 16 novembre 2026.
@@ -1726,7 +1811,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-146 TypeScript e JavaScript: buchi senza causa
+#### D-147 TypeScript e JavaScript: buchi senza causa
 - **Descrizione:** in tududi 8.010 buchi TypeScript erano senza spiegazione.
 - **Spiegazione:** l'indice non dice perché un riferimento non ha occorrenza.
 - **Progetto e caso:** tududi — 16 novembre 2026.
@@ -1735,9 +1820,9 @@ Convenzioni:
   - l'aggancio `unanswered` dà a ogni buco la causa: ricevente any, firma a indice, membro creato dal checker, non dichiarato.
 - **Verifica:** tududi: «da 8.010 buchi TypeScript senza spiegazione a 3.193 con la causa» (dal commit).
 - **Stato:** risolto.
-- **Note:** D-157.
+- **Note:** D-158.
 
-#### D-147 `module` di `module.exports` come locale senza definizione
+#### D-148 `module` di `module.exports` come locale senza definizione
 - **Descrizione:** in un file CommonJS `module` restava un buco.
 - **Spiegazione:** l'indice scrive `module` come una locale senza definizione, perché TypeScript legge `module.exports =` come l'export del file.
 - **Progetto e caso:** js-yarn-berry, js-npm-single — 16 novembre 2026.
@@ -1748,7 +1833,7 @@ Convenzioni:
 - **Stato:** risolto; il buco resta dove il progetto non usa i tipi di Node.
 - **Note:** —
 
-#### D-148 Una chiamata senza nome del chiamato era sempre un buco `no-position`
+#### D-149 Una chiamata senza nome del chiamato era sempre un buco `no-position`
 - **Descrizione:** lo snapshot registra una chiamata senza nome del chiamato con una lista vuota, e il grafo ne faceva sempre un buco no-position.
 - **Spiegazione:** il grafo non leggeva l'espressione chiamata.
 - **Progetto e caso:** chi (`c64ed7d6635f`) e il corpus — 16 novembre 2026.
@@ -1758,9 +1843,9 @@ Convenzioni:
   - il resto è un buco con la sua classe, che il passo dinamico chiude per posizione: call-result, element, dynamic-import, super-call, computed-callee.
 - **Verifica:** chi: 36 di 43 con risposta (dal commit); nessun giro dopo il commit.
 - **Stato:** risolto.
-- **Note:** dallo stesso commit vengono D-149 e D-150; il lavoro era di dynamic-step-2.
+- **Note:** dallo stesso commit vengono D-150 e D-151; il lavoro era di dynamic-step-2.
 
-#### D-149 TypeScript: `x.f!()` non nominava `x.f`
+#### D-150 TypeScript: `x.f!()` non nominava `x.f`
 - **Descrizione:** lo snapshot non dava il nome del chiamato per una chiamata con l'asserzione non-null.
 - **Spiegazione:** il lettore non toglieva `!` dal chiamato.
 - **Progetto e caso:** lettura TypeScript — 16 novembre 2026.
@@ -1769,7 +1854,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-150 TypeScript: `await f<T>(x)` non nominava `f`
+#### D-151 TypeScript: `await f<T>(x)` non nominava `f`
 - **Descrizione:** lo snapshot non dava il nome del chiamato per una chiamata generica sotto await.
 - **Spiegazione:** il lettore non toglieva gli argomenti di tipo sotto await.
 - **Progetto e caso:** lettura TypeScript — 16 novembre 2026.
@@ -1778,25 +1863,25 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-151 TypeScript 6: i tipi di Node non caricati
+#### D-152 TypeScript 6: i tipi di Node non caricati
 - **Descrizione:** con TypeScript 6 l'indice non aveva i tipi di Node.
 - **Spiegazione:** non caricati con quella versione (dal commit).
 - **Progetto e caso:** TypeScript nel container — 16 novembre 2026.
 - **Rimedio:** `12775fee3` (16 novembre): i tipi di Node si caricano anche con TypeScript 6.
 - **Verifica:** prova vera su Modal: TypeScript del workspace pnpm completo.
 - **Stato:** risolto.
-- **Note:** dallo stesso commit vengono D-152–D-155, D-166–D-170 e D-224.
+- **Note:** dallo stesso commit vengono D-153–D-156, D-167–D-171 e D-225.
 
-#### D-152 Svelte con nulla di letto non era `failed`
+#### D-153 Svelte con nulla di letto non era `failed`
 - **Descrizione:** `d94f92470` lasciava aperto lo stato di Svelte con 0 file letti.
 - **Spiegazione:** lo stato non guardava i file letti.
 - **Progetto e caso:** js-sveltekit — 16 novembre 2026.
 - **Rimedio:** `12775fee3`: Svelte senza nulla di letto è `failed`, con la causa.
 - **Verifica:** finale, js-sveltekit: «nothing of the 2 svelte files is read: template not read: calls and bindings in it are not sites (2); none of their 2 calls is asked: builtin (2)».
 - **Stato:** risolto.
-- **Note:** D-158.
+- **Note:** D-159.
 
-#### D-153 Vue diverso fra analisi e unione
+#### D-154 Vue diverso fra analisi e unione
 - **Descrizione:** `d94f92470` lasciava aperto Vue «tra analisi e unione».
 - **Spiegazione:** lo stato di Vue nell'analisi e nell'unione non coincideva.
 - **Progetto e caso:** js-vue-pnpm — 16 novembre 2026.
@@ -1805,7 +1890,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-154 L'import di un `.vue` non tipizzato senza causa
+#### D-155 L'import di un `.vue` non tipizzato senza causa
 - **Descrizione:** un import di un componente `.vue` non tipizzato era un buco senza causa.
 - **Spiegazione:** il motivo non c'era.
 - **Progetto e caso:** progetti Vue — 16 novembre 2026.
@@ -1814,7 +1899,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-155 SvelteKit: «error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'»
+#### D-156 SvelteKit: «error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'»
 - **Descrizione:** finale, js-sveltekit: TypeScript e JavaScript `failed`, «scip-typescript wrote no index (exit code 1): error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'. error: no files got indexed.».
 - **Spiegazione:** il tsconfig lo genera SvelteKit, e nessuna installazione lo crea.
 - **Progetto e caso:** js-sveltekit — finale, 16 novembre 2026.
@@ -1823,7 +1908,7 @@ Convenzioni:
 - **Stato:** buco dichiarato (TS5083 nominato nel motivo).
 - **Note:** `d94f92470` lo lasciava aperto come «causa del tsconfig generato».
 
-#### D-156 TypeScript: i tipi sotto Yarn
+#### D-157 TypeScript: i tipi sotto Yarn
 - **Descrizione:** `d94f92470` lascia aperti «tipi sotto Yarn».
 - **Spiegazione:** da verificare; nessun commit successivo lo nomina.
 - **Progetto e caso:** TypeScript nel container — 16 novembre 2026.
@@ -1832,16 +1917,16 @@ Convenzioni:
 - **Stato:** aperto (da verificare).
 - **Note:** —
 
-#### D-157 JavaScript: riceventi non tipizzati
+#### D-158 JavaScript: riceventi non tipizzati
 - **Descrizione:** buchi «a member of a value of type any: only execution knows it», per esempio 10 in kotlinconf `app/webApp/src/webMain/resources/service-worker.js`; conferma, JavaScript: no-occurrence 39.563.
 - **Spiegazione:** senza tipo del ricevente l'indice non sa quale membro si chiama; solo l'esecuzione lo sa.
 - **Progetto e caso:** kotlinconf e il corpus JavaScript — conferma e corsa su Modal di kotlinconf, 16 novembre 2026.
 - **Rimedio:** `3595d571b` (la causa). Il passo dinamico chiude quei buchi dove i test girano.
 - **Verifica:** conferma: JavaScript con 691 risposte osservate.
 - **Stato:** buco dichiarato («a member of a value of type any»).
-- **Note:** D-146.
+- **Note:** D-147.
 
-#### D-158 Template di Vue e Svelte non letti
+#### D-159 Template di Vue e Svelte non letti
 - **Descrizione:** finale:
   - Vue 0 file su 410 nell'indice, 28,2 % di risposta; Svelte 0 su 4, 26,7 %;
   - hoppscotch Vue 407 su 407 (400 «template not read: calls and bindings in it are not sites», 7 «no script block»), Svelte 2 su 2;
@@ -1851,9 +1936,9 @@ Convenzioni:
 - **Rimedio:** dichiarati letti in parte (`64edfb930`, D-080).
 - **Verifica:** —
 - **Stato:** aperto (csharp-2).
-- **Note:** D-080, D-152.
+- **Note:** D-080, D-153.
 
-#### D-159 TypeScript: un file senza documento
+#### D-160 TypeScript: un file senza documento
 - **Descrizione:** finale: hoppscotch 1 file TypeScript su 1.115, memos 1 su 620, «no document in the index».
 - **Spiegazione:** da verificare.
 - **Progetto e caso:** hoppscotch, memos (`509e41bd1a1b`) — finale, 16 novembre 2026.
@@ -1862,7 +1947,7 @@ Convenzioni:
 - **Stato:** aperto.
 - **Note:** —
 
-#### D-160 Tailwind caricato sull'host con la configurazione del progetto
+#### D-161 Tailwind caricato sull'host con la configurazione del progetto
 - **Descrizione:** l'adattatore Tailwind eseguiva codice del progetto fuori dal container.
 - **Spiegazione:** `css_tailwind.js` caricava sull'host il tailwindcss del progetto, la sua configurazione e i suoi plugin.
 - **Progetto e caso:** analyzer dei fogli di stile — 16 novembre 2026.
@@ -1872,18 +1957,18 @@ Convenzioni:
   - gli altri motori CSS leggono il progetto come testo e restano dove sono.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-161.
+- **Note:** D-162.
 
-#### D-161 Fogli di stile: buchi `no-rule`
+#### D-162 Fogli di stile: buchi `no-rule`
 - **Descrizione:** conferma: 42.757 buchi no-rule su 58.534 siti dei fogli di stile, 26,3 % di risposta; nel finale 48.808.
 - **Spiegazione:** un riferimento di classe, id o composes senza una regola che lo definisca è `no-rule` (`scripts/indexers/css.py`); fra questi le classi Tailwind (`ee1e83fc8`). Da verificare quanti sono classi che nessun foglio definisce e quanti un difetto.
 - **Progetto e caso:** il corpus — finale e conferma, 16 novembre 2026.
 - **Rimedio:** —
 - **Verifica:** —
 - **Stato:** aperto (ts-container-2).
-- **Note:** D-160.
+- **Note:** D-161.
 
-#### D-162 hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto
+#### D-163 hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto
 - **Descrizione:** giro-2 e finale: «the stylesheet stage exited with code 1 without a report; see engine-pass.log».
 - **Spiegazione:** da verificare.
 - **Progetto e caso:** hoppscotch — giro-2 e finale, 16 novembre 2026.
@@ -1892,7 +1977,7 @@ Convenzioni:
 - **Stato:** aperto (ts-container-2).
 - **Note:** —
 
-#### D-163 Fogli remoti senza testo
+#### D-164 Fogli remoti senza testo
 - **Descrizione:** finale: 10 buchi `remote-sheet`.
 - **Spiegazione:** il lettore non scarica nulla; un foglio remoto senza testo lascia buchi con il suo indirizzo.
 - **Progetto e caso:** il corpus — finale, 16 novembre 2026.
@@ -1901,7 +1986,7 @@ Convenzioni:
 - **Stato:** buco dichiarato (`remote-sheet`).
 - **Note:** —
 
-#### D-164 Parser: `base` di C# non letto
+#### D-165 Parser: `base` di C# non letto
 - **Descrizione:** il commit elenca `base` in C# fra le correzioni del parser.
 - **Spiegazione:** da verificare: il commit non dice cosa accadeva prima.
 - **Progetto e caso:** parser — 16 novembre 2026.
@@ -1910,7 +1995,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** con `56e65e114` una chiamata attraverso `base` non prende override.
 
-#### D-165 Parser: `this` e `super` di Kotlin non letti
+#### D-166 Parser: `this` e `super` di Kotlin non letti
 - **Descrizione:** il commit elenca `this` e `super` in Kotlin fra le correzioni del parser.
 - **Spiegazione:** da verificare: il commit non dice cosa accadeva prima.
 - **Progetto e caso:** parser — 16 novembre 2026.
@@ -1919,18 +2004,45 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
+#### D-236 C++: il simbolo di un argomento di macro stava sul nome della macro
+- **Descrizione:** tinyxml2, 255 buchi no-occurrence (misura del commit `a3801beed`, su Modal al commit fissato).
+- **Spiegazione:** scip-clang scrive un riferimento nel punto di espansione, così il simbolo di un argomento di macro stava sul nome della macro.
+- **Progetto e caso:** tinyxml2 (`9148bdf719e9`) — misura su Modal del commit, 16 novembre 2026.
+- **Rimedio:** `a3801beed` (16 novembre), `scripts/indexers/clang.py` (`macro_arguments`): riporta il simbolo al nome dell'argomento, tiene quello del corpo della macro e salta i nomi ambigui.
+- **Verifica:** dal commit, no-occurrence da 255 a 43; `tests/test_codebase_map_code_graph.py` (`test_clang_a_macros_arguments_take_the_symbols_the_index_writes_at_the_macro`).
+- **Stato:** risolto; i 43 restanti dicono il ramo `#if` che il build non compila, o sono chiamate alla libreria C che l'indice C++ non nomina.
+- **Note:** —
+
+#### D-237 Rust: i riferimenti e i file che un `#[cfg]` esclude non dicevano perché
+- **Descrizione:** hoppscotch, 549 buchi no-occurrence e 8 no-position (misura del commit `a3801beed`, su Modal al commit fissato).
+- **Spiegazione:** i cfg li decide la configurazione che rust-analyzer legge: ogni feature accesa, il target dell'host, niente build script né macro procedurali. Un riferimento sotto un `#[cfg(X)]` falso in quella configurazione non ha occorrenza, e un file dietro un `mod` con cfg falso non ha documento.
+- **Progetto e caso:** hoppscotch (`55908a76a1d0`) — misura su Modal del commit, 16 novembre 2026.
+- **Rimedio:** `a3801beed` (16 novembre), `scripts/indexers/rust.py`: il buco dice il cfg falso, e il file dice perché manca.
+- **Verifica:** dal commit, «no-occurrence da 549 a 135, di cui 425 ora con la causa cfg; no-position da 8 a 0»; `tests/test_codebase_map_indexers_reasons.py` (`test_rust_code_a_cfg_leaves_out_says_so`).
+- **Stato:** buco dichiarato (la causa cfg).
+- **Note:** D-143.
+
+#### D-238 Rust: il turbofish su un ricevitore calcolato toglieva il nome al chiamato
+- **Descrizione:** semver: `black_box(t).parse::<V>()` non era nominato.
+- **Spiegazione:** il lettore dei nomi del chiamato (`scripts/languages/semantic.py`) cercava il membro sul nodo `generic_function`, il turbofish, invece che sulla funzione che esso contiene.
+- **Progetto e caso:** semver (`280ebcb6edac`) — commit `a3801beed`, 16 novembre 2026.
+- **Rimedio:** `a3801beed` (16 novembre), `scripts/languages/semantic.py`: il turbofish non fa parte del nome del membro.
+- **Verifica:** solo test (`tests/test_xray_semantic_syntax.py`, `test_a_rust_method_with_type_arguments_keeps_its_name`).
+- **Stato:** risolto.
+- **Note:** —
+
 ### Passo dinamico e osservatori
 
-#### D-166 «Osservato» con zero osservazioni
+#### D-167 «Osservato» con zero osservazioni
 - **Descrizione:** un linguaggio poteva risultare osservato senza una sola osservazione.
 - **Spiegazione:** lo stato non distingueva una corsa senza test, o senza righe, da una corsa che osserva.
 - **Progetto e caso:** passo dinamico — 16 novembre 2026.
 - **Rimedio:** `12775fee3` (16 novembre), `scripts/dynamic/__init__.py`: `not-run` e `not-observed` al posto di un falso «osservato».
 - **Verifica:** giro `fixtures` sui 104 progetti: nei progetti in miniatura quasi sempre non ci sono test da lanciare, e il risultato lo dice (README del benchmark).
 - **Stato:** risolto.
-- **Note:** D-171.
+- **Note:** D-172.
 
-#### D-167 Un risultato malformato di un osservatore fermava la pipeline
+#### D-168 Un risultato malformato di un osservatore fermava la pipeline
 - **Descrizione:** un osservatore che restituisce un risultato fuori contratto fermava la pipeline con un errore.
 - **Spiegazione:** il contratto dell'osservatore non era scritto né controllato.
 - **Progetto e caso:** passo dinamico — 16 novembre 2026.
@@ -1939,7 +2051,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-168 pytest fermo agli errori di raccolta
+#### D-169 pytest fermo agli errori di raccolta
 - **Descrizione:** la prima corsa della pipeline con il passo dinamico, su Daodan stesso su Modal, osserva 1.361 punti e chiude 82 buchi (`d94f92470`), ma solo dall'import dei moduli di test.
 - **Spiegazione:** pytest si fermava agli errori di raccolta, così i test Python non partivano oltre la raccolta.
 - **Progetto e caso:** il codice di Daodan, senza `benchmarks/` — corsa su Modal, 16 novembre 2026 (analisi 26 minuti, passo dinamico 2,6).
@@ -1948,7 +2060,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-169 JavaScript: il TypeScript che Node toglie da solo
+#### D-170 JavaScript: il TypeScript che Node toglie da solo
 - **Descrizione:** il commit elenca nell'osservatore JavaScript il TypeScript che Node toglie da solo.
 - **Spiegazione:** da verificare: il commit non dice di più.
 - **Progetto e caso:** osservatore JavaScript — 16 novembre 2026.
@@ -1957,7 +2069,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-170 Un comando di test fallito senza l'errore vero nel buco
+#### D-171 Un comando di test fallito senza l'errore vero nel buco
 - **Descrizione:** il buco di un comando di test fallito non portava l'errore vero.
 - **Spiegazione:** il buco non riportava l'uscita d'errore del comando.
 - **Progetto e caso:** osservatore JavaScript — 16 novembre 2026.
@@ -1966,7 +2078,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-171 `not-observed` non diceva cosa aveva visto il registratore
+#### D-172 `not-observed` non diceva cosa aveva visto il registratore
 - **Descrizione:** `not-observed` diceva solo che nessuna chiamata era caduta su un riferimento, seguito da buchi estranei.
 - **Spiegazione:** la causa non veniva da ciò che il registratore aveva visto.
 - **Progetto e caso:** py-setup-cfg-extras, il cui unico test non chiama nulla e dove cli.py non gira — 16 novembre 2026.
@@ -1978,36 +2090,36 @@ Convenzioni:
   La spec ne ha la sezione «Corsa senza righe».
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-166.
+- **Note:** D-167.
 
-#### D-172 Go e Rust non pianificavano i test della radice
+#### D-173 Go e Rust non pianificavano i test della radice
 - **Descrizione:** i test del modulo o del crate alla radice non giravano.
 - **Spiegazione:** la pre-mappa nomina la radice del progetto con il percorso vuoto, e Go e Rust non la riconoscevano.
 - **Progetto e caso:** osservatori Go e Rust — 16 novembre 2026.
 - **Rimedio:** `a491415e6` (16 novembre), `scripts/dynamic/go.py` e `scripts/dynamic/rust.py`.
 - **Verifica:** prova vera su Modal: Go osservato (1 chiamata), C/C++ osservato su Callgrind (5 chiamate).
 - **Stato:** risolto.
-- **Note:** D-173.
+- **Note:** D-174.
 
-#### D-173 Go fuori dal contratto dell'osservatore
+#### D-174 Go fuori dal contratto dell'osservatore
 - **Descrizione:** `12775fee3` dice Go «ancora da adeguare» al contratto.
 - **Spiegazione:** Go non riportava runner e stato come chiede il contratto.
 - **Progetto e caso:** osservatore Go — 16 novembre 2026.
 - **Rimedio:** `a491415e6`, `scripts/dynamic/go.py`.
-- **Verifica:** prova vera su Modal, come D-172.
+- **Verifica:** prova vera su Modal, come D-173.
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-174 Rust: «can't find crate for std»
+#### D-175 Rust: «can't find crate for std»
 - **Descrizione:** ogni cargo test falliva su «can't find crate for std».
 - **Spiegazione:** il rustc fissato non contiene le librerie standard.
 - **Progetto e caso:** osservatore Rust — 16 novembre 2026.
 - **Rimedio:** `ef69774f9` (16 novembre), `scripts/dynamic/rust.py` e `scripts/dynamic/callgrind.py`: rust-std 1.99.1, fissato per sha256.
 - **Verifica:** in una Function di Modal con gli script dell'osservatore: cargo test sotto Callgrind, 8 siti, nessun buco.
 - **Stato:** risolto.
-- **Note:** sotto gVisor resta D-208.
+- **Note:** sotto gVisor resta D-209.
 
-#### D-175 Launchpad 502: Rust perde l'osservazione
+#### D-176 Launchpad 502: Rust perde l'osservazione
 - **Descrizione:** nel giro sulle fixture Launchpad ha risposto 502, e il passo dinamico Rust ha perso l'osservazione.
 - **Spiegazione:** Valgrind aveva una sola fonte.
 - **Progetto e caso:** giro `fixtures` — 16 novembre 2026.
@@ -2018,16 +2130,16 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-176 L'osservatore C/C++ installava con vcpkg dove l'analizzatore usa Conan
+#### D-177 L'osservatore C/C++ installava con vcpkg dove l'analizzatore usa Conan
 - **Descrizione:** con vcpkg.json, conanfile.txt e un preset che nomina il toolchain di Conan, osservatore e analizzatore usavano gestori diversi.
 - **Spiegazione:** l'osservatore sceglieva il gestore da sé.
 - **Progetto e caso:** progetti con vcpkg e Conan insieme — 16 novembre 2026.
 - **Rimedio:** `a8a1ebdb5` (16 novembre), `scripts/dynamic/clang.py`: prende da `indexers/clang.restores` la riga di installazione e la preparazione del gestore di ogni radice.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-124.
+- **Note:** D-125.
 
-#### D-177 L'osservatore JVM compilava sul JDK dell'immagine
+#### D-178 L'osservatore JVM compilava sul JDK dell'immagine
 - **Descrizione:** real-3: su javapoet il passo dinamico fallisce perché la build gira sul JDK dell'immagine e non su quello dichiarato (`7532ed2e7`).
 - **Spiegazione:** l'osservatore non installava il JDK dichiarato, e l'agente non era costruito per Java 8.
 - **Progetto e caso:** javapoet — real-3, 16 novembre 2026.
@@ -2037,9 +2149,9 @@ Convenzioni:
   - l'agente è costruito per Java 8 e provato su JDK 8 e 17.
 - **Verifica:** su Modal, javapoet (`609ca96dd`): l'osservatore compila sul JDK 8 dichiarato con Error Prone al suo posto, 389 test e 6.021 siti osservati.
 - **Stato:** risolto.
-- **Note:** D-099, D-223.
+- **Note:** D-099, D-224.
 
-#### D-178 Java 25: «No access to RETAIN_CLASS_REFERENCE»
+#### D-179 Java 25: «No access to RETAIN_CLASS_REFERENCE»
 - **Descrizione:** sotto Java 25 i test fallivano tutti sotto il registratore.
 - **Spiegazione:** i JDK recenti pretendono un permesso che `Walker` non chiedeva.
 - **Progetto e caso:** jvm-ver-* — misura su Modal con 18 progetti, 16 novembre 2026.
@@ -2048,7 +2160,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-179 Test JVM multipiattaforma: nessun compito `test`
+#### D-180 Test JVM multipiattaforma: nessun compito `test`
 - **Descrizione:** in un progetto Kotlin multipiattaforma i test JVM stanno in `jvmTest`, non in `test`.
 - **Spiegazione:** l'osservatore lanciava `gradle test`.
 - **Progetto e caso:** jvm-kmp-common-jvm — 16 novembre 2026.
@@ -2060,7 +2172,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-180 Java 9 e 14 senza un JDK installabile
+#### D-181 Java 9 e 14 senza un JDK installabile
 - **Descrizione:** java-versions: per Java 9 e 14 non c'è un JDK da installare.
 - **Spiegazione:** non esiste un JDK installabile di quelle versioni (README del benchmark).
 - **Progetto e caso:** jvm-ver-* — java-versions, 16 novembre 2026.
@@ -2069,7 +2181,7 @@ Convenzioni:
 - **Stato:** buco dichiarato (`toolchain_unavailable`).
 - **Note:** —
 
-#### D-181 I servizi della CI non avviati: tududi chiede PostgreSQL
+#### D-182 I servizi della CI non avviati: tududi chiede PostgreSQL
 - **Descrizione:** real-3: su tududi i test del backend chiedono PostgreSQL (`7532ed2e7`).
 - **Spiegazione:** il passo non avviava i servizi che la CI dichiara.
 - **Progetto e caso:** tududi — real-3, 16 novembre 2026.
@@ -2083,37 +2195,37 @@ Convenzioni:
   - `b85aa1b9f`: il pod è provato su un Docker vero in un sandbox a macchina virtuale di Modal, con il postgres di tududi raggiunto a localhost e per nome, sano in 5 secondi, 1.1.1.1 irraggiungibile e nessun container lasciato;
   - conferma: i test del backend girano con il PostgreSQL della CI, 3.779 siti JavaScript e 691 buchi chiusi.
 - **Stato:** risolto.
-- **Note:** D-200, D-201.
+- **Note:** D-201, D-202.
 
-#### D-182 Python: le dipendenze dei test non venivano dall'ambiente del runner
+#### D-183 Python: le dipendenze dei test non venivano dall'ambiente del runner
 - **Descrizione:** finale: python-semver Python `not-run`.
 - **Spiegazione:** le dipendenze dei test non venivano dall'ambiente tox che lancia il runner, né dal gruppo, extra o file che nomina pytest.
 - **Progetto e caso:** python-semver (`b6e83e3e40d3`) — finale, 16 novembre 2026.
 - **Rimedio:** `17babc624`: le dipendenze dei test vengono da quell'ambiente.
 - **Verifica:** conferma: python-semver osservato, 1.046 siti, «con i link e le dipendenze di tox» (`828b5413b`).
 - **Stato:** risolto.
-- **Note:** D-205.
+- **Note:** D-206.
 
-#### D-183 Python: l'interprete non veniva da requires-python o .python-version
+#### D-184 Python: l'interprete non veniva da requires-python o .python-version
 - **Descrizione:** il Python dei test non era quello che il progetto dichiara.
 - **Spiegazione:** uv non sceglieva l'interprete come fa `uv sync`.
 - **Progetto e caso:** osservatore Python — 16 novembre 2026.
 - **Rimedio:** `17babc624`: uv sceglie e scarica l'interprete da requires-python o .python-version, come `uv sync`.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-187.
+- **Note:** D-188.
 
-#### D-184 tududi: `test` non arriva ai test del frontend
+#### D-185 tududi: `test` non arriva ai test del frontend
 - **Descrizione:** in tududi `test` lancia jest solo in backend/, mentre `frontend:test` e altri quattro script lanciano jest nella radice, dove stanno i test del frontend.
 - **Spiegazione:** l'osservatore lanciava solo lo script `test`.
 - **Progetto e caso:** tududi — 16 novembre 2026.
 - **Rimedio:** `4ee44da0a` (16 novembre), `scripts/premap/npm_tests.py` (npm-tests v4) e `scripts/dynamic/javascript.py`: il buco `tests_not_declared {path, runner, scripts}`, che il motivo del linguaggio nomina.
 - **Verifica:** solo test.
-- **Stato:** risolto con D-185.
-- **Note:** D-185.
+- **Stato:** risolto con D-186.
+- **Note:** D-186.
 
-#### D-185 L'osservatore JavaScript non lanciava gli script di test che `test` non raggiunge
-- **Descrizione:** come D-184.
+#### D-186 L'osservatore JavaScript non lanciava gli script di test che `test` non raggiunge
+- **Descrizione:** come D-185.
 - **Spiegazione:** uno script di package.json che avvia un runner noto è il comando dichiarato per quei test, anche se la CI non lo chiama.
 - **Progetto e caso:** tududi — 16 novembre 2026.
 - **Rimedio:** `7e5eb092e` (16 novembre), `scripts/premap/npm_tests.py` (npm-tests v5) e `scripts/dynamic/javascript.py`:
@@ -2123,9 +2235,9 @@ Convenzioni:
   - `tests_not_declared` resta solo dove ogni candidato è escluso.
 - **Verifica:** su Modal, tududi: `frontend:test` gira, 1.077 test su 1.080 passano, 20.985 siti osservati; finale: tududi TypeScript osservato, 20.204 siti.
 - **Stato:** risolto.
-- **Note:** D-186.
+- **Note:** D-187.
 
-#### D-186 tududi: i worker di Jest uccisi per memoria
+#### D-187 tududi: i worker di Jest uccisi per memoria
 - **Descrizione:**
   - conferma: i test del frontend di tududi scesi a 92 siti (`828b5413b`);
   - SIGKILL in 154 suite del frontend su 156.
@@ -2134,19 +2246,19 @@ Convenzioni:
 - **Rimedio:** `37c7ee093` (16 novembre), `scripts/dynamic/javascript.py`: i test girano come sul runner ubuntu-latest di GitHub, con 16 GB e `taskset` sulle prime 4 CPU.
 - **Verifica:** su Modal, il frontend: 156 suite, 23.274 siti, nessuno non osservato.
 - **Stato:** risolto.
-- **Note:** D-188.
+- **Note:** D-189.
 
-#### D-187 fastapi: uv.lock non visto, l'intervallo di Python rifiutato
+#### D-188 fastapi: uv.lock non visto, l'intervallo di Python rifiutato
 - **Descrizione:** finale e conferma, fastapi: «the project states Python >=3.14,<4.0 (backend/pyproject.toml): a range that excludes the image's 3.13.18 and names no version to install».
 - **Spiegazione:** lo snapshot non tiene i lockfile, così l'osservatore Python non vedeva uv.lock, trattava la cartella come pip e rifiutava l'intervallo.
 - **Progetto e caso:** fastapi — finale e conferma, 16 novembre 2026.
 - **Rimedio:** `37c7ee093`, `scripts/dynamic/python.py`: il piano conta uv.lock e poetry.lock accanto al manifest quando il checkout li ha, e uv sceglie Python 3.14.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-196.
+- **Note:** D-197.
 
-#### D-188 I test JavaScript con 16 GB fissi anche dove la macchina non li ha
-- **Descrizione:** la forma fissa di D-186 poteva superare la memoria libera.
+#### D-189 I test JavaScript con 16 GB fissi anche dove la macchina non li ha
+- **Descrizione:** la forma fissa di D-187 poteva superare la memoria libera.
 - **Spiegazione:** CPU e memoria non seguivano la macchina.
 - **Progetto e caso:** osservatore JavaScript — 16 novembre 2026.
 - **Rimedio:** `a42dc1d86` (16 novembre), `scripts/dynamic/javascript.py`:
@@ -2158,7 +2270,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-189 Turborepo: il registratore non partiva
+#### D-190 Turborepo: il registratore non partiva
 - **Descrizione:** i test lanciati da Turborepo giravano non registrati.
 - **Spiegazione:** la modalità strict di Turborepo, quella predefinita, passa ai task NODE_OPTIONS ma non le variabili del registratore; il preload si caricava e il registratore non partiva.
 - **Progetto e caso:** osservatore JavaScript — 16 novembre 2026.
@@ -2167,9 +2279,9 @@ Convenzioni:
   - se turbo non registra nulla, il buco nomina turbo e il motivo.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-190, D-191.
+- **Note:** D-191, D-192.
 
-#### D-190 npm-tests non riconosceva `turbo run … test`
+#### D-191 npm-tests non riconosceva `turbo run … test`
 - **Descrizione:** uno script di test che passa da turbo non aveva runner.
 - **Spiegazione:** il lettore degli script npm non conosceva turbo.
 - **Progetto e caso:** pre-mappa dei test npm — 16 novembre 2026.
@@ -2178,7 +2290,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-191 Un run di Node senza test letto come un registratore che non raggiunge i processi
+#### D-192 Un run di Node senza test letto come un registratore che non raggiunge i processi
 - **Descrizione:** un run di Node che non trova test risultava un guasto del registratore.
 - **Spiegazione:** l'esito «nessun test» non era distinto.
 - **Progetto e caso:** osservatore JavaScript — 16 novembre 2026.
@@ -2187,7 +2299,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-192 ES module non registrati su Node prima della 22.15
+#### D-193 ES module non registrati su Node prima della 22.15
 - **Descrizione:** su un Node senza `module.registerHooks` gli ES module giravano non registrati.
 - **Spiegazione:** il registratore usava `module.registerHooks`, che manca prima della 22.15.
 - **Progetto e caso:** mix-infra-gha — 16 novembre 2026.
@@ -2196,7 +2308,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-193 jhipster: 162 chunk di Vitest in memoria non registrati
+#### D-194 jhipster: 162 chunk di Vitest in memoria non registrati
 - **Descrizione:** jhipster: `ng test`, il builder di Angular con Vitest, valuta chunk tenuti in memoria con una mappa inline verso i .ts originali, e i 162 chunk giravano non registrati.
 - **Spiegazione:** il registratore usava una mappa inline solo per un file che esiste e porta a sé stesso.
 - **Progetto e caso:** jhipster-sample — 16 novembre 2026.
@@ -2207,7 +2319,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-194 `bun test` non registrato
+#### D-195 `bun test` non registrato
 - **Descrizione:** in fastapi `bun test` gira senza registratore.
 - **Spiegazione:** il registratore non osserva il runner di Bun.
 - **Progetto e caso:** fastapi — 16 novembre 2026.
@@ -2216,7 +2328,7 @@ Convenzioni:
 - **Stato:** buco dichiarato (`runner_not_observed`).
 - **Note:** D-056.
 
-#### D-195 Un progetto senza test dichiarati, o con test che non partono
+#### D-196 Un progetto senza test dichiarati, o con test che non partono
 - **Descrizione:** il passo vede solo ciò che i test eseguono.
 - **Spiegazione:** senza un comando dichiarato il passo non lancia nulla: il comando è quello che il progetto dichiara, mai una convenzione di Daodan.
 - **Progetto e caso:** spec del passo dinamico, sezione «Limiti»; i progetti in miniatura del giro `fixtures`.
@@ -2225,16 +2337,16 @@ Convenzioni:
 - **Stato:** buco dichiarato (`no_test_command`, `tests_not_declared`, `tests-not-run`).
 - **Note:** —
 
-#### D-196 I test di fastapi non ancora girati davvero
-- **Descrizione:** finale e conferma, fastapi: TypeScript e Python `not-run` (D-056, D-187).
+#### D-197 I test di fastapi non ancora girati davvero
+- **Descrizione:** finale e conferma, fastapi: TypeScript e Python `not-run` (D-056, D-188).
 - **Spiegazione:** le due cause hanno un rimedio, ma nessun giro le prova insieme.
 - **Progetto e caso:** fastapi — finale e conferma, 16 novembre 2026.
 - **Rimedio:** `5148e8eb3`, `37c7ee093`.
 - **Verifica:** su Modal `npm test` arriva a Playwright (`5148e8eb3`); Python su 3.14, solo test.
 - **Stato:** aperto.
-- **Note:** D-056, D-187, D-194.
+- **Note:** D-056, D-188, D-195.
 
-#### D-197 I test di eShop non ancora girati
+#### D-198 I test di eShop non ancora girati
 - **Descrizione:** finale, eShop: C# `no-observer`; JavaScript e TypeScript «no package.json of the project declares a test script (`scripts.test`): nothing is observed».
 - **Spiegazione:** C# non ha osservatore, e gli script npm non dichiarano test.
 - **Progetto e caso:** eShop — finale, 16 novembre 2026.
@@ -2243,16 +2355,16 @@ Convenzioni:
 - **Stato:** aperto: C# senza osservatore (csharp-dotnet).
 - **Note:** D-114.
 
-#### D-198 Python: extra e gruppi che il gestore non installa
+#### D-199 Python: extra e gruppi che il gestore non installa
 - **Descrizione:** un ambiente Python riceve le dipendenze che il ripristino condiviso installa.
 - **Spiegazione:** gli extra e i gruppi che il gestore non installa da sé mancano, e i test che li importano non partono (spec, «Limiti»).
 - **Progetto e caso:** spec del passo dinamico.
 - **Rimedio:** —
 - **Verifica:** —
 - **Stato:** buco dichiarato (test che non partono, `tests-not-run`).
-- **Note:** D-182 prende le dipendenze dall'ambiente del runner.
+- **Note:** D-183 prende le dipendenze dall'ambiente del runner.
 
-#### D-199 Python più vecchio del 3.12
+#### D-200 Python più vecchio del 3.12
 - **Descrizione:** un progetto che dichiara un Python più vecchio, una versione o un intervallo che finisce sotto 3.12, non ha i test osservati.
 - **Spiegazione:** il registratore chiede Python 3.12 (spec, sezione 7).
 - **Progetto e caso:** spec del passo dinamico.
@@ -2261,7 +2373,7 @@ Convenzioni:
 - **Stato:** buco dichiarato (`python_too_old`).
 - **Note:** —
 
-#### D-200 I servizi che `docker compose up` avvia non partivano
+#### D-201 I servizi che `docker compose up` avvia non partivano
 - **Descrizione:** i test che vogliono i servizi avviati da Compose in un passo di GitHub Actions o in uno script di test npm non li avevano.
 - **Spiegazione:** il passo avviava solo i service container dei job.
 - **Progetto e caso:** passo dinamico — 16 novembre 2026.
@@ -2271,9 +2383,9 @@ Convenzioni:
   - un comando non leggibile è `compose_not_read`.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-211, D-213, D-214.
+- **Note:** D-212, D-214, D-215.
 
-#### D-201 I servizi di GitLab CI non avviati
+#### D-202 I servizi di GitLab CI non avviati
 - **Descrizione:** i `services:` di `.gitlab-ci.yml` non partivano accanto ai test.
 - **Spiegazione:** il lettore dei servizi leggeva solo GitHub Actions.
 - **Progetto e caso:** passo dinamico — 16 novembre 2026.
@@ -2283,20 +2395,20 @@ Convenzioni:
   - GitLab non ha controlli di salute, quindi il passo aspetta, come il suo runner, che le porte esposte dall'immagine rispondano (`wait: ports`).
 - **Verifica:** su un Docker vero in un sandbox di Modal: un postgres di GitLab senza controllo di salute risponde in 1,8 secondi, i test aprono una sessione a db:5432, e fuori non si esce.
 - **Stato:** risolto.
-- **Note:** un file incluso è `include_not_read`, D-215.
+- **Note:** un file incluso è `include_not_read`, D-216.
 
 ### Container, servizi e driver Modal
 
-#### D-202 Il motore di container dell'utente usato anche se non risponde in locale
+#### D-203 Il motore di container dell'utente usato anche se non risponde in locale
 - **Descrizione:** la revisione indipendente del perimetro di rete e di copia lo chiedeva.
 - **Spiegazione:** il motore dell'utente si usava senza controllare come risponde.
 - **Progetto e caso:** container — 15 novembre 2026.
 - **Rimedio:** `177dcae02` (15 novembre), `scripts/container.py`: il motore dell'utente si usa solo se risponde su una pipe o un socket locale.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** dallo stesso commit vengono D-064, D-203 e D-204.
+- **Note:** dallo stesso commit vengono D-064, D-204 e D-205.
 
-#### D-203 Con un .git e Git che non risponde si copiavano i file ignorati
+#### D-204 Con un .git e Git che non risponde si copiavano i file ignorati
 - **Descrizione:** la copia del progetto poteva portare nel container i file che Git ignora.
 - **Spiegazione:** senza risposta di Git la copia non sapeva cosa è ignorato.
 - **Progetto e caso:** container — 15 novembre 2026.
@@ -2305,7 +2417,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-204 Ciò che torna dal container non controllato
+#### D-205 Ciò che torna dal container non controllato
 - **Descrizione:** l'uscita del container poteva scrivere fuori misura o fuori posto.
 - **Spiegazione:** la revisione indipendente lo segnalava.
 - **Progetto e caso:** container — 15 novembre 2026.
@@ -2318,7 +2430,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-205 Link simbolici tracciati seguiti nella copia del container
+#### D-206 Link simbolici tracciati seguiti nella copia del container
 - **Descrizione:** python-semver non trovava i suoi moduli di test.
 - **Spiegazione:** la copia seguiva i link simbolici.
 - **Progetto e caso:** python-semver — 16 novembre 2026.
@@ -2327,18 +2439,18 @@ Convenzioni:
   - quelli che puntano fuori dal progetto restano fuori, come `link_outside`.
 - **Verifica:** su Modal python-semver trova i suoi moduli di test, 533 test; conferma: 1.046 siti osservati.
 - **Stato:** risolto.
-- **Note:** D-031, D-206.
+- **Note:** D-031, D-207.
 
-#### D-206 I link lasciati fuori dalla copia non arrivavano ai buchi delle corse
+#### D-207 I link lasciati fuori dalla copia non arrivavano ai buchi delle corse
 - **Descrizione:** i `link_outside` della copia non comparivano nei risultati.
 - **Spiegazione:** osservatori, analisi e pre-mappa non aggiungevano ai propri buchi quelli della copia.
 - **Progetto e caso:** container — 16 novembre 2026.
 - **Rimedio:** `756ebbcb3` (16 novembre): li aggiungono osservatori (Go, C/C++, Rust, JavaScript, Python), analisi (C/C++, C#, JVM, Python) e pre-mappa.
 - **Verifica:** solo test.
 - **Stato:** risolto.
-- **Note:** D-207.
+- **Note:** D-208.
 
-#### D-207 JVM: i buchi della preparazione sovrascrivevano quelli del container
+#### D-208 JVM: i buchi della preparazione sovrascrivevano quelli del container
 - **Descrizione:** nella JVM si perdevano i buchi del container.
 - **Spiegazione:** i buchi della preparazione sovrascrivevano quelli del container.
 - **Progetto e caso:** analisi JVM — 16 novembre 2026.
@@ -2347,7 +2459,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-208 Valgrind muore all'avvio nei sandbox di Modal (gVisor)
+#### D-209 Valgrind muore all'avvio nei sandbox di Modal (gVisor)
 - **Descrizione:**
   - `12775fee3`: «Valgrind non parte nei container di Modal (gVisor)»;
   - `a491415e6`: «Valgrind si ferma nel caricatore dinamico prima del codice Rust»;
@@ -2361,9 +2473,9 @@ Convenzioni:
   - il cargo test della fixture gira sotto Callgrind.
 - **Verifica:** conferma: semver 558 siti osservati, tinyxml2 552 con 26 buchi chiusi, zlib 148.
 - **Stato:** risolto.
-- **Note:** D-174, D-226, D-229.
+- **Note:** D-175, D-227, D-230.
 
-#### D-209 Bear sotto gVisor fallisce circa una build su dieci
+#### D-210 Bear sotto gVisor fallisce circa una build su dieci
 - **Descrizione:** il database di compilazione di un build Make poteva mancare.
 - **Spiegazione:** sotto gVisor un rapporto di Bear fallisce circa una build su dieci.
 - **Progetto e caso:** build Make sotto Bear — 16 novembre 2026.
@@ -2372,7 +2484,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-210 Il server visuale resettava la connessione su una POST rifiutata
+#### D-211 Il server visuale resettava la connessione su una POST rifiutata
 - **Descrizione:** verificando su Modal l'albero di `eacfad80e`, un test del server visuale cadeva solo sotto carico, con la connessione chiusa su una POST rifiutata.
 - **Spiegazione:** il server rifiutava prima di leggere il corpo e chiudeva con il corpo non letto; il kernel resettava la connessione, e il reset poteva cancellare il 403 prima che il client lo leggesse.
 - **Progetto e caso:** suite su Modal — 16 novembre 2026.
@@ -2384,70 +2496,83 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-211 Servizi di Compose che il passo non avvia
+#### D-212 Servizi di Compose che il passo non avvia
 - **Descrizione:** spec, «Limiti»: sono lacune un'immagine che Compose costruisce, un comando con una variabile, uno script che cambia cartella, un bind mount fuori dal progetto, Compose in un job di GitLab.
 - **Spiegazione:** quei casi non si leggono senza eseguire codice del progetto.
 - **Progetto e caso:** spec del passo dinamico.
 - **Rimedio:** dichiarati: quei test falliscono, e la corsa lo dice.
 - **Verifica:** —
 - **Stato:** buco dichiarato (`compose_not_read` e lacune dei servizi).
-- **Note:** D-200.
+- **Note:** D-201.
 
-#### D-212 I passi del job della CI prima dei test
-- **Descrizione:** segnalato da team-lead.
-- **Spiegazione:** da verificare: nessun commit lo descrive ancora.
-- **Progetto e caso:** da verificare.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (test-services).
-- **Note:** —
+#### D-213 I passi del job della CI prima dei test non giravano
+- **Descrizione:** i test partivano senza ciò che la CI fa prima di loro, come una migrazione che crea le tabelle accanto al database di servizio.
+- **Spiegazione:** il passo dinamico avviava i servizi del job, ma non i passi `run:` del job prima di quello dei test.
+- **Progetto e caso:** passo dinamico — 16 novembre 2026.
+- **Rimedio:** `f024ba3a3` (16 novembre, test-services), `scripts/container.py` e `scripts/dynamic/__init__.py`:
+  - in ogni job il passo di test è il primo `run:` che lancia un ingresso `tests`;
+  - i passi prima sono fatti `ci_steps`, eseguiti in ordine nella preparazione con i servizi accanto, con le variabili del workflow, del job e del passo e `CI=true`, sotto `bash -e` o `sh -e`;
+  - prima dell'esecuzione il proxy se ne va e il pod si stacca dalla rete, così i test vedono i servizi già migrati e nient'altro;
+  - altre azioni, `if:` e `${{ }}` sono `ci_step_not_run`; un passo che fallisce è `ci_step_failed`, con le ultime righe.
+- **Verifica:**
+  - dal commit, su Modal e su un Docker vero in un sandbox a macchina virtuale: una migrazione scrive una tabella accanto a postgres, i test la leggono, fuori non si esce (`tests/test_codebase_map_dynamic_services.py`, `test_on_modal_the_ci_s_steps_run_beside_the_services_and_the_tests_find_what_they_wrote`);
+  - il giro della pipeline su tududi e fastapi è in corso (test-services): da verificare.
+- **Stato:** risolto; i passi che non si possono eseguire sono un buco dichiarato (`ci_step_not_run`).
+- **Note:** D-218.
 
-#### D-213 Compose: i bind mount dei servizi
+#### D-214 Compose: i file del progetto montati nei servizi
 - **Descrizione:** i file del progetto che Compose lega a un servizio non arrivavano al servizio.
-- **Spiegazione:** il lettore di Compose non leggeva i bind mount.
-- **Progetto e caso:** passo dinamico — in corso, non ancora in un commit.
-- **Rimedio:** in corso in `scripts/premap/compose.py`, non committato: i bind mount diventano `binds`.
-- **Verifica:** —
-- **Stato:** aperto (test-services).
-- **Note:** D-200, D-214.
+- **Spiegazione:** il passo non portava nel servizio i bind mount che il file compose dichiara.
+- **Progetto e caso:** passo dinamico — 16 novembre 2026.
+- **Rimedio:** `f024ba3a3` (16 novembre, test-services), `scripts/premap/compose.py` e `scripts/dynamic/__init__.py`:
+  - i file del progetto montati nei servizi vi sono copiati;
+  - quelli fuori dal progetto sono `service_incomplete`;
+  - gli script di shell che avviano Compose si leggono fino a tre livelli.
+- **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`: `test_a_service_has_the_project_s_files_its_bind_mounts_name_before_it_starts`, `test_a_shell_script_a_step_or_a_test_script_runs_is_read_for_docker_compose_as_its_caller_is`); il giro su tududi e fastapi è in corso (D-213).
+- **Stato:** risolto; un bind mount fuori dal progetto è un buco dichiarato (`service_incomplete`).
+- **Note:** D-201, D-215.
 
-#### D-214 Compose: `depends_on`
+#### D-215 Compose: `depends_on`
 - **Descrizione:** l'ordine di avvio dei servizi di Compose non era seguito.
-- **Spiegazione:** il lettore di Compose non leggeva `depends_on`.
-- **Progetto e caso:** passo dinamico — in corso, non ancora in un commit.
-- **Rimedio:** in corso in `scripts/premap/compose.py`, non committato: `depends_on` diventa `after`.
-- **Verifica:** —
-- **Stato:** aperto (test-services).
-- **Note:** D-213.
+- **Spiegazione:** il passo non aspettava i servizi da cui un altro dipende.
+- **Progetto e caso:** passo dinamico — 16 novembre 2026.
+- **Rimedio:** `f024ba3a3`: `depends_on` è rispettato, con le condizioni avviato, sano e uscito a 0; un servizio la cui dipendenza fallisce non parte, e la sua causa la nomina.
+- **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`: `test_a_service_starts_after_those_it_depends_on_as_compose_s_condition_says`, `test_a_service_whose_dependency_fails_does_not_start_and_its_cause_names_it`).
+- **Stato:** risolto.
+- **Note:** D-214.
 
-#### D-215 GitLab CI: i file che `.gitlab-ci.yml` include
+#### D-216 GitLab CI: i file che `.gitlab-ci.yml` include
 - **Descrizione:** i servizi dichiarati in un file incluso non partono.
 - **Spiegazione:** il lettore non segue gli `include`; la spec lo lascia fra le cose da decidere.
 - **Progetto e caso:** passo dinamico — 16 novembre 2026.
 - **Rimedio:** dichiarato con `23de469c4`: `include_not_read`.
 - **Verifica:** solo test.
 - **Stato:** aperto (test-services); oggi è il buco `include_not_read`.
-- **Note:** D-201, D-216.
+- **Note:** D-202, D-217.
 
-#### D-216 GitLab CI: `!reference`
+#### D-217 GitLab CI: `!reference`
 - **Descrizione:** segnalato da team-lead.
 - **Spiegazione:** da verificare: nessun commit lo descrive ancora.
 - **Progetto e caso:** da verificare.
 - **Rimedio:** —
 - **Verifica:** —
 - **Stato:** aperto (test-services).
-- **Note:** D-215.
+- **Note:** D-216.
 
-#### D-217 Kiri senza `network connect`
-- **Descrizione:** segnalato da team-lead, in verifica.
-- **Spiegazione:** il proxy si collega alla rete del pod con `network connect`, in `scripts/container.py`: `cli(engine, "network", "connect", "--alias", "proxy", network, box)`. Da verificare se Kiri lo supporta.
-- **Progetto e caso:** motore Kiri — da verificare.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (test-services, in verifica).
-- **Note:** —
+#### D-218 Kiri non stacca un container dalla sua prima rete
+- **Descrizione:** il sospetto era che Kiri non avesse `network connect`. Non è un difetto: test-services ha letto il sorgente di Kiri, il cui `ops.rs:54-58` serve `network connect` e `network disconnect`, e la via del pod funziona.
+- **Spiegazione:**
+  - Kiri 0.2.0 rifiuta solo di togliere un container dalla sua prima rete (`crates/kiri/src/daemon/engine.rs:2357`, citato in `scripts/container.py`, `leaves`);
+  - il pod dei servizi deve lasciare la rete della preparazione prima dei test (D-213), e su Kiri non può.
+- **Progetto e caso:** motore Kiri — 16 novembre 2026.
+- **Rimedio:** `f024ba3a3` (16 novembre, test-services), `scripts/container.py` (`leaves`):
+  - una prova crea un container sulla rete e lo stacca;
+  - se il motore rifiuta, i passi della CI accanto ai servizi sono `ci_step_not_run`, con la risposta del motore: «… cannot take the pod of the services off the preparation's network before the tests, so no step runs beside them».
+- **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`, `test_an_engine_that_cannot_take_the_pod_off_its_network_runs_no_step_beside_the_services`).
+- **Stato:** buco dichiarato (`ci_step_not_run`).
+- **Note:** D-213, D-219.
 
-#### D-218 Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL
+#### D-219 Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL
 - **Descrizione:** spec, «Da decidere»: «another Kiri engine is running on this machine».
 - **Spiegazione:** anche in distribuzioni diverse i due motori condividono la rete della VM di WSL.
 - **Progetto e caso:** spec del passo dinamico.
@@ -2458,7 +2583,7 @@ Convenzioni:
 
 ### Benchmark e documenti
 
-#### D-219 Risposte attese: il workspace di javapoet e le soluzioni .NET di zlib
+#### D-220 Risposte attese: il workspace di javapoet e le soluzioni .NET di zlib
 - **Descrizione:** le risposte attese di javapoet e zlib erano sbagliate.
 - **Spiegazione:** contavano un build incluso come membro (javapoet) e le soluzioni .NET di zlib in modo diverso dal lettore corretto (D-010, D-016).
 - **Progetto e caso:** javapoet, zlib — 15 novembre 2026.
@@ -2467,7 +2592,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** D-010, D-016.
 
-#### D-220 Lo schema del banco senza BOM, POM genitore e versioni centrali
+#### D-221 Lo schema del banco senza BOM, POM genitore e versioni centrali
 - **Descrizione:** le risposte attese non distinguevano BOM, platform() e POM genitore, e una versione centrale dava più voci.
 - **Spiegazione:**
   - un BOM importato, un platform() e un POM genitore sono dipendenze con scope bom o parent, e un arco se sono un'unità del progetto;
@@ -2478,7 +2603,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** D-021, D-026.
 
-#### D-221 `test_catalog` rosso: ANAGRAFICA.md non era l'uscita del generatore
+#### D-222 `test_catalog` rosso: ANAGRAFICA.md non era l'uscita del generatore
 - **Descrizione:** `test_catalog` era rosso da `a633ebd72`.
 - **Spiegazione:** dopo le versioni delle immagini senza variante (D-046) ANAGRAFICA.md non era stata rigenerata.
 - **Progetto e caso:** benchmark project-model — 16 novembre 2026.
@@ -2487,7 +2612,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** D-046.
 
-#### D-222 Le risposte attese delle fixture Android senza i build-tools
+#### D-223 Le risposte attese delle fixture Android senza i build-tools
 - **Descrizione:** le risposte attese di jvm-android-app-lib e mix-poly-firebase non dichiaravano android-build-tools.
 - **Spiegazione:** android-build-tools 34.0.0 è il valore che dà il modello di Gradle, il predefinito di AGP 8.7.
 - **Progetto e caso:** jvm-android-app-lib, mix-poly-firebase — 16 novembre 2026.
@@ -2496,16 +2621,16 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** D-044.
 
-#### D-223 I test del registratore JVM saltati: l'immagine dei test senza JDK
+#### D-224 I test del registratore JVM saltati: l'immagine dei test senza JDK
 - **Descrizione:** i test dell'agente JVM venivano saltati.
 - **Spiegazione:** l'immagine dei test su Modal non aveva un JDK.
 - **Progetto e caso:** `tests/modal_pytest.py` — 16 novembre 2026.
 - **Rimedio:** `a633ebd72`: l'immagine dei test ha un JDK (openjdk-17-jdk-headless).
 - **Verifica:** i test del registratore girano sulle suite di Modal; l'agente è provato su JDK 8 e 17 (dal commit).
 - **Stato:** risolto.
-- **Note:** D-177.
+- **Note:** D-178.
 
-#### D-224 Due fixture con `node --test test/`
+#### D-225 Due fixture con `node --test test/`
 - **Descrizione:** due progetti di prova lanciavano `node --test test/`.
 - **Spiegazione:** da Node 21 `node --test test/` non funziona.
 - **Progetto e caso:** due fixture JavaScript — 16 novembre 2026.
@@ -2514,7 +2639,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-225 Toolchain Maven contate sbagliate per il frammento di `declared_in`
+#### D-226 Toolchain Maven contate sbagliate per il frammento di `declared_in`
 - **Descrizione:** java-versions: le toolchain delle 11 fixture Maven e della mista contano come sbagliate.
 - **Spiegazione:** il solo frammento di `declared_in` differisce: `pom.xml#properties.maven.compiler.source` contro `pom.xml#maven.compiler.source`, come nelle altre fixture Maven del corpus (README del benchmark).
 - **Progetto e caso:** jvm-ver-* e le fixture Maven — java-versions, 16 novembre 2026.
@@ -2523,16 +2648,16 @@ Convenzioni:
 - **Stato:** aperto.
 - **Note:** —
 
-#### D-226 README del benchmark: Rust, C e C++ «solo dove Valgrind parte»
+#### D-227 README del benchmark: Rust, C e C++ «solo dove Valgrind parte»
 - **Descrizione:** il risultato del finale nel README dice ancora che Rust, C e C++ si osservano solo dove Valgrind parte, e che nei sandbox di Modal (gVisor) dipende dalla macchina.
 - **Spiegazione:** è stato scritto prima di `8ef21896f`; la conferma li osserva nei sandbox a macchina virtuale.
 - **Progetto e caso:** `benchmarks/project-model/README.md` — 16 novembre 2026.
 - **Rimedio:** —
 - **Verifica:** —
 - **Stato:** aperto.
-- **Note:** D-208.
+- **Note:** D-209.
 
-#### D-227 Il rapporto dichiarava nulla la copertura a runtime
+#### D-228 Il rapporto dichiarava nulla la copertura a runtime
 - **Descrizione:** i riferimenti del metodo dicevano «Exercised at runtime: none» e «runtime: none unless supplied».
 - **Spiegazione:** il rapporto non leggeva il risultato del passo dinamico.
 - **Progetto e caso:** il metodo di codebase-map — 16 novembre 2026.
@@ -2541,9 +2666,9 @@ Convenzioni:
   - phase-7, entry-analyze, entry-team-analyze, mcp ed evidence, il ruolo semantic-interconnect-mapper e `docs/plugins/codebase-map.md` rimandano a quel comando.
 - **Verifica:** tre test in `tests/test_codebase_map_dynamic.py`; solo test.
 - **Stato:** risolto.
-- **Note:** D-228, D-229.
+- **Note:** D-229, D-230.
 
-#### D-228 Spec: il passo 2 «non esegue codice del progetto»
+#### D-229 Spec: il passo 2 «non esegue codice del progetto»
 - **Descrizione:** la tabella dei passi della spec del passo dinamico diceva «No» per il passo 2.
 - **Spiegazione:** il passo 2 esegue la build da cui l'indice nasce: Java e Kotlin, TypeScript e JavaScript, C#, C e C++.
 - **Progetto e caso:** `docs/specs/2026-11-12-passo-dinamico.md` — 16 novembre 2026.
@@ -2552,16 +2677,16 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-229 Spec: Rust, C e C++ «non provati» su Modal
+#### D-230 Spec: Rust, C e C++ «non provati» su Modal
 - **Descrizione:** lo stato della spec diceva provati con il registro vero «salvo Rust, C e C++».
 - **Spiegazione:** è stato scritto prima di `8ef21896f`.
 - **Progetto e caso:** `docs/specs/2026-11-12-passo-dinamico.md` — 16 novembre 2026.
 - **Rimedio:** `78c03d6e8`: osservati nei sandbox a macchina virtuale, con i numeri della conferma.
 - **Verifica:** conferma: semver 558, tinyxml2 552 con 26 buchi chiusi, zlib 148.
 - **Stato:** risolto.
-- **Note:** D-208, D-226.
+- **Note:** D-209, D-227.
 
-#### D-230 README, SKILL e riferimenti dicevano Jedi e «solo statica»
+#### D-231 README, SKILL e riferimenti dicevano Jedi e «solo statica»
 - **Descrizione:** documenti in ritardo sul codice.
 - **Spiegazione:** non erano aggiornati dopo il passo dinamico e l'arrivo degli indici.
 - **Progetto e caso:** README, SKILL, `references/snapshot.md` — 16 novembre 2026.
@@ -2570,16 +2695,16 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-231 L'osservatore Python diceva che il passo non avvia servizi
+#### D-232 L'osservatore Python diceva che il passo non avvia servizi
 - **Descrizione:** il docstring, il dettaglio di `services_unreachable` e quello del test lo dicevano ancora.
-- **Spiegazione:** scritti prima di D-181.
+- **Spiegazione:** scritti prima di D-182.
 - **Progetto e caso:** `scripts/dynamic/python.py` — 16 novembre 2026.
 - **Rimedio:** `0ca9f1650` (16 novembre).
 - **Verifica:** —
 - **Stato:** risolto.
-- **Note:** D-181.
+- **Note:** D-182.
 
-#### D-232 Due script del benchmark dell'inferenza mai eseguiti
+#### D-233 Due script del benchmark dell'inferenza mai eseguiti
 - **Descrizione:** `modal_scip.py` e `ts_compiler.py` seguono la nuova firma, ma «non sono stati eseguiti».
 - **Spiegazione:** lo dice il commit.
 - **Progetto e caso:** `benchmarks/inference-audit` — 16 novembre 2026.
@@ -2588,7 +2713,7 @@ Convenzioni:
 - **Stato:** aperto.
 - **Note:** —
 
-#### D-233 Un file dello snapshot senza dichiarazioni usciva dal progetto nel grafo
+#### D-234 Un file dello snapshot senza dichiarazioni usciva dal progetto nel grafo
 - **Descrizione:** un file che lo snapshot legge in modo lessicale non era più del progetto nel grafo del benchmark.
 - **Spiegazione:** il grafo cercava le dichiarazioni del file nell'inventario.
 - **Progetto e caso:** `benchmarks/inference-audit` — 13 novembre 2026.
@@ -2597,7 +2722,7 @@ Convenzioni:
 - **Stato:** risolto.
 - **Note:** —
 
-#### D-234 Pre-mappa: dipendenze sotto la soglia
+#### D-235 Pre-mappa: dipendenze sotto la soglia
 - **Descrizione:** misura del 15 novembre sui 122 progetti: dipendenze 682, soglia 716 non raggiunta.
 - **Spiegazione:** le cause sono D-018–D-030.
 - **Progetto e caso:** corpus della pre-mappa — 15 novembre 2026 (`22524b57b`).

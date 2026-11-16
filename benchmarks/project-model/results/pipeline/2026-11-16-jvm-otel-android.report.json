@@ -1,0 +1,643 @@
+{
+ "cases": {
+  "run": 3,
+  "failed": {},
+  "seconds": {
+   "total": 2037.3,
+   "median": 516.0,
+   "slowest": [
+    [
+     "real-svc-otel-demo",
+     1215.9
+    ],
+    [
+     "mix-poly-firebase",
+     516.0
+    ],
+    [
+     "jvm-android-app-lib",
+     305.4
+    ]
+   ]
+  }
+ },
+ "languages": {
+  "c": {
+   "cases": 1,
+   "states": {
+    "unavailable": 1
+   },
+   "reasons": {
+    "unavailable": [
+     [
+      "none of the 1 c files was parsed by the snapshot (lexical: 1)",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 0,
+    "indexed": 0
+   },
+   "sites": 0,
+   "answered": {},
+   "holes": {},
+   "share": null
+  },
+  "cpp": {
+   "cases": 1,
+   "states": {
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-clang wrote no index (src/currency: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded): compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:7 (find_package):\n  Could not find a package configuration file provided by \"Protobuf\" with any\n  of the following names:\n\n    ProtobufConfig.cmake\n    protobuf-config.cmake\n\n  Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set\n  \"Protobuf_DIR\" to a directory containing one of the above files.  If\n  \"Protobuf\" provides a separate development package or SDK, be sure it has\n  been installed.\n\n\n-- Configuring incomplete, errors occurred!",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 0,
+    "indexed": 0
+   },
+   "sites": 0,
+   "answered": {},
+   "holes": {},
+   "share": null
+  },
+  "csharp": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 13,
+    "indexed": 13
+   },
+   "sites": 660,
+   "answered": {
+    "external": 355,
+    "project-callable": 46,
+    "project-value": 203
+   },
+   "holes": {
+    "no-occurrence": 5,
+    "no-position": 49,
+    "undefined-project-symbol": 2
+   },
+   "share": 0.9152
+  },
+  "go": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 15,
+    "indexed": 15
+   },
+   "sites": 6180,
+   "answered": {
+    "external": 2158,
+    "project-callable": 617,
+    "project-value": 3272
+   },
+   "holes": {
+    "no-occurrence": 12,
+    "no-position": 121
+   },
+   "share": 0.9785
+  },
+  "java": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 9,
+    "indexed": 9
+   },
+   "sites": 693,
+   "answered": {
+    "external": 497,
+    "observed": 2,
+    "project-callable": 54,
+    "project-value": 140
+   },
+   "holes": {},
+   "share": 1.0
+  },
+  "javascript": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 10,
+    "indexed": 10
+   },
+   "sites": 276,
+   "answered": {
+    "external": 86,
+    "project-callable": 4,
+    "project-value": 105
+   },
+   "holes": {
+    "NodeJS.ProcessEnv's index signature: only execution knows the value": 2,
+    "a member of a value of type any: only execution knows it": 72,
+    "a member of an anonymous type, an object literal or an index signature another file declares: the index names it with a local of this file it defines nowhere": 1,
+    "dangling-local": 2,
+    "{} declares no such member: only execution knows it": 4
+   },
+   "share": 0.7065
+  },
+  "kotlin": {
+   "cases": 3,
+   "states": {
+    "failed": 3
+   },
+   "reasons": {
+    "failed": [
+     [
+      "none of the 3 kotlin files is in the index: Gradle script: no KotlinCompile task compiles it (2), no Kotlin compile task of the build lists it (1)",
+      1
+     ],
+     [
+      "scip-java wrote no index (preparation exited with code 1): lems/problems-report.html\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\n8 actionable tasks: 6 executed, 2 up-to-date\nExecution failed for task ':app:processFreeDebugGoogleServices'.\n> File google-services.json is missing. \n  The Google Services Plugin cannot function without it. \n  Searched locations: /work/app/src/free/debug/google-services.json, /work/app/src/debug/free/google-services.json, /work/app/src/free/google-services.json, /work/app/src/debug/google-services.json, /work/app/src/freeDebug/google-services.json, /work/app/google-services.json\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 34s",
+      1
+     ],
+     [
+      "scip-java wrote no index (preparation exited with code 1): \n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:processDebugGoogleServices'.\n> File google-services.json is missing. \n  The Google Services Plugin cannot function without it. \n  Searched locations: /work/android/app/src/debug/google-services.json, /work/android/app/src/debug/google-services.json, /work/android/app/src/google-services.json, /work/android/app/src/debug/google-services.json, /work/android/app/src/Debug/google-services.json, /work/android/app/google-services.json\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights.\n6 actionable tasks: 5 executed, 1 up-to-date\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 38s",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 0,
+    "indexed": 0
+   },
+   "sites": 0,
+   "answered": {},
+   "holes": {},
+   "share": null
+  },
+  "python": {
+   "cases": 2,
+   "states": {
+    "fresh": 2
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 24,
+    "indexed": 24
+   },
+   "sites": 1911,
+   "answered": {
+    "external": 475,
+    "observed": 15,
+    "project-callable": 134,
+    "project-value": 820
+   },
+   "holes": {
+    "dangling-local": 58,
+    "no-occurrence": 298,
+    "no-position": 11,
+    "undefined-project-symbol": 100
+   },
+   "share": 0.7556
+  },
+  "rust": {
+   "cases": 2,
+   "states": {
+    "fresh": 2
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 10,
+    "indexed": 10
+   },
+   "sites": 269,
+   "answered": {
+    "external": 182,
+    "project-callable": 36,
+    "project-value": 48
+   },
+   "holes": {
+    "no-occurrence": 3
+   },
+   "share": 0.9888
+  },
+  "stylesheet": {
+   "cases": 2,
+   "states": {
+    "fresh": 2
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 169,
+    "indexed": 162
+   },
+   "sites": 22,
+   "answered": {
+    "external": 1,
+    "namespace": 5
+   },
+   "holes": {
+    "no-font-face": 1,
+    "no-rule": 12,
+    "parameter": 2,
+    "unresolved-import": 1
+   },
+   "share": 0.2727
+  },
+  "typescript": {
+   "cases": 2,
+   "states": {
+    "fresh": 2
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 144,
+    "indexed": 144
+   },
+   "sites": 8733,
+   "answered": {
+    "external": 600,
+    "lexical": 74,
+    "project-callable": 1076,
+    "project-value": 4405
+   },
+   "holes": {
+    "NodeJS.ProcessEnv's index signature: only execution knows the value": 3,
+    "a member of a value of type any: only execution knows it": 2138,
+    "a member of an anonymous type, an object literal or an index signature another file declares: the index names it with a local of this file it defines nowhere": 42,
+    "dangling-local": 350,
+    "no-occurrence": 29,
+    "no-position": 16
+   },
+   "share": 0.7048
+  }
+ },
+ "missing": [
+  {
+   "case": "real-svc-otel-demo",
+   "language": "stylesheet",
+   "missing": 7,
+   "snapshot": 160,
+   "reasons": {
+    "template language: no reader": 7
+   }
+  }
+ ],
+ "no_analyzer": {
+  "sql": {
+   "cases": 1,
+   "files": 1
+  }
+ },
+ "premap": {
+  "languages": {
+   "given": 3,
+   "not_given": 0,
+   "found": 30,
+   "expected": 30,
+   "extra": 27,
+   "wrong": 0
+  },
+  "languages.files": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "excluded": {
+   "given": 3,
+   "not_given": 0,
+   "found": 50,
+   "expected": 58,
+   "extra": 14,
+   "wrong": 0
+  },
+  "units": {
+   "given": 3,
+   "not_given": 0,
+   "found": 34,
+   "expected": 37,
+   "extra": 0,
+   "wrong": 1
+  },
+  "units.depends_on": {
+   "given": 3,
+   "not_given": 0,
+   "found": 2,
+   "expected": 8,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.source_roots": {
+   "given": 2,
+   "not_given": 1,
+   "found": 8,
+   "expected": 51,
+   "extra": 2,
+   "wrong": 0
+  },
+  "units.config": {
+   "given": 3,
+   "not_given": 0,
+   "found": 7,
+   "expected": 66,
+   "extra": 0,
+   "wrong": 3
+  },
+  "workspace": {
+   "given": 3,
+   "not_given": 0,
+   "found": 3,
+   "expected": 4,
+   "extra": 4,
+   "wrong": 0
+  },
+  "workspace.members": {
+   "given": 3,
+   "not_given": 0,
+   "found": 6,
+   "expected": 7,
+   "extra": 1,
+   "wrong": 0
+  },
+  "toolchains": {
+   "given": 3,
+   "not_given": 0,
+   "found": 27,
+   "expected": 77,
+   "extra": 21,
+   "wrong": 0
+  },
+  "dependencies": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "frameworks": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "services": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "needs": {
+   "given": 0,
+   "not_given": 3,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  }
+ },
+ "gaps": [
+  {
+   "step": "scan",
+   "kind": "no_analyzer",
+   "count": 6,
+   "examples": [
+    "real-svc-otel-demo: 1 Batchfile files and no analyzer lists the language: their code is in no graph",
+    "real-svc-otel-demo: 30 Dockerfile files and no analyzer lists the language: their code is in no graph",
+    "real-svc-otel-demo: 38 Elixir files and no analyzer lists the language: their code is in no graph"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "toolchain_undeclared",
+   "count": 5,
+   "examples": [
+    "real-svc-otel-demo: src/ad: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "real-svc-otel-demo: src/fraud-detection: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "real-svc-otel-demo: src/recommendation: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "code_outside_units",
+   "count": 3,
+   "examples": [
+    "real-svc-otel-demo: internal/tools: 2 Python files that no unit of kind python-project holds",
+    "real-svc-otel-demo: src/shared: 1 Python files that no unit of kind python-project holds",
+    "mix-poly-firebase: shared: 2 TypeScript files that no unit of kind npm-package holds"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_failed",
+   "count": 3,
+   "examples": [
+    "real-svc-otel-demo: src/react-native-app/tsconfig.json: tsc --showConfig: tsconfig.json(2,14): error TS6053: File 'expo/tsconfig.base' not found.",
+    "real-svc-otel-demo: src/currency: cmake configure: CMake Error at CMakeLists.txt:7 (find_package): Could not find a package configuration file provided by \"Protobuf\" with any of the following names: Protobuf.cps protobuf.cps ProtobufConfig.cmake protobuf-config.cmake Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set \"Protobuf_DIR\" to a directory containing one of the above files. If \"Protobuf\" provides a separate development package or SDK, be sure it has been installed. -- Configuring incomplete, errors occurred!",
+    "real-svc-otel-demo: src/currency/genproto: cmake configure: CMake Error at CMakeLists.txt:4 (find_package): Could not find a package configuration file provided by \"Protobuf\" with any of the following names: Protobuf.cps protobuf.cps ProtobufConfig.cmake protobuf-config.cmake Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set \"Protobuf_DIR\" to a directory containing one of the above files. If \"Protobuf\" provides a separate development package or SDK, be sure it has been installed. -- Configuring incomplete, errors occurred!"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "not_executed",
+   "count": 3,
+   "examples": [
+    "real-svc-otel-demo: src/frontend/package.json: install scripts are not run (cypress, protobufjs): what they generate is unknown",
+    "real-svc-otel-demo: src/payment/package.json: install scripts are not run (protobufjs): what they generate is unknown",
+    "mix-poly-firebase: react-app/src-tauri/build.rs: a build script is present and Daodan's index does not run it: the code it generates and the cfg flags it sets are unknown"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "restore_failed",
+   "count": 3,
+   "examples": [
+    "real-svc-otel-demo: src/frontend: its packages are not installed: no workspace above names this folder",
+    "real-svc-otel-demo: src/payment: its packages are not installed: no workspace above names this folder",
+    "real-svc-otel-demo: src/react-native-app: its packages are not installed: no workspace above names this folder"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_partial",
+   "count": 1,
+   "examples": [
+    "mix-poly-firebase: react-app/src-tauri: registries unknown: cargo metadata --locked: Updating crates.io index\nerror: cannot create the lock file /work/react-app/src-tauri/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead."
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "ownership_ambiguous",
+   "count": 1,
+   "examples": [
+    "real-svc-otel-demo: src/react-native-app: Directory scope cannot distinguish build ownership: react-native-app@src/react-native-app, react-native-app@src/react-native-app+"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "workspace_failure",
+   "count": 28,
+   "examples": [
+    "real-svc-otel-demo: src/cart/cart.slnx: Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'cs'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+    "real-svc-otel-demo: src/cart/cart.slnx: Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'de'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.",
+    "real-svc-otel-demo: src/cart/cart.slnx: Msbuild failed when processing the file '/work/src/cart/tests/cart.tests.csproj' with message: Package Microsoft.TestPlatform.ObjectModel 18.11.0 has a resource with the locale 'es'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale."
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "manifest_unread",
+   "count": 6,
+   "examples": [
+    "real-svc-otel-demo: src/agent/requirements.in: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+    "real-svc-otel-demo: src/chatbot/requirements.in: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+    "real-svc-otel-demo: src/load-generator/requirements.in: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "restore_failed",
+   "count": 3,
+   "examples": [
+    "real-svc-otel-demo: src/frontend: its packages are not installed: no workspace above names this folder",
+    "real-svc-otel-demo: src/payment: its packages are not installed: no workspace above names this folder",
+    "real-svc-otel-demo: src/react-native-app: its packages are not installed: no workspace above names this folder"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "build_input_missing",
+   "count": 2,
+   "examples": [
+    "jvm-android-app-lib: .: the build stopped without google-services.json, which the Google Services Gradle plugin (com.google.gms.google-services) reads: the Firebase project's configuration, which a developer downloads from the Firebase console, kept out of the repository; Daodan makes none, so the build gives nothing",
+    "mix-poly-firebase: android: the build stopped without google-services.json, which the Google Services Gradle plugin (com.google.gms.google-services) reads: the Firebase project's configuration, which a developer downloads from the Firebase console, kept out of the repository; Daodan makes none, so the build gives nothing"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "build_not_indexed",
+   "count": 2,
+   "examples": [
+    "real-svc-otel-demo: src/fraud-detection: src/fraud-detection: failed: scip-java wrote no index (preparation exited with code 1): eldemo'.\n         Location: /work/src/fraud-detection/src/main/kotlin/frauddetection/main.kt:14\n\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n* Try:\n\n> Run with --stacktrace option to get the stack trace.\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n> Run with --info or --debug option to get more log output.\n\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\nBUILD FAILED in 17s\n10 actionable tasks: 9 executed, 1 up-to-date",
+    "real-svc-otel-demo: src/fraud-detection: src/fraud-detection: failed: scip-java wrote no index (preparation exited with code 1): eldemo'.\n         Location: /work/src/fraud-detection/src/main/kotlin/frauddetection/main.kt:14\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\nBUILD FAILED in 18s\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\n10 actionable tasks: 9 executed, 1 up-to-date"
+   ]
+  }
+ ],
+ "containers": {
+  "runs": 44,
+  "seconds": 719.5,
+  "phases": {
+   "execute": {
+    "runs": 24,
+    "seconds": 243.3
+   },
+   "prepare": {
+    "runs": 20,
+    "seconds": 476.2
+   }
+  },
+  "not_zero": []
+ },
+ "by_case": {
+  "real-svc-otel-demo": {
+   "seconds": 1215.9,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "cpp": {
+     "state": "failed",
+     "holes": 0
+    },
+    "csharp": {
+     "state": "fresh",
+     "holes": 56
+    },
+    "go": {
+     "state": "fresh",
+     "holes": 133
+    },
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 81
+    },
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 464
+    },
+    "rust": {
+     "state": "fresh",
+     "holes": 3
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 15
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 2577
+    }
+   }
+  },
+  "jvm-android-app-lib": {
+   "seconds": 305.4,
+   "languages": {
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    }
+   }
+  },
+  "mix-poly-firebase": {
+   "seconds": 516.0,
+   "languages": {
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 3
+    },
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  }
+ }
+}

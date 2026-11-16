@@ -1,0 +1,879 @@
+{
+ "real-app-kotlinconf": {
+  "premap": {
+   "languages": {
+    "given": true,
+    "expected": 6,
+    "found": 6,
+    "found_normalised": 6,
+    "missed": [],
+    "extra": [
+     "C",
+     "EditorConfig",
+     "Gradle Kotlin DSL",
+     "Java Properties",
+     "JSON",
+     "Markdown",
+     "MATLAB",
+     "Procfile",
+     "Proguard",
+     "SVG",
+     "TOML",
+     "XML",
+     "XML Property List",
+     "YAML"
+    ],
+    "wrong": []
+   },
+   "languages.files": {
+    "given": false,
+    "expected": 7
+   },
+   "excluded": {
+    "given": true,
+    "expected": 46,
+    "found": 42,
+    "found_normalised": 42,
+    "missed": [
+     "app/iosApp/KotlinMultiplatformLinkedPackage/",
+     "app/shared/src/commonMain/composeResources/files/aboutlibraries.json",
+     "CODE_OF_CONDUCT.md",
+     "CLAUDE.md"
+    ],
+    "extra": [
+     ".gitignore",
+     "app/androidApp/proguard-rules.pro",
+     "app/iosApp/KotlinConf.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+     "app/iosApp/KotlinConf.xcworkspace/contents.xcworkspacedata",
+     "app/iosApp/iosApp/Assets.xcassets/KotlinConf 2026 icon.imageset/"
+    ],
+    "wrong": []
+   },
+   "units": {
+    "given": true,
+    "expected": 13,
+    "found": 12,
+    "found_normalised": 12,
+    "missed": [
+     "xcode-target@app/iosApp:iosApp"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.depends_on": {
+    "given": true,
+    "expected": 11,
+    "found": 9,
+    "found_normalised": 9,
+    "missed": [
+     "xcode-target@app/iosApp:iosApp > :app:shared",
+     "xcode-target@app/iosApp:iosApp > KotlinMultiplatformLinkedPackage"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "units.source_roots": {
+    "given": false,
+    "expected": 27
+   },
+   "units.config": {
+    "given": true,
+    "expected": 33,
+    "found": 0,
+    "found_normalised": 0,
+    "missed": [
+     "gradle-project@. > applied_scripts",
+     "gradle-project@core > build_tags",
+     "gradle-project@backend > compile_tasks",
+     "gradle-project@backend > entry_files",
+     "gradle-project@backend > ktor_modules",
+     "gradle-project@backend > main_class",
+     "gradle-project@backend > source_sets",
+     "gradle-project@app/shared > apple_framework",
+     "gradle-project@app/shared > build_tags",
+     "gradle-project@app/shared > compose_resources_package",
+     "gradle-project@app/shared > custom_source_sets",
+     "gradle-project@app/ui-components > build_tags",
+     "gradle-project@app/ui-components > compose_resources_package",
+     "gradle-project@app/ui-components > custom_source_sets",
+     "gradle-project@app/androidApp > build_tags",
+     "gradle-project@app/androidApp > compile_tasks",
+     "gradle-project@app/androidApp > entry_files",
+     "gradle-project@app/androidApp > source_sets",
+     "gradle-project@app/desktopApp > compile_tasks",
+     "gradle-project@app/desktopApp > entry_files",
+     "gradle-project@app/desktopApp > main_class",
+     "gradle-project@app/desktopApp > source_sets",
+     "gradle-project@app/webApp > build_tags",
+     "gradle-project@app/webApp > entry_files",
+     "gradle-project@app/adminApp > build_tags",
+     "gradle-project@app/adminApp > entry_files",
+     "xcode-target@app/iosApp:iosApp > entry_files",
+     "xcode-target@app/iosApp:iosApp > scheme",
+     "xcode-target@app/iosApp:iosApp > workspace",
+     "swift-package@app/iosApp/KotlinMultiplatformLinkedPackage > packages",
+     "swift-package@app/iosApp/KotlinMultiplatformLinkedPackage > source_sets",
+     "swift-package@app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2 > packages",
+     "swift-package@app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2 > source_sets"
+    ],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace": {
+    "given": true,
+    "expected": 1,
+    "found": 1,
+    "found_normalised": 1,
+    "missed": [],
+    "extra": [],
+    "wrong": []
+   },
+   "workspace.members": {
+    "given": true,
+    "expected": 9,
+    "found": 9,
+    "found_normalised": 9,
+    "missed": [],
+    "extra": [
+     "gradle@. > ."
+    ],
+    "wrong": []
+   },
+   "toolchains": {
+    "given": true,
+    "expected": 15,
+    "found": 7,
+    "found_normalised": 7,
+    "missed": [
+     "maven@.devcontainer/devcontainer.json#features.mavenVersion",
+     "node@build.gradle.kts",
+     "xcode@.github/workflows/build-all.yml",
+     "swift@app/iosApp/KotlinConf.xcodeproj/project.pbxproj#SWIFT_VERSION"
+    ],
+    "extra": [
+     "java@app/androidApp/build.gradle.kts#kotlin.compilerOptions.jvmTarget",
+     "android-build-tools@app/androidApp/build.gradle.kts#android.buildToolsVersion",
+     "kotlin@gradle/libs.versions.toml"
+    ],
+    "wrong": [
+     {
+      "item": "java@.devcontainer/devcontainer.json#image",
+      "fields": {
+       "version": {
+        "expected": "1-21",
+        "got": "21"
+       }
+      },
+      "same_after_normalisation": false
+     },
+     {
+      "item": "java@.github/workflows/build-all.yml",
+      "fields": {
+       "version": {
+        "expected": "21",
+        "got": "11"
+       },
+       "declared_in": {
+        "expected": ".github/workflows/build-all.yml",
+        "got": "app/androidApp/build.gradle.kts#sourceCompatibility"
+       }
+      },
+      "same_after_normalisation": false
+     },
+     {
+      "item": "java@.github/workflows/web-deploy.yml",
+      "fields": {
+       "version": {
+        "expected": "21",
+        "got": "11"
+       },
+       "declared_in": {
+        "expected": ".github/workflows/web-deploy.yml",
+        "got": "app/androidApp/build.gradle.kts#targetCompatibility"
+       }
+      },
+      "same_after_normalisation": false
+     },
+     {
+      "item": "android-sdk@gradle/libs.versions.toml#versions.android-compileSdk",
+      "fields": {
+       "version": {
+        "expected": "37",
+        "got": "37.2"
+       },
+       "declared_in": {
+        "expected": "gradle/libs.versions.toml#versions.android-compileSdk",
+        "got": "app/androidApp/build.gradle.kts#android.compileSdk"
+       }
+      },
+      "same_after_normalisation": false
+     }
+    ]
+   },
+   "dependencies": {
+    "given": false,
+    "expected": 12
+   },
+   "frameworks": {
+    "given": false,
+    "expected": 29
+   },
+   "services": {
+    "given": false,
+    "expected": 6
+   },
+   "needs": {
+    "given": false,
+    "expected": 1
+   }
+  },
+  "sources": [
+   {
+    "rank": "reader",
+    "seconds": 0.018,
+    "source": "modules.py@daodan/module-graph/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "python-build@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.028,
+    "source": "requirements@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.005,
+    "source": "python-tests@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "npm-files@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "npm-tests@daodan/premap/v5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.003,
+    "source": "jvm-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.002,
+    "source": "project-files@daodan/premap/v1",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.0,
+    "source": "gitmodules@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "reader",
+    "seconds": 0.009,
+    "source": "autotools@daodan/premap/v1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "scanner",
+    "seconds": 29.071,
+    "source": "go-enry@v2.9.6",
+    "state": "ran"
+   },
+   {
+    "rank": "reader",
+    "seconds": 74.002,
+    "source": "renovate@44.239.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "compose@5.6.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.004,
+    "source": "go@1.27.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "cargo@1.99.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "uv@0.11.28",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "tsc@6.0.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "npm@bundled with Node",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "cmake@4.4.5",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "meson@1.12.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "bazel@9.3.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "make@4.3",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 151.347,
+    "source": "gradle@9.9.1",
+    "state": "ran"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "maven@3.10.0",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.0,
+    "source": "sbt@1.13.1",
+    "state": "not_needed"
+   },
+   {
+    "rank": "model",
+    "seconds": 0.002,
+    "source": "dotnet@10.0.404",
+    "state": "not_needed"
+   }
+  ],
+  "gaps": [
+   {
+    "detail": "the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "kind": "toolchain_undeclared",
+    "path": ".",
+    "source": "jvm-files@daodan/premap/v1"
+   },
+   {
+    "detail": "1 C files that no unit of kind autotools-project, bazel-target, cmake-target, go-module, make-target, meson-target, msbuild-project holds",
+    "files": 1,
+    "kind": "code_outside_units",
+    "language": "C",
+    "path": "app/iosApp/KotlinMultiplatformLinkedPackage/Sources/KotlinMultiplatformLinkedPackage/include",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 C files that no unit of kind autotools-project, bazel-target, cmake-target, go-module, make-target, meson-target, msbuild-project holds",
+    "files": 1,
+    "kind": "code_outside_units",
+    "language": "C",
+    "path": "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Sources/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/include",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 JavaScript files that no unit of kind npm-package holds",
+    "files": 1,
+    "kind": "code_outside_units",
+    "language": "JavaScript",
+    "path": "app/webApp/src/webMain/resources",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "2 MATLAB files and no analyzer lists the language: their code is in no graph",
+    "files": 2,
+    "kind": "no_analyzer",
+    "language": "MATLAB",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Procfile files and no analyzer lists the language: their code is in no graph",
+    "files": 1,
+    "kind": "no_analyzer",
+    "language": "Procfile",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "1 Shell files and no analyzer lists the language: their code is in no graph",
+    "files": 1,
+    "kind": "no_analyzer",
+    "language": "Shell",
+    "source": "premap@daodan/premap/v1"
+   },
+   {
+    "detail": "4 Swift files and no analyzer lists the language: their code is in no graph",
+    "files": 4,
+    "kind": "no_analyzer",
+    "language": "Swift",
+    "source": "premap@daodan/premap/v1"
+   }
+  ],
+  "units": 12,
+  "toolchains": [
+   {
+    "declared_in": "core/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#sourceCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "11"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#targetCompatibility",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "11"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#kotlin.compilerOptions.jvmTarget",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "11"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#android.compileSdk",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-sdk",
+    "version": "37.2"
+   },
+   {
+    "declared_in": "app/androidApp/build.gradle.kts#android.buildToolsVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "android-build-tools",
+    "version": "36.0.0"
+   },
+   {
+    "declared_in": "app/desktopApp/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "app/shared/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "app/ui-components/build.gradle.kts#java.toolchain.languageVersion",
+    "sources": [
+     "gradle@9.9.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "gradle/wrapper/gradle-wrapper.properties#distributionUrl",
+    "line": 4,
+    "sources": [
+     "jvm-files@daodan/premap/v1",
+     "renovate@44.239.1"
+    ],
+    "tool": "gradle",
+    "version": "9.9.1"
+   },
+   {
+    "declared_in": "app/iosApp/KotlinMultiplatformLinkedPackage/Package.swift",
+    "line": 1,
+    "sources": [
+     "project-files@daodan/premap/v1"
+    ],
+    "tool": "swift",
+    "version": "5.9"
+   },
+   {
+    "declared_in": "app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Package.swift",
+    "line": 1,
+    "sources": [
+     "project-files@daodan/premap/v1"
+    ],
+    "tool": "swift",
+    "version": "5.9"
+   },
+   {
+    "declared_in": ".devcontainer/devcontainer.json",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "java",
+    "version": "21"
+   },
+   {
+    "declared_in": "gradle/libs.versions.toml",
+    "sources": [
+     "renovate@44.239.1"
+    ],
+    "tool": "kotlin",
+    "version": "2.5.0-RC"
+   }
+  ],
+  "steps": {
+   "scan": {
+    "modules": 11,
+    "graph": "/runs/real-app-kotlinconf/modules.json",
+    "action": "rebuilt",
+    "units": 12,
+    "gaps": 8,
+    "premap": "/runs/real-app-kotlinconf/premap.json"
+   },
+   "analyze": {
+    "pass": true,
+    "manifest_digest": "0c423d1196a63f27661025b521b3cfdbd1e7f79b933be32175c721f0368997c9",
+    "languages": {
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a"
+     },
+     "c": {
+      "state": "unavailable",
+      "engine": "scip-clang",
+      "reason": "no C or C++ unit in the pre-map: no build of the project compiles C or C++",
+      "install": "none: the project's C and C++ files keep their static facts"
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2"
+     },
+     "kotlin": {
+      "state": "failed",
+      "engine": "scip-kotlin",
+      "reason": "scip-java wrote no index (preparation exited with code 1):  determine the dependencies of task ':app:adminApp:scipCompileAll'.\n> Task with name 'compileKotlinJvm' not found in project ':app:adminApp'.\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\n> Get more help at https://help.gradle.org.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\nBUILD FAILED in 15s"
+     }
+    },
+    "engines": {
+     "stylesheet": {
+      "engine": "stylesheet@145560a4592a",
+      "available": true,
+      "languages": {
+       "stylesheet": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "codebase-map stylesheet.py + typescript + tailwindcss",
+       "peak_mb": 221,
+       "seconds": 0.6,
+       "version": "145560a4592a",
+       "versions": "e62b3f368913 + 5.9.3 + None"
+      }
+     },
+     "scip-clang": {
+      "engine": "scip-clang@v0.4.1",
+      "available": false,
+      "reason": "no C or C++ unit in the pre-map: no build of the project compiles C or C++",
+      "install": "none: the project's C and C++ files keep their static facts",
+      "indexer": {
+       "name": "scip-clang",
+       "peak_mb": null,
+       "seconds": 0,
+       "version": "v0.4.1"
+      }
+     },
+     "scip-typescript": {
+      "engine": "scip-typescript@0.6.2",
+      "available": true,
+      "languages": {
+       "javascript": {
+        "state": "fresh"
+       }
+      },
+      "indexer": {
+       "name": "scip-typescript",
+       "peak_mb": null,
+       "seconds": 10.5,
+       "types": [
+        "@types/node@24.19.2"
+       ],
+       "version": "0.6.2"
+      }
+     },
+     "scip-kotlin": {
+      "engine": "scip-kotlin@0.14.2",
+      "available": false,
+      "reason": "scip-java wrote no index (preparation exited with code 1):  determine the dependencies of task ':app:adminApp:scipCompileAll'.\n> Task with name 'compileKotlinJvm' not found in project ':app:adminApp'.\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\n> Get more help at https://help.gradle.org.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\nBUILD FAILED in 15s",
+      "indexer": {
+       "name": "scip-java",
+       "peak_mb": null,
+       "seconds": 83.3,
+       "version": "0.14.2"
+      }
+     }
+    },
+    "started_at": "2026-11-16T16:18:57Z",
+    "available": true,
+    "finished_at": "2026-11-16T16:23:09Z"
+   },
+   "dynamic": {
+    "languages": {
+     "stylesheet": {
+      "state": "no-observer",
+      "reason": "no observer runs this language's tests"
+     },
+     "c": {
+      "state": "no-static-graph",
+      "reason": "c: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+     },
+     "javascript": {
+      "state": "not-run",
+      "reason": "no package.json of the project declares a test script (`scripts.test`): nothing is observed"
+     },
+     "kotlin": {
+      "state": "no-static-graph",
+      "reason": "kotlin: the store holds no static graph of it (its analyzer left none): an observed edge answers a reference of a graph that is there"
+     }
+    }
+   },
+   "union": {
+    "languages": {
+     "c": {
+      "engine": "scip-clang",
+      "install": "none: the project's C and C++ files keep their static facts",
+      "reason": "no C or C++ unit in the pre-map: no build of the project compiles C or C++",
+      "state": "unavailable"
+     },
+     "javascript": {
+      "state": "fresh",
+      "engine": "scip-typescript@0.6.2",
+      "coverage": {
+       "sites": 23,
+       "answered": {
+        "external": 10,
+        "project-value": 3
+       },
+       "holes": {
+        "a member of a value of type any: only execution knows it": {
+         "count": 10,
+         "examples": [
+          "app/webApp/src/webMain/resources/service-worker.js:66 command",
+          "app/webApp/src/webMain/resources/service-worker.js:68 showNotification",
+          "app/webApp/src/webMain/resources/service-worker.js:68 title"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {
+        "npm typescript@6.0.3": 10,
+        "npm @types/node@24.19.2": 3
+       },
+       "files": {
+        "snapshot": 1,
+        "indexed": 1,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     },
+     "kotlin": {
+      "engine": "scip-kotlin",
+      "reason": "scip-java wrote no index (preparation exited with code 1):  determine the dependencies of task ':app:adminApp:scipCompileAll'.\n> Task with name 'compileKotlinJvm' not found in project ':app:adminApp'.\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\n> Get more help at https://help.gradle.org.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\nBUILD FAILED in 15s",
+      "state": "failed"
+     },
+     "stylesheet": {
+      "state": "fresh",
+      "engine": "stylesheet@145560a4592a",
+      "coverage": {
+       "sites": 45,
+       "answered": {
+        "project-value": 37
+       },
+       "holes": {
+        "no-font-face": {
+         "count": 5,
+         "examples": [
+          "app/adminApp/src/jsMain/resources/index.html:22 -apple-system",
+          "app/adminApp/src/jsMain/resources/index.html:22 BlinkMacSystemFont",
+          "app/adminApp/src/jsMain/resources/index.html:22 Segoe UI"
+         ]
+        },
+        "no-rule": {
+         "count": 1,
+         "examples": [
+          "app/adminApp/src/jsMain/resources/index.html:118 #root"
+         ]
+        },
+        "unresolved-import": {
+         "count": 2,
+         "examples": [
+          "app/adminApp/src/jsMain/resources/index.html:119 /admin/admin.js",
+          "app/webApp/src/webMain/resources/index.html:108 kotlinconf-app.js"
+         ]
+        }
+       },
+       "uncertain": 0,
+       "externals": {},
+       "files": {
+        "snapshot": 3,
+        "indexed": 3,
+        "missing": []
+       },
+       "state": "lower-bound"
+      }
+     }
+    },
+    "no_analyzer": {
+     "sql": 4
+    }
+   }
+  },
+  "events": {
+   "step.started": 4,
+   "log": 1,
+   "progress": 33,
+   "gap": 15,
+   "step.finished": 4,
+   "analyzer.started": 5,
+   "analyzer.finished": 4,
+   "analyzer.unavailable": 1,
+   "graph.ready": 1
+  },
+  "step_seconds": {
+   "scan": [
+    127.5,
+    502.1
+   ],
+   "analyze": [
+    502.1,
+    753.7
+   ],
+   "dynamic": [
+    753.7,
+    754.2
+   ],
+   "union": [
+    754.2,
+    754.2
+   ]
+  },
+  "containers": [
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 11.291,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.587,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 28.693,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 2.226,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 71.383,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 1.446,
+    "cause": null
+   },
+   {
+    "phase": "prepare",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 37.65,
+    "cause": null
+   },
+   {
+    "phase": "execute",
+    "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
+    "outcome": "exited",
+    "exit_code": 0,
+    "duration_seconds": 13.742,
+    "cause": null
+   }
+  ],
+  "logs": {
+   "premap-runs/daodan-enry/results/0/stderr": "go: creating new go.mod: module daodan-enry\ngo: to add module requirements and sums:\n\tgo mod tidy\ngo: downloading github.com/go-enry/go-enry/v2 v2.9.6\ngo: downloading github.com/go-enry/go-oniguruma v1.2.1\ngo: added github.com/go-enry/go-enry/v2 v2.9.6\ngo: added github.com/go-enry/go-oniguruma v1.2.1\n",
+   "premap-runs/gradle/results/1/stderr": "\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nA problem occurred configuring root project 'KotlinConfApp'.\n> Could not resolve all artifacts for configuration 'classpath'.\n   > Could not resolve dev.zacsweers.metro:gradle-plugin:1.5.2.\n     Required by:\n         buildscript of root project 'KotlinConfApp' > dev.zacsweers.metro:dev.zacsweers.metro.gradle.plugin:1.5.2\n      > Dependency requires at least JVM runtime version 21. This build uses a Java 17 JVM.\n\n* Try:\n> Run this build using a Java 21 or newer JVM.\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 25s\n",
+   "premap-runs/gradle-jdk/results/0/stderr": "mise by @jdx \u2013 installing 1 tool\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 0/1 \u00b7 3.0s\n  java@21.0.13+9.0.LTS  extracting  3.0s\nmise java@21.0.13+9.0.LTS openjdk version \"21.0.13\" 2026-10-20 LTS\nmise java@21.0.13+9.0.LTS OpenJDK Runtime Environment Temurin-21.0.13+9 (build 21.0.13+9-LTS)\nmise java@21.0.13+9.0.LTS OpenJDK 64-Bit Server VM Temurin-21.0.13+9 (build 21.0.13+9-LTS, mixed mode, sharing)\nmise \u2713 java@21.0.13+9.0.LTS  4.0s  OpenJDK21U-jdk_x64_linux_hotspot_21.0.13_9.tar.gz\nmise \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 1/1 \u00b7 installed 1 tool in 4.0s\nmise WARN  java installed but not activated \u2014 it is not in any config file.\nTo install and activate, run:\n  mise use java\n",
+   "premap-runs/renovate/results/1/stderr": "{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"e89b423a-a599-4d22-8186-625e7f95992c\",\"err\":{\"code\":\"MODULE_NOT_FOUND\",\"requireStack\":[\"/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\",\"/daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\"],\"message\":\"Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\",\"stack\":\"Error: Cannot find module './build/Release/re2.node'\\nRequire stack:\\n- /daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js\\n- /daodan/state/tools/npm/lib/node_modules/renovate/dist/expose.js\\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\\n    at require (node:internal/modules/helpers:157:16)\\n    at Object.<anonymous> (/daodan/state/tools/npm/lib/node_modules/renovate/node_modules/re2/re2.js:4:13)\\n    at Module._compile (node:internal/modules/cjs/loader:1929:14)\"},\"msg\":\"RE2 not usable, falling back to RegExp\",\"time\":\"2026-11-16T16:16:22.234Z\",\"v\":0}\n{\"name\":\"renovate\",\"hostname\":\"modal\",\"pid\":8,\"level\":40,\"logContext\":\"e89b423a-a599-4d22-8186-625e7f95992c\",\"repository\":\"local\",\"githubDeps\":[\"actions/checkout\",\"actions/setup-java\",\"actions/upload-pages-artifact\",\"actions/deploy-pages\",\"firebase/firebase-ios-sdk\"],\"msg\":\"GitHub token is required for some dependencies\",\"time\":\"2026-11-16T16:16:24.854Z\",\"v\":0}\n",
+   "premap-runs/renovate/results/0/stdout": "\nadded 614 packages in 33s\n"
+  },
+  "seconds": 754.2
+ }
+}

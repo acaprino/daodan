@@ -1,0 +1,292 @@
+{
+ "cases": {
+  "run": 1,
+  "failed": {},
+  "seconds": {
+   "total": 754.2,
+   "median": 754.2,
+   "slowest": [
+    [
+     "real-app-kotlinconf",
+     754.2
+    ]
+   ]
+  }
+ },
+ "languages": {
+  "c": {
+   "cases": 1,
+   "states": {
+    "unavailable": 1
+   },
+   "reasons": {
+    "unavailable": [
+     [
+      "no C or C++ unit in the pre-map: no build of the project compiles C or C++",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 0,
+    "indexed": 0
+   },
+   "sites": 0,
+   "answered": {},
+   "holes": {},
+   "share": null
+  },
+  "javascript": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 1,
+    "indexed": 1
+   },
+   "sites": 23,
+   "answered": {
+    "external": 10,
+    "project-value": 3
+   },
+   "holes": {
+    "a member of a value of type any: only execution knows it": 10
+   },
+   "share": 0.5652
+  },
+  "kotlin": {
+   "cases": 1,
+   "states": {
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-java wrote no index (preparation exited with code 1):  determine the dependencies of task ':app:adminApp:scipCompileAll'.\n> Task with name 'compileKotlinJvm' not found in project ':app:adminApp'.\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\n> Get more help at https://help.gradle.org.\n\nFor more on this, please refer to https://docs.gradle.org/9.9.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\nBUILD FAILED in 15s",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 0,
+    "indexed": 0
+   },
+   "sites": 0,
+   "answered": {},
+   "holes": {},
+   "share": null
+  },
+  "stylesheet": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 3,
+    "indexed": 3
+   },
+   "sites": 45,
+   "answered": {
+    "project-value": 37
+   },
+   "holes": {
+    "no-font-face": 5,
+    "no-rule": 1,
+    "unresolved-import": 2
+   },
+   "share": 0.8222
+  }
+ },
+ "missing": [],
+ "no_analyzer": {
+  "sql": {
+   "cases": 1,
+   "files": 4
+  }
+ },
+ "premap": {
+  "languages": {
+   "given": 1,
+   "not_given": 0,
+   "found": 6,
+   "expected": 6,
+   "extra": 14,
+   "wrong": 0
+  },
+  "languages.files": {
+   "given": 0,
+   "not_given": 1,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "excluded": {
+   "given": 1,
+   "not_given": 0,
+   "found": 42,
+   "expected": 46,
+   "extra": 5,
+   "wrong": 0
+  },
+  "units": {
+   "given": 1,
+   "not_given": 0,
+   "found": 12,
+   "expected": 13,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.depends_on": {
+   "given": 1,
+   "not_given": 0,
+   "found": 9,
+   "expected": 11,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.source_roots": {
+   "given": 0,
+   "not_given": 1,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.config": {
+   "given": 1,
+   "not_given": 0,
+   "found": 0,
+   "expected": 33,
+   "extra": 0,
+   "wrong": 0
+  },
+  "workspace": {
+   "given": 1,
+   "not_given": 0,
+   "found": 1,
+   "expected": 1,
+   "extra": 0,
+   "wrong": 0
+  },
+  "workspace.members": {
+   "given": 1,
+   "not_given": 0,
+   "found": 9,
+   "expected": 9,
+   "extra": 1,
+   "wrong": 0
+  },
+  "toolchains": {
+   "given": 1,
+   "not_given": 0,
+   "found": 7,
+   "expected": 15,
+   "extra": 3,
+   "wrong": 4
+  },
+  "dependencies": {
+   "given": 0,
+   "not_given": 1,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "frameworks": {
+   "given": 0,
+   "not_given": 1,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "services": {
+   "given": 0,
+   "not_given": 1,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "needs": {
+   "given": 0,
+   "not_given": 1,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  }
+ },
+ "gaps": [
+  {
+   "step": "scan",
+   "kind": "no_analyzer",
+   "count": 4,
+   "examples": [
+    "real-app-kotlinconf: 2 MATLAB files and no analyzer lists the language: their code is in no graph",
+    "real-app-kotlinconf: 1 Procfile files and no analyzer lists the language: their code is in no graph",
+    "real-app-kotlinconf: 1 Shell files and no analyzer lists the language: their code is in no graph"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "code_outside_units",
+   "count": 3,
+   "examples": [
+    "real-app-kotlinconf: app/iosApp/KotlinMultiplatformLinkedPackage/Sources/KotlinMultiplatformLinkedPackage/include: 1 C files that no unit of kind autotools-project, bazel-target, cmake-target, go-module, make-target, meson-target, msbuild-project holds",
+    "real-app-kotlinconf: app/iosApp/KotlinMultiplatformLinkedPackage/subpackages/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/Sources/io_github_mirzemehdi_kmpnotifier_push_firebase_2_0_2/include: 1 C files that no unit of kind autotools-project, bazel-target, cmake-target, go-module, make-target, meson-target, msbuild-project holds",
+    "real-app-kotlinconf: app/webApp/src/webMain/resources: 1 JavaScript files that no unit of kind npm-package holds"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "toolchain_undeclared",
+   "count": 1,
+   "examples": [
+    "real-app-kotlinconf: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build"
+   ]
+  }
+ ],
+ "containers": {
+  "runs": 8,
+  "seconds": 168.0,
+  "phases": {
+   "execute": {
+    "runs": 4,
+    "seconds": 19.0
+   },
+   "prepare": {
+    "runs": 4,
+    "seconds": 149.0
+   }
+  },
+  "not_zero": []
+ },
+ "by_case": {
+  "real-app-kotlinconf": {
+   "seconds": 754.2,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 10
+    },
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 8
+    }
+   }
+  }
+ }
+}
