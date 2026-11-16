@@ -116,7 +116,11 @@ def analyze(project_dir: Path, work_dir: Path, files: list[str] | None = None, l
         files = sorted(path.relative_to(project_dir).as_posix() for path in Path(project_dir).rglob("*")
                        if path.suffix in typescript.SUFFIXES and "node_modules" not in path.parts)
     if not (here / "tsconfig.project.json").exists() and not (here / ".strong-js-tsconfig").exists():
-        typescript._tsconfig(here, [rel for rel in files if rel.endswith(typescript.SUFFIXES)])
+        own = here / "tsconfig.json"
+        if own.is_file():  # the generated one takes its place and extends it, as the analyzer's run does
+            own.rename(here / "tsconfig.project.json")
+        typescript._tsconfig(here, own, [rel for rel in files if rel.endswith(typescript.SUFFIXES)],
+                             "tsconfig.project.json")
         (here / ".strong-js-tsconfig").write_text("generated\n", encoding="utf-8")
     output = work_dir / f"ts-compiler{'-' + label if label else ''}.jsonl"
     env = dict(os.environ, NODE_OPTIONS="--max-old-space-size=12288",

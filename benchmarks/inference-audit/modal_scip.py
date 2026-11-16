@@ -5,19 +5,17 @@ existing indexer read completely by `scip_graph.py`, with the plugin's indexer m
 (`indexers/go.py`, `indexers/rust.py`, `indexers/typescript.py`, `indexers/python.py`): every chain the index
 states followed to its end. One container per case, with the base system only: the snapshot as `modal_audit.py`
 builds it and road A (rerun, or the per-call answers a labelled audit run left on the volume), kept under
-`scip-inputs/<case>` with the indexes; each module's `index()` (rerun with `--reindex`, the kept indexes
-otherwise), which downloads its indexer into the container's shared directory; then the graph of each language
+`scip-inputs/<case>`; the indexes an earlier run kept there (this script runs no indexer: the product's pipeline
+does, `benchmarks/project-model/modal_pipeline.py`); then the graph of each language
 (`scip-inputs/<case>/graph-<language>.json.gz`), its counts, the comparison with road A and the hand checks. A
-labelled run with `--reindex` keeps its indexes and graphs in `scip-inputs/<case>/<label>` and leaves the kept
-inputs as they are.
+labelled run over kept inputs keeps its graphs in `scip-inputs/<case>/<label>`.
 
     modal deploy benchmarks/inference-audit/modal_scip.py
-    python benchmarks/inference-audit/modal_scip.py spawn --cases chi,semver,tududi [--reindex] [--label L]
+    python benchmarks/inference-audit/modal_scip.py spawn --cases chi,semver,tududi [--label L]
     python benchmarks/inference-audit/modal_scip.py fetch --cases chi,semver,tududi [--label L]
 
 phazly is private: its archive goes once to the volume (`modal volume put daodan-flow-results PATH
-inference-audit/scip-inputs/phazly/source.tar`) and the container reads it there; `OPTIONS` holds what the
-adapters cannot find alone in it (the Python project's directory, the app's tsconfig).
+inference-audit/scip-inputs/phazly/source.tar`) and the container reads it there.
 
 `python modal_scip.py join --manifest M --index I[=prefix] [--answers A] --out O` runs the join alone, locally.
 """
@@ -41,21 +39,17 @@ sys.path.insert(0, str(HERE) if LOCAL else "/audit")
 sys.path.insert(0, SCRIPTS)
 import plugin_scripts  # noqa: E402
 import code_graph as scip_graph  # noqa: E402
-from indexers import typescript  # noqa: E402
 from modal_audit import CASES, _run, _source  # noqa: E402
 
 # Road A's per-call answers kept by a labelled audit run at the same commit and plugin: reused, never rerun.
 REUSE = {"tududi": "r1"}
-# Per case: the commit the archive was made at, the directory each adapter indexes when it is not the root
-# (its documents named from the root through the prefix), the tsconfig a root without one extends.
-# `focus`: declarations (`FILE:LINE`) whose incoming edges the result lists in full.
-OPTIONS = {"phazly": {"commit": "46c92b28", "roots": {"python": "functions-python"},
-                      "tsconfig": "react-app/tsconfig.app.json",
+# Per case: the commit the archive was made at; `focus`: declarations (`FILE:LINE`) whose incoming edges the
+# result lists in full.
+OPTIONS = {"phazly": {"commit": "46c92b28",
                       "focus": ["react-app/src/components/subscription/PaywallModal.tsx:68",
                                 "react-app/src/contexts/SubscriptionContext.tsx:296",
                                 "react-app/src/contexts/SubscriptionContext.tsx:151"]}}
 ADAPTERS = {"go": "go", "rust": "rust", "javascript": "typescript", "typescript": "typescript", "python": "python"}
-SUFFIXES = {"go": (".go",), "rust": (".rs",), "typescript": typescript.SUFFIXES, "python": (".py",)}
 EXAMPLES = 20
 # Fifteen call sites per language picked at random over every call of the checkout (seed 20261113) and read in
 # the source, the expected end written before any graph existed: `decl FILE:LINE` (the declaration that starts
@@ -498,41 +492,6 @@ def _inputs(name: str, case: dict, target: Path, work: Path, manifest: Path) -> 
     return result, Path(answers)
 
 
-def _indexers(target: Path, work: Path, manifest: Path, options: dict | None = None) -> dict:
-    """Each adapter's indexer over the checkout, for the snapshot's files of its languages; over the directory
-    `options` names for it, its documents then named from the checkout by that prefix."""
-    import sqlite3
-    connection = sqlite3.connect(manifest)
-    coverage = connection.execute("SELECT file, language FROM sem_coverage WHERE status='ast'").fetchall()
-    connection.close()
-    out, options = {}, options or {}
-    import premap
-    record = premap.ensure(Path(manifest))  # the structure an indexer takes, as the stage hands it
-    for name in sorted({ADAPTERS[language] for _, language in coverage if language in ADAPTERS}):
-        files = sorted(rel for rel, language in coverage if ADAPTERS.get(language) == name
-                       and rel.endswith(SUFFIXES[name]))
-        root = options.get("roots", {}).get(name, "")
-        extra = {"tsconfig": options["tsconfig"]} if name == "typescript" and options.get("tsconfig") else {}
-        module = importlib.import_module(f"indexers.{name}")
-        given = module.structure(record) if hasattr(module, "structure") else {}
-        if root and "roots" in given:  # the folders below the directory indexed, named from it
-            given["roots"] = {folder[len(root) + 1:] for folder in given["roots"]
-                              if folder == root or folder.startswith(f"{root}/")}
-        extra.update(given)
-        try:
-            if root:
-                inner = [rel[len(root) + 1:] for rel in files if rel.startswith(f"{root}/")]
-                info = module.index(target / root, work, inner, **extra)
-                info["indexes"] = [[path, f"{root}/{prefix}" if prefix else root] for path, prefix in info["indexes"]]
-                out[name] = {**info, "root": root}
-            else:
-                out[name] = module.index(target, work, files, **extra)
-        except Exception:
-            import traceback
-            out[name] = {"error": traceback.format_exc()[-3000:], "indexes": []}
-    return out
-
-
 def _kept_indexers(kept: Path, inputs: dict) -> dict:
     """The indexes an earlier run kept, in the adapters' shape (older runs named them by tool)."""
     tools = {"scip-go": "go", "rust-analyzer": "rust", "scip-typescript": "typescript"}
@@ -548,9 +507,9 @@ def _kept_indexers(kept: Path, inputs: dict) -> dict:
 
 
 @app.function(cpu=4, memory=16384, timeout=4 * 3600, volumes={"/results": volume})
-def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> dict:
+def scip_case(name: str, case: dict, label: str = "") -> dict:
     """One case: snapshot and road A from the volume when an earlier run kept them, built and kept otherwise;
-    the indexers (again with `reindex`, from the volume otherwise; kept either way); the graphs and the join."""
+    the indexes the volume keeps; the graphs and the join."""
     import shutil
     import time
     print("code", plugin_scripts.code_sha256(), flush=True)  # compared with the checkout before trusting the run
@@ -582,37 +541,17 @@ def scip_case(name: str, case: dict, label: str = "", reindex: bool = False) -> 
                 shutil.copyfile(road_a_answers, Path("/results") / TAG / f"answers-{name}-{label}.sqlite")
             if road_a_answers.resolve() != answers.resolve():
                 shutil.copyfile(road_a_answers, answers)
-        reindex = True
-    indexers = _kept_indexers(kept, inputs)
-    # A labelled rerun over kept inputs keeps its indexes and graphs apart and leaves the inputs as they are.
-    store = kept / label if label and result["inputs"].startswith("kept") else kept
-    if reindex:
-        fresh = _indexers(target, work, manifest, options)
-        result["reindexed"] = {}
-        for adapter, info in fresh.items():
-            result["reindexed"][adapter] = {"error": info.get("error"), "indexer": info.get("indexer"),
-                                            "state": info.get("state"), "reason": info.get("reason"),
-                                            "index_bytes": [run.get("index_bytes") for run in info.get("runs", [])],
-                                            "kept_bytes": [Path(path).stat().st_size for path, _ in
-                                                           indexers.get(adapter, {}).get("indexes", ())
-                                                           if Path(path).is_file()]}
-            if info.get("indexes"):  # a failed indexer leaves the kept indexes in place
-                store.mkdir(parents=True, exist_ok=True)
-                for path, _prefix in info["indexes"]:
-                    shutil.copyfile(path, store / Path(path).name)
-                info["indexes"] = [[str(store / Path(path).name), prefix] for path, prefix in info["indexes"]]
-                indexers[adapter] = info
-        if store == kept:
-            inputs = {**{key: value for key, value in inputs.items() if key != "indexers"}, "indexers": indexers}
-            (kept / "inputs.json").write_text(json.dumps(inputs, indent=1, ensure_ascii=False) + "\n",
-                                              encoding="utf-8")
+        (kept / "inputs.json").write_text(json.dumps(inputs, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         volume.commit()
+    indexers = _kept_indexers(kept, inputs)
+    # A labelled run over kept inputs keeps its graphs apart.
+    store = kept / label if label and result["inputs"].startswith("kept") else kept
     result["indexers"], result["code"] = indexers, plugin_scripts.code_sha256()
     indexes = [(Path(path), prefix) for info in indexers.values() for path, prefix in info.get("indexes", ())]
     begun = time.time()
     try:
         result["join"] = join(manifest, indexes, answers if answers.is_file() else None, indexers, HAND.get(name, ()),
-                              store, options.get("focus", ())) if indexes else {"error": "no index"}
+                              store, options.get("focus", ())) if indexes else {"error": f"no index kept in {kept}"}
     except Exception:
         import traceback
         result["join"] = {"error": traceback.format_exc()[-3000:]}
@@ -633,7 +572,6 @@ if __name__ == "__main__":
     parser.add_argument("command", choices=("spawn", "fetch", "join"))
     parser.add_argument("--cases", default="chi,semver,tududi")
     parser.add_argument("--label", default="")
-    parser.add_argument("--reindex", action="store_true")
     parser.add_argument("--manifest")
     parser.add_argument("--index", action="append", default=[])
     parser.add_argument("--answers")
@@ -643,7 +581,7 @@ if __name__ == "__main__":
     if args.command == "spawn":
         function = modal.Function.from_name("daodan-scip-audit", "scip_case")
         for name in chosen:
-            print(name, function.spawn(name, CASES[name], args.label, args.reindex).object_id)
+            print(name, function.spawn(name, CASES[name], args.label).object_id)
     elif args.command == "fetch":
         RESULTS.mkdir(parents=True, exist_ok=True)
         for name in chosen:
