@@ -662,6 +662,26 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(manifest["scope"]["git_ignore"], "unavailable")
 
     @unittest.skipUnless(HAVE_GIT, "git is not installed")
+    def test_git_on_the_host_runs_no_program_the_work_tree_s_own_configuration_names(self):
+        """AGENTS.md: the analyzed project's code never runs on the host. Git runs the program a work tree's
+        configuration names as core.fsmonitor wherever it reads the index (check-ignore, ls-files, status): here a
+        script of the project that leaves a mark. The snapshot asks Git for the ignored files, the commit, the
+        branch and whether the tree is dirty, and the mark stays absent."""
+        marks = self.tmp / "marks"
+        marks.mkdir()
+        hook = write(self.project, "tools/fsmonitor.sh", f"#!/bin/sh\ntouch {marks}/fsmonitor\n")
+        hook.chmod(0o755)
+        git(self.project, "init", "-q")
+        self.commit()
+        git(self.project, "config", "core.fsmonitor", str(hook))
+        write(self.project, "src/app.py", "def run():\n    return 2\n")  # dirty: `status` reads the work tree
+        manifest = self.manifest()
+        self.assertEqual(sorted(manifest["files"]), ["src/app.py", "tools/fsmonitor.sh"])
+        self.assertTrue(manifest["git"]["dirty"])
+        self.assertEqual(manifest["scope"]["git_ignore"], "applied")
+        self.assertEqual(sorted(path.name for path in marks.iterdir()), [])
+
+    @unittest.skipUnless(HAVE_GIT, "git is not installed")
     def test_a_subdirectory_the_repository_does_not_ignore_keeps_the_repository_root(self):
         git(self.project, "init", "-q")
         self.commit()

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Iterator
 
 from languages import SUPPORTED_EXTENSIONS
-from tree_scope import Perimeter, git_executable, work_tree
+from tree_scope import GIT_OPTIONS, Perimeter, git_executable, work_tree
 
 
 # Hashed but never parsed above this size; recorded with no symbols.
@@ -181,7 +181,7 @@ def git_info(root: Path) -> dict | None:
     def run(*args: str) -> str | None:
         try:
             proc = subprocess.run(
-                [git, "-C", str(root), *args], capture_output=True, text=True, timeout=10
+                [git, *GIT_OPTIONS, "-C", str(root), *args], capture_output=True, text=True, timeout=10
             )
         except (OSError, subprocess.SubprocessError):
             return None

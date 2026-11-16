@@ -77,7 +77,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from embedding_worker import shared_cache_dir  # noqa: E402
 from resolve_edges import _platform, _process_alive, download, free_memory, shared_engine_dir  # noqa: E402
 from snapshot import is_forbidden  # noqa: E402
-from tree_scope import Perimeter, git_executable  # noqa: E402
+from tree_scope import GIT_OPTIONS, Perimeter, git_executable  # noqa: E402
 
 RECORD_NAME = "container-runs.jsonl"
 WORKDIR = "/work"
@@ -458,7 +458,7 @@ def work_tree_git(project: Path) -> str | None:
     if git is None:
         raise Gap(f"{marker} is there and no Git is on PATH: the copy cannot leave out what Git ignores", remedy)
     try:
-        answer = subprocess.run([git, "-C", str(project), "rev-parse", "--is-inside-work-tree"],
+        answer = subprocess.run([git, *GIT_OPTIONS, "-C", str(project), "rev-parse", "--is-inside-work-tree"],
                                 stdin=subprocess.DEVNULL, capture_output=True, timeout=120)
     except (OSError, subprocess.SubprocessError) as error:
         raise Gap(f"Git did not answer for {project} ({error}): the copy cannot leave out what Git ignores",
@@ -480,8 +480,8 @@ def tracked(project: Path) -> dict[str, tuple[int, str]]:
     if git is None:
         return {}
     try:
-        listed = subprocess.run([git, "-C", str(project), "ls-files", "-z", "--stage"], stdin=subprocess.DEVNULL,
-                                capture_output=True, timeout=120)
+        listed = subprocess.run([git, *GIT_OPTIONS, "-C", str(project), "ls-files", "-z", "--stage"],
+                                stdin=subprocess.DEVNULL, capture_output=True, timeout=120)
     except (OSError, subprocess.SubprocessError) as error:
         raise Gap(f"Git did not list {project} ({error})", "install Git") from error
     if listed.returncode != 0:

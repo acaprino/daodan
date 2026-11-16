@@ -41,7 +41,12 @@ import subprocess
 from pathlib import Path
 from typing import Iterator
 
-__all__ = ["DEPENDENCY_DIRS", "Perimeter", "git_executable", "work_tree"]
+__all__ = ["DEPENDENCY_DIRS", "GIT_OPTIONS", "Perimeter", "git_executable", "work_tree"]
+
+# First on every command line of Git on the host: a work tree's own configuration can name a program, core.fsmonitor,
+# which Git runs wherever it reads the index (check-ignore, ls-files, status), and the analyzed project's code runs
+# only in Daodan's container. Git passes the setting on to the commands it starts, a submodule's among them.
+GIT_OPTIONS = ("-c", "core.fsmonitor=false")
 
 
 def git_executable() -> str | None:
@@ -101,7 +106,7 @@ def _held(git: str, base: Path) -> bool:
     """
     try:
         proc = subprocess.run(
-            [git, "-C", str(base), "check-ignore", "-q", "."],
+            [git, *GIT_OPTIONS, "-C", str(base), "check-ignore", "-q", "."],
             capture_output=True, timeout=GIT_TIMEOUT_SECONDS,
         )
     except (OSError, subprocess.SubprocessError):
@@ -122,7 +127,7 @@ def work_tree(base: Path) -> Path | None:
         return None
     try:
         proc = subprocess.run(
-            [git, "-C", str(base), "rev-parse", "--show-toplevel"],
+            [git, *GIT_OPTIONS, "-C", str(base), "rev-parse", "--show-toplevel"],
             capture_output=True, text=True, timeout=GIT_TIMEOUT_SECONDS,
         )
     except (OSError, subprocess.SubprocessError):
@@ -169,7 +174,7 @@ class Perimeter:
             return frozenset(), frozenset(), "unavailable"
         try:
             proc = subprocess.run(
-                [git, "-C", str(self.base), "ls-files", "-z", "--others", "--ignored",
+                [git, *GIT_OPTIONS, "-C", str(self.base), "ls-files", "-z", "--others", "--ignored",
                  "--exclude-standard", "--directory"],
                 capture_output=True, timeout=GIT_TIMEOUT_SECONDS,
             )
