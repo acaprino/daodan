@@ -144,6 +144,22 @@ def test_a_go_file_left_out_by_its_name_or_by_a_run_without_index_says_so(tmp_pa
         "dispatch/main.go": go.NO_MODULE}
 
 
+def test_a_declaration_file_beside_a_typescript_file_of_its_name_says_typescript_leaves_it_out(tmp_path):
+    """D-160, measured with scip-typescript 0.6.2 on Modal: memos' web/src/types/common.d.ts has its document alone
+    and none once common.ts is beside it; hoppscotch's packages/hoppscotch-kernel/vite.config.d.ts is beside
+    vite.config.ts. Where an `include` matches both, TypeScript keeps the .ts or .tsx and leaves the .d.ts of
+    the same name out of the program. A .d.ts with no such sibling, and any other file, keep no reason here."""
+    index = _index(tmp_path, ["web/src/types/common.ts", "packages/kernel/vite.config.ts", "ui/Button.tsx"])
+    absent = ["web/src/types/common.d.ts", "packages/kernel/vite.config.d.ts", "ui/Button.d.ts", "web/src/alone.d.ts",
+              "web/src/lost.ts"]
+    leaves = "TypeScript leaves it out of the program: {} beside it has its name, and an `include` that matches " \
+             "both keeps that one"
+    assert typescript.missing(index, absent) == {
+        "web/src/types/common.d.ts": leaves.format("common.ts"),
+        "packages/kernel/vite.config.d.ts": leaves.format("vite.config.ts"),
+        "ui/Button.d.ts": leaves.format("Button.tsx")}
+
+
 # ---------------------------------------------------------------------------------------------------------------
 # Vue and Svelte: the template no adapter reads, and the languages the stage answers for
 

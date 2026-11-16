@@ -450,13 +450,20 @@ def tasks(configs) -> dict:
 
 
 def missing(index, rels: list[str], configs: dict | None = None) -> dict:
-    """Why a component has no document: the tool that could not turn it into TypeScript, and its error."""
+    """Why a file has no document: a component, the tool that could not turn it into TypeScript and its error; a
+    `.d.ts` beside a `.ts` or `.tsx` of its name, TypeScript's own rule, which keeps the latter where an `include`
+    matches both."""
     reasons = {}
     for rel in rels:
         entry = ((configs or {}).get("components") or {}).get(rel) or {}
+        sibling = next((rel[:-len(".d.ts")] + suffix for suffix in (".ts", ".tsx")
+                        if rel.endswith(".d.ts") and rel[:-len(".d.ts")] + suffix in index.documents), None)
         if entry.get("error"):
             reasons[rel] = (f"{entry['tool']} could not turn it into TypeScript: {entry['error']}" if entry.get("tool")
                             else entry["error"])
+        elif sibling:
+            reasons[rel] = (f"TypeScript leaves it out of the program: {sibling.rsplit('/', 1)[-1]} beside it has its "
+                            "name, and an `include` that matches both keeps that one")
     return reasons
 
 
