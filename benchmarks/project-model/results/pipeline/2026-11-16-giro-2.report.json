@@ -1,0 +1,1384 @@
+{
+ "cases": {
+  "run": 27,
+  "failed": {},
+  "seconds": {
+   "total": 10332.5,
+   "median": 233.9,
+   "slowest": [
+    [
+     "real-app-hoppscotch",
+     1760.2
+    ],
+    [
+     "real-svc-otel-demo",
+     1223.2
+    ],
+    [
+     "real-app-jhipster-sample",
+     924.9
+    ],
+    [
+     "real-app-memos",
+     789.1
+    ],
+    [
+     "real-app-kotlinconf",
+     560.3
+    ]
+   ]
+  }
+ },
+ "languages": {
+  "c": {
+   "cases": 3,
+   "states": {
+    "fresh": 1,
+    "unavailable": 2
+   },
+   "reasons": {
+    "unavailable": [
+     [
+      "no C or C++ unit built with CMake in the pre-map",
+      1
+     ],
+     [
+      "none of the 1 c files was parsed by the snapshot (lexical: 1)",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 54,
+    "indexed": 21
+   },
+   "sites": 10190,
+   "answered": {
+    "external": 242,
+    "lexical": 446,
+    "project-callable": 128,
+    "project-value": 2113
+   },
+   "holes": {
+    "no-document": 6421,
+    "no-occurrence": 839,
+    "no-position": 1
+   },
+   "share": 0.2874
+  },
+  "cpp": {
+   "cases": 6,
+   "states": {
+    "fresh": 3,
+    "failed": 2,
+    "unavailable": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "none of the 8 cpp files is in the index: no compile command: not built by the default configuration (5), header no indexed translation unit includes in an active branch (3)",
+      1
+     ],
+     [
+      "scip-clang wrote no index (src/currency: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded): compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\nCMake Error at CMakeLists.txt:7 (find_package):\n  Could not find a package configuration file provided by \"Protobuf\" with any\n  of the following names:\n\n    ProtobufConfig.cmake\n    protobuf-config.cmake\n\n  Add the installation prefix of \"Protobuf\" to CMAKE_PREFIX_PATH or set\n  \"Protobuf_DIR\" to a directory containing one of the above files.  If\n  \"Protobuf\" provides a separate development package or SDK, be sure it has\n  been installed.\n\n\n-- Configuring incomplete, errors occurred!",
+      1
+     ]
+    ],
+    "unavailable": [
+     [
+      ".: the configure reads third_party/fmt: a git submodule not checked out (git submodule update --init)",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 9,
+    "indexed": 8
+   },
+   "sites": 2620,
+   "answered": {
+    "external": 35,
+    "observed": 31,
+    "project-callable": 634,
+    "project-value": 1656
+   },
+   "holes": {
+    "no-document": 25,
+    "no-occurrence": 239
+   },
+   "share": 0.8992
+  },
+  "csharp": {
+   "cases": 4,
+   "states": {
+    "failed": 1,
+    "fresh": 3
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-dotnet wrote no index (no documents were indexed; Msbuild failed when processing the file '/work/contrib/dotzlib/DotZLib/DotZLib.csproj' with message: The project file \"\" must be opened in a version of Visual Studio IDE that supports it and converted to the latest version before it can be built by MSBuild. More info: https://aka.ms/DeprecatedProjectConversion): 12:39:00 warn: ScipDotnet.IndexCommandOptions[0] Indexing finished without error but no documents were indexed.\n12:39:00 info: ScipDotnet.IndexCommandOptions[0] done: /daodan/out/index-2.scip 2.6s",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 559,
+    "indexed": 559
+   },
+   "sites": 14889,
+   "answered": {
+    "external": 2195,
+    "lexical": 77,
+    "namespace": 24,
+    "project-callable": 1068,
+    "project-value": 4987
+   },
+   "holes": {
+    "dangling-local": 144,
+    "no-occurrence": 5356,
+    "no-position": 1019,
+    "undefined-project-symbol": 19
+   },
+   "share": 0.5609
+  },
+  "go": {
+   "cases": 5,
+   "states": {
+    "fresh": 4,
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "none of the 1 go files is in the index: no document in the index (1)",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 556,
+    "indexed": 555
+   },
+   "sites": 157378,
+   "answered": {
+    "external": 36009,
+    "observed": 16,
+    "project-callable": 16143,
+    "project-value": 100174
+   },
+   "holes": {
+    "no-occurrence": 4372,
+    "no-position": 664
+   },
+   "share": 0.968
+  },
+  "java": {
+   "cases": 8,
+   "states": {
+    "fresh": 7,
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-java wrote no index (preparation exited with code 1):  please refer to https://docs.gradle.org/9.9.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n\n> Configure project :\nThe com.github.ben-manes.versions plugin id is deprecated; apply io.github.ben-manes.versions instead.\n\nFAILURE: Build failed with an exception.\n\n* Where:\nBuild file '/work/build.gradle' line: 70\n\n* What went wrong:\nA problem occurred evaluating root project 'opentelemetry-demo-ad'.\n> Cannot invoke method toPath() on null object\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 5s",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 222,
+    "indexed": 207
+   },
+   "sites": 9906,
+   "answered": {
+    "external": 5317,
+    "observed": 19,
+    "project-callable": 2060,
+    "project-value": 2490
+   },
+   "holes": {
+    "no-document": 14,
+    "undefined-project-symbol": 6
+   },
+   "share": 0.998
+  },
+  "javascript": {
+   "cases": 13,
+   "states": {
+    "fresh": 13
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 186,
+    "indexed": 186
+   },
+   "sites": 38165,
+   "answered": {
+    "external": 4565,
+    "observed": 34,
+    "project-callable": 4158,
+    "project-value": 19416
+   },
+   "holes": {
+    "dangling-local": 566,
+    "no declaration of *.js?v=explicit-esm-dependencies modules: the import is not typed": 1,
+    "no-occurrence": 9261,
+    "no-position": 158,
+    "undefined-project-symbol": 6
+   },
+   "share": 0.7382
+  },
+  "kotlin": {
+   "cases": 7,
+   "states": {
+    "fresh": 2,
+    "failed": 2,
+    "unavailable": 3
+   },
+   "reasons": {
+    "failed": [
+     [
+      "scip-java wrote no index (preparation exited with code 1): ot project 'KotlinConfApp'.\n[Incubating] Problems report is available at: file:///work/build/reports/problems/problems-report.html\n> Could not resolve all artifacts for configuration 'classpath'.\n   > Could not resolve dev.zacsweers.metro:gradle-plugin:1.5.2.\n     Required by:\n         buildscript of root project 'KotlinConfApp' > dev.zacsweers.metro:dev.zacsweers.metro.gradle.plugin:1.5.2\n      > Dependency requires at least JVM runtime version 21. This build uses a Java 17 JVM.\n\n* Try:\n> Run this build using a Java 21 or newer JVM.\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 4s",
+      1
+     ],
+     [
+      "scip-java wrote no index (preparation exited with code 1):  please refer to https://docs.gradle.org/9.9.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n\n\nFAILURE: Build failed with an exception.\n> Configure project :\n\nThe com.github.ben-manes.versions plugin id is deprecated; apply io.github.ben-manes.versions instead.\n* Where:\nBuild file '/work/build.gradle' line: 70\n\n* What went wrong:\nA problem occurred evaluating root project 'opentelemetry-demo-ad'.\n> Cannot invoke method toPath() on null object\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 4s",
+      1
+     ]
+    ],
+    "unavailable": [
+     [
+      "the build's own Kotlin only (2 Gradle scripts and buildSrc files): the pre-map reads them through Gradle, and no Kotlin compile task compiles them",
+      2
+     ],
+     [
+      "the build's own Kotlin only (7 Gradle scripts and buildSrc files): the pre-map reads them through Gradle, and no Kotlin compile task compiles them",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 108,
+    "indexed": 99
+   },
+   "sites": 4324,
+   "answered": {
+    "external": 1375,
+    "lexical": 1,
+    "observed": 2,
+    "project-callable": 1173,
+    "project-value": 1516
+   },
+   "holes": {
+    "no-document": 249,
+    "no-occurrence": 7,
+    "no-position": 1
+   },
+   "share": 0.9406
+  },
+  "python": {
+   "cases": 8,
+   "states": {
+    "fresh": 8
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 108,
+    "indexed": 108
+   },
+   "sites": 7202,
+   "answered": {
+    "external": 2470,
+    "observed": 15,
+    "project-callable": 1065,
+    "project-value": 2901
+   },
+   "holes": {
+    "dangling-local": 103,
+    "no-occurrence": 457,
+    "no-position": 13,
+    "undefined-project-symbol": 178
+   },
+   "share": 0.8957
+  },
+  "rust": {
+   "cases": 4,
+   "states": {
+    "fresh": 4
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 135,
+    "indexed": 126
+   },
+   "sites": 7478,
+   "answered": {
+    "external": 3454,
+    "lexical": 15,
+    "project-callable": 1238,
+    "project-value": 1907
+   },
+   "holes": {
+    "no-document": 289,
+    "no-occurrence": 553,
+    "no-position": 13,
+    "undefined-project-symbol": 9
+   },
+   "share": 0.8845
+  },
+  "stylesheet": {
+   "cases": 13,
+   "states": {
+    "fresh": 12,
+    "failed": 1
+   },
+   "reasons": {
+    "failed": [
+     [
+      "the stylesheet stage exited with code 1 without a report; see engine-pass.log",
+      1
+     ]
+    ]
+   },
+   "files": {
+    "snapshot": 1643,
+    "indexed": 1578
+   },
+   "sites": 29241,
+   "answered": {
+    "external": 13,
+    "namespace": 994,
+    "project-value": 16040
+   },
+   "holes": {
+    "call": 341,
+    "concatenation": 3,
+    "expression": 5,
+    "no-font-face": 41,
+    "no-keyframes": 4,
+    "no-rule": 11639,
+    "parameter": 27,
+    "property": 12,
+    "remote-sheet": 8,
+    "template": 2,
+    "template-tag-glued": 1,
+    "undeclared": 45,
+    "unresolved-import": 36,
+    "url-path": 2,
+    "variable": 28
+   },
+   "share": 0.583
+  },
+  "svelte": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 2,
+    "indexed": 0
+   },
+   "sites": 13,
+   "answered": {
+    "lexical": 3,
+    "project-value": 1
+   },
+   "holes": {
+    "engine-unresolved": 3,
+    "not-asked": 6
+   },
+   "share": 0.3077
+  },
+  "typescript": {
+   "cases": 6,
+   "states": {
+    "fresh": 6
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 2274,
+    "indexed": 2272
+   },
+   "sites": 194292,
+   "answered": {
+    "external": 72848,
+    "lexical": 524,
+    "observed": 2671,
+    "project-callable": 26643,
+    "project-value": 71516
+   },
+   "holes": {
+    "dangling-local": 7259,
+    "no declaration of *.config modules: the import is not typed": 1,
+    "no declaration of *.io-client-v2 modules: the import is not typed": 1,
+    "no declaration of *.io-client-v3 modules: the import is not typed": 1,
+    "no declaration of *.mjs?worker&url modules: the import is not typed": 1,
+    "no declaration of *.model modules: the import is not typed": 4,
+    "no declaration of *.svg?raw modules: the import is not typed": 2,
+    "no-document": 1,
+    "no-occurrence": 9013,
+    "no-position": 1542,
+    "undefined-project-symbol": 2265
+   },
+   "share": 0.8966
+  },
+  "vue": {
+   "cases": 1,
+   "states": {
+    "fresh": 1
+   },
+   "reasons": {},
+   "files": {
+    "snapshot": 407,
+    "indexed": 0
+   },
+   "sites": 25499,
+   "answered": {
+    "lexical": 1689,
+    "project-callable": 756,
+    "project-value": 4745
+   },
+   "holes": {
+    "engine-unresolved": 3216,
+    "not-asked": 15093
+   },
+   "share": 0.282
+  }
+ },
+ "missing": [
+  {
+   "case": "mix-real-klaxon",
+   "language": "kotlin",
+   "missing": 7,
+   "snapshot": 103,
+   "reasons": {
+    "Gradle script: no KotlinCompile task compiles it": 5,
+    "buildSrc: compiled by its own build, where scip-java's tasks do not run": 1,
+    "no Kotlin compile task of the build lists it": 1
+   }
+  },
+  {
+   "case": "mix-real-semver",
+   "language": "rust",
+   "missing": 1,
+   "snapshot": 19,
+   "reasons": {
+    "no document in the index": 1
+   }
+  },
+  {
+   "case": "mix-real-tinyxml2",
+   "language": "cpp",
+   "missing": 1,
+   "snapshot": 3,
+   "reasons": {
+    "no compile command: not built by the default configuration": 1
+   }
+  },
+  {
+   "case": "mix-real-zlib",
+   "language": "c",
+   "missing": 33,
+   "snapshot": 54,
+   "reasons": {
+    "no compile command: not built by the default configuration": 12,
+    "the index of unit contrib/minizip is unavailable: built with make: Daodan configures C and C++ units with CMake only": 9,
+    "header no indexed translation unit includes in an active branch": 7
+   }
+  },
+  {
+   "case": "real-app-hoppscotch",
+   "language": "rust",
+   "missing": 8,
+   "snapshot": 105,
+   "reasons": {
+    "no document in the index": 6,
+    "no crate includes it: no `mod` item of an indexed file loads it": 2
+   }
+  },
+  {
+   "case": "real-app-hoppscotch",
+   "language": "svelte",
+   "missing": 2,
+   "snapshot": 2,
+   "reasons": {
+    "template not read: calls and bindings in it are not sites": 2
+   }
+  },
+  {
+   "case": "real-app-hoppscotch",
+   "language": "typescript",
+   "missing": 1,
+   "snapshot": 1115,
+   "reasons": {
+    "no document in the index": 1
+   }
+  },
+  {
+   "case": "real-app-hoppscotch",
+   "language": "vue",
+   "missing": 407,
+   "snapshot": 407,
+   "reasons": {
+    "template not read: calls and bindings in it are not sites": 400,
+    "no script block: nothing of the component is read": 7
+   }
+  },
+  {
+   "case": "real-app-jhipster-sample",
+   "language": "java",
+   "missing": 15,
+   "snapshot": 136,
+   "reasons": {
+    "document without occurrences": 14,
+    "no document in the index": 1
+   }
+  },
+  {
+   "case": "real-app-memos",
+   "language": "typescript",
+   "missing": 1,
+   "snapshot": 620,
+   "reasons": {
+    "no document in the index": 1
+   }
+  },
+  {
+   "case": "real-svc-eshop",
+   "language": "stylesheet",
+   "missing": 58,
+   "snapshot": 109,
+   "reasons": {
+    "template language: no reader": 58
+   }
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "language": "go",
+   "missing": 1,
+   "snapshot": 15,
+   "reasons": {
+    "build constraint `//go:build tools`": 1
+   }
+  },
+  {
+   "case": "real-svc-otel-demo",
+   "language": "stylesheet",
+   "missing": 7,
+   "snapshot": 160,
+   "reasons": {
+    "template language: no reader": 7
+   }
+  },
+  {
+   "case": "jvm-kmp-common-jvm",
+   "language": "kotlin",
+   "missing": 2,
+   "snapshot": 5,
+   "reasons": {
+    "Gradle script: no KotlinCompile task compiles it": 2
+   }
+  }
+ ],
+ "no_analyzer": {
+  "sql": {
+   "cases": 6,
+   "files": 47
+  }
+ },
+ "premap": {
+  "languages": {
+   "given": 27,
+   "not_given": 0,
+   "found": 152,
+   "expected": 154,
+   "extra": 146,
+   "wrong": 0
+  },
+  "languages.files": {
+   "given": 0,
+   "not_given": 27,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "excluded": {
+   "given": 27,
+   "not_given": 0,
+   "found": 318,
+   "expected": 390,
+   "extra": 168,
+   "wrong": 13
+  },
+  "units": {
+   "given": 27,
+   "not_given": 0,
+   "found": 202,
+   "expected": 290,
+   "extra": 2,
+   "wrong": 4
+  },
+  "units.depends_on": {
+   "given": 26,
+   "not_given": 1,
+   "found": 99,
+   "expected": 170,
+   "extra": 0,
+   "wrong": 0
+  },
+  "units.source_roots": {
+   "given": 18,
+   "not_given": 9,
+   "found": 81,
+   "expected": 249,
+   "extra": 94,
+   "wrong": 0
+  },
+  "units.config": {
+   "given": 20,
+   "not_given": 7,
+   "found": 71,
+   "expected": 495,
+   "extra": 0,
+   "wrong": 33
+  },
+  "workspace": {
+   "given": 27,
+   "not_given": 0,
+   "found": 11,
+   "expected": 17,
+   "extra": 12,
+   "wrong": 1
+  },
+  "workspace.members": {
+   "given": 15,
+   "not_given": 12,
+   "found": 74,
+   "expected": 78,
+   "extra": 2,
+   "wrong": 0
+  },
+  "toolchains": {
+   "given": 27,
+   "not_given": 0,
+   "found": 74,
+   "expected": 228,
+   "extra": 75,
+   "wrong": 10
+  },
+  "dependencies": {
+   "given": 0,
+   "not_given": 27,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "frameworks": {
+   "given": 0,
+   "not_given": 27,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "services": {
+   "given": 0,
+   "not_given": 27,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  },
+  "needs": {
+   "given": 0,
+   "not_given": 27,
+   "found": 0,
+   "expected": 0,
+   "extra": 0,
+   "wrong": 0
+  }
+ },
+ "gaps": [
+  {
+   "step": "scan",
+   "kind": "not_executed",
+   "count": 39,
+   "examples": [
+    "mix-real-semver: build.rs: a build script is present and Daodan's index does not run it: the code it generates and the cfg flags it sets are unknown",
+    "mix-real-zlib: Makefile.in: a makefile GNU Make does not read (another make's dialect, or a template a configure script fills): its targets are unknown",
+    "mix-real-zlib: amiga/Makefile.pup: a makefile GNU Make does not read (another make's dialect, or a template a configure script fills): its targets are unknown"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "no_analyzer",
+   "count": 37,
+   "examples": [
+    "mix-real-klaxon: 1 Batchfile files and no analyzer lists the language: their code is in no graph",
+    "mix-real-klaxon: 2 Shell files and no analyzer lists the language: their code is in no graph",
+    "mix-real-tinyxml2: 2 Meson files and no analyzer lists the language: their code is in no graph"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_failed",
+   "count": 31,
+   "examples": [
+    "mix-real-tinyxml2: test: cmake configure: CMake Error at CMakeLists.txt:6 (find_package): By not providing \"Findtinyxml2.cmake\" in CMAKE_MODULE_PATH this project has asked CMake to find a package configuration file provided by \"tinyxml2\", but CMake did not find one. Could not find a package configuration file provided by \"tinyxml2\" with any of the following names: tinyxml2.cps tinyxml2Config.cmake tinyxml2-config.cmake Add the installation prefix of \"tinyxml2\" to CMAKE_PREFIX_PATH or set \"tinyxml2_DIR\" to a directory containing one of the above files. If \"tinyxml2\" provides a separate development package or SDK, be sure it has been in",
+    "mix-real-zlib: contrib/nuget/nuget.csproj: dotnet msbuild: ndex for source https://api.nuget.org/v3/index.json.\n/work/contrib/nuget/nuget.csproj : warning : Unable to load the service index for source https://api.nuget.org/v3/index.json.\n/work/contrib/nuget/nuget.csproj : error MSB4236: The SDK 'Microsoft.Build.NoTargets/3.5.6' specified could not be found.",
+    "mix-real-zlib: contrib/dotzlib/DotZLib/DotZLib.csproj: dotnet msbuild: b/DotZLib/DotZLib.csproj(1,1): error MSB4075: The project file \"/work/contrib/dotzlib/DotZLib/DotZLib.csproj\" must be opened in a version of Visual Studio IDE that supports it and converted to the latest version before it can be built by MSBuild. More info: https://aka.ms/DeprecatedProjectConversion"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "toolchain_unavailable",
+   "count": 25,
+   "examples": [
+    "mix-real-python-semver: pyproject.toml: python >=3.10: a range, not a version to install",
+    "real-app-full-stack-fastapi: backend/pyproject.toml: python >=3.14,<4.0: a range, not a version to install",
+    "real-app-hoppscotch: packages/hoppscotch-selfhost-web/webapp-server/go.mod: go 1.24.1: go 1.24.0 runs these commands: one version per tool per run"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "code_outside_units",
+   "count": 14,
+   "examples": [
+    "mix-real-klaxon: klaxon/src/test/kotlin/com/beust/klaxon: 1 JavaScript files that no unit of kind npm-package holds",
+    "mix-real-tinyxml2: .: 1 Python files that no unit of kind python-project holds",
+    "real-app-kotlinconf: app/iosApp/KotlinMultiplatformLinkedPackage/Sources/KotlinMultiplatformLinkedPackage/include: 1 C files that no unit of kind bazel-target, cmake-target, make-target, meson-target, msbuild-project holds"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "ownership_ambiguous",
+   "count": 13,
+   "examples": [
+    "mix-real-zlib: contrib/vstudio/vc10: Directory scope cannot distinguish build ownership: miniunz@contrib/vstudio/vc10, minizip@contrib/vstudio/vc10, testzlib@contrib/vstudio/vc10, testzlibdll@contrib/vstudio/vc10, zlibstat@contrib/vstudio/vc10, zlibvc@contrib/vstudio/vc10, zlibvc@contrib/vstudio/vc10+",
+    "mix-real-zlib: contrib/vstudio/vc11: Directory scope cannot distinguish build ownership: miniunz@contrib/vstudio/vc11, minizip@contrib/vstudio/vc11, testzlib@contrib/vstudio/vc11, testzlibdll@contrib/vstudio/vc11, zlibstat@contrib/vstudio/vc11, zlibvc@contrib/vstudio/vc11, zlibvc@contrib/vstudio/vc11+",
+    "mix-real-zlib: contrib/vstudio/vc12: Directory scope cannot distinguish build ownership: miniunz@contrib/vstudio/vc12, minizip@contrib/vstudio/vc12, testzlib@contrib/vstudio/vc12, testzlibdll@contrib/vstudio/vc12, zlibstat@contrib/vstudio/vc12, zlibvc@contrib/vstudio/vc12, zlibvc@contrib/vstudio/vc12+"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "toolchain_undeclared",
+   "count": 12,
+   "examples": [
+    "mix-real-klaxon: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "real-app-kotlinconf: .: the Java version of a Gradle build is declared in its build scripts, which only Gradle runs: no source states it before the build",
+    "real-svc-eshop: src/ClientApp/ClientApp.csproj: TargetFrameworks is $(TargetFrameworks);net10.0-windows10.0.19041.0: only MSBuild's evaluation states it"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "model_partial",
+   "count": 11,
+   "examples": [
+    "mix-real-klaxon: .: gradle configure failed: the edges and Java targets are unknown:  9\n\n* What went wrong:\nScript compilation error:\n\n  Line 9:     jcenter()\n              ^ Unresolved reference 'jcenter'.\n\n1 error\n\n* Try:\n> Run with --stacktrace option to get the stack trace.\n> Run with --info or --debug option to get more log output.\n> Run with --scan to get full insights from a Build Scan (powered by Develocity).\n> Get more help at https://help.gradle.org.\n\nBUILD FAILED in 19s",
+    "mix-real-python-semver: .: make -pn: Makefile:4: *** missing separator.  Stop.",
+    "mix-real-semver: .: registries unknown: cargo metadata --locked: Updating crates.io index\nerror: cannot create the lock file /work/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead."
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "profiles_not_evaluated",
+   "count": 10,
+   "examples": [
+    "real-app-jhipster-sample: pom.xml: Only unconditional Maven modules and dependencies are read; profiles are not evaluated",
+    "real-svc-petclinic-microservices: pom.xml: Only unconditional Maven modules and dependencies are read; profiles are not evaluated",
+    "real-svc-petclinic-microservices: spring-petclinic-admin-server/pom.xml: Only unconditional Maven modules and dependencies are read; profiles are not evaluated"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "restore_failed",
+   "count": 4,
+   "examples": [
+    "real-app-hoppscotch: packages/hoppscotch-desktop/plugin-workspace/tauri-plugin-appload/examples/tauri-app: its packages are not installed: no workspace above names this folder",
+    "real-svc-otel-demo: src/frontend: its packages are not installed: no workspace above names this folder",
+    "real-svc-otel-demo: src/payment: its packages are not installed: no workspace above names this folder"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "superseded",
+   "count": 2,
+   "examples": [
+    "sys-cpp-vcpkg-conan: .: cmake-target imgtool of modules.py@daodan/module-graph/v1: cmake@4.4.5 answers for this folder without it",
+    "sys-cmake-targets: .: cmake-target calc of modules.py@daodan/module-graph/v1: cmake@4.4.5 answers for this folder without it"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "choice",
+   "count": 1,
+   "examples": [
+    "sys-cpp-vcpkg-conan: .: vcpkg and conan declared: vcpkg prepares the configure"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "dependency_unresolved",
+   "count": 1,
+   "examples": [
+    "mix-real-klaxon: $it -> $it: no build unit there"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "member_missing",
+   "count": 1,
+   "examples": [
+    "sys-git-submodule-absent: CMakeLists.txt: workspace member third_party/fmt: absent from the tree"
+   ]
+  },
+  {
+   "step": "scan",
+   "kind": "submodule_absent",
+   "count": 1,
+   "examples": [
+    "sys-git-submodule-absent: third_party/fmt: submodule https://github.com/fmtlib/fmt.git is not checked out: its code is not in the project"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "workspace_failure",
+   "count": 35,
+   "examples": [
+    "mix-real-zlib: contrib/dotzlib/DotZLib.sln: Msbuild failed when processing the file '/work/contrib/dotzlib/DotZLib/DotZLib.csproj' with message: The project file \"\" must be opened in a version of Visual Studio IDE that supports it and converted to the latest version before it can be built by MSBuild. More info: https://aka.ms/DeprecatedProjectConversion",
+    "real-svc-eshop: eShop.slnx: Msbuild failed when processing the file '/work/src/eShop.AppHost/eShop.AppHost.csproj' with message: eShop.AppHost is an Aspire AppHost project but necessary dependencies aren't present. Are you missing an Aspire.Hosting.AppHost PackageReference?",
+    "real-svc-eshop: eShop.slnx: Msbuild failed when processing the file '/work/tests/Basket.FunctionalTests/Basket.FunctionalTests.csproj' with message: Basket.FunctionalTests is an Aspire AppHost project but necessary dependencies aren't present. Are you missing an Aspire.Hosting.AppHost PackageReference?"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "build_not_indexed",
+   "count": 17,
+   "examples": [
+    "mix-real-tinyxml2: .: .: unavailable: built with make: Daodan configures C and C++ units with CMake only",
+    "mix-real-tinyxml2: .: .: unavailable: built with meson: Daodan configures C and C++ units with CMake only",
+    "mix-real-tinyxml2: test: test: failed: the configure ended with exit code 1; FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "restore_failed",
+   "count": 12,
+   "examples": [
+    "mix-real-zlib: contrib/dotzlib: MSBUILD : error MSB4025: The project file could not be loaded. Root element is missing.",
+    "real-app-jhipster-sample: .: [ERROR] Failed to execute goal org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline (default-cli) on project jhipster-sample-application: org.eclipse.aether.resolution.DependencyResolutionException: Failed to collect dependencies at org.ehcache:ehcache:jar:jakarta:3.12.0 -> org.glassfish.jaxb:jaxb-runtime:jar:2.3.0-b170127.1453 -> org.glassfish.jaxb:jaxb-core:jar:2.3.0-b170127.1453 -> javax.xml.bind:jaxb-api:jar:2.3.0-b161121.1438: Failed to read artifact descriptor for javax.xml.bind:jaxb-api:jar:2.3.0-b161121.1438: The following artifacts could not be resolved: javax.xml.bind:ja",
+    "real-app-kotlinconf: .: * What went wrong: | > Could not resolve all artifacts for configuration 'classpath'. | > Could not resolve dev.zacsweers.metro:gradle-plugin:1.5.2."
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "alias_ambiguous",
+   "count": 7,
+   "examples": [
+    "real-app-hoppscotch: `@components/*` has other targets in packages/hoppscotch-common, packages/hoppscotch-desktop, packages/hoppscotch-sh-admin: one program holds one mapping, so an import through it resolves to the first target that holds the file",
+    "real-app-hoppscotch: `@composables/*` has other targets in packages/hoppscotch-common, packages/hoppscotch-desktop, packages/hoppscotch-sh-admin: one program holds one mapping, so an import through it resolves to the first target that holds the file",
+    "real-app-hoppscotch: `@functional/*` has other targets in packages/hoppscotch-common, packages/hoppscotch-desktop, packages/hoppscotch-sh-admin: one program holds one mapping, so an import through it resolves to the first target that holds the file"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "manifest_unread",
+   "count": 6,
+   "examples": [
+    "real-svc-otel-demo: src/agent/requirements.in: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+    "real-svc-otel-demo: src/chatbot/requirements.in: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed",
+    "real-svc-otel-demo: src/load-generator/requirements.in: the environment reads pyproject.toml, uv.lock and requirements*.txt: the packages this file declares are not installed"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "toolchain_unavailable",
+   "count": 3,
+   "examples": [
+    "real-svc-voting-app: result/tests/Dockerfile: node 8.9-slim: node 18-slim runs these commands: one version per tool per run",
+    "real-svc-voting-app: node 18-slim: the preparation could not install it (its output is in the run's log)",
+    "real-svc-voting-app: @types/node 18-slim: the preparation could not install it (its output is in the run's log)"
+   ]
+  },
+  {
+   "step": "analyze",
+   "kind": "language_not_indexed",
+   "count": 1,
+   "examples": [
+    "mix-real-zlib: none of the 8 cpp files is in the index: no compile command: not built by the default configuration (5), header no indexed translation unit includes in an active branch (3)"
+   ]
+  }
+ ],
+ "containers": {
+  "runs": 236,
+  "seconds": 4038.8,
+  "phases": {
+   "execute": {
+    "runs": 128,
+    "seconds": 1553.2
+   },
+   "prepare": {
+    "runs": 108,
+    "seconds": 2485.6
+   }
+  },
+  "not_zero": []
+ },
+ "by_case": {
+  "mix-real-klaxon": {
+   "seconds": 439.5,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "fresh",
+     "holes": 234
+    }
+   }
+  },
+  "mix-real-python-semver": {
+   "seconds": 128.6,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 64
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "mix-real-semver": {
+   "seconds": 150.4,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 22
+    }
+   }
+  },
+  "mix-real-tinyxml2": {
+   "seconds": 223.0,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 260
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 4374
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 4910
+    }
+   }
+  },
+  "mix-real-zlib": {
+   "seconds": 202.7,
+   "languages": {
+    "c": {
+     "state": "fresh",
+     "holes": 7261
+    },
+    "cpp": {
+     "state": "failed",
+     "holes": 0
+    },
+    "csharp": {
+     "state": "failed",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "real-app-full-stack-fastapi": {
+   "seconds": 325.0,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 167
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 827
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 244
+    }
+   }
+  },
+  "real-app-hoppscotch": {
+   "seconds": 1760.2,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 16
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 1116
+    },
+    "rust": {
+     "state": "fresh",
+     "holes": 839
+    },
+    "stylesheet": {
+     "state": "failed",
+     "holes": 0
+    },
+    "svelte": {
+     "state": "fresh",
+     "holes": 9
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 14572
+    },
+    "vue": {
+     "state": "fresh",
+     "holes": 18309
+    }
+   }
+  },
+  "real-app-jhipster-sample": {
+   "seconds": 924.9,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 14
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 982
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 171
+    }
+   }
+  },
+  "real-app-kotlinconf": {
+   "seconds": 560.3,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 10
+    },
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 8
+    }
+   }
+  },
+  "real-app-memos": {
+   "seconds": 789.1,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 4713
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 36
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 5394
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 2517
+    }
+   }
+  },
+  "real-svc-eshop": {
+   "seconds": 494.3,
+   "languages": {
+    "csharp": {
+     "state": "fresh",
+     "holes": 6476
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 237
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 14
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 9
+    }
+   }
+  },
+  "real-svc-otel-demo": {
+   "seconds": 1223.2,
+   "languages": {
+    "c": {
+     "state": "unavailable",
+     "holes": 0
+    },
+    "cpp": {
+     "state": "failed",
+     "holes": 0
+    },
+    "csharp": {
+     "state": "fresh",
+     "holes": 56
+    },
+    "go": {
+     "state": "fresh",
+     "holes": 306
+    },
+    "java": {
+     "state": "failed",
+     "holes": 0
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 81
+    },
+    "kotlin": {
+     "state": "failed",
+     "holes": 0
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 464
+    },
+    "rust": {
+     "state": "fresh",
+     "holes": 3
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 15
+    },
+    "typescript": {
+     "state": "fresh",
+     "holes": 2577
+    }
+   }
+  },
+  "real-svc-petclinic-microservices": {
+   "seconds": 365.6,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 6
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 137
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 19
+    }
+   }
+  },
+  "real-svc-robot-shop": {
+   "seconds": 245.3,
+   "languages": {
+    "go": {
+     "state": "failed",
+     "holes": 0
+    },
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 560
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 47
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 13
+    }
+   }
+  },
+  "real-svc-voting-app": {
+   "seconds": 210.9,
+   "languages": {
+    "csharp": {
+     "state": "fresh",
+     "holes": 6
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 3436
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 5
+    },
+    "stylesheet": {
+     "state": "fresh",
+     "holes": 11
+    }
+   }
+  },
+  "jvm-java-version-conflict": {
+   "seconds": 166.3,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-gradle-kts-catalog-composite": {
+   "seconds": 368.4,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-spring-boot-managed": {
+   "seconds": 312.8,
+   "languages": {
+    "java": {
+     "state": "fresh",
+     "holes": 0
+    },
+    "kotlin": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "jvm-kmp-common-jvm": {
+   "seconds": 233.9,
+   "languages": {
+    "kotlin": {
+     "state": "fresh",
+     "holes": 23
+    }
+   }
+  },
+  "sys-cpp-vcpkg-conan": {
+   "seconds": 189.1,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "sys-git-submodule-absent": {
+   "seconds": 99.6,
+   "languages": {
+    "cpp": {
+     "state": "unavailable",
+     "holes": 0
+    }
+   }
+  },
+  "sys-cmake-targets": {
+   "seconds": 87.6,
+   "languages": {
+    "cpp": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "mix-edge-extensions": {
+   "seconds": 57.3,
+   "languages": {}
+  },
+  "js-turborepo": {
+   "seconds": 146.6,
+   "languages": {
+    "javascript": {
+     "state": "fresh",
+     "holes": 1
+    }
+   }
+  },
+  "mix-infra-gha": {
+   "seconds": 211.7,
+   "languages": {
+    "go": {
+     "state": "fresh",
+     "holes": 1
+    },
+    "javascript": {
+     "state": "fresh",
+     "holes": 4
+    },
+    "python": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  },
+  "py-setup-cfg-extras": {
+   "seconds": 98.7,
+   "languages": {
+    "python": {
+     "state": "fresh",
+     "holes": 3
+    }
+   }
+  },
+  "sys-rust-shared-test-module": {
+   "seconds": 317.5,
+   "languages": {
+    "rust": {
+     "state": "fresh",
+     "holes": 0
+    }
+   }
+  }
+ }
+}
