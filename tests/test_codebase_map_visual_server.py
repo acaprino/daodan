@@ -248,6 +248,13 @@ class LiveTests(unittest.TestCase):
                 self.assertEqual(self.post("/api/requests", body)[0], 400)
         self.assertEqual(self.service.ui_requests()["requests"], [])
 
+    def test_a_refused_post_is_answered_while_its_body_still_arrives(self):
+        """The server answers a refused POST before reading its body. 16 MiB is more than both sides' socket
+        buffers hold, so the client is still writing when the answer leaves: a close with the body unread would
+        reset the connection, and the client would get no answer."""
+        self.assertEqual(self.post("/api/requests", "x" * (16 << 20)), (403, {"error": "refused"}))
+        self.assertEqual(self.service.ui_requests()["requests"], [])
+
     def test_a_refused_request_answers_400_with_the_reason(self):
         for path in ("/api/events", "/api/events?run=example&after=x", "/api/events?run=missing",
                      "/data/visual.json?run=..%2F..", "/data/visual.json"):

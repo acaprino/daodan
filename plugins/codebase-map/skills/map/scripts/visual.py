@@ -29,8 +29,10 @@ import hmac
 import json
 import os
 import shutil
+import socket
 import sys
 import tempfile
+import time
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path, PurePosixPath
@@ -318,6 +320,23 @@ _POLICY = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-in
 class _Server(ThreadingHTTPServer):
     # On Windows SO_REUSEADDR lets a second server bind a port in use and take part of its connections.
     allow_reuse_address = sys.platform != "win32"
+    linger = 5  # seconds a connection keeps reading after its answer, waiting for the client to close
+
+    def shutdown_request(self, request):
+        """Close in stages (RFC 9112, 9.6): a refused POST is answered before its body is read, and a close with
+        bytes unread resets the connection, which can erase the answer before the client reads it. So the write
+        side closes first, then what the client still sends is read and dropped until it closes, at most
+        `linger` seconds."""
+        deadline = time.monotonic() + self.linger
+        try:
+            request.shutdown(socket.SHUT_WR)
+            while (left := deadline - time.monotonic()) > 0:
+                request.settimeout(left)
+                if not request.recv(65536):
+                    break
+        except OSError:  # the client reset, or still sends at the deadline: the connection closes all the same
+            pass
+        self.close_request(request)
 
 
 def live_routes(service) -> dict:
