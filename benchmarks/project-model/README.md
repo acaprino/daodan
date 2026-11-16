@@ -168,24 +168,24 @@ Conta come risultato, per linguaggio su tutti i casi: i casi `fresh` sui casi ch
 
 ### Risultati
 
-Primo giro, 16 novembre 2026, sui 104 progetti in miniatura (`results/pipeline/2026-11-16-fixtures.json`, rapporto in `2026-11-16-fixtures.report.md`), con il passo dinamico. I 18 repository veri: 3 misurati (`2026-11-16-real-3.json`: chi, javapoet, tududi), gli altri 15 no. Nei 3, analisi statica `fresh` con tutti i file nell'indice; passo dinamico: chi osservato (1.344 siti), javapoet fallito (build sul JDK 17 dell'immagine invece dell'8 dichiarato), tududi quasi nullo (i test del backend vogliono PostgreSQL e il passo non avvia servizi). Meno di 0,10 USD in tutto. 104 casi, nessuno fallito; 13.182 secondi in tutto, mediana 106 per caso; 602 corse di container; circa 1 USD fatturato da Modal.
+Giro finale, 16 novembre 2026, sui 122 casi (`results/pipeline/2026-11-16-finale.json`, rapporto in `2026-11-16-finale.report.md`), sul codice fino a `492a7b212`: nessun caso fallito, 23.280 secondi, mediana 124 per caso, circa 2,3 USD. I giri precedenti dello stesso giorno sono accanto (`2026-11-16-fixtures`, `-real-3`, `-giro-2`).
 
 | Linguaggio | Casi `fresh` / casi | File indicizzati / nello snapshot | Quota risposta | Passo dinamico: casi osservati, siti |
 | --- | --- | --- | --- | --- |
-| c | 2 / 8 | 7 / 8 | 100,0 % | 0, 0 |
-| cpp | 3 / 6 | 10 / 10 | 94,0 % | 1, 5 |
-| csharp | 1 / 1 | 2 / 2 | 75,0 % | nessun osservatore |
-| go | 10 / 10 | 28 / 34 | 75,8 % | 2, 4 |
-| java | 9 / 12 | 20 / 22 | 77,1 % | 4, 19 |
-| javascript | 19 / 20 | 34 / 34 | 75,9 % | 1, 6 |
-| kotlin | 3 / 8 | 7 / 12 | 31,7 % | 1, 5 |
-| python | 28 / 28 | 81 / 81 | 75,0 % | 1, 3 |
-| rust | 10 / 10 | 23 / 23 | 95,9 % | 0, 0 |
-| stylesheet | 10 / 10 | 50 / 51 | 52,2 % | nessun osservatore |
-| svelte | 0 / 1 | 0 / 2 | 0,0 % | nessun osservatore |
-| typescript | 13 / 15 | 43 / 43 | 83,2 % | 0, 0 |
-| vue | 1 / 1 | 0 / 3 | 0,0 % | nessun osservatore |
+| c | 6 / 9 | 49 / 72 | 40,7 % | 2, 149 |
+| cpp | 6 / 9 | 18 / 19 | 89,2 % | 0, 0 |
+| csharp | 4 / 5 | 561 / 561 | 56,1 % | nessun osservatore |
+| go | 14 / 15 | 678 / 679 | 99,5 % | 5, 13.365 |
+| java | 16 / 18 | 261 / 278 | 99,7 % | 9, 7.695 |
+| javascript | 31 / 32 | 1.254 / 1.254 | 72,9 % | 4, 763 |
+| kotlin | 4 / 11 | 103 / 115 | 93,1 % | 4, 1.796 |
+| python | 34 / 34 | 185 / 185 | 89,1 % | 2, 70 |
+| rust | 13 / 13 | 145 / 154 | 88,5 % | 1, 1 |
+| stylesheet | 23 / 24 | 3.336 / 3.402 | 26,3 % | nessun osservatore |
+| svelte | 1 / 2 | 0 / 4 | 26,7 % | nessun osservatore |
+| typescript | 20 / 21 | 2.965 / 2.967 | 90,4 % | 3, 73.230 |
+| vue | 2 / 2 | 0 / 410 | 28,2 % | nessun osservatore |
 
-- La maggior parte dei progetti in miniatura non dichiara test: il passo dinamico vi è `not-run` con la causa. Dove li dichiara, osserva (JavaScript, Java, Kotlin, Go, C++, Python).
-- Stati diversi da `fresh` e loro cause, dal rapporto: C e C++ costruiti con Meson, Make o Bazel (configura solo CMake), due configure che falliscono (vcpkg/Conan nell'analizzatore, submodule assente), Kotlin su Android (manca l'SDK), Gradle e Maven nella stessa cartella, una build composta, i soli script `.gradle.kts` che avviano lo stadio Kotlin, SvelteKit senza il tsconfig generato, due file letti solo dal lessicale.
-- Rust: Callgrind non parte nei container di Modal (si ferma nel caricatore dinamico) e in un caso il pacchetto di Valgrind non si scarica (502 di Launchpad).
+- Il passo dinamico osserva 97.069 siti e chiude 4.954 buchi; nei progetti in miniatura quasi sempre non ci sono test da lanciare, e lo dice.
+- Restano aperti: i template di Vue e Svelte (nessun file letto), le classi Tailwind dello stylesheet, C# (56 % e nessun osservatore), il C dei contrib di zlib, i test che vogliono un servizio (un database) e Kotlin su Android, che scip-java non compila.
+- Rust, C e C++ si osservano solo dove Valgrind parte: nei sandbox di Modal (gVisor) dipende dalla macchina, e il caso diventa `not-run` con la causa.
