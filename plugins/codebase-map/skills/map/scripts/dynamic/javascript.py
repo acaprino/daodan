@@ -31,7 +31,8 @@ with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The 
 script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code, in every process
 and thread the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on, with
 TURBO_ENV_MODE=loose (Turborepo's documented setting: its default, strict, passes a task NODE_OPTIONS and not the
-recorder's own variables), on the CPUs and the memory of the runner GitHub hosts for a CI (`CPUS`, `MEMORY`). The
+recorder's own variables), on the CPUs and the memory of the runner GitHub hosts for a CI (`CPUS`, `MEMORY`), or
+on fewer where the host has less memory free (`shape`; each run says the shape it ran with). The
 project is not changed. The recorder puts its Babel plugin where the code is
 compiled:
 
@@ -73,13 +74,27 @@ NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, wh
                        "inspector do not exist"}
 BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the code it records
 MOCKS = ("jest-mock", "sinon", "tinyspy", "@vitest/spy")  # a function of theirs stands for another: no destination
-# The tests run as on the runner GitHub hosts for a CI (ubuntu-latest, public repositories: 4 CPUs, 16 GB): a runner
-# starts its workers by the CPUs it sees (Jest: all but one); tududi's 3 Jest workers took 10 GB under the recorder.
-CPUS, MEMORY = 4, 16 * 2**30
-# `cpus`: the first CPUS CPUs the container may use, as `taskset -c` takes them, the affinity Node counts
-PINNED = ("cpus=$(taskset -cp $$ 2>/dev/null | sed 's/.*: //' | tr , '\\n'"
-          " | awk -F- '{for (i = $1; i <= ($2 == \"\" ? $1 : $2); i++) print i}'"
-          f" | head -n {CPUS} | paste -sd, -)")
+# The tests run at most as on the runner GitHub hosts for a CI (ubuntu-latest, public repositories: 4 CPUs, 16 GB):
+# a runner starts its workers by the CPUs it sees (Jest: all but one), and a host with less memory free gets as many
+# CPUs as it carries at WORKER each, what one process took under the recorder (tududi's Jest: 4 processes, 9.9 GB).
+CPUS, MEMORY, WORKER = 4, 16 * 2**30, 5 * 2**29
+
+
+def shape(free: int | None) -> tuple[int, int] | None:
+    """`(cpus, memory)` of the runs on a host with `free` bytes of memory free (None: it does not say), None when
+    not even one process fits."""
+    if free is None or free >= MEMORY:
+        return CPUS, MEMORY
+    cpus = min(CPUS, free // WORKER)
+    return (cpus, cpus * WORKER) if cpus else None
+
+
+def pinned(cpus: int) -> str:
+    """The line setting `cpus`: the first `cpus` CPUs the container may use, as `taskset -c` takes them, the affinity
+    Node counts its parallelism by."""
+    return ("cpus=$(taskset -cp $$ 2>/dev/null | sed 's/.*: //' | tr , '\\n'"
+            " | awk -F- '{for (i = $1; i <= ($2 == \"\" ? $1 : $2); i++) print i}'"
+            f" | head -n {cpus} | paste -sd, -)")
 LIMIT = 3600  # the seconds one run of the tests may take
 OUT = "/daodan/out"
 IN, T = preparation.IN, preparation.T
@@ -138,9 +153,9 @@ def _command(run: dict) -> str:
     return "npm test" if _script(run) == "test" else f"npm run {_script(run)}"
 
 
-def scripts(planned: dict, restores: list[str]) -> tuple[str, str, dict]:
+def scripts(planned: dict, restores: list[str], cpus: int = CPUS) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and the stated Node's install (`preparation.toolchains`):
-    `restores` are the lines of the project's own restore."""
+    `restores` are the lines of the project's own restore, `cpus` the CPUs each run is pinned to."""
     chains = preparation.toolchains([item for item in planned.get("toolchains") or ()
                                      if preparation.EXACT.match(str(item.get("version") or ""))])
     prepare = ["set -u", f'mkdir -p {T}/bin "$HOME"', *preparation.setup(["node"])["lines"],
@@ -150,7 +165,8 @@ def scripts(planned: dict, restores: list[str]) -> tuple[str, str, dict]:
                f"[ -e {CORE}/package.json ] || {{ echo 'DAODAN-MISSING @babel/core@{BABEL}' >&2; exit 70; }}",
                *chains["lines"], "cd /work || exit 70", *restores]
     # TURBO_ENV_MODE: Turborepo's strict env mode passes its tasks NODE_OPTIONS but not the DYN_ variables
-    execute = ["set -u", f"mkdir -p {OUT}", f"export DYN_ROOT=/work DYN_BABEL={CORE} TURBO_ENV_MODE=loose", PINNED,
+    execute = ["set -u", f"mkdir -p {OUT}", f"export DYN_ROOT=/work DYN_BABEL={CORE} TURBO_ENV_MODE=loose",
+               pinned(cpus),
                "run() {",  # $1 the run, $2 its folder
                "  start=$(date +%s)",
                f'  ( cd "/work/$2" && NODE_OPTIONS="--require {IN}/{RECORDER.name}" DYN_OUT={OUT}/observed-$1-%p.json'
@@ -263,8 +279,16 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     shutil.rmtree(out_dir / Path(OUT).name, ignore_errors=True)  # a former run's outputs are not this one's
     for phase in ("prepare", "execute"):
         (out_dir / f"{phase}.log").unlink(missing_ok=True)
+    free = container.free_memory()
+    fits = shape(free)
+    unrun = list(planned.get("unrun") or ())
+    if fits is None:
+        return {"state": "gap", "cause": f"{free / 2**30:.1f} GB of memory free; one process of the tests under the "
+                                         f"recorder needs {WORKER / 2**30:.1f} GB", "remedy": "close programs to "
+                                         "free memory", "sites": [], "runs": [], "gaps": unrun}
+    cpus, memory = fits
     restored = typescript._prepared(project, planned.get("roots") or ())
-    prepare, execute, chains = scripts(planned, restored["lines"])
+    prepare, execute, chains = scripts(planned, restored["lines"], cpus)
     runs = planned["runs"]
 
     def inputs() -> dict:
@@ -275,10 +299,9 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     result = container.run_in_container(
         project, ["sh", "-c", execute], image=typescript.IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare],
         outputs=[OUT], env={**preparation.ENV, "TERM": "dumb", "CI": "true"}, timeout=len(runs) * (LIMIT + 120),
-        prepare_timeout=3600, memory=MEMORY, engine=engine, inputs=inputs,
+        prepare_timeout=3600, memory=memory, engine=engine, inputs=inputs,
         registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"],
                                         *(planned.get("declared") or {}).get("hosts", ())])))  # `dynamic.run`'s
-    unrun = list(planned.get("unrun") or ())
     if result["state"] == "gap":
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
                 "gaps": unrun}
@@ -300,7 +323,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         entry, own = _outcome(run, marks.get(number, ""), _text(back / f"tests-{number}.log"),
                               _observations(back, number), len(list(back.glob(f"observed-{number}-*.json"))),
                               result["state"])
-        entries.append(entry)
+        entries.append({**entry, "cpus": cpus, "memory": memory})  # the shape it ran with (`shape`)
         gaps += own
     found = sites(back)
     unplaced = sum(1 for site in found for callee in site["callees"]

@@ -277,11 +277,14 @@ class Played:
         return self.result or {"state": "done", "exit_code": 0, "outputs": sorted(self.files)}
 
 
-def observe(tmp_path, played: Played, runs: list[dict] | None = None, files: dict = PROJECT, **planned) -> dict:
+def observe(tmp_path, played: Played, runs: list[dict] | None = None, files: dict = PROJECT, free=64 * 2**30,
+            **planned) -> dict:
+    """The observer over `files` with `played` as the container, on a host with `free` bytes of memory free."""
     project = write(tmp_path / "proj", files)
     runs = runs if runs is not None else [{"root": ".", "runner": "node:test",
                                            "declared_in": "package.json#scripts.test"}]
     with mock.patch.object(container, "run_in_container", played), \
+            mock.patch.object(container, "free_memory", return_value=free), \
             mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)):
         result = observer.observe(project, {"runs": runs, "gaps": [], "roots": [""], "toolchains": [], **planned},
                                   tmp_path / "runs")
@@ -307,15 +310,24 @@ def test_the_tests_run_on_the_cpus_and_memory_of_the_ci_runner(tmp_path):
     """mix-real-tududi: Jest starts a worker per CPU it sees but one, and the engine's host showed it 20; workers
     under the recorder take 2 to 3 GB each, and the 4 GB container killed them (SIGKILL). The tests run as on
     the runner GitHub hosts for the CI (ubuntu-latest: 4 CPUs, 16 GB): the memory, and the first 4 CPUs the
-    container may use, the affinity runners count their workers by."""
-    played = Played({"tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
-    observe(tmp_path, played)
-    assert (observer.CPUS, observer.MEMORY, played.given["memory"]) == (4, 16 * 2**30, 16 * 2**30)
-    execute = played.given["command"][-1]
-    assert observer.PINNED in execute and '${cpus:+taskset -c "$cpus"} timeout' in execute
+    container may use, the affinity runners count their workers by. That shape is the ceiling: a host with less
+    memory free pins as many CPUs as it carries at `WORKER` each (tududi's Jest: 4 processes, 9.9 GB), at least
+    one, with that memory; with not even one, no container starts and the gap says why. Each run says its shape."""
+    assert (observer.CPUS, observer.MEMORY, observer.WORKER) == (4, 16 * 2**30, 5 * 2**29)
+    for free, cpus, memory in ((64 * 2**30, 4, 16 * 2**30), (None, 4, 16 * 2**30), (12 * 2**30, 4, 10 * 2**30),
+                               (6 * 2**30, 2, 5 * 2**30), (3 * 2**30, 1, 5 * 2**29)):
+        played = Played({"tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
+        [run] = observe(tmp_path, played, free=free)["runs"]
+        assert (played.given["memory"], run["cpus"], run["memory"]) == (memory, cpus, memory)
+        execute = played.given["command"][-1]
+        assert observer.pinned(cpus) in execute and '${cpus:+taskset -c "$cpus"} timeout' in execute
+    played = Played()
+    result = observe(tmp_path, played, free=2 * 2**30)
+    assert played.given is None and result["state"] == "gap" and "2.0 GB of memory free" in result["cause"]
     if shutil.which("taskset") is None or not hasattr(os, "sched_getaffinity"):
         pytest.skip("taskset and CPU affinity are Linux's")
-    done = subprocess.run(["sh", "-c", f'{observer.PINNED}; echo "$cpus"'], capture_output=True, text=True)
+    done = subprocess.run(["sh", "-c", f'{observer.pinned(observer.CPUS)}; echo "$cpus"'], capture_output=True,
+                          text=True)
     chosen = [int(cpu) for cpu in done.stdout.strip().split(",")]
     allowed = sorted(os.sched_getaffinity(0))
     assert chosen == allowed[:observer.CPUS]
@@ -341,7 +353,8 @@ def test_the_tests_run_as_declared_under_the_recorder_and_only_in_the_container(
     assert given["outputs"] == ["/daodan/out"] and given["env"]["CI"] == "true"
     assert result["state"] == "ran" and result["gaps"] == []
     assert result["runs"] == [{"root": ".", "runner": "node:test", "declared_in": "package.json#scripts.test",
-                               "state": "ran", "exit_code": 0, "seconds": 3, "processes": 1}]
+                               "state": "ran", "exit_code": 0, "seconds": 3, "processes": 1,
+                               "cpus": observer.CPUS, "memory": observer.MEMORY}]
     assert result["sites"] == [{**site("test/index.test.js", 5, 25, "first", FIRST), "role": "call"}]
 
 
