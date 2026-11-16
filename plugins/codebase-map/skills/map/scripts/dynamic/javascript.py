@@ -30,7 +30,8 @@ with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The 
 script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code, in every process
 and thread the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on, with
 TURBO_ENV_MODE=loose (Turborepo's documented setting: its default, strict, passes a task NODE_OPTIONS and not the
-recorder's own variables). The project is not changed. The recorder puts its Babel plugin where the code is
+recorder's own variables), on the CPUs and the memory of the runner GitHub hosts for a CI (`CPUS`, `MEMORY`). The
+project is not changed. The recorder puts its Babel plugin where the code is
 compiled:
 
 - a source Node runs as written (Mocha, `node --test`, any script on Node's own loaders) is printed by
@@ -71,7 +72,13 @@ NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, wh
                        "inspector do not exist"}
 BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the code it records
 MOCKS = ("jest-mock", "sinon", "tinyspy", "@vitest/spy")  # a function of theirs stands for another: no destination
-MEMORY = 4 * 2**30  # a Jest shard of the measure ran in 4 GB (benchmarks/call-provenance)
+# The tests run as on the runner GitHub hosts for a CI (ubuntu-latest, public repositories: 4 CPUs, 16 GB): a runner
+# starts its workers by the CPUs it sees (Jest: all but one); tududi's 3 Jest workers took 10 GB under the recorder.
+CPUS, MEMORY = 4, 16 * 2**30
+# `cpus`: the first CPUS CPUs the container may use, as `taskset -c` takes them, the affinity Node counts
+PINNED = ("cpus=$(taskset -cp $$ 2>/dev/null | sed 's/.*: //' | tr , '\\n'"
+          " | awk -F- '{for (i = $1; i <= ($2 == \"\" ? $1 : $2); i++) print i}'"
+          f" | head -n {CPUS} | paste -sd, -)")
 LIMIT = 3600  # the seconds one run of the tests may take
 OUT = "/daodan/out"
 IN, T = preparation.IN, preparation.T
@@ -142,11 +149,11 @@ def scripts(planned: dict, restores: list[str]) -> tuple[str, str, dict]:
                f"[ -e {CORE}/package.json ] || {{ echo 'DAODAN-MISSING @babel/core@{BABEL}' >&2; exit 70; }}",
                *chains["lines"], "cd /work || exit 70", *restores]
     # TURBO_ENV_MODE: Turborepo's strict env mode passes its tasks NODE_OPTIONS but not the DYN_ variables
-    execute = ["set -u", f"mkdir -p {OUT}", f"export DYN_ROOT=/work DYN_BABEL={CORE} TURBO_ENV_MODE=loose",
+    execute = ["set -u", f"mkdir -p {OUT}", f"export DYN_ROOT=/work DYN_BABEL={CORE} TURBO_ENV_MODE=loose", PINNED,
                "run() {",  # $1 the run, $2 its folder
                "  start=$(date +%s)",
-               f'  ( cd "/work/$2" && NODE_OPTIONS="--require {IN}/{RECORDER.name}"'
-               f' DYN_OUT={OUT}/observed-$1-%p.json exec timeout -k 30 {LIMIT} npm run "$3" )'
+               f'  ( cd "/work/$2" && NODE_OPTIONS="--require {IN}/{RECORDER.name}" DYN_OUT={OUT}/observed-$1-%p.json'
+               f' exec ${{cpus:+taskset -c "$cpus"}} timeout -k 30 {LIMIT} npm run "$3" )'
                f" > {OUT}/tests-$1.log 2>&1",
                '  echo "DAODAN-DYNAMIC $1 exit $? $(( $(date +%s) - start ))"', "}",
                *(f"run {number} {shlex.quote(run['root'])} {shlex.quote(_script(run))}"

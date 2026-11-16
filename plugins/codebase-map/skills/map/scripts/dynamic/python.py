@@ -182,6 +182,11 @@ def plan(record: dict, files: list[str], read) -> dict:
             "detail": "no file of the project declares how its Python tests run (a pytest configuration, a "
                       "conftest.py, pytest among the declared dependencies, a `python -m unittest` line in tox.ini "
                       "or a makefile): nothing is observed"}]}
+    # The snapshot keeps no lockfile: the ones the checkout holds beside a manifest name the folder's manager.
+    locks = {posixpath.join(posixpath.dirname(rel), lock) for rel in files
+             if posixpath.basename(rel) in preparation.PYTHON for manager in preparation.RESTORES.values()
+             if manager.get("family") == "python" for lock in manager.get("locks", ())}
+    files = [*files, *sorted(lock for lock in locks - set(files) if read(lock))]
     held = {folder: manager for manager, folders in preparation.restores(files).items()
             if preparation.RESTORES[manager].get("family") == "python" for folder in folders}
     files, runs, gaps, toolchains = set(files), [], [], []

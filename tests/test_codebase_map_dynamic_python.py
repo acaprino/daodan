@@ -135,6 +135,10 @@ def test_a_folder_uv_restores_runs_on_the_python_uv_chooses_for_it(tmp_path):
     assert (run["python"], run["python_request"]) == ("3.14.6", request)
     assert kinds(plan(tests, ["backend/pyproject.toml", "backend/tests/conftest.py"], chains[1:2])) == [
         "python_unavailable"]
+    # The snapshot keeps no lockfile: the one the checkout holds names the manager all the same.
+    unlocked = [rel for rel in files if rel != "uv.lock"]
+    found = plan(tests, unlocked, chains, texts={"uv.lock": "version = 1\n"})
+    assert found["gaps"] == [] and found["runs"][0]["manager"] == "uv"
 
 
 # ------------------------------------------------------------------ the two scripts

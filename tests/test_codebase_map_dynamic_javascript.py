@@ -291,6 +291,24 @@ def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_run(tmp_path):
     assert left in observe(tmp_path, played)["gaps"]
 
 
+def test_the_tests_run_on_the_cpus_and_memory_of_the_ci_runner(tmp_path):
+    """mix-real-tududi: Jest starts a worker per CPU it sees but one, and the engine's host showed it 20; workers
+    under the recorder take 2 to 3 GB each, and the 4 GB container killed them (SIGKILL). The tests run as on
+    the runner GitHub hosts for the CI (ubuntu-latest: 4 CPUs, 16 GB): the memory, and the first 4 CPUs the
+    container may use, the affinity runners count their workers by."""
+    played = Played({"tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
+    observe(tmp_path, played)
+    assert (observer.CPUS, observer.MEMORY, played.given["memory"]) == (4, 16 * 2**30, 16 * 2**30)
+    execute = played.given["command"][-1]
+    assert observer.PINNED in execute and '${cpus:+taskset -c "$cpus"} timeout' in execute
+    if shutil.which("taskset") is None or not hasattr(os, "sched_getaffinity"):
+        pytest.skip("taskset and CPU affinity are Linux's")
+    done = subprocess.run(["sh", "-c", f'{observer.PINNED}; echo "$cpus"'], capture_output=True, text=True)
+    chosen = [int(cpu) for cpu in done.stdout.strip().split(",")]
+    allowed = sorted(os.sched_getaffinity(0))
+    assert chosen == allowed[:observer.CPUS]
+
+
 def test_the_tests_run_as_declared_under_the_recorder_and_only_in_the_container(tmp_path):
     played = Played({"observed-0-7-0.json": observed(site("test/index.test.js", 5, 25, "first", FIRST)),
                      "tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
