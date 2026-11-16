@@ -1,6 +1,6 @@
 # Codebase Map: riferimento
 
-Codebase Map legge un repository con analisi statica e ne serve all'agente inventario, simboli, relazioni, moduli e descrizioni semantiche, con riferimenti verificabili alle sorgenti. Esegue codice del progetto solo nel suo container: le build da cui gli analyzer prendono gli indici e i test che il passo dinamico osserva (sezione Pipeline). Le fasi del modello non eseguono nulla, e il loro rapporto dichiara nulla la copertura a runtime, salvo evidenza fornita dall'utente. Non seleziona reviewer e non emette verdetti di correttezza: quello è senior-review, che ne usa i tool. Versione del plugin `1.0.1` (`plugins/codebase-map/plugin.toml`); nessuna dipendenza da altri plugin.
+Codebase Map legge un repository con analisi statica e ne serve all'agente inventario, simboli, relazioni, moduli e descrizioni semantiche, con riferimenti verificabili alle sorgenti. Esegue codice del progetto solo nel suo container: le build da cui gli analyzer prendono gli indici e i test che il passo dinamico osserva (sezione Pipeline). Le fasi del modello non eseguono nulla: la copertura a runtime del loro rapporto è ciò che il passo dinamico ha osservato (`snapshot.py runtime <run-dir>`), con l'evidenza che l'utente fornisce. Non seleziona reviewer e non emette verdetti di correttezza: quello è senior-review, che ne usa i tool. Versione del plugin `1.0.1` (`plugins/codebase-map/plugin.toml`); nessuna dipendenza da altri plugin.
 
 Ogni affermazione di questo documento rimanda a un file del plugin. Il testo operativo che il modello esegue è `skills/map/SKILL.md` con i suoi `references/`; questo documento lo descrive e non lo sostituisce.
 
@@ -103,7 +103,7 @@ Ogni corsa dice come sono finiti i suoi test: `ran`, `timeout`, `killed`, `not_s
 
 In `skills/map/scripts/`, Python con sola libreria standard salvo gli opzionali detti. Punti d'ingresso (`SKILL.md`, sezione Resources):
 
-- `snapshot.py`: `scope`, `write`, `index`, `search`, `resolve`, `diff`, `carry`, `prepare`, `check`, `publish`, `register`, `unregister`, `meta-query`, `meta-upsert`, `edit-impact`, `symbols-at`, `stale-callers`, `context`.
+- `snapshot.py`: `scope`, `write`, `index`, `search`, `resolve`, `runtime`, `diff`, `carry`, `prepare`, `check`, `publish`, `register`, `unregister`, `meta-query`, `meta-upsert`, `edit-impact`, `symbols-at`, `stale-callers`, `context`.
 - `source_reader.py`: `outline` (metadati dei simboli), `graph` (chiamanti e chiamati dal manifest, 1-3 salti), `read` (blocchi di sorgente verificati per simbolo, intervallo o file intero).
 - `modules.py`: `build`, `query`, `brief`, `propose`.
 - `resolve_edges.py`: con `--pass` gli step `analyze`, `dynamic` e `union` della pipeline in `engine-edges.sqlite`, come li avviano in background `snapshot.py write` e `codebase_map_create_run`; con `--engine <analyzer>` o `--engine scip` un solo stadio.

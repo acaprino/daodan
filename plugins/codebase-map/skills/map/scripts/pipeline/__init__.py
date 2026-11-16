@@ -245,3 +245,40 @@ def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | N
 def follow(manifest: Path, after: int = 0, limit: int | None = None) -> tuple[list[dict], int]:
     """The run's events from the cursor `after`, for a listener in another process."""
     return events.read(Path(manifest).resolve().with_name(events.JOURNAL), after, limit)
+
+
+# The union's gaps that say what a run did not observe (`Union.observed`).
+RUNTIME_GAPS = ("tests-not-run", "not-observed", "files-not-executed", "observed-conflict")
+
+
+def runtime(manifest: Path) -> dict:
+    """What the last analysis's dynamic step observed, for a report's runtime coverage: `state` (`running` while
+    the analysis may still observe, `not-run` before any union, else `observed` or `none`), per observed
+    language its recorder (`resolver`), `sites`, `edges` and holes `closed`, the `files` with calls its tests
+    `executed` and those `not_executed` (counts), how each test run ended (`tests`), and the union's `gaps` of
+    what stayed unobserved, each with its `language`."""
+    import resolve_edges
+    manifest = Path(manifest).resolve()
+    state = resolve_edges.edge_state(manifest)
+    if state.get("state") == "running":
+        return {"state": "running", "languages": {}, "gaps": []}
+    recorded, _ = events.read(manifest.with_name(events.JOURNAL))
+    ready = [n for n, event in enumerate(recorded) if event["kind"] == "graph.ready"]  # each union's last event
+    if not ready:
+        return {"state": "not-run", "languages": {}, "gaps": []}
+    last = recorded[ready[-2] + 1 if len(ready) > 1 else 0:ready[-1]]
+    gaps = [{**event["data"]["gap"], "language": event["data"].get("language") or event["data"]["gap"].get("language")}
+            for event in last if event["kind"] == "gap" and event["step"] == Union.NAME
+            and event["data"].get("gap", {}).get("kind") in RUNTIME_GAPS]
+    languages = {}
+    for language, entry in sorted((state.get("languages") or {}).items()):
+        seen = (entry.get("coverage") or {}).get("observed") or {}
+        if seen.get("edges"):
+            files = seen.get("files") or {}
+            languages[language] = {
+                "resolver": seen.get("resolver"), "sites": seen.get("sites", 0), "edges": seen["edges"],
+                "closed": sum((seen.get("closed") or {}).values()),
+                "files": {"executed": files.get("executed", 0), "not_executed": len(files.get("not_executed") or ())},
+                "tests": [{key: test.get(key) for key in ("root", "runner", "state")}
+                          for test in seen.get("tests") or ()]}
+    return {"state": "observed" if languages else "none", "languages": languages, "gaps": gaps}

@@ -77,7 +77,7 @@ reading nor runtime evidence.
 - Files in inventory: [count]: parsed source [N], configuration/documentation [N], presentation [N]; other extensions absent from all counts. Manifest `scope` excludes [N] dot directories ([names]) and [N] Git-ignored paths; ignore rules [applied | unavailable]
 - Static graph mapping: [manifest binding, seeds/hops, AST coverage/gaps, truncation, parser fallback; phase-ledger links]
 - Files read in depth: [count; actual files/ranges from phase ledgers]
-- Exercised at runtime: none. This is static analysis; if the user supplied runtime evidence, cite it here instead
+- Exercised at runtime: [what the analysis's dynamic step observed, from `snapshot.py runtime <run-dir>`: per language the recorder, the sites, edges and holes closed, the files with calls its tests executed and did not, how each test run ended, and its gaps. `running`: the analysis is still observing, say so; `not-run` or `none`: none, with the gaps' causes. Runtime evidence the user supplied is cited beside it]
 - Phases completed: [list]
 - Date: [timestamp]
 ```

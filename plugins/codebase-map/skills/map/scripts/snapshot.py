@@ -1655,6 +1655,18 @@ def cmd_resolve(args: argparse.Namespace) -> int:
         return 2
 
 
+def cmd_runtime(args: argparse.Namespace) -> int:
+    """What the run's dynamic step observed, for the final report's runtime coverage (`pipeline.runtime`)."""
+    import pipeline
+    try:
+        run_dir, _root, state = _run_context(Path(args.run_dir))
+        print(json.dumps(pipeline.runtime(resolve_run_snapshot(run_dir, state)), separators=(",", ":")))
+        return 0
+    except (RunControlError, OSError, ValueError, KeyError) as error:
+        print(json.dumps({"error": str(error)}, separators=(",", ":")), file=sys.stderr)
+        return 2
+
+
 def cmd_write(args: argparse.Namespace) -> int:
     import resolve_edges
     try:
@@ -1942,6 +1954,10 @@ def _add_run_commands(sub) -> None:
     resolve_parser = sub.add_parser("resolve", help="resolve the declared snapshot path and small header of a bound run")
     resolve_parser.add_argument("run_dir")
     resolve_parser.set_defaults(func=cmd_resolve)
+
+    runtime_parser = sub.add_parser("runtime", help="what the run's dynamic step observed, per language, and its gaps")
+    runtime_parser.add_argument("run_dir")
+    runtime_parser.set_defaults(func=cmd_runtime)
 
     diff_parser = sub.add_parser("diff", help="diff a parent run's snapshot against the worktree")
     diff_parser.add_argument("parent_run")

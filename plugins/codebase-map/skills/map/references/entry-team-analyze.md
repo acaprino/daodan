@@ -432,7 +432,7 @@ Output Files:
   Root mirror:              .daodan/map/01..08.md (for downstream consumers)
 
 Summary:
-  - Files in inventory: <count>  |  Read in depth: <count>  |  Exercised at runtime: none
+  - Files in inventory: <count>  |  Read in depth: <count>  |  Exercised at runtime: <files executed per language, from snapshot.py runtime, or none and why>
   - Anti-patterns:   <count>  |  Red flags: <count>  |  Tech debt: <count>
   - Documentation gaps: <count>
   - Cross-partition flows: <count>

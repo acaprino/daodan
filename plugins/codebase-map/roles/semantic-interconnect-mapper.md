@@ -74,7 +74,7 @@ One file at the path the prompt names; defaults: a host documentation workflow i
 - Graph discovery: [queried files/hops, manifest binding, coverage gaps, truncation]
 - Files in manifest inventory: [count within its recorded scope]
 - Files read in depth: [count and actual files/ranges; exclude outline-only metadata]
-- Runtime evidence: [none unless supplied by the user; cite any supplied evidence]
+- Runtime evidence: [what the dynamic step observed (`snapshot.py runtime <run-dir>`) and any evidence the user supplied; none otherwise, with the gaps' causes]
 - Top-level entry points: [list with `file:line`]
 - Codebase Map mode: [lite|full]
 

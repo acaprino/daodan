@@ -163,7 +163,7 @@ failed or aborted delivery, record recoverable state and invoke
 `snapshot.py unregister $RUN_DIR`; the mirror stays untouched.
 
 Present exact run directory, parent and publication/partial status, produced
-files, inventory/read-in-depth/runtime coverage (runtime: none unless supplied),
+files, inventory/read-in-depth/runtime coverage (runtime: `snapshot.py runtime`, `references/phase-7.md`),
 risks and documentation gaps. Updates link `changes.md` and count confirmed,
 revised, retired and added claims. Derive a prioritized action plan from cited
 findings and offer development, readability or knowledge work as a separate task.

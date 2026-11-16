@@ -87,8 +87,9 @@ Every tool returns structured JSON and reports errors as MCP tool failures.
 Source requests use the source reader's selection shape; `full_file: true`
 requests the entire inventoried file, and identity checks and whole-file
 fallbacks are those of `references/evidence.md`. Emitted bytes are not a
-model's deep-reading ledger, and runtime coverage stays none unless the user
-supplied it.
+model's deep-reading ledger, nor runtime coverage: that is the dynamic step's
+observation, each language's `coverage.observed` in `codebase_map_status`'s
+engine state (`snapshot.py runtime <run-dir>` from a shell).
 
 ```json
 {

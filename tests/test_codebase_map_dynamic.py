@@ -513,6 +513,50 @@ def test_the_union_says_what_was_observed_and_what_stayed_unobserved(case):
     assert seen[-1]["kind"] == "graph.ready"
 
 
+def test_a_report_reads_what_the_dynamic_step_observed_from_the_run(case):
+    """The final report's runtime coverage (`references/phase-7.md`): per language what the last analysis's
+    dynamic step observed, the files its tests executed and did not, how each test run ended, and its gaps."""
+    played, manifest, _sites = case
+    static_store(manifest, {("tests/test_lib.py", 10, "build"): APPLY})
+    manifest.with_name(pipeline.events.JOURNAL).unlink(missing_ok=True)
+    assert pipeline.runtime(manifest)["state"] == "not-run"  # no analysis has observed anything yet
+    result, _seen, _asked = step(manifest, Container(played))
+    pipeline.Union.run(pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL))))
+    said = pipeline.runtime(manifest)
+    python, seen = result["languages"]["python"], said["languages"]["python"]
+    assert said["state"] == "observed"
+    assert (seen["sites"], seen["edges"], seen["closed"]) == (python["sites"], python["edges"], python["closed"])
+    assert seen["resolver"] == RESOLVER and seen["files"]["executed"] > 0 and seen["files"]["not_executed"] == 1
+    assert [(test["root"], test["runner"], test["state"]) for test in seen["tests"]] == [(".", "pytest", "ran")]
+    assert sorted(gap["kind"] for gap in said["gaps"]) == ["files-not-executed", "observed-conflict"]
+    assert all(gap["language"] == "python" for gap in said["gaps"])
+
+
+def test_a_report_says_why_a_run_observed_nothing(case):
+    _played, manifest, _sites = case
+    static_store(manifest)
+    manifest.with_name(pipeline.events.JOURNAL).unlink(missing_ok=True)
+    refused = container.Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
+    result, _seen, _asked = step(manifest, engine=refused)
+    context = pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL)))
+    context.results["dynamic"] = result
+    pipeline.Union.run(context)
+    said = pipeline.runtime(manifest)
+    assert said["state"] == "none" and said["languages"] == {}
+    [gap] = said["gaps"]
+    assert gap["kind"] == "not-observed" and gap["language"] == "python" and refused.cause in gap["detail"]
+
+
+def test_the_runtime_coverage_of_a_run_is_one_shell_command(tmp_path, capsys):
+    import json
+    import mcp_service
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/one.py").write_text("def answer():\n    return 7\n", encoding="utf-8")
+    mcp_service.MapService(tmp_path).create_run("src", "r", engine=False)
+    assert snapshot.cmd_runtime(SimpleNamespace(run_dir=str(tmp_path / ".daodan/map/runs/r"))) == 0
+    assert json.loads(capsys.readouterr().out) == {"state": "not-run", "languages": {}, "gaps": []}
+
+
 def fake(observed: dict, entry: str = "dynamic-fake-python") -> SimpleNamespace:
     """An observer of Python whose run returns `observed`, planned with one run."""
     planned = {"runs": [{"root": ".", "runner": "pytest"}], "gaps": []}

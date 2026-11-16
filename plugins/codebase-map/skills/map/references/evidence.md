@@ -226,7 +226,8 @@ Read source as `## Source reading` directs, from the run's resolved
 semantic verification from validated source blocks expanded to the definitions
 and implicit context the claim needs. Record the files and ranges read. Neither
 outline metadata nor a file's presence in the inventory establishes semantic
-verification or runtime coverage.
+verification or runtime coverage; runtime coverage is only what the dynamic step
+observed (`snapshot.py runtime <run-dir>`).
 
 | Documentation Type | Required Evidence |
 |-------------------|-------------------|
