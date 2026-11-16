@@ -6,7 +6,9 @@ parents and properties resolved, and prints every project of it after inheritanc
 the registries (the help plugin, parent poms, the build's extensions) and loads the build's extensions. `read`
 turns each project into a `maven-module` unit named `groupId:artifactId`, rooted at the folder of its build
 directory's parent, with its pom.xml as manifest, the reactor projects it depends on as edges, and its source
-folders (the build's own and the ones a plugin's configuration names, `PLUGIN_SOURCES`); the reactor is a `maven` workspace with the folders of the projects its root's modules list, profiles
+folders (the build's own and the ones a plugin's configuration names, `PLUGIN_SOURCES`), and as registries the
+origins of the repositories and plugin repositories it resolves from (Central from the super POM, those the pom or a
+parent declares); the reactor is a `maven` workspace with the folders of the projects its root's modules list, profiles
 included, as members. A pom.xml no reactor holds states nothing: Maven does not build it.
 """
 from __future__ import annotations
@@ -14,6 +16,8 @@ from __future__ import annotations
 import posixpath
 from pathlib import PurePosixPath
 import xml.etree.ElementTree as ET
+
+from premap.origins import origin
 
 NAME, VERSION, RANK = "maven", "3.10.0", "model"  # `indexers/jvm.py` MAVEN
 DOWNLOAD = (("https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.10.0/apache-maven-3.10.0-bin.zip",
@@ -25,6 +29,7 @@ SCRIPT = f'o=$(mktemp) && mvn -B -ntp -q {HELP} -Doutput="$o" >&2 && cat "$o"'
 NS = "{http://maven.apache.org/POM/4.0.0}"
 # Where a plugin's configuration names the folders it compiles: kotlin-maven-plugin, build-helper-maven-plugin.
 PLUGIN_SOURCES = (("sourceDirs", "sourceDir"), ("sources", "source"))
+REPOSITORIES = (("repositories", "repository"), ("pluginRepositories", "pluginRepository"))
 
 
 def _folder(rel: str) -> str:
@@ -78,12 +83,15 @@ def read(context, commands, results):
             for plugin in project.findall(f"{NS}build/{NS}plugins/{NS}plugin"):  # the folders a plugin compiles
                 sources += [rel((node.text or "").strip()) for held, tag in PLUGIN_SOURCES
                             for node in plugin.iterfind(f".//{NS}{held}/{NS}{tag}")]
+            registries = {origin(_text(repository, f"{NS}url")) for held, tag in REPOSITORIES
+                          for repository in project.findall(f"{NS}{held}/{NS}{tag}")} - {None}
             units.append({"name": key, "kind": "maven-module", "root": folder,
                           "manifest": posixpath.join(folder, FILE).removeprefix("./"),
                           "source_roots": sorted({s for s in sources if s and s in context.inventory.directories}),
                           "depends_on": sorted({f"{_text(d, f'{NS}groupId')}:{_text(d, f'{NS}artifactId')}"
                                                 for d in project.findall(f"{NS}dependencies/{NS}dependency")}
-                                               & set(found) - {key})})
+                                               & set(found) - {key}),
+                          **({"registries": sorted(registries)} if registries else {})})
         top = projects[0] if projects else None
         if top is not None and len(found) > 1:
             first = rel(posixpath.dirname(_text(top, f"{NS}build/{NS}directory") or "")) or command["cwd"]

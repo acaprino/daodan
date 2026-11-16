@@ -43,7 +43,7 @@
     },
     {
       "tool": "python",
-      "version": "3.12-slim",
+      "version": "3.12",
       "declared_in": "Dockerfile"
     }
   ],

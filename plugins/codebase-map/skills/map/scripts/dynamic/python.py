@@ -14,7 +14,9 @@ installed by the preparation (mise, `preparation.toolchains`); a range that excl
 names no version is a `python_unavailable` gap.
 
 `observe` is one container run (`container.run_in_container`, `IMAGE`). The preparation, with the registries:
-the toolchain, uv, the restore of each environment, the project itself installed in it where the folder has a
+the toolchain, uv, where the project declares VCS requirements git and the hosts their URLs name
+(`preparation.python_vcs`), the restore of each environment (one whose install fails is installed again without
+the VCS requirements, `vcs_not_installed`), the project itself installed in it where the folder has a
 build configuration (editable, without dependencies: the tests import it as installed), and pytest at Daodan's
 pin (`PYTEST`) where the project declares it as its runner and its environment does not hold it, which is said
 (`runner_brought`). The execution, with no network: each run under the recorder, loaded through a
@@ -186,7 +188,7 @@ def plan(record: dict, files: list[str], read) -> dict:
                      "argv": ["-m", test["runner"], *test.get("args", ()), *(
                          [KEEP_GOING] if test["runner"] == "pytest" else [])],
                      "env": env, "manager": held.get(env), "install": bool(packaged)})
-    return {"runs": runs, "gaps": gaps, "toolchains": toolchains}
+    return {"runs": runs, "gaps": gaps, "toolchains": toolchains, "vcs": preparation.python_vcs(sorted(files), read)}
 
 
 def _interpreter(number: int, run: dict) -> str:
@@ -207,10 +209,12 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
     for run in runs:
         if run["env"] is not None and run["env"] not in restores.setdefault(run["manager"], []):
             restores[run["manager"]].append(run["env"])
-    needs = preparation.setup({"uv", *(need for manager in restores
-                                       for need in preparation.RESTORES[manager].get("needs", ()))})
+    vcs = planned.get("vcs") or {"names": [], "hosts": []}
+    needs = preparation.setup({"uv", *(["git"] if vcs["names"] or vcs["hosts"] else []),
+                               *(need for manager in restores
+                                 for need in preparation.RESTORES[manager].get("needs", ()))})
     prepare = ["set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']} {VENVS}", *chains["lines"],
-               *needs["lines"], preparation.UV_ENV,
+               *needs["lines"], preparation.UV_ENV, *([preparation.without(vcs["names"])] if vcs["names"] else []),
                *(preparation.restore(manager, folders) for manager, folders in restores.items())]
     execute = ["set -u", f"mkdir -p {OUT}", f"{PYTHON3} {IN}/{RECORDER.name} site {SITE} || exit 70",
                # $1 the run, $2 its folder, $3 its Python, then the runner's arguments
@@ -236,7 +240,7 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
                            f" pytest=={PYTEST} >&2 && echo 'DAODAN-DYNAMIC {number} brought pytest {PYTEST}' >&2; }}")
         execute.append(f"run {number} {shlex.quote(run['root'])} {python} {shlex.join(run['argv'])}")
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n",
-            {"files": [*chains["files"], *needs["files"]], "hosts": (*chains["hosts"], *needs["hosts"]),
+            {"files": [*chains["files"], *needs["files"]], "hosts": (*chains["hosts"], *needs["hosts"], *vcs["hosts"]),
              "gaps": chains["gaps"]})
 
 

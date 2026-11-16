@@ -13,7 +13,8 @@ ride on the answers (`gaps`) and are the source's. The join keeps one entry per 
 it (`tool@version`).
 Where two sources give a field different values, the value of the source with precedence stays (`RANKS`: a
 model command, a file reader, a scanner; between equals, the earlier in `SOURCES`) and the other goes to the
-entry's `conflicts` with its source. What no source establishes is a gap with its class. Deterministic for the
+entry's `conflicts` with its source; a unit's `registries`, where some of its dependencies come from as each
+source reads it, add up. What no source establishes is a gap with its class. Deterministic for the
 same snapshot, source versions and command outputs.
 """
 from __future__ import annotations
@@ -53,6 +54,7 @@ IDENTITY = {  # the fields that make two entries one fact, from the strictest to
     "workspace": (("root", "tool"),),  # two build systems in one folder are two workspaces
     "toolchains": (("tool", "declared_in", "version"), ("tool", "declared_in")),
     "tests": (("root", "runner"),),  # how the tests of a folder run: the dynamic step's command
+    "services": (("declared_in",),),  # a service container a CI job starts beside its steps: the dynamic step's too
 }
 EXECUTES = {  # unit kinds whose model or index exists only when the build runs project code
     "gradle-project": "Gradle runs the build scripts for the model and the compile tasks the index needs",
@@ -124,6 +126,8 @@ def _set(entry: dict, facet: str, field: str, key: str | None, value, source: st
     if name not in holder:
         holder[name] = value
         entry["_from"][where] = source
+    elif (facet, where) == ("units", "registries"):  # each source states where some dependencies come from
+        holder[name] = sorted({*holder[name], *value})
     elif not _same(facet, field, holder[name], value):
         entry.setdefault("conflicts", []).append({"field": where, "value": value, "source": source,
                                                   "kept_from": entry["_from"][where]})

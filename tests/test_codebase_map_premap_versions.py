@@ -150,6 +150,29 @@ def test_gradle_runs_once_per_top_build_with_the_registries_open():
     assert command["argv"][:2] == ["sh", "-c"] and command["argv"][-1] == gradle.INIT
 
 
+def test_the_repositories_a_gradle_build_resolves_from_are_registries():
+    """Gradle's model names the repositories the settings (plugin management, dependency resolution management),
+    each project and its buildscript resolve from: their origins are the project's registries, credentials left
+    out, a local folder no host."""
+    def record(**fields):
+        return "\x1e" + json.dumps(fields)
+    project = {"buildFileExists": True}
+    stdout = "\n".join([
+        record(kind="build", root="/work", name="shop", nested=False, gradle="9.9.1", projects=[
+            {**project, "path": ":", "dir": "/work", "buildFile": "/work/build.gradle"},
+            {**project, "path": ":app", "dir": "/work/app", "buildFile": "/work/app/build.gradle"}],
+            repositories=["https://plugins.gradle.org/m2", "https://repo.maven.apache.org/maven2/"]),
+        record(kind="project", build=None, path=":", buildFile="/work/build.gradle", uses=[], facts={},
+               repositories=[]),
+        record(kind="project", build=None, path=":app", buildFile="/work/app/build.gradle", uses=[], facts={},
+               repositories=["https://user:token@jitpack.io/", "file:/root/.m2/repository/"])])
+    command = {"tool": "gradle", "argv": ["sh", "-c", gradle.SCRIPT, "gradle", gradle.INIT], "cwd": "."}
+    facts = gradle.read(None, [command], [{"returncode": 0, "stdout": stdout, "stderr": "", "root": "/work"}])["facts"]
+    assert {u["name"]: u.get("registries") for u in facts["units"]} == {
+        ":": ["https://plugins.gradle.org", "https://repo.maven.apache.org"],
+        ":app": ["https://jitpack.io", "https://plugins.gradle.org", "https://repo.maven.apache.org"]}
+
+
 def test_the_projects_the_settings_make_by_code_are_the_units(tmp_path):
     """The settings include `modules/*` by a loop that leaves `legacy` out, move `:api` to another folder and
     include a build: the parent `:modules` exists without a build file, `modules/legacy` is no project; `:api`
@@ -211,6 +234,32 @@ def test_a_failed_configure_keeps_the_projects_and_states_no_target(tmp_path):
     assert "toolchains" not in record
     gaps = [g for g in record["gaps"] if g["kind"].startswith("model_")]
     assert [(g["kind"], g["path"]) for g in gaps] == [("model_partial", ".")] and "jcenter" in gaps[0]["detail"]
+
+
+def test_the_android_platform_and_build_tools_an_android_project_compiles_with(tmp_path):
+    """The Android plugin's `compileSdk`, as the corpus names it (`android-sdk`), and the build tools it runs (its
+    own default when the build sets none): the SDK packages the preparation installs (`preparation.android`)."""
+    record = gradle_build(tmp_path, "jvm-android-app-lib")
+    assert toolchains(record, "android-sdk", "android-build-tools") == [
+        ("android-build-tools", "34.0.0", "app/build.gradle.kts#android.buildToolsVersion"),
+        ("android-build-tools", "34.0.0", "core/build.gradle.kts#android.buildToolsVersion"),
+        ("android-sdk", "35", "app/build.gradle.kts#android.compileSdk"),
+        ("android-sdk", "35", "core/build.gradle.kts#android.compileSdk")]
+
+
+def test_an_android_value_the_model_does_not_give_is_a_gap_naming_the_package():
+    """An add-on's target (`compileSdkAddon`) has no API level: Gradle's model gives the plugin's value empty."""
+    build = {"kind": "build", "root": "/w", "name": "x", "nested": False, "gradle": "9.9.1", "projects": [
+        {"path": ":", "dir": "/w", "buildFile": "/w/build.gradle.kts", "buildFileExists": True}]}
+    project = {"kind": "project", "build": None, "path": ":", "buildFile": "/w/build.gradle.kts", "uses": [],
+               "facts": {"android.compileSdk": "", "android.buildToolsVersion": "35.0.0"}}
+    stdout = "".join(gradle.SEPARATOR + json.dumps(record) + "\n" for record in (build, project))
+    read = gradle.read(None, [{"cwd": "."}], [{"root": "/w", "returncode": 0, "stdout": stdout, "stderr": ""}])
+    assert read["facts"]["toolchains"] == [{"tool": "android-build-tools", "version": "35.0.0",
+                                            "declared_in": "build.gradle.kts#android.buildToolsVersion"}]
+    [gap] = read["gaps"]
+    assert (gap["kind"], gap["path"]) == ("toolchain_undeclared", "build.gradle.kts")
+    assert "android.compileSdk" in gap["detail"] and "platforms;android-" in gap["detail"]
 
 
 # ------------------------------------------------------------ CMake and Cargo

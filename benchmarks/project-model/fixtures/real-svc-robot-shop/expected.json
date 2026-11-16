@@ -79,9 +79,9 @@
     {"tool": "go", "version": "1.17", "declared_in": "dispatch/Dockerfile"},
     {"tool": "python", "version": "3.9", "declared_in": "payment/Dockerfile"},
     {"tool": "python", "version": "3.9", "declared_in": "load-gen/Dockerfile"},
-    {"tool": "php", "version": "7.4-apache", "declared_in": "ratings/Dockerfile"},
+    {"tool": "php", "version": "7.4", "declared_in": "ratings/Dockerfile"},
     {"tool": "php", "version": "^7.4", "declared_in": "ratings/html/composer.json"},
-    {"tool": "java", "version": "8-jdk", "declared_in": "shipping/Dockerfile"},
+    {"tool": "java", "version": "8", "declared_in": "shipping/Dockerfile"},
     {"tool": "java", "version": "1.8", "declared_in": "shipping/pom.xml#properties.java.version"}
   ],
   "dependencies": [

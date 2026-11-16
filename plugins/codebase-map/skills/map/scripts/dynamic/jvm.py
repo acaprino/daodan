@@ -21,8 +21,8 @@ So the recorder is Daodan's own, `jvm_record/`: `Agent.java` rewrites every clas
 as it loads (`java.lang.instrument`, part of the JDK) and `Recorder.java` is what the rewritten code calls. It
 rewrites with ASM (`ASM`, BSD-3-Clause, one jar from Maven Central pinned by sha256): the JDK's own class-file
 API exists only from JDK 24 and the image holds JDK 17. The sources are compiled in the container's preparation
-by the JDK that runs the build (`agent_commands`, class files of Java `RELEASE`), so no binary of Daodan's is
-carried; Daodan carries the sources and the jar (`observe`).
+by the image's JDK (`agent_commands`, class files of Java `RELEASE`, so a test JVM from 8 on loads them), so no
+binary of Daodan's is carried; Daodan carries the sources and the jar (`observe`).
 
 The agent is attached without changing the project: every JVM reads JAVA_TOOL_OPTIONS when it starts, Gradle's
 Test task forks its test JVMs with the build's environment ("Defaults to the environment of this process"), and
@@ -38,8 +38,9 @@ file (one that imports JUnit, TestNG, kotlin.test, Kotest or Spock) runs its bui
 phase, Surefire's where the packaging binds it; under Gradle, in each project, its `test` task, else (Kotlin
 Multiplatform, which has none) each task of type Test it has (`jvmTest`), as Gradle names them once it has
 configured the build. A folder Gradle and Maven both build runs the same tests under each: Maven's run only when
-Gradle's did not. `observe` is one container run per build, `indexers/jvm.py` `run`: its image, JDK, build tools
-and restore. The preparation, with the registries: the agent is built, the tests are compiled and their
+Gradle's did not. `observe` is one container run per build, `indexers/jvm.py` `run`: its image, build tools and
+restore, on the JDK `build_jdk` names. The preparation, with the registries: the agent is built, the tests are
+compiled and their
 classpath resolved. Under Gradle that is `jvm_record/tests.gradle`, an init script that writes the paths of the
 Test tasks to run: their runtime-only dependencies (a JUnit engine, a JDBC driver) are not on the compile
 classpath, and offline Gradle downloads nothing. Under Maven, `test-compile` resolves the test scope, and
@@ -68,7 +69,7 @@ import json
 import posixpath
 import re
 import shlex
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import preparation
 from indexers import jvm
@@ -78,7 +79,8 @@ ENTRY, VERSION, LANGUAGES = "dynamic-record-jvm", "1", ("java", "kotlin")
 ASM = ("org.ow2.asm:asm:9.11.1", "ae4e6e10d59d0a1500317764b21881ad883f8550e33c66e6142f7032c6fb566c")
 RECORD = Path(__file__).resolve().parent / "jvm_record"
 AGENT = f"{preparation.IN}/dynamic-jvm"  # the agent's sources and ASM, and the jars built from them, in the container
-RELEASE = 11  # the agent's class files: it reads stack frames' descriptors (Java 10), so test JVMs from 11 on
+RELEASE = 8  # the agent's class files, for test JVMs from 8 on; its JDK 9 and 10 parts are of their JDK
+IMAGE_JDK = "/opt/java/openjdk/bin/"  # the image's JDK, which builds the agent whichever JDK runs the build
 SYNTHETIC, BRIDGE = 0x1000, 0x40
 GRADLE_TEST = ["gradle", "--no-daemon", "--offline", "--continue", "--console=plain"]  # + the preparation's tasks
 MAVEN_TEST = ["mvn", "-B", "-o", "-fae", "-Dmaven.test.failure.ignore=true", "test"]
@@ -99,16 +101,22 @@ EXAMPLES = 20
 NO_CALL = "no call of that name on its line"
 
 
-def agent_commands(source: str, into: str, separator: str = ":") -> list[list[str]]:
-    """The commands that build the agent from the sources in `source` into `into`, where `asm.jar` already is:
-    `record.jar` for the bootstrap class path, `agent.jar` with the manifest that names both."""
-    release = ["javac", "--release", str(RELEASE), "-nowarn"]
-    return [[*release, "-d", f"{into}/record", f"{source}/Recorder.java"],
-            ["jar", "--create", "--file", f"{into}/record.jar", "-C", f"{into}/record", "."],
-            [*release, "-classpath", f"{into}/asm.jar{separator}{into}/record", "-d", f"{into}/agent",
-             f"{source}/Agent.java"],
-            ["jar", "--create", "--file", f"{into}/agent.jar", "--manifest", f"{source}/MANIFEST.MF",
-             "-C", f"{into}/agent", "."]]
+def agent_commands(source: str, into: str, separator: str = ":", bin: str = "") -> list[list[str]]:
+    """The commands that build the agent from the sources in `source` into `into`, where `asm.jar` already is, with
+    the JDK in `bin`: `record.jar` for the bootstrap class path, `agent.jar` with the manifest that names both. Of
+    Java `RELEASE`, but `Walker` (StackWalker's frame descriptors, JDK 10) and `Modular` (modules, JDK 9), which
+    the agent loads only on their JDK."""
+    def javac(release: int, *args: str) -> list[str]:
+        return [f"{bin}javac", "--release", str(release), "-nowarn", *args]
+
+    record, agent, asm = f"{into}/record", f"{into}/agent", f"{into}/asm.jar"
+    return [javac(RELEASE, "-d", record, f"{source}/Recorder.java"),
+            javac(10, "-classpath", record, "-d", record, f"{source}/Walker.java"),
+            [f"{bin}jar", "--create", "--file", f"{into}/record.jar", "-C", record, "."],
+            javac(RELEASE, "-classpath", f"{asm}{separator}{record}", "-d", agent, f"{source}/Agent.java"),
+            javac(9, "-classpath", separator.join((asm, record, agent)), "-d", agent, f"{source}/Modular.java"),
+            [f"{bin}jar", "--create", "--file", f"{into}/agent.jar", "--manifest", f"{source}/MANIFEST.MF",
+             "-C", agent, "."]]
 
 
 def external(callee: dict) -> dict:
@@ -121,6 +129,26 @@ def external(callee: dict) -> dict:
 
 def _inside(rel: str, folder: str) -> bool:
     return not folder or folder == "." or rel == folder or rel.startswith(folder.rstrip("/") + "/")
+
+
+def build_jdk(run: dict, stated) -> dict | None:
+    """The JDK a build runs on, None for the image's: one the pre-map states above the image's, as for the analyzer
+    (`indexers/jvm.py` `wanted_jdk`); for Maven, which compiles with the JDK that runs it, else the JDK of the
+    newest level the build's poms declare (`source`, `target`, `java.version`; Temurin's oldest, 8, for one below)
+    when it is below the image's: a compiler plugin of the pom's time may not read a newer JDK's classes (Error
+    Prone's own javac 9). Not for a pom that declares a `release`, which needs javac 9 or later; not for Gradle,
+    which runs on the image's JDK and finds the toolchain its scripts ask for."""
+    stated = [item for item in stated or () if item.get("tool") == "java"]
+    above = jvm.wanted_jdk(stated)
+    if above or run["tool"] != "maven":
+        return above
+    poms = [item for item in stated if PurePosixPath(item.get("declared_in", "").split("#")[0]).name == "pom.xml"
+            and _inside(item["declared_in"].split("#")[0], run["root"])]
+    if not poms or any(item["declared_in"].endswith("release") for item in poms):
+        return None
+    newest = max(poms, key=lambda item: jvm._major(item["version"]) or 0)
+    level = jvm._major(newest["version"]) or jvm.JDK
+    return {**newest, "version": str(max(level, 8))} if level < jvm.JDK else None
 
 
 def plan(record: dict, files: list[str], read) -> dict:
@@ -148,7 +176,7 @@ def plan(record: dict, files: list[str], read) -> dict:
 
 def scripts(run: dict) -> tuple[str, str]:
     """The preparation's body and the execution's, each after `indexers/jvm.py`'s head (`jvm.script`)."""
-    build = " && ".join(shlex.join(command) for command in agent_commands(AGENT, AGENT))
+    build = " && ".join(shlex.join(command) for command in agent_commands(AGENT, AGENT, bin=IMAGE_JDK))
     prepare = [f"step agent sh -c {shlex.quote(build)} || exit 70", f"step compile {COMPILE[run['tool']]} || exit $?"]
     if run["tool"] == "maven":
         prepare += [f"mkdir -p {NO_JVM}/bin && printf '#!/bin/sh\\nexit 0\\n' > {NO_JVM}/bin/java"
@@ -491,7 +519,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         prepare, execute = scripts(run)
         result, steps, back = jvm.run(Path(project) / run["root"] if run["root"] else Path(project), work, prepare,
                                       execute, memory=MEMORY, engine=engine,
-                                      toolchains=planned.get("toolchains") or (), timeout=LIMIT + 300, inputs=carried)
+                                      toolchains=planned.get("toolchains") or (), timeout=LIMIT + 300, inputs=carried,
+                                      jdk=build_jdk(run, planned.get("toolchains")))
         attempt = {"root": run["root"], "gaps": list(result.get("gaps", []))}
         attempts.append(attempt)
         if result["state"] in ("gap", "failed"):

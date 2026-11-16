@@ -32,10 +32,10 @@
   ],
   "workspace": null,
   "toolchains": [
-    {"tool": "node", "version": "18-slim", "declared_in": "result/Dockerfile"},
-    {"tool": "node", "version": "8.9-slim", "declared_in": "result/tests/Dockerfile"},
-    {"tool": "python", "version": "3.11-slim", "declared_in": "vote/Dockerfile"},
-    {"tool": "python", "version": "3.9-slim", "declared_in": "seed-data/Dockerfile"},
+    {"tool": "node", "version": "18", "declared_in": "result/Dockerfile"},
+    {"tool": "node", "version": "8.9", "declared_in": "result/tests/Dockerfile"},
+    {"tool": "python", "version": "3.11", "declared_in": "vote/Dockerfile"},
+    {"tool": "python", "version": "3.9", "declared_in": "seed-data/Dockerfile"},
     {"tool": "dotnet", "version": "7.0", "declared_in": "worker/Dockerfile"}
   ],
   "dependencies": [

@@ -365,7 +365,7 @@
   },
   {
    "tool": "java",
-   "version": "21-bullseye",
+   "version": "21",
    "declared_in": ".devcontainer/devcontainer.json#build.args.VARIANT"
   },
   {

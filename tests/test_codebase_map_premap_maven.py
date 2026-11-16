@@ -93,3 +93,21 @@ def test_the_source_folders_are_the_ones_the_build_and_its_plugins_declare(tmp_p
     record = premap.write(manifest, sources=(maven,), runner=answer)
     [unit] = [u for u in record["units"] if u["kind"] == "maven-module"]
     assert unit["source_roots"] == ["src/generated/java", "src/main/java", "src/main/kotlin", "src/test/kotlin"]
+
+
+def test_the_repositories_maven_resolves_from_are_registries(tmp_path):
+    """The effective pom names every repository a module resolves its dependencies and plugins from: Central from
+    the super POM, and the ones the pom or a parent declares (JitPack here), credentials left out."""
+    record = build(tmp_path, "profile-module")
+    units = [u for u in record["units"] if u["kind"] == "maven-module"]
+    assert units and all(u["registries"] == ["https://repo.maven.apache.org"] for u in units)
+    [run] = json.loads((ANSWERS / "profile-module.json").read_text(encoding="utf-8"))["runs"]
+    jitpack = "<repository><id>jitpack</id><url>https://user:token@jitpack.io</url></repository>"
+    stdout = run["result"]["stdout"].replace("<repositories>", "<repositories>" + jitpack)
+    project = tmp_path / "jitpack"
+    shutil.copytree(ANSWERS / "profile-module", project)
+    manifest = tmp_path / "jitpack-out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    record = premap.write(manifest, sources=(maven,), runner=lambda commands: [{**run["result"], "stdout": stdout}])
+    assert all(u["registries"] == ["https://jitpack.io", "https://repo.maven.apache.org"]
+               for u in record["units"] if u["kind"] == "maven-module")

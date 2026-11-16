@@ -2,8 +2,8 @@
  "versions": {
   "uv": "0.11.28"
  },
- "image": "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5",
- "line": "export UV_PYTHON_DOWNLOADS=never UV_NO_PROGRESS=1; for f in 'good' 'bad'; do ( cd \"$f\" && UV_PROJECT_ENVIRONMENT=\"/daodan/state/venvs/$f\" uv sync --locked --all-packages --no-install-project ) > /tmp/daodan-restore.log 2>&1 || { printf 'DAODAN-RESTORE-FAILED uv %s\\n' \"$f\"; { grep -E '^error|needs to be updated|No solution' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; done; true",
+ "image": "modal debian_slim python 3.13 (tests/modal_pytest.py)",
+ "line": "export UV_PYTHON_DOWNLOADS=never UV_NO_PROGRESS=1; for f in 'good' 'bad'; do ( cd \"$f\" && UV_PROJECT_ENVIRONMENT=\"/daodan/state/venvs/$f\" uv sync --locked --all-packages --no-install-project ) > /tmp/daodan-restore.log 2>&1 || if [ -s /daodan/state/without-vcs.txt ]; then mv /tmp/daodan-restore.log /tmp/daodan-restore.log.vcs; ( cd \"$f\" && UV_PROJECT_ENVIRONMENT=\"/daodan/state/venvs/$f\" uv sync --locked --all-packages --no-install-project $(sed 's/ .*//; s/^/--no-install-package /' /daodan/state/without-vcs.txt) ) > /tmp/daodan-restore.log 2>&1 && { printf 'DAODAN-VCS-FAILED uv %s\\n' \"$f\"; { grep -E '^error|needs to be updated|No solution|^ *[\u00d7\u2502\u251c\u2570]|^ *Caused by' /tmp/daodan-restore.log.vcs || tail -n 30 /tmp/daodan-restore.log.vcs; } | head -n 30; echo DAODAN-VCS-END; } >&2 || { cat /tmp/daodan-restore.log >> /tmp/daodan-restore.log.vcs; { printf 'DAODAN-RESTORE-FAILED uv %s\\n' \"$f\"; { grep -E '^error|needs to be updated|No solution|^ *[\u00d7\u2502\u251c\u2570]|^ *Caused by' /tmp/daodan-restore.log.vcs || tail -n 30 /tmp/daodan-restore.log.vcs; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; }; else { printf 'DAODAN-RESTORE-FAILED uv %s\\n' \"$f\"; { grep -E '^error|needs to be updated|No solution|^ *[\u00d7\u2502\u251c\u2570]|^ *Caused by' /tmp/daodan-restore.log || tail -n 30 /tmp/daodan-restore.log; } | head -n 30; echo DAODAN-RESTORE-END; } >&2; fi; done; true",
  "result": {
   "returncode": 0,
   "stdout": "",

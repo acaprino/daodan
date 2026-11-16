@@ -4,7 +4,8 @@
 `uv export --frozen --all-packages --no-hashes --format pylock.toml` (the local packages with their
 directories: units and workspace members) and `uv tree --frozen --depth 1` (each member's direct dependencies:
 those that are local packages are the edges between units). `UV_OFFLINE` and no interpreter download: uv reads
-the lock and writes nothing in the project. Registries are the indexes the exported lock names.
+the lock and writes nothing in the project. Registries are the origins the exported lock fetches from: each
+package's index, its files, its git source or its archive.
 """
 from __future__ import annotations
 
@@ -12,7 +13,8 @@ import posixpath
 from pathlib import PurePosixPath
 import re
 import tomllib
-from urllib.parse import urlsplit
+
+from premap.origins import origin
 
 NAME, VERSION, RANK = "uv", "0.11.28", "model"  # pinned by the pre-map; the container brings this release
 ENV = {"UV_OFFLINE": "1", "UV_PYTHON_DOWNLOADS": "never", "UV_NO_PROGRESS": "1"}
@@ -61,8 +63,10 @@ def read(context, commands, results):
         lock = tomllib.loads(export["stdout"])
         local = {p["name"]: posixpath.normpath(posixpath.join(folder, p["directory"]["path"]))
                  for p in lock.get("packages") or [] if isinstance(p.get("directory"), dict)}
-        registries = sorted({f"{u.scheme}://{u.netloc}" for p in lock.get("packages") or [] if isinstance(p.get("index"), str)
-                             for u in [urlsplit(p["index"])] if u.scheme in ("http", "https")})
+        packages = [p for p in lock.get("packages") or [] if isinstance(p, dict)]
+        registries = sorted({o for p in packages for url in [p.get("index"), *(
+            t.get("url") for t in [p.get("vcs"), p.get("archive"), p.get("sdist"), *(p.get("wheels") or [])]
+            if isinstance(t, dict))] if url for o in [origin(url)] if o})
         tree = answers[(folder, "tree")]
         trees = _tree(tree["stdout"]) if tree["returncode"] == 0 else {}
         for name in sorted(set(local) | set(trees)):

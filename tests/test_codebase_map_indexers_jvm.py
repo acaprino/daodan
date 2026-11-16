@@ -348,6 +348,24 @@ class PreparationTests:
         self.assertIn("api.adoptium.net", self.created()[0])
         self.assertEqual((self.arrived(1) / preparation.IN.lstrip("/") / "mise").read_bytes(), tool)
 
+    def test_each_jdk_a_gradle_toolchain_asks_for_is_installed_and_the_build_runs_on_the_newest(self):
+        """A composite build's toolchains (an included build on 17, its projects on 21): the image holds 17, the
+        preparation installs the others, and the build runs on the newest stated above the image's."""
+        self.serve_mise()
+        self.play_success()
+        field = "#java.toolchain.languageVersion"
+        self.index(toolchains=[
+            {"tool": "java", "version": "17", "declared_in": f"libs/money/build.gradle.kts{field}"},
+            {"tool": "java", "version": "21", "declared_in": f"api/build.gradle.kts{field}"},
+            {"tool": "java", "version": "11", "declared_in": f"legacy/build.gradle{field}"},
+            {"tool": "java", "version": "1.8", "declared_in": "pom.xml#maven-compiler-plugin.source"}])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@21", script)
+        self.assertIn("install java@11", script)
+        self.assertNotIn("install java@17", script)  # the image's
+        self.assertNotIn("install java@1.8", script)  # a pom's level is no toolchain of Gradle's
+        self.assertIn("\nDAODAN_JDK=21\n", script)
+
     def test_a_jdk_the_image_holds_is_not_installed(self):
         self.play_success()
         self.index(toolchains=[{"tool": "java", "version": "1.8", "declared_in": "pom.xml#x"},
@@ -372,6 +390,61 @@ class PreparationTests:
             {"tool": "node", "version": "24", "declared_in": "b"}]}
         self.assertEqual(module.structure(record)["toolchains"],
                          [{"tool": "java", "version": "21", "declared_in": "a#x"}])
+
+    ANDROID = [{"tool": "android-sdk", "version": "35", "declared_in": "app/build.gradle.kts#android.compileSdk"},
+               {"tool": "android-build-tools", "version": "34.0.0",
+                "declared_in": "app/build.gradle.kts#android.buildToolsVersion"}]
+
+    def serve_cmdline_tools(self) -> bytes:
+        tool = b"cmdline-tools"
+        url, _digest, name = preparation.NEEDS["cmdline-tools"]["files"][0]
+        self.served[url] = tool
+        patcher = mock.patch.dict(preparation.NEEDS, {"cmdline-tools": {
+            **preparation.NEEDS["cmdline-tools"], "files": [(url, digest(tool), name)]}})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return tool
+
+    def test_the_stage_is_handed_the_android_packages_the_pre_map_states(self):
+        module = java if self.language == "java" else kotlin
+        record = {"units": [], "workspace": [], "toolchains": [*self.ANDROID, {"tool": "node", "version": "24"}]}
+        self.assertEqual(module.structure(record)["toolchains"], self.ANDROID)
+
+    def test_an_android_build_has_the_sdk_packages_it_states_installed_before_the_restore(self):
+        """As a CI prepares one: Google's command-line tools, verified, carried in; the licences accepted; then
+        sdkmanager installs exactly the stated packages from Google's repository, and ANDROID_HOME names the SDK
+        in both phases (the dynamic step runs the tests in the second)."""
+        tool = self.serve_cmdline_tools()
+        self.play_success()
+        self.index(toolchains=self.ANDROID)
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertLess(script.index("--licenses"), script.index("'platforms;android-35'"))
+        self.assertLess(script.index("'build-tools;34.0.0'"), script.index(preparation.restore(self.manager(), ["."])))
+        self.assertNotIn("install java@", script)  # an API level is no JDK
+        self.assertIn("dl.google.com", self.created()[0])
+        self.assertEqual((self.arrived(1) / preparation.IN.lstrip("/") / "cmdline-tools.zip").read_bytes(), tool)
+        for phase in ("prepare", "execute"):
+            self.assertIn(f"export ANDROID_HOME={preparation.ANDROID_HOME}",
+                          (self.state / f"scripts/{phase}.sh").read_text(encoding="utf-8"))
+
+    def test_an_sdk_package_sdkmanager_could_not_install_is_a_gap_naming_it_and_why(self):
+        self.serve_cmdline_tools()
+        self.play_success()
+        failed = ("DAODAN-MISSING android-sdk@35 platforms;android-35: Warning: Failed to find package"
+                  " 'platforms;android-35'\n")
+        self.play("prepare", files={f"{jvm.KEPT.lstrip('/')}/index.scip": self.fixture / "index.scip"},
+                  text=failed + log(("index", 0, "BUILD SUCCESSFUL")))
+        result = self.index(toolchains=self.ANDROID)
+        self.assertTrue(result["indexes"])
+        self.assertEqual(result["gaps"], preparation.missing(failed))
+        self.assertIn("platforms;android-35: Warning: Failed to find package", result["gaps"][0]["detail"])
+
+    def test_a_build_that_states_no_android_package_carries_no_sdk(self):
+        self.play_success()
+        self.index(toolchains=[{"tool": "java", "version": "17", "declared_in": "pom.xml#x"}])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertNotIn("sdkmanager", script)
+        self.assertFalse((self.arrived(1) / preparation.IN.lstrip("/") / "cmdline-tools.zip").exists())
 
 
 class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
@@ -866,6 +939,46 @@ def test_each_build_tool_of_a_folder_runs_only_its_own_steps(tmp_path):
         f"scip-java index --output $OUT/index.scip {flag.format('gradle')}"]
     assert "maven_kotlin" in _phase(tmp_path / "6", kotlin.PREPARE, "maven", 0)[1]
     assert "maven_kotlin" in _phase(tmp_path / "7", kotlin.PREPARE, "", 0, files=("pom.xml",))[1]  # as before
+
+
+@unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
+def test_the_head_takes_the_jdk_it_picked_as_that_jdk_names_itself(tmp_path):
+    """JDK 8 says `1.8.0_N` where a later one says `N`: the head's check takes both for the JDK it picked."""
+    check = jvm.HEAD[jvm.HEAD.index('if ! "$JAVA_HOME/bin/java"'):]
+    check = check[:check.index("\nfi\n") + 4]
+    java = tmp_path / "bin" / "java"
+    java.parent.mkdir()
+    for said, jdk, code in (('openjdk version "1.8.0_472"', 8, 0), ('openjdk version "17.0.21" 2026-10-21', 17, 0),
+                            ('openjdk version "1.8.0_472"', 17, 70), ('openjdk version "11.0.2"', 1, 70)):
+        java.write_text(f"#!/bin/sh\necho '{said}' >&2\n", encoding="utf-8")
+        java.chmod(0o755)
+        ran = subprocess.run([BASH, "-c", f'JAVA_HOME={tmp_path}\nJDK={jdk}\nstep() {{ shift; "$@"; }}\n{check}'],
+                             capture_output=True)
+        assert ran.returncode == code, (said, jdk, ran.stdout)
+
+
+@unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
+def test_the_head_runs_on_the_jdk_it_was_given_and_hands_gradle_every_jdk_there(tmp_path):
+    """Of the JDKs the preparation installed, the build runs on the one it was given (`DAODAN_JDK`); Gradle finds
+    a toolchain among all of them and the image's (`org.gradle.java.installations.paths`) and downloads none."""
+    tools, home = tmp_path / "tools", tmp_path / "home"
+    for name, said in (("11.0.29+7", "11.0.29"), ("21.0.9+10", "21.0.9"), ("8.0.512+9", "1.8.0_512")):
+        java = tools / "mise/installs/java" / name / "bin/java"
+        java.parent.mkdir(parents=True)
+        java.write_text(f"#!/bin/sh\necho 'openjdk version \"{said}\"' >&2\n", encoding="utf-8")
+        java.chmod(0o755)
+    head = jvm.HEAD[jvm.HEAD.index("JDK=17\n"):jvm.HEAD.index("# The options scip-java")]
+    gradle = jvm.HEAD[jvm.HEAD.index('export GRADLE_USER_HOME'):]
+    script = (f"DAODAN_JDK=21\nHOME={home}\nstep() {{ shift; \"$@\"; }}\n{head}{gradle}"
+              'echo "$JAVA_HOME $JDK"\n').replace("/daodan/state/tools", str(tools))
+    ran = subprocess.run([BASH, "-c", script], capture_output=True, text=True, env={"PATH": os.environ["PATH"],
+                                                                                     "JAVA_HOME": str(tools / "x")})
+    installs = tools / "mise/installs/java"
+    assert ran.stdout.split()[-2:] == [str(installs / "21.0.9+10"), "21"], ran.stdout + ran.stderr
+    written = jvm.properties(home / ".gradle/gradle.properties")
+    assert written["org.gradle.java.installations.paths"].split(",") == [
+        "/opt/java/openjdk", *(str(installs / name) for name in ("11.0.29+7", "21.0.9+10", "8.0.512+9"))]
+    assert written["org.gradle.java.installations.auto-download"] == "false"
 
 
 @unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")

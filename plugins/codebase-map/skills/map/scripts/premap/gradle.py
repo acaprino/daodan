@@ -8,14 +8,20 @@ file); once its projects are configured, per project with a build file, the proj
 Java and Kotlin targets the build sets, never a default or a convention (that would be Gradle's own JVM, or a
 toolchain lookup): the Java toolchain's `languageVersion`, `sourceCompatibility` and `targetCompatibility` of the
 `java` extension or of a Java compile task, a compile task's `options.release`, Kotlin's `compilerOptions.jvmTarget`
-of the extension or of a compile task. Configuring runs the project's settings and build scripts; the command
+of the extension or of a compile task; with the Android plugin, the SDK platform it compiles against (`compileSdk`)
+and the build tools it runs (`buildToolsVersion`, the plugin's own default when the build sets none), which the
+build needs installed. Configuring runs the project's settings and build scripts; the command
 reaches the registries (plugins, a toolchain resolver).
 
 `read` turns each project into a `gradle-project` unit named by its path (`:app:shared`; in an included build, its
 identity path, `:tooling:core`), rooted at its folder, with its build file as manifest (none for a project without
 one, which Gradle still makes) and the projects of its build it depends on as edges; each build is a `gradle`
 workspace with its projects' folders as members; each target is a `java` toolchain declared in the project's build
-file with the field (Gradle's model says which project a value applies to, not which script set it). A build whose
+file with the field (Gradle's model says which project a value applies to, not which script set it), the Android
+values the toolchains `android-sdk` and `android-build-tools` (`ANDROID`), one the model gives none of (an add-on's
+target) a `toolchain_undeclared` gap naming its package. A project's registries are the origins of the
+repositories it and its buildscript resolve from and of those its build's settings declare (plugin management,
+dependency resolution management). A build whose
 settings did not evaluate is a `model_failed` gap; one that failed while configuring keeps its projects and is
 `model_partial`: their edges and targets are unknown.
 """
@@ -25,6 +31,8 @@ import json
 import posixpath
 from pathlib import Path, PurePosixPath
 
+from premap.origins import origin
+
 NAME, VERSION, RANK = "gradle", "9.9.1", "model"  # the Gradle of `indexers/jvm.py` GRADLE
 DOWNLOAD = (("https://services.gradle.org/distributions/gradle-9.9.1-bin.zip",
              "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228"),)  # what the runner carries
@@ -32,6 +40,9 @@ IMAGE = "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be
 SETTINGS = ("settings.gradle", "settings.gradle.kts")
 BUILDS = ("build.gradle", "build.gradle.kts")
 SEPARATOR = "\x1e"  # starts each record the init script prints
+# The Android plugin's facts: the toolchain each states and the SDK package it names (`preparation.ANDROID`).
+ANDROID = {"android.compileSdk": ("android-sdk", "platforms;android-"),
+           "android.buildToolsVersion": ("android-build-tools", "build-tools;")}
 INIT = Path(__file__).with_name("gradle_model.gradle").read_text(encoding="utf-8")
 SCRIPT = 'i=$(mktemp) && printf %s "$1" > "$i" && exec gradle --no-daemon --console=plain -q --init-script "$i" help'
 
@@ -59,7 +70,7 @@ def _name(build: str | None, path: str) -> str:
 
 
 def read(context, commands, results):
-    units, workspaces, toolchains, gaps, seen, version = {}, [], [], [], set(), None
+    units, workspaces, toolchains, gaps, seen, version, registries = {}, [], [], [], set(), None, {}
     for command, result in zip(commands, results):
         root = result.get("root") or "/"
 
@@ -91,15 +102,29 @@ def read(context, commands, results):
                 name = _name(build["name"] if build["nested"] else None, project["path"])
                 units[name] = {"name": name, "kind": "gradle-project", "root": folder,
                                "manifest": rel(project["buildFile"]) if project["buildFileExists"] else None}
+                registries[name] = {origin(url) for url in build.get("repositories") or ()}
             workspaces.append({"tool": "gradle", "root": build_root, "members": members})
         for project in (r for r in records if r["kind"] == "project"):
             unit, build_file = units.get(_name(project["build"], project["path"])), rel(project["buildFile"])
             if unit is not None and result["returncode"] == 0:
                 unit["depends_on"] = [_name(project["build"], path) for path in project["uses"]]
+            if unit is not None:
+                registries[unit["name"]] |= {origin(url) for url in project.get("repositories") or ()}
             for field, value in project["facts"].items():
-                item = {"tool": "java", "version": str(value), "declared_in": f"{build_file}#{field}"}
-                if build_file and result["returncode"] == 0 and item not in toolchains:
+                where = f"{build_file}#{field}"
+                if not build_file or result["returncode"] != 0:
+                    continue
+                if value == "" and field in ANDROID:  # the Android plugin applies and its model gives no value
+                    gaps.append({"kind": "toolchain_undeclared", "path": build_file, "detail": f"{where}: Gradle's"
+                                 f" model of the Android plugin gives none: no {ANDROID[field][1]}* SDK package is"
+                                 " installed for this project"})
+                    continue
+                item = {"tool": ANDROID.get(field, ("java",))[0], "version": str(value), "declared_in": where}
+                if item not in toolchains:
                     toolchains.append(item)
+    for name, found in registries.items():
+        if found - {None}:
+            units[name]["registries"] = sorted(found - {None})
     facts = {key: value for key, value in (("units", list(units.values())), ("workspace", workspaces),
                                            ("toolchains", toolchains)) if value}
     return {"facts": facts, "gaps": gaps, **({"version": version} if version else {})}

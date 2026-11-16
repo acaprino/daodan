@@ -4,7 +4,11 @@
 `packages`, poetry's `packages[].from`, `tool.pdm.build.package-dir`, `tool.uv.build-backend.module-root`;
 `setup.cfg`: `options.package_dir`; `setup.py`: a literal `package_dir={'': 'x'}`. Each becomes the unit's
 `source_roots`. A configuration that declares none states nothing: the build backend's default (`src` when it
-holds the package, else the root) is the backend's rule, and Pyright's, not a fact of the file.
+holds the package, else the root) is the backend's rule, and Pyright's, not a fact of the file. The unit's
+`registries` are the origins of what the configuration says its dependencies come from: the URLs its requirements
+name (`project.dependencies`, its extras, `dependency-groups`, setup.cfg's `install_requires` and extras), uv's
+indexes (`tool.uv.index`, `index-url`, `extra-index-url`, `find-links`) and Poetry's (`tool.poetry.source`), the git
+and URL sources of either.
 """
 from __future__ import annotations
 
@@ -12,6 +16,8 @@ import configparser
 from pathlib import PurePosixPath
 import re
 import tomllib
+
+from premap.origins import origin, requirement
 
 NAME, VERSION, RANK = "python-build", "daodan/premap/v1", "reader"
 SETUP_PY = re.compile(r"""package_dir\s*=\s*\{\s*['"]['"]\s*:\s*['"]([^'"]+)['"]""")
@@ -45,8 +51,39 @@ def _pyproject(data: dict) -> list[str]:
     return found
 
 
+def _strings(value) -> list[str]:
+    """The strings of a TOML value: itself, a list's, or those of a table's values."""
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [s for v in value.values() for s in _strings(v)]
+    return [v for v in value if isinstance(v, str)] if isinstance(value, list) else []
+
+
+def _tables(value) -> list[dict]:
+    return [t for t in (value if isinstance(value, list) else [value]) if isinstance(t, dict)]
+
+
+def _origins(data: dict) -> set:
+    project = data.get("project") if isinstance(data.get("project"), dict) else {}
+    tool = data.get("tool") if isinstance(data.get("tool"), dict) else {}
+    uv = tool.get("uv") if isinstance(tool.get("uv"), dict) else {}
+    poetry = tool.get("poetry") if isinstance(tool.get("poetry"), dict) else {}
+    found = {requirement(s) for s in [*_strings(project.get("dependencies")),
+                                      *_strings(project.get("optional-dependencies")),
+                                      *_strings(data.get("dependency-groups"))]}
+    found |= {origin(url) for key in ("index-url", "extra-index-url", "find-links") for url in _strings(uv.get(key))}
+    found |= {origin(t.get("url")) for t in [*_tables(uv.get("index")), *_tables(poetry.get("source"))]}
+    groups = [g.get("dependencies") for g in (poetry["group"].values() if isinstance(poetry.get("group"), dict)
+                                              else ()) if isinstance(g, dict)]
+    found |= {origin(t.get("git") or t.get("url")) for tables in (uv.get("sources"), poetry.get("dependencies"),
+                                                                  poetry.get("dev-dependencies"), *groups)
+              if isinstance(tables, dict) for value in tables.values() for t in _tables(value)}
+    return found - {None}
+
+
 def run(context):
-    inventory, roots = context.inventory, {}
+    inventory, roots, registries = context.inventory, {}, {}
     for rel in inventory.files:
         name = PurePosixPath(rel).name
         if name not in ("pyproject.toml", "setup.cfg", "setup.py"):
@@ -55,17 +92,25 @@ def run(context):
         try:
             text = inventory.text(rel)
             if name == "pyproject.toml":
-                found = _pyproject(tomllib.loads(text))
+                data = tomllib.loads(text)
+                found, origins = _pyproject(data), _origins(data)
             elif name == "setup.cfg":
                 parser = configparser.ConfigParser(interpolation=None)
                 parser.read_string(text)
                 value = parser.get("options", "package_dir", fallback="")
                 found = [line.split("=", 1)[1] for line in value.splitlines() if line.strip().startswith("=")]
+                extras = parser.items("options.extras_require") if parser.has_section("options.extras_require") else []
+                origins = {requirement(line) for requires in [parser.get("options", "install_requires", fallback=""),
+                                                              *(v for _key, v in extras)]
+                           for line in requires.splitlines()} - {None}
             else:
+                origins = set()
                 found = SETUP_PY.findall(text)
         except (ValueError, configparser.Error):
             continue  # an unreadable manifest is the module graph's gap
         roots.setdefault(root, set()).update(_join(root, f) for f in found)
-    units = [{"root": root, "kind": "python-project", "source_roots": sorted(found)}
-             for root, found in sorted(roots.items()) if found]
+        registries.setdefault(root, set()).update(origins)
+    units = [{"root": root, "kind": "python-project", **({"source_roots": sorted(found)} if found else {}),
+              **({"registries": sorted(registries[root])} if registries[root] else {})}
+             for root, found in sorted(roots.items()) if found or registries[root]]
     return {"facts": {"units": units}} if units else None

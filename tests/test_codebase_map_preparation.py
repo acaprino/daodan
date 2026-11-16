@@ -135,6 +135,72 @@ def test_pip_requirements_install_into_a_separate_environment_and_a_missing_pack
     assert "example-missing-nothing" in gaps[0]["detail"]
 
 
+# uv's words, as uv 0.11.28 writes them: a requirement it could not get, with each cause on a line of its own, and
+# an index it could not reach.
+UV_GIT = ("  × Failed to download and build `mylib @\n  │ git+https://github.com/example/mylib.git@v1.4.0`\n"
+          "  ├─▶ Git operation failed\n  ╰─▶ Git executable not found. Ensure that Git is installed and available.\n")
+UV_INDEX = ("error: Request failed after 3 retries in 6.6s\n"
+            "  Caused by: Failed to fetch: `https://pypi.example.org/simple/gunicorn/`\n")
+FAKE_UV = """#!/bin/sh
+echo "uv $*" >> "$CALLS"
+case "$*" in
+  venv*) exit 0;;
+  *--overrides*|*--no-install-package*) [ -f "$AGAIN" ] || exit 0; cat "$AGAIN" >&2; exit 1;;
+esac
+cat "$FIRST" >&2; exit 1
+"""
+
+
+def test_a_python_folder_whose_install_fails_is_installed_again_without_its_vcs_requirements(tmp_path):
+    """py-requirements-includes: a CI fetches a VCS requirement from the host its URL names, so the preparation
+    reaches exactly those hosts, read from the URLs the Python manifests declare. One it still cannot get (git, a
+    refused host, a ref) costs that requirement only: a folder whose install fails is installed again without the
+    VCS requirements, and uv's words name the requirement and its cause. A folder that fails again keeps both
+    installs' words; with no VCS requirement the install runs once."""
+    import os
+    import subprocess
+    texts = {"requirements/base.txt": "click==8.1.7\nmylib @ git+https://github.com/example/mylib.git@v1.4.0\n"
+                                      "-e git+https://gitlab.com/acme/tool.git@main#egg=acme-tool\n",
+             "pyproject.toml": '[tool.uv.sources]\nfast = { git = "https://git.example.org/fast", tag = "v1" }\n',
+             "docs/notes.txt": "x @ git+https://elsewhere.example.com/x\n"}
+    assert preparation.python_vcs(sorted(texts), texts.get) == {
+        "names": ["acme-tool", "fast", "mylib"], "hosts": ["git.example.org", "github.com", "gitlab.com"]}
+    programs, state = tmp_path / "programs", tmp_path / "state"
+    for folder in (programs, state, tmp_path / "a"):
+        folder.mkdir()
+    (programs / "uv").write_text(FAKE_UV, encoding="utf-8", newline="\n")
+    (programs / "uv").chmod(0o755)
+    (tmp_path / "first").write_text(UV_GIT, encoding="utf-8")
+    (tmp_path / "again").write_text(UV_INDEX, encoding="utf-8")
+
+    def restore(manager, names, again=False):
+        calls = tmp_path / f"calls-{manager}-{len(names)}-{again}"
+        script = "\n".join([*([preparation.without(names)] if names else []), preparation.restore(manager, ["a"])])
+        script = script.replace(preparation.LOG, str(tmp_path / "restore.log")).replace(preparation.STATE, str(state))
+        done = subprocess.run(["sh", "-c", script], cwd=tmp_path, capture_output=True, text=True, timeout=60,
+                              env={**os.environ, "PATH": f"{programs}:{os.environ['PATH']}", "CALLS": str(calls),
+                                   "FIRST": str(tmp_path / "first"), "AGAIN": str(tmp_path / ("again" if again
+                                                                                           else "none"))})
+        (state / preparation.WITHOUT.rsplit("/", 1)[1]).unlink(missing_ok=True)
+        return calls.read_text(encoding="utf-8").splitlines(), preparation.restore_gaps(done.stderr)
+
+    calls, [gap] = restore("pip", ["mylib"])
+    without = f"{state}/{preparation.WITHOUT.rsplit('/', 1)[1]}"
+    assert calls[-2:] == [f"uv pip install -q --python {state}/venvs/a -r pyproject.toml",
+                          f"uv pip install -q --python {state}/venvs/a -r pyproject.toml --overrides {without}"]
+    assert gap["kind"] == "vcs_not_installed" and gap["manager"] == "pip" and gap["path"] == "a"
+    assert "mylib @ | │ git+https://github.com/example/mylib.git@v1.4.0`" in gap["detail"]
+    assert "Git executable not found" in gap["detail"]
+    _calls, [gap] = restore("pip", ["mylib"], again=True)
+    assert gap["kind"] == "restore_failed" and "mylib @" in gap["detail"] and "pypi.example.org" in gap["detail"]
+    calls, [gap] = restore("pip", [])
+    assert len(calls) == 2 and gap["kind"] == "restore_failed" and "mylib @" in gap["detail"]
+    calls, [gap] = restore("uv", ["acme-tool", "mylib"])
+    assert calls[-1].endswith("uv sync --locked --all-packages --no-install-project"
+                              " --no-install-package acme-tool --no-install-package mylib")
+    assert gap["kind"] == "vcs_not_installed" and gap["manager"] == "uv" and "mylib @" in gap["detail"]
+
+
 def test_one_python_folder_has_one_manager_its_lockfile_names():
     files = ["pyproject.toml", "uv.lock", "packages/a/pyproject.toml", "svc/pyproject.toml", "svc/poetry.lock",
              "tools/requirements.txt"]
@@ -174,3 +240,60 @@ def test_a_dotnet_solution_restores_the_projects_below_it():
     files = ["App.sln", "src/App/App.csproj", "tests/T/T.fsproj", "tools/x/x.csproj"]
     assert preparation.restores(files) == {"dotnet": ["."]}
     assert preparation.restores(["a/A.csproj", "b/B.vbproj"]) == {"dotnet": ["a", "b"]}
+
+
+# What Google's sdkmanager does here: it accepts the licences it is answered `y` to, and installs a package only
+# then, into its folder under the SDK (two folders above its own `bin`), its progress redrawn on one line.
+FAKE_SDKMANAGER = """#!/bin/sh
+sdk=$(cd "$(dirname "$0")/../../.." && pwd)
+echo "sdkmanager $*" >> "$CALLS"
+if [ "$1" = --licenses ]; then read answer && [ "$answer" = y ] && mkdir -p "$sdk/licenses"; exit $?; fi
+[ -d "$sdk/licenses" ] || { echo "Warning: License for package $1 not accepted."; exit 1; }
+printf 'Loading package information...\\r[=   ] 3%% Fetch remote repository...\\r'
+case "$1" in *android-99*) echo "Warning: Failed to find package '$1'"; exit 1;; esac
+mkdir -p "$sdk/$(printf %s "$1" | tr ';' /)"
+"""
+
+
+def test_android_installs_exactly_the_packages_the_build_states_and_one_it_cannot_is_a_gap(tmp_path):
+    """jvm-android-app-lib: the Android plugin needs the platform of its `compileSdk` and its build tools. Google's
+    command-line tools, verified, are unpacked where Google's layout puts them; their licences are accepted as a CI
+    accepts them, then sdkmanager installs each package the pre-map states, once; one it cannot install names
+    the package and sdkmanager's own words, and the preparation goes on."""
+    import os
+    import subprocess
+    import zipfile
+    programs, tools, carried = tmp_path / "programs", tmp_path / "tools", tmp_path / "in"
+    for folder in (programs, carried):
+        folder.mkdir()
+    with zipfile.ZipFile(carried / "cmdline-tools.zip", "w") as archive:  # as Google's zip: no file modes kept
+        archive.writestr("cmdline-tools/bin/sdkmanager", FAKE_SDKMANAGER)
+    (programs / "jar").write_text('#!/bin/sh\n[ "$1" = xf ] && exec python3 -c "import sys, zipfile;'
+                                  ' zipfile.ZipFile(sys.argv[1]).extractall()" "$2"\n', encoding="utf-8", newline="\n")
+    (programs / "jar").chmod(0o755)
+    stated = [{"tool": "android-sdk", "version": "35", "declared_in": "app/build.gradle.kts#android.compileSdk"},
+              {"tool": "android-sdk", "version": "35", "declared_in": "core/build.gradle.kts#android.compileSdk"},
+              {"tool": "android-build-tools", "version": "34.0.0",
+               "declared_in": "app/build.gradle.kts#android.buildToolsVersion"},
+              {"tool": "android-sdk", "version": "99", "declared_in": "lib/build.gradle.kts#android.compileSdk"},
+              {"tool": "android-sdk", "version": "35'; touch x",
+               "declared_in": "bad/build.gradle.kts#android.compileSdk"},
+              {"tool": "java", "version": "17", "declared_in": "app/build.gradle.kts#java.toolchain.languageVersion"}]
+    plan = preparation.android(stated)
+    assert plan["files"] == preparation.NEEDS["cmdline-tools"]["files"] and plan["hosts"] == ("dl.google.com",)
+    assert [(g["kind"], g["path"]) for g in plan["gaps"]] == [
+        ("toolchain_unavailable", "bad/build.gradle.kts#android.compileSdk")]
+    script = "\n".join(plan["lines"]).replace(preparation.IN, str(carried)).replace(preparation.T, str(tools))
+    done = subprocess.run(["sh", "-c", script], cwd=tmp_path, capture_output=True, text=True, timeout=60,
+                          env={**os.environ, "PATH": f"{programs}:{os.environ['PATH']}",
+                               "CALLS": str(tmp_path / "calls")})
+    assert (tmp_path / "calls").read_text(encoding="utf-8").splitlines() == [
+        "sdkmanager --licenses", "sdkmanager platforms;android-35", "sdkmanager build-tools;34.0.0",
+        "sdkmanager platforms;android-99"]
+    sdk = tools / "android"
+    assert (sdk / "platforms/android-35").is_dir() and (sdk / "build-tools/34.0.0").is_dir()
+    assert preparation.missing(done.stderr) == [{
+        "kind": "toolchain_unavailable", "tool": "android-sdk", "version": "99",
+        "detail": "android-sdk 99: platforms;android-99: Warning: Failed to find package 'platforms;android-99'"}]
+    assert not (tmp_path / "x").exists()
+    assert preparation.android(stated[-1:]) == {"files": [], "lines": [], "hosts": (), "gaps": []}

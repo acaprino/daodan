@@ -16,8 +16,10 @@ language is `unavailable`, with the gap's cause and remedy.
   `unavailable`, and nothing is fetched from it. In the container the wrapper only calls that tool, so no build
   downloads a distribution.
 - Preparation, on a network that reaches only `registries` through the operation's proxy: the steps of
-  `preparation` (its proxy for the JVM, a JDK the pre-map states above the image's installed by mise, the restore
-  of the dependencies with Gradle's or Maven's own command), then the build and `scip-java index`. The build
+  `preparation` (its proxy for the JVM, a JDK the pre-map states above the image's installed by mise, the Android
+  SDK packages it states installed by Google's sdkmanager after its licences are accepted as a CI accepts them,
+  `ANDROID_HOME` in both phases, the restore of the dependencies with Gradle's or Maven's own command), then the
+  build and `scip-java index`. The build
   downloads the project's dependencies and its Gradle plugins; its scripts run there and stay in the container
   (spec, section 4). What a step could not do (`preparation.missing`, `preparation.restore_gaps`) is a gap of
   the contract, and the build goes on.
@@ -124,12 +126,15 @@ step() {
 trap 'echo "DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)"' EXIT
 export JAVA_HOME=${JAVA_HOME:-/opt/java/openjdk}
 JDK=17
-for java in /daodan/state/tools/mise/installs/java/*/bin/java; do  # the JDK the preparation installed
-  [ -x "$java" ] && JAVA_HOME=${java%/bin/java} && JDK=$DAODAN_JDK
+for java in /daodan/state/tools/mise/installs/java/*/bin/java; do  # the JDK the preparation installed to run on
+  [ -x "$java" ] && "$java" -version 2>&1 | grep -q "version \"\(1\.\)\?$DAODAN_JDK[.\"]" \
+    && JAVA_HOME=${java%/bin/java} && JDK=$DAODAN_JDK
 done
 export JAVA_HOME
 export PATH="$JAVA_HOME/bin:$PATH"
-if ! "$JAVA_HOME/bin/java" -version 2>&1 | grep -q "version \"$JDK[.\"]"; then
+# The Android SDK the preparation installed (`preparation.android`), for the Android plugin in either phase.
+[ -d /daodan/state/tools/android/cmdline-tools ] && export ANDROID_HOME=/daodan/state/tools/android
+if ! "$JAVA_HOME/bin/java" -version 2>&1 | grep -q "version \"\(1\.\)\?$JDK[.\"]"; then  # JDK 8 is 1.8.0_N
   step jdk sh -c "echo 'no JDK $JDK at $JAVA_HOME'; exit 70"
   exit 70
 fi
@@ -145,6 +150,14 @@ chmod +x "$SCIP_JAVA"
 # The JVM reads user.home from the account, not HOME: Maven's repository and Gradle's home follow HOME.
 JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=80.0 -XX:+UseContainerSupport -Duser.home=$HOME"
 export GRADLE_USER_HOME="$HOME/.gradle"
+# A Gradle build finds its toolchains among the image's JDK and those the preparation installed, and downloads
+# none: Gradle's `org.gradle.java.installations` properties, in its user home, which every build of a run reads.
+paths=/opt/java/openjdk
+for java in /daodan/state/tools/mise/installs/java/*/bin/java; do
+  [ -x "$java" ] && paths="$paths,${java%/bin/java}"
+done
+mkdir -p "$GRADLE_USER_HOME" && printf 'org.gradle.java.installations.%s\n' "paths=$paths" auto-download=false \
+  > "$GRADLE_USER_HOME/gradle.properties"
 '''
 
 # The JVM ignores HTTPS_PROXY: the preparation's proxy for Java tools (`preparation.JAVA_PROXY`). The build
@@ -233,8 +246,9 @@ def script(phase: str, body: str, *, setup: str = "", jdk: int = JDK) -> str:
 
 
 def toolchains(record: dict) -> list[dict]:
-    """The JDKs the pre-map states (`toolchains`, tool `java`): what the stage hands `run`."""
-    return [item for item in record.get("toolchains", []) if item.get("tool") == "java"]
+    """The JDKs and the Android SDK packages the pre-map states (`toolchains`, tool `java` and those of
+    `preparation.ANDROID`): what the stage hands `run`."""
+    return [item for item in record.get("toolchains", []) if item.get("tool") in ("java", *preparation.ANDROID)]
 
 
 def _major(version: str) -> int | None:
@@ -245,7 +259,7 @@ def _major(version: str) -> int | None:
 def wanted_jdk(stated) -> dict | None:
     """The newest JDK `stated` above the image's: a release or toolchain the image's JDK compiles needs nothing,
     one above it is installed by the preparation at the version stated."""
-    above = [item for item in stated or () if (_major(item.get("version")) or 0) > JDK]
+    above = [item for item in stated or () if item.get("tool") == "java" and (_major(item.get("version")) or 0) > JDK]
     return max(above, key=lambda item: _major(item["version"])) if above else None
 
 
@@ -424,25 +438,38 @@ def failed(result: dict, runs: list[dict]) -> dict:
 
 def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory: int, engine=None,
         toolchains=(), prepare_timeout: float = 1800, timeout: float = 600,
-        inputs: dict[str, Path] | None = None) -> tuple[dict, list[dict], Path]:
+        inputs: dict[str, Path] | None = None, jdk: dict | None = None) -> tuple[dict, list[dict], Path]:
     """Both phases in one container run over a copy of `project_dir` and the `tools` it needs, the preparation's
-    steps before `prepare` (a JDK of `toolchains` above the image's, the restore): the operation's result
-    (`judged`, with the preparation's `gaps`), the runs of both logs, and the folder the outputs came back into."""
+    steps before `prepare` (the JDK it runs on, `jdk` or the newest of `toolchains` above the image's, and each
+    other JDK a Gradle toolchain of `toolchains` asks for; the restore): the operation's result (`judged`, with the
+    preparation's `gaps`), the runs of both logs, and the folder the outputs came back into."""
     import container
     out_dir = Path(work_dir) / "container"
     out = out_dir / Path(OUT).name
     shutil.rmtree(out, ignore_errors=True)
     for phase in ("prepare", "execute"):
         (out_dir / f"{phase}.log").unlink(missing_ok=True)
-    jdk = wanted_jdk(toolchains)
-    chains = preparation.toolchains([jdk] if jdk else [])
-    setup = "".join(f"{line}\n" for line in ([f"mkdir -p {preparation.T}/bin"] if jdk else []) + chains["lines"])
+    jdk = jdk or wanted_jdk(toolchains)
+    # Each other JDK a Gradle toolchain asks for is installed beside it, for Gradle to find (`HEAD`).
+    others, runs_on = {}, _major(jdk["version"]) if jdk else JDK
+    for item in toolchains:
+        major = _major(item.get("version")) if item.get("tool") == "java" else None
+        if major and ".gradle" in item.get("declared_in", "") and major not in (JDK, runs_on):
+            others.setdefault(major, {**item, "version": str(major)})
+    parts = [preparation.toolchains([item]) for item in [*([jdk] if jdk else []), *others.values()]]
+    chains = {"files": list(dict.fromkeys(file for part in parts for file in part["files"])),
+              "lines": [line for part in parts for line in part["lines"]],
+              "hosts": tuple(dict.fromkeys(host for part in parts for host in part["hosts"])),
+              "gaps": [gap for part in parts for gap in part["gaps"]]}
+    sdk = preparation.android(toolchains)
+    setup = "".join(f"{line}\n" for line in ([f"mkdir -p {preparation.T}/bin"] if parts else []) + chains["lines"]
+                    + sdk["lines"])
     used = _major(jdk["version"]) if jdk else JDK
 
     def inputs(extra=inputs) -> dict:
         given = tools(project_dir)
         given.update({f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
-                      for url, digest, name in chains["files"]})
+                      for url, digest, name in chains["files"] + sdk["files"]})
         given.update(extra or {})
         return given
 
@@ -450,7 +477,8 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
         project_dir, ["bash", "-c", script("execute", execute, jdk=used)], image=IMAGE, out_dir=out_dir,
         prepare=["bash", "-c", script("prepare", restore_lines(project_dir) + prepare, setup=setup, jdk=used)],
         outputs=[OUT], env=dict(ENV), timeout=timeout, prepare_timeout=prepare_timeout, memory=memory, pids=PIDS,
-        registries=registries(project_dir) + tuple(chains["hosts"]), engine=engine, inputs=inputs)
+        registries=tuple(dict.fromkeys(registries(project_dir) + tuple(chains["hosts"]) + sdk["hosts"])),
+        engine=engine, inputs=inputs)
     runs, prepared = [], ""
     for phase in ("prepare", "execute"):
         log = out_dir / f"{phase}.log"
@@ -459,9 +487,9 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
             prepared = text if phase == "prepare" else prepared
             runs += steps(text, phase)
     missing = preparation.missing(prepared)
-    if any(gap["tool"] == "java" for gap in missing):
+    if jdk and any(gap["tool"] == "java" and gap["version"] == jdk["version"] for gap in missing):
         used = JDK  # the head ran with the image's JDK
-    gaps = chains["gaps"] + missing + preparation.restore_gaps(prepared)
+    gaps = chains["gaps"] + sdk["gaps"] + missing + preparation.restore_gaps(prepared)
     return {**judged(result, prepared, used), **({"gaps": gaps} if gaps else {})}, runs, out
 
 

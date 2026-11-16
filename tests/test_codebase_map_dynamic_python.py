@@ -141,6 +141,22 @@ def test_poetry_runs_the_tests_in_the_environment_poetry_made():
     assert 'run 0 . "$(cd /work/. && poetry env info -e)" -m pytest' in execute
 
 
+def test_the_declared_vcs_requirements_bring_git_and_their_hosts_and_nothing_else():
+    """py-requirements-includes: a requirement fetched from a VCS needs git, which the image lacks, and the host
+    its URL names; the preparation brings git from the image's own archive and reaches those hosts, and names the
+    requirements so a folder whose install fails is installed again without them."""
+    texts = {"requirements.txt": "click\nmylib @ git+https://github.com/example/mylib.git@v1.4.0\n"}
+    planned, prepare, _execute = scripts_of([PYTEST], ["requirements.txt", "tests/test_a.py"], texts=texts)
+    hosts = observer.scripts(planned)[2]["hosts"]
+    assert planned["vcs"] == {"names": ["mylib"], "hosts": ["github.com"]}
+    assert "github.com" in hosts and set(preparation.NEEDS["git"]["hosts"]) <= set(hosts)
+    assert prepare.index("apt-get") < prepare.index(preparation.without(["mylib"])) < prepare.index(
+        preparation.restore("pip", ["."]))
+    planned, prepare, _execute = scripts_of([PYTEST], ["requirements.txt"], texts={"requirements.txt": "click\n"})
+    assert planned["vcs"] == {"names": [], "hosts": []} and "apt-get" not in prepare
+    assert f"> {preparation.WITHOUT}" not in prepare and "github.com" not in observer.scripts(planned)[2]["hosts"]
+
+
 def test_an_empty_environment_is_made_for_tests_no_manifest_holds():
     tests = [{"root": "old", "runner": "unittest", "declared_in": "old/tox.ini", "args": []}]
     planned, prepare, execute = scripts_of(tests, ["old/tox.ini", "old/test_a.py"])
@@ -302,11 +318,14 @@ def test_a_test_module_that_does_not_import_leaves_the_others_running(tmp_path, 
 def test_what_the_preparation_could_not_do_is_a_gap_of_the_run(tmp_path):
     prepare = ("DAODAN-MISSING python@3.12.4\n"
                "DAODAN-RESTORE-FAILED uv .\nerror: No solution found\nDAODAN-RESTORE-END\n"
+               "DAODAN-VCS-FAILED pip tools\n  × Failed to download and build `mylib @\nDAODAN-VCS-END\n"
                "DAODAN-DYNAMIC 0 not-installed\nerror: build backend failed\nDAODAN-DYNAMIC-END\n"
                f"DAODAN-DYNAMIC 0 brought pytest {observer.PYTEST}\n")
     result = observe(tmp_path, Played(prepare=prepare))
     found = {gap["kind"]: gap for gap in result["gaps"]}
-    assert set(found) == {"toolchain_unavailable", "restore_failed", "project_not_installed", "runner_brought"}
+    assert set(found) == {"toolchain_unavailable", "restore_failed", "vcs_not_installed", "project_not_installed",
+                          "runner_brought"}
+    assert "mylib" in found["vcs_not_installed"]["detail"]
     assert "build backend failed" in found["project_not_installed"]["detail"]
     assert observer.PYTEST in found["runner_brought"]["detail"]
 

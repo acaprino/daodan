@@ -6,8 +6,9 @@
 - The observer through the container operation, against the fake Docker-compatible command line of
   `test_codebase_map_indexers_jvm.py`: what it sends, keeps and returns, and each gap with its cause.
 - The agent itself on a real JDK, over a small Java program this file writes: it needs `javac` and `java` (17
-  or newer) on the PATH and ASM's jar, in Daodan's shared directory, where a real run puts it, or named by
-  DAODAN_ASM_JAR; without either it skips and says which. It reaches no network.
+  or newer) on the PATH, which `tests/modal_pytest.py`'s image holds, and ASM's jar, named by DAODAN_ASM_JAR or
+  in Daodan's shared directory, where it is downloaded and verified as a real run does; without either it skips
+  and says which.
 """
 from __future__ import annotations
 
@@ -30,6 +31,7 @@ for path in (str(SCRIPTS), str(HERE)):
 import code_graph  # noqa: E402
 import container  # noqa: E402
 import dynamic  # noqa: E402
+import preparation  # noqa: E402
 import resolve_edges  # noqa: E402
 import snapshot  # noqa: E402
 from dynamic import jvm  # noqa: E402
@@ -233,14 +235,17 @@ def line_of(file: str, text: str) -> int:
 
 
 def asm_jar() -> Path | None:
-    import engine_tools
+    """`jvm.ASM`, named by DAODAN_ASM_JAR, else in the shared directory, fetched there as `jvm.observe` does."""
+    from engine_tools import MAVEN_CENTRAL, maven_central_dir
+    given = Path(os.environ.get("DAODAN_ASM_JAR") or "")
+    if given.is_file() and jvm.jvm.sha256(given) == jvm.ASM[1]:
+        return given
     group, artifact, version = jvm.ASM[0].split(":")
-    shared = engine_tools.maven_central_dir() / group.replace(".", "/") / artifact / version / \
-        f"{artifact}-{version}.jar"
-    for path in (Path(os.environ.get("DAODAN_ASM_JAR") or shared), shared):
-        if path.is_file() and jvm.jvm.sha256(path) == jvm.ASM[1]:
-            return path
-    return None
+    relative = f"{group.replace('.', '/')}/{artifact}/{version}/{artifact}-{version}.jar"
+    try:
+        return jvm.jvm.fetched(f"{MAVEN_CENTRAL}/{relative}", maven_central_dir() / relative, jvm.ASM[1])
+    except container.Gap:
+        return None
 
 
 class AgentTest(unittest.TestCase):
@@ -252,8 +257,8 @@ class AgentTest(unittest.TestCase):
             raise unittest.SkipTest("no JDK on the PATH: the agent is compiled and run by javac and java")
         asm = asm_jar()
         if asm is None:
-            raise unittest.SkipTest(f"{jvm.ASM[0]} is neither in Daodan's shared directory, where a real run "
-                                    "downloads it, nor named by DAODAN_ASM_JAR")
+            raise unittest.SkipTest(f"{jvm.ASM[0]} is not named by DAODAN_ASM_JAR and could not be downloaded "
+                                    "and verified into Daodan's shared directory")
         cls.scratch = Path(tempfile.mkdtemp(prefix="daodan-jvm-agent-"))
         cls.addClassCleanup(shutil.rmtree, cls.scratch, ignore_errors=True)
         agent, cls.root, cls.out = cls.scratch / "agent", cls.scratch / "project", cls.scratch / "calls"
@@ -482,6 +487,37 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(gap["kind"], "no_tests")
         self.assertIn("sbt", gap["detail"])
 
+    def test_a_maven_build_runs_on_the_jdk_its_poms_state_and_a_gradle_one_on_the_image_s(self):
+        """Maven compiles with the JDK that runs it, and a compiler plugin of a pom's time may not read a newer
+        JDK's classes (Error Prone's own javac 9): a build its poms declare for an older level runs on that JDK.
+        `--release` needs javac 9 or later, which the image's is; Gradle runs on the image's JDK and finds the
+        toolchain its scripts ask for; a JDK above the image's is installed as for the analyzer."""
+        maven, gradle = {"root": "", "tool": "maven"}, {"root": "", "tool": "gradle"}
+        java8 = [{"tool": "java", "version": "1.8", "declared_in": "pom.xml#properties.java.version"},
+                 {"tool": "java", "version": "1.8", "declared_in": "core/pom.xml#maven-compiler-plugin.target"}]
+        self.assertEqual(jvm.build_jdk(maven, java8)["version"], "8")
+        self.assertIsNone(jvm.build_jdk(gradle, java8))
+        release = [{"tool": "java", "version": "8", "declared_in": "pom.xml#properties.maven.compiler.release"}]
+        self.assertIsNone(jvm.build_jdk(maven, [*java8, *release]))
+        old = [{"tool": "java", "version": "1.6", "declared_in": "pom.xml#maven-compiler-plugin.source"}]
+        self.assertEqual(jvm.build_jdk(maven, old)["version"], "8")  # the oldest JDK Temurin builds
+        newer = [*java8, {"tool": "java", "version": "21", "declared_in": ".java-version"}]
+        self.assertEqual(jvm.build_jdk(maven, newer)["version"], "21")
+        self.assertIsNone(jvm.build_jdk({"root": "app", "tool": "maven"}, java8))  # another build's poms
+        self.assertIsNone(jvm.build_jdk(maven, [{"tool": "android", "version": "35", "declared_in": "pom.xml#x"}]))
+
+    def test_the_agent_is_built_for_java_8_and_its_jdk_9_and_10_parts_load_only_there(self):
+        commands = jvm.agent_commands("src", "out", bin="/jdk/bin/")
+        releases = {command[-1].rsplit("/", 1)[-1]: command[command.index("--release") + 1]
+                    for command in commands if "--release" in command}
+        self.assertEqual(releases, {"Recorder.java": "8", "Walker.java": "10", "Agent.java": "8", "Modular.java": "9"})
+        self.assertEqual(jvm.RELEASE, 8)
+        self.assertTrue(all(command[0].startswith("/jdk/bin/") for command in commands))
+        for name, later in (("Recorder.java", ("StackWalker", "ProcessHandle")),
+                            ("Agent.java", ("List.of(", "Module"))):  # JDK 9 and 10 API, apart in their classes
+            text = (jvm.RECORD / name).read_text(encoding="utf-8")
+            self.assertEqual([api for api in later if api in text], [], name)
+
     def test_the_observer_declares_itself_for_java_and_kotlin(self):
         self.assertIn(jvm, dynamic.observers())
         self.assertEqual(jvm.LANGUAGES, ("java", "kotlin"))
@@ -555,7 +591,8 @@ class ObserveTest(FakeEngineTest):
         arrived = self.arrived() / jvm.AGENT.lstrip("/")
         self.assertEqual((arrived / "asm.jar").read_bytes(), ASM_JAR)
         self.assertEqual(sorted(path.name for path in arrived.iterdir()),
-                         ["Agent.java", "MANIFEST.MF", "Recorder.java", "asm.jar", "tests.gradle"])
+                         ["Agent.java", "MANIFEST.MF", "Modular.java", "Recorder.java", "Walker.java", "asm.jar",
+                          "tests.gradle"])
         execution = self.created()[2]
         self.assertEqual(execution[execution.index("--network") + 1], "none")
 
@@ -669,6 +706,24 @@ class ObserveTest(FakeEngineTest):
         self.assertEqual(result["state"], "gap")
         self.assertIn("memory", result["cause"])
         self.assertEqual(self.created(), [])
+
+    def test_a_java_8_maven_build_runs_on_jdk_8_with_the_agent_the_image_s_jdk_builds(self):
+        tool = b"mise"
+        self.served[preparation.MISE[0]] = tool
+        patcher = mock.patch.object(preparation, "MISE", (preparation.MISE[0], digest(tool), "mise"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.planned["toolchains"] = [{"tool": "java", "version": "1.8",
+                                       "declared_in": "pom.xml#maven-compiler-plugin.source"}]
+        result = self.observe(suites=self.suite(2))
+        self.assertEqual(result["state"], "ran")
+        prepare = (self.state / "scripts" / "prepare.sh").read_text(encoding="utf-8")
+        execute = (self.state / "scripts" / "execute.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@8", prepare)
+        for script in (prepare, execute):
+            self.assertIn("\nDAODAN_JDK=8\n", script)  # the head takes the JDK mise installed
+        self.assertIn(f"{jvm.IMAGE_JDK}javac --release {jvm.RELEASE}", prepare)
+        self.assertIn("api.adoptium.net", self.created()[0])  # mise's downloads, through the preparation's proxy
 
     def test_an_asm_jar_that_does_not_match_its_checksum_starts_no_container(self):
         self.served[f"{resolve_edges.MAVEN_CENTRAL}/fx/test/asm/1.0/asm-1.0.jar"] = b"another jar"

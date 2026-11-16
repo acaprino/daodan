@@ -269,6 +269,37 @@ def test_the_stated_toolchains_are_installed_by_mise_at_their_version_and_the_re
     assert preparation.toolchains([]) == {"files": [], "lines": [], "hosts": (), "gaps": []}
 
 
+def test_the_go_lines_are_minimums_and_the_highest_builds_every_module():
+    """mix-real-chi states go 1.24 in go.mod, 1.22 and 1.16 in two example modules. A go line is the least Go its
+    module or workspace needs, a toolchain line (goV) the toolchain it prefers, and the go command runs its own
+    toolchain when that is at least as new as both, else the newer one they name (go.dev/doc/toolchain): the
+    highest of them builds every module, and a version a file pins runs only when it is newer still. sys-go-toolchain
+    pins 1.22.5 in .tool-versions, its go.mod says go 1.23.4 and toolchain go1.24.1: Go itself runs 1.24.1. Any other
+    statement keeps one version per tool per run."""
+    import preparation
+
+    def chosen(stated):
+        plan = preparation.toolchains(stated)
+        return ([line.split(" install ")[1].split(" ")[0] for line in plan["lines"] if " install " in line],
+                [(g["tool"], g["version"], g["path"], g["detail"]) for g in plan["gaps"]])
+
+    assert chosen([{"tool": "go", "version": "1.22", "declared_in": "_examples/rest/go.mod"},
+                   {"tool": "go", "version": "1.16", "declared_in": "_examples/versions/go.mod"},
+                   {"tool": "go", "version": "1.24", "declared_in": "go.mod"}]) == (["go@1.24"], [])
+    assert chosen([{"tool": "go", "version": "1.22.5", "declared_in": ".tool-versions"},
+                   {"tool": "go", "version": "1.23.4", "declared_in": "go.mod#go"},
+                   {"tool": "go", "version": "go1.24.1", "declared_in": "go.mod#toolchain"}]) == (["go@1.24.1"], [])
+    assert chosen([{"tool": "go", "version": "1.25.0", "declared_in": ".go-version"},
+                   {"tool": "go", "version": "1.24", "declared_in": "tools/go.work"}]) == (["go@1.25.0"], [])
+    assert chosen([{"tool": "go", "version": "1.22", "declared_in": "Dockerfile"},
+                   {"tool": "go", "version": "1.23", "declared_in": ".go-version"},
+                   {"tool": "go", "version": "1.24", "declared_in": "go.mod"},
+                   {"tool": "node", "version": "20.11.0", "declared_in": ".nvmrc"},
+                   {"tool": "node", "version": "22", "declared_in": "Dockerfile"}]) == (["go@1.24", "node@20.11.0"], [
+        ("go", "1.23", ".go-version", "go 1.23: go 1.24 runs these commands: one version per tool per run"),
+        ("node", "22", "Dockerfile", "node 22: node 20.11.0 runs these commands: one version per tool per run")])
+
+
 def test_the_runner_prepares_the_toolchains_in_the_preparation(tmp_path, no_download):
     _, manifest = manifest_of(tmp_path, {"go.mod": "module m\n"})
     calls, fake = recorder()

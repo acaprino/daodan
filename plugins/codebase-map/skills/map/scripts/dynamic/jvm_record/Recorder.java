@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * What the instrumented classes call, on the bootstrap class path so every class loader sees it. JDK only.
@@ -17,12 +14,19 @@ import java.util.stream.Stream;
  * A thread's `pending` is the call site whose instruction is running. A method that starts takes it when the
  * site calls that name and descriptor (or the interface method a lambda or method reference implements; any
  * method for a reflective site) and, the first time for that pair, when the frame under it is the site's method
- * at the site's line: so a method reached through a library frame is not the site's callee. StackWalker hides
- * reflection and lambda frames, so a method called by reflection or through a lambda object is the site's.
+ * at the site's line: so a method reached through a library frame is not the site's callee. Reflection and lambda
+ * frames are passed over, so a method called by reflection or through a lambda object is the site's. From JDK 10
+ * the frame is the stack walker's (`Walker`), with its descriptor; on JDK 8 and 9 it is the stack trace's, by class,
+ * name and line. The class files are Java 8's.
  * A site that returns still pending ran outside the instrumented classes. Each new fact is one line, written
  * and flushed at once: a killed JVM loses nothing.
  */
 public final class Recorder {
+    /** Whether the frame under the method that starts is the given method at the given line. */
+    public interface Frames {
+        boolean at(String className, String methodName, String descriptor, int line);
+    }
+
     private static final class State {
         int pending;
         boolean busy;
@@ -34,15 +38,7 @@ public final class Recorder {
             return new State();
         }
     };
-    private static final StackWalker WALKER = StackWalker.getInstance();
-    // Frames from the walk: caller(), enter(), the method that starts, then its caller.
-    private static final Function<Stream<StackWalker.StackFrame>, Optional<StackWalker.StackFrame>> CALLER =
-        new Function<Stream<StackWalker.StackFrame>, Optional<StackWalker.StackFrame>>() {
-            @Override
-            public Optional<StackWalker.StackFrame> apply(Stream<StackWalker.StackFrame> frames) {
-                return frames.skip(3).findFirst();
-            }
-        };
+    private static final Frames WALKER = walker();
     private static final Object LOCK = new Object();
     /** The signature of a reflective call site (`Method.invoke`): any method but a class initializer. */
     public static final int ANY = 0;
@@ -186,14 +182,35 @@ public final class Recorder {
         return false;
     }
 
+    /** The stack walker's frames (`Walker`, JDK 10 and later), else null. */
+    private static Frames walker() {
+        try {
+            return (Frames) Class.forName("daodan.record.Walker").getDeclaredConstructor().newInstance();
+        } catch (Throwable older) {
+            return null;
+        }
+    }
+
     /** Whether the frame under the method that starts is the site's method, at the site's line. */
     private static boolean called(int site) {
-        StackWalker.StackFrame frame = WALKER.walk(CALLER).orElse(null);
         int method = siteMethod[site];
-        return frame != null && frame.getLineNumber() == siteLine[site]
-            && frame.getMethodName().equals(methodName[method])
-            && frame.getClassName().equals(methodClass[method])
-            && frame.getDescriptor().equals(methodDesc[method]);
+        if (WALKER != null) {
+            return WALKER.at(methodClass[method], methodName[method], methodDesc[method], siteLine[site]);
+        }
+        // Frames of the trace: called(), enter(), the method that starts, then its caller, past the frames the
+        // stack walker hides: reflection's, and a lambda's class (JDK 8 shows them).
+        StackTraceElement[] frames = new Throwable().getStackTrace();
+        for (int at = 3; at < frames.length; at++) {
+            String name = frames[at].getClassName();
+            if (name.equals("java.lang.reflect.Method") || name.equals("java.lang.reflect.Constructor")
+                    || name.startsWith("jdk.internal.reflect.") || name.startsWith("sun.reflect.")
+                    || name.startsWith("java.lang.invoke.LambdaForm") || name.contains("$$Lambda")) {
+                continue;
+            }
+            return frames[at].getLineNumber() == siteLine[site] && frames[at].getMethodName().equals(methodName[method])
+                && name.equals(methodClass[method]);
+        }
+        return false;
     }
 
     private static boolean known(long pair) {
@@ -250,7 +267,8 @@ public final class Recorder {
                         return;
                     }
                     new File(folder).mkdirs();
-                    String name = ProcessHandle.current().pid() + "-" + System.currentTimeMillis() + ".jsonl";
+                    String name = System.currentTimeMillis() + "-" + Long.toHexString(System.nanoTime()) + "-"
+                        + Integer.toHexString(System.identityHashCode(LOCK)) + ".jsonl";  // one per JVM
                     out = new BufferedOutputStream(new FileOutputStream(new File(folder, name)), 1 << 16);
                     out.write((header + "\n").getBytes(StandardCharsets.UTF_8));
                 }

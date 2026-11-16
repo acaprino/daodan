@@ -12,7 +12,7 @@
   "workspace": null,
   "toolchains": [
     {"tool": "node", "version": ">=20", "declared_in": "package.json"},
-    {"tool": "node", "version": "20.18.1-alpine", "declared_in": "Dockerfile"}
+    {"tool": "node", "version": "20.18.1", "declared_in": "Dockerfile"}
   ],
   "dependencies": [
     {"unit": "orders-service", "name": "amqplib", "declared": "^0.10.4", "resolved": null, "scope": "runtime", "declared_in": "package.json"},

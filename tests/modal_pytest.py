@@ -29,8 +29,11 @@ if __name__ == "__main__":  # the launcher: Modal's client does not go through a
 import modal  # noqa: E402
 
 LOCAL = (REPO / "AGENTS.md").is_file()
+# Debian's headless JDK 17 builds and runs the JVM recorder in its own tests (test_codebase_map_dynamic_jvm.py);
+# its package wants the manual folder the slim image leaves out.
 image = (modal.Image.debian_slim(python_version="3.13")
-         .apt_install("git", "ca-certificates", "xz-utils")
+         .run_commands("mkdir -p /usr/share/man/man1")
+         .apt_install("git", "ca-certificates", "xz-utils", "openjdk-17-jdk-headless")
          .pip_install("pytest", "pytest-xdist", "uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30"))
 if LOCAL:

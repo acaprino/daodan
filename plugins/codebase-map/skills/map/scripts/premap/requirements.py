@@ -5,8 +5,9 @@ A requirements file is a `.txt` or `.in` whose name holds `requirements`, or one
 `python-project` unit, without a name, its manifest `requirements.in`, else `requirements.txt`, else the first
 by name; a requirements file beside a `pyproject.toml` or below a Python unit adds to that unit and makes no
 other. `-r` includes belong to the including file's unit, `-c` constraints to none; `-e` and bare local paths
-(from the unit's folder, where pip runs) are edges to the unit at that path, `--index-url` and
-`--extra-index-url` are registries. A file pip-compile wrote (its header names the `.in` it compiled) goes with
+(from the unit's folder, where pip runs) are edges to the unit at that path; the origins of `--index-url`,
+`--extra-index-url`, `--find-links` and of the URL a requirement names (`name @ URL`, a VCS URL, `-e URL`) are
+registries. A file pip-compile wrote (its header names the `.in` it compiled) goes with
 that `.in`. Every requirements file of a unit is in its `config.requirements`; the packages they name are not
 the pre-map's.
 """
@@ -15,11 +16,12 @@ from __future__ import annotations
 import posixpath
 from pathlib import PurePosixPath
 import re
-from urllib.parse import urlsplit
+
+from premap.origins import origin, requirement
 
 NAME, VERSION, RANK = "requirements", "daodan/premap/v1", "reader"
 INCLUDE = re.compile(r"^(-r|--requirement|-c|--constraint)(?:\s+|=)(\S+)$")
-INDEX = re.compile(r"^(?:-i|--index-url|--extra-index-url)(?:\s+|=)(\S+)$")
+INDEX = re.compile(r"^(?:-i|--index-url|--extra-index-url|-f|--find-links)(?:\s+|=)(\S+)$")
 EDITABLE = re.compile(r"^(?:-e|--editable)(?:\s+|=)(\S+)$")
 COMPILED = re.compile(r"^#\s+pip-compile\b.*?\s(\S+\.in)\s*$", re.M)
 PREFERRED = ("requirements.in", "requirements.txt")
@@ -55,7 +57,7 @@ def _lines(text: str) -> list[str]:
 
 
 def _parse(text: str) -> dict:
-    out = {"includes": [], "constraints": [], "indexes": [], "paths": []}
+    out = {"includes": [], "constraints": [], "origins": set(), "paths": []}
     for line in _lines(text):
         if not line:
             continue
@@ -65,12 +67,15 @@ def _parse(text: str) -> dict:
             continue
         index = INDEX.match(line)
         if index:
-            out["indexes"].append(index.group(1))
+            out["origins"].add(origin(index.group(1)))
             continue
         editable = EDITABLE.match(line)
         target = editable.group(1) if editable else line if line.startswith((".", "/")) else None
         if target is not None and not re.match(r"^[a-z+]+://", target):
             out["paths"].append(target)
+        else:
+            out["origins"].add(requirement(line))
+    out["origins"].discard(None)
     return out
 
 
@@ -145,7 +150,7 @@ def run(context):
             if rel in compiled:
                 continue
             facts = parsed[rel]
-            origins |= {f"{u.scheme}://{u.netloc}" for u in map(urlsplit, facts["indexes"]) if u.scheme in ("http", "https")}
+            origins |= facts["origins"]
             for path in facts["paths"]:  # pip reads a local path from where it runs: the unit's folder
                 target = _join(folder, path)
                 if target in roots:

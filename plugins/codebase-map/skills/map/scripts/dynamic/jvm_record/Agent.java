@@ -8,6 +8,7 @@ import java.net.URLClassLoader;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,7 @@ import daodan.record.Recorder;
  * per JVM in `out`. An `invokedynamic` creates a lambda or a string and calls no project method: it is not a
  * site; the interface method a lambda or method reference implements is noted, so the body is taken by the
  * site that calls that method. A class that cannot be rewritten runs unchanged and is written as `skipped`.
+ * The class files are Java 8's; on JDK 9 and later the transformer is `Modular`, which also handles modules.
  */
 public final class Agent {
     private Agent() {
@@ -47,7 +49,9 @@ public final class Agent {
             URL[] path = {jar.toURI().toURL(), new File(jar.getParentFile(), "asm.jar").toURI().toURL()};
             // ASM in a loader of its own, under the bootstrap one: the project's ASM stays the project's.
             ClassLoader loader = new URLClassLoader(path, null);
-            Class<?> transformer = Class.forName("daodan.agent.Agent$Transformer", true, loader);
+            boolean modules = !System.getProperty("java.specification.version").startsWith("1.");  // JDK 9 on
+            Class<?> transformer = Class.forName(modules ? "daodan.agent.Modular" : "daodan.agent.Agent$Transformer",
+                true, loader);
             instrumentation.addTransformer((ClassFileTransformer) transformer
                 .getConstructor(String.class, Instrumentation.class).newInstance(options, instrumentation));
         } catch (Throwable error) {
@@ -55,13 +59,12 @@ public final class Agent {
         }
     }
 
-    public static final class Transformer implements ClassFileTransformer {
+    public static class Transformer implements ClassFileTransformer {
         private static final String RECORDER = "daodan/record/Recorder";
-        private static final Set<String> REFLECTIVE = new HashSet<>(List.of(
+        private static final Set<String> REFLECTIVE = new HashSet<>(Arrays.asList(
             "java/lang/reflect/Method.invoke", "java/lang/reflect/Constructor.newInstance",
             "java/lang/invoke/MethodHandle.invoke", "java/lang/invoke/MethodHandle.invokeExact",
             "java/lang/invoke/MethodHandle.invokeWithArguments"));
-        private final Instrumentation instrumentation;
         private final String root;  // the URL every project class is loaded from under
         private final Map<String, Integer> sigs = new HashMap<>();  // name and descriptor
         // A method's name and descriptor to the interface methods a lambda or method reference to it implements,
@@ -76,7 +79,6 @@ public final class Agent {
             for (String option : options.split(",")) {
                 given.put(option.substring(0, option.indexOf('=')), option.substring(option.indexOf('=') + 1));
             }
-            this.instrumentation = instrumentation;
             String folder = new File(given.get("root")).toURI().toString();
             this.root = folder.endsWith("/") ? folder : folder + "/";
             sigs.put("<clinit>()V", Recorder.CLASS_INIT);
@@ -85,8 +87,8 @@ public final class Agent {
         }
 
         @Override
-        public byte[] transform(Module module, ClassLoader loader, String name, Class<?> redefined,
-                                ProtectionDomain domain, byte[] bytes) {
+        public byte[] transform(ClassLoader loader, String name, Class<?> redefined, ProtectionDomain domain,
+                                byte[] bytes) {
             try {
                 CodeSource source = domain == null ? null : domain.getCodeSource();
                 String from = source == null || source.getLocation() == null ? "" : source.getLocation().toString();
@@ -95,13 +97,7 @@ public final class Agent {
                 }
                 synchronized (this) {
                     try {
-                        byte[] rewritten = rewrite(from.substring(root.length()), bytes);
-                        Module boot = Recorder.class.getModule();
-                        if (module != null && module.isNamed() && !module.canRead(boot)) {
-                            instrumentation.redefineModule(module, Collections.singleton(boot), Collections.emptyMap(),
-                                Collections.emptyMap(), Collections.emptySet(), Collections.emptyMap());
-                        }
-                        return rewritten;
+                        return rewrite(from.substring(root.length()), bytes);
                     } catch (Throwable error) {
                         Recorder.write("{\"skipped\":" + quote(name) + ",\"why\":" + quote(error.toString()) + "}");
                     }

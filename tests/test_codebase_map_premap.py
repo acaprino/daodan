@@ -143,6 +143,15 @@ def test_a_field_one_source_does_not_give_is_no_conflict():
     assert only["source_roots"] == ["src"] and "conflicts" not in only and only["sources"] == ["b@1", "a@1"]
 
 
+def test_the_origins_two_sources_state_for_one_unit_add_up():
+    """`registries` is where some of a unit's dependencies come from, as each source reads it (a lock's indexes, a
+    manifest's VCS URLs): two sources add up, and neither is a conflict."""
+    reader = unit(".", "python-project", None, registries=["https://github.com"])
+    model = unit(".", "python-project", None, registries=["https://github.com", "https://pypi.example.org"])
+    [only] = premap.join([part("a@1", "reader", units=[reader]), part("b@1", "model", units=[model])])["units"]
+    assert only["registries"] == ["https://github.com", "https://pypi.example.org"] and "conflicts" not in only
+
+
 def test_config_keys_join_one_by_one():
     joined = premap.join([part("a@1", "reader", units=[unit("app", "npm-package", "app", config={"tsconfig": ["app/tsconfig.json"]})]),
                           part("b@1", "model", units=[unit("app", "npm-package", "app", config={"paths": {"@/*": ["app/src/*"]},
@@ -259,6 +268,44 @@ def test_install_scripts_not_run_are_a_gap_and_the_lock_names_the_registry(tmp_p
     assert gap["source"].startswith("npm-files@")
 
 
+def test_the_origins_of_git_and_url_dependencies_are_registries_from_the_lockfiles_and_the_manifest(tmp_path):
+    """Where a Node package's dependencies come from, as npm, pnpm and Yarn record it in their lockfiles, Yarn's
+    registries in `.yarnrc.yml`, and the manifest's own URLs with npm's shorthands for GitHub, GitLab and
+    Bitbucket. A URL's credentials stay out."""
+    def package(name, dependencies=None):
+        return json.dumps({"name": name, "dependencies": dependencies or {}})
+    lock = {"lockfileVersion": 3, "packages": {"": {"name": "a"}, "node_modules/tool": {
+        "resolved": "git+ssh://git@github.com/acme/tool.git#0123"}, "node_modules/x": {
+        "resolved": "https://user:token@npm.example.org/x/-/x-1.0.0.tgz", "funding": {"url": "https://fund.example"}}}}
+    _, _, record = build(tmp_path, "npm_scripts", extra={
+        "a/package.json": package("a"), "a/package-lock.json": json.dumps(lock),
+        "b/package.json": package("b"), "b/pnpm-lock.yaml": (
+            "packages:\n  tool@https://codeload.github.com/acme/tool/tar.gz/0123:\n"
+            "    resolution: {tarball: https://codeload.github.com/acme/tool/tar.gz/0123}\n"
+            "  lib@git+https://gitlab.com/acme/lib.git#4567:\n"
+            "    resolution: {commit: 4567, repo: https://gitlab.com/acme/lib.git, type: git}\n"),
+        "c/package.json": package("c"), "c/yarn.lock": (
+            '# yarn lockfile v1\n\n"x@^1.0.0":\n  version "1.0.0"\n'
+            '  resolved "https://npm.corp.example/x/-/x-1.0.0.tgz#abc"\n'),
+        "d/package.json": package("d"), "d/.yarnrc.yml": (
+            'npmRegistryServer: "https://registry.corp.example"\nnpmScopes:\n  acme:\n'
+            '    npmRegistryServer: "https://acme.example/npm"\n'),
+        "d/yarn.lock": ('__metadata:\n  version: 8\n\n"y@https://github.com/acme/y.git#commit=89ab":\n'
+                        '  resolution: "y@https://github.com/acme/y.git#commit=89ab"\n'),
+        "e/package.json": package("e", {"a": "github:acme/a#v1", "b": "acme/b", "c": "gitlab:acme/c",
+                                         "d": "bitbucket:acme/d", "e": "git+https://git.example.org/e.git",
+                                         "f": "https://cdn.example.com/f.tgz", "g": "^1.0.0", "h": "file:../h",
+                                         "i": "npm:other@1", "j": "workspace:*"})})
+    units = by_root(record, "npm-package")
+    assert {root: units[root].get("registries") for root in "abcde"} == {
+        "a": ["https://npm.example.org", "ssh://github.com"],
+        "b": ["https://codeload.github.com", "https://gitlab.com"],
+        "c": ["https://npm.corp.example"],
+        "d": ["https://acme.example", "https://github.com", "https://registry.corp.example"],
+        "e": ["https://bitbucket.org", "https://cdn.example.com", "https://git.example.org", "https://github.com",
+              "https://gitlab.com"]}
+
+
 def test_package_folders_come_only_from_what_a_build_configuration_declares(tmp_path):
     _, _, record = build(tmp_path, "declared_package_dirs")
     units = by_root(record, "python-project")
@@ -266,6 +313,41 @@ def test_package_folders_come_only_from_what_a_build_configuration_declares(tmp_
     assert all(any(s.startswith("python-build@") for s in u["sources"]) for u in units.values())
     _, _, plain = build(tmp_path / "plain", "mixed")
     assert all("source_roots" not in u for u in plain["units"] if u["kind"] == "python-project")
+
+
+def test_the_indexes_and_the_url_dependencies_a_python_build_configuration_declares_are_registries(tmp_path):
+    """pyproject.toml's direct references (dependencies, extras, groups), uv's and Poetry's indexes and their git
+    and URL sources, setup.cfg's requirements: where the restore fetches from, credentials left out."""
+    pyproject = """[project]
+name = "svc"
+dependencies = ["mylib @ git+https://github.com/acme/mylib.git@v1", "click"]
+[project.optional-dependencies]
+fast = ["wheel1 @ https://files.example.net/w-1.0-py3-none-any.whl"]
+[dependency-groups]
+dev = ["tool @ git+ssh://git@gitlab.example.com/acme/tool.git", {include-group = "fast"}]
+[tool.uv]
+extra-index-url = ["https://user:secret@extra.example/simple"]
+[[tool.uv.index]]
+name = "internal"
+url = "https://pypi.internal.example/simple"
+[tool.uv.sources]
+fast2 = { git = "https://git.example.org/fast2", tag = "v1" }
+local = { path = "../local" }
+[[tool.poetry.source]]
+name = "corp"
+url = "https://corp.example/simple"
+[tool.poetry.dependencies]
+pkg = { git = "https://git.corp.example/pkg.git" }
+"""
+    setup = "[metadata]\nname = old\n\n[options]\ninstall_requires =\n    old @ git+https://hg.example.org/old\n"
+    _, _, record = build(tmp_path, "python_nested", extra={"svc/pyproject.toml": pyproject, "svc/app.py": "X = 1\n",
+                                                          "old/setup.cfg": setup, "old/old.py": "Y = 2\n"})
+    units = by_root(record, "python-project")
+    assert units["svc"]["registries"] == [
+        "https://corp.example", "https://extra.example", "https://files.example.net", "https://git.corp.example",
+        "https://git.example.org", "https://github.com", "https://pypi.internal.example", "ssh://gitlab.example.com"]
+    assert units["old"]["registries"] == ["https://hg.example.org"]
+    assert "registries" not in units["utils/arena"]
 
 
 def test_the_jvm_files_give_the_wrapper_and_the_java_a_pom_declares(tmp_path):
@@ -326,6 +408,36 @@ def test_uv_reader_gives_members_and_their_edges(tmp_path):
     [workspace] = record["workspace"]
     assert workspace["tool"] == "uv" and sorted(workspace["members"]) == ["packages/app", "packages/core"]
     assert not gaps(record, "model_failed")
+
+
+def test_uv_reader_gives_every_origin_the_lock_fetches_from():
+    """The exported lock names where each package comes from: its index, its files, a git source, an archive."""
+    lock = """lock-version = "1.0"
+[[packages]]
+name = "app"
+directory = { path = ".", editable = true }
+[[packages]]
+name = "six"
+index = "https://pypi.org/simple"
+sdist = { url = "https://files.pythonhosted.org/packages/six-1.16.0.tar.gz" }
+[[packages]]
+name = "mylib"
+vcs = { type = "git", url = "https://github.com/acme/mylib", commit-id = "0123" }
+[[packages]]
+name = "corp"
+index = "https://pypi.corp.example/simple"
+wheels = [{ url = "https://files.corp.example/corp-1.0-py3-none-any.whl" }]
+[[packages]]
+name = "direct"
+archive = { url = "https://user:token@archive.example.org/direct-1.0.tar.gz" }
+"""
+    commands = [{"tool": "uv", "argv": argv, "cwd": ".", "env": uv.ENV, "network": "none"}
+                for argv in (uv.EXPORT, uv.TREE)]
+    answers = [{"returncode": 0, "stdout": text, "stderr": ""} for text in (lock, "app v0.1.0\n")]
+    [app] = uv.read(None, commands, answers)["facts"]["units"]
+    assert app["registries"] == ["https://archive.example.org", "https://files.corp.example",
+                                 "https://files.pythonhosted.org", "https://github.com", "https://pypi.corp.example",
+                                 "https://pypi.org"]
 
 
 def test_tsc_reader_gives_the_tsconfigs_in_reference_order_and_their_aliases(tmp_path):
@@ -550,6 +662,29 @@ def test_the_packages_a_file_declares_give_no_fact_and_its_runtime_is_a_toolchai
     assert facts == {"toolchains": [{"tool": "terraform", "version": ">= 1.6.0", "declared_in": "main.tf"}]}
 
 
+def test_an_image_tag_gives_the_version_renovates_docker_versioning_reads_and_one_without_stays_a_gap(tmp_path):
+    """mix-real-tududi's `FROM node:22-alpine`: Renovate's docker versioning reads a tag as a version, past a `v`, up
+    to the first hyphen, and a compatibility suffix, the image's variant: Node 22 on Alpine. A tag whose first part
+    is no version, or that looks like a commit hash, stays as the file writes it, which no preparation installs."""
+    import preparation
+
+    def image(name, tag):
+        return {"depName": name, "currentValue": tag, "datasource": "docker", "depType": "final"}
+    facts = _renovate(tmp_path, {"Dockerfile": "FROM node:22-alpine\n"}, {
+        "dockerfile": [{"packageFile": "Dockerfile", "deps": [
+            image("node", "22-alpine"), image("python", "v3.12.4-slim-bookworm"), image("eclipse-temurin", "21.0.5_11-jdk"),
+            image("ruby", "alpine"), image("golang", "deadbee")]}],
+        "docker-compose": [{"packageFile": "docker-compose.yml", "deps": [image("node", "lts-alpine")]}]})
+    assert [(t["tool"], t["version"], t["declared_in"]) for t in facts["toolchains"]] == [
+        ("node", "22", "Dockerfile"), ("python", "3.12.4", "Dockerfile"), ("java", "21.0.5_11", "Dockerfile"),
+        ("ruby", "alpine", "Dockerfile"), ("go", "deadbee", "Dockerfile"), ("node", "lts-alpine", "docker-compose.yml")]
+    plan = preparation.toolchains(facts["toolchains"])
+    assert [line.split(" install ")[1].split(" ")[0] for line in plan["lines"] if " install " in line] == [
+        "node@22", "python@3.12.4"]
+    assert [(g["tool"], g["version"]) for g in plan["gaps"]] == [
+        ("java", "21.0.5_11"), ("ruby", "alpine"), ("go", "deadbee"), ("node", "lts-alpine")]
+
+
 def test_the_same_toolchain_in_one_file_is_one_fact_with_or_without_a_fragment():
     parts = [part("jvm-files", "reader", toolchains=[{"tool": "gradle", "version": "8.11.1",
                                                       "declared_in": "gradle/wrapper/gradle-wrapper.properties#distributionUrl"}]),
@@ -576,7 +711,17 @@ def test_a_requirements_file_alone_makes_a_unit_and_its_includes_belong_to_it(tm
     root = units["."]
     assert (root["name"], root["manifest"], root["depends_on"]) == (None, "requirements.txt", ["localpkg"])
     assert root["config"]["requirements"] == ["requirements-dev.txt", "requirements.txt", "requirements/base.txt"]
-    assert root["registries"] == ["https://pypi.example.org"]
+    assert root["registries"] == ["https://github.com", "https://pypi.example.org"]  # an index, a VCS requirement
+
+
+def test_the_links_and_url_requirements_of_a_requirements_file_are_registries(tmp_path):
+    extra = ("-f https://download.example.com/wheels\n-f ./wheels\n"
+             "pkg @ https://user:secret@files.example.net/pkg-1.0-py3-none-any.whl\n"
+             "-e git+ssh://git@gitlab.example.com/acme/tool.git#egg=tool\nhttps://archive.example.org/p-1.0.tar.gz\n")
+    _, _, record = build(tmp_path, "req_includes", extra={"requirements-urls.txt": extra})
+    assert by_root(record, "python-project")["."]["registries"] == [
+        "https://archive.example.org", "https://download.example.com", "https://files.example.net",
+        "https://github.com", "https://pypi.example.org", "ssh://gitlab.example.com"]
 
 
 def test_a_pip_compile_output_is_the_lock_of_its_in_file(tmp_path):

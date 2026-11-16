@@ -66,3 +66,25 @@ def test_commands_evaluate_each_project_file_offline():
     commands = dotnet.commands(Context())
     assert [(c["cwd"], c["argv"][2]) for c in commands] == [("src/App", "App.csproj"), ("src/Fs", "Fs.fsproj")]
     assert {c["network"] for c in commands} == {"none"}
+
+
+def test_the_feeds_a_nuget_config_declares_are_registries_of_the_projects_below_it(tmp_path):
+    """NuGet reads the nuget.config of a project's folder and of each folder above it: their package sources, a
+    `<clear />` dropping the ones above, a disabled source left out, a folder source no host."""
+    project = tmp_path / "proj"
+    shutil.copytree(ANSWERS / "property-reference", project)
+    (project / "nuget.config").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n<configuration>\n  <packageSources>\n'
+        '    <add key="corp" value="https://user:token@nuget.corp.example/v3/index.json" />\n'
+        '    <add key="local" value="./packages" />\n    <add key="off" value="https://off.example/v3/index.json" />\n'
+        '  </packageSources>\n  <disabledPackageSources>\n    <add key="off" value="true" />\n'
+        '  </disabledPackageSources>\n</configuration>\n', encoding="utf-8")
+    (project / "src/Lib/NuGet.Config").write_text(
+        '<configuration><packageSources><clear /><add key="lib" value="https://lib.example/nuget" />'
+        '</packageSources></configuration>\n', encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    record = premap.write(manifest, sources=(dotnet,), runner=replay("property-reference"))
+    units = {u["name"]: u for u in record["units"] if u["kind"] == "dotnet-project"}
+    assert units["App"]["registries"] == ["https://nuget.corp.example"]
+    assert units["Lib"]["registries"] == ["https://lib.example"]

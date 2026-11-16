@@ -212,7 +212,7 @@
   "toolchains": [
     {
       "tool": "node",
-      "version": "22-alpine",
+      "version": "22",
       "declared_in": "Dockerfile"
     },
     {

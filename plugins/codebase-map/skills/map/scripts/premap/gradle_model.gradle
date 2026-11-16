@@ -1,7 +1,12 @@
 // Daodan's pre-map: Gradle's project tree once the settings are evaluated, then per configured project the
-// projects it depends on and the Java and Kotlin targets the build sets. Each record is a line starting with \u001e.
+// projects it depends on and the Java and Kotlin targets the build sets; with each, the URLs of the repositories it
+// resolves from. Each record is a line starting with \u001e.
 import groovy.json.JsonOutput
 def emit(record) { println '\u001e' + JsonOutput.toJson(record) }
+def urls(Closure repositories) {  // the Maven and Ivy repositories' URLs; none where the container does not exist
+    try { return repositories().findAll { it.hasProperty('url') && it.url != null }.collect { it.url.toString() } }
+    catch (Throwable ignored) { return [] }
+}
 def tree
 tree = { d -> [[path: d.path, dir: d.projectDir.absolutePath, buildFile: d.buildFile.absolutePath,
                 buildFileExists: d.buildFile.exists()]] + d.children.sort { it.path }.collectMany { tree(it) } }
@@ -25,7 +30,8 @@ def jvmTarget(options) {
 }
 settingsEvaluated { s ->
     emit([kind: 'build', root: s.rootDir.absolutePath, name: s.rootProject.name, nested: s.gradle.parent != null,
-          gradle: s.gradle.gradleVersion, projects: tree(s.rootProject)])
+          gradle: s.gradle.gradleVersion, projects: tree(s.rootProject),
+          repositories: urls { s.pluginManagement.repositories } + urls { s.dependencyResolutionManagement.repositories }])
 }
 gradle.projectsEvaluated { g ->
     def build = g.parent == null ? null : g.rootProject.name
@@ -53,12 +59,25 @@ gradle.projectsEvaluated { g ->
                 facts['compilerOptions.jvmTarget'] = facts['compilerOptions.jvmTarget'] ?: jvmTarget(t.compilerOptions)
             }
         }
+        def android = p.extensions.findByName('android')
+        if (android != null) {  // the SDK platform and build tools the Android plugin compiles with, the build tools
+            // its own default when the build sets none; '' when its model gives none (an add-on's target)
+            def value = { name ->
+                try { return android.hasProperty(name) ? android."$name" : null }
+                catch (Throwable ignored) { return null }
+            }
+            def level = value('compileSdk'), minor = value('compileSdkMinor'), extension = value('compileSdkExtension')
+            facts['android.compileSdk'] = level == null ? (value('compileSdkPreview') ?: '')
+                : "$level${minor ? '.' + minor : ''}${extension ? '-ext' + extension : ''}".toString()
+            facts['android.buildToolsVersion'] = value('buildToolsVersion') ?: ''
+        }
         def uses = [] as SortedSet
         p.configurations.each { c ->
             c.dependencies.withType(org.gradle.api.artifacts.ProjectDependency).each { d -> uses << d.path }
         }
         uses.remove(p.path)
         emit([kind: 'project', build: build, path: p.path, buildFile: p.buildFile.absolutePath,
-              uses: uses as List, facts: facts.findAll { it.value != null }])
+              uses: uses as List, facts: facts.findAll { it.value != null },
+              repositories: urls { p.repositories } + urls { p.buildscript.repositories }])
     }
 }

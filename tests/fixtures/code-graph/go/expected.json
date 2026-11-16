@@ -8,7 +8,10 @@
  "calls.go:27 Area": {"kind": "call", "rule": "interface implementations; Plot.Area is a decoy",
                       "ends": ["decl shapes.go:5 via -", "decl shapes.go:10 via implementation",
                                "decl shapes.go:14 via implementation"]},
+ "calls.go:27 int": {"kind": "call", "rule": "a conversion to a predeclared type: Go's builtin package",
+                     "ends": ["external golang/go via -"]},
  "calls.go:28 f": {"kind": "call", "rule": "dynamic: a function parameter", "none": true},
- "calls.go:29 len": {"kind": "call", "rule": "language builtin", "none": true},
+ "calls.go:29 len": {"kind": "call", "rule": "a builtin function: Go's builtin package (scip-go writes no occurrence)",
+                     "ends": ["external golang/go via -"]},
  "calls.go:29 ToUpper": {"kind": "call", "rule": "external", "ends": ["external golang/go via -"]}
 }
