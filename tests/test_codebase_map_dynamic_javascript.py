@@ -72,13 +72,18 @@ def write(folder: Path, files: dict) -> Path:
 
 # --- the pre-map: the test script a package declares -----------------------------------------------------------
 
-def declared(tmp_path, files: dict) -> list[dict]:
+def premapped(tmp_path, files: dict) -> dict:
     project = write(tmp_path / "proj", files)
     manifest = tmp_path / "out" / "manifest.sqlite"
     snapshot.write_snapshot(project, manifest)
     record = premap.write(manifest, sources=READERS)
     assert not [gap for gap in record["gaps"] if gap["kind"] == "source_failed"]
-    return [{key: value for key, value in entry.items() if key != "sources"} for entry in record.get("tests", [])]
+    return record
+
+
+def declared(tmp_path, files: dict) -> list[dict]:
+    return [{key: value for key, value in entry.items() if key != "sources"}
+            for entry in premapped(tmp_path, files).get("tests", [])]
 
 
 def package(script: str | None = None, **scripts: str) -> str:
@@ -123,6 +128,29 @@ def test_a_package_without_a_test_script_states_nothing(tmp_path):
         "broken/package.json": "{not json"}) == []
 
 
+def test_scripts_that_start_a_runner_where_the_test_script_does_not_are_a_gap(tmp_path):
+    """tududi's scripts: `npm test` runs Jest in backend/ (`cd backend`); the frontend's Jest runs at the root,
+    from scripts no declared command runs: they are named, never run."""
+    record = premapped(tmp_path, {
+        "package.json": package("npm run backend:test", **{
+            "backend:test": "cd backend && cross-env NODE_ENV=test jest --maxWorkers=4",
+            "backend:test:unit": "cd backend && cross-env NODE_ENV=test jest tests/unit",
+            "backend:test:coverage": "cd backend && cross-env NODE_ENV=test jest --coverage",
+            "frontend:test": "jest", "frontend:test:watch": "jest --watch", "frontend:test:coverage": "jest --coverage",
+            "test:watch": "npm run frontend:test:watch",
+            "test:coverage": "npm run frontend:test:coverage && npm run backend:test:coverage",
+            "test:ui": "bash e2e/bin/run-e2e.sh && echo \"Success!\"", "lint": "eslint ."}),
+        "web/package.json": package(None, **{"test:unit": "vitest run"})})
+    assert [{k: v for k, v in item.items() if k != "sources"} for item in record["tests"]] == [entry(".", "jest")]
+    gaps = [gap for gap in record["gaps"] if gap["kind"] == "tests_not_declared"]
+    assert [(gap["path"], gap["runner"], gap["scripts"]) for gap in gaps] == [
+        ("package.json", "jest",
+         ["frontend:test", "frontend:test:coverage", "frontend:test:watch", "test:coverage", "test:watch"]),
+        ("web/package.json", "vitest", ["test:unit"])]
+    assert "jest in ." in gaps[0]["detail"] and "it starts jest in backend" in gaps[0]["detail"]
+    assert "vitest in web" in gaps[1]["detail"] and "no `test` script" in gaps[1]["detail"]
+
+
 # --- the plan: from the pre-map alone --------------------------------------------------------------------------
 
 def record(tests: list[dict], units: list[str] = (".",), **more) -> dict:
@@ -162,6 +190,20 @@ def test_a_runner_the_recorder_cannot_observe_is_a_gap_with_its_cause():
     [gap] = planned["gaps"]
     assert gap["kind"] == "runner_not_observed" and gap["path"] == "package.json#scripts.test"
     assert gap["runner"] == "bun" and "JavaScriptCore" in gap["detail"]
+
+
+def test_tests_no_declared_command_runs_are_said_with_the_runs_or_in_their_place(tmp_path):
+    named = {"kind": "tests_not_declared", "path": "package.json", "runner": "jest", "scripts": ["frontend:test"],
+             "detail": "package.json: frontend:test starts jest in . and its `test` script does not",
+             "source": "npm-tests@daodan/premap/v4"}
+    said = {key: value for key, value in named.items() if key != "source"}
+    planned = observer.plan(record([entry(".", "jest")], gaps=[named]), [], None)
+    assert planned["gaps"] == [] and planned["unrun"] == [said]  # with the runs' outcome, where a language's is
+    played = Played({"tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
+    assert said in observe(tmp_path, played, unrun=planned["unrun"])["gaps"]
+    planned = observer.plan(record([], gaps=[named]), [], None)  # nothing runs: the reason why
+    assert planned["runs"] == [] and [gap["kind"] for gap in planned["gaps"]] == ["no_test_command",
+                                                                                  "tests_not_declared"]
 
 
 # --- the observation: one container run ------------------------------------------------------------------------

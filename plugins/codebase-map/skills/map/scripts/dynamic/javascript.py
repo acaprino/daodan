@@ -19,7 +19,9 @@ takes it.
 (its `tests` entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, Turborepo, any other), run as
 `npm test` in the package's folder; a project where no package declares one is a `no_test_command` gap, never a
 command of ours. A script whose runner the recorder cannot hook (`NOT_OBSERVED`) is a `runner_not_observed` gap,
-and it does not run.
+and it does not run. The scripts that start a runner where `test` starts none (the pre-map's `tests_not_declared`:
+only their names say they run tests) never run: their gaps come back with the runs', which explain a language's
+outcome.
 
 `observe` is one container run (`container.run_in_container`, the TypeScript analyzer's image). The preparation,
 with the registries: Daodan's Node, the Babel the recorder prints with (from npm without its install scripts),
@@ -98,16 +100,19 @@ def plan(record: dict, files: list[str], read) -> dict:
     import premap
     tests = sorted((test for test in record.get("tests", []) if test.get("runner") in (*RUNNERS, *NOT_OBSERVED)),
                    key=lambda test: test["root"])
+    # the pre-map's: tests of scripts no declared command runs, said again where the tests' outcome is
+    unrun = [{key: value for key, value in gap.items() if key != "source"} for gap in record.get("gaps", [])
+             if gap.get("kind") == "tests_not_declared"]
     if not tests:
         return {"runs": [], "roots": [], "toolchains": [], "gaps": [{
             "kind": "no_test_command",
             "detail": "no package.json of the project declares a test script (`scripts.test`): nothing is "
-                      "observed"}]}
+                      "observed"}, *unrun]}
     gaps = [{"kind": "runner_not_observed", "path": test.get("declared_in"), "runner": test["runner"],
              "detail": f"{test.get('declared_in')} runs {test['runner']}: {NOT_OBSERVED[test['runner']]}; its "
                        "tests do not run"} for test in tests if test["runner"] in NOT_OBSERVED]
     return {"runs": [{"root": test["root"], "runner": test["runner"], "declared_in": test.get("declared_in")}
-                     for test in tests if test["runner"] in RUNNERS], "gaps": gaps,
+                     for test in tests if test["runner"] in RUNNERS], "gaps": gaps, "unrun": unrun,
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "node"]}
 
@@ -249,12 +254,14 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         outputs=[OUT], env={**preparation.ENV, "TERM": "dumb", "CI": "true"}, timeout=len(runs) * (LIMIT + 120),
         prepare_timeout=3600, memory=MEMORY, engine=engine, inputs=inputs,
         registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"]])))
+    unrun = list(planned.get("unrun") or ())
     if result["state"] == "gap":
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
-                "gaps": []}
+                "gaps": unrun}
     prepared = _text(out_dir / "prepare.log")
     missing = preparation.missing(prepared)
-    gaps = [*chains["gaps"], *missing, *preparation.restore_gaps(prepared), *preparation.generation_gaps(prepared)]
+    gaps = [*unrun, *chains["gaps"], *missing, *preparation.restore_gaps(prepared),
+            *preparation.generation_gaps(prepared)]
     if result["state"] == "failed":
         cause = result.get("cause") or "the container run failed"
         if any(gap["tool"] == "@babel/core" for gap in missing):
