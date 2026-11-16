@@ -86,17 +86,19 @@ def test_rust_code_a_cfg_leaves_out_says_so(tmp_path):
                         "src/plain.rs": "", "src/macos.rs": "", "src/desktop.rs": "", "src/checks.rs": ""})
     index = _index(tmp_path, ["src/lib.rs"])
     absent = ["src/node.rs", "src/plain.rs", "src/macos.rs", "src/desktop.rs", "src/checks.rs"]
+    host = rust.CONFIGURATION
     assert rust.missing(index, absent) == {
-        "src/node.rs": rust.CFG_OFF.format("test_node_semver"), "src/desktop.rs": rust.MOD_OFF.format("desktop"),
-        **({"src/macos.rs": rust.MOD_OFF.format('target_os = "macos"')} if sys.platform != "darwin" else {})}
+        "src/node.rs": rust.CFG_OFF.format("test_node_semver", host),
+        "src/desktop.rs": rust.MOD_OFF.format("desktop", host),
+        **({"src/macos.rs": rust.MOD_OFF.format('target_os = "macos"', host)} if sys.platform != "darwin" else {})}
     cause = rust.unanswered(index)
-    assert cause(("src/lib.rs", 10, 17)) == rust.INACTIVE.format('not(feature = "fast")')  # haystack.iter
+    assert cause(("src/lib.rs", 10, 17)) == rust.INACTIVE.format('not(feature = "fast")', host)  # haystack.iter
     assert cause(("src/lib.rs", 6, 8)) is None  # memchr: the feature is on
     assert cause(("src/lib.rs", 14, 13)) == (None if os.name == "posix" else  # `any`: unix holds on the host
-                                             rust.INACTIVE.format('any(unix, not(feature = "fast"))'))
-    assert cause(("src/lib.rs", 16, 13)) == rust.INACTIVE.format('all(unix, not(feature = "fast"))')  # `all`: false
-    assert cause(("src/lib.rs", 18, 14)) == (rust.INACTIVE.format('target_endian = "big"') if sys.byteorder == "little"
-                                            else None)
+                                             rust.INACTIVE.format('any(unix, not(feature = "fast"))', host))
+    assert cause(("src/lib.rs", 16, 13)) == rust.INACTIVE.format('all(unix, not(feature = "fast"))', host)  # `all`
+    assert cause(("src/lib.rs", 18, 14)) == (rust.INACTIVE.format('target_endian = "big"', host)
+                                            if sys.byteorder == "little" else None)
 
 
 def test_a_go_file_left_out_by_its_name_or_by_a_run_without_index_says_so(tmp_path, monkeypatch):
