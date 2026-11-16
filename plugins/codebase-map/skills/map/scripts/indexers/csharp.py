@@ -11,17 +11,20 @@ without a container the language is `unavailable`, with the gap's cause and reme
   by its own file (`targets`). Each from the checkout's root, where scip-dotnet names its documents from. A
   project in Visual Studio .NET 2002-2003's own format (`<VisualStudioProject>`), which MSBuild does not read, and
   a solution of such projects only, is `unavailable` and does not run (`legacy`).
-- The tool is its NuGet package at `VERSION` (`TOOL`), not its image (`sourcegraph/scip-dotnet:v<VERSION>`), which
-  brings an SDK of its own where `global.json` asks for the project's: a .NET tool holding one build per runtime
-  (net8.0, net9.0, net10.0) with every library it needs. Daodan downloads it once on the host into the shared
-  directory, checked by sha256, and the copy carries it; the preparation unpacks it and nothing is installed from
-  a registry. `dotnet <build>/scip-dotnet.dll` runs the build of the SDK's own runtime.
+- The tool is scip-dotnet's source at the commit of its release `VERSION` (`SOURCE`) with Daodan's patch (`PATCH`,
+  below), the build until scip-dotnet has it (`BUILD`); not its image (`sourcegraph/scip-dotnet:v<VERSION>`), which
+  brings an SDK of its own where `global.json` asks for the project's. Daodan downloads the source once on the host
+  into the shared directory, checked by sha256, and the copy carries it with the patch; the preparation builds it
+  with the SDK Daodan pins (`preparation.NEEDS["dotnet"]`: the source asks for 10 or newer), unpacked beside the
+  project's, for the runtime of the SDK that answers in the checkout (net8.0, net9.0, net10.0 for any newer), as
+  the released package holds one build per runtime. `dotnet <build>/scip-dotnet.dll` runs it. Its licence is
+  Apache-2.0: LICENSE and NOTICE stay in the source, and the changed file says it changed.
 - The SDK is the one the pre-map states (`toolchains`, tool `dotnet`: `global.json`), installed by mise at that
   version (`preparation.toolchains`), else the one the preparation carries (`preparation.NEEDS["dotnet"]`). A
   stated SDK mise could not install is a gap, and the run fails with what `dotnet` says: `global.json` accepts
   no other.
 - Preparation, on a network that reaches only `REGISTRIES` (NuGet's read API; packages are pushed to another
-  host) and mise's hosts when it installs the SDK: the SDK, the tool unpacked, then the project's own restore
+  host) and mise's hosts when it installs the SDK: the SDK, the tool built, then the project's own restore
   (`preparation.restore`) in the folder of each run. A restore that fails is a gap (`preparation.restore_gaps`)
   and the run goes on.
 - Execution, with no network: `scip-dotnet index <file> --skip-dotnet-restore` per run, each index under `OUT`,
@@ -51,7 +54,6 @@ range with a reference: no `same_range` rule. The hooks, each for what the index
   a local defined nowhere, its package unknown (`EXTENSION`); a member of a partial type defined nowhere is a
   source generator's (`GENERATED`: only the project's documents are indexed); `args` of top-level statements is
   the compiler's (`TOP_LEVEL`).
-- `unanswered`: a name written with type arguments has no occurrence (`TYPE_ARGUMENTS`, below).
 - `hops`: a symbol the index references and defines nowhere, whose declaration the language puts elsewhere. A
   record's positional property leads to its parameter (`positional`), a constructor the class does not write to
   the class (`implicit-constructor`: an attribute references it), a setter's `value` to its property or event
@@ -66,13 +68,17 @@ range with a reference: no `same_range` rule. The hooks, each for what the index
   references: a hole (`unnamed-constructor`).
 - `missing`: why a file has no document (`tasks` hands it the units and what each run said).
 
-A name with type arguments (`Set<Order>()`, `new List<Order>()`) has no occurrence: scip-dotnet visits
-identifier names only (`ScipCSharpSyntaxWalker` has no `VisitGenericName`, in 0.2.16 as on its main branch).
-Those references stay holes, with that cause.
+What Daodan's build adds (`PATCH`): released scip-dotnet visits identifier names only (`ScipCSharpSyntaxWalker` has
+no `VisitGenericName`, in 0.2.16 as on its main branch), so a name with type arguments (`Set<Order>()`,
+`new List<Order>()`) has no occurrence, and it reads the symbol a name binds to only, so a method group converted to
+`System.Delegate` (`app.MapGet("/items", GetItems)`), which binds none and names its method as the one candidate,
+has none either. The build writes both; the issue and the patch for scip-dotnet are in
+`docs/research/2026-11-16-scip-dotnet-names.md`.
 """
 from __future__ import annotations
 
 import collections
+import hashlib
 import posixpath
 import re
 import shlex
@@ -82,13 +88,15 @@ from pathlib import Path, PurePosixPath
 import code_graph
 import preparation
 
-VERSION = "0.2.16"  # the NuGet package scip-dotnet, published 2026-10-21: its sha512 is the one NuGet's catalog
-# states, its licence the LICENSE it holds (Apache-2.0, the repository's)
-TOOL = (f"https://api.nuget.org/v3-flatcontainer/scip-dotnet/{VERSION}/scip-dotnet.{VERSION}.nupkg",
-        "70255008a2f3054701bafb551b51c3af0c1e0ac7624e63ec2e852b3f72e5df58", "scip-dotnet.nupkg")
-NEWEST = "net10.0"  # the newest runtime the package holds a build for
+VERSION = "0.2.16"  # scip-dotnet's release, published 2026-10-21, at the commit its tag names
+COMMIT = "fadd98aebb1ede2c55801636360c002679b54112"
+SOURCE = (f"https://codeload.github.com/sourcegraph/scip-dotnet/tar.gz/{COMMIT}",
+          "f3e0fe2b03ca38c0e091ccd433eb30a33a8f4b72ec30696a8be65d1b30c56e3b", "scip-dotnet.tar.gz")
+PATCH = Path(__file__).with_name("scip-dotnet.patch")  # a name with type arguments, a method group's one candidate
+BUILD = f"{VERSION}+daodan.{hashlib.sha256(PATCH.read_bytes()).hexdigest()[:12]}"  # the version the index states
+NEWEST = "net10.0"  # the newest runtime the source builds for (`TargetFrameworks`)
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # what the
-# SDK needs (glibc, libssl, zlib) and python3 for the unpacking: the image of `premap/container_runner.py`
+# SDK needs (glibc, libssl, zlib) and git for the patch: the image of `premap/container_runner.py`
 HOME, OUT, WORK = f"{preparation.STATE}/scip-dotnet", "/daodan/out", "/work"
 REGISTRIES = ("api.nuget.org",)  # packages are read here and pushed to www.nuget.org, never listed
 ENV = {**preparation.ENV, "TERM": "dumb", "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1",
@@ -122,7 +130,6 @@ MEMBER = re.compile(r"^(.*#)[^#/()]+(?:\((?:\+\d+)?\))?\.$")  # a type's field, 
 EXTENSION = "a member of a C# 14 extension block: scip-dotnet names it a local, with no package or definition"
 GENERATED = "a member a source generator writes: scip-dotnet indexes the project's own documents only"
 TOP_LEVEL = "the args of top-level statements: the compiler declares them"
-TYPE_ARGUMENTS = "a name with type arguments: scip-dotnet writes no occurrence there"
 
 
 def prepare(index, snapshot) -> dict:
@@ -196,17 +203,6 @@ def _partial(index, key: str) -> bool:
                 child.type == "modifier" and child.text == b"partial" for child in above.children):
             return True
     return False
-
-
-def unanswered(index):
-    """Why the index has no occurrence at a site: a name written with type arguments (`TYPE_ARGUMENTS`)."""
-    def cause(position: tuple) -> str | None:
-        rel, line, column = position
-        node = _node(index, rel, code_graph.Occurrence(line, column, line, column + 1, "", False, None))
-        above = node.parent if node is not None else None
-        return TYPE_ARGUMENTS if above is not None and above.type == "generic_name" and node.type == "identifier" \
-            else None
-    return cause
 
 
 def _node(index, rel: str, occurrence):
@@ -486,15 +482,24 @@ def targets(project_dir: Path, roots, units) -> tuple[list[tuple[str, str]], lis
 
 
 def scripts(setup: list[str], wanted: list[tuple[str, str]]) -> tuple[str, str]:
-    """The bash scripts of the two phases: the preparation installs the SDK with `setup`, unpacks the tool and
+    """The bash scripts of the two phases: the preparation installs the SDK with `setup`, builds the tool and
     restores the folder of each run; the execution runs scip-dotnet over each file of `wanted`."""
     folders = list(dict.fromkeys(PurePosixPath(target).parent.as_posix() for target, _key in wanted))
     lines = "\n".join(setup)
+    pin, inside = preparation.NEEDS["dotnet"]["files"][0][2], preparation.IN
+    # the pin, unless `setup` installed it, beside the project's SDK with no link on the PATH; the source with the
+    # patch; its build for the runtime of the SDK that answers in the checkout, from the source's folder
+    tool = (f"[ -x {preparation.T}/dotnet/dotnet ] || {{ mkdir -p {preparation.T}/dotnet && tar -xzf {inside}/{pin} "
+            f"-C {preparation.T}/dotnet; }} || return\n"
+            f"mkdir -p {HOME}/src && tar -xzf {inside}/{SOURCE[2]} -C {HOME}/src --strip-components=1"
+            f" && git -C {HOME}/src apply {inside}/{PATCH.name} || return\n"
+            f"v=$(dotnet --version 2>/dev/null); case ${{v%%.*}} in 8|9) f=net${{v%%.*}}.0;; *) f={NEWEST};; esac\n"
+            f"( cd {HOME}/src && {preparation.T}/dotnet/dotnet publish ScipDotnet/ScipDotnet.csproj -c Release -f $f"
+            f" -o {HOME}/tools/$f/any -p:UseAppHost=false -nologo )")
     prepare = (f"# daodan prepare\n{HEAD}mkdir -p {preparation.T}/bin\n"
-               f"sdk() {{\n{lines}\n}}\ndependencies() {{\n{preparation.restore('dotnet', folders)}\n}}\n"
-               "step sdk sdk\n"
-               f"step unpack python3 -m zipfile -e {preparation.IN}/{TOOL[2]} {HOME} || exit 70\n"
-               "step restore dependencies\nexit 0\n")
+               f"sdk() {{\n{lines}\n}}\ntool() {{\n{tool}\n}}\n"
+               f"dependencies() {{\n{preparation.restore('dotnet', folders)}\n}}\n"
+               "step sdk sdk\nstep tool tool || exit 70\nstep restore dependencies\nexit 0\n")
     runs = "".join(f'step index-{number} dotnet "$DLL" index {shlex.quote(target)} --working-directory "$WORK" '
                    f'--output "$OUT/index-{number}.scip" --skip-dotnet-restore\n'
                    for number, (target, _key) in enumerate(wanted, 1))
@@ -503,12 +508,12 @@ def scripts(setup: list[str], wanted: list[tuple[str, str]]) -> tuple[str, str]:
 
 def unavailable(cause: str, remedy: str) -> dict:
     """No index can be built here: the contract's `unavailable`, with `reason` and `install`."""
-    indexer = {"name": "scip-dotnet", "version": VERSION, "seconds": 0, "peak_mb": None}
+    indexer = {"name": "scip-dotnet", "version": BUILD, "seconds": 0, "peak_mb": None}
     return {"indexes": [], "runs": [], "indexer": indexer, "state": "unavailable", "reason": cause, "install": remedy}
 
 
 def _indexer(runs: list[dict]) -> dict:
-    return code_graph.indexer("scip-dotnet", VERSION, [run for run in runs if run["seconds"] is not None])
+    return code_graph.indexer("scip-dotnet", BUILD, [run for run in runs if run["seconds"] is not None])
 
 
 def workspace_failures(log: str) -> dict[str, list[str]]:
@@ -556,8 +561,9 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
         project_dir, ["bash", "-c", execute], image=IMAGE, out_dir=out_dir, prepare=["bash", "-c", prepare],
         outputs=[OUT], env=dict(ENV), timeout=timeout, memory=memory, pids=PIDS,
         registries=(*REGISTRIES, *sdk["hosts"], *(declared or {}).get("hosts", ())), engine=engine,
-        inputs=lambda: {f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
-                        for url, digest, name in (TOOL, *sdk["files"])})
+        inputs=lambda: {f"{preparation.IN}/{PATCH.name}": PATCH, **{
+            f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
+            for url, digest, name in dict.fromkeys((SOURCE, *preparation.NEEDS["dotnet"]["files"], *sdk["files"]))}})
     logs = {phase: (out_dir / f"{phase}.log").read_text(encoding="utf-8", errors="replace")
             if (out_dir / f"{phase}.log").is_file() else "" for phase in ("prepare", "execute")}
     runs = [run for phase, text in logs.items() for run in jvm.steps(text, phase)]

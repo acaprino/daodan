@@ -11,6 +11,7 @@ segment, a type without its arity, `new X()` at the type, no enclosing range.
 """
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import os
@@ -67,10 +68,18 @@ def test_a_package_resource_of_any_culture_loads_without_icu():
     assert csharp.ENV["DOTNET_SYSTEM_GLOBALIZATION_PREDEFINED_CULTURES_ONLY"] == "false"
 
 
-def test_the_tool_is_pinned_by_version_and_sha256():
-    url, sha256, name = csharp.TOOL
-    assert url == f"https://api.nuget.org/v3-flatcontainer/scip-dotnet/{csharp.VERSION}/scip-dotnet.{csharp.VERSION}.nupkg"
-    assert re.fullmatch(r"[0-9a-f]{64}", sha256) and name == "scip-dotnet.nupkg"
+def test_the_tool_is_its_source_at_the_release_s_commit_with_daodans_patch():
+    """scip-dotnet 0.2.16's source, pinned by sha256, and Daodan's patch: a name with type arguments and a method
+    group's one candidate are occurrences. The changed file says so (Apache-2.0, section 4), and so does the version."""
+    url, sha256, name = csharp.SOURCE
+    assert url == f"https://codeload.github.com/sourcegraph/scip-dotnet/tar.gz/{csharp.COMMIT}"
+    assert re.fullmatch(r"[0-9a-f]{40}", csharp.COMMIT) and re.fullmatch(r"[0-9a-f]{64}", sha256)
+    patch = csharp.PATCH.read_text(encoding="utf-8")
+    assert re.findall(r"^\+\+\+ b/(\S+)", patch, re.M) == ["ScipDotnet/ScipCSharpSyntaxWalker.cs"]
+    assert f"+// Changed in Daodan's build of scip-dotnet {csharp.VERSION}" in patch
+    assert "VisitGenericName(GenericNameSyntax node)" in patch and "CandidateSymbols.Length == 1" in patch
+    assert not re.search(r"^[ +-]?\s+$", patch, re.M)  # no line a tool may strip
+    assert csharp.BUILD == f"{csharp.VERSION}+daodan.{hashlib.sha256(csharp.PATCH.read_bytes()).hexdigest()[:12]}"
 
 
 def test_structure_is_the_pre_maps_solutions_projects_and_sdk():
@@ -144,7 +153,7 @@ def test_a_project_of_visual_studio_net_s_own_format_is_unavailable_and_not_run(
 # ---------------------------------------------------------------------------------------------------------
 # The container run, against the fake engine
 
-TOOL, SDK, MISE = b"the scip-dotnet package", b"the .NET SDK", b"mise"
+TOOL, SDK, MISE = b"scip-dotnet's source", b"the .NET SDK", b"mise"
 OUT = csharp.OUT.lstrip("/")
 UNITS = [{"root": "src/A", "manifest": "src/A/A.csproj", "solution": ""},
          {"root": "tools/T", "manifest": "tools/T/T.csproj", "solution": None}]
@@ -173,10 +182,10 @@ class RunTest(unittest.TestCase):
         self.work = self.scratch / "work"
         self.asked: list[str] = []
         pinned = preparation.NEEDS["dotnet"]
-        self.served = {csharp.TOOL[0]: TOOL, pinned["files"][0][0]: SDK, preparation.MISE[0]: MISE}
+        self.served = {csharp.SOURCE[0]: TOOL, pinned["files"][0][0]: SDK, preparation.MISE[0]: MISE}
         cache = self.scratch / "cache"
         for patcher in (mock.patch.dict(os.environ, {"LOCALAPPDATA": str(cache), "XDG_CACHE_HOME": str(cache)}),
-                        mock.patch.object(csharp, "TOOL", (csharp.TOOL[0], digest(TOOL), csharp.TOOL[2])),
+                        mock.patch.object(csharp, "SOURCE", (csharp.SOURCE[0], digest(TOOL), csharp.SOURCE[2])),
                         mock.patch.dict(preparation.NEEDS, {"dotnet": {**pinned, "files": [
                             (pinned["files"][0][0], digest(SDK), pinned["files"][0][2])]}}),
                         mock.patch.object(preparation, "MISE", (preparation.MISE[0], digest(MISE), "mise")),
@@ -204,7 +213,7 @@ class RunTest(unittest.TestCase):
 
     def play_success(self):
         """What a good run leaves: each target's index, as scip-dotnet wrote it."""
-        self.play("prepare", text=log(("sdk", 0, ""), ("unpack", 0, ""), ("restore", 0, "")))
+        self.play("prepare", text=log(("sdk", 0, ""), ("tool", 0, ""), ("restore", 0, "")))
         self.play("execute", files={f"{OUT}/index-1.scip": b"the solution's index",
                                     f"{OUT}/index-2.scip": b"the project's index"},
                   text=log(("index-1", 0, "12:00:01 info: done"), ("index-2", 0, ""), peak=2**29))
@@ -244,21 +253,27 @@ class RunTest(unittest.TestCase):
             self.assertIn(left, self.index().get("gaps", []))
 
     def test_the_preparation_brings_the_pinned_sdk_and_the_tool_and_restores_the_projects(self):
-        """Without an SDK in the pre-map: the SDK the preparation carries, scip-dotnet's package unpacked, then the
-        project's own restore in the solution's folder and in the folder of the project no solution lists."""
+        """Without an SDK in the pre-map: the SDK the preparation carries; scip-dotnet's source with Daodan's patch,
+        built by that SDK for the runtime of the SDK that answers in the checkout; then the project's own restore in
+        the solution's folder and in the folder of the project no solution lists."""
         self.play_success()
         self.index()
         script = self.script("prepare")
         setup = preparation.setup(["dotnet"])["lines"][0]
         restore = preparation.restore("dotnet", [".", "tools/T"])
-        unpack = f"python3 -m zipfile -e {preparation.IN}/scip-dotnet.nupkg {csharp.HOME}"
-        for line in (setup, unpack, restore):
+        source = (f"tar -xzf {preparation.IN}/scip-dotnet.tar.gz -C {csharp.HOME}/src --strip-components=1"
+                  f" && git -C {csharp.HOME}/src apply {preparation.IN}/scip-dotnet.patch")
+        build = (f"{preparation.T}/dotnet/dotnet publish ScipDotnet/ScipDotnet.csproj -c Release -f $f"
+                 f" -o {csharp.HOME}/tools/$f/any -p:UseAppHost=false -nologo")
+        for line in (setup, source, "case ${v%%.*} in 8|9) f=net${v%%.*}.0;; *) f=net10.0;; esac", build, restore):
             self.assertIn(line, script)
-        self.assertLess(script.index(setup), script.index("step restore"))
+        self.assertLess(script.index(setup), script.index("step tool"))
+        self.assertLess(script.index("step tool"), script.index("step restore"))
         self.assertNotIn("mise", script)
         self.assertNotIn(" index ", script)  # the indexer runs with no network, in the execution
         carried = self.arrived(1) / preparation.IN.lstrip("/")
-        self.assertEqual((carried / "scip-dotnet.nupkg").read_bytes(), TOOL)
+        self.assertEqual((carried / "scip-dotnet.tar.gz").read_bytes(), TOOL)
+        self.assertEqual((carried / "scip-dotnet.patch").read_bytes(), csharp.PATCH.read_bytes())
         self.assertEqual((carried / "dotnet.tar.gz").read_bytes(), SDK)
 
     def test_preparation_reaches_only_nuget_and_execution_no_network(self):
@@ -296,23 +311,27 @@ class RunTest(unittest.TestCase):
         self.assertEqual((work / "index-1.scip").read_bytes(), b"the solution's index")
         self.assertEqual(result["builds"], [{"root": "Shop.sln", "state": "done"},
                                             {"root": "tools/T/T.csproj", "state": "done"}])
-        self.assertEqual(result["indexer"], {"name": "scip-dotnet", "version": csharp.VERSION, "seconds": 12.5,
+        self.assertEqual(result["indexer"], {"name": "scip-dotnet", "version": csharp.BUILD, "seconds": 12.5,
                                              "peak_mb": 1024})
         self.assertEqual([(run["phase"], run["step"], run["returncode"]) for run in result["runs"]],
-                         [("prepare", "sdk", 0), ("prepare", "unpack", 0), ("prepare", "restore", 0),
+                         [("prepare", "sdk", 0), ("prepare", "tool", 0), ("prepare", "restore", 0),
                           ("execute", "index-1", 0), ("execute", "index-2", 0)])
         self.assertEqual(result["configs"], {"units": UNITS, "failed": {}, "unloaded": {}})
         self.assertNotIn("gaps", result)
 
-    def test_the_sdk_the_pre_map_states_is_installed_by_mise_in_place_of_the_pin(self):
+    def test_the_sdk_the_pre_map_states_is_installed_by_mise_and_the_pin_only_builds_the_tool(self):
+        """The stated SDK is the one `dotnet` answers with in the runs; the pin, unpacked beside it with no link on
+        the PATH, builds scip-dotnet, whose source asks for an SDK 10."""
         self.play_success()
         self.index(toolchains=[GLOBAL_JSON])
         script = self.script("prepare")
         self.assertIn("install dotnet@8.0.404", script)
-        self.assertNotIn("dotnet.tar.gz", script)
+        self.assertNotIn(preparation.setup(["dotnet"])["lines"][0], script)
+        self.assertIn(f"[ -x {preparation.T}/dotnet/dotnet ] || {{ mkdir -p {preparation.T}/dotnet && tar -xzf "
+                      f"{preparation.IN}/dotnet.tar.gz -C {preparation.T}/dotnet; }}", script)
         carried = self.arrived(1) / preparation.IN.lstrip("/")
         self.assertEqual((carried / "mise").read_bytes(), MISE)
-        self.assertFalse((carried / "dotnet.tar.gz").exists())
+        self.assertEqual((carried / "dotnet.tar.gz").read_bytes(), SDK)
         proxy = self.created()[0]
         for host in ("api.nuget.org", "builds.dotnet.microsoft.com"):
             self.assertIn(host, proxy)
@@ -320,13 +339,13 @@ class RunTest(unittest.TestCase):
     def test_a_restore_that_fails_is_a_gap_and_the_index_goes_on(self):
         self.play_success()
         failed = "DAODAN-RESTORE-FAILED dotnet .\nerror NU1101: Unable to find package Gone.\nDAODAN-RESTORE-END\n"
-        self.play("prepare", text=log(("sdk", 0, ""), ("unpack", 0, ""), ("restore", 0, failed)))
+        self.play("prepare", text=log(("sdk", 0, ""), ("tool", 0, ""), ("restore", 0, failed)))
         result = self.index()
         self.assertEqual(len(result["indexes"]), 2)
         self.assertEqual(result["gaps"], preparation.restore_gaps(failed))
 
     def test_an_sdk_the_preparation_could_not_install_is_a_gap_and_the_failure_says_what_dotnet_said(self):
-        self.play("prepare", text=log(("sdk", 0, "DAODAN-MISSING dotnet@8.0.404"), ("unpack", 0, ""), ("restore", 0, "")))
+        self.play("prepare", text=log(("sdk", 0, "DAODAN-MISSING dotnet@8.0.404"), ("tool", 0, ""), ("restore", 0, "")))
         self.play("execute", text=log(("sdk", 70, "no .NET SDK runs here: bash: dotnet: command not found")), code=70)
         result = self.index(toolchains=[GLOBAL_JSON])
         self.assertEqual(result["state"], "failed")
@@ -352,7 +371,7 @@ class RunTest(unittest.TestCase):
         self.assertFalse(mark.exists())
 
     def test_a_run_that_writes_no_index_is_failed_with_the_cause_and_the_log_tail(self):
-        self.play("prepare", text=log(("sdk", 0, ""), ("unpack", 0, ""), ("restore", 0, "")))
+        self.play("prepare", text=log(("sdk", 0, ""), ("tool", 0, ""), ("restore", 0, "")))
         tail = "Unhandled exception: System.IO.FileNotFoundException: Shop.sln"
         self.play("execute", text=log(("index-1", 134, tail), ("index-2", 134, tail)))
         result = self.index()
@@ -363,17 +382,18 @@ class RunTest(unittest.TestCase):
         self.assertEqual(result["indexes"], [])
 
     def test_a_preparation_that_fails_is_failed_and_nothing_executes(self):
-        self.play("prepare", text=log(("sdk", 0, ""), ("unpack", 1, "BadZipFile: File is not a zip file")), code=70)
+        error = "error: patch failed: ScipDotnet/ScipCSharpSyntaxWalker.cs:24"
+        self.play("prepare", text=log(("sdk", 0, ""), ("tool", 1, error)), code=70)
         result = self.index()
         self.assertEqual(result["state"], "failed")
         self.assertIn("preparation exited with code 70", result["reason"])
-        self.assertIn("BadZipFile", result["reason"])
+        self.assertIn(error, result["reason"])
         self.assertEqual(len(self.created()), 2)  # the proxy and the preparation
 
     def test_a_target_scip_dotnet_indexes_no_document_of_is_failed_and_the_others_are_kept(self):
         """scip-dotnet writes an index and exits 0 even when MSBuild loads nothing: it says so, with the workspace's
         failure. That run is a build without an index, the failure a gap, and both reach `missing`."""
-        self.play("prepare", text=log(("sdk", 0, ""), ("unpack", 0, ""), ("restore", 0, "")))
+        self.play("prepare", text=log(("sdk", 0, ""), ("tool", 0, ""), ("restore", 0, "")))
         self.play("execute", files={f"{OUT}/index-1.scip": b"the solution's index", f"{OUT}/index-2.scip": b"empty"},
                   text=log(("index-1", 0, ""), ("index-2", 0, NO_DOCUMENTS)))
         result = self.index()
@@ -579,8 +599,9 @@ OCCURRENCES = {
         (11, "Default", C + "Core/Summary#Default.", False),
         (13, "Summary", C + "Core/Summary#", False), (13, "Make", C + "Core/Summary#Make().", True),
         (13, "T", "local 2", True), (13, "Summary@2", C + "Core/Summary#", False),
-        # a name written with type arguments has no occurrence (`VisitIdentifierName` only); its arguments have
+        # Daodan's build writes a name with type arguments at its identifier (`VisitGenericName`), as its arguments
         (15, "Summary", C + "Core/Summary#", False), (15, "Both", C + "Core/Summary#Both().", True),
+        (15, "Make", C + "Core/Summary#Make().", False), (15, "Make@2", C + "Core/Summary#Make().", False),
         (15, "Summary@2", C + "Core/Summary#", False), (15, "Summary@3", C + "Core/Summary#", False),
         (15, "Order", C + "Core/Order#", False),
         # Roslyn binds what `nameof` names, not `nameof`, and no name of a preprocessor directive
@@ -771,26 +792,11 @@ def test_what_the_index_cannot_name_is_a_hole_with_its_cause(shop):
     assert holes["src/Api/Program.cs:10 args"] == csharp.TOP_LEVEL
 
 
-def test_a_name_with_type_arguments_has_no_occurrence_and_says_so(tmp_path):
-    """scip-dotnet visits identifier names only (`ScipCSharpSyntaxWalker.VisitIdentifierName`), none written with
-    type arguments: `List<Order>` and `Add<Order>()` have no occurrence, their type arguments do."""
-    (tmp_path / "src").mkdir()
-    (tmp_path / "src/Lists.cs").write_text("var orders = new List<Order>();\norders.Add<Order>(null);\n",
-                                           encoding="utf-8")
-    index = graph_tests.load(tmp_path, graph_tests.document("src/Lists.cs", [
-        graph_tests.occurrence(1, 4, 10, "local 0", True), graph_tests.occurrence(1, 22, 27, C + "Core/Order#")]))
-    unanswered = csharp.unanswered(index)
-    assert unanswered(("src/Lists.cs", 1, 17)) == csharp.TYPE_ARGUMENTS
-    assert unanswered(("src/Lists.cs", 2, 7)) == csharp.TYPE_ARGUMENTS
-    assert unanswered(("src/Lists.cs", 1, 22)) is None and unanswered(("src/Other.cs", 1, 0)) is None
-
-
-def test_a_call_written_with_type_arguments_is_named_by_its_name_and_its_hole_says_why(shop):
+def test_a_call_written_with_type_arguments_reaches_the_method_its_name_binds_to(shop):
     """`Make<Summary>()` and `Summary.Make<Order>()` are named by the name before their type arguments, where
-    scip-dotnet writes no occurrence: holes with that cause, not callees without a name."""
-    holes = {f"{row['site']} {row['name']}": row["hole"] for row in shop["references"].values()}
-    assert holes["src/Core/Summary.cs:15 Make"] == csharp.TYPE_ARGUMENTS
-    assert holes["src/Core/Summary.cs:15 Summary.Make"] == csharp.TYPE_ARGUMENTS
+    Daodan's build of scip-dotnet writes the occurrence (`VisitGenericName`)."""
+    for reference in ("src/Core/Summary.cs:15 Make", "src/Core/Summary.cs:15 Summary.Make"):
+        assert _ends(shop, reference) == {("project-callable", "src/Core/Summary.cs:13", ())}
 
 
 def test_a_type_written_with_its_namespace_is_named_by_it(shop):
@@ -823,11 +829,10 @@ def test_a_byte_order_mark_moves_no_column_of_the_first_line(tmp_path):
 
 
 def test_every_reference_of_the_snapshot_ends_or_is_a_hole_the_index_explains(shop):
-    """No dead end the index's own scheme causes is left: what remains unanswered is a generic or implicit name,
-    or says its cause."""
+    """No dead end the index's own scheme causes is left: what remains unanswered is an implicit name, or says its
+    cause."""
     classes = {hole["class"] for hole in shop["graph"]["holes"]}
-    assert {csharp.EXTENSION, csharp.GENERATED, csharp.TOP_LEVEL, csharp.TYPE_ARGUMENTS,
-            "unnamed-constructor"} <= classes
+    assert {csharp.EXTENSION, csharp.GENERATED, csharp.TOP_LEVEL, "unnamed-constructor"} <= classes
     assert "computed-callee" not in classes
     assert not classes & {"dangling-local", "undefined-project-symbol", "cycle", "no-document"}
     assert {edge["to"] for edge in shop["graph"]["edges"] if edge["end"] == "dead-end"} == {

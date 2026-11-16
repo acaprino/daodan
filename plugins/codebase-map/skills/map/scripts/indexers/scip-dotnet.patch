@@ -1,0 +1,31 @@
+--- a/ScipDotnet/ScipCSharpSyntaxWalker.cs
++++ b/ScipDotnet/ScipCSharpSyntaxWalker.cs
+@@ -1 +1,3 @@
++// Changed in Daodan's build of scip-dotnet 0.2.16: VisitGenericName and Referenced, which VisitIdentifierName uses.
++
+ using Microsoft.CodeAnalysis;
+@@ -24,3 +26,3 @@
+         {
+-            _scipDocumentIndexer.VisitOccurrence(_semanticModel.GetSymbolInfo(node).Symbol, node.GetLocation(), false);
++            _scipDocumentIndexer.VisitOccurrence(Referenced(node), node.GetLocation(), false);
+         }
+@@ -173,2 +175,18 @@
+     }
++
++    // A name with type arguments (`List<Order>`, `Make<T>()`) references, at its identifier, what it binds to.
++    public override void VisitGenericName(GenericNameSyntax node)
++    {
++        _scipDocumentIndexer.VisitOccurrence(Referenced(node), node.Identifier.GetLocation(), false);
++        base.VisitGenericName(node);
++    }
++
++    // The symbol a name binds to or, where binding picks none and names one candidate, that candidate: a method group
++    // converted to `System.Delegate` (`app.MapGet("/items", GetItems)`) has no symbol, and its method as the only
++    // candidate (CandidateReason.OverloadResolutionFailure).
++    private ISymbol? Referenced(SimpleNameSyntax node)
++    {
++        var info = _semanticModel.GetSymbolInfo(node);
++        return info.Symbol ?? (info.CandidateSymbols.Length == 1 ? info.CandidateSymbols[0] : null);
++    }
+ }
+\ No newline at end of file
