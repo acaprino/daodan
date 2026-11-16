@@ -46,7 +46,7 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (69): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279
+- `tutti` (70): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280
 - `java` (45): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
@@ -82,11 +82,12 @@ Convenzioni:
 - `parser` (3): D-037, D-165, D-166
 - `driver Modal` (1): D-209
 - `explorer` (1): D-211
+- `processo` (1): D-280
 
 ### Tipo
 
 - `completezza` (150): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279
-- `correttezza` (86): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269
+- `correttezza` (87): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280
 - `sicurezza` (24): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
@@ -94,7 +95,7 @@ Convenzioni:
 
 ### Origine
 
-- `commit` (121): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279
+- `commit` (122): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (30): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264
@@ -114,19 +115,19 @@ Convenzioni:
 
 ### Strumento
 
-- `Gradle` (28): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-058, D-063, D-064, D-089, D-090, D-094, D-095, D-097, D-098, D-101, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-180, D-221, D-223
-- `Maven` (16): D-003, D-025, D-026, D-049, D-054, D-063, D-064, D-089, D-090, D-091, D-095, D-100, D-102, D-112, D-221, D-226
+- `Gradle` (29): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-058, D-063, D-064, D-089, D-090, D-094, D-095, D-097, D-098, D-101, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-112, D-180, D-221, D-223
+- `Maven` (17): D-003, D-025, D-026, D-049, D-054, D-063, D-064, D-089, D-090, D-091, D-095, D-100, D-102, D-111, D-112, D-221, D-226
 - `npm` (15): D-013, D-017, D-049, D-053, D-056, D-072, D-084, D-185, D-186, D-191, D-198, D-201, D-258, D-263, D-269
 - `uv` (12): D-042, D-047, D-049, D-184, D-188, D-246, D-248, D-252, D-253, D-254, D-269, D-276
+- `scip-java` (11): D-089, D-096, D-098, D-099, D-100, D-101, D-103, D-105, D-108, D-110, D-111
 - `scip-clang` (10): D-123, D-131, D-132, D-236, D-255, D-266, D-271, D-272, D-277, D-278
-- `scip-java` (10): D-089, D-096, D-098, D-099, D-100, D-101, D-103, D-105, D-108, D-110
 - `CMake` (9): D-060, D-061, D-076, D-122, D-124, D-125, D-131, D-132, D-135
 - `Docker` (8): D-046, D-107, D-135, D-140, D-141, D-240, D-277, D-279
 - `GitHub Actions` (8): D-056, D-182, D-201, D-213, D-260, D-261, D-274, D-275
+- `git` (7): D-048, D-126, D-204, D-245, D-250, D-257, D-280
 - `scip-python` (7): D-084, D-086, D-088, D-246, D-247, D-248, D-269
 - `Cargo` (6): D-014, D-021, D-030, D-041, D-175, D-239
 - `Compose` (6): D-201, D-212, D-214, D-215, D-240, D-261
-- `git` (6): D-048, D-126, D-204, D-245, D-250, D-257
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
 - `scip-typescript` (6): D-146, D-147, D-148, D-152, D-156, D-160
 - `tree-sitter` (6): D-034, D-035, D-036, D-037, D-117, D-265
@@ -202,7 +203,7 @@ Convenzioni:
 
 ## Indice
 
-279 schede: 219 risolte, 19 aperte, 41 buchi dichiarati.
+280 schede: 219 risolte, 20 aperte, 41 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -335,8 +336,8 @@ Convenzioni:
 | D-108 | Android: classpath dei test unitari non risolti, nessun compito Android | jvm-android-app-lib, mix-poly-firebase | aperto (dynamic-jvm-2) | `39805f5e7` | java, kotlin · analizzatore · completezza · finale · scip-java, Gradle, Android SDK |
 | D-109 | Android: build fermo su `google-services.json` mancante | jvm-android-app-lib, mix-poly-firebase | buco dichiarato (`build_input_missing`) | `39805f5e7` | java, kotlin · analizzatore · completezza · jvm-otel-android · Gradle, Google Services |
 | D-110 | kotlinconf: «Task with name 'compileKotlinJvm' not found in project ':app:adminApp'» | kotlinconf (`146e891c150c`) | risolto | `a13d55787` | kotlin · analizzatore · correttezza · jvm-kotlinconf · scip-java, Gradle |
-| D-111 | jhipster: 14 file Java con il documento senza occorrenze | jhipster-sample (`6b000b5d23a3`) | aperto | — | java · analizzatore · completezza · finale |
-| D-112 | Un file Java senza documento in due fixture Maven | jvm-maven-multi-bom-profile, jvm-protobuf-generated | aperto | — | java · analizzatore · completezza · finale · Maven, protoc |
+| D-111 | jhipster: 14 file Java con il documento senza occorrenze | jhipster-sample (`6b000b5d23a3`) | aperto finché non è committato | — | java · analizzatore · completezza · finale · scip-java, Maven |
+| D-112 | Un file Java senza documento in due fixture: nessun javac del build lo compila | jvm-maven-multi-bom-profile, jvm-protobuf-generated | aperto finché non è committato | — | java · analizzatore · completezza · finale · Maven, Gradle, protoc |
 | D-113 | C#: un progetto che Msbuild rifiuta ferma il ripristino intero | zlib (`51b7f2abdade`) | risolto | `73b645531`, `0cdbae9b2` | csharp · analizzatore · correttezza · giro-2 · scip-dotnet, Roslyn, MSBuild, dotnet |
 | D-114 | C#: 56,1 % di risposta | mix-dotnet-central, eShop (`913acea66708`), otel-demo, voting-app (`63e9150ca17a`) | aperto (csharp-dotnet) | `56e65e114`, `73b645531`, `0cdbae9b2` | csharp · analizzatore · completezza · finale · scip-dotnet |
 | D-115 | La colonna della riga 1 di un file con il BOM | i casi C# | risolto | `0cdbae9b2` | tutti · analizzatore · correttezza · prova su Modal · Roslyn, tsc |
@@ -495,7 +496,7 @@ Convenzioni:
 
 ### Benchmark e documenti
 
-18 schede: 15 risolto, 3 aperto, 0 buco dichiarato.
+19 schede: 15 risolto, 4 aperto, 0 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -517,6 +518,7 @@ Convenzioni:
 | D-235 | Pre-mappa: dipendenze sotto la soglia | corpus della pre-mappa | risolto | `de353d251`, `99112d0b9` | tutti · benchmark · benchmark · corpus della pre-mappa |
 | D-243 | Il driver perdeva i buchi del passo dinamico | benchmark project-model | risolto | `aea1c8c3b` | tutti · benchmark · benchmark · commit |
 | D-251 | I risultati di un giro non registravano il codice di Daodan su cui era girato | giro `ci-steps` | risolto per i giri dopo `cbc219663` | `cbc219663` | tutti · benchmark · benchmark · review · Modal |
+| D-280 | Una seconda sessione sullo stesso checkout ha committato ogni modifica in corso insieme | il checkout di Daodan | aperto (decisione del proprietario) | — | tutti · processo · correttezza · commit · git |
 
 ## Buchi trovati
 
@@ -658,7 +660,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `giro-2` → `finale` | 8 | 20 | 20 |
 | `finale` → `jvm-otel-android` | 1 | 0 | 0 |
 
-- `no-document`: un file Java senza documento in due fixture Maven, da verificare (D-112). Su jhipster, 14 file hanno il documento senza occorrenze (D-111, aperto).
+- `no-document`: un file Java che nessun javac del build compila, in due fixture: un modulo fuori dal reactor predefinito di Maven e l'output di protoc fuori da ogni source set di Gradle; ogni file ha la sua causa nel motivo, non committato (D-112). Su jhipster, i 14 documenti senza occorrenze sono `package-info.java`, e un file lo esclude il build stesso (D-111, non committato).
 - `undefined-project-symbol`: nessuna scheda.
 - Le versioni di Java sotto il 17, e un build che scavalca il plugin di scip-java, non danno buchi ma nessun indice: D-099–D-104 (`jdk_unsupported`, `build_edited`).
 
@@ -1080,7 +1082,7 @@ Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-
 
 | Progetto | Repository e commit | Casi | Rivelate | Citate |
 | --- | --- | ---: | --- | --- |
-| mix-real-chi | github.com/go-chi/chi `c64ed7d6635f` | 6 | D-149 | D-275 |
+| mix-real-chi | github.com/go-chi/chi `c64ed7d6635f` | 6 | D-149 | D-275, D-280 |
 | mix-real-javapoet | github.com/square/javapoet `b9017a9503b7` | 6 | D-016, D-054, D-099, D-100, D-178, D-220 | D-275 |
 | mix-real-klaxon | github.com/cbeust/klaxon `1173bdc568a6` | 10 | D-098 | D-275 |
 | mix-real-python-semver | github.com/python-semver/python-semver `b6e83e3e40d3` | 10 | D-031, D-088, D-183, D-206, D-248 | — |
@@ -2490,25 +2492,33 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Note:** D-058, D-098, D-108.
 
 #### D-111 jhipster: 14 file Java con il documento senza occorrenze
-- **Tag:** lingua java · area analizzatore · tipo completezza · origine finale · strumento —
+- **Tag:** lingua java · area analizzatore · tipo completezza · origine finale · strumento scip-java, Maven
 - **Descrizione:** finale: 15 file Java su 136 fuori dall'indice, 14 «document without occurrences» e 1 «no document in the index».
-- **Spiegazione:** da verificare.
+- **Spiegazione:**
+  - i 14 «document without occurrences» sono `package-info.java` (javadoc e la riga `package`), che scip-java scrive come documenti senza occorrenze: la copertura li contava mancanti;
+  - `DatabaseTestcontainer.java` lo lascia fuori il build di jhipster: il profilo `dev`, `activeByDefault` (`pom.xml:855-898`), dà a maven-compiler-plugin `<testExclude>io/github/jhipster/sample/config/DatabaseTestcontainer.java</testExclude>`; misurato con Maven 3.10.0 `help:effective-pom` su Modal.
 - **Progetto e caso:** jhipster-sample (`6b000b5d23a3`) — finale, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto.
-- **Note:** —
-
-#### D-112 Un file Java senza documento in due fixture Maven
-- **Tag:** lingua java · area analizzatore · tipo completezza · origine finale · strumento Maven, protoc
+- **Rimedio:** non committato (android-sdk):
+  - `scripts/code_graph.py` (`build`): un documento vuoto conta come indicizzato dove lo snapshot non trova niente a cui rispondere (nessun sito di riferimento, nessuna funzione, metodo o classe);
+  - `scripts/premap/maven.py` registra per ogni `maven-module` i `compile_excludes` di maven-compiler-plugin (`excludes`, `testExcludes`); `scripts/indexers/java.py` (`missing`) dice «the build leaves it out: maven-compiler-plugin excludes `<pattern>` from <folder> (<pom>, as Maven's effective model gives it)».
+- **Verifica:** solo test (`tests/test_codebase_map_code_graph.py`, `test_a_document_without_occurrences_of_a_file_that_holds_nothing_to_answer_is_indexed`; `tests/test_codebase_map_premap_maven.py`, `test_the_files_the_compiler_plugin_leaves_out_are_the_module_s`; `tests/test_codebase_map_indexers_jvm.py`, `test_a_java_file_the_compiler_plugin_excludes_says_so`); atteso su jhipster Java 135 file su 136, non ancora rimisurato.
+- **Stato:** aperto finché non è committato; poi risolto, e il 136° file è un'esclusione dichiarata con il suo motivo.
+- **Note:** android-sdk ha aggiunto `excluded` a `structure()` e a `index()` di `scripts/indexers/java.py`.
+#### D-112 Un file Java senza documento in due fixture: nessun javac del build lo compila
+- **Tag:** lingua java · area analizzatore · tipo completezza · origine finale · strumento Maven, Gradle, protoc
 - **Descrizione:** finale: jvm-maven-multi-bom-profile 1 file su 4 e jvm-protobuf-generated 1 su 2, «no document in the index».
-- **Spiegazione:** da verificare.
+- **Spiegazione:**
+  - jvm-maven-multi-bom-profile: `cli/pom.xml` entra nel reactor solo con il profilo `cli` (la proprietà `with-cli`, `pom.xml:86-95`), quindi il modello effettivo di Maven non ne ha il progetto;
+  - jvm-protobuf-generated: `GreetingProto.java` è l'output di protoc committato in `src/generated/java`, che nessun source set di Gradle contiene.
 - **Progetto e caso:** jvm-maven-multi-bom-profile, jvm-protobuf-generated — finale, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto.
-- **Note:** —
-
+- **Rimedio:** non committato (android-sdk), `scripts/indexers/java.py` (`missing`): ogni file Java senza documento ha la sua causa, in quest'ordine:
+  - le esclusioni del compilatore (D-111);
+  - «its module <root> (<pom>) is in no reactor of Maven's default build: Maven's effective model holds no project of it, so no javac task compiles it»;
+  - «the build of <root> wrote no index: …»;
+  - altrimenti «no javac task of the build compiles it: scip-java writes a document for every file javac compiles».
+- **Verifica:** solo test (`tests/test_codebase_map_indexers_jvm.py`, `test_a_java_file_no_javac_task_compiles_says_why`).
+- **Stato:** aperto finché non è committato; poi buco dichiarato (il motivo di `missing`).
+- **Note:** D-111; android-sdk ha aggiunto anche `outside` a `structure()` e `configs` (excluded, outside, failed) a `index()` di `scripts/indexers/java.py`.
 #### D-113 C#: un progetto che Msbuild rifiuta ferma il ripristino intero
 - **Tag:** lingua csharp · area analizzatore · tipo correttezza · origine giro-2 · strumento scip-dotnet, Roslyn, MSBuild, dotnet
 - **Descrizione:** zlib in giro-2, finale e conferma: «scip-dotnet wrote no index (no documents were indexed; Msbuild failed when processing the file '/work/contrib/dotzlib/DotZLib/DotZLib.csproj' with message: The project file "" must be opened in a version of Visual Studio IDE that supports it and converted to the latest version before it can be built».
@@ -4317,6 +4327,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** solo test: `benchmarks/project-model/test_modal_pipeline.py` (`test_a_round_records_its_commit_the_tree_of_the_copy_it_uploaded_and_the_paths_where_they_differ`), `benchmarks/project-model/test_pipeline_report.py` (`test_a_comparison_says_first_whether_the_two_rounds_ran_the_same_code`).
 - **Stato:** risolto per i giri dopo `cbc219663`; i giri già registrati non hanno `code`, e il loro codice resta quello che dicono le Convenzioni.
 - **Note:** i confronti fra giri di «Buchi trovati» ne dipendono; D-243, l'altro difetto del driver.
+
+#### D-280 Una seconda sessione sullo stesso checkout ha committato ogni modifica in corso insieme
+- **Tag:** lingua tutti · area processo · tipo correttezza · origine commit · strumento git
+- **Descrizione:** un'altra sessione (Codex) sullo stesso checkout ha committato in `1c68cbde4` l'intero albero di lavoro: 55 file, 53.591 righe aggiunte, tra cui il registro a 276 schede, la riga della spec e il test del Kiri dell'utente (D-219), CSS, `rust.py`, `compose.py` e altro lavoro in corso di più agenti, che nessuno aveva rivisto insieme.
+- **Spiegazione:** gli agenti lavorano sullo stesso checkout senza worktree e senza commit propri, e chi committa sceglie i file; una sessione che committa tutto quello che trova raccoglie anche il lavoro degli altri. Il messaggio dice che i test non sono stati rieseguiti («test non rieseguiti perché Docker non disponibile»): nessuna verifica sua.
+- **Progetto e caso:** il checkout di Daodan — commit `1c68cbde4`, 16 novembre 2026.
+- **Rimedio:** —: come le sessioni condividono il checkout lo decide il proprietario.
+- **Verifica:** dopo, team-lead ha rieseguito l'intera suite su HEAD: 2.648 passati; nessuna revisione del contenuto.
+- **Stato:** aperto (decisione del proprietario).
+- **Note:** D-219, il cui commit è `1c68cbde4`.
 
 ## Commit feat senza difetto
 
