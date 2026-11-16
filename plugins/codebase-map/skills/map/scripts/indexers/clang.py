@@ -1079,6 +1079,7 @@ def _staged(project_dir: Path, work_dir: Path, build: dict, plan: dict, root: st
     """The run of `plan`'s stage for `root` (`_docker`): what the unit's state becomes; its index, run, compiled
     files and gaps added to the lists given."""
     import docker_build
+    from indexers.clang_run import _diagnostics  # scip-clang's diagnostics, as the main route counts them
     out_dir, started = work_dir / f"docker-{len(runs)}", time.monotonic()
     result = docker_build.run(
         project_dir, out_dir, plan, ["sh", "-c", _stage_script(plan["build"]["argv"], cpus)],
@@ -1099,7 +1100,8 @@ def _staged(project_dir: Path, work_dir: Path, build: dict, plan: dict, root: st
     provenance = docker_build.provenance(plan)
     runs.append({"unit": root, "step": "docker", "returncode": result.get("exit_code"),
                  "seconds": round(time.monotonic() - started, 1), "peak_mb": None,
-                 "stderr_tail": (logs["execute"] or logs["prepare"])[-2500:], "docker": provenance})
+                 "stderr_tail": (logs["execute"] or logs["prepare"])[-2500:], "docker": provenance,
+                 **({"diagnostics": _diagnostics(logs["execute"])} if logs["execute"] else {})})
     if step:
         gaps += step["gaps"]
         return {"state": "failed", "cause": f"{step['path']} `{step['original']}` failed: {step['error']}"}
@@ -1160,5 +1162,12 @@ def _assembled(indexes: list, runs: list[dict], compiled: collections.Counter, s
         if all(item["state"] == "unavailable" for item in states):
             return {**unavailable(causes, "none: the units keep their static facts"), "runs": runs, "units": states}
         return {**failed(causes, runs), "units": states}
-    return {"indexes": indexes, "runs": runs, "indexer": code_graph.indexer("scip-clang", VERSION, runs),
+    indexer = code_graph.indexer("scip-clang", VERSION, runs)
+    staged = [run["diagnostics"] for run in runs if run.get("step") == "docker" and run.get("diagnostics")]
+    if staged:  # the stage's log stays in the work folder: what scip-clang said of its compiles is on record here
+        indexer["diagnostics"] = {"errors": sum(item["errors"] for item in staged),
+                                  "warnings": sum(item["warnings"] for item in staged),
+                                  "error_examples": list(dict.fromkeys(
+                                      example for item in staged for example in item["error_examples"]))[:8]}
+    return {"indexes": indexes, "runs": runs, "indexer": indexer,
             "units": states, "configs": {"compiled": dict(sorted(compiled.items())), "units": states}}

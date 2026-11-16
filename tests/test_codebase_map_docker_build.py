@@ -739,6 +739,31 @@ def test_a_cmake_unit_daodan_cannot_configure_is_built_and_indexed_in_its_docker
                                       "not this one"}
 
 
+def test_the_compile_errors_scip_clang_reports_in_the_stage_are_on_record(sandbox, monkeypatch):
+    """The stage's log stays in the indexer's work folder, which the engine pass removes: what scip-clang said of
+    the stage's compiles (`--show-compiler-diagnostics`, counted as `clang_run._diagnostics` counts them) is the
+    indexer's `diagnostics` in the result, which the engine report keeps. currency on Alpine before clang's
+    builtin headers: 204 errors from GCC's xmmintrin.h, and still "num errored TUs: 0"."""
+    from indexers import clang
+    said = ("/usr/lib/gcc/x86_64-alpine-linux-musl/15.2.0/include/xmmintrin.h:1377:1: error: definition of builtin "
+            "function '_mm_pause'\n/usr/lib/gcc/x86_64-alpine-linux-musl/15.2.0/include/emmintrin.h:1526:1: error: "
+            "definition of builtin function '_mm_clflush'\n/currency/src/server.cpp:40:3: warning: unused variable\n"
+            "2 errors generated.\nFinished indexing 1 translation units (num errored TUs: 0).\n")
+
+    def docker(out_dir):
+        (out_dir / "out" / "index.scip").write_bytes(document("src/server.cpp", []))
+        (out_dir / "execute.log").write_text(f"DAODAN-BUILD-EXIT 0\n{said}", encoding="utf-8")
+        return {"state": "done", "exit_code": 0, "outputs": []}
+
+    clang_runs(monkeypatch, docker)
+    result = clang.index(currency(sandbox), sandbox["root"] / "work", units=UNITS, docker=[CURRENCY])
+    assert result["indexer"]["diagnostics"] == {"errors": 2, "warnings": 1, "error_examples": [
+        "/usr/lib/gcc/x86_64-alpine-linux-musl/15.2.0/include/xmmintrin.h:1377:1: error: definition of builtin "
+        "function '_mm_pause'",
+        "/usr/lib/gcc/x86_64-alpine-linux-musl/15.2.0/include/emmintrin.h:1526:1: error: definition of builtin "
+        "function '_mm_clflush'"]}
+
+
 def test_two_units_one_stage_builds_are_built_once_and_take_that_run_s_state(sandbox, monkeypatch):
     """currency's genproto has a CMakeLists.txt of its own, which the stage copies too: the stage runs once (it
     builds opentelemetry-cpp), and each unit it builds takes that run's state."""
