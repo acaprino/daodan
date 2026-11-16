@@ -488,6 +488,34 @@ def test_the_recorded_run_reads_as_the_hand_written_one(recorded, tmp_path):
 
 # ------------------------------------------------------------------ the container run
 
+def test_valgrind_comes_from_the_archives_pool_and_from_launchpad_when_the_pool_fails(tmp_path):
+    """A source's outage costs no run (Launchpad answered 502 on 16 November 2026): one file, one digest."""
+    archive, launchpad = callgrind.VALGRIND[0]
+    assert archive.startswith("https://archive.ubuntu.com/ubuntu/pool/main/v/valgrind/")
+    assert launchpad.startswith("https://launchpad.net/ubuntu/+archive/primary/+files/")
+    assert archive.rsplit("/", 1)[1] == launchpad.rsplit("/", 1)[1]  # one name in the shared directory
+    down, asked = set(), []
+
+    def fetched(url, digest, name):
+        asked.append(url)
+        if url in down:
+            raise container.Gap(f"{url} could not be downloaded and verified: HTTP Error 502: Proxy Error",
+                                "check the network")
+        return tmp_path / name
+
+    with mock.patch.object(preparation, "fetched", side_effect=fetched):
+        assert callgrind.inputs()[f"{preparation.IN}/valgrind.deb"] == tmp_path / "valgrind.deb"
+        assert asked[0] == archive and launchpad not in asked
+        down.add(archive)
+        asked.clear()
+        assert callgrind.inputs()[f"{preparation.IN}/valgrind.deb"] == tmp_path / "valgrind.deb"
+        assert asked[:2] == [archive, launchpad]
+        down.add(launchpad)
+        with pytest.raises(container.Gap) as raised:
+            callgrind.inputs()
+    assert archive in raised.value.cause and launchpad in raised.value.cause
+    assert raised.value.remedy == "check the network"
+
 class ObserveTest(unittest.TestCase):
     def setUp(self):
         self.scratch = Path(tempfile.mkdtemp(prefix="daodan-dynamic-rust-test-"))

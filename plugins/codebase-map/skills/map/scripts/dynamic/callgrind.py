@@ -6,7 +6,8 @@ virtual method): valgrind.org/docs/manual/cl-manual.html. It needs no ptrace, no
 tracing (it runs the program in its own process), so an unprivileged container runs it; only Memcheck needs
 the C library's symbols (`m_redir.c`), and Callgrind is not Memcheck. Valgrind is adopted as Ubuntu builds it
 for the image's release (`VALGRIND`: the image is Ubuntu 24.04), pinned by version and sha256, GPL-2.0-or-later,
-unpacked in the preparation and never installed in the system. Its cost: a run is tens of times slower, and its
+taken from the Ubuntu archive's pool, else from Launchpad's librarian (one file, one digest: `fetched`), unpacked
+in the preparation and never installed in the system. Its cost: a run is tens of times slower, and its
 threads run one at a time. It maps a program's main stack down to one page below its arguments
 (initimg-linux.c, `setup_client_stack`) and grows it on a fault below only when the kernel reports SEGV_MAPERR,
 as Linux does (m_signals.c, `extend_stack_if_appropriate`); no option changes either. The gVisor of a Modal
@@ -38,8 +39,10 @@ from pathlib import Path
 import preparation
 
 VALGRIND_VERSION = "3.22.0"
-VALGRIND = ("https://launchpad.net/ubuntu/+archive/primary/+files/valgrind_3.22.0-0ubuntu3_amd64.deb",
-            "744e081e5cf3d5c598b499dbb7d2250ea3f2869dde4a4d7b231fe6114f347d7d", "valgrind.deb")  # Ubuntu noble
+VALGRIND = (("https://archive.ubuntu.com/ubuntu/pool/main/v/valgrind/valgrind_3.22.0-0ubuntu3_amd64.deb",
+             "https://launchpad.net/ubuntu/+archive/primary/+files/valgrind_3.22.0-0ubuntu3_amd64.deb"),
+            "744e081e5cf3d5c598b499dbb7d2250ea3f2869dde4a4d7b231fe6114f347d7d", "valgrind.deb")  # Ubuntu noble's,
+# its sources in order: the archive's pool, then Launchpad's librarian
 PYELFTOOLS = ("https://files.pythonhosted.org/packages/46/2a/f9697576603dae937727827505a6126a066affb227034e77e6f9"
               "068910da/pyelftools-0.33-py3-none-any.whl",
               "f215ad5f47d3f1373a21496a6c9e0707c622840d0622f23ff7ce08678b020036", "pyelftools.whl")
@@ -68,10 +71,24 @@ OUTSIDE, NOT_READ, NOT_AT_CALL, AMBIGUOUS = ("made outside the project", "a file
 ACCERR = "Bad permissions for mapped region"  # how Valgrind words a fatal SIGSEGV whose code is SEGV_ACCERR
 
 
+def fetched(sources, digest: str, name: str) -> Path:
+    """The file of `digest` from the first of `sources` that serves it (`preparation.fetched`: downloaded once into
+    the shared directory under the file's own name, the same at every source, and checked): one source's outage
+    costs no run. A Gap that names each source's failure where none serves it."""
+    import container
+    causes = []
+    for url in sources:
+        try:
+            return preparation.fetched(url, digest, name)
+        except container.Gap as gap:
+            causes.append(gap.cause)
+    raise container.Gap("; ".join(causes), "check the network")
+
+
 def inputs() -> dict:
     """What the copy carries: the reader of the traces, Valgrind and pyelftools, downloaded once and checked."""
-    return {f"{IN}/{READER.name}": READER,
-            **{f"{IN}/{name}": preparation.fetched(url, digest, name) for url, digest, name in (VALGRIND, PYELFTOOLS)}}
+    return {f"{IN}/{READER.name}": READER, f"{IN}/{VALGRIND[2]}": fetched(*VALGRIND),
+            f"{IN}/{PYELFTOOLS[2]}": preparation.fetched(*PYELFTOOLS)}
 
 
 def recorder(out: str) -> list[str]:
