@@ -23,8 +23,9 @@ callee, the call site's position) in an unprivileged container (no ptrace, perf 
 framework's discovery) and turn testing on (`enable_testing`, `include(CTest)`): its configure reaches what it
 adds below it. A unit another build makes is a `runner_not_observed` gap.
 `observe` is one container run (`IMAGE`). The preparation, with the registries: CMake at the indexer's pin
-(`indexers.clang.CMAKE`, or with mise the minimum the pre-map states above it), Valgrind unpacked, and the
-dependency manager the root declares, vcpkg or Conan, as the pre-map's configure runs it (`premap.cmake`). The
+(`indexers.clang.CMAKE`, or with mise the minimum the pre-map states above it), Valgrind unpacked, and each
+root's dependencies restored as the C and C++ analyzer restores them (`indexers.clang.restores`: vcpkg or Conan,
+the pre-map's choice). The
 execution, with no network: per root a Debug build (`-g -O0`, so calls stay calls and have lines) outside the
 copy, then CTest under Callgrind, which traces each test it starts (`--trace-children`), stopped after `LIMIT`
 seconds; then the traces are read in the container (`callgrind.symbolize`).
@@ -73,7 +74,7 @@ def _inside(rel: str, folder: str) -> bool:
 
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, toolchains}` from the pre-map `record`, the snapshot's `files` and `read(rel)` their text: a
-    run is `{root, argv, manager}`, a root that declares no test a `no_tests` gap."""
+    run is `{root, runner, argv}`, a root that declares no test a `no_tests` gap."""
     units, states = index.configure_roots(record.get("units"), record.get("workspace"))
     gaps = [{"kind": "runner_not_observed", "path": state["root"],
              "detail": f"{state['root']}: {state['cause']}; its tests are not observed"} for state in states]
@@ -92,32 +93,20 @@ def plan(record: dict, files: list[str], read) -> dict:
             gaps.append({"kind": "no_tests", "path": root, "detail": f"no CMake file of {root} declares a test "
                          "(add_test, with enable_testing or include(CTest)): no ctest to run"})
             continue
-        manager = next((name for name, marks, _line in premap_cmake.MANAGERS
-                        if any(posixpath.normpath(f"{root}/{mark}") in files for mark in marks)), None)
-        runs.append({"root": root, "runner": RUNNER, "argv": ARGV, "manager": manager})
+        runs.append({"root": root, "runner": RUNNER, "argv": ARGV})
     wanted = index.wanted_cmake([item for item in record.get("toolchains") or [] if item.get("tool") == "cmake"])
     return {"runs": runs, "gaps": gaps, "toolchains": [wanted] if wanted and runs else []}
 
 
-def _restore(run: dict) -> str:
-    """The preparation's line installing the root's dependencies as the pre-map's configure does, its failure
-    printed as `preparation.restore` prints one."""
-    script = dict((name, line) for name, _marks, line in premap_cmake.MANAGERS)[run["manager"]]
-    key, folder = premap_cmake._key(run["root"]), shlex.quote(posixpath.normpath(f"{WORK}/{run['root']}"))
-    return (f"( cd {folder} && mkdir -p {premap_cmake.PREP}/{key} && sh -c {shlex.quote(script)} prepare {key} )"
-            f" > {preparation.LOG} 2>&1 || {{ printf 'DAODAN-RESTORE-FAILED {run['manager']} %s\\n'"
-            f" {shlex.quote(run['root'])}; {{ grep -Ei '^error|error:' {preparation.LOG} || tail -n 30"
-            f" {preparation.LOG}; }} | head -n 30; echo DAODAN-RESTORE-END; }} >&2")
-
-
-def scripts(planned: dict) -> tuple[str, str, dict]:
+def scripts(planned: dict, restored: dict) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and what the preparation needs beside them (`{files, hosts,
-    gaps}`: the downloads the copy carries, the hosts beside the registries, the toolchains no installer has)."""
+    gaps}`: the downloads the copy carries, the hosts beside the registries, the toolchains no installer has);
+    `restored` is the analyzer's restore of each root (`indexers.clang.restores`)."""
     chains = preparation.toolchains(planned.get("toolchains") or [])
-    needs = preparation.setup(sorted({run["manager"] for run in planned["runs"] if run["manager"]}))
+    needs = preparation.setup(sorted({item["manager"] for item in restored.values()}))
     prepare = ["# dynamic-clang prepare", "set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}",
                CMAKE_SETUP, *needs["lines"], callgrind.SETUP, *chains["lines"],
-               *(_restore(run) for run in planned["runs"] if run["manager"])]
+               *(item["line"] for item in restored.values())]
     valgrind = shlex.join([callgrind.VALGRIND_BIN, *callgrind.OPTIONS])
     execute = ["# dynamic-clang execute", "set -u", f"OUT={OUT}", "mkdir -p $OUT", *callgrind.recorder("$OUT"),
                'if [ "$(cat $OUT/recorder.code)" = 0 ]; then',
@@ -191,7 +180,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     shutil.rmtree(back, ignore_errors=True)  # a former run's outputs are not this one's
     for phase in ("prepare", "execute"):
         (out_dir / f"{phase}.log").unlink(missing_ok=True)
-    prepare, execute, needs = scripts(planned)
+    prepare, execute, needs = scripts(planned, index.restores(project, [run["root"] for run in runs]))
 
     def inputs() -> dict:
         return {**callgrind.inputs(),

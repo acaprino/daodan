@@ -30,6 +30,7 @@ import preparation  # noqa: E402
 import snapshot  # noqa: E402
 from dynamic import callgrind, callgrind_sites  # noqa: E402
 from dynamic import clang as observer  # noqa: E402
+from indexers import clang as index  # noqa: E402
 from test_codebase_map_container import FAKE_CLI, tree_digest  # noqa: E402
 from test_codebase_map_indexers_jvm import PLAY  # noqa: E402
 
@@ -249,7 +250,7 @@ def reader(texts: dict):
 
 def test_a_cmake_root_that_declares_tests_is_a_run_of_ctest_after_its_build():
     planned = observer.plan(record("."), sorted(FILES), reader(FILES))
-    assert [(run["root"], run["argv"], run["manager"]) for run in planned["runs"]] == [(".", observer.ARGV, None)]
+    assert planned["runs"] == [{"root": ".", "runner": "ctest", "argv": observer.ARGV}]
     assert planned["gaps"] == []
 
 
@@ -277,7 +278,7 @@ def test_the_fixtures_tests_run_from_the_root_the_pre_map_names_by_the_empty_pat
     assert [unit["root"] for unit in record["units"]] == ["", "tests"]
     files = sorted(path.relative_to(fixture).as_posix() for path in fixture.rglob("*") if path.is_file())
     planned = observer.plan({**record, "workspace": []}, files, lambda rel: (fixture / rel).read_text(encoding="utf-8"))
-    assert [(run["root"], run["runner"], run["manager"]) for run in planned["runs"]] == [(".", "ctest", None)]
+    assert [(run["root"], run["runner"]) for run in planned["runs"]] == [(".", "ctest")]
     assert planned["gaps"] == []
 
 
@@ -299,11 +300,9 @@ def test_without_a_native_unit_the_plan_says_so():
     assert planned["runs"] == [] and planned["gaps"][0]["kind"] == "no_tests"
 
 
-def test_the_dependency_manager_and_a_cmake_above_the_pin_come_from_the_project():
-    files = {**FILES, "vcpkg.json": "{}"}
+def test_a_cmake_above_the_pin_comes_from_the_pre_map():
     stated = [{"tool": "cmake", "version": "3.31.2", "declared_in": "CMakeLists.txt"}]
-    planned = observer.plan(record(".", toolchains=stated), sorted(files), reader(files))
-    assert planned["runs"][0]["manager"] == "vcpkg"
+    planned = observer.plan(record(".", toolchains=stated), sorted(FILES), reader(FILES))
     assert planned["toolchains"] == stated
 
 
@@ -400,6 +399,22 @@ class ObserveTest(unittest.TestCase):
         self.assertIn("vcpkg install", prepared)
         self.assertIn("DAODAN-RESTORE-FAILED vcpkg", prepared)
         self.assertIn("/daodan/state/prep/root/init.cmake", executed)
+
+    def test_the_restore_is_the_analyzers_own_where_a_preset_names_conan_beside_vcpkg(self):
+        """The observer restores a root as the C and C++ analyzer does (`indexers.clang.restores`, the pre-map's
+        choice): the manager a configure preset's CMAKE_TOOLCHAIN_FILE names, else vcpkg."""
+        presets = {"version": 3, "configurePresets": [
+            {"name": "conan", "cacheVariables": {"CMAKE_TOOLCHAIN_FILE": "build/conan_toolchain.cmake"}}]}
+        for name, text in {"vcpkg.json": '{"dependencies": ["fmt"]}', "conanfile.txt": "[requires]\nfmt/10.2.1\n",
+                           "CMakePresets.json": json.dumps(presets)}.items():
+            (self.project / name).write_text(text, encoding="utf-8")
+        self.play_run()
+        self.observe()
+        prepared = self.script("prepare")
+        self.assertIn(index.restores(self.project, ["."])["."]["line"], prepared)
+        self.assertNotIn("vcpkg install", prepared)
+        proxy, _prepare, _execute = self.created()
+        self.assertIn("center2.conan.io", proxy)
 
     def test_the_project_is_not_changed_and_the_recorder_is_carried(self):
         before = tree_digest(self.project)
