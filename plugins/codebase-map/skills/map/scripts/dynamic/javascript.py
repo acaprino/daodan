@@ -265,11 +265,13 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
                         f"{', '.join(unobserved[:5])}", files=len(unobserved), examples=unobserved[:5]))
     refused = UNREACHABLE.findall(log)
     if refused:
-        where = collections.Counter(address for address in refused if address).most_common(3)
+        addresses = collections.Counter(address for address in refused if address)
+        where = addresses.most_common(3)
         gaps.append(gap("services_unreachable",
                         f"{command}: {len(refused)} lines of its log report a refused connection or an unreachable "
                         "host" + (f" ({', '.join(f'{address} ×{count}' for address, count in where)})" if where else "")
-                        + ": the tests run with no network and with only the services the project's CI declares"))
+                        + ": the tests run with no network and with only the services the project's CI declares",
+                        addresses=dict(addresses.most_common())))
     return entry, gaps
 
 

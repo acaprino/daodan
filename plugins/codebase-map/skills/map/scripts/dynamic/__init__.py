@@ -68,6 +68,7 @@ TESTS = ("ran", "timeout", "killed", "not_started", "no_tests")  # how a run's t
 HEALTH = ("--health-cmd", "--health-interval", "--health-timeout", "--health-retries", "--health-start-period",
           "--health-start-interval")  # the options of a service passed to the engine: its health check
 EXPRESSION = re.compile(r"\$\{\{.*?\}\}", re.S)  # GitHub's expressions, which Daodan does not evaluate
+LOCAL = {"localhost", "127.0.0.1", "::1", "[::1]", "0.0.0.0"}  # the tests' own host, the pod's shared one
 PORT = re.compile(r"\$\{\{\s*job\.services\.[\w-]+\.ports\[\s*['\"]?(\d+)['\"]?\s*\]\s*\}\}")  # but this one
 KEYS = {"runs": {"root", "runner", "state"}, "sites": {"file", "line", "column", "name", "role", "callees"},
         "sampled": {"caller", "callee", "line"}, "gaps": {"kind", "detail"}}  # what each item of a result holds
@@ -407,6 +408,25 @@ def services(record: dict) -> dict:
     return {"services": planned, "env": env, "gaps": gaps}
 
 
+def _unanswered(gap: dict, facts: list[dict]) -> dict:
+    """An observer's `services_unreachable` `gap` with the local addresses of its `addresses` (the tests' localhost,
+    a service's name or alias) no service the CI declares answers at: beside the tests each answers on its
+    container's ports (`facts`, the pre-map's `services`); nothing is said when one declares none of its ports."""
+    ports = {item["name"]: [str(port).split("/")[0].split(":")[-1] for port in item.get("ports") or ()]
+             for item in facts}
+    if not all(ports.values()):
+        return gap
+    hosts = LOCAL | {name for item in facts for name in (item.get("host"), item["name"], *(item.get("aliases") or ()))}
+    answered = {port for each in ports.values() for port in each}
+    unanswered = [address for address in gap.get("addresses") or () for host, _, port in [address.rpartition(":")]
+                  if host.lower() in hosts and port and port not in answered]
+    if not unanswered:
+        return gap
+    said = ", ".join(f"{name} on {', '.join(each)}" for name, each in ports.items()) or "it declares none"
+    return {**gap, "detail": f"{gap['detail']}; no service the project's CI declares answers at "
+                             f"{', '.join(unanswered)} ({said})"}
+
+
 def _service_gaps(started: list[dict], planned: list[dict], paths: dict, entry: str) -> list[dict]:
     """The gaps of the services of an observer that ran: one that did not start in one of its container runs
     (`started`, `container.Said.services`), once per cause; every one when its runs started none."""
@@ -600,6 +620,8 @@ def run(manifest: Path, bus) -> dict:
             # a declared host a failed restore of the run could not reach: one gap naming it, whichever observer ran
             result["gaps"] = [*(result.get("gaps") or ()),
                               *preparation.unreached(result.get("gaps") or (), planned["declared"])]
+            result["gaps"] = [_unanswered(gap, record.get("services") or [])
+                              if gap.get("kind") == "services_unreachable" else gap for gap in result["gaps"]]
             if result["state"] != "ran":
                 cause = result["cause"] if result["state"] == "failed" else \
                     f"the tests run only in a container: {result['cause']}"

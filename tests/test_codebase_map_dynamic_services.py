@@ -1329,10 +1329,11 @@ class PodTest(unittest.TestCase):
 
 # ------------------------------------------------------------------ the step
 
-def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped: list[list[dict]] = ()):
+def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped: list[list[dict]] = (),
+                found: list[dict] = ()):
     """A Python observer with a container run per item of `runs`, each starting the services with those outcomes
     and the CI's steps with those of `stepped` (as `container.run_in_container` does within `container.beside`),
-    that keeps what it was planned."""
+    that keeps what it was planned and says the gaps `found`."""
     def observe(project, planned, out_dir, engine):
         services, env, steps, said = container.BESIDE.get()
         seen.update(planned, services=services, env=env, steps=steps)
@@ -1340,7 +1341,8 @@ def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped:
             said.services.extend(outcomes)
         for outcomes in stepped:
             said.ci_steps.extend(outcomes)
-        return {"state": state, "sites": [], "gaps": [], "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]} \
+        return {"state": state, "sites": [], "gaps": [dict(gap) for gap in found],
+                "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]} \
             if state == "ran" else {"state": state, "cause": "no engine", "remedy": "start one"}
     return SimpleNamespace(ENTRY="dynamic-fake-python", VERSION="1", LANGUAGES=("python",),
                            external=lambda callee: {"manager": "python", "package": "x", "version": None},
@@ -1349,13 +1351,14 @@ def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped:
                            observe=observe)
 
 
-def run_step(tmp_path, entries: list[dict], runs: list[list[dict]], state: str = "ran", ci_steps=(), stepped=()):
+def run_step(tmp_path, entries: list[dict], runs: list[list[dict]], state: str = "ran", ci_steps=(), stepped=(),
+             found=()):
     _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
     static_store(manifest)
     seen: dict = {}
     record = {"services": entries, "tests": [], "ci_steps": list(ci_steps)}
     with mock.patch.object(premap, "ensure", return_value=record), \
-            mock.patch.object(dynamic, "observers", return_value=[observer_of(seen, runs, state, stepped)]):
+            mock.patch.object(dynamic, "observers", return_value=[observer_of(seen, runs, state, stepped, found)]):
         _result, events, _asked = step(manifest)
     return seen, events
 
@@ -1414,6 +1417,32 @@ def test_the_step_runs_the_ci_s_steps_before_each_observer_s_tests_and_says_thos
     assert container.BESIDE.get() is None
 
 
+REFUSED = {"kind": "services_unreachable", "path": ".",
+           "addresses": {"127.0.0.1:80": 11, "api.example.com:443": 2, "localhost:5432": 1, "postgres:6379": 1},
+           "detail": "npm run frontend:test in .: 15 lines of its log report a refused connection or an unreachable "
+                     "host (127.0.0.1:80 ×11, api.example.com:443 ×2, localhost:5432 ×1): the tests run with no "
+                     "network and with only the services the project's CI declares"}
+
+
+def test_a_refused_local_address_no_declared_service_answers_at_is_said_with_the_ports_they_answer_on(tmp_path):
+    """Of the addresses the tests could not reach (`addresses`), the step names the local ones no service the CI
+    declares answers at, beside the tests on its container's port: tududi's frontend tests, which its CI does not
+    run, reach jsdom's default `http://localhost/` beside postgres on 5432, and no network would change that."""
+    run = [{"name": "postgres", "image": "postgres:16-alpine", "outcome": "ready"}]
+    _seen, events = run_step(tmp_path, [TUDUDI], [run], found=[REFUSED])
+    [said] = gaps(events, "services_unreachable")
+    assert said["detail"] == REFUSED["detail"] + (
+        "; no service the project's CI declares answers at 127.0.0.1:80, postgres:6379 (postgres on 5432)")
+    _seen, events = run_step(tmp_path / "none", [], [], found=[REFUSED])
+    [said] = gaps(events, "services_unreachable")
+    assert said["detail"].endswith("; no service the project's CI declares answers at 127.0.0.1:80, localhost:5432 "
+                                   "(it declares none)")
+    unported = {**TUDUDI, "ports": []}  # a port it answers on that the CI does not declare: nothing is said
+    _seen, events = run_step(tmp_path / "unported", [unported], [run], found=[REFUSED])
+    [said] = gaps(events, "services_unreachable")
+    assert said["detail"] == REFUSED["detail"]
+
+
 # ------------------------------------------------------------------ the JavaScript observer
 
 def test_the_javascript_observer_says_a_refused_connection_without_saying_no_service_starts(tmp_path):
@@ -1425,6 +1454,7 @@ def test_the_javascript_observer_says_a_refused_connection_without_saying_no_ser
     [gap] = [gap for gap in result["gaps"] if gap["kind"] == "services_unreachable"]
     assert "starts no service" not in gap["detail"] and "(127.0.0.1:6379 ×2, redis ×1)" in gap["detail"]
     assert "only the services the project's CI declares" in gap["detail"]
+    assert gap["addresses"] == {"127.0.0.1:6379": 2, "redis": 1}
 
 
 # ------------------------------------------------------------------ on Modal
