@@ -62,6 +62,16 @@ def grammar_gaps(profiles) -> dict[str, str]:
                        if isinstance(profile, dict) and profile.get("backend") == "unavailable"))
 
 
+def _versions(language) -> dict:
+    """A grammar's ABI and semantic version, as the pack states them."""
+    found = {}
+    for attribute in ("abi_version", "semantic_version"):
+        value = getattr(language, attribute, None)
+        if value is not None:
+            found[attribute] = list(value) if isinstance(value, tuple) else value
+    return found
+
+
 def parser_profile(path: Path, language: str | None = None) -> dict:
     """Effective backend for this file, without reading its source bytes."""
     language = language or SUPPORTED_EXTENSIONS.get(path.suffix.lower())
@@ -75,12 +85,12 @@ def parser_profile(path: Path, language: str | None = None) -> dict:
             from languages._treesitter import load_failure
             return {"language": language, "backend": "unavailable", "grammar": grammar,
                     "reason": load_failure(grammar) or "no tree-sitter grammar installed"}
-        profile = {"language": language, "backend": "tree-sitter", "grammar": grammar}
-        lang = loaded[1]
-        for attribute in ("abi_version", "semantic_version"):
-            value = getattr(lang, attribute, None)
-            if value is not None:
-                profile[attribute] = list(value) if isinstance(value, tuple) else value
+        profile = {"language": language, "backend": "tree-sitter", "grammar": grammar, **_versions(loaded[1])}
+        if language in {"vue", "svelte"}:  # the template's own grammar (`languages/sfc.py`)
+            from languages._treesitter import load_failure
+            template = get_parser(language)
+            profile["template"] = {"grammar": language, **(_versions(template[1]) if template else {
+                "reason": load_failure(language) or "no tree-sitter grammar installed"})}
         return profile
     return {"language": language, "backend": {
         "python": "stdlib-ast", "css": "stylesheet", "markup": "stylesheet", "sql": "regex", "plsql": "regex",

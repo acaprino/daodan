@@ -22,7 +22,7 @@ import languages  # noqa: E402
 import resolve_edges  # noqa: E402
 import snapshot  # noqa: E402
 import source_files  # noqa: E402
-from indexers import css, go, rust, vue_svelte  # noqa: E402
+from indexers import css, go, rust, typescript, vue_svelte  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 
@@ -178,28 +178,15 @@ def _stage(tmp_path: Path, sources: dict[str, str], edit: dict[str, str] | None 
                                        out=tmp_path / "engine-edges.sqlite")
 
 
-def test_a_template_is_a_declared_gap_and_its_language_is_not_complete(tmp_path):
-    """No site of these components is a hole: only the template keeps Vue and Svelte from reading `complete`."""
-    script = "<script>\nexport const n = 1\n</script>\n"
-    report = _stage(tmp_path, {"Only.vue": script + "<template>\n  <p @click=\"save()\">{{ f(n) }}</p>\n</template>\n",
-                               "Bare.vue": script, "Card.svelte": script + "<button on:click={h}>x</button>\n"})
-    assert report["available"], report.get("reason")
-    vue, svelte = report["coverage"]["vue"], report["coverage"]["svelte"]
-    assert (vue["sites"], vue["holes"], vue["state"]) == (0, {}, "lower-bound")
-    assert vue["files"] == {"snapshot": 2, "indexed": 1, "missing": [{"path": "Only.vue", "reason": TEMPLATE}]}
-    assert svelte["files"]["missing"] == [{"path": "Card.svelte", "reason": TEMPLATE}]
-    assert svelte["state"] == "lower-bound"
-    bare = _stage(tmp_path / "bare", {"Bare.vue": script})["coverage"]["vue"]
-    assert (bare["files"], bare["state"]) == ({"snapshot": 1, "indexed": 1, "missing": []}, "complete")
-
-
 SCRIPTS_TOO = {"App.vue": "<script>\nexport default { methods: { go(x) { return x.run() } } }\n</script>\n",
                "api.ts": "export function save(x: any) { return x.send() }\n"}
 
 
 def test_the_stage_of_vue_and_svelte_writes_no_entry_for_typescript_and_javascript(tmp_path):
     """Their sites are scip-typescript's: an entry of this engine would outlive a scip-typescript that failed."""
-    assert vue_svelte.TypeScriptEngine.languages == vue_svelte.LANGUAGES == ("vue", "svelte")
+    assert vue_svelte.TypeScriptEngine.languages == vue_svelte.READ == ("vue", "svelte")
+    # The pass no longer gives it these languages: scip-typescript serves them (`indexers/components.py`).
+    assert vue_svelte.LANGUAGES == () and {"vue", "svelte"} <= set(typescript.LANGUAGES)
     report = _stage(tmp_path, SCRIPTS_TOO)
     assert report["available"], report.get("reason")
     assert sorted(report["languages"]) == ["vue"] and report["population_language"] == "vue"

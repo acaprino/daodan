@@ -14,7 +14,10 @@ from pathlib import Path, PurePosixPath
 from engine_tools import executable_name, npm_key, npm_modules, package_directories
 from language_servers import ENGINE_THREADS, SERVER_MEMORY_MB, MirroredEngine, _multilspy_pins
 
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "typescript", ("vue", "svelte"), frozenset(), False
+# The position stage's entry, which now serves no language: scip-typescript serves Vue and Svelte
+# (`indexers/typescript.py`, `indexers/components.py`). Kept until a real run proves that path.
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "typescript", (), frozenset(), False
+READ = ("vue", "svelte")  # what the engine reads when it is asked
 MIN_FREE = 2 * 2**30  # one language server at a time, with this much memory free
 REQUIREMENTS, IMPORT = ("multilspy==0.1.1",), "multilspy"
 INSTALL = "install uv, which gives the pass multilspy and its pinned typescript-language-server"
@@ -59,7 +62,7 @@ class TypeScriptEngine(MirroredEngine):
     server_name = "typescript-language-server"
     # The stage answers for the entry's languages: the TypeScript and JavaScript sites are scip-typescript's.
     # A component imports files of those languages, so they are checked against the snapshot too (`reads`).
-    languages, reads = LANGUAGES, ("typescript", "javascript")
+    languages, reads = READ, ("typescript", "javascript")
     language_ids = {".ts": "typescript", ".mts": "typescript", ".cts": "typescript", ".tsx": "typescriptreact",
                     ".js": "javascript", ".mjs": "javascript", ".cjs": "javascript", ".jsx": "javascriptreact"}
 

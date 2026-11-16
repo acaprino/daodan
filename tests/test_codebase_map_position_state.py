@@ -139,24 +139,6 @@ def test_a_language_of_whose_files_the_engine_reads_nothing_is_failed_with_the_c
         "vue": "fresh", "svelte": "failed"}
 
 
-SVELTEKIT = Path(__file__).resolve().parents[1] / "benchmarks/project-model/fixtures/js-sveltekit/src/routes"
-
-
-def test_components_whose_templates_are_unread_and_whose_calls_none_is_asked_are_failed(tmp_path):
-    """js-sveltekit: each component's template is unread and the only calls of their script blocks are runes no
-    engine is asked (`$props()`): nothing of any file is read, so the language is failed with the cause."""
-    report = reasons._stage(tmp_path, {f"src/routes/{name}": (SVELTEKIT / name).read_text(encoding="utf-8")
-                                       for name in ("+layout.svelte", "+page.svelte")})
-    assert report["available"], report.get("reason")
-    svelte = report["languages"]["svelte"]
-    files, excluded = svelte["coverage"]["files"], svelte["excluded_classes"]
-    assert (files["snapshot"], files["indexed"], svelte["population"], sum(excluded.values())) == (2, 0, 0, 2)
-    assert svelte["state"] == "failed"
-    assert svelte["reason"] == (f"nothing of the 2 svelte files is read: {reasons.TEMPLATE} (2); none of their 2 "
-                                "calls is asked: " + ", ".join(f"{name} ({count})" for name, count in excluded.items()))
-    assert report["gaps"] == [{"kind": "language_not_indexed", "language": "svelte", "detail": svelte["reason"]}]
-
-
 class Served(reasons.Quiet):
     """The engine as the real one names itself: its entry, then the server and its release."""
 
@@ -175,6 +157,6 @@ def test_the_store_entry_names_the_entry_that_serves_the_language_so_the_state_a
     snapshot.write_snapshot(root, manifest)
     report = rx.resolve_edges(manifest, engine=Served(), limit=None, stride=1, out=tmp_path / "engine-edges.sqlite")
     assert report["languages"]["vue"]["state"] == "fresh"
-    assert engine_pass.from_source("vue", report["languages"]["vue"])
-    state = rx.edge_state(manifest)["languages"]["vue"]
-    assert (state["state"], state["coverage"]) == ("fresh", report["languages"]["vue"]["coverage"])
+    # Vue is scip-typescript's now (`indexers/components.py`): the position engine's entry is no longer fresh.
+    assert engine_pass.ENGINE_LANGUAGES["vue"].name == "scip-typescript"
+    assert not engine_pass.from_source("vue", report["languages"]["vue"])

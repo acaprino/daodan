@@ -205,7 +205,10 @@ def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarati
         "scip-go", "scip-rust", "scip-typescript", "scip-python", "scip-java", "scip-kotlin", "scip-clang",
         "scip-dotnet", "stylesheet", "typescript"}
     for module in declared:
-        assert module.LANGUAGES and isinstance(module.UNIT_KINDS, frozenset)
+        # The position stage's entry (`indexers/vue_svelte.py`) serves no language since scip-typescript serves Vue
+        # and Svelte (`indexers/components.py`); it stays until a real run proves that path.
+        assert (module.LANGUAGES or callable(getattr(module, "engine", None))) and isinstance(module.UNIT_KINDS,
+                                                                                              frozenset)
         assert isinstance(module.NEEDS_CONTAINER, bool)
         assert module.MIN_FREE > 0
         assert callable(getattr(module, "engine", None)) or (callable(module.structure) and callable(module.index))

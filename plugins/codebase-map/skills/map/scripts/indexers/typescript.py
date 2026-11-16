@@ -16,15 +16,22 @@ are `unavailable`, with the gap's cause and remedy.
   packages the project lacks (`typescript_types.py`): `@types/node` at the major of the Node the project runs on,
   and `@types/<package>` for a declared package that ships no types, each installed apart and linked where
   TypeScript looks last, Node's named in a file the generated tsconfig includes (`REFERENCES`); the indexer's
-  record lists those added (`types`).
+  record lists those added (`types`). Where a tsconfig of the project extends a file a framework generates
+  (`GENERATORS`: SvelteKit's `svelte-kit sync` writes `.svelte-kit/tsconfig.json` and the generated types,
+  svelte.dev/docs/kit/cli), the project's installed command writes it (`generator`), after the restore, whatever
+  its lifecycle scripts run; the record lists what it wrote with the version (`generated`). With Vue components,
+  Daodan's pin of Vue's tool, which a project without its own needs (`components.PIN`).
 - Execution, with no network: scip-typescript on Daodan's Node (0.6.2 needs Node 22.23.4 or later, whatever the
   project runs on), with a generated tsconfig in place of the project's: it holds every JS/TS file of the
   snapshot (`allowJs`) and extends the project's own, or without a root `tsconfig.json` the one the pre-map
   names. One program has one `paths`: the generated tsconfig carries the aliases every unit's tsconfig states
   and the name of each package another reaches by name (a workspace's member, a unit's dependency) on its
-  folder. Then the checker's pass over the same program (`typescript_unbound.js`): the members it binds no
-  declaration to, where the index has no occurrence, and why (`unanswered`). Both come back as the run's
-  output.
+  folder. The program holds the Vue and Svelte components too (`indexers/components.py`): a Svelte one
+  scip-typescript turns into TypeScript itself, a Vue one is first turned by Vue's own tool, in a generated file
+  beside it whose index `components.rewrite` gives back to it; the record names each tool, its version and whose
+  (`frameworks`), `missing` why a component has no document. Then the checker's pass over the same program
+  (`typescript_unbound.js`): the members it binds no declaration to, where the index has no occurrence, and why
+  (`unanswered`). Both come back as the run's output.
 
 What the run lacks is a gap of its contract (`gaps`): a restore that failed (`preparation.restore_gaps`), an
 install whose lifecycle scripts failed (`preparation.generation_gaps`), a Node the preparation could not install,
@@ -55,6 +62,7 @@ from pathlib import Path
 
 import code_graph
 import preparation
+from indexers import components
 
 # @sourcegraph/scip-typescript on npm. From 0.6.1 a package.json without a name no longer ends the search for a
 # file's package (sourcegraph/scip-typescript#527): before, a package's files below one (`24/outline/` of
@@ -62,7 +70,8 @@ import preparation
 VERSION = "0.6.2"
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-typescript", ("typescript", "javascript"), frozenset({"npm-package"}), True
+ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = ("scip-typescript", ("typescript", "javascript", "vue", "svelte"),
+                                                 frozenset({"npm-package"}), True)
 # The container's memory: on the host the run peaked at 2,264 MB on tududi (benchmarks/inference-audit, 13 November
 # 2026)
 MIN_FREE = 3 * 2**30
@@ -76,6 +85,8 @@ TYPES_DIR = f"{preparation.STATE}/types"
 REFERENCES = f"{TYPES_DIR}/references.d.ts"  # where it names the type packages the program loads (Node's)
 # A folder a framework generates its tsconfig in -> the command that writes it; the scripts an install runs.
 GENERATORS = {".svelte-kit": "svelte-kit sync"}
+GENERATED = re.compile(r"DAODAN-GENERATED (\S+) (\S+) (.+)")  # what `generator` prints: folder, version, command
+INDEXER = f"{preparation.T}/npm/lib/node_modules/@sourcegraph/scip-typescript"  # the package npm installs
 LIFECYCLE = ("preinstall", "install", "postinstall", "prepare")
 UNREAD = re.compile(r"error TS5083: Cannot read file '/work/([^']+)'")
 NODE_TYPES = "scip-typescript npm @types/node "  # the symbols of the Node types, before their version
@@ -92,7 +103,7 @@ T = preparation.T
 MANAGERS = ("npm", "pnpm", "yarn")  # the Node managers of `preparation.RESTORES`
 PEAK = "trap 'echo \"DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)\"' EXIT"
 # The preparation: Daodan's Node, the indexer (before a stated Node is first on the path), `{chains}`, `{restores}`,
-# then `{types}`.
+# the framework's `{generators}`, `{types}`, then the components' tools (`{frameworks}`).
 PREPARE = f'''set -u
 {PEAK}
 mkdir -p {T}/bin "$HOME"
@@ -103,16 +114,20 @@ mkdir -p {T}/bin "$HOME"
 {{chains}}
 cd {WORK} || exit 70
 {{restores}}
+{{generators}}
 {{types}}
+{{frameworks}}
 exit 0
 '''
-# The execution: the generated tsconfig in place of the project's, the indexer on Daodan's Node, `{heap}` MB.
+# The execution: the generated tsconfig in place of the project's, the Vue components' TypeScript
+# (`{components}`), the indexer on Daodan's Node, `{heap}` MB.
 EXECUTE = f'''set -u
 {PEAK}
 mkdir -p {OUT}
 cd {WORK} || exit 70
 if [ -f tsconfig.json ]; then mv tsconfig.json tsconfig.project.json || exit 70; fi
 cp {CONFIG} tsconfig.json || exit 70
+{{components}}
 NODE_OPTIONS=--max-old-space-size={{heap}} {T}/node/bin/node "$(readlink -f {T}/npm/bin/scip-typescript)" index\
  --cwd {WORK} --output {OUT}/index.scip --no-progress-bar
 indexed=$?
@@ -370,25 +385,52 @@ def _tsconfig(project: Path, target: Path, files: list[str], base: str | None = 
     return config.get("extends")
 
 
-def _not_generated(project_dir: Path, said: str) -> list[dict]:
+def _extending(project_dir: Path):
+    """Each tsconfig of the project outside `node_modules` with the file it extends: `(its path, the folder that
+    holds it, the extended file from the project's root, the command that generates that one or None)`."""
+    for config in sorted(project_dir.rglob("tsconfig*.json")):
+        here = config.relative_to(project_dir).as_posix()
+        if "node_modules" in here.split("/"):
+            continue
+        extended = re.search(r'"extends"\s*:\s*"([^"]+)"', config.read_text(encoding="utf-8", errors="replace"))
+        if extended:
+            folder = posixpath.dirname(here) or "."
+            yield (here, folder, posixpath.normpath(posixpath.join(folder, extended.group(1))),
+                   GENERATORS.get(posixpath.normpath(extended.group(1)).split("/")[0]))
+
+
+def generator(folder: str, command: str) -> str:
+    """The preparation's line running the project's own `command` (`svelte-kit sync`) in `folder`, its binary the
+    one the restore installed (`npx --no` installs none): `DAODAN-GENERATED folder version command` on stderr when
+    it wrote, else its failure as `preparation.generation_gaps` reads one."""
+    binary, rest = command.split(" ", 1)
+    log, path = preparation.LOG, shlex.quote(posixpath.normpath(f"{WORK}/{folder}"))
+    return (f"( cd {path} && v=$(npx --no {binary} --version 2>/dev/null | tail -n 1)"
+            f" && {{ [ -n \"$v\" ] || {{ echo 'the project installs no {binary} here' > {log}; false; }}; }}"
+            f" && npx --no {command} > {log} 2>&1 && echo \"DAODAN-GENERATED {folder} ${{v##* }} {command}\" >&2 )"
+            f" || {{ printf 'DAODAN-GENERATE-FAILED {binary} %s\\n' {shlex.quote(folder)};"
+            f" {{ grep -Ei 'error' {log} || tail -n 30 {log}; }} | head -n 30; echo DAODAN-GENERATE-END; }} >&2")
+
+
+def _not_generated(project_dir: Path, said: str, ran=frozenset()) -> list[dict]:
     """A `config_not_generated` gap for each file a tsconfig of the project extends that TypeScript could not read
-    in the run (`said`, its output: TS5083): a file the framework generates (`GENERATORS`) that no lifecycle
-    script of the package runs, with the scripts that do, or else a file no install step wrote."""
+    in the run (`said`, its output: TS5083): a file the framework generates (`GENERATORS`) that the preparation's
+    run of its command in that folder (`ran`) did not write, or that no lifecycle script of the package runs,
+    with the scripts that do, or else a file no install step wrote."""
     gaps = []
     for rel in dict.fromkeys(UNREAD.findall(said)):
-        for config in sorted(project_dir.rglob("tsconfig*.json")):
-            here = config.relative_to(project_dir).as_posix()
-            if "node_modules" in here.split("/"):
+        for here, folder, extended, command in _extending(project_dir):
+            if extended != rel:
                 continue
-            extended = re.search(r'"extends"\s*:\s*"([^"]+)"', config.read_text(encoding="utf-8", errors="replace"))
-            if not extended or posixpath.normpath(posixpath.join(posixpath.dirname(here), extended.group(1))) != rel:
+            if command and folder in ran:
+                gaps.append({"kind": "config_not_generated", "path": here, "file": rel,
+                             "detail": f"{here} extends {rel}, which `{command}` did not write in the preparation"})
                 continue
-            command = GENERATORS.get(rel.split("/")[0])
-            folder = config.parent
-            while folder != project_dir and not (folder / "package.json").is_file():
-                folder = folder.parent
+            package = (project_dir / here).parent
+            while package != project_dir and not (package / "package.json").is_file():
+                package = package.parent
             try:
-                scripts = json.loads((folder / "package.json").read_text(encoding="utf-8")).get("scripts") or {}
+                scripts = json.loads((package / "package.json").read_text(encoding="utf-8")).get("scripts") or {}
             except (OSError, ValueError, AttributeError):
                 scripts = {}
             named = [name for name, line in scripts.items() if command and command in str(line)]
@@ -400,6 +442,22 @@ def _not_generated(project_dir: Path, said: str) -> list[dict]:
                       if command else f"{here} extends {rel}, which the snapshot does not hold and no install step wrote")
             gaps.append({"kind": "config_not_generated", "path": here, "file": rel, "detail": detail})
     return gaps
+
+
+def tasks(configs) -> dict:
+    """What the run brought back for `missing`: `{"components": {rel: {tool, error}}}`, empty without it."""
+    return configs if isinstance(configs, dict) else {}
+
+
+def missing(index, rels: list[str], configs: dict | None = None) -> dict:
+    """Why a component has no document: the tool that could not turn it into TypeScript, and its error."""
+    reasons = {}
+    for rel in rels:
+        entry = ((configs or {}).get("components") or {}).get(rel) or {}
+        if entry.get("error"):
+            reasons[rel] = (f"{entry['tool']} could not turn it into TypeScript: {entry['error']}" if entry.get("tool")
+                            else entry["error"])
+    return reasons
 
 
 def structure(record: dict) -> dict:
@@ -484,23 +542,35 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
     chains = preparation.toolchains(stated)
     major = str(stated[0]["version"] if stated else preparation.NEEDS["node"]["version"]).lstrip("v").split(".")[0]
     types = " ".join(["python3", TYPES, WORK, major, TYPES_DIR, *(shlex.quote(root or ".") for root in sorted(roots))])
-    if files is None:
-        files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
-                       if path.suffix in SUFFIXES and "node_modules" not in path.relative_to(project_dir).parts)
+    found = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
+                   if path.suffix in (*SUFFIXES, *components.SUFFIXES)
+                   and "node_modules" not in path.relative_to(project_dir).parts)
+    files = [rel for rel in found if rel.endswith(SUFFIXES)] if files is None else files
+    parts = components.listed(project_dir, [rel for rel in found if rel.endswith(tuple(components.SUFFIXES))])
+    plan_file = work_dir / "components.json"
+    plan_file.write_text(json.dumps(parts), encoding="utf-8")
     config = work_dir / "tsconfig.generated.json"
-    extends = _tsconfig(project_dir, config, [rel for rel in files if rel.endswith(SUFFIXES)], tsconfig, aliases)
+    extends = _tsconfig(project_dir, config, [*(rel for rel in files if rel.endswith(SUFFIXES)),
+                                              *components.include(parts)], tsconfig, aliases)
+    generators = sorted({(folder, command) for _here, folder, _file, command in _extending(project_dir) if command})
     prepare = PREPARE.format(node="\n".join(preparation.setup(["node"])["lines"]), chains="\n".join(chains["lines"]),
-                             restores="\n".join(restored["lines"]), types=types)
+                             restores="\n".join(restored["lines"]), types=types,
+                             generators="\n".join(generator(folder, command) for folder, command in generators),
+                             frameworks="\n".join(components.install(parts)))
     out_dir = work_dir / "container"
     shutil.rmtree(out_dir, ignore_errors=True)
+    execute = EXECUTE.format(heap=memory * 4 // 5 // 2**20,
+                             components=components.generate(WORK, INDEXER) if parts else "")
     result = container.run_in_container(
-        project_dir, ["bash", "-c", EXECUTE.format(heap=memory * 4 // 5 // 2**20)], image=IMAGE, out_dir=out_dir,
+        project_dir, ["bash", "-c", execute], image=IMAGE, out_dir=out_dir,
         prepare=["bash", "-c", prepare], outputs=[OUT], env={**preparation.ENV, "TERM": "dumb"}, timeout=3 * 3600,
         prepare_timeout=3600, memory=memory, engine=engine,
         registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"],
                                         *(declared or {}).get("hosts", ())])),
         inputs=lambda: {CONFIG: config, TYPES: Path(__file__).with_name("typescript_types.py"),
                         UNBOUND: Path(__file__).with_name("typescript_unbound.js"),
+                        **({components.LIST: plan_file, components.SCRIPT: Path(__file__).with_name("components.cjs")}
+                           if parts else {}),
                         **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                            for url, digest, name in (preparation.NODE, *chains["files"])}})
     if result["state"] == "gap":
@@ -516,17 +586,32 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
             cause, "check the network: Daodan installs scip-typescript from the npm registry"))
     gaps += result.get("gaps") or []  # what the container run reports itself (a tracked link it did not copy)
     gaps += chains["gaps"] + missing + preparation.restore_gaps(prepared) + preparation.generation_gaps(prepared)
+    generated = [{"command": command, "path": folder, "version": version}
+                 for folder, version, command in GENERATED.findall(prepared)]
+    ran = {item["path"] for item in generated} | {folder for binary, folder, _lines in
+                                                   preparation.GENERATE.findall(prepared)
+                                                   if any(command.startswith(f"{binary} ") for _f, command in generators)}
     log = out_dir / "execute.log"
-    gaps += _not_generated(project_dir, log.read_text(encoding="utf-8", errors="replace") if log.is_file() else "")
+    gaps += _not_generated(project_dir, log.read_text(encoding="utf-8", errors="replace") if log.is_file() else "",
+                           ran)
     output = work_dir / "scip-typescript-0.scip"
     if (out_dir / "out/index.scip").is_file():
         os.replace(out_dir / "out/index.scip", output)
     if (out_dir / "out/unbound.jsonl").is_file():  # beside its index, where `unanswered` reads it
         os.replace(out_dir / "out/unbound.jsonl", output.with_suffix(".unbound.jsonl"))
+    # The Vue components' generated documents become theirs, with the checker's pass beside the index.
+    report = components.rewrite(output, out_dir / "out/components.json", project_dir) if parts else {}
+    gaps += components.gaps(report)
     if runs and runs[-1]["phase"] == "execute":
         runs[-1].update(index=str(output) if output.is_file() else None,
                         index_bytes=output.stat().st_size if output.is_file() else 0)
     out = runtime.outcome("scip-typescript", VERSION, runs)
     # On the indexer's record, which the stage's report and each language's store entry carry.
     out["indexer"]["types"] = re.findall(r"DAODAN-TYPES-ADDED (\S+)", prepared)
-    return {**out, "restores": plan, "tsconfig_extends": extends, **({"gaps": gaps} if gaps else {})}
+    if report.get("tools"):
+        out["indexer"]["frameworks"] = sorted(report["tools"].values(), key=lambda item: item["tool"])
+    if generated:
+        out["indexer"]["generated"] = generated
+    configs = {"configs": {"components": {rel: {key: entry[key] for key in ("tool", "error") if key in entry}
+                                          for rel, entry in report.get("components", {}).items()}}} if report else {}
+    return {**out, "restores": plan, "tsconfig_extends": extends, **configs, **({"gaps": gaps} if gaps else {})}

@@ -68,6 +68,8 @@ _LANG_PACK_ALIASES = {
     "kotlin": "kotlin",
     "c": "c",
     "cpp": "cpp",
+    "vue": "vue",  # the templates of single-file components (`languages/sfc.py`)
+    "svelte": "svelte",
 }
 
 # Per-grammar package names for the fallback strategy.

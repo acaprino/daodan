@@ -270,10 +270,13 @@ class SingleFileComponentTests(unittest.TestCase):
             self.assertEqual(index["coverage"]["Button.vue"]["status"], "ast")
             self.assertEqual(index["coverage"]["Panel.svelte"]["status"], "ast")
 
-            vue_calls = [r for r in index["references"] if r["file"] == "Button.vue" and r["kind"] == "call"]
-            self.assertEqual(len(vue_calls), 1)
-            self.assertEqual(vue_calls[0]["resolution"], "resolved")
+            # The script's call, then the template's handler, which Vue calls on the event.
+            vue_calls = sorted((r for r in index["references"] if r["file"] == "Button.vue" and r["kind"] == "call"),
+                               key=lambda r: r["span"][0], reverse=True)
+            self.assertEqual([r["parts"] for r in vue_calls], [["formatLabel"], ["submit"]])
+            self.assertEqual({r["resolution"] for r in vue_calls}, {"resolved"})
             self.assertTrue(vue_calls[0]["target_id"].startswith("util.ts::function@"))
+            self.assertTrue(vue_calls[1]["target_id"].startswith("Button.vue::function@6:"))
 
             svelte_calls = [r for r in index["references"] if r["file"] == "Panel.svelte" and r["kind"] == "call"]
             self.assertEqual(len(svelte_calls), 1)

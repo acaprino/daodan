@@ -29,11 +29,23 @@ if __name__ == "__main__":  # the launcher: Modal's client does not go through a
 import modal  # noqa: E402
 
 LOCAL = (REPO / "AGENTS.md").is_file()
+# Daodan's Node (`preparation.NODE`, checked by its sha256) runs `indexers/components.cjs` in its own tests
+# (test_codebase_map_components.py), over the packages its recorded outputs were made with, in /opt/components.
+NODE = ("https://nodejs.org/dist/v24.22.3/node-v24.22.3-linux-x64.tar.gz",
+        "061ec3e3062115705b56b51fa9cc330ab50d34b6969387d4e4b1a50c6809acc2")
+FETCH_NODE = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
+              "assert hashlib.sha256(data).hexdigest() == '%s'; open('/tmp/node.tar.gz', 'wb').write(data)\"" % NODE)
+COMPONENTS = ("vue@3.5.22", "typescript@5.6.3", "@vue/language-core@3.3.14", "svelte2tsx@0.7.63")
 # Debian's headless JDK 17 builds and runs the JVM recorder in its own tests (test_codebase_map_dynamic_jvm.py);
 # its package wants the manual folder the slim image leaves out.
 image = (modal.Image.debian_slim(python_version="3.13")
          .run_commands("mkdir -p /usr/share/man/man1")
          .apt_install("git", "ca-certificates", "xz-utils", "openjdk-17-jdk-headless")
+         .run_commands(FETCH_NODE, "tar -xzf /tmp/node.tar.gz -C /opt && rm /tmp/node.tar.gz",
+                       "ln -s /opt/node-v24.22.3-linux-x64/bin/node /usr/local/bin/node",
+                       "ln -s /opt/node-v24.22.3-linux-x64/bin/npm /usr/local/bin/npm",
+                       "npm install --prefix /opt/components --no-audit --no-fund --ignore-scripts "
+                       + " ".join(COMPONENTS))
          .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30"))
 if LOCAL:

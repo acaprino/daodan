@@ -1,0 +1,309 @@
+"""Vue and Svelte components for scip-typescript: the index of the TypeScript their framework's tool generates,
+given back to each component through the tool's map, on the tools' real output.
+
+    python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_components.py
+
+`fixtures/components` holds two components and a module importing them, the report `components.cjs` wrote for them
+(@vue/language-core 3.3.14, the project's own there; the svelte2tsx 0.7.63 scip-typescript depends on), and the
+index scip-typescript 0.6.2 wrote of the program (Vue's generated file, the Svelte component itself), all recorded
+once in a Linux container with Node 24.22.3 (the bundler resolution). Where the runner's image holds Node and those
+packages (`tests/modal_pytest.py`), the script runs again and must write what was recorded.
+"""
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+HERE = Path(__file__).resolve().parent
+SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+import code_graph  # noqa: E402
+import container  # noqa: E402
+import preparation  # noqa: E402
+from indexers import components, typescript  # noqa: E402
+
+FIXTURE = HERE / "fixtures/components"
+SVELTEKIT = HERE.parent / "benchmarks/project-model/fixtures/js-sveltekit"
+INDEXER = f"{preparation.T}/npm/lib/node_modules/@sourcegraph/scip-typescript"
+PACKAGES = Path("/opt/components")  # the runner image's: the packages the recording was made with
+LISTED = [{"rel": "src/App.vue", "kind": "vue", "ts": True}, {"rel": "src/Panel.svelte", "kind": "svelte", "ts": True}]
+# The program of the recording: the bundler resolution, the module and the components' entries.
+CONFIG = {"compilerOptions": {"allowJs": True, "noEmit": True, "skipLibCheck": True, "target": "es2022",
+                              "module": "esnext", "moduleResolution": "bundler"},
+          "include": ["src/main.ts", "src/App.vue.ts", "src/App.vue.tsx", "src/Panel.svelte"]}
+
+
+def _rewritten(tmp_path: Path) -> code_graph.Index:
+    project = tmp_path / "project"
+    shutil.copytree(FIXTURE / "src", project / "src")
+    index = tmp_path / "index.scip"
+    shutil.copyfile(FIXTURE / "index.scip", index)
+    report = components.rewrite(index, FIXTURE / "components.json", project)
+    assert set(report["tools"]) == {"svelte2tsx@0.7.63", "@vue/language-core@3.3.14"}
+    loaded = code_graph.Index(project)
+    loaded.load(index)
+    return loaded
+
+
+def _at(rel: str, line: int, text: str) -> tuple[int, int]:
+    row = (FIXTURE / rel).read_text(encoding="utf-8").split("\n")[line - 1]
+    return line, row.index(text)
+
+
+def _defined(index, rel: str, line: int, column: int) -> set:
+    """Where the symbols referenced at a position are defined: `(document, line, column)`."""
+    keys = {item.key for item in index.at.get((rel, line, column), ()) if not item.definition}
+    return {(place, item.line, item.start) for key in keys for place, item in index.defs.get(key, ())}
+
+
+@pytest.mark.skipif(not (shutil.which("node") and (PACKAGES / "node_modules").is_dir()),
+                    reason="the runner's image holds Node and the recording's packages")
+def test_the_script_writes_what_was_recorded(tmp_path):
+    """`components.cjs` on the fixture, with the recording's packages as the project's: the same generated code's
+    map, tools and whose, and no import left unresolved by the bundler resolution."""
+    project = tmp_path / "project"
+    shutil.copytree(FIXTURE / "src", project / "src")
+    shutil.copytree(PACKAGES / "node_modules", project / "node_modules", symlinks=True)
+    (project / "package.json").write_text('{"name": "probe", "version": "1.0.0", "private": true}', encoding="utf-8")
+    (project / "tsconfig.json").write_text(json.dumps(CONFIG), encoding="utf-8")
+    (tmp_path / "list.json").write_text(json.dumps(LISTED), encoding="utf-8")
+    done = subprocess.run(["node", str(SCRIPTS / "indexers/components.cjs"), str(tmp_path / "list.json"),
+                           str(project), str(tmp_path / "ours"), str(tmp_path / "out.json"), str(project)],
+                          capture_output=True, text=True, env={**os.environ, "NODE_OPTIONS": ""})
+    assert done.returncode == 0, done.stderr
+    written = json.loads((tmp_path / "out.json").read_text(encoding="utf-8"))
+    recorded = json.loads((FIXTURE / "components.json").read_text(encoding="utf-8"))
+    # Here svelte2tsx is the image's: in the run it is the one of scip-typescript's package.
+    assert written == recorded
+    assert (project / "src/App.vue.ts").is_file() and not (project / "src/Panel.svelte.ts").exists()
+
+
+def test_the_index_of_the_generated_typescript_is_the_components(tmp_path):
+    index = _rewritten(tmp_path)
+    assert {"src/App.vue", "src/Panel.svelte", "src/main.ts"} <= set(index.documents)
+    assert not {rel for rel in index.documents if rel.endswith((".vue.ts", ".svelte.ts"))}
+    vue, svelte = "src/App.vue", "src/Panel.svelte"
+    # The template's calls and reads reach the script's definitions, the v-for alias its own.
+    assert _defined(index, vue, *_at(vue, 10, "inc(1)")) == {(vue, *_at(vue, 4, "inc"))}
+    assert _defined(index, vue, *_at(vue, 10, "label(n)")) == {(vue, *_at(vue, 5, "label"))}
+    assert _defined(index, vue, *_at(vue, 11, "label(item")) == {(vue, *_at(vue, 5, "label"))}
+    assert _defined(index, vue, *_at(vue, 11, "items")) == {(vue, *_at(vue, 6, "items"))}
+    assert _defined(index, vue, *_at(vue, 11, "item.id")) == {(vue, *_at(vue, 11, "item in"))}
+    assert _defined(index, svelte, *_at(svelte, 8, "select(2)")) == {(svelte, *_at(svelte, 3, "select"))}
+    assert _defined(index, svelte, *_at(svelte, 8, "title")) == {(svelte, *_at(svelte, 4, "title"))}
+    assert _defined(index, svelte, *_at(svelte, 8, "count}")) == {(svelte, *_at(svelte, 2, "count"))}
+    assert _defined(index, svelte, *_at(svelte, 10, "title")) == {(svelte, *_at(svelte, 4, "title"))}
+    assert _defined(index, svelte, *_at(svelte, 9, "item.id")) == {(svelte, *_at(svelte, 9, "item ("))}
+    # Nothing of the generated code is left: every occurrence lies in its component's text.
+    for rel in (vue, svelte):
+        rows = (FIXTURE / rel).read_text(encoding="utf-8").split("\n")
+        assert all(item.end <= len(rows[item.end_line - 1]) for item in index.documents[rel])
+
+
+def test_a_component_the_tool_could_not_turn_has_no_document_and_the_checkers_pass_follows_the_map(tmp_path):
+    project = tmp_path / "project"
+    shutil.copytree(FIXTURE / "src", project / "src")
+    shutil.copyfile(FIXTURE / "index.scip", tmp_path / "index.scip")
+    # The checker's pass names a member at a generated position, which is the template's `item.name`.
+    generated = json.loads((FIXTURE / "components.json").read_text(encoding="utf-8"))["components"]["src/App.vue"]
+    line, column = _at("src/App.vue", 11, "name }}")
+    row, start = next((row, start + column - source_column) for row, items in components.segments(
+        generated["map"], (FIXTURE / "src/App.vue").read_text(encoding="utf-8")).items()
+        for start, source_row, source_column, run in items
+        if source_row + 1 == line and source_column <= column < source_column + run)
+    (tmp_path / "index.unbound.jsonl").write_text(
+        json.dumps(["src/App.vue.ts", row + 1, start, "any", ""]) + "\n" + json.dumps(["src/main.ts", 3, 0, "any", ""])
+        + "\n" + json.dumps(["src/App.vue.ts", 1, 0, "any", ""]) + "\n", encoding="utf-8")
+    components.rewrite(tmp_path / "index.scip", FIXTURE / "components.json", project)
+    assert [json.loads(text)[:3] for text in (tmp_path / "index.unbound.jsonl").read_text().splitlines()] == [
+        ["src/App.vue", line, column], ["src/main.ts", 3, 0]]  # the generated header's line maps nowhere
+    report = json.loads((FIXTURE / "components.json").read_text(encoding="utf-8"))
+    report["components"]["src/App.vue"] = {"tool": "@vue/language-core@3.3.14", "error": "Unexpected token"}
+    (tmp_path / "report.json").write_text(json.dumps(report), encoding="utf-8")
+    shutil.copyfile(FIXTURE / "index.scip", tmp_path / "again.scip")
+    components.rewrite(tmp_path / "again.scip", tmp_path / "report.json", project)
+    index = code_graph.Index(project)
+    index.load(tmp_path / "again.scip")
+    assert "src/Panel.svelte" in index.documents and "src/App.vue" not in index.documents
+
+
+def test_an_import_of_a_component_typescript_resolves_to_nothing_is_a_counted_gap():
+    report = {"unresolved": {"src/main.ts": ["./App.vue"], "src/b.ts": ["./A.vue", "./B.vue"]},
+              "resolution": "NodeNext"}
+    assert components.gaps(report) == [{
+        "kind": "component_import_unresolved", "count": 3, "files": ["src/b.ts", "src/main.ts"],
+        "detail": "3 imports of a .vue component TypeScript resolves to nothing (module resolution NodeNext: an "
+                  "ECMAScript module's import adds no .ts to the name), in src/b.ts, src/main.ts"}]
+    assert components.gaps({"unresolved": {}, "resolution": "Bundler"}) == []
+
+
+def _indexed(tmp_path: Path, monkeypatch, project: Path, prepared: str = "", executed: str = "",
+             brought: bool = True) -> tuple[dict, dict]:
+    """`typescript.index` over `project` with a container run that plays the two logs and brings back the
+    recorded index and report."""
+    seen: dict = {}
+
+    def run(_project, command, **options):
+        seen.update(options, command=command, inputs=options["inputs"]())
+        out = Path(options["out_dir"])
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "prepare.log").write_text(prepared, encoding="utf-8")
+        (out / "execute.log").write_text(executed, encoding="utf-8")
+        (out / container.RECORD_NAME).write_text("".join(json.dumps(
+            {"phase": phase, "exit_code": 0, "duration_seconds": 1.0, "outcome": "exited"}) + "\n"
+            for phase in ("prepare", "execute")), encoding="utf-8")
+        if brought:
+            (out / "out").mkdir()
+            shutil.copyfile(FIXTURE / "index.scip", out / "out/index.scip")
+            shutil.copyfile(FIXTURE / "components.json", out / "out/components.json")
+        return {"state": "done", "exit_code": 0, "outputs": [], "engine": "test"}
+
+    monkeypatch.setattr(container, "run_in_container", run)
+    monkeypatch.setattr(preparation, "fetched", lambda url, digest, name: tmp_path / name)
+    return typescript.index(project, tmp_path / "work", roots={""}), seen
+
+
+def test_the_components_are_turned_into_typescript_in_the_run_and_their_index_given_back(tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    shutil.copytree(FIXTURE / "src", project / "src")
+    (project / "package.json").write_text('{"name": "probe", "private": true}', encoding="utf-8")
+    result, seen = _indexed(tmp_path, monkeypatch, project)
+    assert {"vue", "svelte"} <= set(typescript.LANGUAGES)
+    prepare, execute = seen["prepare"][2], seen["command"][2]
+    # Daodan's Vue tool, installed after the restore: the execution takes the project's where it has one.
+    [install] = components.install(LISTED)
+    assert prepare.index(install) > prepare.index(preparation.restore("npm", ["."], scripts=True))
+    # The generated files come before the indexer, in the copy, with no network, once the tsconfig is in place.
+    generate = execute.index(components.generate(typescript.WORK, INDEXER))
+    assert execute.index(f"cp {typescript.CONFIG} tsconfig.json") < generate < execute.index('scip-typescript)" index')
+    assert json.loads(Path(seen["inputs"][components.LIST]).read_text(encoding="utf-8")) == LISTED
+    assert seen["inputs"][components.SCRIPT].name == "components.cjs"
+    config = json.loads(Path(seen["inputs"][typescript.CONFIG]).read_text(encoding="utf-8"))
+    assert set(CONFIG["include"]) <= set(config["include"])
+    # The index the graph reads holds the components, and the record names whose tools turned them.
+    index = code_graph.Index(project)
+    index.load(Path(result["indexes"][0][0]))
+    assert {"src/App.vue", "src/Panel.svelte"} <= set(index.documents)
+    assert result["indexer"]["frameworks"] == [
+        {"tool": "@vue/language-core", "version": "3.3.14", "from": "project"},
+        {"tool": "svelte2tsx", "version": "0.7.63", "from": "scip-typescript"}]
+    # A component the tool could not turn says so where it has no document.
+    configs = typescript.tasks({"components": {
+        **result["configs"]["components"], "src/Broken.vue": {"tool": "@vue/language-core@3.3.14",
+                                                              "error": "Unexpected token"},
+        "src/Alone.vue": {"error": "@vue/language-core is installed neither by the project nor by Daodan"}}})
+    assert typescript.missing(index, ["src/Broken.vue", "src/Alone.vue", "src/x.ts"], configs) == {
+        "src/Broken.vue": "@vue/language-core@3.3.14 could not turn it into TypeScript: Unexpected token",
+        "src/Alone.vue": "@vue/language-core is installed neither by the project nor by Daodan"}
+
+
+def test_without_components_the_run_is_the_same(tmp_path, monkeypatch):
+    project = tmp_path / "project"
+    (project / "src").mkdir(parents=True)
+    (project / "src/main.ts").write_text("export const x = 1;\n", encoding="utf-8")
+    (project / "package.json").write_text('{"name": "probe", "private": true}', encoding="utf-8")
+    result, seen = _indexed(tmp_path, monkeypatch, project, brought=False)
+    assert "components.cjs" not in seen["command"][2] and components.OURS not in seen["prepare"][2]
+    assert not {components.LIST, components.SCRIPT} & set(seen["inputs"])
+    assert "frameworks" not in result["indexer"]
+
+
+def test_sveltekit_writes_its_tsconfig_in_the_preparation_with_the_projects_kit(tmp_path, monkeypatch):
+    """svelte.dev/docs/kit/cli: `svelte-kit sync` creates the tsconfig.json and the generated types; a project
+    runs it as its `prepare` script, js-sveltekit only in `check`, so the preparation runs it after the restore."""
+    project = tmp_path / "project"
+    shutil.copytree(SVELTEKIT, project, ignore=shutil.ignore_patterns("expected.json"))
+    result, seen = _indexed(tmp_path, monkeypatch, project, prepared="DAODAN-GENERATED . 2.8.0 svelte-kit sync\n",
+                            brought=False)
+    prepare = seen["prepare"][2]
+    sync = typescript.generator(".", typescript.GENERATORS[".svelte-kit"])
+    assert prepare.index(sync) > prepare.index(preparation.restore("npm", ["."], scripts=True))
+    assert "npx --no svelte-kit sync" in sync and "npx --no svelte-kit --version" in sync  # the project's own kit
+    assert result["indexer"]["generated"] == [{"command": "svelte-kit sync", "path": ".", "version": "2.8.0"}]
+    assert not [gap for gap in result.get("gaps", ()) if gap["kind"] == "config_not_generated"]
+    # One that fails is the generation's gap, and the configuration it did not write is said with it.
+    failed = ("DAODAN-GENERATE-FAILED svelte-kit .\nError: Cannot find package '@sveltejs/adapter-auto'\n"
+              "DAODAN-GENERATE-END\n")
+    result, _seen = _indexed(tmp_path / "again", monkeypatch, project, prepared=failed, brought=False,
+                             executed="error TS5083: Cannot read file '/work/.svelte-kit/tsconfig.json'.\n")
+    gaps = {gap["kind"]: gap for gap in result["gaps"]}
+    assert gaps["generation_failed"]["manager"] == "svelte-kit" and "adapter-auto" in gaps["generation_failed"]["detail"]
+    assert gaps["config_not_generated"]["detail"] == (
+        "tsconfig.json extends .svelte-kit/tsconfig.json, which `svelte-kit sync` did not write in the preparation")
+
+
+@pytest.mark.skipif(not shutil.which("bash"), reason="the preparation's lines are bash")
+def test_the_generators_line_says_what_the_projects_command_wrote_or_why_not(tmp_path, monkeypatch):
+    """The line as the preparation runs it, with an `npx` that stands for the project's installed kit."""
+    bin_dir, work = tmp_path / "bin", tmp_path / "work"
+    bin_dir.mkdir()
+    (work / "app").mkdir(parents=True)
+    monkeypatch.setattr(typescript, "WORK", str(work))
+    line = typescript.generator("app", "svelte-kit sync")
+
+    def played(npx: str) -> str:
+        (bin_dir / "npx").write_text(f"#!/bin/sh\n{npx}\n", encoding="utf-8")
+        (bin_dir / "npx").chmod(0o755)
+        done = subprocess.run(["bash", "-c", line], capture_output=True, text=True,
+                              env={**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"})
+        assert done.returncode == 0
+        return done.stderr
+
+    said = played('if [ "$3" = --version ]; then echo "svelte-kit, 2.8.0"; else touch .svelte-kit-synced; fi')
+    assert said == "DAODAN-GENERATED app 2.8.0 svelte-kit sync\n" and (work / "app/.svelte-kit-synced").is_file()
+    said = played("exit 1")
+    assert preparation.generation_gaps(said) == [{"kind": "generation_failed", "manager": "svelte-kit", "path": "app",
+                                                  "detail": "the project installs no svelte-kit here"}]
+
+
+MARKED = {  # the project's code a component or SvelteKit brings, each leaving a mark beside it when executed
+    "svelte.config.js": "require('fs').writeFileSync(__dirname + '/MARK-svelte-config', '1');\nmodule.exports = {};\n",
+    "node_modules/@vue/language-core/package.json": '{"name": "@vue/language-core", "version": "9.9.9"}',
+    "node_modules/@vue/language-core/index.js": "require('fs').writeFileSync(__dirname + '/MARK-language-core', '1');\n",
+    "node_modules/.bin/svelte-kit": "#!/usr/bin/env node\nrequire('fs').writeFileSync(__dirname + '/MARK-svelte-kit', '1');\n",
+}
+
+
+def test_no_code_of_the_project_runs_on_the_host(tmp_path, monkeypatch):
+    """Vue's tool and SvelteKit's sync are the project's code: the snapshot, the plan and the map back read their
+    files as text, and only the container's two scripts name them (AGENTS.md, the inviolable rule)."""
+    project = tmp_path / "project"
+    shutil.copytree(FIXTURE / "src", project / "src")
+    for rel, text in {**MARKED, "package.json": '{"name": "probe", "private": true}',
+                      "tsconfig.json": '{"extends": "./.svelte-kit/tsconfig.json"}'}.items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8")
+    if shutil.which("node"):  # each file leaves its mark when executed: in a copy, so the project keeps none
+        probe = tmp_path / "probe"
+        shutil.copytree(project, probe)
+        for rel in MARKED:
+            if rel.endswith((".js", "svelte-kit")):
+                subprocess.run(["node", str(probe / rel)], check=True, capture_output=True)
+        assert len(list(probe.rglob("MARK-*"))) == 3
+    import snapshot
+    snapshot.build_manifest(project)
+    result, seen = _indexed(tmp_path / "run", monkeypatch, project)
+    components.rewrite(Path(result["indexes"][0][0]), FIXTURE / "components.json", project)
+    assert not list(project.rglob("MARK-*")) and not list((tmp_path / "run").rglob("MARK-*"))
+    prepare, execute = seen["prepare"][2], seen["command"][2]
+    assert "npx --no svelte-kit sync" in prepare and components.SCRIPT in execute
+
+
+def test_the_components_and_the_lines_that_turn_them_into_typescript(tmp_path):
+    (tmp_path / "A.vue").write_text('<script lang="ts">\nexport default {}\n</script>\n', encoding="utf-8")
+    (tmp_path / "B.svelte").write_text("<p>{x}</p>\n", encoding="utf-8")
+    found = components.listed(tmp_path, ["A.vue", "B.svelte", "c.ts"])
+    assert found == [{"rel": "A.vue", "kind": "vue", "ts": True}, {"rel": "B.svelte", "kind": "svelte", "ts": False}]
+    assert components.include(found) == ["A.vue.ts", "A.vue.tsx", "B.svelte"]
+    [line] = components.install(found)
+    assert f"--ignore-scripts --no-audit --no-fund --loglevel=error {components.PIN}" in line
+    assert f"DAODAN-MISSING {components.PIN}" in line
+    assert components.install(found[1:]) == components.install([]) == [] and components.include([]) == []

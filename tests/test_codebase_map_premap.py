@@ -906,7 +906,7 @@ def test_the_unit_kinds_able_to_index_a_language_are_the_ones_its_analyzer_decla
         for language in analyzer.LANGUAGES:
             name = suffix_table.NAMES.get(language, language)
             assert table.get(name, frozenset()) == frozenset(analyzer.UNIT_KINDS), name
-    assert "SQL" not in table and "Vue" not in table
+    assert "SQL" not in table and table["Vue"] == table["Svelte"] == frozenset({"npm-package"})
     _, _, record = build(tmp_path, "mixed", extra={"legacy/build.sbt": 'name := "legacy"\n',
                                                    "legacy/src/main/java/A.java": "class A {}\n"})
     assert "legacy" in by_root(record, "sbt-project")
