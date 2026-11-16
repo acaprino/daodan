@@ -203,7 +203,7 @@ Convenzioni:
 
 ## Indice
 
-280 schede: 219 risolte, 20 aperte, 41 buchi dichiarati.
+280 schede: 220 risolte, 19 aperte, 41 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -286,7 +286,7 @@ Convenzioni:
 
 ### Analizzatori
 
-125 schede: 88 risolto, 12 aperto, 25 buco dichiarato.
+125 schede: 89 risolto, 11 aperto, 25 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -368,7 +368,7 @@ Convenzioni:
 | D-140 | Go: un file senza go.mod non diceva perché | robot-shop (`55292e2199f2`) | risolto | `d4e6d9046` | go · analizzatore · completezza · finale · scip-go, Docker |
 | D-141 | robot-shop dispatch: il modulo Go dichiarato solo nel Dockerfile | robot-shop (`55292e2199f2`) | buco dichiarato (`restore_failed` a `dispatch/Dockerfile:7`) | `f024ba3a3`, `f04dab9d5` | go · analizzatore · completezza · finale · scip-go, Docker |
 | D-142 | Un file cgo fuori dall'indice Go | sys-go-cgo | buco dichiarato («a cgo file») | — | c, go · analizzatore · completezza · finale · scip-go |
-| D-143 | Rust: file senza documento | hoppscotch (`55908a76a1d0`), semver (`280ebcb6edac`) | aperto | `a3801beed` | rust · analizzatore · completezza · finale · rust-analyzer |
+| D-143 | Rust: file senza documento | hoppscotch (`55908a76a1d0`), semver (`280ebcb6edac`) | risolto | `1c68cbde4`, `a3801beed` | rust · analizzatore · completezza · finale · rust-analyzer |
 | D-144 | Rust: file che nessun crate carica | hoppscotch | buco dichiarato («no crate includes it») | — | rust · analizzatore · completezza · finale · rust-analyzer |
 | D-145 | TypeScript: `{ t } = useTranslation()` legato a un simbolo che l'indice non definisce | tududi (`71da9d7b34df`) | risolto | `3595d571b` | typescript · analizzatore · correttezza · commit |
 | D-146 | TypeScript: pacchetti senza nome (heroicons) | tududi | risolto | `3595d571b` | typescript · analizzatore · correttezza · commit · scip-typescript |
@@ -828,7 +828,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
 | `finale` → `jvm-otel-android` | 2 | 3 | 3 |
 
 - `no-occurrence`: un riferimento sotto un `#[cfg]` falso nella configurazione che rust-analyzer legge (D-237). Con `a3801beed`, su hoppscotch «no-occurrence da 549 a 135, di cui 425 ora con la causa cfg; no-position da 8 a 0».
-- `no-document`: file senza documento (D-143, da verificare) e file che nessun crate carica (D-144). Da `a3801beed`, un file dietro un `mod` con cfg falso dice perché manca (D-237).
+- `no-document`: file senza documento, ognuno dietro un cfg falso su Linux e con la sua causa (D-143) e file che nessun crate carica (D-144). Da `a3801beed`, un file dietro un `mod` con cfg falso dice perché manca (D-237).
 - `no-position`: un chiamato con turbofish su un ricevitore calcolato non aveva nome (D-238).
 - Misure dei commit: con `293e3bfac`, che porta build script e macro nel container, su hoppscotch i buchi Rust vanno da 831 a 689 e quelli senza occorrenza da 111 a 5; 23 crate restano buchi per le librerie GTK e WebKit che mancano all'immagine (D-239).
 
@@ -2877,11 +2877,15 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 #### D-143 Rust: file senza documento
 - **Tag:** lingua rust · area analizzatore · tipo completezza · origine finale · strumento rust-analyzer
 - **Descrizione:** «no document in the index» per 6 file Rust su 105 in hoppscotch (finale) e 1 su 19 in semver (finale e conferma).
-- **Spiegazione:** da verificare.
+- **Spiegazione:** ognuno dei file mancanti è dietro un cfg falso su Linux, nessuno è un difetto dell'indicizzatore; ma un file caricato solo da file che un cfg lascia fuori diceva «no crate includes it», senza il file che lo carica né la causa.
 - **Progetto e caso:** hoppscotch (`55908a76a1d0`), semver (`280ebcb6edac`) — finale e conferma, 16 novembre 2026.
-- **Rimedio:** —. Da `a3801beed` un file dietro un `mod` con cfg falso dice perché manca (D-237); quanti dei 7 lo siano è da verificare.
-- **Verifica:** —
-- **Stato:** aperto.
+- **Rimedio:** `1c68cbde4` (16 novembre, dynamic-step-2), `scripts/indexers/rust.py`: un file caricato solo da file che un cfg lascia fuori nomina il file che lo carica e quella causa (`LOADER_OFF`); i file dietro un `mod` con cfg falso dicono perché da `a3801beed` (D-237).
+- **Verifica:**
+  - `tests/test_codebase_map_indexers_reasons.py` (`test_a_rust_file_whose_loader_is_left_out_says_which_and_why`);
+  - su Modal, con lo stadio di scip-rust nel container di Daodan su HEAD:
+    - semver: 1 mancante, `tests/node/mod.rs`, `CFG_OFF` per `#![cfg(test_node_semver)]`, che solo `RUSTFLAGS` imposta;
+    - hoppscotch: da 8 mancanti a 6, perché i due `desktop.rs` ora sono indicizzati (i build script girano nel container e impostano `cfg(desktop)`); i due `mobile.rs` sono `MOD_OFF` per `cfg(mobile)`, `ui/macos/mod.rs` e `ui/windows/mod.rs` `MOD_OFF` per `target_os`, i due `posit.rs` `LOADER_OFF` con il loro `mod.rs`.
+- **Stato:** risolto: ogni file Rust mancante ha la sua causa, un cfg falso su Linux.
 - **Note:** D-144, D-237.
 
 #### D-144 Rust: file che nessun crate carica
