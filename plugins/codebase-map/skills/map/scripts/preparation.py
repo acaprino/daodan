@@ -138,6 +138,14 @@ JAVA_PROXY = (r'if [ -n "${HTTPS_PROXY:-}" ]; then a=${HTTPS_PROXY#*://}; a=${a%
               r' "<proxy><id>http</id><protocol>http</protocol><host>$h</host><port>$p</port></proxy>"'
               r' "</proxies></settings>" > "$HOME/.m2/settings.xml"; fi')
 COREPACK = "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 NODE_USE_ENV_PROXY=1"  # corepack: the pnpm or Yarn named
+# The corepack a Node ships may predate npm's registry key of January 2025, which corepack carries from 0.31.0, and
+# then cannot verify a package manager published since ("Cannot find matching keyid"); from Node 25 none ships.
+# Corepack's remedy is a newer one from npm: installed apart and first on the path, from 0.31.0 to the newest known,
+# npm takes the newest whose engines take the Node that runs it, and refuses a Node none takes (`--engine-strict`):
+# that Node's own corepack then runs, verifying as it does, and `missing` names what the preparation lacked.
+COREPACK_INSTALL = (f"export PATH={T}/corepack/bin:$PATH; [ -x {T}/corepack/bin/corepack ] || {{ npm install -g"
+                    f" --prefix {T}/corepack --engine-strict --no-audit --no-fund --loglevel=error"
+                    f" \"corepack@>=0.31.0 <=0.36.0\" >&2 || echo 'DAODAN-MISSING corepack@>=0.31.0' >&2; }}")
 PYTHON = ("pyproject.toml", "requirements.txt")
 VENVS = f"{STATE}/venvs"  # a Python project's environment, per folder
 UV_ENV = "export UV_PYTHON_DOWNLOADS=never UV_NO_PROGRESS=1"
@@ -303,7 +311,8 @@ def node_prepare(files, read) -> dict:
     """`{restores, lines, hosts, gaps}` for the Node packages among `files`, `read(rel)` a file's text: per
     manager the folders its restore runs in (`node_restores`; a manifest's `packageManager`, the field corepack
     reads, names the manager), the shell lines that restore them with their lifecycle scripts (`restore`), each
-    whole on its own, the hosts they reach beside npm's registry, and a `restore_failed` gap for each package
+    whole on its own (pnpm's and Yarn's install the corepack they run, `COREPACK_INSTALL`), the hosts they reach
+    beside npm's registry, and a `restore_failed` gap for each package
     folder that declares dependencies no restore installs: one inside a restore's folder whose workspaces do not
     name it. Project code: for a container's preparation only."""
     files, named, manifests = list(files), {}, {}
@@ -322,7 +331,8 @@ def node_prepare(files, read) -> dict:
     plan: dict[str, list[str]] = {}
     for manager, folders, _unlocked in found:
         plan[manager] = sorted(plan.get(manager, []) + folders)
-    lines = [(f"{YARN_PROXY}; " if manager == "yarn" else "") + restore(manager, folders, unlocked, scripts=True)
+    lines = [(f"{COREPACK_INSTALL}; " if RESTORES[manager].get("before") == COREPACK else "")
+             + (f"{YARN_PROXY}; " if manager == "yarn" else "") + restore(manager, folders, unlocked, scripts=True)
              for manager, folders, unlocked in found]
     owner = {folder: manager for manager, folders in plan.items() for folder in folders}
     gaps = []

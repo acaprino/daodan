@@ -68,6 +68,46 @@ def test_yarn_installs_from_its_lockfile_and_one_out_of_date_is_a_gap():
     assert "lockfile" in gaps[0]["detail"].lower()
 
 
+FAKE_NPM = """#!/bin/sh
+echo "npm $*" >> "$CALLS"
+[ -n "${REFUSE:-}" ] && { echo "npm error code EBADENGINE" >&2; exit 1; }
+while [ $# -gt 0 ]; do [ "$1" = --prefix ] && prefix=$2; shift; done
+mkdir -p "$prefix/bin" && printf '#!/bin/sh\\necho "installed corepack $*" >> "$CALLS"\\n' > "$prefix/bin/corepack"
+chmod 755 "$prefix/bin/corepack"
+"""
+
+
+def test_pnpm_and_yarn_run_a_corepack_with_npms_current_key_and_none_installed_is_a_gap(tmp_path):
+    """mix-infra-gha on Node 20.18.1: the corepack a Node ships may predate npm's registry key of January 2025
+    ("Cannot find matching keyid"), and from Node 25 none ships. The line installs one with the Node's own npm,
+    apart and first on the path, from 0.31.0, the first release with that key; npm takes the newest whose engines
+    take that Node. When npm installs none, the Node's own corepack runs and the preparation names what it lacks."""
+    import os
+    import subprocess
+    programs = tmp_path / "programs"
+    programs.mkdir()
+    for name, text in (("npm", FAKE_NPM), ("corepack", '#!/bin/sh\necho "bundled corepack $*" >> "$CALLS"\n')):
+        (programs / name).write_text(text, encoding="utf-8", newline="\n")
+        (programs / name).chmod(0o755)
+    (tmp_path / "web").mkdir()
+    plan = preparation.node_prepare(["web/package.json", "web/pnpm-lock.yaml"], lambda rel: "{}")
+    for refuse in ("", "1"):
+        tools, calls = tmp_path / f"tools{refuse}", tmp_path / f"calls{refuse}"
+        done = subprocess.run(["sh", "-c", plan["lines"][0].replace(preparation.T, str(tools))], cwd=tmp_path,
+                              env={**os.environ, "PATH": f"{programs}:{os.environ['PATH']}", "CALLS": str(calls),
+                                   "REFUSE": refuse}, capture_output=True, text=True, timeout=60)
+        ran = calls.read_text(encoding="utf-8").splitlines()
+        assert ran[0] == (f"npm install -g --prefix {tools}/corepack --engine-strict --no-audit --no-fund"
+                          " --loglevel=error corepack@>=0.31.0 <=0.36.0")
+        assert ran[1:] == [f"{'bundled' if refuse else 'installed'} corepack pnpm install --frozen-lockfile"]
+        assert preparation.missing(done.stderr) == ([{
+            "kind": "toolchain_unavailable", "tool": "corepack", "version": ">=0.31.0",
+            "detail": "corepack >=0.31.0: the preparation could not install it (its output is in the run's log)"}]
+            if refuse else [])
+    # npm comes with Node: its restore needs no corepack.
+    assert "corepack" not in preparation.node_prepare(["package.json"], lambda rel: "{}")["lines"][0]
+
+
 def test_one_node_folder_has_one_manager_its_lockfile_names():
     """A workspace's members restore with its root, whatever manager the root uses; a folder with its own
     lockfile is a project of its own."""

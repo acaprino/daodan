@@ -175,7 +175,7 @@ def test_the_packages_are_restored_the_projects_own_way_and_the_index_follows_in
     assert preparation.setup(["node"])["lines"][0] in lines
     assert any(f"npm install -g --prefix {T}/npm --ignore-scripts" in line
                and f"@sourcegraph/scip-typescript@{typescript.VERSION}" in line for line in lines)
-    assert preparation.restore("pnpm", ["."], scripts=True) in lines
+    assert f"{preparation.COREPACK_INSTALL}; " + preparation.restore("pnpm", ["."], scripts=True) in lines
     assert "mise" not in prepare and "npm ci" not in prepare
     # The execution, without network: the generated tsconfig takes the place of the project's, then the indexer
     # runs on Daodan's Node and its index goes where the outputs come back from.
@@ -259,10 +259,12 @@ def test_the_node_preparation_restores_each_folder_with_its_manager_and_its_life
     project = _folders(tmp_path)
     plan = preparation.node_prepare(FOLDERS, lambda rel: (project / rel).read_text(encoding="utf-8"))
     assert plan["restores"] == {"npm": ["api", "cli"], "pnpm": ["web"], "yarn": ["site"]}
-    # Each line is whole on its own: Yarn takes the proxy from its own settings, set in its line.
+    # Each line is whole on its own: pnpm and Yarn install the corepack they run, Yarn takes the proxy from its own
+    # settings, set in its line.
+    corepack, yarn = f"{preparation.COREPACK_INSTALL}; ", f"{preparation.YARN_PROXY}; "
     assert plan["lines"] == [preparation.restore("npm", ["api", "cli"], scripts=True),
-                             preparation.restore("pnpm", ["web"], True, scripts=True),
-                             f"{preparation.YARN_PROXY}; " + preparation.restore("yarn", ["site"], scripts=True)]
+                             corepack + preparation.restore("pnpm", ["web"], True, scripts=True),
+                             corepack + yarn + preparation.restore("yarn", ["site"], scripts=True)]
     assert plan["hosts"] == ("repo.yarnpkg.com",)  # where corepack takes Yarn 2 and later
     assert preparation.node_prepare(["go.mod"], None) == {"restores": {}, "lines": [], "gaps": [], "hosts": ()}
     # A manifest that is not JSON names no manager: npm.
