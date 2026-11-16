@@ -365,8 +365,8 @@ class IndexStoreTests(unittest.TestCase):
         with code_graph.Snapshot(cls.manifest) as snap:
             index = code_graph.Index(snap.root)
             index.load(root / "ts/index.scip")
-            hops = adapter.hops(index)
-            traversal = code_graph.Traversal(index, snap, hops)
+            # The adapter's hooks, as the driver passes them: the store is the one a pass writes.
+            hops, traversal, _prepared = code_graph.adapter_traversal(adapter, index, snap)
             built = {language: code_graph.build(index, snap, language, hops, {"name": "scip-typescript",
                                                                               "version": "0.5.2"},
                                                 None, traversal, refine=refine)

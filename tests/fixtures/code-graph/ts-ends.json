@@ -1,4 +1,10 @@
 {
+ "read src/api/alias.js:8 module": {
+  "end": "external npm @types/node@26.6.6"
+ },
+ "read src/api/controller.js:7 module": {
+  "end": "external npm @types/node@26.6.6"
+ },
  "call src/api/jobs.js:7 billingModule.webhookHandler": {
   "end": [
    "src/api/billing/webhook.js::function@1:0"

@@ -508,6 +508,38 @@ def test_a_name_an_untyped_module_binds_is_a_hole_with_the_cause(tmp_path):
     assert [end.detail for end in traversal.ends(f"src/main.ts#{ref}")] == ["dangling-local"]
 
 
+CJS = {"src/index.js": 'const _ = require("lodash");\n\nmodule.exports = { first: (xs) => _.head(xs) };\n'}
+REQUIRE = 'scip-typescript npm @types/node 24.10.1 `module.d.ts`/`"node:module"`/global/require.'
+
+
+def test_the_module_of_a_commonjs_export_is_nodes_module_object(tmp_path):
+    """js-npm-single, js-yarn-berry: in a JavaScript file TypeScript reads `module.exports = …` as the file's own
+    export, and the index names its `module` with a local it defines nowhere, while `require` beside it resolves
+    to the Node types. The read is of Node's module object, which those types declare with `require`: external,
+    at their version. Without Node types in the index no package declares it: a hole that says so."""
+    import test_codebase_map_code_graph as graphs
+    _written(tmp_path, CJS)
+    exported = "scip-typescript npm fx 1.0.0 src/`index.js`/"
+    index = graphs.load(tmp_path, graphs.document("src/index.js", [
+        graphs.occurrence(1, 10, 17, REQUIRE), graphs.occurrence(3, 0, 6, "local 3"),
+        graphs.occurrence(3, 7, 14, exported)]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert [(end.cls, end.detail) for end in traversal.ends("src/index.js#local 3")] == [
+        ("external", "npm @types/node@24.10.1")]
+    index = graphs.load(tmp_path, graphs.document("src/index.js", [graphs.occurrence(3, 0, 6, "local 3")]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert [(end.cls, end.detail) for end in traversal.ends("src/index.js#local 3")] == [
+        ("dead-end", "module.exports: the index names `module` with a local it defines nowhere, and references "
+                     "no Node types that declare it")]
+    # A `module` the file declares is the file's own: the index defines it, and the default rule holds.
+    _written(tmp_path, {"src/index.js": "function f(module) {\n  module.exports = 1;\n}\n"})
+    index = graphs.load(tmp_path, graphs.document("src/index.js", [
+        graphs.occurrence(1, 11, 17, "local 0", True), graphs.occurrence(2, 2, 8, "local 0"),
+        graphs.occurrence(1, 9, 10, REQUIRE)]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert [end.cls for end in traversal.ends("src/index.js#local 0")] == ["project-value"]
+
+
 def test_without_a_container_engine_typescript_is_unavailable_with_the_gaps_cause_and_remedy(sandbox):
     project = _project(sandbox, "ts")
     _contained(sandbox, gap=("no container engine answers: neither docker nor podman", "start Docker or Podman"))

@@ -34,7 +34,8 @@ to the symbol the index references at the value or the key (CommonJS `module.exp
 index states it as a shared range); a function value leads to the function the snapshot declares there. A
 library function whose documented contract returns its argument is a declared hop, tagged
 `declared:<package>.<function>`. `classify` names why a local the index defines nowhere is a dead end when an
-import of a module TypeScript does not read binds it (a component: no declaration of `*.vue` modules).
+import of a module TypeScript does not read binds it (a component: no declaration of `*.vue` modules), and ends
+the `module` of `module.exports = …`, which the index names with such a local, on Node's module object.
 """
 from __future__ import annotations
 
@@ -68,6 +69,7 @@ REFERENCES = f"{TYPES_DIR}/references.d.ts"  # where it names the type packages 
 GENERATORS = {".svelte-kit": "svelte-kit sync"}
 LIFECYCLE = ("preinstall", "install", "postinstall", "prepare")
 UNREAD = re.compile(r"error TS5083: Cannot read file '/work/([^']+)'")
+NODE_TYPES = "scip-typescript npm @types/node "  # the symbols of the Node types, before their version
 T = preparation.T
 MANAGERS = ("npm", "pnpm", "yarn")  # the Node managers of `preparation.RESTORES`
 PEAK = "trap 'echo \"DAODAN_PEAK $(cat /sys/fs/cgroup/memory.peak 2>/dev/null || echo -)\"' EXIT"
@@ -227,19 +229,36 @@ def _imported(root, name: str) -> str | None:
     return None
 
 
+def _exported_object(node) -> bool:
+    """Whether an identifier is the `module` of `module.exports = …`."""
+    member = node.parent
+    return node.text == b"module" and member is not None and member.type == "member_expression" \
+        and member.child_by_field_name("object") == node and member.parent is not None \
+        and member.parent.type == "assignment_expression" and member.parent.child_by_field_name("left") == member \
+        and getattr(member.child_by_field_name("property"), "text", None) == b"exports"
+
+
 def classify(index):
-    """A local the index defines nowhere, bound by an import of a module whose extension TypeScript does not read
-    (a `.vue` or `.svelte` component), ends on why: no declaration of such modules types the import. Any other
-    key keeps the default rule."""
-    causes = {}
+    """Two locals the index defines nowhere. One bound by an import of a module whose extension TypeScript does
+    not read (a `.vue` or `.svelte` component) ends on why: no declaration of such modules types the import. The
+    `module` of `module.exports = …`, which TypeScript reads as the file's own export in a JavaScript file and
+    the index names with such a local, is Node's module object: external, of the Node types that declare it with
+    `require`, at the version the index references (`NODE_TYPES`), else a dead end that says none is referenced.
+    Any other key keeps the default rule."""
+    causes, objects, versions = {}, set(), collections.Counter()
     for rel, occurrences in index.documents.items():
         grammar = GRAMMARS.get(Path(rel).suffix.lower())
         for occurrence in occurrences if grammar else ():
+            if occurrence.key.startswith(NODE_TYPES):
+                versions[occurrence.key.split(" ")[3]] += 1
             if not occurrence.key.startswith(f"{rel}#local ") or occurrence.key in index.defs \
-                    or occurrence.key in causes:
+                    or occurrence.key in causes or occurrence.key in objects:
                 continue
             node = index.node(rel, occurrence, grammar)
             if node is None or node.type != "identifier":
+                continue
+            if _exported_object(node):
+                objects.add(occurrence.key)
                 continue
             root = node
             while root.parent is not None:
@@ -248,6 +267,10 @@ def classify(index):
             suffix = posixpath.splitext(module or "")[1]
             if suffix and suffix not in (*SUFFIXES, ".json"):
                 causes[occurrence.key] = f"no declaration of *{suffix} modules: the import is not typed"
+    declared = {"manager": "npm", "package": "@types/node", "version": versions.most_common(1)[0][0]} if versions \
+        else "module.exports: the index names `module` with a local it defines nowhere, and references no Node " \
+             "types that declare it"
+    causes.update(dict.fromkeys(objects, declared))
     return causes.get
 
 
