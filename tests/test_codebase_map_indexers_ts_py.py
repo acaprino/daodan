@@ -744,6 +744,38 @@ def test_python_takes_its_runs_roots_and_manifests_and_states_what_its_environme
         "tools/x.py": "outside every Python project the pre-map states"}
 
 
+@pytest.mark.parametrize("contained", [False, True])
+def test_without_daodan_s_uv_python_is_unavailable_with_the_cause(sandbox, contained):
+    """The environment is built by Daodan's pinned uv, never the PATH's: one that cannot be had leaves Python
+    unanalyzed, with the cause, and no index runs."""
+    import engine_tools
+    project = _project(sandbox, "python")
+    _tools(project, "python")
+    shutil.rmtree(rx.shared_engine_dir("uv"))
+
+    def refused(fetch=True):
+        if fetch:
+            raise ValueError("checksum mismatch for uv-x86_64-unknown-linux-gnu.tar.gz")
+
+    sandbox["monkeypatch"].setattr(engine_tools, "uv_binary", refused)
+    if contained:
+        box = Box(FIXTURES / "python/index.scip")
+
+        def gap(project, command, **options):  # what `run_in_container` makes of a preparation's Gap
+            try:
+                return box(project, command, **options)
+            except container.Gap as error:
+                return {"state": "gap", "cause": error.cause, "remedy": error.remedy, "outputs": []}
+
+        sandbox["web"].pages.update(_node_release(platform=f"linux-{container.architecture()}"))
+        sandbox["monkeypatch"].setattr(python, "RUNS_HERE", False)
+        sandbox["monkeypatch"].setattr(container, "run_in_container", gap)
+    result = python.index(project, sandbox["root"] / "work")
+    assert result["state"] == "unavailable", result
+    assert f"uv {engine_tools.UV_VERSION}" in result["reason"] and "checksum mismatch" in result["reason"]
+    assert sandbox["fake"].runs() == []
+
+
 def test_a_run_of_the_whole_checkout_leaves_no_python_file_outside(sandbox):
     project = _project(sandbox, "python")
     _tools(project, "python")

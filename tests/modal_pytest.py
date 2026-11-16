@@ -34,7 +34,7 @@ LOCAL = (REPO / "AGENTS.md").is_file()
 image = (modal.Image.debian_slim(python_version="3.13")
          .run_commands("mkdir -p /usr/share/man/man1")
          .apt_install("git", "ca-certificates", "xz-utils", "openjdk-17-jdk-headless")
-         .pip_install("pytest", "pytest-xdist", "uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
+         .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30"))
 if LOCAL:
     # The results stay: suites replay the recorded answers kept there. The explorer's sources are no suite's.

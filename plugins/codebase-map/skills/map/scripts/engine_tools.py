@@ -581,6 +581,47 @@ def _declared_requirements(project_root: Path, manifests: list[str], uv: str) ->
     return sorted(set(kept))
 
 
+UV_VERSION = "0.11.28"  # the pre-map's pin (`premap/uv.py`), the containers' (`preparation.UV`)
+# The release's own checksums, per platform key of `_platform()`: (asset, sha256).
+UV_ASSETS = {
+    "linux-x64": ("uv-x86_64-unknown-linux-gnu.tar.gz",
+                  "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224"),
+    "linux-arm64": ("uv-aarch64-unknown-linux-gnu.tar.gz",
+                    "03e9fe0a81b0718d0bc84625de3885df6cc3f89a8b6af6121d6b9f6113fb6533"),
+    "win-x64": ("uv-x86_64-pc-windows-msvc.zip", "0a23463216d09c6a72ff80ef5dc5a795f07dc1575cb84d24596c2f124a441b7b"),
+    "osx-arm64": ("uv-aarch64-apple-darwin.tar.gz", "33540eb7c883ab857eff79bd5ac2aa31fe27b595abecb4a9c003a2c998447232"),
+    "osx-x64": ("uv-x86_64-apple-darwin.tar.gz", "2ad79983127ffca7d77b77ce6a24278d7e4f7b817a1acf72fea5f8124b4aac5e"),
+}
+
+
+def uv_binary(fetch: bool = True) -> Path | None:
+    """uv at Daodan's pin, unpacked once into the shared directory and checked against the release's sha256: never
+    the uv on the PATH, from a release Daodan cannot vouch for. With `fetch` False, None until it is installed.
+    OSError when it cannot be had."""
+    home = shared_engine_dir("uv") / UV_VERSION
+    binary = home / executable_name("uv")
+    if binary.is_file() or not fetch:
+        return binary if binary.is_file() else None
+    if _platform() not in UV_ASSETS:
+        raise OSError(f"Daodan pins no uv {UV_VERSION} build for {_platform()}")
+    asset, digest = UV_ASSETS[_platform()]
+    print(f"installing uv {UV_VERSION} into {home} (first use)", flush=True)
+    partial = home.with_name(f".{UV_VERSION}.partial")
+    shutil.rmtree(partial, ignore_errors=True)
+    partial.mkdir(parents=True)
+    try:
+        archive = download(f"https://github.com/astral-sh/uv/releases/download/{UV_VERSION}/{asset}", partial / asset,
+                           sha256=digest)
+        unpack(archive, partial)
+        archive.unlink()
+        os.replace(next(partial.rglob(executable_name("uv"))), partial / executable_name("uv"))
+    except (ValueError, StopIteration) as error:
+        raise OSError(f"uv {UV_VERSION} was not installed: {error or 'its archive holds no uv'}") from error
+    shutil.rmtree(home, ignore_errors=True)
+    os.replace(partial, home)
+    return binary
+
+
 def _own_uv() -> list[str]:
     """What makes a uv run Daodan's own: no configuration file read (the project's, the user's: an index, a mirror
     for the interpreter it downloads, a setting for builds), its cache in Daodan's shared directory, where no wheel
@@ -612,7 +653,7 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
     """The project's declared Python packages in an environment of the shared directory.
 
     Built once per set of manifests and interpreter, from wheels only, by Daodan's own
-    uv (`_own_uv`): no package build script and no project code runs, and nothing is
+    uv (`uv_binary`, `_own_uv`; OSError without it): no package build script and no project code runs, and nothing is
     written into the project; what its interpreter would run as it starts is removed
     (`_inert`). A requirement uv could not install, one without a wheel among them, is
     in its `daodan-environment.json` (`failed`), with uv's words.
@@ -620,13 +661,13 @@ def python_environment(project_root: Path, names, python: str | None = None) -> 
     uv resolves as `uv sync` does (an installed one that matches, else its download):
     a project that declares no package then gets the interpreter alone, and one uv
     cannot provide fails with uv's words. None when the project declares no package,
-    uv is missing, the disk is short or no package could be installed.
+    the disk is short or no package could be installed.
     """
     project_root = Path(project_root).resolve()
     manifests = python_manifests(project_root, names)
-    uv = shutil.which("uv")
-    if not (manifests or python) or uv is None:
+    if not (manifests or python):
         return None
+    uv = str(uv_binary())
     version = python or f"{sys.version_info.major}.{sys.version_info.minor}"
     digest = hashlib.sha256(f"{version}\0{_platform()}\0".encode("utf-8"))
     for name in manifests:

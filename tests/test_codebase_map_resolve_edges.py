@@ -997,7 +997,7 @@ class PreparedEnvironmentTests(unittest.TestCase):
 
     def prepare(self, python=None, names=None):
         with mock.patch.object(engine_tools, "shared_cache_dir", return_value=self.cache), \
-                mock.patch.object(shutil, "which", return_value="uv"), \
+                mock.patch.object(engine_tools, "uv_binary", return_value=Path("uv")), \
                 mock.patch.object(subprocess, "run", side_effect=self.run_uv):
             return resolve_edges.python_environment(self.root, names or self.names, python)
 
@@ -1006,6 +1006,45 @@ class PreparedEnvironmentTests(unittest.TestCase):
         self.assertEqual(manifests, ["api/requirements.txt", "pyproject.toml"])
         self.assertEqual(resolve_edges._declared_requirements(self.root, manifests, "uv"),
                          ["fastapi==0.115.0", "httpx>=0.27", "pytest", "ruff==0.6.0"])
+
+    def test_uv_is_daodan_s_pin_checked_against_its_release_and_never_the_path_s(self):
+        """The uv on the PATH comes from a release Daodan cannot vouch for: uv is the pin the pre-map and the
+        containers use, downloaded once into the shared directory and checked against the release's sha256; a
+        platform without a pinned build has none."""
+        import tarfile
+        import preparation
+        from premap import uv as pinned
+        self.assertEqual(engine_tools.UV_VERSION, pinned.VERSION)
+        self.assertEqual(preparation.UV[:2], (f"https://github.com/astral-sh/uv/releases/download/{pinned.VERSION}/"
+                                              f"{engine_tools.UV_ASSETS['linux-x64'][0]}",
+                                              engine_tools.UV_ASSETS["linux-x64"][1]))
+        fetched = []
+
+        def download(url, target, *, sha256=None, sha1_url=None):
+            fetched.append((url, sha256))
+            source = target.parent / "uv-x86_64-unknown-linux-gnu" / engine_tools.executable_name("uv")
+            source.parent.mkdir(parents=True)
+            source.write_text("#!/bin/sh\n", encoding="utf-8")
+            with tarfile.open(target, "w:gz") as archive:
+                archive.add(source.parent, arcname=source.parent.name)
+            shutil.rmtree(source.parent)
+            return target
+
+        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=self.cache), \
+                mock.patch.object(engine_tools, "_platform", return_value="linux-x64"), \
+                mock.patch.object(engine_tools, "download", side_effect=download), \
+                mock.patch.object(shutil, "which", side_effect=AssertionError("the PATH's uv")):
+            self.assertIsNone(engine_tools.uv_binary(fetch=False))
+            first, again = engine_tools.uv_binary(), engine_tools.uv_binary()
+            with mock.patch.object(engine_tools, "_platform", return_value="win-arm64"):
+                shutil.rmtree(self.cache / "engines/uv")
+                with self.assertRaisesRegex(OSError, f"no uv {engine_tools.UV_VERSION} build for win-arm64"):
+                    engine_tools.uv_binary()
+        asset, digest = engine_tools.UV_ASSETS["linux-x64"]
+        self.assertEqual(fetched, [(f"https://github.com/astral-sh/uv/releases/download/{engine_tools.UV_VERSION}/"
+                                    f"{asset}", digest)])
+        self.assertEqual(first, again)
+        self.assertEqual(first, self.cache / "engines/uv" / engine_tools.UV_VERSION / engine_tools.executable_name("uv"))
 
     def test_a_lock_is_exported_by_daodan_s_own_uv_and_nothing_is_built(self):
         """uv reads the lock as it is (`--frozen`), builds nothing (`--no-build`), reads no configuration file and
@@ -1040,7 +1079,7 @@ class PreparedEnvironmentTests(unittest.TestCase):
             return done
 
         with mock.patch.object(engine_tools, "shared_cache_dir", return_value=self.cache), \
-                mock.patch.object(shutil, "which", return_value="uv"), \
+                mock.patch.object(engine_tools, "uv_binary", return_value=Path("uv")), \
                 mock.patch.object(subprocess, "run", side_effect=refused):
             environment = resolve_edges.python_environment(self.root, self.names)
         built = json.loads((environment / "daodan-environment.json").read_text(encoding="utf-8"))

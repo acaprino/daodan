@@ -6,7 +6,8 @@ that project's folder. A file outside every project has no document (`missing` s
 project itself. Run from the root, a Python project kept in a folder (`svc/app`, imported as `app`) would name
 its modules differently where they are defined and where they are imported. Each run has that project's
 declared packages, from the manifests its unit states (`manifests`), in the engine pass's environment
-(`python_environment`: wheels only) described to it as an environment file, so it never asks pip. The
+(`python_environment`: wheels only, by Daodan's pinned uv, never the PATH's: without it Python is `unavailable`)
+described to it as an environment file, so it never asks pip. The
 environment's interpreter is Daodan's, else, where Daodan's is not one it admits, the Python the unit's folder
 states first as uv reads it (`structure`: a version file, else requires-python), which uv resolves as `uv sync`
 does; the run says the version it ran with (`python`) and that statement (`python_request`). A source
@@ -54,7 +55,8 @@ attributes the interpreter sets on every module (`__name__`, `__file__`, `__doc_
 (`python-stdlib`). After the index, the checker's pass (`python_unbound.py`: Pyright `PYRIGHT`'s language server
 over the same environment, the files parsed by its interpreter) says of each member the project reads what the
 checker gives it, beside the index (`<index>.unbound.jsonl`): a member where the index has no occurrence
-(`unanswered`) or gives a local it defines nowhere (`classify`) carries that cause (`UNBOUND_CAUSES`).
+(`unanswered`) or gives a local it defines nowhere (`classify`) carries that cause (`UNBOUND_CAUSES`). A type after
+the first of a Python 3.14 `except A, B:`, which scip-python's parser does not read, carries that (`NEWER_SYNTAX`).
 """
 from __future__ import annotations
 
@@ -78,6 +80,11 @@ UNBOUND = Path(__file__).with_name("python_unbound.py")
 UNBOUND_CAUSES = {"Any": "a member the checker types Any (a dynamic attribute, `__getattr__`): only execution knows it",
                   "Unknown": "a member of a value the checker types Unknown: only execution knows it",
                   "bound": "the checker binds the {} and scip-python names nothing there"}
+# `except A, B:` without parentheses (PEP 758, Python 3.14), which the snapshot reads with the Python the project
+# states: scip-python's parser predates 3.14 and gives the types after the first no occurrence (fastapi's deps.py).
+EXCEPT_TYPES = re.compile(r"\s*except\*?\s+[^\s(][^:#]*,")
+NEWER_SYNTAX = (f"an `except A, B:` of Python 3.14 (PEP 758): scip-python {VERSION}'s parser predates it and gives "
+                "the types after the first no occurrence")
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-python", ("python",), frozenset({"python-project"}), False
@@ -254,8 +261,14 @@ def _checked(index) -> dict:
 
 
 def unanswered(index):
-    """Why the index has no occurrence at a member's site: what the checker's pass said there."""
-    return _checked(index).get
+    """Why the index has no occurrence at a site: what the checker's pass said there, else, on a clause of Python
+    3.14 scip-python's parser does not read (`EXCEPT_TYPES`), that."""
+    causes = _checked(index)
+
+    def cause(site):
+        rel, line, _column = site
+        return causes.get(site) or (NEWER_SYNTAX if EXCEPT_TYPES.match(index.line(rel, line) or "") else None)
+    return cause
 
 
 def classify(index):
@@ -478,6 +491,17 @@ def _pyright_config(root: Path, target: Path, source_roots=(), unit_roots=()) ->
     return config
 
 
+def _uv() -> None:
+    """Daodan's pinned uv, which builds the environments, installed once: Unavailable when it cannot be had. The
+    uv on the PATH is never used: no Python is analyzed without the pin."""
+    import engine_tools
+    from indexers import runtime
+    if engine_tools.uv_binary(fetch=False) is None:
+        runtime.room()
+    with runtime.fetching(f"uv {engine_tools.UV_VERSION}", "github.com/astral-sh/uv/releases"):
+        engine_tools.uv_binary()
+
+
 def _prepared(project_dir: Path, unit: dict, environment: Path | None) -> tuple[Path | None, list[dict],
                                                                                  dict | None]:
     """`environment`, else the one `python_environment` builds from the manifests the unit states, named from
@@ -592,6 +616,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, env
         runtime.memory("scip-python", MIN_FREE)
         directory = runtime.node(project_dir)
         script = runtime.npm_package(project_dir, directory, "@sourcegraph/scip-python", VERSION)
+        if environment is None:
+            _uv()
     except runtime.Unavailable as error:
         return runtime.refused("scip-python", VERSION, error)
     runtime.clear(work_dir, "scip-python")
@@ -678,6 +704,8 @@ def _boxed(project_dir: Path, unit: dict, number: int, work_dir: Path, environme
             directory = runtime.node(project_dir)  # the host's, for npm
             script = runtime.npm_package(project_dir, directory, "@sourcegraph/scip-python", VERSION)
             archive = runtime.node_archive(project_dir, f"linux-{container.architecture()}")
+            if environment is None:
+                _uv()
         except runtime.Unavailable as error:
             raise container.Gap(error.reason, error.install) from error
         held["environment"], held["gaps"], _stated = _prepared(project_dir, unit, environment)

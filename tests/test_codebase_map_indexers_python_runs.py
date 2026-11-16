@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "plugins/codebase-map/skills/map/scripts"))
 
@@ -97,6 +99,17 @@ def test_a_member_the_index_names_nowhere_carries_what_the_checker_says_of_it(tm
     assert python.unanswered(index)(("app.py", 1, 0)) is None
     [(cls, detail, _chain)] = ends(index, local)
     assert cls == "dead-end" and detail == "the checker binds the function exit and scip-python names nothing there"
+
+
+def test_a_type_after_the_first_of_a_python_3_14_except_clause_carries_why_the_index_names_nothing(tmp_path):
+    """real-app-full-stack-fastapi, backend/app/api/deps.py:36: `except InvalidTokenError, ValidationError:` (PEP
+    758, Python 3.14), which the snapshot reads with the Python the project states; scip-python's parser predates
+    3.14 and gives the types after the first no occurrence. A parenthesized clause is any Python's."""
+    source = ("try:\n    pass\nexcept InvalidTokenError, ValidationError:\n    pass\n"
+              "try:\n    pass\nexcept (KeyError, ValueError):\n    pass\n")
+    index = run(tmp_path, {"app.py": source}, [document("app.py", [occurrence(3, 7, 24, APP + "`app`/InvalidTokenError#")])])
+    assert python.unanswered(index)(("app.py", 3, 26)) == python.NEWER_SYNTAX
+    assert python.unanswered(index)(("app.py", 7, 18)) is None
 
 
 def test_the_checker_pass_reads_the_hover_at_each_member_s_name():
@@ -224,3 +237,41 @@ def test_the_analyzer_on_the_host_reads_the_project_and_its_environment_and_runs
     subprocess.run([str(environment / "bin/python"), "-c", f"exec(open({str(source / 'setup.py')!r}).readline())"],
                    check=True)
     assert sorted(path.name for path in marks.iterdir()) == ["pth", "sdist-setup.py", "setup.py"]
+
+
+@pytest.mark.parametrize(("config", "site"), [("pyrightconfig.json", True), ("pyrightconfig.json", False),
+                                              ("pyproject.toml", True)])
+def test_a_venv_the_project_s_pyright_configuration_names_is_read_and_never_started(tmp_path, config, site):
+    """AGENTS.md: the project's code runs only in the container. Its Pyright configuration may name a venv in the
+    project (`venvPath`, `venv`), whose interpreter is the project's: scip-python and the checker read that venv's
+    packages as files, where it holds any, else ask Daodan's interpreter, and never start the venv's. Real Node,
+    scip-python and Pyright (on Modal)."""
+    import subprocess
+    marks, project = tmp_path / "marks", tmp_path / "project"
+    marks.mkdir()
+    (project / "venv/bin").mkdir(parents=True)
+    (project / "venv/pyvenv.cfg").write_text("home = /usr/local/bin\nversion_info = 3.13.3\n", encoding="utf-8")
+    for name in ("python", "python3", f"python3.{sys.version_info.minor}"):
+        (project / "venv/bin" / name).write_text(f"#!/bin/sh\ntouch {marks / name}\nexec {sys.executable} \"$@\"\n",
+                                                 encoding="utf-8")
+        (project / "venv/bin" / name).chmod(0o755)
+    if site:
+        (project / f"venv/lib/python3.{sys.version_info.minor}/site-packages/vpkg").mkdir(parents=True)
+        (project / f"venv/lib/python3.{sys.version_info.minor}/site-packages/vpkg/__init__.py").write_text(
+            "VALUE = 1\n", encoding="utf-8")
+    (project / config).write_text('{"venvPath": ".", "venv": "venv"}' if config == "pyrightconfig.json" else
+                                  '[project]\nname = "p"\n[tool.pyright]\nvenvPath = "."\nvenv = "venv"\n',
+                                  encoding="utf-8")
+    (project / "app.py").write_text("import vpkg\nprint(vpkg.VALUE)\n", encoding="utf-8")
+    environment = tmp_path / "environment"
+    import engine_tools
+    subprocess.run([str(engine_tools.uv_binary()), "venv", "-q", str(environment), "--python", sys.executable],
+                   check=True)
+    result = python.index(project, tmp_path / "work", environment=environment, units=[{"root": ""}])
+    [run] = result["runs"]
+    rows = {tuple(row[:3]): row[3] for row in python._beside(Path(run["index"]), "unbound")}
+    assert rows[("app.py", 2, 11)] == ("bound" if site else "Unknown"), rows  # the venv's files, else Daodan's
+    assert sorted(path.name for path in marks.iterdir()) == []
+    # The control: started, the venv's interpreter does leave its mark.
+    subprocess.run([str(project / "venv/bin/python"), "-c", "pass"], check=True)
+    assert sorted(path.name for path in marks.iterdir()) == ["python"]

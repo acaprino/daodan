@@ -164,6 +164,8 @@ def _tools(project: Path, which: str) -> None:
         for name in (rx.executable_name("node"), "npm.cmd" if os.name == "nt" else "npm"):
             (directory / name).write_text("fake", encoding="utf-8")
             (directory / name).chmod(0o755)
+        if which == "python":  # Daodan's uv, which builds the environment
+            _installed(rx.shared_engine_dir("uv") / engine_tools.UV_VERSION, {rx.executable_name("uv"): "fake"})
         package, module = NPM[which], MODULES[which]
         bin_name = package.rsplit("/", 1)[-1]
         _installed(rx.shared_engine_dir(bin_name) / module.VERSION,
@@ -299,6 +301,7 @@ def test_node_installs_from_its_release_checked_against_shasums256(sandbox, caps
     project = _project(sandbox, "python")
     sandbox["web"].pages.update(_node_release())
     sandbox["fake"].index = FIXTURES / "python/index.scip"
+    _installed(rx.shared_engine_dir("uv") / engine_tools.UV_VERSION, {rx.executable_name("uv"): "fake"})
     result = python.index(project, sandbox["root"] / "work")
     assert "state" not in result, result.get("reason")
     out = capsys.readouterr().out

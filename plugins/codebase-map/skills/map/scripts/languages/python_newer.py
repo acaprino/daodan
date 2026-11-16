@@ -109,11 +109,8 @@ def newer(version: str) -> bool:
 def _interpreter(root: Path, version: str) -> tuple[Path | None, str | None]:
     """The interpreter uv provides for a stated Python, as `uv sync` would, else why there is none."""
     import contextlib
-    import shutil
     import subprocess
     import engine_tools
-    if shutil.which("uv") is None:
-        return None, "uv is not installed: Daodan asks it for the Python a project states"
     try:
         with contextlib.redirect_stdout(sys.stderr):  # its progress is no server's output
             environment = engine_tools.python_environment(root, [], version)
