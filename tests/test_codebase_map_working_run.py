@@ -324,6 +324,36 @@ class WorkingRunTests(unittest.TestCase):
         self.assertEqual((proc.returncode, proc.stdout), (0, ""))
         self.assertFalse(self.working.exists())
 
+    # The store lies in the project's folder: a repository can bring one, with whatever files it likes.
+
+    @unittest.skipIf(sys.platform == "win32", "the process that must survive leads a process group")
+    def test_6_a_store_that_comes_with_the_project_names_no_process_to_end(self):
+        """A file beside the working snapshot that names a process as a pass in flight: the refresh ends none."""
+        named = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(300)"], start_new_session=True)
+        self.addCleanup(lambda: (named.kill(), named.wait()))
+        (self.working / "snapshot").mkdir(parents=True)
+        (self.working / "snapshot/engine-pass.running").write_text(
+            json.dumps({"pid": named.pid, "started_at": "2026-11-16T00:00:00Z"}), encoding="utf-8")
+        self.edit("app.py", "def greet():\n    return 'hello'\n")
+        proc = self.hook({"tool_name": "Edit", "tool_input": {"file_path": "src/app.py"}})
+        self.assertEqual(json.loads(proc.stdout)["status"], "fresh")
+        time.sleep(0.5)
+        self.assertIsNone(named.poll(), "the refresh ended the process the store's file named")
+
+    def test_6_a_store_that_comes_with_the_project_names_no_folder_outside_it(self):
+        """A published run whose state names a folder outside the project: the refresh reads nothing there."""
+        outside = Path(tempfile.mkdtemp(prefix="map-outside-")).resolve()
+        self.addCleanup(shutil.rmtree, outside, True)
+        (outside / "elsewhere.py").write_text("def elsewhere():\n    return 1\n", encoding="utf-8")
+        state = json.loads((self.published / "state.json").read_text(encoding="utf-8"))
+        (self.published / "state.json").write_text(json.dumps({**state, "target": str(outside)}), encoding="utf-8")
+        self.edit("app.py", "def greet():\n    return 'hello'\n")
+        with self.assertRaisesRegex(snapshot.RunControlError, "target is outside this run's project"):
+            self.refresh()
+        proc = self.hook({"tool_name": "Edit", "tool_input": {"file_path": "src/app.py"}})
+        self.assertEqual((proc.returncode, proc.stdout), (0, ""))  # the hook never fails the tool
+        self.assertFalse((self.working / "snapshot/manifest.sqlite").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

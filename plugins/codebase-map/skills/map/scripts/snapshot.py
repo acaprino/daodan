@@ -1488,6 +1488,8 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
     manifest = working / state["snapshot"]["path"]
     target = Path(state["target"])
     target = (target if target.is_absolute() else store_project(root) / target).resolve()
+    if not target.is_relative_to(store_project(root)):  # the state is the store's, which a project can bring
+        raise RunControlError("target is outside this run's project")
     now = lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")  # noqa: E731
     try:
         with ExitStack() as stack:

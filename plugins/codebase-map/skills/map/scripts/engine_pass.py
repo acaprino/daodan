@@ -5,6 +5,7 @@ lifecycle beside the snapshot (`edge_state`, `ensure_edges`, `reset_pass`, `stop
 `ENGINES` is built last: an adapter imports `resolve_edges` back, which takes this module's other names."""
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import os
@@ -18,6 +19,7 @@ from importlib import metadata
 from pathlib import Path
 from typing import NamedTuple
 
+import engine_tools
 from snapshot_store import logical_digest, open_snapshot
 from engine_tools import free_memory, node_environment
 from edge_store import default_edge_store, read_edge_store
@@ -31,7 +33,12 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPORT_NAME = "engine-report.json"
 
 
-RUNNING_NAME = "engine-pass.running"
+def running_record(manifest: Path) -> Path:
+    """Where the pass over `manifest` records its process, by the manifest's path: in Daodan's shared directory,
+    never beside the manifest. The store lies in the analyzed project's folder, where any file may have come with
+    the project, and the process this record names is the one a new snapshot ends."""
+    key = os.path.normcase(str(Path(manifest).resolve())).encode("utf-8")
+    return engine_tools.shared_cache_dir() / "passes" / f"{hashlib.sha256(key).hexdigest()[:32]}.json"
 
 
 LOG_NAME = "engine-pass.log"
@@ -119,7 +126,7 @@ def pass_state(manifest: Path) -> dict | None:
     `failed` when it ended without a report. None when no pass ever started.
     """
     manifest = Path(manifest)
-    running = manifest.with_name(RUNNING_NAME)
+    running = running_record(manifest)
     report = manifest.with_name(REPORT_NAME)
     if running.is_file():
         try:
@@ -631,7 +638,7 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
     if check:
         return {**before, "action": "reported"}
     report_path = manifest.with_name(REPORT_NAME)
-    running_path = manifest.with_name(RUNNING_NAME)
+    running_path = running_record(manifest)
     for leftover in (report_path, running_path):
         leftover.unlink(missing_ok=True)
     plan, fresh, digest = pass_plan(manifest)
@@ -647,6 +654,7 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
         return {**edge_state(manifest), "action": "none"}
     with manifest.with_name(LOG_NAME).open("ab") as log:
         try:
+            running_path.parent.mkdir(parents=True, exist_ok=True)  # before the pass: one started is one recorded
             child = _spawn_detached(engine_command(manifest, report_path), log)
         except OSError as error:
             _write_report(report_path, {"pass": True, "manifest_digest": digest, "available": False,
@@ -671,8 +679,8 @@ def reset_pass(manifest: Path) -> dict | None:
     last = pass_state(manifest)
     if last is not None and last["state"] == "running":
         _terminate_tree(last["pid"])
-    for name in (RUNNING_NAME, REPORT_NAME):
-        manifest.with_name(name).unlink(missing_ok=True)
+    for record in (running_record(manifest), manifest.with_name(REPORT_NAME)):
+        record.unlink(missing_ok=True)
     for pattern in (f".{default_edge_store(manifest).name}.*.partial", ".engine-stage-*.json"):
         for leftover in manifest.parent.glob(pattern):
             leftover.unlink(missing_ok=True)
@@ -692,7 +700,7 @@ def stop_pass(manifest: Path, reason: str) -> dict:
     _write_report(manifest.with_name(REPORT_NAME),
                   {"pass": True, "available": False, "stopped": True, "reason": f"stopped: {reason}"})
     # The report is the record now; a dying process must not read as running.
-    manifest.with_name(RUNNING_NAME).unlink(missing_ok=True)
+    running_record(manifest).unlink(missing_ok=True)
     return {"stopped": True, "state": "stopped", "pid": last["pid"]}
 
 

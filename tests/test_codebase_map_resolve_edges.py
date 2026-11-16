@@ -627,6 +627,15 @@ class PassLifecycleTests(unittest.TestCase):
         self.manifest = self.root.parent / "manifest.sqlite"
         snapshot.write_snapshot(self.root, self.manifest)
 
+    def record(self, **process) -> Path:
+        """The pass's record of its process, where the pass keeps it: outside the store."""
+        path = resolve_edges.running_record(self.manifest)
+        self.addCleanup(path.unlink, missing_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(process), encoding="utf-8")
+        self.assertNotIn(self.root.parent, path.parents)
+        return path
+
     def run_line(self):
         return self.SOURCES["app/use.py"].split("\n").index("        return helper.run()") + 1
 
@@ -743,16 +752,14 @@ class PassLifecycleTests(unittest.TestCase):
         self.assertEqual(spawn.call_args.args[0], ["engine"])
         ended = subprocess.Popen([sys.executable, "-c", "pass"])
         ended.wait()
-        self.manifest.with_name(resolve_edges.RUNNING_NAME).write_text(
-            json.dumps({"pid": ended.pid}), encoding="utf-8")
+        self.record(pid=ended.pid)
         state = resolve_edges.edge_state(self.manifest)
         self.assertEqual(state["state"], "failed")
         self.assertIn(resolve_edges.LOG_NAME, state["reason"])
 
     def test_the_edge_view_carries_coverage_and_names_a_running_pass(self):
         import edge_view
-        self.manifest.with_name(resolve_edges.RUNNING_NAME).write_text(
-            json.dumps({"pid": os.getpid(), "started_at": "2026-11-08T00:00:00Z"}), encoding="utf-8")
+        self.record(pid=os.getpid(), started_at="2026-11-08T00:00:00Z")
         view = edge_view.load_edge_view(self.manifest)
         self.assertEqual(view["coverage"]["status"], "missing_store")
         self.assertEqual(view["coverage"]["engine_pass"]["state"], "running")
@@ -762,8 +769,7 @@ class PassLifecycleTests(unittest.TestCase):
     def test_rewriting_a_manifest_first_ends_the_pass_over_its_old_revision(self):
         import contextlib
         import io
-        running = self.manifest.with_name(resolve_edges.RUNNING_NAME)
-        running.write_text(json.dumps({"pid": 4242}), encoding="utf-8")
+        running = self.record(pid=4242)
         partial = self.manifest.with_name(".engine-edges.sqlite.abc.partial")
         partial.write_bytes(b"half a store")
         with mock.patch.object(engine_pass, "_process_alive", return_value=True), \

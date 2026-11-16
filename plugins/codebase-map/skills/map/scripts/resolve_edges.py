@@ -91,7 +91,7 @@ from position_stage import (ANSWERS_NAME, default_answers_path, dependency_diges
                             resolve_edges, snapshot_languages)
 from engine_pass import (_process_alive, compact_report, edge_state, engine_command, ensure_edges,  # noqa: E402,F401
                          index_stage, LOG_NAME, pass_languages, pass_plan, pass_state, REPORT_NAME, reset_pass,
-                         run_pass, RUNNING_NAME, stage_command, stop_pass)
+                         run_pass, running_record, stage_command, stop_pass)
 import engine_pass  # noqa: E402
 
 

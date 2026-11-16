@@ -257,7 +257,7 @@ class MapService:
         # Include optional inputs and possible unexpected phase files as well.
         names = {*snapshot.PHASE_FILES, "knowledge/navigation.md", "knowledge/documentation-leads.md",
                  "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite",
-                 "snapshot/engine-report.json", "snapshot/engine-pass.running", "snapshot/engine-pass.log",
+                 "snapshot/engine-report.json", "snapshot/engine-pass.log",
                  "snapshot/modules.json", "snapshot/modules.md", "snapshot/proposals.json", "snapshot/context",
                  f"snapshot/{pipeline_events.JOURNAL}",
                  "cards.sqlite"}
