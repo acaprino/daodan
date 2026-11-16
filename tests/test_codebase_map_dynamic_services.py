@@ -14,7 +14,6 @@ import contextlib
 import json
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -496,22 +495,16 @@ with open("/daodan/out/probe.json", "w") as f:
 '''
 
 
-@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
-def test_on_modal_the_postgres_tududi_s_ci_declares_answers_the_tests_at_localhost(tmp_path):
-    """The driver's Sandboxes as the pipeline runs them: the preparation pulls and pins the image, the execution,
-    network blocked, starts it in its own namespace and awaits its health check, then the tests (a probe that
-    speaks PostgreSQL's protocol to DATABASE_URL, as the job gives it) reach it at localhost and nothing outside."""
+@contextlib.contextmanager
+def the_driver():
+    """The benchmark driver, its volume's `commit` sending what a test wrote under /results (the driver's
+    function holds the volume there, a test does not); this run's scratch folder removed afterwards, never another
+    run's: Docker's binaries stay, as the driver keeps them."""
     sys.path.insert(0, str(HERE.parent / "benchmarks/project-model"))
     import modal_pipeline
-    from indexers import typescript
-    planned = dynamic.services({"services": [TUDUDI]})
-    assert planned["gaps"] == []
-    project = tmp_path / "proj"
-    project.mkdir()
-    (project / "probe.py").write_text(PROBE, encoding="utf-8")
     volume, sent = modal_pipeline.volume, set()
 
-    def commit():  # the driver's function holds the volume at /results; this one sends what it wrote there
+    def commit():
         root = Path("/results")
         with volume.batch_upload(force=True) as batch:
             for path in sorted(root.rglob("*")):
@@ -520,15 +513,30 @@ def test_on_modal_the_postgres_tududi_s_ci_declares_answers_the_tests_at_localho
                     batch.put_file(str(path), "/" + path.relative_to(root).as_posix())
 
     try:
-        with mock.patch.object(volume, "commit", commit), container.beside(planned["services"], planned["env"]):
-            result = modal_pipeline.sandbox_run(project, ["python3", "/work/probe.py"], image=typescript.IMAGE,
-                                                out_dir=tmp_path / "out", prepare=["true"], outputs=["/daodan/out"],
-                                                env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=600,
-                                                prepare_timeout=900)
-    finally:  # this run's scratch folder, never another run's: Docker's binaries stay, as the driver keeps them
+        with mock.patch.object(volume, "commit", commit):
+            yield modal_pipeline
+    finally:
         scratch = f"/{modal_pipeline.SCRATCH}/"
         for folder in sorted({scratch + path[len(scratch):].split("/")[0] for path in sent if path.startswith(scratch)}):
             volume.remove_file(folder, recursive=True)
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_the_postgres_tududi_s_ci_declares_answers_the_tests_at_localhost(tmp_path):
+    """The driver's Sandboxes as the pipeline runs them: the preparation pulls and pins the image, the execution,
+    network blocked, starts it in its own namespace and awaits its health check, then the tests (a probe that
+    speaks PostgreSQL's protocol to DATABASE_URL, as the job gives it) reach it at localhost and nothing outside."""
+    from indexers import typescript
+    planned = dynamic.services({"services": [TUDUDI]})
+    assert planned["gaps"] == []
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "probe.py").write_text(PROBE, encoding="utf-8")
+    with the_driver() as modal_pipeline, container.beside(planned["services"], planned["env"]):
+        result = modal_pipeline.sandbox_run(project, ["python3", "/work/probe.py"], image=typescript.IMAGE,
+                                            out_dir=tmp_path / "out", prepare=["true"], outputs=["/daodan/out"],
+                                            env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=600,
+                                            prepare_timeout=900)
     rows = [json.loads(line) for line in (tmp_path / "out" / container.RECORD_NAME).read_text().splitlines()]
     print(json.dumps(rows, indent=1), flush=True)
     assert result["state"] == "done" and result["exit_code"] == 0, result
@@ -539,3 +547,65 @@ def test_on_modal_the_postgres_tududi_s_ci_declares_answers_the_tests_at_localho
     assert (said["host"], said["port"], said["ssl"], said["reply"]) == ("localhost", 5432, "N", "R")
     assert said["auth"] in (0, 3, 5, 10) and said.get("session", "ready") == "ready"  # trusted, or a password asked
     assert said["outside"] != "reached"
+
+
+POD = r'''import json, sys
+from pathlib import Path
+sys.path.insert(0, "/daodan/scripts")
+import container
+spec, url, engine = json.loads(sys.argv[1]), sys.argv[2], container.Engine("docker", (sys.argv[3] + "/docker",))
+said = {}
+for host in ("localhost", "postgres"):  # on the runner, and from a job's container, by the service's name
+    out = Path(f"/tmp/out-{host}")
+    with container.beside([{**spec, "host": host}], {"DATABASE_URL": url.replace("@localhost:", f"@{host}:")}):
+        result = container.run_in_container(Path("/tmp/project"), ["python3", "/work/probe.py"], engine=engine,
+                                            image=container.PROXY_IMAGE, out_dir=out, outputs=["/daodan/out"],
+                                            env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=300)
+    probe = out / "out" / "probe.json"
+    said[host] = {"result": result, "probe": json.loads(probe.read_text()) if probe.is_file() else None,
+                  "rows": [json.loads(line) for line in (out / container.RECORD_NAME).read_text().splitlines()]}
+said["left"] = container.cli(engine, "ps", "-a", "--format", "{{.Names}}").stdout.decode().split()
+print(json.dumps(said))
+'''
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
+def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_by_name_and_nothing_outside():
+    """`container.run_in_container` itself on a real engine: Docker (`modal_pipeline.DOCKER`) in a Modal VM
+    Sandbox as the driver starts it. The service of tududi's CI starts in the pod (`--network container:<pod>`) and
+    is awaited; the tests, in the pod too, reach it at localhost and, as a job in a container does, by its name
+    (the pod's hosts); the pod has no network; no container stays."""
+    import base64
+
+    import modal
+    image = (modal.Image.debian_slim(python_version="3.13").apt_install("git")
+             .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__"]))
+    with the_driver() as modal_pipeline:
+        bundle = modal_pipeline._bundle()
+        box = modal.Sandbox.create(image=image, app=modal.App.lookup("daodan-pipeline-sandboxes",
+                                                                       create_if_missing=True),
+                                   volumes={"/results": modal_pipeline.volume},
+                                   experimental_options=modal_pipeline.VM, timeout=1200, cpu=2, memory=6144)
+        try:
+            modal_pipeline._daemon(box, bundle)
+            for path, text in (("/tmp/project/probe.py", PROBE), ("/tmp/pod.py", POD)):
+                assert box.exec("sh", "-c", f"mkdir -p {Path(path).parent.as_posix()} && echo "
+                                f"{base64.b64encode(text.encode()).decode()} | base64 -d > {path}").wait() == 0
+            process = box.exec("python3", "/tmp/pod.py", json.dumps(SPEC), DATABASE_URL, modal_pipeline.ENGINE,
+                               timeout=900)
+            out, err = process.stdout.read(), process.stderr.read()
+            assert process.wait() == 0, err[-3000:]
+        finally:
+            box.terminate()
+    said = json.loads(out)
+    print(json.dumps(said, indent=1), flush=True)
+    for host in ("localhost", "postgres"):
+        result, probe, rows = said[host]["result"], said[host]["probe"], said[host]["rows"]
+        assert result["state"] == "done" and result["exit_code"] == 0, result
+        assert [s["outcome"] for s in result["services"]] == ["ready"], result
+        [service, execute] = rows
+        assert service["pinned"].startswith("postgres@sha256:") and service["network"].startswith("container:daodan-pod-")
+        assert execute["phase"] == "execute" and execute["network"] == service["network"]
+        assert (probe["host"], probe["port"], probe["session"]) == (host, 5432, "ready")
+        assert probe["outside"] != "reached"
+    assert said["left"] == []
