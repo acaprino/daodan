@@ -83,6 +83,14 @@ function entityName(envelope: Envelope, ref: string): string {
   return indexOf(envelope).byRef.get(ref)?.name ?? ref;
 }
 
+// The technologies of the project, or those of one build unit (`ids`); each names the files that show it.
+function Technologies({ envelope, ids }: { envelope: Envelope; ids?: string[] }) {
+  const shown = envelope.technologies.filter(item => !ids || ids.includes(item.id));
+  if (!shown.length) return null;
+  return <div className="block"><h3>Tecnologie</h3><ul className="links">{shown.map(item =>
+    <li key={item.id} title={item.paths.join('\n')}>{item.name} <span className="muted">{item.type}</span></li>)}</ul></div>;
+}
+
 function Inspector({ state, dispatch, edges }: { state: ExplorerState; dispatch: (action: Action) => void; edges: ProjectedEdge[] }) {
   const envelope = state.envelope;
   const entity: Entity | undefined = state.selected ? indexOf(envelope).byRef.get(state.selected) : undefined;
@@ -98,6 +106,7 @@ function Inspector({ state, dispatch, edges }: { state: ExplorerState; dispatch:
         <li>{envelope.gaps.length} lacune dichiarate</li>
       </ul>
       <p className="muted">Collegamenti e flussi sono statici: dicono cosa il codice rende possibile, non cosa accade in esecuzione.</p>
+      <Technologies envelope={envelope} />
     </section>;
   }
   const Icon = iconFor({ nodeType: entity.node_type, type: entity.type });
@@ -117,6 +126,7 @@ function Inspector({ state, dispatch, edges }: { state: ExplorerState; dispatch:
       {entity.freshness && <li>{FRESHNESS_LABEL[entity.freshness] ?? entity.freshness}</li>}
     </ul>
     {canOpen && <button type="button" className="primary" onClick={() => dispatch({ type: 'open', ref: entity.ref })}><FolderOpen size={15} />Entra in {entity.name}</button>}
+    {entity.technologies && <Technologies envelope={envelope} ids={entity.technologies} />}
     {flows.length > 0 && <div className="block"><h3>Flussi che lo attraversano</h3>{flows.map(flow =>
       <button type="button" key={flow.ref} className={join('chip', state.flow === flow.ref && 'on')} onClick={() => dispatch({ type: 'flow', ref: flow.ref })}>
         <Route size={12} />{entityName(envelope, flow.entry)}</button>)}</div>}

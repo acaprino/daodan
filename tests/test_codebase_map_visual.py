@@ -54,6 +54,16 @@ class EnvelopeTests(unittest.TestCase):
         self.service.create_run(".", "r1", engine=False)
         self.envelope = visual.build_envelope(self.project / ".daodan/map/runs/r1")
 
+    def test_the_technologies_of_the_stack_step_and_of_each_build_unit(self):
+        (self.project / "requirements.txt").write_text("fastapi==0.110\n", encoding="utf-8")
+        git_project(self.project)
+        self.service.create_run(".", "r2", engine=False)
+        envelope = visual.build_envelope(self.project / ".daodan/map/runs/r2")
+        found = {item["id"]: item for item in envelope["technologies"]}
+        self.assertEqual((found["fastapi"]["name"], found["fastapi"]["paths"]), ("FastAPI", ["requirements.txt"]))
+        unit = next(entity for entity in envelope["entities"] if entity["ref"].startswith("build:"))
+        self.assertIn("fastapi", unit["technologies"])
+
     def test_structure_states_and_shared_membership(self):
         envelope = self.envelope
         self.assertEqual(envelope["schema"], "daodan/visual@1")

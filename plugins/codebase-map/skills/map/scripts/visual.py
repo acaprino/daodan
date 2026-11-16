@@ -5,7 +5,8 @@
 """A Codebase Map run as `daodan/visual@1`: what the explorer draws, with nothing inferred here.
 
 Reads only public APIs: the run snapshot (`snapshot_store`), the module graph (`modules`),
-outlines and file imports (`source_reader`), card freshness (`semantic_store`) and, when
+outlines and file imports (`source_reader`), card freshness (`semantic_store`), the stack
+step's technologies (`technologies`: the list, and on each build unit its ids) and, when
 the run has link rules, its flows (`flows`). States keep the producers' values:
 `provenance`, `status` and card `freshness` are distinct fields, never promoted.
 
@@ -131,6 +132,12 @@ def build_envelope(run_dir: Path) -> dict:
                      counts={edge["kind"]: edge.get("evidence_total", len(edge.get("evidence", [])))},
                      evidence=[{"path": site.get("path"), "line": site.get("line")} for site in edge.get("evidence", [])[:20]])
 
+    import technologies
+    stack = technologies.ensure(manifest)
+    for unit in stack["units"]:
+        if unit["technologies"] and unit["id"] in by_id:
+            entities[by_id[unit["id"]]]["technologies"] = unit["technologies"]
+
     with open_snapshot(manifest) as store:
         root, target = store["root"], store["target"]
         snapshot_digest = logical_digest(store)
@@ -202,6 +209,9 @@ def build_envelope(run_dir: Path) -> dict:
         "memberships": sorted(memberships, key=lambda item: (item["view"], item["group"], item["member"])),
         "gaps": gaps,
         "flows": envelope_flows,
+        "technologies": [{"id": item["id"], "name": item["name"], "type": item["type"] or "altro", "from": item["from"],
+                          "paths": sorted({sign["path"] for sign in item["signs"] if sign["path"]})[:LIMIT]}
+                         for item in stack["technologies"]],
     }
 
 

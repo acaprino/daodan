@@ -73,7 +73,7 @@ def derive(manifest: Path, tool: bool = False) -> dict:
     for unit in graph["modules"]:
         if unit["provenance"] == "build":
             files = set(unit.get("files", []))
-            units.append({"name": unit["name"], "kind": unit["kind"], "paths": unit["paths"],
+            units.append({"id": unit["id"], "name": unit["name"], "kind": unit["kind"], "paths": unit["paths"],
                           "technologies": [e["id"] for e in entries if any(s["path"] in files for s in e["signs"])]})
     return {"schema": SCHEMA, "manifest": manifest.as_posix(), "inputs_digest": _inputs(manifest, registry),
             "stack_analyser": answer, "technologies": entries, "units": units}
