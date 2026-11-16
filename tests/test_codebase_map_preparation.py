@@ -201,6 +201,32 @@ def test_a_python_folder_whose_install_fails_is_installed_again_without_its_vcs_
     assert gap["kind"] == "vcs_not_installed" and gap["manager"] == "uv" and "mylib @" in gap["detail"]
 
 
+def test_the_preparation_reaches_the_hosts_the_project_declares_and_names_one_that_does_not_answer():
+    """As a CI, the preparation reaches the hosts a project declares for its dependencies (the pre-map's
+    `registries`: an index, a repository, a feed, a VCS host) and no other; github.com brings the hosts GitHub serves
+    its downloads from, where npm fetches a GitHub dependency. A failed restore whose words name a declared host it
+    could not reach is a gap naming the host and the files that declare it."""
+    record = {"units": [
+        {"root": ".", "kind": "npm-package", "manifest": "package.json",
+         "registries": ["ssh://github.com", "https://npm.corp.example"]},
+        {"root": "svc", "kind": "python-project", "manifest": "svc/requirements.txt",
+         "registries": ["https://pypi.example.org", "https://npm.corp.example:8443"]},
+        {"root": "lib", "kind": "maven-module", "manifest": "lib/pom.xml"}]}
+    declared = preparation.declared(record)
+    assert declared["hosts"] == tuple(sorted({*preparation.GITHUB, "npm.corp.example", "pypi.example.org"}))
+    assert declared["where"]["npm.corp.example"] == ["package.json", "svc/requirements.txt"]
+    assert declared["where"]["codeload.github.com"] == ["package.json"]  # where GitHub serves github.com's tarballs
+    assert preparation.declared({"units": [{"root": ".", "kind": "go-module"}]}) == {"hosts": (), "where": {}}
+    stderr = ("DAODAN-RESTORE-FAILED pip svc\nerror: Request failed after 3 retries\n"
+              "  Caused by: Failed to fetch: `https://pypi.example.org/simple/acme/`\n  Caused by: dns error\n"
+              "DAODAN-RESTORE-END\nDAODAN-RESTORE-FAILED npm .\n"
+              "npm error 404 Not Found - GET https://npm.corp.example/acme - Not found\nDAODAN-RESTORE-END\n")
+    [gap] = preparation.unreached(preparation.restore_gaps(stderr), declared)
+    assert (gap["kind"], gap["host"], gap["declared_in"], gap["path"]) == (
+        "host_unreachable", "pypi.example.org", ["svc/requirements.txt"], "svc")
+    assert "dns error" in gap["detail"] and "svc/requirements.txt" in gap["detail"]  # a 404 answered: no such gap
+
+
 def test_one_python_folder_has_one_manager_its_lockfile_names():
     files = ["pyproject.toml", "uv.lock", "packages/a/pyproject.toml", "svc/pyproject.toml", "svc/poetry.lock",
              "tools/requirements.txt"]

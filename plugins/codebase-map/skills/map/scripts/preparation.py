@@ -487,6 +487,43 @@ def without(names: list[str]) -> str:
     return f"printf '%s ; sys_platform == \"never\"\\n' {' '.join(names)} > {WITHOUT}"
 
 
+def declared(record: dict) -> dict:
+    """The hosts a project declares its dependencies come from, the pre-map units' `registries` (an index, a
+    repository, a feed, a VCS host), which a preparation reaches beside the registries as a CI does; github.com
+    with the hosts GitHub serves its downloads from (`GITHUB`), where npm fetches a GitHub dependency.
+    `{hosts, where}`: `where` gives each host the manifests of the units that declare it."""
+    from urllib.parse import urlsplit
+    where: dict[str, set] = {}
+    for unit in record.get("units") or ():
+        for url in unit.get("registries") or ():
+            try:
+                host = urlsplit(url).hostname
+            except ValueError:
+                continue
+            for name in GITHUB if host == "github.com" else (host,) if host else ():
+                where.setdefault(name, set()).add(unit.get("manifest") or unit["root"])
+    return {"hosts": tuple(sorted(where)), "where": {host: sorted(files) for host, files in sorted(where.items())}}
+
+
+# A tool's words for a host it could not reach: no name, no connection, a refusal, a timeout.
+UNREACHED = re.compile(r"dns error|lookup address|Name or service not known|resolve host|UnknownHost|ENOTFOUND|"
+                       r"EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|Connection refused|Connection reset|timed out|"
+                       r"Connect to |client error \(Connect\)|tunnel|proxy|403 Forbidden|status code 403|"
+                       r"Unable to load the service index", re.I)
+
+
+def unreached(gaps: list[dict], declared: dict) -> list[dict]:
+    """A `host_unreachable` gap for each declared host (`declared`) a failed restore's words name and say it could
+    not reach, with the files that declare it."""
+    return [{"kind": "host_unreachable", "host": host, "declared_in": files, "path": gap["path"],
+             "detail": f"the restore of {gap['path']} could not reach {host}, declared in {', '.join(files)}: "
+                       f"{gap['detail'][:400]}"}
+            for gap in gaps
+            if gap["kind"] in ("restore_failed", "vcs_not_installed") and UNREACHED.search(gap["detail"])
+            for host, files in declared["where"].items()
+            if re.search(rf"(?<![\w.-]){re.escape(host)}(?![\w-])", gap["detail"])]
+
+
 GENERATE = re.compile(r"DAODAN-GENERATE-FAILED (\S+) (.+)\n((?:.*\n)*?)DAODAN-GENERATE-END")
 
 

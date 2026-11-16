@@ -13,9 +13,10 @@ below 3.12) is a `python_too_old` gap and its tests do not run; an exact version
 installed by the preparation (mise, `preparation.toolchains`); a range that excludes the image's Python and
 names no version is a `python_unavailable` gap.
 
-`observe` is one container run (`container.run_in_container`, `IMAGE`). The preparation, with the registries:
-the toolchain, uv, where the project declares VCS requirements git and the hosts their URLs name
-(`preparation.python_vcs`), the restore of each environment (one whose install fails is installed again without
+`observe` is one container run (`container.run_in_container`, `IMAGE`). The preparation, with the registries and
+the hosts the project declares (`preparation.declared`; one a failed restore could not reach is a
+`host_unreachable` gap): the toolchain, uv, where the project declares VCS requirements git and the hosts their URLs
+name (`preparation.python_vcs`), the restore of each environment (one whose install fails is installed again without
 the VCS requirements, `vcs_not_installed`), the project itself installed in it where the folder has a
 build configuration (editable, without dependencies: the tests import it as installed), and pytest at Daodan's
 pin (`PYTEST`) where the project declares it as its runner and its environment does not hold it, which is said
@@ -188,7 +189,8 @@ def plan(record: dict, files: list[str], read) -> dict:
                      "argv": ["-m", test["runner"], *test.get("args", ()), *(
                          [KEEP_GOING] if test["runner"] == "pytest" else [])],
                      "env": env, "manager": held.get(env), "install": bool(packaged)})
-    return {"runs": runs, "gaps": gaps, "toolchains": toolchains, "vcs": preparation.python_vcs(sorted(files), read)}
+    return {"runs": runs, "gaps": gaps, "toolchains": toolchains, "vcs": preparation.python_vcs(sorted(files), read),
+            "declared": preparation.declared(record)}
 
 
 def _interpreter(number: int, run: dict) -> str:
@@ -239,9 +241,10 @@ def scripts(planned: dict) -> tuple[str, str, dict]:
             prepare.append(f"{python} -c 'import pytest' 2>/dev/null || {{ uv pip install -q --python {python}"
                            f" pytest=={PYTEST} >&2 && echo 'DAODAN-DYNAMIC {number} brought pytest {PYTEST}' >&2; }}")
         execute.append(f"run {number} {shlex.quote(run['root'])} {python} {shlex.join(run['argv'])}")
+    declared = (planned.get("declared") or {}).get("hosts", ())
     return ("\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n",
-            {"files": [*chains["files"], *needs["files"]], "hosts": (*chains["hosts"], *needs["hosts"], *vcs["hosts"]),
-             "gaps": chains["gaps"]})
+            {"files": [*chains["files"], *needs["files"]], "gaps": chains["gaps"],
+             "hosts": (*chains["hosts"], *needs["hosts"], *vcs["hosts"], *declared)})
 
 
 def sites(folder: Path, run: int | None = None) -> list[dict]:
@@ -367,7 +370,9 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
                 "gaps": []}
     prepared = _text(out_dir / "prepare.log")
-    gaps = [*needs["gaps"], *preparation.missing(prepared), *preparation.restore_gaps(prepared)]
+    restored = preparation.restore_gaps(prepared)
+    gaps = [*needs["gaps"], *preparation.missing(prepared), *restored,
+            *preparation.unreached(restored, planned.get("declared") or {"hosts": (), "where": {}})]
     if result["state"] == "failed":
         return {"state": "failed", "cause": result.get("cause") or "the container run failed",
                 "remedy": f"see prepare.log and execute.log in {out_dir}", "sites": [], "runs": [], "gaps": gaps}

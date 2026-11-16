@@ -330,6 +330,22 @@ def test_what_the_preparation_could_not_do_is_a_gap_of_the_run(tmp_path):
     assert observer.PYTEST in found["runner_brought"]["detail"]
 
 
+def test_the_preparation_reaches_the_hosts_the_project_declares_and_names_one_that_does_not_answer(tmp_path):
+    record = {"tests": [PYTEST], "units": [{"root": ".", "kind": "python-project", "manifest": "requirements.txt",
+                                            "registries": ["https://pypi.corp.example"]}]}
+    planned = observer.plan(record, ["requirements.txt", "tests/test_a.py"], lambda rel: "")
+    prepare = ("DAODAN-RESTORE-FAILED pip .\nerror: Request failed after 3 retries\n"
+               "  Caused by: Failed to fetch: `https://pypi.corp.example/simple/a/`\n  Caused by: dns error\n"
+               "DAODAN-RESTORE-END\n")
+    played = Played(prepare=prepare)
+    with mock.patch.object(container, "run_in_container", side_effect=played):
+        result = observer.observe(tmp_path / "project", planned, tmp_path / "out", engine="the engine")
+    [call] = played.calls
+    assert "pypi.corp.example" in call["registries"]
+    [gap] = [gap for gap in result["gaps"] if gap["kind"] == "host_unreachable"]
+    assert gap["host"] == "pypi.corp.example" and gap["declared_in"] == ["requirements.txt"]
+
+
 def test_tests_that_reach_for_a_service_or_the_network_are_said(tmp_path):
     """The execution has no network and starts no service: a project that needs one must declare how it starts,
     and the step starts none."""
