@@ -56,7 +56,7 @@ Convenzioni:
 - `typescript` (22): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265
 - `rust` (19): D-014, D-021, D-030, D-040, D-041, D-078, D-143, D-144, D-173, D-175, D-176, D-209, D-227, D-230, D-237, D-238, D-239, D-256, D-265
 - `csharp` (17): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249
-- `go` (15): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256, D-257, D-265
+- `go` (16): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256, D-257, D-265, D-273
 - `svelte` (5): D-080, D-153, D-156, D-159, D-258
 - `vue` (5): D-080, D-154, D-155, D-159, D-258
 - `css` (4): D-161, D-162, D-163, D-164
@@ -69,7 +69,7 @@ Convenzioni:
 
 ### Area
 
-- `analizzatore` (119): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272
+- `analizzatore` (120): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273
 - `pre-mappa` (39): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062
 - `passo dinamico` (35): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270
 - `servizi` (13): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261
@@ -85,7 +85,7 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (144): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272
+- `completezza` (145): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273
 - `correttezza` (86): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269
 - `sicurezza` (23): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
@@ -94,7 +94,7 @@ Convenzioni:
 
 ### Origine
 
-- `commit` (115): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270
+- `commit` (116): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (30): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264
@@ -152,6 +152,7 @@ Convenzioni:
 - `Bun` (2): D-056, D-195
 - `Deno` (2): D-008, D-029
 - `dotnet` (2): D-113, D-241
+- `go` (2): D-257, D-273
 - `NuGet` (2): D-021, D-049
 - `pip` (2): D-049, D-188
 - `protoc` (2): D-107, D-112
@@ -174,7 +175,6 @@ Convenzioni:
 - `Error Prone` (1): D-100
 - `GCC` (1): D-255
 - `gcc` (1): D-257
-- `go` (1): D-257
 - `gofmt` (1): D-256
 - `Google Services` (1): D-109
 - `Helm` (1): D-029
@@ -201,7 +201,7 @@ Convenzioni:
 
 ## Indice
 
-272 schede: 212 risolte, 22 aperte, 38 buchi dichiarati.
+273 schede: 213 risolte, 22 aperte, 38 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -283,7 +283,7 @@ Convenzioni:
 
 ### Analizzatori
 
-122 schede: 85 risolto, 13 aperto, 24 buco dichiarato.
+123 schede: 86 risolto, 13 aperto, 24 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -401,7 +401,7 @@ Convenzioni:
 | D-253 | uv sull'host poteva installare una ruota costruita da un sdist e leggeva configurazioni altrui | analizzatore Python | risolto | `a9b4e1df2` | python · analizzatore · sicurezza · commit · uv |
 | D-254 | L'uv dell'host non era fissato | fastapi (`aabb90126964`) | risolto da `5e3757031` e `2057bbafc` | `5e3757031`, `2057bbafc` | python · host · correttezza · review · uv |
 | D-255 | scip-clang leggeva i database di GCC con gli header builtin di GCC | otel-demo currency (`b825c7c25726`), riprodotto da android-sdk | risolto da `125ab9ebd` nella via principale e da `841cfe14f` in quella degli stadi del Dockerfile | `125ab9ebd` | c, cpp · analizzatore · correttezza · prova su Modal · scip-clang, GCC |
-| D-257 | L'analizzatore Go esegue sull'host `go mod download` e il compilatore C | analizzatore Go | aperto (host-guard-2) | — | go · analizzatore · sicurezza · review · go, git, gcc |
+| D-257 | L'analizzatore Go eseguiva sull'host `go mod download` e il compilatore C | analizzatore Go | risolto | `c13d51732` | go · analizzatore · sicurezza · review · go, git, gcc |
 | D-258 | Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto | analizzatore di Vue e Svelte | risolto | `b9aeca1fb` | vue, svelte · analizzatore · sicurezza · review · npm, typescript-language-server |
 | D-259 | Un header `.h` di C++ letto come C | otel-demo (`b825c7c25726`) | risolto | `bdfd7797b` | c, cpp · analizzatore · correttezza · commit |
 | D-266 | Le variabili locali di unità di traduzione diverse condividevano una chiave | tinyxml2 (`9148bdf719e9`) | risolto | `ba8a1920f` | c, cpp · analizzatore · correttezza · commit · scip-clang |
@@ -409,6 +409,7 @@ Convenzioni:
 | D-268 | Un linguaggio che nessun build compila era `failed` | zlib (`51b7f2abdade`) | risolto | `60e3590b3` | c, cpp · analizzatore · correttezza · commit |
 | D-271 | C e C++: buchi senza occorrenza senza la loro causa | zlib (`51b7f2abdade`), tinyxml2 (`9148bdf719e9`) | risolto | `5cc88ec62` | c, cpp · analizzatore · completezza · prova su Modal · scip-clang |
 | D-272 | scip-clang non scrive occorrenze per le funzioni `extern "C"` in C++ | tinyxml2 (`9148bdf719e9`), otel-demo currency (`b825c7c25726`) | aperto (strumento esterno) | — | cpp · analizzatore · completezza · prova su Modal · scip-clang |
+| D-273 | Un workspace Go: `go mod download` fallisce nei moduli che richiedono un membro non pubblicato | sys-go-workspace | aperto (host-guard-2) | — | go · analizzatore · completezza · commit · go |
 
 ### Passo dinamico e osservatori
 
@@ -1031,7 +1032,7 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 | sys-go-single | Go | name-mismatch, version-range, locked-versions | — | — |
 | sys-go-toolchain | Go | version-disagree | — | — |
 | sys-go-vendor | Go | locked-versions, vendored-code | — | — |
-| sys-go-workspace | Go | virtual-root, locked-versions, internal-link | — | — |
+| sys-go-workspace | Go | virtual-root, locked-versions, internal-link | D-273 | — |
 | sys-make-plain | C, Makefile | targets-as-units | — | D-255 |
 | sys-meson | C, Meson | targets-as-units, name-mismatch, build-variants | — | — |
 | sys-rust-buildrs | Rust | locked-versions, build-only-dependency, needs-build, build-generates-code | — | — |
@@ -3255,16 +3256,17 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Stato:** risolto da `125ab9ebd` nella via principale e da `841cfe14f` in quella degli stadi del Dockerfile: `-idirafter` su musl, dove il driver di clang 21.1.8 mette gli header builtin dopo `/usr/include`, `-isystem` su glibc (`tests/test_codebase_map_docker_build.py`, `test_a_compiler_that_is_not_clang_reads_clang_s_builtin_headers`).
 - **Note:** D-135 (otel-demo currency); il commit è successivo ai commit dei risultati di tutti i giri.
 
-#### D-257 L'analizzatore Go esegue sull'host `go mod download` e il compilatore C
+#### D-257 L'analizzatore Go eseguiva sull'host `go mod download` e il compilatore C
 - **Tag:** lingua go · area analizzatore · tipo sicurezza · origine review · strumento go, git, gcc
-- **Descrizione:** host-guard-2, nella sua revisione dell'host: l'analizzatore Go lancia sull'host `go mod download` con l'ambiente intero dell'utente e senza `GOPROXY`, `GOVCS`, `GOENV` né `GOSUMDB`, così un modulo del progetto può far raggiungere a git il suo host (su Modal è registrato `git ls-remote https://github.com/<modulo>`); e per cgo lancia il compilatore C dell'host (`gcc -E -dM … cgo-gcc-input.c`) (riportato da team-lead il 16 novembre).
+- **Descrizione:** host-guard-2, nella sua revisione dell'host: l'analizzatore Go lanciava sull'host `go mod download` con l'ambiente intero dell'utente e senza `GOPROXY`, `GOVCS`, `GOENV` né `GOSUMDB`, così un modulo del progetto può far raggiungere a git il suo host (su Modal è registrato `git ls-remote https://github.com/<modulo>`); e per cgo lanciava il compilatore C dell'host (`gcc -E -dM … cgo-gcc-input.c`) (riportato da team-lead il 16 novembre).
 - **Spiegazione:** `scripts/indexers/go.py:652` lancia `go mod download` nella copia del progetto con `env`; `_cgo` (`go.py:381`) chiede `go env CGO_ENABLED`, e Go prova il compilatore C che trova.
 - **Progetto e caso:** analizzatore Go — revisione di host-guard-2, su Modal, 16 novembre 2026.
-- **Rimedio:** in corso (host-guard-2): Go solo nel container di Daodan.
-- **Verifica:** —. La regola chiede un test con un modulo e un compilatore che, se eseguiti, lasciano un segno.
-- **Stato:** aperto (host-guard-2): viola la regola invalicabile di `AGENTS.md` (`2753088a3`).
-- **Note:** D-239, la stessa via per Rust.
-
+- **Rimedio:** `c13d51732` (16 novembre, host-guard-2), `scripts/indexers/go.py`: Go è come Rust (D-239): `NEEDS_CONTAINER` è vero, la preparazione ha i registri dichiarati e l'esecuzione è senza rete; senza container Go è non disponibile con la causa. scip-go si costruisce nella preparazione, i vincoli di build si leggono con `go list -f` nella stessa esecuzione, e il target è linux/amd64 da `preparation.GO`.
+- **Verifica:**
+  - `tests/test_codebase_map_indexers_go.py` (`test_nothing_of_go_starts_on_the_host`), a segni: go, la toolchain della riga `toolchain` del go.mod, git, gcc, cc, clang e scip-go finti non lasciano segni né processi;
+  - dal commit, su Modal con gli strumenti veri (`benchmarks/project-model/modal_go_container.py`): prima il Go di Daodan partiva due volte sulla macchina, dopo nessun finto è chiamato e l'indice si costruisce nel container; sei casi Go della pipeline danno la stessa copertura dei risultati salvati, a meno delle classi di buchi nate dopo.
+- **Stato:** risolto; gli aiuti Go dell'host in `scripts/engine_tools.py` non hanno più chiamanti.
+- **Note:** D-239, la stessa via per Rust; D-273, il workspace Go.
 #### D-258 Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto
 - **Tag:** lingua vue, svelte · area analizzatore · tipo sicurezza · origine review · strumento npm, typescript-language-server
 - **Descrizione:** host-guard-2: `engine_tools.npm_modules` lancia sull'host `npm ci` con l'ambiente dell'utente e senza rifiutare i pacchetti git o da URL, e il `tsserver.js` del `node_modules/typescript` del progetto è girato sull'host (registrato su Modal) (riportato da team-lead il 16 novembre).
@@ -3339,6 +3341,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** —.
 - **Stato:** aperto (strumento esterno).
 - **Note:** D-236, D-271.
+
+#### D-273 Un workspace Go: `go mod download` fallisce nei moduli che richiedono un membro non pubblicato
+- **Tag:** lingua go · area analizzatore · tipo completezza · origine commit · strumento go
+- **Descrizione:** in `sys-go-workspace`, `go mod download` fallisce in ogni modulo che richiede un membro del workspace non pubblicato: tre buchi `restore_failed`, indice invariato (dal commit `c13d51732`).
+- **Spiegazione:** la preparazione lancia `go mod download` nella cartella di ogni modulo, uno per volta (`scripts/preparation.py:269-270`); i membri del workspace (`go.work`: `./api`, `./svc`, `./tools`) si richiedono con versioni che nessun registro pubblica (`svc/go.mod`: `example.com/ws/api v0.0.0`). Il messaggio di Go è da verificare: il commit non lo riporta.
+- **Progetto e caso:** sys-go-workspace — commit `c13d51732` di host-guard-2, 16 novembre 2026.
+- **Rimedio:** —.
+- **Verifica:** —.
+- **Stato:** aperto (host-guard-2).
+- **Note:** D-257.
 
 ### Passo dinamico e osservatori
 
