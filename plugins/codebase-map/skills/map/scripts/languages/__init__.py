@@ -124,7 +124,7 @@ SUPPORTED_EXTENSIONS: dict[str, str] = {
     ".kts": Language.KOTLIN,
     # C#.
     ".cs": Language.CSHARP,
-    # C and C++. A `.h` header is C unless its text says C++ (see detect_language).
+    # C and C++. A `.h` header is C unless its text says C++ or Objective-C (see detect_language).
     ".c": Language.C,
     ".h": Language.C,
     ".cc": Language.CPP,
@@ -173,28 +173,40 @@ _PLSQL_LITERAL_MARKERS = (
 _PLSQL_ROWTYPE_RE = re.compile(r"\w%(?:rowtype|type)\b", re.IGNORECASE)
 
 # A `.h` header is C++ when its text, comments and string literals left out, has
-# a construct C does not: a namespace or class body, a template, an access label,
-# a using-directive. `extern "C"` under `__cplusplus` is a C header's own guard.
+# a construct C does not: a namespace body (its name nested too, `a::b`), a class
+# body, a template, an access label, a using-directive. `extern "C"` under
+# `__cplusplus` is a C header's own guard. One with a directive of Objective-C's is
+# Objective-C, which the snapshot does not read.
 _C_NOISE_RE = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'', re.DOTALL)
 _CPP_HEADER_RE = re.compile(
-    r"\bnamespace\s+\w+\s*\{|\bclass\s+\w+[^;(){}]*\{|\btemplate\s*<"
+    r"\bnamespace\s+\w+(?:\s*::\s*(?:inline\s+)?\w+)*\s*\{|\bclass\s+\w+[^;(){}]*\{|\btemplate\s*<"
     r"|^\s*(?:public|private|protected)\s*:|\busing\s+namespace\b",
     re.MULTILINE,
 )
+_OBJC_HEADER_RE = re.compile(r"^\s*@(?:interface|implementation|protocol|class|property|end)\b", re.MULTILINE)
+# A `.ts` file that is an XML document is a Qt Linguist translation (`<!DOCTYPE TS>`), not TypeScript.
+_XML_RE = re.compile(r"\s*<(?:\?xml|!DOCTYPE)\b")
 
 
 def detect_language(file_path: Path, content: str | None = None) -> str | None:
     """
     Detect the language of a file by extension. For ambiguous .sql files,
-    inspect content for PL/SQL-specific markers.
+    inspect content for PL/SQL-specific markers; for .h and .ts files, for
+    another language's (C++, Objective-C, XML).
 
     Returns the canonical language identifier or None if unsupported.
     """
     suffix = file_path.suffix.lower()
     lang = SUPPORTED_EXTENSIONS.get(suffix)
 
-    if suffix == ".h" and content is not None and _CPP_HEADER_RE.search(_C_NOISE_RE.sub(" ", content)):
-        return Language.CPP
+    if suffix == ".h" and content is not None:
+        code = _C_NOISE_RE.sub(" ", content)
+        if _OBJC_HEADER_RE.search(code):
+            return None
+        if _CPP_HEADER_RE.search(code):
+            return Language.CPP
+    if suffix == ".ts" and content is not None and _XML_RE.match(content):
+        return None
 
     # Disambiguate .sql vs PL/SQL by content if provided.
     if lang == Language.SQL and content is not None:

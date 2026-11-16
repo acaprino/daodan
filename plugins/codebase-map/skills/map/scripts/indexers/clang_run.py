@@ -6,12 +6,14 @@ then scip-clang over its compilation database. Standard library only: the image'
 JOBS is how many compiler processes scip-clang runs at once: the container's share of the machine, as the caller
 gives it, never the machine's processor count.
 
-A unit is `{"root"}`, the folder CMake configures. A dependency the project fetches is never downloaded: CMake
+A unit is `{"root"}`, the folder CMake configures, with `init`, the initial cache the preparation's restore of
+vcpkg or Conan writes, read when it is there, and `absent`, the submodules the pre-map finds not checked out. A
+dependency the project fetches is never downloaded: CMake
 runs with FETCHCONTENT_FULLY_DISCONNECTED, and CMake's dependency provider interface (`PROVIDER`, given through
 CMAKE_PROJECT_TOP_LEVEL_INCLUDES) records each dependency the project asks FetchContent_MakeAvailable for, with the
-URLs it declares, and supplies none. A unit whose configure then fails is not indexed: `unavailable` with what
-CMake recorded when it asked for a download, else `failed`; CMake's own output, unparsed, either way.
-`file(DOWNLOAD)` and ExternalProject are not recorded.
+URLs it declares, and supplies none. A unit whose configure then fails is not indexed: `unavailable` with the
+absent submodule CMake's output names, or with what CMake recorded when it asked for a download, else `failed`;
+CMake's own output, unparsed, either way. `file(DOWNLOAD)` and ExternalProject are not recorded.
 
 `OUT_DIR/result.json` holds, per unit, its state, its steps (`returncode`, `seconds`, the output's tail), the
 files of the compilation database with how many commands compile each, and the index it wrote
@@ -33,6 +35,7 @@ TOOLS = Path("/daodan/state/clang")  # where the copy carries CMake and scip-cla
 WORK = Path("/work")  # the project's copy
 SCRATCH = Path("/tmp/daodan-clang")
 OUTSIDE = "download-outside-registries"  # the cause the map-driven round counts
+ABSENT = "submodule-absent"  # a folder the configure reads is a submodule the checkout lacks
 ERROR_TAIL = 4000
 UNCOVERED = "FetchContent asked for nothing; file(DOWNLOAD) and ExternalProject are not recorded"
 PROVIDER = r"""# Written by Daodan: records each dependency the project asks FetchContent_MakeAvailable
@@ -58,7 +61,9 @@ def run(command: list[str], cwd: Path, timeout: float = 3600) -> tuple[int | Non
 
 
 def configure_command(cmake: str, unit: dict, build: Path, log: Path) -> list[str]:
-    return [cmake, "-S", str(WORK / unit.get("root", ".")), "-B", str(build), "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+    init = unit.get("init")  # the initial cache the preparation's restore writes, naming the toolchain file
+    return [cmake, *(["-C", init] if init and Path(init).is_file() else []), "-S", str(WORK / unit.get("root", ".")),
+            "-B", str(build), "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
             "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
             f"-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES={SCRATCH / 'provider.cmake'}", f"-DDAODAN_FETCH_LOG={log}"]
 
@@ -101,6 +106,12 @@ def configure(runner, cmake: str, unit: dict, build: Path, log: Path) -> tuple[l
     if code == 0:
         return steps, {"state": "configured"}
     error, fetched = output[-ERROR_TAIL:], fetch_record(log)
+    absent = [path for path in unit.get("absent", ()) if re.search(rf"(?<![\w.-]){re.escape(path)}(?![\w.-])", output)]
+    if absent:
+        return steps, {"state": "unavailable", "kind": ABSENT, "error": error,
+                       "cause": f"the configure reads {' and '.join(absent)}: "
+                                f"{'a git submodule' if len(absent) == 1 else 'git submodules'} not checked out "
+                                "(git submodule update --init)"}
     if not fetched:
         ended = "timed out" if code is None else f"ended with exit code {code}"
         return steps, {"state": "failed", "error": error, "cause": f"the configure {ended}; {UNCOVERED}"}

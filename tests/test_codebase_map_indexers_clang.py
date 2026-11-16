@@ -58,6 +58,17 @@ def test_the_configure_never_downloads_and_hands_cmake_the_recording_provider(tm
                        f"-DDAODAN_FETCH_LOG={tmp_path / 'fetch.log'}"]
 
 
+def test_the_configure_reads_the_initial_cache_the_restore_wrote(tmp_path):
+    """The pre-map's configure reads the initial cache vcpkg's or Conan's install writes (`-C`), which names the
+    manager's toolchain file: so does this one, once the preparation's restore wrote it."""
+    init = tmp_path / "init.cmake"
+    unit = {"root": ".", "init": str(init)}
+    assert "-C" not in clang_run.configure_command("cmake", unit, tmp_path / "b", tmp_path / "f.log")  # it failed
+    init.write_text('set(CMAKE_TOOLCHAIN_FILE "/t/vcpkg.cmake" CACHE FILEPATH "")\n', encoding="utf-8")
+    assert clang_run.configure_command("cmake", unit, tmp_path / "b", tmp_path / "f.log")[:4] == \
+        ["cmake", "-C", str(init), "-S"]
+
+
 def test_the_provider_records_each_fetchcontent_dependency_and_supplies_none():
     """CMake's dependency provider is called for each FetchContent_MakeAvailable with the details the project
     declared. It writes the name and the URLs and returns without populating, so FetchContent goes on with
@@ -114,6 +125,32 @@ def test_a_failed_configure_without_a_fetch_request_failed_and_names_what_is_not
     run, _calls = _runner(None, "")
     _steps, state = clang_run.configure(run, "cmake", {"root": "."}, tmp_path / "b2", tmp_path / "fetch2.log")
     assert state == {"state": "failed", "error": "", "cause": f"the configure timed out; {uncovered}"}
+
+
+# CMake 3.28's message when the folder of a submodule that is not checked out is added.
+SUBMODULE_ERROR = '''CMake Error at CMakeLists.txt:7 (add_subdirectory):
+  add_subdirectory given source "third_party/fmt" which is not an existing
+  directory.
+
+
+-- Configuring incomplete, errors occurred!
+'''
+
+
+def test_a_configure_that_reads_a_submodule_not_checked_out_is_unavailable_and_names_it(tmp_path):
+    """The pre-map names the submodules whose folder is missing or empty; one CMake's output names is the cause."""
+    run, _calls = _runner(1, SUBMODULE_ERROR)
+    unit = {"root": ".", "absent": ["docs/theme", "third_party/fmt"]}
+    _steps, state = clang_run.configure(run, "cmake", unit, tmp_path / "b", tmp_path / "fetch.log")
+    assert state == {"state": "unavailable", "kind": "submodule-absent", "error": SUBMODULE_ERROR,
+                     "cause": "the configure reads third_party/fmt: a git submodule not checked out "
+                              "(git submodule update --init)"}
+    _steps, other = clang_run.configure(run, "cmake", {"root": ".", "absent": ["third_party/fm"]}, tmp_path / "b2",
+                                        tmp_path / "fetch2.log")
+    assert other["state"] == "failed"  # a path CMake does not name, a prefix of one included
+    report = {"peak_mb": None, "units": [{"root": ".", **state, "steps": [], "compiled": {}, "index": None}]}
+    result, _seen = _index(tmp_path, report, [UNIT])
+    assert (result["state"], result["reason"]) == ("unavailable", f".: {state['cause']}")
 
 
 def test_a_configure_that_succeeds_is_configured_whatever_the_provider_recorded(tmp_path):
@@ -325,8 +362,13 @@ INDEXED = {"peak_mb": 1, "units": [{"root": ".", "state": "indexed", "index": "i
 STATED = [{"tool": "cmake", "version": "3.31", "declared_in": "CMakeLists.txt#cmake_minimum_required"}]
 
 
-def _index_stated(tmp_path, toolchains, prepared: str = ""):
-    """`index()` with the pre-map's `toolchains` and a container run whose preparation printed `prepared`."""
+def _index_stated(tmp_path, toolchains, prepared: str = "", files: dict | None = None, **options):
+    """`index()` with the pre-map's `toolchains` over a project holding `files`, and a container run whose
+    preparation printed `prepared`."""
+    project = tmp_path / "project"
+    for rel, text in (files or {}).items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8")
     run, seen = _fake_run(tmp_path, INDEXED)
 
     def logged(project, command, **options):
@@ -339,7 +381,7 @@ def _index_stated(tmp_path, toolchains, prepared: str = ""):
             mock.patch.object(clang, "tools", return_value=TOOLS), \
             mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)), \
             mock.patch.object(container, "architecture", return_value="x64"):
-        result = clang.index(tmp_path / "project", tmp_path / "work", units=[UNIT], toolchains=toolchains)
+        result = clang.index(project, tmp_path / "work", units=[UNIT], toolchains=toolchains, **options)
     return result, seen
 
 
@@ -371,6 +413,52 @@ def test_a_cmake_the_preparation_could_not_install_is_a_gap_and_the_pin_configur
 def test_the_stage_is_handed_the_cmake_the_pre_map_states():
     record = {"units": [], "workspace": [], "toolchains": [*STATED, {"tool": "java", "version": "21"}]}
     assert clang.structure(record)["toolchains"] == STATED
+
+
+def _plan(seen) -> list[dict]:
+    return json.loads(seen["inputs"][f"{clang.TOOLS}/units.json"].read_text(encoding="utf-8"))
+
+
+def test_a_root_that_declares_vcpkg_is_restored_as_the_pre_maps_configure_restores_it(tmp_path):
+    """vcpkg's install in manifest mode runs in the preparation, with the registries and GitHub open, and writes
+    the initial cache that names its toolchain file; the configure of that root reads it (`premap.cmake`)."""
+    result, seen = _index_stated(tmp_path, [], files={"vcpkg.json": '{"dependencies": ["fmt"]}'})
+    script = seen["prepare"][-1]
+    assert "git clone -q --filter=blob:none https://github.com/microsoft/vcpkg" in script
+    assert f"tar -xzf {clang.TOOLS}/cmake.tar.gz -C {preparation.T}" in script  # a CMake to build ports with
+    assert "( cd /work && mkdir -p /daodan/state/prep/root && sh -c " in script and "prepare root )" in script
+    assert "vcpkg install --x-manifest-root=." in script and "conan install" not in script
+    assert seen["inputs"][f"{preparation.IN}/vcpkg"] == Path("vcpkg")
+    assert {"github.com", *container.REGISTRIES} <= set(seen["registries"])
+    assert seen["env"]["VCPKG_ROOT"] == preparation.ENV["VCPKG_ROOT"] and seen["env"]["PATH"] == preparation.PATH
+    assert _plan(seen) == [{"root": ".", "init": "/daodan/state/prep/root/init.cmake"}]
+    assert result["indexes"] and "gaps" not in result
+    failed, _seen = _index_stated(tmp_path / "failed", [], files={"vcpkg.json": "{}"}, prepared=(
+        "DAODAN-RESTORE-FAILED vcpkg .\nerror: building fmt:x64-linux failed\nDAODAN-RESTORE-END\n"))
+    assert failed["gaps"] == [{"kind": "restore_failed", "manager": "vcpkg", "path": ".",
+                               "detail": "error: building fmt:x64-linux failed"}]
+
+
+def test_a_root_that_declares_both_managers_is_restored_by_the_one_the_pre_map_chose(tmp_path):
+    """The one a configure preset's CMAKE_TOOLCHAIN_FILE names, else vcpkg."""
+    both = {"vcpkg.json": "{}", "conanfile.txt": "[requires]\nfmt/10.2.1\n"}
+    _result, seen = _index_stated(tmp_path / "vcpkg", [], files=both)
+    assert "vcpkg install" in seen["prepare"][-1] and "conan install" not in seen["prepare"][-1]
+    presets = {"version": 3, "configurePresets": [
+        {"name": "conan", "cacheVariables": {"CMAKE_TOOLCHAIN_FILE": "build/conan_toolchain.cmake"}}]}
+    _result, seen = _index_stated(tmp_path / "conan", [], files={**both, "CMakePresets.json": json.dumps(presets)})
+    assert "conan install" in seen["prepare"][-1] and "vcpkg install" not in seen["prepare"][-1]
+    assert seen["inputs"][f"{preparation.IN}/uv.tar.gz"] == Path("uv.tar.gz")
+    assert "center2.conan.io" in seen["registries"]
+
+
+def test_the_submodules_the_pre_map_finds_absent_go_to_each_configure(tmp_path):
+    record = {"units": [], "workspace": [], "toolchains": [], "gaps": [
+        {"kind": "submodule_absent", "path": "third_party/fmt", "detail": "not checked out"},
+        {"kind": "model_failed", "path": ".", "detail": "cmake configure: CMake Error"}]}
+    assert clang.structure(record)["absent"] == ["third_party/fmt"]
+    _result, seen = _index_stated(tmp_path, [], absent=["third_party/fmt"])
+    assert _plan(seen) == [{"root": ".", "absent": ["third_party/fmt"]}] and "prepare" not in seen
 
 
 def test_the_tools_are_downloaded_once_and_checked_each_time(tmp_path):

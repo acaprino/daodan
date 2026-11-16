@@ -1,15 +1,19 @@
 """scip-clang for C and C++: how it runs, and what its index leaves to the reader.
 
-`index` takes the pre-map's units and workspaces as they are and discovers nothing itself: each `cmake-target`
+`index` takes the pre-map's units and workspaces as they are and discovers no unit itself: each `cmake-target`
 is configured from the root of the CMake workspace holding it, or from its own. A configure runs the project's
 CMake code, so it runs only in a container (`container.run_in_container`), in one phase with no network, over a
 copy of the project: `clang_run.py` there configures each root (a fetched dependency is never downloaded: a unit
-that needs one to configure is not indexed, `unavailable` with what CMake recorded and its own output) and runs
-scip-clang over the compilation database. CMake, scip-clang and that script are what the copy carries under
+that needs one to configure is not indexed, `unavailable` with what CMake recorded and its own output, as is one
+whose configure reads a submodule the pre-map finds not checked out) and runs scip-clang over the compilation
+database. CMake, scip-clang and that script are what the copy carries under
 `TOOLS`, CMake and scip-clang downloaded once by Daodan into the shared directory and checked by sha256. A CMake
 minimum the pre-map states above `CMAKE` (`toolchains`) is installed at that version by mise in a preparation
 before it, the only phase with a network, which reaches mise's hosts only (`preparation.toolchains`); what it
-could not install is a gap and the configure runs with `CMAKE`. The image
+could not install is a gap and the configure runs with `CMAKE`. A root that declares vcpkg or Conan is restored
+in that preparation, with the registries and the manager's hosts open and a CMake on the path, as the pre-map's
+configure of it is (`restores`): the configure reads the initial cache the restore writes, which names the
+manager's toolchain file; a restore that fails is a `restore_failed` gap. The image
 (`IMAGE`) gives gcc and g++ with their headers, which scip-clang needs to read the system includes, glibc 2.39
 (scip-clang v0.4.1 needs 2.38), dpkg, whose file lists name the package of each system header, and python3.
 
@@ -37,6 +41,8 @@ from __future__ import annotations
 
 import collections
 import json
+import posixpath
+import shlex
 import shutil
 from pathlib import Path
 
@@ -52,6 +58,11 @@ CMAKE = ("3.28.3", "https://github.com/Kitware/CMake/releases/download/v3.28.3/c
 TOOLS = "/daodan/state/clang"  # where the copy carries the tools (clang_run.py reads them there); under the
 # operation's state, which a preparation keeps for the run
 OUT = "/tmp/daodan-clang/out"
+# What a restore builds a dependency with, as the pre-map's preparation has a CMake on the path: the pin, where
+# `preparation.PATH` finds it (mise's, when it installs one, comes first).
+CMAKE_ON_PATH = (f"{{ tar -xzf {TOOLS}/cmake.tar.gz -C {preparation.T}"
+                 f" && mv {preparation.T}/cmake-{CMAKE[0]}-linux-x86_64 {preparation.T}/cmake ; }} >&2"
+                 f" || echo 'DAODAN-MISSING cmake@{CMAKE[0]}' >&2")
 MIN_FREE = 2 * 2**30  # the container's memory
 PIDS = 1024
 CMAKE_UNIT = "cmake-target"
@@ -368,11 +379,12 @@ ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATI
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: its native units, the workspaces that hold them and the CMake versions
-    it states."""
+    """What `index` takes from the pre-map: its native units, the workspaces that hold them, the CMake versions
+    it states and the submodules it finds not checked out."""
     return {"units": [unit for unit in record.get("units", []) if unit["kind"] in NATIVE],
             "workspace": record.get("workspace", []),
-            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "cmake"]}
+            "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") == "cmake"],
+            "absent": [gap["path"] for gap in record.get("gaps", []) if gap.get("kind") == "submodule_absent"]}
 
 
 def _version(text) -> tuple[int, ...]:
@@ -400,27 +412,62 @@ def configure_roots(units, workspace) -> tuple[list[str], list[dict]]:
     return roots, states
 
 
+def restores(project_dir: Path, roots) -> dict[str, dict]:
+    """Per configure root that declares vcpkg or Conan, the restore the pre-map's configure of it has
+    (`premap.cmake`; both declared, the one a configure preset's CMAKE_TOOLCHAIN_FILE names, else vcpkg):
+    `{manager, line, init}`, the preparation's line installing the root's dependencies, its failure printed as
+    `preparation.restore` prints one, and the initial cache it writes, which names the manager's toolchain file."""
+    import container
+    from types import SimpleNamespace
+    from premap import cmake as premap_cmake
+    project_dir = Path(project_dir)
+    names = [*(mark for _name, marks, _line in premap_cmake.MANAGERS for mark in marks), premap_cmake.PRESETS]
+    held = {posixpath.join(root, name).removeprefix("./") for root in roots for name in names
+            if (project_dir / root / name).is_file()}
+    read = SimpleNamespace(inventory=SimpleNamespace(  # what `premap.cmake` reads of the snapshot, from the copy
+        headers=held, text=lambda rel: (project_dir / rel).read_text(encoding="utf-8", errors="replace")))
+    out = {}
+    for root in roots:
+        try:
+            manager = premap_cmake._manager(read, root)[0]
+        except ValueError:  # a CMakePresets.json that is no JSON: the pre-map prepares no configure either
+            manager = None
+        if manager is None:
+            continue
+        name, _marks, script = manager
+        key, folder = premap_cmake._key(root), shlex.quote(posixpath.normpath(f"{container.WORKDIR}/{root}"))
+        line = (f"( cd {folder} && mkdir -p {premap_cmake.PREP}/{key} && sh -c {shlex.quote(script)} prepare {key} )"
+                f" > {preparation.LOG} 2>&1 || {{ printf 'DAODAN-RESTORE-FAILED {name} %s\\n' {shlex.quote(root)};"
+                f" {{ grep -Ei '^error|error:' {preparation.LOG} || tail -n 30 {preparation.LOG}; }} | head -n 30;"
+                " echo DAODAN-RESTORE-END; } >&2")
+        out[root] = {"manager": name, "line": line, "init": f"{premap_cmake.PREP}/{key}/init.cmake"}
+    return out
+
+
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, units: list[dict] | None = None,
-          workspace: list[dict] | None = None, toolchains=(), engine=None, memory: int = MIN_FREE, cpus: int = 1,
-          timeout: float = 3600) -> dict:
-    """The index of each configured root, with its runs and each root's state; `units` and `workspace` are the
-    pre-map's (`files` is not used: a unit's compilation database decides what is indexed). `cpus` is the
-    container's share, as the caller gives it: its limit and scip-clang's jobs. A unit built otherwise
-    than with CMake, or whose configure needs a download outside the allowed registries, is `unavailable`; one
-    whose configure fails otherwise, `failed`; either keeps its static facts from the snapshot. Without a unit
-    indexed, or without a container, the result's state is `unavailable` (no unit failed) or `failed`. `gaps` says
-    what the preparation of a CMake of `toolchains` could not install."""
+          workspace: list[dict] | None = None, toolchains=(), absent=(), engine=None, memory: int = MIN_FREE,
+          cpus: int = 1, timeout: float = 3600) -> dict:
+    """The index of each configured root, with its runs and each root's state; `units`, `workspace` and the
+    submodules not checked out (`absent`) are the pre-map's (`files` is not used: a unit's compilation database
+    decides what is indexed). `cpus` is the container's share, as the caller gives it: its limit and scip-clang's
+    jobs. A unit built otherwise than with CMake, or whose configure needs a download outside the allowed
+    registries or an absent submodule, is `unavailable`; one whose configure fails otherwise, `failed`; either
+    keeps its static facts from the snapshot. Without a unit indexed, or without a container, the result's state
+    is `unavailable` (no unit failed) or `failed`. `gaps` says what the preparation could not install: a CMake of
+    `toolchains`, a root's dependencies (`restores`)."""
     import container
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
     roots, states = configure_roots(units, workspace)
-    chosen = [{"root": root} for root in roots]
-    if not chosen:
+    if not roots:
         return unavailable("no C or C++ unit built with CMake in the pre-map" + (
             "; " + "; ".join(dict.fromkeys(item["cause"] for item in states)) if states else ""),
             "none: the project's C and C++ files keep their static facts")
     if container.architecture() != "x64":
         return unavailable(f"scip-clang {VERSION} has an x86_64 Linux build only", "index on an x86_64 machine")
+    restored = restores(project_dir, roots)
+    chosen = [{"root": root, **({"init": restored[root]["init"]} if root in restored else {}),
+               **({"absent": list(absent)} if absent else {})} for root in roots]
     plan = work_dir / "units.json"
     plan.write_text(json.dumps(chosen, indent=1) + "\n", encoding="utf-8")
     out_dir = work_dir / "container"
@@ -428,21 +475,26 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     shutil.rmtree(back, ignore_errors=True)
     cmake = wanted_cmake(toolchains)
     chains = preparation.toolchains([cmake] if cmake else [])
+    needs = preparation.setup(sorted({item["manager"] for item in restored.values()}))
+    lines = [*chains["lines"], *needs["lines"], *([CMAKE_ON_PATH] if restored else []),
+             *(item["line"] for item in restored.values())]
     command = ["python3", f"{TOOLS}/clang_run.py", f"{TOOLS}/units.json", OUT, str(cpus)]
-    options = {"prepare": ["sh", "-c", "\n".join([f"mkdir -p {preparation.T}/bin", *chains["lines"]])],
-               "registries": tuple(chains["hosts"])} if cmake else {}
+    options = {"prepare": ["sh", "-c", "\n".join([f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}", *lines])],
+               "registries": tuple(dict.fromkeys([*(container.REGISTRIES if needs["registries"] else ()),
+                                                  *chains["hosts"], *needs["hosts"]])),
+               "env": {**preparation.ENV, "TERM": "dumb"}} if lines else {"env": {"TERM": "dumb"}}
     if cmake:
         command.append(f"{preparation.T}/bin/cmake")  # mise's, linked there; the pin when it is not
     (out_dir / "prepare.log").unlink(missing_ok=True)
     result = container.run_in_container(
-        project_dir, command, image=IMAGE, out_dir=out_dir, outputs=[OUT], env={"TERM": "dumb"}, timeout=timeout,
+        project_dir, command, image=IMAGE, out_dir=out_dir, outputs=[OUT], timeout=timeout,
         memory=memory, pids=PIDS, cpus=cpus, engine=engine, **options,
         inputs=lambda: {**tools(), f"{TOOLS}/units.json": plan,
                         **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
-                           for url, digest, name in chains["files"]}})
+                           for url, digest, name in [*chains["files"], *needs["files"]]}})
     log = out_dir / "prepare.log"
-    gaps = chains["gaps"] + preparation.missing(log.read_text(encoding="utf-8", errors="replace")
-                                                if log.is_file() else "")
+    prepared = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
+    gaps = chains["gaps"] + preparation.missing(prepared) + preparation.restore_gaps(prepared)
     return {**_contract(result, back, work_dir, states), **({"gaps": gaps} if gaps else {})}
 
 

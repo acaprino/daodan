@@ -249,6 +249,27 @@ def test_a_header_is_cpp_only_when_its_text_has_what_c_lacks():
     assert [detect_language(Path("a.h"), text) for text in c] == ["c"] * len(c)
 
 
+def test_a_file_whose_suffix_another_language_shares_is_read_in_the_language_of_its_text(tmp_path):
+    """A C++ header whose namespace has a nested name (C++17), an Objective-C header, a Qt Linguist translation
+    (`.ts`, an XML document): each is read in its own language, or not at all where the snapshot reads none; the
+    suffix's parser would stop at a syntax error and leave the file lexical."""
+    files = {"archive.h": ("#pragma once\n#include <cstddef>\n\nnamespace calc::detail {\n"
+                           "std::size_t pack_bound(std::size_t n);\n}  // namespace calc::detail\n", "cpp", "parsed"),
+             "Widget.h": ("#import <Foundation/Foundation.h>\n\n@interface Widget : NSObject\n"
+                          "@property (nonatomic, copy) NSString *title;\n- (NSString *)render;\n@end\n",
+                          None, "file-level"),
+             "app_it.ts": ('<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE TS>\n<TS version="2.1" language="it_IT">'
+                           "\n<context>\n    <name>MainWindow</name>\n</context>\n</TS>\n", None, "file-level")}
+    for name, (text, language, status) in files.items():
+        (tmp_path / name).write_text(text, encoding="utf-8")
+        entry = snapshot.file_entry(tmp_path / name)
+        assert (name, entry["language"], entry["status"]) == (name, language, status)
+    assert detect_language(Path("a.h"), "namespace a::inline b {\nint f();\n}\n") == "cpp"
+    # The markers count in code only, and TypeScript's own `<` is no XML document.
+    assert detect_language(Path("a.h"), "// @interface, namespace a::b {\nconst char *s = \"@end\";\n") == "c"
+    assert detect_language(Path("a.ts"), "const tags: Array<TS> = [];\n") == "typescript"
+
+
 def test_every_file_is_read_in_its_language(built):
     for project in ("c", "cpp"):
         assert {rel: language for rel, language in built[project]["languages"].items() if rel in LANGUAGES[project]} \
