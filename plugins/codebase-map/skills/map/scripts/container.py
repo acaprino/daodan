@@ -1372,8 +1372,10 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     runs without a service that failed. Within `beside` with steps, they run at the end of the preparation
     (`steps_script`), with the services beside them where the engine takes the pod off the preparation's network
     before the execution (`leaves`); `ci_steps` gives each one's `{declared_in, name, outcome, exit_code,
-    duration_seconds, cause}` (`stepped`). `dotenv_env`, `(name, file)` of tracked .env files, reach the preparation
-    with their values (`dotenv_values`), never on record: a Dockerfile stage's `${NAME}` words. With `keep_root`, execution starts from everything the preparation wrote
+    duration_seconds, cause}` (`stepped`). `dotenv_env`, `(name, file)` of tracked .env files, reach both phases
+    with their values (`dotenv_values`), never on record and masked in what the run keeps: a Dockerfile stage's
+    ARG, in the environment of every RUN after it, as BuildKit gives it. With `keep_root`, execution starts from
+    everything the preparation wrote
     (a Dockerfile's build stage installs into the image's own folders: `docker_build.py`): its container committed
     as `daodan-prepared-<token>`, on record before it exists and removed by name as the volumes are; an engine that
     does not commit it is a gap with its answer.
@@ -1523,7 +1525,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             joined = joined or "none"
             report()
             row = phase(found, "execute", image=image, command=command, network=joined,
-                        env={**env, **proxy_environment("")}, limits=limits, timeout=timeout,
+                        env={**env, **exported, **proxy_environment("")}, limits=limits, timeout=timeout,
                         copy=run_copy, outputs=list(outputs), out_dir=out_dir, volumes=mounts)
             append_record(record, {**hidden(row), "copy": digest, **({"from": based} if kept_image else {})})
             result.update(exit_code=row.get("exit_code"), outputs=row["outputs"],

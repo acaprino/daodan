@@ -336,7 +336,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
             result["services"] = [{key: item[key] for key in ("name", "image", "pinned", "outcome", "cause")
                                    if key in item} for item in served]
             said.services.extend(result["services"])
-        row = _phase(boxes[-1], "execute", f"{unpack} && exec {shlex.join(command)}", env, timeout, out_dir)
+        row = _phase(boxes[-1], "execute", f"{unpack} && exec {shlex.join(command)}", {**env, **exported}, timeout,
+                     out_dir)
         container.mask_file(row["log"], hide)
         container.append_record(record, {**container.mask_row(row, hide), "image": image, "command": list(command),
                                          "copy": digest})

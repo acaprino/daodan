@@ -1359,15 +1359,25 @@ class PodTest(unittest.TestCase):
         assert "changethis" not in json.dumps(result) and "changethis" not in json.dumps(said)
         assert result["state"] == "done" and "[.env:" in result["services"][0]["cause"]
 
-    def test_the_variables_a_caller_names_reach_the_preparation_with_their_values_and_never_the_record(self):
-        """`dotenv_env`: a Dockerfile stage's `${NAME}` words expand in the preparation's shell, as BuildKit's would."""
-        result = container.run_in_container(self.dotenv_project(), ["exit", "0"], image="fake/runtime:1",
+    def test_the_variables_a_caller_names_reach_both_phases_with_their_values_and_never_what_the_run_keeps(self):
+        """`dotenv_env`: a Dockerfile stage's ARG from the tracked .env is in the environment of every RUN after it,
+        as BuildKit gives it: the preparation's (its `${NAME}` words) and the execution's (the stage's RUN the
+        analyzer runs), which writes it into a file the test reads back with the variable in place of its value."""
+        script = 'mkdir -p ../daodan/out && echo "arg=$SECRET_KEY" > ../daodan/out/arg.txt && echo "$SECRET_KEY"'
+        result = container.run_in_container(self.dotenv_project(), ["sh", "-c", script], image="fake/runtime:1",
                                             out_dir=self.out, engine=self.engine, prepare=["exit", "0"],
+                                            outputs=["/daodan/out"],
                                             dotenv_env=[("SECRET_KEY", ".env"), ("MISSING", ".env")])
         [prepared, executed] = [call for call in self.created("daodan-") if "fake/runtime:1" in call]
-        assert "SECRET_KEY=changethis" in prepared and "SECRET_KEY=changethis" not in executed
-        assert not any(word.startswith("MISSING=") for word in prepared)
-        assert result["state"] == "done" and "changethis" not in (self.out / container.RECORD_NAME).read_text()
+        assert "SECRET_KEY=changethis" in prepared and "SECRET_KEY=changethis" in executed
+        assert not any(word.startswith("MISSING=") for call in (prepared, executed) for word in call)
+        assert result["state"] == "done", result
+        [arg] = [Path(path) for path in result["outputs"] if path.endswith("arg.txt")]
+        masked = "[.env:POSTGRES_PASSWORD,.env:SECRET_KEY]"  # the value both variables hold
+        assert arg.read_text(encoding="utf-8") == f"arg={masked}\n"
+        assert masked in (self.out / "execute.log").read_text(encoding="utf-8")
+        kept = "\n".join(path.read_text(encoding="utf-8") for path in self.out.rglob("*") if path.is_file())
+        assert "changethis" not in kept and "changethis" not in json.dumps(result)
 
     def test_a_tracked_env_file_whose_values_cannot_be_read_stops_the_run_with_its_cause(self):
         (self.state / "no-dotenv").write_text("", encoding="utf-8")
@@ -1706,6 +1716,27 @@ def test_on_modal_a_tracked_env_file_s_value_reaches_the_service_and_nothing_the
     assert [item["outcome"] for item in said.services] == ["ready"]
     assert json.loads(kept["sql.txt"])["rows"] == [["[.env:DB_NAME]"]]  # the database the value names, masked
     assert secret not in json.dumps([kept, result, said])
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="runs in the Modal test container")
+def test_on_modal_a_stage_s_arg_from_the_tracked_env_reaches_both_sandboxes_and_nothing_the_run_keeps(tmp_path):
+    """The driver's `dotenv_env`, as `docker_build.run` asks it: the ARG is in the preparation's environment and in
+    the execution's, whose RUN writes both into a file the test reads back with the variable in place of its
+    value."""
+    from indexers import typescript
+    secret = "s3cr3t" + uuid.uuid4().hex[:8]
+    project = git_project(tmp_path / "proj", {".env": f"VERSION={secret}\n", "app.js": "\n"}, [".env", "app.js"])
+    run = 'mkdir -p /daodan/out && echo "prep=$(cat /work/prep) arg=$VERSION" > /daodan/out/arg.txt'
+    with the_driver() as modal_pipeline:
+        result = modal_pipeline.sandbox_run(project, ["sh", "-c", run], image=typescript.IMAGE,
+                                            prepare=["sh", "-c", 'echo "$VERSION" > /work/prep'],
+                                            out_dir=tmp_path / "out", outputs=["/daodan/out"], timeout=300,
+                                            env={"PATH": "/usr/local/bin:/usr/bin:/bin"},
+                                            dotenv_env=[("VERSION", ".env")])
+    kept = {path.name: path.read_text(encoding="utf-8") for path in (tmp_path / "out").rglob("*") if path.is_file()}
+    assert result["state"] == "done" and result["exit_code"] == 0, result
+    assert kept["arg.txt"] == "prep=[.env:VERSION] arg=[.env:VERSION]\n"
+    assert secret not in json.dumps([kept, result])
 
 
 POD = r'''import json, sys
