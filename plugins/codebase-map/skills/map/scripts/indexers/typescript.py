@@ -9,7 +9,9 @@ are `unavailable`, with the gap's cause and remedy.
   (`preparation.NEEDS`), scip-typescript from npm without its install scripts, the stated Node (`mise`,
   `preparation.toolchains`), then the project's own restore (`preparation.node_prepare`): in each package folder
   the pre-map names that no other holds, and in each with a lockfile of its own, with the manager the lockfile
-  names, else the one its manifest names (`packageManager`, through corepack), else npm. The install runs with
+  names, else the one its manifest names (`packageManager`, through corepack), else npm; a Yarn project on
+  Plug'n'Play is laid out in node_modules, which TypeScript's resolver reads (`_prepared`, a `build_edited` gap
+  says so). The install runs with
   its lifecycle scripts, as a CI's does: there a framework generates what the compiler reads (SvelteKit's
   `.svelte-kit/tsconfig.json`, Nuxt's `.nuxt`). They are project code, which may run in the preparation and
   stays in the container (spec, section 4); an install they break is done again without them. Last, the type
@@ -498,8 +500,22 @@ def _prepared(project_dir: Path, roots) -> dict:
              *(lock for manager in MANAGERS for lock in preparation.RESTORES[manager].get("locks", ())))
     files = [posixpath.join(root, name) for root in sorted(roots) for name in names
              if (project_dir / root / name).is_file()]
-    return preparation.node_prepare(files, lambda rel: (project_dir / rel).read_text(encoding="utf-8",
-                                                                                   errors="replace"))
+    restored = preparation.node_prepare(files, lambda rel: (project_dir / rel).read_text(encoding="utf-8",
+                                                                                       errors="replace"))
+    # Yarn 2 and later lay packages out by Plug'n'Play unless .yarnrc.yml says otherwise: TypeScript's resolver reads
+    # no .pnp.cjs, so the index's restore lays the same lockfile out in node_modules, in the container's copy only.
+    plug = [folder for folder in restored["restores"].get("yarn", ())
+            if (project_dir / folder / ".yarnrc.yml").is_file() and not re.search(
+                r"(?m)^\s*nodeLinker:\s*[\"']?(node-modules|pnpm)",
+                (project_dir / folder / ".yarnrc.yml").read_text(encoding="utf-8", errors="replace"))]
+    if not plug:
+        return restored
+    return {**restored, "lines": [f"export YARN_NODE_LINKER=node-modules; {line}" if "corepack yarn" in line else line
+                                  for line in restored["lines"]],
+            "gaps": [*restored["gaps"], *({"kind": "build_edited", "path": folder, "detail": (
+                "Yarn's Plug'n'Play (.yarnrc.yml sets no nodeLinker, or pnp): the index's restore lays the same "
+                "lockfile out in node_modules (YARN_NODE_LINKER=node-modules) in the container's copy, as "
+                "TypeScript's resolver reads no .pnp.cjs")} for folder in plug)]}
 
 
 def _runs(out_dir: Path, cause: str | None) -> list[dict]:

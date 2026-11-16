@@ -438,6 +438,31 @@ def test_each_package_folder_restores_with_the_manager_its_lockfile_or_its_manif
     assert box.asked[0]["registries"] == (*preparation.NODE_REGISTRIES, "repo.yarnpkg.com")
 
 
+def test_a_yarn_project_on_plug_n_play_is_laid_out_in_node_modules_for_the_index_and_says_so(sandbox):
+    """D-157, measured on Modal with Yarn 4.9.1 and scip-typescript 0.6.2: under Plug'n'Play (Yarn 2 and later
+    with no `nodeLinker`, or `pnp`) the install leaves .pnp.cjs and no node_modules, and scip-typescript names no
+    symbol of a package (TypeScript's resolver does not read Plug'n'Play); with `nodeLinker: node-modules` it names
+    `npm clsx 2.1.1`. So the index's restore lays the same lockfile out in node_modules (YARN_NODE_LINKER), in the
+    container's copy only, and a `build_edited` gap says so. A folder that already says node-modules, and Yarn 1
+    (no .yarnrc.yml), keep their restore as it is."""
+    project = _written(sandbox["root"] / "project" / "pnp", {
+        "package.json": {"name": "app", "packageManager": "yarn@4.9.1", "dependencies": {"clsx": "2.1.1"}},
+        "yarn.lock": "", ".yarnrc.yml": "enableTelemetry: false\n", "src/a.ts": "import clsx from 'clsx';\n",
+        "linked/package.json": {"name": "linked", "packageManager": "yarn@4.9.1"}, "linked/yarn.lock": "",
+        "linked/.yarnrc.yml": "nodeLinker: node-modules\n"})
+    box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
+    result = typescript.index(project, sandbox["root"] / "work", roots={"", "linked"})
+    assert result["restores"] == {"yarn": [".", "linked"]}
+    lines = box.asked[0]["prepare"][2]
+    assert "export YARN_NODE_LINKER=node-modules" in lines
+    assert lines.index("export YARN_NODE_LINKER=node-modules") < lines.index("corepack yarn install")
+    assert [gap for gap in result.get("gaps", ()) if gap["kind"] == "build_edited"] == [{
+        "kind": "build_edited", "path": ".", "detail": (
+            "Yarn's Plug'n'Play (.yarnrc.yml sets no nodeLinker, or pnp): the index's restore lays the same lockfile "
+            "out in node_modules (YARN_NODE_LINKER=node-modules) in the container's copy, as TypeScript's resolver "
+            "reads no .pnp.cjs")}]
+
+
 def test_the_project_runs_on_the_node_it_states_and_the_indexer_on_daodans(sandbox):
     project = _project(sandbox, "ts")
     box = _contained(sandbox, index=FIXTURES / "ts/index.scip")
