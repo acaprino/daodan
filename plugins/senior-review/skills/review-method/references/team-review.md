@@ -20,7 +20,7 @@
 | Security | `senior-review:security-auditor` |
 | General correctness and local design | `senior-review:code-auditor` |
 | **Logic integrity (contracts/invariants/domain rules)** | `senior-review:logic-integrity-auditor` |
-| **Structural entropy (duplicated knowledge, competing owners, redundant representation, derivable state, missed unification, prior art, abstraction fitness)** | `senior-review:prior-art-auditor` |
+| **Structural entropy (duplicated knowledge, competing owners, redundant representation, repeated checks, cases no producer writes, derivable state, missed unification, prior art, abstraction fitness)** | `senior-review:prior-art-auditor` |
 | Codebase hygiene (full pass: dead code, assets, deps, docs, lifecycle archaeology) | `senior-review:cleanup-auditor` |
 | Workspace hygiene (garbage, tracked build output, .gitignore, scratch, doc-assets, git state) | `senior-review:workspace-hygiene-auditor`, also a member of `cleanup-auditor` |
 | UI race conditions | `senior-review:ui-race-auditor` |

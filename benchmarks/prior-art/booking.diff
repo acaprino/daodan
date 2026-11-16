@@ -1,0 +1,110 @@
+diff --git b/booking/imports.py b/booking/imports.py
+new file mode 100644
+index 0000000..dfb32ef
+--- /dev/null
++++ b/booking/imports.py
+@@ -0,0 +1,23 @@
++"""Importazione delle prenotazioni dal vecchio foglio di calcolo."""
++from . import bookings, slots
++
++
++def load(rows):
++    loaded = []
++    for row in rows:
++        bookings._check(row["room"], row["start"], row["end"], row["people"])
++        new = {
++            "id": len(bookings.BOOKINGS) + 1,
++            "room": row["room"],
++            "day": row["day"],
++            "start": row["start"],
++            "end": row["end"],
++            "owner": row["owner"],
++            "people": row["people"],
++        }
++        for other in bookings.BOOKINGS:
++            if other["room"] == new["room"] and other["day"] == new["day"] and slots.overlap(new, other):
++                raise ValueError("sala occupata")
++        bookings.BOOKINGS.append(new)
++        loaded.append(new)
++    return loaded
+diff --git b/booking/mail.py b/booking/mail.py
+new file mode 100644
+index 0000000..06c22d2
+--- /dev/null
++++ b/booking/mail.py
+@@ -0,0 +1,24 @@
++"""Conferme via email."""
++import os
++
++# Predefinito documentato nel manuale d'installazione.
++SENDER = os.environ.get("ROOMS_SENDER", "sale@example.org")
++
++
++def _title(booking):
++    return "%s %02d:00-%02d:00" % (booking["room"], booking["start"], booking["end"])
++
++
++def _owner(booking):
++    try:
++        return booking["owner"]
++    except KeyError:
++        return booking.get("user") or booking.get("created_by") or "sconosciuto"
++
++
++def confirmation(booking):
++    return {
++        "from": SENDER,
++        "to": _owner(booking),
++        "subject": f"Prenotazione confermata: {_title(booking)}",
++    }
+diff --git b/booking/recurring.py b/booking/recurring.py
+new file mode 100644
+index 0000000..fd0a8ba
+--- /dev/null
++++ b/booking/recurring.py
+@@ -0,0 +1,19 @@
++"""Prenotazioni ricorrenti: la stessa fascia in più giorni."""
++from . import bookings, rooms, slots
++
++
++def book_weekly(room, days, start, end, owner, people=1, catering=False):
++    if room not in rooms.ROOMS:
++        raise ValueError("sala sconosciuta")
++    if end - start > rooms.MAX_HOURS:
++        raise ValueError("durata oltre il massimo")
++    made = []
++    for day in days:
++        slot = {"start": start, "end": end}
++        if catering and any(
++            other["room"] == room and other["day"] == day and slots.needs_gap(slot, other)
++            for other in bookings.BOOKINGS
++        ):
++            raise ValueError("serve un'ora libera per le pulizie")
++        made.append(bookings.create(room, day, start, end, owner, people))
++    return made
+diff --git a/booking/rooms.py b/booking/rooms.py
+index 9145a72..693704b 100644
+--- a/booking/rooms.py
++++ b/booking/rooms.py
+@@ -1,4 +1,4 @@
+ """Sale e regole di prenotazione. Le ore sono interi da 0 a 24."""
+ 
+ ROOMS = {"aula-1": {"capacity": 12}, "sala-blu": {"capacity": 40}}
+-MAX_HOURS = 4
++MAX_HOURS = 3
+diff --git a/booking/slots.py b/booking/slots.py
+index 3a1c18f..5e10d61 100644
+--- a/booking/slots.py
++++ b/booking/slots.py
+@@ -5,3 +5,11 @@ def overlap(a, b):
+     """Vero se due fasce semiaperte [start, end) si sovrappongono."""
+     return a["start"] < b["end"] and b["start"] < a["end"]
+ 
++
++def needs_gap(a, b):
++    """Vero se tra due fasce non resta l'ora per le pulizie del catering.
++
++    Estremi inclusi, voluto: due fasce che si toccano non si sovrappongono
++    per overlap, ma non lasciano l'ora libera.
++    """
++    return a["start"] <= b["end"] and b["start"] <= a["end"]

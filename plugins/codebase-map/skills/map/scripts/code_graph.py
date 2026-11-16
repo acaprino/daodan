@@ -787,7 +787,8 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
     holds it) to each end of its symbol (`symbol`, the key referenced there), with the snapshot reference's
     kind at that position; at a `static` site `(rel, line, byte column)` to no end reached through an
     implementation. Holes are the snapshot references the index answers nothing at, or only with a dead end.
-    `files` counts the snapshot's files of the language, the indexed ones, the `missing` ones (no document) and,
+    `files` counts the snapshot's files of the language, the indexed ones (a document without occurrences counts
+    where the snapshot finds nothing in the file to answer), the `missing` ones (no document) and,
     when there are any, the `unread` ones (`unread`): what the snapshot could not measure.
     `refine(index, graph)` runs last: an edge it gives `uncertain` (`{reason, candidates}`) stays, one it gives
     `removed` (a reason) moves to `graph["removed"]`, a hole or edge it adds carries `"by": "refine"`; it
@@ -800,9 +801,10 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
         found = list(dict.fromkeys(end for key in dict.fromkeys(keys) for end in traversal.ends(key)))
         return [end for end in found if "implementation" not in end.chain] if position in static else found
     documents = {rel for rel in index.documents if snapshot.languages.get(snapshot.rel.get(rel, rel)) == language}
-    references, holes, by_position = {}, [], collections.defaultdict(list)
+    references, holes, by_position, sited = {}, [], collections.defaultdict(list), set()
     for identity, rel, kind, resolution, lexical, span, parts, reason in snapshot.references(language):
         checkout = snapshot.checkout.get(rel, rel)
+        sited.add(checkout)
         site = snapshot.callee(rel, span, parts)
         entries, position = [], None
         if site is not None:
@@ -871,11 +873,17 @@ def build(index: Index, snapshot: Snapshot, language: str, hops: dict, indexer: 
                        if snapshot.languages.get(rel) == language and rel in snapshot.checkout)
     missing = [{"path": rel, "reason": (missing_reasons or {}).get(rel) or "no document in the index"}
                for rel in inventory if rel not in index.documents]
+    # A document without occurrences of a file the snapshot finds nothing to answer in (no reference, no function,
+    # method or class: a package-info.java of a package line under its comment) is indexed: nothing awaits it.
+    declares = getattr(snapshot, "functions", {})
+    idle = {rel for rel in inventory if rel in index.documents and not index.documents[rel] and rel not in sited
+            and not declares.get(snapshot.rel.get(rel, rel))}
     missing += [{"path": rel, "reason": "document without occurrences"} for rel in inventory
-                if rel in index.documents and not index.documents[rel]]
+                if rel in index.documents and not index.documents[rel] and rel not in idle]
     unmeasured = unread(index, snapshot, language)
     graph = {"language": language, "indexer": indexer,
-             "files": {"snapshot": len(inventory), "indexed": sum(1 for rel in inventory if index.documents.get(rel)),
+             "files": {"snapshot": len(inventory),
+                       "indexed": sum(1 for rel in inventory if index.documents.get(rel) or rel in idle),
                        "missing": missing, **({"unread": unmeasured} if unmeasured else {})},
              "nodes": list(nodes.values()), "edges": edges, "holes": holes, "removed": []}
     if refine is not None:

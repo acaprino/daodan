@@ -913,6 +913,33 @@ class FakeEngineTest(unittest.TestCase):
         self.assertTrue(caught.exception.remedy)
         fetched.assert_not_called()
 
+    def test_beside_a_running_kiri_of_the_user_daodan_starts_no_engine_and_says_why(self):
+        """D-219: Kiri 0.2.0 refuses a second engine in WSL, and two Kiri engines, even in distributions of their
+        own, share the WSL VM's network and the nftables table `kiri` each rebuilds at start and removes at stop.
+        With the user's Kiri running and its `docker` not answering, Daodan's engine never starts: a Gap names that
+        distribution, and WSL is asked only which distributions run; nothing is imported, started, stopped or
+        downloaded (the owner's rule: never restart, stop or reconfigure the user's Kiri)."""
+        asked = []
+
+        def wsl(*args, timeout=120):
+            asked.append(args)
+            return subprocess.CompletedProcess(args, 0, b"kiri\nUbuntu\n", b"")
+
+        with mock.patch.object(container.os, "name", "nt"), mock.patch.dict(os.environ, {"DAODAN_CONTAINER": ""}), \
+                mock.patch.object(container, "program", return_value=None), \
+                mock.patch.object(container, "wsl_executable", return_value="wsl.exe"), \
+                mock.patch.object(container, "wsl", side_effect=wsl), \
+                mock.patch.object(container, "download") as fetched, \
+                mock.patch.object(container, "engine_home", side_effect=AssertionError("no engine of Daodan's")):
+            with self.assertRaises(container.Gap) as caught:
+                container.find_engine()
+        self.assertEqual(caught.exception.cause,
+                         "another Kiri engine runs in WSL (kiri); Daodan's would reset its network rules")
+        self.assertEqual(caught.exception.remedy,
+                         "open that Kiri so that `docker` answers, or stop it with wsl --terminate kiri")
+        self.assertEqual(asked, [("-l", "--running", "-q")])
+        fetched.assert_not_called()
+
     # Section 3: an engine the user already has is used as it is.
     def test_the_user_engine_is_used_and_not_modified(self):
         bin_dir = self.scratch / "bin"

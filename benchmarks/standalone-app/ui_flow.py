@@ -1,18 +1,106 @@
-"""Focused canonical UI flow benchmark; requires Playwright and local Chrome."""
+"""Canonical UI flow and review regressions; run only in the Daodan container."""
 from pathlib import Path
-import hashlib, json, sys
+import argparse, hashlib, importlib.util, json, platform, sys
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[2]
 APP=ROOT/'prototypes/daodan-app'
-OUT=ROOT/'.jcode/local/mockups/daodan-app/verification'
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--out',type=Path,default=Path(__file__).with_name('ui-results.json'))
+parser.add_argument('--artifacts',type=Path,default=ROOT/'.jcode/local/mockups/daodan-app/verification')
+args=parser.parse_args()
+OUT=args.artifacts.resolve()
 OUT.mkdir(parents=True,exist_ok=True)
-RESULT=Path(__file__).with_name('ui-results.json')
-data={'artifact':str(APP/'index.html'),'parameters':{'viewports':[[1440,1000],[390,844]],'timer':'Playwright clock.run_for; original setInterval callbacks; no state writes','tick_ms':2200},'sha256':hashlib.sha256((APP/'index.html').read_bytes()).hexdigest(),'checks':[],'growth':[],'layouts':[],'screenshots':[],'pageerrors':[],'console_errors':[],'external_requests':[]}
+RESULT=args.out.resolve()
+RESULT.parent.mkdir(parents=True,exist_ok=True)
+
+pricing_spec=importlib.util.spec_from_file_location('standalone_pricing',ROOT/'benchmarks/scope-resolution/app/packages/orders/pricing.py')
+pricing=importlib.util.module_from_spec(pricing_spec)
+pricing_spec.loader.exec_module(pricing)
+data={'artifact':'prototypes/daodan-app/index.html','system':platform.system(),'python':platform.python_version(),'parameters':{'viewports':[[1440,1000],[390,844]],'timer':'Playwright clock.run_for; original setInterval callbacks; no progress state writes','tick_ms':2200},'sha256':hashlib.sha256((APP/'index.html').read_bytes()).hexdigest(),'checks':[],'growth':[],'layouts':[],'screenshots':[],'pageerrors':[],'console_errors':[],'external_requests':[]}
 def record(name,ok,evidence):
     data['checks'].append({'name':name,'status':'pass' if ok else 'fail','evidence':evidence})
     RESULT.write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8')
 def stored(page):return page.evaluate("JSON.parse(localStorage.getItem('daodan-app-prototype-v1'))")
+
+def reset_state(page):
+    return {'progress':stored(page)['progress'],'status':stored(page)['runStatus'],'stage':stored(page)['analysisStage'],'synthesis_disabled':page.locator('#stage-synthesis').is_disabled()}
+
+def is_reset(value):
+    return value=={'progress':0,'status':'idle','stage':'repository','synthesis_disabled':True}
+
+def open_premap(page):
+    page.locator('#use-repository').click()
+    page.clock.run_for(500)
+
+def begin_retry(page):
+    open_premap(page)
+    page.locator('[data-action="new-run"]').click()
+    page.clock.run_for(700+2*2200)
+    page.locator('#simulate-error').click()
+    page.locator('#run-toggle').click()
+    page.locator('[data-analysis-stage="repository"]').first.click()
+
+def invalidation_regressions(page):
+    page.locator('#repository-branch').select_option('main')
+    for return_to_original in [False,True]:
+        begin_retry(page)
+        original=page.locator('#repository-branch').input_value()
+        other='engine-audit-20261113' if original=='main' else 'main'
+        page.locator('#repository-branch').select_option(other)
+        if return_to_original:page.locator('#repository-branch').select_option(original)
+        page.clock.run_for(1000+2*2200)
+        value=reset_state(page)
+        record('retry_branch_roundtrip_invalidated' if return_to_original else 'retry_branch_change_invalidated',is_reset(value),value)
+    open_premap(page)
+    page.locator('[data-action="new-run"]').click()
+    page.locator('[data-analysis-stage="repository"]').first.click()
+    original=page.locator('#repository-branch').input_value()
+    page.locator('#repository-branch').select_option('main' if original!='main' else 'engine-audit-20261113')
+    page.locator('#repository-branch').select_option(original)
+    page.clock.run_for(700+2*2200)
+    value=reset_state(page)
+    record('pending_start_branch_roundtrip_invalidated',is_reset(value),value)
+    page.locator('[data-analysis-stage="repository"]').first.click()
+    page.locator('#use-repository').click()
+    page.locator('#repository-branch').select_option('main' if original!='main' else 'engine-audit-20261113')
+    page.locator('#repository-branch').select_option(original)
+    page.clock.run_for(500)
+    value=reset_state(page)
+    record('pending_premap_branch_roundtrip_invalidated',is_reset(value),value)
+    page.locator('[data-analysis-stage="repository"]').first.click()
+    page.locator('[data-repository-kind="private"]').click()
+    page.locator('[data-action="mock-github-login"]').click()
+    page.clock.run_for(650)
+    begin_retry(page)
+    page.locator('[data-action="mock-github-logout"]').click()
+    page.clock.run_for(1000+2*2200)
+    value=reset_state(page)
+    record('retry_private_logout_invalidated',is_reset(value) and stored(page)['repository'] is None and page.locator('#use-repository').is_disabled(),value)
+
+def tree_regression(page):
+    # Replace inventory only; leave run/progress state and the original fixture intact.
+    result=page.evaluate('''()=>{const paths=['constructor/nested/probe.ts','__proto__/probe.ts','toString/probe.ts'];const original=PREMAP.files;try{PREMAP.files=paths;const host=document.createElement('div');host.innerHTML=directoryTree();return {paths,selected:Array.from(host.querySelectorAll('[data-tree-select]'),e=>e.dataset.treeSelect)};}catch(error){return {error:String(error)};}finally{PREMAP.files=original;}}''')
+    record('git_paths_with_object_property_names',not result.get('error') and sorted(result['selected'])==sorted(result['paths']),result)
+
+def calculator_regressions(page):
+    page.locator('[data-screen="review"]').click()
+    cases=[]
+    for net,discount in [(100,10),(200,10),(1.25,10),(1.005,0),(0.015,0),(0.03,50),(19.99,15),(99999.99,33),(0.7,80),(100,100),(0,0)]:
+        order={'net':net,'loyalty_percent':discount}
+        candidate_net=net-pricing.compute_discount(order)-pricing.compute_discount(order)
+        expected={'expected':pricing.compute_total(order),'candidate':round(candidate_net+pricing.vat_amount(candidate_net),2)}
+        page.locator('#case-net').fill(str(net))
+        page.locator('#case-discount').fill(str(discount))
+        actual=page.evaluate('calculated()')
+        displayed=page.locator('#case-results .cause-step strong').all_text_contents()
+        formatted=page.evaluate('values=>values.map(money)',[expected['expected'],expected['candidate']])
+        cases.append({'net':net,'discount':discount,'expected':expected,'actual':actual,'displayed':displayed[:2],'pass':actual==expected and displayed[:2]==formatted})
+    record('calculator_matches_python_pricing',all(case['pass'] for case in cases),cases)
+    values=[0.125,0.375,1.005,1.015,2.675,2.685,-0.125,-0.375,-1.005,-2.675,0.001,-0.001,1e20,1e308]
+    expected=[round(value,2) for value in values]
+    actual=page.evaluate('values=>values.map(roundMoney)',values)
+    record('money_rounding_matches_python_binary_float',actual==expected,{'values':values,'expected':expected,'actual':actual})
 def growth(page):
     value={'progress':int(page.locator('#progress-value').inner_text()),'nodes':page.locator('.build-node').count(),'edges':page.locator('.build-connections path').count(),'status':stored(page)['runStatus']}
     data['growth'].append(value)
@@ -27,11 +115,11 @@ def screenshots(page,stage):
         data['layouts'].append({'stage':stage,'device':device,**layout})
         path=OUT/f'premap-{device}-{stage}.png'
         page.screenshot(path=str(path),full_page=True,animations='disabled')
-        data['screenshots'].append(str(path))
+        data['screenshots'].append(path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path))
     page.set_viewport_size({'width':1440,'height':1000})
 
 with sync_playwright() as pw:
-    browser=pw.chromium.launch(executable_path='C:/Program Files/Google/Chrome/Application/chrome.exe',headless=True)
+    browser=pw.chromium.launch(headless=True)
     page=browser.new_page(viewport={'width':1440,'height':1000},reduced_motion='reduce')
     page.set_default_timeout(5000)
     page.on('pageerror',lambda e:data['pageerrors'].append(str(e)))
@@ -87,9 +175,12 @@ with sync_playwright() as pw:
     raw=page.locator('#premap-data').text_content()
     premap=json.loads(raw)
     counts={'files':len(premap['files']),'languages':len(premap['languages']),'units':len(premap['units']),'dependencies':sum(len(u.get('dependencies',[])) for u in premap['units'])}
-    record('real_inventory_counts',counts=={'files':2592,'languages':16,'units':5,'dependencies':18},{'counts':counts,'commit':premap['source']['commit'],'summary':summary})
+    exported=json.loads((APP/'assets/premap-preview.json').read_text(encoding='utf-8'))
+    displayed={key:int(''.join(c for c in value if c.isdigit())) for key,value in zip(counts,page.locator('.premap-summary .value').all_text_contents())}
+    record('real_inventory_counts',displayed==counts and premap==exported,{'counts':counts,'displayed':displayed,'embedded_matches_export':premap==exported,'commit':premap['source']['commit'],'summary':summary})
     text=page.locator('#main').inner_text()
-    record('declared_sources_and_framework_caveat',page.locator('.dependency-table tbody tr').count()==18 and 'manifest' in text and 'Vue/Svelte' in text,text[-1100:])
+    record('declared_sources_and_framework_caveat',page.locator('.dependency-table tbody tr').count()==counts['dependencies'] and 'manifest' in text and 'Vue/Svelte' in text,text[-1100:])
+    tree_regression(page)
     record('physical_tree_parent_child',page.locator('details[data-tree-id] details[data-tree-id]').count()>0,{'nested_directories':page.locator('details[data-tree-id] details[data-tree-id]').count()})
     page.locator('#premap-search').fill('pricing.py')
     page.clock.run_for(100)
@@ -177,11 +268,13 @@ with sync_playwright() as pw:
     page.locator('[data-analysis-stage="repository"]').first.click()
     page.locator('#repository-branch').select_option('engine-audit-20261113')
     record('branch_change_resets_completed_run',stored(page)['progress']==0 and stored(page)['runStatus']=='idle' and page.locator('#stage-synthesis').is_disabled(),{'progress':stored(page)['progress'],'branch':stored(page)['repositoryBranch'],'stage':stored(page)['analysisStage']})
+    invalidation_regressions(page)
+    calculator_regressions(page)
     record('no_document_overflow_or_clipping',all(x['document']==x['width'] and not x['clipped'] for x in data['layouts']),data['layouts'])
     record('runtime_clean',not any(data[k] for k in ['pageerrors','console_errors','external_requests']),{k:data[k] for k in ['pageerrors','console_errors','external_requests']})
     data['browser']=browser.version
     browser.close()
-data['limitations']=['Desktop Chrome viewport emulation, not physical mobile hardware.','No backend/model/container execution: progression uses original prototype timer callbacks accelerated by Playwright clock.']
+data['limitations']=['Desktop Chromium viewport emulation, not physical mobile hardware.','Benchmark and browser run in the Daodan container; no backend/model execution by the prototype. Progression uses original timer callbacks accelerated by Playwright clock.']
 data['visual_observations']=['Eight canonical desktop/mobile screenshots cover repository, inventory, pipeline and synthesis.','Selected repository/branch, current Git inventory, manifest declarations and historical graph source are explicitly distinguished.','Tree, dependency table and graph use intentional internal scrolling; no document overflow or clipped outer controls.']
 RESULT.write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps({'checks':len(data['checks']),'failures':[c for c in data['checks'] if c['status']=='fail'],'growth':data['growth'],'screenshots':data['screenshots']},ensure_ascii=True,indent=2))

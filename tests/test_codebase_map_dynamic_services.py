@@ -320,6 +320,49 @@ def test_a_step_that_starts_docker_compose_is_a_fact_with_where_it_runs_and_its_
         assert [command["argv"][0] for command in renovate.commands(context)] == ["renovate", "sh"]
 
 
+MAKEFILE = """\
+DOCKER_COMPOSE_CMD ?= docker compose
+DOCKER_COMPOSE_FILES=-f compose.yaml
+FILES := $(DOCKER_COMPOSE_FILES) \\
+\t-f compose.tests.yaml
+.PHONY: lint start run-telemetry-tests e2e
+lint:
+\tnpm run lint
+start:
+ifneq ($(strip $(service)),)
+\t$(DOCKER_COMPOSE_CMD) $(FILES) up -d $(service)
+else
+\t@$(DOCKER_COMPOSE_CMD) $(FILES) up --detach
+endif
+run-telemetry-tests: start
+\tdocker build -t telemetry-tests ./test/telemetry
+e2e:
+\t$(MAKE) -C deploy up
+"""
+
+
+def test_a_makefile_target_that_starts_docker_compose_is_a_gap_naming_the_target_and_its_file(tmp_path):
+    """otel-demo's telemetry job runs `make run-telemetry-tests`, whose prerequisite `start` runs Compose through a
+    make variable: read from the Makefile's text (GNU make's file names, `-C`, `-f`, variables, prerequisites, a
+    recipe's `$(MAKE)`; nothing run), each such target is a `compose_not_read` gap; one that reaches no Compose,
+    and a Makefile that is not there, are not."""
+    files = {"package.json": "{}\n", "Makefile": MAKEFILE, "deploy/Makefile": "up:\n\tdocker-compose up -d\n"}
+    steps = [{"run": "make lint"}, {"run": "make run-telemetry-tests"}, {"run": "make -f Makefile SERVICE=x e2e"},
+             {"run": "make"}, {"run": "make -C nowhere start"}]
+    out = read_steps(tmp_path, files, [], {".github/workflows/t.yml": {"jobs": {"t": {"steps": steps}}}})
+    said = [(gap["path"], gap["detail"]) for gap in out["gaps"] if gap["kind"] == "compose_not_read"]
+    assert said == [
+        ("Makefile#start", ".github/workflows/t.yml#jobs.t.steps.1 runs `make run-telemetry-tests`, whose target "
+                           "run-telemetry-tests reaches start in Makefile, which runs Docker Compose through make "
+                           "(Makefile:10 `$(DOCKER_COMPOSE_CMD) $(FILES) up -d $(service)`): Daodan does not read it, "
+                           "and the services it starts do not start beside the tests"),
+        ("deploy/Makefile#up", ".github/workflows/t.yml#jobs.t.steps.2 runs `make -f Makefile SERVICE=x e2e`, whose "
+                               "target e2e reaches up in deploy/Makefile, which runs Docker Compose through make "
+                               "(deploy/Makefile:2 `docker-compose up -d`): Daodan does not read it, and the services "
+                               "it starts do not start beside the tests")]
+    assert "compose" not in out["facts"]
+
+
 def test_an_npm_test_script_that_starts_docker_compose_is_a_fact_too(tmp_path):
     """npm runs a script's `pre` script first, in the package's folder: the one the `tests` entry names starts the
     services there."""

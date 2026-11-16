@@ -202,7 +202,6 @@ Parametri e soglie in [`benchmarks/call-provenance`](../../benchmarks/call-prove
 
 ## Da decidere
 
-- Come convivono il motore di Daodan e un Kiri dell'utente. Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL («another Kiri engine is running on this machine»). Anche in distribuzioni diverse i due motori condividono la rete della VM di WSL, e ciascuno ricostruisce all'avvio e toglie all'arresto la stessa tabella nftables `kiri` (`crates/kiri-init/src/linux/net.rs`). Lettura applicata: Daodan usa il motore dell'utente quando risponde e non avvia il proprio accanto a un Kiri attivo; dichiara la lacuna.
 - Come si avviano i servizi che la CI dichiara altrove: i file che `.gitlab-ci.yml` include, Compose in un job di GitLab (sul Docker che il job avvia), Compose avviato da un Makefile o da un task runner.
 - I passi prima dei test di un job di GitLab CI (`before_script`, i job degli stadi precedenti) e quelli che scrivono fuori da `/work` e da `/daodan/state`, che l'esecuzione non vede; su Kiri, come eseguire i passi accanto ai servizi senza togliere il pod dalla sua prima rete.
 - Quanto vale un arco osservato dopo una modifica: oggi vale per lo store del suo snapshot (sezione 5); se tenerlo per i file non toccati è da decidere.
@@ -214,5 +213,6 @@ Deciso il 16 novembre 2026:
 - **Comando dei test:** quello che il progetto dichiara, dalle voci `tests` della pre-mappa (`premap/python_tests.py`, `premap/npm_tests.py`), mai una convenzione di Daodan.
 - **Accensione:** il passo è uno step della pipeline, fra l'analisi e l'unione, acceso quando un motore di container risponde. Senza motore dichiara la lacuna e la pipeline arriva all'unione. `DAODAN_DYNAMIC=off` lo salta; `pipeline.run(..., stop="analyze")` si ferma prima.
 - **Codice del progetto:** gira solo nel container di Daodan, anche quando lo esegue il motore del passo 2, come per le macro procedurali di Rust (`AGENTS.md`, sezione Regola invalicabile).
+- **Kiri dell'utente:** Daodan usa il motore dell'utente quando risponde e non avvia il proprio accanto a un Kiri attivo, che non riavvia, ferma né riconfigura: Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL, e anche in distribuzioni diverse i due condividono la rete della VM di WSL e la tabella nftables `kiri` che ciascuno ricostruisce all'avvio e toglie all'arresto (`crates/kiri-init/src/linux/net.rs`). La lacuna è un `Gap` che nomina la distribuzione (`container.own_engine`).
 
 **Per modificare questa spec:** un requisito in più solo per un'esigenza obbligatoria o un esito sbagliato riproducibile.

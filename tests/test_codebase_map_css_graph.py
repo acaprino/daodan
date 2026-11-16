@@ -958,3 +958,161 @@ def test_the_projects_tailwind_runs_in_the_container_and_never_on_the_host(tmp_p
     assert found["valid"] is None and "only in a container: no container engine answers" in found["error"]
     (project / "package.json").write_text('{"dependencies": {"react": "^19"}}', encoding="utf-8")
     assert css_tailwind.index(project, None, ["flex"])["error"] == "tailwindcss not declared"  # nothing runs
+
+
+def test_a_css_style_block_of_a_component_with_apply_is_read_beside_its_template(tmp_path):
+    """hoppscotch: a Vue component whose CSS `<style>` block uses `@apply` stopped the stage (KeyError 'scopes'):
+    the `@apply` is a reference of the sheet, not a class site of the template, and takes no `:deep()` scopes."""
+    component = {"blocks": [{"line": 4, "lang": "css", "scoped": True, "module": None,
+                             "text": ".row { @apply flex; }\n"}],
+                 "classes": [{"kind": "class", "line": 2, "chain": [], "alts": [[{"s": "row"}]]}],
+                 "imports": [], "components": [], "roots": [2]}
+
+    def runner(script, payload):
+        assert Path(script).name == "css_vue.js"
+        return {"version": "3.5.13", "components": {"App.vue": component}}, {"seconds": 0}
+    found = css.component_files(runner, tmp_path, ["App.vue"])
+    assert found["missing"] == {}
+    [apply] = [r for r in found["records"] if r["t"] == "classes" and r.get("chain") == ["@apply"]]
+    [site] = [r for r in found["records"] if r["t"] == "classes" and r.get("root")]
+    assert "scopes" not in apply and ["deep:App.vue", []] in site["scopes"]
+
+
+def test_a_tailwind_utility_is_answered_by_the_tailwind_that_generates_it_at_its_version(tmp_path):
+    """memos: Tailwind 4 is `web/`'s, not the root's; the run reads each entry with the Tailwind Node resolves from
+    its folder, and says per token which version generates it: the external node carries that one."""
+    project = tmp_path / "memos"
+    (project / "web/src").mkdir(parents=True)
+    (project / "web/package.json").write_text('{"devDependencies": {"tailwindcss": "^4.2.4"}}', encoding="utf-8")
+    (project / "web/src/index.css").write_text('@import "tailwindcss";\n', encoding="utf-8")
+    (project / "web/index.html").write_text('<div class="flex nope"></div>\n', encoding="utf-8")
+    asked = []
+
+    def runner(script, payload):
+        asked.append((Path(script).name, [entry["path"] for entry in payload["entries"]]))
+        return {"version": "4.2.4", "valid": {"flex": "4.2.4"}, "error": None}, {"seconds": 0}
+    built = css.run(project, runner)
+    assert asked == [("css_tailwind.js", ["web/src/index.css"])]
+    [edge] = [edge for edge in built["edges"] if edge["symbol"] == ".flex"]
+    assert edge["to"] == "tailwindcss flex" and edge["end"] == "external"
+    assert {n["id"]: n["external"] for n in built["nodes"]}["tailwindcss flex"] == {
+        "manager": "npm", "package": "tailwindcss", "version": "4.2.4"}
+    assert [(hole["name"], hole["class"]) for hole in built["holes"] if hole["kind"] == "class"] == [("nope", "no-rule")]
+
+
+def test_the_scripts_program_resolves_the_aliases_the_pre_map_states(tmp_path):
+    """memos, full-stack-fastapi: `cn` is imported through `@/lib/utils`, an alias of `web/tsconfig.json`, and the
+    root holds no tsconfig. The program extends the tsconfig the pre-map names and carries every unit's aliases,
+    from the root, as the TypeScript analyzer's does."""
+    from indexers import css_typescript
+    record = {"units": [{"root": "web", "kind": "npm-package", "name": "web",
+                         "config": {"tsconfig": ["web/tsconfig.json"], "paths": {"@/*": ["web/src/*"]}}}]}
+    options = css.structure(record)
+    assert options == {"tsconfig": "web/tsconfig.json", "paths": {"@/*": ["web/src/*"]}}
+    asked = []
+
+    def runner(script, payload):
+        asked.append(payload["tsconfig"])
+        return {"typescript": "5.9.3", "files": [], "records": []}, {"seconds": 0}
+    (tmp_path / "web/src").mkdir(parents=True)
+    (tmp_path / "web/tsconfig.json").write_text('{"compilerOptions": {"jsx": "react-jsx"}}', encoding="utf-8")
+    css_typescript.index(tmp_path, runner, ["web/src/a.tsx"], **options)
+    [config] = asked
+    assert config["extends"] == "./web/tsconfig.json" and config["compilerOptions"]["paths"] == {"@/*": ["web/src/*"]}
+    assert "jsx" not in config["compilerOptions"]  # the project's own options, from the tsconfig it extends
+    css_typescript.index(tmp_path, runner, ["a.ts"])
+    assert "extends" not in asked[-1] and "paths" not in asked[-1]["compilerOptions"]  # without a pre-map, as before
+
+
+MARKING = {  # project files that, run as code, leave a mark in `marks/`: none of the host's engines runs one
+    "mark.js": 'require("fs").writeFileSync(require("path").join(__dirname, "marks", process.argv[2] || "x"), "")\n',
+    "postcss.config.js": 'require("./mark.js"); require("fs").writeFileSync(__dirname + "/marks/postcss", "")\n',
+    "tailwind.config.js": 'require("fs").writeFileSync(__dirname + "/marks/tailwind", ""); module.exports = {}\n',
+    "svelte.config.js": 'require("fs").writeFileSync(__dirname + "/marks/svelte-config", "")\n',
+    "vite.config.js": 'require("fs").writeFileSync(__dirname + "/marks/vite-config", "")\n',
+    "less-plugin.js": 'require("fs").writeFileSync(__dirname + "/marks/less-plugin", ""); module.exports = {}\n',
+    "stylus-plugin.js": 'require("fs").writeFileSync(__dirname + "/marks/stylus-plugin", "");'
+                        ' module.exports = () => () => {}\n',
+    "node_modules/ts-mark/index.js": 'require("fs").writeFileSync(__dirname + "/../../marks/ts-plugin", "");'
+                                     ' module.exports = () => ({ create: (info) => info.languageService })\n',
+    "package.json": '{"name": "marks", "devDependencies": {"tailwindcss": "^3.4.0"},'
+                    ' "scripts": {"postinstall": "node mark.js postinstall"}}\n',
+    "tsconfig.json": '{"compilerOptions": {"allowJs": true, "plugins": [{"name": "ts-mark"}]}}\n',
+    "a.less": '@plugin "./less-plugin.js";\n.a { width: `require("fs").writeFileSync("marks/less-js", "")`; }\n',
+    "a.styl": 'use("./stylus-plugin.js")\n.b\n  color red\n',
+    "a.scss": '@use "sass:meta";\n.c { color: red; }\n',
+    "App.vue": '<script setup>\nrequire("fs").writeFileSync("marks/vue-script", "")\n</script>\n'
+               '<template><div class="a"></div></template>\n<style lang="less">@plugin "./less-plugin.js";</style>\n',
+    "C.svelte": '<script>\nrequire("fs").writeFileSync("marks/svelte-script", "")\n</script>\n<div class="b"></div>\n',
+    "P.astro": '---\nimport fs from "fs";\nfs.writeFileSync("marks/astro", "");\n---\n<div class="c"></div>\n',
+    "index.ts": 'require("fs").writeFileSync("marks/script", "");\ndocument.body.className = "a";\n',
+}
+
+
+def test_the_engines_on_the_host_read_the_projects_files_and_run_none(tmp_path):
+    """AGENTS.md: the project's code runs only in the container. The stylesheet engines Daodan starts on the host
+    (sass-parser, less, stylus, the Vue, Svelte and Astro compilers, TypeScript, in `css.node_runner`) parse a
+    project whose config files, plugins, component scripts and inline JavaScript each leave a mark when run: every
+    engine reads them, and no mark appears. Tailwind, which loads its config, runs only in the container (off in
+    the suites: a gap, no run). Real engines: Node and the pinned engines are installed (on Modal)."""
+    project = tmp_path / "project"
+    for rel, text in MARKING.items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8")
+    (project / "marks").mkdir()
+    result = css.index(project, tmp_path / "work", files=css.walk(project))
+    engines = {engine["name"]: engine["version"] for engine in result["graph"]["engines"]}
+    assert {"sass-parser", "less", "stylus", "@vue/compiler-sfc", "svelte", "@astrojs/compiler", "typescript"} <= set(
+        engines) and all(engines[name] for name in engines if name != "tailwindcss"), engines
+    assert engines["tailwindcss"] is None  # no container in the suites: Tailwind did not run
+    assert {item["path"] for item in result["graph"]["files"]["missing"]} <= {"P.astro"}, result["graph"]["files"]
+    assert sorted(path.name for path in (project / "marks").iterdir()) == []
+    # The control: run as code, a marking file does leave its mark.
+    import subprocess
+    import resolve_edges as rx
+    from indexers import runtime
+    node = runtime.node(project) / rx.executable_name("node")
+    subprocess.run([str(node), "less-plugin.js"], cwd=project, check=True)
+    assert sorted(path.name for path in (project / "marks").iterdir()) == ["less-plugin"]
+
+
+def test_a_helper_imported_from_a_package_not_installed_is_read_by_the_package_its_import_names(tmp_path):
+    """memos, full-stack-fastapi: the checkout's packages are not restored on the host, so `clsx` and `twMerge`
+    have no declaration; their imports name the packages, and `cn`, which returns `twMerge(clsx(inputs))`, is
+    read as tailwind-merge: its literal arguments are class sites, not a `call` hole. memos merges with the
+    function `extendTailwindMerge` makes, which has twMerge's signature (tailwind-merge's API reference). A project
+    module's import names no package (real TypeScript, on Modal)."""
+    project = tmp_path / "project"
+    (project / "src/lib").mkdir(parents=True)
+    (project / "src/lib/utils.ts").write_text(
+        'import { clsx } from "clsx";\nimport { twMerge } from "tailwind-merge";\n'
+        "export function cn(...inputs: unknown[]) {\n  return twMerge(clsx(inputs));\n}\n", encoding="utf-8")
+    (project / "src/lib/merge.ts").write_text(
+        'import { clsx } from "clsx";\nimport { extendTailwindMerge } from "tailwind-merge";\n'
+        "const merge = extendTailwindMerge({ extend: {} });\n"
+        "export function cx(...inputs: unknown[]) {\n  return merge(clsx(inputs));\n}\n", encoding="utf-8")
+    (project / "src/lib/own.ts").write_text("export function own(...xs: string[]) { return xs.join(' '); }\n",
+                                            encoding="utf-8")
+    (project / "src/App.tsx").write_text(
+        'import { cn } from "./lib/utils";\nimport { own } from "./lib/own";\n'
+        'export const A = (ok: boolean) => <div className={cn("flex", ok && "p-4")} id={own("x")} />;\n'
+        'export const B = () => <p className={own("gap-2")} />;\n'
+        'import { cx } from "./lib/merge";\nexport const C = () => <i className={cx("grid", "m-1")} />;\n',
+        encoding="utf-8")
+    built = css.run(project, css.node_runner(project, tmp_path / "work"), css.walk(project))
+    holes = {(hole["name"], hole["class"]) for hole in built["holes"] if hole["kind"] == "class"}
+    assert {("flex", "no-rule"), ("p-4", "no-rule"), ("grid", "no-rule"), ("m-1", "no-rule")} <= holes, holes
+    assert [name for name, cls in holes if cls == "call"] == ['own("gap-2")']
+
+
+@pytest.mark.parametrize("script", ["css_tailwind.js", "typescript_unbound.js"])
+def test_a_script_that_runs_only_in_the_container_parses(tmp_path, script):
+    """No suite runs a container, so these scripts are parsed here (`node --check`, which runs nothing): a syntax
+    error would otherwise reach only the real run."""
+    import subprocess
+    import resolve_edges as rx
+    from indexers import css_tailwind, runtime
+    node = runtime.node(tmp_path) / rx.executable_name("node")
+    done = subprocess.run([str(node), "--check", str(css_tailwind.SCRIPT.parent / script)], capture_output=True,
+                          text=True)
+    assert done.returncode == 0, done.stderr

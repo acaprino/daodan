@@ -20,12 +20,16 @@ const begun = Date.now();
 const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
 const ts = require("module").createRequire(path.join(cfg.engines, "package.json"))("typescript");  // pinned
 const root = process.cwd();
+// The aliases' targets are from the root: absolute here, since a `baseUrl` the tsconfig inherits would move them.
+const aliases = (cfg.tsconfig.compilerOptions || {}).paths || {};
+for (const name of Object.keys(aliases)) aliases[name] = aliases[name].map((target) => path.resolve(root, target));
 const parsed = ts.parseJsonConfigFileContent(cfg.tsconfig, ts.sys, root, undefined, path.join(root, "css-tsconfig.json"));
 const program = ts.createProgram({ rootNames: parsed.fileNames, options: parsed.options });
 const checker = program.getTypeChecker();
 const K = ts.SyntaxKind;
 const MAX = 256;
 const HELPERS = /[\\/]node_modules[\\/](clsx|classnames|tailwind-merge)[\\/]/;
+const MERGE_FACTORIES = new Set(["extendTailwindMerge", "createTailwindMerge"]);
 // Variant tables: every literal of the table is a class written there; a call of the function it makes is read there.
 const TABLES = /[\\/]node_modules[\\/](class-variance-authority|tailwind-variants)[\\/]/;
 const ANGULAR = /[\\/]node_modules[\\/]@angular[\\/]core[\\/]/;
@@ -126,12 +130,19 @@ function value(node, depth) {
 // The helper a call names: clsx, classnames or tailwind-merge by the package that declares it, or a project function
 // (`cn`) whose body only returns a helper's call over its own rest parameter, which is that helper again.
 function helperName(callee, depth = 0) {
-  const symbol = symbolOf(callee.kind === K.PropertyAccessExpression ? callee.name : callee);
-  for (const decl of (symbol && symbol.declarations) || []) {
-    const found = HELPERS.exec(decl.getSourceFile().fileName);
+  const named = callee.kind === K.PropertyAccessExpression ? callee.name : callee;
+  const symbol = symbolOf(named);
+  for (const file of declaredIn(named)) {
+    const found = HELPERS.exec(file);
     if (found) return found[1];
   }
   const decl = symbol && symbol.valueDeclaration;
+  // A merge function tailwind-merge's factories make has twMerge's signature (its API reference).
+  const made = decl && decl.kind === K.VariableDeclaration && decl.initializer && unwrap(decl.initializer);
+  if (made && made.kind === K.CallExpression && MERGE_FACTORIES.has(made.expression.getText())
+      && declaredIn(made.expression).some((file) => (HELPERS.exec(file) || [])[1] === "tailwind-merge")) {
+    return "tailwind-merge";
+  }
   const fn = decl && (decl.kind === K.FunctionDeclaration ? decl : decl.kind === K.VariableDeclaration && decl.initializer
     && [K.ArrowFunction, K.FunctionExpression].includes(unwrap(decl.initializer).kind) ? unwrap(decl.initializer) : null);
   if (!fn || depth > 2 || fn.parameters.length !== 1 || !fn.parameters[0].dotDotDotToken) return null;
@@ -256,10 +267,20 @@ function chain(expr) {
     else if (node.kind === K.Identifier) { names.unshift(node.text); break; }
     else return null;
   }
-  let symbol = node && checker.getSymbolAtLocation(node);
-  if (symbol && symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
+  return { names, files: node ? declaredIn(node) : [] };
+}
+// The files that declare a name's symbol. A name imported from a package that is not installed where the program
+// looks (a checkout whose packages are not restored) is the package's the import names: the path it would have
+// under node_modules, which the package patterns read. A relative or aliased import names no package.
+function declaredIn(node) {
+  const alias = checker.getSymbolAtLocation(node);
+  const symbol = alias && alias.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(alias) : alias;
   const files = ((symbol && symbol.declarations) || []).map((d) => d.getSourceFile().fileName);
-  return { names, files };
+  if (files.length || !alias || !(alias.flags & ts.SymbolFlags.Alias)) return files;
+  let up = (alias.declarations || [])[0];
+  while (up && up.kind !== K.ImportDeclaration) up = up.parent;
+  const spec = up && ts.isStringLiteralLike(up.moduleSpecifier) ? up.moduleSpecifier.text : "";
+  return /^(@[\w-][\w.-]*\/)?[\w-][\w.-]*(\/|$)/.test(spec) ? [`/node_modules/${spec}/`] : [];
 }
 function fromPackage(expr, pattern) {
   const found = chain(expr);

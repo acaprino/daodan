@@ -50,7 +50,15 @@ INERT = {"networks", "restart", "container_name", "labels", "logging", "profiles
 UNSET = re.compile(r"variable is not set", re.I)  # Compose's warning for a variable it interpolates blank
 SHELL = re.compile(r"#!\s*\S*/(?:env\s+)?(?:ba|da|a|k|z)?sh\b")  # a shell script's first line
 MOVES = re.compile(r"(?:^|[;&|({]|\bthen|\bdo|\belse)\s*(?:cd|pushd)(?:\s|$)", re.M)  # a command that changes folder
-DEPTH = 3  # the shell scripts a script runs, followed this deep
+DEPTH = 3  # the shell scripts a script runs, and the Makefiles a recipe's make runs, followed this deep
+MAKE = {"make", "gmake"}  # programs that run a Makefile's targets
+MAKEFILES = ("GNUmakefile", "makefile", "Makefile")  # the files GNU make reads, in its order
+MAKE_VALUED = {"-I", "--include-dir", "-j", "--jobs", "-l", "--load-average", "-o", "--old-file", "-W", "--what-if",
+               "--new-file", "--assume-new", "--assume-old", "--eval"}  # make's options that take the next word
+CONDITIONAL = re.compile(r"(?:ifeq|ifneq|ifdef|ifndef|else|endif)\b")  # a conditional's line: both branches read
+VARIABLE = re.compile(r"(?:(?:export|override|private)\s+)*([A-Za-z_][A-Za-z0-9_.-]*)\s*(\?|::|:|\+|!)?=(.*)")
+RULE = re.compile(r"([^:=]+?)\s*::?(?![=])\s*([^;=|]*)")  # `targets: prerequisites`, a target's variable aside
+REFERENCE = re.compile(r"\$[({]([A-Za-z_][A-Za-z0-9_.-]*)[)}]")  # `$(NAME)` and `${NAME}`
 # What Compose gives where a tracked .env file holds a value: the file and the name the pre-map's container writes
 # in place of the value (`container.named`)
 PLACEHOLDER = re.compile(r"(?:\./)?daodan-dotenv-((?:[0-9a-f]{2})+)-((?:[0-9a-f]{2})+)")
@@ -183,6 +191,105 @@ def _runs(text: str, cwd: str, read) -> list[str]:
     return found
 
 
+def _makefile(text: str) -> tuple[dict, dict, str | None]:
+    """A Makefile's `text` as GNU make reads what Daodan needs of it: its variables as written (`=`, `:=`, `?=`,
+    `+=`; the last wins), each target's prerequisites and recipe lines `(number, line)` (conditionals left open:
+    every branch's lines), and its default goal."""
+    variables: dict[str, str] = {}
+    rules: dict[str, tuple[list[str], list[tuple[int, str]]]] = {}
+    current, default, lines, number = [], None, text.splitlines(), 0
+    while number < len(lines):
+        start, line = number + 1, lines[number]
+        while line.endswith("\\") and number + 1 < len(lines):
+            number += 1
+            line = line[:-1] + " " + lines[number].strip()
+        number += 1
+        if line.startswith("\t"):
+            for target in current:
+                rules[target][1].append((start, line[1:].strip()))
+            continue
+        line = line.split("#", 1)[0].strip()
+        if not line or CONDITIONAL.match(line):
+            continue
+        if found := VARIABLE.match(line):
+            name, append, value = found.group(1), found.group(2) == "+", found.group(3).strip()
+            if found.group(2) != "?" or name not in variables:
+                variables[name] = f"{variables.get(name, '')} {value}".strip() if append else value
+            current = []
+        elif found := RULE.match(line):
+            current = [target for target in found.group(1).split() if "%" not in target]
+            for target in current:
+                rules.setdefault(target, ([], []))[0].extend(found.group(2).split())
+            default = default or next((target for target in current if not target.startswith(".")), None)
+    return variables, rules, default
+
+
+def _expanded(text: str, variables: dict, depth: int = 0) -> str:
+    """`text` with make's `$(NAME)` and `${NAME}` references to `variables` replaced, recursively (an unknown name
+    is empty, `$(MAKE)` is make); a function call stays as written."""
+    if depth > 10:
+        return text
+    return REFERENCE.sub(lambda m: _expanded(variables.get(m.group(1), "make" if m.group(1) == "MAKE" else ""),
+                                             variables, depth + 1), text)
+
+
+def _made(words: list[str], cwd: str, read, depth: int = 0) -> tuple[str, str, int, str, str] | None:
+    """Where a `make` command's `words` run from `cwd` reach Docker Compose, read from the Makefiles' text: the
+    target called, the Makefile and target whose recipe line runs it, that line's number and text; None where they
+    reach none, and where the Makefile is not there."""
+    folder, given, targets, i = cwd, None, [], 1
+    while i < len(words):
+        word = words[i]
+        value = word[2:] if word[:2] in ("-C", "-f") and len(word) > 2 else words[i + 1] if i + 1 < len(words) else ""
+        if word[:2] == "-C" or word in ("--directory",):
+            folder, i = posixpath.normpath(posixpath.join(folder, value)), i + (1 if len(word) > 2 else 2)
+        elif word[:2] == "-f" or word in ("--file", "--makefile"):
+            given, i = value, i + (1 if len(word) > 2 else 2)
+        elif word.startswith("-"):
+            i += 2 if word in MAKE_VALUED else 1
+        else:
+            targets += [] if ASSIGNMENT.match(word) else [word]
+            i += 1
+    names = [posixpath.normpath(posixpath.join(folder, given))] if given else [
+        posixpath.join(folder, name) if folder != "." else name for name in MAKEFILES]
+    makefile = next((rel for rel in names if not rel.startswith(("/", "..")) and read(rel) is not None), None)
+    if makefile is None:
+        return None
+    variables, rules, default = _makefile(read(makefile))
+    for called in targets or [default]:
+        stack, seen = [called], set()
+        while stack:
+            target = stack.pop(0)
+            if target is None or target in seen or target not in rules:
+                continue
+            seen.add(target)
+            prerequisites, recipe = rules[target]
+            for number, line in recipe:
+                line_text = _expanded(line, variables).lstrip("@-+ ")
+                if MENTION.search(line_text):
+                    return called, makefile, number, line, target
+                for inner in simple_commands(line_text) if depth < DEPTH else ():
+                    if posixpath.basename(inner[0]) in MAKE and (hit := _made(
+                            inner, posixpath.dirname(makefile) or ".", read, depth + 1)):
+                        return called, hit[1], hit[2], hit[3], hit[4]
+            stack += prerequisites
+    return None
+
+
+def makes(path: str, text: str, cwd: str, read) -> list[dict]:
+    """A `compose_not_read` gap for each `make` command of a shell `text` written at `path`, run from `cwd`, whose
+    target reaches Docker Compose (`_made`): what make runs Daodan does not read."""
+    gaps = []
+    for words in simple_commands(text):
+        if posixpath.basename(words[0]) in MAKE and (hit := _made(words, cwd, read)):
+            called, makefile, number, line, target = hit
+            gaps.append({"kind": "compose_not_read", "path": f"{makefile}#{target}", "detail": (
+                f"{path} runs `{shlex.join(words)}`, whose target {called} reaches {target} in {makefile}, which runs "
+                f"Docker Compose through make ({makefile}:{number} `{line}`): Daodan does not read it, and the "
+                "services it starts do not start beside the tests")})
+    return gaps
+
+
 def started(path: str, text: str, cwd: str, read, depth: int = 0) -> tuple[list[tuple[str, list[str]]], list[dict]]:
     """The `docker compose up` commands (`invocations`) a shell `text` written at `path` runs from `cwd`, each with
     the path it is written at: `text`'s, and the shell scripts' of the checkout it runs (`_runs`), which run from
@@ -190,6 +297,7 @@ def started(path: str, text: str, cwd: str, read, depth: int = 0) -> tuple[list[
     that changes folder and runs Compose."""
     words, unread = invocations(text)
     found, gaps = [(path, argv) for argv in words], [not_read(path, line) for line in unread]
+    gaps += makes(path, text, cwd, read)
     for rel in _runs(text, cwd, read) if depth < DEPTH else ():
         body = read(rel)
         more, said = started(rel, body, cwd, read, depth + 1)

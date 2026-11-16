@@ -19,15 +19,21 @@ SUFFIXES = (".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs")
 SCRIPT = Path(__file__).resolve().with_suffix(".js")
 
 
-def index(project_dir: Path, runner, files: list[str] | None = None) -> dict:
+def index(project_dir: Path, runner, files: list[str] | None = None, tsconfig: str | None = None,
+          paths: dict | None = None) -> dict:
+    """The program extends the project's root `tsconfig.json`, else `tsconfig` (the one the pre-map names), and
+    carries `paths`, the aliases with their targets from the root (the script makes them absolute, since an
+    inherited `baseUrl` would move a relative target)."""
     project_dir = Path(project_dir).resolve()
     if files is None:
         files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
                        if path.suffix in SUFFIXES and "node_modules" not in path.parts)
-    options = {"allowJs": True, "checkJs": False, "noEmit": True, "incremental": False, "skipLibCheck": True}
+    options = {"allowJs": True, "checkJs": False, "noEmit": True, "incremental": False, "skipLibCheck": True,
+               **({"paths": paths} if paths else {})}
     config = {"compilerOptions": options, "files": list(files), "include": []}
-    if (project_dir / "tsconfig.json").is_file():
-        config["extends"] = "./tsconfig.json"
+    base = "tsconfig.json" if (project_dir / "tsconfig.json").is_file() else tsconfig
+    if base and (project_dir / base).is_file():
+        config["extends"] = f"./{base}"
     else:
         options.update({"target": "es2022", "module": "esnext", "moduleResolution": "bundler", "jsx": "preserve",
                         "esModuleInterop": True, "allowSyntheticDefaultImports": True, "resolveJsonModule": True})

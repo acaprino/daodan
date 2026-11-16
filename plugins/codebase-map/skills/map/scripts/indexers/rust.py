@@ -97,9 +97,9 @@ def _module_files(rel: str, name: str) -> list[str]:
     return [(base / f"{name}.rs").as_posix(), (base / name / "mod.rs").as_posix()]
 
 
-def _mod_items(index):
-    """`(file, name node)` of every `mod name;` without a body."""
-    for rel in index.documents:
+def _mod_items(index, files=None):
+    """`(file, name node)` of every `mod name;` without a body, in the index's documents or in `files`."""
+    for rel in index.documents if files is None else files:
         if not rel.endswith(".rs"):
             continue
         tree = index.tree(rel, "rust")
@@ -181,6 +181,8 @@ def _described(where: str, scripts) -> str:
 CONFIGURATION = _described(HOST, False)
 CFG_OFF = "its `#![cfg({})]` is false in the configuration rust-analyzer reads ({})"
 MOD_OFF = "the `mod` item that loads it is under `#[cfg({})]`, false in the configuration rust-analyzer reads ({})"
+LOADER_OFF = "the file whose `mod` item loads it, {}, is left out: {}"
+NO_CRATE = "no crate includes it: no `mod` item of an indexed file loads it"
 INACTIVE = "under `#[cfg({})]`, false in the configuration rust-analyzer reads ({}): nothing is written"
 UNDECIDED = frozenset({"test", "debug_assertions", "miri", "doc", "doctest", "docsrs", "proc_macro",
                        "overflow_checks", "ub_checks", "fmt_debug", "panic", "relocation_model", "sanitize"})
@@ -297,7 +299,7 @@ def missing(index, rels: list[str], configs: dict | None = None) -> dict:
     """Why a Rust file has no document: the run of its crate wrote no index and no other run read the crate;
     else no `mod` item of an indexed file loads it, so no crate includes it; else each `mod` item that loads it is
     under a `cfg` false in the configuration rust-analyzer read it in (`MOD_OFF`), or the file's own `#![cfg]` is
-    (`CFG_OFF`)."""
+    (`CFG_OFF`). A file only files left out load names the one that loads it (`LOADER_OFF`)."""
     roots, failed = set((configs or {}).get("roots") or ()), (configs or {}).get("failed") or {}
     read = {code_graph.owner(rel, roots) for rel in index.documents}
     loaded = collections.defaultdict(list)  # a file a `mod` item loads: the false cfg of each such item, and where
@@ -316,11 +318,21 @@ def missing(index, rels: list[str], configs: dict | None = None) -> dict:
             reasons[rel] = f"the rust-analyzer run of its crate {root or '.'} wrote no index ({failed[root]})"
         elif rel not in loaded and PurePosixPath(rel).name not in ("lib.rs", "main.rs", "build.rs") \
                 and PurePosixPath(rel).parent.name not in ROOT_DIRECTORIES:
-            reasons[rel] = "no crate includes it: no `mod` item of an indexed file loads it"
+            reasons[rel] = NO_CRATE
         elif rel in loaded and all(off for off, _said in loaded[rel]):
             reasons[rel] = MOD_OFF.format(*loaded[rel][0])
         elif own:
             reasons[rel] = CFG_OFF.format(own[0], _described(where, scripts))
+    # A file loaded only by files left out (`#[cfg(target_os = "macos")] mod macos;`, then macos/mod.rs's
+    # `mod posit;`): the one that loads it, and the cause that leaves the chain out.
+    causes, changed = {rel: reason for rel, reason in reasons.items()}, True
+    while changed:
+        changed = False
+        for rel, name in _mod_items(index, [rel for rel in rels if rel in reasons and rel.endswith(".rs")]):
+            for candidate in _module_files(rel, name.text.decode("utf-8")):
+                if reasons.get(candidate) == NO_CRATE:
+                    causes[candidate] = causes[rel]
+                    reasons[candidate], changed = LOADER_OFF.format(rel, causes[rel]), True
     return reasons
 
 

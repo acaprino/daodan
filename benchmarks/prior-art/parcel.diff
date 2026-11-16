@@ -1,0 +1,70 @@
+diff --git b/parcel/dispatch.py b/parcel/dispatch.py
+new file mode 100644
+index 0000000..1dd127c
+--- /dev/null
++++ b/parcel/dispatch.py
+@@ -0,0 +1,10 @@
++"""Affidamento al corriere: addebita e mette in viaggio."""
++from . import billing, parcels, tracking
++
++
++def ship(parcel_id, account):
++    parcel = parcels.PARCELS[parcel_id]
++    if parcel["status"] != "created":
++        raise ValueError("passaggio non ammesso")
++    billing.charge(account)
++    return tracking.add_event(parcel_id, "in_transit")
+diff --git b/parcel/labels.py b/parcel/labels.py
+new file mode 100644
+index 0000000..44cb6b9
+--- /dev/null
++++ b/parcel/labels.py
+@@ -0,0 +1,30 @@
++"""Etichette da stampare."""
++from . import parcels
++
++STATUSES = ("created", "in_transit", "delivered")
++
++
++def _recipient(parcel):
++    recipient = parcel["recipient"]
++    if isinstance(recipient, str):
++        name, _, zip_code = recipient.rpartition(", ")
++        return name, parcels.clean_zip(zip_code)
++    return recipient["name"], recipient["zip"]
++
++
++def _history(parcel):
++    events = parcel["events"]
++    if events is None:
++        return []
++    if not isinstance(events, list):
++        events = [events]
++    return events
++
++
++def text(parcel_id):
++    parcel = parcels.PARCELS[parcel_id]
++    if parcel["status"] not in STATUSES:
++        raise ValueError("stato sconosciuto")
++    name, zip_code = _recipient(parcel)
++    steps = " > ".join(["created", *_history(parcel)])
++    return f"{name} | {zip_code} | {parcel['weight_g'] / 1000:.1f} kg | {steps}"
+diff --git b/parcel/webhook.py b/parcel/webhook.py
+new file mode 100644
+index 0000000..7c0f1b8
+--- /dev/null
++++ b/parcel/webhook.py
+@@ -0,0 +1,12 @@
++"""Notifiche del corriere: ogni chiamata porta un passaggio di stato."""
++from . import parcels, tracking
++
++
++def on_event(payload):
++    parcel_id = payload["parcel"]
++    if parcel_id not in parcels.PARCELS:
++        raise ValueError("spedizione sconosciuta")
++    status = payload["status"]
++    if status not in tracking.NEXT.values():
++        raise ValueError("passaggio non ammesso")
++    return tracking.add_event(parcel_id, status)

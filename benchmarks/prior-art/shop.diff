@@ -1,0 +1,97 @@
+diff --git a/shop/api.py b/shop/api.py
+index 30e55fc..122886a 100644
+--- a/shop/api.py
++++ b/shop/api.py
+@@ -1,8 +1,13 @@
+ """Ingresso HTTP: riceve JSON non fidato e chiama il dominio."""
+-from . import orders
++from . import orders, returns
+ 
+ 
+ def post_order(body):
++    for line in body["lines"]:
++        if not isinstance(line.get("qty"), int):
++            return 400, "qty deve essere un intero"
++        if line["qty"] < 1 or line["qty"] > 20:
++            return 400, "quantità non ammessa"
+     try:
+         return 201, orders.place(body["id"], body["customer_id"], body["lines"])
+     except (KeyError, ValueError) as exc:
+@@ -15,3 +20,13 @@ def delete_order(order_id):
+     except (KeyError, ValueError) as exc:
+         return 400, str(exc)
+     return 204, None
++
++
++def post_return(body):
++    try:
++        if body["kind"] == "void":
++            returns.void(body["order_id"])
++            return 204, None
++        return 200, returns.refund(body["order_id"], body["skus"])
++    except (KeyError, ValueError) as exc:
++        return 400, str(exc)
+diff --git b/shop/returns.py b/shop/returns.py
+new file mode 100644
+index 0000000..bae559e
+--- /dev/null
++++ b/shop/returns.py
+@@ -0,0 +1,39 @@
++"""Resi: rimborso di righe già pagate e annullamento di un ordine aperto."""
++from decimal import ROUND_HALF_UP, Decimal
++
++from . import catalog, orders
++
++
++def _clean_sku(raw):
++    return raw.strip().upper()
++
++
++def _total(lines):
++    amount = sum((Decimal(str(line["price"])) * line["qty"] for line in lines), Decimal(0))
++    return float(amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
++
++
++def _customer_id(customer):
++    if isinstance(customer, dict):
++        return customer.get("id") or customer.get("customer_id")
++    if hasattr(customer, "id"):
++        return customer.id
++    return customer
++
++
++def refund(order_id, skus):
++    """Importo da rimborsare per le righe indicate."""
++    order = orders.ORDERS[order_id]
++    wanted = {_clean_sku(sku) for sku in skus}
++    lines = [line for line in order["lines"] if line["sku"] in wanted]
++    return {"customer": _customer_id(order["customer"]), "amount": _total(lines)}
++
++
++def void(order_id):
++    """Annulla un ordine non ancora spedito."""
++    order = orders.ORDERS[order_id]
++    if order["status"] != "placed":
++        raise ValueError("solo un ordine aperto si annulla")
++    for line in order["lines"]:
++        catalog.PRODUCTS[line["sku"]]["stock"] += line["qty"]
++    order["status"] = "cancelled"
+diff --git b/shop/stats.py b/shop/stats.py
+new file mode 100644
+index 0000000..5a8fa45
+--- /dev/null
++++ b/shop/stats.py
+@@ -0,0 +1,13 @@
++"""Statistiche per il cruscotto: non sono importi da incassare."""
++
++
++def round_avg(value):
++    """Arrotondamento del banchiere, voluto: su molte medie non sposta la somma.
++
++    Diverso apposta da pricing.round_cents, che arrotonda i soldi metà verso l'alto.
++    """
++    return round(value, 2)
++
++
++def return_rate(returned, sold):
++    return round_avg(returned / sold) if sold else 0.0

@@ -134,15 +134,22 @@ TIMEOUT = 3600
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: nothing yet. The graph runs once over the snapshot's files; the units
-    of code that load sheets together (`graph`'s `units`) are not in the pre-map."""
-    return {}
+    """What `index` takes from the pre-map: the scripts' program as the TypeScript analyzer builds it (`tsconfig`,
+    the one a root without its own extends; `paths`, every unit's aliases and each reachable package's name, from
+    the root). The graph runs once over the snapshot's files; the units of code that load sheets together
+    (`graph`'s `units`) are not in the pre-map."""
+    from . import typescript
+    stated = typescript.structure(record)
+    paths, _gaps = typescript._aliases(stated.get("paths"), stated.get("members"))
+    return {key: value for key, value in (("tsconfig", stated.get("tsconfig")), ("paths", paths)) if value}
 
 
-def index(project_dir: Path, work_dir: Path, *, files: list[str]) -> dict:
+def index(project_dir: Path, work_dir: Path, *, files: list[str], tsconfig: str | None = None,
+          paths: dict | None = None) -> dict:
     """The analyzer's run: the graph over `files` outside dependency directories, its engines through
-    `node_runner`. `{"graph", "indexer"}`, the indexer's version a digest of every engine's (`versions`); without a
-    graph, `state` `unavailable` with `reason` and `install`."""
+    `node_runner`, the scripts' program with `tsconfig` and `paths` (`structure`). `{"graph", "indexer"}`, the
+    indexer's version a digest of every engine's (`versions`); without a graph, `state` `unavailable` with `reason`
+    and `install`."""
     from . import runtime
     project_dir = Path(project_dir).resolve()
     files = [rel for rel in files
@@ -150,7 +157,8 @@ def index(project_dir: Path, work_dir: Path, *, files: list[str]) -> dict:
     try:
         runtime.memory(ENTRY, MIN_FREE)
         built = run(project_dir, node_runner(project_dir, Path(work_dir)), files,
-                    tailwind=tailwind_runner(project_dir, Path(work_dir)))
+                    tailwind=tailwind_runner(project_dir, Path(work_dir)),
+                    program={"tsconfig": tsconfig, "paths": paths})
     except runtime.Unavailable as error:
         return runtime.refused(ENTRY, None, error)
     versions = built["indexer"]["version"]
@@ -260,10 +268,11 @@ def walk(project_dir: Path) -> list[str]:
 
 
 def run(project_dir: Path, runner, files: list[str] | None = None, units: list | None = None,
-        remote: dict | None = None, tailwind=None) -> dict:
+        remote: dict | None = None, tailwind=None, program: dict | None = None) -> dict:
     """The adapters over a project, then the graph. `runner` runs an engine script in the project's root
     (`css_sass`), and raises `runtime.Unavailable` when an engine cannot run; `tailwind`, the runner of the project's
-    Tailwind (`tailwind_runner`), else `runner`; `units` and `remote` as `graph` takes them."""
+    Tailwind (`tailwind_runner`), else `runner`; `program`, the scripts' `tsconfig` and `paths` (`structure`);
+    `units` and `remote` as `graph` takes them."""
     project_dir = Path(project_dir).resolve()
     files = walk(project_dir) if files is None else files
     own = parse(project_dir, files)
@@ -272,7 +281,7 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
     stylus = engine_sheets(runner, css_stylus, "stylus", project_dir, files)
     components = component_files(runner, project_dir, files)
     script_files = [rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)]
-    scripts = css_typescript.index(project_dir, runner, script_files) if script_files else \
+    scripts = css_typescript.index(project_dir, runner, script_files, **(program or {})) if script_files else \
         {"indexer": None, "records": [], "missing": {}}
     records = (own["records"] + sass["records"] + less["records"] + stylus["records"] + components["records"] +
                scripts["records"])
@@ -368,7 +377,8 @@ def component_files(runner, project_dir: Path, files: list[str]) -> dict:
         for child in kids:
             parents_of[child].add(parent)
     for record in records:
-        if record["t"] != "classes" or not record["file"].endswith(".vue"):
+        # The template's class sites; a style block's `@apply` or `@extend` is the sheet's, with no scopes.
+        if record["t"] != "classes" or not record["file"].endswith(".vue") or "scopes" not in record:
             continue
         ancestors, queue = set(), [record["file"]]
         while queue:
@@ -1685,6 +1695,9 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
     names = collections.defaultdict(list)
     tailwind = tailwind or {}
     valid, version = set(tailwind.get("valid") or ()), tailwind.get("version")
+    # The version of the Tailwind that generates each token, when the run says it (`css_tailwind.js`).
+    version_of = {token: found for token, found in (tailwind.get("valid") or {}).items() if isinstance(found, str)} \
+        if isinstance(tailwind.get("valid"), dict) else {}
     in_snapshot, read, cssinjs = set(files), set(), {}
     pending, sheets = {}, set()  # external names, made into nodes when a reference reaches them; sheets read
     sheet_of = {}  # an external name: the sheet that declares it
@@ -1905,7 +1918,7 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
 
     def tailwind_node(name):
         return node(f"tailwindcss {name}", "class" if not name.startswith("@") else "layer", None, None,
-                    {"manager": "npm", "package": "tailwindcss", "version": version})["id"]
+                    {"manager": "npm", "package": "tailwindcss", "version": version_of.get(name, version)})["id"]
 
     def closure(start, keys):
         seen, queue = [], [start]

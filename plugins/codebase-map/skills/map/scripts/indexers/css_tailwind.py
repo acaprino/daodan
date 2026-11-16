@@ -1,11 +1,13 @@
 """The project's Tailwind, for the stylesheet graph: which class tokens are Tailwind utilities (`css_tailwind.js`).
 
-`index` asks the project's `node_modules/tailwindcss` for the order of every token: a token Tailwind does not
-generate has none. Tailwind 3 reads the project's `tailwind.config.*` at its root; Tailwind 4 the design system of each
-CSS entry that imports `tailwindcss` (`entries`). Loading Tailwind, a config or a plugin runs the project's code, as
-Tailwind's own build does: the script runs through the runner the graph gives it, the container's
-(`css.tailwind_runner`), never on the host. A project whose manifests declare no `tailwindcss` (and holds no installed
-one) runs nothing: `valid` is None and no token is one.
+`index` asks the project's Tailwind for the order of every token: a token Tailwind does not generate has none. Each
+entry is read with the Tailwind Node resolves from its folder (a workspace package's `node_modules/tailwindcss`, else
+the root's), and `valid` gives each token the version of the one that generates it. Tailwind 3 reads the project's
+`tailwind.config.*` at its root; Tailwind 4 the design system of each CSS entry that imports `tailwindcss`
+(`entries`). Loading Tailwind, a config or a plugin runs the project's code, as Tailwind's own build does: the
+script runs through the runner the graph gives it, the container's (`css.tailwind_runner`), never on the host. A
+project whose manifests declare no `tailwindcss` (and holds no installed one) runs nothing: `valid` is None and no
+token is one.
 """
 from __future__ import annotations
 

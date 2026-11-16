@@ -345,6 +345,31 @@ def test_every_hook_an_indexer_defines_is_reached():
     assert not unreached, unreached
 
 
+def test_a_document_without_occurrences_of_a_file_that_holds_nothing_to_answer_is_indexed(tmp_path):
+    """jhipster's 14 package-info.java (D-111): a package line under its comment, which scip-java writes as a
+    document without occurrences. Nothing in it awaits an answer (no reference, no function, method or class of
+    the snapshot), so it is indexed. A file the snapshot finds a class and a call in, whose document has no
+    occurrence, stays missing with that reason."""
+    import types
+    import snapshot
+    project = tmp_path / "proj"
+    (project / "app").mkdir(parents=True)
+    (project / "app/package-info.java").write_text("/**\n * Application root.\n */\npackage app;\n", encoding="utf-8")
+    (project / "app/Lost.java").write_text("package app;\n\nclass Lost {\n    int run() { return Math.abs(-1); }\n}\n",
+                                           encoding="utf-8")
+    manifest = tmp_path / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    (tmp_path / "index.scip").write_bytes(document("app/package-info.java", []) + document("app/Lost.java", []))
+    with code_graph.Snapshot(manifest) as snap:
+        index = code_graph.Index(snap.root)
+        index.load(tmp_path / "index.scip")
+        hops, traversal, _prepared = code_graph.adapter_traversal(types.SimpleNamespace(hops=lambda read: {}), index,
+                                                                  snap)
+        graph, _references = code_graph.build(index, snap, "java", hops, {}, None, traversal)
+    assert (graph["files"]["snapshot"], graph["files"]["indexed"]) == (2, 1)
+    assert graph["files"]["missing"] == [{"path": "app/Lost.java", "reason": "document without occurrences"}]
+
+
 def test_file_without_declarations_is_inside_the_snapshot(tmp_path):
     snapshot = code_graph.Snapshot.__new__(code_graph.Snapshot)
     snapshot.paths, snapshot.inventory = {"a.kt": tmp_path / "a.kt"}, set()

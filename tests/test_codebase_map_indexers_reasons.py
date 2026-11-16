@@ -74,8 +74,8 @@ FEATURES = ("pub fn first_newline(haystack: &[u8]) -> Option<usize> {\n"
 
 
 def test_rust_code_a_cfg_leaves_out_says_so(tmp_path):
-    """rust-analyzer reads one configuration (`CONFIG`): every feature on, the host's target, no build script, so
-    no cfg one sets; it writes nothing of the code a `cfg` false there leaves out. sys-rust-features: the
+    """rust-analyzer reads one configuration (`CONFIGURATION`): every feature on, Linux in Daodan's container, the
+    cfgs the build scripts set; it writes nothing of the code a `cfg` false there leaves out. sys-rust-features: the
     `not(feature = "fast")` block; semver: `#[cfg(target_endian = "big")]` and tests/node/mod.rs, whose
     `#![cfg(test_node_semver)]` only RUSTFLAGS sets; hoppscotch: `#[cfg(target_os = "macos")] mod macos;` and
     tauri's `#[cfg(desktop)]`, set by its build script. A cfg rust-analyzer may set (`test`) decides nothing."""
@@ -99,6 +99,26 @@ def test_rust_code_a_cfg_leaves_out_says_so(tmp_path):
     assert cause(("src/lib.rs", 16, 13)) == rust.INACTIVE.format('all(unix, not(feature = "fast"))', host)  # `all`
     assert cause(("src/lib.rs", 18, 14)) == (rust.INACTIVE.format('target_endian = "big"', host)
                                             if sys.byteorder == "little" else None)
+
+
+def test_a_rust_file_whose_loader_is_left_out_says_which_and_why(tmp_path):
+    """hoppscotch's tauri-plugin-appload: `#[cfg(target_os = "macos")] mod macos;` leaves out src/ui/macos/mod.rs,
+    and with it the posit.rs its `mod posit;` loads, which read "no crate includes it" (D-143). A file loaded only
+    by files left out names the one that loads it and the cause that leaves the chain out; one no file loads at all
+    still says so."""
+    _project(tmp_path, {"src/lib.rs": '#[cfg(target_os = "macos")]\nmod macos;\n',
+                        "src/macos/mod.rs": "mod posit;\nmod deeper;\n", "src/macos/posit.rs": "",
+                        "src/macos/deeper.rs": "mod leaf;\n", "src/macos/deeper/leaf.rs": "", "src/orphan.rs": ""})
+    absent = ["src/macos/mod.rs", "src/macos/posit.rs", "src/macos/deeper.rs", "src/macos/deeper/leaf.rs",
+              "src/orphan.rs"]
+    reasons = rust.missing(_index(tmp_path, ["src/lib.rs"]), absent)
+    if sys.platform == "darwin":
+        return
+    first = rust.MOD_OFF.format('target_os = "macos"', rust.CONFIGURATION)
+    loaded = rust.LOADER_OFF.format("src/macos/mod.rs", first)
+    assert reasons == {"src/macos/mod.rs": first, "src/macos/posit.rs": loaded, "src/macos/deeper.rs": loaded,
+                       "src/macos/deeper/leaf.rs": rust.LOADER_OFF.format("src/macos/deeper.rs", first),
+                       "src/orphan.rs": rust.NO_CRATE}
 
 
 def test_a_go_file_left_out_by_its_name_or_by_a_run_without_index_says_so(tmp_path, monkeypatch):
