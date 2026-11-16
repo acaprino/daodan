@@ -78,7 +78,8 @@ def test_premap_beside_the_manifest_every_fact_with_its_source(tmp_path):
     assert {s["source"].split("@")[0]: s["state"] for s in record["sources"]} == {
         "modules.py": "ran", "python-build": "not_needed", "requirements": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
         "gitmodules": "not_needed", "python-tests": "not_needed", "npm-tests": "not_needed", "autotools": "not_needed",
-        "go-enry": "not_run", "renovate": "not_run", "compose": "not_needed", "go": "not_needed", "cargo": "not_needed",
+        "go-enry": "not_run", "renovate": "not_run", "compose": "not_needed", "buildkit": "not_needed",
+        "go": "not_needed", "cargo": "not_needed",
         "uv": "not_needed",
         "tsc": "not_needed", "npm": "not_run", "cmake": "not_needed", "meson": "not_needed", "bazel": "not_needed",
         "make": "not_needed", "project-files": "not_needed", "gradle": "not_needed", "maven": "not_needed",
@@ -629,6 +630,20 @@ def test_the_sdk_of_global_json_is_the_dotnet_toolchain(tmp_path):
         {"depName": "dotnet-sdk", "depType": "dotnet-sdk", "currentValue": "8.0.404"}],
         "extractedConstraints": {"dotnet-sdk": "8.0.404"}}]})
     assert facts == {"toolchains": [{"tool": "dotnet", "version": "8.0.404", "declared_in": "global.json"}]}
+
+
+def test_the_bun_a_workflow_sets_up_is_the_bun_toolchain(tmp_path):
+    """real-app-full-stack-fastapi: Bun's version is only in its workflows, `oven-sh/setup-bun` with
+    `bun-version`, which Renovate's github-actions manager reports as the npm package `bun` (`uses-with`,
+    known-actions/npm.ts); the action itself is no toolchain."""
+    files = {"package.json": '{"name": "a", "scripts": {"test": "bun run --filter frontend test"}}\n'}
+    facts = _renovate(tmp_path, files, {"github-actions": [{"packageFile": ".github/workflows/playwright.yml", "deps": [
+        {"depName": "oven-sh/setup-bun", "currentValue": "v2.2.0", "depType": "action"},
+        {"depName": "bun", "packageName": "bun", "datasource": "npm", "currentValue": "1.3.12", "depType": "uses-with"},
+        {"depName": "@biomejs/biome", "packageName": "@biomejs/biome", "currentValue": "2.6.3",
+         "depType": "uses-with"}]}]})
+    assert facts["toolchains"] == [{"tool": "bun", "version": "1.3.12",
+                                    "declared_in": ".github/workflows/playwright.yml"}]
 
 
 def test_a_constraint_no_file_writes_is_left_out_and_a_written_one_stays(tmp_path):

@@ -226,7 +226,7 @@ def test_a_failed_setup_fails_the_source(tmp_path, no_download):
 def test_every_model_source_of_the_premap_has_a_setup():
     tools = {"go": premap.go, "cargo": premap.cargo, "uv": premap.uv, "tsc": premap.tsc, "npm": premap.npm,
              "renovate": premap.renovate, "compose": premap.compose, "daodan-enry": premap.enry,
-             "cmake": premap.cmake, "meson": premap.meson,
+             "daodan-dockerfile": premap.dockerfile, "cmake": premap.cmake, "meson": premap.meson,
              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
              "sbt": premap.sbt, "dotnet": premap.dotnet}
     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())

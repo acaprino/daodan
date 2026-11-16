@@ -38,7 +38,7 @@ import confinement  # noqa: E402
 import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
-from premap import (autotools, bazel, cargo, cmake, compose, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
+from premap import (autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
                     jvm_files, make, maven, meson, module_graph, npm, npm_lock, npm_tests, project_files, python_build,
                     python_tests, renovate, requirements, sbt, suffix_table, tsc, uv)
 
@@ -47,7 +47,7 @@ FILE = "premap.json"
 RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run` and the coverage gaps
 RANKS = ("model", "reader", "scanner")
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, jvm_files, project_files,
-           gitmodules, autotools, enry, renovate, compose, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
+           gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
            gradle, maven, sbt, dotnet)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
     "languages": (("language",),),
@@ -58,6 +58,8 @@ IDENTITY = {  # the fields that make two entries one fact, from the strictest to
     "tests": (("root", "runner"),),  # how the tests of a folder run: the dynamic step's command
     "services": (("declared_in",),),  # a service container a CI job starts beside its steps: the dynamic step's too
     "compose": (("declared_in",),),  # a CI step that starts Docker Compose: what `compose` reads
+    "ci_steps": (("declared_in", "tests"),),  # a step a CI job runs before the tests of an entry: the dynamic step's
+    "docker_builds": (("dockerfile", "context"),),  # a Dockerfile's stages as BuildKit reads them (`dockerfile`)
 }
 EXECUTES = {  # unit kinds whose model or index exists only when the build runs project code
     "gradle-project": "Gradle runs the build scripts for the model and the compile tasks the index needs",

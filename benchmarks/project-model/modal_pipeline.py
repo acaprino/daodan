@@ -113,9 +113,13 @@ def _bundle() -> str:
 
 
 def _docker(box):
-    """Docker's command line in `box`, answered as `container.cli` answers."""
-    def run(*args, timeout=300):
+    """Docker's command line in `box`, answered as `container.cli` answers; `stdin` a file it reads."""
+    def run(*args, timeout=300, stdin=None):
         process = box.exec(f"{ENGINE}/docker", *args, timeout=int(timeout), text=False)
+        if stdin is not None:
+            process.stdin.write(stdin.read())
+            process.stdin.write_eof()
+            process.stdin.drain()
         out, err = process.stdout.read(), process.stderr.read()
         code = process.wait()
         if code == -1:
@@ -147,6 +151,14 @@ def _quiet(box) -> None:
                          " done", timeout=120).wait()
 
 
+def _hosts(box, pinned) -> None:
+    """The names the services are reached by, other than localhost, at 127.0.0.1 in `box`, as the pod's hosts
+    name them."""
+    for name in sorted({name for s in pinned for name in (s.get("host"), *s.get("aliases", ()))
+                        if name not in (None, "localhost")}):
+        box.exec("sh", "-c", f"echo 127.0.0.1 {shlex.quote(name)} >> /etc/hosts").wait()
+
+
 def vm(command, services) -> bool:
     """Whether a run takes a VM Sandbox, with a Linux kernel of its own: with services (Docker runs only there), or
     when its execution starts Valgrind (the Rust and the C and C++ observers, `dynamic/callgrind.py`), which grows a
@@ -158,7 +170,9 @@ def vm(command, services) -> bool:
 def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), env=None, timeout=600,
                 prepare_timeout=1800, memory=2 * 2**30, inputs=None, **_):
     """`container.run_in_container` on Modal Sandboxes: the same arguments and result (the module's docstring),
-    `container.beside`'s services and variables included."""
+    `container.beside`'s services, variables and steps included. With steps and services, the services start in
+    the preparation's sandbox, the steps beside them, and start again from what they kept (the snapshot holds
+    Docker's own folders) beside the tests."""
     import container
     out_dir = Path(out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -166,7 +180,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
     result = {"state": "failed", "exit_code": None, "outputs": [], "record": str(record), "engine": "modal"}
     token = uuid.uuid4().hex[:12]
     scratch = Path("/results") / SCRATCH / token
-    services, variables, started = container.BESIDE.get() or ((), {}, [])
+    services, variables, steps, said = container.BESIDE.get() or ((), {}, (), container.Said([], []))
+    steps = list(steps) if prepare else []
     env = {**variables, **(env or {})}
     env = {"HOME": container.HOME, **env} if prepare else env
     options = {"app": modal.App.lookup("daodan-pipeline-sandboxes", create_if_missing=True),
@@ -174,7 +189,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                "memory": int(memory / 2**20), "cpu": SANDBOX_CPU, "timeout": int(prepare_timeout + timeout + 900),
                **({"experimental_options": VM} if vm(command, services) else {})}
     unpack = f"tar -xf /results/{SCRATCH}/{token}/copy.tar -C / && mkdir -p {container.WORKDIR} && cd {container.WORKDIR}"
-    boxes, pinned, served = [], [], []
+    boxes, pinned, served, kept = [], [], [], False  # `kept`: the services started beside the steps
+    limits = {"memory": int(memory), "pids": 1024}
 
     def failed(items, error) -> list[dict]:
         cause = f"{type(error).__name__}: {error}"
@@ -209,31 +225,46 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                             served += failed([service], error)
                     if any(s.get("wait") == "ports" for s in pinned):  # the image their ports are asked from
                         container.pin(_docker(boxes[-1]), container.PROXY_IMAGE, prepare_timeout)
-                    _quiet(boxes[-1])
+                    if steps and pinned:  # the services beside the steps, as they will be beside the tests
+                        _hosts(boxes[-1], pinned)
+                        early = container.start_services(_docker(boxes[-1]), pinned, "host", limits, token,
+                                                         copy=scratch / "copy.tar")
+                        for item in early:
+                            container.append_record(record, {**item, "engine": "modal"})
+                        unready = {item["name"] for item in early if item["outcome"] != "ready"}
+                        served += [item for item in early if item["name"] in unready]
+                        pinned, kept = [s for s in pinned if s["name"] not in unready], True
+                    else:
+                        _quiet(boxes[-1])
                 except (RuntimeError, subprocess.TimeoutExpired) as error:
                     said = {item["name"] for item in served}
                     served += failed([s for s in services if s["name"] not in said], error)
                     pinned = []
             if prepare:
-                row = _phase(boxes[-1], "prepare", f"{unpack} && mkdir -p \"$HOME\" && exec {shlex.join(prepare)}",
-                             env, prepare_timeout, out_dir)
+                run = ["sh", "-c", container.steps_script(steps, timeout, token), "sh", *prepare] if steps else prepare
+                row = _phase(boxes[-1], "prepare", f"{unpack} && mkdir -p \"$HOME\" && exec {shlex.join(run)}",
+                             env, prepare_timeout + (timeout if steps else 0), out_dir)
                 container.append_record(record, {**row, "image": image, "command": list(prepare), "copy": digest})
+                for item in container.stepped(Path(row["log"]).read_text(encoding="utf-8", errors="replace")
+                                              if Path(row["log"]).is_file() else "", steps, token, timeout):
+                    container.append_record(record, {**item, "engine": "modal"})
+                    result.setdefault("ci_steps", []).append({key: item[key] for key in item if key != "phase"})
+                said.ci_steps.extend(result.get("ci_steps", ()))
                 if row["outcome"] != "exited" or row["exit_code"] != 0:
                     result["cause"] = row.get("cause") or f"preparation {row['outcome']} with code {row['exit_code']}"
                     return result
                 unpack = f"cd {container.WORKDIR}"
+            if kept:
+                _quiet(boxes[-1])  # the services stop with the daemon, their data in its folders
             base = boxes[-1].snapshot_filesystem()
             boxes.pop().terminate()
         boxes.append(modal.Sandbox.create(image=base, block_network=True, **options))
         if pinned:
             try:
                 _daemon(boxes[-1])
-                names = sorted({name for s in pinned for name in (s.get("host"), *s.get("aliases", ()))
-                                if name not in (None, "localhost")})
-                if names:  # a service reached by its name, as the pod's hosts name it
-                    boxes[-1].exec("sh", "-c", f"printf '127.0.0.1 %s\\n' {shlex.join(names)} >> /etc/hosts").wait()
-                served += container.start_services(_docker(boxes[-1]), pinned, "host",
-                                                   {"memory": int(memory), "pids": 1024}, token)
+                _hosts(boxes[-1], pinned)
+                served += container.start_services(_docker(boxes[-1]), pinned, "host", limits, token,
+                                                   copy=scratch / "copy.tar", created=kept)
             except (RuntimeError, subprocess.TimeoutExpired) as error:
                 served += failed(pinned, error)
         for item in served:
@@ -241,7 +272,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         if services:
             result["services"] = [{key: item[key] for key in ("name", "image", "pinned", "outcome", "cause")
                                    if key in item} for item in served]
-            started += result["services"]
+            said.services.extend(result["services"])
         row = _phase(boxes[-1], "execute", f"{unpack} && exec {shlex.join(command)}", env, timeout, out_dir)
         container.append_record(record, {**row, "image": image, "command": list(command), "copy": digest})
         if outputs and row["outcome"] != "failed":

@@ -29,10 +29,12 @@ import os
 import platform
 import posixpath
 import re
+import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path, PurePosixPath
 
 import code_graph
@@ -207,13 +209,14 @@ def missing(index, rels: list[str], configs: dict | None = None) -> dict:
     """Why a Go file has no document: no module holds it, the run of its module wrote no index, a build
     constraint, or a file name the indexer's build leaves out."""
     roots, failed = set((configs or {}).get("roots") or ()), (configs or {}).get("failed") or {}
-    constraints = (configs or {}).get("constraints") or {}
+    constraints, docker = (configs or {}).get("constraints") or {}, (configs or {}).get("docker") or {}
     read = {code_graph.owner(rel, roots) for rel in index.documents}
     reasons, target = {}, _target()
     for rel in rels:
         root, named = code_graph.owner(rel, roots), _named(rel)
         if root is None and "roots" in (configs or {}):
-            reasons[rel] = NO_MODULE
+            if rel not in index.documents:  # a Dockerfile's build stage indexes it, or says why not (`_docker`)
+                reasons[rel] = docker.get(rel, NO_MODULE)
             continue
         if root in failed and root not in read:
             reasons[rel] = f"the scip-go run of its module {root or '.'} wrote no index ({failed[root]})"
@@ -532,14 +535,103 @@ def _build(go: str, env: dict, partial: Path, work_dir: Path) -> None:
 
 
 def structure(record: dict) -> dict:
-    """What `index` takes from the pre-map: the folders it runs in."""
+    """What `index` takes from the pre-map: the folders it runs in, and the Dockerfiles as BuildKit reads them."""
     import premap
-    return {"roots": premap.roots(record, UNIT_KINDS, {"go"})}
+    builds = record.get("docker_builds") or []
+    return {"roots": premap.roots(record, UNIT_KINDS, {"go"}), **({"docker": builds} if builds else {})}
 
 
-def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str]) -> dict:
+GO_BUILD = r"\bgo\s+(build|install)\b"  # the RUN of a Dockerfile's stage that builds its Go module
+SCIP_GO_OUT = "/daodan/out"
+FAILED_STEP = re.compile(r"DAODAN-DOCKERFILE-FAILED (\S+)")
+
+
+PROGRESS = re.compile(r"go: (downloading|creating|finding|added|upgraded|found|to add|extracting) |"
+                      r"go: module \S+ is deprecated|^\s*go mod tidy$|\simports$")  # what the go command says on the way
+
+
+def _first_error(log: str, marker: int) -> str:
+    """The go command's first error line before `marker` in a preparation's log (`dispatch imports` /
+    `<package> imports` / the error: the error), else its last line."""
+    lines = [line for line in log[:marker].splitlines() if line.strip()]
+    found = next((line for line in lines if not PROGRESS.search(line)), None)
+    return (found or (lines[-1] if lines else "")).rstrip()[:400]
+
+
+def _docker(project: Path, work_dir: Path, files: list[str], roots: set[str], builds) -> tuple[list[dict], dict, list]:
+    """The runs for the Go files no module holds that a Dockerfile's build stage copies in: its steps up to its
+    `go build` or `go install` in the preparation (`docker_build.plan`), with scip-go built there with Daodan's
+    Go; scip-go then runs offline where the build would, on the module and the module cache the steps left, and
+    its documents name the checkout's files. Each run carries the Dockerfile, the stage and the `go.mod` and
+    `go.sum` the steps resolved (`go get` resolves at run time). Also `{file: why}` for the files whose stage is
+    not reproduced or did not run, and the gaps of a step that failed."""
+    import container
+    import docker_build
+    import preparation
+    outside = [rel for rel in files if code_graph.owner(rel, roots) is None]
+    runs, reasons, gaps = [], {}, []
+    for build in builds if outside else ():
+        plan = docker_build.plan(build, project, outside, GO_BUILD)
+        if plan is None:
+            continue
+        covered = sorted(set(plan["copies"].values()) & set(outside))
+        if plan["gaps"]:
+            first = plan["gaps"][0]
+            reasons.update({rel: f"no Go module holds it, and its Dockerfile's build stage is not reproduced: "
+                                 f"{first['path']}: {first['detail']}" for rel in covered})
+            gaps += plan["gaps"]
+            continue
+        setup = [f"mkdir -p {preparation.T}/bin", *preparation.NEEDS["go"]["setup"],
+                 f"GOBIN={preparation.T}/bin GOPATH={preparation.STATE}/scip-go"
+                 f" GOCACHE={preparation.STATE}/scip-go-cache GOFLAGS= GOTOOLCHAIN=local {preparation.T}/go/bin/go"
+                 f" install github.com/scip-code/scip-go/cmd/scip-go@{VERSION}",
+                 f"( cd {shlex.quote(plan['workdir'])} && mkdir -p {SCIP_GO_OUT}/resolved"
+                 f" && cp go.mod go.sum {SCIP_GO_OUT}/resolved/ ) || true"]
+        out_dir = Path(work_dir) / f"docker-{len(runs)}"
+        started = time.monotonic()
+        result = docker_build.run(project, out_dir, plan, ["env", "GOPROXY=off", f"{preparation.T}/bin/scip-go",
+                                                           f"--output={SCIP_GO_OUT}/index.scip", "./..."],
+                                  setup=setup, files=preparation.NEEDS["go"]["files"], outputs=[SCIP_GO_OUT],
+                                  timeout=1800)
+        log = out_dir / "prepare.log"
+        said = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
+        step = FAILED_STEP.search(said)
+        if step:
+            line = int(step.group(1).rsplit(":", 1)[1])
+            original = next((c["original"] for s in build["stages"] for c in s["commands"] if c["line"] == line), "")
+            error = _first_error(said, step.start())
+            reasons.update({rel: f"no Go module holds it: {step.group(1)} `{original}` failed: {error}"
+                            for rel in covered})
+            failed = {"kind": "restore_failed", "path": step.group(1), "detail": f"{original}: {error}"}
+            where = {host: [plan["dockerfile"]] for host in (*plan["hosts"], *container.REGISTRIES)}
+            gaps += [failed, *preparation.unreached([failed], {"hosts": sorted(where), "where": where})]
+            continue
+        if result["state"] != "done":
+            last = next((line.strip() for line in reversed(said.splitlines()) if line.strip()), "")
+            reasons.update({rel: f"no Go module holds it, and its Dockerfile's build stage did not run: "
+                                 f"{result.get('cause')}" + (f": {last[:400]}" if last else "") for rel in covered})
+            continue
+        written, index = out_dir / "out" / "index.scip", Path(work_dir) / f"scip-go-docker-{len(runs)}.scip"
+        kept = docker_build.rewritten(written, plan, index) if written.is_file() else 0
+        resolved = {name: (out_dir / "out" / "resolved" / name).read_text(encoding="utf-8", errors="replace")
+                    for name in ("go.mod", "go.sum") if (out_dir / "out" / "resolved" / name).is_file()}
+        execute = out_dir / "execute.log"
+        runs.append({"prefix": "", "docker": docker_build.provenance(plan), "resolved": resolved,
+                     "returncode": result.get("exit_code"), "seconds": round(time.monotonic() - started, 1),
+                     "peak_mb": None, "index": str(index) if kept else None, "index_bytes": index.stat().st_size
+                     if kept else 0, "stderr_tail": (execute.read_text(encoding="utf-8", errors="replace")[-2500:]
+                                                     if execute.is_file() else "")})
+        if not kept:
+            reasons.update({rel: f"no Go module holds it, and scip-go in its Dockerfile's build stage wrote no "
+                                 f"document of it (exit code {result.get('exit_code')})" for rel in covered})
+    return runs, reasons, gaps
+
+
+def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots: set[str],
+          docker=()) -> dict:
     """The scip-go index of `project_dir` for `files` (default: every `.go` file), `roots` the folders of its
-    modules as the pre-map names them; see the module's docstring."""
+    modules as the pre-map names them, `docker` its Dockerfiles as BuildKit reads them (`_docker`); see the
+    module's docstring."""
     import engine_tools
     import resolve_edges as rx
     from indexers import runtime
@@ -577,8 +669,12 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
         runs = code_graph.module_runs("scip-go", roots, command, files, mirror, work_dir, env)
         more, constraints = _configured(go, scip_go, env, project_dir, mirror, work_dir, files, roots, runs)
     runs += more
+    built, docker_reasons, gaps = _docker(project_dir, work_dir, files, roots, docker)
+    runs += built
     return {**runtime.outcome("scip-go", VERSION, runs),  # `configs` is for `tasks`
             "configs": {"roots": sorted(roots), "failed": {run["prefix"]: f"exit code {run['returncode']}"
                                                            for run in runs if not run["index"]
-                                                           and "configuration" not in run},
-                        **({"constraints": constraints} if constraints else {})}}
+                                                           and "configuration" not in run and "docker" not in run},
+                        **({"constraints": constraints} if constraints else {}),
+                        **({"docker": docker_reasons} if docker_reasons else {})},
+            **({"gaps": gaps} if gaps else {})}

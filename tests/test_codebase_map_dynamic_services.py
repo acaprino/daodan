@@ -13,6 +13,7 @@ from __future__ import annotations
 import contextlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -51,8 +52,20 @@ CI = {"name": "CI", "on": {"pull_request": {"branches": ["main"]}, "push": {"bra
                          "--health-retries 10"}},
           "env": {"DATABASE_URL": "postgres://tududi:tududi@localhost:5432/tududi_test"},
           "steps": [{"name": "Checkout code", "uses": "actions/checkout@v5"},
+                    {"name": "Setup Node.js", "uses": "actions/setup-node@v5",
+                     "with": {"node-version": "22", "cache": "npm"}},
                     {"name": "Install dependencies", "run": "npm install"},
-                    {"name": "Run backend tests", "run": "npm run backend:test"}]}}}
+                    {"name": "Run linting", "run": "npm run lint"},
+                    {"name": "Bootstrap an empty database and run pending migrations", "working-directory": "backend",
+                     "run": "node scripts/db-prepare.js\nnpx sequelize-cli db:migrate --config config/database.js\n"
+                            "node scripts/db-prepare.js\n", "env": {"NODE_ENV": "production"}},
+                    {"name": "Run backend tests", "run": "npm run backend:test"},
+                    {"name": "Build frontend", "run": "npm run build"}]}}}
+# its package.json's scripts that the CI's steps name
+TUDUDI_SCRIPTS = {"test": "npm run backend:test", "backend:test": "cd backend && cross-env NODE_ENV=test jest --maxWorkers=4",
+                  "frontend:test": "jest", "lint": "npm run frontend:lint && npm run backend:lint",
+                  "frontend:lint": "eslint 'frontend/**/*.{js,jsx,ts,tsx}'", "backend:lint": "cd backend && eslint .",
+                  "build": "webpack --mode production"}
 TUDUDI = {"name": "postgres", "image": "postgres:16-alpine", "declared_in": ".github/workflows/ci.yml#jobs.test.services.postgres",
           "host": "localhost",
           "env": {"POSTGRES_USER": "tududi", "POSTGRES_PASSWORD": "tududi", "POSTGRES_DB": "tududi_test"},
@@ -259,7 +272,7 @@ CONFIG = {"name": "work", "networks": {"default": {"name": "work_default", "ipam
 COMPOSE_DB = {"name": "db", "image": "postgres:18", "declared_in": STEP + ".services.db", "host": "localhost",
               "env": {"POSTGRES_DB": "app", "POSTGRES_PASSWORD": "changethis"}, "ports": ["5432:5432"],
               "healthcheck": CONFIG["services"]["db"]["healthcheck"],
-              "volumes": ["init.sql:/docker-entrypoint-initdb.d/init.sql:ro"]}
+              "binds": ["init.sql:/docker-entrypoint-initdb.d/init.sql:ro"]}
 COMPOSE_MAILPIT = {"name": "mailpit", "image": "axllent/mailpit", "declared_in": STEP + ".services.mailpit",
                    "host": "localhost", "ports": ["8025:8025", "1025:1025"]}
 
@@ -348,6 +361,153 @@ def test_each_service_compose_starts_for_a_step_is_a_fact_as_compose_gives_it():
     assert (partial["kind"], partial["path"]) == ("model_partial", "y") and "TAG" in partial["detail"]
 
 
+def test_compose_s_start_order_and_its_bind_mounts_are_facts_as_compose_gives_them():
+    """`depends_on` is `after`, each service with the condition `up` waits for; a bind mount inside the project
+    is relative to it, one outside as Compose gives it."""
+    config = {"services": {"api": {
+        "image": "example/api:1", "depends_on": {
+            "db": {"condition": "service_healthy", "required": True, "restart": True},
+            "migrate": {"condition": "service_completed_successfully", "required": True}},
+        "volumes": [{"type": "bind", "source": "/var/run/docker.sock", "target": "/var/run/docker.sock",
+                     "bind": {"create_host_path": True}},
+                    {"type": "bind", "source": "/work/api/conf", "target": "/etc/api", "read_only": True, "bind": {}},
+                    {"type": "tmpfs", "target": "/tmp"}]}}}
+    context = SimpleNamespace(stated={"compose": [UP]})
+    out = compose.read(context, compose.commands(context),
+                       [{"returncode": 0, "stdout": json.dumps(config), "stderr": "", "root": "/work"}])
+    [api] = out["facts"]["services"]
+    assert api["after"] == {"db": "service_healthy", "migrate": "service_completed_successfully"}
+    assert api["binds"] == ["/var/run/docker.sock:/var/run/docker.sock", "api/conf:/etc/api:ro"]
+    assert "ignored" not in api
+
+
+def test_a_shell_script_a_step_or_a_test_script_runs_is_read_for_docker_compose_as_its_caller_is(tmp_path):
+    """A word that names a shell script of the checkout (`.sh`, or a shell's `#!`) is followed, three levels
+    deep: its `docker compose up` runs where its caller runs, with its caller's variables; one that changes
+    folder first is a gap."""
+    workflow = {"jobs": {"test": {"env": {"CI": "1"}, "steps": [
+        {"run": "uv run bash scripts/ci.sh", "working-directory": "backend"}, {"run": "./tools/moved"}]}}}
+    package = json.dumps({"scripts": {"test": "bash scripts/test.sh && jest"}})
+    files = {"backend/scripts/ci.sh": ("#!/usr/bin/env bash\nset -e\ndocker compose up -d --wait db\n"
+                                       "sh scripts/stack.sh cache\npytest\n"),
+             "backend/scripts/stack.sh": "docker compose up -d --wait \"$1\"\n",
+             "tools/moved": "#!/bin/sh\ncd deploy\ndocker compose up -d\n",
+             "web/package.json": package, "web/scripts/test.sh": "docker compose -f test.yml up -d\n",
+             ".github/workflows/ci.yml": WORKFLOW}
+    with context_of(tmp_path, files) as context:
+        context.stated = {"tests": [{"root": "web", "runner": "jest", "declared_in": "web/package.json#scripts.test"}]}
+        commands = renovate.commands(context)
+        report = {"repositories": {"local": {"packageFiles": {}}}}
+        out = renovate.read(context, commands, [{"returncode": 0, "stdout": json.dumps(report), "stderr": ""}, {
+            "returncode": 0, "stdout": f".github/workflows/ci.yml\n{json.dumps(workflow)}\n", "stderr": ""}])
+    assert out["facts"]["compose"] == [
+        {"declared_in": "backend/scripts/ci.sh", "cwd": "backend", "argv": ["docker", "compose", "up", "-d", "--wait",
+                                                                            "db"],
+         "env": {"CI": "1"}, "job_env": {"CI": "1"}},
+        {"declared_in": "web/scripts/test.sh", "cwd": "web", "argv": ["docker", "compose", "-f", "test.yml", "up", "-d"]}]
+    said = {gap["path"]: gap["detail"] for gap in out["gaps"]}
+    assert set(said) == {"backend/scripts/stack.sh", "tools/moved"}
+    assert '"$1"' in said["backend/scripts/stack.sh"]  # its words hold its caller's argument
+    assert "changes folder" in said["tools/moved"]
+
+
+# ------------------------------------------------------------------ the steps of the CI's job before its tests
+
+TUDUDI_STEPS = [
+    {"declared_in": ".github/workflows/ci.yml#jobs.test.steps.2", "tests": "package.json#scripts.test",
+     "name": "Install dependencies", "cwd": ".", "run": "npm install", "env": {"DATABASE_URL": DATABASE_URL}},
+    {"declared_in": ".github/workflows/ci.yml#jobs.test.steps.3", "tests": "package.json#scripts.test",
+     "name": "Run linting", "cwd": ".", "run": "npm run lint", "env": {"DATABASE_URL": DATABASE_URL}},
+    {"declared_in": ".github/workflows/ci.yml#jobs.test.steps.4", "tests": "package.json#scripts.test",
+     "name": "Bootstrap an empty database and run pending migrations", "cwd": "backend",
+     "run": CI["jobs"]["test"]["steps"][4]["run"], "env": {"DATABASE_URL": DATABASE_URL, "NODE_ENV": "production"}}]
+FASTAPI_SCRIPTS = {  # fastapi/full-stack-fastapi-template's, at the commit of BACKEND
+    "backend/scripts/prestart.sh": "#! /usr/bin/env bash\n\nset -e\nset -x\n\n# Run migrations\nalembic upgrade head\n\n"
+                                   "# Create initial data in DB\npython app/initial_data.py\n",
+    "backend/scripts/tests-start.sh": '#! /usr/bin/env bash\nset -e\nset -x\n\nbash scripts/test.sh "$@"\n',
+    "backend/scripts/test.sh": "#!/usr/bin/env bash\n\nset -e\nset -x\n\nFASTAPI_ENV=development coverage run -m pytest "
+                               'tests/\ncoverage report\ncoverage html --title "${@-coverage}"\n'}
+
+
+def read_steps(tmp_path, files: dict, tests: list[dict], workflows: dict) -> dict:
+    """What the workflow reader states of `workflows` (`{path: document}`, as Renovate's YAML library prints them)
+    for a project of `files` whose `tests` entries the readers before it state."""
+    with context_of(tmp_path, {**files, ".github/workflows/ci.yml": WORKFLOW}) as context:
+        context.stated = {"tests": tests}
+        commands = renovate.commands(context)
+        report = {"repositories": {"local": {"packageFiles": {}}}}
+        printed = "".join(f"{path}\n{json.dumps(doc)}\n" for path, doc in workflows.items())
+        return renovate.read(context, commands, [{"returncode": 0, "stdout": json.dumps(report), "stderr": ""},
+                                                 {"returncode": 0, "stdout": printed, "stderr": ""}])
+
+
+def test_the_steps_a_job_runs_before_its_tests_are_facts_with_where_and_how_github_runs_them(tmp_path):
+    """The job's test step is its first that runs a `tests` entry: an npm script that starts what the entry's
+    starts (tududi's `npm run backend:test`, its `test`'s), or the entry's runner, in the shell scripts it runs
+    too (FastAPI's `uv run bash scripts/tests-start.sh`, whose `scripts/test.sh` runs pytest). Each `run:` step
+    before it is a fact: its folder, its text, the variables the workflow, the job and the step give it. The
+    checkout, a toolchain's setup action and Docker Compose's `up` and `down` (its services are the `compose`
+    facet's) are not; nothing after the tests is."""
+    tests = [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"},
+             {"root": ".", "runner": "jest", "declared_in": "package.json#scripts.frontend:test"},
+             {"root": "backend", "runner": "pytest", "declared_in": "backend/pyproject.toml"}]
+    files = {"package.json": json.dumps({"scripts": TUDUDI_SCRIPTS}), **FASTAPI_SCRIPTS}
+    out = read_steps(tmp_path, files, tests, {".github/workflows/ci.yml": CI,
+                                              ".github/workflows/test-backend.yml": BACKEND})
+    assert out["facts"]["ci_steps"] == [*TUDUDI_STEPS, {
+        "declared_in": ".github/workflows/test-backend.yml#jobs.test-backend.steps.5", "tests": "backend/pyproject.toml",
+        "name": "Migrate DB", "cwd": "backend", "run": "uv run bash scripts/prestart.sh"}]
+    assert "gaps" not in out
+
+
+def test_a_step_before_the_tests_that_daodan_does_not_run_is_a_fact_with_its_cause(tmp_path):
+    """An action other than the checkout and a toolchain's setup, a condition, an expression of the CI (its
+    secrets among them), a shell other than bash and sh, Docker Compose run against its own services: a fact with
+    its `cause`. A job whose steps run no `tests` entry states nothing."""
+    workflow = {"jobs": {"lint": {"steps": [{"run": "npm run lint"}]}, "unit": {
+        "defaults": {"run": {"shell": "bash"}}, "env": {"TOKEN": "x"}, "steps": [
+            {"uses": "actions/checkout@v5"}, {"uses": "pnpm/action-setup@v4"},
+            {"uses": "actions/cache@v4", "with": {"path": "~/.npm"}},
+            {"name": "Seed", "run": "make seed", "if": "github.event_name == 'push'"},
+            {"name": "Token", "run": "echo ${{ secrets.NPM_TOKEN }} > .npmrc"},
+            {"name": "Windows", "run": "Write-Host hi", "shell": "pwsh"},
+            {"name": "Query", "run": "docker compose exec -T db psql -c 'select 1'"},
+            {"name": "Build", "run": "npm run build", "env": {"MODE": "ci"}},
+            {"run": "docker compose up -d db"},
+            {"name": "Tests", "run": "npm test"}]}}}
+    tests = [{"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test"}]
+    files = {"package.json": json.dumps({"scripts": {"test": "jest", "lint": "eslint .", "build": "tsc"}})}
+    out = read_steps(tmp_path, files, tests, {".github/workflows/unit.yml": workflow})
+    path = ".github/workflows/unit.yml#jobs.unit.steps."
+    facts = {item["declared_in"].removeprefix(path): item for item in out["facts"]["ci_steps"]}
+    assert sorted(facts, key=int) == ["2", "3", "4", "5", "6", "7"]
+    assert facts["7"] == {"declared_in": path + "7", "tests": "package.json#scripts.test", "name": "Build", "cwd": ".",
+                          "run": "npm run build", "env": {"TOKEN": "x", "MODE": "ci"}, "shell": "bash"}
+    for number, said in (("2", "actions/cache@v4"), ("3", "github.event_name == 'push'"),
+                         ("4", "${{ secrets.NPM_TOKEN }}"), ("5", "pwsh"), ("6", "docker compose exec")):
+        assert said in facts[number]["cause"] and "run" not in facts[number], (number, facts[number])
+    assert facts["3"]["name"] == "Seed"
+
+
+def test_an_observer_s_runs_get_the_steps_before_their_tests_and_a_gap_for_each_that_does_not_run():
+    """The steps before the tests an observer runs (`declared_in` of its runs), once each, in the job's order;
+    a `ci_step_not_run` gap for one with a `cause`."""
+    def fact(number: int, tests: str, **more) -> dict:
+        return {"declared_in": f"ci.yml#jobs.t.steps.{number}", "tests": tests, "cwd": ".", "run": f"echo {number}",
+                **more}
+    record = {"ci_steps": [fact(10, "a"), fact(2, "a"), fact(2, "b"), fact(3, "c"),
+                           {"declared_in": "ci.yml#jobs.t.steps.4", "tests": "b", "name": "Cache",
+                            "cause": "it uses actions/cache@v4: Daodan runs no action"}]}
+    planned = dynamic.ci_steps(record, [{"root": ".", "runner": "jest", "declared_in": "a"},
+                                        {"root": ".", "runner": "jest", "declared_in": "b"}])
+    assert [step["run"] for step in planned["steps"]] == ["echo 2", "echo 10"]
+    assert planned["steps"][0] == {"declared_in": "ci.yml#jobs.t.steps.2", "cwd": ".", "run": "echo 2"}
+    [gap] = planned["gaps"]
+    assert (gap["kind"], gap["path"]) == ("ci_step_not_run", "ci.yml#jobs.t.steps.4")
+    assert "Cache" in gap["detail"] and "actions/cache@v4" in gap["detail"]
+    assert dynamic.ci_steps({}, [{"root": ".", "runner": "go"}]) == {"steps": [], "gaps": []}
+
+
 def test_a_command_source_reads_what_the_sources_before_it_state(tmp_path):
     seen = {}
     first = SimpleNamespace(NAME="steps", VERSION="1", RANK="reader",
@@ -432,18 +592,22 @@ def test_what_cannot_run_as_declared_is_a_gap_naming_the_service_and_its_image()
 def test_a_compose_service_starts_with_its_health_check_and_one_compose_builds_does_not():
     built = {"name": "backend", "image": "", "declared_in": STEP + ".services.backend", "host": "localhost",
              "build": "backend"}
-    odd = {**COMPOSE_MAILPIT, "name": "zz", "declared_in": STEP + ".services.zz", "ignored": ["privileged", "user"]}
+    odd = {**COMPOSE_MAILPIT, "name": "zz", "declared_in": STEP + ".services.zz", "ignored": ["privileged", "user"],
+           "after": {"db": "service_healthy"}, "binds": ["/var/run/docker.sock:/var/run/docker.sock", "../x:/x"]}
     planned = dynamic.services({"services": [COMPOSE_DB, COMPOSE_MAILPIT, built, odd]})
     assert planned["services"][0] == {
         "name": "db", "image": "postgres:18", "host": "localhost",
         "env": {"POSTGRES_DB": "app", "POSTGRES_PASSWORD": "changethis"},
         "args": ["--health-cmd", "pg_isready -U postgres -d app", "--health-interval", "10s", "--health-timeout", "10s",
-                 "--health-retries", "5", "--health-start-period", "30s"], "command": []}
+                 "--health-retries", "5", "--health-start-period", "30s"], "command": [],
+        "files": [["init.sql", "/docker-entrypoint-initdb.d/init.sql"]]}  # the project's file, in it before it starts
     assert [spec["name"] for spec in planned["services"]] == ["db", "mailpit", "zz"]
+    assert planned["services"][2]["after"] == {"db": "service_healthy"} and "files" not in planned["services"][2]
     said = {(gap["kind"], gap["name"]): gap["detail"] for gap in planned["gaps"]}
     assert "Compose builds its image from backend" in said[("service_unavailable", "backend")]
-    assert "init.sql:/docker-entrypoint-initdb.d/init.sql:ro" in said[("service_incomplete", "db")]
+    assert ("service_incomplete", "db") not in said
     assert "privileged, user" in said[("service_incomplete", "zz")]
+    assert "/var/run/docker.sock:/var/run/docker.sock, ../x:/x" in said[("service_incomplete", "zz")]
     assert dynamic._healthcheck({"test": ["CMD", "redis-cli", "ping"], "interval": "1s"}) == [
         "--health-cmd", "redis-cli ping", "--health-interval", "1s"]
     assert dynamic._healthcheck({"disable": True}) == dynamic._healthcheck({"test": ["NONE"]}) == ["--no-healthcheck"]
@@ -507,6 +671,22 @@ if _args[:1] == ["run"] and "--rm" in _args:  # a check of a service's ports: `r
     _turns.write_text(str(_turn + 1))
     _codes = _read("reach.json", {}).get(_key, [0])
     _sys.exit(_codes[min(_turn, len(_codes) - 1)])
+if _args[:2] == ["network", "disconnect"] and (_state / "no-disconnect").exists():  # as Kiri 0.2.0 answers
+    _log()
+    _sys.exit("Error response from daemon: Kiri cannot disconnect a container from its first network (" + _args[2] + ")")
+if _args[:2] == ["start", "-a"]:
+    _command = _state / "containers" / _args[-1] / "command.json"
+    _command = _json.loads(_command.read_text()) if _command.is_file() else []
+    if _command[:1] == ["sh"]:  # a shell script, run by a real shell in the container's /work, with its variables
+        import os as _os
+        import subprocess as _subprocess
+        _log()
+        print("started", _args[-1], flush=True)
+        _created = [_json.loads(_line) for _line in (_state / "calls.jsonl").read_text().splitlines()]
+        _created = next(_c for _c in _created if _c[:1] == ["create"] and _c[_c.index("--name") + 1] == _args[-1])
+        _given = dict(_created[_n + 1].split("=", 1) for _n, _a in enumerate(_created) if _a == "-e")
+        _sys.exit(_subprocess.run(_command, cwd=_state / "containers" / _args[-1] / "fs" / "work",
+                                  env={**_os.environ, **_given}).returncode)
 if _args[:1] == ["create"] and _mine:
     _log()
     (_state / "containers" / _box).mkdir(parents=True)
@@ -515,6 +695,10 @@ if _args[:1] == ["create"] and _mine:
     _sys.exit(0)
 if _args[:1] == ["start"] and _mine:
     _log()
+    _sys.exit(0)
+if _args[:1] == ["inspect"] and _mine and "{{.State.ExitCode}}" in _args:  # `codes.json`, else 0
+    _log()
+    print(_read("codes.json", {}).get((_state / "containers" / _box / "image").read_text(), 0))
     _sys.exit(0)
 if _args[:1] == ["inspect"] and _mine:
     _log()
@@ -571,8 +755,8 @@ class PodTest(unittest.TestCase):
     def created(self, prefix: str) -> list[list[str]]:
         return [call for call in self.calls() if call[0] == "create" and call[call.index("--name") + 1].startswith(prefix)]
 
-    def run_operation(self, services, given: dict | None = None, **options) -> dict:
-        with container.beside(services, given or {}) as self.started:
+    def run_operation(self, services, given: dict | None = None, steps=(), **options) -> dict:
+        with container.beside(services, given or {}, steps) as self.said:
             return container.run_in_container(self.project, ["exit", "0"], image="fake/runtime:1", out_dir=self.out,
                                               engine=self.engine, **options)
 
@@ -614,7 +798,7 @@ class PodTest(unittest.TestCase):
                          ("postgres", "postgres:16-alpine", PINNED, "ready"))
         self.assertEqual(result["services"], [{"name": "postgres", "image": "postgres:16-alpine", "pinned": PINNED,
                                                "outcome": "ready"}])
-        self.assertEqual(self.started, result["services"])  # what the step reads, whichever folder the record is in
+        self.assertEqual(self.said.services, result["services"])  # what the step reads, wherever the record is
 
     def test_the_job_s_variables_reach_both_phases_under_the_caller_s_own(self):
         self.states(PINNED, "running healthy")
@@ -705,6 +889,156 @@ class PodTest(unittest.TestCase):
                 [service] = result["services"]
                 self.assertEqual((service["name"], service["outcome"]), ("postgres", "failed"))
 
+    def order(self, states: dict, codes: dict | None = None, **after) -> dict:
+        """Four services `api`, `db`, `migrate`, `web` of images `example/<name>:1`, `after` each one's."""
+        pinned = {name: f"example/{name}@sha256:" + letter * 64
+                  for name, letter in (("api", "b"), ("db", "c"), ("migrate", "d"), ("web", "e"))}
+        self.registry({f"docker.io/example/{name}:1": [image] for name, image in pinned.items()})
+        (self.state / "states.json").write_text(json.dumps({pinned[name]: turns for name, turns in states.items()}))
+        (self.state / "codes.json").write_text(json.dumps({pinned[name]: code for name, code in (codes or {}).items()}))
+        (self.state / "logs.json").write_text(json.dumps({pinned["db"]: "FATAL: role does not exist"}))
+        result = self.run_operation([{"name": name, "image": f"example/{name}:1", "host": "localhost", "env": {},
+                                      "args": [], "command": [], **({"after": after[name]} if name in after else {})}
+                                     for name in sorted(pinned)])
+        self.boxes = {call[call.index("--name") + 1]: call[-1].split("@")[0].split("/")[1]
+                      for call in self.created("daodan-svc-")}
+        return result
+
+    def test_a_service_starts_after_those_it_depends_on_as_compose_s_condition_says(self):
+        """Compose's `depends_on`: `api` is created once `db` is healthy and `migrate`, which it waits for to
+        complete, has exited with code 0; `web` once `api` has started."""
+        result = self.order({"db": ["running starting", "running healthy"], "migrate": ["running ", "exited "]},
+                            api={"db": "service_healthy", "migrate": "service_completed_successfully"},
+                            web={"api": "service_started"})
+        self.assertEqual([s["outcome"] for s in result["services"]], ["ready"] * 4, result["services"])
+        self.assertEqual(list(self.boxes.values()), ["db", "migrate", "api", "web"])
+        calls, box = self.calls(), {name: box for box, name in self.boxes.items()}
+        api = next(n for n, c in enumerate(calls) if c[0] == "create" and box["api"] in c)
+        for name in ("db", "migrate"):
+            last = max(n for n, c in enumerate(calls) if c[0] == "inspect" and c[-1] == box[name])
+            self.assertLess(last, api, name)
+        self.assertIn("{{.State.ExitCode}}", calls[last])  # migrate's last: it completed
+
+    def test_a_service_whose_dependency_fails_does_not_start_and_its_cause_names_it(self):
+        result = self.order({"db": ["running unhealthy"], "migrate": ["exited "]}, {"migrate": 3},
+                            api={"db": "service_healthy"}, web={"migrate": "service_completed_successfully"})
+        said = {s["name"]: (s["outcome"], s.get("cause", "")) for s in result["services"]}
+        self.assertEqual(said["db"][0], "failed")
+        self.assertEqual(said["api"], ("failed", "it waits for db to be healthy, which failed"))
+        self.assertIn("exited with code 3", said["migrate"][1])
+        self.assertEqual(said["web"], ("failed", "it waits for migrate to complete, which failed"))
+        self.assertEqual(sorted(self.boxes.values()), ["db", "migrate"])  # neither of the two is created
+
+    def test_a_service_has_the_project_s_files_its_bind_mounts_name_before_it_starts(self):
+        """The service's files from the execution's copy of the project, put in it before it starts: a source the
+        copy does not hold is an empty folder, as the engine makes one."""
+        self.states(PINNED, "running ")
+        result = self.run_operation([{**SPEC, "files": [["src/app.js", "/etc/app/app.js"], ["src", "/srv/src"],
+                                                        ["data", "/var/lib/data"]]}])
+        self.assertEqual([s["outcome"] for s in result["services"]], ["ready"])
+        [service] = self.created("daodan-svc-")
+        box = service[service.index("--name") + 1]
+        fs = self.state / "containers" / box / "fs"
+        self.assertEqual((fs / "etc/app/app.js").read_text(encoding="utf-8"), "module.exports = 1;\n")
+        self.assertEqual((fs / "srv/src/app.js").read_text(encoding="utf-8"), "module.exports = 1;\n")
+        self.assertTrue((fs / "var/lib/data").is_dir())
+        self.assertEqual(list((fs / "var/lib/data").iterdir()), [])
+        calls = self.calls()
+        copied = calls.index(["cp", "-", f"{box}:/"])
+        self.assertLess(calls.index(service), copied)
+        self.assertLess(copied, calls.index(["start", box]))
+
+    STEPS = [{"declared_in": "ci.yml#jobs.test.steps.4", "name": "Migrate", "cwd": "backend",
+              "run": 'echo "migrated $NODE_ENV $DATABASE_URL CI=$CI in $(basename "$PWD")"',
+              "env": {"NODE_ENV": "production"}},
+             {"declared_in": "ci.yml#jobs.test.steps.5", "name": "Seed", "cwd": ".", "run": "echo broken >&2\nexit 3"},
+             {"declared_in": "ci.yml#jobs.test.steps.6", "cwd": ".", "run": "echo after > after.txt", "shell": "sh"}]
+
+    def phases(self) -> list[list[str]]:
+        """The create calls of the preparation and the execution, in order."""
+        return [c for c in self.created("daodan-") if re.fullmatch(r"daodan-[0-9a-f]{12}", c[c.index("--name") + 1])]
+
+    def stepped(self) -> list[dict]:
+        lines = (self.out / container.RECORD_NAME).read_text(encoding="utf-8").splitlines()
+        return [row for row in map(json.loads, lines) if row["phase"] == "ci_step"]
+
+    def test_the_ci_s_steps_run_after_the_preparation_beside_the_services_and_the_pod_leaves_its_network(self):
+        """As GitHub's runner runs a job: each step before the tests in order, in its folder, with its job's and its
+        own variables and CI=true, the services beside it, the registries through the proxy. A step that fails is
+        said and the next one runs. Then the proxy goes and the pod leaves the preparation's network: the tests
+        reach the same services, and only them."""
+        (self.project / "backend").mkdir()
+        (self.project / "backend" / "app.js").write_text("module.exports = 2;\n", encoding="utf-8")
+        self.states(PINNED, "running healthy")
+        result = self.run_operation([SPEC], {"DATABASE_URL": DATABASE_URL}, self.STEPS, prepare=["true"],
+                                    timeout=120)
+        self.assertEqual(result["state"], "done", result)
+        calls = self.calls()
+        [network] = [c[-1] for c in calls if c[:3] == ["network", "create", "--internal"]]
+        [pod] = self.created("daodan-pod-")
+        name = pod[pod.index("--name") + 1]
+        self.assertEqual(pod[pod.index("--network") + 1], network)  # the registries' network, while it prepares
+        [probe] = [c for c in self.created("daodan-probe-")]
+        self.assertIn(["network", "disconnect", network, probe[probe.index("--name") + 1]], calls)
+        [service] = self.created("daodan-svc-")
+        [prepare, execute] = self.phases()
+        self.assertEqual(prepare[prepare.index("--network") + 1], f"container:{name}")
+        self.assertEqual(execute[execute.index("--network") + 1], f"container:{name}")
+        self.assertLess(calls.index(["start", service[service.index("--name") + 1]]), calls.index(prepare))
+        [proxy] = [c[-1] for c in calls if c[:2] == ["network", "connect"]]
+        left = calls.index(["network", "disconnect", network, name])
+        self.assertLess(calls.index(["rm", "-f", proxy]), left)
+        self.assertLess(left, calls.index(execute))
+        log = (self.out / "prepare.log").read_text(encoding="utf-8")
+        self.assertIn(f"migrated production {DATABASE_URL} CI=true in backend", log)
+        rows = self.stepped()
+        self.assertEqual([(r["declared_in"], r["outcome"], r["exit_code"]) for r in rows],
+                         [("ci.yml#jobs.test.steps.4", "exited", 0), ("ci.yml#jobs.test.steps.5", "exited", 3),
+                          ("ci.yml#jobs.test.steps.6", "exited", 0)])
+        self.assertTrue(all(isinstance(r["duration_seconds"], int) for r in rows))
+        self.assertEqual(rows[1]["cause"], "it exited with code 3: broken")
+        self.assertEqual(self.said.ci_steps, result["ci_steps"])
+        self.assertEqual([s["outcome"] for s in result["ci_steps"]], ["exited"] * 3)
+        [limits] = [row["limits"] for row in map(json.loads, (self.out / container.RECORD_NAME).read_text(
+            encoding="utf-8").splitlines()) if row["phase"] == "prepare"]
+        self.assertEqual(limits["seconds"], 1800 + 120)  # the steps within the observer's own time limit
+
+    def test_a_step_that_does_not_end_in_the_time_left_is_stopped_and_the_next_ones_do_not_start(self):
+        steps = [{"declared_in": "s.0", "cwd": ".", "run": "sleep 30"}, {"declared_in": "s.1", "cwd": ".", "run": "true"}]
+        result = self.run_operation([], None, steps, prepare=["true"], timeout=2)
+        self.assertEqual(result["state"], "done", result)
+        first, second = result["ci_steps"]
+        self.assertEqual((first["outcome"], first["exit_code"]), ("timeout", None))
+        self.assertIn("did not end in the 2 s", first["cause"])
+        self.assertEqual((second["outcome"], second["duration_seconds"]), ("timeout", 0))
+        self.assertLess(first["duration_seconds"], 20)
+
+    def test_without_services_the_steps_run_in_the_preparation_s_own_network(self):
+        result = self.run_operation([], None, self.STEPS[2:], prepare=["true"])
+        self.assertEqual([s["outcome"] for s in result["ci_steps"]], ["exited"])
+        calls = self.calls()
+        self.assertEqual(self.created("daodan-pod-") + self.created("daodan-probe-"), [])
+        self.assertFalse([c for c in calls if c[:2] == ["network", "disconnect"]])
+        [prepare, _execute] = self.phases()
+        self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
+
+    def test_an_engine_that_cannot_take_the_pod_off_its_network_runs_no_step_beside_the_services(self):
+        """Kiri 0.2.0 refuses to disconnect a container from its first network (crates/kiri/src/daemon/
+        engine.rs:2357) and to connect one on `none`: the pod cannot leave the preparation's network, so no step runs
+        beside the services, each said with the engine's answer; the services start for the tests as without steps."""
+        (self.state / "no-disconnect").write_text("", encoding="utf-8")
+        self.states(PINNED, "running healthy")
+        result = self.run_operation([SPEC], None, self.STEPS[2:], prepare=["true"])
+        self.assertEqual(result["state"], "done", result)
+        [step] = result["ci_steps"]
+        self.assertEqual(step["outcome"], "not_run")
+        self.assertIn("Kiri cannot disconnect a container from its first network", step["cause"])
+        [pod] = self.created("daodan-pod-")
+        self.assertEqual(pod[pod.index("--network") + 1], "none")
+        [prepare, _execute] = self.phases()
+        self.assertTrue(prepare[prepare.index("--network") + 1].startswith("daodan-net-"))
+        self.assertEqual([s["outcome"] for s in result["services"]], ["ready"])
+
     def test_without_services_nothing_of_a_pod(self):
         self.run_operation(())
         self.assertEqual(self.created("daodan-pod-") + self.created("daodan-svc-"), [])
@@ -722,28 +1056,33 @@ class PodTest(unittest.TestCase):
 
 # ------------------------------------------------------------------ the step
 
-def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran"):
+def observer_of(seen: dict, runs: list[list[dict]], state: str = "ran", stepped: list[list[dict]] = ()):
     """A Python observer with a container run per item of `runs`, each starting the services with those outcomes
-    (as `container.run_in_container` does within `container.beside`), that keeps what it was planned."""
+    and the CI's steps with those of `stepped` (as `container.run_in_container` does within `container.beside`),
+    that keeps what it was planned."""
     def observe(project, planned, out_dir, engine):
-        services, env, started = container.BESIDE.get()
-        seen.update(planned, services=services, env=env)
+        services, env, steps, said = container.BESIDE.get()
+        seen.update(planned, services=services, env=env, steps=steps)
         for outcomes in runs:
-            started += outcomes
+            said.services.extend(outcomes)
+        for outcomes in stepped:
+            said.ci_steps.extend(outcomes)
         return {"state": state, "sites": [], "gaps": [], "runs": [{"root": ".", "runner": "pytest", "state": "ran"}]} \
             if state == "ran" else {"state": state, "cause": "no engine", "remedy": "start one"}
     return SimpleNamespace(ENTRY="dynamic-fake-python", VERSION="1", LANGUAGES=("python",),
                            external=lambda callee: {"manager": "python", "package": "x", "version": None},
-                           plan=lambda record, files, read: {"runs": [{"root": ".", "runner": "pytest"}], "gaps": []},
+                           plan=lambda record, files, read: {"runs": [{"root": ".", "runner": "pytest",
+                                                                       "declared_in": "pyproject.toml"}], "gaps": []},
                            observe=observe)
 
 
-def run_step(tmp_path, entries: list[dict], runs: list[list[dict]], state: str = "ran"):
+def run_step(tmp_path, entries: list[dict], runs: list[list[dict]], state: str = "ran", ci_steps=(), stepped=()):
     _project, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
     static_store(manifest)
     seen: dict = {}
-    with mock.patch.object(premap, "ensure", return_value={"services": entries, "tests": []}), \
-            mock.patch.object(dynamic, "observers", return_value=[observer_of(seen, runs, state)]):
+    record = {"services": entries, "tests": [], "ci_steps": list(ci_steps)}
+    with mock.patch.object(premap, "ensure", return_value=record), \
+            mock.patch.object(dynamic, "observers", return_value=[observer_of(seen, runs, state, stepped)]):
         _result, events, _asked = step(manifest)
     return seen, events
 
@@ -772,6 +1111,27 @@ def test_an_observer_that_starts_no_service_is_said_and_one_without_a_container_
     assert gap["name"] == "postgres" and "starts no service" in gap["detail"] and "dynamic-fake-python" in gap["detail"]
     seen, events = run_step(tmp_path / "b", [TUDUDI], [], state="gap")
     assert gaps(events, "service_unavailable") == []
+
+
+def test_the_step_runs_the_ci_s_steps_before_each_observer_s_tests_and_says_those_that_did_not(tmp_path):
+    """The steps before the tests the observer runs reach its container runs; one that failed in its runs is a
+    `ci_step_failed` gap once, one that cannot run a `ci_step_not_run` gap."""
+    facts = [{"declared_in": "ci.yml#jobs.test.steps.2", "tests": "pyproject.toml", "name": "Migrate", "cwd": ".",
+              "run": "alembic upgrade head"},
+             {"declared_in": "ci.yml#jobs.test.steps.3", "tests": "pyproject.toml", "name": "Cache",
+              "cause": "it uses actions/cache@v4: Daodan runs no action"},
+             {"declared_in": "ci.yml#jobs.web.steps.1", "tests": "web/package.json#scripts.test", "cwd": "web",
+              "run": "npm ci"}]
+    failed = [{"declared_in": "ci.yml#jobs.test.steps.2", "name": "Migrate", "outcome": "exited", "exit_code": 1,
+               "duration_seconds": 3, "cause": "it exited with code 1: FATAL: no such table"}]
+    seen, events = run_step(tmp_path, [], [], ci_steps=facts, stepped=[failed, failed])
+    assert seen["steps"] == [{"declared_in": "ci.yml#jobs.test.steps.2", "name": "Migrate", "cwd": ".",
+                              "run": "alembic upgrade head"}]
+    [said] = gaps(events, "ci_step_failed")
+    assert said["path"] == "ci.yml#jobs.test.steps.2" and "Migrate" in said["detail"] and "no such table" in said["detail"]
+    [skipped] = gaps(events, "ci_step_not_run")
+    assert skipped["path"] == "ci.yml#jobs.test.steps.3"
+    assert container.BESIDE.get() is None
 
 
 # ------------------------------------------------------------------ the JavaScript observer
@@ -812,6 +1172,47 @@ except OSError as error:
 os.makedirs("/daodan/out", exist_ok=True)
 with open("/daodan/out/probe.json", "w") as f:
     json.dump(said, f)
+'''
+
+
+SQL = r'''import json, os, socket, struct, sys, urllib.parse
+url = urllib.parse.urlsplit(os.environ["DATABASE_URL"])
+
+
+def read(s):
+    kind, size = struct.unpack("!ci", s.recv(5, socket.MSG_WAITALL))
+    return kind, s.recv(size - 4, socket.MSG_WAITALL) if size > 4 else b""
+
+
+rows = []
+with socket.create_connection((url.hostname, url.port), timeout=10) as s:  # a trusted session, one simple query
+    body = b"user\0" + url.username.encode() + b"\0database\0" + url.path[1:].encode() + b"\0\0"
+    s.sendall(struct.pack("!ii", 8 + len(body), 196608) + body)
+    for query in (None, sys.argv[1].encode() + b"\0"):
+        if query:
+            s.sendall(b"Q" + struct.pack("!i", 4 + len(query)) + query)
+        kind, data = read(s)
+        while kind != b"Z":
+            assert kind != b"E", data
+            if kind == b"D":
+                at, row = 2, []
+                for _ in range(struct.unpack("!h", data[:2])[0]):
+                    size = struct.unpack("!i", data[at:at + 4])[0]
+                    row.append(None if size < 0 else data[at + 4:at + 4 + size].decode())
+                    at += 4 + max(size, 0)
+                rows.append(row)
+            kind, data = read(s)
+said = {"rows": rows}
+if len(sys.argv) > 2:
+    try:
+        socket.create_connection(("1.1.1.1", 443), timeout=5)
+        said["outside"] = "reached"
+    except OSError as error:
+        said["outside"] = type(error).__name__
+    os.makedirs(os.path.dirname(sys.argv[2]), exist_ok=True)
+    with open(sys.argv[2], "w") as f:
+        json.dump(said, f)
+print(json.dumps(said))
 '''
 
 
@@ -869,15 +1270,45 @@ def test_on_modal_the_postgres_tududi_s_ci_declares_answers_the_tests_at_localho
     assert said["outside"] != "reached"
 
 
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_the_ci_s_steps_run_beside_the_services_and_the_tests_find_what_they_wrote(tmp_path):
+    """The driver's Sandboxes with a step before the tests, as tududi's CI migrates its database: the service
+    starts in the preparation's sandbox, the step writes into it there, the service starts again from what it kept
+    in the network-blocked execution, whose tests read what the step wrote, and nothing outside."""
+    from indexers import typescript
+    entry = {**TUDUDI, "env": {**TUDUDI["env"], "POSTGRES_HOST_AUTH_METHOD": "trust"}}  # SQL speaks no SCRAM
+    planned = dynamic.services({"services": [entry]})
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "sql.py").write_text(SQL, encoding="utf-8")
+    steps = [{"declared_in": "ci.yml#jobs.test.steps.4", "name": "Migrate", "cwd": ".",
+              "run": 'python3 sql.py "CREATE TABLE made (id int); INSERT INTO made VALUES (7)"'}]
+    with the_driver() as modal_pipeline, container.beside(planned["services"], planned["env"], steps) as said:
+        result = modal_pipeline.sandbox_run(project, ["python3", "/work/sql.py", "SELECT id FROM made",
+                                                      "/daodan/out/sql.json"], image=typescript.IMAGE,
+                                            out_dir=tmp_path / "out", prepare=["true"], outputs=["/daodan/out"],
+                                            env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=600,
+                                            prepare_timeout=900)
+    rows = [json.loads(line) for line in (tmp_path / "out" / container.RECORD_NAME).read_text().splitlines()]
+    print(json.dumps(rows, indent=1), flush=True)
+    assert result["state"] == "done" and result["exit_code"] == 0, result
+    [step] = result["ci_steps"]
+    assert (step["outcome"], step["exit_code"]) == ("exited", 0) and said.ci_steps == result["ci_steps"]
+    assert [row["outcome"] for row in rows if row["phase"] == "service"] == ["ready", "ready"]  # beside each phase
+    found = json.loads((tmp_path / "out" / "out" / "sql.json").read_text())
+    print(found, flush=True)
+    assert found["rows"] == [["7"]] and found["outside"] != "reached"
+
+
 POD = r'''import json, sys
 from pathlib import Path
 sys.path.insert(0, "/daodan/scripts")
 import container
 cases, engine = json.loads(sys.argv[1]), container.Engine("docker", (sys.argv[2] + "/docker",))
 said = {}
-for label, (spec, url) in cases.items():
+for label, (specs, url) in cases.items():
     out = Path(f"/tmp/out-{label}")
-    with container.beside([spec], {"DATABASE_URL": url}):
+    with container.beside(specs, {"DATABASE_URL": url}):
         result = container.run_in_container(Path("/tmp/project"), ["python3", "/work/probe.py"], engine=engine,
                                             image=container.PROXY_IMAGE, out_dir=out, outputs=["/daodan/out"],
                                             env={"PATH": "/usr/local/bin:/usr/bin:/bin"}, timeout=300)
@@ -895,17 +1326,26 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
     Sandbox as the driver starts it. The service of tududi's CI starts in the pod (`--network container:<pod>`) and
     is awaited; the tests, in the pod too, reach it at localhost and, as a job in a container does, by its name
     (the pod's hosts); the pod has no network; no container stays. The same service declared in a GitLab job,
-    with no health check, is awaited as GitLab's runner awaits it, until the port its image exposes answers."""
+    with no health check, is awaited as GitLab's runner awaits it, until the port its image exposes answers. Compose's
+    start in the order `depends_on` gives, the project's files in a service as its bind mounts name them."""
     import base64
 
     import modal
     gitlab = {"name": "db", "image": "postgres:16-alpine", "declared_in": ".gitlab-ci.yml#test.services.0",
               "host": "db", "aliases": ["postgres"], "env": TUDUDI["env"], "wait": "ports"}
     [planned] = dynamic.services({"services": [gitlab]})["services"]
-    [composed] = dynamic.services({"services": [COMPOSE_DB]})["services"]  # its health check as Compose writes it
-    cases = {"localhost": (SPEC, DATABASE_URL),  # on the runner, from a job's container, from a GitLab job
-             "postgres": ({**SPEC, "host": "postgres"}, DATABASE_URL.replace("@localhost:", "@postgres:")),
-             "gitlab": (planned, DATABASE_URL.replace("@localhost:", "@db:")),
+    # Compose's: the health check as it writes it, the project's init.sql in the service before it starts, a
+    # one-shot service that reads what it made once the database is healthy, one that starts once that completes
+    migrate = {"name": "migrate", "image": "postgres:18", "declared_in": STEP + ".services.migrate",
+               "host": "localhost", "env": {"PGPASSWORD": "changethis"}, "after": {"db": "service_healthy"},
+               "command": ["psql", "-h", "localhost", "-U", "postgres", "-d", "app", "-v", "ON_ERROR_STOP=1", "-c",
+                           "SELECT count(*) FROM made_by_the_project"]}
+    idle = {"name": "idle", "image": "postgres:18", "declared_in": STEP + ".services.idle", "host": "localhost",
+            "command": ["sleep", "900"], "after": {"migrate": "service_completed_successfully"}}
+    composed = dynamic.services({"services": [COMPOSE_DB, migrate, idle]})["services"]
+    cases = {"localhost": ([SPEC], DATABASE_URL),  # on the runner, from a job's container, from a GitLab job
+             "postgres": ([{**SPEC, "host": "postgres"}], DATABASE_URL.replace("@localhost:", "@postgres:")),
+             "gitlab": ([planned], DATABASE_URL.replace("@localhost:", "@db:")),
              "compose": (composed, "postgres://postgres:changethis@localhost:5432/app")}
     image = (modal.Image.debian_slim(python_version="3.13").apt_install("git")
              .add_local_dir(SCRIPTS, "/daodan/scripts", ignore=["**/__pycache__"]))
@@ -917,7 +1357,8 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
                                    experimental_options=modal_pipeline.VM, timeout=1200, cpu=2, memory=6144)
         try:
             modal_pipeline._daemon(box, bundle)
-            for path, text in (("/tmp/project/probe.py", PROBE), ("/tmp/pod.py", POD)):
+            for path, text in (("/tmp/project/probe.py", PROBE), ("/tmp/pod.py", POD),
+                               ("/tmp/project/init.sql", "CREATE TABLE made_by_the_project (id int);\n")):
                 assert box.exec("sh", "-c", f"mkdir -p {Path(path).parent.as_posix()} && echo "
                                 f"{base64.b64encode(text.encode()).decode()} | base64 -d > {path}").wait() == 0
             process = box.exec("python3", "/tmp/pod.py", json.dumps(cases), modal_pipeline.ENGINE, timeout=900)
@@ -927,13 +1368,15 @@ def test_on_a_real_docker_the_pod_gives_the_tests_the_service_at_localhost_and_b
             box.terminate()
     said = json.loads(out)
     print(json.dumps(said, indent=1), flush=True)
-    for label, (spec, url) in cases.items():
+    for label, (specs, url) in cases.items():
         result, probe, rows = said[label]["result"], said[label]["probe"], said[label]["rows"]
         assert result["state"] == "done" and result["exit_code"] == 0, result
-        assert [s["outcome"] for s in result["services"]] == ["ready"], result
-        [service, execute] = rows
-        assert service["pinned"].startswith("postgres@sha256:") and service["network"].startswith("container:daodan-pod-")
-        assert execute["phase"] == "execute" and execute["network"] == service["network"]
-        assert (probe["host"], probe["port"], probe["session"]) == (spec["host"], 5432, "ready")
+        assert [s["outcome"] for s in result["services"]] == ["ready"] * len(specs), result
+        *services, execute = rows
+        for service in services:
+            assert service["pinned"].startswith("postgres@sha256:"), service
+            assert service["network"].startswith("container:daodan-pod-"), service
+        assert execute["phase"] == "execute" and execute["network"] == services[0]["network"]
+        assert (probe["host"], probe["port"], probe["session"]) == (specs[0]["host"], 5432, "ready")
         assert probe["outside"] != "reached"
     assert said["left"] == []

@@ -31,7 +31,9 @@ the execution in the shape of a Kubernetes pod: a pod container with `--network 
 service and the execution join it (`--network container:<pod>`), so the tests reach a
 service at localhost, or at the name the pod's hosts give it, and nothing outside. Each
 image is pulled by the engine before the preparation and runs by the digest its registry
-gave; the execution starts once every service is ready (`start_services`).
+gave; the execution starts once every service is ready (`start_services`). The steps a CI job
+runs before its tests run at the end of the preparation; with services, the pod is on the
+preparation's network while they run, and leaves it, the proxy gone, before the execution.
 
 The engine is reached only through a Docker-compatible command line (`create`, `cp`,
 `start`, `rm`, `network`, `volume`), so it can be replaced. An engine the user already has
@@ -82,6 +84,7 @@ WORKDIR = "/work"
 STATE = "/daodan/state"  # with WORKDIR, what a preparation hands to execution
 HOME = STATE + "/home"
 VOLUME_NAME = re.compile(r"daodan-(?:work|state)-[0-9a-f]{12}")  # the only names a run removes
+IMAGE_NAME = re.compile(r"daodan-prepared-[0-9a-f]{12}")  # a preparation kept for its execution (`keep_root`)
 RESULTS = "/daodan/out/results"  # each command's code and streams, brought back by `run_commands`
 NETWORKS = ("none", "registries")
 OUTPUT_CAP = 2**30  # what the declared outputs of a run may hold together
@@ -104,7 +107,12 @@ PROXY_IMAGE = "python:3.13-alpine@sha256:9ef1a599f863231c3d91e941389bfdc4a2d6070
 PROXY_PORT = 3128
 SERVICE_WAIT = 600  # the seconds a service may stay `starting`: GitHub's runner waits as long as its health check
 SERVICE_STATE = "{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}"
-BESIDE = contextvars.ContextVar("beside", default=None)  # `beside`'s services, variables and outcomes
+BESIDE = contextvars.ContextVar("beside", default=None)  # `beside`'s services, variables, steps and `Said`
+IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")  # a variable a shell exports
+# A CI step's shell as GitHub's runner runs it: none named, `bash -e` where the image has bash, else `sh -e`
+STEP_SHELLS = {None: "$SH", "bash": "bash --noprofile --norc -eo pipefail", "sh": "sh -e"}
+CONDITIONS = {"service_started": "to start", "service_healthy": "to be healthy",
+              "service_completed_successfully": "to complete"}  # Compose's `depends_on` conditions, as said
 HEALTH_EVERY = 30.0  # Docker's and Podman's `--health-interval` when a service declares none, in seconds
 DURATION = re.compile(r"(\d+(?:\.\d*)?|\.\d+)(ns|us|µs|ms|s|m|h)")  # Go's `time.ParseDuration`, unsigned
 UNITS = {"ns": 1e-9, "us": 1e-6, "µs": 1e-6, "ms": 1e-3, "s": 1.0, "m": 60.0, "h": 3600.0}
@@ -579,25 +587,28 @@ def volume_registry() -> Path:
     return shared_cache_dir() / "container-volumes"
 
 
-def record_volumes(entry: Path, engine: str, pid: int, names: list[str]) -> None:
+def record_volumes(entry: Path, engine: str, pid: int, names: list[str], images: list[str] = ()) -> None:
     entry.parent.mkdir(parents=True, exist_ok=True)
     partial = entry.with_suffix(".partial")
-    partial.write_text(json.dumps({"engine": engine, "pid": pid, "volumes": names}), encoding="utf-8")
+    partial.write_text(json.dumps({"engine": engine, "pid": pid, "volumes": names,
+                                   **({"images": list(images)} if images else {})}), encoding="utf-8")
     os.replace(partial, entry)
 
 
-def remove_volumes(engine: Engine, entry: Path, pid: int, names: list[str]) -> None:
-    """Each volume removed by name; the entry keeps only those still there, and goes when none is."""
+def remove_volumes(engine: Engine, entry: Path, pid: int, names: list[str], images: list[str] = ()) -> None:
+    """Each volume and image removed by name; the entry keeps only those still there, and goes when none is."""
     left = [name for name in names if cli(engine, "volume", "rm", name).returncode != 0
             and cli(engine, "volume", "inspect", name).returncode == 0]
-    if left:
-        record_volumes(entry, engine.name, pid, left)
+    kept = [name for name in images if cli(engine, "image", "rm", "-f", name).returncode != 0
+            and cli(engine, "image", "inspect", name).returncode == 0]
+    if left or kept:
+        record_volumes(entry, engine.name, pid, left, kept)
     else:
         entry.unlink(missing_ok=True)
 
 
 def sweep(engine: Engine) -> None:
-    """The volumes of this engine on record for a process that has ended, removed by name."""
+    """The volumes and kept images of this engine on record for a process that has ended, removed by name."""
     folder = volume_registry()
     for entry in sorted(folder.glob("*.json")) if folder.is_dir() else []:
         try:
@@ -605,16 +616,19 @@ def sweep(engine: Engine) -> None:
             if held["engine"] != engine.name or _process_alive(held["pid"]):
                 continue
             names = [name for name in held["volumes"] if isinstance(name, str) and VOLUME_NAME.fullmatch(name)]
+            images = [name for name in held.get("images") or () if isinstance(name, str)
+                      and IMAGE_NAME.fullmatch(name)]
         except (OSError, ValueError, KeyError, TypeError):
             continue
-        remove_volumes(engine, entry, held["pid"], names)
+        remove_volumes(engine, entry, held["pid"], names, images)
 
 
 def phase(engine: Engine, name: str, *, image: str, command: list[str], network: str, env: dict[str, str],
           limits: dict, timeout: float, copy: Path | None, outputs: list[str], out_dir: Path,
-          volumes: list[str] = ()) -> dict:
+          volumes: list[str] = (), commit: str | None = None) -> dict:
     """One container from create to rm, with the `name:path` volumes mounted: its record, with the outputs
-    brought back."""
+    brought back; with `commit`, a container that exited with 0 is first committed as that image (`committed`
+    in the record, or `commit_failed` with the engine's answer)."""
     box = f"daodan-{uuid.uuid4().hex[:12]}"
     args = ["create", "--name", box, "--network", network, "--memory", str(limits["memory"]),
             "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
@@ -649,6 +663,12 @@ def phase(engine: Engine, name: str, *, image: str, command: list[str], network:
             files, size = fetch(engine, box, path, out_dir, budget)
             row["outputs"] += files
             budget -= size
+        if commit and row["outcome"] == "exited" and row["exit_code"] == 0:
+            done = cli(engine, "commit", box, commit)
+            if done.returncode == 0:
+                row["committed"] = commit
+            else:
+                row["commit_failed"] = (done.stderr or done.stdout or b"").decode("utf-8", "replace").strip()[-400:]
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
         row["outcome"], row["cause"] = "failed", str(error)
     finally:
@@ -767,21 +787,106 @@ def start_proxy(engine: Engine, box: str, network: str, registries: tuple[str, .
     raise RuntimeError("the registry proxy did not start")
 
 
+class Said(NamedTuple):
+    """What the runs within `beside` say: each run's `services` and `ci_steps`, wherever its record lies."""
+    services: list
+    ci_steps: list
+
+
 @contextlib.contextmanager
-def beside(services: list[dict], env: dict[str, str]):
-    """Within it every `run_in_container` starts `services` in the pod its execution joins and gives both phases
-    `env` under its caller's variables: the dynamic step's, so the tests of every observer get the services the
-    project's CI declares and the variables its jobs give them. Each service is `{name, image, host, env, args,
-    command}` (`args` options of `create`, `command` the image's command replaced when not empty), with `aliases`
-    and `wait` where it has them (`start_services`); the pod's hosts name 127.0.0.1 for a `host` or an alias other
-    than localhost (the module's docstring). It yields the list each run within
-    extends with its result's `services`, wherever its record lies."""
-    started: list[dict] = []
-    token = BESIDE.set((list(services), dict(env), started))
+def beside(services: list[dict], env: dict[str, str], steps: list[dict] = ()):
+    """Within it every `run_in_container` starts `services` in the pod its execution joins, gives both phases
+    `env` under its caller's variables and runs `steps` at the end of its preparation: the dynamic step's, so the
+    tests of every observer get the services the project's CI declares, the variables its jobs give them and the
+    steps its jobs run before them. Each service is `{name, image, host, env, args, command}` (`args` options of
+    `create`, `command` the image's command replaced when not empty), with `aliases`, `wait`, `after` and `files`
+    where it has them (`start_services`); the pod's hosts name 127.0.0.1 for a `host` or an alias other than
+    localhost (the module's docstring). Each step is `{declared_in, cwd, run}`, with `name`, `env` and `shell`
+    where it has them (`steps_script`). It yields a `Said` each run within extends with its result's `services`
+    and `ci_steps`."""
+    said = Said([], [])
+    token = BESIDE.set((list(services), dict(env), list(steps), said))
     try:
-        yield started
+        yield said
     finally:
         BESIDE.reset(token)
+
+
+def steps_script(steps: list[dict], limit: float, token: str) -> str:
+    """POSIX sh that runs its arguments (a preparation), then each of `steps` as GitHub's runner runs a `run:` step:
+    in its folder under the copy, with `CI=true` and its variables, by its shell (`bash -e`, else `sh -e`, as GitHub
+    picks one when the step names none), all of them within `limit` seconds (coreutils' or BusyBox's `timeout`,
+    where the image has one); a step that fails does not stop the next. Each step's output lies between two lines of
+    `token` that `stepped` reads: its code and its seconds."""
+    mark = f"@@daodan-step-{token}"
+    lines = ['( "$@" ) || exit $?',
+             'if command -v timeout >/dev/null 2>&1; then b() { timeout -k 10 "$@"; }; else b() { shift; "$@"; }; fi',
+             'if command -v bash >/dev/null 2>&1; then SH="bash -e"; else SH="sh -e"; fi',
+             f"D=$(( $(date +%s) + {int(limit)} ))"]
+    for number, step in enumerate(steps):
+        exports = "".join(f"export {key}={shlex.quote(str(value))}; "
+                          for key, value in {"CI": "true", **(step.get("env") or {})}.items()
+                          if IDENTIFIER.fullmatch(str(key)))
+        shell = STEP_SHELLS[step.get("shell")]
+        lines += [f"s=$(date +%s); l=$((D - s)); echo {mark} begin {number}",
+                  f'if [ "$l" -gt 0 ]; then ( cd {shlex.quote(step.get("cwd") or ".")} || exit; {exports}'
+                  f'b "$l" {shell} -c {shlex.quote(step["run"])} ) </dev/null; c=$?; e=$(( $(date +%s) - s )); '
+                  'if [ "$c" -eq 124 ] || { [ "$c" -gt 128 ] && [ "$e" -ge "$l" ]; }; then c=timeout; fi; '
+                  'else c=timeout; e=0; fi',
+                  f"echo {mark} end {number} $c $e"]
+    return "\n".join(lines) + "\nexit 0\n"
+
+
+def stepped(text: str, steps: list[dict], token: str, limit: float) -> list[dict]:
+    """The record rows of `steps` from a preparation's output `text` (`steps_script`): each `{phase, declared_in,
+    name, outcome, exit_code, duration_seconds}`, `outcome` `exited`, `timeout` (it did not end in the `limit`
+    seconds the steps have, or found none left) or `not_run` (the preparation ended before it), with `cause`
+    where it is not a code 0 (its output's last lines)."""
+    mark, ended, output, current = f"@@daodan-step-{token} ", {}, {}, None
+    for line in text.splitlines():
+        if line.startswith(mark):
+            words = line[len(mark):].split()
+            if words[:1] == ["begin"] and len(words) == 2 and words[1].isdigit():
+                current = int(words[1])
+                output[current] = []
+            elif words[:1] == ["end"] and len(words) == 4 and words[1].isdigit() and words[3].isdigit():
+                ended[int(words[1])], current = (words[2], int(words[3])), None
+        elif current is not None:
+            output[current].append(line.strip())
+    rows = []
+    for number, step in enumerate(steps):
+        row = {"phase": "ci_step", "declared_in": step["declared_in"], **({"name": step["name"]} if step.get("name")
+                                                                          else {})}
+        tail = " | ".join(line for line in output.get(number, ()) if line)[-400:]
+        code, seconds = ended.get(number, (None, 0))
+        if code is None:
+            row.update(outcome="not_run", exit_code=None, duration_seconds=0,
+                       cause="the preparation ended " + ("while it ran" if number in output else "before it ran"))
+        elif code == "timeout":
+            row.update(outcome="timeout", exit_code=None, duration_seconds=seconds,
+                       cause=f"it did not end in the {int(limit)} s the steps have before the tests"
+                             + (f": {tail}" if tail else ""))
+        else:
+            row.update(outcome="exited", exit_code=int(code), duration_seconds=seconds)
+            if row["exit_code"] != 0:
+                row["cause"] = f"it exited with code {code}" + (f": {tail}" if tail else "")
+        rows.append(row)
+    return rows
+
+
+def leaves(run: Callable, network: str, token: str) -> str | None:
+    """None when the engine takes a container off its first network, as the pod leaves the preparation's before
+    the tests; otherwise the engine's answer (Kiri 0.2.0 refuses: crates/kiri/src/daemon/engine.rs:2357)."""
+    box = f"daodan-probe-{token}"
+    try:
+        checked(run("create", "--name", box, "--network", network, PROXY_IMAGE, "true"), "create of the probe")
+        answer = run("network", "disconnect", network, box)
+        said = (answer.stderr or answer.stdout or b"").decode("utf-8", "replace").strip()
+        return None if answer.returncode == 0 else said[-300:] or f"code {answer.returncode}"
+    except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
+        return str(error)
+    finally:
+        run("rm", "-f", box)
 
 
 def qualified(image: str) -> str:
@@ -833,67 +938,172 @@ def reached(run: Callable, network: str, ports: list[str]) -> bool:
         return False
 
 
+def bound(copy: Path, files: list[list[str]]):
+    """A tar of the project's files a service's bind mounts name (`files`, each `[source in the project, target]`),
+    from the copy's `work/` (`copy_perimeter`), each at its target: an empty folder for a source the copy does not
+    hold, as the engine makes one for a bind mount's missing source."""
+    out = tempfile.TemporaryFile()
+    with tarfile.open(copy) as source, tarfile.open(fileobj=out, mode="w") as target:
+        members = source.getmembers()
+        for origin, destination in files:
+            prefix, root = posixpath.normpath(posixpath.join("work", origin)), destination.strip("/")
+            held = [member for member in members if member.name == prefix or member.name.startswith(prefix + "/")]
+            for member in held:
+                target.addfile(member.replace(name=root + member.name[len(prefix):], deep=False),
+                               source.extractfile(member) if member.isfile() else None)
+            if not held:
+                folder = tarfile.TarInfo(root)
+                folder.type, folder.mode = tarfile.DIRTYPE, 0o755
+                target.addfile(folder)
+    out.seek(0)
+    return out
+
+
+def _settle(run: Callable, item: dict, network: str) -> None:
+    """`item`'s service awaited until its row has an outcome (`start_services`)."""
+    row, box = item["row"], item["box"]
+
+    def failed(cause: str) -> None:
+        logs = run("logs", "--tail", "5", box, timeout=60)
+        tail = " | ".join(line.strip() for line in (logs.stdout + logs.stderr).decode("utf-8", "replace").splitlines()
+                          if line.strip())
+        row.update(outcome="failed", cause=f"{cause}: {tail[-400:]}" if tail else cause)
+
+    while "outcome" not in row:
+        if item["every"] is not None and time.monotonic() >= item["due"]:
+            run("healthcheck", "run", box, timeout=120)  # its code is the check's: the state says it
+            item["due"] = time.monotonic() + item["every"]
+        said = run("inspect", "--format", SERVICE_STATE, box, timeout=60).stdout.decode("utf-8", "replace")
+        status, _, health = said.strip().partition(" ")
+        late = time.monotonic() - item["clock"] > SERVICE_WAIT
+        if item["once"] and status == "exited":  # one another service waits for to complete
+            code = run("inspect", "--format", "{{.State.ExitCode}}", box, timeout=60).stdout.decode().strip()
+            if code == "0":
+                row["outcome"] = "ready"
+            else:
+                failed(f"it exited with code {code}")
+        elif item["once"] and status == "running":
+            if late:
+                row.update(outcome="failed", cause=f"still running after {SERVICE_WAIT} s: it never completed")
+            else:
+                time.sleep(1)
+        elif status == "running" and health in ("", "healthy"):
+            if item["wait"] == "ports" and item["ports"] is None:
+                item["ports"] = exposed(run, row["pinned"])
+            if not item["ports"] or reached(run, network, item["ports"]):
+                row["outcome"] = "ready"
+            elif late:
+                row.update(outcome="failed", cause=f"its ports {' '.join(item['ports'])} accepted no connection in "
+                                                   f"{SERVICE_WAIT} s")
+            else:
+                time.sleep(1)
+        elif status != "running" or health == "unhealthy":
+            failed("its health check failed" if status == "running" else f"it {status or 'is gone'}")
+        elif late:
+            row.update(outcome="failed", cause=f"still {health} after {SERVICE_WAIT} s: its health check never "
+                                               "passed")
+        else:
+            time.sleep(1)
+    row.setdefault("duration_seconds", round(time.monotonic() - item["clock"], 3))
+
+
 def start_services(run: Callable, services: list[dict], network: str, limits: dict, token: str,
-                   scheduled: bool = True) -> list[dict]:
+                   scheduled: bool = True, copy: Path | None = None, created: bool = False) -> list[dict]:
     """The pinned `services` (`beside`'s, each with `pinned`) created in `network` and started, then
     awaited as GitHub's runner awaits a service container: ready once running, or once healthy where it has a
     health check, and with `wait` `ports` once the ports its image exposes accept a connection (GitLab's runner,
     `exposed`, `reached`); failed, with the cause, when it stops, turns unhealthy or is still waited for after
-    `SERVICE_WAIT` seconds. The containers are `daodan-svc-<token>-<n>`; a record row each. `scheduled` False is
-    an engine that may run no check by itself (Podman, on systemd's timers): each check runs from here
-    (`healthcheck run`) at its interval, the engine's timer off, its retries counted by the engine."""
-    rows = []
-    for number, service in enumerate(services):
-        box = f"daodan-svc-{token}-{number}"
+    `SERVICE_WAIT` seconds. As Compose's `up` starts them, each starts after those its `after` names have met the
+    condition it gives (`CONDITIONS`): started, ready, or, for one another waits for to complete, exited with code
+    0; one whose dependency failed does not start. A service's `files` are put in it from the project's `copy`
+    (`bound`) before it starts. The containers are `daodan-svc-<token>-<n>`, `n` the service's place in `services`;
+    a record row each, in that order. `run(*args, timeout=..., stdin=...)` is the engine's command line. `scheduled`
+    False is an engine that may run no check by itself (Podman, on systemd's timers): each check runs from here
+    (`healthcheck run`) at its interval, the engine's timer off, its retries counted by the engine. `created`:
+    the containers are there from an earlier start (the benchmark driver's, beside the CI's steps), and start
+    again as they were, a service another waited for to complete counted ready without running again."""
+    index = {service["name"]: number for number, service in enumerate(services)}
+    once = {name for service in services for name, condition in (service.get("after") or {}).items()
+            if condition == "service_completed_successfully"}
+    order: list[int] = []
+
+    def visit(number: int, seen: set) -> None:  # those it depends on first, as Compose orders them
+        if number in seen:
+            return
+        seen.add(number)
+        for name in services[number].get("after") or ():
+            if name in index:
+                visit(index[name], seen)
+        order.append(number)
+
+    visited: set = set()
+    for number in range(len(services)):
+        visit(number, visited)
+    items: dict[int, dict] = {}
+    for number in order:
+        service, box = services[number], f"daodan-svc-{token}-{number}"
         row = {"phase": "service", "name": service["name"], "image": service["image"], "pinned": service["pinned"],
-               "network": network, "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
-        clock = time.monotonic()
-        env = [item for key, value in (service.get("env") or {}).items() for item in ("-e", f"{key}={value}")]
-        args, every = list(service.get("args", ())), None
+               "network": network}
+        items[number] = item = {"row": row, "box": box, "every": None, "due": 0.0, "wait": service.get("wait"),
+                                "once": service["name"] in once, "ports": None, "clock": time.monotonic()}
+        for name, condition in (service.get("after") or {}).items():
+            other = items.get(index.get(name, -1))
+            if other is None:  # not among them: `up --no-deps`, or one of a cycle
+                continue
+            if condition != "service_started":
+                _settle(run, other, network)
+            if other["row"].get("outcome") == "failed":
+                row.update(outcome="failed", cause=f"it waits for {name} {CONDITIONS.get(condition, 'to start')}, "
+                                                   "which failed", duration_seconds=0)
+                break
+        row["started_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        if created and item["once"]:
+            row.update(outcome="ready", duration_seconds=0)  # it completed in the earlier start
+        if "outcome" in row:
+            continue
+        item["clock"] = time.monotonic()
+        env = [word for key, value in (service.get("env") or {}).items() for word in ("-e", f"{key}={value}")]
+        args = list(service.get("args", ()))
         if not scheduled and "--health-cmd" in args and "--no-healthcheck" not in args:
             at = args.index("--health-interval") + 1 if "--health-interval" in args[:-1] else None
-            every = seconds(args[at], HEALTH_EVERY) if at else HEALTH_EVERY
+            item["every"] = seconds(args[at], HEALTH_EVERY) if at else HEALTH_EVERY
+            item["due"] = item["clock"]  # Podman runs a check as soon as the container starts, then at each interval
             args = [*args[:at], "disable", *args[at + 1:]] if at else [*args, "--health-interval", "disable"]
         try:
-            checked(run("create", "--name", box, "--network", network, "--memory", str(limits["memory"]),
-                        "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
-                        "--security-opt", "no-new-privileges", *env, *args, service["pinned"],
-                        *service.get("command", ())), "create")
+            if not created:
+                checked(run("create", "--name", box, "--network", network, "--memory", str(limits["memory"]),
+                            "--memory-swap", str(limits["memory"]), "--pids-limit", str(limits["pids"]),
+                            "--security-opt", "no-new-privileges", *env, *args, service["pinned"],
+                            *service.get("command", ())), "create")
+            if service.get("files") and not created:
+                if copy is None:
+                    raise RuntimeError("its bind mounts name files of the project, and the run has no copy of it")
+                with bound(copy, service["files"]) as files:
+                    checked(run("cp", "-", f"{box}:/", stdin=files), "cp of its files")
             checked(run("start", box), "start")
         except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
             row.update(outcome="failed", cause=str(error))
-        rows.append((row, box, clock, every, service.get("wait")))
-    for row, box, clock, every, wait in rows:
-        due, ports = clock, None  # Podman runs a check as soon as the container starts, then at each interval
-        while "outcome" not in row:
-            if every is not None and time.monotonic() >= due:
-                run("healthcheck", "run", box, timeout=120)  # its code is the check's: the state says it
-                due = time.monotonic() + every
-            said = run("inspect", "--format", SERVICE_STATE, box, timeout=60).stdout.decode("utf-8", "replace")
-            status, _, health = said.strip().partition(" ")
-            if status == "running" and health in ("", "healthy"):
-                if wait == "ports" and ports is None:
-                    ports = exposed(run, row["pinned"])
-                if not ports or reached(run, network, ports):
-                    row["outcome"] = "ready"
-                elif time.monotonic() - clock > SERVICE_WAIT:
-                    row.update(outcome="failed", cause=f"its ports {' '.join(ports)} accepted no connection in "
-                                                       f"{SERVICE_WAIT} s")
-                else:
-                    time.sleep(1)
-            elif status != "running" or health == "unhealthy":
-                logs = run("logs", "--tail", "5", box, timeout=60)
-                tail = " | ".join(line.strip() for line in (logs.stdout + logs.stderr).decode("utf-8", "replace")
-                                  .splitlines() if line.strip())
-                cause = "its health check failed" if status == "running" else f"it {status or 'is gone'}"
-                row.update(outcome="failed", cause=f"{cause}: {tail[-400:]}" if tail else cause)
-            elif time.monotonic() - clock > SERVICE_WAIT:
-                row.update(outcome="failed", cause=f"still {health} after {SERVICE_WAIT} s: its health check "
-                                                   "never passed")
-            else:
-                time.sleep(1)
-        row["duration_seconds"] = round(time.monotonic() - clock, 3)
-    return [row for row, *_ in rows]
+    for number in order:
+        _settle(run, items[number], network)
+    return [items[number]["row"] for number in range(len(services))]
+
+
+def start_pod(engine: Engine, services: list[dict], network: str, token: str, seconds: float,
+              cleanup: list) -> tuple[str | None, str | None]:
+    """The pod of `services`: a container that holds their network namespace on `network` (`none` for the tests
+    alone, the preparation's internal one while the CI's steps run beside them), with a host per name they are
+    reached by, started; its removal and theirs put first in `cleanup`. `(pod, None)`, or `(None, cause)`."""
+    pod = f"daodan-pod-{token}"
+    cleanup[:0] = [*(("rm", "-f", f"daodan-svc-{token}-{n}") for n in range(len(services))), ("rm", "-f", pod)]
+    hosts = sorted({f"--add-host={name}:127.0.0.1" for s in services
+                    for name in (s.get("host"), *s.get("aliases", ())) if name not in (None, "localhost")})
+    try:
+        checked(cli(engine, "create", "--name", pod, "--network", network, *hosts, "--memory", str(64 * 2**20),
+                    "--pids-limit", "16", PROXY_IMAGE, "sleep", str(int(seconds) + 600)), "create of the pod")
+        checked(cli(engine, "start", pod), "start of the pod")
+        return pod, None
+    except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
+        return None, str(error)
 
 
 def declared(record: Path, image: str, command: list[str], gap: Gap) -> dict:
@@ -910,7 +1120,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                      prepare_timeout: float = 1800, memory: int = 2 * 2**30, pids: int = 1024,
                      cpus: float | None = None, registries: tuple[str, ...] = REGISTRIES,
                      engine: Engine | str | None = None,
-                     inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None) -> dict:
+                     inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None,
+                     keep_root: bool = False) -> dict:
     """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
@@ -921,7 +1132,13 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     `done` (the command exited, `exit_code` says how), `timeout`, `failed` (with `cause`) or `gap`
     (with `cause` and `remedy`); `outputs` lists the files brought back into `out_dir`; `services`, with
     services, each `{name, image, pinned, outcome}`, `outcome` `ready` or `failed` with `cause`: the execution
-    runs without a service that failed.
+    runs without a service that failed. Within `beside` with steps, they run at the end of the preparation
+    (`steps_script`), with the services beside them where the engine takes the pod off the preparation's network
+    before the execution (`leaves`); `ci_steps` gives each one's `{declared_in, name, outcome, exit_code,
+    duration_seconds, cause}` (`stepped`). With `keep_root`, execution starts from everything the preparation wrote
+    (a Dockerfile's build stage installs into the image's own folders: `docker_build.py`): its container committed
+    as `daodan-prepared-<token>`, on record before it exists and removed by name as the volumes are; an engine that
+    does not commit it is a gap with its answer.
     """
     project, out_dir = Path(project).resolve(), Path(out_dir).resolve()
     if out_dir == project or project in out_dir.parents:
@@ -932,7 +1149,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     out_dir.mkdir(parents=True, exist_ok=True)
     record = out_dir / RECORD_NAME
     limits = {"memory": int(memory), "pids": int(pids), "cpus": cpus}
-    services, variables, started = BESIDE.get() or ((), {}, [])
+    services, variables, steps, said = BESIDE.get() or ((), {}, (), Said([], []))
     env = {**variables, **(env or {})}
     try:
         free = free_memory()
@@ -945,12 +1162,13 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     token = uuid.uuid4().hex[:12]
     cleanup: list[tuple[str, ...]] = []
     held: tuple[Path, list[str]] | None = None
+    kept_image: str | None = None  # `keep_root`'s image, on record with the volumes
     result = {"state": "failed", "exit_code": None, "outputs": [], "record": str(record), "engine": found.name}
     try:
         sweep(found)
 
-        def engine_cli(*args: str, timeout: float = 300) -> subprocess.CompletedProcess:
-            return cli(found, *args, timeout=timeout)
+        def engine_cli(*args: str, timeout: float = 300, stdin=None) -> subprocess.CompletedProcess:
+            return cli(found, *args, timeout=timeout, stdin=stdin)
 
         pinned, served = [], []
         for service in services:  # pulled with the engine's network, before anything of the project runs
@@ -968,10 +1186,25 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             if digest["gaps"]:  # what the copy left out of the project (`copy_perimeter`)
                 result["gaps"] = digest["gaps"]
             run_copy, mounts, env = copy, [], {"HOME": HOME, **(env or {})} if prepare else dict(env or {})
+            joined, said_steps, steps = None, [], list(steps) if prepare else []
+
+            def unstarted(cause: str) -> list[dict]:
+                return [{"phase": "service", "name": s["name"], "image": s["image"], "pinned": s["pinned"],
+                         "outcome": "failed", "cause": cause} for s in pinned]
+
+            def report() -> None:  # the services' rows, and what the dynamic step reads of them
+                for item in served:
+                    append_record(record, {**item, "engine": found.name})
+                if services:
+                    result["services"] = [{key: item[key] for key in ("name", "image", "pinned", "outcome", "cause")
+                                           if key in item} for item in served]
+                    said.services.extend(result["services"])
+
             if prepare:
                 names = [f"daodan-work-{token}", f"daodan-state-{token}"]
+                kept_image = f"daodan-prepared-{token}" if keep_root else None
                 held = (volume_registry() / f"{token}.json", names)
-                record_volumes(held[0], found.name, os.getpid(), names)
+                record_volumes(held[0], found.name, os.getpid(), names, [kept_image] if kept_image else ())
                 for name in names:
                     checked(cli(found, "volume", "create", name), "volume create")
                 mounts = [f"{names[0]}:{WORKDIR}", f"{names[1]}:{STATE}"]
@@ -979,42 +1212,64 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 checked(cli(found, "network", "create", "--internal", network), "network create")
                 cleanup += [("rm", "-f", proxy), ("network", "rm", network)]
                 start_proxy(found, proxy, network, tuple(registries))
-                row = phase(found, "prepare", image=image, command=prepare, network=network,
-                            env={**env, **proxy_environment(f"http://proxy:{PROXY_PORT}")}, limits=limits,
-                            timeout=prepare_timeout, copy=copy, outputs=[], out_dir=out_dir, volumes=mounts)
+                refused = leaves(engine_cli, network, token) if steps and pinned else None
+                if refused:  # the pod could not leave the network: no step runs beside the services
+                    said_steps = [{"phase": "ci_step", "declared_in": step["declared_in"],
+                                   **({"name": step["name"]} if step.get("name") else {}), "outcome": "not_run",
+                                   "exit_code": None, "duration_seconds": 0,
+                                   "cause": f"{found.name} cannot take the pod of the services off the preparation's "
+                                            f"network before the tests, so no step runs beside them: {refused}"}
+                                  for step in steps]
+                    steps = []
+                elif steps and pinned:  # the services first, in a pod on the preparation's network
+                    pod, failure = start_pod(found, pinned, network, token, prepare_timeout + 2 * timeout, cleanup)
+                    if pod:
+                        joined = f"container:{pod}"
+                        served += start_services(engine_cli, pinned, joined, limits, token, found.name != "podman",
+                                                 copy)
+                    else:
+                        served, pinned = served + unstarted(failure), []
+                row = phase(found, "prepare", image=image, network=joined or network,
+                            command=["sh", "-c", steps_script(steps, timeout, token), "sh", *prepare] if steps
+                            else prepare, env={**env, **proxy_environment(f"http://proxy:{PROXY_PORT}")},
+                            limits=limits, timeout=prepare_timeout + (timeout if steps else 0), copy=copy, outputs=[],
+                            out_dir=out_dir, volumes=mounts, commit=kept_image)
                 append_record(record, {**row, "copy": digest})
+                if steps:
+                    log = Path(row["log"]).read_bytes().decode("utf-8", "replace") if row.get("log") else ""
+                    said_steps = stepped(log, steps, token, timeout)
+                for item in said_steps:
+                    append_record(record, {**item, "engine": found.name})
+                if said_steps:
+                    result["ci_steps"] = [{key: value for key, value in item.items() if key != "phase"}
+                                          for item in said_steps]
+                    said.ci_steps.extend(result["ci_steps"])
                 if row["outcome"] != "exited" or row["exit_code"] != 0:
                     result["cause"] = row.get("cause") or (f"preparation {row['outcome']}" + (
                         f" with code {row['exit_code']}" if row["exit_code"] is not None else "") + f"; see {row['log']}")
+                    report()
                     return result
-                run_copy = None
-            joined = "none"
-            if pinned:
-                pod = f"daodan-pod-{token}"
-                cleanup[:0] = [*(("rm", "-f", f"daodan-svc-{token}-{n}") for n in range(len(pinned))),
-                               ("rm", "-f", pod)]
-                hosts = sorted({f"--add-host={name}:127.0.0.1" for s in pinned
-                                for name in (s.get("host"), *s.get("aliases", ())) if name not in (None, "localhost")})
-                try:
-                    checked(cli(found, "create", "--name", pod, "--network", "none", *hosts, "--memory",
-                                str(64 * 2**20), "--pids-limit", "16", PROXY_IMAGE, "sleep", str(int(timeout) + 600)),
-                            "create of the pod")
-                    checked(cli(found, "start", pod), "start of the pod")
+                if kept_image and "committed" not in row:
+                    raise Gap(f"{found.name} did not commit the preparation's container: {row.get('commit_failed')}",
+                              "run Daodan with an engine that commits a container (Docker, Podman)")
+                run_copy, based, image = None, image, kept_image or image
+                if joined:  # the proxy goes and the pod leaves the network: the tests reach the services, and only them
+                    checked(cli(found, "rm", "-f", proxy), "rm of the proxy")
+                    checked(cli(found, "network", "disconnect", network, joined.partition(":")[2]),
+                            "network disconnect of the pod")
+            if pinned and joined is None:
+                pod, failure = start_pod(found, pinned, "none", token, timeout, cleanup)
+                if pod:
                     joined = f"container:{pod}"
-                    served += start_services(engine_cli, pinned, joined, limits, token, found.name != "podman")
-                except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
-                    served += [{"phase": "service", "name": s["name"], "image": s["image"], "pinned": s["pinned"],
-                                "outcome": "failed", "cause": str(error)} for s in pinned]
-            for row in served:
-                append_record(record, {**row, "engine": found.name})
-            if services:
-                result["services"] = [{key: row[key] for key in ("name", "image", "pinned", "outcome", "cause")
-                                       if key in row} for row in served]
-                started += result["services"]
+                    served += start_services(engine_cli, pinned, joined, limits, token, found.name != "podman", copy)
+                else:
+                    served += unstarted(failure)
+            joined = joined or "none"
+            report()
             row = phase(found, "execute", image=image, command=command, network=joined,
                         env={**env, **proxy_environment("")}, limits=limits, timeout=timeout,
                         copy=run_copy, outputs=list(outputs), out_dir=out_dir, volumes=mounts)
-            append_record(record, {**row, "copy": digest})
+            append_record(record, {**row, "copy": digest, **({"from": based} if kept_image else {})})
             result.update(exit_code=row.get("exit_code"), outputs=row["outputs"],
                           state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))
             if "cause" in row:
@@ -1033,7 +1288,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 pass
         if held:
             try:
-                remove_volumes(found, held[0], os.getpid(), held[1])
+                remove_volumes(found, held[0], os.getpid(), held[1], [kept_image] if kept_image else ())
             except (OSError, subprocess.TimeoutExpired):
                 pass
         found.stop()

@@ -15,13 +15,13 @@ its own. The other packages a file declares are not the pre-map's: each analyzer
 
 Of a service container a GitHub Actions job declares, Renovate's github-actions manager keeps the image alone
 (`lib/modules/manager/github-actions/schema.ts`). Where a workflow of `.github/workflows` names `services` or runs
-Docker Compose, a second command reads each workflow in the container's copy (Git tracks it; the snapshot leaves dot
-folders out) with Renovate's own YAML library (`YAML`, the `yaml` package Renovate pins, beside the Renovate that
-runs): `services`, each service a job declares (`jobs.<id>.services`) as the file writes it, with `host`, where the
-job's steps reach it (GitHub's rule: localhost on the runner, its name from a job that runs in a container), and
-`job_env`, the variables the workflow and the job give the steps; `compose`, each step that runs `docker compose
-up` (`_steps`) and each npm test script that does (`compose.scripts`), which `premap/compose.py` reads with Compose
-itself. A service whose image is empty does not start, and is none.
+Docker Compose, or a `.sh` script of the checkout runs it, a second command reads each workflow in the container's
+copy (Git tracks it; the snapshot leaves dot folders out) with Renovate's own YAML library (`YAML`, the `yaml`
+package Renovate pins, beside the Renovate that runs): `services`, each service a job declares (`jobs.<id>.services`)
+as the file writes it, with `host`, where the job's steps reach it (GitHub's rule: localhost on the runner, its name
+from a job that runs in a container), and `job_env`, the variables the workflow and the job give the steps;
+`compose`, each `docker compose up` a step runs (`_steps`) or an npm test script does (`compose.scripts`), itself or
+in the shell scripts it runs (`compose.started`), which `premap/compose.py` reads with Compose itself. A service whose image is empty does not start, and is none.
 
 Where `.gitlab-ci.yml` names `services` or includes files, the same command reads it: each service a job runs with
 (its own, its templates' through `extends`, else `default:`'s unless it inherits none) is a `services` fact as
@@ -41,7 +41,7 @@ import posixpath
 import re
 import shlex
 
-from premap import compose
+from premap import compose, npm_tests
 
 NAME, VERSION, RANK = "renovate", "44.239.1", "reader"  # it reads declared files and runs no project code
 NODE = "24.22.3"  # the Node release Renovate runs on (it needs `RegExp.escape`), installed with `--ignore-scripts`
@@ -74,6 +74,11 @@ YAML = '"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/ya
 EACH = (f'for f in {WORKFLOWS}/*.yml {WORKFLOWS}/*.yaml {GITLAB}; do [ -f "$f" ] || continue; echo "$f"; '
         f'node {YAML} --json --single --strict --merge < "$f" 2> /tmp/daodan-yaml.err'
         ' || { echo null; sed "s|^|$f: |" /tmp/daodan-yaml.err >&2; }; done')
+CHECKOUT = "actions/checkout"  # the checkout of a job: Daodan's copy of the project
+SETUP = re.compile(r"(?:^|[-_])setup(?:$|[-_])")  # a toolchain's setup action (`setup-node`, `action-setup`)
+PACKAGE_MANAGERS = ("npm", "yarn", "pnpm", "bun", "npx")  # programs that run a package's scripts, not tests
+COMPOSE_KEPT = ("up", "down", "pull", "build", "ps", "logs", "config", "stop", "rm")  # what `compose` reads, or none
+EXPRESSION = re.compile(r"\$\{\{.*?\}\}")  # an expression of GitHub Actions
 SERVICE_KEYS = ("env", "ports", "options", "command", "entrypoint", "volumes")  # what a service's job writes for it
 # GitLab's global keywords (docs.gitlab.com/ci/yaml): every other top-level key not starting with `.` is a job
 GITLAB_KEYWORDS = {"default", "include", "stages", "variables", "workflow", "image", "services", "cache",
@@ -124,9 +129,11 @@ def commands(context):
     if not context.inventory.files:
         return None
     folder = context.root / WORKFLOWS  # outside the snapshot: read on disk, as `.gitmodules` is, links left out
-    named = folder.is_dir() and not folder.is_symlink() and any(
+    read = compose.reader(context)
+    named = folder.is_dir() and not folder.is_symlink() and (any(
         pattern.search(path.read_text(encoding="utf-8", errors="replace")) for pattern in (SERVICES, compose.MENTION)
-        for path in sorted(folder.glob("*.y*ml")) if path.is_file() and not path.is_symlink())
+        for path in sorted(folder.glob("*.y*ml")) if path.is_file() and not path.is_symlink()) or any(
+        rel.endswith(".sh") and compose.MENTION.search(read(rel) or "") for rel in context.inventory.files))
     pipeline = context.root / GITLAB
     named = named or pipeline.is_file() and not pipeline.is_symlink() and any(
         pattern.search(pipeline.read_text(encoding="utf-8", errors="replace")) for pattern in (SERVICES, INCLUDE))
@@ -167,11 +174,12 @@ def _directory(item) -> str | None:
     return run.get("working-directory") if isinstance(run, dict) else None
 
 
-def _steps(rel: str, doc) -> tuple[list[dict], list[dict]]:
-    """Each step of the workflow `doc` that runs `docker compose up` (`compose.invocations`), as the `compose` facet
-    states it: where GitHub runs it (its `working-directory`, else the job's or the workflow's default), the
-    variables the workflow writes for it (`env`; an expression is the CI's, and stays out), the job's (`job_env`,
-    for the tests); a gap for a step that runs Compose in a way its words do not say."""
+def _steps(rel: str, doc, read) -> tuple[list[dict], list[dict]]:
+    """Each `docker compose up` a step of the workflow `doc` runs, itself or in the shell scripts of the checkout it
+    runs (`compose.started`; `read(rel)` a file's text), as the `compose` facet states it: where GitHub runs the step
+    (its `working-directory`, else the job's or the workflow's default), the variables the workflow writes for it
+    (`env`; an expression is the CI's, and stays out), the job's (`job_env`, for the tests); a gap for one that runs
+    Compose in a way its words do not say."""
     if not isinstance(doc, dict) or not isinstance(doc.get("jobs"), dict):
         return [], []
     found, gaps, top, where = [], [], _env(doc), _directory(doc)
@@ -181,19 +189,133 @@ def _steps(rel: str, doc) -> tuple[list[dict], list[dict]]:
         job_env, folder = {**top, **_env(job)}, _directory(job) or where
         for index, step in enumerate(job["steps"]):
             script = step.get("run") if isinstance(step, dict) else None
-            if not isinstance(script, str) or not compose.MENTION.search(script):
+            if not isinstance(script, str):
                 continue
             path = f"{rel}#jobs.{job_id}.steps.{index}"
             cwd = posixpath.normpath(str(step.get("working-directory") or folder or "."))
-            words, unread = compose.invocations(script)
             if "${{" in cwd or cwd.startswith(("/", "..")):  # computed, or outside the checkout
-                words, unread = [], [*unread, *map(shlex.join, words)]
-            gaps += [compose.not_read(path, line) for line in unread]
+                words, unread = compose.invocations(script)
+                gaps += [compose.not_read(path, line) for line in [*unread, *map(shlex.join, words)]]
+                continue
+            started, said = compose.started(path, script, cwd, read)
             env = {key: _text(value) for key, value in {**job_env, **_env(step)}.items() if "${{" not in _text(value)}
-            found += [{"declared_in": path if number == 0 else f"{path}.{number}", "cwd": cwd, "argv": argv,
-                       **({"env": env} if env else {}), **({"job_env": job_env} if job_env else {})}
-                      for number, argv in enumerate(words)]
+            found, gaps = found + compose.facts(started, cwd, env=env, job_env=job_env), gaps + said
     return found, gaps
+
+
+def _shell(item) -> str | None:
+    """The `shell` a workflow's or a job's `defaults.run` gives its steps."""
+    run = item["defaults"].get("run") if isinstance(item.get("defaults"), dict) else None
+    return run.get("shell") if isinstance(run, dict) else None
+
+
+def _npm_script(words: list[str], scripts: dict) -> str | None:
+    """The package script a command's `words` run: `npm test`, `npm run <name>`, `yarn|pnpm [run] <name>`, `bun run
+    <name>`."""
+    tool, rest = words[0].rsplit("/", 1)[-1], [word for word in words[1:] if not word.startswith("-")]
+    if tool in ("npm", "yarn", "pnpm") and rest[:1] in (["test"], ["t"], ["tst"]):
+        return "test"
+    if tool in PACKAGE_MANAGERS and rest[:1] in (["run"], ["run-script"]) and len(rest) > 1:
+        return rest[1]
+    return rest[0] if tool in ("yarn", "pnpm") and rest and rest[0] in scripts else None
+
+
+def _inside(path: str, folder: str) -> bool:
+    return folder == "." or path == folder or path.startswith(folder + "/")
+
+
+def _tests_of(script: str, cwd: str, tests: list[dict], read) -> list[dict]:
+    """The `tests` entries a step's shell `script` run from `cwd` runs: a package script that starts what an
+    entry's script starts (`npm_tests._starts`), or an entry's runner as a program, there or in the shell scripts
+    of the checkout it runs (`compose.followed`), from a folder inside the entry's or holding it."""
+    commands = [command for text in (script, *map(read, compose.followed(script, cwd, read)))
+                for command in compose.simple_commands(text or "")]
+    programs = {word.rsplit("/", 1)[-1] for command in commands for word in command}
+    package = posixpath.normpath(posixpath.join(cwd, "package.json"))
+    try:
+        scripts = json.loads(read(package) or "{}").get("scripts") or {}
+    except (ValueError, AttributeError):
+        scripts = {}
+
+    def starts(name: str) -> set:
+        text = scripts.get(name) if isinstance(scripts, dict) else None
+        return {(where, runner) for where, runner, _, _ in npm_tests._starts(text, scripts)} if isinstance(text, str) \
+            else set()
+
+    found = []
+    for entry in tests:
+        rel, _, name = str(entry.get("declared_in") or "").partition("#scripts.")
+        if name and rel == package and any(run == name or starts(name) & starts(run) for run in (
+                _npm_script(command, scripts) for command in commands) if run):
+            found.append(entry)
+        elif entry.get("runner") not in (None, *PACKAGE_MANAGERS) and entry["runner"] in programs and (
+                _inside(cwd, entry.get("root") or ".") or _inside(entry.get("root") or ".", cwd)):
+            found.append(entry)
+    return found
+
+
+def _step_fact(path: str, step: dict, cwd: str, env: dict, shell: str | None) -> dict | None:
+    """A step before a job's tests as the `ci_steps` facet states it: `{declared_in, name, cwd, run, env, shell}`
+    as GitHub's runner runs it, or `{declared_in, name, cause}` for one Daodan does not run; None for one that is
+    not a step of Daodan's: the checkout (its copy), a toolchain's setup action (a toolchain the pre-map reads) and
+    Docker Compose's `up`, `down` and the like (its services are the `compose` facet's)."""
+    base = {"declared_in": path, **({"name": str(step["name"])} if step.get("name") else {})}
+    uses, script = step.get("uses"), step.get("run")
+    if isinstance(uses, str):
+        action = uses.split("@")[0]
+        if action == CHECKOUT or SETUP.search(action.rsplit("/", 1)[-1]):
+            return None
+        return {**base, "cause": f"it uses {uses}: Daodan runs no action but the checkout and a toolchain's setup"}
+    if not isinstance(script, str):
+        return None
+    commands = compose.simple_commands(script)
+    composed = [command for command in commands if command[:2] == ["docker", "compose"]
+                or command[:1] == ["docker-compose"]]
+    other = [command for command in composed if compose._split(command)[2] not in COMPOSE_KEPT]
+    if other:
+        return {**base, "cause": f"it runs `{shlex.join(other[0])}`, Docker Compose on the services it starts, which "
+                                 "needs an engine beside the tests"}
+    if commands and len(composed) == len(commands):
+        return None
+    shell = step.get("shell") or shell
+    env = {key: _text(value) for key, value in env.items()}
+    expression = next((found.group() for text in (script, cwd, *env.values())
+                       for found in [EXPRESSION.search(text)] if found), None)
+    cause = (f"it runs only if `{step['if']}`, which Daodan does not evaluate" if step.get("if") is not None else
+             f"it reads `{expression}`, an expression of the CI (its secrets among them), which Daodan does not "
+             "evaluate" if expression else
+             f"it runs in {shell}, a shell Daodan does not run" if shell not in (None, "bash", "sh") else
+             f"its folder {cwd} lies outside the checkout" if cwd.startswith(("/", "..")) else None)
+    return {**base, "cause": cause} if cause else {**base, "cwd": cwd, "run": script, **({"env": env} if env else {}),
+                                                   **({"shell": shell} if shell else {})}
+
+
+def _ci_steps(rel: str, doc, tests: list[dict], read, claimed: set) -> list[dict]:
+    """The steps a job of the workflow `doc` runs before its tests, as the `ci_steps` facet states them: for each
+    `tests` entry not in `claimed`, the first job step that runs it (`_tests_of`) is its test step, and each step
+    before it that runs no entry is a fact (`_step_fact`) with `tests` the entry's `declared_in`."""
+    if not tests or not isinstance(doc, dict) or not isinstance(doc.get("jobs"), dict):
+        return []
+    facts, top, where, default = [], _env(doc), _directory(doc), _shell(doc)
+    for job_id, job in doc["jobs"].items():
+        if not isinstance(job, dict) or not isinstance(job.get("steps"), list):
+            continue
+        steps = [step if isinstance(step, dict) else {} for step in job["steps"]]
+        folder, shell = _directory(job) or where, _shell(job) or default
+        cwds = [posixpath.normpath(str(step.get("working-directory") or folder or ".")) for step in steps]
+        tested = [_tests_of(step["run"], cwd, tests, read) if isinstance(step.get("run"), str) else []
+                  for step, cwd in zip(steps, cwds)]
+        for index, entries in enumerate(tested):
+            for entry in entries:
+                if entry["declared_in"] in claimed:
+                    continue
+                claimed.add(entry["declared_in"])
+                for number in range(index):
+                    fact = None if tested[number] else _step_fact(
+                        f"{rel}#jobs.{job_id}.steps.{number}", steps[number], cwds[number],
+                        {**top, **_env(job), **_env(steps[number])}, shell)
+                    facts += [{**fact, "tests": entry["declared_in"]}] if fact else []
+    return facts
 
 
 def _shell_name(text: str) -> tuple[str, int]:
@@ -327,13 +449,13 @@ def _gitlab(rel: str, doc) -> tuple[list[dict], list[dict]]:
     return found, gaps
 
 
-def _workflows(answer: dict) -> tuple[dict, list[dict]]:
+def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[dict]]:
     """The services the workflows' jobs declare and the steps that start Docker Compose, as facets, and a gap for a
     workflow the library could not read."""
     if answer["returncode"] != 0:
         return {}, [{"kind": "model_failed", "path": WORKFLOWS, "detail": f"yaml: {answer['stderr'].strip()[-400:]}"}]
     lines, errors = answer["stdout"].splitlines(), answer["stderr"].splitlines()
-    services, steps, gaps = [], [], []
+    services, steps, gaps, before, claimed = [], [], [], [], set()
     for rel, text in zip(lines[::2], lines[1::2]):
         doc = json.loads(text)
         if doc is None:  # the library's message is the line that names the error, above Node's stack
@@ -345,14 +467,17 @@ def _workflows(answer: dict) -> tuple[dict, list[dict]]:
             found, said = _gitlab(rel, doc)
             services, gaps = services + found, gaps + said
         else:
-            found, said = _steps(rel, doc)
+            found, said = _steps(rel, doc, read)
             services, steps, gaps = services + _services(rel, doc), steps + found, gaps + said
-    return {name: facts for name, facts in (("services", services), ("compose", steps)) if facts}, gaps
+            before += _ci_steps(rel, doc, list(tests), read, claimed)
+    return {name: facts for name, facts in (("services", services), ("compose", steps), ("ci_steps", before))
+            if facts}, gaps
 
 
 def read(context, commands, results):
     result, *rest = results
-    declared, gaps = _workflows(rest[0]) if rest else ({}, [])
+    tests = (getattr(context, "stated", None) or {}).get("tests") or []
+    declared, gaps = _workflows(rest[0], compose.reader(context), tests) if rest else ({}, [])
     started, unread = compose.scripts(context)  # and the test scripts that start Docker Compose
     declared = {**declared, "compose": [*declared.get("compose", ()), *started]} if started else declared
     gaps += unread

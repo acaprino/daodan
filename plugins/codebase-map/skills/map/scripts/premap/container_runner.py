@@ -26,7 +26,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import preparation  # noqa: E402
-from premap import bazel, cmake, compose, gradle, maven, meson, sbt  # noqa: E402
+from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
@@ -55,9 +55,17 @@ def _jar(name: str, folder: str, program: str) -> str:
 ENRY = (f"mkdir -p {STATE}/enry && cp {IN}/enry_facts.go {STATE}/enry/main.go && cd {STATE}/enry"
         " && go mod init daodan-enry && GOFLAGS=-mod=mod go get github.com/go-enry/go-enry/v2@v2.9.6"
         f" && CGO_ENABLED=0 GOFLAGS=-mod=mod go build -o {T}/bin/daodan-enry .")
+DOCKERFILE = (f"mkdir -p {STATE}/dockerfile && cp {IN}/dockerfile_stages.go {STATE}/dockerfile/main.go"
+              f" && cd {STATE}/dockerfile && go mod init daodan-dockerfile"
+              f" && GOFLAGS=-mod=mod go get github.com/moby/buildkit@{dockerfile.VERSION}"
+              f" && CGO_ENABLED=0 GOFLAGS=-mod=mod go build -o {T}/bin/daodan-dockerfile .")
 TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the registries, extra hosts, memory GB
     "go": {"files": [GO], "setup": [UNPACK["go"]], "runs_on": ("go",)},
     "daodan-enry": {"files": [GO, (None, None, "enry_facts.go")], "setup": [UNPACK["go"], ENRY], "registries": True},
+    "daodan-dockerfile": {"files": [GO, (None, None, "dockerfile_stages.go"), (*compose.DOWNLOAD, "docker-compose")],
+                          "setup": [UNPACK["go"], DOCKERFILE, f"cp {IN}/docker-compose {T}/bin/docker-compose"
+                                                              f" && chmod 755 {T}/bin/docker-compose"],
+                          "registries": True},
     "cargo": {"files": preparation.NEEDS["rust"]["files"], "setup": preparation.NEEDS["rust"]["setup"],
               "runs_on": ("rust",)},
     "uv": {"files": [preparation.UV],
@@ -102,7 +110,8 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
 
 
 def fetched(url: str | None, sha256: str | None, name: str) -> Path:
-    """`preparation.fetched`; `enry_facts.go` (no URL) is Daodan's own, beside this module."""
+    """`preparation.fetched`; `enry_facts.go` and `dockerfile_stages.go` (no URL) are Daodan's own, beside this
+    module."""
     return Path(__file__).with_name(name) if url is None else preparation.fetched(url, sha256, name)
 
 

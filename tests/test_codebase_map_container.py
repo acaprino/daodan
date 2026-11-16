@@ -122,7 +122,11 @@ elif verb == "start":
     elif command[:1] == ["exit"]:
         sys.exit(int(command[1]))
 elif verb == "commit":
+    if (state / "no-commit").exists():
+        sys.exit("docker: 'commit' is not a docker command.")
     shutil.copytree(box(args[1]) / "fs", state / "images" / args[2].replace(":", "_"))
+elif verb == "image" and args[1] == "rm":
+    shutil.rmtree(state / "images" / args[-1].replace(":", "_"), ignore_errors=True)
 elif verb == "logs":
     print("ready 3128")
 '''
@@ -619,6 +623,61 @@ class FakeEngineTest(unittest.TestCase):
         homes = [[token for token in call if token.startswith("HOME=")] for call in self.created()
                  if "--network" in call]
         self.assertEqual(homes, [["HOME=/daodan/state/home"]] * 2 + [["HOME=/root"]] * 2 + [[]])
+
+    def test_a_kept_root_hands_execution_everything_the_preparation_wrote_and_goes_by_name(self):
+        """A Dockerfile's build stage installs into the image's own folders (`apk add` into /usr): with
+        `keep_root`, execution starts from the preparation's container committed as `daodan-prepared-<token>`,
+        on record before it exists, with no network, and the image is removed by name at the end."""
+        seen, real = [], container.cli
+
+        def spy(engine, *args, **options):
+            if args[:1] == ("commit",):
+                seen.append(any(args[2] in entry.read_text(encoding="utf-8") for entry in self.registry.glob("*")))
+            return real(engine, *args, **options)
+
+        with mock.patch.object(container, "cli", spy):
+            result = self.run_operation(["copy", "/usr/lib/built.txt", "/out/built.txt"], outputs=["/out/built.txt"],
+                                        prepare=["emit", "/usr/lib/built.txt", "installed"], keep_root=True)
+        self.assertEqual(result["state"], "done", result)
+        self.assertEqual((self.out / "built.txt").read_text(), "installed")
+        calls = self.calls()
+        [commit] = [call for call in calls if call[0] == "commit"]
+        image = commit[2]
+        self.assertRegex(image, r"^daodan-prepared-[0-9a-f]{12}$")
+        self.assertEqual(seen, [True])
+        _proxy, prepare, execute = self.created()
+        self.assertEqual(commit[1], prepare[prepare.index("--name") + 1])
+        self.assertIn(image, execute)
+        self.assertEqual(execute[execute.index("--network") + 1], "none")
+        self.assertLess(calls.index(commit), calls.index(["rm", "-f", commit[1]]))
+        self.assertIn(["image", "rm", "-f", image], calls)
+        self.assertFalse((self.state / "images" / image).exists())
+        rows = [json.loads(line) for line in (self.out / container.RECORD_NAME).read_text().splitlines()]
+        self.assertEqual([(r.get("image"), r.get("from")) for r in rows if r.get("phase") == "execute"],
+                         [(image, "fake/runtime:1")])  # the record names the pinned base it came from
+        self.assertEqual(list(self.registry.glob("*")), [])
+
+    def test_an_engine_that_cannot_commit_a_container_is_a_gap_with_its_answer(self):
+        (self.state / "no-commit").write_text("", encoding="utf-8")
+        result = self.run_operation(["exit", "0"], prepare=["exit", "0"], keep_root=True)
+        self.assertEqual(result["state"], "gap", result)
+        self.assertIn("'commit' is not a docker command", result["cause"])
+        self.assertEqual(len(self.created()), 2)  # the proxy and the preparation: no execution
+        self.assertEqual(list(self.registry.glob("*")), [])
+
+    def test_the_prepared_images_a_killed_run_left_are_removed_by_name_at_the_next_run(self):
+        dead = int(subprocess.run([sys.executable, "-c", "import os; print(os.getpid())"], capture_output=True,
+                                  text=True, check=True).stdout)
+        self.registry.mkdir()
+        (self.registry / "killed.json").write_text(json.dumps({
+            "engine": "fake", "pid": dead, "volumes": ["daodan-work-aaaaaaaaaaaa"],
+            "images": ["daodan-prepared-aaaaaaaaaaaa", "project/app:1"]}), encoding="utf-8")
+        (self.state / "volumes" / "daodan-work-aaaaaaaaaaaa").mkdir(parents=True)
+        self.assertEqual(self.run_operation(["exit", "0"])["state"], "done")
+        calls = self.calls()
+        self.assertIn(["image", "rm", "-f", "daodan-prepared-aaaaaaaaaaaa"], calls)
+        self.assertFalse(any("project/app:1" in call for call in calls))
+        self.assertEqual(list(self.registry.glob("*")), [])
 
     def test_failed_preparation_stops_before_execution(self):
         result = self.run_operation(["exit", "0"], prepare=["exit", "3"])

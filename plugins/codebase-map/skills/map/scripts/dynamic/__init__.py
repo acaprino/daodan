@@ -44,7 +44,9 @@ it could not reach is a `host_unreachable` gap naming the host and the files tha
 The services the project's CI starts beside its tests (the pre-map's `services`) start beside every container run
 of an observer, with the variables its jobs give the tests (`services()`, `container.beside`), so no observer has
 code of its own for them; a service that did not start, or a run that started none of them, is a gap naming the
-service and its image (`service_unavailable`).
+service and its image (`service_unavailable`). The steps a CI job runs before the tests an observer runs (the
+pre-map's `ci_steps`, `ci_steps()`) run at the end of each of its preparations, the services beside them; one that
+fails is a `ci_step_failed` gap, one that cannot run a `ci_step_not_run` one.
 
 See docs/specs/2026-11-12-passo-dinamico.md, sections 5 and 7.
 """
@@ -53,6 +55,7 @@ from __future__ import annotations
 import collections
 import json
 import os
+import posixpath
 import re
 import shlex
 from datetime import datetime, timezone
@@ -317,13 +320,15 @@ def _healthcheck(check) -> list[str]:
 def services(record: dict) -> dict:
     """What the project's CI starts beside its tests, from the pre-map's `services` (GitHub Actions' service
     containers, GitLab's services, those Compose starts for a step), as `container.beside` takes it: `services`,
-    each `{name, image, host, env, args, command}`, with `aliases` and `wait` where the fact has them; `env`, the
+    each `{name, image, host, env, args, command}`, with `aliases`, `wait` and `after` (Compose's `depends_on`) where
+    the fact has them and `files`, `[source in the project, target]` of its bind mounts inside it; `env`, the
     variables the jobs that declare them give their steps, for the tests, without those the fact says the CI
     computes (`computed`); `gaps`, what cannot run as declared, each naming the service, its image and its
     declaration (`path`): `service_unavailable` for one that does not start (an image the CI computes or Compose
     builds, a second definition of a name, which the first's start keeps out), `service_incomplete` for one that
-    starts without part of what its job declares (a port mapped to another, volumes, options other than its health
-    check, Compose keys no option applies, variables the CI computes or two jobs set apart)."""
+    starts without part of what its job declares (a port mapped to another, volumes, bind mounts outside the
+    project, options other than its health check, Compose keys no option applies, variables the CI computes or two
+    jobs set apart)."""
     planned, env, gaps, jobs, first, apart = [], {}, [], set(), {}, set()
     for entry in sorted(record.get("services") or [], key=lambda item: item["declared_in"]):
         name, image, path = entry["name"], entry["image"], entry["declared_in"]
@@ -361,6 +366,11 @@ def services(record: dict) -> dict:
                              f"on {mapped[-1]}")
         if entry.get("volumes"):
             notes.append("its volumes are not mounted: " + ", ".join(map(str, entry["volumes"])))
+        binds = [(str(bind), *str(bind).split(":")[:2]) for bind in entry.get("binds") or ()]
+        outside = [bind for bind, source, _ in binds if posixpath.isabs(source) or source.split("/")[0] == ".."]
+        if outside:
+            notes.append("its bind mounts outside the project are not mounted: " + ", ".join(outside))
+        files = [[posixpath.normpath(source), target] for bind, source, target in binds if bind not in outside]
         args, other = _health(entry.get("options"))
         args += _healthcheck(entry.get("healthcheck"))
         if other:
@@ -379,7 +389,8 @@ def services(record: dict) -> dict:
                 **({"aliases": list(entry["aliases"])} if entry.get("aliases") else {}),
                 "env": {key: value for key, value in given.items() if value is not None},
                 "args": [*args, *(("--entrypoint", entry_point[0]) if entry_point else ())],
-                "command": [*entry_point[1:], *command], **({"wait": entry["wait"]} if entry.get("wait") else {})}
+                "command": [*entry_point[1:], *command], **({"wait": entry["wait"]} if entry.get("wait") else {}),
+                **({"after": dict(entry["after"])} if entry.get("after") else {}), **({"files": files} if files else {})}
         if name in first and first[name][0] != spec:
             gap("service_unavailable", [f"the service of {first[name][1]} has its name and starts: this one does "
                                         "not"])
@@ -396,7 +407,7 @@ def services(record: dict) -> dict:
 
 def _service_gaps(started: list[dict], planned: list[dict], paths: dict, entry: str) -> list[dict]:
     """The gaps of the services of an observer that ran: one that did not start in one of its container runs
-    (`started`, what `container.beside` yields), once per cause; every one when its runs started none."""
+    (`started`, `container.Said.services`), once per cause; every one when its runs started none."""
     def gap(name: str, image: str, said: str) -> dict:
         return {"kind": "service_unavailable", "name": name, "image": image, "path": paths.get(name),
                 "detail": f"{name} ({image}), {paths.get(name)}: {said}; the tests ran without it"}
@@ -406,6 +417,49 @@ def _service_gaps(started: list[dict], planned: list[dict], paths: dict, entry: 
     failed = dict.fromkeys((row["name"], row["image"], row.get("cause")) for row in started
                            if row.get("outcome") != "ready")
     return [gap(name, image, f"it did not start: {cause}") for name, image, cause in failed]
+
+
+def ci_steps(record: dict, runs: list[dict]) -> dict:
+    """The steps the project's CI jobs run before the tests of `runs` (the pre-map's `ci_steps` whose `tests` is a
+    run's `declared_in`), as `container.beside` takes them, once each and in each job's order: `steps`, each
+    `{declared_in, cwd, run}` with `name`, `env` and `shell` where the fact has them; `gaps`, a `ci_step_not_run`
+    for one the fact gives a `cause`."""
+    wanted = {run.get("declared_in") for run in runs} - {None}
+
+    def order(item: dict) -> tuple:
+        where, _, number = item["declared_in"].rpartition(".steps.")
+        return where, int(number) if number.isdigit() else 0
+
+    steps, gaps, seen = [], [], set()
+    for item in sorted((item for item in record.get("ci_steps") or () if item.get("tests") in wanted), key=order):
+        if item["declared_in"] in seen:
+            continue
+        seen.add(item["declared_in"])
+        if item.get("cause"):
+            name = f" ({item['name']})" if item.get("name") else ""
+            gaps.append({"kind": "ci_step_not_run", "path": item["declared_in"],
+                         "detail": f"{item['declared_in']}{name}: {item['cause']}: it does not run before the tests"})
+        else:
+            steps.append({key: item[key] for key in ("declared_in", "name", "cwd", "run", "env", "shell")
+                          if item.get(key)})
+    return {"steps": steps, "gaps": gaps}
+
+
+def _step_gaps(stepped: list[dict]) -> list[dict]:
+    """The gaps of the CI's steps an observer's container runs ran (`container.Said.ci_steps`), once per cause:
+    `ci_step_failed` for one that did not end with code 0, `ci_step_not_run` for one that did not start."""
+    found: dict = {}
+    for row in stepped:
+        if row.get("outcome") == "exited" and row.get("exit_code") == 0:
+            continue
+        kind = "ci_step_not_run" if row.get("outcome") == "not_run" else "ci_step_failed"
+        name = f" ({row['name']})" if row.get("name") else ""
+        found.setdefault((kind, row["declared_in"], row.get("cause")), {
+            "kind": kind, "path": row["declared_in"],
+            **({"exit_code": row["exit_code"]} if row.get("exit_code") is not None else {}),
+            "detail": f"{row['declared_in']}{name}: {row.get('cause')}; the tests ran "
+                      + ("without it" if kind == "ci_step_not_run" else "after it")})
+    return list(found.values())
 
 
 def run(manifest: Path, bus) -> dict:
@@ -495,7 +549,10 @@ def run(manifest: Path, bus) -> dict:
                     say(gap["detail"], gap)
                 for item in sorted(record.get("services") or [], key=lambda item: item["declared_in"]):
                     paths.setdefault(item["name"], item["declared_in"])
-            started: list[dict] = []  # the outcomes of the services its container runs started
+            stepped = ci_steps(record, planned["runs"])  # the CI's steps before the tests it runs
+            for gap in stepped["gaps"]:
+                say(gap["detail"], gap, entry)
+            said = container.Said([], [])  # what its container runs say of the services and the steps
             if not asked:  # the engine found goes to the first run, which ends it; the next ones find their own
                 asked["once"] = True
                 try:
@@ -507,7 +564,7 @@ def run(manifest: Path, bus) -> dict:
             if result is None:
                 bus.progress(STEP, number, len(waiting), analyzer=entry, phase="tests",
                              message=f"{entry}: {len(planned['runs'])} runs of the tests in the container")
-                with container.beside(declared["services"], declared["env"]) as started:
+                with container.beside(declared["services"], declared["env"], stepped["steps"]) as said:
                     result = module.observe(snapshot.root, planned, manifest.parent / RUNS / entry,
                                             asked.pop("engine", None))
             broken = malformed(result)
@@ -534,8 +591,10 @@ def run(manifest: Path, bus) -> dict:
                 left(wanted, "failed" if result["state"] == "failed" else "unavailable", cause)
                 continue
             if declared["services"]:
-                for gap in _service_gaps(started, declared["services"], paths, entry):
+                for gap in _service_gaps(said.services, declared["services"], paths, entry):
                     say(gap["detail"], gap, entry)
+            for gap in _step_gaps(said.ci_steps):
+                say(gap["detail"], gap, entry)
             for gap in result["gaps"]:
                 say(gap["detail"], gap, entry)
             why = "; ".join(gap["detail"] for gap in result["gaps"])
