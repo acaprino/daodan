@@ -161,11 +161,12 @@ def structure(record: dict) -> dict:
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, external_classes: dict | None = None,
           *, roots, tools=None, toolchains=(), modules=(), other_builds=(), engine=None,
-          memory: int = MIN_FREE) -> dict:
+          memory: int = MIN_FREE, declared=None) -> dict:
     """The forward index of each build in `roots` (the pre-map's build folders, built by their `tools`), each in
     a container of its own, with its runs and the indexer's time and memory (`files` is not used: a build compiles
-    every module); the member order of all of them in `javap.json`. Without a container, `unavailable`; without an
-    index, `failed`."""
+    every module); the member order of all of them in `javap.json`. The preparation also reaches the hosts the
+    project declares (`declared`, `preparation.declared`). Without a container, `unavailable`; without an index,
+    `failed`."""
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir).resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
 
@@ -175,7 +176,8 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
         older = jdk if jdk and jvm._major(jdk["version"]) < OLDEST_JDK else None
         prepare = jvm.modules_line(modules, root) + jvm.tool_line(tool) + PREPARE
         result, runs, out = jvm.run(folder, work, prepare, execute(external_classes), memory=memory, engine=engine,
-                                    toolchains=toolchains, jdk=None if older else jdk)
+                                    toolchains=toolchains, jdk=None if older else jdk,
+                                    hosts=(declared or {}).get("hosts", ()))
         part = finish(folder, work, result, runs, out)
         said = [*([unsupported(older, root)] if older else ()), *(edited(runs, root) if part.get("indexes") else ())]
         return jvm.with_gaps(jvm.with_gaps(part, result), {"gaps": said})

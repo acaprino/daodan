@@ -725,6 +725,11 @@ class ObserveTest(FakeEngineTest):
         self.assertIn(f"{jvm.IMAGE_JDK}javac --release {jvm.RELEASE}", prepare)
         self.assertIn("api.adoptium.net", self.created()[0])  # mise's downloads, through the preparation's proxy
 
+    def test_the_hosts_the_project_declares_are_reached_by_the_preparation(self):
+        self.planned["declared"] = {"hosts": ("jitpack.io",), "where": {"jitpack.io": ["pom.xml"]}}
+        self.observe(suites=self.suite(1))
+        self.assertIn("jitpack.io", self.created()[0])
+
     def test_an_asm_jar_that_does_not_match_its_checksum_starts_no_container(self):
         self.served[f"{resolve_edges.MAVEN_CENTRAL}/fx/test/asm/1.0/asm-1.0.jar"] = b"another jar"
         result = self.observe()

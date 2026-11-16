@@ -463,11 +463,12 @@ def failed(result: dict, runs: list[dict]) -> dict:
 
 def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory: int, engine=None,
         toolchains=(), prepare_timeout: float = 1800, timeout: float = 600,
-        inputs: dict[str, Path] | None = None, jdk: dict | None = None) -> tuple[dict, list[dict], Path]:
+        inputs: dict[str, Path] | None = None, jdk: dict | None = None, hosts=()) -> tuple[dict, list[dict], Path]:
     """Both phases in one container run over a copy of `project_dir` and the `tools` it needs, the preparation's
     steps before `prepare` (the JDK it runs on, `jdk` or the newest of `toolchains` above the image's, and each
-    other JDK a Gradle toolchain of `toolchains` asks for; the restore): the operation's result (`judged`, with the
-    preparation's `gaps`), the runs of both logs, and the folder the outputs came back into."""
+    other JDK a Gradle toolchain of `toolchains` asks for; the restore), reaching beside the registries the `hosts`
+    the project declares (`preparation.declared`): the operation's result (`judged`, with the preparation's
+    `gaps`), the runs of both logs, and the folder the outputs came back into."""
     import container
     out_dir = Path(work_dir) / "container"
     out = out_dir / Path(OUT).name
@@ -502,7 +503,7 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
         project_dir, ["bash", "-c", script("execute", execute, jdk=used)], image=IMAGE, out_dir=out_dir,
         prepare=["bash", "-c", script("prepare", restore_lines(project_dir) + prepare, setup=setup, jdk=used)],
         outputs=[OUT], env=dict(ENV), timeout=timeout, prepare_timeout=prepare_timeout, memory=memory, pids=PIDS,
-        registries=tuple(dict.fromkeys(registries(project_dir) + tuple(chains["hosts"]) + sdk["hosts"])),
+        registries=tuple(dict.fromkeys(registries(project_dir) + chains["hosts"] + sdk["hosts"] + tuple(hosts))),
         engine=engine, inputs=inputs)
     runs, prepared = [], ""
     for phase in ("prepare", "execute"):

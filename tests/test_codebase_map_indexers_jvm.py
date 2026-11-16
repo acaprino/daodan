@@ -439,6 +439,11 @@ class PreparationTests:
         self.assertEqual(result["gaps"], preparation.missing(failed))
         self.assertIn("platforms;android-35: Warning: Failed to find package", result["gaps"][0]["detail"])
 
+    def test_the_hosts_the_project_declares_are_reached_by_the_preparation(self):
+        self.play_success()
+        self.index(declared={"hosts": ("jitpack.io",), "where": {"jitpack.io": ["pom.xml"]}})
+        self.assertIn("jitpack.io", self.created()[0])
+
     def test_a_build_that_states_no_android_package_carries_no_sdk(self):
         self.play_success()
         self.index(toolchains=[{"tool": "java", "version": "17", "declared_in": "pom.xml#x"}])

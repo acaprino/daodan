@@ -496,7 +496,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         result, steps, back = jvm.run(Path(project) / run["root"] if run["root"] else Path(project), work, prepare,
                                       execute, memory=MEMORY, engine=engine,
                                       toolchains=planned.get("toolchains") or (), timeout=LIMIT + 300, inputs=carried,
-                                      jdk=jvm.build_jdk(run, planned.get("toolchains")))
+                                      jdk=jvm.build_jdk(run, planned.get("toolchains")),
+                                      hosts=planned.get("declared", {}).get("hosts", ()))
         attempt = {"root": run["root"], "gaps": list(result.get("gaps", []))}
         attempts.append(attempt)
         if result["state"] in ("gap", "failed"):

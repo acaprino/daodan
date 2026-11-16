@@ -210,10 +210,11 @@ def build_logic(rel: str) -> bool:
 
 
 def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, roots, tools=None, toolchains=(),
-          modules=(), other_builds=(), engine=None, memory: int = MIN_FREE) -> dict:
+          modules=(), other_builds=(), engine=None, memory: int = MIN_FREE, declared=None) -> dict:
     """The forward-only index of each build in `roots` (the pre-map's build folders, built by their `tools`), each
     in a container of its own, its runs, the indexer's time and memory, `configs` (the compile tasks `refine`
-    reads, with the build each came from) and `written` (the index as scip-java wrote it). Without a container,
+    reads, with the build each came from) and `written` (the index as scip-java wrote it). The preparation also
+    reaches the hosts the project declares (`declared`, `preparation.declared`). Without a container,
     `unavailable`; without an index, `failed`. When the Kotlin `files` are all the build's own (`build_logic`),
     which the pre-map reads through Gradle and no Kotlin compile task compiles, nothing is built: `unavailable`."""
     from indexers import jvm
@@ -227,7 +228,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     def one(folder: Path, work: Path, tool: str | None) -> dict:
         prepare = jvm.modules_line(modules, jvm.build_root(project_dir, folder)) + jvm.tool_line(tool) + PREPARE
         result, runs, out = jvm.run(folder, work, prepare, EXECUTE, memory=memory, engine=engine,
-                                    toolchains=toolchains)
+                                    toolchains=toolchains, hosts=(declared or {}).get("hosts", ()))
         return jvm.with_gaps(finish(work, result, runs, out), result)
 
     parts = jvm.builds(project_dir, work_dir, roots, one, tools)
