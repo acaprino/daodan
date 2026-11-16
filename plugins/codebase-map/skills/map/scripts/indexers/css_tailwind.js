@@ -31,19 +31,66 @@ function installed(from) {
   return fs.existsSync(path.join(cfg.tailwind, "package.json")) ? cfg.tailwind : null;
 }
 
+// A sheet as `@tailwindcss/node` finds it: a path from the importing sheet's folder, else a package's.
 function sheet(id, base, tailwind) {
   const local = id.startsWith(".") || id.startsWith("/") ? path.resolve(base, id) : null;
-  const candidates = local ? [local, local + ".css"] : [];
-  if (!local) {
-    const [pkg, ...rest] = id.startsWith("@") ? [id.split("/").slice(0, 2).join("/"), ...id.split("/").slice(2)] : id.split("/");
-    const folder = id === "tailwindcss" || pkg === "tailwindcss" ? tailwind : path.join(path.dirname(tailwind), pkg);
-    const meta = fs.existsSync(path.join(folder, "package.json")) ? JSON.parse(fs.readFileSync(path.join(folder, "package.json"), "utf8")) : {};
-    candidates.push(rest.length ? path.join(folder, ...rest) : path.join(folder, meta.style || "index.css"));
-    if (rest.length) candidates.push(path.join(folder, ...rest) + ".css");
-  }
+  const candidates = local ? [local, local + ".css"] : packaged(id, base, tailwind);
   const file = candidates.find((c) => fs.existsSync(c) && fs.statSync(c).isFile());
   if (!file) throw new Error(`cannot load stylesheet ${id} from ${base}`);
-  return { path: file, base: path.dirname(file), content: fs.readFileSync(file, "utf8") };
+  const real = fs.realpathSync(file);  // a linked package's sheet resolves from its real folder, as Node's modules do
+  return { path: real, base: path.dirname(real), content: fs.readFileSync(real, "utf8") };
+}
+
+// A package's sheet: the package in the `node_modules` of the importing sheet's folder or one above, else beside
+// this Tailwind; through its `exports` when it has them, else its `style` field, `index.css` or the subpath.
+function packaged(id, base, tailwind) {
+  const pkg = id.split("/").slice(0, id.startsWith("@") ? 2 : 1).join("/");
+  const sub = "." + id.slice(pkg.length);
+  const folders = [];
+  for (let dir = base; ; dir = path.dirname(dir)) {
+    folders.push(path.join(dir, "node_modules", pkg));
+    if (path.dirname(dir) === dir) break;
+  }
+  folders.push(pkg === "tailwindcss" ? tailwind : path.join(path.dirname(tailwind), pkg));
+  const folder = folders.find((f) => fs.existsSync(path.join(f, "package.json")));
+  if (!folder) return [];
+  const meta = JSON.parse(fs.readFileSync(path.join(folder, "package.json"), "utf8"));
+  if (meta.exports !== undefined && meta.exports !== null) {
+    const target = exported(meta.exports, sub);
+    return target ? [path.join(folder, target)] : [];
+  }
+  return sub === "." ? [path.join(folder, meta.style || "index.css")] : [path.join(folder, sub), path.join(folder, sub) + ".css"];
+}
+
+// The target of a subpath in an `exports` map (Node's rules): its own key, else the pattern with one `*` and the
+// longest head that matches; a condition object gives its first `style` or `default` target, the conditions
+// `@tailwindcss/node` resolves sheets with.
+function exported(exports, sub) {
+  const keyed = exports && typeof exports === "object" && !Array.isArray(exports)
+    && Object.keys(exports).some((key) => key.startsWith("."));
+  const map = keyed ? exports : { ".": exports };
+  let value = map[sub], star = null;
+  if (value === undefined) {
+    const pattern = Object.keys(map)
+      .filter((key) => key.split("*").length === 2 && sub.length >= key.length - 1
+        && sub.startsWith(key.split("*")[0]) && sub.endsWith(key.split("*")[1]))
+      .sort((a, b) => b.indexOf("*") - a.indexOf("*"))[0];
+    if (!pattern) return null;
+    star = sub.slice(pattern.indexOf("*"), sub.length - (pattern.length - pattern.indexOf("*") - 1));
+    value = map[pattern];
+  }
+  const target = (v) => {
+    if (typeof v === "string") return star === null ? v : v.split("*").join(star);
+    if (Array.isArray(v)) return v.map(target).find(Boolean) || null;
+    if (v && typeof v === "object") {
+      for (const [condition, next] of Object.entries(v)) {
+        const found = condition === "style" || condition === "default" ? target(next) : null;
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+  return target(value);
 }
 
 async function designSystem(entry, tailwind) {

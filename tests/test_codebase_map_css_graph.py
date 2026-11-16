@@ -1105,6 +1105,71 @@ def test_a_helper_imported_from_a_package_not_installed_is_read_by_the_package_i
     assert [name for name, cls in holes if cls == "call"] == ['own("gap-2")']
 
 
+def test_a_sheet_tailwind_imports_from_a_package_is_found_as_its_build_finds_it(tmp_path):
+    """memos: `@import "@usememos/ui/tokens.css"` is the package's `exports` entry `./dist/tokens.css`, and Tailwind 4
+    failed with "cannot load stylesheet". A sheet is found as `@tailwindcss/node` finds it: through `exports`
+    (conditions `style`, then `default`), and a package from the importing sheet's real folder up, so a pnpm store's
+    sheet reaches its own dependencies. The Tailwind here is a stand-in this test writes, which loads every
+    `@import` through the script's loader and generates `text-<name>` for each `--color-<name>` it reads: running
+    the script outside a container runs no project's code."""
+    import os
+    import subprocess
+    import resolve_edges as rx
+    from indexers import css_tailwind, runtime
+    project = tmp_path / "memos"
+    modules = project / "web/node_modules"
+
+    def write(rel, text):
+        (modules / rel).parent.mkdir(parents=True, exist_ok=True)
+        (modules / rel).write_text(text, encoding="utf-8")
+    (project / "web/src").mkdir(parents=True)
+    (project / "web/package.json").write_text('{"dependencies": {"tailwindcss": "^4.0.0", "@acme/ui": "1.0.0"}}',
+                                              encoding="utf-8")
+    (project / "web/src/index.css").write_text('@import "tailwindcss";\n@import "@acme/ui/tokens.css";\n',
+                                               encoding="utf-8")
+    write("tailwindcss/package.json", '{"name": "tailwindcss", "version": "4.0.0", "main": "index.js",'
+                                      ' "style": "index.css"}')
+    write("tailwindcss/index.css", "")
+    write("tailwindcss/index.js", """
+exports.__unstable__loadDesignSystem = async (css, { base, loadStylesheet }) => {
+  const made = new Set();
+  const read = async (text, from) => {
+    for (const [, name] of text.matchAll(/--color-([\\w-]+)/g)) made.add(`text-${name}`);
+    for (const [, id] of text.matchAll(/@import "([^"]+)"/g)) {
+      const sheet = await loadStylesheet(id, from);
+      await read(sheet.content, sheet.base);
+    }
+  };
+  await read(css, base);
+  return { getClassOrder: (tokens) => tokens.map((token) => [token, made.has(token) ? 1n : null]) };
+};
+""")
+    store = ".pnpm/@acme+ui@1.0.0/node_modules/@acme"
+    write(f"{store}/ui/package.json", '{"name": "@acme/ui", "exports": {".": "./dist/index.js",'
+                                     ' "./tokens.css": "./dist/tokens.css", "./*.css": {"style": "./dist/*.css"}}}')
+    write(f"{store}/ui/dist/tokens.css", '@import "@acme/base";\n@import "@acme/ui/theme.css";\n'
+                                         ":root { --color-ui-a: red; }\n")
+    write(f"{store}/ui/dist/theme.css", ":root { --color-ui-theme: red; }\n")
+    write(f"{store}/base/package.json", '{"name": "@acme/base", "exports": {".": {"types": "./index.d.ts",'
+                                       ' "style": "./base.css", "default": "./index.js"}}}')
+    write(f"{store}/base/base.css", ":root { --color-base-x: red; }\n")
+    (modules / "@acme").mkdir()
+    os.symlink(modules / store / "ui", modules / "@acme/ui", target_is_directory=True)  # pnpm's link
+    node = runtime.node(tmp_path) / rx.executable_name("node")
+
+    def run_here(script, payload):
+        config, out = tmp_path / "config.json", tmp_path / "out.json"
+        config.write_text(json.dumps(payload), encoding="utf-8")
+        done = subprocess.run([str(node), str(script), str(config), str(out)], cwd=project, capture_output=True,
+                              text=True)
+        assert done.returncode == 0, done.stderr
+        return json.loads(out.read_text(encoding="utf-8")), {"seconds": 0}
+    found = css_tailwind.index(project, run_here, ["text-ui-a", "text-ui-theme", "text-base-x", "text-nope"],
+                               ["web/src/index.css"])
+    assert (found["error"], found["valid"]) == (None, {"text-ui-a": "4.0.0", "text-ui-theme": "4.0.0",
+                                                       "text-base-x": "4.0.0"})
+
+
 @pytest.mark.parametrize("script", ["css_tailwind.js", "typescript_unbound.js"])
 def test_a_script_that_runs_only_in_the_container_parses(tmp_path, script):
     """No suite runs a container, so these scripts are parsed here (`node --check`, which runs nothing): a syntax
