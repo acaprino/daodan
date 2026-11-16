@@ -1,8 +1,11 @@
 """scip-java for Java: how it runs, and what its index leaves to the reader.
 
-`index` runs scip-java's Maven or Gradle build in a container (`indexers.jvm`): in the preparation, the build
-unchanged, then, when it gives no index, with the plain javac (the root pom's compiler plugin without its
-`compilerId`, `forceJavacCompilerUse` and `dependencies`: Error Prone 2.3.1 runs only on Java 8 and 9). The
+`index` runs scip-java's Maven or Gradle build in a container (`indexers.jvm`), on the JDK the build states
+(`jvm.build_jdk`). scip-java's compiler plugin runs on javac 17 or newer only (its documentation's Java versions:
+8 and 11 were dropped in 0.13.0), so a build that states an older one is indexed on the image's JDK and says so
+(`jdk_unsupported`). In the preparation, the build as declared, then, when it gives no index, a declared second
+attempt with the plain javac (the root pom's compiler plugin without its `compilerId`, `forceJavacCompilerUse`
+and `dependencies`: Error Prone 2.3.1 runs only on Java 8 and 9), which the result says (`build_edited`). The
 default aggregation writes each `is_implementation` twice, from child to parent and from parent to child with
 the same flags, so the shared traversal would take a method's parent and siblings for its implementations; the
 execution aggregates the same build once more with `--no-emit-inverse-relationships`, and that index, whose
@@ -28,6 +31,7 @@ from indexers import jvm
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-java", ("java",), jvm.BUILD_KINDS, True
 MIN_FREE = 2 * 2**30  # the container's memory: 1,360 MB for all its processes on javapoet (13 November 2026)
+OLDEST_JDK = 17  # the oldest javac scip-java's compiler plugin runs on (0.12.4 still ran on 8 and 11)
 
 
 def hops(index) -> dict:
@@ -166,10 +170,15 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
     work_dir.mkdir(parents=True, exist_ok=True)
 
     def one(folder: Path, work: Path, tool: str | None) -> dict:
-        prepare = jvm.modules_line(modules, jvm.build_root(project_dir, folder)) + jvm.tool_line(tool) + PREPARE
+        root = jvm.build_root(project_dir, folder)
+        jdk = jvm.build_jdk({"root": root, "tool": tool}, toolchains)
+        older = jdk if jdk and jvm._major(jdk["version"]) < OLDEST_JDK else None
+        prepare = jvm.modules_line(modules, root) + jvm.tool_line(tool) + PREPARE
         result, runs, out = jvm.run(folder, work, prepare, execute(external_classes), memory=memory, engine=engine,
-                                    toolchains=toolchains)
-        return jvm.with_gaps(finish(folder, work, result, runs, out), result)
+                                    toolchains=toolchains, jdk=None if older else jdk)
+        part = finish(folder, work, result, runs, out)
+        said = [*([unsupported(older, root)] if older else ()), *(edited(runs, root) if part.get("indexes") else ())]
+        return jvm.with_gaps(jvm.with_gaps(part, result), {"gaps": said})
 
     parts = jvm.builds(project_dir, work_dir, roots, one, tools)
     members = {}
@@ -209,6 +218,31 @@ def finish(project_dir: Path, work_dir: Path, result: dict, runs: list[dict], ou
                              "parent and sibling methods"}]
     return {"indexes": [[str(forward if same else default), ""]], "runs": runs,
             "indexer": code_graph.indexer("scip-java", jvm.VERSION, runs), **({"gaps": gaps} if gaps else {})}
+
+
+def unsupported(jdk: dict, root: str) -> dict:
+    """A build that states a JDK older than scip-java's: the `jdk_unsupported` gap of its index."""
+    return {"kind": "jdk_unsupported", "path": root or ".", "detail":
+            f"the build states Java {jdk['version']} ({jdk['declared_in']}) and scip-java {jvm.VERSION}'s compiler "
+            f"plugin runs on javac {OLDEST_JDK} or newer only: it was indexed on the image's JDK {jvm.JDK}, so its "
+            f"calls into the JDK name JDK {jvm.JDK}'s classes, not those of Java {jdk['version']}"}
+
+
+def edited(runs: list[dict], root: str) -> list[dict]:
+    """An index of the second build, of the pom `PREPARE` edited (its `plain-javac` step): the `build_edited` gap,
+    with what was removed and the errors of the build as declared."""
+    removed = next((run["patched_pom_removed"] for run in runs if run.get("patched_pom_removed")), None)
+    if not removed:
+        return []
+    first = next((run for run in runs if run["step"] == "index"), {})
+    lines = (first.get("stderr_tail") or "").splitlines()
+    start = next((at for at, line in enumerate(lines) if "ERROR" in line), None)
+    said = (" / ".join(line.strip() for line in lines[start:start + 6]) if start is not None
+            else f"exit code {first.get('returncode')}")
+    return [{"kind": "build_edited", "path": root or ".", "detail":
+             f"the build as declared gave no index ({said[:600]}): this index is a second build's, of the root pom "
+             f"without its compiler plugin's {'; '.join(' '.join(item.split()) for item in removed)[:600]}, "
+             "compiled by the JDK's own javac"}]
 
 
 def same_occurrences(root: Path, default: Path, forward: Path) -> bool:

@@ -263,6 +263,31 @@ def wanted_jdk(stated) -> dict | None:
     return max(above, key=lambda item: _major(item["version"])) if above else None
 
 
+def inside(rel: str, folder: str) -> bool:
+    """Whether the checkout path `rel` is in the build folder `folder` ('' or '.' for the project's root)."""
+    return not folder or folder == "." or rel == folder or rel.startswith(folder.rstrip("/") + "/")
+
+
+def build_jdk(run: dict, stated) -> dict | None:
+    """The JDK a build `{root, tool}` states, None for the image's: one `stated` above the image's (`wanted_jdk`);
+    for Maven, which compiles with the JDK that runs it, else the JDK of the newest level the build's poms declare
+    (`source`, `target`, `java.version`; Temurin's oldest, 8, for one below) when it is below the image's: a
+    compiler plugin of the pom's time may not read a newer JDK's classes (Error Prone's own javac 9). Not for a pom
+    that declares a `release`, which javac 9 or later compiles for it; not for Gradle, which runs on the image's
+    JDK and finds the toolchain its scripts ask for."""
+    stated = [item for item in stated or () if item.get("tool") == "java"]
+    above = wanted_jdk(stated)
+    if above or run["tool"] != "maven":
+        return above
+    poms = [item for item in stated if item.get("declared_in", "").split("#")[0].rsplit("/", 1)[-1] == "pom.xml"
+            and inside(item["declared_in"].split("#")[0], run["root"])]
+    if not poms or any(item["declared_in"].endswith("release") for item in poms):
+        return None
+    newest = max(poms, key=lambda item: _major(item["version"]) or 0)
+    level = _major(newest["version"]) or JDK
+    return {**newest, "version": str(max(level, 8))} if level < JDK else None
+
+
 def restore_lines(project_dir: Path) -> str:
     """The preparation's restore of Gradle's and Maven's dependencies, per build folder (`preparation.restores`)."""
     marks = {mark for manager in ("gradle", "maven") for mark in preparation.RESTORES[manager]["marks"]}

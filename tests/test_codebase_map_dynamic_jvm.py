@@ -495,16 +495,16 @@ class PlanTest(unittest.TestCase):
         maven, gradle = {"root": "", "tool": "maven"}, {"root": "", "tool": "gradle"}
         java8 = [{"tool": "java", "version": "1.8", "declared_in": "pom.xml#properties.java.version"},
                  {"tool": "java", "version": "1.8", "declared_in": "core/pom.xml#maven-compiler-plugin.target"}]
-        self.assertEqual(jvm.build_jdk(maven, java8)["version"], "8")
-        self.assertIsNone(jvm.build_jdk(gradle, java8))
+        self.assertEqual(jvm.jvm.build_jdk(maven, java8)["version"], "8")
+        self.assertIsNone(jvm.jvm.build_jdk(gradle, java8))
         release = [{"tool": "java", "version": "8", "declared_in": "pom.xml#properties.maven.compiler.release"}]
-        self.assertIsNone(jvm.build_jdk(maven, [*java8, *release]))
+        self.assertIsNone(jvm.jvm.build_jdk(maven, [*java8, *release]))
         old = [{"tool": "java", "version": "1.6", "declared_in": "pom.xml#maven-compiler-plugin.source"}]
-        self.assertEqual(jvm.build_jdk(maven, old)["version"], "8")  # the oldest JDK Temurin builds
+        self.assertEqual(jvm.jvm.build_jdk(maven, old)["version"], "8")  # the oldest JDK Temurin builds
         newer = [*java8, {"tool": "java", "version": "21", "declared_in": ".java-version"}]
-        self.assertEqual(jvm.build_jdk(maven, newer)["version"], "21")
-        self.assertIsNone(jvm.build_jdk({"root": "app", "tool": "maven"}, java8))  # another build's poms
-        self.assertIsNone(jvm.build_jdk(maven, [{"tool": "android", "version": "35", "declared_in": "pom.xml#x"}]))
+        self.assertEqual(jvm.jvm.build_jdk(maven, newer)["version"], "21")
+        self.assertIsNone(jvm.jvm.build_jdk({"root": "app", "tool": "maven"}, java8))  # another build's poms
+        self.assertIsNone(jvm.jvm.build_jdk(maven, [{"tool": "android", "version": "35", "declared_in": "pom.xml#x"}]))
 
     def test_the_agent_is_built_for_java_8_and_its_jdk_9_and_10_parts_load_only_there(self):
         commands = jvm.agent_commands("src", "out", bin="/jdk/bin/")

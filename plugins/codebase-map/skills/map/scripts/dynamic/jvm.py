@@ -39,7 +39,7 @@ phase, Surefire's where the packaging binds it; under Gradle, in each project, i
 Multiplatform, which has none) each task of type Test it has (`jvmTest`), as Gradle names them once it has
 configured the build. A folder Gradle and Maven both build runs the same tests under each: Maven's run only when
 Gradle's did not. `observe` is one container run per build, `indexers/jvm.py` `run`: its image, build tools and
-restore, on the JDK `build_jdk` names. The preparation, with the registries: the agent is built, the tests are
+restore, on the JDK `jvm.build_jdk` names. The preparation, with the registries: the agent is built, the tests are
 compiled and their
 classpath resolved. Under Gradle that is `jvm_record/tests.gradle`, an init script that writes the paths of the
 Test tasks to run: their runtime-only dependencies (a JUnit engine, a JDBC driver) are not on the compile
@@ -69,7 +69,7 @@ import json
 import posixpath
 import re
 import shlex
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
 import preparation
 from indexers import jvm
@@ -127,30 +127,6 @@ def external(callee: dict) -> dict:
             "package": module.rpartition(".")[0] or module, "version": None}
 
 
-def _inside(rel: str, folder: str) -> bool:
-    return not folder or folder == "." or rel == folder or rel.startswith(folder.rstrip("/") + "/")
-
-
-def build_jdk(run: dict, stated) -> dict | None:
-    """The JDK a build runs on, None for the image's: one the pre-map states above the image's, as for the analyzer
-    (`indexers/jvm.py` `wanted_jdk`); for Maven, which compiles with the JDK that runs it, else the JDK of the
-    newest level the build's poms declare (`source`, `target`, `java.version`; Temurin's oldest, 8, for one below)
-    when it is below the image's: a compiler plugin of the pom's time may not read a newer JDK's classes (Error
-    Prone's own javac 9). Not for a pom that declares a `release`, which needs javac 9 or later; not for Gradle,
-    which runs on the image's JDK and finds the toolchain its scripts ask for."""
-    stated = [item for item in stated or () if item.get("tool") == "java"]
-    above = jvm.wanted_jdk(stated)
-    if above or run["tool"] != "maven":
-        return above
-    poms = [item for item in stated if PurePosixPath(item.get("declared_in", "").split("#")[0]).name == "pom.xml"
-            and _inside(item["declared_in"].split("#")[0], run["root"])]
-    if not poms or any(item["declared_in"].endswith("release") for item in poms):
-        return None
-    newest = max(poms, key=lambda item: jvm._major(item["version"]) or 0)
-    level = jvm._major(newest["version"]) or jvm.JDK
-    return {**newest, "version": str(max(level, 8))} if level < jvm.JDK else None
-
-
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, sources, toolchains}` from the pre-map `record` and the snapshot's `files`: a run is `{root,
     tool, argv}`, a build without a test file a `no_tests` gap; `sources` are the Java and Kotlin files `place`
@@ -165,7 +141,7 @@ def plan(record: dict, files: list[str], read) -> dict:
     runs, gaps = [], []
     for root, tools in sorted(builds.items()):
         for tool in tools:
-            if any(_inside(rel, root) and rel.endswith((*SOURCES, ".groovy")) and TESTS.search(read(rel) or "")
+            if any(jvm.inside(rel, root) and rel.endswith((*SOURCES, ".groovy")) and TESTS.search(read(rel) or "")
                    for rel in files):
                 runs.append({"root": root, "tool": tool, "argv": GRADLE_TEST if tool == "gradle" else MAVEN_TEST})
             else:
@@ -340,7 +316,7 @@ def place(observed: dict, root: str, sources: list[str], text) -> tuple[list[dic
     `recorded`, `placed`, `ambiguous` (count and examples) and `unplaced` by cause (see the module docstring)."""
     import languages
     from edge_grading import callee_column
-    files = [rel for rel in sources if _inside(rel, root)]
+    files = [rel for rel in sources if jvm.inside(rel, root)]
     parsed, packages = {}, {}
     project = set(observed.get("classes") or ())
 
@@ -371,7 +347,7 @@ def place(observed: dict, root: str, sources: list[str], text) -> tuple[list[dic
             parts = origin.split("/")
             module = "/".join(parts[:next((at for at, part in enumerate(parts) if part in ("target", "build")),
                                           len(parts))])
-            named = [rel for rel in named if _inside(rel, posixpath.join(root, module) if module else root)] or named
+            named = [rel for rel in named if jvm.inside(rel, posixpath.join(root, module) if module else root)] or named
         return named[0] if len(named) == 1 else None
 
     def callee(entry: dict) -> dict:
@@ -520,7 +496,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         result, steps, back = jvm.run(Path(project) / run["root"] if run["root"] else Path(project), work, prepare,
                                       execute, memory=MEMORY, engine=engine,
                                       toolchains=planned.get("toolchains") or (), timeout=LIMIT + 300, inputs=carried,
-                                      jdk=build_jdk(run, planned.get("toolchains")))
+                                      jdk=jvm.build_jdk(run, planned.get("toolchains")))
         attempt = {"root": run["root"], "gaps": list(result.get("gaps", []))}
         attempts.append(attempt)
         if result["state"] in ("gap", "failed"):

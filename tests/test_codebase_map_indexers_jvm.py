@@ -639,6 +639,42 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         self.assertIn("JDK 21", result["reason"])
         self.assertIn("JDK 17 only", result["reason"])
 
+    def test_a_maven_build_on_a_jdk_scip_java_does_not_run_on_is_indexed_on_the_image_s_and_says_so(self):
+        """javapoet's pom states Java 8; scip-java's compiler plugin runs on javac 17 or newer only: the build is
+        indexed on the image's JDK, none is installed for it, and the result says why. A pom that states its
+        `release` states no JDK: the image's compiles it for that release."""
+        self.play_success()
+        stated = [{"tool": "java", "version": "1.8", "declared_in": "pom.xml#properties.java.version"}]
+        result = self.index(tools={"": ["maven"]}, toolchains=stated)
+        self.assertNotIn("install java@", (self.state / "scripts/prepare.sh").read_text(encoding="utf-8"))
+        self.assertTrue(result["indexes"])
+        gap = next(gap for gap in result.get("gaps", ()) if gap["kind"] == "jdk_unsupported")
+        self.assertEqual(gap["path"], ".")
+        for said in ("Java 8", "pom.xml#properties.java.version", "JDK 17", "scip-java"):
+            self.assertIn(said, gap["detail"])
+        release = [{"tool": "java", "version": "8", "declared_in": "pom.xml#maven-compiler-plugin.release"}]
+        self.assertNotIn("gaps", self.index(tools={"": ["maven"]}, toolchains=release))
+
+    def test_an_index_of_the_edited_pom_is_a_declared_second_attempt(self):
+        """The build as declared gives no index (javapoet's Error Prone 2.3.1 on JDK 17); the second build, with
+        the root pom's compiler plugin edited, gives one: the result names what was removed and why the build as
+        declared gave none."""
+        removed = ["<compilerId>javac-with-errorprone</compilerId>",
+                   "<forceJavacCompilerUse>true</forceJavacCompilerUse>"]
+        failure = ("[INFO] BUILD FAILURE\n[ERROR] /work/src/main/java/fx/Shapes.java:[18,15] cannot access "
+                   "java.io.IOException\n[ERROR]   bad class file: /modules/java.base/java/io/IOException.class\n"
+                   "[ERROR]     class file has wrong version 61.0, should be 53.0")
+        self.play_success()
+        self.play("prepare", files={f"{jvm.KEPT.lstrip('/')}/index.scip": self.fixture / "index.scip"},
+                  text=log(("index", 1, failure), ("plain-javac", 0, "DAODAN_PATCHED " + json.dumps(removed)),
+                           ("index", 0, "[INFO] BUILD SUCCESS")))
+        result = self.index(tools={"": ["maven"]})
+        self.assertTrue(result["indexes"])
+        gap = next(gap for gap in result.get("gaps", ()) if gap["kind"] == "build_edited")
+        self.assertEqual(gap["path"], ".")
+        for said in (*removed, "class file has wrong version 61.0, should be 53.0"):
+            self.assertIn(said, gap["detail"])
+
 
 class KotlinContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
     language = "kotlin"
