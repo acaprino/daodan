@@ -5,8 +5,10 @@
 8 and 11 were dropped in 0.13.0), so a build that states an older one says so (`jdk_unsupported`): Maven's is
 indexed on the image's JDK, Gradle's compiles on that toolchain, where the plugin does not load (Gradle itself runs
 on the image's). In the preparation, the build as declared, then, when it gives no index, a declared second
-attempt with the plain javac (the root pom's compiler plugin without its `compilerId`, `forceJavacCompilerUse`
-and `dependencies`: Error Prone 2.3.1 runs only on Java 8 and 9), which the result says (`build_edited`). The
+attempt, which the result says (`build_edited`). Under Maven, with the plain javac (the root pom's compiler
+plugin without its `compilerId`, `forceJavacCompilerUse` and `dependencies`: Error Prone 2.3.1 runs only on
+Java 8 and 9) and each pom's level under 8 raised to 8, the oldest the image's javac compiles. Under Gradle,
+when a script states a Java under 17, with `jvm.RAISE_LEVELS`. The
 default aggregation writes each `is_implementation` twice, from child to parent and from parent to child with
 the same flags, so the shared traversal would take a method's parent and siblings for its implementations; the
 execution aggregates the same build once more with `--no-emit-inverse-relationships`, and that index, whose
@@ -79,7 +81,10 @@ kotlin_too() {
 }
 if step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
   && [ -s "$OUT/index.scip" ]; then kotlin_too; exit; fi
-maven || exit 1
+if ! maven; then
+  [ -n "${DAODAN_RAISE:-}" ] || exit 1
+  raise_levels
+else
 cat > /tmp/PlainJavac.java <<'JAVA'
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,19 +92,62 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class PlainJavac {
+    static String quoted(String item) {
+        return '"' + item.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")
+            .replace("\t", "\\t") + '"';
+    }
+
     public static void main(String[] args) throws Exception {
-        Path pom = Path.of("pom.xml");
+        List<String> removed = removed(Path.of("pom.xml"));
+        List<String> raised = new ArrayList<>();
+        Pattern level = Pattern.compile(
+            "<((?:maven\\.compiler\\.)?(?:source|target|release)|java\\.version)>\\s*(?:1\\.[0-7]|[1-7])\\s*</\\1>");
+        List<Path> poms;
+        try (Stream<Path> files = Files.walk(Path.of(""))) {
+            poms = files.filter(file -> file.endsWith("pom.xml") && !file.toString().contains("target/"))
+                .sorted().toList();
+        }
+        for (Path pom : poms) {
+            String before = Files.readString(pom);
+            Matcher matcher = level.matcher(before);
+            StringBuilder after = new StringBuilder();
+            while (matcher.find()) {
+                raised.add(pom + ": " + matcher.group().replaceAll("\\s+", "") + " -> 8");
+                matcher.appendReplacement(after, "<$1>8</$1>");
+            }
+            if (after.length() > 0) {
+                Files.writeString(pom, matcher.appendTail(after).toString());
+            }
+        }
+        if (removed.isEmpty() && raised.isEmpty()) {
+            System.out.println("nothing to edit: no compiler plugin setting to remove, no level under 8");
+            System.exit(1);
+        }
+        if (!removed.isEmpty()) {
+            List<String> items = new ArrayList<>();
+            for (String item : removed) {
+                items.add(quoted(item));
+            }
+            System.out.println("DAODAN_PATCHED [" + String.join(", ", items) + "]");
+        }
+        for (String item : raised) {
+            System.out.println("DAODAN_RAISED " + quoted(item));
+        }
+    }
+
+    /** What the root pom's compiler plugin loses: the settings that take the compilation from the JDK's javac. */
+    static List<String> removed(Path pom) throws Exception {
         String text = Files.readString(pom);
+        List<String> removed = new ArrayList<>();
         int start = text.indexOf("<artifactId>maven-compiler-plugin</artifactId>");
         int end = start < 0 ? -1 : text.indexOf("</plugin>", start);
         if (end < 0) {
-            System.out.println("no maven-compiler-plugin in pom.xml");
-            System.exit(1);
+            return removed;
         }
         String block = text.substring(start, end);
-        List<String> removed = new ArrayList<>();
         for (String pattern : new String[] {"\\s*<compilerId>[^<]*</compilerId>",
                 "\\s*<forceJavacCompilerUse>[^<]*</forceJavacCompilerUse>", "\\s*<dependencies>.*?</dependencies>"}) {
             Matcher matcher = Pattern.compile(pattern, Pattern.DOTALL).matcher(block);
@@ -108,21 +156,15 @@ public class PlainJavac {
             }
             block = matcher.replaceAll("");
         }
-        if (removed.isEmpty()) {
-            System.out.println("nothing to remove from the compiler plugin");
-            System.exit(1);
+        if (!removed.isEmpty()) {
+            Files.writeString(pom, text.substring(0, start) + block + text.substring(end));
         }
-        Files.writeString(pom, text.substring(0, start) + block + text.substring(end));
-        StringBuilder json = new StringBuilder("[");
-        for (String item : removed) {
-            json.append(json.length() > 1 ? ", \"" : "\"").append(item.replace("\\", "\\\\").replace("\"", "\\\"")
-                .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t")).append('"');
-        }
-        System.out.println("DAODAN_PATCHED " + json.append(']'));
+        return removed;
     }
 }
 JAVA
 step plain-javac java /tmp/PlainJavac.java || exit 1
+fi
 rm -f "$OUT/index.scip"
 step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL} \
   && [ -s "$OUT/index.scip" ] && kotlin_too
@@ -179,14 +221,16 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
         compiled = [item for item in toolchains if tool == "gradle" and item.get("tool") == "java"
                     and ".gradle" in item.get("declared_in", "") and jvm.inside(item["declared_in"].split("#")[0], root)
                     and (jvm._major(item.get("version")) or OLDEST_JDK) < OLDEST_JDK]
-        prepare = jvm.modules_line(modules, root) + jvm.tool_line(tool) + PREPARE
+        prepare = (jvm.modules_line(modules, root) + jvm.tool_line(tool)
+                   + jvm.raise_line(toolchains, root, OLDEST_JDK, "all") + PREPARE)
         result, runs, out = jvm.run(folder, work, prepare, execute(external_classes), memory=memory, engine=engine,
                                     toolchains=toolchains, jdk=None if older else jdk,
                                     hosts=(declared or {}).get("hosts", ()))
         part = finish(folder, work, result, runs, out)
         said = [unsupported([item], root, tool) for item in [older] if item]
-        said += [unsupported(compiled, root, tool)] if compiled else []
-        said += edited(runs, root) if part.get("indexes") else []
+        # A Gradle build the second attempt indexed says its edit (`build_edited`), not a plugin that did not load.
+        said += [unsupported(compiled, root, tool)] if compiled and not part.get("indexes") else []
+        said += jvm.edited(runs, root) if part.get("indexes") else []
         return jvm.with_gaps(jvm.with_gaps(part, result), {"gaps": said})
 
     parts = jvm.builds(project_dir, work_dir, roots, one, tools)
@@ -232,7 +276,9 @@ def finish(project_dir: Path, work_dir: Path, result: dict, runs: list[dict], ou
 def unsupported(stated: list[dict], root: str, tool: str | None) -> dict:
     """The JDKs a build states older than scip-java's: the `jdk_unsupported` gap. Maven compiles on the JDK that
     runs it, the image's; Gradle on the toolchains, where the plugin does not load."""
-    versions = " and ".join(sorted({item["version"] for item in stated}, key=lambda version: jvm._major(version) or 0))
+    # The level the build states: `jvm.build_jdk` keeps it as `stated` beside the JDK it names.
+    versions = " and ".join(str(major) for major in sorted(
+        {jvm._major(item.get("stated", item["version"])) or 0 for item in stated}))
     where = ", ".join(item["declared_in"] for item in stated[:3]) + (", ..." if len(stated) > 3 else "")
     then = (f"Gradle compiles it on that JDK, where the plugin, of Java {OLDEST_JDK}'s class files, does not load"
             if tool == "gradle" else f"it was indexed on the image's JDK {jvm.JDK}, so its calls into the JDK name "
@@ -240,23 +286,6 @@ def unsupported(stated: list[dict], root: str, tool: str | None) -> dict:
     return {"kind": "jdk_unsupported", "path": root or ".", "detail":
             f"the build states Java {versions} ({where}) and scip-java {jvm.VERSION}'s compiler plugin runs on javac "
             f"{OLDEST_JDK} or newer only: {then}"}
-
-
-def edited(runs: list[dict], root: str) -> list[dict]:
-    """An index of the second build, of the pom `PREPARE` edited (its `plain-javac` step): the `build_edited` gap,
-    with what was removed and the errors of the build as declared."""
-    removed = next((run["patched_pom_removed"] for run in runs if run.get("patched_pom_removed")), None)
-    if not removed:
-        return []
-    first = next((run for run in runs if run["step"] == "index"), {})
-    lines = (first.get("stderr_tail") or "").splitlines()
-    start = next((at for at, line in enumerate(lines) if "ERROR" in line), None)
-    said = (" / ".join(line.strip() for line in lines[start:start + 6]) if start is not None
-            else f"exit code {first.get('returncode')}")
-    return [{"kind": "build_edited", "path": root or ".", "detail":
-             f"the build as declared gave no index ({said[:600]}): this index is a second build's, of the root pom "
-             f"without its compiler plugin's {'; '.join(' '.join(item.split()) for item in removed)[:600]}, "
-             "compiled by the JDK's own javac"}]
 
 
 def same_occurrences(root: Path, default: Path, forward: Path) -> bool:

@@ -175,7 +175,8 @@ ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-kotlin", ("kotlin",), froz
 MIN_FREE = 5 * 2**30  # the container's memory: 4,688 MB for all its processes on klaxon (13 November 2026)
 # Under Maven scip-java indexes Java only: `jvm.MAVEN_KOTLIN` indexes the modules' Kotlin after its build, and the
 # targetroot is aggregated again into the index. scip-java runs the build tool it is told (`jvm.tool_line`), else
-# the folder's.
+# the folder's. A Gradle build that gives no index and states a Java under 17 is built once more with
+# `jvm.RAISE_LEVELS`: its Java compile task loads scip-java's compiler plugin on JDK 17 or newer only.
 PREPARE = r'''if [ "${DAODAN_TOOL:-}" = maven ] || { [ -z "${DAODAN_TOOL:-}" ] && [ -f pom.xml ] \
     && ! ls build.gradle build.gradle.kts settings.gradle settings.gradle.kts >/dev/null 2>&1; }; then
   step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
@@ -183,6 +184,10 @@ PREPARE = r'''if [ "${DAODAN_TOOL:-}" = maven ] || { [ -z "${DAODAN_TOOL:-}" ] &
     && step aggregate "$SCIP_JAVA" aggregate --output "$OUT/index.scip" "$WORK/target/scip-targetroot"
 else
   step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
+  if [ ! -f "$OUT/index.scip" ] && [ -n "${DAODAN_RAISE:-}" ]; then  # `jvm.RAISE_LEVELS`
+    raise_levels
+    step index "$SCIP_JAVA" index --output "$OUT/index.scip" ${DAODAN_TOOL:+--build-tool=$DAODAN_TOOL}
+  fi
 fi
 [ -f "$OUT/index.scip" ]
 '''
@@ -226,10 +231,14 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
     work_dir.mkdir(parents=True, exist_ok=True)
 
     def one(folder: Path, work: Path, tool: str | None) -> dict:
-        prepare = jvm.modules_line(modules, jvm.build_root(project_dir, folder)) + jvm.tool_line(tool) + PREPARE
+        root = jvm.build_root(project_dir, folder)
+        prepare = (jvm.modules_line(modules, root) + jvm.tool_line(tool)
+                   + jvm.raise_line(toolchains, root, jvm.JDK, "all") + PREPARE)
         result, runs, out = jvm.run(folder, work, prepare, EXECUTE, memory=memory, engine=engine,
                                     toolchains=toolchains, hosts=(declared or {}).get("hosts", ()))
-        return jvm.with_gaps(finish(work, result, runs, out), result)
+        part = finish(work, result, runs, out)
+        said = jvm.edited(runs, root) if part.get("indexes") else []
+        return jvm.with_gaps(jvm.with_gaps(part, result), {"gaps": said})
 
     parts = jvm.builds(project_dir, work_dir, roots, one, tools)
     done = [(root, part) for root, part in parts if part.get("indexes")]
@@ -255,7 +264,8 @@ def finish(work_dir: Path, result: dict, runs: list[dict], out: Path) -> dict:
     # An index a failed step left is read, and the failure is said: what it did not compile is not in it.
     gaps = [{"kind": "build_failed", "detail": f"{item['step']} exited with code {item['returncode']}: "
              + " ".join((item.get("stderr_tail") or "").split())[-400:]}
-            for item in runs if item["step"] in ("index", "kotlin", "aggregate") and item.get("returncode")]
+            for item in runs if item["step"] in ("index", "kotlin", "aggregate") and item.get("returncode")
+            and (item["step"] != "index" or item is run)]  # the build as declared: `jvm.edited` says it
     return {"indexes": [[str(forward), ""]], "runs": runs,
             "indexer": code_graph.indexer("scip-java", jvm.VERSION, runs),
             "configs": str(configs) if configs else None, "written": str(written),

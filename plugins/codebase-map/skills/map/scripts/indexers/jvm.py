@@ -222,6 +222,52 @@ MAVEN_KOTLIN = r'''maven_kotlin() {
 }
 '''
 PREPARE += MAVEN_KOTLIN
+# A Gradle build whose scripts state a Java the JDK it runs on does not compile, or scip-java's compiler plugin does
+# not load on (`raise_line`): `raise_levels` writes an init script, which every later Gradle of the run reads. It
+# raises to 8 the source and target of a JavaCompile task that states less; with DAODAN_RAISE=all, the analyzers',
+# it also replaces a toolchain under the JDK the build runs on by that JDK, compiling for the level the toolchain
+# was (8 at least; with Kotlin for the JDK's, as Kotlin compiles for its toolchain and refuses a Java task that
+# targets another). Each change is printed as `DAODAN_RAISED "..."`, which `steps` reads.
+RAISE_LEVELS = r'''raise_levels() {
+  mkdir -p "$GRADLE_USER_HOME/init.d" && cat > "$GRADLE_USER_HOME/init.d/daodan-levels.gradle" <<'GRADLE'
+allprojects { project ->
+    project.afterEvaluate {
+        def java = project.extensions.findByType(JavaPluginExtension)
+        if (java == null) return
+        def runsOn = JavaVersion.current().majorVersion as int
+        def name = project.path == ':' ? 'the root project' : "project ${project.path}"
+        def said = { String what ->
+            println 'DAODAN_RAISED ' + groovy.json.JsonOutput.toJson("${name}: ${what}".toString())
+        }
+        def asked = java.toolchain.languageVersion.orNull?.asInt()
+        def replaced = System.getenv('DAODAN_RAISE') == 'all' && asked != null && asked < runsOn
+        if (replaced) {
+            java.toolchain.languageVersion.set(JavaLanguageVersion.of(runsOn))
+            said("Java toolchain ${asked} -> ${runsOn}")
+        }
+        def level = replaced && project.extensions.findByName('kotlin') == null ? Math.max(asked, 8) : null
+        def low = false
+        project.tasks.withType(JavaCompile).configureEach { task ->
+            if (task.options.release.isPresent()) return
+            if (level != null) {
+                task.sourceCompatibility = level.toString()
+                task.targetCompatibility = level.toString()
+                return
+            }
+            def before = [task.sourceCompatibility, task.targetCompatibility]
+            if (JavaVersion.toVersion(before[0]) < JavaVersion.VERSION_1_8) task.sourceCompatibility = '8'
+            if (JavaVersion.toVersion(before[1]) < JavaVersion.VERSION_1_8) task.targetCompatibility = '8'
+            if (before != [task.sourceCompatibility, task.targetCompatibility] && !low) {
+                low = true
+                said("source ${before[0]} and target ${before[1]} -> 8")
+            }
+        }
+    }
+}
+GRADLE
+}
+'''
+PREPARE += RAISE_LEVELS
 # A build that needs a newer JDK says so: Gradle's toolchain request, javac's release, a class file version
 # (61 is Java 17's).
 NEWER = (re.compile(r"languageVersion=(\d+)"), re.compile(r"release version (\d+) not supported"),
@@ -271,7 +317,8 @@ def inside(rel: str, folder: str) -> bool:
 def build_jdk(run: dict, stated) -> dict | None:
     """The JDK a build `{root, tool}` states, None for the image's: one `stated` above the image's (`wanted_jdk`);
     for Maven, which compiles with the JDK that runs it, else the JDK of the newest level the build's poms declare
-    (`source`, `target`, `java.version`; Temurin's oldest, 8, for one below) when it is below the image's: a
+    (`source`, `target`, `java.version`; Temurin's oldest, 8, for one below, which `stated` keeps) when it is
+    below the image's: a
     compiler plugin of the pom's time may not read a newer JDK's classes (Error Prone's own javac 9). Not for a pom
     that declares a `release`, which javac 9 or later compiles for it; not for Gradle, which runs on the image's
     JDK and finds the toolchain its scripts ask for."""
@@ -285,7 +332,41 @@ def build_jdk(run: dict, stated) -> dict | None:
         return None
     newest = max(poms, key=lambda item: _major(item["version"]) or 0)
     level = _major(newest["version"]) or JDK
-    return {**newest, "version": str(max(level, 8))} if level < JDK else None
+    return {**newest, "version": str(max(level, 8)), "stated": newest["version"]} if level < JDK else None
+
+
+def raise_line(toolchains, root: str, under: int, what: str) -> str:
+    """Before a preparation's body: `DAODAN_RAISE=what`, exported, when a Gradle script of the build in `root`
+    states a Java under `under`; else nothing."""
+    low = any(item.get("tool") == "java" and ".gradle" in item.get("declared_in", "")
+              and inside(item["declared_in"].split("#")[0], root) and (_major(item.get("version")) or under) < under
+              for item in toolchains or ())
+    return f"export DAODAN_RAISE={what}\n" if low else ""
+
+
+def edited(runs: list[dict], root: str, declared: str = "gave no index",
+           this: str = "this index is a second build's") -> list[dict]:
+    """A result of a build the preparation edited: the `build_edited` gap, with what was removed from the root pom
+    (`plain-javac`), each level or toolchain raised (`RAISE_LEVELS`, the pom's levels), and the errors of the build
+    as declared when it ran, which `declared`; `this` names what the edited build gave."""
+    removed = next((run["patched_pom_removed"] for run in runs if run.get("patched_pom_removed")), None)
+    raised = list(dict.fromkeys(item for run in runs for item in run.get("build_raised", ())))
+    if not removed and not raised:
+        return []
+    first = next((run for run in runs if run.get("returncode")), {})
+    lines = (first.get("stderr_tail") or "").splitlines()
+    # Maven marks its errors; Gradle says what went wrong under that heading, else its last words.
+    start = next((at for at, line in enumerate(lines) if "ERROR" in line or "What went wrong" in line), None)
+    last = [line.strip() for line in lines if line.strip()][-3:]
+    said = (" / ".join(line.strip() for line in lines[start:start + 6] if line.strip()) if start is not None
+            else " / ".join(last) or f"exit code {first.get('returncode')}") if first else ""
+    how = ["of the root pom without its compiler plugin's "
+           f"{'; '.join(' '.join(item.split()) for item in removed)[:600]}, compiled by the JDK's own javac"
+           ] if removed else []
+    if raised:
+        how.append(f"with {'; '.join(raised)[:600]}")
+    return [{"kind": "build_edited", "path": root or ".", "detail":
+             f"the build as declared {declared}{f' ({said[:600]})' if said else ''}: {this}, " + ", and ".join(how)}]
 
 
 def restore_lines(project_dir: Path) -> str:
@@ -408,6 +489,7 @@ def steps(text: str, phase: str) -> list[dict]:
     """The runs a phase log records: one per step, with its exit code, seconds, output tail and `ERROR` lines;
     `peak_mb` is the container's memory peak over the phase. A step cut off (time limit) has no exit code."""
     runs, current, tail, errors, peak, patched = [], None, collections.deque(maxlen=80), [], None, None
+    raised = []
 
     def close(code, ended):
         output = "\n".join(tail)
@@ -417,6 +499,8 @@ def steps(text: str, phase: str) -> list[dict]:
                "stderr_error_examples": list(dict.fromkeys(errors))[:5]}
         if patched is not None and current[0] == "plain-javac":
             run["patched_pom_removed"] = patched
+        if raised:
+            run["build_raised"] = list(dict.fromkeys(raised))
         runs.append(run)
 
     for line in text.splitlines():
@@ -424,6 +508,7 @@ def steps(text: str, phase: str) -> list[dict]:
             words = line.split()
             if words[1] == "begin":
                 current, tail, errors, patched = (words[2], float(words[3])), collections.deque(maxlen=80), [], None
+                raised = []
             elif current is not None:
                 close(int(words[3]), float(words[4]))
                 current = None
@@ -434,6 +519,9 @@ def steps(text: str, phase: str) -> list[dict]:
             if line.startswith("DAODAN_PATCHED "):
                 import json
                 patched = json.loads(line.split(" ", 1)[1])
+            if "DAODAN_RAISED " in line:  # Gradle may print it after words of its own
+                import json
+                raised.append(json.loads(line.split("DAODAN_RAISED ", 1)[1]))
             tail.append(line)
             found = _errors(line)
             if found:
@@ -480,7 +568,8 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
     others, runs_on = {}, _major(jdk["version"]) if jdk else JDK
     for item in toolchains:
         major = _major(item.get("version")) if item.get("tool") == "java" else None
-        if major and ".gradle" in item.get("declared_in", "") and major not in (JDK, runs_on):
+        # A level under 8 names no JDK to find: none is built, and the image's compiles it raised.
+        if major and major >= 8 and ".gradle" in item.get("declared_in", "") and major not in (JDK, runs_on):
             others.setdefault(major, {**item, "version": str(major)})
     parts = [preparation.toolchains([item]) for item in [*([jdk] if jdk else []), *others.values()]]
     chains = {"files": list(dict.fromkeys(file for part in parts for file in part["files"])),

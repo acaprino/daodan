@@ -501,6 +501,18 @@ class PlanTest(unittest.TestCase):
         self.assertIsNone(jvm.jvm.build_jdk(maven, [*java8, *release]))
         old = [{"tool": "java", "version": "1.6", "declared_in": "pom.xml#maven-compiler-plugin.source"}]
         self.assertEqual(jvm.jvm.build_jdk(maven, old)["version"], "8")  # the oldest JDK Temurin builds
+        self.assertEqual(jvm.jvm.build_jdk(maven, old)["stated"], "1.6")
+        # Gradle runs on the image's JDK, which compiles no level under 8: the preparation raises it and says so.
+        low = [{"tool": "java", "version": "1.6", "declared_in": "build.gradle#java.sourceCompatibility"}]
+        self.assertEqual(jvm.jvm.raise_line(low, "", 8, "levels"), "export DAODAN_RAISE=levels\n")
+        self.assertEqual(jvm.jvm.raise_line(java8, "", 8, "levels"), "")
+        self.assertEqual(jvm.jvm.raise_line(low, "app", 8, "levels"), "")  # another build's script
+        self.assertIn("raise_levels", jvm.scripts({**gradle, "argv": jvm.GRADLE_TEST})[0])
+        self.assertNotIn("raise_levels", jvm.scripts({**maven, "argv": jvm.MAVEN_TEST})[0])
+        steps = [{"step": "compile", "build_raised": ["the root project: source 1.6 and target 1.6 -> 8"]}]
+        gap = jvm.jvm.edited(steps, "", "does not compile on the JDK it runs on", "its tests ran on a build")[0]
+        self.assertEqual(gap["detail"], "the build as declared does not compile on the JDK it runs on: its tests ran "
+                         "on a build, with the root project: source 1.6 and target 1.6 -> 8")
         newer = [*java8, {"tool": "java", "version": "21", "declared_in": ".java-version"}]
         self.assertEqual(jvm.jvm.build_jdk(maven, newer)["version"], "21")
         self.assertIsNone(jvm.jvm.build_jdk({"root": "app", "tool": "maven"}, java8))  # another build's poms
@@ -517,6 +529,9 @@ class PlanTest(unittest.TestCase):
                             ("Agent.java", ("List.of(", "Module"))):  # JDK 9 and 10 API, apart in their classes
             text = (jvm.RECORD / name).read_text(encoding="utf-8")
             self.assertEqual([api for api in later if api in text], [], name)
+        # A JDK after 21 gives a frame's descriptor only to a walker that retains class references.
+        self.assertIn("StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)",
+                      (jvm.RECORD / "Walker.java").read_text(encoding="utf-8"))
 
     def test_the_observer_declares_itself_for_java_and_kotlin(self):
         self.assertIn(jvm, dynamic.observers())

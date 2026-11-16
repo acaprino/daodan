@@ -6,10 +6,11 @@ import java.util.stream.Stream;
 
 /**
  * `Recorder.Frames` from StackWalker, which hides reflection and lambda frames and gives each frame's descriptor
- * (JDK 10 and later; compiled for Java 10, so `Recorder` loads it only there). JDK only.
+ * (JDK 10 and later; compiled for Java 10, so `Recorder` loads it only there). A later JDK gives a frame's
+ * descriptor only to a walker that retains class references (seen on JDK 25). JDK only.
  */
 public final class Walker implements Recorder.Frames {
-    private static final StackWalker WALKER = StackWalker.getInstance();
+    private static final StackWalker WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
     // Frames from the walk: at(), Recorder.called(), enter(), the method that starts, then its caller.
     private static final Function<Stream<StackWalker.StackFrame>, Optional<StackWalker.StackFrame>> CALLER =
         new Function<Stream<StackWalker.StackFrame>, Optional<StackWalker.StackFrame>>() {

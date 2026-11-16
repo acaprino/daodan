@@ -714,9 +714,75 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         for said in (*removed, "class file has wrong version 61.0, should be 53.0"):
             self.assertIn(said, gap["detail"])
 
+    def test_a_pom_level_the_image_s_javac_does_not_compile_is_raised_in_the_second_attempt(self):
+        """javac 17 compiles no level under 7: a pom that states Java 5 or 6 gives no index as declared; the
+        second build, of the poms with those levels raised to 8, gives one, and the result names each level
+        raised and the level the build states, not the JDK the observer runs it on."""
+        raised = ["pom.xml: <source>1.6</source> -> 8",
+                  "core/pom.xml: <maven.compiler.target>1.5</maven.compiler.target> -> 8"]
+        failure = "[ERROR] Source option 6 is no longer supported. Use 7 or later."
+        self.play_success()
+        self.play("prepare", files={f"{jvm.KEPT.lstrip('/')}/index.scip": self.fixture / "index.scip"},
+                  text=log(("index", 1, failure),
+                           ("plain-javac", 0, "\n".join("DAODAN_RAISED " + json.dumps(item) for item in raised)),
+                           ("index", 0, "[INFO] BUILD SUCCESS")))
+        stated = [{"tool": "java", "version": "1.6", "declared_in": "pom.xml#maven-compiler-plugin.source"}]
+        result = self.index(tools={"": ["maven"]}, toolchains=stated)
+        self.assertTrue(result["indexes"])
+        gaps = {gap["kind"]: gap["detail"] for gap in result["gaps"]}
+        for said in (*raised, "Source option 6 is no longer supported"):
+            self.assertIn(said, gaps["build_edited"])
+        self.assertNotIn("compiler plugin's", gaps["build_edited"])  # nothing was removed from it
+        self.assertIn("the build states Java 6 ", gaps["jdk_unsupported"])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertNotIn("export DAODAN_RAISE=", script)  # Maven's second attempt edits the poms it reads
+
+    def test_a_gradle_toolchain_scip_java_does_not_load_on_is_replaced_in_the_second_attempt(self):
+        """scip-java's compiler plugin loads on no javac under 17: a Gradle build whose scripts state an older
+        Java gets a second build with an init script, which replaces the toolchain by the JDK the build runs
+        on and says so in Gradle's own output; a build that states none gets no second build."""
+        said = 'DAODAN_RAISED "project :app: Java toolchain 8 -> 17"'
+        self.serve_mise()  # the preparation installs JDK 8 for Gradle to find, as the build asks
+        self.play_success()
+        self.play("prepare", files={f"{jvm.KEPT.lstrip('/')}/index.scip": self.fixture / "index.scip"},
+                  text=log(("index", 1, "> Compilation failed; see the compiler output below."),
+                           ("index", 0, f"> Configure project :app\n{said}\n{said}\nBUILD SUCCESSFUL")))
+        field = "build.gradle#java."
+        stated = [{"tool": "java", "version": "8", "declared_in": f"app/{field}toolchain.languageVersion"},
+                  {"tool": "java", "version": "1.6", "declared_in": f"lib/{field}sourceCompatibility"}]
+        result = self.index(tools={"": ["gradle"]}, toolchains=stated)
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("export DAODAN_RAISE=all\n", script)
+        self.assertIn("install java@8", script)
+        self.assertNotIn("install java@6", script)  # a level names no JDK to find, and none that old is built
+        self.assertTrue(result["indexes"])
+        gap = next(gap for gap in result["gaps"] if gap["kind"] == "build_edited")
+        self.assertEqual(gap["detail"].count("project :app: Java toolchain 8 -> 17"), 1)
+        self.assertIn("Compilation failed", gap["detail"])
+        self.play_success()
+        newer = [{"tool": "java", "version": "21", "declared_in": "build.gradle#java.toolchain.languageVersion"}]
+        self.index(tools={"": ["gradle"]}, toolchains=newer)
+        self.assertNotIn("export DAODAN_RAISE=", (self.state / "scripts/prepare.sh").read_text(encoding="utf-8"))
+
 
 class KotlinContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
     language = "kotlin"
+
+    def test_a_gradle_build_whose_java_task_does_not_load_the_plugin_is_built_once_more(self):
+        """A Kotlin build with Java beside it on a toolchain under 17: the Java compile task fails as declared and
+        no index is written; the second build, with the toolchain replaced, writes it, and the result says the
+        edit, not a failed build."""
+        said = 'DAODAN_RAISED "the root project: Java toolchain 8 -> 17"'
+        self.serve_mise()
+        self.play_success()
+        self.play("prepare", files={f"{jvm.KEPT.lstrip('/')}/index.scip": self.fixture / "index.scip"},
+                  text=log(("index", 1, "> Compilation failed; see the compiler output below."), ("index", 0, said)))
+        stated = [{"tool": "java", "version": "8", "declared_in": "build.gradle.kts#kotlin.jvmToolchain"}]
+        result = self.index(toolchains=stated)
+        self.assertTrue(result["indexes"])
+        self.assertEqual([gap["kind"] for gap in result["gaps"]], ["build_edited"])
+        self.assertIn("the root project: Java toolchain 8 -> 17", result["gaps"][0]["detail"])
+        self.assertIn("export DAODAN_RAISE=all\n", (self.state / "scripts/prepare.sh").read_text(encoding="utf-8"))
 
     def test_kotlin_only_in_the_build_s_own_scripts_starts_no_build(self):
         """Gradle scripts and buildSrc are the build's definition, which the pre-map reads through Gradle: no

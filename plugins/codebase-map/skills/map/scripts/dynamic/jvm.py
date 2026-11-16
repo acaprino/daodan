@@ -153,7 +153,10 @@ def plan(record: dict, files: list[str], read) -> dict:
 def scripts(run: dict) -> tuple[str, str]:
     """The preparation's body and the execution's, each after `indexers/jvm.py`'s head (`jvm.script`)."""
     build = " && ".join(shlex.join(command) for command in agent_commands(AGENT, AGENT, bin=IMAGE_JDK))
-    prepare = [f"step agent sh -c {shlex.quote(build)} || exit 70", f"step compile {COMPILE[run['tool']]} || exit $?"]
+    # A Gradle level under 8, which no JDK here compiles, is raised first (`jvm.RAISE_LEVELS`).
+    prepare = [f"step agent sh -c {shlex.quote(build)} || exit 70",
+               *(['[ -z "${DAODAN_RAISE:-}" ] || raise_levels'] if run["tool"] == "gradle" else []),
+               f"step compile {COMPILE[run['tool']]} || exit $?"]
     if run["tool"] == "maven":
         prepare += [f"mkdir -p {NO_JVM}/bin && printf '#!/bin/sh\\nexit 0\\n' > {NO_JVM}/bin/java"
                     f" && chmod +x {NO_JVM}/bin/java", f'cp "$JAVA_HOME/release" {NO_JVM}/ 2>/dev/null',
@@ -493,12 +496,14 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
             continue  # the folder's other build ran the same tests
         work = out_dir / f"build-{number}"
         prepare, execute = scripts(run)
+        prepare = jvm.raise_line(planned.get("toolchains"), run["root"], 8, "levels") + prepare
         result, steps, back = jvm.run(Path(project) / run["root"] if run["root"] else Path(project), work, prepare,
                                       execute, memory=MEMORY, engine=engine,
                                       toolchains=planned.get("toolchains") or (), timeout=LIMIT + 300, inputs=carried,
                                       jdk=jvm.build_jdk(run, planned.get("toolchains")),
                                       hosts=planned.get("declared", {}).get("hosts", ()))
-        attempt = {"root": run["root"], "gaps": list(result.get("gaps", []))}
+        attempt = {"root": run["root"], "gaps": [*result.get("gaps", []), *jvm.edited(
+            steps, run["root"], "does not compile on the JDK it runs on", "its tests ran on a build")]}
         attempts.append(attempt)
         if result["state"] in ("gap", "failed"):
             failing = next((step for step in steps if step["returncode"]), steps[-1] if steps else {})
