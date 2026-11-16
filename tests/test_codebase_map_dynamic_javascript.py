@@ -98,10 +98,13 @@ def test_the_test_script_of_a_package_names_its_runner(tmp_path):
         "node/package.json": package("node --experimental-vm-modules --test test/"),
         "tap/package.json": package("tap test/*.js"),
         "bun/package.json": package("bun test --coverage"),
+        "turbo/package.json": package("turbo run --filter=web test"),
+        "built/package.json": package("turbo run build && jest"),  # turbo builds, Jest runs the tests
         "through/package.json": package("npm run lint && yarn test:unit", **{"test:unit": "mocha", "lint": "eslint ."}),
     })
     assert found == [
         {"root": ".", "runner": "jest", "declared_in": "package.json#scripts.test", "args": []},
+        {"root": "built", "runner": "jest", "declared_in": "built/package.json#scripts.test", "args": []},
         {"root": "bun", "runner": "bun", "declared_in": "bun/package.json#scripts.test", "args": []},
         {"root": "cra", "runner": "jest", "declared_in": "cra/package.json#scripts.test", "args": []},
         {"root": "mocha", "runner": "mocha", "declared_in": "mocha/package.json#scripts.test", "args": []},
@@ -109,6 +112,7 @@ def test_the_test_script_of_a_package_names_its_runner(tmp_path):
         # a script that names none of them is npm's to run: the runner is whatever it starts
         {"root": "tap", "runner": "npm", "declared_in": "tap/package.json#scripts.test", "args": []},
         {"root": "through", "runner": "mocha", "declared_in": "through/package.json#scripts.test", "args": []},
+        {"root": "turbo", "runner": "turbo", "declared_in": "turbo/package.json#scripts.test", "args": []},
         {"root": "vite", "runner": "vitest", "declared_in": "vite/package.json#scripts.test", "args": []}]
 
 
@@ -216,6 +220,7 @@ def test_the_tests_run_as_declared_under_the_recorder_and_only_in_the_container(
     # the execution: the declared script, the recorder preloaded, nothing of the project changed
     assert 'NODE_OPTIONS="--require /daodan/state/in/javascript_record.js"' in execute
     assert "DYN_ROOT=/work" in execute and "DYN_BABEL=/daodan/state/tools/npm/lib/node_modules/@babel/core" in execute
+    assert "TURBO_ENV_MODE=loose" in execute  # Turborepo's tasks get the recorder's variables too
     assert f"timeout -k 30 {observer.LIMIT} npm test" in execute and "\nrun 0 .\n" in execute
     assert "npm ci" not in execute and "npm install" not in execute
     assert played.inputs["/daodan/state/in/javascript_record.js"] == observer.RECORDER
@@ -265,6 +270,7 @@ def test_the_sites_of_every_process_are_one_observation(tmp_path):
                   "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
      "services_unreachable", "ran", "no service"),
     (None, {}, "tests_not_started", "not_started", "before the tests' exit"),
+    ("exit 0 1", {"tests-0.log": "ℹ tests 0\nℹ suites 0\nℹ pass 0\n"}, "no_tests", "no_tests", "no test"),
 ])
 def test_what_did_not_happen_is_a_gap_with_its_cause(tmp_path, mark, files, kind, state, said):
     played = Played(files, {"execute.log": f"DAODAN-DYNAMIC 0 {mark}\n" if mark else ""})
@@ -272,6 +278,17 @@ def test_what_did_not_happen_is_a_gap_with_its_cause(tmp_path, mark, files, kind
     assert result["state"] == "ran" and result["runs"][0]["state"] == state
     gap = next(gap for gap in result["gaps"] if gap["kind"] == kind)
     assert gap["path"] == "." and said in gap["detail"]
+
+
+def test_a_turbo_run_that_recorded_nothing_names_turbo_and_why(tmp_path):
+    """Turborepo's strict env mode passes NODE_OPTIONS but not the recorder's own variables: the run sets
+    TURBO_ENV_MODE=loose, which a turbo before 2.1.0, or a script's --env-mode=strict, does not follow."""
+    [run] = observer.plan(record([entry(".", "turbo")]), [], None)["runs"]
+    played = Played({"tests-0.log": "Tasks:    2 successful, 2 total\n"},
+                    {"execute.log": "DAODAN-DYNAMIC 0 exit 0 4\n"})
+    [gap] = observe(tmp_path, played, runs=[run])["gaps"]
+    assert gap["kind"] == "nothing_recorded" and gap["runner"] == "turbo"
+    assert "TURBO_ENV_MODE=loose" in gap["detail"] and "2.1.0" in gap["detail"] and "--env-mode" in gap["detail"]
 
 
 def test_the_error_above_the_runner_s_summary_is_said(tmp_path):

@@ -16,7 +16,7 @@ that kind is Bun's, which is not V8, and the files the recorder misses are said 
 takes it.
 
 `plan` reads the pre-map alone. The command is the one the project declares: the `test` script of each package
-(its `tests` entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, any other script), run as
+(its `tests` entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, Turborepo, any other), run as
 `npm test` in the package's folder; a project where no package declares one is a `no_test_command` gap, never a
 command of ours. A script whose runner the recorder cannot hook (`NOT_OBSERVED`) is a `runner_not_observed` gap,
 and it does not run.
@@ -26,8 +26,10 @@ with the registries: Daodan's Node, the Babel the recorder prints with (from npm
 the Node the project states at an exact version (mise, `preparation.toolchains`), then the project's own restore
 with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The execution, with no network: each
 script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code, in every process
-and thread the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on. The
-project is not changed. The recorder puts its Babel plugin where the code is compiled:
+and thread the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on, with
+TURBO_ENV_MODE=loose (Turborepo's documented setting: its default, strict, passes a task NODE_OPTIONS and not the
+recorder's own variables). The project is not changed. The recorder puts its Babel plugin where the code is
+compiled:
 
 - a source Node runs as written (Mocha, `node --test`, any script on Node's own loaders) is printed by
   Daodan's Babel, TypeScript Node strips itself (`node --test "test/*.test.ts"`) once stripped as Node does;
@@ -38,8 +40,9 @@ project is not changed. The recorder puts its Babel plugin where the code is com
 
 Back come the observation files, one per process and thread, and each run's log. What did not happen is a gap
 with its cause: tests that did not start (the log's tail), that failed, that outlasted the limit, that reached
-for a service or the network (the execution has none and the step starts no service), a run where the recorder
-saw no call, the project files that ran unrecorded (`not_observed`: printed with no inline map, or ES modules
+for a service or the network (the execution has none and the step starts no service), that found no test, a run
+where the recorder saw no call (`nothing_recorded`, with the runner's reason: `UNREACHED`), the project files that
+ran unrecorded (`not_observed`: printed with no inline map, or ES modules
 under a Node without `module.registerHooks`, before 22.15), the project callees the recorder could not place
 (`callee_unplaced`: the map of their code leads to no function's head in the file as written), a failed restore.
 """
@@ -57,7 +60,7 @@ from indexers import typescript  # the image, the unit kinds and the restores of
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
 ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "1", ("javascript", "typescript")
 RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
-RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest")  # the pre-map's runners it starts, each as `npm test`
+RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest", "turbo")  # the pre-map's runners, each run as `npm test`
 NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, where a Node preload and V8's "
                        "inspector do not exist"}
 BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the code it records
@@ -68,6 +71,12 @@ OUT = "/daodan/out"
 IN, T = preparation.IN, preparation.T
 CORE = f"{T}/npm/lib/node_modules/@babel/core"
 UNREACHABLE = re.compile(r"ECONNREFUSED|ENOTFOUND|EAI_AGAIN|ENETUNREACH")
+NO_TESTS = re.compile(r"^[ℹ#] tests 0$", re.M)  # Node's runner, spec or TAP reporter, that found no test file
+# Why a runner's tests may run where the recorder's preload does not reach, beside the script's own NODE_OPTIONS.
+UNREACHED = {"turbo": "Turborepo gives its tasks only the variables its env mode lets through, and strict, its "
+                      "default, passes NODE_OPTIONS but not the recorder's own: the run sets TURBO_ENV_MODE=loose, "
+                      "which turbo reads from 2.1.0; an older turbo, or a script that passes --env-mode=strict, "
+                      "keeps them from the tests"}
 ERROR = re.compile(r"^\s*(?:[\w.]*Error\b|npm (?:ERR!|error)\b)")  # the first line a thrown error or npm prints
 MARK = re.compile(r"^DAODAN-DYNAMIC (\d+) (\S+) ?(.*)$", re.M)
 
@@ -114,7 +123,8 @@ def scripts(planned: dict, restores: list[str]) -> tuple[str, str, dict]:
                f" @babel/core@{BABEL} ; }} >&2",
                f"[ -e {CORE}/package.json ] || {{ echo 'DAODAN-MISSING @babel/core@{BABEL}' >&2; exit 70; }}",
                *chains["lines"], "cd /work || exit 70", *restores]
-    execute = ["set -u", f"mkdir -p {OUT}", f"export DYN_ROOT=/work DYN_BABEL={CORE}",
+    # TURBO_ENV_MODE: Turborepo's strict env mode passes its tasks NODE_OPTIONS but not the DYN_ variables
+    execute = ["set -u", f"mkdir -p {OUT}", f"export DYN_ROOT=/work DYN_BABEL={CORE} TURBO_ENV_MODE=loose",
                "run() {",  # $1 the run, $2 its folder
                "  start=$(date +%s)",
                f'  ( cd "/work/$2" && NODE_OPTIONS="--require {IN}/{RECORDER.name}"'
@@ -191,11 +201,15 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
         if entry["exit_code"]:
             gaps.append(gap("tests_failed", f"{command} exited with code {code}: some tests failed, and a test "
                                             f"that fails may stop before its calls: {tail}"))
+        elif not recorded and NO_TESTS.search(log):
+            entry["state"] = "no_tests"
+            gaps.append(gap("no_tests", f"{command} found no test to run: {tail}"))
         elif not recorded:
+            cause = UNREACHED.get(run["runner"], "the script sets NODE_OPTIONS itself, or starts another engine")
             gaps.append(gap("nothing_recorded",
                             f"{command} ({run['runner']}) ended and the recorder saw no call and no file of the "
-                            "project run: the tests ran in processes the recorder's preload does not reach (the "
-                            "script sets NODE_OPTIONS itself, or starts another engine)", runner=run["runner"]))
+                            f"project run: the tests ran in processes the recorder's preload does not reach ({cause})",
+                            runner=run["runner"]))
     else:
         gaps.append(gap("tests_not_started", f"{command} exited with code {code} and recorded no call: {tail}"))
     unobserved = sorted({rel for data in observations for rel in data.get("unobserved") or ()})
