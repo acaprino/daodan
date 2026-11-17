@@ -45,9 +45,11 @@ UNPACK = {
 def _npm(package: str) -> str:
     return f"npm install -g --prefix {T}/npm --ignore-scripts --no-audit --no-fund --loglevel=error {package}"
 
+JDK = (*preparation.TEMURIN, preparation.JDK_IN.rsplit("/", 1)[1])  # carried by the JVM build tools
+
 
 def _jar(name: str, folder: str, program: str) -> str:
-    """Unpack a zip with the JDK's own `jar` (the JDK image has no unzip) and put its program on the path."""
+    """Unpack a zip with the JDK's own `jar` (the base has no unzip) and put its program on the path."""
     return (f"cd {T} && jar xf {IN}/{name} && chmod 755 {T}/{folder}/bin/{program}"
             f" && ln -sf {T}/{folder}/bin/{program} {T}/bin/{program}")
 
@@ -87,16 +89,20 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
                         f" 'PYTHONPATH={T}/meson exec python3 -m mesonbuild.mesonmain \"$@\"' > {T}/bin/meson"
                         f" && chmod 755 {T}/bin/meson", UNPACK["ninja"]]},
     "make": {"files": [], "setup": []},  # the image's GNU Make
-    # the JVM build tools: on the JDK image (`indexers/jvm.py` IMAGE), each command with Java's proxy settings
-    "maven": {"files": [(*maven.DOWNLOAD[0], "maven.zip")], "setup": [_jar("maven.zip", "apache-maven-3.10.0", "mvn")],
-              "image": maven.IMAGE, "java": True},
-    "gradle": {"files": [("https://services.gradle.org/distributions/gradle-9.9.1-bin.zip",
-                          "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228", "gradle.zip")],
-               "setup": [_jar("gradle.zip", "gradle-9.9.1", "gradle")], "image": maven.IMAGE, "java": True,
+    # the JVM build tools: on the base with Temurin's JDK (`preparation.UNPACK_JDK`, first), each command with
+    # Java's proxy settings
+    "maven": {"files": [JDK, (*maven.DOWNLOAD[0], "maven.zip")],
+              "setup": [preparation.UNPACK_JDK, _jar("maven.zip", "apache-maven-3.10.0", "mvn")],
+              "image": preparation.IMAGE, "java": True},
+    "gradle": {"files": [JDK, ("https://services.gradle.org/distributions/gradle-9.9.1-bin.zip",
+                               "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228", "gradle.zip")],
+               "setup": [preparation.UNPACK_JDK, _jar("gradle.zip", "gradle-9.9.1", "gradle")],
+               "image": preparation.IMAGE, "java": True,
                "hosts": preparation.RESTORES["gradle"]["hosts"], "memory": 3, "retry": gradle.retry,
                "asks": gradle.asked_jdk},
-    "sbt": {"files": [(*sbt.DOWNLOAD[0], "sbt.tgz")],
-            "setup": [f"tar -xzf {IN}/sbt.tgz -C {T} && ln -sf {T}/sbt/bin/sbt {T}/bin/sbt"], "image": sbt.IMAGE,
+    "sbt": {"files": [JDK, (*sbt.DOWNLOAD[0], "sbt.tgz")],
+            "setup": [preparation.UNPACK_JDK, f"tar -xzf {IN}/sbt.tgz -C {T} && ln -sf {T}/sbt/bin/sbt {T}/bin/sbt"],
+            "image": preparation.IMAGE,
             "java": True, "hosts": ("repo.scala-sbt.org", "scala.jfrog.io"), "memory": 3},
     "dotnet": {"files": preparation.NEEDS["dotnet"]["files"], "setup": preparation.NEEDS["dotnet"]["setup"],
                "env": {"DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1",
@@ -164,7 +170,8 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         gaps += restored["gaps"]  # a package folder no restore installs
         hosts = (*hosts, *restored["hosts"])
         ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
-                         **({"argv": ["sh", "-c", f'{preparation.JAVA_PROXY}; exec "$@"', c["tool"], *c["argv"]]}
+                         **({"argv": ["sh", "-c", f'{preparation.UNPACK_JDK}{preparation.JAVA_PROXY}; exec "$@"',
+                                     c["tool"], *c["argv"]]}
                             if spec.get("java") else {})} for c in commands)]
         def contained(given: list[dict], allowed: tuple, out: str) -> dict:
             return container.run_commands(

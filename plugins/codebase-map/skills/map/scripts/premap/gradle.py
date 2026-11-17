@@ -37,7 +37,6 @@ from premap.origins import origin
 NAME, VERSION, RANK = "gradle", "9.9.1", "model"  # the Gradle of `indexers/jvm.py` GRADLE
 DOWNLOAD = (("https://services.gradle.org/distributions/gradle-9.9.1-bin.zip",
              "d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228"),)  # what the runner carries
-IMAGE = "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6"
 SETTINGS = ("settings.gradle", "settings.gradle.kts")
 BUILDS = ("build.gradle", "build.gradle.kts")
 SEPARATOR = "\x1e"  # starts each record the init script prints

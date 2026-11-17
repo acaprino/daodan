@@ -18,7 +18,6 @@ import re
 NAME, VERSION, RANK = "sbt", "1.13.1", "model"  # the launcher; the build's `sbt.version` is what loads it
 DOWNLOAD = (("https://github.com/sbt/sbt/releases/download/v1.13.1/sbt-1.13.1.tgz",
              "4a20e36c1642b6d5be34ef641d2ed6c8c0d464e6145283730d5566716e4083be"),)  # what the runner carries
-IMAGE = "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6"
 MARKS = ("build.sbt", "project/build.properties")
 SBT = "sbt -batch -no-colors -Dsbt.server.forcestart=false -Dsbt.supershell=false"
 SCRIPT = (f'{SBT} projects > /tmp/sbt-projects.txt; r=$?; cat /tmp/sbt-projects.txt; [ $r -eq 0 ] || exit $r;'

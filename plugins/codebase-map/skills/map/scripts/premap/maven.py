@@ -23,7 +23,6 @@ from premap.origins import origin
 NAME, VERSION, RANK = "maven", "3.10.0", "model"  # `indexers/jvm.py` MAVEN
 DOWNLOAD = (("https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.10.0/apache-maven-3.10.0-bin.zip",
              "1f6d9909266510f039f59aa0e13dcd2c66da85f043e56276e41f2918f8bddaff"),)  # what the runner carries
-IMAGE = "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6"
 FILE = "pom.xml"
 HELP = "org.apache.maven.plugins:maven-help-plugin:3.5.1:effective-pom"
 SCRIPT = f'o=$(mktemp) && mvn -B -ntp -q {HELP} -Doutput="$o" >&2 && cat "$o"'

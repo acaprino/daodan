@@ -149,7 +149,7 @@ class FakeEngineTest(unittest.TestCase):
                         mock.patch.object(jvm, "CLASSPATH", (("fx.test:tool:1.0", digest(JAR)),)),
                         mock.patch.object(jvm, "MAVEN", ("0.test", digest(MAVEN_ZIP))),
                         mock.patch.object(jvm, "GRADLE", ("0.test", digest(GRADLE_ZIP))),
-                        mock.patch.object(jvm, "TEMURIN", (JDK_URL, digest(JDK_TAR))),
+                        mock.patch.object(preparation, "TEMURIN", (JDK_URL, digest(JDK_TAR))),
                         mock.patch.object(resolve_edges, "open_url", self.open_url),
                         mock.patch.object(engine_tools, "open_url", self.open_url),
                         mock.patch("time.sleep")):
@@ -712,14 +712,15 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
 
     def test_the_image_is_the_common_base_and_the_jdk_comes_as_an_input(self):
         self.assertRegex(jvm.IMAGE, r"^debian:trixie-slim@sha256:[0-9a-f]{64}$")
+        self.assertEqual(jvm.IMAGE, preparation.IMAGE)
         self.play_success()
         self.index()
-        self.assertTrue(container.kept(jvm.JDK_IN), jvm.JDK_IN)
-        self.assertEqual((self.arrived() / jvm.JDK_IN.lstrip("/")).read_bytes(), JDK_TAR)
+        self.assertTrue(container.kept(preparation.JDK_IN), preparation.JDK_IN)
+        self.assertEqual((self.arrived() / preparation.JDK_IN.lstrip("/")).read_bytes(), JDK_TAR)
         self.assertEqual(self.asked.count(JDK_URL), 1)
         for phase in ("prepare", "execute"):
             script = (self.state / f"scripts/{phase}.sh").read_text(encoding="utf-8")
-            self.assertIn(f"ln -sfn {jvm.JDK_HOME} /opt/java/openjdk", script)
+            self.assertIn(f"ln -sfn {preparation.JDK_HOME} /opt/java/openjdk", script)
 
     def test_a_jdk_archive_with_another_checksum_is_refused_before_any_container(self):
         self.served[JDK_URL] = b"a changed jdk"
@@ -1281,8 +1282,8 @@ class ScipInitTest(unittest.TestCase):
 def test_the_jdk_is_in_place_before_the_preparation_s_toolchains_and_the_head_in_both_phases():
     """The preparation's setup unpacks the Android SDK with the JDK's `jar`, the head checks the JDK's `java`."""
     prepare, execute = jvm.script("prepare", "BODY", setup="SETUP\n"), jvm.script("execute", "BODY")
-    assert prepare.index(jvm.UNPACK_JDK) < prepare.index("SETUP") < prepare.index(jvm.HEAD)
-    assert execute.index(jvm.UNPACK_JDK) < execute.index(jvm.HEAD)
+    assert prepare.index(preparation.UNPACK_JDK) < prepare.index("SETUP") < prepare.index(jvm.HEAD)
+    assert execute.index(preparation.UNPACK_JDK) < execute.index(jvm.HEAD)
 
 
 def test_the_locale_is_the_one_the_base_s_libc_carries():
@@ -1302,15 +1303,15 @@ def test_the_jdk_archive_is_unpacked_once_into_the_state_volume_and_linked_where
         entry.size, entry.mode = len(data), 0o755
         bundle.addfile(entry, io.BytesIO(data))
     (state / "in").mkdir(parents=True)
-    shutil.copyfile(archive, state / "in" / Path(jvm.JDK_IN).name)
-    snippet = jvm.UNPACK_JDK.replace(jvm.STATE_ROOT, str(state)).replace("/opt/java", str(opt))
+    shutil.copyfile(archive, state / "in" / Path(preparation.JDK_IN).name)
+    snippet = preparation.UNPACK_JDK.replace(preparation.STATE, str(state)).replace("/opt/java", str(opt))
     for _ in range(2):  # the execution finds it unpacked
         ran = subprocess.run([BASH, "-c", snippet], capture_output=True, text=True)
         assert ran.returncode == 0, ran.stderr
     java = opt / "openjdk" / "bin" / "java"
     assert java.is_file() and os.access(java, os.X_OK)
     assert (opt / "openjdk").resolve() == (state / "jdk").resolve()
-    assert not (state / "in" / Path(jvm.JDK_IN).name).exists()
+    assert not (state / "in" / Path(preparation.JDK_IN).name).exists()
 
 
 @unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")

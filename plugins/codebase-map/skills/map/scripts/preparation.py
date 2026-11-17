@@ -21,11 +21,20 @@ import re
 
 STATE = "/daodan/state"
 IN, T = f"{STATE}/in", f"{STATE}/tools"
+# The base every container run starts from (Debian's slim image, glibc 2.41): what a language needs beside it,
+# its toolchain and its tools, comes into the run as an input.
+IMAGE = "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2"
+# Temurin's JDK 17 (17.0.21+9), the release asset and the sha256 Adoptium publishes for it: the JDK of scip-java
+# and of the pre-map's JVM build tools.
+TEMURIN = ("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/"
+           "OpenJDK17U-jdk_x64_linux_hotspot_17.0.21_9.tar.gz",
+           "8b9b611d917e3dfd8419d3566b5949226f69b052fed7e109c1368add1dfe8711")
+JDK_IN, JDK_HOME = f"{IN}/temurin-17.tar.gz", f"{STATE}/jdk"
 GITHUB = ("github.com", "codeload.github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com")
 UV = ("https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-gnu.tar.gz",
       "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224", "uv.tar.gz")
 PATH = ":".join([f"{T}/bin", f"{T}/node/bin", f"{T}/npm/bin", f"{T}/go/bin", f"{T}/rust/bin", f"{T}/cmake/bin",
-                 "/opt/java/openjdk/bin",  # the JDK image's java and jar
+                 "/opt/java/openjdk/bin",  # Temurin's java and jar, linked there (`UNPACK_JDK`)
                  "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin", "/bin"])
 ENV = {"PATH": PATH, "HOME": f"{STATE}/home", "GOPATH": f"{STATE}/go", "GOCACHE": f"{STATE}/go-build",
        "GOTELEMETRY": "off", "CARGO_HOME": f"{STATE}/cargo", "UV_CACHE_DIR": f"{STATE}/uv",
@@ -41,6 +50,18 @@ RUST = [("https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-x86_64-unkno
         ("https://static.rust-lang.org/dist/2026-10-15/cargo-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
          "53f3521949404d595efb06a55c12c5658d4ed1c75566f33d3d514eaebe70bd8a", "cargo.tar.xz")]
 UNPACK_UV = f"mkdir -p {T}/uvc {T}/bin && tar -xzf {IN}/uv.tar.gz -C {T}/uvc && ln -sf {T}/uvc/*/uv {T}/bin/uv"
+
+
+def unpacked(archive: str, home: str, program: str, link: str) -> str:
+    """Shell lines that unpack `archive`, a .tar.gz with one top folder, into `home` in the state volume once and
+    remove it, then link `home` at `link`: the volume carries `home` from the preparation to the execution, the
+    container's own root, where `link` is, does not."""
+    return (f"if [ ! -x {home}/{program} ] && [ -f {archive} ]; then\n"
+            f"  mkdir -p {home} && tar -xzf {archive} -C {home} --strip-components=1 && rm -f {archive}\n"
+            f"fi\nmkdir -p {posixpath.dirname(link)} && ln -sfn {home} {link}\n")
+
+
+UNPACK_JDK = unpacked(JDK_IN, JDK_HOME, "bin/java", "/opt/java/openjdk")  # where `PATH` and the scripts look
 ANDROID_HOME = f"{T}/android"  # the Android SDK: sdkmanager where Google's layout puts it, the packages it installs
 SDKMANAGER = f"{ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"  # it reads HTTPS_PROXY itself
 NEEDS = {

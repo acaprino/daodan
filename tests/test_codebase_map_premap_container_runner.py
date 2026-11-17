@@ -393,20 +393,39 @@ def test_dotnet_runs_on_the_sdk_the_project_states(tmp_path, no_download):
     assert "gaps" not in answers[0]  # the target framework is not a toolchain to install
 
 
-def test_the_jvm_build_tools_run_on_the_jdk_image_with_the_proxy_set_for_java(tmp_path, no_download):
+def test_the_jvm_build_tools_run_on_the_common_base_with_the_jdk_and_the_proxy_set_for_java(tmp_path, no_download):
     import preparation
     _, manifest = manifest_of(tmp_path, {"pom.xml": "<project/>\n"})
     calls, fake = recorder()
     with mock.patch.object(container, "run_commands", fake):
         for tool in ("maven", "gradle", "sbt"):
-            container_runner.runner(manifest)([command(tool, "registries")])
+            container_runner.runner(manifest)([command(tool, "registries"), command(tool)])
         container_runner.runner(manifest)([command("dotnet")])
     images = [c["image"] for c in calls]
-    assert images[:3] == [premap.maven.IMAGE] * 3 and images[3] == container_runner.IMAGE
-    for call in calls[:3]:  # the JVM ignores HTTPS_PROXY: each command gets it as Java's own settings first
-        wrapped = call["commands"][1]["argv"]
-        assert preparation.JAVA_PROXY in wrapped[2] and wrapped[-2:] == [call["commands"][1]["tool"], "x"]
+    assert images[:3] == [preparation.IMAGE] * 3 and images[3] == container_runner.IMAGE
+    jdk = preparation.JDK_IN.rsplit("/", 1)[1]
+    for call, tool in zip(calls[:3], ("maven", "gradle", "sbt")):
+        assert call["inputs"]()[preparation.JDK_IN] == Path("/host") / jdk  # carried in like the build tool
+        setup = call["commands"][0]["argv"][-1]  # the JDK first: `jar` unpacks the build tool
+        assert setup.index(preparation.UNPACK_JDK) < setup.index(container_runner.TOOLS[tool]["setup"][-1])
+        for given in call["commands"][1:]:  # the JVM ignores HTTPS_PROXY: each command gets Java's own settings;
+            script = given["argv"][2]       # the execution's container keeps the state volume, not the link
+            assert script.startswith(preparation.UNPACK_JDK) and preparation.JAVA_PROXY in script
+            assert given["argv"][-2:] == [tool, "x"]
     assert calls[3]["commands"][1]["argv"] == ["dotnet", "x"]
+
+
+def test_the_jdk_of_the_jvm_build_tools_is_temurin_s_checked_by_the_sha256_daodan_pins(tmp_path, monkeypatch):
+    import preparation
+    asked = []
+    monkeypatch.setattr(container_runner, "fetched", lambda url, sha, name: asked.append((url, sha, name))
+                        or Path("/host") / name)
+    _, manifest = manifest_of(tmp_path, {"pom.xml": "<project/>\n"})
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        container_runner.runner(manifest)([command("maven", "registries")])
+    calls[0]["inputs"]()
+    assert (*preparation.TEMURIN, preparation.JDK_IN.rsplit("/", 1)[1]) in asked
 
 
 def test_a_gradle_build_that_asks_for_a_newer_jvm_runs_again_on_the_jdk_the_project_states_or_gradle_names(
