@@ -517,7 +517,7 @@ Convenzioni:
 | D-223 | Le risposte attese delle fixture Android senza i build-tools | jvm-android-app-lib, mix-poly-firebase | risolto | `68a846a4a` | java, kotlin · benchmark · benchmark · commit · Gradle, Android SDK |
 | D-224 | I test del registratore JVM saltati: l'immagine dei test senza JDK | `tests/modal_pytest.py` | risolto | `a633ebd72` | java · benchmark · benchmark · commit · Modal |
 | D-225 | Due fixture con `node --test test/` | due fixture JavaScript | risolto | `12775fee3` | javascript · benchmark · benchmark · commit |
-| D-226 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | jvm-ver-* e le fixture Maven | risolto | `eef3e1fef` | java · benchmark · benchmark · java-versions · Maven |
+| D-226 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | jvm-ver-* e le fixture Maven | risolto | `eef3e1fef`, `bef968a44` | java · benchmark · benchmark · java-versions · Maven |
 | D-227 | README del benchmark: Rust, C e C++ «solo dove Valgrind parte» | `benchmarks/project-model/README.md` | risolto | `e4da4b429` | c, cpp, rust · documenti · documentazione · commit · Valgrind |
 | D-228 | Il rapporto dichiarava nulla la copertura a runtime | il metodo di codebase-map | risolto | `78c03d6e8` | tutti · benchmark · benchmark · commit |
 | D-229 | Spec: il passo 2 «non esegue codice del progetto» | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` | javascript, typescript, java, kotlin, c, cpp, csharp · documenti · documentazione, sicurezza · spec |
@@ -4330,8 +4330,13 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:**
   - `tests/test_codebase_map_premap.py` (`test_a_compiler_plugin_setting_is_named_by_its_path_in_the_pom`), rosso prima;
   - il giro java-versions conservato (`benchmarks/project-model/results/pipeline/2026-11-16-java-versions.json`), rivalutato con `score.py` contro il corpus di HEAD su Modal (android-sdk): 28 toolchain su 30, non le 29 del messaggio di `eef3e1fef`; il README del benchmark dice 28 da `b11d5504e`;
-  - le 2 sbagliate sono di jvm-ver-mvn-cfg6: il giro è precedente a `eef3e1fef`, quindi la sua pre-mappa scriveva `pom.xml#maven-compiler-plugin.source` e `.target`, dove il corpus dice `maven-compiler-plugin.configuration.source` e `.target`; il codice di HEAD scrive `.configuration.` (`scripts/premap/jvm_files.py:69`), quindi un giro nuovo dovrebbe dare 30 su 30, non misurato: vuole un giro della pipeline, con il sì del proprietario.
-- **Stato:** risolto.
+  - le 2 sbagliate erano di jvm-ver-mvn-cfg6: il giro è precedente a `eef3e1fef`, quindi la sua pre-mappa scriveva `pom.xml#maven-compiler-plugin.source` e `.target`, dove il corpus dice `maven-compiler-plugin.configuration.source` e `.target`;
+  - giro nuovo del 17 novembre (jvm-container), su `f01fcaf5b` con Java e Kotlin sulla base comune (`bef968a44`), 0,068 USD:
+    - pre-mappa su Modal (`modal_premap.py`, `score_fixtures` sulle 18 `jvm-ver-*`, codice verificato per hash): le 21 toolchain Maven sono tutte giuste, comprese le 2 di jvm-ver-mvn-cfg6;
+    - le 9 toolchain Gradle lì non si misurano: l'immagine di `modal_premap.py` non ha Gradle, e il modello di Gradle finisce con `model_failed` («gradle: not found»);
+    - pipeline su jvm-ver-gradle-tc21: 1 su 1;
+  - 22 toolchain su 30 sono misurate e giuste. Le altre 8 sono delle 6 fixture Gradle jvm-ver-gradle-mixed-tc8, -src6, -src8, -tc11, -tc25 e -tc8: vogliono un giro della pipeline su quelle 6, stimato in circa 0,15 USD.
+- **Stato:** risolto per le toolchain Maven; il 30 su 30 aspetta il giro sulle 6 fixture Gradle.
 - **Note:** la fixture mista è giusta da `1bd53689a`, il cui corpus nomina una toolchain Gradle come la nomina il modello (`#java.toolchain.languageVersion`); la toolchain Kotlin che la pre-mappa trova e il corpus non conta resta fuori, per decisione di team-lead (17 novembre): la versione del plugin Kotlin è una dipendenza del build, non una toolchain, e `score.py` non la conta. D-284.
 #### D-227 README del benchmark: Rust, C e C++ «solo dove Valgrind parte»
 - **Tag:** lingua c, cpp, rust · area documenti · tipo documentazione · origine commit · strumento Valgrind
