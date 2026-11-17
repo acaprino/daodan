@@ -297,18 +297,6 @@ RUST_ANALYZER_ASSETS = {
 GO_VERSION = "1.27.3"
 
 
-GO_ASSETS = {
-    "win-x64": ("go1.27.3.windows-amd64.zip", "f26081f438319757f8a1b46d7d0b2c5ec7583d4038e485e0aa725cfde7885fff"),
-    "win-arm64": ("go1.27.3.windows-arm64.zip", "c507872ff21f8a7cd3c1c217b059c6f7271a4a9d8e692810ef9dd3e1f601197c"),
-    "linux-x64": ("go1.27.3.linux-amd64.tar.gz", "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40"),
-    "linux-arm64": ("go1.27.3.linux-arm64.tar.gz", "a06e99309dbcbdca1a8ccd2282c3ee146e55930886e26b4f1193269587165f49"),
-    "osx-x64": ("go1.27.3.darwin-amd64.tar.gz", "b6f8e931e4ab497fcde6da8ae4499a58f9d258e55c8a80824a516eae5950a750"),
-    "osx-arm64": ("go1.27.3.darwin-arm64.tar.gz", "dd3908cf20959d798c1e06ebe5b72213f0505ce01373b40ce3110975a6cd99c2"),
-}
-
-
-
-
 def unpack(archive: Path, destination: Path) -> None:
     """Extract a zip or a gzip tarball into `destination`."""
     if archive.name.endswith(".zip"):
@@ -330,52 +318,6 @@ def go_jobs() -> str:
     return str(min(os.cpu_count() or 1, 4))
 
 
-def user_config(folder: Path) -> dict:
-    """The variable a tool's user configuration folder comes from (Go's `os.UserConfigDir`), set to `folder`."""
-    if os.name == "nt":
-        return {"APPDATA": str(folder)}
-    if sys.platform == "darwin":
-        return {"HOME": str(folder)}  # $HOME/Library/Application Support
-    return {"XDG_CONFIG_HOME": str(folder)}
-
-
-def go_toolchain() -> Path:
-    """The Go release Daodan pins, unpacked once into the shared directory: its GOROOT."""
-    home = shared_engine_dir("go") / GO_VERSION
-    root = home / "go"
-    if (root / "bin" / executable_name("go")).is_file():
-        return root
-    asset, digest = GO_ASSETS[_platform()]
-    print(f"installing Go {GO_VERSION} into {home} (first use)", flush=True)
-    partial = home.with_name(f".{GO_VERSION}.partial")
-    shutil.rmtree(partial, ignore_errors=True)
-    partial.mkdir(parents=True)
-    archive = download(f"https://go.dev/dl/{asset}", partial / asset, sha256=digest)
-    unpack(archive, partial)
-    archive.unlink()
-    shutil.rmtree(home, ignore_errors=True)
-    os.replace(partial, home)
-    return root
-
-
-
-def go_environment() -> dict:
-    """Go's variables, every folder Go writes in the shared directory, its telemetry turned off there."""
-    root = go_toolchain()
-    cache = shared_cache_dir() / "go"
-    environment = {"GOROOT": str(root), "GOPATH": str(cache / "path"), "GOCACHE": str(cache / "build"),
-                   "GOTOOLCHAIN": "local", "GOFLAGS": "-mod=readonly", **user_config(cache / "config"),
-                   "PATH": str(root / "bin") + os.pathsep + os.environ.get("PATH", "")}
-    # Go reads its telemetry mode from its configuration folder only: GOTELEMETRY is read-only.
-    off = cache / "config" / ".daodan-telemetry-off"
-    if not off.is_file():
-        done = subprocess.run([str(root / "bin" / executable_name("go")), "telemetry", "off"],
-                              env={**os.environ, **environment}, stdin=subprocess.DEVNULL, capture_output=True,
-                              timeout=120)
-        if done.returncode == 0:
-            off.parent.mkdir(parents=True, exist_ok=True)
-            off.touch()
-    return environment
 
 RUST_VERSION = "1.99.1"
 

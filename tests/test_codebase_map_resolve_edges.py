@@ -1871,30 +1871,6 @@ class RustGoContractTests(unittest.TestCase):
 
 
 class NativeToolchainTests(unittest.TestCase):
-    def test_the_go_toolchain_is_unpacked_once_and_checked(self):
-        import zipfile
-        with tempfile.TemporaryDirectory() as temp:
-            bundle = Path(temp) / "go.zip"
-            with zipfile.ZipFile(bundle, "w") as archive:
-                archive.writestr("go/bin/" + resolve_edges.executable_name("go"), "binary")
-            payload = bundle.read_bytes()
-            assets = {"win-x64": ("go.zip", hashlib.sha256(payload).hexdigest())}
-            calls = []
-
-            def fetch(url, target, **options):
-                calls.append(url)
-                target.write_bytes(payload)
-                return target
-
-            with mock.patch.object(engine_tools, "GO_ASSETS", assets), \
-                    mock.patch.object(engine_tools, "_platform", return_value="win-x64"), \
-                    mock.patch.object(engine_tools, "download", side_effect=fetch), \
-                    mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"):
-                root = resolve_edges.go_toolchain()
-                self.assertTrue((root / "bin" / resolve_edges.executable_name("go")).is_file())
-                self.assertEqual(resolve_edges.go_toolchain(), root)
-            self.assertEqual(len(calls), 1)
-
     def test_downloads_name_daodan_as_their_agent(self):
         # The Temurin API answers 403 to Python's default agent: Kotlin had no engine on a machine without Java.
         import io

@@ -35,7 +35,7 @@ ENV = {"PATH": PATH, "HOME": f"{STATE}/home", "GOPATH": f"{STATE}/go", "GOCACHE"
 NODE = ("https://nodejs.org/dist/v24.22.3/node-v24.22.3-linux-x64.tar.gz",
         "061ec3e3062115705b56b51fa9cc330ab50d34b6969387d4e4b1a50c6809acc2", "node.tar.gz")  # `renovate.NODE`
 GO = ("https://go.dev/dl/go1.27.3.linux-amd64.tar.gz",
-      "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40", "go.tar.gz")  # `engine_tools.GO_ASSETS`
+      "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40", "go.tar.gz")  # `engine_tools.GO_VERSION`
 RUST = [("https://static.rust-lang.org/dist/2026-10-15/rustc-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
          "2ff05ff9c08a90861e7f6e4065b40a8b87463b4576186fd613871c3e37f2091f", "rustc.tar.xz"),
         ("https://static.rust-lang.org/dist/2026-10-15/cargo-1.99.1-x86_64-unknown-linux-gnu.tar.xz",
