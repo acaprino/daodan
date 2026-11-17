@@ -116,7 +116,7 @@ HAND_CHECK = [
 
 def _image():
     return (
-        # The plugin's image (JDK 17); scip-java and the build tool come from `jvm.tools`, as in the plugin.
+        # The plugin's base image; the JDK, scip-java and the build tool come from `jvm.tools`, as in the plugin.
         modal.Image.from_registry(jvm.IMAGE, add_python="3.13").apt_install("git")  # the checkout
         .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
         .add_local_dir(PLUGIN, "/daodan/map", ignore=["**/__pycache__/**", "**/tests/**"])

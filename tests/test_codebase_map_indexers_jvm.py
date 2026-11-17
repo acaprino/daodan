@@ -23,6 +23,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
 import unittest
@@ -104,6 +105,8 @@ def digest(data: bytes) -> str:
 
 
 JAR, MAVEN_ZIP, GRADLE_ZIP = b"the scip-java jar", b"the maven distribution", b"the gradle distribution"
+JDK_TAR = b"the temurin jdk"
+JDK_URL = "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-0.test/OpenJDK17U-jdk_x64_0.test.tar.gz"
 MAVEN_URL = f"{jvm.MAVEN_SITE}0.test/apache-maven-0.test-bin.zip"
 GRADLE_URL = f"{jvm.GRADLE_SITE}gradle-0.test-bin.zip"
 
@@ -140,12 +143,13 @@ class FakeEngineTest(unittest.TestCase):
         Recorder.calls = []
         self.asked: list[str] = []
         self.served = {f"{resolve_edges.MAVEN_CENTRAL}/fx/test/tool/1.0/tool-1.0.jar": JAR, MAVEN_URL: MAVEN_ZIP,
-                       GRADLE_URL: GRADLE_ZIP}
+                       GRADLE_URL: GRADLE_ZIP, JDK_URL: JDK_TAR}
         cache = self.scratch / "cache"
         for patcher in (mock.patch.dict(os.environ, {"LOCALAPPDATA": str(cache), "XDG_CACHE_HOME": str(cache)}),
                         mock.patch.object(jvm, "CLASSPATH", (("fx.test:tool:1.0", digest(JAR)),)),
                         mock.patch.object(jvm, "MAVEN", ("0.test", digest(MAVEN_ZIP))),
                         mock.patch.object(jvm, "GRADLE", ("0.test", digest(GRADLE_ZIP))),
+                        mock.patch.object(jvm, "TEMURIN", (JDK_URL, digest(JDK_TAR))),
                         mock.patch.object(resolve_edges, "open_url", self.open_url),
                         mock.patch.object(engine_tools, "open_url", self.open_url),
                         mock.patch("time.sleep")):
@@ -701,10 +705,28 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         fs = self.arrived()
         self.assertEqual((fs / jvm.LIB.lstrip("/") / "tool-1.0.jar").read_bytes(), JAR)
         self.assertEqual((fs / jvm.TOOLS.lstrip("/") / "apache-maven-0.test-bin.zip").read_bytes(), MAVEN_ZIP)
-        self.assertEqual(sorted(self.asked), sorted([MAVEN_URL, f"{resolve_edges.MAVEN_CENTRAL}/fx/test/tool/1.0/"
-                                                                "tool-1.0.jar"]))
+        self.assertEqual(sorted(self.asked), sorted([MAVEN_URL, JDK_URL, f"{resolve_edges.MAVEN_CENTRAL}/fx/test/tool/"
+                                                                         "1.0/tool-1.0.jar"]))
         self.index()
-        self.assertEqual(len(self.asked), 2)
+        self.assertEqual(len(self.asked), 3)
+
+    def test_the_image_is_the_common_base_and_the_jdk_comes_as_an_input(self):
+        self.assertRegex(jvm.IMAGE, r"^debian:trixie-slim@sha256:[0-9a-f]{64}$")
+        self.play_success()
+        self.index()
+        self.assertTrue(container.kept(jvm.JDK_IN), jvm.JDK_IN)
+        self.assertEqual((self.arrived() / jvm.JDK_IN.lstrip("/")).read_bytes(), JDK_TAR)
+        self.assertEqual(self.asked.count(JDK_URL), 1)
+        for phase in ("prepare", "execute"):
+            script = (self.state / f"scripts/{phase}.sh").read_text(encoding="utf-8")
+            self.assertIn(f"ln -sfn {jvm.JDK_HOME} /opt/java/openjdk", script)
+
+    def test_a_jdk_archive_with_another_checksum_is_refused_before_any_container(self):
+        self.served[JDK_URL] = b"a changed jdk"
+        result = self.index()
+        self.assertEqual(result["state"], "unavailable")
+        self.assertIn("checksum mismatch", result["reason"])
+        self.assertEqual(self.created(), [])
 
     def test_the_wrapper_distribution_is_brought_and_the_wrapper_only_calls_it(self):
         url = f"{jvm.MAVEN_SITE}3.9.test/apache-maven-3.9.test-bin.zip"
@@ -1254,6 +1276,41 @@ class ScipInitTest(unittest.TestCase):
         self.assertEqual(ran.returncode, 0, ran.stdout[-2000:] + ran.stderr[-2000:])
         self.assertIn("compiled shared", ran.stdout)
         self.assertIn("compiled its tests", ran.stdout)
+
+
+def test_the_jdk_is_in_place_before_the_preparation_s_toolchains_and_the_head_in_both_phases():
+    """The preparation's setup unpacks the Android SDK with the JDK's `jar`, the head checks the JDK's `java`."""
+    prepare, execute = jvm.script("prepare", "BODY", setup="SETUP\n"), jvm.script("execute", "BODY")
+    assert prepare.index(jvm.UNPACK_JDK) < prepare.index("SETUP") < prepare.index(jvm.HEAD)
+    assert execute.index(jvm.UNPACK_JDK) < execute.index(jvm.HEAD)
+
+
+def test_the_locale_is_the_one_the_base_s_libc_carries():
+    """Debian's slim image holds no locale but C.UTF-8, built into glibc: with an absent one Java 17 reads file
+    names and sources as ASCII."""
+    assert "export LANG=C.UTF-8 LC_ALL=C.UTF-8\n" in jvm.HEAD
+    assert "en_US" not in jvm.HEAD
+
+
+@unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")
+def test_the_jdk_archive_is_unpacked_once_into_the_state_volume_and_linked_where_the_scripts_look(tmp_path):
+    state, opt = tmp_path / "state", tmp_path / "opt"
+    archive = tmp_path / "jdk.tar.gz"
+    with tarfile.open(archive, "w:gz") as bundle:
+        data = b"#!/bin/sh\necho 'openjdk version \"17.0.21\"' >&2\n"
+        entry = tarfile.TarInfo("jdk-17.0.21+9/bin/java")
+        entry.size, entry.mode = len(data), 0o755
+        bundle.addfile(entry, io.BytesIO(data))
+    (state / "in").mkdir(parents=True)
+    shutil.copyfile(archive, state / "in" / Path(jvm.JDK_IN).name)
+    snippet = jvm.UNPACK_JDK.replace(jvm.STATE_ROOT, str(state)).replace("/opt/java", str(opt))
+    for _ in range(2):  # the execution finds it unpacked
+        ran = subprocess.run([BASH, "-c", snippet], capture_output=True, text=True)
+        assert ran.returncode == 0, ran.stderr
+    java = opt / "openjdk" / "bin" / "java"
+    assert java.is_file() and os.access(java, os.X_OK)
+    assert (opt / "openjdk").resolve() == (state / "jdk").resolve()
+    assert not (state / "in" / Path(jvm.JDK_IN).name).exists()
 
 
 @unittest.skipUnless(BASH, "the phase scripts are bash, run in the Linux container")

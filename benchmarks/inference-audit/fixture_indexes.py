@@ -52,7 +52,7 @@ def _base_image():  # Go and Python: the plugin's index() installs its indexer
                     .pip_install(*PIP))
 
 
-def _jvm_image():  # Java and Kotlin, as lang_java.py's and lang_kotlin.py's: JDK 17, the tools from jvm.tools
+def _jvm_image():  # Java and Kotlin, as lang_java.py's and lang_kotlin.py's: the base image, jvm.tools brings the rest
     from indexers import jvm
     return _mounted(modal.Image.from_registry(jvm.IMAGE, add_python="3.13").apt_install("git").pip_install(*PIP))
 

@@ -1466,6 +1466,31 @@ Cosa manca a questa misura:
 - klaxon in un container vero;
 - la fixture Kotlin con i volumi, con `system df` uguale prima e dopo.
 
+### 17 novembre 2026, Java e Kotlin sulla base comune
+
+Java e Kotlin passano all'immagine che tutti i linguaggi condividono (decisione A del proprietario, 15 novembre). Il JDK 17 entra nella run come gli strumenti di build: Daodan lo scarica sull'host e lo verifica con lo sha256. La preparazione lo scompatta nel volume di stato e lo collega in `/opt/java/openjdk`, prima di ogni passo che usa Java; l'esecuzione lo riusa. Il locale è `C.UTF-8`, l'unico che la base porta, dentro la glibc.
+
+| Parametro | Valore |
+| --- | --- |
+| casi | javapoet e klaxon, ai commit sopra; `jvm-ver-gradle-tc21` della pipeline di `benchmarks/project-model` |
+| immagine | `debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2` (`indexers.jvm.IMAGE`), glibc 2.41, senza certificati di sistema |
+| JDK | Temurin 17.0.21+9, `OpenJDK17U-jdk_x64_linux_hotspot_17.0.21_9.tar.gz`, sha256 `8b9b611d…8711` (`indexers.jvm.TEMURIN`) |
+| soglia | conteggi uguali a `results/graph-java-javapoet-checks.json` e a `results/graph-kotlin-klaxon.json` |
+
+Risultati su Modal, con il codice verificato per hash. Costo di tutto il giro, test compresi: 0,068 USD.
+- Test di `tests/test_codebase_map_indexers_jvm.py`, `test_codebase_map_dynamic_jvm.py` e `test_codebase_map_container.py`, in un container Linux: 169 passati e 19 saltati, cioè le prove con un container vero, quelle solo per Windows e quelle che chiedono un JDK sul PATH. I nuovi test erano rossi prima del codice.
+- javapoet: resoconto identico (3.541 nodi, 19.189 archi), verifica a mano invariata. Indicizzatore 28,6 s, picco 652 MB; 1.290 MB per tutti i processi.
+- klaxon: i conteggi dell'indice sono identici: 15.940 archi certi, 238 e 13 incerti, gli stessi 7 file mancanti. Il risultato salvato è del 13 novembre, 288 commit fa, e tre valori della lettura di Daodan sono cambiati:
+  - un buco è lo stesso sito (`dynamic-callee`), che `334ea4d96` sposta da `no-position` a `computed-callee`;
+  - un file mancante ha la ragione scritta con le parole di oggi;
+  - quattro archi passano da «project-value unknown» a «project-value read». Questa misura non separa la causa fra codice e immagine.
+  - Indicizzatore 100,9 s, picco 1.278 MB.
+- `jvm-ver-gradle-tc21`: indice `fresh`. Il JDK 21 della toolchain lo installa mise sulla base senza certificati di sistema; l'indice nomina `jdk@21`. Il passo dinamico osserva 10 siti e 10 archi, con 2 test passati; la toolchain attesa è trovata. 248 s.
+
+Cosa manca a questa misura:
+- le fixture Java e Kotlin in un container vero sul PC, con `system df` prima e dopo;
+- la pre-mappa (`premap/maven.py`, `gradle.py`, `sbt.py`), C, C++, C#, TypeScript, Python e il proxy, che usano ancora le loro immagini.
+
 ## 14 novembre 2026, phazly nel grafo dall'indice
 
 phazly (privato) passa per la prima volta dal grafo letto dall'indice. Archivio: `git archive 46c92b28 react-app shared functions-python`, senza `google-services.json`; i file `.env`, i keystore e `functions-python/app/core/secrets.py` non c'erano già. Restano fuori i tre sottomoduli `vendor/` (plugin Tauri). Una sola esecuzione su Modal, app `daodan-scip-audit`, caso `phazly` di `modal_scip.py` con etichetta `graph`, codice uguale al checkout per hash. Nello stesso container:

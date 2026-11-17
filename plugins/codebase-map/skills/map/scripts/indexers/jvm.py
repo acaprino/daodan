@@ -5,9 +5,11 @@ the project's build scripts and plugins. So the build happens only in a containe
 spec `docs/specs/2026-11-12-passo-dinamico.md`, sections 2-4), never on the host: without a container the
 language is `unavailable`, with the gap's cause and remedy.
 
-- Image: `IMAGE`, Temurin's JDK 17 on Ubuntu, pinned by digest; the engine pulls it on first use and keeps it.
-  It holds no other JDK: a build whose toolchain or compiler release asks for a newer one is `unavailable` with
-  that cause (`newer_jdk`), until an image for that JDK exists.
+- Image: `IMAGE`, the base every language shares (Debian's slim image, glibc 2.41), pinned by digest; the engine
+  pulls it on first use and keeps it. Temurin's JDK 17 (`TEMURIN`) comes as an input like the build tools and is
+  unpacked into the state volume, linked where the image's JDK used to be (`UNPACK_JDK`), before anything runs
+  Java. Another JDK a build asks for, the preparation installs; one it cannot is `unavailable` with that cause
+  (`newer_jdk`).
 - What the image lacks, Daodan downloads on the host into the shared directory, verified, and the copy carries
   into the container (`tools`): scip-java's classpath at `VERSION`, each jar pinned by sha256, and the build tool
   the project asks for. The wrapper's `distributionUrl` names it (`gradle/wrapper/gradle-wrapper.properties`,
@@ -43,8 +45,14 @@ import code_graph
 import preparation
 
 VERSION = "0.14.2"  # org.scip-code:scip-java, released 2026-11-12
-IMAGE = "eclipse-temurin:17-jdk-noble@sha256:1bedb04434bd275ef072355e9caec2a22be5240fbe82ad51a59323f2bbcab4a6"
+IMAGE = "debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2"  # glibc 2.41
 JDK = 17
+# Temurin's JDK 17 (17.0.21+9), the release asset and the sha256 Adoptium publishes for it.
+TEMURIN = ("https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.21%2B9/"
+           "OpenJDK17U-jdk_x64_linux_hotspot_17.0.21_9.tar.gz",
+           "8b9b611d917e3dfd8419d3566b5949226f69b052fed7e109c1368add1dfe8711")
+STATE_ROOT = "/daodan/state"  # `container.STATE`, the volume both phases mount
+JDK_IN, JDK_HOME = f"{STATE_ROOT}/in/temurin-17.tar.gz", f"{STATE_ROOT}/jdk"
 # The classpath coursier 2.1.24 resolves for org.scip-code:scip-java:0.14.2 (14 November 2026), from Maven Central.
 CLASSPATH = (
     ("org.scip-code:scip-java:0.14.2", "77c9d643438dab356b0e760f8f427ea29d092a81cfc55591719a66772c19909a"),
@@ -154,8 +162,15 @@ SCIP_INDEX = r'''scip_index() {
 }
 '''.replace("@SCIP_GRADLE@", SCIP_GRADLE).replace("@ANDROID_GRADLE@", ANDROID_GRADLE)
 
+# The JDK each phase runs on first: unpacked once into the state volume, linked where the scripts and the
+# preparation look for it (`preparation.PATH`, the Android SDK's unpacking with `jar`).
+UNPACK_JDK = (f"if [ ! -x {JDK_HOME}/bin/java ] && [ -f {JDK_IN} ]; then\n"
+              f"  mkdir -p {JDK_HOME} && tar -xzf {JDK_IN} -C {JDK_HOME} --strip-components=1 && rm -f {JDK_IN}\n"
+              f"fi\nmkdir -p /opt/java && ln -sfn {JDK_HOME} /opt/java/openjdk\n")
+
+# C.UTF-8 is built into glibc; the slim image holds no other locale.
 HEAD = r'''set -u
-export LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
+export LANG=C.UTF-8 LC_ALL=C.UTF-8
 WORK=${DAODAN_WORK:-/work}${DAODAN_ROOT:+/$DAODAN_ROOT}
 OUT=${DAODAN_OUT:-$PHASE_OUT}
 SCIP_JAVA=/app/scip-java/bin/scip-java
@@ -335,9 +350,9 @@ def script(phase: str, body: str, *, setup: str = "", jdk: int = JDK, root: str 
     first = (f"# daodan {phase}\nPHASE_OUT={KEPT if phase == 'prepare' else OUT}\nDAODAN_JDK={jdk}\n"
              + (f"DAODAN_ROOT={root}\n" if root else ""))
     if phase == "prepare":
-        return f"{first}{setup}{HEAD}{PREPARE}{body}"
+        return f"{first}{UNPACK_JDK}{setup}{HEAD}{PREPARE}{body}"
     carry = f'if [ -z "${{DAODAN_OUT:-}}" ] && [ -d {KEPT} ]; then cp -a {KEPT}/. "$OUT"/ || exit 70; fi\n'
-    return f"{first}{HEAD}{carry}export JAVA_TOOL_OPTIONS\n{body}"
+    return f"{first}{UNPACK_JDK}{HEAD}{carry}export JAVA_TOOL_OPTIONS\n{body}"
 
 
 def toolchains(record: dict) -> list[dict]:
@@ -555,12 +570,12 @@ def fetched(url: str, target: Path, digest: str | None, *, published: str | None
 
 
 def tools(project_dir: Path) -> dict[str, Path]:
-    """The container paths and host files of scip-java's classpath and of the build tools the project asks for,
+    """The container paths and host files of the JDK, scip-java's classpath and the build tools the project asks for,
     downloaded once into the shared directory; a Gap when a wrapper names another site or a file cannot be
     verified."""
     import container
     from resolve_edges import MAVEN_CENTRAL, maven_central_dir, shared_engine_dir
-    inputs = {}
+    inputs = {JDK_IN: fetched(TEMURIN[0], shared_engine_dir("temurin") / TEMURIN[0].rsplit("/", 1)[1], TEMURIN[1])}
     for coordinate, digest in CLASSPATH:
         group, artifact, version = coordinate.split(":")
         relative = f"{group.replace('.', '/')}/{artifact}/{version}/{artifact}-{version}.jar"
