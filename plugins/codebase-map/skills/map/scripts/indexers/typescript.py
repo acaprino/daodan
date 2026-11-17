@@ -502,8 +502,14 @@ def _prepared(project_dir: Path, roots) -> dict:
              if (project_dir / root / name).is_file()]
     restored = preparation.node_prepare(files, lambda rel: (project_dir / rel).read_text(encoding="utf-8",
                                                                                        errors="replace"))
-    # Yarn 2 and later lay packages out by Plug'n'Play unless .yarnrc.yml says otherwise: TypeScript's resolver reads
-    # no .pnp.cjs, so the index's restore lays the same lockfile out in node_modules, in the container's copy only.
+    return node_modules(project_dir, restored, "TypeScript's resolver reads no .pnp.cjs")
+
+
+def node_modules(project_dir: Path, restored: dict, why: str) -> dict:
+    """`restored` (`preparation.node_prepare`) with each Yarn folder on Plug'n'Play laid out in node_modules. Yarn 2
+    and later use Plug'n'Play unless .yarnrc.yml says otherwise, and what reads the packages here reads no
+    .pnp.cjs (`why`): the index's restore lays the same lockfile out in node_modules, in the container's copy only,
+    and a `build_edited` gap per folder says so. The dynamic step keeps the project's own linker."""
     plug = [folder for folder in restored["restores"].get("yarn", ())
             if (project_dir / folder / ".yarnrc.yml").is_file() and not re.search(
                 r"(?m)^\s*nodeLinker:\s*[\"']?(node-modules|pnpm)",
@@ -514,8 +520,8 @@ def _prepared(project_dir: Path, roots) -> dict:
                                   for line in restored["lines"]],
             "gaps": [*restored["gaps"], *({"kind": "build_edited", "path": folder, "detail": (
                 "Yarn's Plug'n'Play (.yarnrc.yml sets no nodeLinker, or pnp): the index's restore lays the same "
-                "lockfile out in node_modules (YARN_NODE_LINKER=node-modules) in the container's copy, as "
-                "TypeScript's resolver reads no .pnp.cjs")} for folder in plug)]}
+                f"lockfile out in node_modules (YARN_NODE_LINKER=node-modules) in the container's copy, as {why}")}
+                for folder in plug)]}
 
 
 def _runs(out_dir: Path, cause: str | None) -> list[dict]:

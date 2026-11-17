@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -917,6 +918,48 @@ def test_a_failed_run_leaves_its_files_missing_with_the_runner_reason(tmp_path):
 
 
 # Project code runs only in Daodan's container: the project's Tailwind, its config and its plugins.
+def test_a_yarn_project_on_plug_n_play_lays_its_tailwind_out_in_node_modules_and_says_so(tmp_path):
+    """D-157's rule for the stylesheet stage: Daodan's Tailwind script finds the project's package only in
+    `node_modules/tailwindcss` (`css_tailwind.js`), which Yarn's Plug'n'Play does not write. The Tailwind runner's
+    restore lays the same lockfile out in node_modules (`typescript.node_modules`), and the stage's result says so
+    with a `build_edited` gap; the dynamic step keeps the project's own linker."""
+    from unittest import mock
+    import container
+    import preparation
+    from indexers import css_tailwind, runtime
+    project = tmp_path / "proj"
+    (project / "src").mkdir(parents=True)
+    (project / "package.json").write_text(json.dumps({"packageManager": "yarn@4.9.1",
+                                                      "devDependencies": {"tailwindcss": "^3.4.0"}}), encoding="utf-8")
+    (project / "yarn.lock").write_text("", encoding="utf-8")
+    (project / ".yarnrc.yml").write_text("enableTelemetry: false\n", encoding="utf-8")
+    seen = {}
+
+    def run_in_container(copy, command, **options):
+        seen.update(options)
+        out = Path(options["out_dir"]) / "out"
+        out.mkdir(parents=True)
+        (out / "css_tailwind-out.json").write_text(json.dumps({"version": "3.4.19", "valid": {}, "error": None}),
+                                                   encoding="utf-8")
+        return {"state": "done", "exit_code": 0, "outputs": ["css_tailwind-out.json"]}
+    with mock.patch.object(container, "run_in_container", run_in_container), \
+            mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)):
+        runner = css.tailwind_runner(project, tmp_path / "work")
+        css_tailwind.index(project, runner, ["flex"])
+    prepare = seen["prepare"][-1]
+    assert prepare.index("export YARN_NODE_LINKER=node-modules") < prepare.index("corepack yarn install")
+    edited = {"kind": "build_edited", "path": ".", "detail": (
+        "Yarn's Plug'n'Play (.yarnrc.yml sets no nodeLinker, or pnp): the index's restore lays the same lockfile out "
+        "in node_modules (YARN_NODE_LINKER=node-modules) in the container's copy, as Daodan's Tailwind script finds "
+        "the project's tailwindcss only in node_modules")}
+    assert runner.gaps == [edited]
+    built = {"indexer": {"version": "x"}}
+    with mock.patch.object(runtime, "memory"), mock.patch.object(css, "node_runner"), \
+            mock.patch.object(css, "tailwind_runner", return_value=runner), mock.patch.object(css, "run",
+                                                                                         return_value=built):
+        assert css.index(project, tmp_path / "work", files=[])["gaps"] == [edited]
+
+
 def test_the_projects_tailwind_runs_in_the_container_and_never_on_the_host(tmp_path):
     """Loading the project's `tailwindcss`, its config and its plugins runs the project's code: the Tailwind engine
     runs in the container, its packages restored the project's own way in the preparation, the script in the copy
@@ -1181,3 +1224,163 @@ def test_a_script_that_runs_only_in_the_container_parses(tmp_path, script):
     done = subprocess.run([str(node), "--check", str(css_tailwind.SCRIPT.parent / script)], capture_output=True,
                           text=True)
     assert done.returncode == 0, done.stderr
+
+
+def test_a_package_sheet_is_found_through_the_packages_exports_as_its_build_finds_it(tmp_path):
+    """memos: `@import "@usememos/ui/styles.css"` names the package's `exports` entry `./dist/styles.css`, so the
+    import was an `unresolved-import` even with the package installed. A subpath goes through `exports` (Node's
+    rules: its own key, else a `*` pattern), a condition object gives its `style` target (`sass` first for Sass, as
+    Sass's package importer asks) and `default`; a package without `exports` gives its own file, as before."""
+    project = tmp_path / "web"
+    ui = project / "node_modules/.pnpm/@acme+ui@1.2.3/node_modules/@acme/ui"
+    (ui / "dist").mkdir(parents=True)
+    (ui / "package.json").write_text(json.dumps({"name": "@acme/ui", "version": "1.2.3", "exports": {
+        ".": {"types": "./index.d.ts", "default": "./dist/index.js"}, "./styles.css": "./dist/styles.css",
+        "./themes/*.css": {"sass": "./dist/*.scss", "style": "./dist/*.css"}}}), encoding="utf-8")
+    for name in ("styles.css", "dark.css", "dark.scss", "index.js"):
+        (ui / "dist" / name).write_text("", encoding="utf-8")
+    (project / "node_modules/@acme").mkdir()
+    (project / "node_modules/@acme/ui").symlink_to(ui, target_is_directory=True)  # pnpm's link
+    plain = project / "node_modules/plain"
+    plain.mkdir()
+    (plain / "package.json").write_text('{"name": "plain", "version": "2.0.0"}', encoding="utf-8")
+    (plain / "styles.css").write_text("", encoding="utf-8")
+    (project / "src").mkdir()
+
+    def found(spec, rel="src/index.css"):
+        out = css.resolve(project, rel, spec)
+        return out[:3] if out[0] == "external" else out
+    ui_package = {"manager": "npm", "package": "@acme/ui", "version": "1.2.3"}
+    assert found("@acme/ui/styles.css") == ("external", "@acme/ui/dist/styles.css", ui_package)
+    assert found("@acme/ui/themes/dark.css") == ("external", "@acme/ui/dist/dark.css", ui_package)
+    assert found("@acme/ui/themes/dark.css", "src/app.scss") == ("external", "@acme/ui/dist/dark.scss", ui_package)
+    assert found("plain/styles.css") == ("external", "plain/styles.css",
+                                         {"manager": "npm", "package": "plain", "version": "2.0.0"})
+    assert found("@acme/ui/missing.css") == ("hole", "unresolved-import", "@acme/ui/missing.css")
+
+
+def test_the_restores_package_sheets_come_back_where_the_graph_looks_for_them(tmp_path):
+    """memos: @usememos/ui's sheets exist only after the restore, in the container. `css_packages.js` copies, for
+    each package an import names from a folder, its package.json and stylesheets from where Node finds it from that
+    folder (pnpm's link followed), under the link's path; a package one of those sheets imports, nested in the
+    importing package's folder, where the graph's walk up finds it as Node does from the real folder. A workspace
+    link to a folder of the project is the project's own. It only reads files: run here, nothing of the project
+    runs (the package's index.js would leave a mark)."""
+    import os
+    import subprocess
+    import resolve_edges as rx
+    from indexers import css_tailwind, runtime
+    work = tmp_path / "work"
+
+    def write(rel, text):
+        (work / rel).parent.mkdir(parents=True, exist_ok=True)
+        (work / rel).write_text(text, encoding="utf-8")
+    store = "web/node_modules/.pnpm/@acme+ui@1.0.0/node_modules/@acme"
+    write(f"{store}/ui/package.json", '{"name": "@acme/ui", "version": "1.0.0"}')
+    write(f"{store}/ui/dist/styles.css", '@import "@acme/base/base.css";\n.mu-a { color: red }\n')
+    write(f"{store}/ui/dist/index.js", 'require("fs").writeFileSync(__dirname + "/../../../../../../mark", "");\n')
+    write(f"{store}/base/package.json", '{"name": "@acme/base", "version": "2.0.0"}')
+    write(f"{store}/base/base.css", ".base { color: blue }\n")
+    write("packages/own/package.json", '{"name": "@acme/own"}')
+    write("packages/own/own.css", ".own {}\n")
+    (work / "web/node_modules/@acme").mkdir()
+    os.symlink(work / store / "ui", work / "web/node_modules/@acme/ui", target_is_directory=True)
+    os.symlink(work / "packages/own", work / "web/node_modules/@acme/own", target_is_directory=True)
+    (work / "web/src").mkdir()
+    config, out = tmp_path / "in.json", tmp_path / "out.json"
+    config.write_text(json.dumps({"packages": [["web/src", "@acme/ui"], ["web/src", "@acme/own"],
+                                               ["web/src", "@acme/none"]]}), encoding="utf-8")
+    node = runtime.node(tmp_path) / rx.executable_name("node")
+    done = subprocess.run([str(node), str(css_tailwind.SCRIPT.with_name("css_packages.js")), str(config), str(out)],
+                          cwd=work, capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+    data = json.loads(out.read_text(encoding="utf-8"))
+    assert sorted(data["files"]) == ["web/node_modules/@acme/ui/dist/styles.css",
+                                     "web/node_modules/@acme/ui/node_modules/@acme/base/base.css",
+                                     "web/node_modules/@acme/ui/node_modules/@acme/base/package.json",
+                                     "web/node_modules/@acme/ui/package.json"]
+    assert (data["missing"], data["workspace"], data["error"]) == ([["web/src", "@acme/none"]],
+                                                                   [["web/src", "@acme/own"]], None)
+    assert not (work / "mark").exists()
+
+
+def test_a_class_a_package_sheet_declares_is_answered_by_the_restores_copy_of_it(tmp_path, monkeypatch):
+    """The checkout holds no node_modules: the package an import names and the checkout lacks is asked of the
+    container (`css_packages.js`, after the restore), and its sheets, back with their text, answer the classes they
+    declare as the package's, at the version its package.json says. A package the checkout holds is not asked."""
+    project = tmp_path / "memos"
+    (project / "web/src").mkdir(parents=True)
+    (project / "web/src/index.css").write_text('@import "@acme/ui/styles.css";\n', encoding="utf-8")
+    (project / "web/index.html").write_text('<link rel="stylesheet" href="/src/index.css">\n<div class="mu-a"></div>\n',
+                                            encoding="utf-8")
+    calls = []
+    package = json.dumps({"name": "@acme/ui", "version": "1.2.3", "exports": {"./styles.css": "./dist/styles.css"}})
+
+    def container(script, payload):
+        calls.append((Path(script).name, payload))
+        return {"files": {"web/node_modules/@acme/ui/package.json": package,
+                          "web/node_modules/@acme/ui/dist/styles.css": ".mu-a { color: red }\n",
+                          "web/node_modules/@acme/ui/../../../out.css": "", "web/node_modules/x/..\\..\\out.css": "",
+                          "../out.css": ""},  # names that would leave the copy's folder: not written
+                "missing": [], "workspace": [], "error": None}, {"seconds": 0}
+
+    def host(script, payload):
+        raise AssertionError(f"no host engine reads these files: {script}")
+    (tmp_path / "tmp").mkdir()
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path / "tmp"))  # where the copy is written, and removed
+    built = css.run(project, host, css.walk(project), tailwind=container)
+    assert calls == [("css_packages.js", {"packages": [["web/src", "@acme/ui"]]})]
+    assert [(hole["name"], hole["class"]) for hole in built["holes"]] == []
+    [edge] = [edge for edge in built["edges"] if edge["symbol"] == ".mu-a"]
+    assert {node["id"]: node.get("external") for node in built["nodes"]}[edge["to"]] == {
+        "manager": "npm", "package": "@acme/ui", "version": "1.2.3"}
+    assert "daodan-sheets-" not in json.dumps(built)  # the copy is read, never named, and removed after
+    assert not list(tmp_path.rglob("out.css")) and not list((tmp_path / "tmp").iterdir())
+    ui = project / "web/node_modules/@acme/ui"
+    (ui / "dist").mkdir(parents=True)
+    (ui / "package.json").write_text(package, encoding="utf-8")
+    (ui / "dist/styles.css").write_text(".mu-a { color: red }\n", encoding="utf-8")
+    calls.clear()
+    css.run(project, host, css.walk(project), tailwind=container)
+    assert calls == []
+
+
+def test_tailwinds_run_brings_back_the_packages_sheets_after_the_same_restore(tmp_path):
+    """One restore for both: the stage asks Tailwind's verdicts and the unserved packages' sheets in one container
+    run, the scripts one after the other in its execution, and reads each one's answer."""
+    from unittest import mock
+    import container
+    import preparation
+    project = tmp_path / "web"
+    (project / "src").mkdir(parents=True)
+    (project / "package.json").write_text('{"dependencies": {"tailwindcss": "^4.0.0", "@acme/ui": "1.0.0"}}',
+                                          encoding="utf-8")
+    (project / "src/index.css").write_text('@import "tailwindcss";\n@import "@acme/ui/styles.css";\n',
+                                           encoding="utf-8")
+    (project / "index.html").write_text(
+        '<link rel="stylesheet" href="/src/index.css">\n<div class="flex mu-a"></div>\n', encoding="utf-8")
+    runs = []
+
+    def run_in_container(copy, command, **options):
+        runs.append((command[-1], {Path(key).name: value for key, value in options["inputs"]().items()}))
+        out = Path(options["out_dir"]) / "out"
+        out.mkdir(parents=True)
+        (out / "css_tailwind-out.json").write_text(
+            json.dumps({"version": "4.0.0", "valid": {"flex": "4.0.0"}, "error": None}), encoding="utf-8")
+        (out / "css_packages-out.json").write_text(json.dumps({"files": {
+            "node_modules/@acme/ui/package.json": '{"name": "@acme/ui", "version": "1.0.0"}',
+            "node_modules/@acme/ui/styles.css": ".mu-a { color: red }\n"}, "missing": [], "workspace": [],
+            "error": None}), encoding="utf-8")
+        return {"state": "done", "exit_code": 0, "outputs": []}
+
+    def host(script, payload):
+        raise AssertionError(f"no host engine reads these files: {script}")
+    with mock.patch.object(container, "run_in_container", run_in_container), \
+            mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)):
+        built = css.run(project, host, css.walk(project), tailwind=css.tailwind_runner(project, tmp_path / "work"))
+    [(execute, inputs)] = runs
+    assert execute.index("css_tailwind.js") < execute.index("css_packages.js")
+    assert json.loads(inputs["css_packages-in.json"].read_text(encoding="utf-8")) == {
+        "packages": [["src", "@acme/ui"], ["src", "tailwindcss"]]}
+    assert inputs["css_packages.js"] == css.PACKAGES
+    assert [(hole["name"], hole["class"]) for hole in built["holes"] if hole["kind"] == "class"] == []

@@ -33,7 +33,8 @@ An analyzer of the engine pass (`indexers.analyzers`) with a graph of its own, n
 the snapshot's files the stage hands it (`READS`) with the engines through `node_runner`, and the stage writes `rows`
 (`resolve_edges.index_stage`). The engines are Daodan's pinned ones and read the project's files as data: none loads
 the project's code, but Tailwind, whose package, config and plugins are the project's: its runner is the container's
-(`tailwind_runner`). Its entry is in the pass when the snapshot holds a file of `SNAPSHOT_LANGUAGES`.
+(`tailwind_runner`), which also brings back the sheets of the packages only the restore installs
+(`restored_sheets`). Its entry is in the pass when the snapshot holds a file of `SNAPSHOT_LANGUAGES`.
 
 What the code loads together is an input, never discovered here: `units`, the units of code the pre-map states
 (the files and sheets each one loads together), beside the pages and bundles the graph's own imports state; and
@@ -48,6 +49,8 @@ import html.parser
 import json
 import os
 import re
+import shutil
+import tempfile
 import time
 import urllib.parse
 from pathlib import Path
@@ -156,14 +159,15 @@ def index(project_dir: Path, work_dir: Path, *, files: list[str], tsconfig: str 
              if not any(part in DEPENDENCY_DIRS or part.startswith(".") for part in rel.split("/"))]
     try:
         runtime.memory(ENTRY, MIN_FREE)
-        built = run(project_dir, node_runner(project_dir, Path(work_dir)), files,
-                    tailwind=tailwind_runner(project_dir, Path(work_dir)),
+        tailwind = tailwind_runner(project_dir, Path(work_dir))
+        built = run(project_dir, node_runner(project_dir, Path(work_dir)), files, tailwind=tailwind,
                     program={"tsconfig": tsconfig, "paths": paths})
     except runtime.Unavailable as error:
         return runtime.refused(ENTRY, None, error)
-    versions = built["indexer"]["version"]
+    versions, gaps = built["indexer"]["version"], list(getattr(tailwind, "gaps", ()))
     return {"graph": built, "indexer": {**built["indexer"], "versions": versions,
-                                        "version": hashlib.sha256(versions.encode("utf-8")).hexdigest()[:12]}}
+                                        "version": hashlib.sha256(versions.encode("utf-8")).hexdigest()[:12]},
+            **({"gaps": gaps} if gaps else {})}
 
 
 def node_runner(project_dir: Path, work_dir: Path):
@@ -200,37 +204,45 @@ def node_runner(project_dir: Path, work_dir: Path):
 LOCKS = ("package.json", "package-lock.json", "npm-shrinkwrap.json", "pnpm-lock.yaml", "pnpm-workspace.yaml",
          "yarn.lock", ".yarnrc.yml")  # what `preparation.node_prepare` reads of a Node package
 OUT = "/daodan/out"  # where Tailwind's run writes, brought back by the container
+PACKAGES = Path(__file__).with_name("css_packages.js")  # the restore's package sheets, read in the container
 
 
 def tailwind_runner(project_dir: Path, work_dir: Path):
     """The runner of the project's Tailwind (`css_tailwind`): its package, its config and its plugins are the
     project's code, so the script runs only in Daodan's container (`container.run_in_container`). The preparation,
     with the registries, installs Node and restores the project's packages its own way (`preparation.node_prepare`,
-    as the TypeScript analyzer does); the execution, with no network, runs `node <script> IN OUT` in the copy. A run
-    that cannot happen there (no engine, a failed restore) gives no data and says why: Tailwind's tokens are
-    unknown, and the rest of the graph goes on."""
+    as the TypeScript analyzer does, a Yarn project on Plug'n'Play laid out in node_modules, `typescript.node_modules`,
+    its `build_edited` gap in `runner.gaps`); the execution, with no network, runs `node <script> IN OUT` in the
+    copy, for each script `runner.ask` is given after that one restore (`css_packages.js`, the sheets of the
+    packages the checkout lacks). A run that cannot happen there (no engine, a failed restore) gives no data and
+    says why: Tailwind's tokens are unknown, and the rest of the graph goes on."""
     import shutil
     import container
     import preparation
-    from .typescript import IMAGE
+    from .typescript import IMAGE, node_modules
     project_dir, work_dir = Path(project_dir), Path(work_dir)
 
-    def runner(script, payload):
-        script = Path(script)
+    def ask(calls):
+        """`[(script, payload)]` -> `[(data, measured)]`: the scripts in one container run, after one restore."""
+        calls = [(Path(script), payload) for script, payload in calls]
         work_dir.mkdir(parents=True, exist_ok=True)
-        settings = work_dir / f"{script.stem}-in.json"
-        settings.write_text(json.dumps(payload), encoding="utf-8")
+        for script, payload in calls:
+            (work_dir / f"{script.stem}-in.json").write_text(json.dumps(payload), encoding="utf-8")
         files = sorted(path.relative_to(project_dir).as_posix() for path in project_dir.rglob("*")
                        if path.name in LOCKS and not any(part in DEPENDENCY_DIRS or part.startswith(".")
                                                          for part in path.relative_to(project_dir).parent.parts))
-        restored = preparation.node_prepare(files, lambda rel: (project_dir / rel).read_text(encoding="utf-8",
-                                                                                           errors="replace"))
+        restored = node_modules(project_dir, preparation.node_prepare(
+            files, lambda rel: (project_dir / rel).read_text(encoding="utf-8", errors="replace")),
+            "Daodan's Tailwind script finds the project's tailwindcss only in node_modules")
+        runner.gaps[:] = [gap for gap in restored["gaps"] if gap["kind"] == "build_edited"]
         node = preparation.setup(["node"])
         prepare = "\n".join(["set -u", f"mkdir -p {preparation.T}/bin {preparation.ENV['HOME']}", *node["lines"],
                              *restored["lines"], "exit 0"])
-        execute = (f"mkdir -p {OUT} && exec node {preparation.IN}/{script.name} {preparation.IN}/{settings.name}"
-                   f" {OUT}/{script.stem}-out.json")
-        box = work_dir / f"{script.stem}-container"
+        # Each script runs whatever the one before it did: a failed one gives no output, and says why.
+        execute = f"mkdir -p {OUT} && " + "; ".join(
+            f"node {preparation.IN}/{script.name} {preparation.IN}/{script.stem}-in.json {OUT}/{script.stem}-out.json"
+            for script, _ in calls)
+        box = work_dir / f"{calls[0][0].stem}-container"
         shutil.rmtree(box, ignore_errors=True)
         started = time.monotonic()
         result = container.run_in_container(
@@ -238,23 +250,35 @@ def tailwind_runner(project_dir: Path, work_dir: Path):
             outputs=[OUT], env={**preparation.ENV, "NODE_OPTIONS": NODE_OPTIONS}, timeout=TIMEOUT,
             prepare_timeout=3600, memory=3 * 2**30,
             registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *node["hosts"]])),
-            inputs=lambda: {f"{preparation.IN}/{script.name}": script, f"{preparation.IN}/{settings.name}": settings,
+            inputs=lambda: {**{f"{preparation.IN}/{script.name}": script for script, _ in calls},
+                            **{f"{preparation.IN}/{script.stem}-in.json": work_dir / f"{script.stem}-in.json"
+                               for script, _ in calls},
                             **{f"{preparation.IN}/{name}": preparation.fetched(url, digest, name)
                                for url, digest, name in node["files"]}})
         measured = {"seconds": round(time.monotonic() - started, 1), "peak_mb": None,
                     "returncode": result.get("exit_code"), "stderr_tail": ""}
         if result["state"] == "gap":
-            return None, {**measured, "state": "failed",
-                          "reason": f"the project's Tailwind runs only in a container: {result['cause']}"}
-        output = box / Path(OUT).name / f"{script.stem}-out.json"
-        if output.is_file():
-            return json.loads(output.read_text(encoding="utf-8")), measured
-        logs = {phase: (box / f"{phase}.log").read_text(encoding="utf-8", errors="replace")
-                if (box / f"{phase}.log").is_file() else "" for phase in ("prepare", "execute")}
-        said = "; ".join(gap["detail"] for gap in preparation.restore_gaps(logs["prepare"]))
-        return None, {**measured, "state": "failed", "stderr_tail": logs["execute"][-2500:],
-                      "reason": f"the container run ended {result['state']}"
-                                f"{f' ({said})' if said else ''}: {logs['execute'].strip()[-300:]}"}
+            return [(None, {**measured, "state": "failed",
+                            "reason": f"{script.name} runs only in a container: {result['cause']}"})
+                    for script, _ in calls]
+        answers, logs = [], None
+        for script, _ in calls:
+            output = box / Path(OUT).name / f"{script.stem}-out.json"
+            if output.is_file():
+                answers.append((json.loads(output.read_text(encoding="utf-8")), measured))
+                continue
+            logs = logs or {phase: (box / f"{phase}.log").read_text(encoding="utf-8", errors="replace")
+                            if (box / f"{phase}.log").is_file() else "" for phase in ("prepare", "execute")}
+            said = "; ".join(gap["detail"] for gap in preparation.restore_gaps(logs["prepare"]))
+            answers.append((None, {**measured, "state": "failed", "stderr_tail": logs["execute"][-2500:],
+                                   "reason": f"the container run ended {result['state']}"
+                                             f"{f' ({said})' if said else ''}: {logs['execute'].strip()[-300:]}"}))
+        return answers
+
+    def runner(script, payload):
+        return ask([(script, payload)])[0]
+    runner.ask = ask  # several scripts after one restore (`run`: Tailwind's and the packages' sheets)
+    runner.gaps = []  # what the restore of its last run changed from the project's own (`build_edited`)
     return runner
 
 
@@ -287,12 +311,74 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
                scripts["records"])
     entries = sorted({r["file"] for r in records if r["t"] == "ref" and r["kind"] == "import"
                       and r["name"] == "tailwindcss" and r["file"].lower().endswith(STYLESHEETS)})
-    tailwind = css_tailwind.index(project_dir, tailwind or runner, sorted(class_tokens(records)), entries)
+    container, asked = tailwind, {}
+    wanted = unserved(project_dir, records) if container else []
+    packages = (PACKAGES, {"packages": [list(item) for item in wanted]})
+
+    def with_packages(script, payload):  # Tailwind's run and the packages' sheets: one container run, one restore
+        ask = getattr(container, "ask", None) or (lambda calls: [container(*call) for call in calls])
+        answers = ask([(script, payload), *([packages] if wanted else [])])
+        asked.update({"sheets": answers[1]} if wanted else {})
+        return answers[0]
+    tailwind = css_tailwind.index(project_dir, with_packages if container else runner, sorted(class_tokens(records)),
+                                  entries)
+    restored = restored_sheets(asked.get("sheets") or container(*packages)) if wanted else \
+        {"folder": None, "indexer": None}
     engines = [engine for engine in (own["indexer"], sass["indexer"], less["indexer"], stylus["indexer"],
-                                     *components["indexers"], scripts["indexer"], tailwind["indexer"]) if engine]
-    return graph(project_dir, records, tailwind, files, engines,
-                 {**own["missing"], **sass["missing"], **less["missing"], **stylus["missing"],
-                  **components["missing"], **scripts["missing"]}, units, remote)
+                                     *components["indexers"], scripts["indexer"], tailwind["indexer"],
+                                     restored["indexer"]) if engine]
+    _RESTORED[project_dir] = restored["folder"]
+    try:
+        return graph(project_dir, records, tailwind, files, engines,
+                     {**own["missing"], **sass["missing"], **less["missing"], **stylus["missing"],
+                      **components["missing"], **scripts["missing"]}, units, remote)
+    finally:
+        _RESTORED.pop(project_dir, None)
+        if restored["folder"]:
+            shutil.rmtree(restored["folder"], ignore_errors=True)
+
+
+_RESTORED: dict = {}  # project folder -> the folder of the restore's package sheets the graph reads (`restored_sheets`)
+
+
+def unserved(project_dir: Path, records: list[dict]) -> list[tuple[str, str]]:
+    """`(folder, package)` of each package an import of the project names and its checkout lacks (`resolve` finds
+    no folder for it): the restore installs it, in the container (`restored_sheets`)."""
+    return sorted({((project_dir / ref["file"]).parent.relative_to(project_dir).as_posix(), name)
+                   for ref in records if ref["t"] == "ref" and ref["kind"] == "import" and "package" not in ref
+                   for name in [_package_name(ref["name"])] if name
+                   and resolve(project_dir, ref["file"], ref["name"], ref.get("script", False),
+                               sass=True if ref.get("sass") or ref.get("less") else None)[:2]
+                   == ("hole", "unresolved-import")})
+
+
+def restored_sheets(answer: tuple) -> dict:
+    """The container's answer for the unserved packages (`css_packages.js`, after the restore): their package.json
+    and sheets, written under `folder` at the paths the graph looks at (`_package`). A run that gives no data leaves
+    those imports unresolved, its cause on the engine's entry."""
+    data, run = answer
+    indexer = {"name": "codebase-map css_packages.js", "version": _sha(PACKAGES), "seconds": run.get("seconds"),
+               "peak_mb": None, **({"error": (data or {}).get("error") or run.get("reason")}
+                                   if not data or data.get("error") else {})}
+    folder = Path(tempfile.mkdtemp(prefix="daodan-sheets-")).resolve() if data and data.get("files") else None
+    for rel, text in ((data or {}).get("files") or {}).items():
+        target = (folder / rel).resolve()
+        # Only a package's file, below the folder: a name is the package's, never a path out of it on this host.
+        if "\\" in rel or ":" in rel or "node_modules" not in rel.split("/") or not target.is_relative_to(folder):
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding="utf-8")
+    return {"folder": folder, "indexer": indexer}
+
+
+def _package_name(spec: str) -> str | None:
+    """The package a bare specifier names (`@scope/name/sub`, `name/sub`, `~name`), else None."""
+    clean = spec.split("?")[0].split("#")[0].strip().lstrip("~")
+    if not clean or clean.startswith((".", "/")) or re.match(r"^[A-Za-z][\w+.-]*:", clean):
+        return None
+    parts = clean.split("/")
+    return "/".join(parts[:2]) if clean.startswith("@") and len(parts) > 1 else None if clean.startswith("@") \
+        else parts[0]
 
 
 def component_files(runner, project_dir: Path, files: list[str]) -> dict:
@@ -1353,13 +1439,50 @@ def class_tokens(records: list) -> set[str]:
 
 
 def _package(project_dir: Path, start: Path, name: str) -> Path | None:
+    """`node_modules/<name>` in `start` or a folder above it, up to the project's root: on disk, else in the copy
+    of the restore's package sheets (`restored_sheets`), where a package's own dependency is nested in its folder."""
+    restored = _RESTORED.get(project_dir)
     for folder in [start, *start.parents]:
         candidate = folder / "node_modules" / name
         if candidate.is_dir():
             return candidate
-        if folder == project_dir:
+        if restored is not None and folder.is_relative_to(project_dir):
+            copied = restored / candidate.relative_to(project_dir)
+            if copied.is_dir():
+                return copied
+        if folder in (project_dir, restored):
             break
     return None
+
+
+def _exported(exports, sub: str, conditions: tuple) -> str | None:
+    """The target of a subpath in a package's `exports` (Node's rules): its own key, else the `*` pattern with the
+    longest head that matches; a condition object gives its first target under `conditions`. None when the package
+    has no `exports` or they do not export `sub`."""
+    if exports is None:
+        return None
+    table = exports if isinstance(exports, dict) and any(key.startswith(".") for key in exports) else {".": exports}
+    star = None
+    if sub in table:
+        value = table[sub]
+    else:
+        keys = sorted((key for key in table if key.count("*") == 1 and len(sub) >= len(key) - 1
+                       and sub.startswith(key.split("*")[0]) and sub.endswith(key.split("*")[1])),
+                      key=lambda key: -key.index("*"))
+        if not keys:
+            return None
+        head, tail = keys[0].split("*")
+        star, value = sub[len(head):len(sub) - len(tail)], table[keys[0]]
+
+    def target(item):
+        if isinstance(item, str):
+            return item if star is None else item.replace("*", star)
+        if isinstance(item, list):
+            return next(filter(None, map(target, item)), None)
+        if isinstance(item, dict):
+            return next(filter(None, (target(item[name]) for name in item if name in conditions)), None)
+        return None
+    return target(value)
 
 
 def _file(path: Path, sass: bool) -> Path | None:
@@ -1493,9 +1616,13 @@ def resolve(project_dir: Path, rel: str, spec: str, script: bool = False, base: 
     if folder is None:
         return "hole", "unresolved-import", spec
     meta = json.loads((folder / "package.json").read_text(encoding="utf-8")) if (folder / "package.json").is_file() else {}
-    found = _file(folder / sub, sass) if sub else next(
+    # Through the package's `exports` first, with the conditions Sass's package importer and Tailwind's loader ask.
+    target = _exported(meta.get("exports"), f"./{sub}" if sub else ".",
+                       ("sass", "style", "default") if sass else ("style", "default"))
+    found = folder / target if target and (folder / target).is_file() else None
+    found = found or (_file(folder / sub, sass) if sub else next(
         (folder / meta[key] for key in ("sass", "style", "main") if isinstance(meta.get(key), str)
-         and (folder / meta[key]).is_file()), None)
+         and (folder / meta[key]).is_file()), None))
     if found is None:
         return "hole", "unresolved-import", spec
     return "external", f"{name}/{found.resolve().relative_to(folder.resolve()).as_posix()}", \
