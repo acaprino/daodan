@@ -55,6 +55,7 @@ SKIPPED = ("expected.json", "source.json")
 GIT = "/usr/bin/git -c core.fsmonitor=false -c core.hooksPath=/dev/null "  # the perimeter: hooks and monitors off
 BATCH = {"hand": 20, "real": 4}  # fixtures per container: a family's hand-written ones, real repositories
 TIMEOUT = 1500  # seconds a container may spend over its batch
+FIXTURE_TIMEOUT = 900  # seconds one fixture may take (the largest answer in 360)
 
 image = (modal.Image.debian_slim(python_version="3.12").apt_install("git", "ca-certificates")
          .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"))
@@ -171,7 +172,37 @@ def _measure(name: str) -> dict:
             "seconds": {"snapshot": round(middle - started, 2), "stack": round(time.monotonic() - middle, 2)}}
 
 
-@app.function(cpu=1.0, memory=3072, timeout=TIMEOUT + 300, volumes={"/results": volume})
+def bounded(seconds: int, function, *args, **keywords) -> dict:
+    """`function(*args, **keywords)` in a process of its own, or `{"error": "no answer in N s; stood at: ..."}` when
+    it does not answer in `seconds`: faulthandler writes the stack of the process at four fifths of the time, and
+    the top of it goes into the error, the cause of a hang. An exception is the fixture's result, with its type."""
+    import faulthandler
+    import multiprocessing
+    import tempfile
+
+    context = multiprocessing.get_context("fork")
+    receiver, sender = context.Pipe(duplex=False)
+    with tempfile.TemporaryFile("w+") as stack:
+        def work():
+            faulthandler.dump_traceback_later(seconds * 0.8, exit=False, file=stack)
+            try:
+                sender.send(function(*args, **keywords))
+            except Exception as error:  # noqa: BLE001 - a fixture's failure is its result
+                sender.send({"error": f"{type(error).__name__}: {str(error)[-400:]}"})
+
+        process = context.Process(target=work)
+        process.start()
+        if receiver.poll(seconds):
+            result = receiver.recv()
+            process.join()
+            return result
+        process.kill()
+        stack.seek(0)
+        top = " ".join(line.strip() for line in stack.read().splitlines()[1:9])
+        return {"error": f"no answer in {seconds} s; stood at: {top}"[:900]}
+
+
+@app.function(cpu=1.0, memory=3072, timeout=TIMEOUT + FIXTURE_TIMEOUT + 300, volumes={"/results": volume})
 def run_batch(names: list[str]) -> dict:
     sys.path[:0] = [f"/repo/{SCRIPTS}", "/repo/benchmarks/project-model", "/repo/benchmarks/project-model/tools"]
     code = code_hash(Path("/repo"))
@@ -183,10 +214,7 @@ def run_batch(names: list[str]) -> dict:
         if time.monotonic() - began > TIMEOUT:
             record = {"error": f"not run: the batch used its {TIMEOUT} s"}
         else:
-            try:
-                record = _measure(name)
-            except Exception as error:  # noqa: BLE001 - a fixture's failure is its result
-                record = {"error": f"{type(error).__name__}: {str(error)[-400:]}"}
+            record = bounded(FIXTURE_TIMEOUT, _measure, name)
         (folder / f"{name}.json").write_text(json.dumps({"fixture": name, "code": code, **record}, ensure_ascii=False)
                                              + "\n", encoding="utf-8")
         done.append(name)

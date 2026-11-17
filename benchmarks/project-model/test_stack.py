@@ -125,3 +125,17 @@ def test_the_driver_replays_the_recorded_model_commands_and_runs_none():
     assert "benchmarks/project-model/results/premap-runs" in paths  # the answers `modal_premap.py --runs` recorded
     assert "benchmarks/project-model/tools/premap_replay.py" in paths
     assert not hasattr(modal_stack, "_runner")  # no runner of commands: a missing recording leaves them not_run
+
+
+def test_a_fixture_that_does_not_answer_is_cut_off_with_an_error_and_the_batch_goes_on():
+    """Two batches of 17 November 2026 (jellyfin, kuvasz and three more) hit Modal's 1800 s on one fixture and lost
+    every record of the batch: each fixture now has its own time, in a process of its own."""
+    import time
+
+    import modal_stack
+    started = time.monotonic()
+    cut = modal_stack.bounded(1, time.sleep, 60)["error"]
+    assert cut.startswith("no answer in 1 s; stood at:") and "modal_stack.py" in cut  # the record names where it hung
+    assert time.monotonic() - started < 20
+    assert modal_stack.bounded(30, dict, a=1) == {"a": 1}
+    assert modal_stack.bounded(30, int, "x")["error"].startswith("ValueError: ")
