@@ -5,7 +5,7 @@
 
 The launcher starts `modal run` on this file with the arguments as given; the container holds the checkout as it
 is on disk (plugins, tests, benchmarks), runs `python -B -m pytest -p no:cacheprovider` in
-it, streams the output and ends with pytest's exit code. Several suites at once: `-n 4` (pytest-xdist is there).
+it, streams the output and ends with pytest's exit code. Several suites at once: `-n 8`, one per core (pytest-xdist is there).
 """
 from __future__ import annotations
 
@@ -73,7 +73,7 @@ if LOCAL:
 app = modal.App("daodan-tests", image=image)
 
 
-@app.function(cpu=4, memory=8192, timeout=3600)
+@app.function(cpu=8, memory=16384, timeout=3600)
 def pytest(arguments: list) -> int:
     """pytest over the checkout in the container, its output streamed; pytest's exit code."""
     subprocess.run(["git", "init", "-q", REMOTE], check=False)  # suites that ask for the work tree's root
