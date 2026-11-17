@@ -8,9 +8,12 @@ a declaration (`FILE:LINE` of the declaration's name) or at the reason it stays 
 """
 from __future__ import annotations
 
+import json
+import os
 import re
 import shutil
 import sqlite3
+import subprocess
 import sys
 from pathlib import Path
 
@@ -724,3 +727,40 @@ def test_the_index_and_the_store_answer_the_rule_alike(tmp_path):
                 outcome = f"{target['file']}:{target['name_span'][0]}" if target else item["reason"]
                 found.setdefault(item["file"], {})[f"{item['span'][2]} {item['parts'][0]}"] = outcome
         assert found == RULED[root.name], root.name
+
+
+# zlib at the commit the corpus pins (mix-real-zlib), and the C files no build for Linux compiles (D-136): the
+# examples, contrib/infback9, minizip's iowin32.c (Windows only) and contrib/testzlib (Visual Studio only).
+ZLIB = ("https://github.com/madler/zlib.git", "51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf")
+UNBUILT = ("examples", "contrib/infback9", "contrib/minizip/iowin32.c", "contrib/testzlib")
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_the_reference_sites_of_zlib_s_files_no_build_compiles(tmp_path):
+    """The C reference sites (calls and reads) the snapshot of zlib gives each file no build compiles: the
+    `no-document` holes a run counts there, as the C indexer indexes only what a build compiles. The pre-map's
+    readers alone give minizip's Autotools unit with iowin32.c and mztools.c among its sources."""
+    import premap
+    source = tmp_path / "zlib"
+    source.mkdir()
+    for command in (["git", "init", "-q"], ["git", "remote", "add", "origin", ZLIB[0]],
+                    ["git", "fetch", "-q", "--depth", "1", "origin", ZLIB[1]],
+                    ["git", "-c", "core.hooksPath=/dev/null", "checkout", "-q", "FETCH_HEAD"]):
+        subprocess.run(command, cwd=source, check=True, timeout=600)
+    manifest = tmp_path / "snapshot/manifest.sqlite"
+    snapshot.write_snapshot(source, manifest)
+    connection = sqlite3.connect(manifest)
+    sites = dict(connection.execute(
+        "SELECT r.file, COUNT(*) FROM sem_references r JOIN sem_coverage c ON c.file = r.file "
+        "WHERE r.kind IN ('call', 'read') AND c.language = 'c' GROUP BY r.file").fetchall())
+    connection.close()
+    unbuilt = {place: sum(count for rel, count in sites.items() if rel == place or rel.startswith(place + "/"))
+               for place in UNBUILT}
+    print("SITES", sum(sites.values()), json.dumps(unbuilt))
+    assert unbuilt == {"examples": 3446, "contrib/infback9": 633, "contrib/minizip/iowin32.c": 352,
+                       "contrib/testzlib": 12}  # 4,443, the `no-document` holes of the run on f992db560
+    # what a build compiles since the conferma: test/infcover.c (Makefile's `cover`), mztools.c (Autotools)
+    assert (sites["test/infcover.c"], sites["contrib/minizip/mztools.c"]) == (785, 251)
+    [unit] = [unit for unit in premap.ensure(manifest).get("units", []) if unit["root"] == "contrib/minizip"]
+    assert (unit["kind"], unit["name"]) == ("autotools-project", "minizip")
+    assert {"contrib/minizip/iowin32.c", "contrib/minizip/mztools.c"} <= set(unit["config"]["sources"])

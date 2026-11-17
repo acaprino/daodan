@@ -319,6 +319,7 @@ function install(outFile) {
   const unobserved = new Set();  // project files that ran unrecorded
   const marked = new Set();      // project files whose recorded code ran
   let changed = false;           // a site or a callee of one since the last write
+  let writes = 0, writing = 0;   // the writes while the process ran, and the ms they took
   let startsOf = () => [];
   let lookups = 0;
   function locate(fn) {
@@ -402,8 +403,8 @@ function install(outFile) {
     }
     fs.writeFileSync(`${target}.tmp`,
       JSON.stringify({ exact: true, final, node: process.versions.node,
-        stats: { sites: out.length, callees: callees.length, lookups }, unobserved: [...unobserved].sort(),
-        sites: out }));
+        stats: { sites: out.length, callees: callees.length, lookups, writes, writing_ms: writing },
+        unobserved: [...unobserved].sort(), sites: out }));
     fs.renameSync(`${target}.tmp`, target);
   };
   // A Jest worker that does not exit in time gets SIGTERM: the sites are written then too.
@@ -416,15 +417,19 @@ function install(outFile) {
   };
   // SIGKILL runs no handler (Playwright stops its webServer so, a runner a worker that does not end): what the
   // process saw is written as it goes, every EVERY ms while it records something new, and never more often than
-  // ten times a write's own length apart, so a killed process loses only what it saw after its last write. A write
-  // that fails leaves the one before; the exit's writes again.
+  // ten times a write's own length apart, so a killed process loses only what it saw after its last write. The
+  // writes run on the event loop: a process that never yields to it writes at its exit. A write that fails leaves
+  // the one before; the exit's writes again.
   let next = 0;
   setInterval(() => {
     if (written || !changed || Date.now() < next) return;
     changed = false;
     const started = Date.now();
     try { write(false); } catch (error) { changed = true; }
-    next = Date.now() + 10 * (Date.now() - started);
+    const took = Date.now() - started;
+    writes += 1;
+    writing += took;
+    next = Date.now() + 10 * took;
   }, EVERY).unref();
   process.on('exit', flush);
   process.on('SIGTERM', () => { flush(); process.exit(143); });

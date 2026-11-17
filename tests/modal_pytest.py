@@ -10,6 +10,7 @@ it, streams the output and ends with pytest's exit code. Several suites at once:
 from __future__ import annotations
 
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -38,9 +39,12 @@ FETCH_NODE = ("python -c \"import hashlib, urllib.request; data = urllib.request
 COMPONENTS = ("vue@3.5.22", "typescript@5.6.3", "@vue/language-core@3.3.14", "svelte2tsx@0.7.63")
 # Vue's tool 2.x (js-vue-pnpm's 2.2.12) with the indexer, in /opt/components-vue2, where its recording is made again.
 COMPONENTS_VUE2 = ("vue@3.5.22", "typescript@5.6.3", "@vue/language-core@2.2.12", "@sourcegraph/scip-typescript@0.6.2")
-# The @babel/core the JavaScript recorder prints with (`dynamic/javascript.py`, BABEL), in a layer of its own: its
-# tests under a real Node (test_codebase_map_dynamic_javascript.py) find it through DAODAN_TEST_BABEL.
-BABEL = ("7.29.7", "/opt/babel/node_modules/@babel/core")
+# The @babel/core the JavaScript recorder prints with, as the observer installs it (`dynamic/javascript.py`: its
+# BABEL, from npm without install scripts), in a layer of its own: the recorder's tests under a real Node
+# (test_codebase_map_dynamic_javascript.py) find it through DAODAN_TEST_BABEL.
+OBSERVER = REPO / "plugins/codebase-map/skills/map/scripts/dynamic/javascript.py"
+BABEL = (re.search(r'^BABEL = "([^"]+)"', OBSERVER.read_text(encoding="utf-8"), re.M)[1] if LOCAL else "",
+         "/opt/babel/node_modules/@babel/core")
 # Debian's headless JDK 17 builds and runs the JVM recorder in its own tests (test_codebase_map_dynamic_jvm.py);
 # its package wants the manual folder the slim image leaves out.
 image = (modal.Image.debian_slim(python_version="3.13")

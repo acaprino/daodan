@@ -807,6 +807,96 @@ def test_a_process_killed_with_sigkill_leaves_the_calls_it_made_before(tmp_path,
     assert not list(out.glob("*.tmp"))
 
 
+def recorder(project: Path, out: Path, babel_dir: str) -> dict:
+    """The environment a script runs in under the recorder, as the observer sets it."""
+    environment = {key: value for key, value in os.environ.items() if not key.startswith(("NODE_", "DYN_"))}
+    environment.update({"NODE_OPTIONS": f"--require {observer.RECORDER.as_posix()}", "DYN_ROOT": str(project),
+                        "DYN_OUT": str(out / "observed-0-%p.json"), "DYN_BABEL": babel_dir})
+    return environment
+
+
+# 3,000 functions, each called from a site of its own, in five waves of 0.6 s through a fifth of the sites each:
+# the sites grow while the process runs, and the recorder writes them as it goes.
+FUNCTIONS, WAVES = 3000, 5
+WAVED = {"lib.js": "".join(f"function f{n}(x) {{ return x + {n}; }}\n" for n in range(FUNCTIONS))
+         + "module.exports = { " + ", ".join(f"f{n}" for n in range(FUNCTIONS)) + " };\n",
+         "main.js": f"const {{ {', '.join(f'f{n}' for n in range(FUNCTIONS))} }} = require('./lib');\n"
+         + "".join(f"function w{w}(t) {{\n" + "".join(f"  t += f{n}(t & 7);\n" for n in range(w, FUNCTIONS, WAVES))
+                   + "  return t;\n}\n" for w in range(WAVES))
+         + f"const waves = [{', '.join(f'w{w}' for w in range(WAVES))}];\nlet total = 0, calls = 0;\n"
+         + "const started = Date.now();\n(async () => {\n  for (const wave of waves) {\n"
+         + "    const until = Date.now() + 600;\n    while (Date.now() < until) {\n"
+         + f"      for (let i = 0; i < 100; i++) {{ total = wave(total) & 0xffff; calls += {FUNCTIONS // WAVES}; }}\n"
+         + "      await new Promise(resolve => setImmediate(resolve));\n    }\n  }\n"
+         + "  console.log(JSON.stringify({ calls, ms: Date.now() - started }));\n})();\n"}
+
+
+def test_the_writes_while_a_process_runs_take_less_than_a_tenth_of_its_time(tmp_path, node):
+    """What writing as it goes costs (D-292): a write at most every second, and never sooner than ten times the last
+    one's length after it, so the writes take less than a tenth of the run, whatever the sites. The calls the run
+    made and the writes' share are printed: the measure of the cost."""
+    project = write(tmp_path / "proj", WAVED)
+    out = tmp_path / "out"
+    out.mkdir()
+    done = subprocess.run(["node", "main.js"], cwd=project, env=recorder(project, out, node), capture_output=True,
+                          text=True, timeout=300)
+    assert done.returncode == 0, done.stderr[-2000:]
+    run = json.loads(done.stdout.strip().splitlines()[-1])
+    [path] = out.glob("observed-0-*.json")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    stats = data["stats"]
+    print("WAVED", json.dumps({**run, **stats, "bytes": path.stat().st_size}))
+    assert data["final"] is True and stats["sites"] >= FUNCTIONS
+    assert stats["writes"] >= 2  # the waves after the first wrote what they added
+    assert stats["writing_ms"] < run["ms"] / 10
+
+
+PLAYWRIGHT = "1.64.1"  # @playwright/test on npm, the version the proof below ran with
+WEB_SERVER = {
+    "package.json": json.dumps({"name": "pw", "private": True, "scripts": {"test:e2e": "playwright test"}}),
+    "lib.js": "function answer(url) {\n  return url.length;\n}\nmodule.exports = { answer };\n",
+    "server.js": "const http = require('http');\nconst { answer } = require('./lib');\n"
+                 "http.createServer((req, res) => { res.end(String(answer(req.url))); }).listen(4173, '127.0.0.1');\n",
+    "e2e/server.spec.js": "const { test, expect } = require('@playwright/test');\n"
+                          "test('server', async ({ request }) => {\n"
+                          "  const reply = await request.get('http://127.0.0.1:4173/abc');\n"
+                          "  expect(await reply.text()).toBe('4');\n"
+                          "  await new Promise(resolve => setTimeout(resolve, 2500));  // the server writes\n});\n",
+    "playwright.config.js": "module.exports = {\n  testDir: './e2e',\n  workers: 1,\n  webServer: {\n"
+                            "    command: 'node server.js',\n    url: 'http://127.0.0.1:4173/health',\n"
+                            "    reuseExistingServer: false,\n  },\n};\n",
+}
+
+
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
+def test_on_modal_playwright_s_web_server_is_recorded_when_playwright_kills_it(tmp_path, node):
+    """D-198, D-292: `playwright test` (@playwright/test from npm) whose webServer is a Node server the spec calls
+    over HTTP, run under the recorder as the observer runs a script. The server inherits NODE_OPTIONS; Playwright
+    stops it with SIGKILL, so its file is the last one it wrote while it ran (`final: false`), with the calls the
+    spec's request reached; with `gracefulShutdown` sending SIGTERM it writes at its exit."""
+    npm = shutil.which("npm")
+    project = write(tmp_path / "proj", WEB_SERVER)
+    subprocess.run([npm, "install", "--no-audit", "--no-fund", "--ignore-scripts", f"@playwright/test@{PLAYWRIGHT}"],
+                   cwd=project, check=True, capture_output=True, timeout=600)
+    for shutdown, final in (("", False), ("    gracefulShutdown: { signal: 'SIGTERM', timeout: 5000 },\n", True)):
+        (project / "playwright.config.js").write_text(WEB_SERVER["playwright.config.js"].replace(
+            "  },\n};", f"{shutdown}  }},\n}};"), encoding="utf-8")
+        out = tmp_path / f"out-{final}"
+        out.mkdir()
+        done = subprocess.run([npm, "run", "test:e2e"], cwd=project, env={**recorder(project, out, node), "CI": "1"},
+                              capture_output=True, text=True, timeout=600)
+        assert done.returncode == 0, (done.stdout + done.stderr)[-2000:]
+        files = [json.loads(path.read_text(encoding="utf-8")) for path in sorted(out.glob("observed-0-*.json"))]
+        [server] = [data for data in files if any(site["file"] == "server.js" for site in data["sites"])]
+        assert server["final"] is final
+        found = places(server["sites"])
+        column = WEB_SERVER["server.js"].split(chr(10))[2].index("answer")
+        assert found[("server.js", 2, column, "answer")] == {"lib.js:0:0 answer function"}
+        tests = [data for data in files if data is not server]
+        assert any(site["file"] == "e2e/server.spec.js" for data in tests for site in data["sites"])
+        assert all(data["final"] is True for data in tests)
+
+
 # --- the join: what the recorder saw, on the snapshot's references ---------------------------------------------
 
 def test_an_observed_site_joins_the_reference_at_the_same_name_position(tmp_path, monkeypatch):
