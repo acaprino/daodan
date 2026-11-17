@@ -68,6 +68,17 @@ def _vue2_made(tmp_path: Path) -> Path:
     return project
 
 
+def _vue2_rewritten(tmp_path: Path) -> code_graph.Index:
+    """The Vue 2 recording's index given back to its component."""
+    project = tmp_path / "project"
+    shutil.copytree(VUE2 / "src", project / "src")
+    shutil.copyfile(VUE2 / "index.scip", tmp_path / "index.scip")
+    components.rewrite(tmp_path / "index.scip", VUE2 / "components.json", project)
+    index = code_graph.Index(project)
+    index.load(tmp_path / "index.scip")
+    return index
+
+
 def _rewritten(tmp_path: Path) -> code_graph.Index:
     project = tmp_path / "project"
     shutil.copytree(FIXTURE / "src", project / "src")
@@ -178,16 +189,25 @@ def test_a_template_read_vue2_writes_through_its_setups_property_reaches_the_bin
     binding in the template as a property of the generated `setup`'s return (`__VLS_ctx.n`), which it writes as
     `n: n as typeof n`, outside the map. Given back, the template reads the binding the property holds, as 3.x
     reads it itself (`src/App.vue:10 n` of the other recording)."""
-    project = tmp_path / "project"
-    shutil.copytree(VUE2 / "src", project / "src")
-    shutil.copyfile(VUE2 / "index.scip", tmp_path / "index.scip")
-    components.rewrite(tmp_path / "index.scip", VUE2 / "components.json", project)
-    index = code_graph.Index(project)
-    index.load(tmp_path / "index.scip")
+    index = _vue2_rewritten(tmp_path)
     rows = (VUE2 / COUNTER).read_text(encoding="utf-8").split("\n")
     binding = (COUNTER, 5, rows[4].index("n ="))
     assert _defined(index, COUNTER, 9, rows[8].index("n++")) == {binding}
     assert _defined(index, COUNTER, 9, rows[8].index("{{ n }}") + 3) == {binding}
+
+
+def test_a_macro_vues_tool_declares_in_generated_code_is_vues_own(tmp_path):
+    """js-vue-pnpm `src/components/Counter.vue:4 defineProps` (`dangling-local`, D-290): Vue's tool declares the
+    compiler's macros in generated code (2.2.12 `declare const { defineProps, … }: typeof import('vue');`), outside
+    the map, where the index defines each name with a local and, at the same range, references Vue's own function.
+    Given back, the component's call is of Vue's `defineProps`: an external, not a local defined nowhere."""
+    import test_codebase_map_code_graph as graphs
+    index = _vue2_rewritten(tmp_path)
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    row = (VUE2 / COUNTER).read_text(encoding="utf-8").split("\n")[3]
+    assert {(end.cls, end.key) for item in index.at[(COUNTER, 4, row.index("defineProps"))]
+            for end in traversal.ends(item.key)} == {
+        ("external", "scip-typescript npm @vue/runtime-core 3.5.22 dist/`runtime-core.d.ts`/defineProps().")}
 
 
 def test_the_index_of_the_generated_typescript_is_the_components(tmp_path):

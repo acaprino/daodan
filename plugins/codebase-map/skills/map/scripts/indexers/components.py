@@ -19,13 +19,15 @@ TypeScript its framework's own tool generates, and the index brought back to the
 - `rewrite` gives each generated document of the index to its component: each occurrence through the map to the
   component's positions, in UTF-16 code units as the index's; one the map does not cover whole, both ends and the
   same length (generated code), is left out; the module's definition, at the document's start, is the
-  component's start, and a property of generated code that holds a binding the template reads (Vue 2's `setup`,
-  `n: n as typeof n`) is that binding (`_held`). A Volar span maps a run of characters, of which only those marked for navigation are used.
-  The checker's pass (`typescript_unbound.js`) is brought back the same way.
+  component's start, and a symbol generated code defines for another the component reads (Vue 2's `setup`,
+  `n: n as typeof n`; the compiler's macros, `declare const { defineProps, … }: typeof import('vue');`) is that
+  other (`_held`). A Volar span maps a run of characters, of which only those marked for navigation are used. The
+  checker's pass (`typescript_unbound.js`) is brought back the same way.
 """
 from __future__ import annotations
 
 import bisect
+import collections
 import json
 import posixpath
 from pathlib import Path
@@ -175,17 +177,30 @@ def _parts(data: bytes) -> tuple[list[int], bytes, int]:
 
 
 def _held(occurrences: list[bytes], lines: dict) -> dict[bytes, bytes]:
-    """The properties of generated code that hold a binding of the component: Vue's tool 2.x returns each binding
-    the template reads from the generated `setup` as a property of its own (`n: n as typeof n`, outside the map),
-    and the template reads that property (`__VLS_ctx.n`). Such a property, defined where the map holds nothing and
-    followed on its line by a reference to a symbol whose definition the map holds, is that symbol."""
+    """The symbols defined in generated code, where the map holds nothing, that stand for another the component
+    reads. Vue's tool 2.x returns each binding the template reads from the generated `setup` as a property of its
+    own (`n: n as typeof n`), and the template reads that property (`__VLS_ctx.n`): such a property, followed on
+    its line by a reference to a symbol whose definition the map holds, is that symbol. Vue's tool declares the
+    compiler's macros (2.2.12 `declare const { defineProps, … }: typeof import('vue');`), each name a local defined
+    at the range where the index references Vue's function: a definition sharing its range with a reference to one
+    symbol not defined there, the chain the traversal follows from a shared range, is that symbol."""
     parsed = sorted((_parts(data) for data in occurrences), key=lambda part: part[0])
     defined = {symbol for values, symbol, roles in parsed if roles & 1 and mapped(lines, values) is not None}
+    at = collections.defaultdict(list)
+    for values, symbol, roles in parsed:
+        at[tuple(values)].append((symbol, roles))
     held = {}
-    for (values, symbol, roles), (after, other, other_roles) in zip(parsed, parsed[1:]):
-        if roles & 1 and symbol.endswith(b":") and len(values) == 3 and mapped(lines, values) is None \
-                and not other_roles & 1 and other in defined and after[0] == values[0] and after[1] > values[2]:
-            held[symbol] = other
+    for position, (values, symbol, roles) in enumerate(parsed):
+        if not roles & 1 or mapped(lines, values) is not None:
+            continue
+        shared = {other for other, other_roles in at[tuple(values)] if not other_roles & 1} \
+            - {other for other, other_roles in at[tuple(values)] if other_roles & 1}
+        after = next((part for part in parsed[position + 1:] if part[0][0] == values[0]
+                      and part[0][1] >= values[-1]), None) if len(values) == 3 else None
+        if len(shared) == 1:
+            held[symbol] = shared.pop()
+        elif symbol.endswith(b":") and after is not None and not after[2] & 1 and after[1] in defined:
+            held[symbol] = after[1]
     return held
 
 
