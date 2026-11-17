@@ -10,6 +10,7 @@ languages, toolchains, frameworks, declared libraries (cataloged or not), extern
 """
 from __future__ import annotations
 
+from collections import Counter
 import hashlib
 import json
 import os
@@ -21,13 +22,22 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+from build_units import _family  # noqa: E402
 import confinement  # noqa: E402
+from module_derive import PREMAP_KIND_ECOSYSTEM  # noqa: E402
 import modules  # noqa: E402
 import premap  # noqa: E402
 import service_registry  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
 SCHEMA, FILE = "daodan/technologies/v1", "technologies.json"
+
+
+def _versions_only(rel: str | None) -> bool:
+    """A Gradle version catalog or .NET central package versions: a package there has its version, and the module
+    that uses it declares it in its own build file (`premap.jvm_files` reads `libs.*`), not the one holding the file."""
+    name = Path(rel or "").name
+    return name.endswith(".versions.toml") or name == "Directory.Packages.props"
 
 
 def path(manifest: Path) -> Path:
@@ -43,6 +53,25 @@ def _inputs(manifest: Path, registry: dict, facts: dict) -> tuple[str, str, str]
                  facts.get("packages"), facts.get("services"), facts.get("docker_builds"),
                  facts.get("excluded"), facts.get("toolchains"), facts.get("units")]
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest(), root, target
+
+
+def _references(graph: dict, units: list[dict]) -> dict[str, str]:
+    """Build module id -> how the pre-map refers to its unit: the unit's name, or its root when no file names it or
+    another unit has the same name. A module is the unit of its folder and ecosystem, or the folder's only unit."""
+    count, by_root = Counter(u.get("name") for u in units), {}
+    for unit in units:
+        by_root.setdefault(unit["root"], []).append(unit)
+    out = {}
+    for module in graph["modules"]:
+        if module["provenance"] != "build" or not module.get("members"):
+            continue
+        here = by_root.get(module["members"][0]["path"], [])
+        families = {_family(e) for e in module.get("ecosystems") or ()}
+        found = [u for u in here if _family(PREMAP_KIND_ECOSYSTEM.get(u["kind"], "")) in families] or here
+        if len(found) == 1:
+            out[module["id"]] = found[0]["name"] if found[0].get("name") and count[found[0]["name"]] == 1 \
+                else found[0]["root"]
+    return out
 
 
 def _module_files(module: dict, physical: list[dict]) -> set[str]:
@@ -75,11 +104,15 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
                 known_pkg.setdefault((sign["value"].casefold(), sign["path"]), entry)
 
     physical = [m for m in graph["modules"] if m["provenance"] in modules.PHYSICAL]
+    refs = _references(graph, facts.get("units") or [])
     all_modules, units = [], []
     for unit in graph["modules"]:
+        name = refs.get(unit["id"], unit["name"])  # the pre-map's reference; the module's names stay aliases
+        named = {"id": unit["id"], "name": name,
+                 "aliases": sorted({unit["name"], *(unit.get("aliases") or ())} - {name})}
         if unit.get("location") == "external":
             item = {
-                "id": unit["id"], "name": unit["name"], "kind": unit["kind"],
+                **named, "kind": unit["kind"],
                 "nature": unit.get("nature", "logical"), "provenance": unit["provenance"],
                 "paths": unit["paths"], "languages": {}, "toolchains": [],
                 "frameworks": [], "libraries": [], "services": [], "tools": [], "technologies": [],
@@ -87,14 +120,15 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
             all_modules.append(item)
             continue
         owned = _module_files(unit, physical)
-        matched = [e for e in entries if any(s["path"] in owned for s in e["signs"])]
+        matched = [e for e in entries if any(s["path"] in owned and not (s["sign"] == "package" and _versions_only(
+            s["path"])) for s in e["signs"])]
         frameworks = [e["id"] for e in matched if e.get("category") == "framework"]
         services = [e["id"] for e in matched if e.get("category") == "service"]
         tools = [e["id"] for e in matched if e.get("category") == "tool"]
         libs = []
         seen_libs = set()
         for eco, pkg_name, pkg_path, pkg_line in raw_packages:
-            if pkg_path in owned and (eco, pkg_name.casefold()) not in seen_libs:
+            if pkg_path in owned and not _versions_only(pkg_path) and (eco, pkg_name.casefold()) not in seen_libs:
                 seen_libs.add((eco, pkg_name.casefold()))
                 reg_entry = known_pkg.get((pkg_name.casefold(), pkg_path))
                 libs.append({
@@ -103,7 +137,7 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
                 })
         libs.sort(key=lambda x: (x["ecosystem"], x["name"].casefold()))
         item = {
-            "id": unit["id"], "name": unit["name"], "kind": unit["kind"],
+            **named, "kind": unit["kind"],
             "nature": unit.get("nature", "concrete"), "provenance": unit["provenance"],
             "paths": unit["paths"], "languages": unit.get("languages", {}),
             "toolchains": unit.get("toolchains", []),

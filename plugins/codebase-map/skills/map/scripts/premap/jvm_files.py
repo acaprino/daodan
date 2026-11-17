@@ -6,17 +6,19 @@ for (`maven.compiler.release`, `source` and `target` properties, `java.version`,
 `maven-compiler-plugin`'s `release`, `source` and `target`) and the version of the `kotlin-maven-plugin`, each a
 property of the same pom or a literal, its field the path in the pom with the plugin by its artifactId (`properties.java.version`,
 `maven-compiler-plugin.configuration.source`). A value naming a property the pom does not define, and a Gradle
-build's Java version, which lives in build scripts only Gradle runs, are `toolchain_undeclared` gaps.
+build's Java version, which lives in build scripts only Gradle runs, are `toolchain_undeclared` gaps. A `libs.*`
+accessor in a build script is the package `gradle/libs.versions.toml` of its build names, declared on that line (v2).
 """
 from __future__ import annotations
 
 from pathlib import PurePosixPath
 import re
+import tomllib
 import xml.etree.ElementTree as ET
 
 import confinement
 
-NAME, VERSION, RANK = "jvm-files", "daodan/premap/v1", "reader"
+NAME, VERSION, RANK = "jvm-files", "daodan/premap/v2", "reader"
 WRAPPERS = {"gradle": ("gradle/wrapper/gradle-wrapper.properties", r"gradle-([0-9][^-/]*)-(?:bin|all)\.zip$"),
             "maven": (".mvn/wrapper/maven-wrapper.properties", r"apache-maven-([0-9][^-/]*)-bin\.zip$")}
 JAVA_PROPERTIES = ("maven.compiler.release", "maven.compiler.source", "maven.compiler.target", "java.version",
@@ -29,6 +31,42 @@ GRADLE_COORD = re.compile(r"""['"]([A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+)(?::[^'"\s]+)
 TOML_MODULE = re.compile(r"""module\s*=\s*['"]([^'"]+:[^'"]+)['"]""")
 TOML_GROUP_NAME = re.compile(r"""group\s*=\s*['"]([^'"]+)['"].*?name\s*=\s*['"]([^'"]+)['"]""")
 TOML_PLUGIN_ID = re.compile(r"""\bid\s*=\s*['"]([^'"]+)['"]""")
+CATALOG = "gradle/libs.versions.toml"  # the `libs` catalog Gradle reads beside the settings of a build
+ACCESSOR = re.compile(r"\blibs\.([A-Za-z0-9_.]+)")
+
+
+def _catalog(text: str) -> dict[str, list[str]]:
+    """A version catalog's accessors (`junit.jupiter`, `plugins.spring.boot`, `bundles.web`) -> the coordinates or
+    plugin ids they stand for: Gradle turns `-`, `_` and `.` of an alias into the accessor's dots."""
+    try:
+        data = tomllib.loads(text)
+    except tomllib.TOMLDecodeError:
+        return {}
+    key = lambda alias: re.sub(r"[-_.]", ".", alias)  # noqa: E731
+    libraries = {}
+    for alias, value in (data.get("libraries") or {}).items():
+        if isinstance(value, str):  # `group:name:version`
+            coord = ":".join(value.split(":")[:2])
+        else:
+            coord = value.get("module") or (value.get("group") and value.get("name")
+                                            and f"{value['group']}:{value['name']}")
+        if coord:
+            libraries[key(alias)] = [coord]
+    out = dict(libraries)
+    for alias, value in (data.get("plugins") or {}).items():
+        plugin = value.split(":", 1)[0] if isinstance(value, str) else value.get("id")
+        if plugin:
+            out[f"plugins.{key(alias)}"] = [plugin]
+    for alias, members in (data.get("bundles") or {}).items():
+        out[f"bundles.{key(alias)}"] = [c for m in members if isinstance(m, str) for c in libraries.get(key(m), [])]
+    return out
+
+
+def _uses(accessors: dict[str, list[str]], path: str) -> list[str]:
+    """What `libs.<path>` names: the longest accessor it starts with (`libs.junit.jupiter.get()`)."""
+    parts = path.split(".")
+    return next((accessors[".".join(parts[:n])] for n in range(len(parts), 0, -1)
+                 if ".".join(parts[:n]) in accessors), [])
 
 
 def _properties(text: str) -> dict:
@@ -118,7 +156,7 @@ def _pom_packages(rel: str, text: str, own: set[str], packages: list[dict], seen
             add(group, fields.get("artifactId", ""))
 
 
-def _gradle_packages(rel: str, text: str, packages: list[dict], seen: set) -> None:
+def _gradle_packages(rel: str, text: str, packages: list[dict], seen: set, accessors: dict | None = None) -> None:
     base = PurePosixPath(rel).name
     for number, line in enumerate(text.splitlines(), 1):
         code = line.split("//" if not base.endswith(".toml") else "#", 1)[0]
@@ -154,6 +192,11 @@ def _gradle_packages(rel: str, text: str, packages: list[dict], seen: set) -> No
             if not coord.startswith(":") and "$" not in coord and (coord.casefold(), rel) not in seen:
                 seen.add((coord.casefold(), rel))
                 packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
+        for m in ACCESSOR.finditer(code) if accessors else ():
+            for coord in _uses(accessors, m.group(1)):
+                if (coord.casefold(), rel) not in seen:
+                    seen.add((coord.casefold(), rel))
+                    packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
 
 
 def run(context):
@@ -193,6 +236,8 @@ def run(context):
                 gaps.append({"kind": "toolchain_undeclared", "path": folder,
                              "detail": "the Java version of a Gradle build is declared in its build scripts, which "
                                        "only Gradle runs: no source states it before the build"})
+    catalogs = {(rel[:-len(CATALOG)].rstrip("/") or "."): _catalog(context.inventory.text(rel))
+                for rel in context.inventory.files if rel == CATALOG or rel.endswith("/" + CATALOG)}
     for rel in context.inventory.files:
         base = PurePosixPath(rel).name
         if base == "pom.xml":
@@ -200,6 +245,7 @@ def run(context):
             _pom(rel, text, toolchains, gaps)
             _pom_packages(rel, text, own, packages, seen_pkgs)
         elif base in ("build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts") or base.endswith(".versions.toml"):
-            _gradle_packages(rel, context.inventory.text(rel), packages, seen_pkgs)
+            build = max((f for f in catalogs if f == "." or rel.startswith(f + "/")), key=len, default=None)
+            _gradle_packages(rel, context.inventory.text(rel), packages, seen_pkgs, catalogs.get(build))
     facts = {"units": units, "toolchains": toolchains, **({"packages": packages} if packages else {})}
     return {"facts": facts, "gaps": gaps}

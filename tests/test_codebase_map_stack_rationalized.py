@@ -144,3 +144,57 @@ def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logica
     faces = score.technologies_faces(record)
     service_names = {s["name"].lower() for s in faces["services"]}
     assert "playwright" not in service_names and "caddy" not in service_names
+
+
+def _stack(tmp_path, files: dict[str, str]) -> dict:
+    project = _git_project(tmp_path / "proj", files)
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    premap.write(manifest)
+    return technologies.ensure(manifest)
+
+
+def test_a_unit_of_the_stack_is_named_as_the_pre_map_refers_to_it_and_keeps_its_module_name_as_an_alias(tmp_path):
+    """D-303: Maven's `groupId:artifactId`, Gradle's `:` for the root of a build, the root when two units share a
+    name; the name of modules.json stays among the aliases."""
+    record = _stack(tmp_path, {
+        "pom.xml": '<project><groupId>com.acme</groupId><artifactId>shop</artifactId><packaging>pom</packaging>'
+                   "<modules><module>svc</module></modules></project>\n",
+        "svc/pom.xml": '<project><parent><groupId>com.acme</groupId><artifactId>shop</artifactId></parent>'
+                       "<groupId>com.acme</groupId><artifactId>svc</artifactId><dependencies><dependency>"
+                       "<groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId></dependency>"
+                       "</dependencies></project>\n",
+        "g/settings.gradle.kts": 'rootProject.name = "billing"\n',
+        "g/build.gradle.kts": 'dependencies {\n    implementation("org.springframework.boot:spring-boot-starter-web:3.4.0")\n}\n',
+        "tool/pyproject.toml": '[project]\nname = "kit"\ndependencies = ["fastapi"]\n',
+        "ui/package.json": '{"name": "kit", "dependencies": {"vue": "^3.5.0"}}\n',
+    })
+    units = {u["paths"][0]: u for u in record["units"]}
+    assert {root: units[root]["name"] for root in ("svc", "g", "tool", "ui")} == {
+        "svc": "com.acme:svc", "g": ":", "tool": "tool", "ui": "ui"}
+    assert "svc" in units["svc"]["aliases"] and "billing" in units["g"]["aliases"] and "kit" in units["ui"]["aliases"]
+    faces = {(f["name"], f.get("unit")) for f in score.technologies_faces(record)["frameworks"]}
+    assert {("JUnit Jupiter", "com.acme:svc"), ("Spring MVC", ":"), ("FastAPI", "tool")} <= faces
+    assert any(unit == "ui" and name.startswith("Vue") for name, unit in faces)
+
+
+def test_a_package_of_the_version_catalog_goes_to_the_build_script_that_uses_it_not_to_the_catalog_s_build(tmp_path):
+    """D-303: `libs.junit.jupiter` in domain/build.gradle.kts is junit-jupiter declared there; the catalog only
+    gives its version, so the root of the build, which holds the catalog, does not use it."""
+    record = _stack(tmp_path, {
+        "settings.gradle.kts": 'rootProject.name = "inventory"\ninclude(":domain", ":api")\n',
+        "gradle/libs.versions.toml": (
+            '[versions]\njackson = "2.18.1"\n\n[libraries]\n'
+            'jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }\n'
+            'junit_jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version = "5.11.3" }\n\n'
+            '[plugins]\nspring-boot = { id = "org.springframework.boot", version = "3.4.0" }\n'),
+        "domain/build.gradle.kts": "dependencies {\n    testImplementation(libs.junit.jupiter)\n}\n",
+        "api/build.gradle.kts": ("plugins {\n    alias(libs.plugins.spring.boot)\n}\n"
+                                 "dependencies {\n    implementation(libs.jackson.databind)\n}\n"),
+    })
+    units = {u["name"]: u for u in record["units"]}
+    assert "junit-jupiter" in units[":domain"]["technologies"]
+    assert {"jackson", "spring-boot"} <= set(units[":api"]["technologies"])
+    assert not {"junit-jupiter", "jackson", "spring-boot"} & set(units[":"]["technologies"])
+    assert [lib["path"] for lib in units[":domain"]["libraries"]] == ["domain/build.gradle.kts"]
+    assert not units[":"]["libraries"]
