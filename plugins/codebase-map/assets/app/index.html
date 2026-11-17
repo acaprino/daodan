@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fafafa">
+  <link rel="icon" href="data:,">
+  <title>Daodan — Analisi</title>
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="smoothui.css">
+  <link rel="stylesheet" href="smoothui-business.css">
+</head>
+<body>
+<a class="skip" href="#main">Vai al contenuto</a>
+<div class="shell">
+  <aside class="rail" aria-label="Area di lavoro">
+    <div class="brand" aria-label="Daodan"><span class="brand-symbol" aria-hidden="true">d.</span><span class="brand-wordmark">Daodan</span></div>
+    <div class="repo-switch"><div class="row"><span class="repo-mark" id="selected-repository-mark">D</span><div><strong id="selected-repository-name">Seleziona repository</strong><div class="muted small" id="selected-repository-meta">GitHub · pubblica</div></div></div></div>
+    <p class="eyebrow" style="margin:0 12px 12px">Area di lavoro</p>
+    <nav aria-label="Navigazione principale">
+      <button class="nav-item" data-screen="analysis" aria-current="page"><span data-icon="analysis"></span>Analisi</button>
+      <button class="nav-item" data-screen="graph"><span data-icon="graph"></span>Grafo<span class="nav-count" id="graph-nav-count">—</span></button>
+      <button class="nav-item" data-screen="engine"><span data-icon="review"></span>Motore e domande</button>
+    </nav>
+    <div class="rail-foot"><span class="badge cyan"><span class="dot"></span>App locale</span><div><strong>Il codice resta sul tuo disco.</strong><br>Nulla del progetto viene eseguito.<br><span id="engine-foot">Motore non scelto.</span></div></div>
+  </aside>
+  <div class="main-column">
+    <header class="topbar"><div class="crumb"><span>Progetti</span><span>/</span><strong id="crumb-project">—</strong><span>/</span><span id="crumb-screen">Analisi</span></div><span class="badge" id="context-source"></span></header>
+    <main id="main" tabindex="-1"><div class="page-heading"><div><p class="eyebrow">Codebase intelligence</p><h1>Analisi del repository</h1><p>Lettura dello stato del server…</p></div></div></main>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="modal-root"></div>
+<script src="app.js"></script>
+</body>
+</html>

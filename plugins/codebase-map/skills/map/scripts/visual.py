@@ -433,8 +433,10 @@ def live_actions(service) -> dict:
 
 def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None,
                 actions: dict | None = None, token: str | None = None,
-                stream: dict | None = None) -> ThreadingHTTPServer:
+                stream: dict | None = None, mounts: dict | None = None) -> ThreadingHTTPServer:
     """A server on 127.0.0.1, read-only without `actions`: the viewer's files listed at start, and the export's envelope.
+
+    `mounts` maps a name to a further folder of files, served under `/<name>/` by the same rules as the assets.
 
     `routes` maps an exact path to a function of the query that returns JSON, in place of
     an export: a ValueError, a missing parameter or an unreadable file answers 400.
@@ -449,13 +451,15 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
     """
     assets_dir = Path(assets_dir).resolve()
     allowed: dict[str, Path] = {}
-    for path in sorted(assets_dir.rglob("*")) if assets_dir.is_dir() else []:
-        relative = path.relative_to(assets_dir)
-        if path.is_file() and not any((assets_dir / Path(*relative.parts[:index])).is_symlink()
-                                      for index in range(1, len(relative.parts) + 1)):
-            allowed["/" + relative.as_posix()] = path
-    if "/index.html" in allowed:
-        allowed["/"] = allowed["/index.html"]
+    folders = [("", assets_dir), *((f"/{name}", Path(folder).resolve()) for name, folder in (mounts or {}).items())]
+    for prefix, folder in folders:
+        for path in sorted(folder.rglob("*")) if folder.is_dir() else []:
+            relative = path.relative_to(folder)
+            if path.is_file() and not any((folder / Path(*relative.parts[:index])).is_symlink()
+                                          for index in range(1, len(relative.parts) + 1)):
+                allowed[f"{prefix}/{relative.as_posix()}"] = path
+        if f"{prefix}/index.html" in allowed:
+            allowed[f"{prefix}/"] = allowed[f"{prefix}/index.html"]
     if export_dir is not None:
         allowed["/data/visual.json"] = Path(export_dir).resolve() / "visual.json"
     routes, actions, stream = routes or {}, actions or {}, stream or {}
