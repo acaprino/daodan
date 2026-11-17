@@ -208,7 +208,7 @@ Convenzioni:
 
 ## Indice
 
-286 schede: 234 risolte, 9 aperte, 43 buchi dichiarati.
+286 schede: 235 risolte, 8 aperte, 43 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -507,7 +507,7 @@ Convenzioni:
 
 ### Benchmark e documenti
 
-19 schede: 18 risolto, 1 aperto, 0 buco dichiarato.
+19 schede: 19 risolto, 0 aperto, 0 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -529,7 +529,7 @@ Convenzioni:
 | D-235 | Pre-mappa: dipendenze sotto la soglia | corpus della pre-mappa | risolto | `de353d251`, `99112d0b9` | tutti · benchmark · benchmark · corpus della pre-mappa |
 | D-243 | Il driver perdeva i buchi del passo dinamico | benchmark project-model | risolto | `aea1c8c3b` | tutti · benchmark · benchmark · commit |
 | D-251 | I risultati di un giro non registravano il codice di Daodan su cui era girato | giro `ci-steps` | risolto per i giri dopo `cbc219663` | `cbc219663` | tutti · benchmark · benchmark · review · Modal |
-| D-280 | Una seconda sessione sullo stesso checkout ha committato ogni modifica in corso insieme | il checkout di Daodan | aperto (decisione del proprietario) | — | tutti · processo · correttezza · commit · git |
+| D-280 | Una seconda sessione sullo stesso checkout ha committato ogni modifica in corso insieme | il checkout di Daodan | risolto | — | tutti · processo · correttezza · commit · git |
 
 ## Buchi trovati
 
@@ -4446,10 +4446,10 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** un'altra sessione (Codex) sullo stesso checkout ha committato in `1c68cbde4` l'intero albero di lavoro: 55 file, 53.591 righe aggiunte, tra cui il registro a 276 schede, la riga della spec e il test del Kiri dell'utente (D-219), CSS, `rust.py`, `compose.py` e altro lavoro in corso di più agenti, che nessuno aveva rivisto insieme. Il 17 novembre di nuovo, in `05135d74e` (13 file, pubblicato): il CSS di ts-container-2 prima della sua prova completa, il prototipo standalone e senior-review 1.1.4; il messaggio dice che quelle modifiche non sono coperte dalla sua verifica nel Kiri su `f992db56`.
 - **Spiegazione:** gli agenti lavorano sullo stesso checkout senza worktree e senza commit propri, e chi committa sceglie i file; una sessione che committa tutto quello che trova raccoglie anche il lavoro degli altri. Il messaggio dice che i test non sono stati rieseguiti («test non rieseguiti perché Docker non disponibile»): nessuna verifica sua.
 - **Progetto e caso:** il checkout di Daodan — commit `1c68cbde4`, 16 novembre 2026, e `05135d74e`, 17 novembre 2026.
-- **Rimedio:** —: come le sessioni condividono il checkout lo decide il proprietario.
+- **Rimedio:** il 17 novembre il proprietario ha fermato la sessione Codex e ha affidato il checkout a team-lead: gli agenti consegnano diff su HEAD e committa solo team-lead, dopo la suite intera su Modal.
 - **Verifica:** dopo, team-lead ha rieseguito l'intera suite su HEAD: 2.648 passati; nessuna revisione del contenuto. Dopo `05135d74e`, su HEAD `425006538`: 2.682 passati, e ts-container-2 conferma che `css.py`, `css_packages.js` e il loro test sono la sua versione finale.
-- **Stato:** aperto (decisione del proprietario).
-- **Note:** D-219, il cui commit è `1c68cbde4`.
+- **Stato:** risolto.
+- **Note:** D-219, il cui commit è `1c68cbde4`. Le prove di Codex sull'app standalone (`05135d74e`, `425006538`) sono girate nel Kiri locale, non su Modal.
 
 ## Commit feat senza difetto
 
