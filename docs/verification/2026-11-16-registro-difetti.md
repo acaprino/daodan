@@ -31,7 +31,7 @@ Convenzioni:
   - «solo test»: lo confermano solo le suite, che dal commit `233618aa1` girano su Modal;
   - «da verificare»: nessun commit o risultato lo prova ancora;
   - «in stage»: il lavoro è nell'indice di git, non ancora in un commit.
-- La regola invalicabile di `AGENTS.md` (`2753088a3`, poi `ae7fd8270`): il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host, e ogni strumento che Daodan lancia sull'host ha un test con un file del progetto che, se eseguito, lascia un segno. Le schede del codice del progetto sull'host: D-161 (Tailwind), D-239 (rust-analyzer), D-245 e D-250 (Git), D-248 e D-253 (l'ambiente Python), D-256 (i formattatori), D-257 (Go), D-258 (Vue e Svelte), D-263 (i programmi nella cartella del progetto), D-264 (la sonda della memoria), D-276 (l'avvio del plugin), D-281 e D-285 (lo store che arriva con il progetto), D-282 (i programmi per nome nudo), D-286 (i file derivati di uno store portato, aperta).
+- La regola invalicabile di `AGENTS.md` (`2753088a3`, poi `ae7fd8270`): il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host, e ogni strumento che Daodan lancia sull'host ha un test con un file del progetto che, se eseguito, lascia un segno. Le schede del codice del progetto sull'host: D-161 (Tailwind), D-239 (rust-analyzer), D-245 e D-250 (Git), D-248 e D-253 (l'ambiente Python), D-256 (i formattatori), D-257 (Go), D-258 (Vue e Svelte), D-263 (i programmi nella cartella del progetto), D-264 (la sonda della memoria), D-276 (l'avvio del plugin), D-281 e D-285 (lo store che arriva con il progetto), D-282 (i programmi per nome nudo), D-286 (i file derivati di uno store portato).
 - Tag: ogni scheda ha una riga con cinque voci, che l'«Indice dei tag» raccoglie:
   - lingua: i linguaggi del difetto, `tutti` se non dipende da un linguaggio;
   - area: `pre-mappa`, `snapshot`, `preparazione`, `host`, `parser`, `analizzatore`, `passo dinamico`, `container`, `servizi`, `driver Modal`, `explorer`, `benchmark` o `documenti`;
@@ -208,11 +208,11 @@ Convenzioni:
 
 ## Indice
 
-286 schede: 231 risolte, 13 aperte, 42 buchi dichiarati.
+286 schede: 232 risolte, 12 aperte, 42 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
-77 schede: 70 risolto, 1 aperto, 6 buco dichiarato.
+77 schede: 71 risolto, 0 aperto, 6 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -292,7 +292,7 @@ Convenzioni:
 | D-282 | Sull'host taskkill, wsl.exe, rg e grep si avviavano per nome nudo | gli strumenti dell'host | risolto su Linux | `fd76f2d7d` | tutti · host · sicurezza · prova su Modal · taskkill, WSL, ripgrep, grep |
 | D-284 | `kotlin.compiler.jvmTarget` di un pom non era una toolchain | jvm-mixed-java-kotlin | risolto | `a6af77108` | java, kotlin · pre-mappa · completezza · commit · Maven |
 | D-285 | L'hook, refresh, diff e carry seguivano ciò che uno store portato dal progetto nomina | lo store nel progetto | risolto su Linux | `76214fa0f` | tutti · host · sicurezza · commit |
-| D-286 | Uno store portato dal progetto può riempire prima i file derivati | lo store nel progetto | aperto (host-guard-2) | — | tutti · host · sicurezza · review |
+| D-286 | Uno store portato dal progetto può riempire prima i file derivati | lo store nel progetto | risolto su Linux con git | `6ab37afd9` | tutti · host · sicurezza · review |
 
 ### Analizzatori
 
@@ -2011,13 +2011,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 
 #### D-286 Uno store portato dal progetto può riempire prima i file derivati
 - **Tag:** lingua tutti · area host · tipo sicurezza · origine review · strumento —
-- **Descrizione:** uno store che arriva con il progetto può portare già pronti i file che Daodan deriva: `snapshot/premap.json`, che porta i comandi che il container esegue, i documenti delle fasi, le schede e gli archi; Daodan li prende come freschi o come prove.
-- **Spiegazione:** da verificare quali file si leggono senza ricalcolarli né confrontarli con il proprio digest; D-281 e D-285 hanno chiuso i nomi di processi, cartelle, link e richieste, non i contenuti.
-- **Progetto e caso:** lo store nel progetto — segnalato da team-lead (host-guard-2), 17 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (host-guard-2).
-- **Note:** D-281, D-285.
+- **Descrizione:** uno store `.daodan/map` che arriva con il progetto poteva portare già pronti i file che Daodan deriva (`snapshot/premap.json`, i documenti delle fasi, le schede, gli archi), presi come freschi o come prove: un `premap.json` tracciato accanto allo snapshot di Daodan dava il suo passo `touch /tmp/daodan-mark` a `dynamic.ci_steps`, cioè ai comandi che il container esegue (dal commit `6ab37afd9`).
+- **Spiegazione:** D-281 e D-285 avevano chiuso i nomi di processi, cartelle, link e richieste, non i contenuti: lo store sta nella cartella del progetto, e niente distingueva uno store di Daodan da uno arrivato con il repository.
+- **Progetto e caso:** lo store nel progetto — segnalato da team-lead, commit `6ab37afd9` di host-guard-2, 17 novembre 2026.
+- **Rimedio:** `6ab37afd9` (17 novembre, host-guard-2, decisione del proprietario), `scripts/run_store.py`, `scripts/snapshot.py`, `scripts/snapshot_store.py`, `scripts/change_set.py`, `scripts/mcp_service.py`:
+  - uno store sotto cui git del progetto traccia un percorso è estraneo (`run_store.tracked`: `git ls-files` sull'indice, git non esegue niente); un repository che non elenca i suoi file è un rifiuto, non un via libera;
+  - `open_snapshot` rifiuta i suoi manifest, quindi nessun suo file derivato è fresco; ogni strumento MCP, creazione di run compresa, refresh, i comandi della CLI e carry rifiutano con la causa e il rimedio («untrack it: git rm -r --cached -- <path>, and delete the folder too unless the store is your own»); l'hook non fa niente;
+  - Daodan non sposta, rinomina né modifica niente di quello store; lo store di Daodan riceve un `.gitignore` (`*`), così un `git add -A` non lo traccia.
+- **Verifica:** `tests/test_codebase_map_working_run.py` (`test_7_a_premap_that_comes_with_the_project_gives_the_container_no_command`, `test_7_nothing_of_a_store_that_comes_with_the_project_is_read`, `test_7_no_run_is_created_in_that_store_and_nothing_of_it_changes`, byte per byte, `test_7_a_repository_that_does_not_list_what_it_tracks_is_not_trusted`, `test_7_the_store_daodan_makes_is_kept_out_of_the_repository`).
+- **Stato:** risolto su Linux con git; uno store arrivato in uno zip, o un progetto senza git, si prende come di Daodan; Windows non è misurato.
+- **Note:** un progetto che ha già committato il suo `.daodan/map` è rifiutato dopo l'aggiornamento: `git ls-files .daodan` lo dice. D-281, D-285.
 
 ### Analizzatori
 
