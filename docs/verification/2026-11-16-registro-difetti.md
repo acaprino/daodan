@@ -208,7 +208,7 @@ Convenzioni:
 
 ## Indice
 
-286 schede: 232 risolte, 12 aperte, 42 buchi dichiarati.
+286 schede: 234 risolte, 10 aperte, 42 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -507,7 +507,7 @@ Convenzioni:
 
 ### Benchmark e documenti
 
-19 schede: 16 risolto, 3 aperto, 0 buco dichiarato.
+19 schede: 18 risolto, 1 aperto, 0 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -518,13 +518,13 @@ Convenzioni:
 | D-224 | I test del registratore JVM saltati: l'immagine dei test senza JDK | `tests/modal_pytest.py` | risolto | `a633ebd72` | java · benchmark · benchmark · commit · Modal |
 | D-225 | Due fixture con `node --test test/` | due fixture JavaScript | risolto | `12775fee3` | javascript · benchmark · benchmark · commit |
 | D-226 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | jvm-ver-* e le fixture Maven | risolto | `eef3e1fef` | java · benchmark · benchmark · java-versions · Maven |
-| D-227 | README del benchmark: Rust, C e C++ «solo dove Valgrind parte» | `benchmarks/project-model/README.md` | aperto | — | c, cpp, rust · documenti · documentazione · commit · Valgrind |
+| D-227 | README del benchmark: Rust, C e C++ «solo dove Valgrind parte» | `benchmarks/project-model/README.md` | risolto | `e4da4b429` | c, cpp, rust · documenti · documentazione · commit · Valgrind |
 | D-228 | Il rapporto dichiarava nulla la copertura a runtime | il metodo di codebase-map | risolto | `78c03d6e8` | tutti · benchmark · benchmark · commit |
 | D-229 | Spec: il passo 2 «non esegue codice del progetto» | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` | javascript, typescript, java, kotlin, c, cpp, csharp · documenti · documentazione, sicurezza · spec |
 | D-230 | Spec: Rust, C e C++ «non provati» su Modal | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` | c, cpp, rust · documenti · documentazione · spec · Modal |
 | D-231 | README, SKILL e riferimenti dicevano Jedi e «solo statica» | README, SKILL, `references/snapshot.md` | risolto | `e617127c3` | python · documenti · documentazione · commit · Jedi |
 | D-232 | L'osservatore Python diceva che il passo non avvia servizi | `scripts/dynamic/python.py` | risolto | `0ca9f1650` | python · documenti · documentazione · commit |
-| D-233 | Due script del benchmark dell'inferenza mai eseguiti | `benchmarks/inference-audit` | aperto | `137512c11` | tutti · benchmark · benchmark · commit |
+| D-233 | Due script del benchmark dell'inferenza mai eseguiti | `benchmarks/inference-audit` | risolto | `137512c11` | tutti · benchmark · benchmark · commit |
 | D-234 | Un file dello snapshot senza dichiarazioni usciva dal progetto nel grafo | `benchmarks/inference-audit` | risolto | `53e219638` | tutti · benchmark · benchmark · commit |
 | D-235 | Pre-mappa: dipendenze sotto la soglia | corpus della pre-mappa | risolto | `de353d251`, `99112d0b9` | tutti · benchmark · benchmark · corpus della pre-mappa |
 | D-243 | Il driver perdeva i buchi del passo dinamico | benchmark project-model | risolto | `aea1c8c3b` | tutti · benchmark · benchmark · commit |
@@ -4311,10 +4311,10 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** il risultato del finale nel README dice ancora che Rust, C e C++ si osservano solo dove Valgrind parte, e che nei sandbox di Modal (gVisor) dipende dalla macchina.
 - **Spiegazione:** è stato scritto prima di `8ef21896f`; la conferma li osserva nei sandbox a macchina virtuale.
 - **Progetto e caso:** `benchmarks/project-model/README.md` — 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto.
-- **Note:** D-209.
+- **Rimedio:** `e4da4b429` (16 novembre): la frase del finale è al passato, sotto il gVisor dei sandbox di Modal Valgrind non parte e il driver dà le VM Sandbox agli osservatori nativi (`8ef21896f`); la conferma dice che lì Rust, C e C++ si osservano.
+- **Verifica:** a HEAD le righe 196 e 208 del README; i numeri della conferma sono quelli di `results/pipeline/2026-11-16-conferma.json` (`steps.dynamic.languages`): semver 558, tinyxml2 552 con 26 buchi chiusi, zlib 148.
+- **Stato:** risolto.
+- **Note:** D-209, D-230.
 
 #### D-228 Il rapporto dichiarava nulla la copertura a runtime
 - **Tag:** lingua tutti · area benchmark · tipo benchmark · origine commit · strumento —
@@ -4374,8 +4374,10 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Spiegazione:** lo dice il commit.
 - **Progetto e caso:** `benchmarks/inference-audit` — 16 novembre 2026.
 - **Rimedio:** `137512c11` (16 novembre).
-- **Verifica:** da verificare.
-- **Stato:** aperto.
+- **Verifica:** il 17 novembre, su Modal con `tests/modal_pytest.py` e un test temporaneo:
+  - `adapters/ts_compiler.py`: su due file TypeScript con il loro `tsconfig.json`, `analyze` lo sposta in `tsconfig.project.json`, il generato lo estende e include i due file, e il checker (`@typescript/typescript6` 6.0.2, typescript 6.0.3) dà la chiamata `a.ts:2:0` → `b.ts:1:7` per la firma, senza errori;
+  - `modal_scip.py`: `scip_case` su semver, con gli input che il volume tiene e l'etichetta `d233`, senza scrivere sul volume: input `kept`, i due indici di rust-analyzer 0.3.3113, il join senza errori, con 1.073 nodi, 3.960 archi e 721 risposte della strada A.
+- **Stato:** risolto.
 - **Note:** —
 
 #### D-234 Un file dello snapshot senza dichiarazioni usciva dal progetto nel grafo
