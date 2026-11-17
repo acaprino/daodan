@@ -28,8 +28,9 @@ index; a different parser set needs a new run). Run creation also derives the
 module graph beside the snapshot; a failed derivation records `modules_failed`
 and `codebase_map_modules(refresh=true)` repairs it.
 
-The project is fixed at startup: `--project`, or the working directory when
-omitted, so a consumer that controls the launch passes it explicitly. `scope`
+The project is fixed at startup: `--project`, else the host's
+`CLAUDE_PROJECT_DIR`; with neither the server stops with the cause, since the
+folder it starts in is the plugin's. `scope`
 and `status` (hence `runs`) return the bound `project_root`; verify it before
 creating a run. Every target is relative to the project; every run ID selects
 exactly `.daodan/map/runs/<run-id>/` (or `<store>/runs/<run-id>/`). Foreign

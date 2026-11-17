@@ -101,6 +101,16 @@ def requests_record(store: Path) -> Path:
     return engine_tools.shared_cache_dir() / "explorer" / f"{hashlib.sha256(key).hexdigest()[:32]}.json"
 
 
+def launch_project(given, environment=os.environ) -> Path:
+    """The project a server is started for: `--project`, else the host's CLAUDE_PROJECT_DIR. Never the folder it
+    starts in: the launch line puts that in the plugin (`uv --directory`), so that uv reads nothing of the project."""
+    value = given or environment.get("CLAUDE_PROJECT_DIR")
+    if not value:
+        raise ValueError("no project: pass --project <root>, or start the server from a host that sets "
+                         "CLAUDE_PROJECT_DIR; the folder the server starts in is the plugin's, not a project")
+    return Path(value)
+
+
 def _evidence_run(run_id: str) -> str:
     """A run that documents, reviews or progresses is never the working run."""
     if run_id == snapshot.WORKING_RUN:

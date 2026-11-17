@@ -22,7 +22,7 @@ from mcp.server.mcpserver import Context
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
-from mcp_service import MapService
+from mcp_service import launch_project, MapService
 
 
 async def _invoke(ctx: Context, operation, *args, **kwargs) -> dict:
@@ -258,8 +258,9 @@ def main(argv: list[str] | None = None) -> None:
     from languages.python import require_minimum_interpreter
     require_minimum_interpreter("the Codebase Map MCP server")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--project", type=Path, default=Path.cwd(),
-                        help="project binding, fixed for the lifetime of this server")
+    parser.add_argument("--project", type=Path, default=None,
+                        help="project binding, fixed for the lifetime of this server; "
+                             "default: the host's CLAUDE_PROJECT_DIR")
     parser.add_argument("--store", default=None,
                         help="project-relative analysis store beginning with a dot directory; "
                              "default .daodan/map, fixed for the lifetime of this server")
@@ -270,7 +271,7 @@ def main(argv: list[str] | None = None) -> None:
         import snapshot
         raise SystemExit(snapshot.main(["hook"]))
     try:
-        server = create_server(args.project, args.store)
+        server = create_server(launch_project(args.project), args.store)
     except ValueError as exc:
         parser.error(str(exc))
     server.run(transport="stdio")

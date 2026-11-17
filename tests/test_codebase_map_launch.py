@@ -7,13 +7,16 @@ directory up, whatever `--no-config --no-project` say: so each line takes uv out
 """
 from __future__ import annotations
 
+import importlib
 import json
 import os
 import shlex
 import shutil
 import subprocess
+import sys
 import tomllib
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -84,3 +87,34 @@ def test_uv_started_in_a_project_runs_nothing_of_it(tmp_path, name):
     at = words.index("--directory")
     inside = first([*words[:at], *words[at + 2:]], "another cache")
     assert mark.exists(), (inside.stdout, inside.stderr)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="the server requires Python 3.12")
+def test_the_server_takes_its_project_from_the_launch_never_from_where_it_starts(tmp_path, monkeypatch, capsys):
+    """`uv --directory` starts the server in the plugin's folder: its project is `--project`, else the host's
+    CLAUDE_PROJECT_DIR, and with neither it stops with the cause instead of mapping the folder it stands in."""
+    monkeypatch.syspath_prepend(str(PLUGIN / "skills/map/scripts"))
+    for name in ("anyio", "mcp", "mcp.server", "mcp.server.mcpserver", "mcp.server.mcpserver.exceptions", "mcp.types"):
+        try:
+            importlib.import_module(name)
+        except ImportError:  # the SDK is uv's to provide: the entry needs only its names
+            monkeypatch.setitem(sys.modules, name, mock.MagicMock())
+    held = sys.modules.pop("mcp_server", None)
+    try:
+        import mcp_server
+        bound = []
+        monkeypatch.setattr(mcp_server, "create_server",
+                            lambda project, store=None: bound.append(Path(project)) or mock.MagicMock())
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(tmp_path / "host"))
+        mcp_server.main(["--project", str(tmp_path / "given")])
+        mcp_server.main([])
+        assert bound == [tmp_path / "given", tmp_path / "host"]
+        monkeypatch.delenv("CLAUDE_PROJECT_DIR")
+        with pytest.raises(SystemExit) as stopped:
+            mcp_server.main([])
+        assert stopped.value.code == 2 and "--project" in capsys.readouterr().err and len(bound) == 2
+    finally:
+        sys.modules.pop("mcp_server", None)
+        if held is not None:
+            sys.modules["mcp_server"] = held
