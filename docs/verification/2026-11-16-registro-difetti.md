@@ -53,12 +53,12 @@ Convenzioni:
 - `kotlin` (35): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284
 - `python` (34): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256, D-276
 - `javascript` (32): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270
-- `typescript` (22): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265
+- `typescript` (23): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290
 - `rust` (19): D-014, D-021, D-030, D-040, D-041, D-078, D-143, D-144, D-173, D-175, D-176, D-209, D-227, D-230, D-237, D-238, D-239, D-256, D-265
 - `csharp` (17): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249
 - `go` (16): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256, D-257, D-265, D-273
-- `svelte` (5): D-080, D-153, D-156, D-159, D-258
-- `vue` (5): D-080, D-154, D-155, D-159, D-258
+- `svelte` (6): D-080, D-153, D-156, D-159, D-258, D-288
+- `vue` (7): D-080, D-154, D-155, D-159, D-258, D-289, D-290
 - `css` (4): D-161, D-162, D-163, D-164
 - `scala` (2): D-011, D-092
 - `dart` (1): D-015
@@ -69,7 +69,7 @@ Convenzioni:
 
 ### Area
 
-- `analizzatore` (122): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278
+- `analizzatore` (125): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278, D-288, D-289, D-290
 - `pre-mappa` (40): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062, D-284
 - `passo dinamico` (36): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274
 - `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
@@ -86,8 +86,8 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (150): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284
-- `correttezza` (88): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280
+- `completezza` (152): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290
+- `correttezza` (89): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280, D-288
 - `sicurezza` (29): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
@@ -103,7 +103,7 @@ Convenzioni:
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
 - `conferma` (5): D-057, D-058, D-136, D-158, D-187
-- `corsa su un progetto` (5): D-031, D-043, D-085, D-087, D-206
+- `corsa su un progetto` (8): D-031, D-043, D-085, D-087, D-206, D-288, D-289, D-290
 - `test` (4): D-083, D-211, D-222, D-244
 - `fixtures` (3): D-176, D-196, D-209
 - `real-3` (3): D-099, D-178, D-182
@@ -126,7 +126,7 @@ Convenzioni:
 - `git` (8): D-048, D-126, D-197, D-204, D-245, D-250, D-257, D-280
 - `GitHub Actions` (8): D-056, D-182, D-201, D-213, D-260, D-261, D-274, D-275
 - `scip-python` (7): D-084, D-086, D-088, D-246, D-247, D-248, D-269
-- `scip-typescript` (7): D-146, D-147, D-148, D-152, D-156, D-157, D-160
+- `scip-typescript` (8): D-146, D-147, D-148, D-152, D-156, D-157, D-160, D-290
 - `Cargo` (6): D-014, D-021, D-030, D-041, D-175, D-239
 - `Compose` (6): D-201, D-212, D-214, D-215, D-240, D-261
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
@@ -205,10 +205,13 @@ Convenzioni:
 - `Vitest` (1): D-194
 - `wsl` (1): D-263
 - `WSL` (1): D-282
+- `npx` (1): D-288
+- `svelte-kit` (1): D-288
+- `@vue/language-core` (2): D-289, D-290
 
 ## Indice
 
-287 schede: 236 risolte, 7 aperte, 44 buchi dichiarati.
+290 schede: 238 risolte, 8 aperte, 44 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -296,7 +299,7 @@ Convenzioni:
 
 ### Analizzatori
 
-125 schede: 93 risolto, 5 aperto, 27 buco dichiarato.
+128 schede: 95 risolto, 6 aperto, 27 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -425,6 +428,9 @@ Convenzioni:
 | D-273 | Un workspace Go: `go mod download` fallisce nei moduli che richiedono un membro non pubblicato | sys-go-workspace | aperto (host-guard-2) | — | go · analizzatore · completezza · commit · go |
 | D-277 | Gli errori di compilazione di uno stadio del Dockerfile si perdevano | otel-demo currency (`b825c7c25726`) | risolto | `fcfb04338` | c, cpp · analizzatore · completezza · commit · scip-clang, Docker |
 | D-278 | C++: una chiamata esplicita a un distruttore e un membro di un tipo dipendente | tinyxml2 (`9148bdf719e9`) | risolto per le chiamate ai distruttori | `2ac9cdc69` | cpp · analizzatore · completezza · commit · scip-clang |
+| D-288 | La versione di SvelteKit registrata era quella di npm | js-sveltekit | risolto | `710460616` | svelte · analizzatore · correttezza · corsa su un progetto · npx, svelte-kit |
+| D-289 | Lo strumento Vue 1.x di un progetto non ha il plugin del linguaggio | real-app-hoppscotch | risolto | `710460616` | vue · analizzatore · completezza · corsa su un progetto · @vue/language-core |
+| D-290 | Vue: l'import di un componente e una lettura del template senza definizione | js-vue-pnpm | aperto | — | vue, typescript · analizzatore · completezza · corsa su un progetto · scip-typescript, @vue/language-core |
 
 ### Passo dinamico e osservatori
 
@@ -953,12 +959,12 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 | js-nx | TypeScript | workspace-glob, path-alias, version-absent, no-lockfile | — | — |
 | js-pnpm-workspace | TypeScript | workspace-glob, locked-versions, version-indirect, internal-link | — | — |
 | js-static-html | CSS, HTML, JavaScript | no-build-file, unit-no-name, declared-in-source | — | — |
-| js-sveltekit | HTML, JavaScript, Svelte, TypeScript | path-alias, no-lockfile, build-generates-code | D-153, D-156, D-159 | — |
+| js-sveltekit | HTML, JavaScript, Svelte, TypeScript | path-alias, no-lockfile, build-generates-code | D-153, D-156, D-159, D-288 | — |
 | js-turborepo | JavaScript | workspace-glob, no-lockfile, internal-link | — | — |
 | js-vendored-generated | GraphQL, TypeScript | no-lockfile, generated-file, vendored-code | — | — |
 | js-version-conflict | JavaScript | version-disagree, no-lockfile | — | — |
 | js-vite-react-ts | HTML, TSX, TypeScript | path-alias, version-absent, no-lockfile, false-generated | — | — |
-| js-vue-pnpm | HTML, TypeScript, Vue | version-absent, no-lockfile, ambiguous-extension | D-154, D-159 | — |
+| js-vue-pnpm | HTML, TypeScript, Vue | version-absent, no-lockfile, ambiguous-extension | D-154, D-159, D-290 | — |
 | js-yarn-berry | JavaScript | workspace-glob, unit-no-name, version-absent, locked-versions, internal-link | D-148, D-157 | — |
 
 #### jvm (16)
@@ -1103,7 +1109,7 @@ Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-
 | mix-real-tududi | github.com/chrisvel/tududi `71da9d7b34df` | 9 | D-145, D-146, D-147, D-182, D-185, D-186, D-187, D-270, D-274 | D-189, D-213, D-240, D-251 |
 | mix-real-zlib | github.com/madler/zlib `51b7f2abdade` | 15 | D-043, D-113, D-130, D-133, D-134, D-136, D-209, D-220, D-267, D-268, D-271 | D-010, D-065, D-230, D-275 |
 | real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254, D-260 | D-162, D-171, D-213, D-251, D-253, D-270 |
-| real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237 | D-080, D-162, D-239 |
+| real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237, D-289 | D-080, D-162, D-239 |
 | real-app-jhipster-sample | github.com/jhipster/jhipster-sample-app `6b000b5d23a3` | 17 | D-111, D-194 | D-275 |
 | real-app-kotlinconf | github.com/JetBrains/kotlinconf-app `146e891c150c` | 18 | D-055, D-057, D-058, D-110, D-158 | D-275 |
 | real-app-memos | github.com/usememos/memos `509e41bd1a1b` | 10 | D-160 | D-162, D-163, D-275 |
@@ -3404,6 +3410,38 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - giro `2026-11-17-vue-svelte` (script di `aca4fd008`): js-vue-pnpm, Vue fresco su 3 file su 3 con il `@vue/language-core` 2.2.12 del progetto; js-sveltekit, Svelte fresco su 2 file su 2 con il svelte2tsx 0.7.63 di scip-typescript e `svelte-kit sync` nella preparazione, `config_not_generated` sparito; hoppscotch non prova nulla: l'indice è trattenuto (D-283).
 - **Stato:** risolto.
 - **Note:** D-080 e D-159, i template non letti; D-283, l'indice di hoppscotch.
+
+#### D-288 La versione di SvelteKit registrata era quella di npm
+- **Tag:** lingua svelte · area analizzatore · tipo correttezza · origine corsa su un progetto · strumento npx, svelte-kit
+- **Descrizione:** nel giro `2026-11-17-vue-svelte` js-sveltekit registra `svelte-kit sync` con la versione `11.19.1` (`indexer.generated`), che è quella di npm.
+- **Spiegazione:** la riga della preparazione (`typescript.generator`) chiedeva `npx --no svelte-kit --version`: npm legge `--version` ovunque stia e risponde con la sua; dopo `--` il flag è del comando.
+- **Progetto e caso:** js-sveltekit — giro `2026-11-17-vue-svelte` su Modal (script di `aca4fd008`), 17 novembre 2026.
+- **Rimedio:** `710460616` (17 novembre, csharp-2), `scripts/indexers/typescript.py` `generator`: `npx --no -- svelte-kit --version` e `npx --no -- svelte-kit sync`.
+- **Verifica:** `tests/test_codebase_map_components.py` (`test_the_generators_line_reads_the_kits_version_not_npms`): la riga com'è, con l'npx vero accanto a Node e un kit nel `node_modules/.bin` del progetto, dice `2.8.0`; rosso sul codice vecchio su Modal: `DAODAN-GENERATED app 11.19.1 svelte-kit sync`.
+- **Stato:** risolto; la versione del kit nel record è da vedere al prossimo giro.
+- **Note:** D-258.
+
+#### D-289 Lo strumento Vue 1.x di un progetto non ha il plugin del linguaggio
+- **Tag:** lingua vue · area analizzatore · tipo completezza · origine corsa su un progetto · strumento @vue/language-core
+- **Descrizione:** hoppscotch tiene anche `@vue/language-core` 1.8.8 (`indexer.frameworks` del giro, accanto a 2.2.0 e 2.1.6, tutti del progetto), che non esporta `createVueLanguagePlugin`.
+- **Spiegazione:** `scripts/indexers/components.cjs` usa lo strumento del progetto trovato dalla cartella del componente o dal pacchetto che ne dipende e chiama `createVueLanguagePlugin`, che c'è dalla 2.0; la 1.8.8 esporta `createVueLanguage` (unpkg, `out/languageModule.d.ts`), e il componente che la trova resta senza documento. Nel giro non si vede quali componenti: tutti i linguaggi di hoppscotch sono falliti con l'indice trattenuto (D-283).
+- **Progetto e caso:** hoppscotch — giro `2026-11-17-vue-svelte` su Modal, 17 novembre 2026.
+- **Rimedio:** `710460616` (17 novembre, csharp-2), `scripts/indexers/components.cjs` `vueTool`: uno strumento del progetto senza `createVueLanguagePlugin` lascia il posto al pin di Daodan (`components.PIN`, 3.3.14), e la voce dello strumento lo dice (`instead: ["1.8.8"]`).
+- **Verifica:** `tests/test_codebase_map_components.py` (`test_a_projects_vue_tool_older_than_its_language_plugin_gives_way_to_daodans_and_is_said`): con una 1.8.8 del progetto che esporta solo `createVueLanguage`, il componente ha il file generato dalla 3.3.14 di Daodan e la voce dice `instead`; rosso sul codice vecchio su Modal: lo strumento usato è la 1.8.8 del progetto (`from: project`).
+- **Stato:** risolto; su hoppscotch da vedere quando il suo indice si conserva (D-283).
+- **Note:** D-258, D-283.
+
+#### D-290 Vue: l'import di un componente e una lettura del template senza definizione
+- **Tag:** lingua vue, typescript · area analizzatore · tipo completezza · origine corsa su un progetto · strumento scip-typescript, @vue/language-core
+- **Descrizione:** js-vue-pnpm, giro `2026-11-17-vue-svelte`: `src/main.ts:4 App` (`import App from "@/App.vue"`) è il buco «no declaration of *.vue modules: the import is not typed», e `src/components/Counter.vue:9 n` (`@click="n++"`, `{{ n }}`) è `undefined-project-symbol`: mancano l'arco main.ts → App.vue e quello del template alla `const n`.
+- **Spiegazione:** da confermare sull'indice di js-vue-pnpm, che il giro non conserva.
+  - L'import: lo strumento Vue scrive il default del componente come espressione (2.2.12 `export default (await import('vue')).defineComponent({`, 3.3.14 `export default {} as typeof __VLS_export;`) e scip-typescript nomina l'import con un locale del file che importa, senza definizione; il modulo è `` src/`App.vue.ts`/ ``, senza definizione dopo `components.rewrite`. Nella registrazione di `tests/fixtures/components` (3.3.14) è così: `src/main.ts:1 App` è `src/main.ts#local 0`, mentre `Panel` va al modulo `` src/`Panel.svelte`/ `` definito in `src/Panel.svelte:1`. Vale quindi per ogni versione, e la causa che `typescript.classify` scrive è sbagliata: l'import si risolve al file generato.
+  - La `n`: con la 2.2.12 di js-vue-pnpm il template diventa `__VLS_ctx.n++` e `( __VLS_ctx.n )`, una proprietà del tipo dell'istanza che il `setup` generato riempie (`n: n as typeof n`, codice fuori dalla mappa), e la sua definizione cade con il codice generato; con la 3.3.14 il template legge la `const` stessa (`label(__VLS_unwrap(n, …))`) e nella registrazione `src/App.vue:10 n` va a `src/App.vue:3`. Visto sul codice generato, non sull'indice: scip-typescript non è nell'immagine dei test.
+- **Progetto e caso:** js-vue-pnpm — giro `2026-11-17-vue-svelte`, 17 novembre 2026; codice generato con `@vue/language-core` 2.2.12 e 3.3.14 e registrazione di `tests/fixtures/components`, su Modal (`tests/modal_pytest.py`).
+- **Rimedio:** nessuno. Proposte: `components.rewrite` dà al modulo del file generato il nome e la definizione 1:0 del componente, e l'import del default si lega a quel modulo, come per Svelte; con la 2.x, la proprietà `__VLS_ctx.x` segue il valore che il `setup` generato le dà fino alla definizione nel componente.
+- **Verifica:** —
+- **Stato:** aperto; causa da confermare sull'indice di js-vue-pnpm.
+- **Note:** D-258; `Counter.vue:4 defineProps` (`dangling-local`) è della stessa famiglia: la macro è dichiarata nel codice generato (`declare const { defineProps, … }` nella 2.2.12).
 
 #### D-259 Un header `.h` di C++ letto come C
 - **Tag:** lingua c, cpp · area analizzatore · tipo correttezza · origine commit · strumento —
