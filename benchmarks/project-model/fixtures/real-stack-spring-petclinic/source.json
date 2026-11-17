@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/spring-projects/spring-petclinic",
+ "commit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+ "licence": "Apache-2.0",
+ "why": "Spring Boot sample declared twice, by Maven and by Gradle in the same root, with three databases chosen by profile"
+}

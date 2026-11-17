@@ -1,0 +1,178 @@
+{
+ "frameworks": [
+  {
+   "name": "ASP.NET Core",
+   "unit": "Web",
+   "evidence": "src/Web/Web.csproj#L1"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "ServiceDefaults",
+   "evidence": "src/ServiceDefaults/ServiceDefaults.csproj#L10"
+  },
+  {
+   "name": "Aspire",
+   "unit": "ServiceDefaults",
+   "evidence": "src/ServiceDefaults/ServiceDefaults.csproj#L4"
+  },
+  {
+   "name": "Aspire",
+   "unit": "AppHost",
+   "evidence": "src/AppHost/AppHost.csproj#L1"
+  },
+  {
+   "name": "Aspire",
+   "unit": "TestAppHost",
+   "evidence": "tests/TestAppHost/TestAppHost.csproj#L1"
+  },
+  {
+   "name": "Aspire",
+   "unit": "Application.FunctionalTests",
+   "evidence": "tests/Application.FunctionalTests/Application.FunctionalTests.csproj#L25"
+  },
+  {
+   "name": "Aspire",
+   "unit": "Web.AcceptanceTests",
+   "evidence": "tests/Web.AcceptanceTests/Web.AcceptanceTests.csproj#L10"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Application",
+   "evidence": "src/Application/Application.csproj#L13"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Infrastructure",
+   "evidence": "src/Infrastructure/Infrastructure.csproj#L9"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Web",
+   "evidence": "src/Web/Web.csproj#L32"
+  },
+  {
+   "name": "NUnit",
+   "unit": "Application.FunctionalTests",
+   "evidence": "tests/Application.FunctionalTests/Application.FunctionalTests.csproj#L12"
+  },
+  {
+   "name": "NUnit",
+   "unit": "Application.UnitTests",
+   "evidence": "tests/Application.UnitTests/Application.UnitTests.csproj#L11"
+  },
+  {
+   "name": "NUnit",
+   "unit": "Domain.UnitTests",
+   "evidence": "tests/Domain.UnitTests/Domain.UnitTests.csproj#L10"
+  },
+  {
+   "name": "NUnit",
+   "unit": "Web.AcceptanceTests",
+   "evidence": "tests/Web.AcceptanceTests/Web.AcceptanceTests.csproj#L15"
+  },
+  {
+   "name": "NUnit",
+   "unit": "Infrastructure.IntegrationTests",
+   "evidence": "tests/Infrastructure.IntegrationTests/Infrastructure.IntegrationTests.csproj#L10"
+  },
+  {
+   "name": "Playwright",
+   "unit": "Web.AcceptanceTests",
+   "evidence": "tests/Web.AcceptanceTests/Web.AcceptanceTests.csproj#L12"
+  },
+  {
+   "name": "Reqnroll",
+   "unit": "Web.AcceptanceTests",
+   "evidence": "tests/Web.AcceptanceTests/Web.AcceptanceTests.csproj#L13"
+  },
+  {
+   "name": "Angular",
+   "unit": "CleanArchitecture.Web",
+   "evidence": "src/Web/ClientApp/angular.json#L18"
+  },
+  {
+   "name": "Vitest",
+   "unit": "src/Web/ClientApp",
+   "evidence": "src/Web/ClientApp/package.json#L40"
+  },
+  {
+   "name": "Pico CSS",
+   "unit": "src/Web/ClientApp",
+   "evidence": "src/Web/ClientApp/package.json#L25"
+  },
+  {
+   "name": "React",
+   "unit": "src/Web/ClientApp-React",
+   "evidence": "src/Web/ClientApp-React/package.json#L9"
+  },
+  {
+   "name": "React Router",
+   "unit": "src/Web/ClientApp-React",
+   "evidence": "src/Web/ClientApp-React/package.json#L11"
+  },
+  {
+   "name": "Vite",
+   "unit": "src/Web/ClientApp-React",
+   "evidence": "src/Web/ClientApp-React/package.json#L25"
+  },
+  {
+   "name": "Pico CSS",
+   "unit": "src/Web/ClientApp-React",
+   "evidence": "src/Web/ClientApp-React/package.json#L7"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "src/AppHost/Program.cs#L9"
+  },
+  {
+   "name": "Microsoft SQL Server",
+   "kind": "database",
+   "evidence": "src/AppHost/Program.cs#L16"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "src/Web/appsettings.json#L3"
+  },
+  {
+   "name": "Azure Key Vault",
+   "kind": "storage",
+   "evidence": "src/Web/DependencyInjection.cs#L41"
+  },
+  {
+   "name": "Azure Container Apps",
+   "kind": "hosting",
+   "evidence": "src/AppHost/Program.cs#L5"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the repository is a dotnet new template: <!--#if (UsePostgreSQL)--> and #if (UseSqlServer) blocks are XML or C# comments in the committed files, so all three databases, both clients and their packages are present at this commit",
+  "the two clients have the same npm name cleanarchitecture.web: they are referred to by root, src/Web/ClientApp (Angular) and src/Web/ClientApp-React (React with Vite)",
+  "Angular is attributed to the angular.json project CleanArchitecture.Web; Vitest runs through @angular/build:unit-test of that project",
+  "the .NET units are named after their .csproj files (Web, Infrastructure, AppHost), not after their AssemblyName (CleanArchitecture.Web, ...)",
+  "PostgreSQL and SQL Server come from Aspire's Azure resources (AddAzurePostgresFlexibleServer, AddAzureSqlServer) that run as containers locally; SQLite is the default connection string",
+  "Azure Key Vault is used only when AZURE_KEY_VAULT_ENDPOINT is set; Azure Container Apps is the Aspire deployment target",
+  "NUnit is written nunit in four test projects and NUnit in one; Moq, Shouldly and Respawn are test helpers, and MediatR, AutoMapper and FluentValidation are libraries outside the listed classes",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework",
+  "framework-from-files"
+ ]
+}

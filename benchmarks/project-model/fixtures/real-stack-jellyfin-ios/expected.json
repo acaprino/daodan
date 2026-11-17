@@ -1,0 +1,80 @@
+{
+ "frameworks": [
+  {
+   "name": "React Native",
+   "unit": "jellyfin-ios",
+   "evidence": "package.json#L79"
+  },
+  {
+   "name": "Expo",
+   "unit": "jellyfin-ios",
+   "evidence": "package.json#L54"
+  },
+  {
+   "name": "React",
+   "unit": "jellyfin-ios",
+   "evidence": "package.json#L75"
+  },
+  {
+   "name": "React Navigation",
+   "unit": "jellyfin-ios",
+   "evidence": "package.json#L50"
+  },
+  {
+   "name": "React Native Elements",
+   "unit": "jellyfin-ios",
+   "evidence": "package.json#L80"
+  },
+  {
+   "name": "Jest",
+   "unit": "jellyfin-ios",
+   "evidence": "package.json#L116"
+  },
+  {
+   "name": "React Native",
+   "unit": "Jellyfin",
+   "evidence": "ios/Podfile#L21"
+  },
+  {
+   "name": "Expo",
+   "unit": "Jellyfin",
+   "evidence": "ios/Podfile#L13"
+  }
+ ],
+ "services": [
+  {
+   "name": "Jellyfin Server",
+   "kind": "api",
+   "evidence": "package.json#L44"
+  },
+  {
+   "name": "App Store Connect",
+   "kind": "hosting",
+   "evidence": "fastlane/Fastfile#L25"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the Jellyfin target in ios/Jellyfin.xcodeproj gets React Native and Expo only through ios/Podfile (use_react_native!, use_expo_modules!), which resolves them from node_modules by running node",
+  "the root holds both package.json (jellyfin-ios) and a Gemfile with cocoapods and fastlane: the Gemfile unit has no name and no framework",
+  "Jest is configured in the jest key of package.json with the jest-expo preset; ts-jest is declared but the preset uses babel",
+  "react-native-web and react-dom are declared, yet app.json targets only the ios platform",
+  "the only runtime service is the user's Jellyfin server, reached through @jellyfin/sdk; App Store Connect appears only in fastlane/Fastfile",
+  "engines.yarn holds the sentence 'YARN NO LONGER USED - use npm instead.' instead of a version",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "saas-service",
+  "framework-per-unit",
+  "framework-from-files",
+  "test-only-framework"
+ ]
+}

@@ -1,0 +1,156 @@
+{
+ "frameworks": [
+  {
+   "name": "Laravel",
+   "unit": "bookstackapp/bookstack",
+   "evidence": "composer.json#L25"
+  },
+  {
+   "name": "PHPUnit",
+   "unit": "bookstackapp/bookstack",
+   "evidence": "composer.json#L50"
+  },
+  {
+   "name": "Jest",
+   "unit": ".",
+   "evidence": "package.json#L31"
+  },
+  {
+   "name": "esbuild",
+   "unit": ".",
+   "evidence": "package.json#L28"
+  }
+ ],
+ "services": [
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "docker-compose.yml#L9"
+  },
+  {
+   "name": "MailHog",
+   "kind": "mail",
+   "evidence": "docker-compose.yml#L50"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": ".env.example.complete#L79"
+  },
+  {
+   "name": "Memcached",
+   "kind": "cache",
+   "evidence": ".env.example.complete#L110"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": ".env.example.complete#L116"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": ".env.example.complete#L139"
+  },
+  {
+   "name": "LDAP",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L219"
+  },
+  {
+   "name": "SAML 2.0",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L248"
+  },
+  {
+   "name": "OpenID Connect",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L271"
+  },
+  {
+   "name": "Microsoft Entra ID OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L163"
+  },
+  {
+   "name": "Discord OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L169"
+  },
+  {
+   "name": "Facebook OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L174"
+  },
+  {
+   "name": "GitHub OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L179"
+  },
+  {
+   "name": "GitLab OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L184"
+  },
+  {
+   "name": "Google OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L190"
+  },
+  {
+   "name": "Okta OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L197"
+  },
+  {
+   "name": "Slack OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L202"
+  },
+  {
+   "name": "Twitch OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L207"
+  },
+  {
+   "name": "Twitter OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example.complete#L212"
+  },
+  {
+   "name": "Gravatar",
+   "kind": "api",
+   "evidence": "app/Uploads/UserAvatars.php#L190"
+  },
+  {
+   "name": "diagrams.net",
+   "kind": "api",
+   "evidence": "app/Util/CspService.php#L231"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the npm package has no name, so its unit is referred to by the root; composer.json is the unit bookstackapp/bookstack in the same folder",
+  "the services are documented in .env.example.complete, not in .env.example, which lists only the database and mail settings",
+  "docker-compose.yml is for development: it starts MySQL and MailHog; the node service is the project's own build container",
+  "the ten OAuth providers come from laravel/socialite and socialiteproviders/* packages, each enabled by its *_APP_ID variable",
+  "Gravatar and diagrams.net are default URLs in code, both turned off by DISABLE_EXTERNAL_SERVICES",
+  "the JavaScript is built by esbuild from dev/build/esbuild.mjs and the styles by Sass: there is no Vite or webpack; Jest is the only JavaScript test framework",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

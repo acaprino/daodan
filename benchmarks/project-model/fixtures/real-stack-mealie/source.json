@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/mealie-recipes/mealie",
+ "commit": "04ba6b722075d9d5428c8310027cded2d42969ae",
+ "licence": "AGPL-3.0",
+ "why": "FastAPI and SQLAlchemy back end with a Nuxt and Vuetify front end, both named mealie; services in two compose files, an e2e compose and pydantic settings"
+}

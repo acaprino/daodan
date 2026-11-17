@@ -1,0 +1,125 @@
+{
+ "frameworks": [
+  {
+   "name": "ASP.NET Core",
+   "unit": "OpenBudgeteer.Blazor",
+   "evidence": "OpenBudgeteer.Blazor/OpenBudgeteer.Blazor.csproj#L1"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "OpenBudgeteer.API",
+   "evidence": "OpenBudgeteer.API/OpenBudgeteer.API.csproj#L1"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "OpenBudgeteer.Blazor.Test",
+   "evidence": "OpenBudgeteer.Blazor.Test/OpenBudgeteer.Blazor.Test.csproj#L11"
+  },
+  {
+   "name": "Blazor",
+   "unit": "OpenBudgeteer.Blazor",
+   "evidence": "OpenBudgeteer.Blazor/Program.cs#L33"
+  },
+  {
+   "name": "MudBlazor",
+   "unit": "OpenBudgeteer.Blazor",
+   "evidence": "OpenBudgeteer.Blazor/OpenBudgeteer.Blazor.csproj#L20"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "OpenBudgeteer.Blazor",
+   "evidence": "OpenBudgeteer.Blazor/OpenBudgeteer.Blazor.csproj#L16"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "OpenBudgeteer.Core",
+   "evidence": "OpenBudgeteer.Core/OpenBudgeteer.Core.csproj#L10"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "OpenBudgeteer.Core.Data",
+   "evidence": "OpenBudgeteer.Core.Data/OpenBudgeteer.Core.Data.csproj#L11"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "OpenBudgeteer.Core.Data.Entities",
+   "evidence": "OpenBudgeteer.Core.Data.Entities/OpenBudgeteer.Core.Data.Entities.csproj#L11"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "OpenBudgeteer.Core.Data.MySql.Migrations",
+   "evidence": "OpenBudgeteer.Core.Data.MySql.Migrations/OpenBudgeteer.Core.Data.MySql.Migrations.csproj#L16"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "OpenBudgeteer.Core.Data.Postgres.Migrations",
+   "evidence": "OpenBudgeteer.Core.Data.Postgres.Migrations/OpenBudgeteer.Core.Data.Postgres.Migrations.csproj#L16"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "OpenBudgeteer.Core.Data.Sqlite.Migrations",
+   "evidence": "OpenBudgeteer.Core.Data.Sqlite.Migrations/OpenBudgeteer.Core.Data.Sqlite.Migrations.csproj#L15"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "OpenBudgeteer.Core.Test",
+   "evidence": "OpenBudgeteer.Core.Test/OpenBudgeteer.Core.Test.csproj#L40"
+  },
+  {
+   "name": "xUnit",
+   "unit": "OpenBudgeteer.Core.Test",
+   "evidence": "OpenBudgeteer.Core.Test/OpenBudgeteer.Core.Test.csproj#L44"
+  },
+  {
+   "name": "xUnit",
+   "unit": "OpenBudgeteer.Blazor.Test",
+   "evidence": "OpenBudgeteer.Blazor.Test/OpenBudgeteer.Blazor.Test.csproj#L17"
+  }
+ ],
+ "services": [
+  {
+   "name": "MariaDB",
+   "kind": "database",
+   "evidence": "examples/compose-mariadb.yaml#L32"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "examples/compose-mysql.yaml#L32"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "examples/compose-postgres.yaml#L30"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": "examples/example.env#L9"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "Blazor has no package of its own: OpenBudgeteer.Blazor uses the Web SDK and AddRazorComponents().AddInteractiveServerComponents() in Program.cs; MudBlazor is its component framework",
+  "Entity Framework Core is spread over eight projects, among them three migrations projects for MySQL, PostgreSQL and a SQLite one",
+  "SQLite is no longer a provider: the switch in DatabaseInitializationExtensions.cs accepts MARIADB, MYSQL, POSTGRES and POSTGRESQL, and OpenBudgeteer.Core.Data.Sqlite.Migrations is a leftover that targets net8.0 while every other project targets net10.0",
+  "the databases appear only in the three examples/compose-*.yaml files and in CONNECTION_PROVIDER; phpMyAdmin and Adminer in those files are admin tools, not services of the application",
+  "Redis is required at startup (AddRedis in Program.cs, CONNECTION_REDIS_* in examples/example.env), through StackExchange.Redis",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "framework-per-unit",
+  "test-only-framework",
+  "framework-from-files"
+ ]
+}

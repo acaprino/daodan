@@ -1,0 +1,211 @@
+{
+ "frameworks": [
+  {
+   "name": "Phoenix",
+   "unit": "plausible",
+   "evidence": "mix.exs#L130"
+  },
+  {
+   "name": "Phoenix LiveView",
+   "unit": "plausible",
+   "evidence": "mix.exs#L136"
+  },
+  {
+   "name": "Ecto",
+   "unit": "plausible",
+   "evidence": "mix.exs#L89"
+  },
+  {
+   "name": "Oban",
+   "unit": "plausible",
+   "evidence": "mix.exs#L110"
+  },
+  {
+   "name": "ExUnit",
+   "unit": "plausible",
+   "evidence": "test/test_helper.exs#L22"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "plausible",
+   "evidence": "mix.exs#L165"
+  },
+  {
+   "name": "esbuild",
+   "unit": "plausible",
+   "evidence": "mix.exs#L164"
+  },
+  {
+   "name": "React",
+   "unit": "assets",
+   "evidence": "assets/package.json#L32"
+  },
+  {
+   "name": "React Router",
+   "unit": "assets",
+   "evidence": "assets/package.json#L38"
+  },
+  {
+   "name": "Alpine.js",
+   "unit": "assets",
+   "evidence": "assets/package.json#L26"
+  },
+  {
+   "name": "Jest",
+   "unit": "assets",
+   "evidence": "assets/package.json#L66"
+  },
+  {
+   "name": "Playwright",
+   "unit": "e2e",
+   "evidence": "e2e/package.json#L16"
+  },
+  {
+   "name": "Playwright",
+   "unit": "tracker",
+   "evidence": "tracker/package.json#L30"
+  },
+  {
+   "name": "Rollup",
+   "unit": "tracker",
+   "evidence": "tracker/package.json#L25"
+  },
+  {
+   "name": "Express",
+   "unit": "tracker",
+   "evidence": "tracker/package.json#L35"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "Makefile#L45"
+  },
+  {
+   "name": "ClickHouse",
+   "kind": "database",
+   "evidence": "Makefile#L27"
+  },
+  {
+   "name": "MinIO",
+   "kind": "storage",
+   "evidence": "Makefile#L60"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "config/runtime.exs#L1097"
+  },
+  {
+   "name": "Browserless",
+   "kind": "api",
+   "evidence": "Makefile#L57"
+  },
+  {
+   "name": "SimpleSAMLphp",
+   "kind": "authentication",
+   "evidence": "Makefile#L78"
+  },
+  {
+   "name": "CoreDNS",
+   "kind": "dns",
+   "evidence": "Makefile#L109"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "config/runtime.exs#L792"
+  },
+  {
+   "name": "Postmark",
+   "kind": "mail",
+   "evidence": "config/runtime.exs#L270"
+  },
+  {
+   "name": "Mailgun",
+   "kind": "mail",
+   "evidence": "config/runtime.exs#L758"
+  },
+  {
+   "name": "Mandrill",
+   "kind": "mail",
+   "evidence": "config/runtime.exs#L769"
+  },
+  {
+   "name": "SendGrid",
+   "kind": "mail",
+   "evidence": "config/runtime.exs#L775"
+  },
+  {
+   "name": "Sentry",
+   "kind": "monitoring",
+   "evidence": "config/runtime.exs#L264"
+  },
+  {
+   "name": "OpenTelemetry",
+   "kind": "monitoring",
+   "evidence": "config/runtime.exs#L1033"
+  },
+  {
+   "name": "Paddle",
+   "kind": "payments",
+   "evidence": "config/runtime.exs#L267"
+  },
+  {
+   "name": "Google Analytics",
+   "kind": "api",
+   "evidence": "lib/plausible/google/ga4/http.ex#L303"
+  },
+  {
+   "name": "Google Search Console",
+   "kind": "api",
+   "evidence": "lib/plausible/google/api.ex#L11"
+  },
+  {
+   "name": "Help Scout",
+   "kind": "api",
+   "evidence": "config/runtime.exs#L273"
+  },
+  {
+   "name": "MaxMind",
+   "kind": "api",
+   "evidence": "config/runtime.exs#L290"
+  },
+  {
+   "name": "Friendly Captcha",
+   "kind": "api",
+   "evidence": "config/runtime.exs#L328"
+  },
+  {
+   "name": "Let's Encrypt",
+   "kind": "certificates",
+   "evidence": "config/runtime.exs#L482"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "there is no compose file: PostgreSQL, ClickHouse, MinIO, Browserless, a SimpleSAMLphp IdP and CoreDNS are docker run targets of the Makefile",
+  "Tailwind CSS and esbuild come from the Mix packages :tailwind and :esbuild, which download the binaries; assets/package.json has only Tailwind plugins",
+  "mail goes through one adapter chosen by MAILER_ADAPTER: SMTP, Postmark, Mailgun, Mandrill or SendGrid, all keys read in config/runtime.exs",
+  "four npm packages: assets (React dashboard), e2e and the nameless tracker (Playwright), and tracker/npm_package with no dependencies; Express in tracker serves only the test pages",
+  "ExUnit ships with Elixir and has no dependency line; test/test_helper.exs is the evidence",
+  "Let's Encrypt is the default ACME directory of the community edition (site_encrypt), and Google Analytics and Search Console are reached for imports",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

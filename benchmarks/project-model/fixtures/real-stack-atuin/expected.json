@@ -1,0 +1,351 @@
+{
+ "frameworks": [
+  {
+   "name": "Ratatui",
+   "unit": "atuin-ai",
+   "evidence": "crates/atuin-ai/Cargo.toml#L48"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-ai",
+   "evidence": "crates/atuin-ai/Cargo.toml#L59"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-ai",
+   "evidence": "crates/atuin-ai/Cargo.toml#L56"
+  },
+  {
+   "name": "clap",
+   "unit": "atuin-ai",
+   "evidence": "crates/atuin-ai/Cargo.toml#L32"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-ai",
+   "evidence": "crates/atuin-ai/Cargo.toml#L92"
+  },
+  {
+   "name": "proptest",
+   "unit": "atuin-ai",
+   "evidence": "crates/atuin-ai/Cargo.toml#L91"
+  },
+  {
+   "name": "Protocol Buffers",
+   "unit": "atuin-client",
+   "evidence": "crates/atuin-client/Cargo.toml#L53"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-client",
+   "evidence": "crates/atuin-client/Cargo.toml#L66"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-client",
+   "evidence": "crates/atuin-client/Cargo.toml#L60"
+  },
+  {
+   "name": "clap",
+   "unit": "atuin-client",
+   "evidence": "crates/atuin-client/Cargo.toml#L36"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-client",
+   "evidence": "crates/atuin-client/Cargo.toml#L103"
+  },
+  {
+   "name": "proptest",
+   "unit": "atuin-client",
+   "evidence": "crates/atuin-client/Cargo.toml#L101"
+  },
+  {
+   "name": "WireMock",
+   "unit": "atuin-client",
+   "evidence": "crates/atuin-client/Cargo.toml#L107"
+  },
+  {
+   "name": "Protocol Buffers",
+   "unit": "atuin-common",
+   "evidence": "crates/atuin-common/Cargo.toml#L70"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-common",
+   "evidence": "crates/atuin-common/Cargo.toml#L87"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-common",
+   "evidence": "crates/atuin-common/Cargo.toml#L80"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-common",
+   "evidence": "crates/atuin-common/Cargo.toml#L129"
+  },
+  {
+   "name": "proptest",
+   "unit": "atuin-common",
+   "evidence": "crates/atuin-common/Cargo.toml#L127"
+  },
+  {
+   "name": "gRPC",
+   "unit": "atuin-daemon",
+   "evidence": "crates/atuin-daemon/Cargo.toml#L57"
+  },
+  {
+   "name": "Protocol Buffers",
+   "unit": "atuin-daemon",
+   "evidence": "crates/atuin-daemon/Cargo.toml#L42"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-daemon",
+   "evidence": "crates/atuin-daemon/Cargo.toml#L51"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-daemon",
+   "evidence": "crates/atuin-daemon/Cargo.toml#L48"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-daemon",
+   "evidence": "crates/atuin-daemon/Cargo.toml#L80"
+  },
+  {
+   "name": "proptest",
+   "unit": "atuin-daemon",
+   "evidence": "crates/atuin-daemon/Cargo.toml#L78"
+  },
+  {
+   "name": "Axum",
+   "unit": "atuin-domain",
+   "evidence": "crates/atuin-domain/Cargo.toml#L18"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-domain",
+   "evidence": "crates/atuin-domain/Cargo.toml#L29"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-domain",
+   "evidence": "crates/atuin-domain/Cargo.toml#L27"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-domain",
+   "evidence": "crates/atuin-domain/Cargo.toml#L49"
+  },
+  {
+   "name": "proptest",
+   "unit": "atuin-domain",
+   "evidence": "crates/atuin-domain/Cargo.toml#L48"
+  },
+  {
+   "name": "WireMock",
+   "unit": "atuin-domain",
+   "evidence": "crates/atuin-domain/Cargo.toml#L51"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-dotfiles",
+   "evidence": "crates/atuin-dotfiles/Cargo.toml#L24"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-dotfiles",
+   "evidence": "crates/atuin-dotfiles/Cargo.toml#L29"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-history",
+   "evidence": "crates/atuin-history/Cargo.toml#L19"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-history",
+   "evidence": "crates/atuin-history/Cargo.toml#L24"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-kv",
+   "evidence": "crates/atuin-kv/Cargo.toml#L25"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-kv",
+   "evidence": "crates/atuin-kv/Cargo.toml#L32"
+  },
+  {
+   "name": "gRPC",
+   "unit": "atuin-octavo",
+   "evidence": "crates/atuin-octavo/Cargo.toml#L31"
+  },
+  {
+   "name": "Protocol Buffers",
+   "unit": "atuin-octavo",
+   "evidence": "crates/atuin-octavo/Cargo.toml#L24"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-octavo",
+   "evidence": "crates/atuin-octavo/Cargo.toml#L29"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-octavo",
+   "evidence": "crates/atuin-octavo/Cargo.toml#L43"
+  },
+  {
+   "name": "clap",
+   "unit": "atuin-pty-proxy",
+   "evidence": "crates/atuin-pty-proxy/Cargo.toml#L15"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-pty-proxy",
+   "evidence": "crates/atuin-pty-proxy/Cargo.toml#L36"
+  },
+  {
+   "name": "proptest",
+   "unit": "atuin-pty-proxy",
+   "evidence": "crates/atuin-pty-proxy/Cargo.toml#L34"
+  },
+  {
+   "name": "MiniJinja",
+   "unit": "atuin-scripts",
+   "evidence": "crates/atuin-scripts/Cargo.toml#L23"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-scripts",
+   "evidence": "crates/atuin-scripts/Cargo.toml#L30"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-scripts",
+   "evidence": "crates/atuin-scripts/Cargo.toml#L27"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-scripts",
+   "evidence": "crates/atuin-scripts/Cargo.toml#L39"
+  },
+  {
+   "name": "Axum",
+   "unit": "atuin-server",
+   "evidence": "crates/atuin-server/Cargo.toml#L38"
+  },
+  {
+   "name": "sqlx",
+   "unit": "atuin-server",
+   "evidence": "crates/atuin-server/Cargo.toml#L55"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin-server",
+   "evidence": "crates/atuin-server/Cargo.toml#L54"
+  },
+  {
+   "name": "clap",
+   "unit": "atuin-server",
+   "evidence": "crates/atuin-server/Cargo.toml#L39"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin-server",
+   "evidence": "crates/atuin-server/Cargo.toml#L76"
+  },
+  {
+   "name": "proptest",
+   "unit": "atuin-server",
+   "evidence": "crates/atuin-server/Cargo.toml#L74"
+  },
+  {
+   "name": "Ratatui",
+   "unit": "atuin",
+   "evidence": "crates/atuin/Cargo.toml#L136"
+  },
+  {
+   "name": "Serde",
+   "unit": "atuin",
+   "evidence": "crates/atuin/Cargo.toml#L144"
+  },
+  {
+   "name": "clap",
+   "unit": "atuin",
+   "evidence": "crates/atuin/Cargo.toml#L113"
+  },
+  {
+   "name": "rstest",
+   "unit": "atuin",
+   "evidence": "crates/atuin/Cargo.toml#L189"
+  },
+  {
+   "name": "proptest",
+   "unit": "atuin",
+   "evidence": "crates/atuin/Cargo.toml#L188"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "k8s/atuin.yaml#L64"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "crates/atuin-client/Cargo.toml#L66"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "crates/atuin-server/server.toml#L13"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "crates/atuin-server/Cargo.toml#L48"
+  },
+  {
+   "name": "Atuin Sync",
+   "kind": "api",
+   "evidence": "crates/atuin-client/src/settings.rs#L64"
+  },
+  {
+   "name": "Atuin Hub",
+   "kind": "api",
+   "evidence": "crates/atuin-client/src/settings.rs#L68"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "members = [\"crates/*\"] is a glob; vendor/axoasset is a vendored crate outside the workspace, and ui/backend is excluded but absent from the tree",
+  "every crate writes its dependencies as { workspace = true }: versions are in the root Cargo.toml, frameworks belong to the crates that name them",
+  "gRPC comes from tonic in atuin-daemon and atuin-octavo, whose build.rs runs tonic-prost-build with protox; Protocol Buffers (prost) is also used by atuin-client and atuin-common",
+  "the client keeps its history in SQLite through sqlx and rusqlite; the server accepts PostgreSQL, SQLite or MySQL by db_uri, with MySQL only in a commented line of server.toml and PostgreSQL in k8s/atuin.yaml",
+  "rstest and proptest are dev-dependencies of almost every crate; wiremock only of atuin-client and atuin-domain",
+  "Atuin Sync (api.atuin.sh) and Atuin Hub (hub.atuin.sh) are the project's hosted services, named only as default URLs in settings.rs",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-per-unit",
+  "test-only-framework",
+  "service-in-infra",
+  "service-from-config",
+  "saas-service"
+ ]
+}

@@ -334,6 +334,21 @@
       "definition": "Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata."
     },
     {
+      "id": "framework-through-plugin",
+      "group": "services",
+      "definition": "Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome."
+    },
+    {
+      "id": "framework-per-unit",
+      "group": "services",
+      "definition": "Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara."
+    },
+    {
+      "id": "test-only-framework",
+      "group": "services",
+      "definition": "Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara."
+    },
+    {
       "id": "undeclared-connections",
       "group": "connections",
       "definition": "Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections."

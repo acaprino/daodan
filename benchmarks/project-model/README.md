@@ -44,6 +44,7 @@ Le famiglie `js`, `py`, `jvm`, `sys` e `mix` sono progetti in miniatura scritti 
 - `expected.json` viene dai file del repository a quel commit ed è completo per unità, workspace, toolchain, framework, servizi ed esclusi;
 - le dipendenze sono complete solo per al massimo tre unità piccole per repository (`unknown` con `known`);
 - `connections` elenca i punti di contatto fra unità per il grafo unico, senza entrare nel punteggio.
+- le 40 cartelle `real-stack-*` misurano solo `frameworks` e `services` per unità, per lo step `stack`: ogni voce porta l'evidenza con la riga (`pom.xml#L42`) e le altre facce stanno in `unknown`.
 
 Il frammento di `declared_in` di una toolchain Gradle è il nome che il modello di Gradle dà al valore: `kotlin { jvmToolchain(N) }` imposta la toolchain dell'estensione `java`, e il modello non sa dire quale DSL l'ha scritta, quindi anche lì è `#java.toolchain.languageVersion`.
 

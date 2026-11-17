@@ -1,0 +1,186 @@
+{
+ "frameworks": [
+  {
+   "name": "Spring Boot",
+   "unit": "com.macro.mall:mall",
+   "evidence": "pom.xml#L24"
+  },
+  {
+   "name": "Lombok",
+   "unit": "com.macro.mall:mall",
+   "evidence": "pom.xml#L80"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "com.macro.mall:mall",
+   "evidence": "pom.xml#L71"
+  },
+  {
+   "name": "Mockito",
+   "unit": "com.macro.mall:mall",
+   "evidence": "pom.xml#L71"
+  },
+  {
+   "name": "Spring MVC",
+   "unit": "com.macro.mall:mall-common",
+   "evidence": "mall-common/pom.xml#L28"
+  },
+  {
+   "name": "Spring Data Redis",
+   "unit": "com.macro.mall:mall-common",
+   "evidence": "mall-common/pom.xml#L32"
+  },
+  {
+   "name": "MyBatis",
+   "unit": "com.macro.mall:mall-mbg",
+   "evidence": "mall-mbg/pom.xml#L33"
+  },
+  {
+   "name": "Spring MVC",
+   "unit": "com.macro.mall:mall-security",
+   "evidence": "mall-security/pom.xml#L26"
+  },
+  {
+   "name": "Spring Security",
+   "unit": "com.macro.mall:mall-security",
+   "evidence": "mall-security/pom.xml#L30"
+  },
+  {
+   "name": "Spring Data Redis",
+   "unit": "com.macro.mall:mall-security",
+   "evidence": "mall-security/pom.xml#L34"
+  },
+  {
+   "name": "Spring Boot",
+   "unit": "com.macro.mall:mall-demo",
+   "evidence": "mall-demo/pom.xml#L42"
+  },
+  {
+   "name": "Thymeleaf",
+   "unit": "com.macro.mall:mall-demo",
+   "evidence": "mall-demo/pom.xml#L26"
+  },
+  {
+   "name": "Spring Security",
+   "unit": "com.macro.mall:mall-demo",
+   "evidence": "mall-demo/pom.xml#L30"
+  },
+  {
+   "name": "Spring Boot",
+   "unit": "com.macro.mall:mall-admin",
+   "evidence": "mall-admin/pom.xml#L57"
+  },
+  {
+   "name": "Spring Boot",
+   "unit": "com.macro.mall:mall-portal",
+   "evidence": "mall-portal/pom.xml#L57"
+  },
+  {
+   "name": "Spring Data MongoDB",
+   "unit": "com.macro.mall:mall-portal",
+   "evidence": "mall-portal/pom.xml#L32"
+  },
+  {
+   "name": "Spring Data Redis",
+   "unit": "com.macro.mall:mall-portal",
+   "evidence": "mall-portal/pom.xml#L37"
+  },
+  {
+   "name": "Spring AMQP",
+   "unit": "com.macro.mall:mall-portal",
+   "evidence": "mall-portal/pom.xml#L42"
+  },
+  {
+   "name": "Spring Boot",
+   "unit": "com.macro.mall:mall-search",
+   "evidence": "mall-search/pom.xml#L41"
+  },
+  {
+   "name": "Spring Data Elasticsearch",
+   "unit": "com.macro.mall:mall-search",
+   "evidence": "mall-search/pom.xml#L33"
+  }
+ ],
+ "services": [
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "document/docker/docker-compose-env.yml#L4"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": "document/docker/docker-compose-env.yml#L17"
+  },
+  {
+   "name": "Nginx",
+   "kind": "proxy",
+   "evidence": "document/docker/docker-compose-env.yml#L25"
+  },
+  {
+   "name": "RabbitMQ",
+   "kind": "queue",
+   "evidence": "document/docker/docker-compose-env.yml#L34"
+  },
+  {
+   "name": "Elasticsearch",
+   "kind": "search",
+   "evidence": "document/docker/docker-compose-env.yml#L42"
+  },
+  {
+   "name": "Logstash",
+   "kind": "monitoring",
+   "evidence": "document/docker/docker-compose-env.yml#L55"
+  },
+  {
+   "name": "Kibana",
+   "kind": "monitoring",
+   "evidence": "document/docker/docker-compose-env.yml#L71"
+  },
+  {
+   "name": "MongoDB",
+   "kind": "database",
+   "evidence": "document/docker/docker-compose-env.yml#L82"
+  },
+  {
+   "name": "MinIO",
+   "kind": "storage",
+   "evidence": "document/docker/docker-compose-env.yml#L89"
+  },
+  {
+   "name": "Aliyun OSS",
+   "kind": "storage",
+   "evidence": "mall-admin/pom.xml#L30"
+  },
+  {
+   "name": "Alipay",
+   "kind": "payments",
+   "evidence": "mall-portal/pom.xml#L47"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "Spring Boot comes from the parent spring-boot-starter-parent of the root pom; Lombok and spring-boot-starter-test (JUnit Jupiter, Mockito) are declared once in the root pom and inherited by every module, so they belong to the root unit",
+  "every Spring framework is a starter: Spring MVC from spring-boot-starter-web, Spring Security, Spring Data Redis, MongoDB and Elasticsearch, Spring AMQP from spring-boot-starter-amqp",
+  "the frameworks differ per module: MyBatis only in mall-mbg, Thymeleaf only in mall-demo, MongoDB and AMQP only in mall-portal, Elasticsearch only in mall-search",
+  "mall-admin declares no framework of its own beyond the Spring Boot plugin: it gets MyBatis and Spring Security through mall-mbg and mall-security",
+  "PageHelper, Druid, MyBatis Generator, springdoc and Hutool are plugins or utilities, not counted as frameworks here",
+  "all services are in document/docker/docker-compose-env.yml, a folder that looks like documentation; Aliyun OSS and Alipay are named only by their SDKs",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-through-plugin",
+  "framework-per-unit",
+  "test-only-framework",
+  "service-in-infra",
+  "saas-service"
+ ]
+}

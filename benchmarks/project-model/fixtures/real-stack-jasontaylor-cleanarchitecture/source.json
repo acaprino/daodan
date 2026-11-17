@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/jasontaylordev/CleanArchitecture",
+ "commit": "57c9d5d4a61aa44bdc6471bac9c7ddb03b4497d8",
+ "licence": "MIT",
+ "why": "dotnet new template whose committed files hold every option at once: three databases, an Angular and a React client, Aspire hosting on Azure"
+}

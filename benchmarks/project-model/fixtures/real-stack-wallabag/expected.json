@@ -1,0 +1,126 @@
+{
+ "frameworks": [
+  {
+   "name": "Symfony",
+   "unit": "wallabag/wallabag",
+   "evidence": "composer.json#L138"
+  },
+  {
+   "name": "Doctrine ORM",
+   "unit": "wallabag/wallabag",
+   "evidence": "composer.json#L76"
+  },
+  {
+   "name": "Twig",
+   "unit": "wallabag/wallabag",
+   "evidence": "composer.json#L163"
+  },
+  {
+   "name": "JMS Serializer",
+   "unit": "wallabag/wallabag",
+   "evidence": "composer.json#L91"
+  },
+  {
+   "name": "PHPUnit",
+   "unit": "wallabag/wallabag",
+   "evidence": "composer.json#L184"
+  },
+  {
+   "name": "webpack",
+   "unit": "wallabag",
+   "evidence": "package.json#L78"
+  },
+  {
+   "name": "Webpack Encore",
+   "unit": "wallabag",
+   "evidence": "package.json#L54"
+  },
+  {
+   "name": "Stimulus",
+   "unit": "wallabag",
+   "evidence": "package.json#L91"
+  },
+  {
+   "name": "Materialize",
+   "unit": "wallabag",
+   "evidence": "package.json#L92"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": ".env#L26"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": ".env#L27"
+  },
+  {
+   "name": "MariaDB",
+   "kind": "database",
+   "evidence": "compose.yaml#L61"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": ".env#L31"
+  },
+  {
+   "name": "Redis",
+   "kind": "queue",
+   "evidence": "compose.yaml#L75"
+  },
+  {
+   "name": "RabbitMQ",
+   "kind": "queue",
+   "evidence": ".env#L15"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": ".env#L4"
+  },
+  {
+   "name": "Gmail",
+   "kind": "mail",
+   "evidence": "composer.json#L139"
+  },
+  {
+   "name": "Sentry",
+   "kind": "monitoring",
+   "evidence": "app/config/config_prod.yml#L24"
+  },
+  {
+   "name": "Matomo",
+   "kind": "analytics",
+   "evidence": "app/config/wallabag.yml#L137"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "composer.json (wallabag/wallabag) and package.json (wallabag) share the root: Symfony, Doctrine ORM, Twig and JMS Serializer belong to the first, webpack, Encore, Stimulus and Materialize to the second",
+  "the default store is SQLite; MySQL, MariaDB and PostgreSQL are commented DATABASE_URL lines in .env and commented services in compose.yaml, with docker/mariadb/env and docker/postgres/env beside them",
+  "compose.yaml starts only Redis next to the app; RabbitMQ is configured by RABBITMQ_URL and a commented compose service, and Redis or RabbitMQ carry the asynchronous import queues",
+  "Matomo is a setting in app/config/wallabag.yml with a default host, not a dependency",
+  "Gmail is a Symfony Mailer transport package; Google Authenticator in scheb_two_factor is a local TOTP check, not a service",
+  "@codecov/webpack-plugin and the commented Blackfire service are developer tooling, not services of the application",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

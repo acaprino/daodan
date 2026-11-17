@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/umami-software/umami",
+ "commit": "b18d5144dfe7342edeeca6f61d13ba3baabed9ad",
+ "licence": "MIT",
+ "why": "Next.js analytics app in a pnpm workspace with two library packages; most data services exist only as environment variables and client packages"
+}

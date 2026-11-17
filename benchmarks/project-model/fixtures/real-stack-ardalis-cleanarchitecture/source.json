@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/ardalis/CleanArchitecture",
+ "commit": "ecf2f4df89199e5d9e101484c990a6652bcf9065",
+ "licence": "MIT",
+ "why": "dotnet new template with three solutions (Clean, MinimalClean, the sample) and 28 projects: ASP.NET Core, FastEndpoints, EF Core and Aspire spread over many units, with central package management"
+}

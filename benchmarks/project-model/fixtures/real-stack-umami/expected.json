@@ -1,0 +1,137 @@
+{
+ "frameworks": [
+  {
+   "name": "Next.js",
+   "unit": "umami",
+   "evidence": "package.json#L115"
+  },
+  {
+   "name": "React",
+   "unit": "umami",
+   "evidence": "package.json#L125"
+  },
+  {
+   "name": "Prisma",
+   "unit": "umami",
+   "evidence": "package.json#L84"
+  },
+  {
+   "name": "Zod",
+   "unit": "umami",
+   "evidence": "package.json#L139"
+  },
+  {
+   "name": "Vitest",
+   "unit": "umami",
+   "evidence": "package.json#L172"
+  },
+  {
+   "name": "Vite",
+   "unit": "umami",
+   "evidence": "package.json#L171"
+  },
+  {
+   "name": "Playwright",
+   "unit": "umami",
+   "evidence": "package.json#L82"
+  },
+  {
+   "name": "Rollup",
+   "unit": "umami",
+   "evidence": "package.json#L166"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@umami/api-client",
+   "evidence": "packages/api-client/package.json#L30"
+  },
+  {
+   "name": "Model Context Protocol SDK",
+   "unit": "@umami/mcp",
+   "evidence": "packages/mcp/package.json#L35"
+  },
+  {
+   "name": "Zod",
+   "unit": "@umami/mcp",
+   "evidence": "packages/mcp/package.json#L37"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@umami/mcp",
+   "evidence": "packages/mcp/package.json#L44"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker-compose.yml#L24"
+  },
+  {
+   "name": "ClickHouse",
+   "kind": "database",
+   "evidence": "docker-compose.test.yml#L70"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": "src/lib/redis.ts#L106"
+  },
+  {
+   "name": "Apache Kafka",
+   "kind": "queue",
+   "evidence": "src/lib/kafka.ts#L15"
+  },
+  {
+   "name": "MaxMind GeoIP",
+   "kind": "api",
+   "evidence": "scripts/build-geo.js#L28"
+  },
+  {
+   "name": "DuckDuckGo Icons",
+   "kind": "api",
+   "evidence": "src/lib/constants.ts#L25"
+  },
+  {
+   "name": "Heroku",
+   "kind": "hosting",
+   "evidence": "app.json#L7"
+  },
+  {
+   "name": "Netlify",
+   "kind": "hosting",
+   "evidence": "netlify.toml#L5"
+  },
+  {
+   "name": "Vercel",
+   "kind": "hosting",
+   "evidence": "vercel.json#L2"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "pnpm-workspace.yaml lists '**', so the root package umami and packages/api-client and packages/mcp are three units, each with its own Vitest",
+  "@playwright/test sits in dependencies, not devDependencies, yet it only runs the e2e tests",
+  "@types/jest is a dev dependency but no Jest is installed: the tests run on Vitest",
+  "vite is declared only as the engine of Vitest; the app is built by Next.js and the tracker scripts by Rollup",
+  "ClickHouse appears only in docker-compose.test.yml and as CLICKHOUSE_URL; Redis and Kafka only as REDIS_URL, KAFKA_URL and their client packages; the deployable compose file starts PostgreSQL alone",
+  "the Prisma schema writes its client to src/generated/prisma, which the sources import and the repository does not hold",
+  "Heroku, Netlify and Vercel are deployment targets named only by app.json, netlify.toml and vercel.json",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

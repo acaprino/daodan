@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/lldap/lldap",
+ "commit": "99c510a7a603df1cdaca00a9ffff95ec73b296eb",
+ "licence": "GPL-3.0",
+ "why": "Cargo workspace of sixteen crates where the Actix server, the Yew WebAssembly front end and the GraphQL and ORM crates each carry their own frameworks, mostly through workspace = true"
+}

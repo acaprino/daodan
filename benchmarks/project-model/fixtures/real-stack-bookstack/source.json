@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/BookStackApp/BookStack",
+ "commit": "0b6b667e0d84ebb3406de6de9fadbf4230c29c0b",
+ "licence": "MIT",
+ "why": "Laravel application with a nameless npm build beside it; most services are single-sign-on providers chosen in a long environment example"
+}

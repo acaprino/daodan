@@ -1,0 +1,187 @@
+{
+ "frameworks": [
+  {
+   "name": "Flutter",
+   "unit": "localsend_app",
+   "evidence": "app/pubspec.yaml#L25"
+  },
+  {
+   "name": "flutter_test",
+   "unit": "localsend_app",
+   "evidence": "app/pubspec.yaml#L81"
+  },
+  {
+   "name": "Flutter",
+   "unit": "localsend_isolates",
+   "evidence": "packages/localsend_isolates/pubspec.yaml#L15"
+  },
+  {
+   "name": "flutter_test",
+   "unit": "localsend_isolates",
+   "evidence": "packages/localsend_isolates/pubspec.yaml#L36"
+  },
+  {
+   "name": "Flutter",
+   "unit": "packages/localsend_isolates/rust_builder",
+   "evidence": "packages/localsend_isolates/rust_builder/pubspec.yaml#L11"
+  },
+  {
+   "name": "flutter_test",
+   "unit": "packages/localsend_isolates/rust_builder",
+   "evidence": "packages/localsend_isolates/rust_builder/pubspec.yaml#L19"
+  },
+  {
+   "name": "test",
+   "unit": "localsend_app",
+   "evidence": "app/pubspec.yaml#L87"
+  },
+  {
+   "name": "Refena",
+   "unit": "localsend_app",
+   "evidence": "app/pubspec.yaml#L54"
+  },
+  {
+   "name": "dart_mappable",
+   "unit": "localsend_app",
+   "evidence": "app/pubspec.yaml#L17"
+  },
+  {
+   "name": "Refena",
+   "unit": "localsend_isolates",
+   "evidence": "packages/localsend_isolates/pubspec.yaml#L25"
+  },
+  {
+   "name": "dart_mappable",
+   "unit": "localsend_isolates",
+   "evidence": "packages/localsend_isolates/pubspec.yaml#L14"
+  },
+  {
+   "name": "Routerino",
+   "unit": "localsend_app",
+   "evidence": "app/pubspec.yaml#L56"
+  },
+  {
+   "name": "flutter_rust_bridge",
+   "unit": "localsend_isolates",
+   "evidence": "packages/localsend_isolates/pubspec.yaml#L18"
+  },
+  {
+   "name": "Android",
+   "unit": ":app",
+   "evidence": "app/android/app/build.gradle#L2"
+  },
+  {
+   "name": "Flutter",
+   "unit": ":app",
+   "evidence": "app/android/app/build.gradle#L4"
+  },
+  {
+   "name": "Android",
+   "unit": "packages/localsend_isolates/rust_builder/android",
+   "evidence": "packages/localsend_isolates/rust_builder/android/build.gradle#L25"
+  },
+  {
+   "name": "Tokio",
+   "unit": "localsend-cli",
+   "evidence": "cli/Cargo.toml#L27"
+  },
+  {
+   "name": "clap",
+   "unit": "localsend-cli",
+   "evidence": "cli/Cargo.toml#L14"
+  },
+  {
+   "name": "Ratatui",
+   "unit": "localsend-cli",
+   "evidence": "cli/Cargo.toml#L22"
+  },
+  {
+   "name": "Serde",
+   "unit": "localsend-cli",
+   "evidence": "cli/Cargo.toml#L25"
+  },
+  {
+   "name": "Tokio",
+   "unit": "localsend",
+   "evidence": "packages/core/Cargo.toml#L32"
+  },
+  {
+   "name": "Hyper",
+   "unit": "localsend",
+   "evidence": "packages/core/Cargo.toml#L15"
+  },
+  {
+   "name": "Serde",
+   "unit": "localsend",
+   "evidence": "packages/core/Cargo.toml#L26"
+  },
+  {
+   "name": "Axum",
+   "unit": "server",
+   "evidence": "server/Cargo.toml#L8"
+  },
+  {
+   "name": "Tokio",
+   "unit": "server",
+   "evidence": "server/Cargo.toml#L14"
+  },
+  {
+   "name": "Serde",
+   "unit": "server",
+   "evidence": "server/Cargo.toml#L12"
+  },
+  {
+   "name": "flutter_rust_bridge",
+   "unit": "packages/localsend_isolates/rust",
+   "evidence": "packages/localsend_isolates/rust/Cargo.toml#L15"
+  },
+  {
+   "name": "Tokio",
+   "unit": "packages/localsend_isolates/rust",
+   "evidence": "packages/localsend_isolates/rust/Cargo.toml#L17"
+  }
+ ],
+ "services": [
+  {
+   "name": "STUN",
+   "kind": "api",
+   "evidence": "app/lib/provider/network/webrtc/signaling_provider.dart#L54"
+  },
+  {
+   "name": "Google Play Billing",
+   "kind": "payments",
+   "evidence": "app/pubspec.yaml#L35"
+  },
+  {
+   "name": "Apple App Store",
+   "kind": "payments",
+   "evidence": "app/pubspec.yaml#L35"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "two workspaces share the root: pubspec.yaml (members app, packages/localsend_isolates, packages/typed_isolates) and Cargo.toml (cli, packages/core, packages/localsend_isolates/rust, server)",
+  "rust_lib_localsend_app is both the pub package in rust_builder and the Cargo crate in rust: both are referred to by root; the two Gradle builds named : are too, while :app is unique",
+  "the Flutter app's Android build applies dev.flutter.flutter-gradle-plugin: Flutter reaches the Gradle unit :app through a plugin",
+  "flutter_rust_bridge appears in both ecosystems: the Dart package in localsend_isolates and the =2.12.0 crate in packages/localsend_isolates/rust",
+  "rust_builder/cargokit is a vendored copy of Cargokit with its own build_tool pubspec: it is build machinery, and its test dependency is not listed",
+  "the public signaling server wss://public.localsend.org/v1/ws is a deployment of this repository's server crate, so it is not listed as an external service; the STUN server stun.localsend.org is",
+  "in_app_purchase is marked [FOSS_REMOVE]: the store builds talk to Google Play Billing and the App Store, the FOSS build drops them",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "saas-service",
+  "service-from-config",
+  "framework-per-unit",
+  "framework-through-plugin",
+  "test-only-framework"
+ ]
+}

@@ -1,0 +1,46 @@
+{
+ "frameworks": [
+  {
+   "name": "Astro",
+   "unit": "astro-paper-v6",
+   "evidence": "package.json#L13"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "astro-paper-v6",
+   "evidence": "package.json#L33"
+  }
+ ],
+ "services": [
+  {
+   "name": "Google Fonts",
+   "kind": "api",
+   "evidence": "astro.config.ts#L73"
+  },
+  {
+   "name": "Google Search Console",
+   "kind": "analytics",
+   "evidence": "astro.config.ts#L82"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "Vite is configured under the vite key of astro.config.ts but is not a dependency: it is Astro's internal bundler",
+  "@astrojs/mdx, @astrojs/sitemap and @astrojs/rss are Astro integrations, not frameworks of their own",
+  "Giscus, GitHub Pages and other services appear only in the blog posts under src/content/posts, which are content, not configuration",
+  "the Dockerfile serves the static build with nginx: it is the app's own container, not a service",
+  "Pagefind builds a static search index at build time: it is a tool, not a search service",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "saas-service"
+ ]
+}

@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/netbox-community/netbox",
+ "commit": "836c1e43a0e812984d54bc6ccf59e869e4aaed6b",
+ "licence": "Apache-2.0",
+ "why": "Django with DRF and Strawberry GraphQL, a yarn workspace for the static front end and a React GraphiQL package; services in a configuration template, optional extras and hard-coded URLs"
+}

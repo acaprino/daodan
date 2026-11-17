@@ -1,0 +1,92 @@
+{
+ "frameworks": [
+  {
+   "name": "Nuxt",
+   "unit": "@elk-zone/elk",
+   "evidence": "package.json#L99"
+  },
+  {
+   "name": "Vue",
+   "unit": "@elk-zone/elk",
+   "evidence": "package.json#L122"
+  },
+  {
+   "name": "UnoCSS",
+   "unit": "@elk-zone/elk",
+   "evidence": "package.json#L69"
+  },
+  {
+   "name": "Vite",
+   "unit": "@elk-zone/elk",
+   "evidence": "package.json#L120"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@elk-zone/elk",
+   "evidence": "package.json#L158"
+  },
+  {
+   "name": "Nuxt",
+   "unit": "elk-docs",
+   "evidence": "docs/package.json#L14"
+  },
+  {
+   "name": "Docus",
+   "unit": "elk-docs",
+   "evidence": "docs/package.json#L13"
+  }
+ ],
+ "services": [
+  {
+   "name": "Mastodon",
+   "kind": "api",
+   "evidence": "nuxt.config.ts#L178"
+  },
+  {
+   "name": "LibreTranslate",
+   "kind": "api",
+   "evidence": "nuxt.config.ts#L176"
+  },
+  {
+   "name": "Cloudflare Workers KV",
+   "kind": "storage",
+   "evidence": ".env.example#L8"
+  },
+  {
+   "name": "Vercel KV",
+   "kind": "storage",
+   "evidence": "package.json#L71"
+  },
+  {
+   "name": "Netlify",
+   "kind": "hosting",
+   "evidence": "netlify.toml#L1"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the root package @elk-zone/elk and docs/ (elk-docs) are two units with different frameworks: Docus belongs to the docs only",
+  "UnoCSS is declared only as the Nuxt module @unocss/nuxt",
+  "the server storage driver is NUXT_STORAGE_DRIVER: fs locally, Cloudflare Workers KV in CI, or Vercel KV; @upstash/redis is declared but nothing imports it",
+  "Mastodon is not a dependency: the masto client talks to whatever instance the user logs in to, with m.webtoo.ls as defaultServer in nuxt.config.ts",
+  "LibreTranslate is named only in a comment beside translateApi, an empty runtime setting",
+  "better-sqlite3 in docs is the local store of Docus content, not a database service; the compose file starts only Elk's own container",
+  "NUXT_GITHUB_CLIENT_ID and the other GitHub variables of .env.example are read by no source file",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-from-config",
+  "saas-service",
+  "framework-through-plugin",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

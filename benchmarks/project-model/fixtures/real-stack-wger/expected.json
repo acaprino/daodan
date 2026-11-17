@@ -1,0 +1,125 @@
+{
+ "frameworks": [
+  {
+   "name": "Django",
+   "unit": "wger",
+   "evidence": "pyproject.toml#L49"
+  },
+  {
+   "name": "Django REST framework",
+   "unit": "wger",
+   "evidence": "pyproject.toml#L48"
+  },
+  {
+   "name": "Celery",
+   "unit": "wger",
+   "evidence": "pyproject.toml#L31"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "wger",
+   "evidence": "package.json#L14"
+  },
+  {
+   "name": "htmx",
+   "unit": "wger",
+   "evidence": "package.json#L16"
+  },
+  {
+   "name": "React",
+   "unit": "wger",
+   "evidence": "wger/core/templates/template.html#L54"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "settings/local_dev.py#L101"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "settings/local_dev.py#L111"
+  },
+  {
+   "name": "Redis",
+   "kind": "queue",
+   "evidence": "settings/main.py#L330"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "settings/main.py#L169"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "settings/main.py#L394"
+  },
+  {
+   "name": "Google reCAPTCHA",
+   "kind": "api",
+   "evidence": "settings/main.py#L132"
+  },
+  {
+   "name": "Cloudflare Turnstile",
+   "kind": "api",
+   "evidence": "settings/main.py#L137"
+  },
+  {
+   "name": "PowerSync",
+   "kind": "api",
+   "evidence": "settings/main.py#L104"
+  },
+  {
+   "name": "Open Food Facts",
+   "kind": "api",
+   "evidence": "pyproject.toml#L61"
+  },
+  {
+   "name": "wger.de",
+   "kind": "api",
+   "evidence": "settings/settings_global.py#L686"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "pyproject.toml#L42"
+  },
+  {
+   "name": "MongoDB",
+   "kind": "database",
+   "evidence": "extras/open-food-facts/docker-compose.yml#L3"
+  },
+  {
+   "name": "Mongo Express",
+   "kind": "admin",
+   "evidence": "extras/open-food-facts/docker-compose.yml#L13"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "pyproject.toml and package.json at the root both name their unit wger: the frameworks of either side carry the same unit name",
+  "React has no dependency of its own: the prebuilt bundle of @wger-project/react-components (a devDependency) is loaded by wger/core/templates/template.html",
+  "there is no compose file for the application: databases, Redis and mail come from environment variables in settings/main.py, and settings/local_dev.py switches between SQLite and PostgreSQL",
+  "the only compose file, extras/open-food-facts/docker-compose.yml, starts MongoDB and Mongo Express to import the Open Food Facts dump",
+  "exercises and ingredients are synchronised from another instance, https://wger.de by default (WGER_INSTANCE), and from PowerSync when POWERSYNC_URL is set",
+  "the CAPTCHA is reCAPTCHA or Cloudflare Turnstile depending on CAPTCHA_PROVIDER; tests use Django's TestCase, there is no pytest",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-from-files"
+ ]
+}

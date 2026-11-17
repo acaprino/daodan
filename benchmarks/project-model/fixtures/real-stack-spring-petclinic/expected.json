@@ -1,0 +1,135 @@
+{
+ "frameworks": [
+  {
+   "name": "Spring Boot",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L7"
+  },
+  {
+   "name": "Spring MVC",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L64"
+  },
+  {
+   "name": "Spring Data JPA",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L52"
+  },
+  {
+   "name": "Hibernate",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L52"
+  },
+  {
+   "name": "Thymeleaf",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L56"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L103"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L148"
+  },
+  {
+   "name": "Mockito",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L148"
+  },
+  {
+   "name": "Testcontainers",
+   "unit": "org.springframework.samples:spring-petclinic",
+   "evidence": "pom.xml#L173"
+  },
+  {
+   "name": "Spring Boot",
+   "unit": ":",
+   "evidence": "build.gradle#L4"
+  },
+  {
+   "name": "Spring MVC",
+   "unit": ":",
+   "evidence": "build.gradle#L37"
+  },
+  {
+   "name": "Spring Data JPA",
+   "unit": ":",
+   "evidence": "build.gradle#L35"
+  },
+  {
+   "name": "Hibernate",
+   "unit": ":",
+   "evidence": "build.gradle#L35"
+  },
+  {
+   "name": "Thymeleaf",
+   "unit": ":",
+   "evidence": "build.gradle#L36"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": ":",
+   "evidence": "build.gradle#L43"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": ":",
+   "evidence": "build.gradle#L62"
+  },
+  {
+   "name": "Mockito",
+   "unit": ":",
+   "evidence": "build.gradle#L52"
+  },
+  {
+   "name": "Testcontainers",
+   "unit": ":",
+   "evidence": "build.gradle#L55"
+  }
+ ],
+ "services": [
+  {
+   "name": "H2",
+   "kind": "database",
+   "evidence": "src/main/resources/application.properties#L2"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "docker-compose.yml#L3"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker-compose.yml#L15"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "pom.xml and build.gradle declare the same application: every framework belongs to both the Maven unit and the Gradle root project ':'",
+  "Spring MVC, Spring Data JPA, Hibernate and Thymeleaf come only through Spring Boot starters; no dependency carries their own artifact name",
+  "JUnit Jupiter and Mockito arrive with the test starters (spring-boot-starter-webmvc-test and siblings) and are test-only",
+  "Bootstrap is a webjar (org.webjars.npm:bootstrap), a CSS framework packed as a Maven artifact; the SCSS build runs only in the Maven profile css",
+  "H2 is the default store (database=h2 in application.properties); MySQL and PostgreSQL are selected by the mysql and postgres profiles and started by docker-compose.yml and k8s/db.yml",
+  "Caffeine and the JCache API are an in-process cache, not a service",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-through-plugin",
+  "test-only-framework",
+  "service-in-infra",
+  "service-from-config"
+ ]
+}

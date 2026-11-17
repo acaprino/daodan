@@ -1,0 +1,167 @@
+{
+ "frameworks": [
+  {
+   "name": "Django",
+   "unit": "paperless-ngx",
+   "evidence": "pyproject.toml#L29"
+  },
+  {
+   "name": "Django REST framework",
+   "unit": "paperless-ngx",
+   "evidence": "pyproject.toml#L41"
+  },
+  {
+   "name": "Django Channels",
+   "unit": "paperless-ngx",
+   "evidence": "pyproject.toml#L23"
+  },
+  {
+   "name": "Celery",
+   "unit": "paperless-ngx",
+   "evidence": "pyproject.toml#L22"
+  },
+  {
+   "name": "pytest",
+   "unit": "paperless-ngx",
+   "evidence": "pyproject.toml#L116"
+  },
+  {
+   "name": "Angular",
+   "unit": "paperless-ngx-ui",
+   "evidence": "src-ui/package.json#L21"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "paperless-ngx-ui",
+   "evidence": "src-ui/package.json#L30"
+  },
+  {
+   "name": "Jest",
+   "unit": "paperless-ngx-ui",
+   "evidence": "src-ui/package.json#L66"
+  },
+  {
+   "name": "Playwright",
+   "unit": "paperless-ngx-ui",
+   "evidence": "src-ui/package.json#L59"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "src/paperless_mail/templates",
+   "evidence": "src/paperless_mail/templates/package.json#L3"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker/compose/docker-compose.postgres-tika.yml#L38"
+  },
+  {
+   "name": "MariaDB",
+   "kind": "database",
+   "evidence": "docker/compose/docker-compose.mariadb.yml#L34"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "src/paperless/settings/custom.py#L247"
+  },
+  {
+   "name": "Valkey",
+   "kind": "queue",
+   "evidence": "docker/compose/docker-compose.postgres-tika.yml#L33"
+  },
+  {
+   "name": "Redis",
+   "kind": "queue",
+   "evidence": ".devcontainer/docker-compose.devcontainer.sqlite-tika.yml#L25"
+  },
+  {
+   "name": "Apache Tika",
+   "kind": "api",
+   "evidence": "docker/compose/docker-compose.postgres-tika.yml#L79"
+  },
+  {
+   "name": "Gotenberg",
+   "kind": "api",
+   "evidence": "docker/compose/docker-compose.postgres-tika.yml#L70"
+  },
+  {
+   "name": "GreenMail",
+   "kind": "mail",
+   "evidence": "docker/compose/docker-compose.ci-test.yml#L27"
+  },
+  {
+   "name": "nginx",
+   "kind": "proxy",
+   "evidence": "docker/compose/docker-compose.ci-test.yml#L38"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "src/paperless/settings/__init__.py#L293"
+  },
+  {
+   "name": "IMAP",
+   "kind": "mail",
+   "evidence": "pyproject.toml#L50"
+  },
+  {
+   "name": "Gmail",
+   "kind": "mail",
+   "evidence": "src/paperless/settings/__init__.py#L1176"
+  },
+  {
+   "name": "Microsoft Outlook",
+   "kind": "mail",
+   "evidence": "src/paperless/settings/__init__.py#L1183"
+  },
+  {
+   "name": "OpenAI",
+   "kind": "ai",
+   "evidence": "pyproject.toml#L60"
+  },
+  {
+   "name": "Ollama",
+   "kind": "ai",
+   "evidence": "pyproject.toml#L57"
+  },
+  {
+   "name": "Hugging Face",
+   "kind": "ai",
+   "evidence": "pyproject.toml#L54"
+  },
+  {
+   "name": "Azure AI Document Intelligence",
+   "kind": "ai",
+   "evidence": "pyproject.toml#L20"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "three units carry frameworks: the Python project paperless-ngx, the npm package paperless-ngx-ui in src-ui and a nameless package.json in src/paperless_mail/templates that only holds Tailwind CSS",
+  "the compose broker is Valkey (valkey/valkey:9-alpine), while the devcontainer starts redis:7 and the code talks to it through the redis client and PAPERLESS_REDIS",
+  "PostgreSQL, MariaDB and SQLite are alternatives chosen by PAPERLESS_DBENGINE or PAPERLESS_DBHOST; SQLite is the default when nothing is set",
+  "Tika and Gotenberg appear only in the -tika compose files and CI; GreenMail and nginx appear only in docker-compose.ci-test.yml, as the IMAP server and the static file server of the tests",
+  "the AI back ends (OpenAI-like, Ollama, Hugging Face embeddings) and Azure AI Document Intelligence are reached only when PAPERLESS_AI_LLM_BACKEND or PAPERLESS_REMOTE_OCR_ENGINE select them",
+  "pytest lives in the dependency group testing, and Jest runs through the Angular builder @angular-builders/jest",
+  "social login through django-allauth names no provider in the repository: providers come from PAPERLESS_SOCIALACCOUNT_PROVIDERS at run time",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

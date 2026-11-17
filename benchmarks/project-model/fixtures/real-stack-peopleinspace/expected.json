@@ -1,0 +1,255 @@
+{
+ "frameworks": [
+  {
+   "name": "Android",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L2"
+  },
+  {
+   "name": "Jetpack Compose",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L65"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L3"
+  },
+  {
+   "name": "Koin",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L94"
+  },
+  {
+   "name": "Coil",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L80"
+  },
+  {
+   "name": "Robolectric",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L103"
+  },
+  {
+   "name": "Android",
+   "unit": ":wearApp",
+   "evidence": "wearApp/build.gradle.kts#L2"
+  },
+  {
+   "name": "Compose for Wear OS",
+   "unit": ":wearApp",
+   "evidence": "wearApp/build.gradle.kts#L72"
+  },
+  {
+   "name": "Jetpack Compose",
+   "unit": ":wearApp",
+   "evidence": "wearApp/build.gradle.kts#L100"
+  },
+  {
+   "name": "Horologist",
+   "unit": ":wearApp",
+   "evidence": "wearApp/build.gradle.kts#L78"
+  },
+  {
+   "name": "Koin",
+   "unit": ":wearApp",
+   "evidence": "wearApp/build.gradle.kts#L85"
+  },
+  {
+   "name": "Coil",
+   "unit": ":wearApp",
+   "evidence": "wearApp/build.gradle.kts#L82"
+  },
+  {
+   "name": "Robolectric",
+   "unit": ":wearApp",
+   "evidence": "wearApp/build.gradle.kts#L104"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":compose-desktop",
+   "evidence": "compose-desktop/build.gradle.kts#L4"
+  },
+  {
+   "name": "Coil",
+   "unit": ":compose-desktop",
+   "evidence": "compose-desktop/build.gradle.kts#L13"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":compose-web",
+   "evidence": "compose-web/build.gradle.kts#L7"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":compose-web",
+   "evidence": "compose-web/build.gradle.kts#L10"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":compose-web",
+   "evidence": "compose-web/build.gradle.kts#L8"
+  },
+  {
+   "name": "Coil",
+   "unit": ":compose-web",
+   "evidence": "compose-web/build.gradle.kts#L34"
+  },
+  {
+   "name": "webpack",
+   "unit": ":compose-web",
+   "evidence": "compose-web/build.gradle.kts#L42"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":common",
+   "evidence": "common/build.gradle.kts#L9"
+  },
+  {
+   "name": "Compose Multiplatform",
+   "unit": ":common",
+   "evidence": "common/build.gradle.kts#L14"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":common",
+   "evidence": "common/build.gradle.kts#L11"
+  },
+  {
+   "name": "Ktor",
+   "unit": ":common",
+   "evidence": "common/build.gradle.kts#L107"
+  },
+  {
+   "name": "Koin",
+   "unit": ":common",
+   "evidence": "common/build.gradle.kts#L113"
+  },
+  {
+   "name": "SQLDelight",
+   "unit": ":common",
+   "evidence": "common/build.gradle.kts#L125"
+  },
+  {
+   "name": "kotlin.test",
+   "unit": ":common",
+   "evidence": "common/build.gradle.kts#L121"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":db",
+   "evidence": "db/build.gradle.kts#L6"
+  },
+  {
+   "name": "SQLDelight",
+   "unit": ":db",
+   "evidence": "db/build.gradle.kts#L8"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":ios-export",
+   "evidence": "ios-export/build.gradle.kts#L12"
+  },
+  {
+   "name": "Kotlin Multiplatform",
+   "unit": ":backend",
+   "evidence": "backend/build.gradle.kts#L6"
+  },
+  {
+   "name": "Ktor",
+   "unit": ":backend",
+   "evidence": "backend/build.gradle.kts#L28"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":backend",
+   "evidence": "backend/build.gradle.kts#L7"
+  },
+  {
+   "name": "kotlin.test",
+   "unit": ":backend",
+   "evidence": "backend/build.gradle.kts#L46"
+  },
+  {
+   "name": "Ktor",
+   "unit": ":mcp-server",
+   "evidence": "mcp-server/build.gradle.kts#L12"
+  },
+  {
+   "name": "Koin",
+   "unit": ":mcp-server",
+   "evidence": "mcp-server/build.gradle.kts#L11"
+  },
+  {
+   "name": "kotlinx.serialization",
+   "unit": ":mcp-server",
+   "evidence": "mcp-server/build.gradle.kts#L3"
+  },
+  {
+   "name": "SwiftUI",
+   "unit": "PeopleInSpaceSwiftUI",
+   "evidence": "PeopleInSpaceSwiftUI/PeopleInSpaceSwiftUI/ContentView.swift#L1"
+  },
+  {
+   "name": "WinUI",
+   "unit": "PeopleInSpace.Windows.WinUiApp",
+   "evidence": "windows/WinUiApp/PeopleInSpace.Windows.WinUiApp.csproj#L9"
+  }
+ ],
+ "services": [
+  {
+   "name": "Google App Engine",
+   "kind": "hosting",
+   "evidence": "backend/src/jvmMain/appengine/app.yaml#L2"
+  },
+  {
+   "name": "Where the ISS At API",
+   "kind": "api",
+   "evidence": "common/src/commonMain/kotlin/dev/johnoreilly/common/remote/PeopleInSpaceApi.kt#L28"
+  },
+  {
+   "name": "Astroviewer",
+   "kind": "api",
+   "evidence": "common/src/commonMain/kotlin/dev/johnoreilly/common/remote/AstroviewerApi.kt#L19"
+  },
+  {
+   "name": "The Space Devs API",
+   "kind": "api",
+   "evidence": "backend/src/jvmMain/kotlin/SpaceDevsPeopleRepository.kt#L47"
+  },
+  {
+   "name": "OpenStreetMap",
+   "kind": "api",
+   "evidence": "gradle/libs.versions.toml#L13"
+  },
+  {
+   "name": "Apple Maps",
+   "kind": "api",
+   "evidence": "PeopleInSpaceSwiftUI/PeopleInSpaceSwiftUI/NativeISSMapView.swift#L3"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "Android units use Jetpack Compose (androidx.compose BOM) while :common, :compose-desktop and :compose-web use JetBrains Compose Multiplatform: two names for related frameworks, attributed per unit",
+  ":wearApp adds Compose for Wear OS and Horologist; Glance, Wear Tiles and ProtoLayout are Jetpack libraries not counted as frameworks here",
+  "the SwiftUI app (an Xcode target) and the WinUI app (windows/WinUiApp, a .NET project consuming the Kotlin library as the NuGet package PeopleInSpace.Kotlin) are outside Gradle",
+  "kotlin.test, the Kotlin test framework, appears only as kotlin(\"test\") in commonTest and jvmTest; Robolectric only in the Android unit tests",
+  "webpack is driven by the Kotlin/Wasm Gradle plugin: there is no package.json, only devNpm declarations and webpack.config.d/",
+  "every external service is an HTTP API named by a base URL in code (wheretheiss.at, astroviewer.net, thespacedevs.com) or a map SDK; the backend is deployed to Google App Engine by backend/src/jvmMain/appengine/app.yaml",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-per-unit",
+  "test-only-framework",
+  "framework-through-plugin",
+  "saas-service"
+ ]
+}

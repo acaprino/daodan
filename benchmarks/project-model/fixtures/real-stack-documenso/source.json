@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/documenso/documenso",
+ "commit": "209d454491eb30f1b91e01ae6a48316a81716257",
+ "licence": "AGPL-3.0",
+ "why": "npm workspace of three apps and twelve packages; every package names its own frameworks, and most services exist only as environment variables"
+}

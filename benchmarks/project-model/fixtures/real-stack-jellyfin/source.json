@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/jellyfin/jellyfin",
+ "commit": "07bcec2e1f4e835bc3a667c856dd444ec46b4611",
+ "licence": "GPL-2.0",
+ "why": "large .NET media server of 43 projects: ASP.NET Core enters through the Web SDK, a framework reference and a single package, and the services are metadata APIs named in provider code"
+}

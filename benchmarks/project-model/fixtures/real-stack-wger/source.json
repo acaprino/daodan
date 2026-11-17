@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/wger-project/wger",
+ "commit": "d4cc7d7769e6d77354242510a08cac89e8704c69",
+ "licence": "AGPL-3.0",
+ "why": "Django app whose Python project and npm package share name and root folder; services only in environment-driven settings and a side compose file for the Open Food Facts import"
+}

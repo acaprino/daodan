@@ -1,0 +1,65 @@
+{
+ "frameworks": [
+  {
+   "name": "Symfony",
+   "unit": "symfony/symfony-demo",
+   "evidence": "composer.json#L25"
+  },
+  {
+   "name": "Doctrine ORM",
+   "unit": "symfony/symfony-demo",
+   "evidence": "composer.json#L15"
+  },
+  {
+   "name": "Twig",
+   "unit": "symfony/symfony-demo",
+   "evidence": "composer.json#L37"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "symfony/symfony-demo",
+   "evidence": "composer.json#L43"
+  },
+  {
+   "name": "Stimulus",
+   "unit": "symfony/symfony-demo",
+   "evidence": "importmap.php#L29"
+  },
+  {
+   "name": "PHPUnit",
+   "unit": "symfony/symfony-demo",
+   "evidence": "composer.json#L55"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": ".env#L27"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "there is no package.json: JavaScript comes from importmap.php, where Stimulus, Bootstrap and jQuery are version entries that importmap:install downloads",
+  "Stimulus is named only in importmap.php; symfony/stimulus-bundle in composer.json is its Symfony integration",
+  "Twig arrives through symfony/twig-bundle and twig/extra-bundle: twig/twig is not a direct requirement",
+  "DATABASE_URL points at a SQLite file; the MySQL, MariaDB and PostgreSQL URLs in .env are commented recipe examples, not services of the demo",
+  "MAILER_DSN is null://null: no mail service is configured",
+  "there is no compose file and no Dockerfile",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-from-config",
+  "framework-from-files",
+  "framework-through-plugin",
+  "test-only-framework"
+ ]
+}

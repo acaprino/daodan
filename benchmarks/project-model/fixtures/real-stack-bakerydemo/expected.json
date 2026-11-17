@@ -1,0 +1,81 @@
+{
+ "frameworks": [
+  {
+   "name": "Django",
+   "unit": ".",
+   "evidence": "requirements/base.txt#L1"
+  },
+  {
+   "name": "Wagtail",
+   "unit": ".",
+   "evidence": "requirements/base.txt#L3"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": ".",
+   "evidence": "bakerydemo/static/css/bootstrap.min.css#L2"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker-compose.yml#L8"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": "docker-compose.yml#L14"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "bakerydemo/settings/base.py#L136"
+  },
+  {
+   "name": "Elasticsearch",
+   "kind": "search",
+   "evidence": "bakerydemo/settings/production.py#L92"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "bakerydemo/settings/production.py#L151"
+  },
+  {
+   "name": "Google Cloud Storage",
+   "kind": "storage",
+   "evidence": "bakerydemo/settings/production.py#L166"
+  },
+  {
+   "name": "Google Maps",
+   "kind": "api",
+   "evidence": "bakerydemo/settings/base.py#L262"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "requirements.txt only includes requirements/production.txt, which includes base.txt: Django and Wagtail are two files away from the root list",
+  "no file names the Python project, so the unit is referred to by its root",
+  "package.json holds only linters and formatters (eslint, stylelint, prettier): no JavaScript framework",
+  "Bootstrap is a vendored bootstrap.min.css, not a dependency",
+  "Elasticsearch, Amazon S3 and Google Cloud Storage are used only when their environment variables are set in production.py; the compose file starts PostgreSQL and Redis only",
+  "SQLite is the default database in base.py when DATABASE_URL is absent",
+  "tests run with Django's own test runner: there is no pytest",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-from-files"
+ ]
+}

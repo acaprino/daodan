@@ -1,0 +1,248 @@
+{
+ "frameworks": [
+  {
+   "name": "ASP.NET Core",
+   "unit": "Clean.Architecture.Web",
+   "evidence": "src/Clean.Architecture.Web/Clean.Architecture.Web.csproj#L1"
+  },
+  {
+   "name": "FastEndpoints",
+   "unit": "Clean.Architecture.Web",
+   "evidence": "src/Clean.Architecture.Web/Clean.Architecture.Web.csproj#L15"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "MinimalClean.Architecture.Web",
+   "evidence": "MinimalClean/src/MinimalClean.Architecture.Web/MinimalClean.Architecture.Web.csproj#L1"
+  },
+  {
+   "name": "FastEndpoints",
+   "unit": "MinimalClean.Architecture.Web",
+   "evidence": "MinimalClean/src/MinimalClean.Architecture.Web/MinimalClean.Architecture.Web.csproj#L24"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "NimblePros.SampleToDo.Web",
+   "evidence": "sample/src/NimblePros.SampleToDo.Web/NimblePros.SampleToDo.Web.csproj#L1"
+  },
+  {
+   "name": "FastEndpoints",
+   "unit": "NimblePros.SampleToDo.Web",
+   "evidence": "sample/src/NimblePros.SampleToDo.Web/NimblePros.SampleToDo.Web.csproj#L15"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "Clean.Architecture.ServiceDefaults",
+   "evidence": "src/Clean.Architecture.ServiceDefaults/Clean.Architecture.ServiceDefaults.csproj#L8"
+  },
+  {
+   "name": "Aspire",
+   "unit": "Clean.Architecture.ServiceDefaults",
+   "evidence": "src/Clean.Architecture.ServiceDefaults/Clean.Architecture.ServiceDefaults.csproj#L4"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "MinimalClean.Architecture.ServiceDefaults",
+   "evidence": "MinimalClean/src/MinimalClean.Architecture.ServiceDefaults/MinimalClean.Architecture.ServiceDefaults.csproj#L8"
+  },
+  {
+   "name": "Aspire",
+   "unit": "MinimalClean.Architecture.ServiceDefaults",
+   "evidence": "MinimalClean/src/MinimalClean.Architecture.ServiceDefaults/MinimalClean.Architecture.ServiceDefaults.csproj#L4"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "NimblePros.SampleToDo.ServiceDefaults",
+   "evidence": "sample/src/NimblePros.SampleToDo.ServiceDefaults/NimblePros.SampleToDo.ServiceDefaults.csproj#L8"
+  },
+  {
+   "name": "Aspire",
+   "unit": "NimblePros.SampleToDo.ServiceDefaults",
+   "evidence": "sample/src/NimblePros.SampleToDo.ServiceDefaults/NimblePros.SampleToDo.ServiceDefaults.csproj#L4"
+  },
+  {
+   "name": "Aspire",
+   "unit": "Clean.Architecture.AspireHost",
+   "evidence": "src/Clean.Architecture.AspireHost/Clean.Architecture.AspireHost.csproj#L1"
+  },
+  {
+   "name": "Aspire",
+   "unit": "MinimalClean.Architecture.AspireHost",
+   "evidence": "MinimalClean/src/MinimalClean.Architecture.AspireHost/MinimalClean.Architecture.AspireHost.csproj#L3"
+  },
+  {
+   "name": "Aspire",
+   "unit": "NimblePros.SampleToDo.AspireHost",
+   "evidence": "sample/src/NimblePros.SampleToDo.AspireHost/NimblePros.SampleToDo.AspireHost.csproj#L3"
+  },
+  {
+   "name": "Aspire",
+   "unit": "Clean.Architecture.AspireTests",
+   "evidence": "tests/Clean.Architecture.AspireTests/Clean.Architecture.AspireTests.csproj#L12"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Clean.Architecture.Infrastructure",
+   "evidence": "src/Clean.Architecture.Infrastructure/Clean.Architecture.Infrastructure.csproj#L9"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Clean.Architecture.Web",
+   "evidence": "src/Clean.Architecture.Web/Clean.Architecture.Web.csproj#L21"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Clean.Architecture.IntegrationTests",
+   "evidence": "tests/Clean.Architecture.IntegrationTests/Clean.Architecture.IntegrationTests.csproj#L19"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "MinimalClean.Architecture.Web",
+   "evidence": "MinimalClean/src/MinimalClean.Architecture.Web/MinimalClean.Architecture.Web.csproj#L43"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "NimblePros.SampleToDo.Infrastructure",
+   "evidence": "sample/src/NimblePros.SampleToDo.Infrastructure/NimblePros.SampleToDo.Infrastructure.csproj#L6"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "NimblePros.SampleToDo.UseCases",
+   "evidence": "sample/src/NimblePros.SampleToDo.UseCases/NimblePros.SampleToDo.UseCases.csproj#L14"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "NimblePros.SampleToDo.Web",
+   "evidence": "sample/src/NimblePros.SampleToDo.Web/NimblePros.SampleToDo.Web.csproj#L22"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "NimblePros.SampleToDo.FunctionalTests",
+   "evidence": "sample/tests/NimblePros.SampleToDo.FunctionalTests/NimblePros.SampleToDo.FunctionalTests.csproj#L17"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "NimblePros.SampleToDo.IntegrationTests",
+   "evidence": "sample/tests/NimblePros.SampleToDo.IntegrationTests/NimblePros.SampleToDo.IntegrationTests.csproj#L15"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Clean.Architecture.AspireTests",
+   "evidence": "tests/Clean.Architecture.AspireTests/Clean.Architecture.AspireTests.csproj#L15"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Clean.Architecture.FunctionalTests",
+   "evidence": "tests/Clean.Architecture.FunctionalTests/Clean.Architecture.FunctionalTests.csproj#L7"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Clean.Architecture.IntegrationTests",
+   "evidence": "tests/Clean.Architecture.IntegrationTests/Clean.Architecture.IntegrationTests.csproj#L17"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Clean.Architecture.UnitTests",
+   "evidence": "tests/Clean.Architecture.UnitTests/Clean.Architecture.UnitTests.csproj#L26"
+  },
+  {
+   "name": "xUnit",
+   "unit": "NimblePros.SampleToDo.FunctionalTests",
+   "evidence": "sample/tests/NimblePros.SampleToDo.FunctionalTests/NimblePros.SampleToDo.FunctionalTests.csproj#L7"
+  },
+  {
+   "name": "xUnit",
+   "unit": "NimblePros.SampleToDo.IntegrationTests",
+   "evidence": "sample/tests/NimblePros.SampleToDo.IntegrationTests/NimblePros.SampleToDo.IntegrationTests.csproj#L13"
+  },
+  {
+   "name": "xUnit",
+   "unit": "NimblePros.SampleToDo.UnitTests",
+   "evidence": "sample/tests/NimblePros.SampleToDo.UnitTests/NimblePros.SampleToDo.UnitTests.csproj#L21"
+  },
+  {
+   "name": "Testcontainers",
+   "unit": "Clean.Architecture.FunctionalTests",
+   "evidence": "tests/Clean.Architecture.FunctionalTests/Clean.Architecture.FunctionalTests.csproj#L17"
+  },
+  {
+   "name": "Testcontainers",
+   "unit": "Clean.Architecture.IntegrationTests",
+   "evidence": "tests/Clean.Architecture.IntegrationTests/Clean.Architecture.IntegrationTests.csproj#L6"
+  },
+  {
+   "name": "Testcontainers",
+   "unit": "NimblePros.SampleToDo.FunctionalTests",
+   "evidence": "sample/tests/NimblePros.SampleToDo.FunctionalTests/NimblePros.SampleToDo.FunctionalTests.csproj#L6"
+  },
+  {
+   "name": "Json.NET",
+   "unit": "NimblePros.SampleToDo.Web",
+   "evidence": "sample/src/NimblePros.SampleToDo.Web/NimblePros.SampleToDo.Web.csproj#L21"
+  },
+  {
+   "name": "Json.NET",
+   "unit": "NimblePros.SampleToDo.FunctionalTests",
+   "evidence": "sample/tests/NimblePros.SampleToDo.FunctionalTests/NimblePros.SampleToDo.FunctionalTests.csproj#L18"
+  },
+  {
+   "name": "MessagePack",
+   "unit": "Clean.Architecture.AspireHost",
+   "evidence": "src/Clean.Architecture.AspireHost/Clean.Architecture.AspireHost.csproj#L13"
+  }
+ ],
+ "services": [
+  {
+   "name": "Microsoft SQL Server",
+   "kind": "database",
+   "evidence": "src/Clean.Architecture.AspireHost/AppHost.cs#L6"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "src/Clean.Architecture.Web/appsettings.json#L9"
+  },
+  {
+   "name": "Papercut SMTP",
+   "kind": "mail",
+   "evidence": "src/Clean.Architecture.AspireHost/AppHost.cs#L13"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "src/Clean.Architecture.Web/appsettings.json#L45"
+  },
+  {
+   "name": "Azure Application Insights",
+   "kind": "monitoring",
+   "evidence": "sample/src/NimblePros.SampleToDo.Web/NimblePros.SampleToDo.Web.csproj#L26"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "each .csproj is a unit named after its file; frameworks are per project, so ASP.NET Core belongs to the three Web projects (Sdk Microsoft.NET.Sdk.Web) and to the ServiceDefaults projects through FrameworkReference Microsoft.AspNetCore.App",
+  "versions live in Directory.Packages.props (central package management) at the root, in MinimalClean/ and in sample/: the PackageReference lines in the projects carry no version",
+  "Aspire is an MSBuild SDK (Aspire.AppHost.Sdk) in the AppHost projects and a property (IsAspireSharedProject) in ServiceDefaults, not a package of those projects",
+  "SQL Server and the Papercut SMTP container are declared in C# by the Aspire AppHost (AddSqlServer, AddContainer), not in a compose file",
+  "SQLite is the fallback connection string when the app runs outside Aspire; Azure Application Insights is a Serilog sink package of the sample's Web project whose configuration is commented out",
+  "xUnit is the test framework of the seven test projects (xunit.v3.mtp-off); Shouldly and NSubstitute are assertion and mocking libraries and are not listed, nor are Mediator, Serilog, FluentValidation and Vogen",
+  "the repository is also a dotnet new template (.template.config): template symbols can remove projects when the template is instantiated",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework",
+  "framework-from-files"
+ ]
+}

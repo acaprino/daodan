@@ -1,0 +1,271 @@
+{
+ "frameworks": [
+  {
+   "name": "Laravel",
+   "unit": "koel/koel",
+   "evidence": "composer.json#L13"
+  },
+  {
+   "name": "PHPUnit",
+   "unit": "koel/koel",
+   "evidence": "composer.json#L65"
+  },
+  {
+   "name": "Vue",
+   "unit": "koel",
+   "evidence": "package.json#L59"
+  },
+  {
+   "name": "Vite",
+   "unit": "koel",
+   "evidence": "package.json#L96"
+  },
+  {
+   "name": "Vite+",
+   "unit": "koel",
+   "evidence": "package.json#L97"
+  },
+  {
+   "name": "Vitest",
+   "unit": "koel",
+   "evidence": "package.json#L100"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "koel",
+   "evidence": "package.json#L94"
+  },
+  {
+   "name": "VitePress",
+   "unit": "koel",
+   "evidence": "package.json#L98"
+  }
+ ],
+ "services": [
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "config/database.php#L63"
+  },
+  {
+   "name": "MariaDB",
+   "kind": "database",
+   "evidence": "config/database.php#L84"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "config/database.php#L105"
+  },
+  {
+   "name": "Microsoft SQL Server",
+   "kind": "database",
+   "evidence": "config/database.php#L147"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "config/database.php#L37"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": "config/database.php#L184"
+  },
+  {
+   "name": "Amazon SQS",
+   "kind": "queue",
+   "evidence": ".env.example#L386"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": ".env.example#L73"
+  },
+  {
+   "name": "Dropbox",
+   "kind": "storage",
+   "evidence": ".env.example#L83"
+  },
+  {
+   "name": "SFTP",
+   "kind": "storage",
+   "evidence": ".env.example#L89"
+  },
+  {
+   "name": "WebDAV",
+   "kind": "storage",
+   "evidence": ".env.example#L108"
+  },
+  {
+   "name": "Algolia",
+   "kind": "search",
+   "evidence": ".env.example#L175"
+  },
+  {
+   "name": "Meilisearch",
+   "kind": "search",
+   "evidence": ".env.example#L177"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": ".env.example#L375"
+  },
+  {
+   "name": "Pusher",
+   "kind": "notification",
+   "evidence": ".env.example#L356"
+  },
+  {
+   "name": "Sentry",
+   "kind": "monitoring",
+   "evidence": ".env.example#L350"
+  },
+  {
+   "name": "Laravel Nightwatch",
+   "kind": "monitoring",
+   "evidence": "composer.json#L46"
+  },
+  {
+   "name": "Google OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example#L305"
+  },
+  {
+   "name": "OpenID Connect",
+   "kind": "authentication",
+   "evidence": ".env.example#L312"
+  },
+  {
+   "name": "Lemon Squeezy",
+   "kind": "payments",
+   "evidence": "app/Http/Integrations/LemonSqueezy/LemonSqueezyConnector.php#L3"
+  },
+  {
+   "name": "MusicBrainz",
+   "kind": "api",
+   "evidence": "config/koel.php#L144"
+  },
+  {
+   "name": "Cover Art Archive",
+   "kind": "api",
+   "evidence": "config/koel.php#L145"
+  },
+  {
+   "name": "YouTube",
+   "kind": "api",
+   "evidence": "config/koel.php#L150"
+  },
+  {
+   "name": "Last.fm",
+   "kind": "api",
+   "evidence": "config/koel.php#L155"
+  },
+  {
+   "name": "ListenBrainz",
+   "kind": "api",
+   "evidence": "config/koel.php#L158"
+  },
+  {
+   "name": "Spotify",
+   "kind": "api",
+   "evidence": ".env.example#L208"
+  },
+  {
+   "name": "iTunes",
+   "kind": "api",
+   "evidence": "config/koel.php#L167"
+  },
+  {
+   "name": "Ticketmaster",
+   "kind": "api",
+   "evidence": "config/koel.php#L171"
+  },
+  {
+   "name": "IPinfo",
+   "kind": "api",
+   "evidence": "config/koel.php#L176"
+  },
+  {
+   "name": "Wikidata",
+   "kind": "api",
+   "evidence": "app/Http/Integrations/Wikidata/WikidataConnector.php#L14"
+  },
+  {
+   "name": "Wikipedia",
+   "kind": "api",
+   "evidence": "app/Http/Integrations/Wikipedia/WikipediaConnector.php#L14"
+  },
+  {
+   "name": "Gravatar",
+   "kind": "api",
+   "evidence": "config/services.php#L55"
+  },
+  {
+   "name": "OpenAI",
+   "kind": "ai",
+   "evidence": "app/Values/AiSettings.php#L12"
+  },
+  {
+   "name": "Anthropic",
+   "kind": "ai",
+   "evidence": "app/Values/AiSettings.php#L13"
+  },
+  {
+   "name": "Google Gemini",
+   "kind": "ai",
+   "evidence": "app/Values/AiSettings.php#L14"
+  },
+  {
+   "name": "DeepSeek",
+   "kind": "ai",
+   "evidence": "app/Values/AiSettings.php#L15"
+  },
+  {
+   "name": "Groq",
+   "kind": "ai",
+   "evidence": "app/Values/AiSettings.php#L16"
+  },
+  {
+   "name": "Mistral AI",
+   "kind": "ai",
+   "evidence": "app/Values/AiSettings.php#L17"
+  },
+  {
+   "name": "OpenRouter",
+   "kind": "ai",
+   "evidence": "app/Values/AiSettings.php#L18"
+  },
+  {
+   "name": "xAI",
+   "kind": "ai",
+   "evidence": "app/Values/AiSettings.php#L19"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "composer.json (koel/koel) and package.json (koel) are two units in the same root: Laravel and PHPUnit belong to the first, Vue, Vite, Vitest and Tailwind CSS to the second",
+  "the front end runs through Vite+ (the vp command): build, test and check all call vp, and vite and vitest are catalog: entries of pnpm-workspace.yaml, where vite is an alias of npm:@voidzero-dev/vite-plus-core@1.3.0",
+  "VitePress builds only the docs/ site, from the same package.json",
+  "there is no compose file: every service is chosen by .env.example, config/*.php or an App/Http/Integrations connector",
+  "config/services.php, config/broadcasting.php, config/queue.php, config/filesystems.php and config/ai.php keep Laravel's skeleton entries (Mailgun, Mandrill, SES, Stripe, Ably, Beanstalkd, FTP, Rackspace, Cohere, Jina, Voyage AI, Ollama, ElevenLabs, Azure OpenAI) that koel neither documents in .env.example nor offers in code: they are not listed",
+  "the AI providers listed are the eight of AiSettings::PROVIDERS, the ones a user can pick in the settings",
+  "TNTSearch, the default search driver, and Laravel Reverb run inside koel's own process or host: they are not external services",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

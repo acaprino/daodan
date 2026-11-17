@@ -1,0 +1,443 @@
+{
+ "frameworks": [
+  {
+   "name": "Quarkus",
+   "unit": "io.quarkus.sample.super-heroes:event-statistics",
+   "evidence": "event-statistics/pom.xml#L23"
+  },
+  {
+   "name": "Quarkus REST",
+   "unit": "io.quarkus.sample.super-heroes:event-statistics",
+   "evidence": "event-statistics/pom.xml#L45"
+  },
+  {
+   "name": "Jackson",
+   "unit": "io.quarkus.sample.super-heroes:event-statistics",
+   "evidence": "event-statistics/pom.xml#L45"
+  },
+  {
+   "name": "Quarkus WebSockets Next",
+   "unit": "io.quarkus.sample.super-heroes:event-statistics",
+   "evidence": "event-statistics/pom.xml#L49"
+  },
+  {
+   "name": "SmallRye Reactive Messaging",
+   "unit": "io.quarkus.sample.super-heroes:event-statistics",
+   "evidence": "event-statistics/pom.xml#L41"
+  },
+  {
+   "name": "Apache Avro",
+   "unit": "io.quarkus.sample.super-heroes:event-statistics",
+   "evidence": "event-statistics/pom.xml#L86"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "io.quarkus.sample.super-heroes:event-statistics",
+   "evidence": "event-statistics/pom.xml#L116"
+  },
+  {
+   "name": "Mockito",
+   "unit": "io.quarkus.sample.super-heroes:event-statistics",
+   "evidence": "event-statistics/pom.xml#L121"
+  },
+  {
+   "name": "Quarkus",
+   "unit": "io.quarkus.sample.super-heroes:grpc-locations",
+   "evidence": "grpc-locations/pom.xml#L24"
+  },
+  {
+   "name": "gRPC",
+   "unit": "io.quarkus.sample.super-heroes:grpc-locations",
+   "evidence": "grpc-locations/pom.xml#L42"
+  },
+  {
+   "name": "Protocol Buffers",
+   "unit": "io.quarkus.sample.super-heroes:grpc-locations",
+   "evidence": "grpc-locations/pom.xml#L99"
+  },
+  {
+   "name": "Hibernate ORM",
+   "unit": "io.quarkus.sample.super-heroes:grpc-locations",
+   "evidence": "grpc-locations/pom.xml#L62"
+  },
+  {
+   "name": "Panache",
+   "unit": "io.quarkus.sample.super-heroes:grpc-locations",
+   "evidence": "grpc-locations/pom.xml#L46"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "io.quarkus.sample.super-heroes:grpc-locations",
+   "evidence": "grpc-locations/pom.xml#L129"
+  },
+  {
+   "name": "MockK",
+   "unit": "io.quarkus.sample.super-heroes:grpc-locations",
+   "evidence": "grpc-locations/pom.xml#L134"
+  },
+  {
+   "name": "Pact",
+   "unit": "io.quarkus.sample.super-heroes:grpc-locations",
+   "evidence": "grpc-locations/pom.xml#L146"
+  },
+  {
+   "name": "Quarkus",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L26"
+  },
+  {
+   "name": "Quarkus REST",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L63"
+  },
+  {
+   "name": "Jackson",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L63"
+  },
+  {
+   "name": "SmallRye Reactive Messaging",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L59"
+  },
+  {
+   "name": "Apache Avro",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L113"
+  },
+  {
+   "name": "Panache",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L125"
+  },
+  {
+   "name": "MapStruct",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L87"
+  },
+  {
+   "name": "gRPC",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L190"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L209"
+  },
+  {
+   "name": "REST Assured",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L219"
+  },
+  {
+   "name": "WireMock",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L230"
+  },
+  {
+   "name": "Pact",
+   "unit": "io.quarkus.sample.super-heroes:rest-fights",
+   "evidence": "rest-fights/pom.xml#L252"
+  },
+  {
+   "name": "Quarkus",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L25"
+  },
+  {
+   "name": "Quarkus REST",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L52"
+  },
+  {
+   "name": "Jackson",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L52"
+  },
+  {
+   "name": "Hibernate Reactive",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L64"
+  },
+  {
+   "name": "Panache",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L64"
+  },
+  {
+   "name": "Qute",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L110"
+  },
+  {
+   "name": "MapStruct",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L80"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L132"
+  },
+  {
+   "name": "Mockito",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L137"
+  },
+  {
+   "name": "REST Assured",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L147"
+  },
+  {
+   "name": "Pact",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L158"
+  },
+  {
+   "name": "Playwright",
+   "unit": "io.quarkus.sample.super-heroes:rest-heroes",
+   "evidence": "rest-heroes/pom.xml#L164"
+  },
+  {
+   "name": "Quarkus",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L25"
+  },
+  {
+   "name": "Quarkus REST",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L69"
+  },
+  {
+   "name": "Jackson",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L69"
+  },
+  {
+   "name": "LangChain4j",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L51"
+  },
+  {
+   "name": "MapStruct",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L64"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L132"
+  },
+  {
+   "name": "Mockito",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L142"
+  },
+  {
+   "name": "REST Assured",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L137"
+  },
+  {
+   "name": "WireMock",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L153"
+  },
+  {
+   "name": "Pact",
+   "unit": "io.quarkus.sample.super-heroes:rest-narration",
+   "evidence": "rest-narration/pom.xml#L165"
+  },
+  {
+   "name": "Quarkus",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L25"
+  },
+  {
+   "name": "Quarkus REST",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L43"
+  },
+  {
+   "name": "Jackson",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L43"
+  },
+  {
+   "name": "Hibernate ORM",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L51"
+  },
+  {
+   "name": "Panache",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L51"
+  },
+  {
+   "name": "Qute",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L106"
+  },
+  {
+   "name": "MapStruct",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L76"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L128"
+  },
+  {
+   "name": "Mockito",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L138"
+  },
+  {
+   "name": "REST Assured",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L148"
+  },
+  {
+   "name": "Pact",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L159"
+  },
+  {
+   "name": "Playwright",
+   "unit": "io.quarkus.sample.super-heroes:rest-villains",
+   "evidence": "rest-villains/pom.xml#L165"
+  },
+  {
+   "name": "Quarkus",
+   "unit": "io.quarkus.sample.super-heroes:ui-super-heroes",
+   "evidence": "ui-super-heroes/pom.xml#L22"
+  },
+  {
+   "name": "Quarkus REST",
+   "unit": "io.quarkus.sample.super-heroes:ui-super-heroes",
+   "evidence": "ui-super-heroes/pom.xml#L51"
+  },
+  {
+   "name": "Jackson",
+   "unit": "io.quarkus.sample.super-heroes:ui-super-heroes",
+   "evidence": "ui-super-heroes/pom.xml#L55"
+  },
+  {
+   "name": "Quinoa",
+   "unit": "io.quarkus.sample.super-heroes:ui-super-heroes",
+   "evidence": "ui-super-heroes/pom.xml#L42"
+  },
+  {
+   "name": "JUnit Jupiter",
+   "unit": "io.quarkus.sample.super-heroes:ui-super-heroes",
+   "evidence": "ui-super-heroes/pom.xml#L123"
+  },
+  {
+   "name": "REST Assured",
+   "unit": "io.quarkus.sample.super-heroes:ui-super-heroes",
+   "evidence": "ui-super-heroes/pom.xml#L112"
+  },
+  {
+   "name": "Playwright",
+   "unit": "io.quarkus.sample.super-heroes:ui-super-heroes",
+   "evidence": "ui-super-heroes/pom.xml#L128"
+  },
+  {
+   "name": "Quarkus",
+   "unit": "io.quarkus.sample.super-heroes:docs",
+   "evidence": "docs/pom.xml#L17"
+  },
+  {
+   "name": "Roq",
+   "unit": "io.quarkus.sample.super-heroes:docs",
+   "evidence": "docs/pom.xml#L36"
+  },
+  {
+   "name": "Apache JMeter",
+   "unit": "io.quarkus.sample.super-heroes:jmeter-scripts",
+   "evidence": "scripts/jmeter/pom.xml#L16"
+  },
+  {
+   "name": "React",
+   "unit": "Quarkus Sample :: Super-Heroes :: User Interface :: React Frontend",
+   "evidence": "ui-super-heroes/src/main/webui/package.json#L10"
+  },
+  {
+   "name": "Create React App",
+   "unit": "Quarkus Sample :: Super-Heroes :: User Interface :: React Frontend",
+   "evidence": "ui-super-heroes/src/main/webui/package.json#L13"
+  },
+  {
+   "name": "Jest",
+   "unit": "Quarkus Sample :: Super-Heroes :: User Interface :: React Frontend",
+   "evidence": "ui-super-heroes/src/main/webui/package.json#L18"
+  }
+ ],
+ "services": [
+  {
+   "name": "MongoDB",
+   "kind": "database",
+   "evidence": "rest-fights/src/main/docker-compose/infra.yml#L3"
+  },
+  {
+   "name": "Apache Kafka",
+   "kind": "queue",
+   "evidence": "rest-fights/src/main/docker-compose/infra.yml#L24"
+  },
+  {
+   "name": "Apicurio Registry",
+   "kind": "api",
+   "evidence": "rest-fights/src/main/docker-compose/infra.yml#L15"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "deploy/docker-compose/java25.yml#L86"
+  },
+  {
+   "name": "MariaDB",
+   "kind": "database",
+   "evidence": "deploy/docker-compose/java25.yml#L110"
+  },
+  {
+   "name": "Grafana LGTM",
+   "kind": "monitoring",
+   "evidence": "monitoring/docker-compose/monitoring.yml#L4"
+  },
+  {
+   "name": "OpenAI",
+   "kind": "ai",
+   "evidence": "rest-narration/src/main/resources/application.properties#L9"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the modules do not inherit from the root pom.xml, a pure aggregator; each imports the Quarkus BOM itself, and rest-narration also imports the LangChain4j BOM",
+  "Quarkus extensions bring the frameworks: quarkus-rest-jackson gives Quarkus REST and Jackson, quarkus-hibernate-orm-panache gives Hibernate ORM and Panache, quarkus-messaging-kafka gives SmallRye Reactive Messaging, quarkus-apicurio-registry-avro gives Apache Avro",
+  "each module has its own frameworks: only grpc-locations has Protocol Buffers and MockK, only rest-narration has LangChain4j, only rest-fights uses MongoDB with Panache",
+  "the React front end in ui-super-heroes/src/main/webui is an npm unit of its own, built through Quinoa by the Maven module; Jest runs only through react-scripts test",
+  "health, metrics, OpenTelemetry, Kubernetes, Helm, OpenShift, container-image, Stork, Fault Tolerance, Liquibase, validation and OpenAPI extensions are not counted as frameworks here",
+  "the services are started by compose files spread over module folders (src/main/docker-compose/infra.yml, deploy/docker-compose/*.yml, monitoring/); MariaDB serves grpc-locations, PostgreSQL rest-heroes and rest-villains",
+  "OpenAI is reached only through LangChain4j configuration (quarkus.langchain4j.openai.api-key); in dev and test WireMock stands in for it, and Microcks is a dev service, not a service of the product",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-through-plugin",
+  "framework-per-unit",
+  "test-only-framework",
+  "service-in-infra",
+  "service-from-config",
+  "saas-service"
+ ]
+}

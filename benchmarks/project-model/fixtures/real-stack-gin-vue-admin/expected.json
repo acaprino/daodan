@@ -1,0 +1,161 @@
+{
+ "frameworks": [
+  {
+   "name": "Gin",
+   "unit": "github.com/flipped-aurora/gin-vue-admin/server",
+   "evidence": "server/go.mod#L17"
+  },
+  {
+   "name": "GORM",
+   "unit": "github.com/flipped-aurora/gin-vue-admin/server",
+   "evidence": "server/go.mod#L59"
+  },
+  {
+   "name": "Qmgo",
+   "unit": "github.com/flipped-aurora/gin-vue-admin/server",
+   "evidence": "server/go.mod#L33"
+  },
+  {
+   "name": "Casbin",
+   "unit": "github.com/flipped-aurora/gin-vue-admin/server",
+   "evidence": "server/go.mod#L12"
+  },
+  {
+   "name": "testify",
+   "unit": "github.com/flipped-aurora/gin-vue-admin/server",
+   "evidence": "server/go.mod#L39"
+  },
+  {
+   "name": "Vue",
+   "unit": "gin-vue-admin",
+   "evidence": "web/package.json#L49"
+  },
+  {
+   "name": "Vite",
+   "unit": "gin-vue-admin",
+   "evidence": "web/package.json#L79"
+  },
+  {
+   "name": "Element Plus",
+   "unit": "gin-vue-admin",
+   "evidence": "web/package.json#L32"
+  },
+  {
+   "name": "Pinia",
+   "unit": "gin-vue-admin",
+   "evidence": "web/package.json#L41"
+  },
+  {
+   "name": "Vue Router",
+   "unit": "gin-vue-admin",
+   "evidence": "web/package.json#L53"
+  },
+  {
+   "name": "UnoCSS",
+   "unit": "gin-vue-admin",
+   "evidence": "web/package.json#L63"
+  }
+ ],
+ "services": [
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "deploy/docker-compose/docker-compose.yaml#L53"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": "deploy/docker-compose/docker-compose.yaml#L76"
+  },
+  {
+   "name": "MongoDB",
+   "kind": "database",
+   "evidence": "server/config.yaml#L49"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "server/config.yaml#L66"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "server/config.yaml#L120"
+  },
+  {
+   "name": "Oracle Database",
+   "kind": "database",
+   "evidence": "server/config.yaml#L132"
+  },
+  {
+   "name": "Microsoft SQL Server",
+   "kind": "database",
+   "evidence": "server/config.yaml#L144"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "server/config.yaml#L156"
+  },
+  {
+   "name": "Qiniu Kodo",
+   "kind": "storage",
+   "evidence": "server/config.yaml#L198"
+  },
+  {
+   "name": "MinIO",
+   "kind": "storage",
+   "evidence": "server/config.yaml#L208"
+  },
+  {
+   "name": "Aliyun OSS",
+   "kind": "storage",
+   "evidence": "server/config.yaml#L218"
+  },
+  {
+   "name": "Tencent COS",
+   "kind": "storage",
+   "evidence": "server/config.yaml#L227"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "server/config.yaml#L236"
+  },
+  {
+   "name": "Cloudflare R2",
+   "kind": "storage",
+   "evidence": "server/config.yaml#L248"
+  },
+  {
+   "name": "Huawei Cloud OBS",
+   "kind": "storage",
+   "evidence": "server/config.yaml#L257"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "server/ is a Go module (github.com/flipped-aurora/gin-vue-admin/server) and web/ an npm package named gin-vue-admin: the frameworks split between the two units",
+  "web/package.json declares @vue/cli-service and its plugins, but every script runs vite: Vue CLI is not used and is not counted",
+  "UnoCSS is the CSS framework (through @unocss/vite in vite.config.js); sass is only a preprocessor",
+  "testify is the only Go test framework, used by a few _test.go files; go.mod has no test scope",
+  "the compose file starts only MySQL and Redis; PostgreSQL, Oracle, SQL Server, SQLite, MongoDB and the object stores (Qiniu, MinIO, Aliyun OSS, Tencent COS, Amazon S3, Cloudflare R2, Huawei OBS) are chosen by sections of server/config.yaml",
+  "Cloudflare R2 has no SDK of its own: it is reached through the AWS S3 SDK",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-per-unit",
+  "test-only-framework",
+  "service-in-infra",
+  "service-from-config",
+  "saas-service"
+ ]
+}

@@ -1,0 +1,147 @@
+{
+ "frameworks": [
+  {
+   "name": "Flask",
+   "unit": "ctfd",
+   "evidence": "pyproject.toml#L9"
+  },
+  {
+   "name": "SQLAlchemy",
+   "unit": "ctfd",
+   "evidence": "pyproject.toml#L16"
+  },
+  {
+   "name": "marshmallow",
+   "unit": "ctfd",
+   "evidence": "pyproject.toml#L32"
+  },
+  {
+   "name": "Pydantic",
+   "unit": "ctfd",
+   "evidence": "pyproject.toml#L33"
+  },
+  {
+   "name": "pytest",
+   "unit": "ctfd",
+   "evidence": "pyproject.toml#L50"
+  },
+  {
+   "name": "Vue",
+   "unit": "admin",
+   "evidence": "CTFd/themes/admin/package.json#L38"
+  },
+  {
+   "name": "Vite",
+   "unit": "admin",
+   "evidence": "CTFd/themes/admin/package.json#L20"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "admin",
+   "evidence": "CTFd/themes/admin/package.json#L29"
+  },
+  {
+   "name": "Alpine.js",
+   "unit": "admin",
+   "evidence": "CTFd/themes/admin/package.json#L28"
+  },
+  {
+   "name": "Vue",
+   "unit": "core-beta",
+   "evidence": "CTFd/themes/core/package.json#L24"
+  },
+  {
+   "name": "Vite",
+   "unit": "core-beta",
+   "evidence": "CTFd/themes/core/package.json#L31"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "core-beta",
+   "evidence": "CTFd/themes/core/package.json#L19"
+  },
+  {
+   "name": "Alpine.js",
+   "unit": "core-beta",
+   "evidence": "CTFd/themes/core/package.json#L18"
+  }
+ ],
+ "services": [
+  {
+   "name": "MariaDB",
+   "kind": "database",
+   "evidence": "docker-compose.yml#L51"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": "docker-compose.yml#L67"
+  },
+  {
+   "name": "nginx",
+   "kind": "proxy",
+   "evidence": "docker-compose.yml#L41"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "CTFd/config.py#L123"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": ".github/workflows/mysql.yml#L18"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": ".github/workflows/postgres.yml#L18"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "CTFd/config.ini#L169"
+  },
+  {
+   "name": "Mailgun",
+   "kind": "mail",
+   "evidence": "CTFd/config.ini#L206"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "CTFd/config.ini#L240"
+  },
+  {
+   "name": "MajorLeagueCyber",
+   "kind": "authentication",
+   "evidence": "CTFd/auth.py#L521"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "requirements.txt is exported by uv from pyproject.toml and lists transitive packages: Flask-SQLAlchemy, marshmallow-sqlalchemy and alembic are there next to the direct dependencies",
+  "the themes are two npm packages, admin and core-beta (folder CTFd/themes/core); CTFd/themes/core-deprecated holds only built assets and no package.json",
+  "both themes build with Vite and Vue but also ship Alpine.js and Bootstrap, at different major versions (4.3 and 5.3)",
+  "the compose file uses MariaDB and Redis; MySQL and PostgreSQL appear only as CI service containers, and SQLite is the default when DATABASE_URL is empty",
+  "mail goes either to SMTP (MAIL_SERVER) or to Mailgun (MAILGUN_API_KEY), uploads either to the filesystem or to S3 (UPLOAD_PROVIDER), all keys of CTFd/config.ini",
+  "the only OAuth login is MajorLeagueCyber, whose URLs are defaults in CTFd/auth.py",
+  "pytest is in the dev group; the GeoIP lookup reads a bundled MaxMind database, not a service",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

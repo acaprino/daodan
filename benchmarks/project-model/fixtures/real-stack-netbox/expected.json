@@ -1,0 +1,139 @@
+{
+ "frameworks": [
+  {
+   "name": "Django",
+   "unit": ".",
+   "evidence": "requirements.txt#L2"
+  },
+  {
+   "name": "Django REST framework",
+   "unit": ".",
+   "evidence": "requirements.txt#L17"
+  },
+  {
+   "name": "Strawberry GraphQL",
+   "unit": ".",
+   "evidence": "requirements.txt#L40"
+  },
+  {
+   "name": "RQ",
+   "unit": ".",
+   "evidence": "requirements.txt#L36"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "netbox/project-static",
+   "evidence": "netbox/project-static/package.json#L29"
+  },
+  {
+   "name": "Tabler",
+   "unit": "netbox/project-static",
+   "evidence": "netbox/project-static/package.json#L28"
+  },
+  {
+   "name": "htmx",
+   "unit": "netbox/project-static",
+   "evidence": "netbox/project-static/package.json#L33"
+  },
+  {
+   "name": "esbuild",
+   "unit": "netbox/project-static",
+   "evidence": "netbox/project-static/package.json#L49"
+  },
+  {
+   "name": "React",
+   "unit": "netbox-graphiql",
+   "evidence": "netbox/project-static/netbox-graphiql/package.json#L13"
+  },
+  {
+   "name": "GraphiQL",
+   "unit": "netbox-graphiql",
+   "evidence": "netbox/project-static/netbox-graphiql/package.json#L10"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "netbox/netbox/settings.py#L306"
+  },
+  {
+   "name": "Redis",
+   "kind": "queue",
+   "evidence": "netbox/netbox/configuration_example.py#L30"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "netbox/netbox/settings.py#L470"
+  },
+  {
+   "name": "Sentry",
+   "kind": "monitoring",
+   "evidence": "netbox/netbox/settings.py#L709"
+  },
+  {
+   "name": "LDAP",
+   "kind": "authentication",
+   "evidence": "pyproject.toml#L28"
+  },
+  {
+   "name": "SAML",
+   "kind": "authentication",
+   "evidence": "pyproject.toml#L29"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "pyproject.toml#L33"
+  },
+  {
+   "name": "OpenStack Swift",
+   "kind": "storage",
+   "evidence": "netbox/netbox/settings.py#L361"
+  },
+  {
+   "name": "NetBox Census",
+   "kind": "analytics",
+   "evidence": "netbox/netbox/settings.py#L724"
+  },
+  {
+   "name": "NetBox plugin catalog",
+   "kind": "api",
+   "evidence": "netbox/netbox/settings.py#L958"
+  },
+  {
+   "name": "NetBox Copilot",
+   "kind": "ai",
+   "evidence": "netbox/netbox/settings.py#L731"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "requirements.txt#L9"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "pyproject.toml declares its dependencies as dynamic: a custom Hatch hook (scripts/packaging/hatch_metadata.py) reads them from requirements.txt, so the frameworks are in requirements.txt",
+  "the Python project and netbox/project-static/package.json are both named netbox, so their frameworks are attributed by root; netbox-graphiql is a yarn workspace member with React",
+  "PostgreSQL is the only database: settings.py fills in the postgresql engine when configuration.py gives none; Redis is required for tasks and caching",
+  "there is no compose file: every service comes from netbox/netbox/configuration_example.py, settings.py or an optional extra (ldap, saml2, s3, swift, sentry) of pyproject.toml",
+  "NetBox Census, the plugin catalog and NetBox Copilot are NetBox Labs endpoints hard-coded in settings.py",
+  "social login uses social-auth-app-django with the backend chosen in configuration, so no provider is fixed; tests use Django's test runner, not pytest",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit"
+ ]
+}

@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/symfony/demo",
+ "commit": "f42980c690b4bf335fa41bbafdb075bb67b719c2",
+ "licence": "MIT",
+ "why": "Symfony application with no package.json: the front end comes from an import map and Composer bundles, and the only store is SQLite"
+}

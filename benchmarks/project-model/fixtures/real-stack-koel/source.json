@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/koel/koel",
+ "commit": "9ec40db3ca9b01a0822d11ad24591b70cc6aca63",
+ "licence": "MIT",
+ "why": "Laravel back end and Vue front end in one root, with about forty external services selected by environment variables and integration classes"
+}

@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/thomiceli/opengist",
+ "commit": "2acf3dae87f9c3d536e0a870787941bbd06d0b46",
+ "licence": "AGPL-3.0",
+ "why": "Echo and GORM Go server with a Vite, Tailwind and htmx front end declared by the root package.json, and a VitePress site in docs/"
+}

@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/lobsters/lobsters",
+ "commit": "28bc8d6b53f405cf0d7b18e16f4c5b2f7448e470",
+ "licence": "BSD-3-Clause",
+ "why": "Rails app on SQLite with the Solid gems, where every external service is a class in extras/ or a Rails credential, and the compose file holds only the app"
+}

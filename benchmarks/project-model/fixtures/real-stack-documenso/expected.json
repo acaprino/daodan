@@ -1,0 +1,403 @@
+{
+ "frameworks": [
+  {
+   "name": "React",
+   "unit": "@documenso/root",
+   "evidence": "package.json#L144"
+  },
+  {
+   "name": "Zod",
+   "unit": "@documenso/root",
+   "evidence": "package.json#L149"
+  },
+  {
+   "name": "Prisma",
+   "unit": "@documenso/root",
+   "evidence": "package.json#L52"
+  },
+  {
+   "name": "tRPC",
+   "unit": "@documenso/root",
+   "evidence": "package.json#L75"
+  },
+  {
+   "name": "ts-rest",
+   "unit": "@documenso/root",
+   "evidence": "package.json#L76"
+  },
+  {
+   "name": "Inngest",
+   "unit": "@documenso/root",
+   "evidence": "package.json#L83"
+  },
+  {
+   "name": "Playwright",
+   "unit": "@documenso/root",
+   "evidence": "package.json#L91"
+  },
+  {
+   "name": "Vite",
+   "unit": "@documenso/root",
+   "evidence": "package.json#L100"
+  },
+  {
+   "name": "Next.js",
+   "unit": "@documenso/docs",
+   "evidence": "apps/docs/package.json#L18"
+  },
+  {
+   "name": "React",
+   "unit": "@documenso/docs",
+   "evidence": "apps/docs/package.json#L21"
+  },
+  {
+   "name": "Fumadocs",
+   "unit": "@documenso/docs",
+   "evidence": "apps/docs/package.json#L13"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "@documenso/docs",
+   "evidence": "apps/docs/package.json#L32"
+  },
+  {
+   "name": "Next.js",
+   "unit": "@documenso/openpage-api",
+   "evidence": "apps/openpage-api/package.json#L15"
+  },
+  {
+   "name": "React Router",
+   "unit": "@documenso/remix",
+   "evidence": "apps/remix/package.json#L66"
+  },
+  {
+   "name": "React",
+   "unit": "@documenso/remix",
+   "evidence": "apps/remix/package.json#L58"
+  },
+  {
+   "name": "Hono",
+   "unit": "@documenso/remix",
+   "evidence": "apps/remix/package.json#L46"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "@documenso/remix",
+   "evidence": "apps/remix/package.json#L71"
+  },
+  {
+   "name": "Vite",
+   "unit": "@documenso/remix",
+   "evidence": "apps/remix/package.json#L102"
+  },
+  {
+   "name": "Rollup",
+   "unit": "@documenso/remix",
+   "evidence": "apps/remix/package.json#L99"
+  },
+  {
+   "name": "ts-rest",
+   "unit": "@documenso/api",
+   "evidence": "packages/api/package.json#L18"
+  },
+  {
+   "name": "Zod",
+   "unit": "@documenso/api",
+   "evidence": "packages/api/package.json#L24"
+  },
+  {
+   "name": "Playwright",
+   "unit": "@documenso/app-tests",
+   "evidence": "packages/app-tests/package.json#L18"
+  },
+  {
+   "name": "Hono",
+   "unit": "@documenso/auth",
+   "evidence": "packages/auth/package.json#L18"
+  },
+  {
+   "name": "Zod",
+   "unit": "@documenso/auth",
+   "evidence": "packages/auth/package.json#L22"
+  },
+  {
+   "name": "Hono",
+   "unit": "@documenso/ee",
+   "evidence": "packages/ee/package.json#L20"
+  },
+  {
+   "name": "React",
+   "unit": "@documenso/ee",
+   "evidence": "packages/ee/package.json#L22"
+  },
+  {
+   "name": "Zod",
+   "unit": "@documenso/ee",
+   "evidence": "packages/ee/package.json#L24"
+  },
+  {
+   "name": "React Email",
+   "unit": "@documenso/email",
+   "evidence": "packages/email/package.json#L24"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "@documenso/email",
+   "evidence": "packages/email/tailwind.config.js#L2"
+  },
+  {
+   "name": "React Router",
+   "unit": "@documenso/email",
+   "evidence": "packages/email/preview/react-router.config.ts#L1"
+  },
+  {
+   "name": "Vite",
+   "unit": "@documenso/email",
+   "evidence": "packages/email/preview/vite.config.ts#L6"
+  },
+  {
+   "name": "React",
+   "unit": "@documenso/lib",
+   "evidence": "packages/lib/package.json#L65"
+  },
+  {
+   "name": "Zod",
+   "unit": "@documenso/lib",
+   "evidence": "packages/lib/package.json#L70"
+  },
+  {
+   "name": "Kysely",
+   "unit": "@documenso/lib",
+   "evidence": "packages/lib/package.json#L52"
+  },
+  {
+   "name": "BullMQ",
+   "unit": "@documenso/lib",
+   "evidence": "packages/lib/package.json#L45"
+  },
+  {
+   "name": "Inngest",
+   "unit": "@documenso/lib",
+   "evidence": "packages/lib/package.json#L48"
+  },
+  {
+   "name": "Playwright",
+   "unit": "@documenso/lib",
+   "evidence": "packages/lib/package.json#L60"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@documenso/lib",
+   "evidence": "packages/lib/package.json#L75"
+  },
+  {
+   "name": "Prisma",
+   "unit": "@documenso/prisma",
+   "evidence": "packages/prisma/package.json#L24"
+  },
+  {
+   "name": "Kysely",
+   "unit": "@documenso/prisma",
+   "evidence": "packages/prisma/package.json#L25"
+  },
+  {
+   "name": "Zod",
+   "unit": "@documenso/prisma",
+   "evidence": "packages/prisma/package.json#L30"
+  },
+  {
+   "name": "tRPC",
+   "unit": "@documenso/trpc",
+   "evidence": "packages/trpc/package.json#L17"
+  },
+  {
+   "name": "ts-rest",
+   "unit": "@documenso/trpc",
+   "evidence": "packages/trpc/package.json#L18"
+  },
+  {
+   "name": "Zod",
+   "unit": "@documenso/trpc",
+   "evidence": "packages/trpc/package.json#L23"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "@documenso/tailwind-config",
+   "evidence": "packages/tailwind-config/package.json#L15"
+  },
+  {
+   "name": "React",
+   "unit": "@documenso/ui",
+   "evidence": "packages/ui/package.json#L23"
+  },
+  {
+   "name": "Zod",
+   "unit": "@documenso/ui",
+   "evidence": "packages/ui/package.json#L53"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "@documenso/ui",
+   "evidence": "packages/ui/tailwind.config.cjs#L2"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker/development/compose.yml#L5"
+  },
+  {
+   "name": "Redis",
+   "kind": "queue",
+   "evidence": "docker/development/compose.yml#L30"
+  },
+  {
+   "name": "Inbucket",
+   "kind": "mail",
+   "evidence": "docker/development/compose.yml#L22"
+  },
+  {
+   "name": "Gotenberg",
+   "kind": "api",
+   "evidence": "docker/development/compose.yml#L37"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": ".env.example#L111"
+  },
+  {
+   "name": "Resend",
+   "kind": "mail",
+   "evidence": ".env.example#L133"
+  },
+  {
+   "name": "MailChannels",
+   "kind": "mail",
+   "evidence": ".env.example#L135"
+  },
+  {
+   "name": "Amazon SES",
+   "kind": "mail",
+   "evidence": ".env.example#L149"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": ".env.example#L101"
+  },
+  {
+   "name": "Amazon CloudFront",
+   "kind": "storage",
+   "evidence": "packages/lib/package.json#L21"
+  },
+  {
+   "name": "Azure Blob Storage",
+   "kind": "storage",
+   "evidence": "packages/lib/universal/upload/providers/azure-blob-provider.ts#L7"
+  },
+  {
+   "name": "Google OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example#L17"
+  },
+  {
+   "name": "Microsoft OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example#L21"
+  },
+  {
+   "name": "OpenID Connect",
+   "kind": "authentication",
+   "evidence": ".env.example#L24"
+  },
+  {
+   "name": "Google Cloud KMS",
+   "kind": "authentication",
+   "evidence": "packages/signing/package.json#L15"
+  },
+  {
+   "name": "Google Secret Manager",
+   "kind": "authentication",
+   "evidence": "packages/signing/package.json#L16"
+  },
+  {
+   "name": "Cloud Signature Consortium",
+   "kind": "api",
+   "evidence": ".env.example#L74"
+  },
+  {
+   "name": "Stripe",
+   "kind": "payments",
+   "evidence": ".env.example#L154"
+  },
+  {
+   "name": "Inngest",
+   "kind": "queue",
+   "evidence": ".env.example#L160"
+  },
+  {
+   "name": "PostHog",
+   "kind": "analytics",
+   "evidence": ".env.example#L170"
+  },
+  {
+   "name": "Plausible",
+   "kind": "analytics",
+   "evidence": "apps/docs/package.json#L19"
+  },
+  {
+   "name": "Google Vertex AI",
+   "kind": "ai",
+   "evidence": ".env.example#L213"
+  },
+  {
+   "name": "Cloudflare Turnstile",
+   "kind": "authentication",
+   "evidence": ".env.example#L224"
+  },
+  {
+   "name": "Plain",
+   "kind": "api",
+   "evidence": ".env.example#L240"
+  },
+  {
+   "name": "Browserless",
+   "kind": "api",
+   "evidence": "packages/lib/server-only/htmltopdf/get-audit-logs-pdf.ts#L32"
+  },
+  {
+   "name": "Render",
+   "kind": "hosting",
+   "evidence": "render.yaml#L2"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "apps/remix is named after Remix but runs on React Router 7 framework mode (react-router, @react-router/*): no package of the repository declares a @remix-run package, so Remix is not a framework here",
+  "the root package.json declares React, Zod, Prisma, tRPC, ts-rest, Inngest, Playwright and Vite for hoisting: they count for the root unit as well as for the packages that declare them",
+  "packages/email/preview is a React Router and Vite app inside @documenso/email with no manifest of its own, so neither appears in that unit's dependencies",
+  "packages/email and packages/ui get Tailwind CSS only through tailwind.config files and @documenso/tailwind-config",
+  "playwright is a runtime dependency of @documenso/lib, which drives Chromium to render PDFs; the e2e tests use @playwright/test in @documenso/app-tests",
+  "the jobs provider is chosen by NEXT_PRIVATE_JOBS_PROVIDER (local, inngest or bullmq), the mail transport by NEXT_PRIVATE_SMTP_TRANSPORT and storage by NEXT_PUBLIC_UPLOAD_TRANSPORT: every external service is optional and named only by its variable or SDK",
+  "Gotenberg is built from docker/development/Dockerfile.gotenberg; its compose entry has an image name but no registry image",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-from-files",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

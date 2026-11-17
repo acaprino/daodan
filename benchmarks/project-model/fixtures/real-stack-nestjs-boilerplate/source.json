@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/brocoders/nestjs-boilerplate",
+ "commit": "9620f159eefe38f47747d02ab162852367c5472c",
+ "licence": "MIT",
+ "why": "NestJS API template that switches between a relational (TypeORM, PostgreSQL) and a document (Mongoose, MongoDB) persistence through separate compose and env files"
+}

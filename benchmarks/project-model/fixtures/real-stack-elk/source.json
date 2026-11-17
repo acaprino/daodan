@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/elk-zone/elk",
+ "commit": "6b956a6d4a89a676059d83a0b0e59d7165d5f266",
+ "licence": "MIT",
+ "why": "Nuxt client for Mastodon with a Nuxt docs site in a pnpm workspace; its storage service is chosen by an environment variable"
+}

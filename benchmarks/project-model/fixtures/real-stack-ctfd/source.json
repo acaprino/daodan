@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/CTFd/CTFd",
+ "commit": "485d59e7bff790424f093be80ea9f6031b631f2d",
+ "licence": "Apache-2.0",
+ "why": "Flask back end with two Vite and Vue theme packages; databases in compose, CI service containers and an ini file, plus an OAuth provider named only in code"
+}

@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/atuinsh/atuin",
+ "commit": "fd95859eb5caf78850914493641c56f1f7481312",
+ "licence": "MIT",
+ "why": "Cargo workspace of thirteen crates with a TUI client, an Axum sync server and gRPC daemons, frameworks attributed per crate through workspace dependencies"
+}

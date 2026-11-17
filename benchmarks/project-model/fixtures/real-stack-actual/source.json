@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/actualbudget/actual",
+ "commit": "9f046e7d638b0e775d678af3c15380fa43a2f3d3",
+ "licence": "MIT",
+ "why": "Yarn workspace of fifteen packages: web, Electron and Capacitor clients, a sync server and libraries, each with its own frameworks; the services are bank-sync APIs reached from code"
+}

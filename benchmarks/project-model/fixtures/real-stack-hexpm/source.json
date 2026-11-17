@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/hexpm/hexpm",
+ "commit": "92147c5982cfdf4fe34f742efbf9ae5ecf069beb",
+ "licence": "Apache-2.0",
+ "why": "Phoenix package registry whose only compose service is PostgreSQL, while S3, SQS, GCS, Fastly, Typesense and a dozen other services come only from System.fetch_env! in config/runtime.exs"
+}

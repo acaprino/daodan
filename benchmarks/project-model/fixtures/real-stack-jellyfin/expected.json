@@ -1,0 +1,245 @@
+{
+ "frameworks": [
+  {
+   "name": "ASP.NET Core",
+   "unit": "Jellyfin.Server",
+   "evidence": "Jellyfin.Server/Jellyfin.Server.csproj#L1"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "Jellyfin.Api.Fuzz",
+   "evidence": "fuzz/Jellyfin.Api.Fuzz/Jellyfin.Api.Fuzz.csproj#L1"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "MediaBrowser.Common",
+   "evidence": "MediaBrowser.Common/MediaBrowser.Common.csproj#L17"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "MediaBrowser.Model",
+   "evidence": "MediaBrowser.Model/MediaBrowser.Model.csproj#L36"
+  },
+  {
+   "name": "ASP.NET Core",
+   "unit": "Jellyfin.Api",
+   "evidence": "Jellyfin.Api/Jellyfin.Api.csproj#L14"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Emby.Server.Implementations",
+   "evidence": "Emby.Server.Implementations/Emby.Server.Implementations.csproj#L31"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Jellyfin.Server.Implementations",
+   "evidence": "Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj#L30"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Jellyfin.Database.Implementations",
+   "evidence": "src/Jellyfin.Database/Jellyfin.Database.Implementations/Jellyfin.Database.Implementations.csproj#L27"
+  },
+  {
+   "name": "Entity Framework Core",
+   "unit": "Jellyfin.Database.Providers.Sqlite",
+   "evidence": "src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj#L15"
+  },
+  {
+   "name": "Json.NET",
+   "unit": "MediaBrowser.Providers",
+   "evidence": "MediaBrowser.Providers/MediaBrowser.Providers.csproj#L23"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Api.Tests",
+   "evidence": "tests/Jellyfin.Api.Tests/Jellyfin.Api.Tests.csproj#L15"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Common.Tests",
+   "evidence": "tests/Jellyfin.Common.Tests/Jellyfin.Common.Tests.csproj#L11"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Controller.Tests",
+   "evidence": "tests/Jellyfin.Controller.Tests/Jellyfin.Controller.Tests.csproj#L12"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Drawing.Skia.Tests",
+   "evidence": "tests/Jellyfin.Drawing.Skia.Tests/Jellyfin.Drawing.Skia.Tests.csproj#L11"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Extensions.Tests",
+   "evidence": "tests/Jellyfin.Extensions.Tests/Jellyfin.Extensions.Tests.csproj#L9"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.LiveTv.Tests",
+   "evidence": "tests/Jellyfin.LiveTv.Tests/Jellyfin.LiveTv.Tests.csproj#L18"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.MediaEncoding.Hls.Tests",
+   "evidence": "tests/Jellyfin.MediaEncoding.Hls.Tests/Jellyfin.MediaEncoding.Hls.Tests.csproj#L9"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.MediaEncoding.Keyframes.Tests",
+   "evidence": "tests/Jellyfin.MediaEncoding.Keyframes.Tests/Jellyfin.MediaEncoding.Keyframes.Tests.csproj#L9"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.MediaEncoding.Tests",
+   "evidence": "tests/Jellyfin.MediaEncoding.Tests/Jellyfin.MediaEncoding.Tests.csproj#L22"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Model.Tests",
+   "evidence": "tests/Jellyfin.Model.Tests/Jellyfin.Model.Tests.csproj#L10"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Naming.Tests",
+   "evidence": "tests/Jellyfin.Naming.Tests/Jellyfin.Naming.Tests.csproj#L12"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Networking.Tests",
+   "evidence": "tests/Jellyfin.Networking.Tests/Jellyfin.Networking.Tests.csproj#L11"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Providers.Tests",
+   "evidence": "tests/Jellyfin.Providers.Tests/Jellyfin.Providers.Tests.csproj#L19"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Server.Implementations.Tests",
+   "evidence": "tests/Jellyfin.Server.Implementations.Tests/Jellyfin.Server.Implementations.Tests.csproj#L21"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Server.Integration.Tests",
+   "evidence": "tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj#L13"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.Server.Tests",
+   "evidence": "tests/Jellyfin.Server.Tests/Jellyfin.Server.Tests.csproj#L13"
+  },
+  {
+   "name": "xUnit",
+   "unit": "Jellyfin.XbmcMetadata.Tests",
+   "evidence": "tests/Jellyfin.XbmcMetadata.Tests/Jellyfin.XbmcMetadata.Tests.csproj#L16"
+  },
+  {
+   "name": "FsCheck",
+   "unit": "Jellyfin.Common.Tests",
+   "evidence": "tests/Jellyfin.Common.Tests/Jellyfin.Common.Tests.csproj#L17"
+  },
+  {
+   "name": "FsCheck",
+   "unit": "Jellyfin.Extensions.Tests",
+   "evidence": "tests/Jellyfin.Extensions.Tests/Jellyfin.Extensions.Tests.csproj#L18"
+  },
+  {
+   "name": "FsCheck",
+   "unit": "Jellyfin.Model.Tests",
+   "evidence": "tests/Jellyfin.Model.Tests/Jellyfin.Model.Tests.csproj#L16"
+  },
+  {
+   "name": "FsCheck",
+   "unit": "Jellyfin.Networking.Tests",
+   "evidence": "tests/Jellyfin.Networking.Tests/Jellyfin.Networking.Tests.csproj#L17"
+  },
+  {
+   "name": "SharpFuzz",
+   "unit": "Emby.Server.Implementations.Fuzz",
+   "evidence": "fuzz/Emby.Server.Implementations.Fuzz/Emby.Server.Implementations.Fuzz.csproj#L22"
+  },
+  {
+   "name": "SharpFuzz",
+   "unit": "Jellyfin.Api.Fuzz",
+   "evidence": "fuzz/Jellyfin.Api.Fuzz/Jellyfin.Api.Fuzz.csproj#L19"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "src/Jellyfin.Database/Jellyfin.Database.Providers.Sqlite/Jellyfin.Database.Providers.Sqlite.csproj#L14"
+  },
+  {
+   "name": "TMDb",
+   "kind": "api",
+   "evidence": "MediaBrowser.Providers/MediaBrowser.Providers.csproj#L28"
+  },
+  {
+   "name": "MusicBrainz",
+   "kind": "api",
+   "evidence": "MediaBrowser.Providers/Plugins/MusicBrainz/Configuration/PluginConfiguration.cs#L13"
+  },
+  {
+   "name": "ListenBrainz",
+   "kind": "api",
+   "evidence": "MediaBrowser.Providers/Plugins/ListenBrainz/Configuration/PluginConfiguration.cs#L13"
+  },
+  {
+   "name": "TheAudioDB",
+   "kind": "api",
+   "evidence": "MediaBrowser.Providers/Plugins/AudioDb/AudioDbArtistProvider.cs#L33"
+  },
+  {
+   "name": "OMDb",
+   "kind": "api",
+   "evidence": "MediaBrowser.Providers/Plugins/Omdb/OmdbProvider.cs#L269"
+  },
+  {
+   "name": "Schedules Direct",
+   "kind": "api",
+   "evidence": "src/Jellyfin.LiveTv/Listings/SchedulesDirect.cs#L38"
+  },
+  {
+   "name": "Jellyfin plugin repository",
+   "kind": "api",
+   "evidence": "Jellyfin.Server/Migrations/Routines/20250420170000_UpdateDefaultPluginRepository.cs#L14"
+  },
+  {
+   "name": "Graylog",
+   "kind": "monitoring",
+   "evidence": "Jellyfin.Server/Jellyfin.Server.csproj#L58"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "Jellyfin.Server/Jellyfin.Server.csproj#L50"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "only Jellyfin.Server and the API fuzz project use Microsoft.NET.Sdk.Web; MediaBrowser.Common and MediaBrowser.Model reach ASP.NET Core through FrameworkReference, Jellyfin.Api through the Microsoft.AspNetCore.Authorization package",
+  "versions are in Directory.Packages.props and the analyzers come from Directory.Build.props, which every project inherits: StyleCop and the other analyzers are not frameworks",
+  "SQLite is the only database: Jellyfin.Database.Providers.Sqlite is the provider project; Microsoft.Data.Sqlite in Emby.Server.Implementations is its low-level driver",
+  "the metadata services (TMDb, MusicBrainz, ListenBrainz, TheAudioDB, OMDb, Schedules Direct) are built-in provider plugins under MediaBrowser.Providers and src/Jellyfin.LiveTv, named by base URLs in code or by a client package",
+  "there is no compose file in the repository; Prometheus scrapes the /metrics endpoint mapped in Startup.cs, and Graylog is a Serilog sink",
+  "Swashbuckle, Serilog, SkiaSharp, AutoFixture and Moq are libraries, not listed; FsCheck and SharpFuzz are property-based and fuzz testing frameworks; the studio artwork downloaded from raw.githubusercontent.com is not listed as a service",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "saas-service",
+  "service-from-config",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

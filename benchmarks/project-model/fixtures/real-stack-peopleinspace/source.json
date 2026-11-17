@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/joreilly/PeopleInSpace",
+ "commit": "2db46a039837989b3a9337a56bab832318c05fa4",
+ "licence": "Apache-2.0",
+ "why": "Kotlin Multiplatform sample with Android, Wear OS, desktop, Wasm web, a Ktor backend, an MCP server, a SwiftUI app and a WinUI app, each with its own UI framework"
+}

@@ -1,0 +1,235 @@
+{
+ "frameworks": [
+  {
+   "name": "Vitest",
+   "unit": "actual",
+   "evidence": "package.json#L93"
+  },
+  {
+   "name": "Vite",
+   "unit": "@actual-app/api",
+   "evidence": "packages/api/package.json#L70"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@actual-app/api",
+   "evidence": "packages/api/package.json#L72"
+  },
+  {
+   "name": "Playwright",
+   "unit": "@actual-app/api",
+   "evidence": "packages/api/package.json#L66"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@actual-app/ci-actions",
+   "evidence": "packages/ci-actions/package.json#L16"
+  },
+  {
+   "name": "Vite",
+   "unit": "@actual-app/cli",
+   "evidence": "packages/cli/package.json#L46"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@actual-app/cli",
+   "evidence": "packages/cli/package.json#L47"
+  },
+  {
+   "name": "React",
+   "unit": "@actual-app/components",
+   "evidence": "packages/component-library/package.json#L82"
+  },
+  {
+   "name": "Storybook",
+   "unit": "@actual-app/components",
+   "evidence": "packages/component-library/package.json#L84"
+  },
+  {
+   "name": "Vite",
+   "unit": "@actual-app/components",
+   "evidence": "packages/component-library/package.json#L85"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@actual-app/components",
+   "evidence": "packages/component-library/package.json#L86"
+  },
+  {
+   "name": "Protocol Buffers",
+   "unit": "@actual-app/crdt",
+   "evidence": "packages/crdt/package.json#L42"
+  },
+  {
+   "name": "Vite",
+   "unit": "@actual-app/crdt",
+   "evidence": "packages/crdt/package.json#L50"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@actual-app/crdt",
+   "evidence": "packages/crdt/package.json#L51"
+  },
+  {
+   "name": "React",
+   "unit": "@actual-app/web",
+   "evidence": "packages/desktop-client/package.json#L206"
+  },
+  {
+   "name": "React Router",
+   "unit": "@actual-app/web",
+   "evidence": "packages/desktop-client/package.json#L219"
+  },
+  {
+   "name": "Capacitor",
+   "unit": "@actual-app/web",
+   "evidence": "packages/desktop-client/package.json#L157"
+  },
+  {
+   "name": "Vite",
+   "unit": "@actual-app/web",
+   "evidence": "packages/desktop-client/package.json#L233"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@actual-app/web",
+   "evidence": "packages/desktop-client/package.json#L235"
+  },
+  {
+   "name": "Playwright",
+   "unit": "@actual-app/web",
+   "evidence": "packages/desktop-client/package.json#L170"
+  },
+  {
+   "name": "Electron",
+   "unit": "desktop-electron",
+   "evidence": "packages/desktop-electron/package.json#L33"
+  },
+  {
+   "name": "Playwright",
+   "unit": "desktop-electron",
+   "evidence": "packages/desktop-electron/package.json#L28"
+  },
+  {
+   "name": "Vitest",
+   "unit": "desktop-electron",
+   "evidence": "packages/desktop-electron/package.json#L36"
+  },
+  {
+   "name": "Docusaurus",
+   "unit": "docs",
+   "evidence": "packages/docs/package.json#L17"
+  },
+  {
+   "name": "React",
+   "unit": "docs",
+   "evidence": "packages/docs/package.json#L28"
+  },
+  {
+   "name": "Vitest",
+   "unit": "eslint-plugin-actual",
+   "evidence": "packages/eslint-plugin-actual/package.json#L14"
+  },
+  {
+   "name": "Vite",
+   "unit": "@actual-app/core",
+   "evidence": "packages/loot-core/package.json#L241"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@actual-app/core",
+   "evidence": "packages/loot-core/package.json#L243"
+  },
+  {
+   "name": "Capacitor",
+   "unit": "mobile-client",
+   "evidence": "packages/mobile-client/package.json#L24"
+  },
+  {
+   "name": "Vite",
+   "unit": "plugins-service",
+   "evidence": "packages/plugins-service/package.json#L22"
+  },
+  {
+   "name": "Express",
+   "unit": "@actual-app/sync-server",
+   "evidence": "packages/sync-server/package.json#L101"
+  },
+  {
+   "name": "Vite",
+   "unit": "@actual-app/sync-server",
+   "evidence": "packages/sync-server/package.json#L128"
+  },
+  {
+   "name": "Vitest",
+   "unit": "@actual-app/sync-server",
+   "evidence": "packages/sync-server/package.json#L129"
+  },
+  {
+   "name": "Vite",
+   "unit": "@actual-app/vite-plugin-peggy",
+   "evidence": "packages/vite-plugin-peggy/package.json#L13"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "packages/sync-server/package.json#L96"
+  },
+  {
+   "name": "GoCardless Bank Account Data",
+   "kind": "api",
+   "evidence": "packages/sync-server/src/app-gocardless/services/gocardless-api.ts#L21"
+  },
+  {
+   "name": "Enable Banking",
+   "kind": "api",
+   "evidence": "packages/sync-server/src/app-enablebanking/services/enablebanking-service.ts#L18"
+  },
+  {
+   "name": "SimpleFIN Bridge",
+   "kind": "api",
+   "evidence": "packages/desktop-client/src/components/modals/SimpleFinInitialiseModal.tsx#L117"
+  },
+  {
+   "name": "Akahu",
+   "kind": "api",
+   "evidence": "packages/sync-server/src/app-akahu/app-akahu.ts#L1"
+  },
+  {
+   "name": "Pluggy",
+   "kind": "api",
+   "evidence": "packages/sync-server/src/app-pluggyai/pluggyai-service.js#L2"
+  },
+  {
+   "name": "OpenID Connect",
+   "kind": "authentication",
+   "evidence": "packages/sync-server/src/accounts/openid.ts#L3"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "packages/desktop-client is named @actual-app/web and packages/loot-core @actual-app/core: unit names differ from their folders",
+  "@actual-app/web declares every dependency, React and React Router included, as a devDependency because Vite bundles them",
+  "Capacitor is declared by both @actual-app/web (core and plugins) and mobile-client (the android and ios platforms)",
+  "the root package actual declares Vitest for the workspace-wide test run; lage runs the per-package scripts",
+  "the bank-sync services (GoCardless Bank Account Data, Enable Banking, SimpleFIN Bridge, Akahu, Pluggy) live in packages/sync-server/src/app-*: two have an SDK, the others are plain base URLs",
+  "SQLite is the store of both the client (sql.js, absurd-sql, better-sqlite3 in loot-core) and the sync server; the compose files start only Actual's own containers",
+  "packages/docs/static/fly.toml is a downloadable example for users, not this repository's deployment",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

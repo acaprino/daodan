@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/healthchecks/healthchecks",
+ "commit": "6c05a7adf266efb70f9517727bef9ea8b2bbf52f",
+ "licence": "BSD-3-Clause",
+ "why": "Django monitoring service with one notification integration per SaaS under hc/integrations, a database chosen by an environment variable and vendored Bootstrap"
+}

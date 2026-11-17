@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/mattermost/mattermost-mobile",
+ "commit": "b8b7310b5f88ffb924ae9321a8450127b8b1599d",
+ "licence": "Apache-2.0",
+ "why": "React Native and Expo app with a committed Gradle project, an Xcode project with three targets, an e2e Detox package and a Maestro suite; frameworks reach the native units only through plugins and the Podfile"
+}

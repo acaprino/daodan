@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/plausible/analytics",
+ "commit": "012522e4e6a4fe69b61a9d66c622be751aafd480",
+ "licence": "AGPL-3.0",
+ "why": "Phoenix and Ecto analytics app on PostgreSQL and ClickHouse with a React dashboard, a Rollup tracker and Playwright suites; services started by Makefile targets and read from runtime.exs"
+}

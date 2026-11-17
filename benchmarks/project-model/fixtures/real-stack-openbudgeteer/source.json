@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/TheAxelander/OpenBudgeteer",
+ "commit": "48eba0855d637f75364007f4e7912708b700e4d2",
+ "licence": "AGPL-3.0",
+ "why": "Blazor Server application split into thirteen .NET projects, one migrations project per database, with Redis and the databases chosen by environment variables"
+}

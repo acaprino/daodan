@@ -1,0 +1,155 @@
+{
+ "frameworks": [
+  {
+   "name": "chi",
+   "unit": "github.com/owncast/owncast",
+   "evidence": "go.mod#L16"
+  },
+  {
+   "name": "oapi-codegen",
+   "unit": "github.com/owncast/owncast",
+   "evidence": "go.mod#L29"
+  },
+  {
+   "name": "testify",
+   "unit": "github.com/owncast/owncast",
+   "evidence": "go.mod#L38"
+  },
+  {
+   "name": "oapi-codegen",
+   "unit": "github.com/owncast/owncast/tools",
+   "evidence": "tools/go.mod#L8"
+  },
+  {
+   "name": "sqlc",
+   "unit": "github.com/owncast/owncast/tools",
+   "evidence": "tools/go.mod#L9"
+  },
+  {
+   "name": "Next.js",
+   "unit": "owncast-web",
+   "evidence": "web/package.json#L68"
+  },
+  {
+   "name": "React",
+   "unit": "owncast-web",
+   "evidence": "web/package.json#L71"
+  },
+  {
+   "name": "Ant Design",
+   "unit": "owncast-web",
+   "evidence": "web/package.json#L53"
+  },
+  {
+   "name": "Storybook",
+   "unit": "owncast-web",
+   "evidence": "web/package.json#L129"
+  },
+  {
+   "name": "Cypress",
+   "unit": "owncast-web",
+   "evidence": "web/package.json#L110"
+  },
+  {
+   "name": "Jest",
+   "unit": "owncast-web",
+   "evidence": "web/jest.config.js#L4"
+  },
+  {
+   "name": "Jest",
+   "unit": "test/automated/api",
+   "evidence": "test/automated/api/package.json#L22"
+  },
+  {
+   "name": "Jest",
+   "unit": "owncast-auth-gate-integration-tests",
+   "evidence": "test/automated/auth/package.json#L11"
+  },
+  {
+   "name": "Jest",
+   "unit": "test/automated/hls",
+   "evidence": "test/automated/hls/package.json#L16"
+  },
+  {
+   "name": "Jest",
+   "unit": "owncast-plugin-integration-tests",
+   "evidence": "test/automated/plugins/package.json#L15"
+  },
+  {
+   "name": "Cypress",
+   "unit": "owncast-browser-tests",
+   "evidence": "test/automated/browser/package.json#L12"
+  },
+  {
+   "name": "Artillery",
+   "unit": "owncast-load-tests",
+   "evidence": "test/load/package.json#L12"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "go.mod#L24"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "go.mod#L13"
+  },
+  {
+   "name": "ActivityPub",
+   "kind": "api",
+   "evidence": "go.mod#L6"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "go.mod#L33"
+  },
+  {
+   "name": "Discord",
+   "kind": "notification",
+   "evidence": "notifications/discord/discord.go#L27"
+  },
+  {
+   "name": "Web Push",
+   "kind": "notification",
+   "evidence": "notifications/browser/browser.go#L6"
+  },
+  {
+   "name": "IndieAuth",
+   "kind": "authentication",
+   "evidence": "auth/auth.go#L9"
+  },
+  {
+   "name": "BrowserStack",
+   "kind": "api",
+   "evidence": "test/automated/screenshots/package.json#L12"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the web front end owncast-web declares ts-jest and jest-environment-jsdom but not jest itself: Jest shows only through web/jest.config.js",
+  "test/automated/api and test/automated/hls are both named owncast-test-automation, and test/package.json has no name: these units are referred to by their root",
+  "tools/go.mod is a second Go module that pins oapi-codegen, sqlc and linters as tools; the main module uses only the oapi-codegen runtime",
+  "Ant Design, Storybook and Cypress belong to owncast-web; Cypress is also the only framework of test/automated/browser",
+  "the Fediverse is reached through the ActivityPub library and federation code, IndieAuth and Discord through hand-written HTTP clients: no service has a compose file or an environment variable",
+  "GeoIP lookups read a local GeoLite file with geoip2-golang: no external service is called",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework",
+  "framework-from-files"
+ ]
+}

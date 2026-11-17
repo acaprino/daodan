@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/docusealco/docuseal",
+ "commit": "0dac1abe842798633aac85ff975ec719c39e85dd",
+ "licence": "AGPL-3.0",
+ "why": "Rails app with a webpack, Vue and Turbo front end in the same root; the database is picked from DATABASE_URL and storage from Active Storage services"
+}

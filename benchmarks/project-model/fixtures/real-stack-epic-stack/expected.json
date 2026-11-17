@@ -1,0 +1,120 @@
+{
+ "frameworks": [
+  {
+   "name": "React Router",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L97"
+  },
+  {
+   "name": "React",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L95"
+  },
+  {
+   "name": "Express",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L81"
+  },
+  {
+   "name": "Prisma",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L52"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L107"
+  },
+  {
+   "name": "Zod",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L109"
+  },
+  {
+   "name": "React Email",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L60"
+  },
+  {
+   "name": "Vite",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L152"
+  },
+  {
+   "name": "Vitest",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L154"
+  },
+  {
+   "name": "Playwright",
+   "unit": "epic-stack-template",
+   "evidence": "package.json#L114"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "prisma/schema.prisma#L10"
+  },
+  {
+   "name": "LiteFS",
+   "kind": "database",
+   "evidence": "other/litefs.yml#L2"
+  },
+  {
+   "name": "Consul",
+   "kind": "database",
+   "evidence": "other/litefs.yml#L28"
+  },
+  {
+   "name": "Resend",
+   "kind": "mail",
+   "evidence": ".env.example#L7"
+  },
+  {
+   "name": "Sentry",
+   "kind": "monitoring",
+   "evidence": ".env.example#L8"
+  },
+  {
+   "name": "GitHub OAuth",
+   "kind": "authentication",
+   "evidence": ".env.example#L15"
+  },
+  {
+   "name": "Tigris",
+   "kind": "storage",
+   "evidence": ".env.example#L33"
+  },
+  {
+   "name": "Fly.io",
+   "kind": "hosting",
+   "evidence": "fly.toml#L1"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the template is the Epic Stack for Remix, but it runs on React Router 7 framework mode (react-router, @react-router/node, @react-router/express, react-router.config.ts): Remix is not a framework here",
+  "@remix-run/server-runtime is still declared in dependencies, yet no source file imports it (only a TODO comment names it), and types/env.env.d.ts references @remix-run/node, which is not declared",
+  "remix-auth, remix-auth-github and remix-utils are community libraries named after Remix, not Remix itself",
+  "remix.init/package.json is a second unit, the template's setup script, with no framework",
+  "the database is SQLite through Prisma, replicated on Fly.io by LiteFS with a Consul lease: there is no compose file and no database server",
+  "Resend is called over plain fetch to api.resend.com and GitHub OAuth through remix-auth-github: neither has an SDK, both are named by RESEND_API_KEY and GITHUB_CLIENT_ID",
+  "the S3 variables point at Tigris (fly.storage.tigris.dev), not at Amazon S3",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-from-config",
+  "saas-service",
+  "test-only-framework"
+ ]
+}

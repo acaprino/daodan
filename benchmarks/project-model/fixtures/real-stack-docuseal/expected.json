@@ -1,0 +1,137 @@
+{
+ "frameworks": [
+  {
+   "name": "Ruby on Rails",
+   "unit": ".",
+   "evidence": "Gemfile#L33"
+  },
+  {
+   "name": "Sidekiq",
+   "unit": ".",
+   "evidence": "Gemfile#L41"
+  },
+  {
+   "name": "RSpec",
+   "unit": ".",
+   "evidence": "Gemfile#L59"
+  },
+  {
+   "name": "Capybara",
+   "unit": ".",
+   "evidence": "Gemfile#L76"
+  },
+  {
+   "name": "Vue",
+   "unit": "docuseal",
+   "evidence": "package.json#L60"
+  },
+  {
+   "name": "Turbo",
+   "unit": "docuseal",
+   "evidence": "package.json#L13"
+  },
+  {
+   "name": "Catalyst",
+   "unit": "docuseal",
+   "evidence": "package.json#L12"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "docuseal",
+   "evidence": "package.json#L57"
+  },
+  {
+   "name": "webpack",
+   "unit": "docuseal",
+   "evidence": "package.json#L62"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker-compose.yml#L16"
+  },
+  {
+   "name": "Caddy",
+   "kind": "proxy",
+   "evidence": "docker-compose.yml#L30"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "config/database.yml#L26"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "config/database.yml#L33"
+  },
+  {
+   "name": "Redis",
+   "kind": "queue",
+   "evidence": "config/dotenv.rb#L108"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "config/storage.yml#L7"
+  },
+  {
+   "name": "Google Cloud Storage",
+   "kind": "storage",
+   "evidence": "config/storage.yml#L21"
+  },
+  {
+   "name": "Azure Blob Storage",
+   "kind": "storage",
+   "evidence": "config/storage.yml#L29"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "config/environments/production.rb#L83"
+  },
+  {
+   "name": "AWS Secrets Manager",
+   "kind": "api",
+   "evidence": "config/dotenv.rb#L23"
+  },
+  {
+   "name": "Rollbar",
+   "kind": "monitoring",
+   "evidence": "app/views/layouts/application.html.erb#L12"
+  },
+  {
+   "name": "eID Easy",
+   "kind": "authentication",
+   "evidence": "app/javascript/submission_form/verification_step.vue#L187"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the Gemfile (no gemspec, so referred to by root) and package.json (named docuseal) share the root folder; Rails and Sidekiq belong to the first, Vue, Turbo and webpack to the second",
+  "config/database.yml is ERB: PostgreSQL by default, SQLite when DATABASE_URL is empty in production, MySQL through trilogy when DATABASE_URL starts with mysql",
+  "Redis has no compose service: lib/puma/plugin/redis_server.rb forks a local redis-server and config/dotenv.rb writes REDIS_URL for Sidekiq",
+  "S3, Google Cloud Storage and Azure Blob are alternative Active Storage services in config/storage.yml",
+  "daisyUI is a Tailwind plugin and Shakapacker is the Rails wrapper around webpack: neither is listed apart",
+  "eID Easy is reached only from the Vue signing form, and Rollbar only from a meta tag when ROLLBAR_CLIENT_TOKEN is set",
+  "RSpec is in the development and test group, Capybara in test",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework"
+ ]
+}

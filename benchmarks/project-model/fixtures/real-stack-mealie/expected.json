@@ -1,0 +1,127 @@
+{
+ "frameworks": [
+  {
+   "name": "FastAPI",
+   "unit": ".",
+   "evidence": "pyproject.toml#L17"
+  },
+  {
+   "name": "SQLAlchemy",
+   "unit": ".",
+   "evidence": "pyproject.toml#L12"
+  },
+  {
+   "name": "Pydantic",
+   "unit": ".",
+   "evidence": "pyproject.toml#L21"
+  },
+  {
+   "name": "pytest",
+   "unit": ".",
+   "evidence": "pyproject.toml#L71"
+  },
+  {
+   "name": "Nuxt",
+   "unit": "frontend",
+   "evidence": "frontend/package.json#L36"
+  },
+  {
+   "name": "Vue",
+   "unit": "frontend",
+   "evidence": "frontend/package.json#L40"
+  },
+  {
+   "name": "Vuetify",
+   "unit": "frontend",
+   "evidence": "frontend/package.json#L44"
+  },
+  {
+   "name": "Vitest",
+   "unit": "frontend",
+   "evidence": "frontend/package.json#L14"
+  },
+  {
+   "name": "Vite",
+   "unit": "frontend",
+   "evidence": "frontend/package.json#L52"
+  },
+  {
+   "name": "Playwright",
+   "unit": "e2e",
+   "evidence": "tests/e2e/package.json#L7"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "mealie/core/settings/settings.py#L307"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker/docker-compose.dev.yml#L14"
+  },
+  {
+   "name": "Mailpit",
+   "kind": "mail",
+   "evidence": "docker/docker-compose.dev.yml#L3"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "mealie/core/settings/settings.py#L337"
+  },
+  {
+   "name": "LDAP",
+   "kind": "authentication",
+   "evidence": "mealie/core/settings/settings.py#L394"
+  },
+  {
+   "name": "OpenID Connect",
+   "kind": "authentication",
+   "evidence": "mealie/core/settings/settings.py#L437"
+  },
+  {
+   "name": "mock-oauth2-server",
+   "kind": "authentication",
+   "evidence": "tests/e2e/docker/docker-compose.yml#L4"
+  },
+  {
+   "name": "OpenLDAP",
+   "kind": "authentication",
+   "evidence": "tests/e2e/docker/docker-compose.yml#L11"
+  },
+  {
+   "name": "OpenAI",
+   "kind": "ai",
+   "evidence": "pyproject.toml#L42"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the Python project and the front-end npm package are both named mealie, so the units are referred to by root: . and frontend; tests/e2e is a third package named e2e that only holds Playwright",
+  "Vite is not a direct dependency: Nuxt builds with it, and the front end declares only the plugin @vitejs/plugin-vue for its Vitest config",
+  "docker/docker-compose.yml starts only the mealie image with DB_ENGINE sqlite; PostgreSQL and Mailpit are in docker-compose.dev.yml",
+  "SMTP, LDAP and OpenID Connect are pydantic settings in mealie/core/settings/settings.py, enabled only when their variables are set; tests/e2e/docker/docker-compose.yml starts mock-oauth2-server and OpenLDAP for them",
+  "AI providers are rows in the database since a 2026 migration; the openai package is the only client declared",
+  "notifications go through the apprise library, and paho-mqtt is declared for it: the targets are user URLs, not services of the project",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-per-unit",
+  "test-only-framework",
+  "framework-through-plugin"
+ ]
+}

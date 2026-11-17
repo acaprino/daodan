@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/wallabag/wallabag",
+ "commit": "15a90c68cde2aaf2591740c949449e07ac477f32",
+ "licence": "MIT",
+ "why": "Symfony application with a webpack Encore front end; SQLite by default, the other databases and RabbitMQ only as documented alternatives"
+}

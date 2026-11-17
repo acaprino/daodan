@@ -1,0 +1,208 @@
+{
+ "frameworks": [
+  {
+   "name": "Micronaut",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L11"
+  },
+  {
+   "name": "jOOQ",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L79"
+  },
+  {
+   "name": "Jackson",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L55"
+  },
+  {
+   "name": "Pebble",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L109"
+  },
+  {
+   "name": "Kotest",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L131"
+  },
+  {
+   "name": "MockK",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L128"
+  },
+  {
+   "name": "Testcontainers",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L132"
+  },
+  {
+   "name": "MockServer",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L135"
+  },
+  {
+   "name": "Playwright",
+   "unit": ":app",
+   "evidence": "app/build.gradle.kts#L193"
+  },
+  {
+   "name": "Micronaut",
+   "unit": ":model",
+   "evidence": "model/build.gradle.kts#L29"
+  },
+  {
+   "name": "jOOQ",
+   "unit": ":model",
+   "evidence": "model/build.gradle.kts#L32"
+  },
+  {
+   "name": "Jackson",
+   "unit": ":model",
+   "evidence": "model/build.gradle.kts#L47"
+  },
+  {
+   "name": "Kotest",
+   "unit": ":model",
+   "evidence": "model/build.gradle.kts#L65"
+  },
+  {
+   "name": "Kotest",
+   "unit": ":shared",
+   "evidence": "shared/build.gradle.kts#L15"
+  },
+  {
+   "name": "kotlinx.html",
+   "unit": ":ui",
+   "evidence": "ui/build.gradle.kts#L16"
+  },
+  {
+   "name": "htmx",
+   "unit": ":ui",
+   "evidence": "ui/build.gradle.kts#L17"
+  },
+  {
+   "name": "Alpine.js",
+   "unit": ":ui",
+   "evidence": "ui/src/main/kotlin/com/kuvaszuptime/kuvasz/ui/Layout.kt#L94"
+  },
+  {
+   "name": "Tabler",
+   "unit": ":ui",
+   "evidence": "ui/src/main/kotlin/com/kuvaszuptime/kuvasz/ui/Layout.kt#L127"
+  },
+  {
+   "name": "Jackson",
+   "unit": ":ui",
+   "evidence": "ui/build.gradle.kts#L18"
+  },
+  {
+   "name": "Kotest",
+   "unit": ":ui",
+   "evidence": "ui/build.gradle.kts#L21"
+  },
+  {
+   "name": "MkDocs",
+   "unit": "docs",
+   "evidence": "docs/requirements.txt#L18"
+  },
+  {
+   "name": "Material for MkDocs",
+   "unit": "docs",
+   "evidence": "docs/requirements.txt#L20"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "app/src/main/resources/application.yml#L138"
+  },
+  {
+   "name": "Keycloak",
+   "kind": "authentication",
+   "evidence": "localdev/docker-compose.yml#L34"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "app/src/main/resources/application.yml#L6"
+  },
+  {
+   "name": "OpenTelemetry",
+   "kind": "monitoring",
+   "evidence": "app/src/main/resources/application.yml#L11"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/integrations/SMTPMailer.kt#L12"
+  },
+  {
+   "name": "PagerDuty",
+   "kind": "notification",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/integrations/PagerdutyAPIClient.kt#L11"
+  },
+  {
+   "name": "Pushover",
+   "kind": "notification",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/integrations/PushoverService.kt#L45"
+  },
+  {
+   "name": "Slack",
+   "kind": "notification",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/integrations/SlackBotService.kt#L36"
+  },
+  {
+   "name": "Telegram",
+   "kind": "notification",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/integrations/TelegramAPIService.kt#L22"
+  },
+  {
+   "name": "Discord",
+   "kind": "notification",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/integrations/DiscordWebhookService.kt#L30"
+  },
+  {
+   "name": "Microsoft Teams",
+   "kind": "notification",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/integrations/MsTeamsWebhookService.kt#L36"
+  },
+  {
+   "name": "Apprise",
+   "kind": "notification",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/integrations/AppriseService.kt#L38"
+  },
+  {
+   "name": "GitHub API",
+   "kind": "api",
+   "evidence": "app/src/main/kotlin/com/kuvaszuptime/kuvasz/services/VersionChecker.kt#L91"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "every version and most coordinates come from two catalogs: gradle/libs.versions.toml (libs.*) and the Micronaut platform catalog loaded in settings.gradle.kts (mn.*), so mn.micronaut.jooq names a library that no file of the project spells out",
+  "the frameworks differ per Gradle project: :app is the Micronaut application, :model a Micronaut library with jOOQ code generation, :shared and :ui have no Micronaut plugin",
+  "tests use Kotest on the JUnit Platform (kotest-runner-junit5), not JUnit Jupiter; Playwright exists only in the uiTest source set",
+  "htmx, Alpine.js and the Tabler CSS framework are vendored minified files under ui/src/main/resources/public/ext, included by Layout.kt; the HTML is written with kotlinx.html, not a template engine, while Pebble renders e-mail and webhook templates in :app",
+  "ui/src/jsTest runs with node --test from a Gradle Exec task: there is no package.json and no JavaScript test framework",
+  "docs/ is a separate MkDocs site with its own requirements.txt and no project name, referred to by its root",
+  "the notification services (PagerDuty, Pushover, Slack, Telegram, Discord, Microsoft Teams, Apprise, SMTP) are named only by the integration classes and their URLs; Keycloak appears only in localdev/docker-compose.yml and in Testcontainers tests",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-per-unit",
+  "test-only-framework",
+  "framework-from-files",
+  "service-in-infra",
+  "service-from-config",
+  "saas-service"
+ ]
+}

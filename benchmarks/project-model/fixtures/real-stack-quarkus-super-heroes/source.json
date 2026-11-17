@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/quarkusio/quarkus-super-heroes",
+ "commit": "f2404b0510d03d26238f476fe755e297040ba1c2",
+ "licence": "Apache-2.0",
+ "why": "nine Maven modules without a parent, each a Quarkus application with its own extensions, plus a React front end built by Quinoa"
+}

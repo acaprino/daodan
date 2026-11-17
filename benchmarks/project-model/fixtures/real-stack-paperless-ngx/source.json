@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/paperless-ngx/paperless-ngx",
+ "commit": "c3fa454ffad47388277823f90ea48e1abd17b7a0",
+ "licence": "GPL-3.0",
+ "why": "Django back end, Angular front end and a Tailwind mail-template package in one repository; services spread over eleven compose files, settings and AI client packages"
+}

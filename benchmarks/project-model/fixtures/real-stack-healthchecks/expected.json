@@ -1,0 +1,191 @@
+{
+ "frameworks": [
+  {
+   "name": "Django",
+   "unit": ".",
+   "evidence": "requirements.txt#L2"
+  },
+  {
+   "name": "Pydantic",
+   "unit": ".",
+   "evidence": "requirements.txt#L10"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": ".",
+   "evidence": "static/css/bootstrap.css#L2"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker/docker-compose.yml#L6"
+  },
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "hc/settings.py#L210"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "hc/settings.py#L245"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "docker/.env.example#L34"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "hc/settings.py#L345"
+  },
+  {
+   "name": "StatsD",
+   "kind": "monitoring",
+   "evidence": "hc/settings.py#L353"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "docker/.env.example#L100"
+  },
+  {
+   "name": "Twilio",
+   "kind": "notification",
+   "evidence": "hc/integrations/call/transport.py#L18"
+  },
+  {
+   "name": "Discord",
+   "kind": "notification",
+   "evidence": "hc/integrations/discord/transport.py#L11"
+  },
+  {
+   "name": "GitHub",
+   "kind": "notification",
+   "evidence": "hc/integrations/github/transport.py#L13"
+  },
+  {
+   "name": "Google Chat",
+   "kind": "notification",
+   "evidence": "hc/integrations/googlechat/transport.py#L18"
+  },
+  {
+   "name": "Gotify",
+   "kind": "notification",
+   "evidence": "hc/integrations/gotify/transport.py#L10"
+  },
+  {
+   "name": "Matrix",
+   "kind": "notification",
+   "evidence": "hc/integrations/matrix/transport.py#L12"
+  },
+  {
+   "name": "Mattermost",
+   "kind": "notification",
+   "evidence": "hc/integrations/mattermost/transport.py#L10"
+  },
+  {
+   "name": "Microsoft Teams",
+   "kind": "notification",
+   "evidence": "hc/integrations/msteamsw/transport.py#L13"
+  },
+  {
+   "name": "ntfy",
+   "kind": "notification",
+   "evidence": "hc/integrations/ntfy/transport.py#L9"
+  },
+  {
+   "name": "Opsgenie",
+   "kind": "notification",
+   "evidence": "hc/integrations/opsgenie/transport.py#L15"
+  },
+  {
+   "name": "PagerTree",
+   "kind": "notification",
+   "evidence": "hc/integrations/pagertree/transport.py#L9"
+  },
+  {
+   "name": "PagerDuty",
+   "kind": "notification",
+   "evidence": "hc/integrations/pd/transport.py#L11"
+  },
+  {
+   "name": "Pushover",
+   "kind": "notification",
+   "evidence": "hc/integrations/po/transport.py#L16"
+  },
+  {
+   "name": "Pushbullet",
+   "kind": "notification",
+   "evidence": "hc/integrations/pushbullet/transport.py#L9"
+  },
+  {
+   "name": "Rocket.Chat",
+   "kind": "notification",
+   "evidence": "hc/integrations/rocketchat/transport.py#L13"
+  },
+  {
+   "name": "Signal",
+   "kind": "notification",
+   "evidence": "hc/integrations/signal/transport.py#L27"
+  },
+  {
+   "name": "Slack",
+   "kind": "notification",
+   "evidence": "hc/integrations/slack/transport.py#L100"
+  },
+  {
+   "name": "Spike",
+   "kind": "notification",
+   "evidence": "hc/integrations/spike/transport.py#L9"
+  },
+  {
+   "name": "Telegram",
+   "kind": "notification",
+   "evidence": "hc/integrations/telegram/transport.py#L19"
+  },
+  {
+   "name": "Trello",
+   "kind": "notification",
+   "evidence": "hc/integrations/trello/transport.py#L9"
+  },
+  {
+   "name": "VictorOps",
+   "kind": "notification",
+   "evidence": "hc/integrations/victorops/transport.py#L12"
+  },
+  {
+   "name": "Zulip",
+   "kind": "notification",
+   "evidence": "hc/integrations/zulip/transport.py#L13"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "most services are the notification integrations in hc/integrations/<name>/transport.py; their folder names (pd, po, msteamsw, call, sms) are not the service names (PagerDuty, Pushover, Microsoft Teams, Twilio)",
+  "call, sms and whatsapp all go through the Twilio API: one service",
+  "the database is SQLite unless DB is postgres or mysql (mariadb is an accepted alias of mysql); the compose file starts PostgreSQL only",
+  "apprise, minio and Markdown are in requirements-dev.txt although apprise and S3 offloading are runtime features",
+  "the SMTP listener (minismtpd, SMTPD_PORT) is the project's own inbound server, not an external service; outbound mail uses EMAIL_HOST",
+  "Bootstrap 3.4.1 and jQuery are vendored under static/; tests use Django's test runner, there is no pytest",
+  "the requirements files name no project, so the unit is referred to by its root",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-from-files"
+ ]
+}

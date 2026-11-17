@@ -1,0 +1,141 @@
+{
+ "frameworks": [
+  {
+   "name": "Echo",
+   "unit": "github.com/thomiceli/opengist",
+   "evidence": "go.mod#L20"
+  },
+  {
+   "name": "GORM",
+   "unit": "github.com/thomiceli/opengist",
+   "evidence": "go.mod#L41"
+  },
+  {
+   "name": "urfave/cli",
+   "unit": "github.com/thomiceli/opengist",
+   "evidence": "go.mod#L29"
+  },
+  {
+   "name": "testify",
+   "unit": "github.com/thomiceli/opengist",
+   "evidence": "go.mod#L28"
+  },
+  {
+   "name": "Vite",
+   "unit": "opengist",
+   "evidence": "package.json#L36"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "opengist",
+   "evidence": "package.json#L35"
+  },
+  {
+   "name": "htmx",
+   "unit": "opengist",
+   "evidence": "package.json#L28"
+  },
+  {
+   "name": "_hyperscript",
+   "unit": "opengist",
+   "evidence": "package.json#L29"
+  },
+  {
+   "name": "Basecoat",
+   "unit": "opengist",
+   "evidence": "package.json#L23"
+  },
+  {
+   "name": "VitePress",
+   "unit": "opengist-docs",
+   "evidence": "docs/package.json#L15"
+  },
+  {
+   "name": "Vue",
+   "unit": "opengist-docs",
+   "evidence": "docs/package.json#L16"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "opengist-docs",
+   "evidence": "docs/package.json#L14"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "config.yml#L27"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "helm/opengist/Chart.yaml#L12"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "config.yml#L26"
+  },
+  {
+   "name": "Meilisearch",
+   "kind": "search",
+   "evidence": "helm/opengist/Chart.yaml#L16"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "config.yml#L72"
+  },
+  {
+   "name": "GitHub",
+   "kind": "authentication",
+   "evidence": "config.yml#L114"
+  },
+  {
+   "name": "GitLab",
+   "kind": "authentication",
+   "evidence": "config.yml#L118"
+  },
+  {
+   "name": "Gitea",
+   "kind": "authentication",
+   "evidence": "config.yml#L126"
+  },
+  {
+   "name": "OpenID Connect",
+   "kind": "authentication",
+   "evidence": "config.yml#L138"
+  },
+  {
+   "name": "LDAP",
+   "kind": "authentication",
+   "evidence": "config.yml#L146"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the Go module and the npm package share the root folder; the front end sources are in public/ and its Vite config is public/vite.config.js, passed with -c",
+  "every front-end package is a devDependency, Vite, Tailwind CSS, htmx and _hyperscript included: they are bundled, not runtime dependencies",
+  "docs/ is a separate npm package, opengist-docs, with VitePress, Vue and Tailwind CSS of its own",
+  "Bleve is an embedded index inside the Go binary, not a service; Meilisearch is the external alternative chosen by the index key and by the Helm chart's dependency",
+  "SQLite is the default (db-uri: opengist.db); PostgreSQL and MySQL are named only in comments of config.yml, by the GORM drivers and, for PostgreSQL, by the Helm chart",
+  "the identity providers GitHub, GitLab, Gitea, OpenID Connect and LDAP are configuration keys, used through goth and go-ldap",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-per-unit",
+  "test-only-framework",
+  "service-in-infra",
+  "service-from-config",
+  "saas-service"
+ ]
+}

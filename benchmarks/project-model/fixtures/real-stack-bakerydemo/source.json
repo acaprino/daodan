@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/wagtail/bakerydemo",
+ "commit": "890285b95dcf980215ab9e9942d64ed2b47c48c3",
+ "licence": "BSD-3-Clause",
+ "why": "Wagtail CMS on Django from requirements files only; services split between compose, settings and environment variables"
+}

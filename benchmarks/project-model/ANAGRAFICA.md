@@ -3,7 +3,7 @@
 Scritta da `catalog.py` con [cases.json](cases.json) e i `fixtures/*/expected.json`: non si modifica a mano.
 Si rigenera con `python catalog.py`.
 
-140 progetti, 61 casi in 7 gruppi.
+180 progetti, 64 casi in 7 gruppi.
 
 ## Dominio dei casi
 
@@ -67,10 +67,13 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 | Esecuzione | `build-generates-code` | Parte del codice o della configurazione esiste solo dopo un passo di build. | 15 | letto |  |
 | Esecuzione | `submodule-absent` | Un sottomodulo Git dichiarato ma assente. | 2 | dai dati | sottomoduli Git assenti da un archivio |
 | Esecuzione | `missing-file` | Un file nominato dalla configurazione non è nel repository. | 14 | letto |  |
-| Servizi e framework | `service-in-infra` | Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze. | 11 | letto |  |
-| Servizi e framework | `service-from-config` | Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente. | 7 | letto |  |
-| Servizi e framework | `saas-service` | Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione. | 8 | letto |  |
-| Servizi e framework | `framework-from-files` | Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata. | 5 | letto |  |
+| Servizi e framework | `service-in-infra` | Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze. | 35 | letto |  |
+| Servizi e framework | `service-from-config` | Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente. | 40 | letto |  |
+| Servizi e framework | `saas-service` | Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione. | 44 | letto |  |
+| Servizi e framework | `framework-from-files` | Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata. | 18 | letto |  |
+| Servizi e framework | `framework-through-plugin` | Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome. | 10 | letto |  |
+| Servizi e framework | `framework-per-unit` | Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara. | 29 | letto |  |
+| Servizi e framework | `test-only-framework` | Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara. | 34 | letto |  |
 | Collegamenti | `undeclared-connections` | Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections. | 13 | dai dati |  |
 | Collegamenti | `shared-contract` | Un file di contratto (proto, OpenAPI, GraphQL) unisce unità diverse. | 7 | letto |  |
 
@@ -2346,7 +2349,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `locked-versions`: Le versioni risolte si leggono da un lockfile.
   - `internal-link`: Una dipendenza punta a un'altra unità del repository (workspace:, path, in_umbrella, project()), quindi è un arco depends_on.
 
-### real (10 progetti)
+### real (50 progetti)
 
 #### real-app-full-stack-fastapi
 
@@ -2516,6 +2519,665 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
   - `undeclared-connections`: Le unità si collegano fuori dai manifesti (rotte, RPC, code, tabelle, codice generato), elencate in connections.
   - `shared-contract`: Un file di contratto (proto, OpenAPI, GraphQL) unisce unità diverse.
+
+#### real-stack-actual
+
+- Origine: [github.com/actualbudget/actual](https://github.com/actualbudget/actual) al commit `9f046e7d638b0e775d678af3c15380fa43a2f3d3`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Capacitor, Docusaurus, Electron, Express, Playwright, Protocol Buffers, React, React Router, Storybook, Vite, Vitest.
+- Servizi: Akahu, Enable Banking, GoCardless Bank Account Data, OpenID Connect, Pluggy, SimpleFIN Bridge, SQLite.
+- Casi:
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-ardalis-cleanarchitecture
+
+- Origine: [github.com/ardalis/CleanArchitecture](https://github.com/ardalis/CleanArchitecture) al commit `ecf2f4df89199e5d9e101484c990a6652bcf9065`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: ASP.NET Core, Aspire, Entity Framework Core, FastEndpoints, Json.NET, MessagePack, Testcontainers, xUnit.
+- Servizi: Azure Application Insights, Microsoft SQL Server, Papercut SMTP, SMTP, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-astro-paper
+
+- Origine: [github.com/satnaing/astro-paper](https://github.com/satnaing/astro-paper) al commit `4bc2dafac5405c6c4f06d1daba275e836e656097`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Astro, Tailwind CSS.
+- Servizi: Google Fonts, Google Search Console.
+- Casi:
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+
+#### real-stack-atuin
+
+- Origine: [github.com/atuinsh/atuin](https://github.com/atuinsh/atuin) al commit `fd95859eb5caf78850914493641c56f1f7481312`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Axum, clap, gRPC, MiniJinja, proptest, Protocol Buffers, Ratatui, rstest, Serde, sqlx, WireMock.
+- Servizi: Atuin Hub, Atuin Sync, MySQL, PostgreSQL, Prometheus, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-bakerydemo
+
+- Origine: [github.com/wagtail/bakerydemo](https://github.com/wagtail/bakerydemo) al commit `890285b95dcf980215ab9e9942d64ed2b47c48c3`, licenza BSD-3-Clause.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Bootstrap, Django, Wagtail.
+- Servizi: Amazon S3, Elasticsearch, Google Cloud Storage, Google Maps, PostgreSQL, Redis, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+
+#### real-stack-bookstack
+
+- Origine: [github.com/BookStackApp/BookStack](https://github.com/BookStackApp/BookStack) al commit `0b6b667e0d84ebb3406de6de9fadbf4230c29c0b`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: esbuild, Jest, Laravel, PHPUnit.
+- Servizi: Amazon S3, diagrams.net, Discord OAuth, Facebook OAuth, GitHub OAuth, GitLab OAuth, Google OAuth, Gravatar, LDAP, MailHog, Memcached, Microsoft Entra ID OAuth, MySQL, Okta OAuth, OpenID Connect, Redis, SAML 2.0, Slack OAuth, SMTP, Twitch OAuth, Twitter OAuth.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-ctfd
+
+- Origine: [github.com/CTFd/CTFd](https://github.com/CTFd/CTFd) al commit `485d59e7bff790424f093be80ea9f6031b631f2d`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Alpine.js, Bootstrap, Flask, marshmallow, Pydantic, pytest, SQLAlchemy, Vite, Vue.
+- Servizi: Amazon S3, Mailgun, MajorLeagueCyber, MariaDB, MySQL, nginx, PostgreSQL, Redis, SMTP, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-documenso
+
+- Origine: [github.com/documenso/documenso](https://github.com/documenso/documenso) al commit `209d454491eb30f1b91e01ae6a48316a81716257`, licenza AGPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: BullMQ, Fumadocs, Hono, Inngest, Kysely, Next.js, Playwright, Prisma, React, React Email, React Router, Rollup, Tailwind CSS, tRPC, ts-rest, Vite, Vitest, Zod.
+- Servizi: Amazon CloudFront, Amazon S3, Amazon SES, Azure Blob Storage, Browserless, Cloud Signature Consortium, Cloudflare Turnstile, Google Cloud KMS, Google OAuth, Google Secret Manager, Google Vertex AI, Gotenberg, Inbucket, Inngest, MailChannels, Microsoft OAuth, OpenID Connect, Plain, Plausible, PostgreSQL, PostHog, Redis, Render, Resend, SMTP, Stripe.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-docuseal
+
+- Origine: [github.com/docusealco/docuseal](https://github.com/docusealco/docuseal) al commit `0dac1abe842798633aac85ff975ec719c39e85dd`, licenza AGPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Capybara, Catalyst, RSpec, Ruby on Rails, Sidekiq, Tailwind CSS, Turbo, Vue, webpack.
+- Servizi: Amazon S3, AWS Secrets Manager, Azure Blob Storage, Caddy, eID Easy, Google Cloud Storage, MySQL, PostgreSQL, Redis, Rollbar, SMTP, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-elk
+
+- Origine: [github.com/elk-zone/elk](https://github.com/elk-zone/elk) al commit `6b956a6d4a89a676059d83a0b0e59d7165d5f266`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Docus, Nuxt, UnoCSS, Vite, Vitest, Vue.
+- Servizi: Cloudflare Workers KV, LibreTranslate, Mastodon, Netlify, Vercel KV.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-epic-stack
+
+- Origine: [github.com/epicweb-dev/epic-stack](https://github.com/epicweb-dev/epic-stack) al commit `893610db76127fb5a5f1ffa786bee6b050637429`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Express, Playwright, Prisma, React, React Email, React Router, Tailwind CSS, Vite, Vitest, Zod.
+- Servizi: Consul, Fly.io, GitHub OAuth, LiteFS, Resend, Sentry, SQLite, Tigris.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-fiber-go-template
+
+- Origine: [github.com/create-go-app/fiber-go-template](https://github.com/create-go-app/fiber-go-template) al commit `286d0d84d3373668634fcc30a3cec60740a8f4dc`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Fiber, sqlx, testify.
+- Servizi: MySQL, PostgreSQL, Redis.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-gin-vue-admin
+
+- Origine: [github.com/flipped-aurora/gin-vue-admin](https://github.com/flipped-aurora/gin-vue-admin) al commit `0592a692884bc0ed78f5172ab2f597abb5aa7cb6`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Casbin, Element Plus, Gin, GORM, Pinia, Qmgo, testify, UnoCSS, Vite, Vue, Vue Router.
+- Servizi: Aliyun OSS, Amazon S3, Cloudflare R2, Huawei Cloud OBS, Microsoft SQL Server, MinIO, MongoDB, MySQL, Oracle Database, PostgreSQL, Qiniu Kodo, Redis, SMTP, SQLite, Tencent COS.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-healthchecks
+
+- Origine: [github.com/healthchecks/healthchecks](https://github.com/healthchecks/healthchecks) al commit `6c05a7adf266efb70f9517727bef9ea8b2bbf52f`, licenza BSD-3-Clause.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Bootstrap, Django, Pydantic.
+- Servizi: Amazon S3, Discord, GitHub, Google Chat, Gotify, Matrix, Mattermost, Microsoft Teams, MySQL, ntfy, Opsgenie, PagerDuty, PagerTree, PostgreSQL, Prometheus, Pushbullet, Pushover, Rocket.Chat, Signal, Slack, SMTP, Spike, SQLite, StatsD, Telegram, Trello, Twilio, VictorOps, Zulip.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+
+#### real-stack-hexpm
+
+- Origine: [github.com/hexpm/hexpm](https://github.com/hexpm/hexpm) al commit `92147c5982cfdf4fe34f742efbf9ae5ecf069beb`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Broadway, Ecto, esbuild, ExUnit, Oban, Phoenix, Phoenix LiveView, Tailwind CSS.
+- Servizi: Amazon S3, Amazon SQS, Fastly, GitHub, Google Cloud Storage, hCaptcha, Hex billing, OpenID Connect, PostgreSQL, Prometheus, SendGrid, Sentry, Slack, Typesense, Varsel.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+
+#### real-stack-jasontaylor-cleanarchitecture
+
+- Origine: [github.com/jasontaylordev/CleanArchitecture](https://github.com/jasontaylordev/CleanArchitecture) al commit `57c9d5d4a61aa44bdc6471bac9c7ddb03b4497d8`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Angular, ASP.NET Core, Aspire, Entity Framework Core, NUnit, Pico CSS, Playwright, React, React Router, Reqnroll, Vite, Vitest.
+- Servizi: Azure Container Apps, Azure Key Vault, Microsoft SQL Server, PostgreSQL, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-jellyfin
+
+- Origine: [github.com/jellyfin/jellyfin](https://github.com/jellyfin/jellyfin) al commit `07bcec2e1f4e835bc3a667c856dd444ec46b4611`, licenza GPL-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: ASP.NET Core, Entity Framework Core, FsCheck, Json.NET, SharpFuzz, xUnit.
+- Servizi: Graylog, Jellyfin plugin repository, ListenBrainz, MusicBrainz, OMDb, Prometheus, Schedules Direct, SQLite, TheAudioDB, TMDb.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-jellyfin-ios
+
+- Origine: [github.com/jellyfin/jellyfin-ios](https://github.com/jellyfin/jellyfin-ios) al commit `38cf41817f46cda9d3c24b81e8b4538894b2e363`, licenza MPL-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Expo, Jest, React, React Native, React Native Elements, React Navigation.
+- Servizi: App Store Connect, Jellyfin Server.
+- Casi:
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-koel
+
+- Origine: [github.com/koel/koel](https://github.com/koel/koel) al commit `9ec40db3ca9b01a0822d11ad24591b70cc6aca63`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Laravel, PHPUnit, Tailwind CSS, Vite, Vite+, VitePress, Vitest, Vue.
+- Servizi: Algolia, Amazon S3, Amazon SQS, Anthropic, Cover Art Archive, DeepSeek, Dropbox, Google Gemini, Google OAuth, Gravatar, Groq, IPinfo, iTunes, Laravel Nightwatch, Last.fm, Lemon Squeezy, ListenBrainz, MariaDB, Meilisearch, Microsoft SQL Server, Mistral AI, MusicBrainz, MySQL, OpenAI, OpenID Connect, OpenRouter, PostgreSQL, Pusher, Redis, Sentry, SFTP, SMTP, Spotify, SQLite, Ticketmaster, WebDAV, Wikidata, Wikipedia, xAI, YouTube.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-kuvasz
+
+- Origine: [github.com/kuvasz-uptime/kuvasz](https://github.com/kuvasz-uptime/kuvasz) al commit `16c87cb4467bbdb0259ee8f14db3ae0445ca24c0`, licenza AGPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Alpine.js, htmx, Jackson, jOOQ, Kotest, kotlinx.html, Material for MkDocs, Micronaut, MkDocs, MockK, MockServer, Pebble, Playwright, Tabler, Testcontainers.
+- Servizi: Apprise, Discord, GitHub API, Keycloak, Microsoft Teams, OpenTelemetry, PagerDuty, PostgreSQL, Prometheus, Pushover, Slack, SMTP, Telegram.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-lldap
+
+- Origine: [github.com/lldap/lldap](https://github.com/lldap/lldap) al commit `99c510a7a603df1cdaca00a9ffff95ec73b296eb`, licenza GPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Actix Web, Bootstrap, clap, graphql_client, Juniper, Mockall, SeaORM, Serde, Yew.
+- Servizi: jsDelivr, MySQL, PostgreSQL, SMTP, SQLite.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-lobsters
+
+- Origine: [github.com/lobsters/lobsters](https://github.com/lobsters/lobsters) al commit `28bc8d6b53f405cf0d7b18e16f4c5b2f7448e470`, licenza BSD-3-Clause.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Capybara, RSpec, Ruby on Rails, Solid Queue.
+- Servizi: Diffbot, GitHub, Internet Archive, Mastodon, Pushover, Redis, SMTP, SQLite, Telebugs.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-localsend
+
+- Origine: [github.com/localsend/localsend](https://github.com/localsend/localsend) al commit `d1e6198f401939a9b76854f406f7dbb27d67a808`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Android, Axum, clap, dart_mappable, Flutter, flutter_rust_bridge, flutter_test, Hyper, Ratatui, Refena, Routerino, Serde, test, Tokio.
+- Servizi: Apple App Store, Google Play Billing, STUN.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-mall
+
+- Origine: [github.com/macrozheng/mall](https://github.com/macrozheng/mall) al commit `dcaa93b3150352e5044708d7211b5bed0af4509f`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: JUnit Jupiter, Lombok, Mockito, MyBatis, Spring AMQP, Spring Boot, Spring Data Elasticsearch, Spring Data MongoDB, Spring Data Redis, Spring MVC, Spring Security, Thymeleaf.
+- Servizi: Alipay, Aliyun OSS, Elasticsearch, Kibana, Logstash, MinIO, MongoDB, MySQL, Nginx, RabbitMQ, Redis.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-mattermost-mobile
+
+- Origine: [github.com/mattermost/mattermost-mobile](https://github.com/mattermost/mattermost-mobile) al commit `b8b7310b5f88ffb924ae9321a8450127b8b1599d`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Android, Detox, Expo, Expo Router, Express, Jest, Maestro, React, React Native, React Native Elements, React Navigation, WatermelonDB.
+- Servizi: Amazon S3, App Store Connect, Apple Push Notification service, Firebase Cloud Messaging, Google Play, LiveKit, Mattermost Server, Microsoft Intune, Sentry.
+- Casi:
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-mealie
+
+- Origine: [github.com/mealie-recipes/mealie](https://github.com/mealie-recipes/mealie) al commit `04ba6b722075d9d5428c8310027cded2d42969ae`, licenza AGPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: FastAPI, Nuxt, Playwright, Pydantic, pytest, SQLAlchemy, Vite, Vitest, Vue, Vuetify.
+- Servizi: LDAP, Mailpit, mock-oauth2-server, OpenAI, OpenID Connect, OpenLDAP, PostgreSQL, SMTP, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-nestjs-boilerplate
+
+- Origine: [github.com/brocoders/nestjs-boilerplate](https://github.com/brocoders/nestjs-boilerplate) al commit `9620f159eefe38f47747d02ab162852367c5472c`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: class-transformer, class-validator, Express, Jest, Mongoose, NestJS, TypeORM.
+- Servizi: Adminer, Amazon S3, Facebook Login, Google Sign-In, MailDev, Mongo Express, MongoDB, PostgreSQL, Sign in with Apple, SMTP.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-netbox
+
+- Origine: [github.com/netbox-community/netbox](https://github.com/netbox-community/netbox) al commit `836c1e43a0e812984d54bc6ccf59e869e4aaed6b`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Bootstrap, Django, Django REST framework, esbuild, GraphiQL, htmx, React, RQ, Strawberry GraphQL, Tabler.
+- Servizi: Amazon S3, LDAP, NetBox Census, NetBox Copilot, NetBox plugin catalog, OpenStack Swift, PostgreSQL, Prometheus, Redis, SAML, Sentry, SMTP.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+
+#### real-stack-openbudgeteer
+
+- Origine: [github.com/TheAxelander/OpenBudgeteer](https://github.com/TheAxelander/OpenBudgeteer) al commit `48eba0855d637f75364007f4e7912708b700e4d2`, licenza AGPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: ASP.NET Core, Blazor, Entity Framework Core, MudBlazor, xUnit.
+- Servizi: MariaDB, MySQL, PostgreSQL, Redis.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-opengist
+
+- Origine: [github.com/thomiceli/opengist](https://github.com/thomiceli/opengist) al commit `2acf3dae87f9c3d536e0a870787941bbd06d0b46`, licenza AGPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: _hyperscript, Basecoat, Echo, GORM, htmx, Tailwind CSS, testify, urfave/cli, Vite, VitePress, Vue.
+- Servizi: Gitea, GitHub, GitLab, LDAP, Meilisearch, MySQL, OpenID Connect, PostgreSQL, Prometheus, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-owncast
+
+- Origine: [github.com/owncast/owncast](https://github.com/owncast/owncast) al commit `b2c4e69553f87884c856a1a71147fe8138d21cc3`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Ant Design, Artillery, chi, Cypress, Jest, Next.js, oapi-codegen, React, sqlc, Storybook, testify.
+- Servizi: ActivityPub, Amazon S3, BrowserStack, Discord, IndieAuth, Prometheus, SQLite, Web Push.
+- Casi:
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-paperless-ngx
+
+- Origine: [github.com/paperless-ngx/paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) al commit `c3fa454ffad47388277823f90ea48e1abd17b7a0`, licenza GPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Angular, Bootstrap, Celery, Django, Django Channels, Django REST framework, Jest, Playwright, pytest, Tailwind CSS.
+- Servizi: Apache Tika, Azure AI Document Intelligence, Gmail, Gotenberg, GreenMail, Hugging Face, IMAP, MariaDB, Microsoft Outlook, nginx, Ollama, OpenAI, PostgreSQL, Redis, SMTP, SQLite, Valkey.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-peopleinspace
+
+- Origine: [github.com/joreilly/PeopleInSpace](https://github.com/joreilly/PeopleInSpace) al commit `2db46a039837989b3a9337a56bab832318c05fa4`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Android, Coil, Compose for Wear OS, Compose Multiplatform, Horologist, Jetpack Compose, Koin, Kotlin Multiplatform, kotlin.test, kotlinx.serialization, Ktor, Robolectric, SQLDelight, SwiftUI, webpack, WinUI.
+- Servizi: Apple Maps, Astroviewer, Google App Engine, OpenStreetMap, The Space Devs API, Where the ISS At API.
+- Casi:
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-plausible
+
+- Origine: [github.com/plausible/analytics](https://github.com/plausible/analytics) al commit `012522e4e6a4fe69b61a9d66c622be751aafd480`, licenza AGPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Alpine.js, Ecto, esbuild, Express, ExUnit, Jest, Oban, Phoenix, Phoenix LiveView, Playwright, React, React Router, Rollup, Tailwind CSS.
+- Servizi: Amazon S3, Browserless, ClickHouse, CoreDNS, Friendly Captcha, Google Analytics, Google Search Console, Help Scout, Let's Encrypt, Mailgun, Mandrill, MaxMind, MinIO, OpenTelemetry, Paddle, PostgreSQL, Postmark, SendGrid, Sentry, SimpleSAMLphp, SMTP.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-quarkus-super-heroes
+
+- Origine: [github.com/quarkusio/quarkus-super-heroes](https://github.com/quarkusio/quarkus-super-heroes) al commit `f2404b0510d03d26238f476fe755e297040ba1c2`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Apache Avro, Apache JMeter, Create React App, gRPC, Hibernate ORM, Hibernate Reactive, Jackson, Jest, JUnit Jupiter, LangChain4j, MapStruct, Mockito, MockK, Pact, Panache, Playwright, Protocol Buffers, Quarkus, Quarkus REST, Quarkus WebSockets Next, Quinoa, Qute, React, REST Assured, Roq, SmallRye Reactive Messaging, WireMock.
+- Servizi: Apache Kafka, Apicurio Registry, Grafana LGTM, MariaDB, MongoDB, OpenAI, PostgreSQL.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-spring-petclinic
+
+- Origine: [github.com/spring-projects/spring-petclinic](https://github.com/spring-projects/spring-petclinic) al commit `500158f732419217507c7656904b8e6aa1bcc0d6`, licenza Apache-2.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Bootstrap, Hibernate, JUnit Jupiter, Mockito, Spring Boot, Spring Data JPA, Spring MVC, Testcontainers, Thymeleaf.
+- Servizi: H2, MySQL, PostgreSQL.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-symfony-demo
+
+- Origine: [github.com/symfony/demo](https://github.com/symfony/demo) al commit `f42980c690b4bf335fa41bbafdb075bb67b719c2`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Bootstrap, Doctrine ORM, PHPUnit, Stimulus, Symfony, Twig.
+- Servizi: SQLite.
+- Casi:
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
+  - `framework-through-plugin`: Il framework si riconosce da un plugin del build, da uno starter o da un pacchetto che lo porta con sé, non da una dipendenza diretta con il suo nome.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-umami
+
+- Origine: [github.com/umami-software/umami](https://github.com/umami-software/umami) al commit `b18d5144dfe7342edeeca6f61d13ba3baabed9ad`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Model Context Protocol SDK, Next.js, Playwright, Prisma, React, Rollup, Vite, Vitest, Zod.
+- Servizi: Apache Kafka, ClickHouse, DuckDuckGo Icons, Heroku, MaxMind GeoIP, Netlify, PostgreSQL, Redis, Vercel.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-wallabag
+
+- Origine: [github.com/wallabag/wallabag](https://github.com/wallabag/wallabag) al commit `15a90c68cde2aaf2591740c949449e07ac477f32`, licenza MIT.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Doctrine ORM, JMS Serializer, Materialize, PHPUnit, Stimulus, Symfony, Twig, webpack, Webpack Encore.
+- Servizi: Gmail, MariaDB, Matomo, MySQL, PostgreSQL, RabbitMQ, Redis, Sentry, SMTP, SQLite.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-per-unit`: Unità dello stesso repository usano framework diversi, e ogni framework va all'unità che lo dichiara.
+  - `test-only-framework`: Un framework serve solo ai test (scope test o dev) e appartiene comunque all'unità che lo dichiara.
+
+#### real-stack-wger
+
+- Origine: [github.com/wger-project/wger](https://github.com/wger-project/wger) al commit `d4cc7d7769e6d77354242510a08cac89e8704c69`, licenza AGPL-3.0.
+- Linguaggi: non misurato.
+- Unità: non misurato.
+- Workspace: non misurato.
+- File delle dipendenze: non misurato.
+- Versioni dichiarate: non misurato.
+- Framework: Bootstrap, Celery, Django, Django REST framework, htmx, React.
+- Servizi: Amazon S3, Cloudflare Turnstile, Google reCAPTCHA, Mongo Express, MongoDB, Open Food Facts, PostgreSQL, PowerSync, Prometheus, Redis, SMTP, SQLite, wger.de.
+- Casi:
+  - `service-in-infra`: Servizi dichiarati solo da compose, Helm, Kubernetes o dev container, non dalle dipendenze.
+  - `service-from-config`: Servizio riconoscibile solo da un URL di connessione o da una variabile d'ambiente.
+  - `saas-service`: Servizio gestito esterno, visibile solo da un SDK client o dalla configurazione.
+  - `framework-from-files`: Framework riconoscibile da file, SDK o CDN, non da una dipendenza dichiarata.
 
 #### real-svc-eshop
 
@@ -2749,10 +3411,13 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - `build-generates-code` (15): js-angular, js-sveltekit, jvm-maven-release-apt, jvm-protobuf-generated, mix-poly-firebase, mix-real-zlib, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-kotlinconf, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, sys-rust-buildrs, sys-rust-tauri
 - `submodule-absent` (2): mix-edge-submodules, sys-git-submodule-absent
 - `missing-file` (14): jvm-android-app-lib, jvm-gradle-groovy-wrapper, jvm-mixed-java-kotlin, mix-infra-compose, mix-infra-devcontainer, mix-php-laravel, mix-poly-firebase, mix-real-chi, mix-real-python-semver, mix-real-zlib, real-app-hoppscotch, real-svc-eshop, real-svc-otel-demo, sys-rust-tauri
-- `service-in-infra` (11): jvm-spring-boot-managed, mix-infra-compose, mix-infra-devcontainer, mix-infra-k8s-helm, mix-real-tududi, py-fastapi-compose, real-app-jhipster-sample, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app
-- `service-from-config` (7): js-nextjs, mix-infra-tool-versions, mix-php-laravel, mix-ruby-rails, py-django, real-app-kotlinconf, real-svc-robot-shop
-- `saas-service` (8): jvm-android-app-lib, mix-edge-scripts, mix-poly-firebase, mix-real-tududi, real-app-full-stack-fastapi, real-app-memos, real-svc-eshop, real-svc-otel-demo
-- `framework-from-files` (5): mix-dotnet-central, py-django, py-pip-tools, real-svc-petclinic-microservices, real-svc-voting-app
+- `service-in-infra` (35): jvm-spring-boot-managed, mix-infra-compose, mix-infra-devcontainer, mix-infra-k8s-helm, mix-real-tududi, py-fastapi-compose, real-app-jhipster-sample, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-kuvasz, real-stack-mall, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-openbudgeteer, real-stack-opengist, real-stack-paperless-ngx, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app
+- `service-from-config` (40): js-nextjs, mix-infra-tool-versions, mix-php-laravel, mix-ruby-rails, py-django, real-app-kotlinconf, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-fiber-go-template, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-netbox, real-stack-openbudgeteer, real-stack-opengist, real-stack-paperless-ngx, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-robot-shop
+- `saas-service` (44): jvm-android-app-lib, mix-edge-scripts, mix-poly-firebase, mix-real-tududi, real-app-full-stack-fastapi, real-app-memos, real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-astro-paper, real-stack-atuin, real-stack-bakerydemo, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-gin-vue-admin, real-stack-healthchecks, real-stack-hexpm, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-netbox, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-umami, real-stack-wallabag, real-stack-wger, real-svc-eshop, real-svc-otel-demo
+- `framework-from-files` (18): mix-dotnet-central, py-django, py-pip-tools, real-stack-ardalis-cleanarchitecture, real-stack-bakerydemo, real-stack-documenso, real-stack-healthchecks, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin-ios, real-stack-kuvasz, real-stack-lldap, real-stack-mattermost-mobile, real-stack-openbudgeteer, real-stack-owncast, real-stack-symfony-demo, real-stack-wger, real-svc-petclinic-microservices, real-svc-voting-app
+- `framework-through-plugin` (10): real-stack-elk, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-peopleinspace, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo
+- `framework-per-unit` (29): real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-gin-vue-admin, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-netbox, real-stack-openbudgeteer, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-umami, real-stack-wallabag
+- `test-only-framework` (34): real-stack-actual, real-stack-ardalis-cleanarchitecture, real-stack-atuin, real-stack-bookstack, real-stack-ctfd, real-stack-documenso, real-stack-docuseal, real-stack-elk, real-stack-epic-stack, real-stack-fiber-go-template, real-stack-gin-vue-admin, real-stack-jasontaylor-cleanarchitecture, real-stack-jellyfin, real-stack-jellyfin-ios, real-stack-koel, real-stack-kuvasz, real-stack-lldap, real-stack-lobsters, real-stack-localsend, real-stack-mall, real-stack-mattermost-mobile, real-stack-mealie, real-stack-nestjs-boilerplate, real-stack-openbudgeteer, real-stack-opengist, real-stack-owncast, real-stack-paperless-ngx, real-stack-peopleinspace, real-stack-plausible, real-stack-quarkus-super-heroes, real-stack-spring-petclinic, real-stack-symfony-demo, real-stack-umami, real-stack-wallabag
 - `undeclared-connections` (13): mix-poly-firebase, mix-poly-grpc, mix-poly-openapi, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-jhipster-sample, real-app-kotlinconf, real-app-memos, real-svc-eshop, real-svc-otel-demo, real-svc-petclinic-microservices, real-svc-robot-shop, real-svc-voting-app
 - `shared-contract` (7): mix-poly-grpc, mix-poly-openapi, real-app-full-stack-fastapi, real-app-hoppscotch, real-app-memos, real-svc-eshop, real-svc-otel-demo
 

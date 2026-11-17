@@ -1,0 +1,57 @@
+{
+ "frameworks": [
+  {
+   "name": "Fiber",
+   "unit": "github.com/create-go-app/fiber-go-template",
+   "evidence": "go.mod#L11"
+  },
+  {
+   "name": "sqlx",
+   "unit": "github.com/create-go-app/fiber-go-template",
+   "evidence": "go.mod#L16"
+  },
+  {
+   "name": "testify",
+   "unit": "github.com/create-go-app/fiber-go-template",
+   "evidence": "go.mod#L19"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": ".env.example#L18"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": ".env.example#L18"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": ".env.example#L30"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "there is no compose file: PostgreSQL and Redis are started by docker run targets of the Makefile, and the app finds them through DB_HOST and REDIS_HOST in .env.example",
+  "MySQL is an alternative selected by DB_TYPE (pgx or mysql) in the same line, with the driver github.com/go-sql-driver/mysql in go.mod",
+  "data access is sqlx over pgx and the MySQL driver, not an ORM; the SQL migrations under platform/migrations run with the external migrate tool",
+  "testify is used only by the two _test.go files in pkg/routes; go.mod has no test scope",
+  "the swagger packages generate API documentation and are not counted as frameworks here",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "test-only-framework",
+  "service-from-config"
+ ]
+}

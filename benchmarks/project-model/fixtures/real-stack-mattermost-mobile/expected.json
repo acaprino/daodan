@@ -1,0 +1,157 @@
+{
+ "frameworks": [
+  {
+   "name": "React Native",
+   "unit": "mattermost-mobile",
+   "evidence": "package.json#L89"
+  },
+  {
+   "name": "React",
+   "unit": "mattermost-mobile",
+   "evidence": "package.json#L86"
+  },
+  {
+   "name": "Expo",
+   "unit": "mattermost-mobile",
+   "evidence": "package.json#L63"
+  },
+  {
+   "name": "Expo Router",
+   "unit": "mattermost-mobile",
+   "evidence": "package.json#L69"
+  },
+  {
+   "name": "React Navigation",
+   "unit": "mattermost-mobile",
+   "evidence": "package.json#L52"
+  },
+  {
+   "name": "React Native Elements",
+   "unit": "mattermost-mobile",
+   "evidence": "package.json#L55"
+  },
+  {
+   "name": "WatermelonDB",
+   "unit": "mattermost-mobile",
+   "evidence": "package.json#L39"
+  },
+  {
+   "name": "Jest",
+   "unit": "mattermost-mobile",
+   "evidence": "package.json#L159"
+  },
+  {
+   "name": "Detox",
+   "unit": "mattermost-mobile-e2e",
+   "evidence": "detox/package.json#L24"
+  },
+  {
+   "name": "Jest",
+   "unit": "mattermost-mobile-e2e",
+   "evidence": "detox/package.json#L28"
+  },
+  {
+   "name": "Express",
+   "unit": "mattermost-mobile-e2e",
+   "evidence": "detox/package.json#L26"
+  },
+  {
+   "name": "Maestro",
+   "unit": "mattermost-mobile-maestro",
+   "evidence": "detox/maestro/flows/account/attach_logs.yml#L31"
+  },
+  {
+   "name": "Android",
+   "unit": ":app",
+   "evidence": "android/app/build.gradle#L1"
+  },
+  {
+   "name": "React Native",
+   "unit": ":app",
+   "evidence": "android/app/build.gradle#L3"
+  },
+  {
+   "name": "React Native",
+   "unit": "Mattermost",
+   "evidence": "ios/Podfile#L77"
+  },
+  {
+   "name": "Expo",
+   "unit": "Mattermost",
+   "evidence": "ios/Podfile#L75"
+  }
+ ],
+ "services": [
+  {
+   "name": "Mattermost Server",
+   "kind": "api",
+   "evidence": "app/client/rest/base.ts#L12"
+  },
+  {
+   "name": "Sentry",
+   "kind": "monitoring",
+   "evidence": "package.json#L56"
+  },
+  {
+   "name": "LiveKit",
+   "kind": "api",
+   "evidence": "package.json#L79"
+  },
+  {
+   "name": "Firebase Cloud Messaging",
+   "kind": "notification",
+   "evidence": "android/app/build.gradle#L216"
+  },
+  {
+   "name": "Apple Push Notification service",
+   "kind": "notification",
+   "evidence": "ios/Mattermost/Mattermost.entitlements#L5"
+  },
+  {
+   "name": "Microsoft Intune",
+   "kind": "authentication",
+   "evidence": "ios/Podfile#L90"
+  },
+  {
+   "name": "App Store Connect",
+   "kind": "hosting",
+   "evidence": "fastlane/Fastfile#L1121"
+  },
+  {
+   "name": "Google Play",
+   "kind": "hosting",
+   "evidence": "fastlane/Fastfile#L1189"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "detox/package.json#L7"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the Android :app project gets React Native from the com.facebook.react Gradle plugin and Expo from autolinking in settings.gradle, which runs node to find both plugins in node_modules",
+  "the iOS target Mattermost gets React Native and Expo only through ios/Podfile; the NotificationService and MattermostShare targets use neither",
+  "expo-router and React Navigation are both declared and both imported",
+  "detox/package.json (mattermost-mobile-e2e) has its own Jest and Express, used by the e2e harness, not by the app",
+  "Maestro is not a dependency: detox/maestro holds YAML flows run by the Maestro CLI, and its package.json declares only helpers",
+  "the Mattermost server the app talks to is the user's own, reached through the network client in app/client: there is no URL to find",
+  "Microsoft Intune comes from the git submodule libraries/@mattermost/intune, a private repository, and only when intune_enabled is set in the Podfile",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "saas-service",
+  "framework-per-unit",
+  "framework-from-files",
+  "framework-through-plugin",
+  "test-only-framework"
+ ]
+}

@@ -1,0 +1,95 @@
+{
+ "frameworks": [
+  {
+   "name": "Ruby on Rails",
+   "unit": ".",
+   "evidence": "Gemfile#L5"
+  },
+  {
+   "name": "Solid Queue",
+   "unit": ".",
+   "evidence": "Gemfile#L13"
+  },
+  {
+   "name": "RSpec",
+   "unit": ".",
+   "evidence": "Gemfile#L77"
+  },
+  {
+   "name": "Capybara",
+   "unit": ".",
+   "evidence": "Gemfile#L68"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "config/database.yml.sample#L3"
+  },
+  {
+   "name": "Redis",
+   "kind": "cache",
+   "evidence": "config/cable.yml#L9"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "config/initializers/email.rb#L3"
+  },
+  {
+   "name": "Telebugs",
+   "kind": "monitoring",
+   "evidence": "config/initializers/telebugs.rb#L22"
+  },
+  {
+   "name": "GitHub",
+   "kind": "authentication",
+   "evidence": "extras/github.rb#L13"
+  },
+  {
+   "name": "Mastodon",
+   "kind": "authentication",
+   "evidence": "extras/mastodon.rb#L1"
+  },
+  {
+   "name": "Pushover",
+   "kind": "notification",
+   "evidence": "extras/pushover.rb#L19"
+  },
+  {
+   "name": "Diffbot",
+   "kind": "api",
+   "evidence": "extras/diff_bot.rb#L1"
+  },
+  {
+   "name": "Internet Archive",
+   "kind": "api",
+   "evidence": "app/models/story.rb#L537"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "the Gemfile has no gemspec and names no unit, so the frameworks belong to the root folder",
+  "the database is SQLite (config/database.yml.sample); Solid Cache and Solid Queue keep cache and jobs in further SQLite databases, not in Redis",
+  "Redis is used only by Action Cable in production (config/cable.yml)",
+  "error reports go to Telebugs through the sentry-rails gem: the DSN is credentials.telebugs.dsn, so naming the service Sentry is wrong",
+  "GitHub, Mastodon, Pushover and Diffbot are plain classes in extras/ with their keys in Rails credentials; there is no SDK gem for them",
+  "JavaScript is pinned through importmap-rails with Tom Select vendored in vendor/javascript: there is no package.json",
+  "RSpec and Capybara are in the test and development group",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-from-config",
+  "saas-service",
+  "test-only-framework"
+ ]
+}

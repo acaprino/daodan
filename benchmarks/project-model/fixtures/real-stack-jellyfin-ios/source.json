@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/jellyfin/jellyfin-ios",
+ "commit": "38cf41817f46cda9d3c24b81e8b4538894b2e363",
+ "licence": "MPL-2.0",
+ "why": "Expo and React Native iOS app with a committed ios/ Xcode project, a CocoaPods Podfile and a Gemfile for fastlane beside package.json"
+}

@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/macrozheng/mall",
+ "commit": "dcaa93b3150352e5044708d7211b5bed0af4509f",
+ "licence": "Apache-2.0",
+ "why": "Spring Boot e-commerce in seven Maven modules whose frameworks come from starters declared per module, with ten services in one compose file"
+}

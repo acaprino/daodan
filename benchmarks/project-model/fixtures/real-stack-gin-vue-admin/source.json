@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/flipped-aurora/gin-vue-admin",
+ "commit": "0592a692884bc0ed78f5172ab2f597abb5aa7cb6",
+ "licence": "Apache-2.0",
+ "why": "Gin and GORM server and a Vue 3 admin front end in two folders, with seven databases and six object stores chosen by one config file"
+}

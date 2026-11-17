@@ -1,0 +1,221 @@
+{
+ "frameworks": [
+  {
+   "name": "Actix Web",
+   "unit": "lldap",
+   "evidence": "server/Cargo.toml#L63"
+  },
+  {
+   "name": "Juniper",
+   "unit": "lldap",
+   "evidence": "server/Cargo.toml#L34"
+  },
+  {
+   "name": "SeaORM",
+   "unit": "lldap",
+   "evidence": "server/Cargo.toml#L42"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap",
+   "evidence": "server/Cargo.toml#L44"
+  },
+  {
+   "name": "clap",
+   "unit": "lldap",
+   "evidence": "server/Cargo.toml#L26"
+  },
+  {
+   "name": "graphql_client",
+   "unit": "lldap",
+   "evidence": "server/Cargo.toml#L142"
+  },
+  {
+   "name": "Mockall",
+   "unit": "lldap",
+   "evidence": "server/Cargo.toml#L144"
+  },
+  {
+   "name": "Yew",
+   "unit": "lldap_app",
+   "evidence": "app/Cargo.toml#L33"
+  },
+  {
+   "name": "graphql_client",
+   "unit": "lldap_app",
+   "evidence": "app/Cargo.toml#L20"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_app",
+   "evidence": "app/Cargo.toml#L24"
+  },
+  {
+   "name": "graphql_client",
+   "unit": "lldap_migration_tool",
+   "evidence": "migration-tool/Cargo.toml#L26"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_migration_tool",
+   "evidence": "migration-tool/Cargo.toml#L18"
+  },
+  {
+   "name": "clap",
+   "unit": "lldap_set_password",
+   "evidence": "set-password/Cargo.toml#L20"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_set_password",
+   "evidence": "set-password/Cargo.toml#L17"
+  },
+  {
+   "name": "SeaORM",
+   "unit": "lldap_auth",
+   "evidence": "crates/auth/Cargo.toml#L34"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_auth",
+   "evidence": "crates/auth/Cargo.toml#L24"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_domain_handlers",
+   "evidence": "crates/domain-handlers/Cargo.toml#L20"
+  },
+  {
+   "name": "SeaORM",
+   "unit": "lldap_domain_model",
+   "evidence": "crates/domain-model/Cargo.toml#L20"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_domain_model",
+   "evidence": "crates/domain-model/Cargo.toml#L21"
+  },
+  {
+   "name": "Juniper",
+   "unit": "lldap_domain",
+   "evidence": "crates/domain/Cargo.toml#L25"
+  },
+  {
+   "name": "SeaORM",
+   "unit": "lldap_domain",
+   "evidence": "crates/domain/Cargo.toml#L26"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_domain",
+   "evidence": "crates/domain/Cargo.toml#L27"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_frontend_options",
+   "evidence": "crates/frontend-options/Cargo.toml#L13"
+  },
+  {
+   "name": "Juniper",
+   "unit": "lldap_graphql_server",
+   "evidence": "crates/graphql-server/Cargo.toml#L15"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_graphql_server",
+   "evidence": "crates/graphql-server/Cargo.toml#L16"
+  },
+  {
+   "name": "Mockall",
+   "unit": "lldap_graphql_server",
+   "evidence": "crates/graphql-server/Cargo.toml#L48"
+  },
+  {
+   "name": "Mockall",
+   "unit": "lldap_ldap",
+   "evidence": "crates/ldap/Cargo.toml#L50"
+  },
+  {
+   "name": "Mockall",
+   "unit": "lldap_opaque_handler",
+   "evidence": "crates/opaque-handler/Cargo.toml#L29"
+  },
+  {
+   "name": "SeaORM",
+   "unit": "lldap_sql_backend_handler",
+   "evidence": "crates/sql-backend-handler/Cargo.toml#L31"
+  },
+  {
+   "name": "Serde",
+   "unit": "lldap_sql_backend_handler",
+   "evidence": "crates/sql-backend-handler/Cargo.toml#L35"
+  },
+  {
+   "name": "Mockall",
+   "unit": "lldap_sql_backend_handler",
+   "evidence": "crates/sql-backend-handler/Cargo.toml#L69"
+  },
+  {
+   "name": "Mockall",
+   "unit": "lldap_test_utils",
+   "evidence": "crates/test-utils/Cargo.toml#L13"
+  },
+  {
+   "name": "Bootstrap",
+   "unit": "lldap_app",
+   "evidence": "app/index.html#L16"
+  }
+ ],
+ "services": [
+  {
+   "name": "SQLite",
+   "kind": "database",
+   "evidence": "lldap_config.docker_template.toml#L104"
+  },
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "lldap_config.docker_template.toml#L100"
+  },
+  {
+   "name": "MySQL",
+   "kind": "database",
+   "evidence": "lldap_config.docker_template.toml#L101"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "lldap_config.docker_template.toml#L133"
+  },
+  {
+   "name": "jsDelivr",
+   "kind": "cdn",
+   "evidence": "app/index.html#L10"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "most crates write sea-orm = { workspace = true } or [dependencies.sea-orm] with workspace = true: the version and features are in the root Cargo.toml, but the framework belongs to each crate that names it",
+  "the server (package lldap in server/) uses Actix Web, Juniper as GraphQL server and SeaORM; the front end (lldap_app in app/) is Yew compiled to WebAssembly and talks to it with graphql_client",
+  "Bootstrap comes from a CDN link in app/index.html, not from any manifest",
+  "Mockall is a dev-dependency in five crates but a normal dependency of lldap_test_utils, a crate that only serves tests",
+  "SQLite is the default database_url; PostgreSQL and MySQL appear only as commented example URLs, and SMTP only as the smtp_options section of lldap_config.docker_template.toml",
+  "Tokio, tracing and the cryptography crates (opaque-ke, orion) are libraries, not counted as frameworks here",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "framework-per-unit",
+  "test-only-framework",
+  "framework-from-files",
+  "service-from-config",
+  "saas-service"
+ ]
+}

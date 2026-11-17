@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/satnaing/astro-paper",
+ "commit": "4bc2dafac5405c6c4f06d1daba275e836e656097",
+ "licence": "MIT",
+ "why": "static Astro blog with one manifest: few frameworks, no infrastructure, two services named only in the Astro configuration"
+}

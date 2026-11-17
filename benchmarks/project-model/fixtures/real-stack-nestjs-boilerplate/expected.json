@@ -1,0 +1,117 @@
+{
+ "frameworks": [
+  {
+   "name": "NestJS",
+   "unit": "nestjs-boilerplate",
+   "evidence": "package.json#L63"
+  },
+  {
+   "name": "Express",
+   "unit": "nestjs-boilerplate",
+   "evidence": "package.json#L67"
+  },
+  {
+   "name": "TypeORM",
+   "unit": "nestjs-boilerplate",
+   "evidence": "package.json#L9"
+  },
+  {
+   "name": "Mongoose",
+   "unit": "nestjs-boilerplate",
+   "evidence": "package.json#L80"
+  },
+  {
+   "name": "class-validator",
+   "unit": "nestjs-boilerplate",
+   "evidence": "package.json#L75"
+  },
+  {
+   "name": "class-transformer",
+   "unit": "nestjs-boilerplate",
+   "evidence": "package.json#L74"
+  },
+  {
+   "name": "Jest",
+   "unit": "nestjs-boilerplate",
+   "evidence": "package.json#L129"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker-compose.yaml#L3"
+  },
+  {
+   "name": "MongoDB",
+   "kind": "database",
+   "evidence": "docker-compose.document.yaml#L11"
+  },
+  {
+   "name": "MailDev",
+   "kind": "mail",
+   "evidence": "docker-compose.yaml#L16"
+  },
+  {
+   "name": "Adminer",
+   "kind": "admin",
+   "evidence": "docker-compose.yaml#L22"
+  },
+  {
+   "name": "Mongo Express",
+   "kind": "admin",
+   "evidence": "docker-compose.document.yaml#L22"
+  },
+  {
+   "name": "SMTP",
+   "kind": "mail",
+   "evidence": "env-example-relational#L33"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "env-example-relational#L31"
+  },
+  {
+   "name": "Google Sign-In",
+   "kind": "authentication",
+   "evidence": "package.json#L77"
+  },
+  {
+   "name": "Sign in with Apple",
+   "kind": "authentication",
+   "evidence": "package.json#L72"
+  },
+  {
+   "name": "Facebook Login",
+   "kind": "authentication",
+   "evidence": "src/auth-facebook/auth-facebook.service.ts#L11"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "NestJS runs on Express only through @nestjs/platform-express: express is not a direct dependency",
+  "TypeORM with PostgreSQL and Mongoose with MongoDB are both declared: which one runs is chosen by env-example-relational or env-example-document and the matching compose file",
+  "MongoDB and Mongo Express are only in the docker-compose.document*.yaml files, PostgreSQL and Adminer only in the relational ones",
+  "Redis is commented out in every compose file and no package reads WORKER_HOST: it is not a service of this project",
+  "MailDev is built from maildev.Dockerfile, so its compose entry has no image",
+  "Facebook Login has no SDK: the service calls graph.facebook.com over HTTP",
+  "Jest is configured in the jest key of package.json and in test/jest-e2e.json; supertest drives the e2e requests",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service",
+  "framework-through-plugin",
+  "test-only-framework"
+ ]
+}

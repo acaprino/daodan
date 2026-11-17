@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/localsend/localsend",
+ "commit": "d1e6198f401939a9b76854f406f7dbb27d67a808",
+ "licence": "Apache-2.0",
+ "why": "Flutter app in a pub workspace with a Rust core in a Cargo workspace, bridged by flutter_rust_bridge, plus Android Gradle builds, a Rust CLI and an Axum signaling server"
+}

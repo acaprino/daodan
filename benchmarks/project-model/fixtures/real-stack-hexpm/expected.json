@@ -1,0 +1,144 @@
+{
+ "frameworks": [
+  {
+   "name": "Phoenix",
+   "unit": "hexpm",
+   "evidence": "mix.exs#L142"
+  },
+  {
+   "name": "Phoenix LiveView",
+   "unit": "hexpm",
+   "evidence": "mix.exs#L138"
+  },
+  {
+   "name": "Ecto",
+   "unit": "hexpm",
+   "evidence": "mix.exs#L46"
+  },
+  {
+   "name": "Oban",
+   "unit": "hexpm",
+   "evidence": "mix.exs#L131"
+  },
+  {
+   "name": "Broadway",
+   "unit": "hexpm",
+   "evidence": "mix.exs#L39"
+  },
+  {
+   "name": "ExUnit",
+   "unit": "hexpm",
+   "evidence": "test/test_helper.exs#L2"
+  },
+  {
+   "name": "Tailwind CSS",
+   "unit": "hexpm",
+   "evidence": "mix.exs#L150"
+  },
+  {
+   "name": "esbuild",
+   "unit": "hexpm",
+   "evidence": "mix.exs#L44"
+  }
+ ],
+ "services": [
+  {
+   "name": "PostgreSQL",
+   "kind": "database",
+   "evidence": "docker-compose.yaml#L3"
+  },
+  {
+   "name": "Amazon S3",
+   "kind": "storage",
+   "evidence": "config/runtime.exs#L66"
+  },
+  {
+   "name": "Amazon SQS",
+   "kind": "queue",
+   "evidence": "config/runtime.exs#L237"
+  },
+  {
+   "name": "Google Cloud Storage",
+   "kind": "storage",
+   "evidence": "config/runtime.exs#L235"
+  },
+  {
+   "name": "Fastly",
+   "kind": "cdn",
+   "evidence": "config/runtime.exs#L89"
+  },
+  {
+   "name": "GitHub",
+   "kind": "authentication",
+   "evidence": "config/runtime.exs#L120"
+  },
+  {
+   "name": "OpenID Connect",
+   "kind": "authentication",
+   "evidence": "config/runtime.exs#L113"
+  },
+  {
+   "name": "SendGrid",
+   "kind": "mail",
+   "evidence": "config/runtime.exs#L155"
+  },
+  {
+   "name": "Sentry",
+   "kind": "monitoring",
+   "evidence": "config/runtime.exs#L146"
+  },
+  {
+   "name": "Typesense",
+   "kind": "search",
+   "evidence": "config/runtime.exs#L238"
+  },
+  {
+   "name": "hCaptcha",
+   "kind": "api",
+   "evidence": "config/runtime.exs#L116"
+  },
+  {
+   "name": "Slack",
+   "kind": "notification",
+   "evidence": "config/runtime.exs#L77"
+  },
+  {
+   "name": "Varsel",
+   "kind": "api",
+   "evidence": "config/runtime.exs#L105"
+  },
+  {
+   "name": "Hex billing",
+   "kind": "payments",
+   "evidence": "config/runtime.exs#L93"
+  },
+  {
+   "name": "Prometheus",
+   "kind": "monitoring",
+   "evidence": "mix.exs#L148"
+  }
+ ],
+ "unknown": [
+  "languages",
+  "excluded",
+  "units",
+  "workspace",
+  "toolchains",
+  "dependencies",
+  "needs"
+ ],
+ "traps": [
+  "docker-compose.yaml starts only PostgreSQL; every other service is a production environment variable read in config/runtime.exs",
+  "package files go to several S3 buckets through ex_aws_s3, documentation jobs come from SQS through broadway_sqs, and private docs live in Google Cloud Storage (the \"gcs,\" prefix)",
+  "there is no package.json: Tailwind CSS and esbuild are Mix packages that download their binaries in dev",
+  "GitHub is the OAuth login (ueberauth_github), and OpenID Connect (oidcc) verifies workload identity tokens for publishing",
+  "Varsel is the external service that receives package security reports; Hex billing is a separate service reached through HEXPM_BILLING_URL",
+  "ExUnit ships with Elixir and has no dependency line; GeoIP reads a local MaxMind file and is not a service",
+  "only frameworks and services are measured; the other facets are in unknown"
+ ],
+ "cases": [
+  "service-in-infra",
+  "service-from-config",
+  "saas-service"
+ ]
+}

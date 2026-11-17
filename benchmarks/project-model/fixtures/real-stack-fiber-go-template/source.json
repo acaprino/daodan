@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/create-go-app/fiber-go-template",
+ "commit": "286d0d84d3373668634fcc30a3cec60740a8f4dc",
+ "licence": "Apache-2.0",
+ "why": "single Go module on Fiber whose PostgreSQL, MySQL and Redis appear only in .env.example and in docker run commands of the Makefile"
+}

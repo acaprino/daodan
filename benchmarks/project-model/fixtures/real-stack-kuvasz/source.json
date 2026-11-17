@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/kuvasz-uptime/kuvasz",
+ "commit": "16c87cb4467bbdb0259ee8f14db3ae0445ca24c0",
+ "licence": "AGPL-3.0",
+ "why": "Micronaut and jOOQ in four Gradle subprojects whose frameworks differ per project, a server-rendered UI with vendored JavaScript, and a dozen notification services named only in code"
+}

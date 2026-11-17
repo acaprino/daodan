@@ -1,0 +1,6 @@
+{
+ "repo": "https://github.com/owncast/owncast",
+ "commit": "b2c4e69553f87884c856a1a71147fe8138d21cc3",
+ "licence": "MIT",
+ "why": "Go streaming server with a Next.js admin and viewer front end and eight separate npm test packages; every service is reached from Go code, none from infrastructure"
+}
