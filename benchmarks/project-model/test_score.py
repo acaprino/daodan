@@ -335,6 +335,15 @@ class Check(unittest.TestCase):
         self.assertEqual(len(problems), 1)
         self.assertIn("mypy", problems[0])
 
+    def test_evidence_may_name_a_line(self):
+        def doc(evidence):
+            return {"frameworks": [{"name": "Spring Boot", "evidence": evidence}],
+                    "services": [{"name": "Redis", "kind": "cache", "evidence": "compose.yaml#L15"}],
+                    "needs": {"container": False, "reason": ""}, "traps": ["t"]}
+        self.assertEqual(score.check_expected(doc("pom.xml#L42"), None), [])
+        for bad in ("pom.xml#42", "pom.xml#L0", "pom.xml#project.parent"):
+            self.assertTrue(any("#L<line>" in x for x in score.check_expected(doc(bad), None)), bad)
+
     def test_check_reports_shape_problems(self):
         bad = {"units": [{"kind": "npm-package", "root": "nowhere", "depends_on": ["ghost"]}],
                "dependencies": [{"unit": "x", "name": "y", "scope": "sometimes"}], "colour": 1}
@@ -387,6 +396,14 @@ class Cases(unittest.TestCase):
         self.assertEqual(score.check_cases(doc, self.DOMAIN), [])
         self.assertEqual(score.check_cases(dict(NPM_EXPECTED), self.DOMAIN),
                          ["cases: must be a non-empty list of case ids"])
+
+    def test_a_derived_case_of_an_unknown_facet_is_neither_required_nor_allowed(self):
+        doc = {"units": [], "frameworks": [], "services": [], "traps": ["t"],
+               "unknown": ["units", "needs"], "cases": ["workspace-glob"]}
+        self.assertEqual(score.check_expected(doc, None), [])          # needs may be absent when unknown
+        self.assertEqual(score.check_cases(doc, self.DOMAIN), [])      # no-build-file is not demanded
+        listed = dict(doc, cases=["workspace-glob", "no-build-file"])
+        self.assertTrue(any("'no-build-file' reads 'units'" in x for x in score.check_cases(listed, self.DOMAIN)))
 
     def test_unused_and_single_use_cases_warn(self):
         docs = {"a": {"cases": ["workspace-glob", "nested-module"]}}

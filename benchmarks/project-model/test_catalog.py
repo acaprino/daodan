@@ -29,6 +29,13 @@ class Render(unittest.TestCase):
                      "- `no-build-file`: nessun progetto"):
             self.assertIn(line, text.splitlines())
 
+    def test_a_facet_in_unknown_reads_not_measured(self):
+        doc = dict(DOC, units=[], toolchains=[], unknown=["units", "toolchains"])
+        lines = catalog.render(DOMAIN, {"real-stack-x": doc}, {}).splitlines()
+        self.assertIn("- Unità: non misurato.", lines)
+        self.assertIn("- Versioni dichiarate: non misurato.", lines)
+        self.assertIn("- Linguaggi: Go.", lines)
+
     def test_committed_file_is_the_generator_output(self):
         self.assertEqual(catalog.OUT.read_text(encoding="utf-8"), catalog.render(*catalog.load()))
 

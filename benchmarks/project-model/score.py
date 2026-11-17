@@ -521,8 +521,9 @@ def check_expected(doc, fixture_dir):
     for k in doc:
         if k not in TOP_KEYS:
             p.append(f"unknown key {k!r}")
+    unknown = {k for k in doc.get("unknown") or [] if isinstance(k, str)}
     for k in ("needs", "traps"):
-        if k not in doc:
+        if k not in doc and k not in unknown:
             p.append(f"missing {k!r}")
     base = Path(fixture_dir) if fixture_dir else None
 
@@ -664,7 +665,10 @@ def check_expected(doc, fixture_dir):
             if key == "frameworks" and units and "unit" in f and f["unit"] not in refs:
                 p.append(f"{w}: unit {f['unit']!r} is not a unit name")
             if isinstance(f.get("evidence"), str):
-                path_ok(w, f["evidence"])
+                path, _, line = f["evidence"].partition("#")
+                if line and not re.fullmatch(r"L[1-9][0-9]*", line):
+                    p.append(f"{w}: evidence fragment must be #L<line>: {f['evidence']!r}")
+                path_ok(w, path)
     needs = doc.get("needs")
     if "needs" in doc:
         if not isinstance(needs, dict) or not isinstance(needs.get("container"), bool):
@@ -729,21 +733,23 @@ def _shared_name(doc):
     return len(names) != len(set(names))
 
 
-# Cases that follow from expected.json: check_cases fails when the list and the data disagree.
+# Cases that follow from expected.json, with the key each one reads: check_cases fails when the list
+# and the data disagree. When that key is listed in "unknown" the case is neither required nor allowed.
 DERIVED = {
-    "shared-root": _shared_root,
-    "no-build-file": lambda d: not _units_of(d) or any(u.get("kind") == "source-tree" for u in _units_of(d)),
-    "unit-no-name": lambda d: any(u.get("name") is None for u in _units_of(d)),
-    "shared-name": _shared_name,
-    "generated-file": _excluded_for("generated"),
-    "vendored-code": _excluded_for("vendored"),
-    "documentation-tree": _excluded_for("documentation"),
-    "binary-file": _excluded_for("binary"),
-    "submodule-absent": _excluded_for("submodule"),
-    "build-only-dependency": lambda d: any(isinstance(x, dict) and x.get("scope") == "build"
-                                           for x in d.get("dependencies") or []),
-    "needs-build": lambda d: (d.get("needs") or {}).get("container") is True,
-    "undeclared-connections": lambda d: bool(d.get("connections")),
+    "shared-root": ("units", _shared_root),
+    "no-build-file": ("units", lambda d: not _units_of(d) or any(u.get("kind") == "source-tree"
+                                                                 for u in _units_of(d))),
+    "unit-no-name": ("units", lambda d: any(u.get("name") is None for u in _units_of(d))),
+    "shared-name": ("units", _shared_name),
+    "generated-file": ("excluded", _excluded_for("generated")),
+    "vendored-code": ("excluded", _excluded_for("vendored")),
+    "documentation-tree": ("excluded", _excluded_for("documentation")),
+    "binary-file": ("excluded", _excluded_for("binary")),
+    "submodule-absent": ("excluded", _excluded_for("submodule")),
+    "build-only-dependency": ("dependencies", lambda d: any(isinstance(x, dict) and x.get("scope") == "build"
+                                                            for x in d.get("dependencies") or [])),
+    "needs-build": ("needs", lambda d: (d.get("needs") or {}).get("container") is True),
+    "undeclared-connections": ("connections", lambda d: bool(d.get("connections"))),
 }
 
 
@@ -784,7 +790,12 @@ def check_cases(doc, domain):
     p = [f"cases: {c!r} is not in cases.json" for c in cases if c not in ids]
     if len(set(cases)) != len(cases):
         p.append("cases: an id is repeated")
-    for cid, holds in DERIVED.items():
+    unknown = {k for k in doc.get("unknown") or [] if isinstance(k, str)}
+    for cid, (key, holds) in DERIVED.items():
+        if key in unknown:
+            if cid in cases:
+                p.append(f"cases: {cid!r} reads {key!r}, which this fixture lists as unknown")
+            continue
         if holds(doc) and cid not in cases:
             p.append(f"cases: the data shows {cid!r} but the list lacks it")
         elif cid in cases and not holds(doc):

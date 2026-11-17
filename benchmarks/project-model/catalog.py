@@ -91,16 +91,25 @@ def render(domain, docs, sources):
         out += ["", f"### {family} ({len(names)} progetti)"]
         for name in names:
             doc = docs[name]
-            versions = _versions(doc)
+            unknown = {k for k in doc.get("unknown") or [] if isinstance(k, str)}
+
+            def fact(facet, label, text):
+                return f"- {label}: {'non misurato' if facet in unknown else text}."
+
+            versions = [] if "toolchains" in unknown else _versions(doc)
             out += ["", f"#### {name}", "",
                     f"- Origine: {_origin(sources.get(name))}.",
-                    f"- Linguaggi: {_list(_unique(x.get('language') for x in doc.get('languages') or []), 'nessuno')}.",
-                    f"- Unità: {_units(doc)}.",
-                    f"- Workspace: {_workspaces(doc)}.",
-                    f"- File delle dipendenze: {_dependency_files(doc)}.",
-                    "- Versioni dichiarate:" + ("" if versions else " nessuna.")] + versions + [
-                    f"- Framework: {_list(_unique(f.get('name') for f in doc.get('frameworks') or []), 'nessuno')}.",
-                    f"- Servizi: {_list(_unique(s.get('name') for s in doc.get('services') or []), 'nessuno')}.",
+                    fact("languages", "Linguaggi",
+                         _list(_unique(x.get("language") for x in doc.get("languages") or []), "nessuno")),
+                    fact("units", "Unità", _units(doc)),
+                    fact("workspace", "Workspace", _workspaces(doc)),
+                    fact("dependencies", "File delle dipendenze", _dependency_files(doc)),
+                    "- Versioni dichiarate:" + ("" if versions else " non misurato." if "toolchains" in unknown
+                                                else " nessuna.")] + versions + [
+                    fact("frameworks", "Framework", _list(_unique(f.get("name") for f in doc.get("frameworks") or []),
+                                                          "nessuno")),
+                    fact("services", "Servizi", _list(_unique(s.get("name") for s in doc.get("services") or []),
+                                                      "nessuno")),
                     "- Casi:"]
             listed = set(doc.get("cases") or [])
             out += [f"  - `{c['id']}`: {c['definition']}" for c in domain["cases"] if c["id"] in listed]
