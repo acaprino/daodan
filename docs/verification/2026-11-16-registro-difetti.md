@@ -46,21 +46,21 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (76): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287
-- `java` (47): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284, D-293
+- `tutti` (81): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287, D-295, D-296, D-297, D-298, D-299
+- `java` (48): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284, D-293, D-294
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
-- `kotlin` (36): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284, D-293
+- `kotlin` (37): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284, D-293, D-294
 - `python` (34): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256, D-276
 - `javascript` (34): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270, D-291, D-292
 - `typescript` (25): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290, D-291, D-292
 - `rust` (19): D-014, D-021, D-030, D-040, D-041, D-078, D-143, D-144, D-173, D-175, D-176, D-209, D-227, D-230, D-237, D-238, D-239, D-256, D-265
-- `csharp` (17): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249
+- `csharp` (18): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249, D-294
 - `go` (16): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256, D-257, D-265, D-273
 - `svelte` (6): D-080, D-153, D-156, D-159, D-258, D-288
 - `vue` (8): D-080, D-154, D-155, D-159, D-258, D-289, D-290, D-291
 - `css` (4): D-161, D-162, D-163, D-164
-- `scala` (3): D-011, D-092, D-293
+- `scala` (4): D-011, D-092, D-293, D-294
 - `dart` (1): D-015
 - `elixir` (1): D-012
 - `php` (1): D-015
@@ -69,7 +69,7 @@ Convenzioni:
 
 ### Area
 
-- `analizzatore` (125): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278, D-288, D-289, D-290
+- `analizzatore` (131): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278, D-288, D-289, D-290, D-294, D-295, D-296, D-297, D-298, D-299
 - `pre-mappa` (40): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062, D-284
 - `passo dinamico` (37): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274, D-292
 - `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
@@ -86,7 +86,7 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (155): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291, D-292, D-293
+- `completezza` (161): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291, D-292, D-293, D-294, D-295, D-296, D-297, D-298, D-299
 - `correttezza` (89): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280, D-288
 - `sicurezza` (29): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
@@ -112,6 +112,7 @@ Convenzioni:
 - `jvm-otel-android` (2): D-107, D-109
 - `ci-steps` (1): D-240
 - `jvm-kotlinconf` (1): D-110
+- `benchmark` (6): D-294, D-295, D-296, D-297, D-298, D-299
 
 ### Strumento
 
@@ -132,7 +133,7 @@ Convenzioni:
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
 - `tree-sitter` (6): D-034, D-035, D-036, D-037, D-117, D-265
 - `GitLab CI` (5): D-202, D-212, D-216, D-217, D-275
-- `Modal` (6): D-209, D-210, D-224, D-230, D-251, D-287
+- `Modal` (12): D-209, D-210, D-224, D-230, D-251, D-287, D-294, D-295, D-296, D-297, D-298, D-299
 - `Pyright` (5): D-074, D-088, D-247, D-248, D-269
 - `rust-analyzer` (5): D-041, D-143, D-144, D-237, D-239
 - `Conan` (4): D-029, D-061, D-125, D-177
@@ -211,7 +212,7 @@ Convenzioni:
 
 ## Indice
 
-293 schede: 242 risolte, 7 aperte, 44 buchi dichiarati.
+299 schede: 242 risolte, 13 aperte, 44 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -299,7 +300,7 @@ Convenzioni:
 
 ### Analizzatori
 
-128 schede: 96 risolto, 5 aperto, 27 buco dichiarato.
+134 schede: 96 risolto, 11 aperto, 27 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -431,6 +432,12 @@ Convenzioni:
 | D-288 | La versione di SvelteKit registrata era quella di npm | js-sveltekit | risolto | `710460616` | svelte · analizzatore · correttezza · corsa su un progetto · npx, svelte-kit |
 | D-289 | Lo strumento Vue 1.x di un progetto non ha il plugin del linguaggio | real-app-hoppscotch | risolto | `710460616` | vue · analizzatore · completezza · corsa su un progetto · @vue/language-core |
 | D-290 | Vue: l'import di un componente e una lettura del template senza definizione | js-vue-pnpm | risolto | `b5a2fceb4`, `fc650d77f`, `3027d663f` | vue, typescript · analizzatore · completezza · corsa su un progetto · scip-typescript, @vue/language-core |
+| D-294 | Lo step `stack` non legge Maven, NuGet, Pub, Hex né Swift: JVM 0/42 e nessun framework .NET | scan/stack | aperto | — | java, kotlin, scala, csharp · analizzatore · completezza · benchmark · Modal |
+| D-295 | Il `kind` `service` del registro fa servizi dei framework e degli strumenti di test | scan/stack | aperto | — | tutti · analizzatore · completezza · benchmark · Modal |
+| D-296 | Segni da prefisso di variabile o di pacchetto danno servizi che il progetto non usa | scan/stack | aperto | — | tutti · analizzatore · completezza · benchmark · Modal |
+| D-297 | File di CI e di strumenti, ed esempi sotto la documentazione, contati come servizi | scan/stack | aperto | — | tutti · analizzatore · completezza · benchmark · Modal |
+| D-298 | Servizi che nessun segno del registro raggiunge: 79 su 123 attesi | scan/stack | aperto | — | tutti · analizzatore · completezza · benchmark · Modal |
+| D-299 | Framework che il registro non ha o non cerca nel manifest dell'ecosistema | scan/stack | aperto | — | tutti · analizzatore · completezza · benchmark · Modal |
 
 ### Passo dinamico e osservatori
 
@@ -3445,6 +3452,80 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** `tests/test_codebase_map_components.py` (`test_a_default_import_of_a_vue_component_reaches_it_as_one_of_a_svelte_component_does`): sulla registrazione `App` di `src/main.ts` va al modulo definito in `src/App.vue:1`, come `Panel` al suo; `tests/test_codebase_map_indexers_ts_py.py` (`test_a_name_bound_to_a_modules_default_export_the_index_leaves_unnamed_reaches_that_module`, e `test_a_name_an_import_of_a_component_binds_is_a_hole_with_the_cause` per le due cause); per la `n`, `tests/test_codebase_map_components.py` (`test_a_template_read_vue2_writes_through_its_setups_property_reaches_the_binding`): sulla registrazione 2.2.12 la `n` di `src/components/Counter.vue:9`, in `n++` e in `{{ n }}`, va alla `const` di `src/components/Counter.vue:5`; la registrazione si rifà su Modal con gli strumenti veri (`test_the_vue2_recording_is_what_its_tools_write_again`, `/opt/components-vue2` di `tests/modal_pytest.py`); i test delle correzioni rossi su Modal prima di esse.
 - **Stato:** risolto; da vedere su js-vue-pnpm al prossimo giro (`src/main.ts:4 App` `project-value`, `src/components/Counter.vue:9 n` `project-value`).
 - **Note:** D-258; un import dentro un componente `.vue` resta fuori: `hops` e `classify` leggono solo i documenti JS e TS; `Counter.vue:4 defineProps` (`dangling-local`) è della stessa famiglia: la macro è dichiarata nel codice generato (`declare const { defineProps, … }` nella 2.2.12) e resta un buco.
+
+#### D-294 Lo step `stack` non legge Maven, NuGet, Pub, Hex né Swift: JVM 0/42 e nessun framework .NET
+- **Tag:** lingua java, kotlin, scala, csharp · area analizzatore · tipo completezza · origine benchmark · strumento Modal
+- **Descrizione:** su 34 fixture JVM e sui progetti .NET del corpus lo step non trova nessuno dei 42 framework attesi nel gruppo `jvm` (per nome 0/42), né i framework .NET di `mix-dotnet-central` e `real-svc-eshop`. Perduti: JUnit (20 fixture), JUnit Jupiter (10), Spring Boot (5), Spring MVC, Spring Data JPA e Hibernate (4 ciascuno), Spring Cloud Config, Netflix, Gateway, Spring WebFlux, Spring Security, Spring AI e Spring Boot Admin (`real-svc-petclinic-microservices`, `real-app-jhipster-sample`), Jackson (3), MapStruct (2), Lombok, picocli, TestNG, ScalaTest, Cats, Testcontainers (2), Thymeleaf, ArchUnit, Gatling, Resilience4j, Liquibase, Kotlin Multiplatform, Compose Multiplatform, Ktor, Exposed, Koin, kotlinx.serialization, Android, ASP.NET Core (3), Entity Framework Core (3), Blazor, .NET Aspire, .NET MAUI, xUnit, MSTest, NUnit, YARP, Duende IdentityServer e gRPC (NuGet). I servizi che ne vengono: PostgreSQL in `jvm-spring-boot-managed` e in `mix-dotnet-central`, H2 e HSQLDB (`real-app-jhipster-sample`, `real-app-kotlinconf`, `real-svc-petclinic-microservices`). 62 delle 140 fixture hanno `technologies` vuote (17 non hanno nemmeno un'unità di build).
+- **Spiegazione:**
+  - `service_registry.ECOSYSTEMS` (`scripts/service_registry.py:34-36`) traduce gli ecosistemi del grafo dei moduli nei soli `npm`, `pypi`, `crates`, `go`, `composer`, `rubygems` e `terraform`; una dipendenza `maven`, `nuget` o `pub` di un'unità non è un segno;
+  - `data/service-registry.json` non ha nemmeno un segno per quegli ecosistemi: le sue chiavi di `signs.packages` sono `npm` (459 voci), `pypi` (264), `go` (202), `rubygems` (190), `composer` (169), `crates` (129), `docker`, `github-actions`, `terraform-resource` e `terraform`. Le sue regole vengono da stack-analyser (`data/REGISTRY-NOTICES.md`) e dal CNCF Landscape, che non hanno coordinate Maven;
+  - nessun framework o libreria JVM o .NET ha dunque una voce con un segno: `junit`, `spring-boot`, `hibernate`, `aspnetcore` non sono nel registro (verificato per id e nome).
+- **Progetto e caso:** il gruppo `jvm` (34 fixture), `mix-dotnet-central`, `real-svc-eshop`, `real-svc-petclinic-microservices`, `real-app-jhipster-sample`, `real-app-kotlinconf`; giro del 17 novembre 2026.
+- **Rimedio:** da decidere: voci del registro con coordinate Maven e NuGet (da dove, se non da stack-analyser: nessuna fonte è stata scelta) e gli ecosistemi `maven`, `nuget`, `pub`, `hex` in `ECOSYSTEMS`.
+- **Verifica:** `benchmarks/project-model/results/daodan_stack.json`, `frameworks_by_name` del gruppo `jvm`: 0/42; `ids` delle fixture JVM senza voci JVM.
+- **Stato:** aperto.
+- **Note:** è la stessa lacuna del registro sui servizi (`daodan_registry`, 14 novembre): 45 su 123 allora e oggi.
+
+#### D-295 Il `kind` `service` del registro fa servizi dei framework e degli strumenti di test
+- **Tag:** lingua tutti · area analizzatore · tipo completezza · origine benchmark · strumento Modal
+- **Descrizione:** una voce `service` entra in `technologies.json` come servizio anche quando è un framework, un SDK o un test runner. Persi come framework e comparsi come servizio: Playwright (framework atteso in `mix-real-tududi`, `real-app-full-stack-fastapi`, `real-svc-eshop`, `real-svc-otel-demo`; servizio in più nelle prime tre), Firebase (`mix-poly-firebase`, `jvm-android-app-lib`, `real-app-kotlinconf`; servizio in più in `mix-poly-firebase`), OpenTelemetry (`real-svc-eshop`; servizio in più in `real-svc-eshop` e `real-svc-otel-demo`), CypressCI per Cypress (`real-app-jhipster-sample`, `real-svc-otel-demo`).
+- **Spiegazione:**
+  - le voci `playwright`, `firebase`, `opentelemetry` e `cypressci` hanno `kind: service` nel registro (`data/service-registry.json`), con segni `npm` e `docker` che un progetto usa come libreria o strumento;
+  - `technologies.derive` copia il `kind` dell'entry nel record (`scripts/technologies.py:49-50`) e non ha altra classe: chi legge il record non distingue un database da un test runner.
+- **Progetto e caso:** i progetti nominati, giro del 17 novembre 2026.
+- **Rimedio:** una classe per voce (servizio esterno, framework, strumento) nel registro o nel record; il confronto con `expected.json` ne ha bisogno, perché lì i framework e i servizi sono due elenchi.
+- **Verifica:** `results/daodan_stack.json`: `frameworks_by_name.missed` contiene `playwright` (4), `firebase` (3), `cypress` (2), `opentelemetry` (1); `services.extra` contiene `playwright` (3), `cypressci` (2), `opentelemetry` (2), `firebase` (1).
+- **Stato:** aperto.
+
+#### D-296 Segni da prefisso di variabile o di pacchetto danno servizi che il progetto non usa
+- **Tag:** lingua tutti · area analizzatore · tipo completezza · origine benchmark · strumento Modal
+- **Descrizione:** servizi in più che nessun servizio spiega:
+  - Zoom: `ZOOM_STEP` (`real-app-memos`, `web/src/components/PreviewImageDialog.tsx:161`) e `ZOOM_KEY` (`mix-real-tududi`, `frontend/components/Project/Timeline/ProjectTimeline.tsx`) sono costanti di zoom dell'interfaccia;
+  - Ghost: `GHOST_CLASS` (`real-app-memos`, `AttachmentListEditor.tsx:628`) è una classe di stile;
+  - GCP: il pacchetto `passport-google-oauth20` (`real-app-hoppscotch`, `packages/hoppscotch-backend/package.json:70`) è il login con Google, non Google Cloud;
+  - AWS: `aws4fetch` (`hoppscotch-common/package.json:61`, `hoppscotch-cli`) firma richieste a un S3 compatibile;
+  - Postman: `postman-collection` (`hoppscotch-common/package.json:92`) legge un formato di file;
+  - Discord: `DISCORD_INVITE_CODE` (`mix-real-tududi`, `backend/modules/landing/stats.js:11`); `expected.json` non lo conta;
+  - Prometheus: `prom-client` (`real-svc-robot-shop`, `cart/package.json:20`); `expected.json` non lo conta.
+- **Spiegazione:** `service_registry.recognize` cerca ogni prefisso di variabile d'ambiente di ogni voce con `\b(prefisso)[A-Z0-9_]*\b` su ogni riga di ogni file, e confronta i pacchetti con i modelli (`patterns`) delle voci; una costante che comincia con `ZOOM_` o `GHOST_` e un pacchetto che nomina un'azienda sono segni. Il segno non dice dove sta l'uso: un test su `env`/`pattern` richiede la voce e il file.
+- **Progetto e caso:** `real-app-memos`, `mix-real-tududi`, `real-app-hoppscotch`, `real-svc-robot-shop`, 17 novembre 2026.
+- **Rimedio:** da decidere; i prefissi corti (`ZOOM_`, `GHOST_`) e i modelli da nome d'azienda sono le sorgenti dei casi; l'etichetta di fiducia per segno (`env`, `package`) è già nel record.
+- **Verifica:** `results/daodan_stack.json`, `services.extra`: `zoom`, `ghost`, `gcp`, `aws`, `postman`, `discord`, `prometheus`.
+- **Stato:** aperto.
+- **Note:** `aws`, `discord` e `prometheus` sono discutibili: il progetto può usare davvero un servizio; la parola è del proprietario del corpus.
+
+#### D-297 File di CI e di strumenti, ed esempi sotto la documentazione, contati come servizi
+- **Tag:** lingua tutti · area analizzatore · tipo completezza · origine benchmark · strumento Modal
+- **Descrizione:** `renovate.json` (`mix-real-javapoet`) dà Renovate, `.travis.yml` (`mix-real-klaxon`) TravisCI, la CI di `mix-real-tinyxml2` GitHub Pages; in `mix-real-tududi` Caddy e Kubernetes vengono da `docs/examples/docker-compose.hosted.yml:17` e da `docs/examples/kubernetes/kustomization.yaml`, esempi di distribuzione sotto la documentazione che `expected.json` esclude (`traps` di corpus-mix).
+- **Spiegazione:** `service_registry.recognize` applica `excluded` della pre-mappa solo ai segni di variabile d'ambiente e di host (`scripts/service_registry.py:153-158`, il giro sulle righe); i segni di pacchetto, di immagine dei file compose e di nome di file (`:140-148`) valgono in ogni percorso, anche in un albero che il corpus conta come documentazione. Per `mix-real-tududi` la pre-mappa ha le risposte registrate di `modal_premap.py`, con l'elenco `excluded` che quelle danno.
+- **Progetto e caso:** `mix-real-javapoet`, `mix-real-klaxon`, `mix-real-tinyxml2`, `mix-real-tududi`.
+- **Rimedio:** applicare `excluded` ai segni; tenere i servizi di CI fuori dai servizi del progetto.
+- **Verifica:** `results/daodan_stack.json`, `services.extra`: `renovate`, `travisci`, `githubpages`, `caddy`, `kubernetes`.
+- **Stato:** aperto.
+
+#### D-298 Servizi che nessun segno del registro raggiunge: 79 su 123 attesi
+- **Tag:** lingua tutti · area analizzatore · tipo completezza · origine benchmark · strumento Modal
+- **Descrizione:** 44 servizi su 123 trovati (js 1/1, py 2/3, jvm 1/2, mix 14/33, real 26/84). I 79 persi hanno 59 nomi; 33 non hanno una voce nel registro (41 casi): SMTP (6 fixture), Cloud Firestore, Firebase Hosting, Firebase Authentication, Cloud Functions for Firebase, Firebase Analytics e Cloud Messaging, H2, HSQLDB, Azure Blob Storage, Azure Container Apps, OpenID Connect provider, Web Push, Apprise, Mailpit, Let's Encrypt, FastAPI Cloud, GitHub, Google e Microsoft OAuth, OAuth2, JHipster Control Center, Sessionize, Google Gemini, OpenAI API, flagd, OpenTelemetry Collector, OpAMP server, eBPF profiler, Instana EUM, OpenShift, DC/OS. Gli altri 26 hanno la voce, ma nessun segno nei file del progetto: PostgreSQL (7: `mix-dotnet-central`, `mix-edge-sql`, `mix-infra-k8s-helm`, `mix-infra-tool-versions`, `real-app-kotlinconf`, `real-app-memos`, `real-svc-eshop`), Redis (3: `mix-php-laravel`, `mix-ruby-rails`, `real-svc-eshop`), SQLite (2: `py-django`, `real-app-memos`), MySQL (2), RabbitMQ, Elasticsearch, Kafka, Envoy, Jaeger, OpenSearch, Grafana (2), Prometheus (2: `real-app-jhipster-sample`, `real-svc-otel-demo`), SonarQube, Heroku, Kubernetes, Istio, Docker Swarm, PayPal, Ollama, Azure OpenAI, Google Maps, Oracle Database, Microsoft SQL Server, Fluentd, Instana.
+- **Spiegazione:**
+  - nessuna delle due parti (voce e segno) esiste per i 33; il registro nasce da stack-analyser e dal CNCF Landscape, che non nominano SMTP o Web Push;
+  - per gli altri il segno sta in un file che il registro non legge: una Helm `values.yaml`, un file `.sql`, una stringa di connessione, un driver Maven o NuGet (D-294), la libreria standard di Python.
+- **Progetto e caso:** i 79 casi, `results/daodan_stack.json`, `services.missed`.
+- **Rimedio:** voci nuove dove manca la voce; dove manca il segno, un lettore del file (compose, Helm, SQL) che il registro già riconosce come immagine.
+- **Verifica:** `services.missed` per fixture; l'elenco dei nomi senza voce confrontato con `data/service-registry.json` per id e nome.
+- **Stato:** aperto.
+
+#### D-299 Framework che il registro non ha o non cerca nel manifest dell'ecosistema
+- **Tag:** lingua tutti · area analizzatore · tipo completezza · origine benchmark · strumento Modal
+- **Descrizione:** per nome js e py non perdono nessun framework (10/10 e 4/4), sys ne perde uno (Chi, 1/2), mix 14 (17/31) e real 88 (39/127), JVM e .NET compresi (D-294); oltre a quelli:
+  - nessuna voce nel registro: Chi (`mix-real-chi`, `sys-go-single`), Flutter (`mix-dart-flutter`), Sidekiq, Sinatra, Phoenix e Phoenix LiveView, Slim, SQLModel, Passport, Apollo Server, urql, Vue Router, AngularJS (2), Locust (2), React Native, FastMCP;
+  - la voce c'è, il segno no: Rails (`mix-ruby-rails`: la voce `rails` ha solo il pacchetto `npm`, il Gemfile ha `gem "rails"`), Symfony (`real-svc-robot-shop`: lo mostra `ratings/html/src/Kernel.php`, non un `composer.json`), React Email (`real-app-full-stack-fastapi`);
+  - Vue (`real-svc-petclinic-microservices`: i file statici dell'API gateway), Bootstrap (lì, un `pom.xml`).
+- **Spiegazione:** il registro nasce da stack-analyser (D-294, D-298) e per un framework che non ha voce non c'è alternativa; un pacchetto cercato solo nell'ecosistema che la voce nomina (`rails` solo in `npm`) non si trova nel Gemfile.
+- **Progetto e caso:** i progetti nominati, `results/daodan_stack.json`, `frameworks_by_name.missed`.
+- **Rimedio:** voci e segni per gli ecosistemi della voce; per i framework che un file mostra e un manifest no (Symfony, Vue), nessun rimedio dal registro.
+- **Verifica:** `frameworks_by_name.missed` per fixture; ricerca di id e nome nel registro.
+- **Stato:** aperto.
+- **Note:** «Tailwind» del registro e «Tailwind CSS» di `expected.json` (6 fixture: `mix-php-laravel`, `mix-real-tududi`, `real-app-full-stack-fastapi`, `real-app-hoppscotch`, `real-app-memos`, `real-svc-otel-demo`) non è un difetto dello step: la tecnologia c'è, lo spazio e la parola differiscono; l'alias `tailwind` → `tailwindcss` è per `score.py`, chiesto a pm-core.
 
 #### D-259 Un header `.h` di C++ letto come C
 - **Tag:** lingua c, cpp · area analizzatore · tipo correttezza · origine commit · strumento —

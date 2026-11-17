@@ -22,7 +22,7 @@ Misura quanto di una **pre-mappa** danno gli strumenti esistenti, prima di ogni 
 - `score.py` dà il punteggio di ogni faccetta: trovate, sbagliate, mancate, in più. Una faccetta che lo strumento non dà conta come "non data", non come zero.
 - `cases.json` è il dominio chiuso dei casi di test; ogni `expected.json` elenca i suoi in `cases`.
 - `catalog.py` scrive [ANAGRAFICA.md](ANAGRAFICA.md) dai dati: per ogni progetto origine, tecnologie, versioni dichiarate, framework, servizi e casi, poi la copertura dei casi.
-- `modal_catalog.py` fa girare su Modal il controllo, `catalog.py`, le tabelle di `score.py` e il rapporto di un giro (`pipeline_report.py`); sul PC scrive solo ANAGRAFICA.md e i due file del rapporto.
+- `modal_catalog.py` fa girare su Modal il controllo, `catalog.py` e le tabelle di `score.py`, e sul PC scrive solo ANAGRAFICA.md.
 
 ## Dopo una modifica
 
@@ -165,7 +165,7 @@ Dalla cartella del benchmark:
 
 - Corpus: le 140 fixture. `js`, `py`, `jvm`, `sys` e `mix` sono i 122 progetti in miniatura, `real` i 18 repository con `source.json`. Le 18 `jvm-ver-*` sono del 16 novembre 2026, dopo il giro finale sui 122 casi.
 - Giro, su Modal e mai su questo PC: `python -m modal run modal_pipeline.py --cases js,py,jvm,sys,mix,real --out results/pipeline/<giro>.json`. `--cases` accetta anche nomi di fixture; `--chunk` (4) dice quante fixture di una famiglia vanno in un container. Accanto ai casi, `code` dice il codice di Daodan che il giro ha eseguito: il commit della checkout, l'albero git della copia caricata e i percorsi in cui la copia differisce dal commit.
-- Rapporto, su Modal e mai su questo PC: `python modal_catalog.py report results/pipeline/<giro>.json [<altro>.json ...] [--compare <precedente>.report.json]`, che fa girare `pipeline_report.py` con gli stessi argomenti, tutti file dentro la cartella del benchmark. Un caso di un file successivo sostituisce lo stesso caso dei precedenti. Scrive `<giro>.report.md` e, accanto, gli stessi numeri in `<giro>.report.json`; Il rapporto nomina il codice di ogni file; `--compare` dice prima se i due giri hanno eseguito lo stesso codice (lo stesso albero, non lo stesso commit), poi stampa cosa cambia per linguaggio e per caso: stati, buchi in più o in meno.
+- Rapporto: `python pipeline_report.py results/pipeline/<giro>.json [<altro>.json ...] [--compare <precedente>.report.json]`. Un caso di un file successivo sostituisce lo stesso caso dei precedenti. Scrive `<giro>.report.md` e, accanto, gli stessi numeri in `<giro>.report.json`; Il rapporto nomina il codice di ogni file; `--compare` dice prima se i due giri hanno eseguito lo stesso codice (lo stesso albero, non lo stesso commit), poi stampa cosa cambia per linguaggio e per caso: stati, buchi in più o in meno.
 
 I giri stanno in `results/pipeline/`, una sottocartella: `score.py` legge come strumento ogni `.json` di `results/`.
 
@@ -226,3 +226,33 @@ Giro del `.env` tracciato, 16 novembre 2026, su fastapi e tududi (`results/pipel
 - tududi: i tre passi del job escono con 0 accanto a postgres:16-alpine; il passo dinamico osserva 11.369 siti JavaScript e 20.192 TypeScript.
 
 Prova della regola invalicabile per Rust, 16 novembre 2026 (`modal run modal_rust_container.py::rust_container`, `c714e6298`): un crate il cui build script imposta un cfg e una macro procedurale che genera una funzione, ognuno con un segno dove gira, e cargo, rustc, rust-analyzer e rustup sul PATH della macchina sostituiti da finti che lasciano un segno. Sulla macchina nessun segno e nessun finto chiamato; nell'indice del container la funzione sotto il cfg si risolve e quella generata ha il suo nome, definita in nessun file (`undefined-project-symbol`).
+
+## Lo step `stack` sul corpus
+
+Misura lo step `stack` della pipeline (`scripts/technologies.py`, `daodan/technologies/v1`): le tecnologie del progetto per unità di build, dal solo registro (`data/service-registry.json`, 2.172 voci), senza eseguire nulla del progetto. Il 14 novembre il registro era stato misurato solo sui servizi (`daodan_registry`, 45 su 123); questo è il primo giro dello step nuovo.
+
+### Parametri
+
+- Corpus: tutte le fixture con `expected.json`, 140 (`js`, `py`, `jvm`, `sys`, `mix` e `real`); il driver prende anche le fixture nuove, senza modifiche, e quelle con `source.json` dal loro archivio sul volume (`modal_native.py prepare`) o, senza archivio, da un clone alla revisione fissata. `expected.json` e `source.json` non entrano nel progetto che lo step legge.
+- Giro, su Modal e mai su questo PC: `modal deploy modal_stack.py`, poi `python modal_stack.py spawn [--fixtures a,b | --families js,py,jvm,sys,mix,real]` e `fetch`. Il container (1 CPU, 3 GB) scrive la snapshot, la pre-mappa e `technologies.ensure`; `spawn` rifiuta il giro se i file caricati (`UPLOADED`, con i dati accanto agli script: D-287) non sono quelli di questa copia, e `fetch` confronta l'impronta del codice dei due lati.
+- Pre-mappa: i comandi di modello non girano. Le loro risposte sono quelle registrate da `modal_premap.py --runs` (`results/premap-runs`), riprodotte come fa `tools/premap_replay.py`; una fixture senza registrazione ha i comandi `not_run` (`model: none`: le 18 `jvm-ver-*`), una registrazione a cui manca una risposta è `partial`. Nel giro: 74 `recorded`, 48 `partial` (183 comandi senza risposta), 18 `none`.
+- Punteggio: `score.technologies_faces` porta il record nelle facce `frameworks` (ogni voce `project`, per ogni unità che la tiene, con il primo segno dentro l'unità come prova) e `services` (ogni voce `service`) di `expected.json`; `score.score_technologies` le confronta. Il record non distingue un framework da una libreria o da uno strumento, quindi ciò che offre in più di `expected.json` fra i framework non è un falso: è `counted_apart`. I servizi di `expected.json` sono completi, e un servizio in più resta `extra`. `frameworks_by_name` toglie le unità, che ogni lettore nomina a modo suo, e conta un nome una volta per fixture.
+- Due fatti per fixture: `executed_project_code`, dai processi che `ensure` avvia (`spawned`: `no` solo se tutti sono il `git` del perimetro, con gli hook e il monitor spenti), e `seconds` (snapshot con pre-mappa, e lo step). Il costo del giro viene dal rapporto di Modal.
+
+### Risultati
+
+17 novembre 2026, codice `006b9de156bf9926` uguale ai due lati, 140 fixture su 140 senza errori, 0,09 USD secondo `modal billing report` (due giri: il primo senza risposte registrate, il secondo con; il tetto era 0,20). `results/daodan_stack.json` tiene, per fixture, le facce, il punteggio, gli id delle tecnologie, i secondi e i processi avviati.
+
+| Faccia | js | py | jvm | sys | mix | real | tutte |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 0 / 42 | 1 / 2 | 17 / 31 | 39 / 127 | 71 / 216 |
+| Framework per unità, trovati / attesi (sbagliati) | 10 / 11 (1) | 4 / 4 | 0 / 43 | 1 / 2 | 17 / 37 (1) | 41 / 251 (8) | 73 / 348 (10) |
+| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 14 / 33 (9) | 26 / 84 (15) | 44 / 123 (24) |
+
+- Il codice del progetto non gira: in 140 fixture su 140 gli unici processi sono `git check-ignore` e `git ls-files` del perimetro.
+- Lo step `technologies.ensure` impiega, con la pre-mappa già scritta, 0,03 s di mediana e 3,34 s al massimo (`mix-real-tududi`); la pre-mappa e la snapshot, 354 s su kotlinconf e 100 su eShop, non sono dello step. Nel primo giro, senza pre-mappa scritta prima, lo step ne impiegava 178 e 61: era la pre-mappa che `ensure` scriveva.
+- I servizi sono quelli di `daodan_registry`: 44 contro 45 su 123 (`real` 26 contro 27). Lo step li prende dal registro e non ne aggiunge; quello perso rispetto al primo giro, senza risposte registrate, non è stato cercato.
+- Fuori da JVM e .NET, js e py non perdono nessun framework; quello che manca è altrove (JVM 0 su 42, .NET, Rails, Chi, Flutter) e i servizi senza voce o senza segno.
+- 62 fixture su 140 hanno `technologies` vuote e 17 non hanno nessuna unità di build; sono i progetti JVM e .NET, di sistema e di script che il registro non conosce.
+- Le cause sono le schede D-294 (Maven, NuGet, Pub, Hex e Swift non letti: JVM 0 su 42), D-295 (il `kind` `service` fa servizi dei framework: Playwright, Firebase, OpenTelemetry, Cypress), D-296 (prefissi di variabile e di pacchetto: Zoom, Ghost, GCP, Postman), D-297 (CI, strumenti ed esempi sotto `docs/` come servizi), D-298 (79 servizi senza voce o senza segno) e D-299 (framework senza voce o senza segno nel manifest). «Tailwind» e «Tailwind CSS» (6 fixture) è un alias di `score.py`, non un difetto.
+

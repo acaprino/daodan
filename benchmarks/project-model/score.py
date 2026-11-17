@@ -503,6 +503,68 @@ def score(expected, got, root=None):
     return {facet: r for facet, r in out.items() if facet.split(".")[0] not in unknown}
 
 
+def _within(path, roots):
+    """True when `path` lies under one of `roots` (`.` is every path)."""
+    return any(r in (".", "") or path == r or path.startswith(r.rstrip("/") + "/") for r in roots)
+
+
+def technologies_faces(record):
+    """The `frameworks` and `services` of the `stack` step's record (`technologies.json`, daodan/technologies/v1).
+
+    The record has no framework type: every `project` entry is offered as a framework of each build unit that holds
+    it (the entry's `evidence` is its first sign inside that unit), unitless when no unit holds it; every `service`
+    entry is a service, with its first sign as evidence. Which project entries are libraries or tools is for
+    `score_technologies`, which counts those apart."""
+    held = {}
+    for unit in record.get("units") or []:
+        for ident in unit.get("technologies") or []:
+            held.setdefault(ident, []).append(unit)
+    frameworks, services, seen = [], [], set()
+    for entry in record.get("technologies") or []:
+        paths = [s["path"] for s in entry.get("signs") or [] if s.get("path")]
+        if entry.get("kind") == "service":
+            if entry["name"] not in seen:
+                seen.add(entry["name"])
+                services.append({"name": entry["name"], **({"evidence": paths[0]} if paths else {})})
+            continue
+        for unit in held.get(entry["id"]) or [None]:
+            inside = [p for p in paths if unit is None or _within(p, unit.get("paths") or [])] or paths
+            item = {"name": entry["name"], **({"unit": unit["name"]} if unit else {}),
+                    **({"evidence": inside[0]} if inside else {})}
+            if (item["name"], item.get("unit")) not in seen:
+                seen.add((item["name"], item.get("unit")))
+                frameworks.append(item)
+    return {"frameworks": frameworks, "services": services}
+
+
+def _bare(items):
+    """Framework items by name alone, one each: the name of a unit is how an adapter spells its manifest, not detection."""
+    seen = {}
+    for item in items or []:
+        seen.setdefault(_framework(item.get("name", "")), {"name": item["name"]})
+    return list(seen.values())
+
+
+def score_technologies(expected, record):
+    """`technologies.json` against `expected.json` on `frameworks` and `services`; None without a record.
+
+    `expected.json` counts the frameworks a project uses, with some libraries; the record cannot tell a framework
+    from a library or a tool. What it offers beyond `expected` is therefore not a false framework: it moves from
+    `extra` to `counted_apart`. Services are complete in `expected.json`, so a service beyond it stays `extra`.
+    `frameworks_by_name` scores the names alone, one per project: units are named as each reader names them, and a
+    `unit` that differs turns a found framework into a wrong one (or, where `unknown` limits the units, a missed one)."""
+    if record is None:
+        return None
+    faces = technologies_faces(record)
+    result = score(expected, faces)
+    out = {facet: result[facet] for facet in ("frameworks", "services") if facet in result}  # `unknown` may drop one
+    if "frameworks" in out:
+        out["frameworks"] = {**out["frameworks"], "counted_apart": out["frameworks"]["extra"], "extra": []}
+    named = score({"frameworks": _bare(expected.get("frameworks"))}, {"frameworks": _bare(faces["frameworks"])})
+    out["frameworks_by_name"] = {**named["frameworks"], "counted_apart": named["frameworks"]["extra"], "extra": []}
+    return out
+
+
 def _covers(e, g):
     if e == g:
         return True
