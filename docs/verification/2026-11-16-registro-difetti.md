@@ -208,7 +208,7 @@ Convenzioni:
 
 ## Indice
 
-286 schede: 234 risolte, 10 aperte, 42 buchi dichiarati.
+286 schede: 234 risolte, 9 aperte, 43 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -296,7 +296,7 @@ Convenzioni:
 
 ### Analizzatori
 
-125 schede: 93 risolto, 6 aperto, 26 buco dichiarato.
+125 schede: 93 risolto, 5 aperto, 27 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -371,7 +371,7 @@ Convenzioni:
 | D-133 | zlib: file C e C++ che nessun build compila | zlib | buco dichiarato (`no compile command`) | `d4e6d9046` | c, cpp · analizzatore · completezza · finale · Make, Bear |
 | D-134 | zlib minizip: il build autotools non eseguito | zlib contrib/minizip | risolto | `22dca6da8` | c · analizzatore · completezza · commit · autotools |
 | D-135 | otel-demo currency: il build dichiarato solo nel Dockerfile | otel-demo (`b825c7c25726`) | risolto | `841cfe14f`, `f024ba3a3` | cpp · analizzatore · completezza · finale · Docker, BuildKit, CMake |
-| D-136 | C: 5.147 buchi `no-document` | i casi C della conferma | aperto | — | c · analizzatore · completezza · conferma |
+| D-136 | C: 5.147 buchi `no-document` | zlib (`51b7f2abdade`) | buco dichiarato (`no compile command`) | `60e3590b3`, `22dca6da8` | c · analizzatore · completezza · conferma |
 | D-137 | File C e C++ fuori dalla configurazione predefinita | sys-cmake-presets, tinyxml2 (`9148bdf719e9`) | buco dichiarato (`no compile command | `2bc7c7459` | c, cpp · analizzatore · completezza · finale |
 | D-138 | Go: i builtin erano buchi | indicizzatore Go | risolto | `a633ebd72` | go · analizzatore · completezza · commit |
 | D-139 | Go: file esclusi dai vincoli di build senza indice | indicizzatore Go | risolto | `a633ebd72` | go · analizzatore · completezza · commit · scip-go |
@@ -734,7 +734,7 @@ Le classi dei fogli di stile le decide `scripts/indexers/css.py`; quelle di Vue 
   - file che nessun build compila, in zlib (D-133) o fuori dalla configurazione predefinita (D-137);
   - il build autotools di minizip, che Daodan non eseguiva (D-134);
   - un configure che chiede ciò che l'unità scarica (D-131), o un submodule non scaricato (D-126);
-  - i 5.147 della conferma sono da verificare (D-136).
+  - i 5.147 della conferma sono tutti di zlib, in file che il build predefinito non compilava: examples/, contrib/infback9, test/infcover.c e due file di contrib/minizip (D-136).
 - `no-occurrence`: le macro di decorazione e i nomi da header (D-130): semantici da 37 a 12, risolte da 303 a 510.
 - Fino a `125ab9ebd`, successivo ai commit dei risultati di tutti i giri, scip-clang leggeva i progetti costruiti con GCC con gli header builtin di GCC e taceva migliaia di errori (D-255): libdeflate da 11.150 errori a 0.
 
@@ -1100,7 +1100,7 @@ Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-
 | mix-real-semver | github.com/dtolnay/semver `280ebcb6edac` | 8 | D-143, D-209, D-238 | D-176, D-230, D-275 |
 | mix-real-tinyxml2 | github.com/leethomason/tinyxml2 `9148bdf719e9` | 11 | D-043, D-137, D-209, D-236, D-266, D-271, D-272, D-278 | D-230, D-255, D-265, D-275 |
 | mix-real-tududi | github.com/chrisvel/tududi `71da9d7b34df` | 9 | D-145, D-146, D-147, D-182, D-185, D-186, D-187, D-270, D-274 | D-189, D-213, D-240, D-251 |
-| mix-real-zlib | github.com/madler/zlib `51b7f2abdade` | 15 | D-043, D-113, D-130, D-133, D-134, D-209, D-220, D-267, D-268, D-271 | D-010, D-065, D-230, D-275 |
+| mix-real-zlib | github.com/madler/zlib `51b7f2abdade` | 15 | D-043, D-113, D-130, D-133, D-134, D-136, D-209, D-220, D-267, D-268, D-271 | D-010, D-065, D-230, D-275 |
 | real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254, D-260 | D-162, D-171, D-213, D-251, D-253, D-270 |
 | real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237 | D-080, D-162, D-239 |
 | real-app-jhipster-sample | github.com/jhipster/jhipster-sample-app `6b000b5d23a3` | 17 | D-111, D-194 | D-275 |
@@ -2870,12 +2870,18 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 #### D-136 C: 5.147 buchi `no-document`
 - **Tag:** lingua c · area analizzatore · tipo completezza · origine conferma · strumento —
 - **Descrizione:** conferma, C su 7 casi: 10.271 siti, 40,7 % di risposta; fra i buchi, no-document 5.147 e no-occurrence 941.
-- **Spiegazione:** da verificare.
-- **Progetto e caso:** i casi C della conferma — 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto.
-- **Note:** D-133.
+- **Spiegazione:** i 5.147 sono tutti di zlib, nei suoi 22 file C senza documento, ognuno con il suo motivo in `files.missing`: i file che il build predefinito non compila e i loro header. Sullo snapshot di HEAD, che in quei file conta 5.467 siti:
+  - `examples/`, 9 file e 2 header, 3.446 siti: nessun build di zlib li compila;
+  - `test/infcover.c`, 785: solo il target `cover` del Makefile, non `all`;
+  - `contrib/infback9`, 2 file e 4 header, 633: nessun build;
+  - `contrib/minizip/iowin32.c`, 352: il `Makefile.am` lo compila solo su WIN32 (`${iowin32_src}`);
+  - `contrib/minizip/mztools.c`, 251: solo il build Autotools di minizip, non il suo `Makefile`;
+  - gli 8 header non hanno siti.
+- **Progetto e caso:** zlib (`51b7f2abdade`) — conferma, 16 novembre 2026.
+- **Rimedio:** nessuno nel codice per examples/, contrib/infback9 e iowin32.c, che nessun build per Linux compila; dopo la conferma `60e3590b3` indicizza `test/infcover.c` (D-267) e `22dca6da8` `mztools.c` (D-134).
+- **Verifica:** il 17 novembre, su Modal con `tests/modal_pytest.py` e un test temporaneo: lo snapshot di zlib dà i siti per file sopra, e la pre-mappa senza comandi l'unità `autotools-project` `minizip` con iowin32.c e mztools.c fra i sorgenti. Nessun giro dopo i due commit: i buchi `no-document` attesi sono i 4.431 siti di examples/, contrib/infback9 e iowin32.c.
+- **Stato:** buco dichiarato (`no compile command`).
+- **Note:** D-133, D-134, D-137, D-267.
 
 #### D-137 File C e C++ fuori dalla configurazione predefinita
 - **Tag:** lingua c, cpp · area analizzatore · tipo completezza · origine finale · strumento —
