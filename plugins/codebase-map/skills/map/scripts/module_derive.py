@@ -622,13 +622,31 @@ def _graph(store, inventory: _Inventory, modules: list[dict], edge_list: list[di
     }
 
 
-def derive(store, *, ledger: list[dict] | None = None) -> dict:
-    """Derive the module graph of a snapshot; deterministic for the same inputs."""
-    inventory = _Inventory(store)
+def _build_units(inventory: _Inventory):
+    """The manifests' units merged per directory, the workspaces that register them, one build module each."""
     units, gaps = _read_units(inventory)
     by_directory = _merge_units(units)
     _register_members(inventory, by_directory, gaps)
-    build_modules = [_build_module(inventory, merged, by_directory) for merged in by_directory.values()]
+    return units, by_directory, [_build_module(inventory, merged, by_directory) for merged in by_directory.values()], gaps
+
+
+def build_graph(inventory: _Inventory) -> dict:
+    """The build modules with their `declares` and `contains` edges and their gaps, `ownership_ambiguous` among
+    them, in memory: what the pre-map reads (`premap.module_graph`), never `modules.json`, which
+    `modules.sync_with_premap` writes from the pre-map."""
+    units, by_directory, modules, gaps = _build_units(inventory)
+    _assign_identities(modules)
+    by_id = {m["id"]: m for m in modules}
+    _ownership(inventory, modules, by_id, gaps)
+    edges = _Edges(by_id)
+    _build_edges(inventory, modules, units, {key: m["id"] for key, m in zip(by_directory, modules)}, edges)
+    return {"modules": modules, "edges": edges.listed(), "gaps": gaps}
+
+
+def derive(store, *, ledger: list[dict] | None = None) -> dict:
+    """Derive the module graph of a snapshot; deterministic for the same inputs."""
+    inventory = _Inventory(store)
+    units, by_directory, build_modules, gaps = _build_units(inventory)
     modules = [*build_modules, *_virtual_source_tree(inventory, build_modules),
                *_declared_modules(inventory, store, ledger, gaps)]
     _assign_identities(modules)

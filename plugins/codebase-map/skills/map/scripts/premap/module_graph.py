@@ -1,4 +1,4 @@
-"""Source: Daodan's module graph (`modules.py`), its build units as the pre-map names them.
+"""Source: the build modules of the module graph (`module_derive.build_graph`, in memory), its units as the pre-map names them.
 
 Units, the workspaces that contain them and the declared edges between units (`depends_on`). A module of
 several kinds in one folder (settings and build script, `package.json` beside a workspace file) is one unit per

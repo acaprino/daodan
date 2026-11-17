@@ -845,6 +845,51 @@ def test_the_module_graph_gaps_are_kept_with_their_source(tmp_path):
     assert gap["path"] == "broken/package.json" and gap["source"].startswith("modules.py@")
 
 
+def test_a_unit_another_source_states_never_comes_back_as_a_fact_of_the_module_graph(tmp_path):
+    """`modules.sync_with_premap` writes the pre-map's units into modules.json: the pre-map derived again states
+    only what the manifests and its sources state, not what the previous pre-map put there."""
+    import modules
+    stating = fake("model-units", "model", lambda _: {"facts": {"units": [unit("lib", "cargo-crate", "gen")]}})
+    _, manifest, first = build(tmp_path, "mixed", sources=(module_graph, stating), extra={"lib/src/lib.rs": "pub fn a() {}\n"})
+    assert ("lib", "cargo-crate") in {(u["root"], u["kind"]) for u in first["units"]}
+    modules.sync_with_premap(manifest, first)
+    again = premap.write(manifest, sources=(module_graph,))
+    assert {(u["root"], u["kind"]) for u in again["units"]} == {(".", "python-project"), ("web", "npm-package")}
+
+
+def test_the_build_units_come_from_the_snapshot_never_from_modules_json(tmp_path, monkeypatch):
+    """The pre-map derives the build units in memory (`module_derive.build_graph`): the units and workspaces of
+    the module graph, no `modules.json` read or written, and no gap of the declared or proposed modules."""
+    import module_derive
+    import modules
+
+    def refused(*_, **__):
+        raise AssertionError("the pre-map reads modules.json")
+
+    monkeypatch.setattr(modules, "ensure_graph", refused)
+    shape = lambda u: json.dumps({k: u.get(k) for k in ("root", "kind", "name", "manifest", "depends_on")})  # noqa: E731
+    members = lambda w: (w["tool"], w["root"], sorted(w["members"]))  # noqa: E731
+    for name in ("mixed", "gradle", "npm_workspace", "uv_workspace", "go_nested", "jvm_files", "req_services"):
+        extra = {"codebase-modules.json": "{not json"} if name == "mixed" else None
+        _, manifest, record = build(tmp_path / name, name, sources=(module_graph,), extra=extra)
+        with open_snapshot(manifest) as store:
+            graph = module_graph.facts(module_derive.derive(store, ledger=[]))
+        assert record["units"] and sorted(map(shape, record["units"])) == sorted(map(shape, graph["units"])), name
+        assert sorted(map(members, record.get("workspace", []))) == sorted(map(members, graph["workspace"])), name
+        assert not modules.graph_name(manifest).exists(), name
+        assert name != "mixed" or not gaps(record, "modules_unreadable")
+
+
+def test_two_build_units_in_one_folder_keep_their_ambiguous_ownership_as_a_gap(tmp_path):
+    """Which of two units in one folder owns its files the build tells apart, not the folder: a fact of the build
+    units that the pre-map keeps as the module graph states it."""
+    extra = {"package.json": '{"name": "site"}', "main.py": "VALUE = 1\n"}
+    _, _, record = build(tmp_path, "mixed", sources=(module_graph,), extra=extra)
+    [gap] = gaps(record, "ownership_ambiguous")
+    assert gap["path"] == "." and gap["source"].startswith("modules.py@")
+    assert gap["detail"] == "Directory scope cannot distinguish build ownership: acme, site"
+
+
 # ------------------------------------------------------------------ preparation
 
 def model(name, commands, read):

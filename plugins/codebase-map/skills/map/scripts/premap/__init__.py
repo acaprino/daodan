@@ -35,6 +35,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import confinement  # noqa: E402
+import module_derive  # noqa: E402
 import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
@@ -82,9 +83,9 @@ ALSO = {"typescript": ("TSX",)}  # Linguist's other programming languages inside
 
 
 class Context:
-    """What a source reads: the snapshot (`store`, `inventory`, hash-verified text) and the module graph; for a model
-    command's source, `stated`, the facts the sources that ran before it state, joined (`compose` reads the steps
-    `renovate` reads)."""
+    """What a source reads: the snapshot (`store`, `inventory`, hash-verified text) and its build modules
+    (`module_derive.build_graph`, in memory: no `modules.json`); for a model command's source, `stated`, the facts
+    the sources that ran before it state, joined (`compose` reads the steps `renovate` reads)."""
 
     def __init__(self, manifest: Path, store):
         self.manifest, self.store = Path(manifest), store
@@ -96,7 +97,7 @@ class Context:
     @property
     def graph(self) -> dict:
         if self._graph is None:
-            self._graph = modules.load_graph(Path(modules.ensure_graph(self.manifest)["graph"]))
+            self._graph = module_derive.build_graph(self.inventory)
         return self._graph
 
 
