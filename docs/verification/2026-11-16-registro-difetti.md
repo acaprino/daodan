@@ -441,7 +441,7 @@ Convenzioni:
 | D-300 | Un segno del registro nomina solo il pacchetto della voce, non i suoi componenti | scan/stack | aperto | — | tutti · analizzatore · completezza · benchmark · Modal |
 | D-301 | I requisiti Python si leggono solo da un file il cui nome comincia con `requirements` | scan/stack | aperto | — | python · analizzatore · completezza · benchmark · Modal |
 | D-302 | La snapshot di jellyfin e di kuvasz non finisce in 900 secondi: la risoluzione degli import scorre ogni file | scan/stack | aperto | — | kotlin, csharp · snapshot · prestazioni · benchmark · Modal |
-| D-303 | Lo step `stack` dà un framework all'unità sbagliata: per il nome, o al padre invece che al sottomodulo | scan/stack | aperto | — | tutti · analizzatore · correttezza · benchmark · Modal |
+| D-303 | Lo step `stack` dà un framework all'unità sbagliata: per il nome, o al padre invece che al sottomodulo | scan/stack | aperto | `819964b55` | tutti · analizzatore · correttezza · benchmark · Modal |
 
 ### Passo dinamico e osservatori
 
@@ -3576,11 +3576,11 @@ Casi che il giro aggiunge alle schede esistenti (da accodare alla loro «Descriz
 - **Descrizione:** il giro dello stack del 17 novembre dopo l'ADR (codice `107d16779072c4cd`): i framework per unità trovati salgono da 268 a 364 su 1.001, ma gli sbagliati da 35 a 208; JVM 2 su 43 con 35 sbagliati. La tecnologia è giusta e l'unità no: atteso `:app`, dato `app` (jvm-android-app-lib); atteso `com-example:mapping-demo`, dato `mapping-demo` (jvm-maven-release-apt); atteso `:`, dato `hello-groovy` (jvm-gradle-groovy-wrapper).
 - **Spiegazione:** `technologies.json` dà per modulo il `name` di `modules.json`, mentre l'unità della pre-mappa e delle risposte attese è il suo riferimento (`scripts/premap/module_graph.py:105`: Maven `groupId:artifactId`, Gradle `:percorso`); è la doppia identità che l'inventario del piano del 17 novembre chiama «contraddizione 1». Contati sul risultato, i 208 sono di tre tipi: 76 lo stesso modulo con un altro nome; 15 attendono la radice `:` e ricevono il nome del progetto; 117 vanno a un'altra unità (real-stack 65, real 44, mix 5, jvm 3), spesso la radice o il padre al posto del sottomodulo: kotlinconf `:backend`, `:core` e `:app:androidapp` dati a `kotlinconfapp`, mealie `frontend` a `mealie`, netbox `netbox/project-static` a `netbox`, JUnit Jupiter a `shop-parent` invece di `shop-service` (jvm-maven-multi-bom-profile). Il nome spiega quindi meno della metà: il resto è l'attribuzione del segno al modulo.
 - **Progetto e caso:** le fixture jvm-*, real-* e real-stack-* — giro dello stack del 17 novembre, `results/daodan_stack.json`.
-- **Rimedio:** in attesa del commit:
+- **Rimedio:** `819964b55` (17 novembre, modules-map):
   - il nome: `scripts/technologies.py`, `_references`. Un modulo di build prende come `name` il riferimento della sua unità nella pre-mappa (stessa radice ed ecosistema): il nome, oppure la radice quando nessun file la nomina o un'altra unità ha lo stesso nome. Il nome e gli alias di `modules.json` restano in `aliases`, e l'`id` non cambia;
   - l'attribuzione: un framework va all'unità che possiede il file del segno, ma la versione e l'uso stanno in due file diversi. Con il catalogo di Gradle e `Directory.Packages.props` l'unico segno era nel file della radice. Ora `scripts/premap/jvm_files.py` (v2) legge in ogni script di build gli accessori `libs.*`, `libs.plugins.*` e `libs.bundles.*` del `gradle/libs.versions.toml` della sua build, e li scrive come pacchetti di quella riga. `scripts/technologies.py` (`_versions_only`) non dà al modulo che li contiene i pacchetti di un `*.versions.toml` o di un `Directory.Packages.props`.
 - **Verifica:** ogni test rosso prima del codice, in `tests/test_codebase_map_stack_rationalized.py`: `test_a_unit_of_the_stack_is_named_as_the_pre_map_refers_to_it_and_keeps_its_module_name_as_an_alias` e `test_a_package_of_the_version_catalog_goes_to_the_build_script_that_uses_it_not_to_the_catalog_s_build`. Suite intera su Modal: 2733 passati, 57 saltati. Il giro dello stack è da rifare.
-- **Stato:** aperto finché il giro non misura i 208.
+- **Stato:** aperto: dopo `819964b55` restano 50 framework all'unità sbagliata su 1.001 (real-stack 37, real 12, sys 1).
 - **Note:** D-294; l'ADR `docs/adr/2026-11-17-mappa-moduli-stack-e-reattivita.md`.
 
 #### D-259 Un header `.h` di C++ letto come C
