@@ -1068,7 +1068,7 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 
 | Progetto | Cosa dichiara | Rivelate | Citate |
 | --- | --- | --- | --- |
-| jvm-ver-gradle-mixed-tc8 | Gradle, Java e Kotlin con jvmToolchain(8) | — | D-226 |
+| jvm-ver-gradle-mixed-tc8 | Gradle, Java e Kotlin con jvmToolchain(8) | — | — |
 | jvm-ver-gradle-src6 | Gradle, sourceCompatibility 1.6 | — | — |
 | jvm-ver-gradle-src8 | Gradle, sourceCompatibility 1.8 | — | — |
 | jvm-ver-gradle-tc11 | Gradle, toolchain 11 | — | — |
@@ -4297,9 +4297,12 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Rimedio:** `eef3e1fef` (17 novembre, dynamic-step-2): il campo di una toolchain di un pom è il suo percorso nel pom, con il plugin nominato dal suo artifactId.
   - nella verità, 28 voci di toolchain in 17 `expected.json` passano a `pom.xml#properties.maven.compiler.*`, `#properties.java.version` e `#properties.kotlin.compiler.jvmTarget` (`ANAGRAFICA.md` rigenerata);
   - nel lettore, `scripts/premap/jvm_files.py` scrive `maven-compiler-plugin.configuration.<campo>`, come la verità di jvm-ver-mvn-cfg6.
-- **Verifica:** `tests/test_codebase_map_premap.py` (`test_a_compiler_plugin_setting_is_named_by_its_path_in_the_pom`), rosso prima; il giro java-versions conservato, rivalutato: toolchain trovate da 8 a 29 su 30, sbagliate da 22 a 1.
+- **Verifica:**
+  - `tests/test_codebase_map_premap.py` (`test_a_compiler_plugin_setting_is_named_by_its_path_in_the_pom`), rosso prima;
+  - il giro java-versions conservato (`benchmarks/project-model/results/pipeline/2026-11-16-java-versions.json`), rivalutato con `score.py` contro il corpus di HEAD su Modal (android-sdk): 28 toolchain su 30, non le 29 del messaggio di `eef3e1fef`; il README del benchmark dice 28 da `b11d5504e`;
+  - le 2 sbagliate sono di jvm-ver-mvn-cfg6: il giro è precedente a `eef3e1fef`, quindi la sua pre-mappa scriveva `pom.xml#maven-compiler-plugin.source` e `.target`, dove il corpus dice `maven-compiler-plugin.configuration.source` e `.target`; il codice di HEAD scrive `.configuration.` (`scripts/premap/jvm_files.py:69`), quindi un giro nuovo dovrebbe dare 30 su 30, non misurato: vuole un giro della pipeline, con il sì del proprietario.
 - **Stato:** risolto.
-- **Note:** la sola toolchain sbagliata che resta è di jvm-ver-gradle-mixed-tc8: il modello di Gradle nomina `java.toolchain.languageVersion` dove la verità ha `kotlin.jvmToolchain`; quella, e la toolchain Kotlin della pre-mappa che il corpus non conta, le decide team-lead.
+- **Note:** la fixture mista è giusta da `1bd53689a`, il cui corpus nomina una toolchain Gradle come la nomina il modello (`#java.toolchain.languageVersion`); la toolchain Kotlin della pre-mappa che il corpus non conta la decide team-lead. D-284.
 #### D-227 README del benchmark: Rust, C e C++ «solo dove Valgrind parte»
 - **Tag:** lingua c, cpp, rust · area documenti · tipo documentazione · origine commit · strumento Valgrind
 - **Descrizione:** il risultato del finale nel README dice ancora che Rust, C e C++ si osservano solo dove Valgrind parte, e che nei sandbox di Modal (gVisor) dipende dalla macchina.
