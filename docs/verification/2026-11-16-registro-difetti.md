@@ -397,7 +397,7 @@ Convenzioni:
 | D-159 | Template di Vue e Svelte non letti | hoppscotch, js-vue-pnpm, js-sveltekit | risolto | `64edfb930`, `b9aeca1fb` | vue, svelte · analizzatore · completezza · finale |
 | D-160 | TypeScript: un file senza documento | hoppscotch, memos (`509e41bd1a1b`) | risolto | `a57333c3b` | typescript · analizzatore · completezza · finale · scip-typescript |
 | D-161 | Tailwind caricato sull'host con la configurazione del progetto | analyzer dei fogli di stile | risolto | `3595d571b` | css · analizzatore · sicurezza · commit · Tailwind |
-| D-162 | Fogli di stile: buchi `no-rule` | il corpus | aperto (ts-container-2) | `efac75599` | css · analizzatore · completezza · finale · Tailwind |
+| D-162 | Fogli di stile: buchi `no-rule` | il corpus | aperto (ts-container-2) | `efac75599`, `aca4fd008`, `05135d74e` | css · analizzatore · completezza · finale · Tailwind |
 | D-163 | hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto | hoppscotch | risolto | `efac75599` | css · analizzatore · correttezza · giro-2 |
 | D-164 | Fogli remoti senza testo | il corpus | buco dichiarato (`remote-sheet`) | `9c719fc1a` | css · analizzatore · completezza · finale |
 | D-165 | Parser: `base` di C# non letto | parser | risolto | `d94f92470` | csharp · parser · completezza · commit |
@@ -2879,7 +2879,11 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - gli 8 header non hanno siti.
 - **Progetto e caso:** zlib (`51b7f2abdade`) — conferma, 16 novembre 2026.
 - **Rimedio:** nessuno nel codice per examples/, contrib/infback9 e iowin32.c, che nessun build per Linux compila; dopo la conferma `60e3590b3` indicizza `test/infcover.c` (D-267) e `22dca6da8` `mztools.c` (D-134).
-- **Verifica:** il 17 novembre, su Modal con `tests/modal_pytest.py` e un test temporaneo: lo snapshot di zlib dà i siti per file sopra, e la pre-mappa senza comandi l'unità `autotools-project` `minizip` con iowin32.c e mztools.c fra i sorgenti. Nessun giro dopo i due commit: i buchi `no-document` attesi sono i 4.431 siti di examples/, contrib/infback9 e iowin32.c.
+- **Verifica:** il 17 novembre, su Modal:
+  - con `tests/modal_pytest.py` e un test temporaneo: lo snapshot di zlib dà i siti per file sopra, e la pre-mappa senza comandi l'unità `autotools-project` `minizip` con iowin32.c e mztools.c fra i sorgenti;
+  - un giro di zlib sul codice di `f992db560`, da una copia di `git archive`: la pre-mappa con i comandi del modello e lo stadio di scip-clang indicizzano 45 file C su 66, `test/infcover.c` e `mztools.c` compresi;
+  - i buchi `no-document` sono 4.443: i 4.431 attesi (examples/ 3.446, contrib/infback9 633, iowin32.c 352) e i 12 di `contrib/testzlib/testzlib.c`, che lo snapshot ora legge e che compilano solo i progetti Visual Studio di contrib/vstudio («no build compiles a file of contrib/testzlib»);
+  - il giro è costato 0,012 USD (report di fatturazione di Modal).
 - **Stato:** buco dichiarato (`no compile command`).
 - **Note:** D-133, D-134, D-137, D-267.
 
@@ -3163,12 +3167,18 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 #### D-162 Fogli di stile: buchi `no-rule`
 - **Tag:** lingua css · area analizzatore · tipo completezza · origine finale · strumento Tailwind
 - **Descrizione:** conferma: 42.757 buchi no-rule su 58.534 siti dei fogli di stile, 26,3 % di risposta; nel finale 48.808.
-- **Spiegazione:** un riferimento di classe, id o composes senza una regola che lo definisca è `no-rule` (`scripts/indexers/css.py`); fra questi le classi Tailwind (`ee1e83fc8`). Da verificare quanti sono classi che nessun foglio definisce e quanti un difetto.
+- **Spiegazione:** un riferimento di classe, id o composes senza una regola che lo definisca è `no-rule` (`scripts/indexers/css.py`). Fra questi ci sono le classi Tailwind (`ee1e83fc8`) e quelle dei fogli dei pacchetti che solo il ripristino installa: il checkout non ha `node_modules` e il grafo non leggeva quei fogli (le classi `mu-*` di `@usememos/ui` in memos).
 - **Progetto e caso:** il corpus — finale e conferma, 16 novembre 2026.
-- **Rimedio:** `efac75599` (17 novembre, ts-container-2), `scripts/indexers/css_tailwind.js`: i fogli di un pacchetto si trovano come li trova il build (D-163), e gli argomenti di `cn`/`clsx`, compresa la funzione fatta con `extendTailwindMerge`, sono siti di classe.
-- **Verifica:** dal commit, su Modal ai commit fissati: memos da 1,3 % a 88,5 % (6.494 su 7.339), `no-rule` da 5.073 a 652; fastapi da 6,4 % a 93,1 % (1.954 su 2.098), `no-rule` da 688 a 11, `call` da 109 a 0; hoppscotch 97,2 % (D-163).
-- **Stato:** aperto (ts-container-2): restano le classi di un pacchetto che solo il ripristino nel container porta (`mu-*` di memos), i marcatori `group`/`peer` di Tailwind e le funzioni del progetto, per il passo dinamico.
-- **Note:** D-161.
+- **Rimedio:**
+  - `efac75599` (17 novembre, ts-container-2), `scripts/indexers/css_tailwind.js`: i fogli di un pacchetto si trovano come li trova il build (D-163), e gli argomenti di `cn`/`clsx`, compresa la funzione fatta con `extendTailwindMerge`, sono siti di classe.
+  - `aca4fd008` e `05135d74e` (17 novembre, ts-container-2), `scripts/indexers/css.py` e `scripts/indexers/css_packages.js`: i pacchetti che un import di un foglio o di uno script nomina e il checkout non ha si chiedono al container, nella stessa corsa di Tailwind e dopo lo stesso ripristino. `css_packages.js` legge solo file e riporta il `package.json` e i fogli di ciascun pacchetto, con i pacchetti che quei fogli importano. Il grafo li legge da una cartella temporanea che poi cancella, e trova il foglio di un pacchetto attraverso i suoi `exports`.
+- **Verifica:** su Modal ai commit fissati, con il ripristino vero nel container emulato del test, il grafo sul checkout con i fogli riportati dal container risponde come il grafo sull'albero ripristinato: memos e fastapi senza differenze, hoppscotch con un buco `parameter` in più, non indagato. Rispetto a `efac75599`:
+  - memos da 88,5 % a 96,7 % (7.100 su 7.339), `no-rule` da 652 a 81, `unresolved-import` da 10 a 0;
+  - hoppscotch da 97,2 % a 97,3 % (16.228 su 16.676), `unresolved-import` da 26 a 7;
+  - fastapi da 93,1 % a 93,3 % (1.957 su 2.098), `unresolved-import` da 2 a 0.
+  Test in `tests/test_codebase_map_css_graph.py`: `test_the_restores_package_sheets_come_back_where_the_graph_looks_for_them`, `test_a_class_a_package_sheet_declares_is_answered_by_the_restores_copy_of_it`, `test_tailwinds_run_brings_back_the_packages_sheets_after_the_same_restore`, `test_a_package_sheet_is_found_through_the_packages_exports_as_its_build_finds_it`.
+- **Stato:** aperto (ts-container-2). Restano i `no-rule` che nessun foglio definisce: i marcatori `group`/`peer` di Tailwind (memos 35, fastapi 5), gli id che nessuna regola prende (memos) e i 358 di hoppscotch, non ancora classificati. I `call` alle funzioni del progetto (memos 46) e i `parameter` sono del passo dinamico.
+- **Note:** D-161, D-163.
 
 #### D-163 hoppscotch: lo stadio dei fogli di stile esce con 1 senza rapporto
 - **Tag:** lingua css · area analizzatore · tipo correttezza · origine giro-2 · strumento —
@@ -4433,11 +4443,11 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 
 #### D-280 Una seconda sessione sullo stesso checkout ha committato ogni modifica in corso insieme
 - **Tag:** lingua tutti · area processo · tipo correttezza · origine commit · strumento git
-- **Descrizione:** un'altra sessione (Codex) sullo stesso checkout ha committato in `1c68cbde4` l'intero albero di lavoro: 55 file, 53.591 righe aggiunte, tra cui il registro a 276 schede, la riga della spec e il test del Kiri dell'utente (D-219), CSS, `rust.py`, `compose.py` e altro lavoro in corso di più agenti, che nessuno aveva rivisto insieme.
+- **Descrizione:** un'altra sessione (Codex) sullo stesso checkout ha committato in `1c68cbde4` l'intero albero di lavoro: 55 file, 53.591 righe aggiunte, tra cui il registro a 276 schede, la riga della spec e il test del Kiri dell'utente (D-219), CSS, `rust.py`, `compose.py` e altro lavoro in corso di più agenti, che nessuno aveva rivisto insieme. Il 17 novembre di nuovo, in `05135d74e` (13 file, pubblicato): il CSS di ts-container-2 prima della sua prova completa, il prototipo standalone e senior-review 1.1.4; il messaggio dice che quelle modifiche non sono coperte dalla sua verifica nel Kiri su `f992db56`.
 - **Spiegazione:** gli agenti lavorano sullo stesso checkout senza worktree e senza commit propri, e chi committa sceglie i file; una sessione che committa tutto quello che trova raccoglie anche il lavoro degli altri. Il messaggio dice che i test non sono stati rieseguiti («test non rieseguiti perché Docker non disponibile»): nessuna verifica sua.
-- **Progetto e caso:** il checkout di Daodan — commit `1c68cbde4`, 16 novembre 2026.
+- **Progetto e caso:** il checkout di Daodan — commit `1c68cbde4`, 16 novembre 2026, e `05135d74e`, 17 novembre 2026.
 - **Rimedio:** —: come le sessioni condividono il checkout lo decide il proprietario.
-- **Verifica:** dopo, team-lead ha rieseguito l'intera suite su HEAD: 2.648 passati; nessuna revisione del contenuto.
+- **Verifica:** dopo, team-lead ha rieseguito l'intera suite su HEAD: 2.648 passati; nessuna revisione del contenuto. Dopo `05135d74e`, su HEAD `425006538`: 2.682 passati, e ts-container-2 conferma che `css.py`, `css_packages.js` e il loro test sono la sua versione finale.
 - **Stato:** aperto (decisione del proprietario).
 - **Note:** D-219, il cui commit è `1c68cbde4`.
 
