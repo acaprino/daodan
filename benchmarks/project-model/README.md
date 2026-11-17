@@ -241,7 +241,19 @@ Misura lo step `stack` della pipeline (`scripts/technologies.py`, `daodan/techno
 
 ### Risultati
 
-17 novembre 2026. 178 fixture su 180 con record; `real-stack-jellyfin` e `real-stack-kuvasz` no (D-302). `results/daodan_stack.json` tiene, per fixture, le facce, il punteggio, gli id delle tecnologie, i secondi e i processi avviati. I record vengono da tre versioni del driver (`2dafe3d6678aa4c6`, `63a0f46b0eacc825`, `8720a450c5b16739`, elencate in `code.container`; `code.local` è la terza, quella di questa copia): cambiano solo il tempo per fixture e il testo dell'errore, non la misura.
+Dopo l'ADR della mappa dei moduli (`3b961646a`, `1a33518f4`), 17 novembre 2026, codice `107d16779072c4cd` uguale ai due lati, 178 fixture su 180 con record (jellyfin e kuvasz ancora no, D-302):
+
+| Faccia | js | py | jvm | sys | mix | real | stack | tutte |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Fixture con record | 20 | 21 | 34 | 25 | 30 | 10 | 38 | 178 |
+| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 36 / 42 | 2 / 2 | 29 / 31 | 100 / 127 | 182 / 352 | 363 / 568 |
+| Framework per unità, trovati / attesi (sbagliati) | 11 / 11 | 4 / 4 | 2 / 43 (35) | 2 / 2 | 24 / 37 (8) | 95 / 251 (77) | 226 / 653 (88) | 364 / 1.001 (208) |
+| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 15 / 33 (2) | 33 / 84 (8) | 107 / 395 (67) | 159 / 518 (77) |
+
+- Framework per nome da 211 a 363 su 568: JVM da 0 a 36 su 42, i repository veri da 42 a 100 su 127, le `real-stack-*` da 135 a 182 su 352. Servizi da 148 a 159 su 518, con 77 in più invece di 100.
+- Per unità i framework trovati salgono da 268 a 364, ma gli sbagliati da 35 a 208: la tecnologia è giusta e l'unità no, il più delle volte perché lo stack nomina l'unità con il nome di `modules.json` e la risposta attesa con il riferimento della pre-mappa (JVM 2 su 43 con 35 sbagliati). È D-303.
+
+Prima dell'ADR, 17 novembre 2026. 178 fixture su 180 con record; `real-stack-jellyfin` e `real-stack-kuvasz` no (D-302). `results/daodan_stack.json` tiene, per fixture, le facce, il punteggio, gli id delle tecnologie, i secondi e i processi avviati. I record vengono da tre versioni del driver (`2dafe3d6678aa4c6`, `63a0f46b0eacc825`, `8720a450c5b16739`, elencate in `code.container`; `code.local` è la terza, quella di questa copia): cambiano solo il tempo per fixture e il testo dell'errore, non la misura.
 
 | Faccia | js | py | jvm | sys | mix | real | stack | tutte |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
