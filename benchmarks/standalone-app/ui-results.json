@@ -1,7 +1,7 @@
 {
   "artifact": "prototypes/daodan-app/index.html",
   "system": "Linux",
-  "python": "3.12.3",
+  "python": "3.13.18",
   "parameters": {
     "viewports": [
       [
@@ -16,7 +16,7 @@
     "timer": "Playwright clock.run_for; original setInterval callbacks; no progress state writes",
     "tick_ms": 2200
   },
-  "sha256": "6286984165ea9d2a25b5b9a433c2b558772a27d65356ddec72ca732ad49264ed",
+  "sha256": "faa39606d2e3c67178ae15d4f500afc094e3835ad306c68ffdb180db87507ce3",
   "checks": [
     {
       "name": "initial_repository",
@@ -24,15 +24,20 @@
       "evidence": "Scegli repository e branch."
     },
     {
-      "name": "repository_url_validation_1",
+      "name": "one_url_no_visibility_or_login_prompt",
       "status": "pass",
-      "evidence": {
-        "input": "",
-        "error": "Inserisci l’URL GitHub della repository pubblica."
-      }
+      "evidence": "one URL; no visibility choice or premature login"
     },
     {
       "name": "repository_url_validation_2",
+      "status": "pass",
+      "evidence": {
+        "input": "",
+        "error": "Inserisci l’URL GitHub della repository."
+      }
+    },
+    {
+      "name": "repository_url_validation_3",
       "status": "pass",
       "evidence": {
         "input": "https://example.com/owner/repo",
@@ -40,7 +45,7 @@
       }
     },
     {
-      "name": "repository_url_validation_3",
+      "name": "repository_url_validation_4",
       "status": "pass",
       "evidence": {
         "input": "https://github.com/owner/repo/tree/main",
@@ -59,7 +64,7 @@
         "branch": "sviluppo-demo",
         "repository": {
           "slug": "example/custom-repository",
-          "visibility": "public",
+          "visibility": "unknown",
           "branches": [
             "sviluppo-demo",
             "rilascio-demo"
@@ -72,12 +77,17 @@
     {
       "name": "foreign_repository_dataset_disclosure",
       "status": "pass",
-      "evidence": "example/custom-repository\nPubblica\nsviluppo-demo · demo\nAccesso pubblico\n\nNessun checkout remoto eseguito. La pre-mappa e il grafo mostrano solo dati esempio Daodan, non risultati di questa repository o branch.\n\nCambia repository o branch"
+      "evidence": "example/custom-repository\nVisibilità non verificata\nsviluppo-demo · demo\nSenza login · demo\n\nNessun checkout remoto eseguito. La pre-mappa e il grafo mostrano solo dati esempio Daodan, non risultati di questa repository o branch.\n\nCambia repository o branch"
     },
     {
       "name": "private_requires_simulated_login",
       "status": "pass",
-      "evidence": "private continuation blocked while logged out"
+      "evidence": "access failed; neutral login prompt on same URL"
+    },
+    {
+      "name": "conditional_login_prompt_reload",
+      "status": "pass",
+      "evidence": "login-required"
     },
     {
       "name": "private_master_preference",
@@ -125,6 +135,11 @@
       }
     },
     {
+      "name": "public_access_without_login",
+      "status": "pass",
+      "evidence": "known public fixture opens anonymously"
+    },
+    {
       "name": "public_repository_branch_reload",
       "status": "pass",
       "evidence": {
@@ -135,7 +150,7 @@
     {
       "name": "selected_repository_premap",
       "status": "pass",
-      "evidence": "acaprino/daodan\nPubblica\nmain\nAccesso pubblico\n\nNessun checkout remoto eseguito. La pre-mappa usa il dataset locale della stessa origine Git; il grafo usa uno snapshot storico separato.\n\nCambia repository o branch"
+      "evidence": "acaprino/daodan\nPubblica · esempio\nmain\nSenza login · demo\n\nNessun checkout remoto eseguito. La pre-mappa usa il dataset locale della stessa origine Git; il grafo usa uno snapshot storico separato.\n\nCambia repository o branch"
     },
     {
       "name": "real_inventory_counts",
@@ -466,6 +481,100 @@
         "status": "idle",
         "stage": "repository",
         "synthesis_disabled": true
+      }
+    },
+    {
+      "name": "conditional_login_loading",
+      "status": "pass",
+      "evidence": "login and same-URL retry disable both actions"
+    },
+    {
+      "name": "denied_after_login",
+      "status": "pass",
+      "evidence": "Repository ancora non accessibile dopo il login simulato. Controlla URL e permessi dell’account; poi riprova."
+    },
+    {
+      "name": "denied_result_reload",
+      "status": "pass",
+      "evidence": "denial survives reload"
+    },
+    {
+      "name": "network_error_no_login",
+      "status": "pass",
+      "evidence": "Errore di rete simulato. Riprova la verifica; il login non risolve un errore di connessione."
+    },
+    {
+      "name": "network_error_retry",
+      "status": "pass",
+      "evidence": "deterministic network fixture remains retryable"
+    },
+    {
+      "name": "url_edit_clears_login_prompt",
+      "status": "pass",
+      "evidence": "editing clears the conditional prompt immediately"
+    },
+    {
+      "name": "pending_verification_url_change_invalidated",
+      "status": "pass",
+      "evidence": {
+        "url": "https://github.com/acaprino/daodan",
+        "access": "idle",
+        "loggedIn": false
+      }
+    },
+    {
+      "name": "pending_verification_url_roundtrip_invalidated",
+      "status": "pass",
+      "evidence": {
+        "url": "https://github.com/organizzazione-demo/progetto-privato",
+        "access": "idle",
+        "loggedIn": false
+      }
+    },
+    {
+      "name": "pending_login_url_change_invalidated",
+      "status": "pass",
+      "evidence": {
+        "url": "https://github.com/acaprino/daodan",
+        "access": "idle",
+        "loggedIn": false
+      }
+    },
+    {
+      "name": "pending_login_url_roundtrip_invalidated",
+      "status": "pass",
+      "evidence": {
+        "url": "https://github.com/organizzazione-demo/progetto-privato",
+        "access": "idle",
+        "loggedIn": false
+      }
+    },
+    {
+      "name": "stale_check_preserves_new_pending_check",
+      "status": "pass",
+      "evidence": "old completion cannot unlock or replace newer verification"
+    },
+    {
+      "name": "latest_check_wins",
+      "status": "pass",
+      "evidence": {
+        "slug": "acaprino/daodan",
+        "visibility": "public",
+        "branches": [
+          "main",
+          "engine-audit-20261113"
+        ],
+        "defaultBranch": "main",
+        "branchSource": "cache"
+      }
+    },
+    {
+      "name": "legacy_visibility_migration_requires_check",
+      "status": "pass",
+      "evidence": {
+        "url": "https://github.com/acaprino/daodan",
+        "access": "idle",
+        "stage": "repository"
       }
     },
     {

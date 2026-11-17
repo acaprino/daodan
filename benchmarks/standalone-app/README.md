@@ -100,4 +100,6 @@ Conferma del 17 novembre 2026 sullo stesso commit `f992db5609c72cd8bdc0d0d9c5da8
 
 ## Limiti
 
+Verifica del flusso URL unico, 17 novembre 2026: **68/68 controlli UI passati**, Python 3.13.18 e Chromium 156.0.8078.4. Include accesso anonimo, login condizionale sullo stesso URL, accesso negato, errore di rete, migrazione e annullamento delle verifiche obsolete. Risultato corrente in `ui-results.json`; le misure precedenti restano storiche. Esecuzione su Kiri con base Python Debian già presente (`sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90`), Playwright 1.64.1 e Chromium headless installati nel container di preparazione; codice copiato in un secondo container senza rete o mount host, 2 GiB, 2 CPU, 512 processi e 512 MiB condivisi. Canary presente soltanto nel container, assente sull'host.
+
 Le prove validano il confine già esistente e il prototipo, non implementano il launcher o un coordinatore. Nessuna esecuzione LLM, clone, OAuth reale, analisi completa, cancellazione di processi, ripresa di sessioni o chiamata a provider API. Il mobile è una viewport Chromium, non un dispositivo fisico. La corrispondenza del grafo e la correttezza dei reviewer hanno benchmark propri.
