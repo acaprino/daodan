@@ -381,6 +381,20 @@ def test_a_compiler_plugin_setting_is_named_by_its_path_in_the_pom(tmp_path):
     assert versions[("java", "legacy/pom.xml#maven-compiler-plugin.configuration.target")] == ("1.6", 12)
 
 
+def test_the_jvm_target_kotlin_compiles_to_is_a_java_toolchain_of_the_pom(tmp_path):
+    """jvm-mixed-java-kotlin: `<kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>`, the property
+    kotlin-maven-plugin reads for the bytecode level it writes, is a Java release the pom states, beside
+    `maven.compiler.release` (its expected.json: `pom.xml#properties.kotlin.compiler.jvmTarget`)."""
+    pom = ('<project xmlns="http://maven.apache.org/POM/4.0.0">\n  <modelVersion>4.0.0</modelVersion>\n'
+           '  <groupId>acme</groupId>\n  <artifactId>mixed</artifactId>\n  <version>1</version>\n  <properties>\n'
+           '    <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>\n'
+           '    <maven.compiler.release>17</maven.compiler.release>\n  </properties>\n</project>\n')
+    _, _, record = build(tmp_path, "jvm_files", extra={"mixed/pom.xml": pom})
+    versions = {(t["tool"], t["declared_in"]): (t["version"], t["line"]) for t in record["toolchains"]}
+    assert versions[("java", "mixed/pom.xml#properties.kotlin.compiler.jvmTarget")] == ("17", 7)
+    assert versions[("java", "mixed/pom.xml#properties.maven.compiler.release")] == ("17", 8)
+
+
 # ------------------------------------------------- model readers, stored outputs
 
 def test_go_reader_gives_the_nested_module_and_what_the_build_leaves_out(tmp_path):

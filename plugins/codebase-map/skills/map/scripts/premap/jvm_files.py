@@ -2,9 +2,9 @@
 
 The wrapper (`gradle/wrapper/gradle-wrapper.properties`, `.mvn/wrapper/maven-wrapper.properties`): the unit's
 `config.wrapper` and the build tool's version in the distribution's file name. A pom: the Java release it asks
-for (`maven.compiler.release`, `source` and `target` properties, `java.version`, the `maven-compiler-plugin`'s
-`release`, `source` and `target`) and the version of the `kotlin-maven-plugin`, each a property of the same pom
-or a literal, its field the path in the pom with the plugin by its artifactId (`properties.java.version`,
+for (`maven.compiler.release`, `source` and `target` properties, `java.version`, `kotlin.compiler.jvmTarget`, the
+`maven-compiler-plugin`'s `release`, `source` and `target`) and the version of the `kotlin-maven-plugin`, each a
+property of the same pom or a literal, its field the path in the pom with the plugin by its artifactId (`properties.java.version`,
 `maven-compiler-plugin.configuration.source`). A value naming a property the pom does not define, and a Gradle
 build's Java version, which lives in build scripts only Gradle runs, are `toolchain_undeclared` gaps.
 """
@@ -19,7 +19,8 @@ import confinement
 NAME, VERSION, RANK = "jvm-files", "daodan/premap/v1", "reader"
 WRAPPERS = {"gradle": ("gradle/wrapper/gradle-wrapper.properties", r"gradle-([0-9][^-/]*)-(?:bin|all)\.zip$"),
             "maven": (".mvn/wrapper/maven-wrapper.properties", r"apache-maven-([0-9][^-/]*)-bin\.zip$")}
-JAVA_PROPERTIES = ("maven.compiler.release", "maven.compiler.source", "maven.compiler.target", "java.version")
+JAVA_PROPERTIES = ("maven.compiler.release", "maven.compiler.source", "maven.compiler.target", "java.version",
+                   "kotlin.compiler.jvmTarget")  # the last: the bytecode level kotlin-maven-plugin writes
 COMPILER_FIELDS = ("release", "source", "target")
 PLACEHOLDER = re.compile(r"^\$\{([^}]+)\}$")
 
