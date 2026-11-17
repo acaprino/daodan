@@ -13,7 +13,7 @@ from pathlib import Path
 
 from import_resolution import _STYLESHEET_SUFFIXES, _by_basename
 from languages import SUPPORTED_EXTENSIONS
-from run_store import _read_json
+from run_store import _read_json, _reject_links_below, RunControlError
 from snapshot_store import artifact_digest, resolve_run_snapshot
 from source_files import read_text
 
@@ -370,6 +370,11 @@ def _append_added_symbols(run_dir: Path, added: list[dict]) -> None:
 def cmd_carry(args: argparse.Namespace) -> int:
     parent_dir = Path(args.parent_run)
     run_dir = Path(args.run_dir)
+    try:
+        _reject_links_below(parent_dir)  # a parent run can come with the project
+    except RunControlError as error:
+        print(f"carry: {error}", file=sys.stderr)
+        return 2
     changes = _read_json(run_dir / "changes.json")
     if changes is None:
         print("carry: no changes.json in the run directory; run `diff` first", file=sys.stderr)

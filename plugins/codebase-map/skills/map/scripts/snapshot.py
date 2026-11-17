@@ -83,7 +83,8 @@ from import_resolution import (blast_radius, build_import_index, _by_basename, c
                                _python_module_candidates, resolve_module, resolved_imports, _strip_jsonc_comments,
                                ts_path_config)
 from run_store import (_acquire_registry_lock, _artifact_bytes, _artifact_hash, CANONICAL_STORE,  # noqa: E402,F401
-                       _effective_flags, _hold, _read_json, _read_registry, _reject_links, _run_context,
+                       _effective_flags, _hold, _read_json, _read_registry, _reject_links, _reject_links_below,
+                       _run_context,
                        RunControlError, STORE_MARKER, store_project, STORE_SCHEMA, update_registration, validate_store,
                        _write_json_atomic)
 from change_set import (_changes_markdown, cited_symbols, cmd_carry, _legacy_check, MARKER_PREFIX,  # noqa: E402,F401
@@ -872,6 +873,11 @@ def _change_record(manifest, parent_dir: Path, parent_state: dict, target: Path,
 def cmd_diff(args: argparse.Namespace) -> int:
     with ExitStack() as stack:
         parent_dir = Path(args.parent_run)
+        try:
+            _reject_links_below(parent_dir)  # a parent run can come with the project
+        except RunControlError as error:
+            print(f"diff: {error}", file=sys.stderr)
+            return 2
         target = Path(args.target)
         out_dir = Path(args.out)
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -916,19 +922,23 @@ def cmd_diff(args: argparse.Namespace) -> int:
         return 0
 
 
+def _project_target(root: Path, value) -> Path:
+    """The target a state of the store at `root` names, inside the store's project, or a refusal: a state is the
+    store's, which a project can bring."""
+    project = store_project(root)
+    target = Path(value)
+    target = (target if target.is_absolute() else project / target).resolve()
+    if not target.is_relative_to(project):
+        raise RunControlError("target is outside this run's project")
+    return target
+
+
 def _bound_manifest(run_dir: Path, root: Path, state: dict, fresh: bool = False) -> dict:
     try:
         with open_snapshot(resolve_run_snapshot(run_dir, state)) as manifest:
             validate_reuse_manifest(manifest)
             project = store_project(root)
-            target = Path(state["target"])
-            if not target.is_absolute():
-                target = project / target
-            target = target.resolve()
-            try:
-                target.relative_to(project)
-            except ValueError as exc:
-                raise RunControlError("target is outside this run's project") from exc
+            target = _project_target(root, state["target"])
             if not isinstance(manifest.get("root"), str) or not isinstance(manifest.get("target"), str):
                 raise RunControlError("snapshot requires root and target binding")
             if (Path(manifest["root"]) / manifest["target"]).resolve() != target:
@@ -1389,10 +1399,9 @@ FULL_REBUILD_SHARE = 0.4
 
 
 def published_run(root: Path) -> Path | None:
-    """The store's latest complete run, the one the working run follows."""
-    registry = _read_json(root / "runs.json") or {}
-    run_id = registry.get("latest_completed")
-    if not isinstance(run_id, str) or not run_id or run_id == WORKING_RUN:
+    """The store's latest complete run, the one the working run follows: the registry names it, never a path."""
+    run_id = _read_registry(root).get("latest_completed")
+    if run_id is None or run_id == WORKING_RUN:
         return None
     run = root / "runs" / run_id
     state = _read_json(run / "state.json")
@@ -1447,6 +1456,8 @@ def refresh_working(root: Path) -> dict:
     if published is None:
         return {"status": "skipped", "reason": "no published run"}
     working = root / "runs" / WORKING_RUN
+    for run in (published, working):  # the refresh reads, replaces and removes files of both
+        _reject_links_below(run)
     (working / "snapshot").mkdir(parents=True, exist_ok=True)
     queued = _hold(working / ".refresh-queue.lock", wait=False)
     if queued is None:
@@ -1486,10 +1497,7 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
             shutil.copy2(published / "snapshot/proposals.json", working / "snapshot/proposals.json")
         _write_json_atomic(working / "state.json", state)
     manifest = working / state["snapshot"]["path"]
-    target = Path(state["target"])
-    target = (target if target.is_absolute() else store_project(root) / target).resolve()
-    if not target.is_relative_to(store_project(root)):  # the state is the store's, which a project can bring
-        raise RunControlError("target is outside this run's project")
+    target = _project_target(root, state["target"])
     now = lambda: datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")  # noqa: E731
     try:
         with ExitStack() as stack:
@@ -1569,8 +1577,7 @@ def cmd_hook(args: argparse.Namespace) -> int:
         edited = tool_input.get("file_path") or tool_input.get("notebook_path")
         if edited:
             project = store_project(root)
-            target = Path((_read_json(published / "state.json") or {}).get("target", "."))
-            target = (target if target.is_absolute() else project / target).resolve()
+            target = _project_target(root, (_read_json(published / "state.json") or {}).get("target", "."))
             path = (cwd / edited).resolve()
             if (not path.is_relative_to(target) or path.relative_to(project).parts[0] in (".daodan", ".team-review")
                     or not Perimeter(target).covers(path)):

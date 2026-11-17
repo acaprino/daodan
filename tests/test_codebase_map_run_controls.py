@@ -252,6 +252,25 @@ class RunControlsTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("01-structure.md", result["invalid_inherited"])
 
+    @unittest.skipIf(sys.platform == "win32", "a link there needs a privilege")
+    def test_a_parent_run_that_holds_a_link_is_neither_carried_nor_compared(self):
+        """A parent run can come with the project: a link in it names any file of the PC, whose text `carry`
+        would copy into the new run and `diff` would read for claims."""
+        import os
+        parent = self.update_parent()
+        outside = self.project.parent / (self.project.name + "-elsewhere.md")
+        outside.write_text("# kept elsewhere\n", encoding="utf-8")
+        self.addCleanup(outside.unlink, True)
+        (parent / "knowledge").mkdir()
+        os.symlink(outside, parent / "knowledge/notes.md")
+        code, result = self.invoke("carry", self.run, run=parent)
+        self.assertFalse((self.run / "knowledge/notes.md").exists(), "carry copied the file the link names")
+        self.assertEqual((code, "linked path" in result.get("stderr", "")), (2, True), result)
+        (self.run / "changes.json").unlink()
+        code, result = self.invoke("diff", self.project / "src", "--out", self.run, run=parent)
+        self.assertEqual((code, "linked path" in result.get("stderr", "")), (2, True), result)
+        self.assertFalse((self.run / "changes.json").exists())
+
     def test_stopped_update_defers_stale_later_claims_until_resume(self):
         parent = self.update_parent()
         self.write("05-risks.md", "<!-- xray:stale reason=changed -->\n# old risk\n", run=parent)

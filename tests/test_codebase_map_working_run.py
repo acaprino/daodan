@@ -63,6 +63,14 @@ class WorkingRunTests(unittest.TestCase):
     def refresh(self):
         return snapshot.refresh_working(self.root)
 
+    def refused(self):
+        """Why the refresh was refused, or the empty string when it went on."""
+        try:
+            self.refresh()
+        except snapshot.RunControlError as error:
+            return str(error)
+        return ""
+
     def report(self):
         return json.loads((self.working / "refresh.json").read_text(encoding="utf-8"))
 
@@ -353,6 +361,61 @@ class WorkingRunTests(unittest.TestCase):
         proc = self.hook({"tool_name": "Edit", "tool_input": {"file_path": "src/app.py"}})
         self.assertEqual((proc.returncode, proc.stdout), (0, ""))  # the hook never fails the tool
         self.assertFalse((self.working / "snapshot/manifest.sqlite").exists())
+
+    def test_6_a_store_that_comes_with_the_project_names_its_runs_by_name(self):
+        """A registry whose latest run is a path to a complete run elsewhere: the refresh takes nothing from there."""
+        import os
+        outside = Path(tempfile.mkdtemp(prefix="map-outside-")).resolve()
+        self.addCleanup(shutil.rmtree, outside, True)
+        shutil.copytree(self.published, outside / "base")
+        (outside / "base/snapshot/proposals.json").write_text('{"from": "elsewhere"}', encoding="utf-8")
+        self.edit("app.py", "def greet():\n    return 'hello'\n")
+        for name in (str(outside / "base"), os.path.relpath(outside / "base", self.root / "runs"), "..", "base/../base"):
+            with self.subTest(name=name):
+                (self.root / "runs.json").write_text(json.dumps(
+                    {"schema": 2, "active": [], "latest_completed": name}), encoding="utf-8")
+                refused = self.refused()
+                proc = self.hook({"tool_name": "Edit", "tool_input": {"file_path": "src/app.py"}})
+                self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+                self.assertFalse(self.working.exists(), "the refresh built a working run from the folder named")
+                self.assertIn("malformed runs registry", refused)
+
+    @unittest.skipIf(sys.platform == "win32", "a link there needs a privilege")
+    def test_6_a_store_that_comes_with_the_project_holds_no_link(self):
+        """A link in a run's folder names any file or folder of the PC: the refresh reads, writes and deletes
+        nothing through one."""
+        import os
+        outside = Path(tempfile.mkdtemp(prefix="map-outside-")).resolve()
+        self.addCleanup(shutil.rmtree, outside, True)
+        (outside / "manifest.json").write_text("{}", encoding="utf-8")  # the name a new working run clears
+        (outside / "kept.json").write_text('{"kept": "elsewhere"}', encoding="utf-8")
+        self.working.mkdir()
+        self.edit("app.py", "def greet():\n    return 'hello'\n")
+        for link, target in ((self.working / "snapshot", outside),
+                             (self.published / "snapshot/proposals.json", outside / "kept.json"),
+                             (self.published / "02-interfaces.md", outside / "kept.json")):
+            with self.subTest(link=link.relative_to(self.root).as_posix()):
+                os.symlink(target, link)
+                self.addCleanup(link.unlink, True)
+                refused = self.refused()
+                proc = self.hook({"tool_name": "Edit", "tool_input": {"file_path": "src/app.py"}})
+                self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+                self.assertEqual(sorted(path.name for path in outside.iterdir()), ["kept.json", "manifest.json"])
+                self.assertEqual([path.name for path in self.working.iterdir() if not path.is_symlink()], [])
+                self.assertIn("linked path", refused)
+                link.unlink()
+
+    def test_6_the_hook_asks_git_about_no_folder_outside_the_project(self):
+        """A published run whose state names the folder above the project: the hook starts no git there."""
+        import io
+        state = json.loads((self.published / "state.json").read_text(encoding="utf-8"))
+        (self.published / "state.json").write_text(json.dumps({**state, "target": ".."}), encoding="utf-8")
+        asked, real = [], snapshot.Perimeter
+        payload = {"cwd": str(self.project), "tool_name": "Edit", "tool_input": {"file_path": "src/app.py"}}
+        with mock.patch.object(snapshot, "Perimeter", side_effect=lambda target: asked.append(target) or real(target)), \
+                mock.patch.object(sys, "stdin", io.StringIO(json.dumps(payload))):
+            self.assertEqual(snapshot.main(["hook"]), 0)
+        self.assertEqual(asked, [])
 
 
 if __name__ == "__main__":

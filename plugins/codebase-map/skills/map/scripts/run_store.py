@@ -23,14 +23,28 @@ class RunControlError(ValueError):
     """A malformed or unsafe run binding; no state may be written."""
 
 
+def _is_link(path: Path) -> bool:
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return False
+    return path.is_symlink() or bool(getattr(metadata, "st_file_attributes", 0) & 0x400)
+
+
 def _reject_links(path: Path) -> None:
     for part in (path, *path.parents):
-        try:
-            metadata = part.lstat()
-        except FileNotFoundError:
-            metadata = None
-        if part.is_symlink() or (metadata is not None and getattr(metadata, "st_file_attributes", 0) & 0x400):
+        if _is_link(part):
             raise RunControlError(f"linked path is not a run-owned regular path: {part}")
+
+
+def _reject_links_below(folder: Path) -> None:
+    """`folder` and all it holds, without a link. A store lies in the project's folder, where a repository can
+    bring one: a link in it names any file or folder of the machine to whoever reads, replaces or removes there."""
+    _reject_links(folder)
+    for base, folders, files in os.walk(folder):
+        for name in (*folders, *files):
+            if _is_link(Path(base, name)):
+                raise RunControlError(f"linked path is not a run-owned regular path: {Path(base, name)}")
 
 
 CANONICAL_STORE = ".daodan/map"
@@ -221,6 +235,12 @@ def _acquire_registry_lock(root: Path) -> _RegistryLock:
     return _RegistryLock(lock, descriptor)
 
 
+def _run_name(value) -> bool:
+    """Whether `value` is one folder name under `runs/`. A registry can come with the project: a path in it would
+    name any folder of the machine as a run of this store."""
+    return isinstance(value, str) and value not in ("", ".", "..") and Path(value).name == value
+
+
 def _read_registry(root: Path) -> dict:
     path = root / "runs.json"
     _reject_links(path)
@@ -229,7 +249,8 @@ def _read_registry(root: Path) -> dict:
     registry = _read_json(path)
     if (not isinstance(registry, dict) or not isinstance(registry.get("active"), list)
             or any(not isinstance(item, dict) or not isinstance(item.get("run_id"), str)
-                   or not item["run_id"] for item in registry["active"])):
+                   or not item["run_id"] for item in registry["active"])
+            or not (registry.get("latest_completed") is None or _run_name(registry["latest_completed"]))):
         raise RunControlError("malformed runs registry")
     return registry
 

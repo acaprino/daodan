@@ -22,6 +22,7 @@ import sys
 
 import card_store
 import confinement
+import engine_tools
 import modules as module_graph
 from pipeline import events as pipeline_events
 import resolve_edges
@@ -36,7 +37,6 @@ _SNAPSHOTS = ContextVar("map_operation_snapshots", default=None)
 
 __all__ = ["MapService"]
 EVENT_FILE = "mcp-events.json"
-UI_FILE = "ui-requests.json"
 UI_KINDS = ("map", "review")
 UI_SCOPES = ("global", "changeset", "feature", "prompt")
 MAX_UI_REQUESTS = 200  # open requests; done ones beyond MAX_UI_DONE are dropped, oldest first
@@ -91,6 +91,14 @@ def _json(path: Path) -> dict:
     if not isinstance(value, dict):
         raise ValueError(f"expected a JSON object: {path}")
     return value
+
+
+def requests_record(store: Path) -> Path:
+    """Where the explorer's requests for the store at `store` are kept: in Daodan's shared directory, never in the
+    store. The store lies in the analyzed project's folder, where any file may have come with the project, and a
+    request is what the person asked the host to do."""
+    key = os.path.normcase(str(Path(store).resolve())).encode("utf-8")
+    return engine_tools.shared_cache_dir() / "explorer" / f"{hashlib.sha256(key).hexdigest()[:32]}.json"
 
 
 def _evidence_run(run_id: str) -> str:
@@ -938,11 +946,13 @@ class MapService:
             return self._status(run_id)
 
     def _ui(self):
-        path = self.root / UI_FILE
-        confinement.reject_link_chain(path)
+        path = requests_record(self.root)
         if not path.exists():
             return []
-        requests = _json(path).get("requests")
+        try:
+            requests = json.loads(path.read_text(encoding="utf-8")).get("requests")
+        except (ValueError, AttributeError):
+            requests = None
         if not isinstance(requests, list) or not all(
                 isinstance(item, dict) and type(item.get("id")) is int and item.get("state") in UI_STATES
                 and isinstance(item.get("results", []), list) for item in requests):
@@ -950,8 +960,12 @@ class MapService:
         return requests
 
     def _ui_write(self, requests):
-        self.root.mkdir(parents=True, exist_ok=True)
-        _write(self.root / UI_FILE, {"schema": 1, "requests": requests})
+        path = requests_record(self.root)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        partial = path.with_suffix(".partial")
+        partial.write_text(json.dumps({"schema": 1, "requests": requests}, indent=2, sort_keys=True) + "\n",
+                           encoding="utf-8")
+        os.replace(partial, path)
 
     def _ui_result(self, relative):
         """A result's findings and gaps, parsed again only when the file changed."""
