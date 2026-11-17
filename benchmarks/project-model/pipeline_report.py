@@ -1,6 +1,6 @@
 """The report of a round of `modal_pipeline.py`: one page to read it, and its numbers to compare it with the next.
 
-    python pipeline_report.py ROUND.json [MORE.json ...] [--out REPORT.md] [--compare OLD.json]
+    python modal_catalog.py report ROUND.json [MORE.json ...] [--out REPORT.md] [--compare OLD.json]   # on Modal
 
 The files are the driver's outputs; a case in a later file replaces the same case of an earlier one. The report is
 written as Markdown and, beside it with the suffix `.json`, as the same numbers (default: `<last file>.report.md`).

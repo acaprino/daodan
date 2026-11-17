@@ -1,4 +1,7 @@
-"""Tests for pipeline_report.py on a hand-made round. Run: python -m unittest test_pipeline_report.py"""
+"""Tests for pipeline_report.py on a hand-made round.
+
+On Modal: python tests/modal_pytest.py benchmarks/project-model/test_pipeline_report.py -q
+"""
 
 import json
 import os
