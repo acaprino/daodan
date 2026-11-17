@@ -36,6 +36,8 @@ NODE = ("https://nodejs.org/dist/v24.22.3/node-v24.22.3-linux-x64.tar.gz",
 FETCH_NODE = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
               "assert hashlib.sha256(data).hexdigest() == '%s'; open('/tmp/node.tar.gz', 'wb').write(data)\"" % NODE)
 COMPONENTS = ("vue@3.5.22", "typescript@5.6.3", "@vue/language-core@3.3.14", "svelte2tsx@0.7.63")
+# Vue's tool 2.x (js-vue-pnpm's 2.2.12) with the indexer, in /opt/components-vue2, where its recording is made again.
+COMPONENTS_VUE2 = ("vue@3.5.22", "typescript@5.6.3", "@vue/language-core@2.2.12", "@sourcegraph/scip-typescript@0.6.2")
 # The @babel/core the JavaScript recorder prints with (`dynamic/javascript.py`, BABEL), in a layer of its own: its
 # tests under a real Node (test_codebase_map_dynamic_javascript.py) find it through DAODAN_TEST_BABEL.
 BABEL = ("7.29.7", "/opt/babel/node_modules/@babel/core")
@@ -50,6 +52,8 @@ image = (modal.Image.debian_slim(python_version="3.13")
                        "npm install --prefix /opt/components --no-audit --no-fund --ignore-scripts "
                        + " ".join(COMPONENTS))
          .run_commands(f"npm install --prefix /opt/babel --no-audit --no-fund --ignore-scripts @babel/core@{BABEL[0]}")
+         .run_commands("npm install --prefix /opt/components-vue2 --no-audit --no-fund --ignore-scripts "
+                       + " ".join(COMPONENTS_VUE2))
          .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30"))
 if LOCAL:

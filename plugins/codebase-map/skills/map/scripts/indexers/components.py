@@ -19,7 +19,8 @@ TypeScript its framework's own tool generates, and the index brought back to the
 - `rewrite` gives each generated document of the index to its component: each occurrence through the map to the
   component's positions, in UTF-16 code units as the index's; one the map does not cover whole, both ends and the
   same length (generated code), is left out; the module's definition, at the document's start, is the
-  component's start. A Volar span maps a run of characters, of which only those marked for navigation are used.
+  component's start, and a property of generated code that holds a binding the template reads (Vue 2's `setup`,
+  `n: n as typeof n`) is that binding (`_held`). A Volar span maps a run of characters, of which only those marked for navigation are used.
   The checker's pass (`typescript_unbound.js`) is brought back the same way.
 """
 from __future__ import annotations
@@ -165,10 +166,33 @@ def _field(number: int, wire: int, value) -> bytes:
     return _varint(number << 3 | wire) + value
 
 
-def _occurrence(data: bytes, lines: dict) -> bytes | None:
+def _parts(data: bytes) -> tuple[list[int], bytes, int]:
+    """An occurrence's range, symbol and roles."""
+    from code_graph import _fields, _ints
+    found = {number: (wire, value) for number, wire, value in _fields(data)}
+    return (_ints(found[1][1], found[1][0]) if 1 in found else [], found.get(2, (2, b""))[1],
+            found[3][1] if 3 in found and found[3][0] == 0 else 0)
+
+
+def _held(occurrences: list[bytes], lines: dict) -> dict[bytes, bytes]:
+    """The properties of generated code that hold a binding of the component: Vue's tool 2.x returns each binding
+    the template reads from the generated `setup` as a property of its own (`n: n as typeof n`, outside the map),
+    and the template reads that property (`__VLS_ctx.n`). Such a property, defined where the map holds nothing and
+    followed on its line by a reference to a symbol whose definition the map holds, is that symbol."""
+    parsed = sorted((_parts(data) for data in occurrences), key=lambda part: part[0])
+    defined = {symbol for values, symbol, roles in parsed if roles & 1 and mapped(lines, values) is not None}
+    held = {}
+    for (values, symbol, roles), (after, other, other_roles) in zip(parsed, parsed[1:]):
+        if roles & 1 and symbol.endswith(b":") and len(values) == 3 and mapped(lines, values) is None \
+                and not other_roles & 1 and other in defined and after[0] == values[0] and after[1] > values[2]:
+            held[symbol] = other
+    return held
+
+
+def _occurrence(data: bytes, lines: dict, held: dict | None = None) -> bytes | None:
     """An occurrence with its range and enclosing range mapped; None when its range is not in the map. The
     document's module, which the indexer defines at its start with an empty range, is the component's, at its
-    start: an import of the component references it."""
+    start: an import of the component references it. A property that holds a binding is the binding (`_held`)."""
     from code_graph import _fields, _ints
     fields = list(_fields(data))
     module = any(number == 2 and wire == 2 and value.endswith(b"/") for number, wire, value in fields)
@@ -181,6 +205,8 @@ def _occurrence(data: bytes, lines: dict) -> bytes | None:
                 kept = found
             if found is not None:
                 out += _field(number, 2, b"".join(_varint(item) for item in found))
+        elif number == 2 and wire == 2 and held and value in held:
+            out += _field(number, wire, held[value])
         else:
             out += _field(number, wire, value)
     return bytes(out) if kept is not None else None
@@ -195,10 +221,11 @@ def _document(data: bytes, maps: dict, sources: dict) -> bytes | None:
         return data
     component, entry = maps[rel]
     lines = segments(entry, sources[component])
+    held = _held([value for number, wire, value in fields if number == 2 and wire == 2], lines)
     out = bytearray(_field(1, 2, component.encode("utf-8")))
     for number, wire, value in fields:
         if number == 2 and wire == 2:
-            occurrence = _occurrence(value, lines)
+            occurrence = _occurrence(value, lines, held)
             if occurrence is not None:
                 out += _field(2, 2, occurrence)
         elif number != 1:

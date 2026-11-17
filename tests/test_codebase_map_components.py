@@ -8,6 +8,10 @@ given back to each component through the tool's map, on the tools' real output.
 index scip-typescript 0.6.2 wrote of the program (Vue's generated file, the Svelte component itself), all recorded
 once in a Linux container with Node 24.22.3 (the bundler resolution). Where the runner's image holds Node and those
 packages (`tests/modal_pytest.py`), the script runs again and must write what was recorded.
+
+`fixtures/components-vue2` holds js-vue-pnpm's Counter.vue as @vue/language-core 2.2.12, the project's there, turns
+it, and scip-typescript 0.6.2's index of it, made with vue 3.5.22's types; the runner's image holds those packages
+too (`/opt/components-vue2`), where both are made again and must be what was recorded.
 """
 from __future__ import annotations
 
@@ -39,6 +43,29 @@ LISTED = [{"rel": "src/App.vue", "kind": "vue", "ts": True}, {"rel": "src/Panel.
 CONFIG = {"compilerOptions": {"allowJs": True, "noEmit": True, "skipLibCheck": True, "target": "es2022",
                               "module": "esnext", "moduleResolution": "bundler"},
           "include": ["src/main.ts", "src/App.vue.ts", "src/App.vue.tsx", "src/Panel.svelte"]}
+VUE2, VUE2_PACKAGES = HERE / "fixtures/components-vue2", Path("/opt/components-vue2")
+COUNTER = "src/components/Counter.vue"
+
+
+def _vue2_made(tmp_path: Path) -> Path:
+    """The Vue 2 recording made again: `components.cjs` with the project's 2.2.12, then scip-typescript over the
+    program of the generated file; its report and index in `tmp_path`, the project returned."""
+    project = tmp_path / "project"
+    shutil.copytree(VUE2 / "src", project / "src")
+    os.symlink(VUE2_PACKAGES / "node_modules", project / "node_modules")
+    (project / "package.json").write_text('{"name": "probe", "version": "1.0.0", "private": true}', encoding="utf-8")
+    config = {**CONFIG, "include": [COUNTER + ".ts", COUNTER + ".tsx"]}
+    (project / "tsconfig.json").write_text(json.dumps(config), encoding="utf-8")
+    (tmp_path / "list.json").write_text(json.dumps([{"rel": COUNTER, "kind": "vue", "ts": True}]), encoding="utf-8")
+    modules = VUE2_PACKAGES / "node_modules"
+    for command in (["node", str(SCRIPTS / "indexers/components.cjs"), str(tmp_path / "list.json"), str(project),
+                     str(tmp_path / "ours"), str(tmp_path / "components.json"),
+                     str(modules / "@sourcegraph/scip-typescript")],
+                    ["node", os.path.realpath(modules / ".bin/scip-typescript"), "index", "--cwd", str(project),
+                     "--output", str(tmp_path / "index.scip"), "--no-progress-bar"]):
+        done = subprocess.run(command, capture_output=True, text=True, env={**os.environ, "NODE_OPTIONS": ""})
+        assert done.returncode == 0, done.stderr
+    return project
 
 
 def _rewritten(tmp_path: Path) -> code_graph.Index:
@@ -129,6 +156,38 @@ def test_a_default_import_of_a_vue_component_reaches_it_as_one_of_a_svelte_compo
     assert [(rel, item.line, item.start) for rel, item in index.defs[module]] == [("src/App.vue", 1, 0)]
     assert reached(1, 7) == reached(3, 22) == [("project-value", module)]
     assert reached(2, 7) == [("project-value", panel)]
+
+
+@pytest.mark.skipif(not (shutil.which("node") and (VUE2_PACKAGES / "node_modules").is_dir()),
+                    reason="the runner's image holds Node, Vue's tool 2.2.12 and scip-typescript 0.6.2")
+def test_the_vue2_recording_is_what_its_tools_write_again(tmp_path):
+    project = _vue2_made(tmp_path)
+    assert json.loads((tmp_path / "components.json").read_text(encoding="utf-8")) == json.loads(
+        (VUE2 / "components.json").read_text(encoding="utf-8"))
+
+    def occurrences(path: Path) -> dict:
+        index = code_graph.Index(project)
+        index.load(path)
+        return {rel: sorted(item[:6] for item in items) for rel, items in index.documents.items()}
+
+    assert occurrences(tmp_path / "index.scip") == occurrences(VUE2 / "index.scip")
+
+
+def test_a_template_read_vue2_writes_through_its_setups_property_reaches_the_binding(tmp_path):
+    """js-vue-pnpm `src/components/Counter.vue:9 n` (round 2026-11-17-vue-svelte, D-290): Vue's tool 2.x reads a
+    binding in the template as a property of the generated `setup`'s return (`__VLS_ctx.n`), which it writes as
+    `n: n as typeof n`, outside the map. Given back, the template reads the binding the property holds, as 3.x
+    reads it itself (`src/App.vue:10 n` of the other recording)."""
+    project = tmp_path / "project"
+    shutil.copytree(VUE2 / "src", project / "src")
+    shutil.copyfile(VUE2 / "index.scip", tmp_path / "index.scip")
+    components.rewrite(tmp_path / "index.scip", VUE2 / "components.json", project)
+    index = code_graph.Index(project)
+    index.load(tmp_path / "index.scip")
+    rows = (VUE2 / COUNTER).read_text(encoding="utf-8").split("\n")
+    binding = (COUNTER, 5, rows[4].index("n ="))
+    assert _defined(index, COUNTER, 9, rows[8].index("n++")) == {binding}
+    assert _defined(index, COUNTER, 9, rows[8].index("{{ n }}") + 3) == {binding}
 
 
 def test_the_index_of_the_generated_typescript_is_the_components(tmp_path):
