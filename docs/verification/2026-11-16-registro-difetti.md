@@ -52,13 +52,13 @@ Convenzioni:
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
 - `kotlin` (35): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284
 - `python` (34): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256, D-276
-- `javascript` (32): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270
-- `typescript` (23): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290
+- `javascript` (33): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270, D-291
+- `typescript` (24): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290, D-291
 - `rust` (19): D-014, D-021, D-030, D-040, D-041, D-078, D-143, D-144, D-173, D-175, D-176, D-209, D-227, D-230, D-237, D-238, D-239, D-256, D-265
 - `csharp` (17): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249
 - `go` (16): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256, D-257, D-265, D-273
 - `svelte` (6): D-080, D-153, D-156, D-159, D-258, D-288
-- `vue` (7): D-080, D-154, D-155, D-159, D-258, D-289, D-290
+- `vue` (8): D-080, D-154, D-155, D-159, D-258, D-289, D-290, D-291
 - `css` (4): D-161, D-162, D-163, D-164
 - `scala` (2): D-011, D-092
 - `dart` (1): D-015
@@ -74,7 +74,7 @@ Convenzioni:
 - `passo dinamico` (36): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274
 - `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
 - `servizi` (14): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261, D-275
-- `container` (13): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279, D-283
+- `container` (14): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279, D-283, D-291
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
 - `preparazione` (11): D-044, D-045, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-063
 - `snapshot` (10): D-031, D-032, D-033, D-034, D-035, D-059, D-245, D-250, D-252, D-265
@@ -86,7 +86,7 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (152): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290
+- `completezza` (153): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291
 - `correttezza` (89): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280, D-288
 - `sicurezza` (29): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
@@ -103,7 +103,7 @@ Convenzioni:
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
 - `conferma` (5): D-057, D-058, D-136, D-158, D-187
-- `corsa su un progetto` (8): D-031, D-043, D-085, D-087, D-206, D-288, D-289, D-290
+- `corsa su un progetto` (9): D-031, D-043, D-085, D-087, D-206, D-288, D-289, D-290, D-291
 - `test` (4): D-083, D-211, D-222, D-244
 - `fixtures` (3): D-176, D-196, D-209
 - `real-3` (3): D-099, D-178, D-182
@@ -126,7 +126,7 @@ Convenzioni:
 - `git` (8): D-048, D-126, D-197, D-204, D-245, D-250, D-257, D-280
 - `GitHub Actions` (8): D-056, D-182, D-201, D-213, D-260, D-261, D-274, D-275
 - `scip-python` (7): D-084, D-086, D-088, D-246, D-247, D-248, D-269
-- `scip-typescript` (8): D-146, D-147, D-148, D-152, D-156, D-157, D-160, D-290
+- `scip-typescript` (9): D-146, D-147, D-148, D-152, D-156, D-157, D-160, D-290, D-291
 - `Cargo` (6): D-014, D-021, D-030, D-041, D-175, D-239
 - `Compose` (6): D-201, D-212, D-214, D-215, D-240, D-261
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
@@ -211,7 +211,7 @@ Convenzioni:
 
 ## Indice
 
-290 schede: 238 risolte, 8 aperte, 44 buchi dichiarati.
+291 schede: 239 risolte, 8 aperte, 44 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -480,7 +480,7 @@ Convenzioni:
 
 ### Container, servizi e driver Modal
 
-26 schede: 21 risolto, 1 aperto, 4 buco dichiarato.
+27 schede: 22 risolto, 1 aperto, 4 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -510,6 +510,7 @@ Convenzioni:
 | D-275 | I passi della CI si leggevano solo nei workflow con servizi o Compose | pre-mappa della CI | risolto | `bd133fe94` | tutti · servizi · completezza · commit · GitHub Actions, GitLab CI |
 | D-279 | I valori del `.env` non arrivavano all'esecuzione di uno stadio | container | risolto | `4a999670e` | tutti · container · completezza · commit · Docker, BuildKit |
 | D-283 | Un valore del `.env` restava negli output JSON e binari e dentro parole più lunghe | container | risolto | `a41823a06`, `124c63440` | tutti · container · sicurezza · commit |
+| D-291 | I valori di un `.env.example` facevano trattenere l'indice di un intero progetto | hoppscotch (`55908a76a1d0`) | risolto | — | typescript, javascript, vue · container · completezza · corsa su un progetto · scip-typescript |
 
 ### Benchmark e documenti
 
@@ -1109,7 +1110,7 @@ Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-
 | mix-real-tududi | github.com/chrisvel/tududi `71da9d7b34df` | 9 | D-145, D-146, D-147, D-182, D-185, D-186, D-187, D-270, D-274 | D-189, D-213, D-240, D-251 |
 | mix-real-zlib | github.com/madler/zlib `51b7f2abdade` | 15 | D-043, D-113, D-130, D-133, D-134, D-136, D-209, D-220, D-267, D-268, D-271 | D-010, D-065, D-230, D-275 |
 | real-app-full-stack-fastapi | github.com/fastapi/full-stack-fastapi-template `aabb90126964` | 21 | D-056, D-088, D-188, D-195, D-197, D-240, D-246, D-248, D-252, D-254, D-260 | D-162, D-171, D-213, D-251, D-253, D-270 |
-| real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237, D-289 | D-080, D-162, D-239 |
+| real-app-hoppscotch | github.com/hoppscotch/hoppscotch `55908a76a1d0` | 20 | D-143, D-144, D-159, D-160, D-163, D-237, D-289, D-291 | D-080, D-162, D-239 |
 | real-app-jhipster-sample | github.com/jhipster/jhipster-sample-app `6b000b5d23a3` | 17 | D-111, D-194 | D-275 |
 | real-app-kotlinconf | github.com/JetBrains/kotlinconf-app `146e891c150c` | 18 | D-055, D-057, D-058, D-110, D-158 | D-275 |
 | real-app-memos | github.com/usememos/memos `509e41bd1a1b` | 10 | D-160 | D-162, D-163, D-275 |
@@ -4301,6 +4302,16 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - dal commit `a41823a06`, su Modal con g++ e `-DVERSION=<valore>`: il database di compilazione torna mascherato e l'indice che porta il valore è un buco.
 - **Stato:** risolto; i valori corti, i booleani e i numeri non mascherati sono il buco dichiarato `mask_partial`.
 - **Note:** D-240, D-279.
+
+#### D-291 I valori di un `.env.example` facevano trattenere l'indice di un intero progetto
+- **Tag:** lingua typescript, javascript, vue · area container · tipo completezza · origine corsa su un progetto · strumento scip-typescript
+- **Descrizione:** nel giro `2026-11-17-vue-svelte` l'indice scip-typescript di hoppscotch (`55908a76a1d0`) è un buco `output_withheld`: contiene i valori di `.env.example` (`PROXY_APP_URL`, `VITE_BASE_URL`, `VITE_SHORTCODE_BASE_URL`), e TypeScript, JavaScript e Vue dell'intero progetto si perdevano.
+- **Spiegazione:** la regola di D-283 trattava come segreto ogni `.env*` tracciato, anche i file d'esempio, che il progetto pubblica proprio perché chiunque li legga. Il proprietario ha deciso che i file d'esempio non si mascherano.
+- **Progetto e caso:** hoppscotch (`55908a76a1d0`) — giro `2026-11-17-vue-svelte`, 17 novembre 2026.
+- **Rimedio:** `scripts/container.py`, test-services: `example(name)` riconosce `.env.example`, `.env.sample`, `.env.template` e `.env.dist`, anche con un nome in mezzo (`.env.local.example`), in ogni maiuscola; `secret(values)` toglie i loro valori prima di `masker`, `partial` e `scrubbed`, in `run_in_container` e in `benchmarks/project-model/modal_pipeline.py`. I file d'esempio entrano nella copia del container come prima; un valore che sta anche in un `.env` vero resta mascherato, col nome della variabile del file vero.
+- **Verifica:** `tests/test_codebase_map_dynamic_services.py` (`test_an_example_env_file_is_public_by_its_name_and_only_the_true_files_values_are_secret`, `PodTest.test_an_example_env_file_s_values_are_public_and_an_output_that_holds_them_is_kept`: un indice binario con i valori di `.env.example` e `.env.local.sample` si conserva com'è, uno col valore del `.env` vero resta trattenuto, un valore comune ai due si maschera).
+- **Stato:** risolto.
+- **Note:** D-283.
 
 ### Benchmark e documenti
 

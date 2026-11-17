@@ -124,6 +124,7 @@ UNITS = {"ns": 1e-9, "us": 1e-6, "µs": 1e-6, "ms": 1e-3, "s": 1.0, "m": 60.0, "
 REACH = ("import socket, sys\nfor port in sys.argv[1:]:\n"
          "    socket.create_connection(('127.0.0.1', int(port)), 2).close()")  # `reached`: each port answers
 DOTENV = (".env", ".env.*")  # of the names Daodan never reads, those the copy carries where Git tracks the file
+EXAMPLES = ("example", "sample", "template", "dist")  # the last part of an .env file's name the project publishes
 TEXTS = (".log", ".txt")  # the outputs that are a run's text, masked as its logs are (`masker`)
 JSONS = (".json",)  # the outputs that are JSON, masked string by string so they stay JSON (`scrubbed`)
 UNMASKED = re.compile(r"(?i)true|false|yes|no|on|off|\d{1,5}")  # values the text's own words and ports would be
@@ -611,6 +612,19 @@ def _within(relative: str, target: str) -> bool:
 def dotenv(name: str) -> bool:
     """Whether a file of this name is an `.env` file (`DOTENV`), as Daodan's names are matched: in any case."""
     return any(fnmatch.fnmatchcase(name.lower(), pattern) for pattern in DOTENV)
+
+
+def example(name: str) -> bool:
+    """Whether a file of this name is an example `.env` file the project publishes (`.env.example`,
+    `.env.local.sample`: `EXAMPLES`), whose values are no secret (D-291)."""
+    return dotenv(name) and name.lower().rsplit(".", 1)[-1] in EXAMPLES
+
+
+def secret(values: dict[str, dict[str, str]]) -> dict[str, dict[str, str]]:
+    """The values of the tracked `.env` files (`dotenv_values`) that are secret, those of an `example` file aside:
+    what the masks hide and an output must not hold. A value an example shares with a true file stays, by the true
+    file's variable."""
+    return {path: found for path, found in values.items() if not example(posixpath.basename(path))}
 
 
 def _withheld(relative: str, path: Path, mode: int | None) -> dict:
@@ -1530,8 +1544,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             if digest["gaps"]:  # what the copy left out of the project (`copy_perimeter`)
                 result["gaps"] = digest["gaps"]
             values = dotenv_values(engine_cli, copy, digest["dotenv"], token) if digest.get("dotenv") else {}
-            hide = masker(values)
-            if said_partial := partial(values):  # what the masks leave, said once
+            hide = masker(secret(values))
+            if said_partial := partial(secret(values)):  # what the masks leave, said once
                 result["gaps"] = [*(result.get("gaps") or ()), *said_partial]
             pinned = [filled(item, values) for item in pinned]  # the values only here, never on record
             exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
@@ -1541,7 +1555,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             def hidden(row: dict) -> dict:  # what the run printed, masked in its log, its outputs and its row
                 mask_file(row.get("log"), hide)
                 if row.get("outputs"):
-                    row["outputs"], withheld = scrubbed(row["outputs"], hide, values, out_dir)
+                    row["outputs"], withheld = scrubbed(row["outputs"], hide, secret(values), out_dir)
                     result["gaps"] = [*(result.get("gaps") or ()), *withheld]
                 return mask_row(row, hide)
 

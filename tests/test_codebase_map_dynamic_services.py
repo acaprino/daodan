@@ -845,6 +845,19 @@ def test_the_values_of_a_tracked_env_file_are_read_as_compose_reads_them(tmp_pat
         container.dotenv_answer("Traceback (most recent call last):\n", 1)
 
 
+def test_an_example_env_file_is_public_by_its_name_and_only_the_true_files_values_are_secret():
+    """`.env.example`, `.env.sample`, `.env.template`, `.env.dist`, with a name between (`.env.local.example`),
+    in any case, are examples the project publishes; `.env`, `.env.local`, `.env.example.local` are not."""
+    for name, public in ((".env.example", True), (".env.sample", True), (".env.template", True),
+                         (".env.dist", True), (".env.local.example", True), (".ENV.Example", True),
+                         (".env", False), (".env.local", False), (".env.example.local", False),
+                         (".env.production", False), ("env.example", False)):
+        assert container.example(name) is public, name
+    values = {".env.example": {"URL": "http://localhost:3000"}, "web/.env.local.example": {"A": "abcdef"},
+              ".env": {"KEY": "changethis"}}
+    assert container.secret(values) == {".env": {"KEY": "changethis"}}
+
+
 def test_each_value_of_a_tracked_env_file_is_masked_wherever_it_stands_and_a_short_one_as_a_whole_word():
     """What a run keeps names the variable in place of its value wherever it stands, inside a longer word too
     (`-DVERSION=1.28.0x`); a value shorter than four characters only as a whole word, as it would mask the text's
@@ -1570,6 +1583,30 @@ class PodTest(unittest.TestCase):
         rows = [json.loads(line) for line in (self.out / container.RECORD_NAME).read_text().splitlines()]
         assert not any("index.scip" in path for row in rows for path in row.get("outputs") or ())
         assert not any(b"changethis" in path.read_bytes() for path in self.out.rglob("*") if path.is_file())
+
+    def test_an_example_env_file_s_values_are_public_and_an_output_that_holds_them_is_kept(self):
+        """hoppscotch's `.env.example` (D-291): a tracked example file's values are public, as its name says, so an
+        index that holds one is kept as written and no gap names it; one that holds the value of a true `.env` is
+        withheld; a value both hold stays masked, named by the true file's variable only."""
+        project = git_project(self.scratch / "example", {
+            ".env.example": "VITE_BASE_URL=http://localhost:3000\nSHARED=sharedsecret\n",
+            ".env.local.sample": "PROXY_APP_URL=http://localhost:9159\n",
+            ".env": "SECRET_KEY=changethis\nSHARED=sharedsecret\n", "app.js": "\n"},
+            [".env.example", ".env.local.sample", ".env", "app.js"])
+        script = ('mkdir -p ../daodan/out && printf "scip\\000%s %s\\001" "$(sed -n "s/^VITE_BASE_URL=//p" '
+                  '.env.example)" "$(sed -n "s/^PROXY_APP_URL=//p" .env.local.sample)" > ../daodan/out/public.scip'
+                  ' && printf "scip\\000%s\\001" "$(sed -n "s/^SECRET_KEY=//p" .env)" > ../daodan/out/secret.scip'
+                  ' && echo shared $(sed -n "s/^SHARED=//p" .env.example)')
+        result = container.run_in_container(project, ["sh", "-c", script], image="fake/runtime:1", out_dir=self.out,
+                                            engine=self.engine, outputs=["/daodan/out"])
+        assert result["state"] == "done", result
+        assert [Path(path).name for path in result["outputs"]] == ["public.scip"]
+        assert Path(result["outputs"][0]).read_bytes() == b"scip\x00http://localhost:3000 http://localhost:9159\x01"
+        assert [(gap["path"], gap["variables"]) for gap in result["gaps"] if gap["kind"] == "output_withheld"] == [
+            ("out/secret.scip", [".env:SECRET_KEY"])]
+        assert "shared [.env:SHARED]" in (self.out / "execute.log").read_text(encoding="utf-8")
+        assert not any(b"changethis" in path.read_bytes() or b"sharedsecret" in path.read_bytes()
+                       for path in self.out.rglob("*") if path.is_file())
 
     def test_a_run_says_once_which_values_it_masks_only_as_whole_words_or_not_at_all(self):
         """A short value is masked where it stands whole (`DB=app` in the log, `application` as it was); the result

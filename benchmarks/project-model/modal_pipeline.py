@@ -275,8 +275,8 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
             result["gaps"] = digest["gaps"]
         volume.commit()
         values = _dotenv(token, digest["dotenv"], options) if digest.get("dotenv") else {}
-        hide = container.masker(values)
-        if said_partial := container.partial(values):  # what the masks leave, said once
+        hide = container.masker(container.secret(values))
+        if said_partial := container.partial(container.secret(values)):  # what the masks leave, said once
             result["gaps"] = [*(result.get("gaps") or ()), *said_partial]
         services = [container.filled(item, values) for item in services]  # the values only here, never on record
         exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
@@ -361,7 +361,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                     bundle.extractall(out_dir, members=members, filter="data")
                     result["outputs"] += [str(out_dir / m.name) for m in members if m.isfile()]
             # no value of the tracked .env files in what the run keeps (`container.scrubbed`)
-            result["outputs"], withheld = container.scrubbed(result["outputs"], hide, values, out_dir)
+            result["outputs"], withheld = container.scrubbed(result["outputs"], hide, container.secret(values), out_dir)
             result["gaps"] = [*(result.get("gaps") or ()), *withheld]
         result.update(exit_code=row.get("exit_code"),
                       state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))
