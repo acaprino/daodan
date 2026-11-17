@@ -29,6 +29,8 @@ Criterio, dichiarato prima delle run:
 
 `test_shop.py`, `test_booking.py` e `test_parcel.py` dimostrano ogni seme e ogni esca: i test passano sulla fixture così com'è.
 
+Conferma del 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`: **21/21 test passati** con `python -B -m unittest discover -s benchmarks/prior-art -v`, Python 3.13.18 su Linux, nel container Daodan su Kiri 0.2.1. Rete disabilitata, nessun mount host, limiti di 1 GiB, 2 CPU e 256 processi; canary assente dal checkout host prima e dopo. La prova riguarda le fixture versionate, esclude le modifiche locali e non ripete le misure LLM.
+
 ## Run con il modello
 
 1. Copiare in una directory vuota `<fixture>/`, `<fixture>.diff` e il plugin della configurazione in `plugin/`.

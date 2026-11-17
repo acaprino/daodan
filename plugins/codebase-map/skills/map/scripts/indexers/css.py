@@ -316,10 +316,11 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
     packages = (PACKAGES, {"packages": [list(item) for item in wanted]})
 
     def with_packages(script, payload):  # Tailwind's run and the packages' sheets: one container run, one restore
-        ask = getattr(container, "ask", None) or (lambda calls: [container(*call) for call in calls])
-        answers = ask([(script, payload), *([packages] if wanted else [])])
-        asked.update({"sheets": answers[1]} if wanted else {})
-        return answers[0]
+        if not wanted or not hasattr(container, "ask"):
+            return container(script, payload)
+        answer, (data, measured) = container.ask([(script, payload), packages])
+        asked["sheets"] = (data, {**measured, "seconds": 0})  # Tailwind's run: its time is counted once, there
+        return answer
     tailwind = css_tailwind.index(project_dir, with_packages if container else runner, sorted(class_tokens(records)),
                                   entries)
     restored = restored_sheets(asked.get("sheets") or container(*packages)) if wanted else \
@@ -343,13 +344,21 @@ _RESTORED: dict = {}  # project folder -> the folder of the restore's package sh
 
 def unserved(project_dir: Path, records: list[dict]) -> list[tuple[str, str]]:
     """`(folder, package)` of each package an import of the project names and its checkout lacks (`resolve` finds
-    no folder for it): the restore installs it, in the container (`restored_sheets`)."""
-    return sorted({((project_dir / ref["file"]).parent.relative_to(project_dir).as_posix(), name)
-                   for ref in records if ref["t"] == "ref" and ref["kind"] == "import" and "package" not in ref
-                   for name in [_package_name(ref["name"])] if name
-                   and resolve(project_dir, ref["file"], ref["name"], ref.get("script", False),
-                               sass=True if ref.get("sass") or ref.get("less") else None)[:2]
-                   == ("hole", "unresolved-import")})
+    no folder for it), a sheet's or a script's (`import "pkg/x.css"`, the graph's `import` ref with `script`): the
+    restore installs it, in the container (`restored_sheets`)."""
+    wanted = set()
+    for record in records:
+        if record["t"] == "ref" and record["kind"] == "import" and "package" not in record:
+            spec, script = record["name"], record.get("script", False)
+            sass = True if record.get("sass") or record.get("less") else None
+        elif record["t"] == "import":
+            spec, script, sass = record["spec"], True, None
+        else:
+            continue
+        name = _package_name(spec)
+        if name and resolve(project_dir, record["file"], spec, script, sass=sass)[:2] == ("hole", "unresolved-import"):
+            wanted.add(((project_dir / record["file"]).parent.relative_to(project_dir).as_posix(), name))
+    return sorted(wanted)
 
 
 def restored_sheets(answer: tuple) -> dict:

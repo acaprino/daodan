@@ -1307,7 +1307,8 @@ def test_the_restores_package_sheets_come_back_where_the_graph_looks_for_them(tm
 def test_a_class_a_package_sheet_declares_is_answered_by_the_restores_copy_of_it(tmp_path, monkeypatch):
     """The checkout holds no node_modules: the package an import names and the checkout lacks is asked of the
     container (`css_packages.js`, after the restore), and its sheets, back with their text, answer the classes they
-    declare as the package's, at the version its package.json says. A package the checkout holds is not asked."""
+    declare as the package's, at the version its package.json says; a sheet a script imports (`import
+    "leaflet/dist/leaflet.css"`) as well as one a sheet does. A package the checkout holds is not asked."""
     project = tmp_path / "memos"
     (project / "web/src").mkdir(parents=True)
     (project / "web/src/index.css").write_text('@import "@acme/ui/styles.css";\n', encoding="utf-8")
@@ -1320,20 +1321,30 @@ def test_a_class_a_package_sheet_declares_is_answered_by_the_restores_copy_of_it
         calls.append((Path(script).name, payload))
         return {"files": {"web/node_modules/@acme/ui/package.json": package,
                           "web/node_modules/@acme/ui/dist/styles.css": ".mu-a { color: red }\n",
+                          "web/node_modules/@acme/kit/package.json": '{"name": "@acme/kit", "version": "0.9.0"}',
+                          "web/node_modules/@acme/kit/kit.css": ".kit-a { color: blue }\n",
                           "web/node_modules/@acme/ui/../../../out.css": "", "web/node_modules/x/..\\..\\out.css": "",
                           "../out.css": ""},  # names that would leave the copy's folder: not written
                 "missing": [], "workspace": [], "error": None}, {"seconds": 0}
 
-    def host(script, payload):
-        raise AssertionError(f"no host engine reads these files: {script}")
+    def host(script, payload):  # the scripts' reader, as its run on the host answers: a script imports a sheet
+        assert Path(script).stem == "css_typescript", f"no other host engine reads these files: {script}"
+        return {"typescript": "5.9.3", "files": ["web/src/main.ts"],
+                "records": [{"t": "import", "file": "web/src/main.ts", "line": 1, "spec": "@acme/kit/kit.css"}]}, \
+            {"seconds": 0}
+    (project / "web/src/main.ts").write_text('import "@acme/kit/kit.css";\n', encoding="utf-8")
+    (project / "web/index.html").write_text(
+        '<link rel="stylesheet" href="/src/index.css">\n<script type="module" src="/src/main.ts"></script>\n'
+        '<div class="mu-a"></div>\n<p class="kit-a"></p>\n', encoding="utf-8")
     (tmp_path / "tmp").mkdir()
     monkeypatch.setattr(tempfile, "tempdir", str(tmp_path / "tmp"))  # where the copy is written, and removed
     built = css.run(project, host, css.walk(project), tailwind=container)
-    assert calls == [("css_packages.js", {"packages": [["web/src", "@acme/ui"]]})]
+    assert calls == [("css_packages.js", {"packages": [["web/src", "@acme/kit"], ["web/src", "@acme/ui"]]})]
     assert [(hole["name"], hole["class"]) for hole in built["holes"]] == []
-    [edge] = [edge for edge in built["edges"] if edge["symbol"] == ".mu-a"]
-    assert {node["id"]: node.get("external") for node in built["nodes"]}[edge["to"]] == {
-        "manager": "npm", "package": "@acme/ui", "version": "1.2.3"}
+    externals = {node["id"]: node.get("external") for node in built["nodes"]}
+    for symbol, name, version in ((".mu-a", "@acme/ui", "1.2.3"), (".kit-a", "@acme/kit", "0.9.0")):
+        [edge] = [edge for edge in built["edges"] if edge["symbol"] == symbol]
+        assert externals[edge["to"]] == {"manager": "npm", "package": name, "version": version}
     assert "daodan-sheets-" not in json.dumps(built)  # the copy is read, never named, and removed after
     assert not list(tmp_path.rglob("out.css")) and not list((tmp_path / "tmp").iterdir())
     ui = project / "web/node_modules/@acme/ui"
@@ -1342,7 +1353,7 @@ def test_a_class_a_package_sheet_declares_is_answered_by_the_restores_copy_of_it
     (ui / "dist/styles.css").write_text(".mu-a { color: red }\n", encoding="utf-8")
     calls.clear()
     css.run(project, host, css.walk(project), tailwind=container)
-    assert calls == []
+    assert calls == [("css_packages.js", {"packages": [["web/src", "@acme/kit"]]})]
 
 
 def test_tailwinds_run_brings_back_the_packages_sheets_after_the_same_restore(tmp_path):

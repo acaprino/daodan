@@ -80,6 +80,8 @@ Le asserzioni verificano import del nucleo senza UI/SDK MCP, HTTP autonomo, loop
 
 La precedente misura Windows, Python 3.13.14, registrava 9 controlli in 2,477 s: è storica e distinta dall'esecuzione container corrente.
 
+Conferma del 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`, escludendo le modifiche locali: **9/9 controlli HTTP passati** con gli stessi parametri (3 cicli, 4 richieste, 2 consumer), in 1,678 s. Python 3.13.18 su Linux, container Daodan su Kiri 0.2.1, senza rete né mount host, con limiti di 1 GiB, 2 CPU e 256 processi.
+
 ## Percorso UI
 
 La stessa esecuzione nel container esercita il [prototipo versionato](../../prototypes/daodan-app/README.md) con Chromium standard di Playwright. `--out` sceglie il JSON dei risultati e `--artifacts` la directory degli screenshot; i default rimangono locali al checkout del container.
@@ -93,6 +95,8 @@ Le regressioni coprono `constructor/nested/probe.ts`, `__proto__/probe.ts` e `to
 Misura del 16 novembre 2026 nel container Linux: **52/52 controlli superati**, Chromium 156.0.8078.4, nessun errore runtime o richiesta esterna, nessun overflow a 1440/390 px. Prima delle correzioni, gli stessi 52 controlli hanno prodotto 8 fallimenti attesi; dopo le correzioni, tutti passano. Per 1,25 €/10% la UI mostra 1,38 € e 1,23 €, come Python. Il canary ha scritto il marker soltanto nel container; assente sull'host prima e dopo la prova.
 
 Le precedenti **44/44** su Windows riguardano un dataset e un hash HTML precedenti e rimangono misure storiche. Il processo termina con codice diverso da zero se un controllo fallisce; `ui-results.json` registra hash della pagina, ambiente, conteggi e prove puntuali.
+
+Conferma del 17 novembre 2026 sullo stesso commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`: **52/52 controlli UI passati**, Chromium 156.0.8078.4, container Daodan su Kiri 0.2.1. Rete disabilitata, nessun mount host, limiti di 3 GiB, 2 CPU, 512 processi e 512 MiB di memoria condivisa; canary assente dal checkout host prima e dopo. Nessuna nuova misura LLM.
 
 ## Limiti
 

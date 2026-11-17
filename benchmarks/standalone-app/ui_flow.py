@@ -23,6 +23,11 @@ def record(name,ok,evidence):
     RESULT.write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8')
 def stored(page):return page.evaluate("JSON.parse(localStorage.getItem('daodan-app-prototype-v1'))")
 
+def verify_url(page,slug):
+    page.locator('#repository-url').fill('https://github.com/'+slug)
+    page.locator('#verify-repository').click()
+    page.clock.run_for(600)
+
 def reset_state(page):
     return {'progress':stored(page)['progress'],'status':stored(page)['runStatus'],'stage':stored(page)['analysisStage'],'synthesis_disabled':page.locator('#stage-synthesis').is_disabled()}
 
@@ -69,7 +74,7 @@ def invalidation_regressions(page):
     value=reset_state(page)
     record('pending_premap_branch_roundtrip_invalidated',is_reset(value),value)
     page.locator('[data-analysis-stage="repository"]').first.click()
-    page.locator('[data-repository-kind="private"]').click()
+    verify_url(page,'organizzazione-demo/progetto-privato')
     page.locator('[data-action="mock-github-login"]').click()
     page.clock.run_for(650)
     begin_retry(page)
@@ -77,6 +82,55 @@ def invalidation_regressions(page):
     page.clock.run_for(1000+2*2200)
     value=reset_state(page)
     record('retry_private_logout_invalidated',is_reset(value) and stored(page)['repository'] is None and page.locator('#use-repository').is_disabled(),value)
+
+def access_regressions(page):
+    private='https://github.com/organizzazione-demo/progetto-privato'
+    public='https://github.com/acaprino/daodan'
+    verify_url(page,'organizzazione-demo/non-disponibile')
+    page.locator('[data-action="mock-github-login"]').click()
+    record('conditional_login_loading',page.locator('[data-action="mock-github-login"]').is_disabled() and page.locator('#verify-repository').is_disabled(),'login and same-URL retry disable both actions')
+    page.clock.run_for(650)
+    record('denied_after_login',stored(page)['mockGithubLogin'] and stored(page)['repositoryAccess']=='denied' and stored(page)['repository'] is None and page.locator('#use-repository').is_disabled() and 'URL e permessi' in page.locator('#repository-access-feedback').inner_text(),page.locator('#repository-access-feedback').inner_text())
+    page.reload()
+    page.clock.run_for(100)
+    record('denied_result_reload',stored(page)['repositoryAccess']=='denied' and 'ancora non accessibile' in page.locator('#repository-access-feedback').inner_text(),'denial survives reload')
+    page.locator('[data-action="mock-github-logout"]').click()
+    verify_url(page,'organizzazione-demo/errore-rete')
+    record('network_error_no_login',stored(page)['repositoryAccess']=='network-error' and page.locator('[data-action="mock-github-login"]').count()==0 and page.locator('#use-repository').is_disabled(),page.locator('#repository-access-feedback').inner_text())
+    page.locator('#verify-repository').click()
+    page.clock.run_for(600)
+    record('network_error_retry',stored(page)['repositoryAccess']=='network-error' and page.locator('#verify-repository').is_enabled(),'deterministic network fixture remains retryable')
+    verify_url(page,'organizzazione-demo/progetto-privato')
+    page.locator('#repository-url').fill(public)
+    record('url_edit_clears_login_prompt',stored(page)['repositoryAccess']=='idle' and page.locator('[data-action="mock-github-login"]').count()==0 and not page.locator('#repository-access-feedback').inner_text(),'editing clears the conditional prompt immediately')
+    for login in [False,True]:
+        for roundtrip in [False,True]:
+            page.locator('#repository-url').fill(private)
+            page.locator('#verify-repository').click()
+            if login:
+                page.clock.run_for(600)
+                page.locator('[data-action="mock-github-login"]').click()
+            page.locator('#repository-url').fill(public)
+            if roundtrip:page.locator('#repository-url').fill(private)
+            page.clock.run_for(700)
+            value=stored(page)
+            record(('pending_login_' if login else 'pending_verification_')+('url_roundtrip_invalidated' if roundtrip else 'url_change_invalidated'),value['repository'] is None and value['repositoryAccess']=='idle' and not value['mockGithubLogin'] and page.locator('#use-repository').is_disabled() and page.locator('#verify-repository').is_enabled(),{'url':value['repositoryUrl'],'access':value['repositoryAccess'],'loggedIn':value['mockGithubLogin']})
+    page.locator('#repository-url').fill(private)
+    page.locator('#verify-repository').click()
+    page.clock.run_for(300)
+    page.locator('#repository-url').fill(public)
+    page.locator('#verify-repository').click()
+    page.clock.run_for(300)
+    record('stale_check_preserves_new_pending_check',page.locator('#verify-repository').is_disabled() and stored(page)['repository'] is None,'old completion cannot unlock or replace newer verification')
+    page.clock.run_for(300)
+    record('latest_check_wins',stored(page)['repository']['slug']=='acaprino/daodan' and not stored(page)['mockGithubLogin'],stored(page)['repository'])
+    # Simulate a saved state from the previous selector UI, whose private fixture
+    # did not match the public URL. Migration must require fresh verification.
+    page.evaluate('''()=>{const old=JSON.parse(localStorage.getItem('daodan-app-prototype-v1'));old.repositoryVisibility='private';old.repository={slug:'organizzazione-demo/progetto-privato',visibility:'private',branches:['master'],defaultBranch:'master',branchSource:'demo'};old.repositoryBranch='master';old.mockGithubLogin=true;old.analysisStage='synthesis';old.progress=100;old.runStatus='complete';delete old.repositoryAccess;localStorage.setItem('daodan-app-prototype-v1',JSON.stringify(old));}''')
+    page.reload()
+    page.clock.run_for(100)
+    value=stored(page)
+    record('legacy_visibility_migration_requires_check','repositoryVisibility' not in value and value['repository'] is None and value['repositoryAccess']=='idle' and value['repositoryUrl']==public and value['mockGithubLogin'] and is_reset(reset_state(page)),{'url':value['repositoryUrl'],'access':value['repositoryAccess'],'stage':value['analysisStage']})
 
 def tree_regression(page):
     # Replace inventory only; leave run/progress state and the original fixture intact.
@@ -130,6 +184,7 @@ with sync_playwright() as pw:
     page.evaluate('document.fonts.ready')
     page.clock.run_for(100)
     record('initial_repository',stored(page)['analysisStage']=='repository' and page.locator('#repository-url').count()==1 and page.locator('#use-repository').is_disabled(),page.locator('#main h1').inner_text())
+    record('one_url_no_visibility_or_login_prompt',page.locator('[data-repository-kind]').count()==0 and page.locator('[aria-label="Visibilità della repository"]').count()==0 and page.locator('[data-action="mock-github-login"]').count()==0 and 'repositoryVisibility' not in stored(page),'one URL; no visibility choice or premature login')
     screenshots(page,'repository')
     for value in ['', 'https://example.com/owner/repo', 'https://github.com/owner/repo/tree/main']:
         page.locator('#repository-url').fill(value)
@@ -139,16 +194,19 @@ with sync_playwright() as pw:
     page.locator('#verify-repository').click()
     record('repository_verify_loading',page.locator('#verify-repository').is_disabled(),'URL validation async button disabled')
     page.clock.run_for(600)
-    record('metadata_default_fallback',page.locator('#repository-branch').input_value()=='sviluppo-demo' and 'dimostrativi' in page.locator('.repository-branch-source').inner_text(),{'branch':page.locator('#repository-branch').input_value(),'repository':stored(page)['repository']})
+    record('metadata_default_fallback',page.locator('#repository-branch').input_value()=='sviluppo-demo' and 'dimostrativi' in page.locator('.repository-branch-source').inner_text() and stored(page)['repository']['visibility']=='unknown',{'branch':page.locator('#repository-branch').input_value(),'repository':stored(page)['repository']})
     page.locator('#use-repository').click()
     page.clock.run_for(500)
     record('foreign_repository_dataset_disclosure','non risultati di questa repository o branch' in page.locator('.repository-context').inner_text(),page.locator('.repository-context').inner_text())
     page.locator('[data-analysis-stage="repository"]').first.click()
-    page.locator('[data-repository-kind="private"]').click()
-    record('private_requires_simulated_login',page.locator('#use-repository').is_disabled(),'private continuation blocked while logged out')
+    verify_url(page,'organizzazione-demo/progetto-privato')
+    record('private_requires_simulated_login',page.locator('#use-repository').is_disabled() and stored(page)['repositoryAccess']=='login-required' and 'potrebbe non esistere' in page.locator('#repository-access-feedback').inner_text(),'access failed; neutral login prompt on same URL')
+    page.reload()
+    page.clock.run_for(100)
+    record('conditional_login_prompt_reload',page.locator('[data-action="mock-github-login"]').count()==1 and page.locator('#repository-url').input_value()=='https://github.com/organizzazione-demo/progetto-privato',stored(page)['repositoryAccess'])
     page.locator('[data-action="mock-github-login"]').click()
     page.clock.run_for(650)
-    record('private_master_preference',page.locator('#repository-branch').input_value()=='master' and stored(page)['mockGithubLogin'],stored(page)['repository'])
+    record('private_master_preference',page.locator('#repository-branch').input_value()=='master' and stored(page)['mockGithubLogin'] and page.locator('#repository-url').input_value()=='https://github.com/'+stored(page)['repository']['slug'],stored(page)['repository'])
     page.reload()
     page.clock.run_for(100)
     record('private_login_branch_reload',stored(page)['mockGithubLogin'] and page.locator('#repository-branch').input_value()=='master',{'loggedIn':stored(page)['mockGithubLogin'],'branch':stored(page)['repositoryBranch']})
@@ -160,11 +218,11 @@ with sync_playwright() as pw:
     page.locator('[data-analysis-stage="repository"]').first.click()
     page.locator('[data-action="mock-github-logout"]').click()
     record('private_logout_resets_and_blocks',private_progress>0 and stored(page)['progress']==0 and stored(page)['runStatus']=='idle' and stored(page)['repository'] is None and page.locator('#use-repository').is_disabled(),{'progressBefore':private_progress,'progressAfter':stored(page)['progress'],'status':stored(page)['runStatus']})
-    page.locator('[data-repository-kind="public"]').click()
     page.locator('#repository-url').fill('https://github.com/acaprino/daodan')
     page.locator('#verify-repository').click()
     page.clock.run_for(600)
     record('cached_branch_main_preference',page.locator('#repository-branch').input_value()=='main' and 'cache' in page.locator('.repository-branch-source').inner_text(),stored(page)['repository'])
+    record('public_access_without_login',not stored(page)['mockGithubLogin'] and stored(page)['repositoryAccess']=='ready' and page.locator('[data-action="mock-github-login"]').count()==0,'known public fixture opens anonymously')
     page.reload()
     page.clock.run_for(100)
     record('public_repository_branch_reload',stored(page)['repository']['slug']=='acaprino/daodan' and page.locator('#repository-branch').input_value()=='main',{'repository':stored(page)['repository']['slug'],'branch':stored(page)['repositoryBranch']})
@@ -269,6 +327,7 @@ with sync_playwright() as pw:
     page.locator('#repository-branch').select_option('engine-audit-20261113')
     record('branch_change_resets_completed_run',stored(page)['progress']==0 and stored(page)['runStatus']=='idle' and page.locator('#stage-synthesis').is_disabled(),{'progress':stored(page)['progress'],'branch':stored(page)['repositoryBranch'],'stage':stored(page)['analysisStage']})
     invalidation_regressions(page)
+    access_regressions(page)
     calculator_regressions(page)
     record('no_document_overflow_or_clipping',all(x['document']==x['width'] and not x['clipped'] for x in data['layouts']),data['layouts'])
     record('runtime_clean',not any(data[k] for k in ['pageerrors','console_errors','external_requests']),{k:data[k] for k in ['pageerrors','console_errors','external_requests']})

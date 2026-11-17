@@ -54,52 +54,73 @@ function repositoryUsesLocalDataset() {
 function repositoryContext() {
   const repo = state.repository;
   if (!repo) return '';
-  return `<div class="repository-context"><div>${icon('code')}<strong>${esc(repo.slug)}</strong><span class="badge">${repo.visibility === 'private' ? 'Privata · demo' : 'Pubblica'}</span><span class="badge">${icon('branch')}${esc(state.repositoryBranch)}${repo.branchSource === 'demo' ? ' · demo' : ''}</span><span class="muted small">${state.mockGithubLogin ? 'Accesso GitHub simulato' : 'Accesso pubblico'}</span></div><p>Nessun checkout remoto eseguito. ${repositoryUsesLocalDataset() ? 'La pre-mappa usa il dataset locale della stessa origine Git; il grafo usa uno snapshot storico separato.' : 'La pre-mappa e il grafo mostrano solo dati esempio Daodan, non risultati di questa repository o branch.'}</p><button class="textbutton small" data-analysis-stage="repository">Cambia repository o branch ${icon('arrow')}</button></div>`;
+  return `<div class="repository-context"><div>${icon('code')}<strong>${esc(repo.slug)}</strong><span class="badge">${repo.visibility === 'private' ? 'Privata · demo' : repo.visibility === 'public' ? 'Pubblica · esempio' : 'Visibilità non verificata'}</span><span class="badge">${icon('branch')}${esc(state.repositoryBranch)}${repo.branchSource === 'demo' ? ' · demo' : ''}</span><span class="muted small">${state.mockGithubLogin ? 'Accesso GitHub simulato' : 'Senza login · demo'}</span></div><p>Nessun checkout remoto eseguito. ${repositoryUsesLocalDataset() ? 'La pre-mappa usa il dataset locale della stessa origine Git; il grafo usa uno snapshot storico separato.' : 'La pre-mappa e il grafo mostrano solo dati esempio Daodan, non risultati di questa repository o branch.'}</p><button class="textbutton small" data-analysis-stage="repository">Cambia repository o branch ${icon('arrow')}</button></div>`;
 }
 
 function repositoryScreen() {
   const repo = state.repository;
-  const privateMode = state.repositoryVisibility === 'private';
-  const canContinue = repo && (!privateMode || state.mockGithubLogin);
-  return `<div class="demo-source-note">${icon('info')}<div><strong>Connessione GitHub · demo offline</strong><p>Nessun account, token, richiesta API o checkout. L’accesso privato e i branch dimostrativi servono a provare il percorso della futura app.</p></div></div><div class="repository-layout"><section class="panel"><div class="panel-head"><h2>Repository GitHub</h2><span class="badge">Selezione del progetto</span></div><div class="panel-body"><div class="segmented repository-kind" aria-label="Visibilità della repository"><button data-repository-kind="public" aria-pressed="${!privateMode}">Pubblica</button><button data-repository-kind="private" aria-pressed="${privateMode}">Privata · demo</button></div>${privateMode ? `<div class="private-repo-demo"><span class="repo-mark">P</span><div><strong>Repository privata · demo</strong><code>${PRIVATE_REPOSITORY_DEMO.slug}</code><p>${state.mockGithubLogin ? 'Fixture dimostrativa accessibile con il login simulato.' : 'Simula l’accesso GitHub per selezionare questo esempio privato.'}</p></div></div>` : `<form id="repository-form" novalidate><div class="field"><label for="repository-url">URL GitHub pubblico</label><input id="repository-url" type="url" value="${esc(state.repositoryUrl)}" placeholder="https://github.com/proprietario/repository" aria-describedby="repository-url-help repository-error" ${repositoryError ? 'aria-invalid="true"' : ''}><p id="repository-url-help" class="muted small">Esempio reale: acaprino/daodan, origine del dataset locale. Gli altri URL vengono validati solo nella forma.</p><p id="repository-error" class="error-text" role="alert">${esc(repositoryError)}</p></div><button type="submit" id="verify-repository" ${repositoryBusy ? 'disabled' : ''}>${icon(repositoryBusy ? 'spinner' : 'check')}${repositoryBusy ? 'Verifica…' : 'Verifica URL · demo'}</button></form>`}
-  <div class="repository-branch"><div class="field"><label for="repository-branch">Branch da analizzare</label><select id="repository-branch" ${!repo || !canContinue || repositoryBusy ? 'disabled' : ''}>${repo ? selectOptions(repo.branches.map(branch => [branch, branch + (repo.branchSource === 'demo' ? ' · demo' : ' · cache locale')]), state.repositoryBranch) : '<option>Seleziona prima una repository</option>'}</select></div><p class="muted small">Preferenza automatica: <code>main</code>, poi <code>master</code>, altrimenti il default dei metadati.</p>${repo ? `<p class="repository-branch-source">${repo.branchSource === 'cache' ? 'Rami realmente presenti nella cache Git locale, letta il 16/11/2026; nessuna verifica remota eseguita ora.' : 'Rami e default interamente dimostrativi. Il default reale richiederà i metadati API GitHub.'}</p>` : ''}</div><div class="repository-next"><p class="muted small">Un cambio di repository o branch azzera avanzamento e sintesi precedenti.</p><button class="primary" data-action="use-repository" id="use-repository" ${!canContinue || repositoryBusy ? 'disabled' : ''}>Apri pre-mappa ${icon('arrow')}</button></div></div></section>
-  <aside class="stack"><section class="panel"><div class="panel-head"><h2>Accesso GitHub</h2>${icon('code')}</div><div class="panel-body"><span class="badge ${state.mockGithubLogin ? 'cyan' : ''}">${state.mockGithubLogin ? 'Accesso simulato attivo' : 'Non connesso'}</span><h3 style="margin-top:16px">${state.mockGithubLogin ? 'Profilo dimostrativo' : 'Pubblico, senza login'}</h3><p class="repository-auth-copy">${state.mockGithubLogin ? 'Puoi provare la selezione della repository privata di esempio. Non è collegato alcun account reale.' : 'Una repository pubblica è selezionabile con il suo URL. Per il percorso privato, prova il pulsante di accesso simulato.'}</p><button data-action="${state.mockGithubLogin ? 'mock-github-logout' : 'mock-github-login'}" id="mock-github-login" ${repositoryBusy ? 'disabled' : ''}>${icon(state.mockGithubLogin ? 'close' : 'play')}${state.mockGithubLogin ? 'Scollega accesso simulato' : 'Simula accesso GitHub'}</button></div></section><section class="panel"><div class="panel-head"><h2>Fonti distinte</h2></div><div class="panel-body"><ul class="repository-source-list"><li><strong>Selezione</strong><span>Repository e branch scelti in questa demo.</span></li><li><strong>Pre-mappa</strong><span>Inventario locale Daodan ${esc(PREMAP.source.commit)}, acquisito il 16/11/2026.</span></li><li><strong>Grafo</strong><span>Snapshot storico ${esc(SNAPSHOT.source.git.commit)}, usato solo come esempio di costruzione.</span></li></ul></div></section></aside></div>`;
+  const needsLogin = state.repositoryAccess === 'login-required' && !state.mockGithubLogin;
+  const feedback = {
+    'login-required': 'Accesso non disponibile nella demo. La repository potrebbe non esistere o richiedere autorizzazioni. Accedi e riprova lo stesso URL.',
+    denied: 'Repository ancora non accessibile dopo il login simulato. Controlla URL e permessi dell’account; poi riprova.',
+    'network-error': 'Errore di rete simulato. Riprova la verifica; il login non risolve un errore di connessione.',
+  }[state.repositoryAccess] || '';
+  return `<div class="demo-source-note">${icon('info')}<div><strong>Connessione GitHub · demo offline</strong><p>Nessun account, token, richiesta API o checkout. La verifica simula gli scenari dichiarati qui sotto; non controlla GitHub.</p></div></div><div class="repository-layout"><section class="panel"><div class="panel-head"><h2>Repository GitHub</h2><span class="badge">Selezione del progetto</span></div><div class="panel-body"><form id="repository-form" novalidate><div class="field"><label for="repository-url">URL GitHub</label><input id="repository-url" type="url" value="${esc(state.repositoryUrl)}" placeholder="https://github.com/proprietario/repository" aria-describedby="repository-url-help repository-error repository-access-feedback" ${repositoryError ? 'aria-invalid="true"' : ''}><p id="repository-url-help" class="muted small">Inserisci l’URL e verifica l’accesso. Il login viene richiesto solo se necessario.</p><p id="repository-error" class="error-text" role="alert">${esc(repositoryError)}</p><p id="repository-access-feedback" class="repository-auth-copy" role="status">${esc(feedback)}</p></div><button type="submit" id="verify-repository" ${repositoryBusy ? 'disabled' : ''}>${icon(repositoryBusy ? 'spinner' : 'check')}${repositoryBusy ? 'Verifica…' : 'Verifica accesso · demo'}</button></form>
+  <div class="repository-branch"><div class="field"><label for="repository-branch">Branch da analizzare</label><select id="repository-branch" ${!repo || repositoryBusy ? 'disabled' : ''}>${repo ? selectOptions(repo.branches.map(branch => [branch, branch + (repo.branchSource === 'demo' ? ' · demo' : ' · cache locale')]), state.repositoryBranch) : '<option>Verifica prima l’accesso</option>'}</select></div><p class="muted small">Preferenza automatica: <code>main</code>, poi <code>master</code>, altrimenti il default dei metadati.</p>${repo ? `<p class="repository-branch-source">${repo.branchSource === 'cache' ? 'Rami realmente presenti nella cache Git locale, letta il 16/11/2026; nessuna verifica remota eseguita ora.' : 'Rami e default interamente dimostrativi. Esistenza e visibilità degli URL generici non vengono verificate.'}</p>` : ''}</div><div class="repository-next"><p class="muted small">Un cambio di repository o branch azzera avanzamento e sintesi precedenti.</p><button class="primary" data-action="use-repository" id="use-repository" ${!repo || repositoryBusy ? 'disabled' : ''}>Apri pre-mappa ${icon('arrow')}</button></div></div></section>
+  <aside class="stack"><section class="panel"><div class="panel-head"><h2>Accesso GitHub</h2>${icon('code')}</div><div class="panel-body"><span class="badge ${state.mockGithubLogin ? 'cyan' : ''}">${state.mockGithubLogin ? 'Accesso simulato attivo' : 'Non connesso'}</span><h3 style="margin-top:16px">${state.mockGithubLogin ? 'Profilo dimostrativo' : needsLogin ? 'Accedi e riprova' : 'Verifica prima l’URL'}</h3><p class="repository-auth-copy">${state.mockGithubLogin ? 'Nessun account reale collegato. Il login non garantisce l’accesso a ogni repository.' : needsLogin ? 'La verifica non ha consentito l’accesso. Il login simulato riprova l’URL inserito, senza sostituirlo.' : 'Le repository accessibili si aprono senza login. Per gli altri URL, l’accesso sarà richiesto dopo la verifica.'}</p>${state.mockGithubLogin || needsLogin ? `<button data-action="${state.mockGithubLogin ? 'mock-github-logout' : 'mock-github-login'}" id="mock-github-login" ${repositoryBusy ? 'disabled' : ''}>${icon(state.mockGithubLogin ? 'close' : 'play')}${state.mockGithubLogin ? 'Scollega accesso simulato' : 'Simula login e riprova'}</button>` : ''}</div></section><section class="panel"><div class="panel-head"><h2>Scenari offline</h2></div><div class="panel-body"><ul class="repository-source-list"><li><strong>Accesso senza login</strong><span><code>acaprino/daodan</code>: origine del dataset locale.</span></li><li><strong>Login richiesto</strong><span><code>organizzazione-demo/progetto-privato</code>: fixture accessibile dopo login.</span></li><li><strong>Accesso negato / rete</strong><span><code>organizzazione-demo/non-disponibile</code> resta inaccessibile; <code>organizzazione-demo/errore-rete</code> simula un errore di connessione.</span></li><li><strong>Altri URL</strong><span>Demo generica: solo formato valido, esistenza e visibilità non verificate.</span></li></ul></div></section><section class="panel"><div class="panel-head"><h2>Fonti distinte</h2></div><div class="panel-body"><ul class="repository-source-list"><li><strong>Selezione</strong><span>Repository e branch scelti in questa demo.</span></li><li><strong>Pre-mappa</strong><span>Inventario locale Daodan ${esc(PREMAP.source.commit)}, acquisito il 16/11/2026.</span></li><li><strong>Grafo</strong><span>Snapshot storico ${esc(SNAPSHOT.source.git.commit)}, usato solo come esempio di costruzione.</span></li></ul></div></section></aside></div>`;
 }
 
-async function verifyRepositoryUrl(button) {
+function repositorySlug() {
   const value = state.repositoryUrl.trim();
   const normalized = value.startsWith('github.com/') ? 'https://' + value : value;
   const match = /^https:\/\/github\.com\/([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)\/?$/i.exec(normalized);
-  const repoName = match?.[2].replace(/\.git$/, '');
-  if (!match || !repoName || ['.', '..'].includes(repoName)) {
-    repositoryError = value ? 'Usa un URL https://github.com/proprietario/repository, senza percorsi aggiuntivi.' : 'Inserisci l’URL GitHub della repository pubblica.';
+  const name = match?.[2].replace(/\.git$/, '');
+  return match && name && !['.', '..'].includes(name) ? match[1] + '/' + name : null;
+}
+
+function resolveRepositoryDemo(slug) {
+  const key = slug.toLowerCase();
+  const privateFixture = key === PRIVATE_REPOSITORY_DEMO.slug;
+  const deniedFixture = key === 'organizzazione-demo/non-disponibile';
+  if (key === 'organizzazione-demo/errore-rete' || ((privateFixture || deniedFixture) && !state.mockGithubLogin) || deniedFixture) {
+    state.repositoryAccess = key === 'organizzazione-demo/errore-rete' ? 'network-error' : !state.mockGithubLogin ? 'login-required' : 'denied';
+    state.repository = null;
+    state.repositoryBranch = '';
+    return;
+  }
+  const known = key === 'acaprino/daodan';
+  setRepository(privateFixture ? { ...PRIVATE_REPOSITORY_DEMO, slug } : { slug, visibility: known ? 'public' : 'unknown', branches: known ? ['main', 'engine-audit-20261113'] : ['sviluppo-demo', 'rilascio-demo'], defaultBranch: known ? 'main' : 'sviluppo-demo', branchSource: known ? 'cache' : 'demo' });
+  state.repositoryAccess = 'ready';
+}
+
+async function verifyRepositoryUrl(login = false) {
+  if (repositoryBusy || (login && state.repositoryAccess !== 'login-required')) return;
+  const slug = repositorySlug();
+  if (!slug) {
+    repositoryError = state.repositoryUrl.trim() ? 'Usa un URL https://github.com/proprietario/repository, senza percorsi aggiuntivi.' : 'Inserisci l’URL GitHub della repository.';
     render();
     document.getElementById('repository-url').focus();
     return;
   }
-  if (repositoryBusy) return;
+  const generation = repositoryGeneration;
   repositoryBusy = true;
-  button.disabled = true;
-  button.innerHTML = icon('spinner') + 'Verifica…';
-  await new Promise(resolve => setTimeout(resolve, 550));
-  if (state.repositoryUrl.trim() !== value || state.repositoryVisibility !== 'public') {
-    repositoryBusy = false;
-    render();
-    return;
-  }
-  const slug = match[1] + '/' + repoName;
-  const known = slug.toLowerCase() === 'acaprino/daodan';
-  setRepository({ slug, visibility: 'public', branches: known ? ['main', 'engine-audit-20261113'] : ['sviluppo-demo', 'rilascio-demo'], defaultBranch: known ? 'main' : 'sviluppo-demo', branchSource: known ? 'cache' : 'demo' });
   repositoryError = '';
+  render();
+  const activeButton = document.getElementById(login ? 'mock-github-login' : 'verify-repository');
+  activeButton.innerHTML = icon('spinner') + (login ? 'Accesso e verifica…' : 'Verifica…');
+  await new Promise(resolve => setTimeout(resolve, login ? 600 : 550));
+  if (generation !== repositoryGeneration) return;
+  if (login) state.mockGithubLogin = true;
+  resolveRepositoryDemo(slug);
   repositoryBusy = false;
   render();
-  toast('URL valido nella forma. Nessuna verifica remota eseguita.');
+  if (state.repository) toast('Scenario demo pronto. Nessuna verifica remota eseguita.');
 }
 
 function analysisWorkspace() {
   const stage = state.analysisStage || 'repository';
   const titles = {
-    repository: ['Da GitHub all’analisi', 'Scegli repository e branch.', 'Un repository pubblico o un accesso GitHub simulato per provare il percorso privato.'],
+    repository: ['Da GitHub all’analisi', 'Scegli repository e branch.', 'Inserisci un URL, verifica l’accesso e accedi solo se richiesto. Percorso simulato offline.'],
     premap: ['Prima dell’analisi', 'Conosci il punto di partenza.', 'Tecnologie dichiarate, file e unità tecniche: una vista del repository prima di interpretarne il comportamento.'],
     analysis: ['Pipeline di analisi', 'Il grafo prende forma.', 'Segui fasi, avanzamento ed eventi della simulazione.'],
     synthesis: ['Risultati della demo', 'Dalla mappa alla comprensione.', 'Componenti, responsabilità e lacune dello snapshot storico usato nella simulazione.'],
@@ -374,26 +395,19 @@ document.addEventListener('click', event => {
 document.addEventListener('submit', async event => {
   if (event.target.id !== 'repository-form') return;
   event.preventDefault();
-  await verifyRepositoryUrl(document.getElementById('verify-repository'));
+  await verifyRepositoryUrl();
 });
 
 document.addEventListener('input', event => {
   if (event.target.id !== 'repository-url') return;
   state.repositoryUrl = event.target.value;
   repositoryError = '';
-  if (state.repository) {
-    state.repository = null;
-    state.repositoryBranch = '';
-    invalidateRepositoryRun();
-    const branch = document.getElementById('repository-branch');
-    branch.disabled = true;
-    branch.innerHTML = '<option>Seleziona prima una repository</option>';
-    document.getElementById('use-repository').disabled = true;
-    document.querySelectorAll('[data-analysis-stage]').forEach(b => b.disabled = b.dataset.analysisStage !== 'repository');
-  }
-  event.target.removeAttribute('aria-invalid');
-  document.getElementById('repository-error').textContent = '';
-  save();
+  repositoryBusy = false;
+  state.repositoryAccess = 'idle';
+  state.repository = null;
+  state.repositoryBranch = '';
+  invalidateRepositoryRun();
+  render();
 });
 
 document.addEventListener('change', event => {
@@ -408,36 +422,19 @@ document.addEventListener('change', event => {
 document.addEventListener('click', async event => {
   const button = event.target.closest('button');
   if (!button || button.disabled) return;
-  if (button.dataset.repositoryKind) {
-    if (state.repositoryVisibility === button.dataset.repositoryKind) return;
-    state.repositoryVisibility = button.dataset.repositoryKind;
-    state.repository = null;
-    state.repositoryBranch = '';
-    repositoryError = '';
-    invalidateRepositoryRun();
-    if (state.repositoryVisibility === 'private' && state.mockGithubLogin) setRepository(PRIVATE_REPOSITORY_DEMO);
-    render();
-    return;
-  }
   if (button.dataset.action === 'mock-github-login') {
-    if (repositoryBusy) return;
-    repositoryBusy = true;
-    button.disabled = true;
-    button.innerHTML = icon('spinner') + 'Accesso simulato…';
-    await new Promise(resolve => setTimeout(resolve, 600));
-    state.mockGithubLogin = true;
-    repositoryBusy = false;
-    if (state.repositoryVisibility === 'private') setRepository(PRIVATE_REPOSITORY_DEMO);
-    render();
-    toast('Accesso GitHub simulato. Nessun account o token collegato.');
+    await verifyRepositoryUrl(true);
+    return;
   }
   if (button.dataset.action === 'mock-github-logout') {
     state.mockGithubLogin = false;
     if (state.repository?.visibility === 'private') {
       state.repository = null;
       state.repositoryBranch = '';
+      state.repositoryAccess = 'login-required';
       invalidateRepositoryRun();
     }
+    if (state.repositoryAccess === 'denied') state.repositoryAccess = 'login-required';
     render();
     toast('Accesso simulato scollegato.');
   }

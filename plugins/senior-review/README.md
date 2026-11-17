@@ -75,7 +75,7 @@ Le chiamate a ondate restano isolate: nessun aiutante vede i finding degli altri
 
 ## Stato
 
-Versione **1.1.3**. Dipendenza richiesta: solo `codebase-map`. I ruoli compositi sono definiti in `[reviewers.compositions]` di `plugin.toml`, non come file ruolo.
+Versione **1.1.4**. Dipendenza richiesta: solo `codebase-map`. I ruoli compositi sono definiti in `[reviewers.compositions]` di `plugin.toml`, non come file ruolo.
 
 Installazione: `claude plugin install senior-review@daodan` (marketplace `acaprino/daodan`; richiede `codebase-map`). Ingresso: la skill `/senior-review:review-method`. Le review eseguite sul benchmark `benchmarks/scope-resolution/` e i loro costi sono registrati nel suo README: il criterio di costo non è ancora raggiunto. Il catalogo dei reviewer è `plugin.toml`: `skills/review-preparation/scripts/composition.py catalog` lo legge e scrive `CATALOG.json`; `bind` lega il roster ai job.
 

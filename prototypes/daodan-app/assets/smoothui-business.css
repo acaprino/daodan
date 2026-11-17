@@ -312,8 +312,6 @@ details[open] > summary > .tree-caret .icon { transform: rotate(90deg); }
 .review-scope-source { font-size: 10px; color: oklch(.47 0 0); margin-top: 12px; line-height: 1.8; overflow-wrap: anywhere; }
 .review-scope-source code { font-size: 10px; }
 .repository-layout { display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 20px; align-items: start; }
-.repository-kind { margin-bottom: 20px; }
-.repository-kind button { min-height: 40px; }
 #repository-form { display: grid; gap: 12px; }
 #repository-form > button { justify-self: start; font-size: 12px; }
 #repository-form .field > p { font-size: 11px; line-height: 1.8; }
@@ -327,11 +325,7 @@ details[open] > summary > .tree-caret .icon { transform: rotate(90deg); }
 .repository-source-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
 .repository-source-list strong { display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; }
 .repository-source-list span { display: block; color: oklch(.47 0 0); font-size: 11px; line-height: 1.8; }
-.private-repo-demo { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--canvas); }
-.private-repo-demo > div { min-width: 0; }
-.private-repo-demo strong { display: block; font-size: 14px; font-weight: 500; }
-.private-repo-demo code { display: block; margin-top: 4px; font-size: 11px; overflow-wrap: anywhere; }
-.private-repo-demo p { margin-top: 8px; color: oklch(.47 0 0); font-size: 12px; line-height: 1.8; }
+.repository-source-list code { overflow-wrap: anywhere; }
 .repository-context { padding: 16px 18px; background: white; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 20px; }
 .repository-context > div { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
 .repository-context strong { font-size: 13px; font-weight: 550; overflow-wrap: anywhere; }
