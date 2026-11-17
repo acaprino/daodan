@@ -430,7 +430,7 @@ Convenzioni:
 | D-278 | C++: una chiamata esplicita a un distruttore e un membro di un tipo dipendente | tinyxml2 (`9148bdf719e9`) | risolto per le chiamate ai distruttori | `2ac9cdc69` | cpp · analizzatore · completezza · commit · scip-clang |
 | D-288 | La versione di SvelteKit registrata era quella di npm | js-sveltekit | risolto | `710460616` | svelte · analizzatore · correttezza · corsa su un progetto · npx, svelte-kit |
 | D-289 | Lo strumento Vue 1.x di un progetto non ha il plugin del linguaggio | real-app-hoppscotch | risolto | `710460616` | vue · analizzatore · completezza · corsa su un progetto · @vue/language-core |
-| D-290 | Vue: l'import di un componente e una lettura del template senza definizione | js-vue-pnpm | aperto | — | vue, typescript · analizzatore · completezza · corsa su un progetto · scip-typescript, @vue/language-core |
+| D-290 | Vue: l'import di un componente e una lettura del template senza definizione | js-vue-pnpm | aperto | `b5a2fceb4` | vue, typescript · analizzatore · completezza · corsa su un progetto · scip-typescript, @vue/language-core |
 
 ### Passo dinamico e osservatori
 
@@ -510,7 +510,7 @@ Convenzioni:
 | D-275 | I passi della CI si leggevano solo nei workflow con servizi o Compose | pre-mappa della CI | risolto | `bd133fe94` | tutti · servizi · completezza · commit · GitHub Actions, GitLab CI |
 | D-279 | I valori del `.env` non arrivavano all'esecuzione di uno stadio | container | risolto | `4a999670e` | tutti · container · completezza · commit · Docker, BuildKit |
 | D-283 | Un valore del `.env` restava negli output JSON e binari e dentro parole più lunghe | container | risolto | `a41823a06`, `124c63440` | tutti · container · sicurezza · commit |
-| D-291 | I valori di un `.env.example` facevano trattenere l'indice di un intero progetto | hoppscotch (`55908a76a1d0`) | risolto | — | typescript, javascript, vue · container · completezza · corsa su un progetto · scip-typescript |
+| D-291 | I valori di un `.env.example` facevano trattenere l'indice di un intero progetto | hoppscotch (`55908a76a1d0`) | risolto | `e674c007b` | typescript, javascript, vue · container · completezza · corsa su un progetto · scip-typescript |
 
 ### Benchmark e documenti
 
@@ -3439,9 +3439,9 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - L'import: lo strumento Vue scrive il default del componente come espressione (2.2.12 `export default (await import('vue')).defineComponent({`, 3.3.14 `export default {} as typeof __VLS_export;`) e scip-typescript nomina l'import con un locale del file che importa, senza definizione; il modulo è `` src/`App.vue.ts`/ ``, senza definizione dopo `components.rewrite`. Nella registrazione di `tests/fixtures/components` (3.3.14) è così: `src/main.ts:1 App` è `src/main.ts#local 0`, mentre `Panel` va al modulo `` src/`Panel.svelte`/ `` definito in `src/Panel.svelte:1`. Vale quindi per ogni versione, e la causa che `typescript.classify` scrive è sbagliata: l'import si risolve al file generato.
   - La `n`: con la 2.2.12 di js-vue-pnpm il template diventa `__VLS_ctx.n++` e `( __VLS_ctx.n )`, una proprietà del tipo dell'istanza che il `setup` generato riempie (`n: n as typeof n`, codice fuori dalla mappa), e la sua definizione cade con il codice generato; con la 3.3.14 il template legge la `const` stessa (`label(__VLS_unwrap(n, …))`) e nella registrazione `src/App.vue:10 n` va a `src/App.vue:3`. Visto sul codice generato, non sull'indice: scip-typescript non è nell'immagine dei test.
 - **Progetto e caso:** js-vue-pnpm — giro `2026-11-17-vue-svelte`, 17 novembre 2026; codice generato con `@vue/language-core` 2.2.12 e 3.3.14 e registrazione di `tests/fixtures/components`, su Modal (`tests/modal_pytest.py`).
-- **Rimedio:** nessuno. Proposte: `components.rewrite` dà al modulo del file generato il nome e la definizione 1:0 del componente, e l'import del default si lega a quel modulo, come per Svelte; con la 2.x, la proprietà `__VLS_ctx.x` segue il valore che il `setup` generato le dà fino alla definizione nel componente.
-- **Verifica:** —
-- **Stato:** aperto; causa da confermare sull'indice di js-vue-pnpm.
+- **Rimedio:** l'import: `b5a2fceb4` (17 novembre, csharp-2): `scripts/indexers/components.py` `_occurrence` dà la definizione del modulo del file generato (vuota, al suo inizio) all'inizio del componente; `scripts/indexers/typescript.py` `hops` (`_default_import`): un nome che un import lega al default di un modulo, e che l'indice nomina con un locale senza definizione, va al modulo dove l'indice lo definisce (tag `import`). La `n`: nessuno; proposta: con la 2.x, la proprietà `__VLS_ctx.x` segue il valore che il `setup` generato le dà fino alla definizione nel componente.
+- **Verifica:** `tests/test_codebase_map_components.py` (`test_a_default_import_of_a_vue_component_reaches_it_as_one_of_a_svelte_component_does`): sulla registrazione `App` di `src/main.ts` va al modulo definito in `src/App.vue:1`, come `Panel` al suo; `tests/test_codebase_map_indexers_ts_py.py` (`test_a_name_bound_to_a_modules_default_export_the_index_leaves_unnamed_reaches_that_module`); rossi su Modal prima della correzione.
+- **Stato:** aperto per la `n`; l'import è risolto, da vedere su js-vue-pnpm al prossimo giro (`src/main.ts:4 App` `project-value`).
 - **Note:** D-258; `Counter.vue:4 defineProps` (`dangling-local`) è della stessa famiglia: la macro è dichiarata nel codice generato (`declare const { defineProps, … }` nella 2.2.12).
 
 #### D-259 Un header `.h` di C++ letto come C
@@ -4308,7 +4308,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** nel giro `2026-11-17-vue-svelte` l'indice scip-typescript di hoppscotch (`55908a76a1d0`) è un buco `output_withheld`: contiene i valori di `.env.example` (`PROXY_APP_URL`, `VITE_BASE_URL`, `VITE_SHORTCODE_BASE_URL`), e TypeScript, JavaScript e Vue dell'intero progetto si perdevano.
 - **Spiegazione:** la regola di D-283 trattava come segreto ogni `.env*` tracciato, anche i file d'esempio, che il progetto pubblica proprio perché chiunque li legga. Il proprietario ha deciso che i file d'esempio non si mascherano.
 - **Progetto e caso:** hoppscotch (`55908a76a1d0`) — giro `2026-11-17-vue-svelte`, 17 novembre 2026.
-- **Rimedio:** `scripts/container.py`, test-services: `example(name)` riconosce `.env.example`, `.env.sample`, `.env.template` e `.env.dist`, anche con un nome in mezzo (`.env.local.example`), in ogni maiuscola; `secret(values)` toglie i loro valori prima di `masker`, `partial` e `scrubbed`, in `run_in_container` e in `benchmarks/project-model/modal_pipeline.py`. I file d'esempio entrano nella copia del container come prima; un valore che sta anche in un `.env` vero resta mascherato, col nome della variabile del file vero.
+- **Rimedio:** `e674c007b` (17 novembre, test-services), `scripts/container.py`: `example(name)` riconosce `.env.example`, `.env.sample`, `.env.template` e `.env.dist`, anche con un nome in mezzo (`.env.local.example`), in ogni maiuscola; `secret(values)` toglie i loro valori prima di `masker`, `partial` e `scrubbed`, in `run_in_container` e in `benchmarks/project-model/modal_pipeline.py`. I file d'esempio entrano nella copia del container come prima; un valore che sta anche in un `.env` vero resta mascherato, col nome della variabile del file vero.
 - **Verifica:** `tests/test_codebase_map_dynamic_services.py` (`test_an_example_env_file_is_public_by_its_name_and_only_the_true_files_values_are_secret`, `PodTest.test_an_example_env_file_s_values_are_public_and_an_output_that_holds_them_is_kept`: un indice binario con i valori di `.env.example` e `.env.local.sample` si conserva com'è, uno col valore del `.env` vero resta trattenuto, un valore comune ai due si maschera).
 - **Stato:** risolto.
 - **Note:** D-283.

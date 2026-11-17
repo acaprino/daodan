@@ -18,6 +18,7 @@ Il codice del progetto analizzato gira solo nel container di Daodan, mai sull'ho
 - Stile e formato sono del linter o formatter configurato, non delle review.
 - Ogni regola di questo file è verificabile e vale per ogni compito; il resto vive nel metodo che lo usa.
 - Le spec si mettono alla prova in `benchmarks/`: ogni benchmark dichiara nel suo README i parametri da provare e i risultati misurati.
+- Una prova che sostiene un risultato o una scheda del registro resta nel repository, come test o benchmark che si riesegue; quella che chiede gli strumenti veri gira solo su Modal. Un test temporaneo poi cancellato non è una verifica.
 
 ## Come rispondere
 
