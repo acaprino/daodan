@@ -83,8 +83,8 @@ from import_resolution import (blast_radius, build_import_index, _by_basename, c
                                _python_module_candidates, resolve_module, resolved_imports, _strip_jsonc_comments,
                                ts_path_config)
 from run_store import (_acquire_registry_lock, _artifact_bytes, _artifact_hash, CANONICAL_STORE,  # noqa: E402,F401
-                       _effective_flags, _hold, _read_json, _read_registry, _reject_links, _reject_links_below,
-                       _run_context,
+                       _effective_flags, _hold, keep_local, own_store, _read_json, _read_registry, _reject_links,
+                       _reject_links_below, _run_context,
                        RunControlError, STORE_MARKER, store_project, STORE_SCHEMA, update_registration, validate_store,
                        _write_json_atomic)
 from change_set import (_changes_markdown, cited_symbols, cmd_carry, _legacy_check, MARKER_PREFIX,  # noqa: E402,F401
@@ -1400,6 +1400,7 @@ FULL_REBUILD_SHARE = 0.4
 
 def published_run(root: Path) -> Path | None:
     """The store's latest complete run, the one the working run follows: the registry names it, never a path."""
+    own_store(root)
     run_id = _read_registry(root).get("latest_completed")
     if run_id is None or run_id == WORKING_RUN:
         return None
@@ -1458,6 +1459,7 @@ def refresh_working(root: Path) -> dict:
     working = root / "runs" / WORKING_RUN
     for run in (published, working):  # the refresh reads, replaces and removes files of both
         _reject_links_below(run)
+    keep_local(root)
     (working / "snapshot").mkdir(parents=True, exist_ok=True)
     queued = _hold(working / ".refresh-queue.lock", wait=False)
     if queued is None:

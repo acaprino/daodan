@@ -11,6 +11,7 @@ from typing import Iterable, Iterator
 import zlib
 
 from json_snapshot import JsonSnapshot, MAX_RECORD_BYTES, DECODER
+from run_store import own_store, store_of
 
 APPLICATION_ID = 0x444D4150
 STORAGE_VERSION = 1
@@ -606,6 +607,9 @@ class SnapshotWriter:
 def open_snapshot(path: Path, *, expected_format: str | None = None) -> SnapshotStore:
     path = Path(path)
     _plain(path)
+    store = store_of(path)
+    if store is not None:
+        own_store(store)  # every derived file and every query reads its snapshot first
     if expected_format is not None:
         validate_format(expected_format)
     with path.open("rb") as handle:

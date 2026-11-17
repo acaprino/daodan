@@ -417,6 +417,90 @@ class WorkingRunTests(unittest.TestCase):
             self.assertEqual(snapshot.main(["hook"]), 0)
         self.assertEqual(asked, [])
 
+    # A clone brings what its repository tracks: nothing of such a store is Daodan's, neither fresh nor evidence.
+
+    def ship(self, *names):
+        """The store, or the files of it named, as the project's repository brings them."""
+        subprocess.run(["git", "-C", str(self.project), "add", "-f", *(names or [".daodan/map"])], check=True,
+                       capture_output=True)
+
+    def test_7_a_premap_that_comes_with_the_project_gives_the_container_no_command(self):
+        """The pre-map carries what the container runs: the CI's steps before the tests. One the repository brings
+        beside Daodan's own snapshot, fresh by its digest, is not read."""
+        import dynamic
+        import premap
+        manifest = self.published / "snapshot/manifest.sqlite"
+        step = {"declared_in": ".github/workflows/ci.yml.jobs.test.steps.0", "tests": "pyproject.toml", "cwd": ".",
+                "run": "touch /tmp/daodan-mark"}
+        premap.path(manifest).write_text(json.dumps({**premap.write(manifest), "ci_steps": [step]}), encoding="utf-8")
+        runs = [{"declared_in": "pyproject.toml"}]
+        self.assertEqual(premap.state(manifest)["state"], "fresh")
+        taken = dynamic.ci_steps(premap.ensure(manifest), runs)["steps"]  # as the dynamic step takes them
+        self.assertEqual([item["run"] for item in taken], [step["run"]])  # Daodan's own store: its files are read
+        self.ship(".daodan/map/runs/base/snapshot/premap.json")
+        with self.assertRaisesRegex(ValueError, "came with the project"):
+            premap.ensure(manifest)
+        import pipeline
+        with self.assertRaisesRegex(ValueError, "came with the project"):
+            pipeline.run(manifest, stop="scan")
+
+    def test_7_nothing_of_a_store_that_comes_with_the_project_is_read(self):
+        self.ship()
+        self.edit("app.py", "def greet():\n    return 'hello'\n")
+        proc = self.hook({"tool_name": "Edit", "tool_input": {"file_path": "src/app.py"}})
+        self.assertEqual((proc.returncode, proc.stdout), (0, ""))
+        self.assertFalse(self.working.exists(), "the hook followed the published run the repository brings")
+        self.assertIn("came with the project", self.refused())
+        for name, call in (("status", lambda: self.service.status("base")),
+                           ("search", lambda: self.service.search("base", "greet")),
+                           ("runs", self.service.runs)):
+            with self.subTest(name), self.assertRaisesRegex(ValueError, "came with the project"):
+                call()
+        manifest = self.published / "snapshot/manifest.sqlite"
+        proc = subprocess.run([sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "search", str(manifest),
+                               "--query", "greet"], capture_output=True, text=True)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("came with the project", proc.stdout + proc.stderr)
+        (self.root / "runs/next").mkdir()
+        proc = subprocess.run([sys.executable, "-B", str(SCRIPTS / "snapshot.py"), "carry", str(self.published),
+                               str(self.root / "runs/next")], capture_output=True, text=True)
+        self.assertEqual((proc.returncode, "came with the project" in proc.stderr), (2, True), proc.stderr)
+        self.assertEqual(list((self.root / "runs/next").iterdir()), [])
+
+    def test_7_no_run_is_created_in_that_store_and_nothing_of_it_changes(self):
+        """It is the person's checkout: Daodan says the cause and the remedy, and the remedy is theirs."""
+        self.ship()
+        before = run_bytes(self.root.parent)
+        with self.assertRaisesRegex(ValueError, r"came with the project.*git rm -r --cached -- .*\.daodan/map"):
+            self.service.create_run("src", "mine", engine=False)
+        self.assertEqual(run_bytes(self.root.parent), before)
+        subprocess.run(["git", "-C", str(self.project), "rm", "-r", "-q", "--cached", "--", str(self.root)],
+                       check=True, capture_output=True)
+        self.assertEqual(self.service.status("base")["run_id"], "base")  # untracked: the person's own again
+        self.assertEqual(self.service.create_run("src", "mine", engine=False)["run_id"], "mine")
+
+    def test_7_a_repository_that_does_not_list_what_it_tracks_is_not_trusted(self):
+        import run_store
+        real = subprocess.run
+
+        def git(command, **options):
+            done = real(command, **options)
+            return subprocess.CompletedProcess(command, 128, b"", b"fatal") if "ls-files" in command else done
+
+        run_store._TRACKED.pop(self.root, None)
+        with mock.patch.object(subprocess, "run", side_effect=git), \
+                self.assertRaisesRegex(ValueError, "does not list what it tracks"):
+            self.service.status("base")
+
+    def test_7_the_store_daodan_makes_is_kept_out_of_the_repository(self):
+        """`git add -A` in the project does not track Daodan's own store, which would then read as the
+        repository's."""
+        subprocess.run(["git", "-C", str(self.project), "add", "-A"], check=True, capture_output=True)
+        listed = subprocess.run(["git", "-C", str(self.project), "ls-files", "--", ".daodan"], check=True,
+                                capture_output=True, text=True).stdout
+        self.assertEqual(listed, "")
+        self.assertEqual(self.service.status("base")["run_id"], "base")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from import_resolution import _STYLESHEET_SUFFIXES, _by_basename
 from languages import SUPPORTED_EXTENSIONS
-from run_store import _read_json, _reject_links_below, RunControlError
+from run_store import own_store, _read_json, _reject_links_below, RunControlError, store_of
 from snapshot_store import artifact_digest, resolve_run_snapshot
 from source_files import read_text
 
@@ -372,6 +372,9 @@ def cmd_carry(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir)
     try:
         _reject_links_below(parent_dir)  # a parent run can come with the project
+        store = store_of(parent_dir / "snapshot" / "manifest")
+        if store is not None:
+            own_store(store)
     except RunControlError as error:
         print(f"carry: {error}", file=sys.stderr)
         return 2

@@ -35,7 +35,12 @@ and `status` (hence `runs`) return the bound `project_root`; verify it before
 creating a run. Every target is relative to the project; every run ID selects
 exactly `.daodan/map/runs/<run-id>/` (or `<store>/runs/<run-id>/`). Foreign
 paths, traversal, symlinks and Windows junctions are rejected; clients supply no
-executable, output root or manifest path. Helper subprocesses run from the helper
+executable, output root or manifest path. A store that came with the project (its
+repository tracks a path under it) is not Daodan's: every tool refuses with the cause,
+`codebase_map_create_run` included, and the edit hook does nothing. Daodan changes
+nothing of it: the person untracks it (`git rm -r --cached -- <store>`) and deletes the
+folder unless the store is their own, or passes another `--store`. Daodan's own store
+carries a `.gitignore`, so `git add -A` does not track it. Helper subprocesses run from the helper
 directory and resolve `git` from absolute `PATH` entries only.
 
 ### Custom analysis store

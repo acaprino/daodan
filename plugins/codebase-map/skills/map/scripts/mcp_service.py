@@ -143,6 +143,7 @@ class MapService:
                 token = _SNAPSHOTS.set(snapshots)
                 try:
                     confinement.reject_link_chain(self.root)
+                    snapshot.own_store(self.root)
                     if self.store is not None:
                         self._bind_store(write=write)
                     yield

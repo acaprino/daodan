@@ -108,6 +108,86 @@ def store_project(root: Path) -> Path:
     return project
 
 
+def store_of(manifest: Path) -> Path | None:
+    """The store that holds `manifest` as a run's snapshot (`<store>/runs/<run>/snapshot/`), or None."""
+    path = Path(os.path.abspath(manifest))
+    if path.parent.name != "snapshot" or path.parent.parent.parent.name != "runs":
+        return None
+    root, canonical = path.parents[3], tuple(CANONICAL_STORE.split("/"))
+    return root if root.parts[-len(canonical):] == canonical or (root / STORE_MARKER).is_file() else None
+
+
+_TRACKED: dict[Path, tuple] = {}  # store -> the repository's index, its size and time when asked, the answer
+
+
+def tracked(root: Path) -> str | None:
+    """A path under the store at `root` that the project's repository tracks, as git names it; None when it
+    tracks none, or no repository holds the store (no git, or git names none there). Git reads its index and runs
+    nothing; it is asked once, and again when the index changes: an `add`, a `pull` or a checkout rewrites it. A
+    repository that does not list what it tracks is a refusal: the store is not known to be Daodan's."""
+    root = Path(os.path.abspath(root))
+
+    def stamp(index: Path) -> tuple | None:
+        try:
+            status = os.stat(index)
+        except OSError:
+            return None  # a repository that tracks nothing yet
+        return status.st_size, status.st_mtime_ns
+
+    held = _TRACKED.get(root)
+    if held is not None and (held[0] is None or stamp(held[0]) == held[1]):
+        return held[2]
+    import subprocess
+    import tree_scope
+    git = tree_scope.git_executable()
+    base = next(folder for folder in (root, *root.parents) if folder.is_dir())
+
+    def ask(*args: str) -> bytes | None:
+        try:
+            done = subprocess.run([git, *tree_scope.GIT_OPTIONS, "--literal-pathspecs", "-C", str(base), *args],
+                                  capture_output=True, timeout=tree_scope.GIT_TIMEOUT_SECONDS)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        return done.stdout if done.returncode == 0 else None
+
+    said = ask("rev-parse", "--git-path", "index") if git is not None else None
+    if not said or not said.strip():
+        _TRACKED[root] = (None, None, None)
+        return None
+    index = Path(os.path.abspath(base / os.fsdecode(said).strip()))
+    seen = stamp(index)
+    listed = ask("ls-files", "-z", "--", os.path.relpath(root, base).replace(os.sep, "/"))
+    if listed is None:
+        raise RunControlError(f"the repository of the map store {root.as_posix()} does not list what it tracks "
+                              "there (git ls-files failed): the store is not known to be Daodan's")
+    answer = os.fsdecode(listed.split(b"\0")[0]) or None
+    _TRACKED[root] = (index, seen, answer)
+    return answer
+
+
+def own_store(root: Path) -> None:
+    """Refuse the store at `root` when it came with the project: its repository tracks a path under it. Nothing of
+    such a store is read, since a derived file of it would be taken as fresh (the pre-map carries the commands the
+    container runs) and a document of it as evidence; and nothing of it is changed, since it is the person's
+    checkout: the remedy is theirs."""
+    path = tracked(root)
+    if path is not None:
+        store = Path(root).as_posix()
+        raise RunControlError(
+            f"the map store {store} came with the project: its repository tracks {path}. Daodan reads nothing of "
+            f"it, creates no run in it and changes nothing of it. Untrack it (git rm -r --cached -- {store}), and "
+            "delete the folder too unless the store is your own; or give Daodan another store (--store)")
+
+
+def keep_local(root: Path) -> None:
+    """Keep Daodan's own store out of the project's repository: a `git add -A` would track it, and a tracked
+    store is one that comes with the project."""
+    ignore = root / ".gitignore"
+    _reject_links(ignore)
+    if not ignore.exists():
+        ignore.write_text("*\n", encoding="utf-8")
+
+
 def _run_context(run_dir: Path) -> tuple[Path, Path, dict]:
     _reject_links(run_dir)
     run_dir = run_dir.resolve()
@@ -116,6 +196,7 @@ def _run_context(run_dir: Path) -> tuple[Path, Path, dict]:
                               f"or a custom store carrying {STORE_MARKER}")
     root = run_dir.parent.parent
     store_project(root)
+    own_store(root)
     _reject_links(run_dir / "state.json")
     state = _read_json(run_dir / "state.json")
     if not isinstance(state, dict) or state.get("run_id") != run_dir.name:
@@ -261,6 +342,7 @@ def update_registration(run_dir: Path, *, active: bool) -> dict:
         raise RunControlError("registration requires state.started_at")
     lock = _acquire_registry_lock(root)
     try:
+        keep_local(root)
         registry = _read_registry(root)
         entries = [item for item in registry["active"] if item["run_id"] != state["run_id"]]
         if active:
