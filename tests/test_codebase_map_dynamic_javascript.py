@@ -121,6 +121,22 @@ def test_the_test_script_of_a_package_names_its_runner(tmp_path):
         {"root": "vite", "runner": "vitest", "declared_in": "vite/package.json#scripts.test", "args": []}]
 
 
+def test_a_playwright_script_names_playwright_as_its_runner(tmp_path):
+    """eShop: the root package.json declares only `test:e2e`, `playwright test`; the full-stack FastAPI template's
+    frontend `test` is `bunx playwright test`. Playwright is their runner, not npm's whatever, and the run that
+    never ends (`--ui`, the Inspector's `--debug`) does not declare it."""
+    found = declared(tmp_path, {
+        "package.json": package(None, **{"test:e2e": "playwright test", "test:e2e:ui": "playwright test --ui"}),
+        "frontend/package.json": package("bunx playwright test", **{"test:ui": "bunx playwright test --ui"}),
+        "debug/package.json": package(None, **{"e2e:debug": "npx playwright test --debug"})})
+    assert found == [
+        {"root": ".", "runner": "playwright", "declared_in": "package.json#scripts.test:e2e", "args": []},
+        {"root": "frontend", "runner": "playwright", "declared_in": "frontend/package.json#scripts.test", "args": []}]
+    record = premapped(tmp_path / "debug", {"package.json": package(None, **{"e2e": "npx playwright test --debug"})})
+    [gap] = [gap for gap in record["gaps"] if gap["kind"] == "tests_not_declared"]
+    assert (gap["runner"], gap["scripts"]) == ("playwright", ["e2e"])
+
+
 def test_a_package_without_a_test_script_states_nothing(tmp_path):
     assert declared(tmp_path, {
         "package.json": package(None, build="tsc"),
@@ -202,6 +218,19 @@ def test_a_runner_the_recorder_cannot_observe_is_a_gap_with_its_cause():
     [gap] = planned["gaps"]
     assert gap["kind"] == "runner_not_observed" and gap["path"] == "package.json#scripts.test"
     assert gap["runner"] == "bun" and "JavaScriptCore" in gap["detail"]
+
+
+def test_playwright_s_tests_are_a_gap_that_says_where_the_code_they_test_runs():
+    """eShop's only JavaScript tests are Playwright's (`test:e2e`): the code they reach runs in the browser they
+    drive and in the server their configuration starts, so they do not run, and the gap says so instead of
+    `no_test_command`."""
+    e2e = {**entry(".", "playwright"), "declared_in": "package.json#scripts.test:e2e"}
+    planned = observer.plan(record([e2e]), [], None)
+    assert planned["runs"] == []
+    [gap] = planned["gaps"]
+    assert (gap["kind"], gap["path"], gap["runner"]) == ("runner_not_observed", "package.json#scripts.test:e2e",
+                                                         "playwright")
+    assert "browser" in gap["detail"] and "webServer" in gap["detail"]
 
 
 def test_a_script_that_runs_bun_has_the_bun_the_project_declares(tmp_path):

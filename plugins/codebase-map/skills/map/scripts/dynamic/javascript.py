@@ -19,9 +19,10 @@ takes it.
 and, for a folder and runner it does not reach, the package's script that starts that runner (its `tests`
 entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, Turborepo, any other), run as `npm run`
 of the script `declared_in` names in the package's folder; a project where no package declares one is a
-`no_test_command` gap, never a command of ours. A script whose runner the recorder cannot hook (`NOT_OBSERVED`) is
-a `runner_not_observed` gap, and it does not run. Where every script of a runner watches (the pre-map's
-`tests_not_declared`), none runs: their gaps come back with the runs', which explain a language's outcome.
+`no_test_command` gap, never a command of ours. A script whose runner runs the code it tests where the recorder has
+no hook (`NOT_OBSERVED`: Bun's engine, Playwright's browser) is a `runner_not_observed` gap, and it does not run.
+Where every script of a runner watches (the pre-map's `tests_not_declared`), none runs: their gaps come back with
+the runs', which explain a language's outcome.
 
 `observe` is one container run (`container.run_in_container`, the TypeScript analyzer's image). The preparation,
 with the registries: Daodan's Node, the Babel the recorder prints with (from npm without its install scripts),
@@ -72,7 +73,10 @@ ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "1", ("javascript", "ty
 RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
 RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest", "turbo")  # the pre-map's runners, run through their script
 NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, where a Node preload and V8's "
-                       "inspector do not exist"}
+                       "inspector do not exist",
+                "playwright": "Playwright's tests drive a browser: the code they reach runs in that browser and in "
+                              "the server its configuration's webServer starts, not in the Node processes the "
+                              "recorder hooks"}
 BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the code it records
 MOCKS = ("jest-mock", "sinon", "tinyspy", "@vitest/spy")  # a function of theirs stands for another: no destination
 # The tests run at most as on the runner GitHub hosts for a CI (ubuntu-latest, public repositories: 4 CPUs, 16 GB):

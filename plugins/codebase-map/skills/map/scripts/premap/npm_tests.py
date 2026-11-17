@@ -2,9 +2,9 @@
 
 The `test` script, the one `npm test` runs, and the runner it names: Jest (`jest`, `react-scripts test`), Vitest,
 Mocha, Node's own (`node --test`), Bun's (`bun test`), Turborepo (`turbo run test`: the packages' own `test`
-scripts, run by turbo); a script that names none of them is npm's to run (`npm`: the runner is whatever it
-starts). A script of the package it runs (`npm run test:unit`, `yarn test:unit`, `pnpm test:unit`) is read
-through. npm's placeholder (`echo "Error: no test specified" && exit 1`) declares nothing.
+scripts, run by turbo), Playwright (`playwright test`); a script that names none of them is npm's to run (`npm`:
+the runner is whatever it starts). A script of the package it runs (`npm run test:unit`, `yarn test:unit`,
+`pnpm test:unit`) is read through. npm's placeholder (`echo "Error: no test specified" && exit 1`) declares nothing.
 
 Each is a `tests` entry `{root, runner, declared_in, args}`, `args` empty: the command is `npm run` of the script
 `declared_in` names, `npm test` for `test`. A package without the script states nothing: the dynamic step's gap,
@@ -24,14 +24,15 @@ from pathlib import PurePosixPath
 import posixpath
 import re
 
-NAME, VERSION, RANK = "npm-tests", "daodan/premap/v5", "reader"  # v3: Turborepo; v4, v5: the other scripts
+NAME, VERSION, RANK = "npm-tests", "daodan/premap/v6", "reader"  # v3: Turborepo; v4, v5: other scripts; v6: Playwright
 WORD = r"(?<![\w.@-]){}(?![\w.-])"  # a program's name alone or at the end of its path, not a part of another's
 RUNNERS = (("jest", re.compile(WORD.format("jest") + "|" + WORD.format(r"react-scripts\s+test"))),
            ("vitest", re.compile(WORD.format("vitest"))),
            ("mocha", re.compile(WORD.format("mocha"))),
            ("node:test", re.compile(WORD.format(r"node\s(?:[^&|;]*\s)?--test"))),
            ("bun", re.compile(WORD.format(r"bun\s+test"))),
-           ("turbo", re.compile(WORD.format(r"turbo(?:\s+[^\s&|;]+)*?\s+test"))))  # turbo runs a `test` task
+           ("turbo", re.compile(WORD.format(r"turbo(?:\s+[^\s&|;]+)*?\s+test"))),  # turbo runs a `test` task
+           ("playwright", re.compile(WORD.format(r"playwright\s+test"))))
 THROUGH = re.compile(r"(?<![\w./@-])(?:npm|pnpm|yarn)\s+(?:run\s+)?([\w:.-]+)")  # a script that runs another
 COMMANDS = re.compile(r"&&|\|\||[;|]")
 CD = re.compile(r"^\s*cd\s+([^\s&|;]+)\s*$")
@@ -42,7 +43,8 @@ ENDLESS = {runner: re.compile(f"(?:{pattern})|--inspect-(?:brk|wait)(?![\\w-])")
     "mocha": r"(?<![\w-])(?:--watch|-w)(?![\w-])",
     "node:test": r"--watch(?:-path)?(?![\w-])",
     "bun": r"--watch(?![\w-])",
-    "turbo": r"(?<![\w.@-])turbo\s+watch(?![\w-])"}.items()}
+    "turbo": r"(?<![\w.@-])turbo\s+watch(?![\w-])",
+    "playwright": r"(?<![\w-])--(?:ui(?:-host|-port)?|debug)(?![\w-])"}.items()}  # its UI mode, its Inspector
 
 
 def _starts(script: str, scripts: dict, folder: str = ".", depth: int = 0) -> list[tuple[str, str, str, int]]:

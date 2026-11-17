@@ -153,7 +153,7 @@ Convenzioni:
 - `BuildKit` (2): D-135, D-279
 - `Bun` (2): D-056, D-195
 - `Deno` (2): D-008, D-029
-- `dotnet` (2): D-113, D-241
+- `dotnet` (3): D-113, D-198, D-241
 - `go` (2): D-257, D-273
 - `NuGet` (2): D-021, D-049
 - `pip` (2): D-049, D-188
@@ -188,7 +188,7 @@ Convenzioni:
 - `Mix` (1): D-012
 - `Node` (1): D-269
 - `pip-compile` (1): D-028
-- `Playwright` (1): D-197
+- `Playwright` (2): D-197, D-198
 - `podman` (1): D-263
 - `prettier` (1): D-256
 - `pub` (1): D-015
@@ -208,7 +208,7 @@ Convenzioni:
 
 ## Indice
 
-286 schede: 235 risolte, 8 aperte, 43 buchi dichiarati.
+286 schede: 235 risolte, 7 aperte, 44 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -428,7 +428,7 @@ Convenzioni:
 
 ### Passo dinamico e osservatori
 
-39 schede: 31 risolto, 2 aperto, 6 buco dichiarato.
+39 schede: 31 risolto, 1 aperto, 7 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -463,7 +463,7 @@ Convenzioni:
 | D-195 | `bun test` non registrato | fastapi | buco dichiarato (`runner_not_observed`) | `5148e8eb3` | javascript · passo dinamico · completezza · commit · Bun |
 | D-196 | Un progetto senza test dichiarati, o con test che non partono | spec del passo dinamico, sezione «Limiti»; i progetti in miniatura del giro `fixtures` | buco dichiarato (`no_test_command`, `tests_not_declared`, `tests-not-run`) | — | tutti · passo dinamico · completezza · fixtures |
 | D-197 | I test di fastapi non ancora girati davvero | fastapi | aperto | `5148e8eb3`, `37c7ee093`, `a46e5af7d` | python, typescript · passo dinamico · completezza · finale · Playwright, git |
-| D-198 | I test di eShop non ancora girati | eShop | aperto | — | javascript, typescript, csharp · passo dinamico · completezza · finale · npm |
+| D-198 | I test di eShop non ancora girati | eShop (`913acea66708`) | buco dichiarato (`tests_need_container_engine`, `runner_not_observed`) | `15960a591` | javascript, typescript, csharp · passo dinamico · completezza · finale · npm, Playwright, dotnet |
 | D-199 | Python: extra e gruppi che il gestore non installa | spec del passo dinamico | buco dichiarato (test che non partono, `tests-not-run`) | — | python · passo dinamico · completezza · spec |
 | D-200 | Python più vecchio del 3.12 | spec del passo dinamico | buco dichiarato (`python_too_old`) | — | python · passo dinamico · completezza · spec |
 | D-201 | I servizi che `docker compose up` avvia non partivano | passo dinamico | risolto | `22dca6da8` | tutti · servizi · completezza · commit · npm, Compose, GitHub Actions |
@@ -3842,14 +3842,25 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Stato:** aperto: risolto in codice per Python, da misurare; TypeScript resta nella lacuna di D-212 e D-261.
 - **Note:** D-056, D-188, D-195, D-212, D-261.
 #### D-198 I test di eShop non ancora girati
-- **Tag:** lingua javascript, typescript, csharp · area passo dinamico · tipo completezza · origine finale · strumento npm
+- **Tag:** lingua javascript, typescript, csharp · area passo dinamico · tipo completezza · origine finale · strumento npm, Playwright, dotnet
 - **Descrizione:** finale, eShop: C# `no-observer`; JavaScript e TypeScript «no package.json of the project declares a test script (`scripts.test`): nothing is observed».
-- **Spiegazione:** C# non ha osservatore, e gli script npm non dichiarano test.
-- **Progetto e caso:** eShop — finale, 16 novembre 2026.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto: C# senza osservatore (csharp-dotnet).
-- **Note:** D-114.
+- **Spiegazione:** ciò che i test di eShop vogliono, dai file del progetto a `913acea66708` e dalla pre-mappa:
+  - C#: l'osservatore arriva dopo il finale (D-241). Il piano ha 5 progetti di test su MSTest.Sdk 4.0.2 (`global.json#msbuild-sdks`) e Microsoft.Testing.Platform (`global.json#test.runner`, da cui `dotnet test --project`): Application, Basket, ClientApp, Ordering ed eShop.AppHost.UnitTests. I 4 `*.FunctionalTests` sono host Aspire (`Aspire.AppHost.Sdk/13.6.0`), `tests_need_container_engine`;
+  - l'SDK è quello di `global.json`, 10.0.302 con `rollForward: latestFeature`, che la pre-mappa dichiara da Renovate e la preparazione installa con mise. Nessun workflow dichiara servizi, e nessun passo della CI precede test che la pre-mappa conosca: i servizi li avvia Aspire;
+  - la CI su Linux (`pr-validation.yml`) fa `dotnet build eShop.Web.slnf` e `dotnet test --solution eShop.Web.slnf --no-build`; ClientApp.UnitTests (`UseMaui`) lo costruisce e lo prova solo il job su `windows-latest` di `pr-validation-maui.yml`, dopo i workload android, ios, maccatalyst e maui;
+  - JavaScript e TypeScript: gli unici test sono quelli di Playwright, lo script `test:e2e` (`playwright test`) di `package.json`, che `playwright.yml` lancia con `npm run test:e2e` dopo `npx playwright install --with-deps chromium`. Il loro `webServer` è `dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj`, l'host Aspire che avvia Redis, RabbitMQ e PostgreSQL (`ankane/pgvector`) come container (`src/eShop.AppHost/AppHost.cs`): lo stesso motore dei test funzionali, più un Chromium;
+  - `scripts/premap/npm_tests.py` non conosceva Playwright fra i runner: lo script `test:e2e` non era un test dichiarato, e il buco diceva `no_test_command`, falso.
+- **Progetto e caso:** eShop (`913acea66708`) — finale, 16 novembre 2026.
+- **Rimedio:**
+  - per C# `15960a591` (16 novembre), l'osservatore di D-241;
+  - per JavaScript e TypeScript (17 novembre, android-sdk): `scripts/premap/npm_tests.py` (v6) dà a `playwright test` il runner `playwright`, e non lo dichiara da uno script che non finisce (`--ui`, `--debug`); `scripts/dynamic/javascript.py` lo mette in `NOT_OBSERVED`. Lo script è un buco `runner_not_observed` che dice dove gira il codice che i suoi test raggiungono, il browser e il server del `webServer`, e non gira.
+- **Verifica:**
+  - il 17 novembre, su Modal con `tests/modal_pytest.py` e un test temporaneo, snapshot di eShop e pre-mappa senza comandi: per C# `dynamic.dotnet.plan` dà i 5 progetti con `dotnet test --project <progetto> --no-build` e i 4 buchi `tests_need_container_engine`, nessun servizio e nessun passo della CI; dal commit `15960a591` 4 progetti girano su eShop (D-241);
+  - con la correzione, lo stesso test su eShop, fastapi e tududi: eShop `runner_not_observed` per `package.json#scripts.test:e2e` invece di `no_test_command`; fastapi `runner_not_observed` per `frontend/package.json#scripts.test` (`bunx playwright test`), mentre lo `test` della radice (`bun run --filter frontend test`) resta di npm e fa ancora girare quei test; tududi invariato, Playwright solo in `e2e/bin/run-e2e.sh`;
+  - `tests/test_codebase_map_dynamic_javascript.py` (`test_a_playwright_script_names_playwright_as_its_runner`, `test_playwright_s_tests_are_a_gap_that_says_where_the_code_they_test_runs`); la suite intera su Modal: 2.598 passati, 65 saltati;
+  - nessun giro reale dopo il finale.
+- **Stato:** buco dichiarato (`tests_need_container_engine`, `runner_not_observed`).
+- **Note:** D-114, D-195, D-197, D-241.
 
 #### D-199 Python: extra e gruppi che il gestore non installa
 - **Tag:** lingua python · area passo dinamico · tipo completezza · origine spec · strumento —
