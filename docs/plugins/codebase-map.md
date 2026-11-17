@@ -194,6 +194,14 @@ senior-review esige una mappa completa dell'intero progetto prima di una review:
 
 `contracts/context.toml` esporta i quattro record del contesto delimitato: richiesta, piano di scope, pacchetto e map slice.
 
+## Limiti aperti su Windows
+
+Tre fatti dell'host non sono misurati: le suite girano su Linux, dove nessuno dei tre si riproduce. Ognuno resta aperto finché la sua prova non è fatta su Windows.
+
+- **`uv` per nome.** Le righe di avvio (`.mcp.json`, `hooks/hooks.json`, `plugin.toml`) nominano `uv` senza percorso e lo risolve l'host, che parte nella cartella del progetto; su Windows la creazione di un processo cerca lì prima che nel `PATH`. Prova: in un progetto con `uv.exe` e `uv.cmd` nella radice che lasciano un segno, una sessione con il plugin attivo e una modifica a un file (l'hook) non lo lasciano, e `claude mcp list` dà il server connesso.
+- **DLL dalla cartella di lavoro.** Un processo cerca le DLL che carica per nome anche nella sua cartella di lavoro: `uv` la eredita dall'host, ed è quella del progetto finché `--directory` non lo sposta. Prova: una traccia di Process Monitor su un avvio di sessione e una modifica, filtrata sui percorsi sotto la radice del progetto, senza caricamenti di immagine né ricerche di `.dll`.
+- **`core.hooksPath=/dev/null`.** `tree_scope.GIT_OPTIONS` spegne così gli hook di Git a ogni comando; non è misurato come Git for Windows legge quel percorso: nessuna cartella, oppure `\dev\null` sul disco corrente. Prova: `git -c core.hooksPath=/dev/null rev-parse --git-path hooks` dice la cartella che Git usa; con un `post-index-change` che lascia un segno in `.git/hooks` e in quella cartella, i comandi di `tree_scope`, `source_files.git_info` e `run_store.tracked` non lo lasciano.
+
 ## Test
 
 In `tests/` alla radice del repository: 85 file `test_codebase_map_*.py` e 13 file `test_xray_*.py`, più `skills/map/scripts/tests/test_modules.py`. Le suite girano su Modal, in un container Linux sull'albero di lavoro, mai sul PC: `python tests/modal_pytest.py <argomenti di pytest>` dalla radice (`tests/modal_pytest.py`).
