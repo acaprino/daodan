@@ -22,16 +22,15 @@ Misura quanto di una **pre-mappa** danno gli strumenti esistenti, prima di ogni 
 - `score.py` dà il punteggio di ogni faccetta: trovate, sbagliate, mancate, in più. Una faccetta che lo strumento non dà conta come "non data", non come zero.
 - `cases.json` è il dominio chiuso dei casi di test; ogni `expected.json` elenca i suoi in `cases`.
 - `catalog.py` scrive [ANAGRAFICA.md](ANAGRAFICA.md) dai dati: per ogni progetto origine, tecnologie, versioni dichiarate, framework, servizi e casi, poi la copertura dei casi.
+- `modal_catalog.py` fa girare su Modal il controllo, `catalog.py` e le tabelle di `score.py`, e sul PC scrive solo ANAGRAFICA.md.
 
 ## Dopo una modifica
 
-Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Dalla cartella del benchmark:
+Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Su questo PC non gira niente: ogni passo va su Modal, dalla radice del repository.
 
-1. `python -m unittest test_score.py test_catalog.py test_pipeline_report.py`: test del punteggio, dell'anagrafica e del rapporto della pipeline.
-2. `python score.py --check all`: forma di ogni `expected.json`, casi contro `cases.json` e contro i dati, casi che nessun progetto usa.
-3. `python catalog.py`: riscrive ANAGRAFICA.md; `python catalog.py --check` dice solo se è da riscrivere.
-4. Su Modal, il driver `modal_<gruppo>.py` del gruppo toccato: riscrive i suoi `results/<tool>.json`.
-5. `python score.py all all`, o `python score.py <tool> <famiglia>`: tabelle da confrontare con quelle di REPORT.md.
+1. `python benchmarks/project-model/modal_catalog.py`: controlla ogni `expected.json` (forma, casi contro `cases.json` e contro i dati, casi che nessun progetto usa), riscrive ANAGRAFICA.md e stampa le tabelle per strumento e faccetta; `modal_catalog.py <tool> <famiglia>` stampa solo quelle.
+2. `python tests/modal_pytest.py benchmarks/project-model/test_score.py benchmarks/project-model/test_catalog.py benchmarks/project-model/test_pipeline_report.py -q`: test del punteggio, dell'anagrafica e del rapporto della pipeline; falliscono anche se un `expected.json` non passa il controllo o se ANAGRAFICA.md è da riscrivere.
+3. Il driver `modal_<gruppo>.py` del gruppo toccato: riscrive i suoi `results/<tool>.json`; poi di nuovo il passo 1, per le tabelle da confrontare con quelle di REPORT.md.
 
 ## Parametri
 

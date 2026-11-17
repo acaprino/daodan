@@ -1,4 +1,4 @@
-"""Tests for catalog.py. Run: python -m unittest test_catalog.py"""
+"""Tests for catalog.py. On Modal: python tests/modal_pytest.py benchmarks/project-model/test_catalog.py -q"""
 
 import unittest
 

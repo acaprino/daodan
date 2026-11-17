@@ -1,5 +1,10 @@
-"""Tests for score.py on two hand-made cases. Run: python -m unittest test_score.py"""
+"""Tests for score.py on hand-made cases, and the check of the whole corpus.
 
+On Modal: python tests/modal_pytest.py benchmarks/project-model/test_score.py -q
+"""
+
+import contextlib
+import io
 import unittest
 
 import score
@@ -411,6 +416,13 @@ class Cases(unittest.TestCase):
         self.assertIn("'vendored-code' is used by no project", text)
         self.assertIn("'workspace-glob' is used by one project only (a)", text)
         self.assertNotIn("'nested-module'", text)                                   # a measured case may stand alone
+
+
+class Corpus(unittest.TestCase):
+    def test_every_fixture_passes_the_check(self):
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            code = score.run_check("all")
+        self.assertEqual(code, 0, out.getvalue())
 
 
 if __name__ == "__main__":

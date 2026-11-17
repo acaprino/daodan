@@ -103,11 +103,10 @@ con `expected = found + len(wrong) + len(missed)`. Una voce è trovata se è abb
 
 ## Comandi
 
+Su Modal, dalla radice del repository; su questo PC non gira niente.
+
 ```
-python score.py all all                  tabelle per strumento e faccetta su tutto il corpus
-python score.py syft,trivy js            due strumenti, una famiglia
-python score.py all all --json out.json  anche ogni punteggio per fixture
-python score.py --check [js|nome,…]      controlla gli expected.json e i loro casi
-python catalog.py                        riscrive ANAGRAFICA.md
-python -m unittest test_score.py test_catalog.py
+python benchmarks/project-model/modal_catalog.py                controllo, ANAGRAFICA.md, tabelle di ogni strumento
+python benchmarks/project-model/modal_catalog.py syft,trivy js  tabelle di due strumenti su una famiglia
+python tests/modal_pytest.py benchmarks/project-model/test_score.py benchmarks/project-model/test_catalog.py -q
 ```

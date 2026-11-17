@@ -55,8 +55,12 @@ image = (modal.Image.debian_slim(python_version="3.13")
 if LOCAL:
     # The results stay: suites replay the recorded answers kept there. The explorer's sources are no suite's.
     skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "codebase-explorer/**"]
+    # The project-model fixtures go up as they are (mix-edge-vendored commits node_modules/ on purpose), in a
+    # folder of their own: a "!" exception in `skipped` would stop Modal pruning the skipped folders.
+    fixtures = "project-model/fixtures"
     for folder in ("plugins", "tests", "benchmarks"):
-        image = image.add_local_dir(REPO / folder, f"{REMOTE}/{folder}", ignore=skipped)
+        image = image.add_local_dir(REPO / folder, f"{REMOTE}/{folder}", ignore=[*skipped, fixtures])
+    image = image.add_local_dir(REPO / "benchmarks" / fixtures, f"{REMOTE}/benchmarks/{fixtures}")
     image = image.add_local_file(REPO / "AGENTS.md", f"{REMOTE}/AGENTS.md")
 app = modal.App("daodan-tests", image=image)
 
