@@ -156,6 +156,11 @@ class NpmWorkspace(unittest.TestCase):
                         {"services": [{"name": "Postgres"}]})
         self.assertEqual(r["services"]["found"], 1)
 
+    def test_framework_alias(self):
+        r = score.score({"frameworks": [{"name": "Tailwind CSS", "evidence": "x"}]},
+                        {"frameworks": [{"name": "Tailwind"}]})
+        self.assertEqual(r["frameworks"]["found"], 1)
+
     def test_needs(self):
         n = self.r["needs"]
         self.assertEqual((n["found"], len(n["wrong"])), (0, 1))

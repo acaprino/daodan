@@ -70,7 +70,8 @@ KIND_ECOSYSTEM = {
 
 # Framework spellings that differ by more than case and punctuation. Ask the core owner to extend.
 FRAMEWORK_ALIASES = {"next": "nextjs", "nuxtjs": "nuxt", "vue": "vuejs", "nest": "nestjs", "spring": "springframework",
-                     "postgres": "postgresql", "awss3": "amazons3", "telegram": "telegrambotapi"}
+                     "postgres": "postgresql", "awss3": "amazons3", "telegram": "telegrambotapi",
+                     "tailwind": "tailwindcss"}
 
 
 # ---------------------------------------------------------------- normalisation
