@@ -55,6 +55,7 @@ import re
 import shlex
 from pathlib import Path, PurePosixPath
 
+import dynamic
 import preparation
 from indexers import csharp, jvm
 
@@ -358,14 +359,14 @@ def _outcome(run: dict, code: str, log: str, ended: str) -> tuple[dict, list[dic
     def gap(kind: str, detail: str) -> dict:
         return {"kind": kind, "path": run["project"], "detail": detail}
 
-    gaps = []
+    gaps, stop = [], dynamic.stopped(exit_code, None, LIMIT)
     if exit_code is None:
         entry["state"] = "not_started"
         gaps.append(gap("tests_not_started", f"{command}: the run ended before the tests' exit ({ended})"))
-    elif exit_code == 124:
+    elif stop == "timeout":
         entry["state"] = "timeout"
         gaps.append(gap("tests_timeout", f"{command} did not end in {LIMIT} s: what ran until then is observed"))
-    elif exit_code == 137:
+    elif stop == "killed":
         entry["state"] = "killed"
         gaps.append(gap("tests_killed", f"{command} was killed before its end, at the container's memory limit "
                                         f"({csharp.MIN_FREE // 2**30} GB) or {LIMIT} s: what ran until then is "

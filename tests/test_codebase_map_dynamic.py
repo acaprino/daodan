@@ -700,3 +700,19 @@ def test_every_observer_reaches_the_hosts_the_project_declares_and_one_that_did_
     assert planned[0]["declared"] == declared
     [gap] = gaps(seen, "host_unreachable")
     assert gap["host"] == "pypi.corp.example" and gap["declared_in"] == ["requirements.txt"]
+
+
+@pytest.mark.parametrize("exit_code, seconds, state", [
+    (124, None, "timeout"), (124, 3600, "timeout"),  # `timeout`'s own exit
+    (137, 3630, "timeout"),  # the interrupt was not enough: killed after the limit
+    (137, 41, "killed"),  # killed before the limit: the container's memory limit, most often
+    (137, None, "killed"),  # an observer with no seconds cannot say the limit was reached
+    (0, 12, None), (1, 12, None), (None, None, None),
+])
+def test_one_rule_says_how_a_stopped_run_ended_for_every_observer(exit_code, seconds, state):
+    """Every observer reads a tests' exit code the same way: none has a rule of its own for 124 and 137."""
+    assert dynamic.stopped(exit_code, seconds, 3600) == state
+    import inspect
+    for module in dynamic.observers():
+        assert "137" not in inspect.getsource(module), module.ENTRY
+

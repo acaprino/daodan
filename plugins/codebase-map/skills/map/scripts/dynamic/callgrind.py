@@ -37,6 +37,7 @@ import posixpath
 import re
 from pathlib import Path
 
+import dynamic
 import preparation
 
 VALGRIND_VERSION = "3.22.0"
@@ -168,11 +169,12 @@ def stopped(entry: dict, given: str, limit: int, memory: int) -> dict | None:
     entry["exit_code"] = int(code) if code.isdigit() else None
     entry["seconds"] = int(seconds) if seconds.isdigit() else None
     command = f"{' '.join(entry['argv'])} in {entry['root']}"
-    if entry["exit_code"] == 124 or (entry["exit_code"] == 137 and (entry["seconds"] or 0) >= limit):
+    stop = dynamic.stopped(entry["exit_code"], entry["seconds"], limit)
+    if stop == "timeout":
         entry["state"] = "timeout"
         return {"kind": "tests_timeout", "path": entry["root"],
                 "detail": f"{command} did not end in {limit} s: what ran until then is observed"}
-    if entry["exit_code"] == 137:
+    if stop == "killed":
         entry["state"] = "killed"
         return {"kind": "tests_killed", "path": entry["root"],
                 "detail": f"{command} was killed after {entry['seconds']} s, as a process is when the container's "

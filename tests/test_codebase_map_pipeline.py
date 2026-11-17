@@ -179,19 +179,41 @@ def test_writing_a_snapshot_runs_the_scan_through_the_pipeline_and_the_pass_runs
 
 def test_a_failing_stack_step_says_why_and_does_not_stop_the_steps_after_it(tmp_path):
     import technologies
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    (tmp_path / "p").mkdir()
+    (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.write_snapshot(tmp_path / "p", manifest)
     seen = []
-    context = pipeline.Context(tmp_path / "manifest.sqlite", pipeline.events.Bus(tmp_path / "journal"))
-    context.bus.subscribe(seen.append)
     with mock.patch.object(technologies, "ensure", side_effect=OSError("disk full")):
-        result = pipeline.Stack.run(context)
-    assert result == {"failed": "OSError: disk full"}
-    assert [(e["kind"], e["level"]) for e in seen] == [("log", "error")]
+        result = pipeline.run(manifest, listeners=[seen.append], start="stack", stop="stack")
+    assert result == {"stack": {"failed": "OSError: disk full"}}
+    [said] = [e for e in seen if e["level"] == "error"]
+    assert (said["kind"], said["step"]) == ("log", "stack") and said["data"]["remedy"] == pipeline.Stack.WITHOUT
+    assert seen[-1] == {**seen[-1], "kind": "step.finished", "step": "stack"}
+
+
+def test_an_error_a_step_the_others_need_does_not_foresee_is_said_before_it_leaves(tmp_path):
+    """A step the pipeline cannot do without (`WITHOUT` is None) that raises anything else than `StepFailed` still
+    says `step.failed` with the cause, and the error reaches the caller as before."""
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    (tmp_path / "p").mkdir()
+    (tmp_path / "p" / "a.py").write_text("x = 1\n", encoding="utf-8")
+    snapshot.write_snapshot(tmp_path / "p", manifest)
+    seen = []
+    with mock.patch.object(pipeline.Analyze, "run", side_effect=RuntimeError("the index is gone")), \
+            pytest.raises(RuntimeError):
+        pipeline.run(manifest, listeners=[seen.append], start="analyze")
+    assert seen[-1]["kind"] == "step.failed" and seen[-1]["step"] == "analyze"
+    assert seen[-1]["data"]["cause"] == "RuntimeError: the index is gone"
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():
     assert [step.NAME for step in pipeline.STEPS] == ["scan", "stack", "analyze", "dynamic", "union"]
     for step in pipeline.STEPS:
         assert step.INPUTS and step.OUTPUTS and callable(step.run)
+    # what the pipeline does without a step that fails; None: the steps after it need it, and it stops them
+    assert {step.NAME: bool(step.WITHOUT) for step in pipeline.STEPS} == {
+        "scan": False, "stack": True, "analyze": False, "dynamic": True, "union": False}
 
 
 def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarations():

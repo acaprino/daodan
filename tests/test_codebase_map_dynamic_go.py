@@ -477,6 +477,14 @@ class ObserveTest(unittest.TestCase):
         self.assertIn(str(observer.LIMIT), gap["detail"])
         self.assertTrue(result["sites"])
 
+    def test_a_module_that_is_killed_is_said_killed_and_keeps_what_it_recorded(self):
+        self.play_run("", 137)
+        result = self.observe()
+        [gap] = result["gaps"]
+        self.assertEqual((gap["kind"], gap["path"], result["runs"][0]["state"]), ("tests_killed", ".", "killed"))
+        self.assertIn("memory limit", gap["detail"])
+        self.assertTrue(result["sites"])
+
     def test_a_recorder_that_fails_is_a_gap_and_no_test_runs_unrecorded(self):
         self.play_run(**{"recorder.code": "1\n", "recorder.log": "go_record: go.mod names no module\n",
                          "tests-0.log": None, "tests-0.code": None, "calls.tsv": None, "table.json": None})

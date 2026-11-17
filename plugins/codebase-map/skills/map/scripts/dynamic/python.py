@@ -42,6 +42,7 @@ import re
 import shlex
 from pathlib import Path
 
+import dynamic
 import preparation
 from dynamic import python_record
 from indexers.python import IMAGE  # the image the Python analyzer runs in
@@ -374,10 +375,11 @@ def _outcome(run: dict, marks: dict, log: str, processes: int, ended: str) -> tu
     if not code:
         return entry, [gap("tests_not_started", f"{command}: the run ended before the tests' exit ({ended})")]
     gaps = []
-    if entry["exit_code"] == 124 or (entry["exit_code"] == 137 and (entry["seconds"] or 0) >= LIMIT):
+    stop = dynamic.stopped(entry["exit_code"], entry["seconds"], LIMIT)
+    if stop == "timeout":
         entry["state"] = "timeout"
         gaps.append(gap("tests_timeout", f"{command} did not end in {LIMIT} s: what ran until then is observed"))
-    elif entry["exit_code"] == 137:  # killed before the limit: the container's memory limit, most often
+    elif stop == "killed":
         entry["state"] = "killed"
         gaps.append(gap("tests_killed", f"{command} was killed after {entry['seconds']} s, as a process is when the "
                                         f"container's memory limit ({MEMORY // 2**30} GB) is reached: {tail}"))

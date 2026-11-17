@@ -65,6 +65,16 @@ STEP = "dynamic"
 RUNS = "dynamic-runs"  # beside the manifest: each observer's container record, logs and observation files
 EXAMPLES = 20
 TESTS = ("ran", "timeout", "killed", "not_started", "no_tests")  # how a run's tests ended; the first three ran
+
+
+def stopped(exit_code: int | None, seconds: int | None, limit: int) -> str | None:
+    """How a run that was stopped ended, from its tests' exit code and the seconds they took: `timeout` at the
+    limit (`timeout`'s own 124, or a KILL after it), `killed` before it (a KILL's 137: the container's memory
+    limit, most often); None where nothing stopped it. An observer with no seconds cannot say a KILL came at the
+    limit: its 137 is `killed`."""
+    if exit_code == 124 or (exit_code == 137 and (seconds or 0) >= limit):
+        return "timeout"
+    return "killed" if exit_code == 137 else None
 HEALTH = ("--health-cmd", "--health-interval", "--health-timeout", "--health-retries", "--health-start-period",
           "--health-start-interval")  # the options of a service passed to the engine: its health check
 EXPRESSION = re.compile(r"\$\{\{.*?\}\}", re.S)  # GitHub's expressions, which Daodan does not evaluate

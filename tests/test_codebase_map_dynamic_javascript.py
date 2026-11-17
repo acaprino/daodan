@@ -470,6 +470,10 @@ def test_the_sites_of_every_process_are_one_observation(tmp_path):
      "tests_failed", "ran", "1 failing"),
     ("exit 124 3600", {"tests-0.log": "", "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
      "tests_timeout", "timeout", "3600 s"),
+    ("exit 137 3630", {"tests-0.log": "", "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
+     "tests_timeout", "timeout", "3600 s"),  # the interrupt was not enough: killed after the limit
+    ("exit 137 41", {"tests-0.log": "Killed\n", "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
+     "tests_killed", "killed", "memory"),
     ("exit 0 2", {"tests-0.log": "ok\n"}, "nothing_recorded", "ran", "no call"),
     ("exit 0 2", {"tests-0.log": "ok\n", "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST),
                                                                          unobserved=["src/a.ts", "src/b.ts"])},

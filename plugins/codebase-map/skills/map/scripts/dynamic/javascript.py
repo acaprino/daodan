@@ -71,6 +71,7 @@ import shlex
 import shutil
 from pathlib import Path
 
+import dynamic
 import preparation
 from indexers import typescript  # the image, the unit kinds and the restores of the analyzer of the same languages
 
@@ -282,9 +283,15 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
     if not code:
         return entry, [gap("tests_not_started", f"{command}: the run ended before the tests' exit ({ended})")]
     gaps = []
-    if entry["exit_code"] in (124, 137):
+    stop = dynamic.stopped(entry["exit_code"], entry["seconds"], LIMIT)
+    if stop == "timeout":
         entry["state"] = "timeout"
         gaps.append(gap("tests_timeout", f"{command} did not end in {LIMIT} s: what ran until then is observed"))
+    elif stop == "killed":
+        entry["state"] = "killed"
+        gaps.append(gap("tests_killed", f"{command} was killed after {entry['seconds']} s, as a process is when the "
+                                        f"container's memory limit is reached: what ran until then is observed: "
+                                        f"{tail}"))
     elif entry["exit_code"] == 0 or recorded:
         entry["state"] = "ran"
         if entry["exit_code"]:

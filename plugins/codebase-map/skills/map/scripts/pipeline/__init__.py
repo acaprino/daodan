@@ -1,8 +1,9 @@
 """The analysis pipeline: its steps in one place, in order, up to the complete graph.
 
 Each step has the same contract: `NAME`, `INPUTS` (what it reads, written by the steps before it), `OUTPUTS`
-(what it writes) and `run(context)`; it says what it does on the context's event bus (`pipeline.events`). The
-snapshot is the pipeline's input; the flows read the complete graph after it.
+(what it writes), `WITHOUT` (what the pipeline does when the step fails: None where the steps after it need it and
+stop, else the words that say how it goes on) and `run(context)`; it says what it does on the context's event bus
+(`pipeline.events`). The snapshot is the pipeline's input; the flows read the complete graph after it.
 
 1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
    commands run in Daodan's container (`premap.container_runner`).
@@ -45,7 +46,7 @@ class Context:
 
 
 class Scan:
-    NAME, INPUTS, OUTPUTS = "scan", ("snapshot",), ("modules", "premap")
+    NAME, INPUTS, OUTPUTS, WITHOUT = "scan", ("snapshot",), ("modules", "premap"), None
 
     @staticmethod
     def run(context: Context) -> dict:
@@ -94,23 +95,18 @@ def _runner(manifest: Path):
 
 class Stack:
     NAME, INPUTS, OUTPUTS = "stack", ("snapshot", "modules", "premap"), ("technologies",)
+    WITHOUT = "the analysis goes on; scan again to recognize the technologies"  # the analysis needs no technology
 
     @staticmethod
     def run(context: Context) -> dict:
         import technologies
-        try:
-            record = technologies.ensure(context.manifest)
-        except Exception as error:  # noqa: BLE001 - the analysis needs no technology: it goes on without them
-            cause = f"{type(error).__name__}: {error}"
-            context.bus.emit("log", f"the stack step failed: {error}", step=Stack.NAME, level="error", cause=cause,
-                             remedy="the analysis goes on; scan again to recognize the technologies")
-            return {"failed": cause}
+        record = technologies.ensure(context.manifest)
         return {"technologies": len(record["technologies"]), "units": len(record["units"]),
                 "modules": len(record["modules"]), "path": str(technologies.path(context.manifest))}
 
 
 class Analyze:
-    NAME, INPUTS, OUTPUTS = "analyze", ("snapshot", "premap"), ("edges",)
+    NAME, INPUTS, OUTPUTS, WITHOUT = "analyze", ("snapshot", "premap"), ("edges",), None
 
     @staticmethod
     def run(context: Context) -> dict:
@@ -123,21 +119,16 @@ class Analyze:
 
 class Dynamic:
     NAME, INPUTS, OUTPUTS = "dynamic", ("snapshot", "premap", "edges"), ("observed",)
+    WITHOUT = "the graph is the static one; run the analysis again"  # what a run observes is added to that graph
 
     @staticmethod
     def run(context: Context) -> dict:
         import dynamic
-        try:
-            return dynamic.run(context.manifest, context.bus)
-        except Exception as error:  # noqa: BLE001 - what a run observes is added to the static graph, which stays
-            cause = f"{type(error).__name__}: {error}"
-            context.bus.emit("log", f"the dynamic step failed: {error}", step=Dynamic.NAME, level="error",
-                             cause=cause, remedy="the graph is the static one; run the analysis again")
-            return {"languages": {}, "failed": cause}
+        return dynamic.run(context.manifest, context.bus)
 
 
 class Union:
-    NAME, INPUTS, OUTPUTS = "union", ("edges", "observed"), ("graph",)
+    NAME, INPUTS, OUTPUTS, WITHOUT = "union", ("edges", "observed"), ("graph",), None
     # Languages two analyzers index apart that call each other (Java and Kotlin in one build, cgo, a Python C
     # extension, JNI): each stage loads only its own index, so no edge joins them.
     APART = (("java", "kotlin"), ("go", "c"), ("python", "c"), ("python", "cpp"), ("java", "c"), ("java", "cpp"))
@@ -241,7 +232,9 @@ def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | N
         report_path: Path | None = None, fast_scan: bool = False) -> dict:
     """The steps in order on the snapshot `manifest`, from `start` through `stop` (default: all), with
     `listeners` on the bus and the journal beside it; each step's result by its name. A step that fails says
-    why and stops the ones after it: its result is `{"failed": cause, "remedy": ...}`."""
+    why and stops the ones after it: its result is `{"failed": cause, "remedy": ...}`. One the others can do
+    without (`WITHOUT`) says why as an error and the run goes on: its result is `{"failed": cause}`. An error a step
+    the others need does not foresee is said as `step.failed` and reaches the caller."""
     manifest = Path(manifest).resolve()
     bus = events.Bus(manifest.with_name(events.JOURNAL))
     for listener in listeners:
@@ -259,6 +252,15 @@ def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | N
                      remedy=failure.remedy)
             results[step.NAME] = {"failed": failure.cause, "remedy": failure.remedy}
             break
+        except Exception as error:  # noqa: BLE001 - every step's failure is said, whatever it is
+            cause = f"{type(error).__name__}: {error}"
+            if step.WITHOUT is None:
+                bus.emit("step.failed", cause, step=step.NAME, level="error", cause=cause,
+                         remedy="an error the step does not foresee: report it with its cause")
+                raise
+            bus.emit("log", f"the {step.NAME} step failed: {error}", step=step.NAME, level="error", cause=cause,
+                     remedy=step.WITHOUT)
+            results[step.NAME] = {"failed": cause}
         bus.emit("step.finished", step.NAME, step=step.NAME, outputs=list(step.OUTPUTS))
     return results
 

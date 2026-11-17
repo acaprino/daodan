@@ -31,6 +31,7 @@ import re
 import shlex
 from pathlib import Path
 
+import dynamic
 import preparation
 from premap.container_runner import IMAGE  # gcc for cgo, git, timeout
 
@@ -160,7 +161,8 @@ def _outcome(run: dict, code: str, log: str, ended: str) -> tuple[dict, list[dic
     packages.pop("no_tests", None)
     entry = {"root": run["root"], "runner": run["runner"], "argv": run["argv"],
              "exit_code": int(code) if code.strip().isdigit() else None, "packages": dict(sorted(packages.items()))}
-    entry["state"] = ("not_started" if entry["exit_code"] is None else "timeout" if entry["exit_code"] in (124, 137)
+    stop = dynamic.stopped(entry["exit_code"], None, LIMIT)
+    entry["state"] = ("not_started" if entry["exit_code"] is None else stop if stop
                       else "ran" if packages["passed"] or packages["failed"] else
                       "no_tests" if entry["exit_code"] == 0 else "not_started")
     command, tail = f"{' '.join(run['argv'])} in {run['root']}", " | ".join(
@@ -172,8 +174,12 @@ def _outcome(run: dict, code: str, log: str, ended: str) -> tuple[dict, list[dic
     gaps = []
     if entry["exit_code"] is None:
         gaps.append(gap("tests_not_started", f"{command}: the run ended before the tests' exit ({ended})"))
-    elif entry["exit_code"] in (124, 137):
+    elif stop == "timeout":
         gaps.append(gap("tests_timeout", f"{command} did not end in {LIMIT} s: what ran until then is observed"))
+    elif stop == "killed":
+        gaps.append(gap("tests_killed", f"{command} was killed before its end, at the container's memory limit "
+                                        f"({MEMORY // 2**30} GB) or {LIMIT} s: what ran until then is observed: "
+                                        f"{tail}"))
     elif packages["not_built"] or (entry["exit_code"] and not packages["failed"]):
         gaps.append(gap("tests_not_started", f"{command}: {packages['not_built'] or 'its'} packages' tests did not "
                                              f"start (exit code {entry['exit_code']}): {tail}"))
