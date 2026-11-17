@@ -477,7 +477,7 @@ Convenzioni:
 | D-241 | C#: nessun osservatore eseguiva i test .NET | eShop (`913acea66708`) | risolto | `15960a591` | csharp · passo dinamico · completezza · finale · dotnet |
 | D-270 | `services_unreachable` non diceva a quale indirizzo nessun servizio rispondeva | tududi (`71da9d7b34df`) | risolto | `e6a49324b` | javascript · passo dinamico · completezza · commit · Jest |
 | D-274 | Un'esecuzione di test che la CI non esegue non lo diceva | tududi (`71da9d7b34df`) | buco dichiarato (`tests_not_in_ci`) | `a46e5af7d` | tutti · passo dinamico · completezza · commit · GitHub Actions |
-| D-292 | Un processo ucciso con SIGKILL non lasciava registrazioni | osservatore JavaScript | risolto | `750a7aa36` | javascript, typescript · passo dinamico · completezza · prova su Modal · Playwright, Node |
+| D-292 | Un processo ucciso con SIGKILL non lasciava registrazioni | osservatore JavaScript | risolto | `750a7aa36`, `1fd31c503` | javascript, typescript · passo dinamico · completezza · prova su Modal · Playwright, Node |
 
 ### Container, servizi e driver Modal
 
@@ -4003,7 +4003,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Rimedio:** `750a7aa36` (17 novembre, android-sdk)
   - `scripts/dynamic/javascript_record.js` scrive mentre il processo gira: ogni secondo (`EVERY`) in cui ha registrato qualcosa di nuovo, mai prima di dieci volte la durata dell'ultima scrittura, il file intero in un `.tmp` rinominato al suo posto, con `final: false`; all'uscita ancora, con `final: true`;
   - `scripts/dynamic/javascript.py` toglie il buco `not_observed` del webServer, che ora gira registrato, e dà `processes_killed` per i file con `final: false`: ciò che ogni processo ha eseguito dopo la sua ultima scrittura non è registrato;
-  - poi (17 novembre, android-sdk) le `stats` del registratore dicono le scritture fatte mentre il processo girava e i loro ms (`writes`, `writing_ms`); le scritture corrono sul ciclo degli eventi, e un processo che non gli cede mai scrive alla sua uscita.
+  - poi `1fd31c503` (17 novembre, android-sdk) le `stats` del registratore dicono le scritture fatte mentre il processo girava e i loro ms (`writes`, `writing_ms`); le scritture corrono sul ciclo degli eventi, e un processo che non gli cede mai scrive alla sua uscita.
 - **Verifica:**
   - `tests/test_codebase_map_dynamic_javascript.py`: `test_a_process_killed_with_sigkill_leaves_the_calls_it_made_before` (un server Node ucciso con SIGKILL lascia le chiamate fatte prima, anche una fatta dopo la prima scrittura; sul registratore di prima fallisce senza alcun file), `test_on_modal_playwright_s_web_server_is_recorded_when_playwright_kills_it` (il webServer di Playwright, su Modal), `test_a_playwright_web_server_that_is_no_aspire_app_host_runs`, `test_fastapi_s_playwright_tests_run_as_before` e il caso `processes_killed` di `test_what_did_not_happen_is_a_gap_with_its_cause`;
   - da questo rimedio gli 8 test del registratore sotto un Node vero girano su Modal: `tests/modal_pytest.py` dà all'immagine il @babel/core 7.29.7 del registratore (`DAODAN_TEST_BABEL`); prima si saltavano;
