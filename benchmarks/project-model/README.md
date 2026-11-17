@@ -241,6 +241,16 @@ Misura lo step `stack` della pipeline (`scripts/technologies.py`, `daodan/techno
 
 ### Risultati
 
+Dopo la pulizia dello stack (`136cd87ca`: tre controlli, e un segno solo da una variabile d'ambiente resta `mentioned`), 17 novembre 2026, codice `d96bc1ec3246636d`, 178 fixture su 180 con record:
+
+| Faccia | js | py | jvm | sys | mix | real | stack | tutte |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Framework per nome, trovati / attesi | 10 / 10 | 4 / 4 | 36 / 42 | 2 / 2 | 29 / 31 | 99 / 127 | 182 / 352 | 362 / 568 |
+| Framework per unità, trovati / attesi (sbagliati) | 11 / 11 | 4 / 4 | 37 / 43 | 1 / 2 (1) | 32 / 37 | 177 / 251 (12) | 290 / 653 (37) | 552 / 1.001 (50) |
+| Servizi trovati / attesi (in più) | 1 / 1 | 2 / 3 | 1 / 2 | 0 / 0 | 11 / 33 (1) | 29 / 84 (8) | 93 / 395 (53) | 137 / 518 (62) |
+
+- Servizi in più da 77 a 62 (via Discord, Segment, Facebook e altri da un prefisso o da un identificatore), ma trovati da 159 a 137: 22 servizi veri avevano come solo prova una variabile d'ambiente e ora sono `mentioned` (PostgreSQL in atuin, fiber-go-template e quarkus-super-heroes, Sentry in fastapi, epic-stack e netbox, Redis in mix-infra-k8s-helm e lobsters, Slack, Discord, Telegram e Twilio in healthchecks). OpenTelemetry di eShop non è più un framework per nome. È D-304.
+
 Dopo D-303 (`819964b55`: lo stack nomina le unità come la pre-mappa e dà un pacchetto di catalogo allo script che lo usa), 17 novembre 2026, 178 fixture su 180 con record:
 
 | Faccia | js | py | jvm | sys | mix | real | stack | tutte |
