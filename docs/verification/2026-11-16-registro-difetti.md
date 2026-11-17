@@ -46,7 +46,7 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (75): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286
+- `tutti` (76): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287
 - `java` (46): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
@@ -75,7 +75,7 @@ Convenzioni:
 - `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
 - `servizi` (14): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261, D-275
 - `container` (13): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279, D-283
-- `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
+- `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
 - `preparazione` (11): D-044, D-045, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-063
 - `snapshot` (10): D-031, D-032, D-033, D-034, D-035, D-059, D-245, D-250, D-252, D-265
 - `documenti` (6): D-222, D-227, D-229, D-230, D-231, D-232
@@ -89,13 +89,13 @@ Convenzioni:
 - `completezza` (150): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284
 - `correttezza` (88): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280
 - `sicurezza` (29): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286
-- `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
+- `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
 - `prestazioni` (3): D-123, D-187, D-189
 
 ### Origine
 
-- `commit` (125): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283, D-284, D-285
+- `commit` (126): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283, D-284, D-285, D-287
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (31): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264, D-286
@@ -132,7 +132,7 @@ Convenzioni:
 - `scip-dotnet` (6): D-113, D-114, D-116, D-118, D-119, D-249
 - `tree-sitter` (6): D-034, D-035, D-036, D-037, D-117, D-265
 - `GitLab CI` (5): D-202, D-212, D-216, D-217, D-275
-- `Modal` (5): D-209, D-210, D-224, D-230, D-251
+- `Modal` (6): D-209, D-210, D-224, D-230, D-251, D-287
 - `Pyright` (5): D-074, D-088, D-247, D-248, D-269
 - `rust-analyzer` (5): D-041, D-143, D-144, D-237, D-239
 - `Conan` (4): D-029, D-061, D-125, D-177
@@ -208,7 +208,7 @@ Convenzioni:
 
 ## Indice
 
-286 schede: 235 risolte, 7 aperte, 44 buchi dichiarati.
+287 schede: 236 risolte, 7 aperte, 44 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -415,7 +415,7 @@ Convenzioni:
 | D-254 | L'uv dell'host non era fissato | fastapi (`aabb90126964`) | risolto da `5e3757031` e `2057bbafc` | `5e3757031`, `2057bbafc` | python · host · correttezza · review · uv |
 | D-255 | scip-clang leggeva i database di GCC con gli header builtin di GCC | otel-demo currency (`b825c7c25726`), riprodotto da android-sdk | risolto da `125ab9ebd` nella via principale e da `841cfe14f` in quella degli stadi del Dockerfile | `125ab9ebd` | c, cpp · analizzatore · correttezza · prova su Modal · scip-clang, GCC |
 | D-257 | L'analizzatore Go eseguiva sull'host `go mod download` e il compilatore C | analizzatore Go | risolto | `c13d51732` | go · analizzatore · sicurezza · review · go, git, gcc |
-| D-258 | Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto | analizzatore di Vue e Svelte | risolto | `b9aeca1fb` | vue, svelte · analizzatore · sicurezza · review · npm, typescript-language-server |
+| D-258 | Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto | analizzatore di Vue e Svelte | risolto | `b9aeca1fb`, `590466b5d` | vue, svelte · analizzatore · sicurezza · review · npm, typescript-language-server |
 | D-259 | Un header `.h` di C++ letto come C | otel-demo (`b825c7c25726`) | risolto | `bdfd7797b` | c, cpp · analizzatore · correttezza · commit |
 | D-266 | Le variabili locali di unità di traduzione diverse condividevano una chiave | tinyxml2 (`9148bdf719e9`) | risolto | `ba8a1920f` | c, cpp · analizzatore · correttezza · commit · scip-clang |
 | D-267 | zlib: il configure scritto a mano non girava prima di make | zlib (`51b7f2abdade`) | risolto | `60e3590b3` | c · analizzatore · completezza · commit · Make, Bear |
@@ -507,7 +507,7 @@ Convenzioni:
 
 ### Benchmark e documenti
 
-19 schede: 19 risolto, 0 aperto, 0 buco dichiarato.
+20 schede: 20 risolto, 0 aperto, 0 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -530,6 +530,7 @@ Convenzioni:
 | D-243 | Il driver perdeva i buchi del passo dinamico | benchmark project-model | risolto | `aea1c8c3b` | tutti · benchmark · benchmark · commit |
 | D-251 | I risultati di un giro non registravano il codice di Daodan su cui era girato | giro `ci-steps` | risolto per i giri dopo `cbc219663` | `cbc219663` | tutti · benchmark · benchmark · review · Modal |
 | D-280 | Una seconda sessione sullo stesso checkout ha committato ogni modifica in corso insieme | il checkout di Daodan | risolto | — | tutti · processo · correttezza · commit · git |
+| D-287 | Il driver della pipeline non caricava i dati che gli script leggono accanto alla loro cartella | benchmark project-model | risolto | `c1244f610` | tutti · benchmark · benchmark · commit · Modal |
 
 ## Buchi trovati
 
@@ -3394,10 +3395,15 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** host-guard-2: `engine_tools.npm_modules` lancia sull'host `npm ci` con l'ambiente dell'utente e senza rifiutare i pacchetti git o da URL, e il `tsserver.js` del `node_modules/typescript` del progetto è girato sull'host (registrato su Modal) (riportato da team-lead il 16 novembre).
 - **Spiegazione:** lo stadio di Vue e Svelte gira sull'host (`scripts/indexers/vue_svelte.py`, `NEEDS_CONTAINER` falso): installa i pacchetti del progetto con `npm_modules` (`scripts/engine_tools.py:247-250`, `env={**os.environ, ...}`), lega quel `node_modules` alla copia del progetto e chiede le chiamate a typescript-language-server, che carica il TypeScript che trova lì.
 - **Progetto e caso:** analizzatore di Vue e Svelte — revisione di host-guard-2, su Modal, 16 novembre 2026.
-- **Rimedio:** `b9aeca1fb` (16 novembre, csharp-2): Vue e Svelte passano a scip-typescript nel container di Daodan (`scripts/languages/sfc.py` legge i template, `scripts/indexers/components.py` genera il TypeScript dei componenti con lo strumento del progetto, su Node fissato per sha256); la vecchia via di `scripts/indexers/vue_svelte.py` non serve più nessun linguaggio (`LANGUAGES = ()`), resta senza chiamanti e si toglie dopo i giri reali.
-- **Verifica:** solo test, a segni: `svelte.config.js`, lo strumento Vue e svelte-kit lasciano un segno se eseguiti, e dopo un indice intero il progetto non ne ha (`tests/test_codebase_map_components.py`, `test_no_code_of_the_project_runs_on_the_host`); nessun giro dopo il commit.
-- **Stato:** risolto; il codice della vecchia via resta, senza chiamanti, fino ai giri reali.
-- **Note:** D-080 e D-159, i template non letti.
+- **Rimedio:**
+  - `b9aeca1fb` (16 novembre, csharp-2): Vue e Svelte passano a scip-typescript nel container di Daodan (`scripts/languages/sfc.py` legge i template, `scripts/indexers/components.py` genera il TypeScript dei componenti con lo strumento del progetto, su Node fissato per sha256);
+  - `590466b5d` (17 novembre, csharp-2): la vecchia via è tolta: `scripts/indexers/vue_svelte.py`, `scripts/language_servers.py` (`LspEngine`, `MirroredEngine`, multilspy), `npm_modules` con gli aiuti che usava solo lei (`npm_manifests`, `npm_key`, `package_directories`, i pacchetti di tipi e quelli locali) di `scripts/engine_tools.py`, `runtime.npm` e la loro riesportazione in `resolve_edges`; `runtime.Tool` tiene da sé l'installazione e lo specchio che usa scip-python; i due benchmark che chiamavano `npm_modules` (`benchmarks/inference-audit/adapters/ts_compiler.py`, `lang_css.py`) installano con npm nel loro container Modal.
+- **Verifica:**
+  - a segni: `svelte.config.js`, lo strumento Vue e svelte-kit lasciano un segno se eseguiti, e dopo un indice intero il progetto non ne ha (`tests/test_codebase_map_components.py`, `test_no_code_of_the_project_runs_on_the_host`);
+  - `test_vue_and_svelte_have_no_engine_on_the_host` (stesso file): Vue e Svelte sono solo di scip-typescript, che chiede il container; nessuna voce del passo chiede un motore sull'host; `language_servers` e `npm_modules` non ci sono; una voce dello store lasciata dal vecchio motore non è fresca; senza container Vue è un buco con la causa (`tests/test_codebase_map_resolve_edges.py`, `CommandLineTests`);
+  - giro `2026-11-17-vue-svelte` (script di `aca4fd008`): js-vue-pnpm, Vue fresco su 3 file su 3 con il `@vue/language-core` 2.2.12 del progetto; js-sveltekit, Svelte fresco su 2 file su 2 con il svelte2tsx 0.7.63 di scip-typescript e `svelte-kit sync` nella preparazione, `config_not_generated` sparito; hoppscotch non prova nulla: l'indice è trattenuto (D-283).
+- **Stato:** risolto.
+- **Note:** D-080 e D-159, i template non letti; D-283, l'indice di hoppscotch.
 
 #### D-259 Un header `.h` di C++ letto come C
 - **Tag:** lingua c, cpp · area analizzatore · tipo correttezza · origine commit · strumento —
@@ -4466,6 +4472,24 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** dopo, team-lead ha rieseguito l'intera suite su HEAD: 2.648 passati; nessuna revisione del contenuto. Dopo `05135d74e`, su HEAD `425006538`: 2.682 passati, e ts-container-2 conferma che `css.py`, `css_packages.js` e il loro test sono la sua versione finale.
 - **Stato:** risolto.
 - **Note:** D-219, il cui commit è `1c68cbde4`. Le prove di Codex sull'app standalone (`05135d74e`, `425006538`) sono girate nel Kiri locale, non su Modal.
+
+#### D-287 Il driver della pipeline non caricava i dati che gli script leggono accanto alla loro cartella
+- **Tag:** lingua tutti · area benchmark · tipo benchmark · origine commit · strumento Modal
+- **Descrizione:** su Modal lo step `stack` finisce con `FileNotFoundError: [Errno 2] No such file or directory: '/daodan/map/data/service-registry.json'`, e l'analisi va avanti senza tecnologie. È successo nei 3 casi del giro `2026-11-17-vue-svelte` e in `jvm-ver-gradle-tc21`, il 17 novembre (D-226).
+- **Spiegazione:**
+  - lo step `stack` (`899ba7f57`, 16 novembre) chiama `technologies.ensure`. Questo importa `service_registry`, che legge `SCRIPT_DIR.parent / "data" / "service-registry.json"` (`scripts/service_registry.py:32`); `registry_build.DATA` legge la stessa cartella;
+  - il driver caricava gli script in `/daodan/map/scripts`, poi le fixture e `score.py`, ma non `plugins/codebase-map/skills/map/data`: `UPLOADED` e l'immagine, righe 71-85 a `9964ebe92`;
+  - i giri registrati prima di `899ba7f57` non hanno lo step `stack`, che lì vale `null`.
+- **Progetto e caso:** il driver della pipeline: il giro `2026-11-17-vue-svelte` e `jvm-ver-gradle-tc21`, 17 novembre 2026.
+- **Rimedio:** `c1244f610` (17 novembre, jvm-container), `benchmarks/project-model/modal_pipeline.py`:
+  - `UPLOADED` carica anche la cartella `data` che sta accanto agli script del giro: quella del checkout, oppure quella accanto alla copia indicata da `DAODAN_SCRIPTS`. Così `code` la copre;
+  - l'immagine la mette in `REMOTE_DATA`, `/daodan/map/data`, accanto a `REMOTE_SCRIPTS`.
+- **Verifica:**
+  - `benchmarks/project-model/test_modal_pipeline.py` (`test_a_round_uploads_the_data_its_scripts_read_beside_their_folder`): rosso prima della correzione, con `AssertionError: data`;
+  - su Modal: i `test_*.py` di `benchmarks/project-model`, `tests/test_codebase_map_docker_build.py` e `tests/test_codebase_map_dynamic_services.py` danno 156 passati, con l'impronta del codice uguale ai due lati (`0945157a3a0d0278`);
+  - non misurato: un giro in cui lo step `stack` scrive le tecnologie. Basta la pipeline su un caso, circa 0,02 USD.
+- **Stato:** risolto nel driver; il giro `2026-11-17-vue-svelte` conserva lo step `stack` fallito.
+- **Note:** fra gli altri driver di Modal nessuno esegue lo step `stack` o il comando `snapshot.py technologies`, gli unici che leggono quella cartella; `modal_premap.py` carica solo gli script. D-251, il codice registrato da un giro.
 
 ## Commit feat senza difetto
 
