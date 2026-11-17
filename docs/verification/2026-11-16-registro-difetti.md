@@ -31,7 +31,7 @@ Convenzioni:
   - «solo test»: lo confermano solo le suite, che dal commit `233618aa1` girano su Modal;
   - «da verificare»: nessun commit o risultato lo prova ancora;
   - «in stage»: il lavoro è nell'indice di git, non ancora in un commit.
-- La regola invalicabile di `AGENTS.md` (`2753088a3`, poi `ae7fd8270`): il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host, e ogni strumento che Daodan lancia sull'host ha un test con un file del progetto che, se eseguito, lascia un segno. Le schede del codice del progetto sull'host: D-161 (Tailwind), D-239 (rust-analyzer), D-245 e D-250 (Git), D-248 e D-253 (l'ambiente Python), D-256 (i formattatori), D-257 (Go), D-258 (Vue e Svelte), D-263 (i programmi nella cartella del progetto), D-264 (la sonda della memoria), D-276 (l'avvio del plugin), D-281 (lo store che arriva con il progetto), D-282 (i programmi per nome nudo).
+- La regola invalicabile di `AGENTS.md` (`2753088a3`, poi `ae7fd8270`): il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host, e ogni strumento che Daodan lancia sull'host ha un test con un file del progetto che, se eseguito, lascia un segno. Le schede del codice del progetto sull'host: D-161 (Tailwind), D-239 (rust-analyzer), D-245 e D-250 (Git), D-248 e D-253 (l'ambiente Python), D-256 (i formattatori), D-257 (Go), D-258 (Vue e Svelte), D-263 (i programmi nella cartella del progetto), D-264 (la sonda della memoria), D-276 (l'avvio del plugin), D-281 e D-285 (lo store che arriva con il progetto), D-282 (i programmi per nome nudo), D-286 (i file derivati di uno store portato, aperta).
 - Tag: ogni scheda ha una riga con cinque voci, che l'«Indice dei tag» raccoglie:
   - lingua: i linguaggi del difetto, `tutti` se non dipende da un linguaggio;
   - area: `pre-mappa`, `snapshot`, `preparazione`, `host`, `parser`, `analizzatore`, `passo dinamico`, `container`, `servizi`, `driver Modal`, `explorer`, `benchmark` o `documenti`;
@@ -46,11 +46,11 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (73): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283
-- `java` (45): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265
+- `tutti` (75): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286
+- `java` (46): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
-- `kotlin` (34): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229
+- `kotlin` (35): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284
 - `python` (34): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256, D-276
 - `javascript` (32): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270
 - `typescript` (22): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265
@@ -70,9 +70,9 @@ Convenzioni:
 ### Area
 
 - `analizzatore` (122): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278
-- `pre-mappa` (39): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062
+- `pre-mappa` (40): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062, D-284
 - `passo dinamico` (36): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274
-- `host` (14): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282
+- `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
 - `servizi` (14): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261, D-275
 - `container` (13): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279, D-283
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
@@ -86,19 +86,19 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (149): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279
+- `completezza` (150): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284
 - `correttezza` (88): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280
-- `sicurezza` (27): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283
+- `sicurezza` (29): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
 - `prestazioni` (3): D-123, D-187, D-189
 
 ### Origine
 
-- `commit` (123): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283
+- `commit` (125): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283, D-284, D-285
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
-- `review` (30): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264
+- `review` (31): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264, D-286
 - `prova su Modal` (22): D-089, D-102, D-103, D-104, D-115, D-116, D-117, D-118, D-119, D-120, D-169, D-179, D-236, D-237, D-239, D-249, D-255, D-271, D-272, D-276, D-281, D-282
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
@@ -116,7 +116,7 @@ Convenzioni:
 ### Strumento
 
 - `Gradle` (29): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-058, D-063, D-064, D-089, D-090, D-094, D-095, D-097, D-098, D-101, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-112, D-180, D-221, D-223
-- `Maven` (17): D-003, D-025, D-026, D-049, D-054, D-063, D-064, D-089, D-090, D-091, D-095, D-100, D-102, D-111, D-112, D-221, D-226
+- `Maven` (18): D-003, D-025, D-026, D-049, D-054, D-063, D-064, D-089, D-090, D-091, D-095, D-100, D-102, D-111, D-112, D-221, D-226, D-284
 - `npm` (15): D-013, D-017, D-049, D-053, D-056, D-072, D-084, D-185, D-186, D-191, D-198, D-201, D-258, D-263, D-269
 - `uv` (12): D-042, D-047, D-049, D-184, D-188, D-246, D-248, D-252, D-253, D-254, D-269, D-276
 - `scip-java` (11): D-089, D-096, D-098, D-099, D-100, D-101, D-103, D-105, D-108, D-110, D-111
@@ -208,11 +208,11 @@ Convenzioni:
 
 ## Indice
 
-283 schede: 229 risolte, 12 aperte, 42 buchi dichiarati.
+286 schede: 231 risolte, 13 aperte, 42 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
-74 schede: 68 risolto, 0 aperto, 6 buco dichiarato.
+77 schede: 70 risolto, 1 aperto, 6 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -287,9 +287,12 @@ Convenzioni:
 | D-263 | Su Windows un programma si cercava anche nella cartella del progetto | host Windows | risolto | `5dcb466fe` | tutti · host · sicurezza · review · docker, podman, npm, wsl |
 | D-264 | La sonda della memoria importava i moduli della cartella del progetto | sonda della memoria | risolto | `5dcb466fe` | tutti · host · sicurezza · review · python |
 | D-265 | Un file con un errore di sintassi si perdeva intero | il corpus | risolto | `ba8a1920f` | go, rust, java, javascript, typescript, c, cpp · snapshot · completezza · finale · tree-sitter |
-| D-276 | Le righe che avviano il plugin eseguivano sull'host il `.venv` del progetto | avvio del plugin | risolto su Linux | `624561af1` | python · host · sicurezza · prova su Modal · uv, Claude Code |
+| D-276 | Le righe che avviano il plugin eseguivano sull'host il `.venv` del progetto | avvio del plugin | risolto su Linux | `624561af1`, `1dc2d6b9b` | python · host · sicurezza · prova su Modal · uv, Claude Code |
 | D-281 | Uno store che arriva con il progetto sceglieva il processo da terminare e la cartella da leggere | lo store nel progetto | risolto su Linux | `398adf80e` | tutti · host · sicurezza · prova su Modal |
 | D-282 | Sull'host taskkill, wsl.exe, rg e grep si avviavano per nome nudo | gli strumenti dell'host | risolto su Linux | `fd76f2d7d` | tutti · host · sicurezza · prova su Modal · taskkill, WSL, ripgrep, grep |
+| D-284 | `kotlin.compiler.jvmTarget` di un pom non era una toolchain | jvm-mixed-java-kotlin | risolto | `a6af77108` | java, kotlin · pre-mappa · completezza · commit · Maven |
+| D-285 | L'hook, refresh, diff e carry seguivano ciò che uno store portato dal progetto nomina | lo store nel progetto | risolto su Linux | `76214fa0f` | tutti · host · sicurezza · commit |
+| D-286 | Uno store portato dal progetto può riempire prima i file derivati | lo store nel progetto | aperto (host-guard-2) | — | tutti · host · sicurezza · review |
 
 ### Analizzatori
 
@@ -972,7 +975,7 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 | jvm-maven-multi-bom-profile | Java | name-mismatch, inherited-settings, build-variants, version-from-bom, version-indirect, internal-link, build-only-dependency, needs-build | D-112 | — |
 | jvm-maven-release-apt | Java | version-disagree, no-lockfile, version-indirect, build-only-dependency, build-generates-code | — | — |
 | jvm-maven-wrapper | Java | version-in-wrapper, no-lockfile, build-only-dependency, vendored-code | — | — |
-| jvm-mixed-java-kotlin | Java, Kotlin | custom-source-roots, no-lockfile, version-indirect, build-only-dependency, missing-file | — | — |
+| jvm-mixed-java-kotlin | Java, Kotlin | custom-source-roots, no-lockfile, version-indirect, build-only-dependency, missing-file | D-284 | — |
 | jvm-no-build | Java | no-build-file, unit-no-name, version-absent | — | — |
 | jvm-protobuf-generated | Java, Protocol Buffer | custom-source-roots, no-lockfile, build-only-dependency, generated-file, build-generates-code | D-112 | — |
 | jvm-sbt-two-subprojects | Scala | targets-as-units, name-mismatch, version-absent, no-lockfile, build-only-dependency, ambiguous-extension | — | — |
@@ -1076,7 +1079,7 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 | jvm-ver-mvn-14 | Maven, source 14 | — | — |
 | jvm-ver-mvn-21 | Maven, source 21 | — | — |
 | jvm-ver-mvn-25 | Maven, source 25 | — | — |
-| jvm-ver-mvn-5 | Maven, source 1.5 | — | — |
+| jvm-ver-mvn-5 | Maven, source 1.5 | — | D-284 |
 | jvm-ver-mvn-6 | Maven, source 1.6 | — | — |
 | jvm-ver-mvn-7 | Maven, source 1.7 | — | — |
 | jvm-ver-mvn-8 | Maven, source 1.8 | — | — |
@@ -1084,7 +1087,7 @@ Ogni progetto su cui Daodan si prova, con ciò che prova e le schede che ha rive
 | jvm-ver-mvn-cfg6 | Maven, source 1.6 nel plugin del compilatore | — | D-226 |
 | jvm-ver-mvn-rel8 | Maven, release 8 | — | — |
 
-Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-181, D-226; citate —.
+Le nominano tutte insieme (`jvm-ver-*`): rivelate D-102, D-103, D-104, D-179, D-181, D-226; citate D-284.
 
 ### Repository veri (18)
 
@@ -1952,10 +1955,13 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** le righe che avviano il server MCP (`.mcp.json`, `plugin.toml`) e quella dell'hook PostToolUse erano `uv run --no-config --no-project --script mcp_server.py`, con la cartella del progetto come cartella corrente: al primo avvio dopo l'installazione o un aggiornamento del plugin, o dopo che la cache di uv è stata svuotata, uv 0.11.28 interrogava e quindi eseguiva l'interprete `<progetto>/.venv/bin/python3` sull'host, prima che il server partisse (dal commit `624561af1`).
 - **Spiegazione:** quando lo script non ha ancora un ambiente nella cache, uv cerca un interprete a partire dalla cartella corrente; misurato su Modal con uv vero: degli otto insiemi di opzioni provati, solo un interprete esplicito o `uv --directory <cartella del plugin>` non lasciano segni.
 - **Progetto e caso:** avvio del plugin — prova di host-guard-2, commit `624561af1`, 16 novembre 2026.
-- **Rimedio:** `624561af1` (16 novembre, host-guard-2), `plugins/codebase-map/.mcp.json`, `plugins/codebase-map/plugin.toml`, `plugins/codebase-map/hooks/hooks.json`: le tre righe sono `uv --directory "${CLAUDE_PLUGIN_ROOT}" run …`; il server riceve il progetto con `--project "${CLAUDE_PROJECT_DIR}"`, che Claude Code sostituisce negli argomenti di un server stdio, la stessa cartella che prima era la cartella corrente; l'hook prende il progetto dal campo `cwd` del suo stdin, e se manca non aggiorna niente. Nessun codice Python cambia.
+- **Rimedio:**
+  - `624561af1` (16 novembre, host-guard-2), `plugins/codebase-map/.mcp.json`, `plugins/codebase-map/plugin.toml`, `plugins/codebase-map/hooks/hooks.json`: le tre righe sono `uv --directory "${CLAUDE_PLUGIN_ROOT}" run …`; il server riceve il progetto con `--project "${CLAUDE_PROJECT_DIR}"`, che Claude Code sostituisce negli argomenti di un server stdio, la stessa cartella che prima era la cartella corrente; l'hook prende il progetto dal campo `cwd` del suo stdin, e se manca non aggiorna niente. Nessun codice Python cambia.
+  - `1dc2d6b9b` (17 novembre, host-guard-2): dal primo commit il server parte dalla cartella del plugin, quindi la cartella corrente non è più il progetto, e il server legava quella; ora `mcp_service.launch_project` prende `--project`, altrimenti `CLAUDE_PROJECT_DIR`, altrimenti si ferma dicendo perché, e `mcp_server.py` non ripiega più sulla cartella corrente.
 - **Verifica:**
   - `tests/test_codebase_map_launch.py` (`test_uv_started_in_a_project_runs_nothing_of_it`, `test_the_manifest_declares_the_server_as_the_host_starts_it`), a segni: le due righe con uv vero e un `.venv` che lascia un segno;
   - dal commit, su Modal con Claude Code 2.1.322 (`benchmarks/host-guard/`: `modal_host_launch.py`, `uv_options.py` con `test_options` e `test_starts`).
+  - `tests/test_codebase_map_launch.py` (`test_the_server_takes_its_project_from_the_launch_never_from_where_it_starts`), rosso prima di `1dc2d6b9b`.
 - **Stato:** risolto su Linux; Windows non è misurato.
 - **Note:** D-248, D-253, D-264, lo stesso difetto per gli interpreti Python che Daodan avvia sull'host.
 
@@ -1978,6 +1984,40 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** `tests/test_codebase_map_host_programs.py` (`test_a_pass_is_ended_by_the_taskkill_of_the_path_never_by_the_project_s`, `test_without_wsl_nothing_named_wsl_is_started`, `test_usages_are_searched_by_a_tool_of_the_path_or_by_python_never_by_the_project_s`), a segni, veri su Linux con `.` nel `PATH`: prima partivano il `taskkill`, il `wsl.exe` e l'`rg` del progetto, e l'`rg` finto faceva rispondere «nessun uso».
 - **Stato:** risolto su Linux; Windows non è misurato.
 - **Note:** D-263.
+
+#### D-284 `kotlin.compiler.jvmTarget` di un pom non era una toolchain
+- **Tag:** lingua java, kotlin · area pre-mappa · tipo completezza · origine commit · strumento Maven
+- **Descrizione:** `scripts/premap/jvm_files.py` non leggeva `kotlin.compiler.jvmTarget`, quindi la toolchain Java 17 di jvm-mixed-java-kotlin restava fuori (dal commit `a6af77108`).
+- **Spiegazione:** è il livello di bytecode che scrive kotlin-maven-plugin, quindi una toolchain Java del pom.
+- **Progetto e caso:** jvm-mixed-java-kotlin — commit `a6af77108` di android-sdk, 17 novembre 2026.
+- **Rimedio:** `a6af77108` (17 novembre, android-sdk), `scripts/premap/jvm_files.py`: `kotlin.compiler.jvmTarget` è tra le proprietà Java del pom (campo `properties.kotlin.compiler.jvmTarget`, strumento java).
+- **Verifica:** `tests/test_codebase_map_premap.py` (`test_the_jvm_target_kotlin_compiles_to_is_a_java_toolchain_of_the_pom`); con `score.py` su Modal ogni fixture JVM Maven ha tutte le sue toolchain (jvm-ver-mvn-5…25, cfg6, rel8, multi-bom-profile, release-apt, wrapper), e jvm-mixed-java-kotlin passa a 2 su 2.
+- **Stato:** risolto.
+- **Note:** D-226.
+
+#### D-285 L'hook, refresh, diff e carry seguivano ciò che uno store portato dal progetto nomina
+- **Tag:** lingua tutti · area host · tipo sicurezza · origine commit · strumento —
+- **Descrizione:** l'hook, refresh, diff e carry usavano lo store senza i controlli che il servizio MCP applica in `_bound_run`, e un repository può portare il suo `.daodan/map` (dal commit `76214fa0f`):
+  - `latest_completed` di `runs.json` si univa come percorso: un registro che nominava una run completa altrove (assoluta, `..`) costruiva da lì una run di lavoro;
+  - un link dentro la cartella di una run si seguiva: l'aggiornamento entrava in una cartella snapshot linkata (e lì toglieva `manifest.*`), un `proposals.json` linkato si leggeva come proprio, carry copiava il file che un link nominava;
+  - con un `target` `..` in `state.json`, l'hook interrogava git sulla cartella sopra il progetto;
+  - una richiesta in sospeso in un `ui-requests.json` portato dal progetto si prendeva come chiesta dalla persona.
+- **Spiegazione:** lo stesso difetto di D-281: lo store sta nella cartella del progetto, e solo il servizio MCP lo controllava.
+- **Progetto e caso:** lo store nel progetto — commit `76214fa0f` di host-guard-2, 17 novembre 2026.
+- **Rimedio:** `76214fa0f` (17 novembre, host-guard-2), `scripts/run_store.py`, `scripts/snapshot.py`: `latest_completed` è un solo nome di cartella, altrimenti «malformed runs registry»; una run che contiene un link è rifiutata; un solo aiuto, `_project_target`, serve hook, aggiornamento e `_bound_manifest`; le richieste dell'esploratore vivono nella cartella condivisa di Daodan.
+- **Verifica:** ogni caso rosso prima del commit: `tests/test_codebase_map_working_run.py` (`test_6_a_store_that_comes_with_the_project_names_its_runs_by_name`, `test_6_a_store_that_comes_with_the_project_holds_no_link`, `test_6_the_hook_asks_git_about_no_folder_outside_the_project`), `tests/test_codebase_map_run_controls.py` (`test_a_parent_run_that_holds_a_link_is_neither_carried_nor_compared`), `tests/test_codebase_map_visual_server.py` (`test_a_request_file_that_comes_with_the_project_asks_the_host_nothing`).
+- **Stato:** risolto su Linux; Windows non è misurato.
+- **Note:** le richieste dell'esploratore in sospeso al momento dell'aggiornamento non si rivedono, una volta. D-281, D-286.
+
+#### D-286 Uno store portato dal progetto può riempire prima i file derivati
+- **Tag:** lingua tutti · area host · tipo sicurezza · origine review · strumento —
+- **Descrizione:** uno store che arriva con il progetto può portare già pronti i file che Daodan deriva: `snapshot/premap.json`, che porta i comandi che il container esegue, i documenti delle fasi, le schede e gli archi; Daodan li prende come freschi o come prove.
+- **Spiegazione:** da verificare quali file si leggono senza ricalcolarli né confrontarli con il proprio digest; D-281 e D-285 hanno chiuso i nomi di processi, cartelle, link e richieste, non i contenuti.
+- **Progetto e caso:** lo store nel progetto — segnalato da team-lead (host-guard-2), 17 novembre 2026.
+- **Rimedio:** —
+- **Verifica:** —
+- **Stato:** aperto (host-guard-2).
+- **Note:** D-281, D-285.
 
 ### Analizzatori
 
@@ -3328,7 +3368,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:**
   - `tests/test_codebase_map_indexers_go.py` (`test_nothing_of_go_starts_on_the_host`), a segni: go, la toolchain della riga `toolchain` del go.mod, git, gcc, cc, clang e scip-go finti non lasciano segni né processi;
   - dal commit, su Modal con gli strumenti veri (`benchmarks/project-model/modal_go_container.py`): prima il Go di Daodan partiva due volte sulla macchina, dopo nessun finto è chiamato e l'indice si costruisce nel container; sei casi Go della pipeline danno la stessa copertura dei risultati salvati, a meno delle classi di buchi nate dopo.
-- **Stato:** risolto; gli aiuti Go dell'host in `scripts/engine_tools.py` non hanno più chiamanti.
+- **Stato:** risolto; gli aiuti Go dell'host rimasti senza chiamanti (`GO_ASSETS`, `user_config`, `go_toolchain`, `go_environment` di `scripts/engine_tools.py`, con la loro riesportazione in `resolve_edges` e il loro test) sono tolti da `f10cd344e`.
 - **Note:** D-239, la stessa via per Rust; D-273, il workspace Go.
 #### D-258 Vue e Svelte eseguivano sull'host l'installazione npm e il TypeScript del progetto
 - **Tag:** lingua vue, svelte · area analizzatore · tipo sicurezza · origine review · strumento npm, typescript-language-server
