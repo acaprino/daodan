@@ -586,7 +586,7 @@ def _read_units(inventory: _Inventory) -> tuple[list[dict], list[dict]]:
     for rel in inventory.files:
         name = PurePosixPath(rel).name
         reader = READERS.get(name) or SUFFIX_READERS.get(PurePosixPath(rel).suffix.lower())
-        if reader is None or (name == "project.json" and "node_modules" in rel):
+        if reader is None:
             continue
         ecosystem, read = reader
         text = inventory.text(rel)

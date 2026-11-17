@@ -581,3 +581,18 @@ def test_sync_with_premap_attaches_inherited_toolchains_excluded_languages_and_m
     dyn_tools = {t["tool"]: t["version"] for t in dyn["toolchains"]}
     assert dyn_tools["java"] == "21" and dyn_tools["gradle"] == "8.10"
     assert ("app", dyn["id"]) in edges(synced, "declares")
+
+
+def test_a_nested_module_inherits_the_enclosing_tools_of_its_family_only():
+    from module_derive import attach_toolchains
+    unit = lambda path, eco, manifest: {"provenance": "build", "members": [{"path": path}],  # noqa: E731
+                                        "ecosystems": [eco], "languages": {}, "files": [manifest],
+                                        "manifests": [manifest]}
+    found = [unit(".", "npm", "package.json"), unit("api", "python", "api/pyproject.toml"),
+             unit("web", "npm", "web/package.json"), unit("app", "gradle", "app/build.gradle")]
+    attach_toolchains(found, [{"tool": tool, "version": "1", "declared_in": "mise.toml"}
+                              for tool in ("uv", "pnpm", "android-sdk")])
+    tools = {m["members"][0]["path"]: {t["tool"] for t in m["toolchains"]} for m in found}
+    assert tools["api"] == {"python", "uv"}
+    assert tools["web"] == {"node", "npm", "pnpm"}
+    assert tools["app"] == {"gradle", "java", "android-sdk"}

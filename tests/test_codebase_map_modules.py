@@ -186,6 +186,14 @@ def test_path_dependency_without_a_unit_stays_a_declared_dependency(tmp_path):
                             "detail": "proto-py -> libs/proto-py: no build unit there"}]
 
 
+def test_only_the_perimeter_leaves_a_manifest_unread(tmp_path):
+    """`tree_scope.DEPENDENCY_DIRS` keeps `node_modules/` out of the snapshot; a folder with the word in its name is
+    the project's own, and its manifest is read."""
+    _, _, graph = build(tmp_path, {"tools/node_modules-audit/project.json": '{"name":"audit"}',
+                                   "node_modules/dep/project.json": '{"name":"dep"}'})
+    assert [(m["name"], m["kind"]) for m in graph["modules"] if m["provenance"] == "build"] == [("audit", "nx-project")]
+
+
 def test_colocated_builds_do_not_claim_exclusive_import_ownership(tmp_path):
     files = {"package.json": '{"name":"web"}',
              "pyproject.toml": '[project]\nname="api"\n',

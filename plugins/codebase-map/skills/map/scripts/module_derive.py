@@ -34,6 +34,11 @@ ECOSYSTEM_TOOLS: dict[str, tuple[str, ...]] = {
     "cabal": ("cabal", "ghc"), "stack": ("stack", "ghc"), "terraform": ("terraform",), "zig": ("zig",),
     "julia": ("julia",), "dune": ("dune", "ocaml"), "buf": ("buf",),
 }
+JVM_TOOLS = ("java", "kotlin", "scala", "gradle", "maven", "android-sdk", "android-build-tools")
+INHERITED_TOOLS: dict[str, tuple[str, ...]] = {  # per family, the other tools a module takes from an enclosing folder
+    "gradle": JVM_TOOLS, "maven": JVM_TOOLS, "dotnet": ("dotnet", "dotnet-target", "c#"),
+    "npm": ("node", "npm", "pnpm", "yarn", "bun", "typescript"), "python": ("uv",),
+}
 LANGUAGE_TOOLS: dict[str, str] = {
     "python": "python", "javascript": "node", "typescript": "typescript", "tsx": "typescript", "jsx": "node",
     "rust": "rust", "go": "go", "java": "java", "kotlin": "kotlin", "scala": "scala", "csharp": "c#",
@@ -135,13 +140,8 @@ def attach_toolchains(modules: list[dict], stated: list[dict] = ()) -> None:
             mod_dir = module["members"][0]["path"]
             ancestors = sorted([d for d in by_dir if _inside(mod_dir, d)],
                                key=lambda d: (-1 if d == "." else len(d)), reverse=True)
-            relevant = set(baseline) | {t for eco in module.get("ecosystems", ()) for t in ECOSYSTEM_TOOLS.get(eco, ())}
-            if "gradle" in module.get("ecosystems", ()) or "maven" in module.get("ecosystems", ()):
-                relevant |= {"java", "kotlin", "scala", "gradle", "maven", "android-sdk", "android-build-tools"}
-            elif "dotnet" in module.get("ecosystems", ()):
-                relevant |= {"dotnet", "dotnet-target", "c#"}
-            elif set(module.get("ecosystems", ())) & {"npm", "pnpm", "lerna", "nx", "angular"}:
-                relevant |= {"node", "npm", "pnpm", "yarn", "bun", "typescript"}
+            relevant = set(baseline) | {t for eco in module.get("ecosystems", ()) for t in
+                                        ECOSYSTEM_TOOLS.get(eco, ()) + INHERITED_TOOLS.get(_family(eco), ())}
             for anc in ancestors:
                 for tool, entry in by_dir[anc].items():
                     if anc == mod_dir or tool in relevant or not relevant:
