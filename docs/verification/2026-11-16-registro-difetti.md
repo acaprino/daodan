@@ -47,10 +47,10 @@ Convenzioni:
 ### Lingua
 
 - `tutti` (76): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287
-- `java` (46): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284
+- `java` (47): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284, D-293
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
-- `kotlin` (35): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284
+- `kotlin` (36): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284, D-293
 - `python` (34): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256, D-276
 - `javascript` (34): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270, D-291, D-292
 - `typescript` (25): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290, D-291, D-292
@@ -60,7 +60,7 @@ Convenzioni:
 - `svelte` (6): D-080, D-153, D-156, D-159, D-258, D-288
 - `vue` (8): D-080, D-154, D-155, D-159, D-258, D-289, D-290, D-291
 - `css` (4): D-161, D-162, D-163, D-164
-- `scala` (2): D-011, D-092
+- `scala` (3): D-011, D-092, D-293
 - `dart` (1): D-015
 - `elixir` (1): D-012
 - `php` (1): D-015
@@ -74,7 +74,7 @@ Convenzioni:
 - `passo dinamico` (37): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274, D-292
 - `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
 - `servizi` (14): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261, D-275
-- `container` (14): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279, D-283, D-291
+- `container` (15): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279, D-283, D-291, D-293
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
 - `preparazione` (11): D-044, D-045, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-063
 - `snapshot` (10): D-031, D-032, D-033, D-034, D-035, D-059, D-245, D-250, D-252, D-265
@@ -86,7 +86,7 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (154): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291, D-292
+- `completezza` (155): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291, D-292, D-293
 - `correttezza` (89): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280, D-288
 - `sicurezza` (29): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
@@ -95,7 +95,7 @@ Convenzioni:
 
 ### Origine
 
-- `commit` (126): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283, D-284, D-285, D-287
+- `commit` (127): D-032, D-033, D-034, D-035, D-037, D-044, D-045, D-046, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-055, D-060, D-061, D-062, D-063, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-100, D-101, D-121, D-122, D-123, D-124, D-125, D-127, D-128, D-129, D-130, D-131, D-134, D-138, D-139, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-157, D-161, D-165, D-166, D-167, D-168, D-170, D-171, D-172, D-173, D-174, D-175, D-177, D-180, D-184, D-185, D-186, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-201, D-202, D-204, D-207, D-208, D-210, D-213, D-214, D-215, D-220, D-221, D-223, D-224, D-225, D-227, D-228, D-231, D-232, D-233, D-234, D-238, D-242, D-243, D-246, D-247, D-248, D-252, D-253, D-259, D-260, D-261, D-262, D-266, D-267, D-268, D-269, D-270, D-273, D-274, D-275, D-277, D-278, D-279, D-280, D-283, D-284, D-285, D-287, D-293
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (31): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264, D-286
@@ -115,8 +115,8 @@ Convenzioni:
 
 ### Strumento
 
-- `Gradle` (29): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-058, D-063, D-064, D-089, D-090, D-094, D-095, D-097, D-098, D-101, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-112, D-180, D-221, D-223
-- `Maven` (18): D-003, D-025, D-026, D-049, D-054, D-063, D-064, D-089, D-090, D-091, D-095, D-100, D-102, D-111, D-112, D-221, D-226, D-284
+- `Gradle` (30): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-058, D-063, D-064, D-089, D-090, D-094, D-095, D-097, D-098, D-101, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-112, D-180, D-221, D-223, D-293
+- `Maven` (19): D-003, D-025, D-026, D-049, D-054, D-063, D-064, D-089, D-090, D-091, D-095, D-100, D-102, D-111, D-112, D-221, D-226, D-284, D-293
 - `npm` (15): D-013, D-017, D-049, D-053, D-056, D-072, D-084, D-185, D-186, D-191, D-198, D-201, D-258, D-263, D-269
 - `uv` (12): D-042, D-047, D-049, D-184, D-188, D-246, D-248, D-252, D-253, D-254, D-269, D-276
 - `scip-java` (11): D-089, D-096, D-098, D-099, D-100, D-101, D-103, D-105, D-108, D-110, D-111
@@ -161,7 +161,7 @@ Convenzioni:
 - `pytest` (2): D-169, D-183
 - `Renovate` (2): D-046, D-217
 - `rustc` (2): D-041, D-175
-- `sbt` (2): D-011, D-092
+- `sbt` (3): D-011, D-092, D-293
 - `Tailwind` (2): D-161, D-162
 - `tsc` (2): D-072, D-115
 - `Turborepo` (2): D-190, D-191
@@ -211,7 +211,7 @@ Convenzioni:
 
 ## Indice
 
-292 schede: 240 risolte, 8 aperte, 44 buchi dichiarati.
+293 schede: 241 risolte, 8 aperte, 44 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -477,11 +477,11 @@ Convenzioni:
 | D-241 | C#: nessun osservatore eseguiva i test .NET | eShop (`913acea66708`) | risolto | `15960a591` | csharp · passo dinamico · completezza · finale · dotnet |
 | D-270 | `services_unreachable` non diceva a quale indirizzo nessun servizio rispondeva | tududi (`71da9d7b34df`) | risolto | `e6a49324b` | javascript · passo dinamico · completezza · commit · Jest |
 | D-274 | Un'esecuzione di test che la CI non esegue non lo diceva | tududi (`71da9d7b34df`) | buco dichiarato (`tests_not_in_ci`) | `a46e5af7d` | tutti · passo dinamico · completezza · commit · GitHub Actions |
-| D-292 | Un processo ucciso con SIGKILL non lasciava registrazioni | osservatore JavaScript | risolto | — | javascript, typescript · passo dinamico · completezza · prova su Modal · Playwright, Node |
+| D-292 | Un processo ucciso con SIGKILL non lasciava registrazioni | osservatore JavaScript | risolto | `750a7aa36` | javascript, typescript · passo dinamico · completezza · prova su Modal · Playwright, Node |
 
 ### Container, servizi e driver Modal
 
-27 schede: 22 risolto, 1 aperto, 4 buco dichiarato.
+28 schede: 23 risolto, 1 aperto, 4 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -512,6 +512,7 @@ Convenzioni:
 | D-279 | I valori del `.env` non arrivavano all'esecuzione di uno stadio | container | risolto | `4a999670e` | tutti · container · completezza · commit · Docker, BuildKit |
 | D-283 | Un valore del `.env` restava negli output JSON e binari e dentro parole più lunghe | container | risolto | `a41823a06`, `124c63440` | tutti · container · sicurezza · commit |
 | D-291 | I valori di un `.env.example` facevano trattenere l'indice di un intero progetto | hoppscotch (`55908a76a1d0`) | risolto | `e674c007b` | typescript, javascript, vue · container · completezza · corsa su un progetto · scip-typescript |
+| D-293 | La pre-mappa di Maven, Gradle e sbt girava sull'immagine di Temurin, non sulla base comune | container | risolto | `bb7a6b56e` | java, kotlin, scala · container · completezza · commit · Maven, Gradle, sbt |
 
 ### Benchmark e documenti
 
@@ -3999,7 +4000,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** il registratore JavaScript scriveva ciò che aveva visto solo all'uscita del processo (`process.on('exit')`) e al SIGTERM: un processo ucciso con SIGKILL, come Playwright ferma il suo webServer senza `gracefulShutdown`, non lasciava nulla, e da `408c1e7ae` il webServer era un buco `not_observed` (D-198).
 - **Spiegazione:** un SIGKILL non esegue alcun gestore.
 - **Progetto e caso:** osservatore JavaScript, la prova del webServer di Playwright su Modal (D-198) — 17 novembre 2026.
-- **Rimedio:** (17 novembre, android-sdk)
+- **Rimedio:** `750a7aa36` (17 novembre, android-sdk)
   - `scripts/dynamic/javascript_record.js` scrive mentre il processo gira: ogni secondo (`EVERY`) in cui ha registrato qualcosa di nuovo, mai prima di dieci volte la durata dell'ultima scrittura, il file intero in un `.tmp` rinominato al suo posto, con `final: false`; all'uscita ancora, con `final: true`;
   - `scripts/dynamic/javascript.py` toglie il buco `not_observed` del webServer, che ora gira registrato, e dà `processes_killed` per i file con `final: false`: ciò che ogni processo ha eseguito dopo la sua ultima scrittura non è registrato.
 - **Verifica:**
@@ -4331,6 +4332,22 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Note:** D-283.
 
 ### Benchmark e documenti
+
+#### D-293 La pre-mappa di Maven, Gradle e sbt girava sull'immagine di Temurin, non sulla base comune
+- **Tag:** lingua java, kotlin, scala · area container · tipo completezza · origine commit · strumento Maven, Gradle, sbt
+- **Descrizione:** la decisione A del proprietario (15 novembre) vuole una sola immagine per ogni linguaggio. Ciò che un linguaggio chiede oltre la base arriva come input della run. Dopo `bef968a44` scip-java girava sulla base, ma i tre modelli JVM della pre-mappa usavano ancora `eclipse-temurin:17-jdk-noble@sha256:1bedb044…`: due immagini da 190 MB e 28,5 MB compressi per lo stesso progetto.
+- **Spiegazione:** `scripts/premap/maven.py`, `gradle.py` e `sbt.py` avevano ciascuno la propria `IMAGE`, e `scripts/premap/container_runner.py` la passava a `container.run_commands`. Il JDK era quello dell'immagine.
+- **Progetto e caso:** il modulo, non un progetto.
+- **Rimedio:** `bb7a6b56e` (17 novembre, jvm-container):
+  - `scripts/preparation.py` tiene la base (`IMAGE`, `debian:trixie-slim@sha256:a72b4433…`, glibc 2.41), il JDK (`TEMURIN`, Temurin 17.0.21+9 con lo sha256 di Adoptium, `JDK_IN`, `JDK_HOME`) e una funzione sola, `unpacked(archive, home, program, link)`: scompatta un `.tar.gz` una volta nel volume di stato e lo collega dove gli script lo cercano, perché il volume passa dalla preparazione all'esecuzione e la radice del container no. `UNPACK_JDK` è quella funzione per il JDK, in `/opt/java/openjdk`;
+  - `scripts/premap/container_runner.py`: `maven`, `gradle` e `sbt` portano il JDK fra i loro file, mettono `UNPACK_JDK` in testa al setup, prima di `jar xf`, e la ripetono in ogni comando, prima delle impostazioni del proxy per Java;
+  - `scripts/indexers/jvm.py` prende la base, il JDK e `UNPACK_JDK` da `preparation`, e scarica il JDK nello stesso posto della pre-mappa (`preparation.fetched`): sull'host c'è una copia sola;
+  - le `IMAGE` di `maven.py`, `gradle.py` e `sbt.py` sono tolte.
+- **Verifica:**
+  - `tests/test_codebase_map_premap_container_runner.py`, `test_the_jvm_build_tools_run_on_the_common_base_with_the_jdk_and_the_proxy_set_for_java` e `test_the_jdk_of_the_jvm_build_tools_is_temurin_s_checked_by_the_sha256_daodan_pins`: rossi prima del codice (`AttributeError: module 'preparation' has no attribute 'IMAGE'`, poi `'TEMURIN'`);
+  - su Modal, da una copia esportata di HEAD `e674c007b` con questo diff: i `test_codebase_map_premap*`, `preparation`, `indexers*` e `dynamic*` danno 811 passati e 50 saltati, con l'impronta del codice uguale ai due lati (`d9106c28f56088b6`). I saltati sono le prove con un container vero, quelle solo per Windows e quelle che chiedono Node, Go, un JDK o .NET sul PATH;
+  - da misurare, nel giro approvato: le 6 fixture Gradle `jvm-ver-*` di D-226, un caso Maven e uno sbt. Fra le domande aperte: se il lanciatore di sbt chiede `ps`, che la base non ha.
+- **Stato:** risolto nel codice; la prova su Modal parte da `bb7a6b56e`.
 
 #### D-220 Risposte attese: il workspace di javapoet e le soluzioni .NET di zlib
 - **Tag:** lingua java, csharp · area benchmark · tipo benchmark · origine commit · strumento —
