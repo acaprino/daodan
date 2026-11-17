@@ -211,7 +211,7 @@ Convenzioni:
 
 ## Indice
 
-293 schede: 241 risolte, 8 aperte, 44 buchi dichiarati.
+293 schede: 242 risolte, 7 aperte, 44 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -299,7 +299,7 @@ Convenzioni:
 
 ### Analizzatori
 
-128 schede: 95 risolto, 6 aperto, 27 buco dichiarato.
+128 schede: 96 risolto, 5 aperto, 27 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
