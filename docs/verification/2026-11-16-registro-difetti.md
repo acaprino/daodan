@@ -86,8 +86,8 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (150): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-217, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279
-- `correttezza` (87): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280
+- `completezza` (149): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279
+- `correttezza` (88): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280
 - `sicurezza` (27): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283
 - `benchmark` (12): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
@@ -159,6 +159,7 @@ Convenzioni:
 - `pip` (2): D-049, D-188
 - `protoc` (2): D-107, D-112
 - `pytest` (2): D-169, D-183
+- `Renovate` (2): D-046, D-217
 - `rustc` (2): D-041, D-175
 - `sbt` (2): D-011, D-092
 - `Tailwind` (2): D-161, D-162
@@ -192,7 +193,6 @@ Convenzioni:
 - `prettier` (1): D-256
 - `pub` (1): D-015
 - `python` (1): D-264
-- `Renovate` (1): D-046
 - `ripgrep` (1): D-282
 - `ruff` (1): D-256
 - `rustfmt` (1): D-256
@@ -208,7 +208,7 @@ Convenzioni:
 
 ## Indice
 
-283 schede: 227 risolte, 14 aperte, 42 buchi dichiarati.
+283 schede: 229 risolte, 12 aperte, 42 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -471,7 +471,7 @@ Convenzioni:
 
 ### Container, servizi e driver Modal
 
-26 schede: 20 risolto, 2 aperto, 4 buco dichiarato.
+26 schede: 21 risolto, 1 aperto, 4 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -489,7 +489,7 @@ Convenzioni:
 | D-214 | Compose: i file del progetto montati nei servizi | passo dinamico | risolto | `f024ba3a3` | tutti · servizi · completezza · commit · Compose |
 | D-215 | Compose: `depends_on` | passo dinamico | risolto | `f024ba3a3` | tutti · servizi · correttezza · commit · Compose |
 | D-216 | GitLab CI: i file che `.gitlab-ci.yml` include | passo dinamico | aperto (test-services) | `23de469c4` | tutti · servizi · completezza · spec · GitLab CI |
-| D-217 | GitLab CI: `!reference` | da verificare | aperto (test-services) | — | tutti · servizi · completezza · review · GitLab CI |
+| D-217 | GitLab CI: `!reference` | pre-mappa della CI | risolto | `940f69e66` | tutti · servizi · correttezza · review · Renovate, GitLab CI |
 | D-218 | Kiri non stacca un container dalla sua prima rete | motore Kiri | buco dichiarato (`ci_step_not_run`) | `f024ba3a3` | tutti · container · completezza · review · Kiri |
 | D-219 | Kiri 0.2.0 rifiuta un secondo motore nella stessa distribuzione WSL | spec del passo dinamico | buco dichiarato (buco del motore Kiri) | `2adc041f1`, `1c68cbde4` | tutti · container · correttezza · spec · Kiri |
 | D-240 | Il `.env` che il progetto traccia non arrivava nel container | fastapi (`aabb90126964`) | risolto | `b1f14ac08` | python, cpp · servizi · completezza, sicurezza · ci-steps · Compose, Docker |
@@ -504,7 +504,7 @@ Convenzioni:
 
 ### Benchmark e documenti
 
-19 schede: 15 risolto, 4 aperto, 0 buco dichiarato.
+19 schede: 16 risolto, 3 aperto, 0 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -514,7 +514,7 @@ Convenzioni:
 | D-223 | Le risposte attese delle fixture Android senza i build-tools | jvm-android-app-lib, mix-poly-firebase | risolto | `68a846a4a` | java, kotlin · benchmark · benchmark · commit · Gradle, Android SDK |
 | D-224 | I test del registratore JVM saltati: l'immagine dei test senza JDK | `tests/modal_pytest.py` | risolto | `a633ebd72` | java · benchmark · benchmark · commit · Modal |
 | D-225 | Due fixture con `node --test test/` | due fixture JavaScript | risolto | `12775fee3` | javascript · benchmark · benchmark · commit |
-| D-226 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | jvm-ver-* e le fixture Maven | aperto finché non è committato | — | java · benchmark · benchmark · java-versions · Maven |
+| D-226 | Toolchain Maven contate sbagliate per il frammento di `declared_in` | jvm-ver-* e le fixture Maven | risolto | `eef3e1fef` | java · benchmark · benchmark · java-versions · Maven |
 | D-227 | README del benchmark: Rust, C e C++ «solo dove Valgrind parte» | `benchmarks/project-model/README.md` | aperto | — | c, cpp, rust · documenti · documentazione · commit · Valgrind |
 | D-228 | Il rapporto dichiarava nulla la copertura a runtime | il metodo di codebase-map | risolto | `78c03d6e8` | tutti · benchmark · benchmark · commit |
 | D-229 | Spec: il passo 2 «non esegue codice del progetto» | `docs/specs/2026-11-12-passo-dinamico.md` | risolto | `78c03d6e8` | javascript, typescript, java, kotlin, c, cpp, csharp · documenti · documentazione, sicurezza · spec |
@@ -4044,15 +4044,14 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Note:** D-202, D-217.
 
 #### D-217 GitLab CI: `!reference`
-- **Tag:** lingua tutti · area servizi · tipo completezza · origine review · strumento GitLab CI
-- **Descrizione:** segnalato da team-lead.
-- **Spiegazione:** da verificare: nessun commit lo descrive ancora.
-- **Progetto e caso:** da verificare.
-- **Rimedio:** —
-- **Verifica:** —
-- **Stato:** aperto (test-services).
-- **Note:** D-216.
-
+- **Tag:** lingua tutti · area servizi · tipo correttezza · origine review · strumento Renovate, GitLab CI
+- **Descrizione:** il lettore della pre-mappa trasformava un `!reference` di GitLab CI in fatti inventati: `services: !reference [.setup, services]` diventava due servizi chiamati «.setup» e «services», e `- !reference [.setup, script]` due righe di script, senza buco (dal commit `940f69e66`).
+- **Spiegazione:** provato su Modal con yaml 2.9.1 come lo esegue Renovate: `!reference` è solo un avviso (`TAG_RESOLVE_FAILED`), l'uscita è 0 e il JSON stampa il percorso del riferimento come valore.
+- **Progetto e caso:** pre-mappa della CI — segnalato da team-lead, commit `940f69e66` di test-services, 17 novembre 2026; nessuna fixture ha un `.gitlab-ci.yml`.
+- **Rimedio:** `940f69e66` (17 novembre, test-services), `scripts/premap/renovate.py`: il lettore stampa ogni `!reference` come `{"!reference": [percorso]}` (il `--visit` della CLI) e `renovate._referenced` li risolve come GitLab quando carica il file, prima di `extends`, annidati fino a dieci livelli; un percorso che il file non ha, o che si annida oltre dieci, è un buco `reference_not_found`, e il job non dichiara servizi né passi.
+- **Verifica:** `tests/test_codebase_map_dynamic_services.py` (`test_a_gitlab_reference_is_the_section_it_names_and_one_not_in_the_file_is_a_gap`; su Modal `test_on_modal_renovate_s_yaml_library_with_the_reader_s_visitor_marks_each_gitlab_reference`).
+- **Stato:** risolto; un riferimento che il file non risolve è il buco dichiarato `reference_not_found`.
+- **Note:** D-216, D-275.
 #### D-218 Kiri non stacca un container dalla sua prima rete
 - **Tag:** lingua tutti · area container · tipo completezza · origine review · strumento Kiri
 - **Descrizione:** il sospetto era che Kiri non avesse `network connect`. Non è un difetto: test-services ha letto il sorgente di Kiri, il cui `ops.rs:54-58` serve `network connect` e `network disconnect`, e la via del pod funziona.
@@ -4255,11 +4254,11 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Descrizione:** java-versions: le toolchain delle 11 fixture Maven e della mista contano come sbagliate.
 - **Spiegazione:** il solo frammento di `declared_in` differisce: `pom.xml#properties.maven.compiler.source` contro `pom.xml#maven.compiler.source`, come nelle altre fixture Maven del corpus (README del benchmark).
 - **Progetto e caso:** jvm-ver-* e le fixture Maven — java-versions, 16 novembre 2026.
-- **Rimedio:** non committato (dynamic-step-2): il campo di una toolchain di un pom è il suo percorso nel pom, con il plugin nominato dal suo artifactId.
+- **Rimedio:** `eef3e1fef` (17 novembre, dynamic-step-2): il campo di una toolchain di un pom è il suo percorso nel pom, con il plugin nominato dal suo artifactId.
   - nella verità, 28 voci di toolchain in 17 `expected.json` passano a `pom.xml#properties.maven.compiler.*`, `#properties.java.version` e `#properties.kotlin.compiler.jvmTarget` (`ANAGRAFICA.md` rigenerata);
   - nel lettore, `scripts/premap/jvm_files.py` scrive `maven-compiler-plugin.configuration.<campo>`, come la verità di jvm-ver-mvn-cfg6.
 - **Verifica:** `tests/test_codebase_map_premap.py` (`test_a_compiler_plugin_setting_is_named_by_its_path_in_the_pom`), rosso prima; il giro java-versions conservato, rivalutato: toolchain trovate da 8 a 29 su 30, sbagliate da 22 a 1.
-- **Stato:** aperto finché non è committato; poi risolto.
+- **Stato:** risolto.
 - **Note:** la sola toolchain sbagliata che resta è di jvm-ver-gradle-mixed-tc8: il modello di Gradle nomina `java.toolchain.languageVersion` dove la verità ha `kotlin.jvmToolchain`; quella, e la toolchain Kotlin della pre-mappa che il corpus non conta, le decide team-lead.
 #### D-227 README del benchmark: Rust, C e C++ «solo dove Valgrind parte»
 - **Tag:** lingua c, cpp, rust · area documenti · tipo documentazione · origine commit · strumento Valgrind
