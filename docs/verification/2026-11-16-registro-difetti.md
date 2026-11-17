@@ -441,7 +441,7 @@ Convenzioni:
 | D-300 | Un segno del registro nomina solo il pacchetto della voce, non i suoi componenti | scan/stack | aperto | — | tutti · analizzatore · completezza · benchmark · Modal |
 | D-301 | I requisiti Python si leggono solo da un file il cui nome comincia con `requirements` | scan/stack | aperto | — | python · analizzatore · completezza · benchmark · Modal |
 | D-302 | La snapshot di jellyfin e di kuvasz non finisce in 900 secondi: la risoluzione degli import scorre ogni file | scan/stack | aperto | — | kotlin, csharp · snapshot · prestazioni · benchmark · Modal |
-| D-303 | Lo step `stack` nomina le unità con il nome di `modules.json`, non con il riferimento della pre-mappa | scan/stack | aperto | — | tutti · analizzatore · correttezza · benchmark · Modal |
+| D-303 | Lo step `stack` dà un framework all'unità sbagliata: per il nome, o al padre invece che al sottomodulo | scan/stack | aperto | — | tutti · analizzatore · correttezza · benchmark · Modal |
 
 ### Passo dinamico e osservatori
 
@@ -3571,10 +3571,10 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 
 Casi che il giro aggiunge alle schede esistenti (da accodare alla loro «Descrizione»):
 
-#### D-303 Lo step `stack` nomina le unità con il nome di `modules.json`, non con il riferimento della pre-mappa
+#### D-303 Lo step `stack` dà un framework all'unità sbagliata: per il nome, o al padre invece che al sottomodulo
 - **Tag:** lingua tutti · area analizzatore · tipo correttezza · origine benchmark · strumento Modal
 - **Descrizione:** il giro dello stack del 17 novembre dopo l'ADR (codice `107d16779072c4cd`): i framework per unità trovati salgono da 268 a 364 su 1.001, ma gli sbagliati da 35 a 208; JVM 2 su 43 con 35 sbagliati. La tecnologia è giusta e l'unità no: atteso `:app`, dato `app` (jvm-android-app-lib); atteso `com-example:mapping-demo`, dato `mapping-demo` (jvm-maven-release-apt); atteso `:`, dato `hello-groovy` (jvm-gradle-groovy-wrapper).
-- **Spiegazione:** `technologies.json` dà per modulo il `name` di `modules.json`, mentre l'unità della pre-mappa e delle risposte attese è il suo riferimento (`scripts/premap/module_graph.py:105`: Maven `groupId:artifactId`, Gradle `:percorso`); è la doppia identità che l'inventario del piano del 17 novembre chiama «contraddizione 1». Alcuni casi sono un'attribuzione diversa e non solo un nome: JUnit Jupiter a `shop-parent` invece di `shop-service` (jvm-maven-multi-bom-profile), Jackson a `inventory` invece di `:api` (jvm-gradle-kts-catalog-composite).
+- **Spiegazione:** `technologies.json` dà per modulo il `name` di `modules.json`, mentre l'unità della pre-mappa e delle risposte attese è il suo riferimento (`scripts/premap/module_graph.py:105`: Maven `groupId:artifactId`, Gradle `:percorso`); è la doppia identità che l'inventario del piano del 17 novembre chiama «contraddizione 1». Contati sul risultato, i 208 sono di tre tipi: 76 lo stesso modulo con un altro nome; 15 attendono la radice `:` e ricevono il nome del progetto; 117 vanno a un'altra unità (real-stack 65, real 44, mix 5, jvm 3), spesso la radice o il padre al posto del sottomodulo: kotlinconf `:backend`, `:core` e `:app:androidapp` dati a `kotlinconfapp`, mealie `frontend` a `mealie`, netbox `netbox/project-static` a `netbox`, JUnit Jupiter a `shop-parent` invece di `shop-service` (jvm-maven-multi-bom-profile). Il nome spiega quindi meno della metà: il resto è l'attribuzione del segno al modulo.
 - **Progetto e caso:** le fixture jvm-*, real-* e real-stack-* — giro dello stack del 17 novembre, `results/daodan_stack.json`.
 - **Rimedio:** —
 - **Verifica:** —
