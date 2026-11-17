@@ -86,6 +86,31 @@ def test_the_script_writes_what_was_recorded(tmp_path):
     assert (project / "src/App.vue.ts").is_file() and not (project / "src/Panel.svelte.ts").exists()
 
 
+@pytest.mark.skipif(not (shutil.which("node") and (PACKAGES / "node_modules").is_dir()),
+                    reason="the runner's image holds Node and the recording's packages")
+def test_a_projects_vue_tool_older_than_its_language_plugin_gives_way_to_daodans_and_is_said(tmp_path):
+    """hoppscotch holds @vue/language-core 1.8.8 too (round 2026-11-17-vue-svelte), which exports createVueLanguage
+    and no createVueLanguagePlugin: Daodan's pin turns its components, and the record says which it stands for."""
+    project = tmp_path / "project"
+    shutil.copytree(FIXTURE / "src", project / "src")
+    old = project / "node_modules/@vue/language-core"
+    old.mkdir(parents=True)
+    (old / "package.json").write_text('{"name": "@vue/language-core", "version": "1.8.8", "main": "index.js"}',
+                                      encoding="utf-8")
+    (old / "index.js").write_text("exports.createVueLanguage = () => null;\n", encoding="utf-8")
+    (project / "package.json").write_text('{"name": "probe", "version": "1.0.0", "private": true}', encoding="utf-8")
+    (project / "tsconfig.json").write_text(json.dumps(CONFIG), encoding="utf-8")
+    (tmp_path / "list.json").write_text(json.dumps(LISTED[:1]), encoding="utf-8")
+    done = subprocess.run(["node", str(SCRIPTS / "indexers/components.cjs"), str(tmp_path / "list.json"),
+                           str(project), str(PACKAGES), str(tmp_path / "out.json"), str(PACKAGES)],
+                          capture_output=True, text=True, env={**os.environ, "NODE_OPTIONS": ""})
+    assert done.returncode == 0, done.stderr
+    written = json.loads((tmp_path / "out.json").read_text(encoding="utf-8"))
+    assert written["tools"] == {"@vue/language-core@3.3.14": {"tool": "@vue/language-core", "version": "3.3.14",
+                                                              "from": "daodan", "instead": ["1.8.8"]}}
+    assert written["components"]["src/App.vue"]["generated"] == "src/App.vue.ts"
+
+
 def test_the_index_of_the_generated_typescript_is_the_components(tmp_path):
     index = _rewritten(tmp_path)
     assert {"src/App.vue", "src/Panel.svelte", "src/main.ts"} <= set(index.documents)
@@ -226,7 +251,7 @@ def test_sveltekit_writes_its_tsconfig_in_the_preparation_with_the_projects_kit(
     prepare = seen["prepare"][2]
     sync = typescript.generator(".", typescript.GENERATORS[".svelte-kit"])
     assert prepare.index(sync) > prepare.index(preparation.restore("npm", ["."], scripts=True))
-    assert "npx --no svelte-kit sync" in sync and "npx --no svelte-kit --version" in sync  # the project's own kit
+    assert "npx --no -- svelte-kit sync" in sync and "npx --no -- svelte-kit --version" in sync  # the project's kit
     assert result["indexer"]["generated"] == [{"command": "svelte-kit sync", "path": ".", "version": "2.8.0"}]
     assert not [gap for gap in result.get("gaps", ()) if gap["kind"] == "config_not_generated"]
     # One that fails is the generation's gap, and the configuration it did not write is said with it.
@@ -257,11 +282,31 @@ def test_the_generators_line_says_what_the_projects_command_wrote_or_why_not(tmp
         assert done.returncode == 0
         return done.stderr
 
-    said = played('if [ "$3" = --version ]; then echo "svelte-kit, 2.8.0"; else touch .svelte-kit-synced; fi')
+    said = played('if [ "$4" = --version ]; then echo "svelte-kit, 2.8.0"; else touch .svelte-kit-synced; fi')
     assert said == "DAODAN-GENERATED app 2.8.0 svelte-kit sync\n" and (work / "app/.svelte-kit-synced").is_file()
     said = played("exit 1")
     assert preparation.generation_gaps(said) == [{"kind": "generation_failed", "manager": "svelte-kit", "path": "app",
                                                   "detail": "the project installs no svelte-kit here"}]
+
+
+NODE_BIN = Path(os.path.realpath(shutil.which("node"))).parent if shutil.which("node") else Path("/nowhere")
+
+
+@pytest.mark.skipif(not (NODE_BIN / "npx").is_file(), reason="npm's npx, beside Node, runs the line")
+def test_the_generators_line_reads_the_kits_version_not_npms(tmp_path, monkeypatch):
+    """npm reads `--version` wherever it stands, so `npx svelte-kit --version` printed npm's 11.19.1 on js-sveltekit
+    (round 2026-11-17-vue-svelte): after `--` the flag is the kit's. The kit here is the project's installed bin."""
+    work = tmp_path / "work"
+    kit = work / "app/node_modules/.bin/svelte-kit"
+    kit.parent.mkdir(parents=True)
+    kit.write_text('#!/bin/sh\nif [ "$1" = --version ]; then echo "svelte-kit, 2.8.0"; else touch synced; fi\n',
+                   encoding="utf-8")
+    kit.chmod(0o755)
+    monkeypatch.setattr(typescript, "WORK", str(work))
+    done = subprocess.run(["bash", "-c", typescript.generator("app", "svelte-kit sync")], capture_output=True,
+                          text=True, env={**os.environ, "npm_config_cache": str(tmp_path / "npm-cache"),
+                                          "PATH": f"{NODE_BIN}{os.pathsep}{os.environ['PATH']}"})
+    assert done.stderr == "DAODAN-GENERATED app 2.8.0 svelte-kit sync\n" and (work / "app/synced").is_file()
 
 
 MARKED = {  # the project's code a component or SvelteKit brings, each leaving a mark beside it when executed
@@ -294,7 +339,7 @@ def test_no_code_of_the_project_runs_on_the_host(tmp_path, monkeypatch):
     components.rewrite(Path(result["indexes"][0][0]), FIXTURE / "components.json", project)
     assert not list(project.rglob("MARK-*")) and not list((tmp_path / "run").rglob("MARK-*"))
     prepare, execute = seen["prepare"][2], seen["command"][2]
-    assert "npx --no svelte-kit sync" in prepare and components.SCRIPT in execute
+    assert "npx --no -- svelte-kit sync" in prepare and components.SCRIPT in execute
 
 
 def test_vue_and_svelte_have_no_engine_on_the_host():

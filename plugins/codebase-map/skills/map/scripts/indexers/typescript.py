@@ -403,13 +403,14 @@ def _extending(project_dir: Path):
 
 def generator(folder: str, command: str) -> str:
     """The preparation's line running the project's own `command` (`svelte-kit sync`) in `folder`, its binary the
-    one the restore installed (`npx --no` installs none): `DAODAN-GENERATED folder version command` on stderr when
-    it wrote, else its failure as `preparation.generation_gaps` reads one."""
+    one the restore installed (`npx --no` installs none; after `--` npm reads no flag of the command's, its
+    `--version` the first): `DAODAN-GENERATED folder version command` on stderr when it wrote, else its failure as
+    `preparation.generation_gaps` reads one."""
     binary, rest = command.split(" ", 1)
     log, path = preparation.LOG, shlex.quote(posixpath.normpath(f"{WORK}/{folder}"))
-    return (f"( cd {path} && v=$(npx --no {binary} --version 2>/dev/null | tail -n 1)"
+    return (f"( cd {path} && v=$(npx --no -- {binary} --version 2>/dev/null | tail -n 1)"
             f" && {{ [ -n \"$v\" ] || {{ echo 'the project installs no {binary} here' > {log}; false; }}; }}"
-            f" && npx --no {command} > {log} 2>&1 && echo \"DAODAN-GENERATED {folder} ${{v##* }} {command}\" >&2 )"
+            f" && npx --no -- {command} > {log} 2>&1 && echo \"DAODAN-GENERATED {folder} ${{v##* }} {command}\" >&2 )"
             f" || {{ printf 'DAODAN-GENERATE-FAILED {binary} %s\\n' {shlex.quote(folder)};"
             f" {{ grep -Ei 'error' {log} || tail -n 30 {log}; }} | head -n 30; echo DAODAN-GENERATE-END; }} >&2")
 

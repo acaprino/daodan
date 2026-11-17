@@ -10,7 +10,9 @@ TypeScript its framework's own tool generates, and the index brought back to the
   `script_(js|jsx|ts|tsx)` code carries Volar's mappings `{sourceOffsets, generatedOffsets, lengths}`).
   `components.cjs` runs it in the execution, with no network, before the indexer: the project's own, found from
   the component's folder or through the package that depends on it, else Daodan's pin (`PIN`), which the
-  preparation installs from npm; the result names whose (`tools`). The generated file is the component's name
+  preparation installs from npm; the pin too in place of a project's tool before 2.0, which has no language plugin
+  (1.8.8 exports `createVueLanguage`), and the record keeps that one's version (`instead`); the result names whose
+  (`tools`). The generated file is the component's name
   with `.ts` (`.tsx` for a component in TSX), beside it in the copy, where TypeScript finds it for an import of the
   component (an import of `foo.js` may be matched by `foo.js.ts`, `moduleNameResolver`), except in ECMAScript
   module resolution, which adds no extension: such an import is a gap (`gaps`).

@@ -5,7 +5,8 @@
 //     node components.cjs COMPONENTS_JSON WORK OURS OUT_JSON INDEXER
 //
 // COMPONENTS_JSON lists `{rel, kind, ts}`. Vue's tool is the project's, found from the component's folder or
-// through the package that depends on it (pnpm keeps it there), else the one Daodan installed under OURS; it reads
+// through the package that depends on it (pnpm keeps it there), else the one Daodan installed under OURS, also in
+// place of a project's tool older than its language plugin (2.0), whose version the record keeps (`instead`); it reads
 // with the project's TypeScript, else with the indexer's (INDEXER, scip-typescript's package folder). Then the
 // imports of a component the program's TypeScript resolves to nothing, with the module resolution that left them.
 // OUT_JSON gets the tools used and, per component, its generated file and map, or the tool's error.
@@ -37,15 +38,24 @@ function version(entry) {
   return JSON.parse(fs.readFileSync(path.join(packageOf(entry), "package.json"), "utf8")).version;
 }
 
-function vueTool(folder) {  // `{entry, from}` of the tool for a component in `folder`
+function vueTool(folder) {  // `{entry, from}` of the tool for a component in `folder`, `instead` the project's left
   const [name, via] = VUE;
   const bases = [folder, ...via.map((other) => resolve(folder, other)).filter(Boolean).map(packageOf)];
+  let instead = null;
   for (const base of bases) {
     const entry = resolve(base, name);
-    if (entry) return { entry, from: "project" };
+    if (!entry) continue;
+    // Before 2.0 the tool has no language plugin (1.8.8 exports createVueLanguage): Daodan's then, and said.
+    let plugin = null;
+    try {
+      plugin = require(entry).createVueLanguagePlugin;
+    } catch {}
+    if (typeof plugin === "function") return { entry, from: "project" };
+    instead = version(entry);
+    break;
   }
   const entry = resolve(ours, name);
-  return entry ? { entry, from: "daodan" } : null;
+  return entry ? { entry, from: "daodan", ...(instead ? { instead } : {}) } : null;
 }
 
 function starts(text) {  // the offset of each line's first character, in UTF-16 code units
@@ -133,7 +143,8 @@ for (const { rel, kind } of components) {
     continue;
   }
   const name = `@vue/language-core@${version(found.entry)}`;
-  result.tools[name] = { tool: "@vue/language-core", version: version(found.entry), from: found.from };
+  const tool = (result.tools[name] ||= { tool: "@vue/language-core", version: version(found.entry), from: found.from });
+  if (found.instead && !(tool.instead ||= []).includes(found.instead)) tool.instead.push(found.instead);
   try {
     const done = vue(found, file, fs.readFileSync(file, "utf8"));
     const generated = rel + done.extension;
