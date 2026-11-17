@@ -547,6 +547,22 @@ def test_a_name_an_untyped_module_binds_is_a_hole_with_the_cause(tmp_path):
     assert [end.detail for end in traversal.ends(f"src/main.ts#{ref}")] == ["dangling-local"]
 
 
+def test_a_name_bound_to_a_modules_default_export_the_index_leaves_unnamed_reaches_that_module(tmp_path):
+    """js-vue-pnpm `src/main.ts:4 App` (D-290): Vue's tool writes the default export as an expression
+    (`export default {} as typeof __VLS_export;`), and scip-typescript names the import of it with a local of the
+    importer it defines nowhere, while the import's source references the module. The name reaches the module,
+    as the import of a Svelte component does: the cause of an untyped import is only for one the index types not."""
+    import test_codebase_map_code_graph as graphs
+    _written(tmp_path, VUE)
+    app, module = "local 0", "scip-typescript npm probe 1.0.0 src/`App.vue.ts`/"
+    index = graphs.load(tmp_path, graphs.document("src/main.ts", [
+        graphs.occurrence(2, 7, 10, app), graphs.occurrence(2, 16, 27, module), graphs.occurrence(4, 10, 13, app)]),
+        graphs.document("src/App.vue", [graphs.occurrence(1, 0, 0, module, definition=True)]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert [(end.cls, end.key, end.chain) for end in traversal.ends(f"src/main.ts#{app}")] == [
+        ("project-value", module, ("import",))]
+
+
 CJS = {"src/index.js": 'const _ = require("lodash");\n\nmodule.exports = { first: (xs) => _.head(xs) };\n'}
 REQUIRE = 'scip-typescript npm @types/node 24.10.1 `module.d.ts`/`"node:module"`/global/require.'
 

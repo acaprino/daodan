@@ -18,8 +18,9 @@ TypeScript its framework's own tool generates, and the index brought back to the
   module resolution, which adds no extension: such an import is a gap (`gaps`).
 - `rewrite` gives each generated document of the index to its component: each occurrence through the map to the
   component's positions, in UTF-16 code units as the index's; one the map does not cover whole, both ends and the
-  same length (generated code), is left out. A Volar span maps a run of characters, of which only those marked for
-  navigation are used. The checker's pass (`typescript_unbound.js`) is brought back the same way.
+  same length (generated code), is left out; the module's definition, at the document's start, is the
+  component's start. A Volar span maps a run of characters, of which only those marked for navigation are used.
+  The checker's pass (`typescript_unbound.js`) is brought back the same way.
 """
 from __future__ import annotations
 
@@ -165,12 +166,17 @@ def _field(number: int, wire: int, value) -> bytes:
 
 
 def _occurrence(data: bytes, lines: dict) -> bytes | None:
-    """An occurrence with its range and enclosing range mapped; None when its range is not in the map."""
+    """An occurrence with its range and enclosing range mapped; None when its range is not in the map. The
+    document's module, which the indexer defines at its start with an empty range, is the component's, at its
+    start: an import of the component references it."""
     from code_graph import _fields, _ints
+    fields = list(_fields(data))
+    module = any(number == 2 and wire == 2 and value.endswith(b"/") for number, wire, value in fields)
     out, kept = bytearray(), None
-    for number, wire, value in _fields(data):
+    for number, wire, value in fields:
         if number in (1, 7):  # range, enclosing range (packed int32)
-            found = mapped(lines, _ints(value, wire))
+            values = _ints(value, wire)
+            found = [0, 0, 0] if module and list(values) == [0, 0, 0] else mapped(lines, values)
             if number == 1:
                 kept = found
             if found is not None:

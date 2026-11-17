@@ -111,6 +111,26 @@ def test_a_projects_vue_tool_older_than_its_language_plugin_gives_way_to_daodans
     assert written["components"]["src/App.vue"]["generated"] == "src/App.vue.ts"
 
 
+def test_a_default_import_of_a_vue_component_reaches_it_as_one_of_a_svelte_component_does(tmp_path):
+    """js-vue-pnpm `src/main.ts:4 App` (round 2026-11-17-vue-svelte, D-290). The recording holds the same: the
+    importer names `App` with a local it defines nowhere (Vue's default export is an expression), and the import's
+    module is the generated file's, which the indexer defines at its start, where the map holds nothing. Given back
+    at the component's start, the module is what the name reaches; `Panel` reaches its Svelte component's."""
+    import test_codebase_map_code_graph as graphs
+    index = _rewritten(tmp_path)
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+
+    def reached(line: int, column: int) -> list:
+        return sorted({(end.cls, end.key) for item in index.at[("src/main.ts", line, column)]
+                       for end in traversal.ends(item.key)})
+
+    [module] = {item.key for item in index.at[("src/main.ts", 1, 16)]}
+    [panel] = {item.key for item in index.at[("src/main.ts", 2, 18)]}
+    assert [(rel, item.line, item.start) for rel, item in index.defs[module]] == [("src/App.vue", 1, 0)]
+    assert reached(1, 7) == reached(3, 22) == [("project-value", module)]
+    assert reached(2, 7) == [("project-value", panel)]
+
+
 def test_the_index_of_the_generated_typescript_is_the_components(tmp_path):
     index = _rewritten(tmp_path)
     assert {"src/App.vue", "src/Panel.svelte", "src/main.ts"} <= set(index.documents)

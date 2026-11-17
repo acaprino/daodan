@@ -46,10 +46,12 @@ index states it as a shared range); a function value leads to the function the s
 library function whose documented contract returns its argument is a declared hop, tagged
 `declared:<package>.<function>`. scip-typescript names a member of an anonymous type, an object literal or an
 index signature another file declares with a local of the file that reads it, defined nowhere: no hop or shared
-range leads there (`same_range`), and the name bound to it ends at its own definition. `classify` names why such
-a local is a dead end: a member (`MEMBER`), or a name an import of a module TypeScript does not read binds (a
-component: no declaration of `*.vue` modules); it ends `module`, which the index names with such a local, on
-Node's module object. `unanswered` names why a member's site has no occurrence: the checker's pass says it.
+range leads there (`same_range`), and the name bound to it ends at its own definition. A name an import binds to
+a module's default export, which the index names so when the export is an expression (a Vue component's), leads to
+the module where the index defines it (`_default_import`). `classify` names why such a local is a dead end: a
+member (`MEMBER`), or a name an import of a module TypeScript does not read binds (a component: no declaration of
+`*.vue` modules); it ends `module`, which the index names with such a local, on Node's module object.
+`unanswered` names why a member's site has no occurrence: the checker's pass says it.
 """
 from __future__ import annotations
 
@@ -232,15 +234,31 @@ def _unnamed(index, key) -> bool:
     return isinstance(key, str) and "#local " in key and not index.defs.get(key)
 
 
+def _default_import(index, rel: str, occurrence, grammar: str) -> list:
+    """The module an import binds a name to the default export of, when the index defines it and references the
+    name with a local it defines nowhere: scip-typescript names so the import of an expression's export (Vue's
+    generated `export default {} as typeof __VLS_export;`)."""
+    node = index.node(rel, occurrence, grammar)
+    clause = node.parent if node is not None and node.type == "identifier" else None
+    statement = clause.parent if clause is not None and clause.type == "import_clause" else None
+    source = statement.child_by_field_name("source") if statement is not None \
+        and statement.type == "import_statement" else None
+    return [] if source is None else [(key, "import") for key in index.stated(rel, source)
+                                      if key.endswith("/") and index.defs.get(key)]
+
+
 def hops(index) -> dict:
     """Alias edges from the statements that define the names of JS/TS documents; none to a local the index
-    defines nowhere (`_unnamed`), where an alias leads nowhere: the name ends at its own definition."""
+    defines nowhere (`_unnamed`), where an alias leads nowhere: the name ends at its own definition. Such a local
+    an import binds to a module's default export leads to the module (`_default_import`)."""
     out = collections.defaultdict(list)
     for rel, occurrences in index.documents.items():
         grammar = GRAMMARS.get(Path(rel).suffix.lower())
         if grammar is None:
             continue
         for occurrence in occurrences:
+            if not occurrence.definition and _unnamed(index, occurrence.key):
+                out[occurrence.key] += _default_import(index, rel, occurrence, grammar)
             # Types, methods, modules and parameters are declarations, never aliases.
             if not occurrence.definition or occurrence.key.endswith(("#", ").", "/", ")")):
                 continue
@@ -292,7 +310,8 @@ def classify(index):
     """The cause of a local the index defines nowhere. A member, of an anonymous type, an object literal or an
     index signature another file declares, which the index names with such a local, ends on that (`MEMBER`).
     One bound by an import of a module whose extension TypeScript does not read (a `.vue` or `.svelte`
-    component) ends on why: no declaration of such modules types the import. `module`, which TypeScript reads in
+    component) ends on why, where no hop leads to the module (`_default_import`): no declaration of such modules
+    types the import. `module`, which TypeScript reads in
     a JavaScript file as the file's own module (`module.exports = …`, `require.main === module`) and the index
     names with such a local, is Node's module object: external, of the Node types that declare it with
     `require`, at the version the index references (`NODE_TYPES`), else a dead end that says none is referenced.
