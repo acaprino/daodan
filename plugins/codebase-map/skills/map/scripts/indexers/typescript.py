@@ -49,9 +49,9 @@ index signature another file declares with a local of the file that reads it, de
 range leads there (`same_range`), and the name bound to it ends at its own definition. A name an import binds to
 a module's default export, which the index names so when the export is an expression (a Vue component's), leads to
 the module where the index defines it (`_default_import`). `classify` names why such a local is a dead end: a
-member (`MEMBER`), or a name an import of a module TypeScript does not read binds (a component: no declaration of
-`*.vue` modules); it ends `module`, which the index names with such a local, on Node's module object.
-`unanswered` names why a member's site has no occurrence: the checker's pass says it.
+member (`MEMBER`), or a name an import of a module TypeScript does not read binds (a component it resolves to no
+file, or to a module the index defines nowhere); it ends `module`, which the index names with such a local, on
+Node's module object. `unanswered` names why a member's site has no occurrence: the checker's pass says it.
 """
 from __future__ import annotations
 
@@ -289,8 +289,8 @@ def same_range(index) -> dict:
     return pairs
 
 
-def _imported(root, name: str) -> str | None:
-    """The module an import statement of the document binds `name` from, None when none does."""
+def _imported(root, name: str):
+    """The source (a string node) of the import statement of the document that binds `name`, None when none does."""
     for statement in root.named_children:
         source = statement.child_by_field_name("source") if statement.type == "import_statement" else None
         clause = next((child for child in statement.named_children if child.type == "import_clause"), None)
@@ -301,7 +301,7 @@ def _imported(root, name: str) -> str | None:
             node = stack.pop()
             if node.type == "identifier" and node.text.decode("utf-8", errors="replace") == name and (
                     node.parent.type != "import_specifier" or node == node.parent.named_children[-1]):
-                return source.text.decode("utf-8", errors="replace").strip("'\"")
+                return source
             stack += node.named_children
     return None
 
@@ -310,8 +310,9 @@ def classify(index):
     """The cause of a local the index defines nowhere. A member, of an anonymous type, an object literal or an
     index signature another file declares, which the index names with such a local, ends on that (`MEMBER`).
     One bound by an import of a module whose extension TypeScript does not read (a `.vue` or `.svelte`
-    component) ends on why, where no hop leads to the module (`_default_import`): no declaration of such modules
-    types the import. `module`, which TypeScript reads in
+    component) ends on why, where no hop leads to the module (`_default_import`): TypeScript resolves the import
+    to no file (no generated TypeScript of the component, no declaration of such modules), or to a module the
+    index defines nowhere. `module`, which TypeScript reads in
     a JavaScript file as the file's own module (`module.exports = …`, `require.main === module`) and the index
     names with such a local, is Node's module object: external, of the Node types that declare it with
     `require`, at the version the index references (`NODE_TYPES`), else a dead end that says none is referenced.
@@ -337,10 +338,14 @@ def classify(index):
             root = node
             while root.parent is not None:
                 root = root.parent
-            module = _imported(root, node.text.decode("utf-8", errors="replace"))
-            suffix = posixpath.splitext(module or "")[1]
+            source = _imported(root, node.text.decode("utf-8", errors="replace"))
+            module = source.text.decode("utf-8", errors="replace").strip("'\"") if source is not None else ""
+            suffix = posixpath.splitext(module)[1]
             if suffix and suffix not in (*SUFFIXES, ".json"):
-                causes[occurrence.key] = f"no declaration of *{suffix} modules: the import is not typed"
+                causes[occurrence.key] = (
+                    "the import resolves to a module the index defines nowhere"
+                    if any(key.endswith("/") for key in index.stated(rel, source)) else
+                    f"TypeScript resolves the import to no file and finds no declaration of *{suffix} modules")
     declared = {"manager": "npm", "package": "@types/node", "version": versions.most_common(1)[0][0]} if versions \
         else "module.exports: the index names `module` with a local it defines nowhere, and references no Node " \
              "types that declare it"

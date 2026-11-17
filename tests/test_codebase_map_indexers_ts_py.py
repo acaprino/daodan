@@ -531,9 +531,11 @@ VUE = {"src/main.ts": 'import { createApp } from "vue";\nimport App from "@/App.
        "src/App.vue": "<template><p>x</p></template>\n"}
 
 
-def test_a_name_an_untyped_module_binds_is_a_hole_with_the_cause(tmp_path):
-    """js-vue-pnpm: no declaration of `*.vue` modules, so TypeScript types no import of a component; the index
-    references the import's name as a local it defines nowhere. The hole says why, not `dangling-local`."""
+def test_a_name_an_import_of_a_component_binds_is_a_hole_with_the_cause(tmp_path):
+    """The index references the name an import of a module TypeScript does not read binds as a local it defines
+    nowhere; where no hop leads on, the hole says why, not `dangling-local`: TypeScript resolves the import to no
+    file (no generated TypeScript of the component, no declaration of `*.vue` modules), or to a module the index
+    defines nowhere. Round 2026-11-17-vue-svelte said the first of js-vue-pnpm's, which was resolved (D-290)."""
     import test_codebase_map_code_graph as graphs
     _written(tmp_path, VUE)
     app, ref = "local 0", "local 1"
@@ -542,9 +544,15 @@ def test_a_name_an_untyped_module_binds_is_a_hole_with_the_cause(tmp_path):
         graphs.occurrence(1, 9, 18, ref)]))
     _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
     assert [(end.cls, end.detail) for end in traversal.ends(f"src/main.ts#{app}")] == [
-        ("dead-end", "no declaration of *.vue modules: the import is not typed")]
+        ("dead-end", "TypeScript resolves the import to no file and finds no declaration of *.vue modules")]
     # A local of a typed module, or of none, stays what the index makes of it.
     assert [end.detail for end in traversal.ends(f"src/main.ts#{ref}")] == ["dangling-local"]
+    module = "scip-typescript npm probe 1.0.0 src/`App.vue.ts`/"
+    index = graphs.load(tmp_path, graphs.document("src/main.ts", [
+        graphs.occurrence(2, 7, 10, app), graphs.occurrence(2, 16, 27, module), graphs.occurrence(4, 10, 13, app)]))
+    _hops, traversal, _prepared = code_graph.adapter_traversal(typescript, index, graphs.Snapshot({}))
+    assert [(end.cls, end.detail) for end in traversal.ends(f"src/main.ts#{app}")] == [
+        ("dead-end", "the import resolves to a module the index defines nowhere")]
 
 
 def test_a_name_bound_to_a_modules_default_export_the_index_leaves_unnamed_reaches_that_module(tmp_path):
