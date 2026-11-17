@@ -5,8 +5,8 @@ the HTML parser, the official parsers of Sass, Less and Stylus, the compilers of
 compiler and the project's Tailwind; `css.py` assembles the graph), a Node runner for its engines and the volume. One
 container per case: the checkout at its pinned commit, its files (tududi: the snapshot `modal_scip.py` kept,
 `scip-inputs/tududi/manifest.sqlite`; the others: the walk of `css.walk`, the snapshot's perimeter), the pinned
-engines (`indexers/css_engines/`, installed in the image from the lockfile), the project's packages as the engine pass
-installs them (`npm ci --ignore-scripts`), then the graph and the hand check. No model. No CDN sheet is fetched:
+engines (`indexers/css_engines/`, installed in the image from the lockfile), the project's packages installed in the
+container (`npm ci --ignore-scripts`, `_npm_modules`), then the graph and the hand check. No model. No CDN sheet is fetched:
 `remote` is empty, so a linked CDN sheet leaves its page's undeclared names as `remote-sheet` holes.
 
     modal deploy benchmarks/inference-audit/lang_css.py
@@ -463,6 +463,24 @@ def summary(graph: dict) -> dict:
     }
 
 
+def _npm_modules(target: Path) -> Path | None:
+    """The project's packages installed by npm in its clone in this container, from its lockfile when it has one,
+    scripts off; None when npm fails, which leaves no `node_modules` behind."""
+    import shutil
+    import subprocess
+    if not (target / "package.json").is_file():
+        return None
+    locked = any((target / name).is_file() for name in ("package-lock.json", "npm-shrinkwrap.json"))
+    run = subprocess.run(["npm", "ci" if locked else "install", "--ignore-scripts", "--no-audit", "--no-fund",
+                          "--loglevel=error", *([] if locked else ["--package-lock=false"])], cwd=target,
+                         capture_output=True, text=True, timeout=1800)
+    print("npm", run.returncode, run.stderr[-400:], flush=True)
+    if run.returncode == 0 and (target / "node_modules").is_dir():
+        return target / "node_modules"
+    shutil.rmtree(target / "node_modules", ignore_errors=True)
+    return None
+
+
 def _pnpm_modules(target: Path) -> Path | None:
     """A project npm cannot install (an `overrides` npm refuses) installed with the pnpm its `packageManager` names
     (pnpm 10 when it names none), from its own lockfile, scripts off, in a copy holding only the manifests."""
@@ -490,7 +508,6 @@ def css_case(name: str) -> dict:
     import os
     import shutil
     import time
-    import resolve_edges as rx
     print("code", code_sha256(), flush=True)  # compared with the checkout before trusting the run
     started = time.time()
     case = CSS_CASES[name]
@@ -504,7 +521,7 @@ def css_case(name: str) -> dict:
     else:
         files = css.walk(target)
     begun = time.time()
-    modules = rx.npm_modules(target) or _pnpm_modules(target)
+    modules = _npm_modules(target) or _pnpm_modules(target)
     installed = round(time.time() - begun, 1)
     if modules is not None and not (target / "node_modules").exists():
         os.symlink(modules, target / "node_modules", target_is_directory=True)

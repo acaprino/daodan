@@ -194,11 +194,11 @@ class EdgeViewTests(unittest.TestCase):
             ("use.py", 7): Definition(self.root / "app/tool.py", "run", line=2, column=8),
         })
         stdout = io.StringIO()
-        with mock.patch("indexers.vue_svelte.engine", return_value=engine):
+        with mock.patch.object(resolve_edges, "ScipEngine", return_value=engine):
             with contextlib.redirect_stdout(stdout):
                 code = resolve_edges.main([
                     str(self.manifest),
-                    "--engine", "typescript",
+                    "--engine", "scip",
                     "--out", str(self.edges),
                     "--report-out", str(report_file),
                     "--compact",

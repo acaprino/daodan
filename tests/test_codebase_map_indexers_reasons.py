@@ -9,8 +9,6 @@ import os
 import sys
 from pathlib import Path
 
-import pytest
-
 HERE = Path(__file__).resolve().parent
 SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
 if str(SCRIPTS) not in sys.path:
@@ -19,10 +17,9 @@ if str(SCRIPTS) not in sys.path:
 import code_graph  # noqa: E402
 import engine_pass  # noqa: E402
 import languages  # noqa: E402
-import resolve_edges  # noqa: E402
 import snapshot  # noqa: E402
 import source_files  # noqa: E402
-from indexers import css, go, rust, typescript, vue_svelte  # noqa: E402
+from indexers import css, go, rust, typescript  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 
@@ -158,84 +155,6 @@ def test_a_declaration_file_beside_a_typescript_file_of_its_name_says_typescript
         "web/src/types/common.d.ts": leaves.format("common.ts"),
         "packages/kernel/vite.config.d.ts": leaves.format("vite.config.ts"),
         "ui/Button.d.ts": leaves.format("Button.tsx")}
-
-
-# ---------------------------------------------------------------------------------------------------------------
-# Vue and Svelte: the template no adapter reads, and the languages the stage answers for
-
-TEMPLATE = "template not read: calls and bindings in it are not sites"
-
-
-@pytest.mark.parametrize("suffix, text, expected", [
-    (".vue", "<template>\n  <button @click=\"save()\">{{ f(x) }}</button>\n</template>\n<script>\n</script>\n", True),
-    (".vue", "<script>\nconst a = '<template>'\n</script>\n", False),
-    (".vue", "<!-- <template> -->\n<script setup>\nlet a\n</script>\n<style>\np {}\n</style>\n<i18n>{}</i18n>", False),
-    (".svelte", "<script>\nlet a\n</script>\n\n<style>\np {}\n</style>\n", False),
-    (".svelte", "<script>\nfunction h() {}\n</script>\n<button on:click={h}>x</button>\n", True),
-])
-def test_a_component_says_whether_it_holds_markup_outside_its_script_and_style_blocks(suffix, text, expected):
-    assert vue_svelte.has_template(text, suffix) is expected
-
-
-class Quiet(vue_svelte.TypeScriptEngine):
-    """The adapter's engine as it declares itself, its server never started: it answers nothing."""
-
-    def __init__(self):
-        pass
-
-    def probe(self):
-        return True, ""
-
-    def identity(self):
-        return "typescript@test"
-
-    def context(self):
-        return None
-
-    def definitions(self, path, line, column):
-        return []
-
-    implementations = definitions
-
-    def report(self):
-        return {}
-
-    def close(self):
-        pass
-
-
-def _stage(tmp_path: Path, sources: dict[str, str], edit: dict[str, str] | None = None) -> dict:
-    """The position stage's report over a snapshot of `sources`, `edit` written after the snapshot."""
-    root = _project(tmp_path / "proj", sources)
-    manifest = tmp_path / "manifest.sqlite"
-    snapshot.write_snapshot(root, manifest)
-    _project(root, edit or {})
-    return resolve_edges.resolve_edges(manifest, engine=Quiet(), limit=None, stride=1,
-                                       out=tmp_path / "engine-edges.sqlite")
-
-
-SCRIPTS_TOO = {"App.vue": "<script>\nexport default { methods: { go(x) { return x.run() } } }\n</script>\n",
-               "api.ts": "export function save(x: any) { return x.send() }\n"}
-
-
-def test_the_stage_of_vue_and_svelte_writes_no_entry_for_typescript_and_javascript(tmp_path):
-    """Their sites are scip-typescript's: an entry of this engine would outlive a scip-typescript that failed."""
-    assert vue_svelte.TypeScriptEngine.languages == vue_svelte.READ == ("vue", "svelte")
-    # The pass no longer gives it these languages: scip-typescript serves them (`indexers/components.py`).
-    assert vue_svelte.LANGUAGES == () and {"vue", "svelte"} <= set(typescript.LANGUAGES)
-    report = _stage(tmp_path, SCRIPTS_TOO)
-    assert report["available"], report.get("reason")
-    assert sorted(report["languages"]) == ["vue"] and report["population_language"] == "vue"
-    with open_snapshot(tmp_path / "manifest.sqlite") as store:
-        _edges, binding, reason = resolve_edges.read_edge_store(tmp_path / "engine-edges.sqlite", store)
-    assert reason is None and sorted(binding["languages"]) == ["vue"]
-
-
-def test_a_script_the_components_import_is_still_checked_against_the_snapshot(tmp_path):
-    """An answer in a component depends on the TypeScript and JavaScript files it imports: a changed one ends
-    the stage, as when the engine answered for them."""
-    report = _stage(tmp_path, SCRIPTS_TOO, edit={"api.ts": "export function other() {}\n"})
-    assert not report["available"] and "source differs from snapshot: api.ts" in report["reason"]
 
 
 # ---------------------------------------------------------------------------------------------------------------

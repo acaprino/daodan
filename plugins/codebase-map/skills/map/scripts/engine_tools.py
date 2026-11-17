@@ -1,7 +1,7 @@
-"""What the pass installs on first use into the shared directory, outside every project: language
-servers and indexers (`shared_engine_dir`), the Go and Rust toolchains, Maven artifacts, and the project's declared
-JavaScript and Python packages (`npm_modules`, `python_environment`), from manifests only and without running the
-project's code; with the machine's platform and free memory, which decide what runs."""
+"""What the pass installs on first use into the shared directory, outside every project: indexers
+(`shared_engine_dir`), the Go and Rust toolchains, Maven artifacts, and the project's declared Python packages
+(`python_environment`), from manifests only and without running the project's code; with the machine's platform
+and free memory, which decide what runs."""
 from __future__ import annotations
 
 import hashlib
@@ -16,11 +16,10 @@ import time
 from pathlib import Path, PurePosixPath
 
 from embedding_worker import shared_cache_dir
-from tree_scope import program
 
 
 def shared_engine_dir(name: str) -> Path:
-    """Where Daodan installs a language server on first use, shared across projects."""
+    """Where Daodan installs a tool on first use, shared across projects."""
     return shared_cache_dir() / "engines" / name
 
 
@@ -56,7 +55,7 @@ def free_memory() -> int | None:
 
 
 def _platform() -> str:
-    """The platform key multilspy uses in its pins: `win-x64`, `linux-arm64`, `osx-x64` and so on.
+    """The machine's platform key in Daodan's pins: `win-x64`, `linux-arm64`, `osx-x64` and so on.
 
     From `sys.platform` and the process's architecture (`PROCESSOR_ARCHITECTURE` on Windows, `os.uname`
     elsewhere). Never from `platform`: it asks Windows through WMI and, when WMI fails, runs `ver` through the
@@ -67,217 +66,10 @@ def _platform() -> str:
     return f"{system}-{'arm64' if machine.lower() in ('arm64', 'aarch64') else 'x64'}"
 
 
-def npm_manifests(root: Path) -> list[Path]:
-    """The files that decide a JavaScript project's packages: root manifest, lockfile, workspace manifests."""
-    root = Path(root)
-    package = root / "package.json"
-    if not package.is_file():
-        return []
-    found = [package, *[root / name for name in ("package-lock.json", "npm-shrinkwrap.json")
-                        if (root / name).is_file()]]
-    try:
-        workspaces = json.loads(package.read_text(encoding="utf-8")).get("workspaces") or []
-    except (OSError, ValueError):
-        workspaces = []
-    if isinstance(workspaces, dict):
-        workspaces = workspaces.get("packages") or []
-    for pattern in workspaces if isinstance(workspaces, list) else []:
-        for directory in root.glob(str(pattern)):
-            manifest = directory / "package.json"
-            if manifest.is_file() and "node_modules" not in manifest.relative_to(root).parts:
-                found.append(manifest)
-    return sorted(set(found))
-
-
-def npm_key(root: Path) -> str | None:
-    manifests = npm_manifests(root)
-    if not manifests:
-        return None
-    # The second field changes when the installation itself changes (type packages added).
-    digest = hashlib.sha256(b"npm-install\0types-1\0")
-    for manifest in manifests:
-        digest.update(manifest.relative_to(root).as_posix().encode("utf-8") + b"\0" + manifest.read_bytes() + b"\0")
-    return digest.hexdigest()[:16]
-
-
-def _declares_types(package: Path) -> bool:
-    """Whether an installed package carries its own type declarations."""
-    try:
-        data = json.loads((package / "package.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return False
-    if data.get("types") or data.get("typings") or "types" in json.dumps(data.get("exports") or {}):
-        return True
-    return (package / "index.d.ts").is_file()
-
-
-def missing_type_packages(directory: Path) -> list[str]:
-    """`@types/...` names for the declared packages installed without their own types.
-
-    A JavaScript project rarely declares them, and without them the engine cannot
-    tell what `res.send` or `request(app).get` is: the call stays unanswered
-    instead of external.
-    """
-    try:
-        data = json.loads((directory / "package.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return []
-    declared = set()
-    for table in ("dependencies", "devDependencies", "optionalDependencies"):
-        if isinstance(data.get(table), dict):
-            declared |= set(data[table])
-    wanted = []
-    for name in sorted(declared):
-        if name.startswith("@types/"):
-            continue
-        typed = "@types/" + name.lstrip("@").replace("/", "__")
-        installed = directory / "node_modules" / name
-        if typed in declared or not installed.is_dir() or _declares_types(installed):
-            continue
-        if not (directory / "node_modules" / typed).is_dir():
-            wanted.append(typed)
-    return wanted
-
-
-def _install_type_packages(npm: str, directory: Path) -> int:
-    """Install the missing type packages beside the others, without scripts; one that does
-    not exist must not cost the rest. Returns how many were installed."""
-    wanted = missing_type_packages(directory)
-    if not wanted:
-        return 0
-    base = [npm, "install", "--no-save", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error",
-            "--package-lock=false"]
-
-    def run(names, timeout):
-        return subprocess.run([*base, *names], cwd=directory, stdin=subprocess.DEVNULL, capture_output=True,
-                              text=True, timeout=timeout, shell=os.name == "nt",
-                              env={**os.environ, **node_environment(npm)}).returncode == 0
-
-    if run(wanted, 900):
-        return len(wanted)
-    return sum(1 for name in wanted if run([name], 300))
-
-
-def _local_packages(data: dict) -> list[tuple[str, str, str]]:
-    """(table, name, spec) of each package a package.json takes from a local path."""
-    return [(table, name, spec)
-            for table in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies")
-            if isinstance(data.get(table), dict) for name, spec in data[table].items()
-            if isinstance(spec, str) and spec.startswith(("file:", "link:", "workspace:", ".", "/", "~/"))]
-
-
-def _without_local_packages(manifest: Path) -> str | None:
-    """A package.json without the packages it takes from a local path, or None when it has none.
-
-    `file:`, `link:`, `workspace:` and bare paths point at the project's own code, which
-    the manifest-only copy does not hold: npm would fail on every other package too.
-    """
-    try:
-        data = json.loads(manifest.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return None
-    local = _local_packages(data)
-    for table, name, _spec in local:
-        del data[table][name]
-    return json.dumps(data, indent=2) + "\n" if local else None
-
-
-def package_directories(root: Path, limit: int = 8) -> list[Path]:
-    """Directories of the project with their own package.json and no installed packages, nearest first.
-
-    The members of a workspace are served by its root, and a directory under an
-    installed `node_modules` by that installation.
-    """
-    root = Path(root).resolve()
-    served = {manifest.parent.resolve() for manifest in npm_manifests(root)} - {root}
-    found = []
-    for current, directories, files in os.walk(root):
-        here = Path(current)
-        directories[:] = sorted(name for name in directories if name != "node_modules" and not name.startswith("."))
-        if "package.json" in files and here.resolve() not in served and not (here / "node_modules").is_dir():
-            found.append(here)
-            served |= {manifest.parent.resolve() for manifest in npm_manifests(here)}
-    return sorted(found, key=lambda path: (len(path.relative_to(root).parts), path.as_posix()))[:limit]
-
-
-def node_environment(npm: str | None = None) -> dict:
-    """Where npm and Node keep their caches for a process Daodan starts: in the shared directory. With `npm`,
-    also its folder first on the PATH: npm starts the Node beside it."""
+def node_environment() -> dict:
+    """Where npm and Node keep their caches for a process Daodan starts: in the shared directory."""
     cache = shared_cache_dir()
-    found = {"npm_config_cache": str(cache / "npm-cache"), "NODE_COMPILE_CACHE": str(cache / "node-compile-cache")}
-    if npm:
-        found["PATH"] = f"{Path(npm).parent}{os.pathsep}{os.environ.get('PATH', '')}"
-    return found
-
-
-def npm_modules(root: Path, failed: list | None = None, npm: str | None = None) -> Path | None:
-    """The project's packages installed once into the shared directory, without running any package script.
-
-    Only the manifests are copied there, so npm never sees the project's code; the
-    lockfile is honoured when there is one. Every project with the same manifests
-    shares the installation (`publish`: two at once each fill their own folder), and
-    npm's own cache spares repeated downloads. `npm` is
-    the npm to start (Daodan's), else the host's. None when the project has no
-    package.json, npm is missing or the install fails: `failed` then gets the reason
-    of the last two.
-    """
-    root = Path(root).resolve()
-    key, npm = npm_key(root), npm or program("npm")
-    if key is None or npm is None:
-        if key is not None and failed is not None:
-            failed.append("npm is not on the PATH")
-        return None
-    destination = shared_cache_dir() / "npm" / key
-    if (destination / "daodan-modules.json").is_file():
-        return destination / "node_modules"
-    print(f"installing the project's JavaScript packages into {destination} (first use)", flush=True)
-    manifests = npm_manifests(root)
-
-    def fill(partial: Path) -> None:
-        local = False
-        for manifest in manifests:
-            target = partial / manifest.relative_to(root)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            text = _without_local_packages(manifest) if manifest.name == "package.json" else None
-            if text is None:
-                shutil.copyfile(manifest, target)
-            else:
-                target.write_text(text, encoding="utf-8")
-                local = True
-        # A lockfile that still names the local packages cannot be honoured to the letter.
-        locked = not local and any(manifest.name in ("package-lock.json", "npm-shrinkwrap.json")
-                                   for manifest in manifests)
-        command = [npm, "ci" if locked else "install", "--ignore-scripts", "--no-audit", "--no-fund",
-                   "--loglevel=error", *([] if locked else ["--package-lock=false"])]
-        completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-                                   timeout=1800, shell=os.name == "nt", env={**os.environ, **node_environment(npm)})
-        if completed.returncode != 0 and locked:
-            # A lockfile out of step with its manifest still leaves the manifest to install from.
-            command = [npm, "install", "--ignore-scripts", "--no-audit", "--no-fund", "--loglevel=error"]
-            completed = subprocess.run(command, cwd=partial, stdin=subprocess.DEVNULL, capture_output=True,
-                                       text=True, timeout=1800, shell=os.name == "nt",
-                                       env={**os.environ, **node_environment(npm)})
-        if completed.returncode != 0 or not (partial / "node_modules").is_dir():
-            raise subprocess.CalledProcessError(completed.returncode, command, stderr=(
-                (completed.stderr or "").strip()[-300:] or "npm wrote no node_modules"))
-        try:
-            typed = _install_type_packages(npm, partial)
-        except (OSError, subprocess.SubprocessError):
-            typed = 0
-        if typed:
-            print(f"installed {typed} type packages for declared JavaScript packages without their own", flush=True)
-        (partial / "daodan-modules.json").write_text(json.dumps({"manifests": [m.relative_to(root).as_posix()
-                                                                               for m in manifests],
-                                                                 "type_packages": typed}), encoding="utf-8")
-
-    try:
-        publish(destination, fill, key)
-    except subprocess.CalledProcessError as error:
-        print(f"the project's JavaScript packages were not installed: {error.stderr}", flush=True)
-        if failed is not None:
-            failed.append(error.stderr)
-        return None
-    return destination / "node_modules"
+    return {"npm_config_cache": str(cache / "npm-cache"), "NODE_COMPILE_CACHE": str(cache / "node-compile-cache")}
 
 
 RUST_ANALYZER_RELEASE = "2026-11-09"

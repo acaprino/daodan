@@ -26,7 +26,6 @@ import engine_tools  # noqa: E402
 import position_stage  # noqa: E402
 import semantic_store  # noqa: E402
 import snapshot
-from indexers import vue_svelte  # noqa: E402
 from snapshot_store import _unpack, open_snapshot
 
 
@@ -594,10 +593,9 @@ class ResolveEdgesTests(unittest.TestCase):
         self.assertEqual(ref_by_id[_identity]["target_id"], free_id)
 
 
-# The entries with Python on the position engine's entry, named as the stub engines answer, for the tests of the
-# position pass.
-POSITION_ENGINES = tuple(spec._replace(name="stub", languages=("python",)) if spec.name == "typescript" else spec
-                         for spec in resolve_edges.ENGINES if spec.name != "scip-python")
+# The entries with Python on an entry named as the stub engines answer, for the tests of the position pass.
+POSITION_ENGINES = (engine_pass.EngineSpec("stub", ("python",), (), "tree_sitter", engine_pass.INDEXER_INSTALL, "python"),
+                    *(spec for spec in resolve_edges.ENGINES if spec.name != "scip-python"))
 POSITION_LANGUAGES = {language: spec for spec in reversed(POSITION_ENGINES) for language in spec.languages}
 
 
@@ -726,8 +724,8 @@ class PassLifecycleTests(unittest.TestCase):
         self.assertEqual(command[:9], [str(Path("/daodan/uv")), "run", "--quiet", *engine_tools.uv_options(),
                                        "--no-project", "--python", python])
         self.assertEqual(command[3:6], ["--no-config", "--cache-dir", str(engine_tools.shared_cache_dir() / "uv")])
-        self.assertEqual(command[9:13], ["--with", "multilspy==0.1.1", "--with", "tree-sitter==0.25.2"])
-        self.assertEqual(command[13:17], ["python", "-B", "-X", "faulthandler"])
+        self.assertEqual(command[9:11], ["--with", "tree-sitter==0.25.2"])
+        self.assertEqual(command[11:15], ["python", "-B", "-X", "faulthandler"])
         self.assertIn(str(report), command)
         # Without the pin, this interpreter, when it holds the engine.
         with mock.patch.object(engine_tools, "uv_binary", side_effect=OSError("no network")), \
@@ -1577,25 +1575,19 @@ class OfflineStageTests(unittest.TestCase):
             self.assertEqual(asked, [str(engine_pass.SCRIPT_DIR)])  # outside the project, as the stage runs
 
 
-class LanguageServerTests(unittest.TestCase):
-    def test_a_language_server_is_given_the_files_exact_line_endings(self):
-        with tempfile.TemporaryDirectory() as temp:
-            source = Path(temp) / "App.java"
-            source.write_bytes(b"class App {\r\n  void run() {}\r\n}\r\n")
-            _served, text = resolve_edges.LspEngine(Path(temp)).served_text(source)
-        self.assertEqual(text.count("\r\n"), 3)
+class ToolMirrorTests(unittest.TestCase):
+    """A tool the pass runs on the host (`indexers/runtime.py`): its install, published whole, and its mirror."""
 
     def test_two_first_installs_of_one_release_at_once_both_end_with_it_installed(self):
-        """The server and the pass, or two workers, may install one pinned release at once (Node, scip-python):
-        each fills its own folder, the first published wins, the other's is dropped and no install fails."""
+        """The pass and a worker may install one pinned release at once (Node, scip-python): each fills its own
+        folder, the first published wins, the other's is dropped and no install fails."""
         import contextlib
         import io
-        class Engine(resolve_edges.LspEngine):
-            version = "1"
-
+        from indexers import runtime
         with tempfile.TemporaryDirectory() as temp:
-            engine, other = (Engine(Path(temp), install_dir=Path(temp) / "engines") for _ in "12")
-            home = engine.install_root / "1"
+            engine, other = (runtime.Tool(Path(temp), "tool", "1") for _ in "12")
+            engine.install_root = other.install_root = Path(temp) / "engines"
+            home = engine.home()
 
             def fill(partial, inner=True):
                 (partial / "tool").write_text("one" if inner else "two", encoding="utf-8")
@@ -1609,9 +1601,8 @@ class LanguageServerTests(unittest.TestCase):
             self.assertEqual((home / "tool").read_text(encoding="utf-8"), "two")  # the first one published
             self.assertEqual(sorted(path.name for path in home.parent.iterdir()), ["1"])
 
-
-class TypeScriptMirrorTests(unittest.TestCase):
     def test_the_mirror_links_the_project_and_its_removal_leaves_every_target_intact(self):
+        from indexers import runtime
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "proj"
             (root / "src/deep").mkdir(parents=True)
@@ -1620,170 +1611,33 @@ class TypeScriptMirrorTests(unittest.TestCase):
             modules = Path(temp) / "shared/node_modules/pkg"
             modules.mkdir(parents=True)
             (modules / "index.d.ts").write_text("export declare const p: number;\n", encoding="utf-8")
-            engine = vue_svelte.TypeScriptEngine(root, install_dir=Path(temp) / "engines")
-            engine.mirror = engine.build_mirror({"node_modules": modules.parent})
-            mirror = engine.workspace_root()
-            self.assertEqual((mirror / "src/deep/a.ts").read_text(encoding="utf-8"), "export const a = 1;\n")
-            self.assertTrue((mirror / "node_modules/pkg/index.d.ts").is_file())
-            served, _text = engine.served_text(root / "src/deep/a.ts")
-            self.assertEqual(served.resolve(), (root / "src/deep/a.ts").resolve())
-            engine.cleanup()
+            with runtime.mirrored(runtime.Tool(root, "tool", "1"), {"node_modules": modules.parent}) as mirror:
+                self.assertEqual((mirror / "src/deep/a.ts").read_text(encoding="utf-8"), "export const a = 1;\n")
+                self.assertTrue((mirror / "node_modules/pkg/index.d.ts").is_file())
             self.assertFalse(mirror.exists())
             self.assertTrue((root / "src/deep/a.ts").is_file())
             self.assertTrue((modules / "index.d.ts").is_file())
             self.assertEqual(sorted(path.name for path in root.iterdir()), ["package.json", "src"])
 
-    def test_only_the_manifests_reach_npm_and_scripts_never_run(self):
-        with tempfile.TemporaryDirectory() as temp, \
-                mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"):
-            root = Path(temp) / "proj"
-            (root / "src").mkdir(parents=True)
-            (root / "src/a.ts").write_text("export const a = 1;\n", encoding="utf-8")
-            (root / "package.json").write_text('{"name": "demo", "devDependencies": {"ava": "^6"}}',
-                                               encoding="utf-8")
-            seen = []
-
-            def run(command, cwd, **_options):
-                seen.append((command, sorted(path.name for path in Path(cwd).iterdir())))
-                (Path(cwd) / "node_modules").mkdir()
-                return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
-
-            with mock.patch.object(shutil, "which", return_value="npm"), \
-                    mock.patch.object(subprocess, "run", side_effect=run):
-                first = resolve_edges.npm_modules(root)
-                again = resolve_edges.npm_modules(root)
-        self.assertEqual(first, again)
-        self.assertEqual(len(seen), 1)
-        command, files = seen[0]
-        self.assertEqual(files, ["package.json"])
-        self.assertIn("--ignore-scripts", command)
-
-    def test_two_first_installs_of_one_project_s_packages_at_once_both_end_with_them(self):
-        """The server and the pass may install one project's packages at once: each fills its own folder, the
-        first published stays, and neither fails."""
-        import contextlib
-        import io
-        with tempfile.TemporaryDirectory() as temp, \
-                mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(temp) / "cache"):
-            root = Path(temp) / "proj"
-            root.mkdir()
-            (root / "package.json").write_text('{"name": "demo"}', encoding="utf-8")
-            started, nested = [], []
-
-            def run(command, cwd, **_options):
-                if not started:  # the other process, done while this one is half-way
-                    started.append(cwd)
-                    nested.append(resolve_edges.npm_modules(root, npm="npm"))
-                (Path(cwd) / "node_modules").mkdir()
-                return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
-
-            with mock.patch.object(subprocess, "run", side_effect=run), contextlib.redirect_stdout(io.StringIO()):
-                first = resolve_edges.npm_modules(root, npm="npm")
-            self.assertEqual(nested, [first])
-            self.assertTrue((first.parent / "daodan-modules.json").is_file())
-            self.assertEqual([path.name for path in first.parent.parent.iterdir()], [first.parent.name])
-
-
-class NestedPackageTests(unittest.TestCase):
-    """A project whose packages are declared below its root, one of them taken from a local path."""
-
-    def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name).resolve() / "proj"
-        (self.root / "web/src").mkdir(parents=True)
-        (self.root / "web/src/a.ts").write_text("export const a = 1;\n", encoding="utf-8")
-        (self.root / "web/package.json").write_text(json.dumps({
-            "name": "web", "dependencies": {"left": "^1", "kit": "file:../vendor/kit", "ui": "workspace:*"}}),
-            encoding="utf-8")
-        (self.root / "web/package-lock.json").write_text("{}", encoding="utf-8")
-        (self.root / "vendor/kit").mkdir(parents=True)
-        (self.root / "vendor/kit/package.json").write_text('{"name": "kit"}', encoding="utf-8")
-        (self.root / "docs").mkdir()
-        (self.root / "docs/readme.md").write_text("# Docs\n", encoding="utf-8")
-
-    def test_package_directories_are_found_below_the_root(self):
-        found = [path.relative_to(self.root).as_posix() for path in resolve_edges.package_directories(self.root)]
-        self.assertEqual(found, ["web", "vendor/kit"])
-        (self.root / "web/node_modules").mkdir()
-        found = [path.relative_to(self.root).as_posix() for path in resolve_edges.package_directories(self.root)]
-        self.assertEqual(found, ["vendor/kit"])
-
-    def test_local_packages_are_left_out_of_the_install_and_the_project_is_untouched(self):
-        seen = []
-
-        def run(command, cwd, **_options):
-            seen.append((command, json.loads((Path(cwd) / "package.json").read_text(encoding="utf-8"))))
-            (Path(cwd) / "node_modules").mkdir()
-            return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
-
-        before = (self.root / "web/package.json").read_text(encoding="utf-8")
-        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(self.temp.name) / "cache"), \
-                mock.patch.object(shutil, "which", return_value="npm"), \
-                mock.patch.object(subprocess, "run", side_effect=run):
-            modules = resolve_edges.npm_modules(self.root / "web")
-        self.assertIsNotNone(modules)
-        command, manifest = seen[0]
-        self.assertEqual(manifest["dependencies"], {"left": "^1"})
-        self.assertEqual(command[1], "install")
-        self.assertEqual((self.root / "web/package.json").read_text(encoding="utf-8"), before)
-
-    def test_declared_packages_without_types_get_their_type_packages_without_scripts(self):
-        calls = []
-
-        def package(directory, name, **fields):
-            (directory / "node_modules" / name).mkdir(parents=True, exist_ok=True)
-            (directory / "node_modules" / name / "package.json").write_text(json.dumps({"name": name, **fields}),
-                                                                           encoding="utf-8")
-
-        def run(command, cwd, **_options):
-            calls.append(command)
-            cwd = Path(cwd)
-            if command[1] in ("ci", "install") and "--no-save" not in command:
-                package(cwd, "express")
-                package(cwd, "typed", types="index.d.ts")
-                package(cwd, "@scope/plain")
-                package(cwd, "left")
-                return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
-            names = [item for item in command if item.startswith("@types/")]
-            # One type package does not exist: the batch fails, the others install one by one.
-            ok = "@types/left" not in names
-            if ok:
-                for name in names:
-                    package(cwd, name)
-            return subprocess.CompletedProcess(command, 0 if ok else 1, stdout="", stderr="")
-
-        (self.root / "web/package.json").write_text(json.dumps({
-            "name": "web", "dependencies": {"express": "^4", "typed": "^1", "@scope/plain": "^1", "left": "^1"}}),
-            encoding="utf-8")
-        with mock.patch.object(engine_tools, "shared_cache_dir", return_value=Path(self.temp.name) / "cache"), \
-                mock.patch.object(shutil, "which", return_value="npm"), \
-                mock.patch.object(subprocess, "run", side_effect=run):
-            modules = resolve_edges.npm_modules(self.root / "web")
-        installs = [command for command in calls if "--no-save" in command]
-        self.assertEqual(sorted(item for item in installs[0] if item.startswith("@types/")),
-                         ["@types/express", "@types/left", "@types/scope__plain"])
-        self.assertTrue(all("--ignore-scripts" in command for command in installs))
-        self.assertTrue((modules / "@types/express").is_dir())
-        self.assertTrue((modules / "@types/scope__plain").is_dir())
-        self.assertFalse((modules / "@types/typed").exists())
-        self.assertEqual(json.loads((modules.parent / "daodan-modules.json").read_text(encoding="utf-8"))["type_packages"], 2)
-
-    def test_a_mirror_links_packages_below_the_root_without_writing_into_the_project(self):
-        modules = Path(self.temp.name).resolve() / "shared/node_modules"
-        (modules / "left").mkdir(parents=True)
-        (modules / "left/index.d.ts").write_text("export declare const l: number;\n", encoding="utf-8")
-        engine = vue_svelte.TypeScriptEngine(self.root, install_dir=Path(self.temp.name) / "engines")
-        engine.mirror = engine.build_mirror({"web/node_modules": modules})
-        mirror = engine.workspace_root()
-        self.assertTrue((mirror / "web/node_modules/left/index.d.ts").is_file())
-        self.assertEqual((mirror / "web/src/a.ts").read_text(encoding="utf-8"), "export const a = 1;\n")
-        self.assertTrue((mirror / "docs/readme.md").is_file())
-        self.assertFalse((self.root / "web/node_modules").exists())
-        engine.cleanup()
-        self.assertFalse(mirror.exists())
-        self.assertTrue((self.root / "web/src/a.ts").is_file())
-        self.assertTrue((modules / "left/index.d.ts").is_file())
+    def test_a_link_below_the_root_makes_its_parents_real_directories_without_writing_into_the_project(self):
+        from indexers import runtime
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve() / "proj"
+            (root / "web/src").mkdir(parents=True)
+            (root / "web/src/a.ts").write_text("export const a = 1;\n", encoding="utf-8")
+            (root / "docs").mkdir()
+            (root / "docs/readme.md").write_text("# Docs\n", encoding="utf-8")
+            modules = Path(temp).resolve() / "shared/node_modules"
+            (modules / "left").mkdir(parents=True)
+            (modules / "left/index.d.ts").write_text("export declare const l: number;\n", encoding="utf-8")
+            with runtime.mirrored(runtime.Tool(root, "tool", "1"), {"web/node_modules": modules}) as mirror:
+                self.assertTrue((mirror / "web/node_modules/left/index.d.ts").is_file())
+                self.assertEqual((mirror / "web/src/a.ts").read_text(encoding="utf-8"), "export const a = 1;\n")
+                self.assertTrue((mirror / "docs/readme.md").is_file())
+                self.assertFalse((root / "web/node_modules").exists())
+            self.assertFalse(mirror.exists())
+            self.assertTrue((root / "web/src/a.ts").is_file())
+            self.assertTrue((modules / "left/index.d.ts").is_file())
 
 
 class MavenArtifactTests(unittest.TestCase):
@@ -1888,7 +1742,7 @@ class NativeToolchainTests(unittest.TestCase):
         self.assertEqual(agents, [resolve_edges.USER_AGENT, resolve_edges.USER_AGENT])
         self.assertFalse(resolve_edges.USER_AGENT.startswith("Python-urllib"))
 
-    def test_a_mirror_keeps_what_the_server_writes_out_of_the_project(self):
+    def test_a_mirror_keeps_what_the_tool_writes_out_of_the_project(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "proj"
             (root / "src").mkdir(parents=True)
@@ -1896,14 +1750,10 @@ class NativeToolchainTests(unittest.TestCase):
             (root / "Cargo.toml").write_text('[package]\nname = "demo"\n', encoding="utf-8")
             (root / ".git").mkdir()
             from indexers import runtime
-            engine = runtime.Tool(root, "rust-analyzer", "1")
-            engine.mirror = engine.build_mirror()
-            mirror = engine.workspace_root()
-            self.assertFalse((mirror / ".git").exists())
-            (mirror / "Cargo.lock").write_text("lock", encoding="utf-8")
-            served, text = engine.served_text(root / "src/lib.rs")
-            self.assertEqual((served.resolve(), text), ((root / "src/lib.rs").resolve(), "pub fn a() {}\n"))
-            engine.cleanup()
+            with runtime.mirrored(runtime.Tool(root, "rust-analyzer", "1")) as mirror:
+                self.assertFalse((mirror / ".git").exists())
+                (mirror / "Cargo.lock").write_text("lock", encoding="utf-8")
+                self.assertEqual((mirror / "src/lib.rs").read_bytes(), b"pub fn a() {}\n")
             self.assertFalse(mirror.exists())
             self.assertEqual(sorted(path.name for path in root.iterdir()), [".git", "Cargo.toml", "src"])
             self.assertTrue((root / "src/lib.rs").is_file())
@@ -2057,25 +1907,27 @@ class LexicalCheckTests(unittest.TestCase):
 
 class CommandLineTests(unittest.TestCase):
     def test_the_command_reports_a_missing_engine_as_a_failure_with_its_recovery(self):
+        """Without a container Vue is a gap with its cause: nothing of it starts on the host (AGENTS.md)."""
         import contextlib
         import io
+        import container
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve() / "proj"
             root.mkdir()
             (root / "a.vue").write_text("<script>\nfunction f(x) { return x.f(); }\n</script>\n",
                                         encoding="utf-8")
+            (root / "package.json").write_text('{"name": "demo"}', encoding="utf-8")
             manifest = Path(temp).resolve() / "manifest.sqlite"
             snapshot.write_snapshot(root, manifest)
             stdout = io.StringIO()
-            with mock.patch.dict(sys.modules, {"multilspy": None}), contextlib.redirect_stdout(stdout):
-                code = resolve_edges.main([str(manifest), "--engine", "typescript"])
+            gap = container.Gap("no container engine answers", "install Docker or Podman, then analyze again")
+            with mock.patch.object(container, "find_engine", side_effect=gap), contextlib.redirect_stdout(stdout):
+                code = resolve_edges.main([str(manifest), "--engine", "scip-typescript"])
         self.assertEqual(code, 1)
         payload = json.loads(stdout.getvalue())
         self.assertFalse(payload["available"])
-        self.assertIn("multilspy is not installed", payload["reason"])
-        # Daodan downloads its own uv (`engine_tools.uv_binary`): none on the PATH is ever asked for.
-        self.assertEqual(payload["install"],
-                         "check the network: Daodan downloads its uv, which gives the pass multilspy")
+        self.assertEqual(payload["reason"], "the build runs only in a container: no container engine answers")
+        self.assertEqual(payload["install"], "install Docker or Podman, then analyze again")
 
 
 class CoverageTests(unittest.TestCase):
@@ -2462,7 +2314,7 @@ class IndexerStageTests(unittest.TestCase):
             "scip-python": (("python",), "python", False), "scip-java": (("java",), "java", True),
             "scip-kotlin": (("kotlin",), "kotlin", True), "scip-clang": (("c", "cpp"), "clang", True),
             "scip-dotnet": (("csharp",), "csharp", True),
-            "stylesheet": (("stylesheet",), "css", False), "typescript": ((), "vue_svelte", False)})
+            "stylesheet": (("stylesheet",), "css", False)})
 
     def test_the_resolver_names_the_entry_not_the_indexer(self):
         # rust-analyzer is also the engine of the position pass, and scip-java indexes Kotlin too.

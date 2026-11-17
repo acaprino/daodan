@@ -49,7 +49,6 @@ these edges stay in their own store instead of being merged into the lexical gra
 from __future__ import annotations
 
 import argparse
-import importlib
 import json
 import os  # noqa: F401  callers patch these three through this module
 import shutil  # noqa: F401
@@ -68,19 +67,16 @@ from languages.python import require_minimum_interpreter  # noqa: E402
 import resolution  # noqa: E402,F401
 from snapshot_store import open_snapshot  # noqa: E402
 
-# The names other modules reach through this one, from the modules that own them. The language servers come
-# before the pass: an adapter imports this module back while the pass builds `ENGINES` (`indexers/runtime.py`).
+# The names other modules reach through this one, from the modules that own them. They come before the pass:
+# an adapter imports this module back while the pass builds `ENGINES` (`indexers/runtime.py`).
 from source_positions import (byte_to_char, byte_to_utf16, char_to_byte, EngineFailure, Location,  # noqa: E402,F401
                               SourceLines, utf16_to_byte)
 from engine_tools import (_declared_requirements, _platform, download, executable_name,  # noqa: E402,F401
                           free_memory, go_jobs, GO_VERSION,
                           KOTLIN_ANALYSIS, KOTLIN_COMPILER, KOTLIN_OPT_INS, KOTLIN_RUNTIME, maven_artifact,
-                          MAVEN_CENTRAL, maven_central_dir, node_environment, npm_key, npm_manifests,
-                          npm_modules, open_url, package_directories, python_environment,
+                          MAVEN_CENTRAL, maven_central_dir, node_environment, open_url, python_environment,
                           python_manifests, RUST_ANALYZER_RELEASE, RUST_VERSION,
                           shared_cache_dir, shared_engine_dir, unpack, USER_AGENT)
-from language_servers import (_multilspy_pins, ENGINE_THREADS, LSP_REQUEST_TIMEOUT, LspEngine,  # noqa: E402,F401
-                              MirroredEngine, SERVER_MEMORY_MB)
 from scip_engine import ScipEngine  # noqa: E402,F401
 from edge_grading import (callee_column, classify_reference, grade, grade_all, inventory_files,  # noqa: E402,F401
                           project_callee_names, symbol_table, verify_sources)
@@ -139,19 +135,15 @@ def _arguments(argv: list[str] | None) -> argparse.Namespace:
 
 
 def _stage(args: argparse.Namespace, manifest: Path) -> dict:
-    """One stage's report: a precomputed SCIP index, an adapter's position engine or an indexer's graph."""
+    """One stage's report: a precomputed SCIP index asked at each call position, or an indexer's graph."""
     with open_snapshot(manifest) as store:
         project_root = (Path(store["root"]) / store["target"]).resolve()
     if project_root.is_file():
         project_root = project_root.parent
-    if args.engine == "scip":
-        engine = ScipEngine(project_root, [path.resolve() for path in args.scip_index])
-    else:
+    if args.engine != "scip":
         spec = next(spec for spec in engine_pass.ENGINES if spec.name == args.engine)
-        module = importlib.import_module(f"indexers.{spec.indexer}")
-        if not hasattr(module, "engine"):
-            return index_stage(spec, manifest, project_root, out=args.out)
-        engine = module.engine(project_root)
+        return index_stage(spec, manifest, project_root, out=args.out)
+    engine = ScipEngine(project_root, [path.resolve() for path in args.scip_index])
     return resolve_edges(manifest, engine=engine, limit=args.limit, stride=args.stride, dry_run=args.dry_run,
                          out=args.out)
 

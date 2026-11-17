@@ -1,7 +1,7 @@
 """What every indexer run shares: the engine pass's install and mirror, the downloads it allows, its outcome.
 
 An indexer installs on first use into the shared directory (`resolve_edges.shared_engine_dir`), published
-whole, with one log line and no question. It runs in a mirror of the project (`MirroredEngine.build_mirror`),
+whole, with one log line and no question. It runs in a mirror of the project (`Tool.build_mirror`),
 removed after the run, so nothing is written in the project (requirement 22 of the engine specification). It
 starts only with its `MIN_FREE` of memory free, the peak measured on a benchmark case rounded up to 256 MB, and
 downloads nothing with less than 1 GB free on the shared directory's drive.
@@ -17,10 +17,12 @@ import json
 import os
 import shutil
 import subprocess
-from pathlib import Path
+import tempfile
+from pathlib import Path, PurePosixPath
 
 import code_graph
 import resolve_edges as rx
+from engine_tools import publish
 
 MIN_DISK = 2**30
 NODE_VERSION = "v22.23.4"  # nodejs.org; the host's Node, for scip-python and the stylesheet engines
@@ -37,25 +39,94 @@ class Unavailable(Exception):
         self.reason, self.install = reason, install
 
 
-class Tool(rx.MirroredEngine):
-    """An indexer as the engine pass knows a server: installed on first use (`_install`), run in a mirror."""
+class Tool:
+    """An indexer at its pinned version: installed on first use (`_install`), run in a mirror of the project.
+
+    A package manager asked to read the project's packages may write a lock file or a checksum file beside the
+    manifest. The mirror holds a link per top-level directory and a copy of each top-level file, so such a write
+    lands in the copy. Removing the mirror never enters a link.
+    """
 
     def __init__(self, project_dir: Path, name: str, version: str, skip: tuple = (".git",)):
-        super().__init__(project_dir)
-        self.name = self.server_name = name
+        self.project_root = Path(project_dir).resolve()
+        self.name, self.version = name, version
         self.install_root = rx.shared_engine_dir(name)
         self.mirror_skip = skip
-        self._version = version
+        self.mirror: Path | None = None
 
-    def pinned(self) -> dict:
-        return {"version": self._version}
+    def home(self) -> Path:
+        return self.install_root / self.version
 
     def installed(self) -> bool:
         return (self.home() / ".installed").is_file()
 
+    def _install(self, home: Path, fill) -> None:
+        """Fill a sibling directory, then publish it whole, so an interrupted install leaves nothing usable.
+
+        Each install fills its own: the pass and a worker may install one release at once; the first published
+        stays and the other's is dropped."""
+        if (home / ".installed").is_file():
+            return
+        print(f"installing {self.name} {self.version} into {home} (first use)", flush=True)
+        publish(home, fill, self.version)
+
+    def build_mirror(self, links: dict | None = None) -> Path:
+        mirror = Path(tempfile.mkdtemp(prefix=f"daodan-{self.name}-")) / self.project_root.name
+        mirror.mkdir()
+        # A directory that receives a link is a real directory of the mirror, one link per child.
+        real = {parent.as_posix() for name in links or {} for parent in PurePosixPath(name).parents} - {"."}
+
+        def fill(source: Path, target: Path, relative: PurePosixPath) -> None:
+            for entry in source.iterdir():
+                if entry.name in self.mirror_skip:
+                    continue
+                if entry.is_dir():
+                    if (relative / entry.name).as_posix() in real:
+                        (target / entry.name).mkdir()
+                        fill(entry, target / entry.name, relative / entry.name)
+                    else:
+                        link_directory(target / entry.name, entry)
+                elif entry.is_file():
+                    shutil.copyfile(entry, target / entry.name)
+
+        fill(self.project_root, mirror, PurePosixPath(""))
+        for name, target in (links or {}).items():
+            link_directory(mirror / name, target)
+        return mirror
+
+    def cleanup(self) -> None:
+        if self.mirror is not None:
+            remove_mirror(self.mirror)
+            self.mirror.parent.rmdir()
+            self.mirror = None
+
+
+def link_directory(link: Path, target: Path) -> None:
+    """A directory link: a junction on Windows, which needs no privilege, a symbolic link elsewhere."""
+    if os.name == "nt":
+        import _winapi
+        _winapi.CreateJunction(str(target), str(link))
+    else:
+        os.symlink(target, link, target_is_directory=True)
+
+
+def remove_mirror(root: Path) -> None:
+    """Remove a mirror's links and copies without ever entering a link, so no target file is touched."""
+    root = Path(root)
+    if not root.is_dir() or root.is_symlink() or os.path.isjunction(root):
+        return
+    for entry in root.iterdir():
+        if os.path.isjunction(entry):
+            os.rmdir(entry)
+        elif entry.is_symlink() or entry.is_file():
+            entry.unlink()
+        elif entry.is_dir():
+            remove_mirror(entry)
+    root.rmdir()
+
 
 @contextlib.contextmanager
-def mirrored(engine: rx.MirroredEngine, links: dict | None = None):
+def mirrored(engine: Tool, links: dict | None = None):
     """The engine's mirror of the project for the time of a run, removed after it whatever happens."""
     engine.mirror = engine.build_mirror(links)
     try:
@@ -170,11 +241,6 @@ def node_archive(project_dir: Path, platform: str) -> Path:
         with fetching(f"Node {NODE_VERSION} for {name}", "nodejs.org"):
             tool._install(tool.home(), lambda partial: _release(asset, partial))
     return tool.home() / asset
-
-
-def npm(directory: Path) -> str:
-    """The npm of the Node in `directory`, as a program to start."""
-    return str(directory / ("npm.cmd" if os.name == "nt" else "npm"))
 
 
 def npm_install(directory: Path, prefix: Path, packages: list[str]) -> None:

@@ -297,6 +297,23 @@ def test_no_code_of_the_project_runs_on_the_host(tmp_path, monkeypatch):
     assert "npx --no svelte-kit sync" in prepare and components.SCRIPT in execute
 
 
+def test_vue_and_svelte_have_no_engine_on_the_host():
+    """The position engine Vue and Svelte had ran the project's `npm ci` and its own TypeScript's tsserver on the
+    host (D-258): scip-typescript serves them in the container alone, no entry of the pass asks an engine on the
+    host, and a store entry that engine left is not fresh."""
+    import importlib
+    import importlib.util
+    import engine_pass
+    import engine_tools
+    for language in ("vue", "svelte"):
+        spec = engine_pass.ENGINE_LANGUAGES[language]
+        assert (spec.name, spec.needs_container) == ("scip-typescript", True)
+    assert not [spec.name for spec in engine_pass.ENGINES
+                if hasattr(importlib.import_module(f"indexers.{spec.indexer}"), "engine")]
+    assert importlib.util.find_spec("language_servers") is None and not hasattr(engine_tools, "npm_modules")
+    assert not engine_pass.from_source("vue", {"engine": "typescript@typescript-language-server@4.3.3"})
+
+
 def test_the_components_and_the_lines_that_turn_them_into_typescript(tmp_path):
     (tmp_path / "A.vue").write_text('<script lang="ts">\nexport default {}\n</script>\n', encoding="utf-8")
     (tmp_path / "B.svelte").write_text("<p>{x}</p>\n", encoding="utf-8")

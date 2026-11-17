@@ -150,11 +150,10 @@ def _tools(project: Path, which: str) -> None:
     else:
         home = rx.shared_engine_dir("node") / runtime.NODE_VERSION
         _installed(home)
-        directory = runtime.node_directory(home)  # npm too, which `npm_modules` looks for on the PATH
+        directory = runtime.node_directory(home)
         directory.mkdir(parents=True, exist_ok=True)
-        for name in (rx.executable_name("node"), "npm.cmd" if os.name == "nt" else "npm"):
-            (directory / name).write_text("fake", encoding="utf-8")
-            (directory / name).chmod(0o755)
+        (directory / rx.executable_name("node")).write_text("fake", encoding="utf-8")
+        (directory / rx.executable_name("node")).chmod(0o755)
         if which == "python":  # Daodan's uv, which builds the environment
             _installed(rx.shared_engine_dir("uv") / engine_tools.UV_VERSION, {rx.executable_name("uv"): "fake"})
         package, module = NPM[which], MODULES[which]
@@ -504,14 +503,11 @@ def test_node_and_npm_keep_their_caches_in_the_shared_directory(sandbox):
     shutil.rmtree(rx.shared_engine_dir("scip-python"))
     sandbox["fake"].index = FIXTURES / "python/index.scip"
     python.index(project, sandbox["root"] / "work")
-    directory = runtime.node_directory(rx.shared_engine_dir("node") / runtime.NODE_VERSION)
-    sandbox["monkeypatch"].setenv("PATH", f"{directory}{os.pathsep}{os.environ.get('PATH', '')}")
-    rx.npm_modules(_project(sandbox, "ts"))  # the position engine's install of a project's packages
     fake = sandbox["fake"]
     started = [(command, env) for (command, _cwd), env in zip(fake.calls, fake.envs)
                if Path(command[0]).stem in ("node", "npm")]
-    assert {Path(command[0]).stem for command, _env in started} == {"node", "npm"}  # npm_package, npm_modules
-    assert len(started) == 4  # the indexer's install, its run, the checker's install (`python.PYRIGHT`), the packages'
+    assert {Path(command[0]).stem for command, _env in started} == {"node"}  # npm's own script runs on Daodan's Node
+    assert len(started) == 3  # the indexer's install, its run, the checker's install (`python.PYRIGHT`)
     for command, env in started:
         assert env is not None, command
         assert Path(env["npm_config_cache"]).is_relative_to(sandbox["cache"])

@@ -146,9 +146,9 @@ The engine pass is the pipeline after `scan` (`pipeline/`): `analyze`, `dynamic`
 and `union`, into `<run-dir>/snapshot/engine-edges.sqlite`, read by `edge_view.py`.
 `analyze` runs one analyzer per technology of the pre-map, one at a time: the index
 of scip-go for Go, rust-analyzer for Rust and scip-python for Python; in a
-container, over the build the project declares, scip-typescript for TypeScript and
-JavaScript, scip-java for Java and Kotlin, scip-dotnet for C# and scip-clang for C
-and C++; typescript-language-server for Vue and Svelte; the stylesheet graph. Each
+container, over the build the project declares, scip-typescript for TypeScript,
+JavaScript, Vue and Svelte, scip-java for Java and Kotlin, scip-dotnet for C# and
+scip-clang for C and C++; the stylesheet graph. Each
 is installed on first use under the shared Daodan directory. `dynamic` runs the
 project's declared tests in a container under a recorder and adds the calls they
 execute as observed edges (`dynamic/`). Answers whose file,

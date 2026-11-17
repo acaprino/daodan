@@ -235,8 +235,7 @@ class EngineSpec(NamedTuple):
     """One analyzer of the derived pass: its languages and what its stage environment needs.
 
     The entry names its adapter module under `indexers/` (`indexer`): its stage runs that indexer and builds
-    the graph of its languages (`index_stage`), or, for an adapter that declares `engine`, asks that engine
-    at each call position (`resolve_edges`). One that `needs_container` builds the project, which happens
+    the graph of its languages (`index_stage`). One that `needs_container` builds the project, which happens
     only in a container: the stage finds the container engine before the indexer starts. A stage needs the
     snapshot's parser, plus the adapter's `REQUIREMENTS` when it declares them (`IMPORT` is the module that
     shows they are there, `INSTALL` what to do without them).

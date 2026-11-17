@@ -1,7 +1,7 @@
 """The TypeScript compiler API in batch, for JavaScript and TypeScript: a second source beside the SCIP index.
 
 `analyze` builds one program over a copy of the checkout (`allowJs`, the generated tsconfig of the plugin's
-`indexers/typescript.py`, the engine pass's package install) and asks the checker, in one Node process
+`indexers/typescript.py`, the project's packages, npm's install when it has none) and asks the checker, in one Node process
 (`ts_compiler.js`), for every call and `new`: `getResolvedSignature(call).declaration`, else the symbol at the
 callee's name through `getAliasedSymbol`. TypeScript 7.0 ships without a JavaScript API; `@typescript/typescript6`
 re-exports the 6.0 one (the TypeScript blog, 7.0 announcement). An edge's `callee` is `file:line:column` of the
@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -33,22 +34,35 @@ def _link(source: str, destination: str) -> None:
         shutil.copy2(source, destination)
 
 
+def install(folder: Path) -> None:
+    """`folder`'s packages installed there by npm, in this container: from its lockfile when it has one, without
+    their scripts. A failed install leaves the folder without them."""
+    if not (folder / "package.json").is_file():
+        return
+    locked = any((folder / name).is_file() for name in ("package-lock.json", "npm-shrinkwrap.json"))
+    env = dict(os.environ, PATH=f"{NODE}{os.pathsep}{os.environ.get('PATH', '')}")
+    subprocess.run([shutil.which("npm", path=env["PATH"]) or "npm", "ci" if locked else "install", "--ignore-scripts",
+                    "--no-audit", "--no-fund", "--loglevel=error", *([] if locked else ["--package-lock=false"])],
+                   cwd=folder, env=env, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=1800)
+
+
 def mirror(project_dir: Path, work_dir: Path) -> Path:
-    """A copy of the checkout with its packages inside it (hard links), so every file resolves under it."""
-    import resolve_edges as rx
+    """A copy of the checkout with its packages inside it (hard links), so every file resolves under it: the
+    project's own, else npm's install in the copy (`install`)."""
     here = Path(work_dir) / "mirror-strong-js"
     if here.exists():
         return here
     shutil.copytree(project_dir, here, symlinks=True, ignore=shutil.ignore_patterns("node_modules", ".git"))
-    own = Path(project_dir) / "node_modules"
-    modules = own if own.is_dir() else rx.npm_modules(Path(project_dir))  # npm ci --ignore-scripts, shared cache
-    if modules is not None:
-        for found in sorted(modules.parent.rglob("node_modules")):
-            relative = found.relative_to(modules.parent)
-            if "node_modules" in relative.parts[:-1] or (here / relative).exists():
-                continue
-            (here / relative).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(found, here / relative, symlinks=True, copy_function=_link)
+    modules = Path(project_dir) / "node_modules"
+    if not modules.is_dir():
+        install(here)
+        return here
+    for found in sorted(modules.parent.rglob("node_modules")):
+        relative = found.relative_to(modules.parent)
+        if "node_modules" in relative.parts[:-1] or (here / relative).exists():
+            continue
+        (here / relative).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(found, here / relative, symlinks=True, copy_function=_link)
     return here
 
 
