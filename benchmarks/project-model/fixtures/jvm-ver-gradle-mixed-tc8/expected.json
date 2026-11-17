@@ -55,7 +55,7 @@
     {
       "tool": "java",
       "version": "8",
-      "declared_in": "build.gradle.kts#kotlin.jvmToolchain"
+      "declared_in": "build.gradle.kts#java.toolchain.languageVersion"
     }
   ],
   "dependencies": [

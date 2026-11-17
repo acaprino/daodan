@@ -773,7 +773,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
   - android-build-tools: 34.0.0 (`app/build.gradle.kts`); 34.0.0 (`core/build.gradle.kts`)
   - android-sdk: 35 (`app/build.gradle.kts`); 35 (`core/build.gradle.kts`)
   - gradle: 8.11.1 (`gradle/wrapper/gradle-wrapper.properties`)
-  - java: 17 (`app/build.gradle.kts`); 17 (`core/build.gradle.kts`)
+  - java: 17 (`app/build.gradle.kts#java.toolchain.languageVersion`); 17 (`core/build.gradle.kts#java.toolchain.languageVersion`)
 - Framework: Android, Firebase.
 - Servizi: Firebase Analytics.
 - Casi:
@@ -890,7 +890,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: build.gradle.kts.
 - Versioni dichiarate:
-  - java: 17 (`build.gradle.kts`)
+  - java: 17 (`build.gradle.kts#java.toolchain.languageVersion`)
 - Framework: Kotlin Multiplatform.
 - Servizi: nessuno.
 - Casi:
@@ -908,7 +908,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: build.gradle.kts.
 - Versioni dichiarate:
-  - java: 21 (`build.gradle.kts`)
+  - java: 21 (`build.gradle.kts#java.toolchain.languageVersion`)
 - Framework: JUnit Jupiter.
 - Servizi: nessuno.
 - Casi:
@@ -1071,7 +1071,7 @@ Incidente misurato: il caso misurato nella [ricerca](../../docs/research/2026-11
 - Workspace: nessuno.
 - File delle dipendenze: build.gradle.kts.
 - Versioni dichiarate:
-  - java: 8 (`build.gradle.kts#kotlin.jvmToolchain`)
+  - java: 8 (`build.gradle.kts#java.toolchain.languageVersion`)
 - Framework: JUnit.
 - Servizi: nessuno.
 - Casi:

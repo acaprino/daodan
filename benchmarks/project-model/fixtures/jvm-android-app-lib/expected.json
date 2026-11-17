@@ -157,12 +157,12 @@
     {
       "tool": "java",
       "version": "17",
-      "declared_in": "app/build.gradle.kts"
+      "declared_in": "app/build.gradle.kts#java.toolchain.languageVersion"
     },
     {
       "tool": "java",
       "version": "17",
-      "declared_in": "core/build.gradle.kts"
+      "declared_in": "core/build.gradle.kts#java.toolchain.languageVersion"
     },
     {
       "tool": "android-sdk",

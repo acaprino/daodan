@@ -46,6 +46,8 @@ Le famiglie `js`, `py`, `jvm`, `sys` e `mix` sono progetti in miniatura scritti 
 - le dipendenze sono complete solo per al massimo tre unità piccole per repository (`unknown` con `known`);
 - `connections` elenca i punti di contatto fra unità per il grafo unico, senza entrare nel punteggio.
 
+Il frammento di `declared_in` di una toolchain Gradle è il nome che il modello di Gradle dà al valore: `kotlin { jvmToolchain(N) }` imposta la toolchain dell'estensione `java`, e il modello non sa dire quale DSL l'ha scritta, quindi anche lì è `#java.toolchain.languageVersion`.
+
 I runner eseguono `real` in un secondo passaggio.
 
 | Famiglia | Fixture | Cosa mette alla prova |

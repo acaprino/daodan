@@ -52,7 +52,7 @@
     {
       "tool": "java",
       "version": "17",
-      "declared_in": "build.gradle.kts"
+      "declared_in": "build.gradle.kts#java.toolchain.languageVersion"
     }
   ],
   "dependencies": [
