@@ -231,7 +231,7 @@
   "frameworks": [
     {
       "name": "JUnit Jupiter",
-      "unit": "com.example.shop:shop-service",
+      "unit": "com.example.shop:shop-parent",
       "evidence": "pom.xml"
     },
     {
