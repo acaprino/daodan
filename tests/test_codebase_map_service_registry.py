@@ -11,8 +11,10 @@ SCRIPTS = ROOT / "plugins/codebase-map/skills/map/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import registry_build  # noqa: E402
+import service_registry  # noqa: E402
 
 REGISTRY = ROOT / "plugins/codebase-map/skills/map/data/service-registry.json"
+ADDITIONS = ROOT / "plugins/codebase-map/skills/map/data/registry-additions.json"
 
 
 class DistributedRegistryTests(unittest.TestCase):
@@ -35,6 +37,32 @@ class DistributedRegistryTests(unittest.TestCase):
         sources = {source for entry in self.entries.values() for source in entry["from"]}
         self.assertLessEqual(sources, set(registry_build.SOURCES))
         self.assertNotIn("webappanalyzer", json.dumps(self.value).lower())
+
+    def test_a_category_is_the_entry_s_own_field_never_its_name(self):
+        for ident, category in (("eslint", "tool"), ("docker", "tool"), ("renovate", "tool"), ("nodejs", "tool"),
+                                ("cypressci", "framework"), ("opentelemetry", "framework"), ("playwright", "framework")):
+            self.assertEqual((ident, self.entries[ident].get("category")), (ident, category))
+        self.assertEqual(service_registry.entry_category({"id": "eslint", "kind": "project"}), "framework")
+        self.assertEqual(service_registry.entry_category({"id": "playwright", "kind": "service"}), "service")
+        self.assertEqual(service_registry.entry_category({"id": "x", "kind": "service", "category": "tool"}), "tool")
+
+    def test_a_sign_a_catalog_gives_wrongly_is_taken_away_by_an_addition(self):
+        self.assertNotIn("passport-google-oauth20", self.entries["gcp"]["signs"]["packages"]["npm"])
+        self.assertNotIn("postman-collection", self.entries["postman"]["signs"]["packages"]["npm"])
+        signs = {"packages": {"npm": ["googleapis", "passport-google-oauth20"], "pypi": ["x"]}, "patterns": {},
+                 "env": ["GOOGLE_CLOUD_PROJECT"], "hosts": [], "files": []}
+        entries = {"gcp": {"id": "gcp", "name": "GCP", "kind": "service", "type": "servizio o API", "site": None,
+                           "icon": None, "signs": signs, "from": ["stack-analyser"]}}
+        registry_build.apply_additions(entries, [{"id": "gcp", "wrong_signs": {
+            "packages": {"npm": ["passport-google-oauth20"], "pypi": ["x"]}}, "by": "catalog"}])
+        self.assertEqual(entries["gcp"]["signs"]["packages"], {"npm": ["googleapis"]})
+        self.assertEqual(entries["gcp"]["from"], ["additions", "stack-analyser"])
+
+    def test_the_built_file_is_what_its_additions_make_of_it(self):
+        """The checked-in file agrees with `registry-additions.json` by the build's own merge rule."""
+        entries = copy.deepcopy(self.entries)
+        registry_build.apply_additions(entries, json.loads(ADDITIONS.read_text(encoding="utf-8"))["entries"])
+        self.assertEqual(entries, self.entries)
 
 
 class CheckTests(unittest.TestCase):
@@ -108,6 +136,57 @@ class DeriveTests(unittest.TestCase):
         self.assertEqual(registry_build.owner("https://github.com/Stripe/stripe-python"), "github.com/stripe")
         self.assertEqual(registry_build.owner("git@github.com:getsentry/sentry-javascript.git"), "github.com/getsentry")
         self.assertIsNone(registry_build.owner("https://stripe.com"))
+
+
+class CheckerTests(unittest.TestCase):
+    """One checker per kind of sign, each `checker(entries, project) -> {"signs", "gaps"}`, over data in memory."""
+    ENTRIES = [
+        {"id": "acme", "name": "Acme", "signs": {"packages": {"maven": ["web"], "go": ["github.com/acme/a"]},
+                                                  "patterns": {"npm": ["^@acme\\/"]}, "env": ["ACME_"],
+                                                  "files": ["acme.yml"]}},
+        {"id": "redis", "name": "Redis", "signs": {"packages": {"npm": ["redis"]}, "patterns": {}, "env": [],
+                                                   "files": []}},
+        {"id": "minio", "name": "MinIO", "signs": None},
+    ]
+    LINES = {"api/pay.py": ["import os", "", "KEY = os.environ['ACME_SECRET_KEY']"],
+             "known.json": ['{"schema": "daodan/service-registry/v1", "entries": [{"env": ["ACME_KEY"]}]}'],
+             "dist.js": ["var a=1;" * 2000 + "ACME_KEY"], "ci/acme.yml": ["on: push"]}
+
+    def project(self, packages=()):
+        return service_registry.Project(list(packages), sorted(self.LINES), lambda rel: self.LINES[rel])
+
+    def test_the_checkers_are_one_per_kind_of_sign_each_with_its_strength(self):
+        self.assertEqual([(name, strength) for name, strength, _ in service_registry.CHECKERS],
+                         [("package", "declared"), ("file", "declared"), ("env", "mentioned")])
+
+    def test_the_package_checker_reads_a_name_an_artifact_a_go_module_and_a_pattern(self):
+        answer = service_registry.check_packages(self.ENTRIES, self.project([
+            ("maven", "org.acme:web", "pom.xml", 3), ("go", "github.com/acme/a/v2", "go.mod", 5),
+            ("npm", "@acme/ui", "package.json", None), ("npm", "left-pad", "package.json", None)]))
+        self.assertEqual(answer["signs"], [("acme", "org.acme:web", "pom.xml", 3),
+                                           ("acme", "github.com/acme/a/v2", "go.mod", 5),
+                                           ("acme", "@acme/ui", "package.json", None)])
+        self.assertEqual(answer["gaps"], [])
+
+    def test_a_package_named_like_an_entry_without_signs_in_its_ecosystem_is_a_gap(self):
+        answer = service_registry.check_packages(self.ENTRIES, self.project([
+            ("crates", "redis", "Cargo.toml", 7), ("crates", "redis", "sub/Cargo.toml", 2),
+            ("pypi", "minio", "requirements.txt", 1), ("maven", "io.minio:minio", "pom.xml", 9),
+            ("npm", "redis-mock", "package.json", None)]))
+        self.assertEqual(answer["signs"], [])
+        self.assertEqual(answer["gaps"], [
+            {"kind": "no_ecosystem_sign", "entry": "redis", "ecosystem": "crates", "value": "redis",
+             "path": "Cargo.toml", "line": 7},
+            {"kind": "no_ecosystem_sign", "entry": "minio", "ecosystem": "pypi", "value": "minio",
+             "path": "requirements.txt", "line": 1},
+            {"kind": "no_ecosystem_sign", "entry": "minio", "ecosystem": "maven", "value": "io.minio:minio",
+             "path": "pom.xml", "line": 9}])
+
+    def test_the_file_checker_reads_a_name_and_the_env_checker_a_token_outside_the_registry_s_files(self):
+        self.assertEqual(service_registry.check_files(self.ENTRIES, self.project())["signs"],
+                         [("acme", "acme.yml", "ci/acme.yml", None)])
+        self.assertEqual(service_registry.check_env(self.ENTRIES, self.project())["signs"],
+                         [("acme", "ACME_SECRET_KEY", "api/pay.py", 3)])
 
 
 if __name__ == "__main__":
@@ -201,4 +280,25 @@ class RecognizeTests(unittest.TestCase):
             found = {r["id"]: r for r in service_registry.recognize(self.manifest)}
         finally:
             service_registry.premap.ensure = ensure
-        self.assertEqual(found["postgresql"]["signs"], [{"sign": "package", "value": "postgres", "path": workflow, "line": None}])
+        self.assertEqual(found["postgresql"]["signs"], [{"sign": "package", "value": "postgres", "path": workflow,
+                                                         "line": None, "strength": "declared"}])
+
+    def test_a_checker_that_fails_is_a_gap_with_its_cause_and_the_others_still_run(self):
+        import service_registry
+
+        def broken(entries, project):
+            raise ValueError("no lines")
+
+        checkers = service_registry.CHECKERS
+        service_registry.CHECKERS = tuple(("file", "declared", broken) if name == "file" else (name, strength, check)
+                                          for name, strength, check in checkers)
+        try:
+            answer = service_registry.run(self.manifest)
+        finally:
+            service_registry.CHECKERS = checkers
+        self.assertEqual([(c["checker"], c["state"]) for c in answer["checkers"]],
+                         [("package", "ran"), ("file", "failed"), ("env", "ran")])
+        self.assertIn({"kind": "checker_failed", "checker": "file", "detail": "ValueError: no lines"}, answer["gaps"])
+        found = {e["id"]: {(s["sign"], s["value"]) for s in e["signs"]} for e in answer["found"]}
+        self.assertTrue({("package", "stripe"), ("env", "STRIPE_SECRET_KEY")} <= found["stripe"])
+        self.assertNotIn("file", {sign for signs in found.values() for sign, _ in signs})

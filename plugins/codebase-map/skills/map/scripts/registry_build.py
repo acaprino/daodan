@@ -280,6 +280,19 @@ def _add_signs(signs: dict, more: dict) -> None:
             signs[name] = sorted(set(signs[name]) | set(value))
 
 
+def _drop_signs(signs: dict, wrong: dict) -> None:
+    for name, value in wrong.items():
+        if name in ("packages", "patterns"):
+            for ecosystem, names in value.items():
+                kept = [n for n in signs[name].get(ecosystem, []) if n not in names]
+                if kept:
+                    signs[name][ecosystem] = kept
+                else:
+                    signs[name].pop(ecosystem, None)
+        else:
+            signs[name] = [n for n in signs[name] if n not in value]
+
+
 def _from_rule(rule: dict) -> dict:
     signs = _empty_signs()
     for dependency in rule.get("dependencies", []):
@@ -299,7 +312,8 @@ def _from_rule(rule: dict) -> dict:
 
 
 def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
-    """Merge curated/verified `additions` records into `entries` in place."""
+    """Merge curated/verified `additions` records into `entries` in place; a record's `wrong_signs` take away the
+    signs a catalog gives the entry wrongly."""
     for record in records:
         entry = entries.get(record["id"])
         if entry is None:
@@ -312,6 +326,7 @@ def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
             if record.get(name):
                 entry[name] = record[name]
         _add_signs(entry["signs"], record.get("signs", {}))
+        _drop_signs(entry["signs"], record.get("wrong_signs", {}))
         entry["from"] = sorted(set(entry["from"]) | {"additions"})
         if not any(entry["signs"].values()):
             entry["signs"] = None

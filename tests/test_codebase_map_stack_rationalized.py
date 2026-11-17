@@ -198,3 +198,35 @@ def test_a_package_of_the_version_catalog_goes_to_the_build_script_that_uses_it_
     assert not {"junit-jupiter", "jackson", "spring-boot"} & set(units[":"]["technologies"])
     assert [lib["path"] for lib in units[":domain"]["libraries"]] == ["domain/build.gradle.kts"]
     assert not units[":"]["libraries"]
+
+
+def test_an_entry_a_line_only_mentions_is_no_module_s_and_stays_in_mentioned_with_its_signs(tmp_path):
+    """A package or file the project declares is a `declared` sign, an env-prefix token in a line a `mentioned` one;
+    an entry with no declared sign is in no module's lists, for every prefix of the registry alike."""
+    record = _stack(tmp_path, {
+        "pyproject.toml": '[project]\nname = "app"\ndependencies = ["fastapi"]\n',
+        "app.py": "import os\n\nKEY = os.environ['STRIPE_SECRET_KEY']\nZOOM = os.environ['ZOOM_API_KEY']\n",
+    })
+    found = {e["id"]: e for e in record["technologies"]}
+    mentioned = {e["id"]: e for e in record["mentioned"]}
+    assert {s["strength"] for s in found["fastapi"]["signs"]} == {"declared"}
+    assert {"stripe", "zoom"} <= set(mentioned) and not {"stripe", "zoom"} & set(found)
+    assert [(s["sign"], s["value"], s["path"], s["line"], s["strength"]) for s in mentioned["stripe"]["signs"]] == [
+        ("env", "STRIPE_SECRET_KEY", "app.py", 3, "mentioned")]
+    for module in record["modules"]:
+        held = module["frameworks"] + module["services"] + module["tools"] + module["technologies"]
+        assert not {"stripe", "zoom"} & set(held), module["id"]
+    assert "fastapi" in {i for module in record["modules"] for i in module["frameworks"]}
+
+
+def test_the_record_gives_each_checker_s_status_and_what_the_registry_lacks(tmp_path):
+    """MinIO is an entry with no PyPI sign: the package `minio` is a gap of the registry, not a guess."""
+    record = _stack(tmp_path, {"pyproject.toml": '[project]\nname = "app"\ndependencies = ["fastapi", "minio"]\n',
+                               "app.py": "import minio\n"})
+    assert [(c["checker"], c["state"]) for c in record["checkers"]] == [("package", "ran"), ("file", "ran"),
+                                                                         ("env", "ran")]
+    gaps = [(g["kind"], g["checker"], g["entry"], g["ecosystem"], g["value"], g["path"]) for g in record["gaps"]]
+    assert ("no_ecosystem_sign", "package", "minio", "pypi", "minio", "pyproject.toml") in gaps
+    assert "fastapi" not in {g[2] for g in gaps}
+    assert "minio" not in {e["id"] for e in record["technologies"] + record["mentioned"]}
+    assert any(lib["name"] == "minio" and "id" not in lib for m in record["modules"] for lib in m["libraries"])

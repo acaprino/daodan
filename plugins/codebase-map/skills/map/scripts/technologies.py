@@ -7,6 +7,8 @@
 Reads only Step 1's module graph and pre-map facts (`packages`, `services`, `docker_builds`, `excluded`, `toolchains`),
 with zero tool execution and zero duplicate manifest parsing. Every concrete, logical and virtual module receives its
 languages, toolchains, frameworks, declared libraries (cataloged or not), external services and tools.
+An entry with no `declared` sign, only lines of text that mention it, is no module's: it stays in `mentioned` with its
+signs. `checkers` gives each checker's status (`service_registry.CHECKERS`) and `gaps` what they could not establish.
 """
 from __future__ import annotations
 
@@ -88,8 +90,11 @@ def _module_files(module: dict, physical: list[dict]) -> set[str]:
 
 def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     """The stack record of `manifest` from the registry and Step 1's `facts`."""
-    entries = [{k: v for k, v in e.items() if k != "source"}
-               for e in service_registry.recognize(manifest, registry, facts)]
+    recognized = service_registry.run(manifest, registry, facts)
+    entries, mentioned = [], []
+    for found in recognized["found"]:
+        entry = {k: v for k, v in found.items() if k != "source"}
+        (entries if any(s["strength"] == "declared" for s in entry["signs"]) else mentioned).append(entry)
     if "sources" in facts:
         graph = modules.sync_with_premap(manifest, facts)
     else:
@@ -149,7 +154,8 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
             units.append(item)
     digest, root, target = _inputs(manifest, registry, facts)
     return {"schema": SCHEMA, "manifest": manifest.as_posix(), "root": root, "target": target,
-            "inputs_digest": digest, "technologies": entries, "units": units, "modules": all_modules}
+            "inputs_digest": digest, "technologies": entries, "mentioned": mentioned, "units": units,
+            "modules": all_modules, "checkers": recognized["checkers"], "gaps": recognized["gaps"]}
 
 
 def _read(manifest: Path, digest: str) -> dict | None:
@@ -157,7 +163,7 @@ def _read(manifest: Path, digest: str) -> dict | None:
         record = json.loads(path(manifest).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
-    return record if record.get("schema") == SCHEMA and record.get("inputs_digest") == digest and "modules" in record else None
+    return record if record.get("schema") == SCHEMA and record.get("inputs_digest") == digest and "checkers" in record else None
 
 
 def state(manifest: Path, *, facts: dict | None = None) -> str:

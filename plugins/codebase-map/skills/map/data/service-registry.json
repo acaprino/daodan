@@ -5864,9 +5864,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "backend-ai",
@@ -9894,8 +9896,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "cyso-managed-kubernetes",
@@ -11123,7 +11127,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "docker-compose",
@@ -12442,7 +12447,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "eslint",
@@ -12471,9 +12477,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "etcd",
@@ -13867,7 +13875,6 @@
       "googleapis",
       "@pulumi/gcp",
       "google-auth-library",
-      "passport-google-oauth20",
       "passport-google-oauth"
      ],
      "terraform": [
@@ -15734,9 +15741,11 @@
     ]
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "golangcilint",
@@ -17150,7 +17159,8 @@
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "helmwave",
@@ -18841,8 +18851,10 @@
    "icon": null,
    "signs": null,
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "javascript",
@@ -20203,10 +20215,12 @@
    "icon": "kotlin",
    "signs": null,
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "kotlin-multiplatform",
@@ -23202,8 +23216,10 @@
    "icon": null,
    "signs": null,
    "from": [
+    "additions",
     "cncf-landscape"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "mcp",
@@ -25482,7 +25498,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "nodesource",
@@ -25665,9 +25682,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "nscale-managed-kubernetes",
@@ -26970,10 +26989,12 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "opentofu",
@@ -28418,8 +28439,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "phpunit",
@@ -28984,9 +29007,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "podman",
@@ -29381,7 +29406,6 @@
    "signs": {
     "packages": {
      "npm": [
-      "postman-collection",
       "postman-request",
       "newman"
      ]
@@ -29392,6 +29416,7 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
    ]
@@ -29558,9 +29583,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "previder-kubernetes-engine",
@@ -30031,7 +30058,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "pytorch",
@@ -31399,9 +31427,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "replex",
@@ -31818,8 +31848,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "rook",
@@ -31888,9 +31920,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "ruby",
@@ -31976,7 +32010,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "runc",
@@ -32051,10 +32086,12 @@
     ]
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "salad",
@@ -35764,9 +35801,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "stytch",
@@ -37025,7 +37064,8 @@
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "terragrunt",
@@ -37683,10 +37723,12 @@
     ]
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "trayio",
@@ -39323,9 +39365,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "vitepress",
@@ -40151,9 +40195,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "weight-and-biases-wandb",
@@ -40692,9 +40738,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "yarp",

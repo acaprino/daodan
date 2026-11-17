@@ -7,13 +7,21 @@
 Consumes the pre-map's `packages`, `services`, `docker_builds` and `excluded` without re-parsing manifests,
 requirements files, Dockerfiles or Compose files; falls back to `premap.module_graph.package_facts` only when a caller
 passes a partial `facts` stub in tests. Every sign respects `excluded`.
+
+A checker reads one kind of the registry's signs and names no technology: `checker(entries, project)` answers
+`{"signs": [(entry id, value, path, line)], "gaps": [...]}`. `run` runs `CHECKERS` in order; each sign found carries
+its checker (`sign`) and the checker's strength: `declared`, a package, image or file the project declares, or
+`mentioned`, a token in a line of text. A checker that fails is a gap with its cause, and the others still run.
+The registry's `hosts` sign has no checker: no catalog and no addition gives one.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 import json
 import re
 import sys
 from pathlib import Path, PurePosixPath
+from typing import NamedTuple
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -25,28 +33,7 @@ from premap.module_graph import normalize_image as _image, package_facts  # noqa
 from snapshot_store import open_snapshot  # noqa: E402
 
 REGISTRY = SCRIPT_DIR.parent / "data" / "service-registry.json"
-ECOSYSTEMS = {
-    "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
-    "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
-    "dotnet": "nuget", "composer": "composer", "bundler": "rubygems", "rubygems": "rubygems",
-    "pub": "pub", "melos": "pub", "swiftpm": "swiftpm", "mix": "hex", "terraform": "terraform",
-}
 OWN = ('"daodan/service-registry/', '"daodan/registry-additions/')
-FRAMEWORK_OVERRIDES = frozenset({"playwright", "cypressci", "cypress", "opentelemetry"})
-TOOL_IDS = frozenset({
-    "docker", "eslint", "prettier", "renovate", "travisci", "githubpages", "vite", "webpack", "rollup",
-    "esbuild", "babel", "biome", "stylelint", "ruff", "mypy", "black", "flake8", "rubocop", "phpstan",
-    "checkstyle", "spotbugs", "gradle", "maven", "npm", "pnpm", "yarn", "bun", "nodejs", "python",
-    "golang", "rust", "java", "kotlin", "dotnet", "helm", "terraform",
-})
-AMBIGUOUS_ENV = {
-    "ZOOM_": re.compile(r"^ZOOM_(?:API|CLIENT|SECRET|WEBHOOK|ACCOUNT|SDK|OAUTH|JWT)_"),
-    "GHOST_": re.compile(r"^GHOST_(?:API|ADMIN|CONTENT|URL|KEY)_"),
-}
-PACKAGE_EXCLUSIONS = frozenset({
-    ("npm", "passport-google-oauth20", "gcp"),
-    ("npm", "postman-collection", "postman"),
-})
 
 
 def load(path: Path | None = None) -> dict:
@@ -98,27 +85,23 @@ def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | No
 
 
 def entry_category(entry: dict) -> str:
-    if entry.get("id") in FRAMEWORK_OVERRIDES:
-        return "framework"
-    if entry.get("category"):
-        return entry["category"]
-    if entry.get("id") in TOOL_IDS:
-        return "tool"
-    return "service" if entry.get("kind") == "service" else "framework"
+    """The entry's `category`; without one, a service when its kind is, else a framework."""
+    return entry.get("category") or ("service" if entry.get("kind") == "service" else "framework")
 
 
-def recognize(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> list[dict]:
-    """Registry entries the snapshot shows signs of, each sign with its path and line; `facts` is the pre-map."""
-    manifest = Path(manifest)
-    facts = premap.ensure(manifest) if facts is None else facts
-    entries = (registry or load())["entries"]
-    left_out = tuple(item["path"] for item in facts.get("excluded") or () if item.get("path"))
-    packages = [s for s in step1_packages(manifest, facts) if not _is_excluded(s[2], left_out)]
-    with open_snapshot(manifest) as store:
-        files = [rel for rel in sorted(dict(store.iter_file_headers_only())) if not _is_excluded(rel, left_out)]
-        source = flows.Source(store)
-        texts = {rel: source.lines(rel) or [] for rel in files}
-    by_package, patterns, prefixes, hosts, names = {}, [], {}, {}, {}
+class Project(NamedTuple):
+    """What a checker reads, without what the pre-map excludes: the declared packages and images
+    (`step1_packages`), the files, and a file's lines."""
+    packages: list[tuple[str, str, str | None, int | None]]
+    files: list[str]
+    lines: Callable[[str], list[str]]
+
+
+def check_packages(entries: list[dict], project: Project) -> dict:
+    """A declared package or image, by its name in its ecosystem, a Maven artifact without its group, a Go package
+    under a module or an entry's pattern. One no entry knows, named like an entry with no sign in its ecosystem, is a
+    gap: the registry lacks that sign."""
+    by_package, patterns, named = {}, [], {}
     for entry in entries:
         signs = entry.get("signs") or {}
         for ecosystem, values in (signs.get("packages") or {}).items():
@@ -130,48 +113,97 @@ def recognize(manifest: Path, registry: dict | None = None, facts: dict | None =
                     patterns.append((ecosystem, re.compile(value, re.I), entry["id"]))
                 except re.error:
                     continue
-        for value in signs.get("env") or []:
-            prefixes.setdefault(value, []).append(entry["id"])
-        for value in signs.get("hosts") or []:
-            hosts.setdefault(value, []).append(entry["id"])
-        for value in signs.get("files") or []:
-            names.setdefault(value, []).append(entry["id"])
-    found: dict[str, list[dict]] = {}
-
-    def add(ids, sign, value, path, line):
-        for ident in ids:
-            found.setdefault(ident, []).append({"sign": sign, "value": value, "path": path, "line": line})
-
-    for ecosystem, name, path, line in packages:
+        for key in (entry["id"], entry.get("name") or ""):
+            named.setdefault(key.casefold(), entry)
+    found, gaps, seen = [], [], set()
+    for ecosystem, name, path, line in project.packages:
         low = name.lower()
         ids = list(by_package.get((ecosystem, low), []))
         if ecosystem == "maven" and ":" in low:
-            ids += list(by_package.get((ecosystem, low.split(":", 1)[1]), []))
+            ids += by_package.get((ecosystem, low.split(":", 1)[1]), [])
         if ecosystem == "go":
             ids += [i for (e, value), owners in by_package.items() if e == "go" and low.startswith(value + "/")
                     for i in owners]
         ids += [i for e, pattern, i in patterns if e == ecosystem and pattern.search(name)]
-        filtered = [i for i in dict.fromkeys(ids) if (ecosystem, low, i) not in PACKAGE_EXCLUSIONS]
-        add(filtered, "package", name, path, line)
-    for rel in files:
-        add(names.get(PurePosixPath(rel).name, []), "file", PurePosixPath(rel).name, rel, None)
-    words = re.compile(r"\b(" + "|".join(sorted(map(re.escape, prefixes), key=len, reverse=True)) + r")[A-Z0-9_]*\b") \
-        if prefixes else None
-    places = re.compile("|".join(sorted(map(re.escape, hosts), key=len, reverse=True))) if hosts else None
-    for rel, lines in texts.items():
+        found += [(ident, name, path, line) for ident in dict.fromkeys(ids)]
+        entry = None if ids else named.get(name.casefold()) or named.get(re.split(r"[:/]", name.casefold())[-1])
+        signs = (entry or {}).get("signs") or {}
+        if entry and (entry["id"], ecosystem) not in seen and not any(
+                ecosystem in (signs.get(kind) or {}) for kind in ("packages", "patterns")):
+            seen.add((entry["id"], ecosystem))
+            gaps.append({"kind": "no_ecosystem_sign", "entry": entry["id"], "ecosystem": ecosystem, "value": name,
+                         "path": path, "line": line})
+    return {"signs": found, "gaps": gaps}
+
+
+def check_files(entries: list[dict], project: Project) -> dict:
+    """A file of the project, by its name."""
+    names = {}
+    for entry in entries:
+        for value in (entry.get("signs") or {}).get("files") or []:
+            names.setdefault(value, []).append(entry["id"])
+    found = []
+    for rel in project.files:
+        name = PurePosixPath(rel).name
+        found += [(ident, name, rel, None) for ident in names.get(name, [])]
+    return {"signs": found, "gaps": []}
+
+
+def check_env(entries: list[dict], project: Project) -> dict:
+    """A token starting with an entry's prefix in a line of text, outside the registry's own files and minified
+    lines."""
+    prefixes = {}
+    for entry in entries:
+        for value in (entry.get("signs") or {}).get("env") or []:
+            prefixes.setdefault(value, []).append(entry["id"])
+    if not prefixes:
+        return {"signs": [], "gaps": []}
+    words = re.compile(r"\b(" + "|".join(sorted(map(re.escape, prefixes), key=len, reverse=True)) + r")[A-Z0-9_]*\b")
+    found = []
+    for rel in project.files:
+        lines = project.lines(rel)
         if any(mark in line for line in lines[:3] for mark in OWN):
             continue
         for number, line in enumerate(lines, 1):
-            if len(line) > flows.snapshot.MAX_STYLESHEET_LINE:
+            if len(line) <= flows.snapshot.MAX_STYLESHEET_LINE:
+                found += [(ident, match.group(0), rel, number) for match in words.finditer(line)
+                          for ident in prefixes[match.group(1)]]
+    return {"signs": found, "gaps": []}
+
+
+CHECKERS = (("package", "declared", check_packages), ("file", "declared", check_files),
+            ("env", "mentioned", check_env))
+
+
+def run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict:
+    """`CHECKERS` over the snapshot: the registry entries it shows signs of (`found`), each sign with its path, line
+    and strength, each checker's status (`checkers`) and the `gaps`; `facts` is the pre-map."""
+    manifest = Path(manifest)
+    facts = premap.ensure(manifest) if facts is None else facts
+    entries = (registry or load())["entries"]
+    left_out = tuple(item["path"] for item in facts.get("excluded") or () if item.get("path"))
+    declared = [s for s in step1_packages(manifest, facts) if not _is_excluded(s[2], left_out)]
+    found: dict[str, list[dict]] = {}
+    checkers, gaps = [], []
+    with open_snapshot(manifest) as store:
+        source = flows.Source(store)
+        files = [rel for rel in sorted(dict(store.iter_file_headers_only())) if not _is_excluded(rel, left_out)]
+        project = Project(declared, files, lambda rel: source.lines(rel) or [])
+        for name, strength, checker in CHECKERS:
+            try:
+                answer = checker(entries, project)
+                signs = [(ident, {"sign": name, "value": value, "path": path, "line": line, "strength": strength})
+                         for ident, value, path, line in answer["signs"]]
+                more = [{**gap, "checker": name} for gap in answer.get("gaps") or ()]
+            except Exception as error:  # a checker's failure is its gap, never the end of the others
+                reason = f"{type(error).__name__}: {error}"
+                checkers.append({"checker": name, "state": "failed", "reason": reason})
+                gaps.append({"kind": "checker_failed", "checker": name, "detail": reason})
                 continue
-            for match in words.finditer(line) if words else ():
-                prefix, token = match.group(1), match.group(0)
-                guard = AMBIGUOUS_ENV.get(prefix)
-                if guard is not None and not guard.match(token):
-                    continue
-                add(prefixes[prefix], "env", token, rel, number)
-            for match in places.finditer(line) if places else ():
-                add(hosts[match.group(0)], "host", match.group(0), rel, number)
+            checkers.append({"checker": name, "state": "ran"})
+            gaps += more
+            for ident, sign in signs:
+                found.setdefault(ident, []).append(sign)
     by_id = {e["id"]: e for e in entries}
     out = []
     for ident in sorted(found):
@@ -183,4 +215,9 @@ def recognize(manifest: Path, registry: dict | None = None, facts: dict | None =
                     "type": entry.get("type"), "site": entry.get("site"), "icon": entry.get("icon"),
                     "source": "registry",
                     "signs": sorted(signs.values(), key=lambda s: (s["sign"], s["path"] or "", s["line"] or 0, s["value"]))})
-    return out
+    return {"found": out, "checkers": checkers, "gaps": gaps}
+
+
+def recognize(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> list[dict]:
+    """Registry entries the snapshot shows signs of, each sign with its path and line (`run`'s `found`)."""
+    return run(manifest, registry, facts)["found"]

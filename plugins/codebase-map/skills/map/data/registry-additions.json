@@ -759,6 +759,11 @@
    "owner": "github.com/azure"
   },
   {
+   "id": "babel",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "bigcommerce",
    "signs": {
     "packages": {
@@ -1013,6 +1018,11 @@
    "owner": "github.com/couchbase"
   },
   {
+   "id": "cypressci",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "dask",
    "name": "Dask",
    "kind": "project",
@@ -1088,6 +1098,11 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "docker",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "docker",
@@ -1265,6 +1280,11 @@
   },
   {
    "id": "esbuild",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "esbuild",
    "signs": {
     "packages": {
      "go": [
@@ -1274,6 +1294,11 @@
    },
    "by": "derive",
    "owner": "github.com/evanw"
+  },
+  {
+   "id": "eslint",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "etcd",
@@ -1424,6 +1449,17 @@
     "patterns": {
      "maven": [
       "^io\\.gatling"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "gcp",
+   "wrong_signs": {
+    "packages": {
+     "npm": [
+      "passport-google-oauth20"
      ]
     }
    },
@@ -1698,6 +1734,11 @@
    "by": "model"
   },
   {
+   "id": "golang",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "google.meet",
    "signs": {
     "packages": {
@@ -1807,6 +1848,11 @@
    },
    "by": "derive",
    "owner": "github.com/pulumi"
+  },
+  {
+   "id": "helm",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "helm",
@@ -1961,6 +2007,11 @@
    "by": "model"
   },
   {
+   "id": "java",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "jenkins",
    "signs": {
     "packages": {
@@ -2093,6 +2144,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "kotlin",
+   "category": "tool",
    "by": "catalog"
   },
   {
@@ -2283,6 +2339,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "maven",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "meilisearch",
@@ -2483,6 +2544,11 @@
   },
   {
    "id": "nodejs",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "nodejs",
    "site": "https://nodejs.org",
    "signs": {
     "packages": {}
@@ -2499,6 +2565,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "npm",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "numpy",
@@ -2609,6 +2680,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "opentelemetry",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "optimizely",
@@ -2753,6 +2829,11 @@
    "by": "model"
   },
   {
+   "id": "phpstan",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "picocli",
    "name": "picocli",
    "kind": "project",
@@ -2853,6 +2934,11 @@
    "by": "model"
   },
   {
+   "id": "pnpm",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "podman",
    "signs": {
     "packages": {
@@ -2916,6 +3002,22 @@
    "by": "model"
   },
   {
+   "id": "postman",
+   "wrong_signs": {
+    "packages": {
+     "npm": [
+      "postman-collection"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "prettier",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "protobuf",
    "name": "Protocol Buffers",
    "kind": "project",
@@ -2965,6 +3067,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "python",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "python",
@@ -3133,6 +3240,11 @@
    "by": "model"
   },
   {
+   "id": "renovate",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "replicate",
    "signs": {
     "packages": {
@@ -3240,12 +3352,27 @@
    "owner": "github.com/rolldown"
   },
   {
+   "id": "rollup",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "rubocop",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "ruby",
    "site": "https://www.ruby-lang.org",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "ruff",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "ruff",
@@ -3261,6 +3388,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "rust",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "scalatest",
@@ -3749,6 +3881,11 @@
    "by": "model"
   },
   {
+   "id": "stylelint",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "stytch",
    "signs": {
     "packages": {
@@ -3818,6 +3955,11 @@
    },
    "by": "derive",
    "owner": "github.com/tensorflow"
+  },
+  {
+   "id": "terraform",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "terraform",
@@ -3912,6 +4054,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "travisci",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "trino",
@@ -4086,6 +4233,11 @@
    "by": "model"
   },
   {
+   "id": "vite",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "vue-router",
    "name": "Vue Router",
    "kind": "project",
@@ -4143,6 +4295,11 @@
    "owner": "github.com/webflow"
   },
   {
+   "id": "webpack",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "xunit",
    "name": "xUnit",
    "kind": "project",
@@ -4158,6 +4315,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "yarn",
+   "category": "tool",
    "by": "catalog"
   },
   {

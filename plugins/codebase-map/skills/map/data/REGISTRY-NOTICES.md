@@ -40,4 +40,4 @@ The `icon` field names a slug of [Simple Icons](https://simpleicons.org/), relea
 
 ## Additions
 
-`registry-additions.json` holds the packages and entries the catalogs lack. Those marked `derive` were found on PyPI, crates.io and the Go proxy under the name of an npm package whose repository has the same owner.
+`registry-additions.json` holds the packages and entries the catalogs lack. Those marked `derive` were found on PyPI, crates.io and the Go proxy under the name of an npm package whose repository has the same owner. Those marked `catalog` are curated: `category` says whether an entry is a framework, library, tool or service, and `wrong_signs` take away a sign a catalog gives wrongly.
