@@ -16,7 +16,7 @@ once per assignment and apply its conventions; reuse them if already supplied.
 
 ## Mandate and input
 
-Require the diff, the resolved perimeter and the complete Codebase Map run; the search for prior art reads the whole codebase through `codebase_map_search`, `_outline` and `_read`, while findings stay anchored to the diff. Establish that an existing implementation already does what the new code does, or that two places now hold one fact, and name the consequence: drift that produces different behavior, a fix that must land twice, or a reader who cannot tell which owner is authoritative.
+Require the diff, the resolved perimeter and the complete Codebase Map run; the search for prior art reads the whole codebase through `codebase_map_search`, `_outline` and `_read`, while findings stay anchored to the diff. Establish that an existing implementation already does what the new code does, that two places now hold one fact, or that the new code handles a case nothing produces, and name the consequence: drift that produces different behavior, a fix that must land twice, or a reader who cannot tell which owner is authoritative.
 
 ## Causal checks
 
@@ -27,7 +27,7 @@ Require the diff, the resolved perimeter and the complete Codebase Map run; the 
 - For each fallback, default, alternative key, type ladder (`isinstance`, `hasattr`), substitute value in an `except` and guard against an unknown value that the diff adds, list every producer of that value. A case no producer writes is a finding: the consumer states a shape or a set of values its producers do not, so a later mistake in a producer yields a plausible wrong result instead of a failure where it happened. Name the producers read, the cases without one and what the handling would let through.
 - Check stored state that is derivable from other state in the same store or object, with no single point that keeps them consistent. Show the sequence that makes them diverge.
 - Check abstraction fitness for new abstractions: an interface, base class or indirection with one implementation and no caller that needs the seam, or a generic helper whose callers all pass the same arguments. The consequence is the reading and maintenance cost on the real call sites, stated from them, not from a principle.
-- Rule of three, for that second occurrence only: a third place with the same shape is a finding, with extraction as direction.
+- Rule of three, for a second occurrence the first check recorded: a third place with the same shape is a finding, with extraction as direction.
 
 ## Counterevidence
 
@@ -36,4 +36,4 @@ A documented intentional divergence, different lifecycles or owners that would o
 ## Boundaries and output
 
 Declared module boundaries belong to boundary-auditor; dependency cycles to chicken-egg; symbols and assets without a consumer to application-reachability, while a branch kept for a case no producer writes stays here; naming and style to the configured linter.
-Report the new code, the prior art or the sibling copy with `file:line`, the difference, the consequence and the direction: reuse, extract or document the divergence.
+Report the new code, the prior art or the sibling copy with `file:line`, the difference, the consequence and the direction: reuse, extract, remove the repeated check or the handling of the unproduced case, or document the divergence.

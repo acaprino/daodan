@@ -15,7 +15,7 @@ Prova se i reviewer trovano, in una modifica, ciò che il codice sa o fa due vol
 | mappa | nessuna run: la fixture ha sette file e il worker li legge direttamente; la ricerca attraverso la mappa non è misurata |
 | verifica | lenti 1 e 2 di `panel-and-critic-prompts.md` sui semi delle run indicate nelle tabelle, un worker per lente |
 
-Esito di un seme: `sì` se è un finding che nomina i due posti (per un'incertezza: i casi gestiti e l'unico produttore), `nota` se il ruolo lo registra senza farne un finding, `no` altrimenti.
+Esito di un seme: `sì` se è un finding che nomina i due posti (per un'incertezza: i casi gestiti e l'unico produttore), `nota` se il ruolo lo registra senza farne un finding, `no` altrimenti. Un'esca è segnalata se un finding la dichiara doppione, controllo ridondante o caso senza produttore; un finding nello stesso punto che dice altro conta tra gli altri finding.
 
 Criterio, dichiarato prima delle run:
 
@@ -153,4 +153,13 @@ Una run per fixture già vista, con il ruolo corretto.
 
 Su `parcel/` il ruolo corretto trova T3 in entrambe le run e il ruolo al commit in nessuna, nessuna esca è segnalata, e su `shop/` e `booking/` ritrova ogni seme. Le lenti 1 e 2 non scartano i semi della prima run corretta di `parcel/`; la seconda run e le run corrette di `shop/` e `booking/` non sono state verificate dalle lenti. La correzione resta con questa copertura parziale della verifica prevista dal criterio.
 
-Limiti della misura: un solo modello; due run per configurazione su `parcel/` e una sulle altre; lenti 0 e 3 non eseguite. Il miglioramento sui controlli ripetuti riguarda R4 in una sola run corretta su `booking/`, fixture già vista; T1 su `parcel/` era trovato anche prima. Le fixture sono lette per intero: la ricerca attraverso la mappa in un codebase grande e il flusso completo al rigor `deep` restano non misurati.
+Dopo queste run il testo del ruolo ha ricevuto tre ritocchi senza controlli nuovi: il mandato nomina il caso che nessuno produce, la regola del tre dice a quale seconda occorrenza si riferisce, l'output nomina la direzione «togliere» per il controllo ripetuto e per il caso senza produttore. Una run di conferma su `parcel/` il 2026-11-17 con il testo finale, non verificata dalle lenti:
+
+| Configurazione | T1 | T3 | T4 | Altri finding | Esca segnalata | Token | Strumenti | Tempo |
+|---|---|---|---|---|---|---|---|---|
+| ruolo finale | sì | sì | sì | 1 | no | 42.926 | 14 | 135 s |
+
+- Confidenza 90, 85 e 60; le tre direzioni dicono di togliere la copia o la gestione. D1 e D2 sono registrate come occorrenze necessarie.
+- L'altro finding è il caso `None` di T2. Il difetto reale non seminato di `webhook.on_event` non compare: il ruolo corretto lo trova in una run su tre.
+
+Limiti della misura: un solo modello; due run per configurazione su `parcel/` e una sulle altre; lenti 0 e 3 non eseguite. Il miglioramento sui controlli ripetuti riguarda R4 in una sola run corretta su `booking/`, fixture già vista; T1 e T4 su `parcel/` erano trovati anche prima. Non è separato se T3 lo fa trovare il nuovo controllo sui casi senza produttore o il solo cambio di instradamento: il ruolo al commit vedeva il ramo e lo passava ad `application-reachability`. Nessuna esca ha un `except` legittimo su I/O o timeout. Le fixture sono lette per intero: la ricerca attraverso la mappa in un codebase grande e il flusso completo al rigor `deep` restano non misurati.
