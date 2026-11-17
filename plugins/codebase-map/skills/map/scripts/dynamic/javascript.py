@@ -22,11 +22,10 @@ Playwright, any other), run as `npm run` of the script `declared_in` names in th
 no package declares one is a `no_test_command` gap, never a command of ours. A script whose runner the recorder
 cannot hook (`NOT_OBSERVED`) is a `runner_not_observed` gap, and it does not run. A Playwright script whose
 configuration's webServer is `dotnet run` of an Aspire app host does not run either: the host starts its services
-as containers, the `tests_need_container_engine` gap of a C# test project that is one (`dynamic/dotnet.py`). Any
-other webServer runs, and its process inherits the recorder; but Playwright stops it with SIGKILL unless its
-`gracefulShutdown` sends SIGTERM, and the recorder writes at a process's exit, so what it ran is said unrecorded
-(`not_observed`, `web_server`). Where every script of a runner watches (the pre-map's `tests_not_declared`), none
-runs: their gaps come back with the runs', which explain a language's outcome.
+as containers, the `tests_need_container_engine` gap of a C# test project that is one (`dynamic/dotnet.py`,
+`web_server`). Any other webServer runs, and its process inherits the recorder. Where every script of a runner
+watches (the pre-map's `tests_not_declared`), none runs: their gaps come back with the runs', which explain a
+language's outcome.
 
 `observe` is one container run (`container.run_in_container`, the TypeScript analyzer's image). The preparation,
 with the registries: Daodan's Node, the Babel the recorder prints with (from npm without its install scripts),
@@ -34,7 +33,8 @@ the Node and the Bun the project states at an exact version (mise, `preparation.
 `bun run` or `bunx` runs, and what Bun starts on Node is recorded), then the project's own restore
 with its lifecycle scripts, as the analyzer's (`preparation.node_prepare`). The execution, with no network: each
 script under the recorder, preloaded through NODE_OPTIONS so it starts before any project code, in every process
-and thread the script starts, stopped after `LIMIT` seconds by a signal the recorder writes its sites on, with
+and thread the script starts, which writes its sites as it runs and at its exit, so a process killed with SIGKILL
+leaves those of its last write; stopped after `LIMIT` seconds by a signal the recorder writes its sites on, with
 TURBO_ENV_MODE=loose (Turborepo's documented setting: its default, strict, passes a task NODE_OPTIONS and not the
 recorder's own variables), on the CPUs and the memory of the runner GitHub hosts for a CI (`CPUS`, `MEMORY`), or
 on fewer where the host has less memory free (`shape`; each run says the shape it ran with). The
@@ -57,7 +57,8 @@ for a service or the network (the execution has none, only the services the proj
 found no test, a run
 where the recorder saw no call (`nothing_recorded`, with the runner's reason: `UNREACHED`), the project files that
 ran unrecorded (`not_observed`: printed with no inline map, or ES modules
-under a Node with neither module hook), the project callees the recorder could not place
+under a Node with neither module hook), the processes that ended with no exit handler (`processes_killed`: what
+each ran after its last write), the project callees the recorder could not place
 (`callee_unplaced`: the map of their code leads to no function's head in the file as written), a failed restore.
 """
 from __future__ import annotations
@@ -79,10 +80,9 @@ RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
 RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest", "turbo", "playwright")  # the pre-map's, run as their script
 NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, where a Node preload and V8's "
                        "inspector do not exist"}
-# Where `playwright test` reads its configuration (the folder it runs in), a webServer command that runs a .NET
-# project, whose path is relative to that configuration's folder, and the shutdown the recorder writes at.
+# Where `playwright test` reads its configuration (the folder it runs in), and a webServer command that runs a .NET
+# project, whose path is relative to that configuration's folder.
 PLAYWRIGHT_CONFIGS = tuple(f"playwright.config.{ext}" for ext in ("ts", "js", "mts", "mjs", "cts", "cjs"))
-SIGTERM = re.compile(r"gracefulShutdown\s*:\s*\{[^}]*\bsignal\s*:\s*['\"`]SIGTERM['\"`]")
 WEB_SERVER = re.compile(r"\bcommand\s*:\s*(['\"`])(?P<command>(?:(?!\1).)*?(?<![\w-])dotnet\s+run\b(?:(?!\1).)*?"
                         r"--project[\s=]+(?P<project>[^\s'\"`]+)(?:(?!\1).)*)\1")
 BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the code it records
@@ -134,10 +134,8 @@ def external(callee: dict) -> dict:
 
 
 def web_server(test: dict, files: list[str], read) -> dict | None:
-    """The gap of a Playwright entry whose configuration, in its package's folder, has a webServer: one that is
-    `dotnet run --project` of an Aspire app host (`dotnet.ASPIRE`), `tests_need_container_engine`, and the entry
-    does not run; else, without a `gracefulShutdown` that sends SIGTERM, `not_observed`, and it runs. None
-    otherwise."""
+    """The `tests_need_container_engine` gap of a Playwright entry whose configuration, in its package's folder, has
+    a webServer that is `dotnet run --project` of an Aspire app host (`dotnet.ASPIRE`); None otherwise."""
     from . import dotnet
     listed = set(files)
     folder = "" if test["root"] in (".", "") else test["root"]
@@ -160,13 +158,7 @@ def web_server(test: dict, files: list[str], read) -> dict | None:
                               "containers, and Aspire needs a container engine reachable from the tests, which "
                               "Daodan's execution does not give, as for a C# test project that is one "
                               "(`dynamic/dotnet.py`); its tests do not run"}
-    if SIGTERM.search(text[start:]):
-        return None
-    return {"kind": "not_observed", "path": test.get("declared_in"), "runner": "playwright",
-            "detail": f"{test.get('declared_in')} runs playwright, whose webServer ({config}:"
-                      f"{text.count(chr(10), 0, start) + 1}) Playwright stops with SIGKILL, as no gracefulShutdown "
-                      "sends SIGTERM: the recorder writes at a process's exit, so what that process runs is not "
-                      "recorded, only what the tests' own processes run"}
+    return None
 
 
 def plan(record: dict, files: list[str], read) -> dict:
@@ -309,6 +301,13 @@ def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes
                             runner=run["runner"]))
     else:
         gaps.append(gap("tests_not_started", f"{command} exited with code {code} and recorded no call: {tail}"))
+    killed = sum(data.get("final") is False for data in observations)  # its last write was one while it ran
+    if killed:
+        gaps.append(gap("processes_killed",
+                        f"{command}: {killed} process{'es' if killed > 1 else ''} of the run ended with no exit "
+                        "handler (a SIGKILL, as Playwright stops its webServer, or a crash): what each ran after "
+                        "its last write, which the recorder makes every second while it records, is not recorded",
+                        processes=killed))
     unobserved = sorted({rel for data in observations for rel in data.get("unobserved") or ()})
     if unobserved:
         gaps.append(gap("not_observed",

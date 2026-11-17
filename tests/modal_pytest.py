@@ -36,6 +36,9 @@ NODE = ("https://nodejs.org/dist/v24.22.3/node-v24.22.3-linux-x64.tar.gz",
 FETCH_NODE = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
               "assert hashlib.sha256(data).hexdigest() == '%s'; open('/tmp/node.tar.gz', 'wb').write(data)\"" % NODE)
 COMPONENTS = ("vue@3.5.22", "typescript@5.6.3", "@vue/language-core@3.3.14", "svelte2tsx@0.7.63")
+# The @babel/core the JavaScript recorder prints with (`dynamic/javascript.py`, BABEL), in a layer of its own: its
+# tests under a real Node (test_codebase_map_dynamic_javascript.py) find it through DAODAN_TEST_BABEL.
+BABEL = ("7.29.7", "/opt/babel/node_modules/@babel/core")
 # Debian's headless JDK 17 builds and runs the JVM recorder in its own tests (test_codebase_map_dynamic_jvm.py);
 # its package wants the manual folder the slim image leaves out.
 image = (modal.Image.debian_slim(python_version="3.13")
@@ -46,6 +49,7 @@ image = (modal.Image.debian_slim(python_version="3.13")
                        "ln -s /opt/node-v24.22.3-linux-x64/bin/npm /usr/local/bin/npm",
                        "npm install --prefix /opt/components --no-audit --no-fund --ignore-scripts "
                        + " ".join(COMPONENTS))
+         .run_commands(f"npm install --prefix /opt/babel --no-audit --no-fund --ignore-scripts @babel/core@{BABEL[0]}")
          .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30"))
 if LOCAL:
@@ -63,7 +67,8 @@ def pytest(arguments: list) -> int:
     subprocess.run(["git", "init", "-q", REMOTE], check=False)  # suites that ask for the work tree's root
     command = [sys.executable, "-B", "-m", "pytest", "-p", "no:cacheprovider", *arguments]
     print("$", shlex.join(command), flush=True)
-    return subprocess.run(command, cwd=REMOTE, env={**os.environ, "PYTHONUTF8": "1"}).returncode
+    environment = {**os.environ, "PYTHONUTF8": "1", "DAODAN_TEST_BABEL": BABEL[1]}
+    return subprocess.run(command, cwd=REMOTE, env=environment).returncode
 
 
 @app.local_entrypoint()

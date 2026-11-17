@@ -52,8 +52,8 @@ Convenzioni:
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
 - `kotlin` (35): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284
 - `python` (34): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256, D-276
-- `javascript` (33): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270, D-291
-- `typescript` (24): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290, D-291
+- `javascript` (34): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270, D-291, D-292
+- `typescript` (25): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290, D-291, D-292
 - `rust` (19): D-014, D-021, D-030, D-040, D-041, D-078, D-143, D-144, D-173, D-175, D-176, D-209, D-227, D-230, D-237, D-238, D-239, D-256, D-265
 - `csharp` (17): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249
 - `go` (16): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256, D-257, D-265, D-273
@@ -71,7 +71,7 @@ Convenzioni:
 
 - `analizzatore` (125): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278, D-288, D-289, D-290
 - `pre-mappa` (40): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062, D-284
-- `passo dinamico` (36): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274
+- `passo dinamico` (37): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274, D-292
 - `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
 - `servizi` (14): D-182, D-201, D-202, D-212, D-213, D-214, D-215, D-216, D-217, D-240, D-244, D-260, D-261, D-275
 - `container` (14): D-064, D-203, D-204, D-205, D-206, D-207, D-208, D-210, D-218, D-219, D-262, D-279, D-283, D-291
@@ -86,7 +86,7 @@ Convenzioni:
 
 ### Tipo
 
-- `completezza` (153): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291
+- `completezza` (154): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291, D-292
 - `correttezza` (89): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280, D-288
 - `sicurezza` (29): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
@@ -99,7 +99,7 @@ Convenzioni:
 - `finale` (32): D-056, D-059, D-088, D-097, D-098, D-105, D-106, D-108, D-111, D-112, D-114, D-126, D-132, D-133, D-135, D-137, D-140, D-141, D-142, D-143, D-144, D-156, D-159, D-160, D-162, D-164, D-183, D-188, D-197, D-198, D-241, D-265
 - `corpus della pre-mappa` (31): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-235
 - `review` (31): D-064, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-203, D-205, D-217, D-218, D-251, D-254, D-256, D-257, D-258, D-263, D-264, D-286
-- `prova su Modal` (22): D-089, D-102, D-103, D-104, D-115, D-116, D-117, D-118, D-119, D-120, D-169, D-179, D-236, D-237, D-239, D-249, D-255, D-271, D-272, D-276, D-281, D-282
+- `prova su Modal` (23): D-089, D-102, D-103, D-104, D-115, D-116, D-117, D-118, D-119, D-120, D-169, D-179, D-236, D-237, D-239, D-249, D-255, D-271, D-272, D-276, D-281, D-282, D-292
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
 - `conferma` (5): D-057, D-058, D-136, D-158, D-187
@@ -186,9 +186,9 @@ Convenzioni:
 - `Launchpad` (1): D-176
 - `Meson` (1): D-060
 - `Mix` (1): D-012
-- `Node` (1): D-269
+- `Node` (2): D-269, D-292
 - `pip-compile` (1): D-028
-- `Playwright` (2): D-197, D-198
+- `Playwright` (3): D-197, D-198, D-292
 - `podman` (1): D-263
 - `prettier` (1): D-256
 - `pub` (1): D-015
@@ -211,7 +211,7 @@ Convenzioni:
 
 ## Indice
 
-291 schede: 239 risolte, 8 aperte, 44 buchi dichiarati.
+292 schede: 240 risolte, 8 aperte, 44 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -434,7 +434,7 @@ Convenzioni:
 
 ### Passo dinamico e osservatori
 
-39 schede: 31 risolto, 1 aperto, 7 buco dichiarato.
+40 schede: 32 risolto, 1 aperto, 7 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -477,6 +477,7 @@ Convenzioni:
 | D-241 | C#: nessun osservatore eseguiva i test .NET | eShop (`913acea66708`) | risolto | `15960a591` | csharp · passo dinamico · completezza · finale · dotnet |
 | D-270 | `services_unreachable` non diceva a quale indirizzo nessun servizio rispondeva | tududi (`71da9d7b34df`) | risolto | `e6a49324b` | javascript · passo dinamico · completezza · commit · Jest |
 | D-274 | Un'esecuzione di test che la CI non esegue non lo diceva | tududi (`71da9d7b34df`) | buco dichiarato (`tests_not_in_ci`) | `a46e5af7d` | tutti · passo dinamico · completezza · commit · GitHub Actions |
+| D-292 | Un processo ucciso con SIGKILL non lasciava registrazioni | osservatore JavaScript | risolto | — | javascript, typescript · passo dinamico · completezza · prova su Modal · Playwright, Node |
 
 ### Container, servizi e driver Modal
 
@@ -1150,9 +1151,9 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - `cpp` (27): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-177, D-236, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
 - `java` (27): D-003, D-016, D-025, D-026, D-027, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-099, D-100, D-101, D-105, D-106, D-111, D-178, D-265
 - `python` (26): D-006, D-007, D-028, D-047, D-048, D-049, D-052, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-246, D-247, D-248, D-252, D-253
-- `javascript` (24): D-013, D-021, D-046, D-049, D-051, D-053, D-056, D-072, D-147, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-194, D-195, D-198, D-265, D-270
+- `javascript` (25): D-013, D-021, D-046, D-049, D-051, D-053, D-056, D-072, D-147, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-194, D-195, D-198, D-265, D-270, D-292
 - `kotlin` (21): D-016, D-027, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-105, D-106, D-107, D-110, D-166
-- `typescript` (18): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-160, D-170, D-194, D-197, D-198, D-265
+- `typescript` (19): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-160, D-170, D-194, D-197, D-198, D-265, D-292
 - `csharp` (14): D-010, D-021, D-049, D-113, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-241, D-242, D-249
 - `go` (13): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-173, D-174, D-257, D-265
 - `rust` (13): D-014, D-021, D-030, D-078, D-143, D-144, D-173, D-175, D-176, D-237, D-238, D-239, D-265
@@ -3900,7 +3901,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Rimedio:**
   - per C# `15960a591` (16 novembre), l'osservatore di D-241;
   - per JavaScript e TypeScript `385387b93` (17 novembre): `scripts/premap/npm_tests.py` (v6) dà a `playwright test` il runner `playwright`, e non lo dichiara da uno script che non finisce (`--ui`, `--debug`);
-  - poi `408c1e7ae` (17 novembre, android-sdk), `scripts/dynamic/javascript.py` (`web_server`) fa girare `playwright` come gli altri runner, salvo dove la configurazione di Playwright della cartella ha un webServer che è `dotnet run --project` di un host Aspire (`dynamic.dotnet.ASPIRE`): lì lo script è `tests_need_container_engine`, con la riga del webServer, come un progetto di test C# che è un host. Un altro webServer senza un `gracefulShutdown` che mandi SIGTERM è un buco `not_observed`, con la sua riga, e lo script gira.
+  - poi `408c1e7ae` (17 novembre, android-sdk), `scripts/dynamic/javascript.py` (`web_server`) fa girare `playwright` come gli altri runner, salvo dove la configurazione di Playwright della cartella ha un webServer che è `dotnet run --project` di un host Aspire (`dynamic.dotnet.ASPIRE`): lì lo script è `tests_need_container_engine`, con la riga del webServer, come un progetto di test C# che è un host. Un altro webServer senza un `gracefulShutdown` che mandi SIGTERM è un buco `not_observed`, con la sua riga, e lo script gira; da D-292 il registratore scrive man mano, quel buco non c'è più e il webServer gira registrato fino alla sua ultima scrittura.
 - **Verifica:**
   - il 17 novembre, su Modal con `tests/modal_pytest.py` e un test temporaneo, snapshot di eShop e pre-mappa senza comandi: per C# `dynamic.dotnet.plan` dà i 5 progetti con `dotnet test --project <progetto> --no-build` e i 4 buchi `tests_need_container_engine`, nessun servizio e nessun passo della CI;
   - il registratore sul webServer, su Modal con un test temporaneo (`@playwright/test` 1.64.1): uno spec che chiama in HTTP un `node server.js` avviato dal webServer; con la chiusura predefinita scrivono il runner e il worker (lo spec fino a `lib.js` `answer`), il server nulla; con `gracefulShutdown: {signal: 'SIGTERM'}` scrive anche il server (`http.createServer`, `listen`, `end`, `lib.js` `answer`);
@@ -3908,7 +3909,7 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
   - il giro reale di eShop, il 17 novembre su Modal (approvato dall'utente, tetto 2 USD), su una copia di `36c7fb1e2` con `javascript.py` di questo rimedio: 828 s, costo 0,048 USD (report di fatturazione di Modal). C# osservato: 4 progetti girano, Application 13 test, Basket 8, Ordering 43, eShop.AppHost.UnitTests 8, 72 in tutto e nessuno fallito; 841 siti registrati, 800 uniti ai riferimenti in 42 file, 708 d'accordo con il grafo statico, 41 di un mock, 21 in conflitto, 73 `sites_ambiguous`. ClientApp.UnitTests è `tests_not_started`: «NETSDK1147: To build this project, the following workloads must be installed: maui-tizen». I 4 `*.FunctionalTests` e lo script `test:e2e` sono `tests_need_container_engine`; JavaScript e TypeScript `not-run` con quella causa;
   - `tests/test_codebase_map_dynamic_javascript.py` (`test_a_playwright_script_names_playwright_as_its_runner`, `test_playwright_s_tests_whose_web_server_is_an_aspire_app_host_need_a_container_engine`, `test_a_playwright_web_server_that_is_no_aspire_app_host_runs_and_its_process_is_said_unrecorded`, `test_fastapi_s_playwright_tests_run_as_before`); la suite intera su Modal: 2.607 passati, 65 saltati.
 - **Stato:** buco dichiarato (`tests_need_container_engine`; ClientApp.UnitTests `tests_not_started`, il workload maui-tizen).
-- **Note:** limite noto: lo `test` della radice di fastapi (`bun run --filter frontend test`) non è seguito nel pacchetto che filtra, e il suo runner resta `npm`. D-114, D-195, D-197, D-241.
+- **Note:** D-292; limite noto: lo `test` della radice di fastapi (`bun run --filter frontend test`) non è seguito nel pacchetto che filtra, e il suo runner resta `npm`. D-114, D-195, D-197, D-241.
 
 #### D-199 Python: extra e gruppi che il gestore non installa
 - **Tag:** lingua python · area passo dinamico · tipo completezza · origine spec · strumento —
@@ -3992,6 +3993,22 @@ Le schede della pre-mappa, degli analizzatori e del passo dinamico, salvo quelle
 - **Verifica:** solo test (`tests/test_codebase_map_dynamic_services.py`, `test_a_test_step_without_variables_is_a_fact_too_so_a_run_no_workflow_runs_is_said`).
 - **Stato:** buco dichiarato (`tests_not_in_ci`).
 - **Note:** il commit è un feat. D-260, D-270.
+
+#### D-292 Un processo ucciso con SIGKILL non lasciava registrazioni
+- **Tag:** lingua javascript, typescript · area passo dinamico · tipo completezza · origine prova su Modal · strumento Playwright, Node
+- **Descrizione:** il registratore JavaScript scriveva ciò che aveva visto solo all'uscita del processo (`process.on('exit')`) e al SIGTERM: un processo ucciso con SIGKILL, come Playwright ferma il suo webServer senza `gracefulShutdown`, non lasciava nulla, e da `408c1e7ae` il webServer era un buco `not_observed` (D-198).
+- **Spiegazione:** un SIGKILL non esegue alcun gestore.
+- **Progetto e caso:** osservatore JavaScript, la prova del webServer di Playwright su Modal (D-198) — 17 novembre 2026.
+- **Rimedio:** (17 novembre, android-sdk)
+  - `scripts/dynamic/javascript_record.js` scrive mentre il processo gira: ogni secondo (`EVERY`) in cui ha registrato qualcosa di nuovo, mai prima di dieci volte la durata dell'ultima scrittura, il file intero in un `.tmp` rinominato al suo posto, con `final: false`; all'uscita ancora, con `final: true`;
+  - `scripts/dynamic/javascript.py` toglie il buco `not_observed` del webServer, che ora gira registrato, e dà `processes_killed` per i file con `final: false`: ciò che ogni processo ha eseguito dopo la sua ultima scrittura non è registrato.
+- **Verifica:**
+  - `tests/test_codebase_map_dynamic_javascript.py`: `test_a_process_killed_with_sigkill_leaves_the_calls_it_made_before` (un server Node ucciso con SIGKILL lascia le chiamate fatte prima, anche una fatta dopo la prima scrittura; sul registratore di prima fallisce senza alcun file), `test_a_playwright_web_server_that_is_no_aspire_app_host_runs`, `test_fastapi_s_playwright_tests_run_as_before` e il caso `processes_killed` di `test_what_did_not_happen_is_a_gap_with_its_cause`;
+  - da questo rimedio gli 8 test del registratore sotto un Node vero girano su Modal: `tests/modal_pytest.py` dà all'immagine il @babel/core 7.29.7 del registratore (`DAODAN_TEST_BABEL`); prima si saltavano;
+  - il costo, su Modal con un test temporaneo: 3.000 funzioni, ciascuna chiamata da un suo sito, in dieci ondate di 1,2 s, tre ripetizioni; chiamate fatte, in mediana, 680 milioni con il registratore di prima e 728 milioni con questo, senza costo misurabile, per un file di 477 KB con 3.005 siti; gli 8 test del registratore 5,10 s prima, 5,05 e 4,94 s dopo; la suite intera su Modal: 2.622 passati, 57 saltati (8 in meno: i test del registratore);
+  - nessun giro reale.
+- **Stato:** risolto; ciò che un processo ucciso esegue dopo l'ultima scrittura resta il buco dichiarato `processes_killed`.
+- **Note:** D-198.
 
 ### Container, servizi e driver Modal
 

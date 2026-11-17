@@ -9,7 +9,8 @@
 // recorder: f(a) becomes globalThis.__dynC(site, f)(a), o.m(a) becomes
 // globalThis.__dynM(site, o, 'm')(a), (0, o.m)(a) becomes (0, globalThis.__dynC(site, o.m))(a).
 // As a preload it defines the recorders in every realm and asks the inspector where
-// each called function is defined; on exit it writes the sites, with "exact": true.
+// each called function is defined; it writes the sites, with "exact": true, as it runs and
+// at its exit ("final": true), so a process killed with SIGKILL leaves those of its last write.
 //
 // With DYN_BABEL the preload also puts the plugin where the code is compiled, and
 // the project is not changed:
@@ -37,6 +38,7 @@ const path = require('path');
 const { fileURLToPath } = require('url');
 
 const slash = file => (path.sep === '/' ? file : file.split(path.sep).join('/'));
+const EVERY = 1000;   // ms between the writes of what a running process saw (`install`)
 const ROOT = process.env.DYN_ROOT ? slash(path.resolve(process.env.DYN_ROOT)) + '/' : null;
 
 function relative(url) {
@@ -316,6 +318,7 @@ function install(outFile) {
   const sites = new Map();       // site id -> Set of callee indexes
   const unobserved = new Set();  // project files that ran unrecorded
   const marked = new Set();      // project files whose recorded code ran
+  let changed = false;           // a site or a callee of one since the last write
   let startsOf = () => [];
   let lookups = 0;
   function locate(fn) {
@@ -356,7 +359,8 @@ function install(outFile) {
     let index = known.get(fn);
     if (index === undefined) known.set(fn, index = locate(fn));
     const seen = sites.get(id);
-    if (seen) seen.add(index); else sites.set(id, new Set([index]));
+    if (!seen) { sites.set(id, new Set([index])); changed = true; }
+    else if (!seen.has(index)) { seen.add(index); changed = true; }
   }
   const bind = Function.prototype.bind;
   const { isProxy } = require('util').types;
@@ -386,22 +390,42 @@ function install(outFile) {
   known.set(vm.createContext, locate(createContext));   // a call of it is a call of Node's
   if (process.env.DYN_BABEL) startsOf = hook(process.env.DYN_BABEL, unobserved, new Map());
 
-  // A Jest worker that does not exit in time gets SIGTERM: the sites are written then too.
-  let written = false;
-  const flush = () => {
-    for (const file of ran) if (!marked.has(file)) unobserved.add(file);
-    if (written || !(sites.size || unobserved.size)) return;
-    written = true;
+  // The file is written whole and renamed into place: a reader never sees half of one, nor does a kill leave one.
+  // `final`: written at the process's exit, else a write while it ran (`EVERY`).
+  const target = outFile.replace('%p', `${process.pid}-${threadId}`);
+  const write = final => {
     const out = [];
     for (const [id, seen] of sites) {
       const parts = id.split('|');
       out.push({ file: parts[0], line: Number(parts[1]), column: Number(parts[2]), name: parts.slice(3).join('|'),
         callees: [...seen].map(index => callees[index]) });
     }
-    fs.writeFileSync(outFile.replace('%p', `${process.pid}-${threadId}`),
-      JSON.stringify({ exact: true, node: process.versions.node, stats: { sites: out.length, callees: callees.length, lookups },
-        unobserved: [...unobserved].sort(), sites: out }));
+    fs.writeFileSync(`${target}.tmp`,
+      JSON.stringify({ exact: true, final, node: process.versions.node,
+        stats: { sites: out.length, callees: callees.length, lookups }, unobserved: [...unobserved].sort(),
+        sites: out }));
+    fs.renameSync(`${target}.tmp`, target);
   };
+  // A Jest worker that does not exit in time gets SIGTERM: the sites are written then too.
+  let written = false;
+  const flush = () => {
+    for (const file of ran) if (!marked.has(file)) unobserved.add(file);
+    if (written || !(sites.size || unobserved.size)) return;
+    written = true;
+    write(true);
+  };
+  // SIGKILL runs no handler (Playwright stops its webServer so, a runner a worker that does not end): what the
+  // process saw is written as it goes, every EVERY ms while it records something new, and never more often than
+  // ten times a write's own length apart, so a killed process loses only what it saw after its last write. A write
+  // that fails leaves the one before; the exit's writes again.
+  let next = 0;
+  setInterval(() => {
+    if (written || !changed || Date.now() < next) return;
+    changed = false;
+    const started = Date.now();
+    try { write(false); } catch (error) { changed = true; }
+    next = Date.now() + 10 * (Date.now() - started);
+  }, EVERY).unref();
   process.on('exit', flush);
   process.on('SIGTERM', () => { flush(); process.exit(143); });
   // A worker thread a pool terminates (Vitest's threads) runs no exit handler: it writes when the thread that

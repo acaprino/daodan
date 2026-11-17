@@ -15,8 +15,10 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
+import time
 from pathlib import Path
 from unittest import mock
 
@@ -244,28 +246,19 @@ def test_playwright_s_tests_whose_web_server_is_an_aspire_app_host_need_a_contai
     assert "Aspire app host" in gap["detail"] and "container engine" in gap["detail"]
 
 
-def test_a_playwright_web_server_that_is_no_aspire_app_host_runs_and_its_process_is_said_unrecorded():
+def test_a_playwright_web_server_that_is_no_aspire_app_host_runs():
     """A webServer that starts a dev server, or `dotnet run` of a project that is no app host, starts in the
-    container: the tests run, and their runner's processes and workers are recorded. The webServer's process gets the
-    recorder too (it inherits NODE_OPTIONS), but Playwright stops it with SIGKILL unless `gracefulShutdown` sends
-    SIGTERM, and the recorder writes at its exit: on Modal (D-198) a server.js the webServer ran wrote nothing with
-    the default, its calls with SIGTERM. Without it, the gap says so, with the line of the webServer."""
+    container: the tests run, and their webServer's process inherits the recorder. Playwright stops it with SIGKILL
+    unless `gracefulShutdown` says otherwise; the recorder writes as it goes, so what it ran up to its last write is
+    recorded (`test_a_process_killed_with_sigkill_leaves_the_calls_it_made_before`)."""
     web = {"api/Api.csproj": '<Project Sdk="Microsoft.NET.Sdk.Web" />'}
     e2e = {**entry(".", "playwright"), "declared_in": "package.json#scripts.test:e2e"}
     for command, files in (("bun run dev", {}), ("dotnet run --project api/Api.csproj", web)):
         files = {**ESHOP, **files, "playwright.config.ts": ESHOP["playwright.config.ts"].replace(
             "dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj", command)}
         planned = observer.plan(record([e2e]), sorted(files), files.get)
+        assert planned["gaps"] == []
         assert planned["runs"] == [{key: e2e[key] for key in ("root", "runner", "declared_in")}]
-        [gap] = planned["gaps"]
-        assert (gap["kind"], gap["path"], gap["runner"]) == ("not_observed", "package.json#scripts.test:e2e",
-                                                             "playwright")
-        assert "playwright.config.ts:3" in gap["detail"] and "SIGKILL" in gap["detail"]
-    graceful = {**ESHOP, "playwright.config.ts": ESHOP["playwright.config.ts"].replace(
-        "dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj", "node server.js").replace(
-        "  },\n});", "    gracefulShutdown: { signal: 'SIGTERM', timeout: 500 },\n  },\n});")}
-    planned = observer.plan(record([e2e]), sorted(graceful), graceful.get)
-    assert planned["gaps"] == [] and len(planned["runs"]) == 1
 
 
 def test_fastapi_s_playwright_tests_run_as_before(tmp_path):
@@ -282,8 +275,7 @@ def test_fastapi_s_playwright_tests_run_as_before(tmp_path):
                                               "});\n"}
     tests = declared(tmp_path, files)
     planned = observer.plan(record(tests, units=(".", "frontend")), sorted(files), files.get)
-    assert [(gap["kind"], gap["path"]) for gap in planned["gaps"]] == [  # its `bun run dev`: see above
-        ("not_observed", "frontend/package.json#scripts.test")]
+    assert planned["gaps"] == []
     assert planned["runs"] == [{"root": ".", "runner": "npm", "declared_in": "package.json#scripts.test"},
                                {"root": "frontend", "runner": "playwright",
                                 "declared_in": "frontend/package.json#scripts.test"}]
@@ -345,8 +337,8 @@ FIRST = {"kind": "project", "file": "src/index.js", "name": "first", "line": 2, 
 LODASH = {"kind": "package", "module": "lodash", "version": "4.17.21", "name": "head", "line": 10}
 
 
-def observed(*sites: dict, unobserved=()) -> str:
-    return json.dumps({"exact": True, "node": "24.22.3", "stats": {}, "unobserved": list(unobserved),
+def observed(*sites: dict, unobserved=(), final: bool = True) -> str:
+    return json.dumps({"exact": True, "final": final, "node": "24.22.3", "stats": {}, "unobserved": list(unobserved),
                        "sites": list(sites)})
 
 
@@ -485,6 +477,9 @@ def test_the_sites_of_every_process_are_one_observation(tmp_path):
     ("exit 1 2", {"tests-0.log": "Error: connect ECONNREFUSED 127.0.0.1:5432\n",
                   "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST))},
      "services_unreachable", "ran", "(127.0.0.1:5432 ×1): the tests run with no network and with only the services"),
+    ("exit 0 2", {"tests-0.log": "ok\n", "observed-0-7-0.json": observed(site("a.js", 1, 2, "f", FIRST)),
+                  "observed-0-9-0.json": observed(site("a.js", 2, 0, "f", FIRST), final=False)},
+     "processes_killed", "ran", "1 process of the run ended with no exit handler"),
     (None, {}, "tests_not_started", "not_started", "before the tests' exit"),
     ("exit 0 1", {"tests-0.log": "ℹ tests 0\nℹ suites 0\nℹ pass 0\n"}, "no_tests", "no_tests", "no test"),
 ])
@@ -763,6 +758,53 @@ def test_a_file_that_ran_where_the_recorder_has_no_hook_is_named(tmp_path, node)
     [file] = recorded(project, tmp_path / "out", node, env=hidden(tmp_path, "registerHooks", "register"))
     assert file["unobserved"] == ["src/more.mjs"]
     assert ("test/index.test.js", 5, 25, "first") in places(file["sites"])
+
+
+SERVER = {"lib.js": "function first(xs) { return xs[0]; }\nfunction later(xs) { return xs.length; }\n"
+                    "module.exports = { first, later };\n",
+          "server.js": "const lib = require('./lib');\nlib.first([1]);\nconsole.log('called');\n"
+                       "process.stdin.once('data', () => { lib.later([2]); console.log('later'); });\n"
+                       "setInterval(() => {}, 1000);\n"}
+
+
+def test_a_process_killed_with_sigkill_leaves_the_calls_it_made_before(tmp_path, node):
+    """Playwright stops its webServer with SIGKILL, as a runner may a worker that does not end: no handler runs. The
+    recorder writes what it saw as it goes (`EVERY`), so the file of a killed process holds every call made before
+    its last write."""
+    project = write(tmp_path / "proj", SERVER)
+    out = tmp_path / "out"
+    out.mkdir()
+    environment = {key: value for key, value in os.environ.items() if not key.startswith(("NODE_", "DYN_"))}
+    environment.update({"NODE_OPTIONS": f"--require {observer.RECORDER.as_posix()}", "DYN_ROOT": str(project),
+                        "DYN_OUT": str(out / "observed-0-%p.json"), "DYN_BABEL": node})
+    server = subprocess.Popen(["node", "server.js"], cwd=project, env=environment, stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE, text=True)
+    try:
+        assert server.stdout.readline().strip() == "called"
+
+        def written(*names: str) -> dict:
+            for _ in range(100):  # up to 10 s: the recorder writes within its interval
+                for path in out.glob("observed-0-*.json"):
+                    data = json.loads(path.read_text(encoding="utf-8"))
+                    if set(names) <= {site["name"] for site in data["sites"]}:
+                        return data
+                time.sleep(0.1)
+            raise AssertionError(f"no observation holds {names}: {sorted(p.name for p in out.iterdir())}")
+        written("first")
+        server.stdin.write("go\n")
+        server.stdin.flush()
+        assert server.stdout.readline().strip() == "later"
+        written("first", "later")  # a call after a write: the next write holds it
+    finally:
+        server.send_signal(signal.SIGKILL)
+        server.wait(timeout=30)
+    assert server.returncode == -signal.SIGKILL
+    [path] = out.glob("observed-0-*.json")  # the last write, whole: a write is a rename
+    found = places(json.loads(path.read_text(encoding="utf-8"))["sites"])
+    lines = SERVER["server.js"].split("\n")
+    assert found[("server.js", 1, lines[1].index("first"), "first")] == {"lib.js:0:0 first function"}
+    assert found[("server.js", 3, lines[3].index("later"), "later")] == {"lib.js:1:0 later function"}
+    assert not list(out.glob("*.tmp"))
 
 
 # --- the join: what the recorder saw, on the snapshot's references ---------------------------------------------
