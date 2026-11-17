@@ -220,17 +220,77 @@ def test_a_runner_the_recorder_cannot_observe_is_a_gap_with_its_cause():
     assert gap["runner"] == "bun" and "JavaScriptCore" in gap["detail"]
 
 
-def test_playwright_s_tests_are_a_gap_that_says_where_the_code_they_test_runs():
-    """eShop's only JavaScript tests are Playwright's (`test:e2e`): the code they reach runs in the browser they
-    drive and in the server their configuration starts, so they do not run, and the gap says so instead of
-    `no_test_command`."""
-    e2e = {**entry(".", "playwright"), "declared_in": "package.json#scripts.test:e2e"}
-    planned = observer.plan(record([e2e]), [], None)
+ASPIRE_HOST = ('<Project Sdk="Aspire.AppHost.Sdk/13.6.0">\n  <PropertyGroup><OutputType>Exe</OutputType>'
+               '</PropertyGroup>\n</Project>\n')
+ESHOP = {"package.json": package(None, **{"test:e2e": "playwright test"}),
+         "playwright.config.ts": "export default defineConfig({\n  testDir: './e2e',\n  webServer: {\n"
+                                 "    command: 'dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj',\n"
+                                 "    url: 'http://localhost:5045',\n  },\n});\n",
+         "src/eShop.AppHost/eShop.AppHost.csproj": ASPIRE_HOST}
+
+
+def test_playwright_s_tests_whose_web_server_is_an_aspire_app_host_need_a_container_engine(tmp_path):
+    """eShop's only JavaScript tests are Playwright's (`test:e2e`), whose webServer is `dotnet run` of its Aspire app
+    host: the host starts Redis, RabbitMQ and PostgreSQL as containers, which the execution cannot, so the script is
+    the gap a C# test project that is such a host is (`dynamic/dotnet.py`), with the line that names the host."""
+    tests = declared(tmp_path, ESHOP)
+    assert tests == [{"root": ".", "runner": "playwright", "declared_in": "package.json#scripts.test:e2e", "args": []}]
+    planned = observer.plan(record(tests), sorted(ESHOP), ESHOP.get)
     assert planned["runs"] == []
     [gap] = planned["gaps"]
-    assert (gap["kind"], gap["path"], gap["runner"]) == ("runner_not_observed", "package.json#scripts.test:e2e",
+    assert (gap["kind"], gap["path"], gap["runner"]) == ("tests_need_container_engine", "package.json#scripts.test:e2e",
                                                          "playwright")
-    assert "browser" in gap["detail"] and "webServer" in gap["detail"]
+    assert "playwright.config.ts:4" in gap["detail"] and "src/eShop.AppHost/eShop.AppHost.csproj" in gap["detail"]
+    assert "Aspire app host" in gap["detail"] and "container engine" in gap["detail"]
+
+
+def test_a_playwright_web_server_that_is_no_aspire_app_host_runs_and_its_process_is_said_unrecorded():
+    """A webServer that starts a dev server, or `dotnet run` of a project that is no app host, starts in the
+    container: the tests run, and their runner's processes and workers are recorded. The webServer's process gets the
+    recorder too (it inherits NODE_OPTIONS), but Playwright stops it with SIGKILL unless `gracefulShutdown` sends
+    SIGTERM, and the recorder writes at its exit: on Modal (D-198) a server.js the webServer ran wrote nothing with
+    the default, its calls with SIGTERM. Without it, the gap says so, with the line of the webServer."""
+    web = {"api/Api.csproj": '<Project Sdk="Microsoft.NET.Sdk.Web" />'}
+    e2e = {**entry(".", "playwright"), "declared_in": "package.json#scripts.test:e2e"}
+    for command, files in (("bun run dev", {}), ("dotnet run --project api/Api.csproj", web)):
+        files = {**ESHOP, **files, "playwright.config.ts": ESHOP["playwright.config.ts"].replace(
+            "dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj", command)}
+        planned = observer.plan(record([e2e]), sorted(files), files.get)
+        assert planned["runs"] == [{key: e2e[key] for key in ("root", "runner", "declared_in")}]
+        [gap] = planned["gaps"]
+        assert (gap["kind"], gap["path"], gap["runner"]) == ("not_observed", "package.json#scripts.test:e2e",
+                                                             "playwright")
+        assert "playwright.config.ts:3" in gap["detail"] and "SIGKILL" in gap["detail"]
+    graceful = {**ESHOP, "playwright.config.ts": ESHOP["playwright.config.ts"].replace(
+        "dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj", "node server.js").replace(
+        "  },\n});", "    gracefulShutdown: { signal: 'SIGTERM', timeout: 500 },\n  },\n});")}
+    planned = observer.plan(record([e2e]), sorted(graceful), graceful.get)
+    assert planned["gaps"] == [] and len(planned["runs"]) == 1
+
+
+def test_fastapi_s_playwright_tests_run_as_before(tmp_path):
+    """The full-stack FastAPI template: the root `test` is `bun run --filter frontend test`, the frontend's `bunx
+    playwright test`, whose webServer is `bun run dev`. Both scripts run, as before Playwright was a runner: with
+    the stack up, those tests reach the backend."""
+    root = {"name": "fastapi-full-stack-template", "workspaces": ["frontend"],
+            "scripts": {"test": "bun run --filter frontend test", "test:ui": "bun run --filter frontend test:ui"}}
+    files = {"package.json": json.dumps(root),
+             "frontend/package.json": package("bunx playwright test", **{"test:ui": "bunx playwright test --ui"}),
+             "frontend/playwright.config.ts": "export default defineConfig({\n  webServer: "
+                                              "process.env.PLAYWRIGHT_BASE_URL\n    ? undefined\n    : {\n"
+                                              "        command: 'bun run dev',\n        url: baseURL,\n      },\n"
+                                              "});\n"}
+    tests = declared(tmp_path, files)
+    planned = observer.plan(record(tests, units=(".", "frontend")), sorted(files), files.get)
+    assert [(gap["kind"], gap["path"]) for gap in planned["gaps"]] == [  # its `bun run dev`: see above
+        ("not_observed", "frontend/package.json#scripts.test")]
+    assert planned["runs"] == [{"root": ".", "runner": "npm", "declared_in": "package.json#scripts.test"},
+                               {"root": "frontend", "runner": "playwright",
+                                "declared_in": "frontend/package.json#scripts.test"}]
+    played = Played({}, {"execute.log": "DAODAN-DYNAMIC 0 exit 1 3\nDAODAN-DYNAMIC 1 exit 1 2\n"})
+    observe(tmp_path, played, runs=planned["runs"], files=files)
+    execute = played.given["command"][-1]
+    assert "\nrun 0 . test\n" in execute and "\nrun 1 frontend test\n" in execute
 
 
 def test_a_script_that_runs_bun_has_the_bun_the_project_declares(tmp_path):

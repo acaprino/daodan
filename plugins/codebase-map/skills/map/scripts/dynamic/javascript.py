@@ -15,14 +15,18 @@ the step takes (`sampled` pairs, `dynamic.join_sampled`) only where the recorder
 that kind is Bun's, which is not V8, and the files the recorder misses are said (`not_observed`), so no run
 takes it.
 
-`plan` reads the pre-map alone. The command is the one the project declares: the `test` script of each package
-and, for a folder and runner it does not reach, the package's script that starts that runner (its `tests`
-entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, Turborepo, any other), run as `npm run`
-of the script `declared_in` names in the package's folder; a project where no package declares one is a
-`no_test_command` gap, never a command of ours. A script whose runner runs the code it tests where the recorder has
-no hook (`NOT_OBSERVED`: Bun's engine, Playwright's browser) is a `runner_not_observed` gap, and it does not run.
-Where every script of a runner watches (the pre-map's `tests_not_declared`), none runs: their gaps come back with
-the runs', which explain a language's outcome.
+`plan` reads the pre-map, and a Playwright script's configuration. The command is the one the project declares:
+the `test` script of each package and, for a folder and runner it does not reach, the package's script that starts
+that runner (its `tests` entries, from `premap/npm_tests.py`: Jest, Vitest, Mocha, `node --test`, Turborepo,
+Playwright, any other), run as `npm run` of the script `declared_in` names in the package's folder; a project where
+no package declares one is a `no_test_command` gap, never a command of ours. A script whose runner the recorder
+cannot hook (`NOT_OBSERVED`) is a `runner_not_observed` gap, and it does not run. A Playwright script whose
+configuration's webServer is `dotnet run` of an Aspire app host does not run either: the host starts its services
+as containers, the `tests_need_container_engine` gap of a C# test project that is one (`dynamic/dotnet.py`). Any
+other webServer runs, and its process inherits the recorder; but Playwright stops it with SIGKILL unless its
+`gracefulShutdown` sends SIGTERM, and the recorder writes at a process's exit, so what it ran is said unrecorded
+(`not_observed`, `web_server`). Where every script of a runner watches (the pre-map's `tests_not_declared`), none
+runs: their gaps come back with the runs', which explain a language's outcome.
 
 `observe` is one container run (`container.run_in_container`, the TypeScript analyzer's image). The preparation,
 with the registries: Daodan's Node, the Babel the recorder prints with (from npm without its install scripts),
@@ -60,6 +64,7 @@ from __future__ import annotations
 
 import collections
 import json
+import posixpath
 import re
 import shlex
 import shutil
@@ -71,12 +76,15 @@ from indexers import typescript  # the image, the unit kinds and the restores of
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
 ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "1", ("javascript", "typescript")
 RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
-RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest", "turbo")  # the pre-map's runners, run through their script
+RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest", "turbo", "playwright")  # the pre-map's, run as their script
 NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, where a Node preload and V8's "
-                       "inspector do not exist",
-                "playwright": "Playwright's tests drive a browser: the code they reach runs in that browser and in "
-                              "the server its configuration's webServer starts, not in the Node processes the "
-                              "recorder hooks"}
+                       "inspector do not exist"}
+# Where `playwright test` reads its configuration (the folder it runs in), a webServer command that runs a .NET
+# project, whose path is relative to that configuration's folder, and the shutdown the recorder writes at.
+PLAYWRIGHT_CONFIGS = tuple(f"playwright.config.{ext}" for ext in ("ts", "js", "mts", "mjs", "cts", "cjs"))
+SIGTERM = re.compile(r"gracefulShutdown\s*:\s*\{[^}]*\bsignal\s*:\s*['\"`]SIGTERM['\"`]")
+WEB_SERVER = re.compile(r"\bcommand\s*:\s*(['\"`])(?P<command>(?:(?!\1).)*?(?<![\w-])dotnet\s+run\b(?:(?!\1).)*?"
+                        r"--project[\s=]+(?P<project>[^\s'\"`]+)(?:(?!\1).)*)\1")
 BABEL = "7.29.7"  # @babel/core on npm: the recorder prints with it the code it records
 MOCKS = ("jest-mock", "sinon", "tinyspy", "@vitest/spy")  # a function of theirs stands for another: no destination
 # The tests run at most as on the runner GitHub hosts for a CI (ubuntu-latest, public repositories: 4 CPUs, 16 GB):
@@ -125,6 +133,42 @@ def external(callee: dict) -> dict:
     return {"manager": "node", "package": package, "version": callee.get("version")}
 
 
+def web_server(test: dict, files: list[str], read) -> dict | None:
+    """The gap of a Playwright entry whose configuration, in its package's folder, has a webServer: one that is
+    `dotnet run --project` of an Aspire app host (`dotnet.ASPIRE`), `tests_need_container_engine`, and the entry
+    does not run; else, without a `gracefulShutdown` that sends SIGTERM, `not_observed`, and it runs. None
+    otherwise."""
+    from . import dotnet
+    listed = set(files)
+    folder = "" if test["root"] in (".", "") else test["root"]
+    config = next((rel for rel in (posixpath.join(folder, name) for name in PLAYWRIGHT_CONFIGS) if rel in listed), None)
+    text = (read(config) or "") if config and read else ""
+    start = text.find("webServer")
+    if start < 0:
+        return None
+    for found in WEB_SERVER.finditer(text[start:]):
+        project = posixpath.normpath(posixpath.join(folder, found["project"]))
+        if not project.lower().endswith(".csproj"):  # a folder: the one project in it
+            held = [rel for rel in listed if posixpath.dirname(rel) == project and rel.lower().endswith(".csproj")]
+            project = held[0] if len(held) == 1 else project
+        what, pattern = dotnet.ASPIRE[0]
+        if project in listed and pattern.search(read(project) or ""):
+            line = text.count("\n", 0, start + found.start()) + 1
+            return {"kind": "tests_need_container_engine", "path": test.get("declared_in"), "runner": "playwright",
+                    "detail": f"{test.get('declared_in')} runs playwright, whose webServer ({config}:{line} "
+                              f"`{found['command']}`) runs {project}, which {what}: it starts its services as "
+                              "containers, and Aspire needs a container engine reachable from the tests, which "
+                              "Daodan's execution does not give, as for a C# test project that is one "
+                              "(`dynamic/dotnet.py`); its tests do not run"}
+    if SIGTERM.search(text[start:]):
+        return None
+    return {"kind": "not_observed", "path": test.get("declared_in"), "runner": "playwright",
+            "detail": f"{test.get('declared_in')} runs playwright, whose webServer ({config}:"
+                      f"{text.count(chr(10), 0, start) + 1}) Playwright stops with SIGKILL, as no gracefulShutdown "
+                      "sends SIGTERM: the recorder writes at a process's exit, so what that process runs is not "
+                      "recorded, only what the tests' own processes run"}
+
+
 def plan(record: dict, files: list[str], read) -> dict:
     """`{runs, gaps, roots, toolchains}` from the pre-map `record`: see the module's docstring. A run is
     `{root, runner, declared_in}`; `roots` are the package folders the restores run in and `toolchains` the Node
@@ -143,8 +187,12 @@ def plan(record: dict, files: list[str], read) -> dict:
     gaps = [{"kind": "runner_not_observed", "path": test.get("declared_in"), "runner": test["runner"],
              "detail": f"{test.get('declared_in')} runs {test['runner']}: {NOT_OBSERVED[test['runner']]}; its "
                        "tests do not run"} for test in tests if test["runner"] in NOT_OBSERVED]
+    served = [gap for test in tests if test["runner"] == "playwright" for gap in [web_server(test, files, read)] if gap]
+    gaps += served
+    hosted = {gap["path"] for gap in served if gap["kind"] == "tests_need_container_engine"}
     return {"runs": [{"root": test["root"], "runner": test["runner"], "declared_in": test.get("declared_in")}
-                     for test in tests if test["runner"] in RUNNERS], "gaps": gaps, "unrun": unrun,
+                     for test in tests if test["runner"] in RUNNERS and test.get("declared_in") not in hosted],
+            "gaps": gaps, "unrun": unrun,
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in ("node", "bun")]}
 
