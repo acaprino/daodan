@@ -1,8 +1,8 @@
 """The whole pipeline on Modal: snapshot, scan (the pre-map with its build tools), analyzers and union.
 
-Nothing runs on this PC. A Modal function holds the plugin's scripts and runs `pipeline.run` on each case; where
-the pipeline asks for a container (`container.run_in_container`), the function starts a Modal Sandbox from the
-same image, pinned by the same digest:
+Nothing runs on this PC. A Modal function holds the plugin's scripts, with the data they read beside them, and
+runs `pipeline.run` on each case; where the pipeline asks for a container (`container.run_in_container`), the
+function starts a Modal Sandbox from the same image, pinned by the same digest:
 
 - the copy of the project and its inputs travel on the volume `daodan-flow-results` and are unpacked at `/`;
 - with a preparation, a first sandbox runs it with the network open (Modal's allowlist is by address, not by
@@ -68,10 +68,13 @@ DOCKER = ("https://download.docker.com/linux/static/stable/x86_64/docker-29.10.0
 ENGINE = "/daodan/engine"  # where its binaries lie in a sandbox
 VM = {"vm_runtime": True}  # the `experimental_options` of a VM Sandbox (client 1.5: no `runtime` argument yet)
 
-SCRIPTS = "plugins/codebase-map/skills/map/scripts"
+SCRIPTS, DATA = "plugins/codebase-map/skills/map/scripts", "plugins/codebase-map/skills/map/data"
+REMOTE_DATA = "/daodan/map/data"  # the scripts read it beside their folder (`service_registry.REGISTRY`)
 # what a round uploads, each with its path in the repository: DAODAN_SCRIPTS names the tool's scripts to run when
-# not the checkout's (a committed copy while files are edited); the driver itself goes with its function
-UPLOADED = ((Path(os.environ.get("DAODAN_SCRIPTS") or REPO / SCRIPTS), SCRIPTS),
+# not the checkout's (a committed copy while files are edited), with the data beside them; the driver itself goes
+# with its function
+_scripts = Path(os.environ.get("DAODAN_SCRIPTS") or REPO / SCRIPTS)
+UPLOADED = ((_scripts, SCRIPTS), (_scripts.parent / "data", DATA),
             (HERE / "fixtures", "benchmarks/project-model/fixtures"),
             (HERE / "score.py", "benchmarks/project-model/score.py"),
             (HERE / "modal_pipeline.py", "benchmarks/project-model/modal_pipeline.py"))
@@ -81,8 +84,9 @@ image = (modal.Image.debian_slim(python_version="3.13")
          .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"))
 if LOCAL:
     image = (image.add_local_dir(UPLOADED[0][0], REMOTE_SCRIPTS, ignore=["**/__pycache__/**"])
-             .add_local_dir(UPLOADED[1][0], f"{REMOTE_PM}/fixtures")
-             .add_local_file(UPLOADED[2][0], f"{REMOTE_PM}/score.py"))
+             .add_local_dir(UPLOADED[1][0], REMOTE_DATA)
+             .add_local_dir(UPLOADED[2][0], f"{REMOTE_PM}/fixtures")
+             .add_local_file(UPLOADED[3][0], f"{REMOTE_PM}/score.py"))
     if os.environ.get("DAODAN_FOLDER"):  # a folder of this PC as one more case (`--folder-out`)
         image = image.add_local_dir(os.environ["DAODAN_FOLDER"], REMOTE_FOLDER,
                                     ignore=["**/__pycache__/**", "**/node_modules/**", "**/.git/**"])

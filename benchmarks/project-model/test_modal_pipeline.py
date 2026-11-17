@@ -2,6 +2,7 @@
 benchmarks/project-model/test_modal_pipeline.py (Modal's client is there)."""
 from __future__ import annotations
 
+import posixpath
 import shutil
 import subprocess
 import sys
@@ -64,3 +65,17 @@ def test_a_round_records_its_commit_the_tree_of_the_copy_it_uploaded_and_the_pat
     assert edited["commit"] == commit and edited["tree"] != clean["tree"]
     assert edited["differs"] == ["tool/a.py", "tool/b.py", "tool/c.py"]
     assert modal_pipeline.code(repo, [(copy, "tool"), parts[1]]) == clean  # the copy did not change
+
+
+def test_a_round_uploads_the_data_its_scripts_read_beside_their_folder():
+    """The scripts read the skill's `data` beside their own folder (`SCRIPT_DIR.parent / "data"`: the service
+    registry the `stack` step reads, the registry build's inputs): a round uploads it from beside the scripts it
+    runs, so its `code` covers it, to beside `REMOTE_SCRIPTS`."""
+    import registry_build
+    import service_registry
+    uploaded = {rel: Path(local).resolve() for local, rel in modal_pipeline.UPLOADED}
+    skill = posixpath.dirname(modal_pipeline.SCRIPTS)
+    for read in (service_registry.REGISTRY, registry_build.DATA):
+        folder = read.resolve().relative_to(service_registry.SCRIPT_DIR.resolve().parent).parts[0]
+        assert uploaded.get(f"{skill}/{folder}") == uploaded[modal_pipeline.SCRIPTS].parent / folder, folder
+    assert modal_pipeline.REMOTE_DATA == posixpath.join(posixpath.dirname(modal_pipeline.REMOTE_SCRIPTS), "data")
