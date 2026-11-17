@@ -51,6 +51,7 @@ ADDITIONS_SCHEMA = "daodan/registry-additions/v1"
 DATA = SCRIPT_DIR.parent / "data"
 SOURCES = ("stack-analyser", "simple-icons", "cncf-landscape", "additions")
 KINDS = ("service", "project")
+CATEGORIES = ("framework", "library", "tool", "service")
 SIGNS = ("packages", "patterns", "env", "hosts", "files")
 MIN_ENTRIES = 1000
 STACK_ANALYSER = ("@specfy/stack-analyser", "1.27.6")
@@ -93,6 +94,8 @@ def check(value: object) -> list[str]:
             problems.append(f"{ident}: no name")
         if entry.get("kind") not in KINDS:
             problems.append(f"{ident}: kind is one of {', '.join(KINDS)}")
+        if entry.get("category") is not None and entry.get("category") not in CATEGORIES:
+            problems.append(f"{ident}: category is one of {', '.join(CATEGORIES)}")
         if entry.get("type") not in flows.NODE_TYPES:
             problems.append(f"{ident}: type is one of {', '.join(flows.NODE_TYPES)}")
         signs = entry.get("signs")
@@ -295,6 +298,25 @@ def _from_rule(rule: dict) -> dict:
             "signs": signs, "from": ["stack-analyser"]}
 
 
+def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
+    """Merge curated/verified `additions` records into `entries` in place."""
+    for record in records:
+        entry = entries.get(record["id"])
+        if entry is None:
+            entry = entries[record["id"]] = {"id": record["id"], "name": record["name"], "kind": record["kind"],
+                                             "type": record["type"], "site": None, "icon": None,
+                                             "signs": _empty_signs(), "from": []}
+        elif entry["signs"] is None:
+            entry["signs"] = _empty_signs()
+        for name in ("name", "kind", "type", "site", "category", "icon"):
+            if record.get(name):
+                entry[name] = record[name]
+        _add_signs(entry["signs"], record.get("signs", {}))
+        entry["from"] = sorted(set(entry["from"]) | {"additions"})
+        if not any(entry["signs"].values()):
+            entry["signs"] = None
+
+
 def build(cache: Path, additions: Path) -> dict:
     entries, by_name = {}, {}
     for rule in stack_analyser_rules(cache):
@@ -319,16 +341,7 @@ def build(cache: Path, additions: Path) -> dict:
                           "site": item.get("homepage_url"), "icon": None, "signs": _empty_signs(),
                           "from": ["cncf-landscape"]}
         by_name[_norm(item["name"])] = ident
-    for record in json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []:
-        entry = entries.get(record["id"])
-        if entry is None:
-            entry = entries[record["id"]] = {"id": record["id"], "name": record["name"], "kind": record["kind"],
-                                             "type": record["type"], "site": None, "icon": None,
-                                             "signs": _empty_signs(), "from": []}
-        for name in ("name", "kind", "type", "site"):
-            entry[name] = record.get(name) or entry[name]
-        _add_signs(entry["signs"], record.get("signs", {}))
-        entry["from"] = sorted(set(entry["from"]) | {"additions"})
+    apply_additions(entries, json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else [])
     icons = {}
     for icon in simple_icons(cache):
         for name in [icon["title"], icon["slug"], *icon.get("aliases", {}).get("aka", [])]:
@@ -602,7 +615,30 @@ def main(argv=None) -> int:
     accept_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
     verify_parser = sub.add_parser("verify-additions")
     verify_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
+    sync_parser = sub.add_parser("sync-additions")
+    sync_parser.add_argument("source", type=Path)
+    sync_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
+    sync_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
     args = parser.parse_args(argv)
+    if args.command == "sync-additions":
+        incoming = json.loads(args.source.read_text(encoding="utf-8"))
+        add_doc = json.loads(args.additions.read_text(encoding="utf-8"))
+        by_key = {(e["id"], e.get("by")): e for e in add_doc["entries"]}
+        for item in incoming:
+            by_key[(item["id"], item.get("by"))] = item
+        add_doc["entries"] = sorted(by_key.values(), key=lambda e: (e["id"], e.get("by") or ""))
+        reg_doc = json.loads(args.registry.read_text(encoding="utf-8"))
+        entries = {e["id"]: e for e in reg_doc["entries"]}
+        apply_additions(entries, incoming)
+        reg_doc["entries"] = [entries[k] for k in sorted(entries)]
+        problems = check(reg_doc)
+        if problems:
+            print("\n".join(problems), file=sys.stderr)
+            return 1
+        args.additions.write_text(json.dumps(add_doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        args.registry.write_text(json.dumps(reg_doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        print(f"{len(reg_doc['entries'])} entries -> {args.registry}")
+        return 0
     if args.command == "build":
         args.cache.mkdir(parents=True, exist_ok=True)
         value = build(args.cache, args.additions)

@@ -79,6 +79,39 @@
    "owner": "github.com/amplitude"
   },
   {
+   "id": "android",
+   "name": "Android",
+   "kind": "project",
+   "category": "framework",
+   "type": "dispositivo",
+   "site": "https://developer.android.com",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.android.application",
+      "com.android.library"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "angularjs",
+   "name": "AngularJS",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://angularjs.org",
+   "signs": {
+    "packages": {
+     "npm": [
+      "angular"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "ansible",
    "signs": {
     "packages": {
@@ -188,12 +221,67 @@
    "owner": "github.com/apify"
   },
   {
+   "id": "apollo-server",
+   "name": "Apollo Server",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://www.apollographql.com/docs/apollo-server/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@apollo/server",
+      "apollo-server",
+      "apollo-server-express"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "archunit",
+   "name": "ArchUnit",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://www.archunit.org",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^com\\.tngtech\\.archunit:archunit"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "asana",
    "site": "https://asana.com",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "aspnetcore",
+   "name": "ASP.NET Core",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://dotnet.microsoft.com/apps/aspnet",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.AspNetCore.App"
+     ]
+    },
+    "patterns": {
+     "nuget": [
+      "^Microsoft\\.AspNetCore\\."
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "atlassian.jira",
@@ -683,6 +771,23 @@
    "owner": "github.com/bigcommerce"
   },
   {
+   "id": "blazor",
+   "name": "Blazor",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.AspNetCore.Components.WebAssembly",
+      "Microsoft.AspNetCore.Components.Web"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "boto3",
    "name": "Boto3",
    "kind": "project",
@@ -725,6 +830,22 @@
    "by": "model"
   },
   {
+   "id": "cats",
+   "name": "Cats",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://typelevel.org/cats/",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^org\\.typelevel:cats-core"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "celery",
    "site": "https://docs.celeryq.dev",
    "signs": {
@@ -739,6 +860,22 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "chi",
+   "name": "Chi",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://go-chi.io",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/go-chi/chi"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "click",
@@ -809,6 +946,22 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "compose-multiplatform",
+   "name": "Compose Multiplatform",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://www.jetbrains.com/lp/compose-multiplatform/",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.compose"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "consul",
@@ -968,6 +1121,43 @@
    "by": "model"
   },
   {
+   "id": "dotnet-aspire",
+   "name": ".NET Aspire",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://learn.microsoft.com/dotnet/aspire/",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Aspire.Hosting"
+     ]
+    },
+    "patterns": {
+     "nuget": [
+      "^Aspire\\."
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "dotnet-maui",
+   "name": ".NET MAUI",
+   "kind": "project",
+   "category": "framework",
+   "type": "dispositivo",
+   "site": "https://dotnet.microsoft.com/apps/maui",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.Maui.Controls"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "dropbox",
    "site": "https://www.dropbox.com",
    "signs": {
@@ -993,6 +1183,22 @@
    },
    "by": "derive",
    "owner": "github.com/duckdb"
+  },
+  {
+   "id": "duende-identityserver",
+   "name": "Duende IdentityServer",
+   "kind": "project",
+   "category": "framework",
+   "type": "autenticazione",
+   "site": "https://duendesoftware.com/products/identityserver",
+   "signs": {
+    "patterns": {
+     "nuget": [
+      "^Duende\\.IdentityServer"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "echo",
@@ -1024,6 +1230,27 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "entity-framework-core",
+   "name": "Entity Framework Core",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://learn.microsoft.com/ef/core/",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.EntityFrameworkCore"
+     ]
+    },
+    "patterns": {
+     "nuget": [
+      "^Microsoft\\.EntityFrameworkCore\\."
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "envoy",
@@ -1060,6 +1287,22 @@
    "by": "model"
   },
   {
+   "id": "exposed",
+   "name": "Exposed",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://github.com/JetBrains/Exposed",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^org\\.jetbrains\\.exposed:exposed-"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "fastapi",
    "name": "FastAPI",
    "kind": "project",
@@ -1088,6 +1331,22 @@
    },
    "by": "derive",
    "owner": "github.com/fastly"
+  },
+  {
+   "id": "fastmcp",
+   "name": "FastMCP",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://gofastmcp.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "fastmcp"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "firebase",
@@ -1128,6 +1387,22 @@
    "by": "model"
   },
   {
+   "id": "flutter",
+   "name": "Flutter",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://flutter.dev",
+   "signs": {
+    "packages": {
+     "pub": [
+      "flutter"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "foundationdb",
    "signs": {
     "packages": {
@@ -1137,6 +1412,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "gatling",
+   "name": "Gatling",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://gatling.io",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^io\\.gatling"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "gcp",
@@ -1428,6 +1719,37 @@
   },
   {
    "id": "grpc",
+   "name": "gRPC",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://grpc.io",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Grpc.AspNetCore",
+      "Grpc.Net.Client",
+      "Grpc.Core"
+     ],
+     "maven": [
+      "io.grpc:grpc-netty",
+      "io.grpc:grpc-stub"
+     ],
+     "go": [
+      "google.golang.org/grpc"
+     ],
+     "pypi": [
+      "grpcio"
+     ],
+     "npm": [
+      "@grpc/grpc-js"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "grpc",
    "signs": {
     "packages": {
      "pypi": [
@@ -1457,6 +1779,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "h2",
+   "name": "H2",
+   "kind": "service",
+   "category": "service",
+   "type": "database",
+   "site": "https://h2database.com",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.h2database:h2"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "hashicorp_vault",
@@ -1490,6 +1828,23 @@
    "by": "model"
   },
   {
+   "id": "hibernate",
+   "name": "Hibernate",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://hibernate.org",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.hibernate.orm:hibernate-core",
+      "org.hibernate:hibernate-core"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "honeycomb",
    "signs": {
     "packages": {
@@ -1502,6 +1857,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "hsqldb",
+   "name": "HSQLDB",
+   "kind": "service",
+   "category": "service",
+   "type": "database",
+   "site": "https://hsqldb.org",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.hsqldb:hsqldb"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "httpx",
@@ -1561,6 +1932,24 @@
    "owner": "github.com/inngest"
   },
   {
+   "id": "jackson",
+   "name": "Jackson",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://github.com/FasterXML/jackson",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.fasterxml.jackson.core:jackson-databind",
+      "com.fasterxml.jackson.core:jackson-core",
+      "com.fasterxml.jackson.module:jackson-module-kotlin"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "jaeger",
    "signs": {
     "packages": {
@@ -1598,6 +1987,40 @@
    "by": "model"
   },
   {
+   "id": "junit",
+   "name": "JUnit",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://junit.org/junit4/",
+   "signs": {
+    "packages": {
+     "maven": [
+      "junit:junit"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "junit-jupiter",
+   "name": "JUnit Jupiter",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://junit.org/junit5/",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.junit.jupiter:junit-jupiter",
+      "org.junit.jupiter:junit-jupiter-api",
+      "org.junit.jupiter:junit-jupiter-engine"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "jupyter",
    "name": "Jupyter",
    "kind": "project",
@@ -1611,6 +2034,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "kafka",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.apache.kafka:kafka-clients",
+      "org.springframework.kafka:spring-kafka"
+     ],
+     "nuget": [
+      "Confluent.Kafka"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "keras",
@@ -1642,6 +2080,75 @@
    "by": "model"
   },
   {
+   "id": "koin",
+   "name": "Koin",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://insert-koin.io",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^io\\.insert-koin:koin-"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "kotlin-multiplatform",
+   "name": "Kotlin Multiplatform",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://kotlinlang.org/docs/multiplatform.html",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin.multiplatform"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "kotlinx-serialization",
+   "name": "kotlinx.serialization",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://github.com/Kotlin/kotlinx.serialization",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin.plugin.serialization"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^org\\.jetbrains\\.kotlinx:kotlinx-serialization-"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "ktor",
+   "name": "Ktor",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://ktor.io",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^io\\.ktor:ktor-"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "langchain",
    "signs": {
     "packages": {
@@ -1656,6 +2163,22 @@
    "by": "model"
   },
   {
+   "id": "liquibase",
+   "name": "Liquibase",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://www.liquibase.org",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.liquibase:liquibase-core"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "llamaindex",
    "signs": {
     "packages": {
@@ -1665,6 +2188,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "locust",
+   "name": "Locust",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://locust.io",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "locust"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "logsnag",
@@ -1677,6 +2216,22 @@
    },
    "by": "derive",
    "owner": "github.com/logsnag"
+  },
+  {
+   "id": "lombok",
+   "name": "Lombok",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://projectlombok.org",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.projectlombok:lombok"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "mailchimp",
@@ -1697,6 +2252,22 @@
    },
    "by": "derive",
    "owner": "github.com/mailgun"
+  },
+  {
+   "id": "mapstruct",
+   "name": "MapStruct",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://mapstruct.org",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.mapstruct:mapstruct"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "matplotlib",
@@ -1734,6 +2305,22 @@
    "by": "model"
   },
   {
+   "id": "micronaut",
+   "name": "Micronaut",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://micronaut.io",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^io\\.micronaut"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "mistralai",
    "site": "https://mistral.ai",
    "signs": {
@@ -1761,6 +2348,38 @@
    "by": "model"
   },
   {
+   "id": "mockito",
+   "name": "Mockito",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://site.mockito.org",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.mockito:mockito-core",
+      "org.mockito:mockito-junit-jupiter"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "mongodb",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.mongodb:mongodb-driver-sync",
+      "org.springframework.boot:spring-boot-starter-data-mongodb"
+     ],
+     "nuget": [
+      "MongoDB.Driver"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "mongodbatlas",
    "signs": {
     "packages": {
@@ -1771,6 +2390,39 @@
    },
    "by": "derive",
    "owner": "github.com/pulumi"
+  },
+  {
+   "id": "mstest",
+   "name": "MSTest",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://learn.microsoft.com/dotnet/core/testing/unit-testing-with-mstest",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "MSTest",
+      "MSTest.TestFramework"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "mysql",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.mysql:mysql-connector-j",
+      "mysql:mysql-connector-java"
+     ],
+     "nuget": [
+      "MySql.Data",
+      "Pomelo.EntityFrameworkCore.MySql"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "nats",
@@ -1862,6 +2514,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "nunit",
+   "name": "NUnit",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://nunit.org",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "NUnit"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "okta",
@@ -2017,6 +2685,22 @@
    "by": "model"
   },
   {
+   "id": "passport",
+   "name": "Passport",
+   "kind": "project",
+   "category": "framework",
+   "type": "autenticazione",
+   "site": "https://www.passportjs.org",
+   "signs": {
+    "packages": {
+     "npm": [
+      "passport"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "paypal",
    "site": "https://www.paypal.com",
    "signs": {
@@ -2029,12 +2713,60 @@
    "by": "model"
   },
   {
+   "id": "phoenix",
+   "name": "Phoenix",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://www.phoenixframework.org",
+   "signs": {
+    "packages": {
+     "hex": [
+      "phoenix"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "phoenix-liveview",
+   "name": "Phoenix LiveView",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://hexdocs.pm/phoenix_live_view",
+   "signs": {
+    "packages": {
+     "hex": [
+      "phoenix_live_view"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "php",
    "site": "https://www.php.net",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "picocli",
+   "name": "picocli",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://picocli.info",
+   "signs": {
+    "packages": {
+     "maven": [
+      "info.picocli:picocli"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "pillow",
@@ -2073,6 +2805,29 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "playwright",
+   "kind": "project",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@playwright/test",
+      "playwright"
+     ],
+     "pypi": [
+      "playwright"
+     ],
+     "nuget": [
+      "Microsoft.Playwright"
+     ],
+     "maven": [
+      "com.microsoft.playwright:playwright"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "playwright",
@@ -2125,6 +2880,24 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "postgresql",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.postgresql:postgresql"
+     ],
+     "nuget": [
+      "Npgsql",
+      "Npgsql.EntityFrameworkCore.PostgreSQL"
+     ],
+     "hex": [
+      "postgrex"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "postgresql",
@@ -2202,6 +2975,22 @@
    "by": "model"
   },
   {
+   "id": "quarkus",
+   "name": "Quarkus",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://quarkus.io",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^io\\.quarkus:"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "questdb",
    "signs": {
     "packages": {
@@ -2212,6 +3001,37 @@
    },
    "by": "derive",
    "owner": "github.com/questdb"
+  },
+  {
+   "id": "rabbitmq",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.rabbitmq:amqp-client",
+      "org.springframework.boot:spring-boot-starter-amqp"
+     ],
+     "nuget": [
+      "RabbitMQ.Client"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "rails",
+   "name": "Ruby on Rails",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://rubyonrails.org",
+   "signs": {
+    "packages": {
+     "rubygems": [
+      "rails"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "railway",
@@ -2239,6 +3059,55 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "react-email",
+   "name": "React Email",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://react.email",
+   "signs": {
+    "packages": {
+     "npm": [
+      "react-email",
+      "@react-email/components"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "react-native",
+   "name": "React Native",
+   "kind": "project",
+   "category": "framework",
+   "type": "dispositivo",
+   "site": "https://reactnative.dev",
+   "signs": {
+    "packages": {
+     "npm": [
+      "react-native"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "redis",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-data-redis",
+      "redis.clients:jedis",
+      "io.lettuce:lettuce-core"
+     ],
+     "nuget": [
+      "StackExchange.Redis"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "redis",
@@ -2311,6 +3180,22 @@
    "by": "model"
   },
   {
+   "id": "resilience4j",
+   "name": "Resilience4j",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://resilience4j.readme.io",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^io\\.github\\.resilience4j:"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "rethinkdb",
    "signs": {
     "packages": {
@@ -2376,6 +3261,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "scalatest",
+   "name": "ScalaTest",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://www.scalatest.org",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^org\\.scalatest:scalatest"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "scaleway",
@@ -2492,6 +3393,38 @@
    "by": "model"
   },
   {
+   "id": "sidekiq",
+   "name": "Sidekiq",
+   "kind": "project",
+   "category": "framework",
+   "type": "coda",
+   "site": "https://sidekiq.org",
+   "signs": {
+    "packages": {
+     "rubygems": [
+      "sidekiq"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "sinatra",
+   "name": "Sinatra",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://sinatrarb.com",
+   "signs": {
+    "packages": {
+     "rubygems": [
+      "sinatra"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "slack",
    "site": "https://slack.com",
    "signs": {
@@ -2502,6 +3435,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "slim",
+   "name": "Slim",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://www.slimframework.com",
+   "signs": {
+    "packages": {
+     "composer": [
+      "slim/slim"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "snowflake",
@@ -2557,6 +3506,182 @@
    "by": "model"
   },
   {
+   "id": "spring-ai",
+   "name": "Spring AI",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-ai",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.ai:spring-ai-core",
+      "org.springframework.ai:spring-ai-openai-spring-boot-starter"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-boot",
+   "name": "Spring Boot",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-boot",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot",
+      "org.springframework.boot:spring-boot",
+      "org.springframework.boot:spring-boot-starter",
+      "org.springframework.boot:spring-boot-starter-parent",
+      "org.springframework.boot:spring-boot-autoconfigure",
+      "org.springframework.boot:spring-boot-dependencies"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-boot-admin",
+   "name": "Spring Boot Admin",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://codecentric.github.io/spring-boot-admin/",
+   "signs": {
+    "packages": {
+     "maven": [
+      "de.codecentric:spring-boot-admin-starter-server",
+      "de.codecentric:spring-boot-admin-starter-client"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-cloud-config",
+   "name": "Spring Cloud Config",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-cloud-config",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.cloud:spring-cloud-config-server",
+      "org.springframework.cloud:spring-cloud-starter-config"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-cloud-gateway",
+   "name": "Spring Cloud Gateway",
+   "kind": "project",
+   "category": "framework",
+   "type": "gateway",
+   "site": "https://spring.io/projects/spring-cloud-gateway",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.cloud:spring-cloud-starter-gateway",
+      "org.springframework.cloud:spring-cloud-gateway-server"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-cloud-netflix",
+   "name": "Spring Cloud Netflix",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-cloud-netflix",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client",
+      "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-data-jpa",
+   "name": "Spring Data JPA",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-data-jpa",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.data:spring-data-jpa",
+      "org.springframework.boot:spring-boot-starter-data-jpa"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-mvc",
+   "name": "Spring MVC",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework:spring-webmvc",
+      "org.springframework.boot:spring-boot-starter-web",
+      "org.springframework.boot:spring-boot-starter-webmvc"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-security",
+   "name": "Spring Security",
+   "kind": "project",
+   "category": "framework",
+   "type": "autenticazione",
+   "site": "https://spring.io/projects/spring-security",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.security:spring-security-core",
+      "org.springframework.security:spring-security-web",
+      "org.springframework.boot:spring-boot-starter-security"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "spring-webflux",
+   "name": "Spring WebFlux",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework:spring-webflux",
+      "org.springframework.boot:spring-boot-starter-webflux"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "sqlalchemy",
    "site": "https://www.sqlalchemy.org",
    "signs": {
@@ -2571,6 +3696,22 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "sqlmodel",
+   "name": "SQLModel",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://sqlmodel.tiangolo.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "sqlmodel"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "streamlit",
@@ -2689,6 +3830,62 @@
    },
    "by": "derive",
    "owner": "github.com/hashicorp"
+  },
+  {
+   "id": "testcontainers",
+   "name": "Testcontainers",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://testcontainers.com",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.testcontainers:testcontainers",
+      "org.testcontainers:junit-jupiter"
+     ],
+     "pypi": [
+      "testcontainers"
+     ],
+     "nuget": [
+      "Testcontainers"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "testng",
+   "name": "TestNG",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://testng.org",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.testng:testng"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "thymeleaf",
+   "name": "Thymeleaf",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://www.thymeleaf.org",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.thymeleaf:thymeleaf",
+      "org.springframework.boot:spring-boot-starter-thymeleaf"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "tokio",
@@ -2815,6 +4012,23 @@
    "owner": "github.com/upstash"
   },
   {
+   "id": "urql",
+   "name": "urql",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://commerce.nearform.com/open-source/urql/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "urql",
+      "@urql/core"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "uv",
    "name": "uv",
    "kind": "project",
@@ -2872,6 +4086,22 @@
    "by": "model"
   },
   {
+   "id": "vue-router",
+   "name": "Vue Router",
+   "kind": "project",
+   "category": "framework",
+   "type": "schermata",
+   "site": "https://router.vuejs.org",
+   "signs": {
+    "packages": {
+     "npm": [
+      "vue-router"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "wandb",
    "name": "Weights & Biases",
    "kind": "service",
@@ -2911,6 +4141,40 @@
    },
    "by": "derive",
    "owner": "github.com/webflow"
+  },
+  {
+   "id": "xunit",
+   "name": "xUnit",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://xunit.net",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "xunit",
+      "xunit.v3",
+      "xunit.core"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "yarp",
+   "name": "YARP",
+   "kind": "project",
+   "category": "framework",
+   "type": "gateway",
+   "site": "https://microsoft.github.io/reverse-proxy/",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Yarp.ReverseProxy"
+     ]
+    }
+   },
+   "by": "catalog"
   }
  ]
 }

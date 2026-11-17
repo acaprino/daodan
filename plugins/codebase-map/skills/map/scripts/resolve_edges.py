@@ -156,9 +156,11 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"error": f"no such manifest: {manifest}"}), file=sys.stderr)
         return 2
     if args.whole_pass:
-        # The detached pass is the pipeline after the scan: the stack, each analyzer, then the complete graph.
+        # The detached pass starts at scan when model commands are still unrun, else at stack.
         import pipeline
-        results = pipeline.run(manifest, start="stack",
+        import premap
+        start = "scan" if premap.state(manifest, runner=True)["state"] != "fresh" else "stack"
+        results = pipeline.run(manifest, start=start,
                                report_path=(args.report_out or manifest.with_name(REPORT_NAME)).resolve())
         report = results.get("analyze") or {}
         if "failed" in report:

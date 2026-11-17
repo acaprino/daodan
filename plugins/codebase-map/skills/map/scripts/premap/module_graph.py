@@ -12,11 +12,34 @@ also gives the names of each unit's external dependencies; the pre-map takes onl
 from __future__ import annotations
 
 from collections import Counter
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
+import re
 
 import modules
 
 NAME, VERSION, RANK = "modules.py", modules.SCHEMA, "reader"
+PACKAGE_ECOSYSTEM = {
+    "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
+    "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
+    "dotnet": "nuget", "composer": "composer", "bundler": "rubygems", "rubygems": "rubygems",
+    "pub": "pub", "melos": "pub", "swiftpm": "swiftpm", "mix": "hex", "terraform": "terraform",
+}
+_FROM = re.compile(r"^\s*FROM\s+(?:--\S+\s+)*([^\s#]+)(?:\s+AS\s+([^\s#]+))?", re.I)
+_IMAGE = re.compile(r"^\s*image:\s*['\"]?([^\s'\"#]+)")
+_FLUTTER_SDK = re.compile(r"^\s*sdk\s*:\s*flutter\b")
+
+
+def normalize_image(reference: str) -> str:
+    """An image reference without registry host, tag or digest: `docker.io/library/postgres:16` is `postgres`."""
+    name = reference.split("@", 1)[0]
+    if ":" in name.rsplit("/", 1)[-1]:
+        name = name.rsplit(":", 1)[0]
+    parts = name.split("/")
+    if len(parts) > 1 and ("." in parts[0] or ":" in parts[0] or parts[0] == "localhost"):
+        parts = parts[1:]
+    if parts[:1] == ["library"]:
+        parts = parts[1:]
+    return "/".join(parts).lower()
 KIND = {"npm-package": "npm-package", "python-package": "python-project", "cargo-crate": "cargo-crate",
         "go-module": "go-module", "maven-module": "maven-module", "maven-aggregator": "maven-module",
         "gradle-project": "gradle-project", "gradle-build": "gradle-project", "dotnet-project": "dotnet-project",
@@ -138,6 +161,86 @@ def facts(graph: dict) -> dict:
     return {"units": units, "workspace": list(workspaces.values()), "dependencies": dependencies}
 
 
+def _declared_packages(graph: dict, inventory) -> list[dict]:
+    """Declared package and container image signs from manifests, pubspec SDKs, Dockerfiles and Compose files."""
+    units = [m for m in graph["modules"] if m["provenance"] == "build"]
+    own = {(PACKAGE_ECOSYSTEM.get(e), name.casefold()) for m in units for e in m.get("ecosystems", [])
+           for name in [m["name"], *m["aliases"]] if name}
+    lines_cache: dict[str, list[str]] = {}
+
+    def lines_of(rel: str) -> list[str]:
+        if rel not in lines_cache:
+            try:
+                lines_cache[rel] = inventory.text(rel).splitlines()
+            except (KeyError, OSError, ValueError):
+                lines_cache[rel] = []
+        return lines_cache[rel]
+
+    packages: list[dict] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    def add(ecosystem: str, name: str, path: str, line: int | None) -> None:
+        if not name or not path or (ecosystem, name.casefold()) in own:
+            return
+        declared_in = f"{path}#L{line}" if line else path
+        key = (ecosystem, name.casefold(), path)
+        if key not in seen:
+            seen.add(key)
+            packages.append({"ecosystem": ecosystem, "name": name, "declared_in": declared_in})
+
+    for unit in units:
+        ecosystems = sorted({PACKAGE_ECOSYSTEM[e] for e in unit.get("ecosystems", []) if e in PACKAGE_ECOSYSTEM})
+        for ecosystem in ecosystems:
+            for name in unit.get("dependencies") or ():
+                if (ecosystem, name.casefold()) in own:
+                    continue
+                needle = name.split(":", 1)[-1] if ecosystem == "maven" and ":" in name else name
+                path, line = next(
+                    ((p, n) for p in unit["manifests"] for n, text in enumerate(lines_of(p), 1)
+                     if re.search(rf"""(^|[\s"'/:>]){re.escape(name)}($|[\s"'=<>~^@:,\[/])""", text)
+                     or (needle != name and re.search(rf"""(^|[\s"'/:>]){re.escape(needle)}($|[\s"'=<>~^@:,\[/<])""", text))),
+                    (unit["manifests"][0] if unit["manifests"] else None, None),
+                )
+                add(ecosystem, name, path, line)
+
+    for rel in inventory.files:
+        base = PurePosixPath(rel).name
+        if base == "pubspec.yaml":
+            for n, text in enumerate(lines_of(rel), 1):
+                if _FLUTTER_SDK.match(text):
+                    add("pub", "flutter", rel, n)
+        elif base == "Dockerfile" or base.endswith(".Dockerfile"):
+            stages: set[str] = set()
+            for n, text in enumerate(lines_of(rel), 1):
+                if match := _FROM.match(text):
+                    raw, alias = match.group(1), match.group(2)
+                    if raw.lower() != "scratch" and raw.lower() not in stages and not raw.startswith("$"):
+                        add("docker", normalize_image(raw), rel, n)
+                    if alias:
+                        stages.add(alias.lower())
+        elif base.startswith(("docker-compose", "compose")) and base.endswith((".yml", ".yaml")):
+            for n, text in enumerate(lines_of(rel), 1):
+                if (match := _IMAGE.match(text)) and not match.group(1).startswith("$"):
+                    add("docker", normalize_image(match.group(1)), rel, n)
+    return packages
+
+
+def package_facts(manifest: Path) -> list[dict]:
+    """Fast reader-only package signs of `manifest` without running any container command."""
+    import premap
+    from snapshot_store import open_snapshot
+    manifest = Path(manifest).resolve()
+    parts = []
+    with open_snapshot(manifest) as store:
+        context = premap.Context(manifest, store)
+        for source in (premap.module_graph, premap.requirements, premap.jvm_files, premap.project_files):
+            result = source.run(context)
+            if result and (result.get("facts") or {}).get("packages"):
+                parts.append({"source": premap.label(source), "rank": source.RANK,
+                              "facts": {"packages": result["facts"]["packages"]}})
+    return premap.join(parts).get("packages", []) if parts else []
+
+
 def run(context) -> dict:
     graph = context.graph
     ref = references(graph)
@@ -145,4 +248,7 @@ def run(context) -> dict:
     gaps += [{**gap, "unit": ref[module["id"]]} for module in graph["modules"] if module["provenance"] == "build"
              for gap in module.get("gaps") or []]
     found = facts(graph)
-    return {"facts": {"units": found["units"], "workspace": found["workspace"]}, "gaps": gaps}
+    packages = _declared_packages(graph, context.inventory)
+    out = {"units": found["units"], "workspace": found["workspace"],
+           **({"packages": packages} if packages else {})}
+    return {"facts": out, "gaps": gaps}

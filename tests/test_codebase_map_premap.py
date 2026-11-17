@@ -644,12 +644,13 @@ def _renovate(tmp_path, files: dict, package_files: dict) -> dict:
 
 def test_a_constraint_renovate_extracts_from_the_file_is_a_toolchain_not_a_package(tmp_path):
     """Poetry's `python`, Composer's `php`, pub's `dart` and `flutter`, global.json's SDK: the same file states
-    them as constraints. Not packages a unit uses."""
+    them as constraints. Not packages a unit uses: `rich` is one."""
     files = {"pyproject.toml": '[tool.poetry]\nname = "app"\n[tool.poetry.dependencies]\npython = "^3.10"\nrich = "^13"\n'}
     facts = _renovate(tmp_path, files, {"poetry": [{"packageFile": "pyproject.toml", "extractedConstraints": {"python": "^3.10"},
                                                     "deps": [{"depName": "python", "currentValue": "^3.10", "depType": "dependencies"},
                                                              {"depName": "rich", "currentValue": "^13", "depType": "dependencies"}]}]})
-    assert facts == {"toolchains": [{"tool": "python", "version": "^3.10", "declared_in": "pyproject.toml"}]}
+    assert facts == {"toolchains": [{"tool": "python", "version": "^3.10", "declared_in": "pyproject.toml"}],
+                     "packages": [{"ecosystem": "pypi", "name": "rich", "declared_in": "pyproject.toml"}]}
 
 
 def test_the_sdk_of_global_json_is_the_dotnet_toolchain(tmp_path):

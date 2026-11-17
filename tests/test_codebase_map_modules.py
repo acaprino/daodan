@@ -105,8 +105,12 @@ def test_contract_provenances_stay_distinct(tmp_path):
 
 
 def test_contract_directory_and_source_do_not_declare_module(tmp_path):
+    """No folder becomes a module by its name or its README: code outside every build unit is the one implicit
+    `source-tree` at the root (ADR 2026-11-17, decision 1)."""
     _, _, graph = build(tmp_path, {"feature/logic.py": "def run():\n    return 1\n", "README.md": "# A component\n"})
-    assert graph["modules"] == []
+    [tree] = graph["modules"]
+    assert (tree["provenance"], tree["kind"], tree["nature"], tree["named"]) == ("virtual", "source-tree", "virtual", False)
+    assert [m["path"] for m in tree["members"]] == ["."]
     assert graph["edges"] == []
 
 

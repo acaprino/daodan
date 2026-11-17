@@ -681,8 +681,17 @@ def read(context, commands, results):
         except (KeyError, OSError, ValueError):
             return ""
 
-    toolchains = []
+    toolchains, packages, seen_pkgs = [], [], set()
+    manager_ecosystems = {
+        "maven": "maven", "gradle": "maven", "gradle-lite": "maven", "sbt": "maven",
+        "nuget": "nuget", "pub": "pub", "mix": "hex", "hex": "hex", "swift": "swiftpm",
+        "bundler": "rubygems", "composer": "composer", "cargo": "crates", "gomod": "go",
+        "pep621": "pypi", "poetry": "pypi", "pip_requirements": "pypi", "pip_setup": "pypi",
+        "pipenv": "pypi", "setup-cfg": "pypi", "npm": "npm", "bun": "npm", "deno": "npm",
+        "dockerfile": "docker", "docker-compose": "docker", "github-actions": "github-actions",
+    }
     for manager, files in (repository.get("packageFiles") or {}).items():
+        eco = manager_ecosystems.get(manager)
         for package_file in files:
             path = package_file.get("packageFile")
             if not path:
@@ -692,6 +701,13 @@ def read(context, commands, results):
                 name, current = dep.get("depName") or dep.get("packageName"), dep.get("currentValue")
                 if not name or (manager in WRAPPER_SELF and name in WRAPPER_SELF):
                     continue
+                # a constraint the file states (Poetry's `python`, global.json's `dotnet-sdk`) is a toolchain
+                if eco and manager not in VERSION_MANAGERS and dep.get("depType") not in TOOL_DEPTYPES and (
+                        name not in (package_file.get("extractedConstraints") or {})):
+                    pkg_name = name.split("@", 1)[0].split(":", 1)[0] if eco == "docker" else name
+                    if pkg_name and (eco, pkg_name.casefold(), path) not in seen_pkgs:
+                        seen_pkgs.add((eco, pkg_name.casefold(), path))
+                        packages.append({"ecosystem": eco, "name": pkg_name, "declared_in": path})
                 tool = _tool(name) if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES else (
                     DOCKER_RUNTIMES.get(name, DEV_CONTAINERS.get(name)) if manager in IMAGE_MANAGERS
                     else _package_tool(manager, name, dep))
@@ -707,4 +723,5 @@ def read(context, commands, results):
                 if not key.startswith("%") and (_tool(key), path) not in known and isinstance(value, str) and (
                         value in written):  # a value no file writes is Renovate's deduction
                     toolchains.append({"tool": _tool(key), "version": value, "declared_in": path})
-    return {"facts": {"toolchains": toolchains, **declared}, **({"gaps": gaps} if gaps else {})}
+    facts = {"toolchains": toolchains, **({"packages": packages} if packages else {}), **declared}
+    return {"facts": facts, **({"gaps": gaps} if gaps else {})}

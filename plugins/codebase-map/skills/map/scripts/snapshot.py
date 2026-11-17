@@ -1451,6 +1451,34 @@ def query_gate(manifest: Path) -> dict | None:
     return None
 
 
+LIVE_PULSE = "live-pulse.jsonl"
+
+
+def append_live_pulse(root: Path, kind: str, **data) -> dict:
+    """Append one reactive store pulse line so MCP and UI listeners observe hook/service updates without blocking."""
+    from datetime import datetime, timezone
+    import confinement
+    entry = {"at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "kind": kind, **data}
+    target = Path(root) / LIVE_PULSE
+    confinement.reject_link_chain(target)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
+    return entry
+
+
+def read_live_pulse(root: Path, after: int = 0, limit: int = 100) -> dict:
+    import confinement
+    target = Path(root) / LIVE_PULSE
+    confinement.reject_link_chain(target)
+    if not target.is_file():
+        return {"events": [], "next_cursor": after, "has_more": False}
+    lines = target.read_text(encoding="utf-8").split("\n")[:-1]
+    chosen = lines[after:after + limit + 1]
+    page = [json.loads(line) for line in chosen[:limit]]
+    return {"events": page, "next_cursor": after + len(page), "has_more": len(chosen) > limit}
+
+
 def refresh_working(root: Path) -> dict:
     """Bring the working run to the current source; one refresh runs, at most one waits."""
     published = published_run(root)
@@ -1523,9 +1551,11 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
         index = retrieval.ensure_index(manifest)
         if index["state"] != "fresh":
             raise ValueError(f"index: {index['state']}: {index.get('reason', '')}")
-        scanned = pipeline.run(manifest, stop="scan")["scan"]  # before the analysis: the pre-map names what it indexes
+        piped = pipeline.run(manifest, stop="stack", fast_scan=True)
+        scanned = piped["scan"]
         if "failed" in scanned:
             raise ValueError(f"modules: {scanned['failed']}")
+        stacked = piped.get("stack") or {}
         engine = resolve_edges.ensure_edges(manifest) if state.get("engine", True) else {"state": "off"}
         with ExitStack() as stack:
             base = stack.enter_context(open_snapshot(resolve_run_snapshot(published, pstate)))
@@ -1541,6 +1571,8 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
             "status": "fresh", "refreshed_at": now(), "published_run": published.name,
             "rebuild": "full" if full else "incremental", "changed_since_last": len(changed),
             "parsed_files": written["metrics"]["parsed_files"],
+            "modules": scanned.get("modules", 0),
+            "stack": {"state": "failed" if "failed" in stacked else "fresh", **stacked},
             "seconds": round(time.perf_counter() - started, 2),
             "engine": {"fresh": "fresh", "running": "running"}.get(engine["state"], "unavailable"),
             "manifest_stat": [st.st_ino, st.st_size, st.st_mtime_ns],
@@ -1548,6 +1580,8 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
                                 "symbols": {key: symbols[key] for key in ("added", "removed", "changed")},
                                 "claims": scan_claims(published, delta, symbols, [])},
         }
+        append_live_pulse(root, "working.refreshed", run_id=WORKING_RUN, changed=len(changed),
+                          modules=scanned.get("modules", 0), technologies=stacked.get("technologies", 0))
     except (OSError, ValueError, KeyError, TypeError, RunControlError) as error:
         report = {"status": "failed", "refreshed_at": now(), "error": str(error)}
     _write_json_atomic(report_path, report)
@@ -1766,9 +1800,10 @@ def cmd_write(args: argparse.Namespace) -> int:
         else:
             print(f"index: {index['action']} -> {index['index']} ({index['documents']} documents)")
     if not getattr(args, "no_modules", False):
-        # The scan, the pipeline's first step: nothing downstream decides the project's structure.
+        # Step 1 (scan) and Step 2 (stack): structure and module stack before downstream analysis.
         import pipeline
-        scanned = pipeline.run(Path(args.out), stop="scan")["scan"]
+        piped = pipeline.run(Path(args.out), stop="stack")
+        scanned = piped["scan"]
         if "failed" in scanned:
             print(f"modules: {scanned['failed']}", file=sys.stderr)
             status = 1

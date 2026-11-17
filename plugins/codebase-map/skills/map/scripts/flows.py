@@ -976,7 +976,8 @@ LEVELS = ("fisico", "logico", "dati", "ux")
 
 
 def file_modules(manifest: Path) -> dict[str, str]:
-    """The module each file belongs to: the smallest module of the module graph that holds it."""
+    """The module each file belongs to: the smallest module of the module graph that holds it. The implicit
+    `source-tree` holds the code no module holds: a file only there belongs to no module."""
     import modules
     try:
         graph = json.loads(Path(modules.ensure_graph(manifest)["graph"]).read_text(encoding="utf-8"))
@@ -984,7 +985,7 @@ def file_modules(manifest: Path) -> dict[str, str]:
         return {}
     out: dict[str, tuple[int, str]] = {}
     for module in graph.get("modules", []):
-        files = module.get("files") or []
+        files = [] if module.get("kind") == "source-tree" else module.get("files") or []
         for file in files:
             if file not in out or len(files) < out[file][0]:
                 out[file] = (len(files), module["name"])

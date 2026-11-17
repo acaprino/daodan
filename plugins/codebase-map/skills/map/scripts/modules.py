@@ -42,7 +42,8 @@ from build_units import ECOSYSTEMS, READERS, SUFFIX_READERS  # noqa: E402,F401
 from module_records import (DECLARED_FILE, DECLARED_SCHEMA, LEDGER_FILE, LEDGER_SCHEMA, LOCATIONS,  # noqa: E402,F401
                             MAX_MEMBERS, MAX_MODULES, MODULE_KINDS, ledger_name, load_ledger, resolve_evidence,
                             resolve_members, validate_module, validate_modules, write_ledger)
-from module_derive import MAX_EDGE_EVIDENCE, PROVENANCES, SCHEMA, STATUSES, derive  # noqa: E402,F401
+from module_derive import (MAX_EDGE_EVIDENCE, NATURES, PHYSICAL, PROVENANCES, SCHEMA, STATUSES,  # noqa: E402,F401
+                           derive, enrich_with_premap)
 
 GRAPH_FILE = "modules.json"
 VIEW_FILE = "modules.md"
@@ -143,6 +144,35 @@ def ensure_graph(manifest: Path, *, check: bool = False) -> dict:
             "changes": graph["changes"]}
 
 
+def sync_with_premap(manifest: Path, premap_record: dict) -> dict:
+    """Align `modules.json` and `modules.md` with pre-map model units, exclusions and toolchains."""
+    manifest = Path(manifest).resolve()
+    ensured = ensure_graph(manifest)
+    if ensured["state"] != "fresh":
+        raise ValueError(f"module graph is {ensured['state']}: {ensured.get('reason', '')}")
+    graph_path, view_path = graph_name(manifest), Path(manifest).with_name(VIEW_FILE)
+    _plain(graph_path)
+    _plain(view_path)
+    previous = load_graph(graph_path)
+    if premap_record.get("inputs_digest") and previous.get("premap_digest") == premap_record.get("inputs_digest"):
+        return previous
+    with open_snapshot(manifest) as store:
+        before = _inputs_digest(manifest, store)
+        base = derive(store, ledger=load_ledger(manifest))
+        base["inputs_digest"] = before
+        graph = enrich_with_premap(store, base, premap_record)
+        if _inputs_digest(manifest, store) != before:
+            raise ValueError("snapshot or ledger changed during pre-map sync; retry")
+    graph["changes"] = _changes(graph, previous)
+    view = render(graph)
+    for path, data in ((graph_path, _json(graph).encode("utf-8")), (view_path, view.encode("utf-8"))):
+        descriptor, name = tempfile.mkstemp(prefix=".modules-", dir=path.parent)
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(data)
+        os.replace(name, path)
+    return graph
+
+
 # ---------------------------------------------------------------- query
 
 def _match(module: dict, key: str) -> str | None:
@@ -157,10 +187,10 @@ def _match(module: dict, key: str) -> str | None:
 
 
 def _owners_of(graph: dict, rel: str) -> list[str]:
-    """The most specific build scopes holding a file, including colocated units."""
+    """The most specific physical scopes holding a file, including colocated units."""
     best, depth = [], -2
     for module in graph["modules"]:
-        if module["provenance"] != "build" or any(_inside(rel, p) for p in module["excluded"]):
+        if module["provenance"] not in PHYSICAL or any(_inside(rel, p) for p in module["excluded"]):
             continue
         for path in module["paths"]:
             candidate_depth = -1 if path == "." else len(path)
@@ -196,14 +226,17 @@ def query(graph: dict, name: str, *, state: str = "unverified", limit: int = 10)
                 scope.append({"module": other, "name": by_id[other]["name"], "relation": item["kind"],
                               "direction": relations[-1]["direction"], "status": by_id[other]["status"],
                               "paths": by_id[other]["paths"], "excluded": by_id[other]["excluded"]})
-        if module["provenance"] != "build":
-            # The build units whose directories hold the member files: read scope, not target.
+        if module["provenance"] not in PHYSICAL:
+            # The physical units whose directories hold the member files: read scope, not target.
             for owner in sorted({owner for rel in module["files"] for owner in _owners_of(graph, rel)}):
                 scope.append({"module": owner, "name": by_id[owner]["name"], "relation": "owned_by", "direction": "outgoing",
                               "status": by_id[owner]["status"], "paths": by_id[owner]["paths"], "excluded": by_id[owner]["excluded"]})
         candidates.append({**{k: module[k] for k in ("id", "name", "aliases", "provenance", "kind", "location", "description",
                                                       "responsibility", "status", "paths", "excluded", "files", "members",
                                                       "manifests", "evidence", "conflicts", "gaps", "coverage")},
+                           "nature": module.get("nature"),
+                           "languages": module.get("languages", {}),
+                           "toolchains": module.get("toolchains", []),
                            "match": kind, "relations": relations,
                            "read_scope": sorted(scope, key=lambda r: (r["module"], r["relation"], r["direction"]))})
     direct = [c for c in candidates if c["match"] in ("exact", "alias")]
@@ -248,9 +281,10 @@ def propose(manifest: Path, value: object, *, replace: bool = False) -> dict:
     write_ledger(manifest, records, replace=replace)
     graph = write_graph(manifest)
     names = {slug(r["name"]) for r in records}
-    keys = ("id", "name", "kind", "location", "status", "provenance", "paths", "files", "coverage", "gaps", "conflicts")
+    keys = ("id", "name", "kind", "nature", "location", "status", "provenance", "paths", "files", "languages",
+            "toolchains", "coverage", "gaps", "conflicts")
     return {"schema": LEDGER_SCHEMA, "manifest": str(manifest), "accepted": len(records),
-            "modules": [{k: m[k] for k in keys} for m in graph["modules"] if slug(m["name"]) in names],
+            "modules": [{k: m.get(k) for k in keys} for m in graph["modules"] if slug(m["name"]) in names],
             "graph": graph_state(manifest), "changes": graph["changes"]}
 
 
@@ -277,9 +311,10 @@ def brief(manifest: Path, *, symbol_limit: int = MAX_BRIEF_SYMBOLS) -> dict:
             break
         symbols[path] = names
         kept += len(names)
-    keys = ("id", "name", "provenance", "kind", "location", "responsibility", "status", "paths", "excluded", "coverage", "gaps")
+    keys = ("id", "name", "provenance", "nature", "kind", "location", "responsibility", "status", "paths",
+            "excluded", "languages", "toolchains", "coverage", "gaps")
     return {"schema": "daodan/modules-brief/v1", "graph_state": state["state"],
-            "modules": [{k: m[k] for k in keys} | {"members": [x["id"] for x in m["members"]]} for m in graph["modules"]],
+            "modules": [{k: m.get(k) for k in keys} | {"members": [x["id"] for x in m["members"]]} for m in graph["modules"]],
             "symbols": symbols, "symbols_omitted": total - kept,
             **({"symbols_hint": "files past the limit are omitted whole; list them with codebase_map_outline(path=...)"}
                if total > kept else {}),
@@ -335,7 +370,7 @@ def render(graph: dict) -> str:
         lines.append(f"- Paths: {', '.join(_code(p) for p in m['paths']) or 'none'}"
                      + (f"; excluded: {', '.join(_code(p) for p in m['excluded'])}" if m["excluded"] else "")
                      + f"; {m['coverage']['files']} files")
-        if m["provenance"] != "build":
+        if m["provenance"] not in PHYSICAL:
             lines.append("- Members: " + (", ".join(_code(x["id"]) + ("" if x["resolved"] else " (unresolved)") for x in m["members"]) or "none"))
         if m["evidence"]:
             lines.append("- Evidence: " + ", ".join(_code(e["path"] + (f":{e['line']}" if e.get("line") else "")) for e in m["evidence"]))

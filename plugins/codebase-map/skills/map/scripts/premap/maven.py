@@ -56,7 +56,7 @@ def _text(node, path: str) -> str | None:
 
 
 def read(context, commands, results):
-    units, workspaces, gaps = [], [], []
+    units, workspaces, packages, gaps, seen_pkgs = [], [], [], [], set()
     for command, result in zip(commands, results):
         root = result.get("root") or "/"
         text = result["stdout"] or ""
@@ -80,6 +80,7 @@ def read(context, commands, results):
             if folder is not None:
                 found[key] = (project, folder)
         for key, (project, folder) in found.items():
+            manifest = posixpath.join(folder, FILE).removeprefix("./")
             sources = [rel(_text(project, f"{NS}build/{NS}{tag}"))
                        for tag in ("sourceDirectory", "testSourceDirectory")]
             for plugin in project.findall(f"{NS}build/{NS}plugins/{NS}plugin"):  # the folders a plugin compiles
@@ -96,12 +97,17 @@ def read(context, commands, results):
                         excludes.setdefault(compiled, set()).update(patterns - {""})
             registries = {origin(_text(repository, f"{NS}url")) for held, tag in REPOSITORIES
                           for repository in project.findall(f"{NS}{held}/{NS}{tag}")} - {None}
+            all_deps = {f"{_text(d, f'{NS}groupId')}:{_text(d, f'{NS}artifactId')}"
+                        for d in project.findall(f"{NS}dependencies/{NS}dependency")
+                        if _text(d, f"{NS}groupId") and _text(d, f"{NS}artifactId")}
+            for coord in sorted(all_deps - set(found)):
+                if (coord.casefold(), manifest) not in seen_pkgs:
+                    seen_pkgs.add((coord.casefold(), manifest))
+                    packages.append({"ecosystem": "maven", "name": coord, "declared_in": manifest})
             units.append({"name": key, "kind": "maven-module", "root": folder,
-                          "manifest": posixpath.join(folder, FILE).removeprefix("./"),
+                          "manifest": manifest,
                           "source_roots": sorted({s for s in sources if s and s in context.inventory.directories}),
-                          "depends_on": sorted({f"{_text(d, f'{NS}groupId')}:{_text(d, f'{NS}artifactId')}"
-                                                for d in project.findall(f"{NS}dependencies/{NS}dependency")}
-                                               & set(found) - {key}),
+                          "depends_on": sorted(all_deps & set(found) - {key}),
                           **({"registries": sorted(registries)} if registries else {}),
                           **({"compile_excludes": {compiled: sorted(patterns) for compiled, patterns in sorted(
                               excludes.items())}} if excludes else {})})
@@ -110,5 +116,6 @@ def read(context, commands, results):
             first = rel(posixpath.dirname(_text(top, f"{NS}build/{NS}directory") or "")) or command["cwd"]
             workspaces.append({"tool": "maven", "root": first,
                                "members": sorted(f for _, f in found.values() if f != first)})
-    facts = {key: value for key, value in (("units", units), ("workspace", workspaces)) if value}
+    facts = {key: value for key, value in (("units", units), ("workspace", workspaces),
+                                           ("packages", packages)) if value}
     return {"facts": facts, "gaps": gaps}

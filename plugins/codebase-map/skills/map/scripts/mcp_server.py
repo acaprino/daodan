@@ -37,6 +37,14 @@ async def _invoke(ctx: Context, operation, *args, **kwargs) -> dict:
         # a protocol fault that ends the session.
         raise ToolError(f"internal error in {operation.__name__}: {type(error).__name__}: {error}") from error
     await ctx.report_progress(1, message=f"Finished {operation.__name__}")
+    session = getattr(ctx, "session", None)
+    notify = getattr(session, "send_resource_updated", None)
+    if callable(notify) and operation.__name__ in ("create_run", "modules", "index", "checkpoint", "publish", "stop",
+                                                   "ui_requests", "ui_done"):
+        try:
+            await notify("daodan://project/live")
+        except Exception:  # noqa: BLE001 - optional notification must never fail the tool call
+            pass
     return result
 
 
@@ -236,7 +244,8 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
             token = secrets.token_urlsafe(24)
             explorer.append((visual.make_server(None, visual.SCRIPT_DIR.parents[2] / "assets" / "viewer",
                                                 routes=visual.live_routes(service),
-                                                actions=visual.live_actions(service), token=token), token))
+                                                actions=visual.live_actions(service), token=token,
+                                                stream=visual.live_stream(service)), token))
             threading.Thread(target=explorer[0][0].serve_forever, daemon=True).start()
         server_, token = explorer[0]
         return {"url": f"http://127.0.0.1:{server_.server_address[1]}/?token={token}"}
@@ -250,6 +259,16 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
     async def codebase_map_ui_done(ctx: Context, request_id: int, results: list[str] | None = None, message: str = "") -> dict:
         """Close a taken explorer request. results are project-relative JSON files with a findings or retained_findings list: the explorer shows them."""
         return await _invoke(ctx, service.ui_done, request_id, results=results or [], message=message)
+
+    @server.tool(annotations=read_only)
+    async def codebase_map_stack(ctx: Context, run_id: str, module: str | None = None) -> dict:
+        """Step 2 stack of the bound run: for every module (concrete, logical, virtual) or one named module, its nature, languages, toolchains, frameworks, declared libraries (cataloged or not), external services and tools."""
+        return await _invoke(ctx, service.stack, run_id, module=module)
+
+    @server.resource("daodan://project/live")
+    def codebase_map_live_resource() -> str:
+        """Latest reactive store pulse (hook refreshes, run milestones, UI transitions)."""
+        return json.dumps(service.live_pulse(after=0, limit=50), ensure_ascii=False)
 
     return server
 

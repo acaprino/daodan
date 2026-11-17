@@ -25,6 +25,7 @@ INDEX = re.compile(r"^(?:-i|--index-url|--extra-index-url|-f|--find-links)(?:\s+
 EDITABLE = re.compile(r"^(?:-e|--editable)(?:\s+|=)(\S+)$")
 COMPILED = re.compile(r"^#\s+pip-compile\b.*?\s(\S+\.in)\s*$", re.M)
 PREFERRED = ("requirements.in", "requirements.txt")
+PKG_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])?\s*(?:[<>=!~;@#\s]|$)")
 
 
 def _parent(rel: str) -> str:
@@ -114,6 +115,10 @@ def run(context):
     compiled = {rel: _join(_parent(rel), match.group(1)) for rel in files
                 for match in [COMPILED.search(text(rel))] if match}
     included = {_join(_parent(rel), name) for rel in files for name in parsed[rel]["includes"]}
+    for target in sorted(included & set(inventory.files) - set(files)):
+        files.append(target)
+        parsed[target] = _parse(text(target))
+    files.sort()
     constraints = {_join(_parent(rel), name) for rel in files for name in parsed[rel]["constraints"]}
     # Each file's unit folder: a file no other includes speaks for its own folder; an included one goes with
     # the first file that includes it.
@@ -163,4 +168,18 @@ def run(context):
         if depends:
             unit["depends_on"] = sorted(depends)
         units.append(unit)
-    return {"facts": {"units": units}, "gaps": gaps}
+    packages: list[dict] = []
+    seen_pkgs: set[tuple[str, str]] = set()
+    for rel in files:
+        if rel in constraints:
+            continue
+        for number, raw in enumerate(text(rel).splitlines(), 1):
+            stripped = raw.split("#", 1)[0].strip()
+            if not stripped or stripped.startswith("-"):
+                continue
+            if match := PKG_NAME.match(stripped):
+                norm = re.sub(r"[-_.]+", "-", match.group(1)).lower()
+                if (norm, rel) not in seen_pkgs:
+                    seen_pkgs.add((norm, rel))
+                    packages.append({"ecosystem": "pypi", "name": norm, "declared_in": f"{rel}#L{number}"})
+    return {"facts": {"units": units, **({"packages": packages} if packages else {})}, "gaps": gaps}

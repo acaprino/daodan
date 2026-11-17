@@ -75,7 +75,10 @@ def _chunks(items: list, size: int = LIMIT):
 
 def _module_ref(module: dict) -> str:
     kind = "external" if module.get("location") == "external" else (
-        "build" if module.get("provenance") == "build" else module.get("kind", "component"))
+        "virtual" if module.get("provenance") == "virtual" else (
+            "build" if module.get("provenance") == "build" else module.get("kind", "component")
+        )
+    )
     return f"{kind}:{module['id']}"
 
 
@@ -113,7 +116,8 @@ def build_envelope(run_dir: Path) -> dict:
         by_id[module["id"]] = ref
         external = module.get("location") == "external"
         entity(ref, ref.split(":", 1)[0], module["name"], description=module.get("responsibility") or module.get("description") or "",
-               provenance=module.get("provenance"), status=module.get("status"),
+               provenance=module.get("provenance"), nature=module.get("nature"), status=module.get("status"),
+               languages=module.get("languages"), toolchains=module.get("toolchains"),
                location="external" if external else "internal", node_type="servizio o API" if external else None,
                evidence=[{"path": item.get("path"), "line": item.get("line")} for item in module.get("evidence", [])],
                gaps=list(module.get("gaps", [])))
@@ -134,9 +138,14 @@ def build_envelope(run_dir: Path) -> dict:
 
     import technologies
     stack = technologies.ensure(manifest)
-    for unit in stack["units"]:
-        if unit["technologies"] and unit["id"] in by_id:
-            entities[by_id[unit["id"]]]["technologies"] = unit["technologies"]
+    for unit in stack.get("modules", stack["units"]):
+        if unit["id"] in by_id:
+            target_entity = entities[by_id[unit["id"]]]
+            if unit["technologies"]:
+                target_entity["technologies"] = unit["technologies"]
+            for field in ("frameworks", "libraries", "services", "tools"):
+                if unit.get(field) is not None:
+                    target_entity[field] = unit[field]
 
     with open_snapshot(manifest) as store:
         root, target = store["root"], store["target"]
@@ -185,10 +194,10 @@ def build_envelope(run_dir: Path) -> dict:
                 if f"file:{link['source']}" in entities and f"file:{link['target']}" in entities:
                     relation("imports", f"file:{link['source']}", f"file:{link['target']}")
 
-    # Memberships: a file belongs to every logical module that holds it; build units are physical groups.
+    # Memberships: a file belongs to every logical module that holds it; build and virtual units are physical groups.
     for module in graph.get("modules", []):
         ref = by_id[module["id"]]
-        view = "physical" if module.get("provenance") == "build" else "logical"
+        view = "physical" if module.get("provenance") in ("build", "virtual") else "logical"
         for path in module.get("files", []):
             if f"file:{path}" in entities:
                 memberships.append({"member": f"file:{path}", "group": ref, "view": view})
@@ -355,10 +364,65 @@ def live_routes(service) -> dict:
         return build_envelope(service.root / "runs" / service.status(query["run"])["run_id"])
 
     return {"/api/runs": lambda query: service.runs(),
-            "/api/events": lambda query: service.events(query["run"], after=int(query.get("after", 0))),
+            "/api/events": lambda query: service.events(
+                query["run"], after=int(query.get("after", 0)),
+                limit=int(query.get("limit", 100)),
+                pipeline_after=int(query.get("pipeline_after", 0)),
+            ),
+            "/api/modules": lambda query: service.modules(query["run"], query=query.get("query")),
+            "/api/stack": lambda query: service.stack(query["run"], module=query.get("module")),
+            "/api/pulse": lambda query: service.live_pulse(
+                after=int(query.get("after", 0)), limit=int(query.get("limit", 100))
+            ),
             "/api/requests": lambda query: service.ui_requests(),
             "/api/findings": lambda query: service.ui_findings(),
             "/data/visual.json": envelope}
+
+
+def live_stream(service):
+    """Generator of SSE frames `(event_name, payload_dict)` for `/api/stream`."""
+    def frames(query: dict, should_stop):
+        run_id = query.get("run")
+        after = int(query.get("after", 0))
+        pipeline_after = int(query.get("pipeline_after", 0))
+        pulse_after = int(query.get("pulse_after", 0))
+        once = query.get("once") == "1"
+        max_seconds = min(float(query.get("max_seconds", 15)), 60.0)
+        deadline = time.monotonic() + max_seconds
+
+        def poll():
+            nonlocal after, pipeline_after, pulse_after
+            payload: dict = {}
+            pulse = service.live_pulse(after=pulse_after, limit=100)
+            if pulse["events"]:
+                pulse_after = pulse["next_cursor"]
+                payload["pulse"] = pulse
+            if run_id:
+                ev = service.events(run_id, after=after, limit=100, pipeline_after=pipeline_after)
+                if ev["events"] or ev["pipeline"]["events"]:
+                    after = ev["next_cursor"]
+                    pipeline_after = ev["pipeline"]["next_cursor"]
+                    payload["run_events"] = ev
+            return payload
+
+        initial = {"pulse": service.live_pulse(after=pulse_after, limit=100)}
+        pulse_after = initial["pulse"]["next_cursor"]
+        if run_id:
+            ev = service.events(run_id, after=after, limit=100, pipeline_after=pipeline_after)
+            after, pipeline_after = ev["next_cursor"], ev["pipeline"]["next_cursor"]
+            initial["run_events"] = ev
+        yield "snapshot", initial
+        if once:
+            return
+        while not should_stop() and time.monotonic() < deadline:
+            time.sleep(0.15)
+            if should_stop():
+                break
+            delta = poll()
+            if delta:
+                yield "update", delta
+
+    return {"/api/stream": frames}
 
 
 def live_actions(service) -> dict:
@@ -368,7 +432,8 @@ def live_actions(service) -> dict:
 
 
 def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None,
-                actions: dict | None = None, token: str | None = None) -> ThreadingHTTPServer:
+                actions: dict | None = None, token: str | None = None,
+                stream: dict | None = None) -> ThreadingHTTPServer:
     """A server on 127.0.0.1, read-only without `actions`: the viewer's files listed at start, and the export's envelope.
 
     `routes` maps an exact path to a function of the query that returns JSON, in place of
@@ -393,7 +458,7 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
         allowed["/"] = allowed["/index.html"]
     if export_dir is not None:
         allowed["/data/visual.json"] = Path(export_dir).resolve() / "visual.json"
-    routes, actions = routes or {}, actions or {}
+    routes, actions, stream = routes or {}, actions or {}, stream or {}
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):  # noqa: N802 - the stdlib names the method
@@ -401,11 +466,16 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
             if self.headers.get("Host") not in (f"127.0.0.1:{port}", f"localhost:{port}"):
                 return self._send(421, b"misdirected request", "text/plain; charset=utf-8")
             address = urlsplit(self.path)
+            query = dict(parse_qsl(address.query))
+            if address.path in stream:
+                if not self._authorized(query.get("token")):
+                    return self._json(403, {"error": "refused"})
+                return self._sse(stream[address.path], query)
             if address.path in routes:
                 if not self._authorized():
                     return self._json(403, {"error": "refused"})
                 try:
-                    return self._json(200, routes[address.path](dict(parse_qsl(address.query))))
+                    return self._json(200, routes[address.path](query))
                 except (ValueError, KeyError, TypeError, OSError) as error:
                     return self._json(400, {"error": str(error)})
             if address.path == "/data/visual.json" and not self._authorized():
@@ -434,8 +504,34 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
             except (ValueError, KeyError, TypeError, OSError) as error:
                 return self._json(400, {"error": str(error)})
 
-        def _authorized(self) -> bool:
-            return token is None or hmac.compare_digest(self.headers.get("X-Daodan-Token", ""), token)
+        def _authorized(self, query_token: str | None = None) -> bool:
+            given = self.headers.get("X-Daodan-Token") or query_token or ""
+            return token is None or hmac.compare_digest(given, token)
+
+        def _sse(self, producer, query: dict) -> None:
+            try:
+                iterator = iter(producer(query, lambda: bool(getattr(self.server, "_BaseServer__shutdown_request", False))))
+                first_event, first_data = next(iterator)
+            except StopIteration:
+                first_event, first_data = None, None
+            except (ValueError, KeyError, TypeError, OSError) as error:
+                return self._json(400, {"error": str(error)})
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            try:
+                if first_event is not None:
+                    self.wfile.write(f"event: {first_event}\ndata: {json.dumps(first_data, ensure_ascii=False, separators=(',', ':'))}\n\n".encode("utf-8"))
+                    self.wfile.flush()
+                for event_name, payload in iterator:
+                    self.wfile.write(f"event: {event_name}\ndata: {json.dumps(payload, ensure_ascii=False, separators=(',', ':'))}\n\n".encode("utf-8"))
+                    self.wfile.flush()
+            except OSError:
+                pass
+            self.close_connection = True
 
         def _json(self, code: int, value) -> None:
             self._send(code, json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8"), "application/json")

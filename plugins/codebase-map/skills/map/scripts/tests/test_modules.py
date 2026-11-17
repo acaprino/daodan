@@ -485,3 +485,99 @@ def test_cli_and_service(tmp_path):
     assert "modules_proposed" in events and "modules_failed" not in events
     with pytest.raises(ValueError):
         service.modules("run-a", query="")
+
+
+def test_module_natures_languages_and_toolchains_across_concrete_logical_and_virtual(tmp_path):
+    _, cargo = build(tmp_path / "cargo", ECOSYSTEMS["cargo"][0])
+    cargo_mods = by_id(cargo)
+    assert cargo_mods["proj"]["nature"] == "virtual"
+    assert cargo_mods["engine"]["nature"] == "concrete"
+    assert cargo_mods["engine"]["languages"] == {"rust": 1}
+    assert {t["tool"] for t in cargo_mods["engine"]["toolchains"]} >= {"cargo", "rust"}
+
+    _, dotnet = build(tmp_path / "dotnet", ECOSYSTEMS["dotnet"][0])
+    dotnet_mods = by_id(dotnet)
+    assert dotnet_mods["shop"]["nature"] == "virtual"
+    assert dotnet_mods["shop-web"]["nature"] == "concrete"
+    assert dotnet_mods["shop-web"]["languages"] == {"csharp": 1}
+
+    manifest, sessions = build(tmp_path / "sessions", SESSIONS)
+    modules.propose(manifest, [{"name": "External KV", "kind": "component", "location": "external",
+                                "responsibility": "KV", "evidence": ["src/storage/store.py"]}])
+    sessions = modules.load_graph(modules.graph_name(manifest))
+    mods = by_id(sessions)
+    assert mods["sessions"]["nature"] == "concrete"
+    assert mods["session-management"]["nature"] == "logical"
+    assert mods["session-management"]["languages"] == {"python": 4}
+    assert {t["tool"] for t in mods["session-management"]["toolchains"]} >= {"python"}
+    assert mods["external-kv"]["nature"] == "logical"
+    assert mods["external-kv"]["languages"] == {} and mods["external-kv"]["toolchains"] == []
+    queried = modules.query(sessions, "session-management", state="fresh")["candidates"][0]
+    assert queried["nature"] == "logical" and queried["languages"] == {"python": 4} and queried["toolchains"]
+    briefed = {m["id"]: m for m in modules.brief(manifest)["modules"]}
+    assert briefed["session-management"]["nature"] == "logical" and briefed["session-management"]["toolchains"]
+
+
+def test_manifestless_source_and_runtime_files_form_a_virtual_source_tree_module(tmp_path):
+    manifest, bare = build(tmp_path / "bare", {
+        "app/main.py": "def run():\n    return 1\n",
+        "Dockerfile": "FROM python:3.12-slim\n",
+        "README.md": "# Demo\n",
+    })
+    assert len(bare["modules"]) == 1
+    root = bare["modules"][0]
+    assert (root["provenance"], root["nature"], root["kind"], root["status"]) == (
+        "virtual", "virtual", "source-tree", "confirmed")
+    assert root["paths"] == ["."] and "app/main.py" in root["files"] and "Dockerfile" in root["files"]
+    assert root["languages"] == {"python": 1}
+    assert {t["tool"] for t in root["toolchains"]} >= {"python", "docker"}
+    assert_no_invented_paths(bare, manifest)
+
+    _, mixed = build(tmp_path / "mixed", {
+        "backend/pom.xml": '<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>com.acme</groupId>'
+                           "<artifactId>api</artifactId></project>\n",
+        "backend/src/Main.java": "class Main {}\n",
+        "scripts/deploy.py": "def deploy():\n    return 0\n",
+    })
+    kinds = {(m["nature"], m["kind"], tuple(m["paths"]), tuple(m["excluded"])) for m in mixed["modules"]}
+    assert kinds == {("concrete", "maven-module", ("backend",), ()),
+                     ("virtual", "source-tree", (".",), ("backend",))}
+    virtual = next(m for m in mixed["modules"] if m["provenance"] == "virtual")
+    assert virtual["files"] == ["scripts/deploy.py"] and virtual["languages"] == {"python": 1}
+
+
+def test_sync_with_premap_attaches_inherited_toolchains_excluded_languages_and_model_units(tmp_path):
+    manifest, _ = build(tmp_path, {
+        "settings.gradle.kts": 'rootProject.name = "shop"\ninclude(":app")\n',
+        "build.gradle.kts": "plugins { kotlin(\"jvm\") }\n",
+        "app/build.gradle.kts": "plugins { kotlin(\"jvm\") }\n",
+        "app/src/main/kotlin/App.kt": "fun main() {}\n",
+        "app/generated/Gen.kt": "class Gen\n",
+        "lib/dyn/src/main/kotlin/Dyn.kt": "class Dyn\n",
+    })
+    premap_record = {
+        "excluded": [{"path": "app/generated", "why": "generated"}],
+        "toolchains": [
+            {"tool": "gradle", "version": "8.10", "declared_in": "gradle/wrapper/gradle-wrapper.properties#distributionUrl"},
+            {"tool": "java", "version": "21", "declared_in": "build.gradle.kts#java.toolchain.languageVersion"},
+            {"tool": "java", "version": "17", "declared_in": "app/build.gradle.kts#java.toolchain.languageVersion"},
+        ],
+        "units": [
+            {"name": ":", "kind": "gradle-project", "root": ".", "manifest": "build.gradle.kts", "depends_on": []},
+            {"name": ":app", "kind": "gradle-project", "root": "app", "manifest": "app/build.gradle.kts", "depends_on": [":lib:dyn"]},
+            {"name": ":lib:dyn", "kind": "gradle-project", "root": "lib/dyn", "manifest": None, "depends_on": []},
+        ],
+    }
+    synced = modules.sync_with_premap(manifest, premap_record)
+    assert modules.graph_state(manifest)["state"] == "fresh"
+    mods = by_id(synced)
+    assert mods["app"]["languages"] == {"kotlin": 1}  # generated/Gen.kt excluded from language counts
+    app_tools = {t["tool"]: t["version"] for t in mods["app"]["toolchains"]}
+    assert app_tools["java"] == "17" and app_tools["gradle"] == "8.10"
+    dyn = next(m for m in synced["modules"] if m["paths"] == ["lib/dyn"])
+    assert (dyn["provenance"], dyn["nature"], dyn["kind"], dyn["status"]) == (
+        "build", "concrete", "gradle-project", "confirmed")
+    assert dyn["languages"] == {"kotlin": 1}
+    dyn_tools = {t["tool"]: t["version"] for t in dyn["toolchains"]}
+    assert dyn_tools["java"] == "21" and dyn_tools["gradle"] == "8.10"
+    assert ("app", dyn["id"]) in edges(synced, "declares")

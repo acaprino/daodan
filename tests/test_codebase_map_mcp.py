@@ -385,26 +385,30 @@ class MapServiceTests(unittest.TestCase):
     def test_events_and_status_follow_the_analysis_pipeline_of_the_run(self):
         from pipeline import events as pipeline_events
         self.create()
-        self.assertIsNone(self.service.status("example")["progress"])
-        bus = pipeline_events.Bus(self.service.root / "runs/example/snapshot" / pipeline_events.JOURNAL)
+        journal = self.service.root / "runs/example/snapshot" / pipeline_events.JOURNAL
+        # The run's creation runs the scan without the container, and the stack (ADR 2026-11-17, decision 3).
+        progress = self.service.status("example")["progress"]
+        self.assertEqual((progress["step"], progress["done"]), ("scan", progress["total"]))
+        start = len(pipeline_events.read(journal)[0])
+        bus = pipeline_events.Bus(journal)
         bus.emit("step.started", "scan", step="scan")
         bus.progress("analyze", 1, 3, analyzer="python", phase="index")
         bus.progress("analyze", 2, 3, analyzer="python", phase="graph")
         bus.emit("log", "x" * (mcp_service.MAX_MESSAGE + 5), step="analyze", analyzer="python", level="debug")
         service_events = self.service.events("example")["events"]
-        first = self.service.events("example", limit=2)
+        first = self.service.events("example", limit=2, pipeline_after=start)
         self.assertEqual(first["events"], service_events[:2])
         self.assertEqual([item["kind"] for item in first["pipeline"]["events"]], ["step.started", "progress"])
-        self.assertEqual((first["pipeline"]["next_cursor"], first["pipeline"]["has_more"]), (2, True))
+        self.assertEqual((first["pipeline"]["next_cursor"], first["pipeline"]["has_more"]), (start + 2, True))
         rest = self.service.events("example", pipeline_after=first["pipeline"]["next_cursor"])
         self.assertEqual([item["kind"] for item in rest["pipeline"]["events"]], ["progress", "log"])
         self.assertEqual(len(rest["pipeline"]["events"][-1]["message"]), mcp_service.MAX_MESSAGE)
-        self.assertEqual((rest["pipeline"]["next_cursor"], rest["pipeline"]["has_more"]), (4, False))
-        self.assertFalse(self.service.events("example", pipeline_after=4)["pipeline"]["events"])
+        self.assertEqual((rest["pipeline"]["next_cursor"], rest["pipeline"]["has_more"]), (start + 4, False))
+        self.assertFalse(self.service.events("example", pipeline_after=start + 4)["pipeline"]["events"])
         progress = self.service.status("example")["progress"]
         self.assertEqual({key: progress[key] for key in ("step", "analyzer", "done", "total", "phase")},
                          {"step": "analyze", "analyzer": "python", "done": 2, "total": 3, "phase": "graph"})
-        for values in ({"pipeline_after": -1}, {"pipeline_after": True}, {"pipeline_after": 5}):
+        for values in ({"pipeline_after": -1}, {"pipeline_after": True}, {"pipeline_after": start + 5}):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 self.service.events("example", **values)
 

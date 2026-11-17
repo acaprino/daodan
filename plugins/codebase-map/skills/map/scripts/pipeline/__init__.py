@@ -40,6 +40,7 @@ class Context:
     manifest: Path
     bus: events.Bus
     report_path: Path | None = None  # the analysis's report, beside the snapshot by default
+    fast_scan: bool = False  # reader-only scan without container commands, for interactive/hook callers
     results: dict = field(default_factory=dict)  # each step's result by its name, for the steps after it
 
 
@@ -61,10 +62,11 @@ class Scan:
             bus.progress(Scan.NAME, done, total, phase=status["source"],
                          message=f"{status['source']}: {status['state']}")
 
-        record = premap.ensure(manifest, report=source, runner=_runner(manifest))
+        record = premap.ensure(manifest, report=source, runner=None if context.fast_scan else _runner(manifest))
+        synced = modules.sync_with_premap(manifest, record)
         for gap in record.get("gaps", []):
             bus.emit("gap", gap.get("detail") or gap["kind"], step=Scan.NAME, gap=gap)
-        return {"modules": graph.get("modules", 0), "graph": graph["graph"], "action": graph.get("action"),
+        return {"modules": len(synced["modules"]), "graph": graph["graph"], "action": graph.get("action"),
                 "units": len(record["units"]), "gaps": len(record["gaps"]), "premap": str(premap.path(manifest))}
 
 
@@ -104,7 +106,7 @@ class Stack:
                              remedy="the analysis goes on; scan again to recognize the technologies")
             return {"failed": cause}
         return {"technologies": len(record["technologies"]), "units": len(record["units"]),
-                "path": str(technologies.path(context.manifest))}
+                "modules": len(record["modules"]), "path": str(technologies.path(context.manifest))}
 
 
 class Analyze:
@@ -236,7 +238,7 @@ class StepFailed(Exception):
 
 
 def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | None = None,
-        report_path: Path | None = None) -> dict:
+        report_path: Path | None = None, fast_scan: bool = False) -> dict:
     """The steps in order on the snapshot `manifest`, from `start` through `stop` (default: all), with
     `listeners` on the bus and the journal beside it; each step's result by its name. A step that fails says
     why and stops the ones after it: its result is `{"failed": cause, "remedy": ...}`."""
@@ -244,7 +246,7 @@ def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | N
     bus = events.Bus(manifest.with_name(events.JOURNAL))
     for listener in listeners:
         bus.subscribe(listener)
-    context = Context(manifest, bus, report_path)
+    context = Context(manifest, bus, report_path, fast_scan=fast_scan)
     names = [step.NAME for step in STEPS]
     chosen = STEPS[names.index(start) if start else 0:names.index(stop) + 1 if stop else len(STEPS)]
     results = context.results

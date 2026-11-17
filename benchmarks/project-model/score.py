@@ -523,7 +523,8 @@ def technologies_faces(record):
     frameworks, services, seen = [], [], set()
     for entry in record.get("technologies") or []:
         paths = [s["path"] for s in entry.get("signs") or [] if s.get("path")]
-        if entry.get("kind") == "service":
+        is_service = entry["category"] == "service" if "category" in entry else entry.get("kind") == "service"
+        if is_service:
             if entry["name"] not in seen:
                 seen.add(entry["name"])
                 services.append({"name": entry["name"], **({"evidence": paths[0]} if paths else {})})

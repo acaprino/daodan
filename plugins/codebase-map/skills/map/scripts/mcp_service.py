@@ -277,7 +277,8 @@ class MapService:
         names = {*snapshot.PHASE_FILES, "knowledge/navigation.md", "knowledge/documentation-leads.md",
                  "comment_health.md", "changes.md", "snapshot/engine-edges.sqlite", "snapshot/retrieval.sqlite",
                  "snapshot/engine-report.json", "snapshot/engine-pass.log",
-                 "snapshot/modules.json", "snapshot/modules.md", "snapshot/proposals.json", "snapshot/context",
+                 "snapshot/modules.json", "snapshot/modules.md", "snapshot/proposals.json",
+                 "snapshot/premap.json", "snapshot/technologies.json", "snapshot/context",
                  f"snapshot/{pipeline_events.JOURNAL}",
                  "cards.sqlite"}
         for path in run.glob("[0-9][0-9]-*.md"):
@@ -294,6 +295,17 @@ class MapService:
         for name in names:
             confinement.reject_link_chain(run / name)
 
+    def _pipeline_state(self, manifest_path, engine_info):
+        import premap
+        import technologies
+        m_state = module_graph.graph_state(manifest_path)["state"]
+        p_state = premap.state(manifest_path)["state"]
+        scan_state = "fresh" if m_state == "fresh" and p_state == "fresh" else (
+            "stale" if "stale" in (m_state, p_state) else "missing"
+        )
+        stack_state = technologies.state(manifest_path) if p_state in ("fresh", "stale") else "missing"
+        return {"scan": scan_state, "stack": stack_state, "analyze": engine_info.get("state")}
+
     def _status(self, run_id, *, engine=False):
         run, state, manifest, target = self._bound_run(run_id)
         project = self.project_root.as_posix()
@@ -305,8 +317,10 @@ class MapService:
         result = {"run_id": run_id, "project_root": project, "state": state, "check": checked,
                   "source_available": True}
         if engine:
-            result["engine"] = self._engine(state, manifest.path, repair=False)
+            eng = self._engine(state, manifest.path, repair=False)
+            result["engine"] = eng
             result["progress"] = self._progress(manifest.path)
+            result["pipeline"] = self._pipeline_state(manifest.path, eng)
         return result
 
     def _pipeline_journal(self, manifest):
@@ -380,6 +394,9 @@ class MapService:
             item["phase"] = phase
         events.append(item)
         _write(run / EVENT_FILE, {"schema": 1, "events": events})
+        if self.root.is_dir():
+            snapshot.append_live_pulse(self.root, f"service.{event}", run_id=run.name, cursor=item["cursor"],
+                                       message=message[:200])
         return item
 
     def _command(self, command, *args):
@@ -466,11 +483,15 @@ class MapService:
                     # The run stays usable without its index: searches report the gap
                     # and codebase_map_index repairs it.
                     self._event(run, "index_failed", message=f"{index['state']}: {index['reason']}")
-                graph = module_graph.ensure_graph(run / state["snapshot"]["path"])
-                if graph["state"] != "fresh":
-                    # Likewise without its module graph: module queries report the
-                    # gap and codebase_map_modules(refresh=true) rebuilds it.
-                    self._event(run, "modules_failed", message=f"{graph['state']}: {graph.get('reason', '')}")
+                if format == "sqlite":
+                    import pipeline
+                    piped = pipeline.run(run / state["snapshot"]["path"], stop="stack", fast_scan=True)
+                    if "failed" in piped.get("scan", {}):
+                        self._event(run, "modules_failed", message=str(piped["scan"]["failed"])[:MAX_MESSAGE])
+                else:
+                    graph = module_graph.ensure_graph(run / state["snapshot"]["path"])
+                    if graph["state"] != "fresh":
+                        self._event(run, "modules_failed", message=f"{graph['state']}: {graph.get('reason', '')}")
                 # The call-resolution pass runs beside the run, never inside it:
                 # consumers read its store as soon as it lands.
                 self._engine_event(run, self._engine(state, run / state["snapshot"]["path"], repair=True))
@@ -582,8 +603,9 @@ class MapService:
                 graph = module_graph.load_graph(Path(state["graph"]))
                 summary.update(
                     binding=graph["binding"], coverage=graph["coverage"], changes=graph.get("changes"),
-                    modules=[{key: m[key] for key in ("id", "name", "aliases", "provenance", "kind", "description",
-                                                      "responsibility", "status", "paths", "excluded", "coverage")}
+                    modules=[{key: m.get(key) for key in ("id", "name", "aliases", "provenance", "nature", "kind",
+                                                          "description", "responsibility", "status", "paths",
+                                                          "excluded", "languages", "toolchains", "coverage")}
                              | {"members": [x["id"] for x in m["members"]],
                                 "conflicts": len(m["conflicts"]), "gaps": len(m["gaps"])}
                              for m in graph["modules"]],
@@ -591,6 +613,42 @@ class MapService:
                            for e in graph["edges"]],
                     gaps=graph["gaps"], notes=graph["notes"])
             return summary
+
+    def stack(self, run_id, module=None):
+        """Step 2 stack (`frameworks`, `libraries`, `services`, `tools`) for every module or one selected module."""
+        if module is not None and (not isinstance(module, str) or not module.strip() or len(module) > 1000):
+            raise ValueError("module must be text of at most 1000 characters")
+        import technologies
+        with self._operation():
+            _, _, manifest, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
+            record = technologies.ensure(manifest.path)
+            if module is None:
+                return {"run_id": run_id, "schema": record["schema"], "technologies": record["technologies"],
+                        "modules": record["modules"], "units": record["units"]}
+            key = module_graph.slug(module)
+            found = next(
+                (m for m in record["modules"]
+                 if m["id"] == module or m["id"] == key or module_graph.slug(m["name"]) == key
+                 or module in m.get("paths", ())),
+                None,
+            )
+            if found is None:
+                raise ValueError(f"unknown module in run {run_id}: {module}")
+            by_tech = {t["id"]: t for t in record["technologies"]}
+            return {
+                "run_id": run_id, "module": found,
+                "resolved_technologies": [by_tech[i] for i in found["technologies"] if i in by_tech],
+            }
+
+    def live_pulse(self, after=0, limit=100):
+        """Store-wide reactive pulse after cursor `after` (hook refreshes, run events, UI request transitions)."""
+        if type(after) is not int or after < 0:
+            raise ValueError("after must be a nonnegative integer cursor")
+        _limit(limit)
+        with self._operation():
+            return snapshot.read_live_pulse(self.root, after=after, limit=limit)
 
     def outline(self, run_id, path=None, pattern=None, limit=100):
         _limit(limit)

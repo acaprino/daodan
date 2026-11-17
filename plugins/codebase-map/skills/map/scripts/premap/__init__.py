@@ -60,6 +60,7 @@ IDENTITY = {  # the fields that make two entries one fact, from the strictest to
     "compose": (("declared_in",),),  # a CI step that starts Docker Compose: what `compose` reads
     "ci_steps": (("declared_in", "tests"),),  # a step a CI job runs before the tests of an entry: the dynamic step's
     "docker_builds": (("dockerfile", "context"),),  # a Dockerfile's stages as BuildKit reads them (`dockerfile`)
+    "packages": (("ecosystem", "name", "declared_in"),),  # declared package/image signs for the stack step
 }
 EXECUTES = {  # unit kinds whose model or index exists only when the build runs project code
     "gradle-project": "Gradle runs the build scripts for the model and the compile tasks the index needs",
@@ -124,8 +125,10 @@ def _same(facet: str, field: str, a, b) -> bool:
     # entries of the same root and kind.
     if (facet, field) == ("units", "name") and a and b:
         return _package(a) == _package(b)
-    if (facet, field) == ("toolchains", "declared_in") and a and b:  # a file and a setting of it are one place
+    if (facet, field) in (("toolchains", "declared_in"), ("packages", "declared_in")) and a and b:
         return str(a).split("#", 1)[0] == str(b).split("#", 1)[0]
+    if (facet, field) == ("packages", "name") and a and b:
+        return str(a).casefold() == str(b).casefold()
     return _canonical(a) == _canonical(b)
 
 

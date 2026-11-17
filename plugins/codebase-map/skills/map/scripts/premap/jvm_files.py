@@ -23,6 +23,12 @@ JAVA_PROPERTIES = ("maven.compiler.release", "maven.compiler.source", "maven.com
                    "kotlin.compiler.jvmTarget")  # the last: the bytecode level kotlin-maven-plugin writes
 COMPILER_FIELDS = ("release", "source", "target")
 PLACEHOLDER = re.compile(r"^\$\{([^}]+)\}$")
+GRADLE_PLUGIN = re.compile(r"""\bid\s*\(\s*['"]([^'"]+)['"]\s*\)|\bid\s+['"]([^'"]+)['"]""")
+KOTLIN_PLUGIN = re.compile(r"""\bkotlin\s*\(\s*['"]([^'"]+)['"]\s*\)""")
+GRADLE_COORD = re.compile(r"""['"]([A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+)(?::[^'"\s]+)?['"]""")
+TOML_MODULE = re.compile(r"""module\s*=\s*['"]([^'"]+:[^'"]+)['"]""")
+TOML_GROUP_NAME = re.compile(r"""group\s*=\s*['"]([^'"]+)['"].*?name\s*=\s*['"]([^'"]+)['"]""")
+TOML_PLUGIN_ID = re.compile(r"""\bid\s*=\s*['"]([^'"]+)['"]""")
 
 
 def _properties(text: str) -> dict:
@@ -83,18 +89,87 @@ def _pom(rel: str, text: str, toolchains: list, gaps: list) -> None:
         toolchains.append({"tool": tool, "version": value, "declared_in": f"{rel}#{field}", "line": _line(text, needle)})
 
 
+def _pom_packages(rel: str, text: str, own: set[str], packages: list[dict], seen: set) -> None:
+    try:
+        project = ET.fromstring(text)
+    except ET.ParseError:
+        return
+
+    def add(group: str, artifact: str) -> None:
+        if not artifact or "$" in artifact or "$" in group:
+            return
+        coord = f"{group}:{artifact}" if group else artifact
+        if coord.casefold() in own or artifact.casefold() in own:
+            return
+        if (coord.casefold(), rel) not in seen:
+            seen.add((coord.casefold(), rel))
+            line = _line(text, f">{artifact}<")
+            packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{line}" if line else rel})
+
+    for node in project:
+        if _local(node.tag) == "parent":
+            fields = {_local(c.tag): (c.text or "").strip() for c in node}
+            add(fields.get("groupId", ""), fields.get("artifactId", ""))
+    for node in project.iter():
+        tag = _local(node.tag)
+        if tag in ("dependency", "plugin"):
+            fields = {_local(c.tag): (c.text or "").strip() for c in node}
+            group = fields.get("groupId", "org.apache.maven.plugins" if tag == "plugin" else "")
+            add(group, fields.get("artifactId", ""))
+
+
+def _gradle_packages(rel: str, text: str, packages: list[dict], seen: set) -> None:
+    base = PurePosixPath(rel).name
+    for number, line in enumerate(text.splitlines(), 1):
+        code = line.split("//" if not base.endswith(".toml") else "#", 1)[0]
+        if base.endswith(".toml"):
+            for m in TOML_MODULE.finditer(code):
+                coord = m.group(1)
+                if (coord.casefold(), rel) not in seen:
+                    seen.add((coord.casefold(), rel))
+                    packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
+            for m in TOML_GROUP_NAME.finditer(code):
+                coord = f"{m.group(1)}:{m.group(2)}"
+                if (coord.casefold(), rel) not in seen:
+                    seen.add((coord.casefold(), rel))
+                    packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
+            for m in TOML_PLUGIN_ID.finditer(code):
+                pid = m.group(1)
+                if "." in pid and (pid.casefold(), rel) not in seen:
+                    seen.add((pid.casefold(), rel))
+                    packages.append({"ecosystem": "maven", "name": pid, "declared_in": f"{rel}#L{number}"})
+            continue
+        for m in GRADLE_PLUGIN.finditer(code):
+            pid = m.group(1) or m.group(2)
+            if pid and "." in pid and (pid.casefold(), rel) not in seen:
+                seen.add((pid.casefold(), rel))
+                packages.append({"ecosystem": "maven", "name": pid, "declared_in": f"{rel}#L{number}"})
+        for m in KOTLIN_PLUGIN.finditer(code):
+            kid = f"org.jetbrains.kotlin.{m.group(1)}"
+            if (kid.casefold(), rel) not in seen:
+                seen.add((kid.casefold(), rel))
+                packages.append({"ecosystem": "maven", "name": kid, "declared_in": f"{rel}#L{number}"})
+        for m in GRADLE_COORD.finditer(code):
+            coord = m.group(1)
+            if not coord.startswith(":") and "$" not in coord and (coord.casefold(), rel) not in seen:
+                seen.add((coord.casefold(), rel))
+                packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
+
+
 def run(context):
     graph = context.graph
     builds = {}
+    own = set()
     for module in graph["modules"]:
         if module["provenance"] != "build":
             continue
         for ecosystem in module["ecosystems"]:
             if ecosystem in ("gradle", "maven"):
                 builds.setdefault(module["members"][0]["path"], set()).add(ecosystem)
+                own |= {a.casefold() for a in [module["name"], *module["aliases"]] if a}
     if not builds:
         return None
-    units, toolchains, gaps = [], [], []
+    units, toolchains, packages, gaps, seen_pkgs = [], [], [], [], set()
     for folder, tools in sorted(builds.items()):
         for tool in sorted(tools):
             kind = "gradle-project" if tool == "gradle" else "maven-module"
@@ -119,6 +194,12 @@ def run(context):
                              "detail": "the Java version of a Gradle build is declared in its build scripts, which "
                                        "only Gradle runs: no source states it before the build"})
     for rel in context.inventory.files:
-        if PurePosixPath(rel).name == "pom.xml":
-            _pom(rel, context.inventory.text(rel), toolchains, gaps)
-    return {"facts": {"units": units, "toolchains": toolchains}, "gaps": gaps}
+        base = PurePosixPath(rel).name
+        if base == "pom.xml":
+            text = context.inventory.text(rel)
+            _pom(rel, text, toolchains, gaps)
+            _pom_packages(rel, text, own, packages, seen_pkgs)
+        elif base in ("build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts") or base.endswith(".versions.toml"):
+            _gradle_packages(rel, context.inventory.text(rel), packages, seen_pkgs)
+    facts = {"units": units, "toolchains": toolchains, **({"packages": packages} if packages else {})}
+    return {"facts": facts, "gaps": gaps}

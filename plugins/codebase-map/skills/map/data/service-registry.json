@@ -1049,6 +1049,30 @@
    ]
   },
   {
+   "id": "android",
+   "name": "Android",
+   "kind": "project",
+   "type": "dispositivo",
+   "site": "https://developer.android.com",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.android.application",
+      "com.android.library"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "angular",
    "name": "Angular",
    "kind": "project",
@@ -1076,6 +1100,29 @@
     "simple-icons",
     "stack-analyser"
    ]
+  },
+  {
+   "id": "angularjs",
+   "name": "AngularJS",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://angularjs.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "npm": [
+      "angular"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "ansible",
@@ -2052,6 +2099,31 @@
    ]
   },
   {
+   "id": "apollo-server",
+   "name": "Apollo Server",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.apollographql.com/docs/apollo-server/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "npm": [
+      "@apollo/server",
+      "apollo-server",
+      "apollo-server-express"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "appdynamics",
    "name": "AppDynamics",
    "kind": "project",
@@ -2279,6 +2351,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "archunit",
+   "name": "ArchUnit",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.archunit.org",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^com\\.tngtech\\.archunit:archunit"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "ardc-nectar-research-cloud-magnum-service",
@@ -2580,6 +2675,33 @@
    "from": [
     "stack-analyser"
    ]
+  },
+  {
+   "id": "aspnetcore",
+   "name": "ASP.NET Core",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://dotnet.microsoft.com/apps/aspnet",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.AspNetCore.App"
+     ]
+    },
+    "patterns": {
+     "nuget": [
+      "^Microsoft\\.AspNetCore\\."
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "assemble",
@@ -6147,6 +6269,30 @@
    ]
   },
   {
+   "id": "blazor",
+   "name": "Blazor",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.AspNetCore.Components.Web",
+      "Microsoft.AspNetCore.Components.WebAssembly"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "blitzjs",
    "name": "Blitzjs",
    "kind": "project",
@@ -7135,6 +7281,29 @@
    ]
   },
   {
+   "id": "cats",
+   "name": "Cats",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://typelevel.org/cats/",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^org\\.typelevel:cats-core"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "causely",
    "name": "Causely",
    "kind": "project",
@@ -7561,6 +7730,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "chi",
+   "name": "Chi",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://go-chi.io",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/go-chi/chi"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "china-mobile-cloud-cloud-native-application-security",
@@ -8752,6 +8944,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "compose-multiplatform",
+   "name": "Compose Multiplatform",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://www.jetbrains.com/lp/compose-multiplatform/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.compose"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "composefs",
@@ -11138,6 +11353,56 @@
    ]
   },
   {
+   "id": "dotnet-aspire",
+   "name": ".NET Aspire",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://learn.microsoft.com/dotnet/aspire/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Aspire.Hosting"
+     ]
+    },
+    "patterns": {
+     "nuget": [
+      "^Aspire\\."
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "dotnet-maui",
+   "name": ".NET MAUI",
+   "kind": "project",
+   "type": "dispositivo",
+   "site": "https://dotnet.microsoft.com/apps/maui",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.Maui.Controls"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "dragonfly",
    "name": "Dragonfly",
    "kind": "project",
@@ -11346,6 +11611,29 @@
     "simple-icons",
     "stack-analyser"
    ]
+  },
+  {
+   "id": "duende-identityserver",
+   "name": "Duende IdentityServer",
+   "kind": "project",
+   "type": "autenticazione",
+   "site": "https://duendesoftware.com/products/identityserver",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "nuget": [
+      "^Duende\\.IdentityServer"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "dx-o2-by-broadcom",
@@ -11960,6 +12248,33 @@
    ]
   },
   {
+   "id": "entity-framework-core",
+   "name": "Entity Framework Core",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://learn.microsoft.com/ef/core/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.EntityFrameworkCore"
+     ]
+    },
+    "patterns": {
+     "nuget": [
+      "^Microsoft\\.EntityFrameworkCore\\."
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "envoy",
    "name": "Envoy",
    "kind": "project",
@@ -12279,6 +12594,29 @@
    ]
   },
   {
+   "id": "exposed",
+   "name": "Exposed",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://github.com/JetBrains/Exposed",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^org\\.jetbrains\\.exposed:exposed-"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "express",
    "name": "Express",
    "kind": "project",
@@ -12551,6 +12889,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "fastmcp",
+   "name": "FastMCP",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://gofastmcp.com",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "pypi": [
+      "fastmcp"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "fathom",
@@ -13045,6 +13406,29 @@
    ]
   },
   {
+   "id": "flutter",
+   "name": "Flutter",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://flutter.dev",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "pub": [
+      "flutter"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "fluvio",
    "name": "Fluvio",
    "kind": "project",
@@ -13397,6 +13781,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "gatling",
+   "name": "Gatling",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://gatling.io",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^io\\.gatling"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "gatsby",
@@ -16250,6 +16657,15 @@
      ],
      "npm": [
       "@grpc/grpc-js"
+     ],
+     "nuget": [
+      "Grpc.AspNetCore",
+      "Grpc.Core",
+      "Grpc.Net.Client"
+     ],
+     "maven": [
+      "io.grpc:grpc-netty",
+      "io.grpc:grpc-stub"
      ]
     },
     "patterns": {},
@@ -16260,7 +16676,8 @@
    "from": [
     "additions",
     "cncf-landscape"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "grype",
@@ -16368,6 +16785,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "h2",
+   "name": "H2",
+   "kind": "service",
+   "type": "database",
+   "site": "https://h2database.com",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.h2database:h2"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "service"
   },
   {
    "id": "hadoop-hdfs",
@@ -16910,6 +17350,30 @@
    ]
   },
   {
+   "id": "hibernate",
+   "name": "Hibernate",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://hibernate.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.hibernate.orm:hibernate-core",
+      "org.hibernate:hibernate-core"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "higress",
    "name": "Higress",
    "kind": "project",
@@ -17174,6 +17638,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "hsqldb",
+   "name": "HSQLDB",
+   "kind": "service",
+   "type": "database",
+   "site": "https://hsqldb.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.hsqldb:hsqldb"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "service"
   },
   {
    "id": "htmx",
@@ -18297,6 +18784,31 @@
    ]
   },
   {
+   "id": "jackson",
+   "name": "Jackson",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://github.com/FasterXML/jackson",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.fasterxml.jackson.core:jackson-core",
+      "com.fasterxml.jackson.core:jackson-databind",
+      "com.fasterxml.jackson.module:jackson-module-kotlin"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "jaeger",
    "name": "Jaeger",
    "kind": "project",
@@ -18656,6 +19168,54 @@
    ]
   },
   {
+   "id": "junit",
+   "name": "JUnit",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://junit.org/junit4/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "junit:junit"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "junit-jupiter",
+   "name": "JUnit Jupiter",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://junit.org/junit5/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.junit.jupiter:junit-jupiter",
+      "org.junit.jupiter:junit-jupiter-api",
+      "org.junit.jupiter:junit-jupiter-engine"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "jupyter",
    "name": "Jupyter",
    "kind": "project",
@@ -18812,8 +19372,23 @@
    "type": "coda",
    "site": "https://kafka.apache.org/",
    "icon": null,
-   "signs": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.apache.kafka:kafka-clients",
+      "org.springframework.kafka:spring-kafka"
+     ],
+     "nuget": [
+      "Confluent.Kafka"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
    "from": [
+    "additions",
     "cncf-landscape"
    ]
   },
@@ -19523,6 +20098,29 @@
    ]
   },
   {
+   "id": "koin",
+   "name": "Koin",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://insert-koin.io",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^io\\.insert-koin:koin-"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "kong",
    "name": "Kong",
    "kind": "service",
@@ -19609,6 +20207,56 @@
     "simple-icons",
     "stack-analyser"
    ]
+  },
+  {
+   "id": "kotlin-multiplatform",
+   "name": "Kotlin Multiplatform",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://kotlinlang.org/docs/multiplatform.html",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin.multiplatform"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "kotlinx-serialization",
+   "name": "kotlinx.serialization",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://github.com/Kotlin/kotlinx.serialization",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin.plugin.serialization"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^org\\.jetbrains\\.kotlinx:kotlinx-serialization-"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "kots",
@@ -19768,6 +20416,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "ktor",
+   "name": "Ktor",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://ktor.io",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^io\\.ktor:ktor-"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "kuadrant",
@@ -21386,7 +22057,7 @@
    "name": "Liquibase",
    "kind": "project",
    "type": "altro",
-   "site": "https://www.liquibase.com/",
+   "site": "https://www.liquibase.org",
    "icon": "liquibase",
    "signs": {
     "packages": {
@@ -21398,6 +22069,9 @@
       "liquibase/liquibase-github-action",
       "liquibase-github-actions/init-start-h2",
       "liquibase-github-actions/update"
+     ],
+     "maven": [
+      "org.liquibase:liquibase-core"
      ]
     },
     "patterns": {},
@@ -21406,10 +22080,12 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "litjs",
@@ -21589,6 +22265,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "locust",
+   "name": "Locust",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://locust.io",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "pypi": [
+      "locust"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "loggie",
@@ -21786,6 +22485,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "lombok",
+   "name": "Lombok",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://projectlombok.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.projectlombok:lombok"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "longhorn",
@@ -22224,6 +22946,29 @@
     "simple-icons",
     "stack-analyser"
    ]
+  },
+  {
+   "id": "mapstruct",
+   "name": "MapStruct",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://mapstruct.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.mapstruct:mapstruct"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "mariadb",
@@ -22938,6 +23683,29 @@
    ]
   },
   {
+   "id": "micronaut",
+   "name": "Micronaut",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://micronaut.io",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^io\\.micronaut"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "microsoft",
    "name": "Microsoft",
    "kind": "service",
@@ -23371,6 +24139,30 @@
    ]
   },
   {
+   "id": "mockito",
+   "name": "Mockito",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://site.mockito.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.mockito:mockito-core",
+      "org.mockito:mockito-junit-jupiter"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "mockserver",
    "name": "MockServer",
    "kind": "project",
@@ -23541,6 +24333,13 @@
      ],
      "terraform-resource": [
       "airbyte_destination_mongodb"
+     ],
+     "maven": [
+      "org.mongodb:mongodb-driver-sync",
+      "org.springframework.boot:spring-boot-starter-data-mongodb"
+     ],
+     "nuget": [
+      "MongoDB.Driver"
      ]
     },
     "patterns": {
@@ -23555,6 +24354,7 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
@@ -23746,6 +24546,30 @@
    ]
   },
   {
+   "id": "mstest",
+   "name": "MSTest",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://learn.microsoft.com/dotnet/core/testing/unit-testing-with-mstest",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "MSTest",
+      "MSTest.TestFramework"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "muiicons",
    "name": "MUI Icons",
    "kind": "project",
@@ -23831,6 +24655,14 @@
      ],
      "terraform-resource": [
       "airbyte_destination_mysql"
+     ],
+     "maven": [
+      "com.mysql:mysql-connector-j",
+      "mysql:mysql-connector-java"
+     ],
+     "nuget": [
+      "MySql.Data",
+      "Pomelo.EntityFrameworkCore.MySql"
      ]
     },
     "patterns": {
@@ -23848,6 +24680,7 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
@@ -24927,6 +25760,29 @@
     "additions",
     "simple-icons"
    ]
+  },
+  {
+   "id": "nunit",
+   "name": "NUnit",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://nunit.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "NUnit"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "nuodb",
@@ -27087,6 +27943,29 @@
    ]
   },
   {
+   "id": "passport",
+   "name": "Passport",
+   "kind": "project",
+   "type": "autenticazione",
+   "site": "https://www.passportjs.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "npm": [
+      "passport"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "payloadcms",
    "name": "Payload",
    "kind": "service",
@@ -27351,6 +28230,52 @@
    ]
   },
   {
+   "id": "phoenix",
+   "name": "Phoenix",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.phoenixframework.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "hex": [
+      "phoenix"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "phoenix-liveview",
+   "name": "Phoenix LiveView",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://hexdocs.pm/phoenix_live_view",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "hex": [
+      "phoenix_live_view"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "phosphoreicons",
    "name": "Phosphor Icons",
    "kind": "project",
@@ -27519,6 +28444,29 @@
    "from": [
     "stack-analyser"
    ]
+  },
+  {
+   "id": "picocli",
+   "name": "picocli",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://picocli.info",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "info.picocli:picocli"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "pillow",
@@ -27920,15 +28868,15 @@
   {
    "id": "playwright",
    "name": "Playwright",
-   "kind": "service",
+   "kind": "project",
    "type": "servizio o API",
    "site": "https://playwright.dev",
    "icon": null,
    "signs": {
     "packages": {
      "npm": [
-      "playwright",
-      "@playwright/test"
+      "@playwright/test",
+      "playwright"
      ],
      "github-actions": [
       "microsoft/playwright-github-action"
@@ -27937,7 +28885,14 @@
       "mcr.microsoft.com/playwright"
      ],
      "pypi": [
+      "playwright",
       "pytest-playwright"
+     ],
+     "nuget": [
+      "Microsoft.Playwright"
+     ],
+     "maven": [
+      "com.microsoft.playwright:playwright"
      ]
     },
     "patterns": {},
@@ -27950,7 +28905,8 @@
    "from": [
     "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "plotly",
@@ -28308,6 +29264,16 @@
      ],
      "terraform-resource": [
       "airbyte_destination_postgres"
+     ],
+     "maven": [
+      "org.postgresql:postgresql"
+     ],
+     "nuget": [
+      "Npgsql",
+      "Npgsql.EntityFrameworkCore.PostgreSQL"
+     ],
+     "hex": [
+      "postgrex"
      ]
     },
     "patterns": {
@@ -29284,13 +30250,25 @@
    "name": "Quarkus",
    "kind": "project",
    "type": "altro",
-   "site": "https://www.quarkus.io/",
+   "site": "https://quarkus.io",
    "icon": "quarkus",
-   "signs": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^io\\.quarkus:"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "quay",
@@ -29448,6 +30426,13 @@
      ],
      "pypi": [
       "amqp"
+     ],
+     "maven": [
+      "com.rabbitmq:amqp-client",
+      "org.springframework.boot:spring-boot-starter-amqp"
+     ],
+     "nuget": [
+      "RabbitMQ.Client"
      ]
     },
     "patterns": {
@@ -29462,6 +30447,7 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
@@ -29602,14 +30588,17 @@
   },
   {
    "id": "rails",
-   "name": "Rails",
+   "name": "Ruby on Rails",
    "kind": "project",
    "type": "altro",
-   "site": null,
+   "site": "https://rubyonrails.org",
    "icon": null,
    "signs": {
     "packages": {
      "npm": [
+      "rails"
+     ],
+     "rubygems": [
       "rails"
      ]
     },
@@ -29623,8 +30612,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "railway",
@@ -29842,6 +30833,53 @@
     "simple-icons",
     "stack-analyser"
    ]
+  },
+  {
+   "id": "react-email",
+   "name": "React Email",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://react.email",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "npm": [
+      "@react-email/components",
+      "react-email"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "react-native",
+   "name": "React Native",
+   "kind": "project",
+   "type": "dispositivo",
+   "site": "https://reactnative.dev",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "npm": [
+      "react-native"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "reactemail",
@@ -30062,6 +31100,14 @@
      ],
      "go": [
       "github.com/redis/go-redis/v9"
+     ],
+     "maven": [
+      "io.lettuce:lettuce-core",
+      "org.springframework.boot:spring-boot-starter-data-redis",
+      "redis.clients:jedis"
+     ],
+     "nuget": [
+      "StackExchange.Redis"
      ]
     },
     "patterns": {
@@ -30527,6 +31573,29 @@
     "simple-icons",
     "stack-analyser"
    ]
+  },
+  {
+   "id": "resilience4j",
+   "name": "Resilience4j",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://resilience4j.readme.io",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^io\\.github\\.resilience4j:"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "rethinkdb",
@@ -31241,6 +32310,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "scalatest",
+   "name": "ScalaTest",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.scalatest.org",
+   "icon": null,
+   "signs": {
+    "packages": {},
+    "patterns": {
+     "maven": [
+      "^org\\.scalatest:scalatest"
+     ]
+    },
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "scale",
@@ -32550,6 +33642,29 @@
    ]
   },
   {
+   "id": "sidekiq",
+   "name": "Sidekiq",
+   "kind": "project",
+   "type": "coda",
+   "site": "https://sidekiq.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "rubygems": [
+      "sidekiq"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "sidero-talos-linux",
    "name": "Sidero Talos Linux",
    "kind": "project",
@@ -32722,6 +33837,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "sinatra",
+   "name": "Sinatra",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://sinatrarb.com",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "rubygems": [
+      "sinatra"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "singlestore",
@@ -32929,6 +34067,29 @@
    "from": [
     "stack-analyser"
    ]
+  },
+  {
+   "id": "slim",
+   "name": "Slim",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.slimframework.com",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "composer": [
+      "slim/slim"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "slime",
@@ -33624,6 +34785,106 @@
    ]
   },
   {
+   "id": "spring-ai",
+   "name": "Spring AI",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-ai",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.ai:spring-ai-core",
+      "org.springframework.ai:spring-ai-openai-spring-boot-starter"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "spring-boot",
+   "name": "Spring Boot",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-boot",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot",
+      "org.springframework.boot:spring-boot",
+      "org.springframework.boot:spring-boot-autoconfigure",
+      "org.springframework.boot:spring-boot-dependencies",
+      "org.springframework.boot:spring-boot-starter",
+      "org.springframework.boot:spring-boot-starter-parent"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "spring-boot-admin",
+   "name": "Spring Boot Admin",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://codecentric.github.io/spring-boot-admin/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "de.codecentric:spring-boot-admin-starter-client",
+      "de.codecentric:spring-boot-admin-starter-server"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "spring-cloud-config",
+   "name": "Spring Cloud Config",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-cloud-config",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.cloud:spring-cloud-config-server",
+      "org.springframework.cloud:spring-cloud-starter-config"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "spring-cloud-function",
    "name": "Spring Cloud Function",
    "kind": "project",
@@ -33636,6 +34897,54 @@
    ]
   },
   {
+   "id": "spring-cloud-gateway",
+   "name": "Spring Cloud Gateway",
+   "kind": "project",
+   "type": "gateway",
+   "site": "https://spring.io/projects/spring-cloud-gateway",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.cloud:spring-cloud-gateway-server",
+      "org.springframework.cloud:spring-cloud-starter-gateway"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "spring-cloud-netflix",
+   "name": "Spring Cloud Netflix",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-cloud-netflix",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client",
+      "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "spring-cloud-sleuth",
    "name": "Spring Cloud Sleuth",
    "kind": "project",
@@ -33646,6 +34955,104 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "spring-data-jpa",
+   "name": "Spring Data JPA",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-data-jpa",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-data-jpa",
+      "org.springframework.data:spring-data-jpa"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "spring-mvc",
+   "name": "Spring MVC",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-framework",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-web",
+      "org.springframework.boot:spring-boot-starter-webmvc",
+      "org.springframework:spring-webmvc"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "spring-security",
+   "name": "Spring Security",
+   "kind": "project",
+   "type": "autenticazione",
+   "site": "https://spring.io/projects/spring-security",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-security",
+      "org.springframework.security:spring-security-core",
+      "org.springframework.security:spring-security-web"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
+   "id": "spring-webflux",
+   "name": "Spring WebFlux",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://spring.io/projects/spring-framework",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-webflux",
+      "org.springframework:spring-webflux"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "spyderbat",
@@ -33722,6 +35129,29 @@
     "simple-icons",
     "stack-analyser"
    ]
+  },
+  {
+   "id": "sqlmodel",
+   "name": "SQLModel",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://sqlmodel.tiangolo.com",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "pypi": [
+      "sqlmodel"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "sqreen",
@@ -35667,6 +37097,36 @@
    ]
   },
   {
+   "id": "testcontainers",
+   "name": "Testcontainers",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://testcontainers.com",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.testcontainers:junit-jupiter",
+      "org.testcontainers:testcontainers"
+     ],
+     "pypi": [
+      "testcontainers"
+     ],
+     "nuget": [
+      "Testcontainers"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "testinglibrary",
    "name": "Testing Library",
    "kind": "project",
@@ -35700,6 +37160,29 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "testng",
+   "name": "TestNG",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://testng.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.testng:testng"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "tetragon",
@@ -35809,6 +37292,30 @@
    "from": [
     "cncf-landscape"
    ]
+  },
+  {
+   "id": "thymeleaf",
+   "name": "Thymeleaf",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://www.thymeleaf.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-thymeleaf",
+      "org.thymeleaf:thymeleaf"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "tidb",
@@ -37078,6 +38585,30 @@
    ]
   },
   {
+   "id": "urql",
+   "name": "urql",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://commerce.nearform.com/open-source/urql/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "npm": [
+      "@urql/core",
+      "urql"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "urunc",
    "name": "urunc",
    "kind": "project",
@@ -38089,6 +39620,29 @@
    ]
   },
   {
+   "id": "vue-router",
+   "name": "Vue Router",
+   "kind": "project",
+   "type": "schermata",
+   "site": "https://router.vuejs.org",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "npm": [
+      "vue-router"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "vuejs",
    "name": "Vue",
    "kind": "project",
@@ -39097,6 +40651,31 @@
    ]
   },
   {
+   "id": "xunit",
+   "name": "xUnit",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://xunit.net",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "xunit",
+      "xunit.core",
+      "xunit.v3"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
+  },
+  {
    "id": "yarn",
    "name": "Yarn",
    "kind": "project",
@@ -39116,6 +40695,29 @@
     "simple-icons",
     "stack-analyser"
    ]
+  },
+  {
+   "id": "yarp",
+   "name": "YARP",
+   "kind": "project",
+   "type": "gateway",
+   "site": "https://microsoft.github.io/reverse-proxy/",
+   "icon": null,
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Yarp.ReverseProxy"
+     ]
+    },
+    "patterns": {},
+    "env": [],
+    "hosts": [],
+    "files": []
+   },
+   "from": [
+    "additions"
+   ],
+   "category": "framework"
   },
   {
    "id": "ydb",
