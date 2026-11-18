@@ -46,14 +46,14 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (86): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287, D-295, D-296, D-297, D-298, D-299, D-300, D-303, D-304, D-305, D-306
+- `tutti` (87): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287, D-295, D-296, D-297, D-298, D-299, D-300, D-303, D-304, D-305, D-306, D-308
 - `java` (48): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284, D-293, D-294
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
 - `kotlin` (38): D-016, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-089, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-103, D-105, D-106, D-107, D-108, D-109, D-110, D-166, D-180, D-208, D-221, D-223, D-229, D-284, D-293, D-294, D-302
 - `python` (35): D-006, D-007, D-028, D-042, D-047, D-048, D-049, D-052, D-059, D-074, D-075, D-084, D-085, D-086, D-087, D-088, D-169, D-183, D-184, D-188, D-197, D-199, D-200, D-231, D-232, D-240, D-246, D-247, D-248, D-252, D-253, D-254, D-256, D-276, D-301
 - `javascript` (34): D-013, D-017, D-021, D-046, D-049, D-051, D-053, D-056, D-059, D-072, D-147, D-148, D-156, D-158, D-170, D-171, D-185, D-186, D-187, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-198, D-225, D-229, D-256, D-265, D-270, D-291, D-292
-- `typescript` (25): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290, D-291, D-292
+- `typescript` (26): D-008, D-009, D-029, D-072, D-073, D-129, D-145, D-146, D-147, D-150, D-151, D-152, D-156, D-157, D-160, D-170, D-194, D-197, D-198, D-229, D-256, D-265, D-290, D-291, D-292, D-307
 - `rust` (19): D-014, D-021, D-030, D-040, D-041, D-078, D-143, D-144, D-173, D-175, D-176, D-209, D-227, D-230, D-237, D-238, D-239, D-256, D-265
 - `csharp` (19): D-010, D-021, D-049, D-113, D-114, D-116, D-117, D-118, D-119, D-120, D-165, D-198, D-220, D-229, D-241, D-242, D-249, D-294, D-302
 - `go` (16): D-002, D-020, D-045, D-078, D-079, D-138, D-139, D-140, D-141, D-142, D-173, D-174, D-256, D-257, D-265, D-273
@@ -69,7 +69,7 @@ Convenzioni:
 
 ### Area
 
-- `analizzatore` (135): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278, D-288, D-289, D-290, D-294, D-295, D-296, D-297, D-298, D-299, D-300, D-301, D-303, D-304
+- `analizzatore` (136): D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-072, D-073, D-074, D-075, D-076, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-084, D-085, D-086, D-087, D-088, D-089, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-097, D-098, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-107, D-108, D-109, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-119, D-120, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-129, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147, D-148, D-149, D-150, D-151, D-152, D-153, D-154, D-155, D-156, D-157, D-158, D-159, D-160, D-161, D-162, D-163, D-164, D-236, D-237, D-238, D-239, D-242, D-246, D-247, D-248, D-249, D-253, D-255, D-257, D-258, D-259, D-266, D-267, D-268, D-271, D-272, D-273, D-277, D-278, D-288, D-289, D-290, D-294, D-295, D-296, D-297, D-298, D-299, D-300, D-301, D-303, D-304, D-308
 - `pre-mappa` (40): D-001, D-002, D-003, D-004, D-005, D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-029, D-030, D-043, D-046, D-055, D-056, D-057, D-058, D-060, D-061, D-062, D-284
 - `passo dinamico` (37): D-167, D-168, D-169, D-170, D-171, D-172, D-173, D-174, D-175, D-176, D-177, D-178, D-179, D-180, D-181, D-183, D-184, D-185, D-186, D-187, D-188, D-189, D-190, D-191, D-192, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-241, D-270, D-274, D-292
 - `host` (16): D-036, D-038, D-039, D-040, D-041, D-042, D-254, D-256, D-263, D-264, D-269, D-276, D-281, D-282, D-285, D-286
@@ -79,14 +79,14 @@ Convenzioni:
 - `preparazione` (11): D-044, D-045, D-047, D-048, D-049, D-050, D-051, D-052, D-053, D-054, D-063
 - `snapshot` (11): D-031, D-032, D-033, D-034, D-035, D-059, D-245, D-250, D-252, D-265, D-302
 - `documenti` (6): D-222, D-227, D-229, D-230, D-231, D-232
-- `parser` (3): D-037, D-165, D-166
+- `parser` (4): D-037, D-165, D-166, D-307
 - `driver Modal` (1): D-209
 - `explorer` (3): D-211, D-305, D-306
 - `processo` (1): D-280
 
 ### Tipo
 
-- `completezza` (165): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291, D-292, D-293, D-294, D-295, D-296, D-297, D-298, D-299, D-300, D-301, D-304, D-306
+- `completezza` (167): D-006, D-007, D-008, D-009, D-010, D-011, D-012, D-013, D-014, D-017, D-021, D-029, D-033, D-035, D-043, D-044, D-046, D-047, D-048, D-049, D-050, D-052, D-053, D-054, D-055, D-059, D-061, D-062, D-066, D-068, D-069, D-072, D-073, D-074, D-075, D-076, D-078, D-082, D-085, D-088, D-089, D-091, D-092, D-093, D-094, D-096, D-098, D-099, D-100, D-102, D-103, D-104, D-107, D-108, D-109, D-111, D-112, D-114, D-116, D-117, D-118, D-119, D-125, D-126, D-127, D-130, D-131, D-132, D-133, D-134, D-135, D-136, D-137, D-138, D-139, D-140, D-141, D-142, D-143, D-144, D-147, D-148, D-149, D-150, D-151, D-152, D-155, D-156, D-157, D-158, D-159, D-160, D-162, D-164, D-165, D-166, D-169, D-170, D-171, D-172, D-173, D-176, D-180, D-181, D-182, D-185, D-186, D-190, D-191, D-193, D-194, D-195, D-196, D-197, D-198, D-199, D-200, D-201, D-202, D-207, D-208, D-209, D-210, D-212, D-213, D-214, D-216, D-218, D-236, D-237, D-240, D-241, D-247, D-249, D-252, D-260, D-261, D-262, D-265, D-267, D-270, D-271, D-272, D-273, D-274, D-275, D-277, D-278, D-279, D-284, D-289, D-290, D-291, D-292, D-293, D-294, D-295, D-296, D-297, D-298, D-299, D-300, D-301, D-304, D-306, D-307, D-308
 - `correttezza` (91): D-001, D-002, D-003, D-004, D-005, D-015, D-016, D-018, D-019, D-020, D-022, D-023, D-024, D-025, D-026, D-027, D-028, D-030, D-031, D-036, D-037, D-038, D-039, D-045, D-051, D-056, D-057, D-058, D-060, D-065, D-067, D-070, D-071, D-077, D-079, D-080, D-081, D-083, D-084, D-086, D-087, D-090, D-095, D-097, D-101, D-105, D-106, D-110, D-113, D-115, D-120, D-121, D-122, D-124, D-128, D-129, D-145, D-146, D-153, D-154, D-163, D-167, D-168, D-174, D-175, D-177, D-178, D-179, D-183, D-184, D-188, D-192, D-206, D-211, D-215, D-217, D-219, D-238, D-242, D-244, D-246, D-254, D-255, D-259, D-266, D-268, D-269, D-280, D-288, D-303, D-305
 - `sicurezza` (29): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
@@ -103,7 +103,7 @@ Convenzioni:
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
 - `conferma` (5): D-057, D-058, D-136, D-158, D-187
-- `corsa su un progetto` (11): D-031, D-043, D-085, D-087, D-206, D-288, D-289, D-290, D-291, D-305, D-306
+- `corsa su un progetto` (13): D-031, D-043, D-085, D-087, D-206, D-288, D-289, D-290, D-291, D-305, D-306, D-307, D-308
 - `test` (4): D-083, D-211, D-222, D-244
 - `fixtures` (3): D-176, D-196, D-209
 - `real-3` (3): D-099, D-178, D-182
@@ -212,7 +212,7 @@ Convenzioni:
 
 ## Indice
 
-306 schede: 245 risolte, 18 aperte, 43 buchi dichiarati.
+308 schede: 247 risolte, 18 aperte, 43 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -300,7 +300,7 @@ Convenzioni:
 
 ### Analizzatori
 
-139 schede: 96 risolto, 16 aperto, 27 buco dichiarato.
+141 schede: 98 risolto, 16 aperto, 27 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -443,6 +443,8 @@ Convenzioni:
 | D-302 | La snapshot di jellyfin e di kuvasz non finisce in 900 secondi: la risoluzione degli import scorre ogni file | scan/stack | aperto | — | kotlin, csharp · snapshot · prestazioni · benchmark · Modal |
 | D-303 | Lo step `stack` dà un framework all'unità sbagliata: per il nome, o al padre invece che al sottomodulo | scan/stack | aperto | `819964b55` | tutti · analizzatore · correttezza · benchmark · Modal |
 | D-304 | Un servizio che ha come sola prova una variabile d'ambiente non è più un servizio del modulo | scan/stack | aperto | — | tutti · analizzatore · completezza · benchmark · Modal |
+| D-307 | Il codice di un file `.astro` non entrava nel grafo, e nessuna lacuna lo diceva | pets-workshop | risolto | `b39e2e51b` | typescript · parser · completezza · corsa su un progetto |
+| D-308 | Una richiesta non si univa alla sua rotta, e un legame trovato non era una relazione fra moduli | pets-workshop | risolto | `b6f877bad` | tutti · analizzatore · completezza · corsa su un progetto |
 
 ### Passo dinamico e osservatori
 
@@ -3690,6 +3692,34 @@ Casi che il giro aggiunge alle schede esistenti (da accodare alla loro «Descriz
 - **Verifica:** solo test (`tests/test_codebase_map_code_graph.py`, `test_clang_an_explicit_destructor_call_ends_at_the_destructor`); su tinyxml2 le due chiamate dovrebbero diventare archi e l'ultimo buco `DEPENDENT`, non misurato: lo dirà il prossimo giro reale.
 - **Stato:** risolto per le chiamate ai distruttori; il membro di un tipo dipendente è il buco dichiarato `DEPENDENT`.
 - **Note:** D-271.
+
+#### D-307 Il codice di un file `.astro` non entrava nel grafo, e nessuna lacuna lo diceva
+- **Tag:** lingua typescript · area parser · tipo completezza · origine corsa su un progetto · strumento —
+- **Descrizione:** app standalone, 18 novembre, pets-workshop: il client ha 7 file `.astro` con 6 import fra loro (`src/pages/index.astro:2-3`, `src/layouts/Layout.astro:2`), e il grafo non ha nessuna relazione che li tocchi, senza una lacuna.
+- **Spiegazione:** `scripts/languages/__init__.py` dava a `.astro` il linguaggio `markup`, il cui adattatore legge solo i blocchi `<style>`: il frontmatter, che è TypeScript, e i blocchi `<script>` non si leggevano. Vue e Svelte passavano già da `languages/sfc.py`.
+- **Progetto e caso:** github-samples/pets-workshop (`d2437a6f3dbb`) — corsa nell'app, 18 novembre 2026.
+- **Rimedio:** `b39e2e51b`, `scripts/languages/sfc.py`, `scripts/languages/__init__.py` e ciò che elenca i linguaggi:
+  - `Language.ASTRO` passa dall'adattatore dei componenti a file singolo: il frontmatter in testa al file e i `<script>` si leggono come TypeScript alle loro posizioni, gli `<style>` come prima;
+  - scip-typescript non indicizza i `.astro`: il loro codice è la lacuna `no_analyzer`, e gli stili restano nel grafo dei fogli di stile;
+  - un componente senza script era `parse-error`, anche per Vue e Svelte: ora è `parsed` (`snapshot._record_parse`).
+- **Verifica:** da `b39e2e51b`, `tests/test_codebase_map_extensions.py` (tre test sui file `.astro`), `tests/test_codebase_map_indexers_reasons.py`, `tests/test_codebase_map_stylesheet_dialects.py` (`test_astro_style_block_beside_its_frontmatter`). Nell'app vera: le relazioni del client passano da 0 a 5.
+- **Stato:** risolto. Restano non letti la parte di pagina (i tag dei componenti, le espressioni), dichiarata nelle note di parse, e un import senza estensione verso un `.astro`.
+- **Note:** D-306.
+
+#### D-308 Una richiesta non si univa alla sua rotta, e un legame trovato non era una relazione fra moduli
+- **Tag:** lingua tutti · area analizzatore · tipo completezza · origine corsa su un progetto · strumento —
+- **Descrizione:** app standalone, 18 novembre, pets-workshop: il client chiama `${API_SERVER_URL}/api/dogs/${dogId}` e il server dichiara `/api/dogs/<int:id>`; il grafo non ha nessuna relazione fra client e server.
+- **Spiegazione:**
+  - `flows.link_facts` univa `rotta` e `offre` solo a servizio, metodo e percorso uguali, e `_value` scartava un valore con `${`: un percorso a modello era «route not a literal»;
+  - `visual._flows` metteva i flussi nell'elenco `flows` della busta e mai in `relations`, e `module_derive._module_edges` non ha un tipo per una rotta: un legame dedotto non arrivava al grafo.
+- **Progetto e caso:** github-samples/pets-workshop (`d2437a6f3dbb`) — corsa nell'app, 18 novembre 2026; `benchmarks/connection-points/fixtures/pets`.
+- **Rimedio:** `b6f877bad`, `scripts/flows.py`, `scripts/visual.py`, `scripts/app_view.py`:
+  - un motore generale (`LinkType`, `join`) e l'adattatore REST: la chiave è servizio, metodo e schema del percorso, con ogni parametro e ogni interpolazione come `{}`, senza query e senza URL di base; nessun nome di framework;
+  - uno schema che incontra più rotte è un legame incerto, lacuna con i candidati;
+  - `visual._link_relations`: un legame dedotto è una relazione fra i due file con tipo, chiave, conteggio e le righe dei due lati; `app_view.graph` la solleva ai gruppi e tiene un legame incerto in un arco suo.
+- **Verifica:** da `b6f877bad`, `tests/test_codebase_map_flows.py` (`RestSchemaTests`), `tests/test_codebase_map_visual.py` (`LinkRelationTests`), con le attese di `benchmarks/connection-points/fixtures/pets/expected.json` scritte prima del codice. Sul progetto vero, con due regole scritte a mano: 2 richieste, 2 rotte, 2 legami, 0 lacune, e il grafo disegna `pages -> server`.
+- **Stato:** risolto. Restano: nell'app le regole del progetto non le scrive ancora nessuno; una concatenazione è una lacuna; un'API esterna con il percorso di una rotta del progetto si legherebbe; l'esploratore compilato disegna un legame incerto come certo.
+- **Note:** D-306, D-307.
 
 ### Passo dinamico e osservatori
 
