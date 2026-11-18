@@ -62,6 +62,7 @@ function observe() {
 }
 
 function applyState(found) {
+  const linked = server && server.links?.state !== 'done' && found.links?.state === 'done';  // new links: a new graph
   server = found;
   serverError = '';
   const c = ctx();
@@ -79,6 +80,7 @@ function applyState(found) {
       toast('Contesto pronto: ' + slug() + ' · ' + c.branch);
     }
   }
+  if (linked && c) loadGraph();
   loadViews();
   show();
 }
@@ -100,7 +102,7 @@ function loadViews() {  // what the stage on screen draws, read once a run
 }
 
 function show() {  // draws again what a frame changed
-  const signature = JSON.stringify([server?.job, ctx()?.run_id, pass(), server?.run?.progress, events.length, server?.engine, server?.mcp_ready, server?.asked]);
+  const signature = JSON.stringify([server?.job, ctx()?.run_id, pass(), server?.run?.progress, events.length, server?.engine, server?.mcp_ready, server?.asked, server?.links]);
   if (signature === shown) return;
   shown = signature;
   if (state.screen === 'analysis' && state.analysisStage === 'analysis' && document.getElementById('run-title')) updateAnalysisRun();
@@ -436,6 +438,18 @@ function renderLogs() {
   return items.slice(-8).reverse().map(l => `<div class="log-item ${l.type}"><span class="dot"></span><div><strong>${esc(l.title)}</strong><p>${esc(l.detail)}</p></div><time datetime="${esc(l.at)}">${esc(l.at ? new Date(l.at).toLocaleTimeString('it-IT') : '')}</time></div>`).join('');
 }
 
+// The links between modules: the engine writes the project's link rules, the machine applies them and decides every
+// link. What the block says is the server's state, from the stream.
+function plural(n, one, many) { return `${number(n)} ${Number(n) === 1 ? one : many}`; }
+function linksBlock() {
+  const l = server?.links || { state: 'idle' }, chosen = Boolean(server?.engine?.engine), running = l.state === 'running';
+  const said = { idle: 'Non ancora cercati: il motore scrive le regole del progetto, la macchina le applica e decide ogni legame.', running: 'In corso: il motore scrive le regole, la macchina le applica e gli rimanda quello che resta scollegato.', done: 'Trovati dalla macchina con le regole del progetto.', failed: 'Non trovati.', no_engine: 'Nessun motore scelto.' }[l.state] || l.state;
+  const counts = l.state === 'done' ? `<p>${plural(l.routes.called, 'richiesta', 'richieste')}, ${plural(l.routes.offered, 'rotta', 'rotte')}, ${plural(l.routes.linked, 'legame', 'legami')}, ${plural(l.gaps, 'lacuna', 'lacune')}${l.stores ? ', ' + plural(l.stores, 'archivio', 'archivi') : ''}</p>` : '';
+  const cause = l.state === 'failed' && l.cause ? `<div class="alert error" role="status" style="margin-top:10px">${esc(l.cause)}</div>` : '';
+  const action = `<button data-action="find-links" ${chosen && !running ? '' : 'disabled'}>${icon(running ? 'spinner' : 'play')}${running ? 'Ricerca in corso' : 'Trova i legami'}</button>${chosen ? '' : `<button data-screen="engine">${icon('arrow')}Scegli il motore</button>`}`;
+  return `${icon('graph')}<div><strong>Legami tra i moduli</strong><p>${said}</p>${counts}${cause}<div class="row" style="margin-top:10px">${action}</div>${chosen ? '' : '<p>Scegli e salva prima un motore.</p>'}</div>`;
+}
+
 function runButton() {
   return complete() ? `<button id="run-toggle" class="primary" data-analysis-stage="synthesis">${icon('review')}Leggi sintesi</button>` : `<button id="run-toggle" disabled>${icon('spinner')}Analisi in corso</button>`;
 }
@@ -464,7 +478,7 @@ function buildStatus() {
 function analysisRunScreen() {
   const c = ctx(), percent = runPercent(), alert = passAlert();
   return `<div class="source-note">${icon('info')}<div><strong>Analisi del commit ${esc(c.commit.slice(0, 12))}.</strong><p>Avanzamento ed eventi sono quelli del run <code>${esc(c.run_id)}</code>. Il grafo cresce solo quando la pipeline scrive un artefatto.</p></div></div>
-  <div class="run-build-layout"><section class="panel" aria-labelledby="run-title"><div class="panel-body"><div class="run-status"><div><p class="eyebrow">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="row"><span class="badge ${pass().state === 'failed' ? 'bad' : 'cyan'}" id="run-badge"><span class="dot"></span>${statusLabel()}</span><span id="run-button-wrap">${runButton()}</span></div></div><div class="progress-number"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="progress" role="progressbar" aria-label="Passi completati della pipeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" id="run-progress"><span id="progress-fill" style="width:${percent}%"></span></div><p class="run-help" id="run-help">${esc(runHelp())}</p><div id="smooth-analysis-tasks" class="daodan-pipeline"></div><div id="run-error" class="alert ${pass().state === 'failed' ? 'error' : ''}" style="margin-top:16px" role="status" ${alert ? '' : 'hidden'}>${alert}</div></div><div class="run-footer"><span class="muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span></div></section>
+  <div class="run-build-layout"><section class="panel" aria-labelledby="run-title"><div class="panel-body"><div class="run-status"><div><p class="eyebrow">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="row"><span class="badge ${pass().state === 'failed' ? 'bad' : 'cyan'}" id="run-badge"><span class="dot"></span>${statusLabel()}</span><span id="run-button-wrap">${runButton()}</span></div></div><div class="progress-number"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="progress" role="progressbar" aria-label="Passi completati della pipeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" id="run-progress"><span id="progress-fill" style="width:${percent}%"></span></div><p class="run-help" id="run-help">${esc(runHelp())}</p><div id="smooth-analysis-tasks" class="daodan-pipeline"></div><div id="run-error" class="alert ${pass().state === 'failed' ? 'error' : ''}" style="margin-top:16px" role="status" ${alert ? '' : 'hidden'}>${alert}</div><div id="links-block" class="source-note" style="margin:16px 0 0">${linksBlock()}</div></div><div class="run-footer"><span class="muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span></div></section>
   <section class="panel building-panel" aria-labelledby="building-title"><div class="panel-head"><div><h2 id="building-title">Costruzione del grafo</h2><p class="muted small">Gruppi di file e relazioni dal grafo del run.</p></div><span class="badge" id="build-level">${levelLabel()}</span></div><div class="build-viewport" id="build-viewport">${buildPreview()}</div><div class="build-foot"><span id="build-counts">${buildCounts()}</span><span id="build-status">${buildStatus()}</span></div></section></div>
   <section class="panel run-activity" aria-labelledby="activity-title"><div class="panel-head"><h2 id="activity-title">Eventi e feedback</h2><span class="badge">${logItems().length} eventi</span></div><div class="logs" id="logs" aria-live="polite" aria-relevant="additions">${renderLogs()}</div></section>`;
 }
@@ -487,6 +501,7 @@ function updateAnalysisRun() {
   error.hidden = !alert;
   error.className = 'alert ' + (pass().state === 'failed' ? 'error' : '');
   error.innerHTML = alert;
+  document.getElementById('links-block').innerHTML = linksBlock();
   const hadFocus = document.activeElement?.id === 'run-toggle';
   document.getElementById('run-button-wrap').innerHTML = runButton();
   if (hadFocus) document.getElementById('run-toggle').focus({ preventScroll: true });
@@ -713,6 +728,7 @@ document.addEventListener('click', async event => {
     case 'use-repository': await selectRepository(); break;
     case 'retry-premap': premapRun = ''; loadPremap(); break;
     case 'retry-pass': try { applyState(await post('/api/app/retry', {})); } catch (error) { toast(error.message); } break;
+    case 'find-links': try { applyState(await post('/api/app/link', {})); } catch (error) { toast(error.message); } break;
     case 'close-modal': closeModal(); break;
     case 'snapshot': snapshotModal(); break;
     case 'open-explorer': window.open(explorerUrl(), '_blank', 'noopener'); break;

@@ -104,8 +104,10 @@ def test_a_checkout_runs_nothing_the_user_s_configuration_or_the_repository_name
 
 
 class Endpoint(BaseHTTPRequestHandler):
-    """Chat Completions, streamed: a call of the first tool offered, then the tool's answer as the text."""
+    """Chat Completions, streamed: a call of the first tool offered (or `call`, a name and its arguments), then the
+    tool's answer as the text."""
     seen: list = []
+    call = None
 
     def do_POST(self):  # noqa: N802
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
@@ -114,9 +116,9 @@ class Endpoint(BaseHTTPRequestHandler):
         if last["role"] == "tool":
             chunks = [{"delta": {"content": last["content"][:5]}}, {"delta": {"content": last["content"][5:]}}]
         else:
-            name = body["tools"][0]["function"]["name"]
-            chunks = [{"delta": {"tool_calls": [{"index": 0, "id": "c1", "function": {"name": name, "arguments": '{"val'}}]}},
-                      {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": 'ue": "w"}'}}]}}]
+            name, arguments = Endpoint.call or (body["tools"][0]["function"]["name"], '{"value": "w"}')
+            chunks = [{"delta": {"tool_calls": [{"index": 0, "id": "c1", "function": {"name": name, "arguments": arguments[:5]}}]}},
+                      {"delta": {"tool_calls": [{"index": 0, "function": {"arguments": arguments[5:]}}]}}]
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.end_headers()
@@ -378,6 +380,8 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         assert premap["files"] == ["a.py"] and premap["languages"] == [{"name": "Python", "files": 1}]
         drawn = request(port, "/api/app/graph")[1]
         assert drawn["files"] == 1 and sum(len(node["files"]) for node in drawn["nodes"]) == 1
+        status, told = request(port, "/api/app/link", {})  # the service gives the rule format; no engine is chosen
+        assert status == 200 and told["links"]["state"] == "no_engine"
         described = request(port, "/api/app/engine", {"engine": "openai", "model": "m", "api_key": "sk-secret"})[1]
         assert described["api_key"] == "set" and "sk-secret" not in json.dumps(request(port, "/api/app/state")[1])
         assert request(port, "/api/app/engine", {"engine": "other"})[0] == 400
@@ -420,3 +424,109 @@ def test_a_pass_that_failed_starts_again_when_asked_and_when_its_commit_is_selec
     assert app.job["state"] == "ready" and asked == [("root", "commit"), ("index", "app-aaaaaaaaaaaa")]
     assert app.retry({})["context"]["run_id"] == "app-aaaaaaaaaaaa"
     assert asked[2:] == [("index", "app-aaaaaaaaaaaa")]
+
+
+RULE = {"written": "fetch", "in": ["app/client"], "link": "rotta", "route": {"service": "api", "method": "GET", "path": "arg0"}}
+
+
+class Flows:
+    """The service's flows as the app reads them: the rule format until rules are recorded, then what they link; a
+    rule without its link is refused with the service's reason."""
+
+    def __init__(self):
+        self.rules, self.asked = None, []
+
+    def status(self, run_id):
+        return {}
+
+    def flows(self, run_id, rules=None):
+        self.asked.append(rules)
+        if rules is not None:
+            if any("link" not in rule for rule in rules):
+                raise ValueError("rule 0: link must be one of scrive, legge, rotta, offre, attiva, ingresso")
+            self.rules = rules
+        if self.rules is None:
+            return {"status": "needs_rules", "run_id": run_id, "format": "the rule format v1",
+                    "technologies": [{"unit": "app/server", "technologies": ["flask"]}]}
+        return {"status": "ok", "run_id": run_id, "entries": [], "entry_count": 0,
+                "routes": {"offered": 2, "called": 2, "linked": 2}, "stores": {}, "store_count": 0, "gaps": [],
+                "gap_count": 0, "external": []}
+
+
+def linking(tmp_path, environment=None):
+    """An app on a selected run whose service is `Flows`."""
+    app = launcher.App(tmp_path / "work", environment=environment or {})
+    app.service, app.context = Flows(), {"run_id": "app-r", "path": str(tmp_path / "commit" / "source")}
+    return app
+
+
+def settled(app) -> dict:
+    deadline = time.monotonic() + 60
+    while app.linked["state"] == "running" and time.monotonic() < deadline:
+        time.sleep(0.05)
+    return app.linked
+
+
+def openai(endpoint) -> dict:
+    return {"DAODAN_ENGINE": "openai", "DAODAN_OPENAI_BASE_URL": endpoint, "DAODAN_OPENAI_MODEL": "m",
+            "DAODAN_OPENAI_API_KEY": "sk-secret"}
+
+
+def test_finding_the_links_without_an_engine_says_what_to_do_and_starts_nothing(tmp_path):
+    app = linking(tmp_path)
+    told = app.link({})["links"]
+    assert told["state"] == "no_engine" and "engine" in told["cause"]
+    assert app.service.asked == [None] and not (tmp_path / "work" / "engine").exists()  # read, nothing written or run
+
+
+def test_the_engine_records_the_rules_through_the_flows_tool_and_the_service_says_what_they_link(
+        tmp_path, endpoint, monkeypatch):
+    monkeypatch.setattr(Endpoint, "call", ("codebase_map_flows", json.dumps({"rules": [RULE]})))
+    app = linking(tmp_path, openai(endpoint))
+    assert app.link({})["links"]["state"] == "running"
+    assert settled(app) == {"state": "done", "cause": None, "routes": {"offered": 2, "called": 2, "linked": 2},
+                            "stores": 0, "gaps": 0}
+    assert app.service.asked == [None, [RULE], None]  # the format, the rules through the tool, then the outcome
+    first = Endpoint.seen[0][2]
+    assert "codebase_map_flows" in [tool["function"]["name"] for tool in first["tools"]]
+    task = first["messages"][-1]["content"]
+    assert "the rule format v1" in task and "flask" in task and "app-r" in task and "at most 3 times" in task
+    assert "sk-secret" not in task and app.state({})["links"]["state"] == "done"
+    assert "sk-secret" not in json.dumps(app.state({}))
+
+
+def test_an_engine_that_records_no_valid_rules_fails_with_the_cause(tmp_path, endpoint, monkeypatch):
+    monkeypatch.setattr(Endpoint, "call", ("codebase_map_flows", json.dumps({"rules": [{"written": "fetch"}]})))
+    app = linking(tmp_path, openai(endpoint))
+    app.link({})
+    told = settled(app)
+    assert told["state"] == "failed" and "link must be one of" in told["cause"]  # the service's own reason
+    answered = {"type": "result", "result": "all linked", "is_error": False, "session_id": "s1"}
+    monkeypatch.setattr(engines, "configured", lambda chosen: scripted(tmp_path, [answered]))
+    app.link({})
+    told = settled(app)
+    assert told["state"] == "failed" and "no rules" in told["cause"]  # its words are no result
+
+
+def test_finding_the_links_runs_once_at_a_time_and_stops_with_the_app(tmp_path, monkeypatch):
+    class Waiting:
+        def __init__(self):
+            self.started, self.go = [], threading.Event()
+
+        def run(self, task, say, cancelled):
+            self.started.append(task["prompt"])
+            self.go.wait(30)
+            return {"state": "cancelled" if cancelled() else "done", "text": "", "session": None, "cause": None}
+
+    engine = Waiting()
+    monkeypatch.setattr(engines, "configured", lambda chosen: engine)
+    app = linking(tmp_path)
+    app.link({})
+    with pytest.raises(ValueError, match="wait"):
+        app.link({})
+    with pytest.raises(ValueError, match="in progress"):
+        app.select({"url": "https://github.com/o/n", "branch": "main"})
+    app.close()
+    engine.go.set()
+    told = settled(app)
+    assert len(engine.started) == 1 and told["state"] == "failed" and "stopped" in told["cause"]
