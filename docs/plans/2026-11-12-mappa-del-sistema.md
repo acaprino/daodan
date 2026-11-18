@@ -8,7 +8,7 @@
 
 **Tecnologie:** Python 3 con la sola libreria standard negli script del plugin; Node solo per costruire il registro e per stack-analyser 1.27.6; Modal e `claude -p` per le run cieche; Markdown.
 
-**Spec:** [`docs/specs/2026-11-12-mappa-del-sistema.md`](../specs/2026-11-12-mappa-del-sistema.md). Questo piano copre i passi 1, 2 e 3 del suo ordine di lavoro e le misure da 1 a 6. Esploratore (passo 4) e review (passo 5, misure 7 e 8) hanno un piano ciascuno, dopo queste misure.
+**Spec:** [`docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md`](../specs/2026-11-18-flussi-e-mappa-del-sistema.md). Questo piano copre i passi 1, 2 e 3 del suo ordine di lavoro e le misure da 1 a 6. Esploratore (passo 4) e review (passo 5, misure 7 e 8) hanno un piano ciascuno, dopo queste misure.
 
 ## Vincoli
 

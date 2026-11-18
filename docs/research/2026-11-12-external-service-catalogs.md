@@ -1,6 +1,6 @@
 # Cataloghi pubblici di servizi e progetti esterni
 
-**Verifica delle fonti:** 12 novembre 2026. **Natura del documento:** ricognizione mirata per il registro della [mappa del sistema](../specs/2026-11-12-mappa-del-sistema.md), non esaustiva. I numeri sono contati alla fonte, salvo dove è scritto il contrario.
+**Verifica delle fonti:** 12 novembre 2026. **Natura del documento:** ricognizione mirata per il registro della [mappa del sistema](../specs/2026-11-18-flussi-e-mappa-del-sistema.md), non esaustiva. I numeri sono contati alla fonte, salvo dove è scritto il contrario.
 
 ## In breve
 

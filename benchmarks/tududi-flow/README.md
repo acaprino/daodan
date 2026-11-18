@@ -1,6 +1,6 @@
 # Benchmark: uno stato letto da un altro campo, fra interfaccia e servizio
 
-Caso per le spec [fase 2](../../docs/specs/2026-11-09-flow-model.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md): un'app con frontend e backend nello stesso repository, [chrisvel/tududi](https://github.com/chrisvel/tududi), con un difetto reale già corretto. Lo stato di un'attività ha sette valori; il calendario lo mostra ricavandolo dalla sola data di completamento e chiede le attività senza indicare lo stato. Il codice di tududi non è copiato qui; le run e i loro artefatti restano fuori dal repository.
+Caso per le spec [fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md): un'app con frontend e backend nello stesso repository, [chrisvel/tududi](https://github.com/chrisvel/tududi), con un difetto reale già corretto. Lo stato di un'attività ha sette valori; il calendario lo mostra ricavandolo dalla sola data di completamento e chiede le attività senza indicare lo stato. Il codice di tududi non è copiato qui; le run e i loro artefatti restano fuori dal repository.
 
 ## Parametri
 

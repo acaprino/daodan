@@ -11,7 +11,7 @@
 
 ## Stato
 
-- `flows.py` unisce le rotte (`rotta` / `offre`) per servizio, metodo e schema del percorso (tipo `REST`: parametri come `{}`, query e URL di base fuori dalla chiave; più candidati sono una lacuna con i candidati), e gli store (`scrive` / `legge`) per store e chiave uguali. Uno store è «dove un dato vive: stato globale, tabella o collezione, file, cache» ([fase 2](../specs/2026-11-09-flow-model.md)), e una regola di store può dichiararlo `coda`.
+- `flows.py` unisce le rotte (`rotta` / `offre`) per servizio, metodo e schema del percorso (tipo `REST`: parametri come `{}`, query e URL di base fuori dalla chiave; più candidati sono una lacuna con i candidati), e gli store (`scrive` / `legge`) per store e chiave uguali. Uno store è «dove un dato vive: stato globale, tabella o collezione, file, cache» ([fase 2](../specs/2026-11-18-flussi-e-mappa-del-sistema.md)), e una regola di store può dichiararlo `coda`.
 - `snapshot.py` unisce `invoke` di Tauri al suo `#[tauri::command]`.
 - Il benchmark `connection-points` unisce le rotte HTTP per schema, con collegamenti incerti e lati singoli; il prodotto ne riprende il confronto per segmenti, provato sulla fixture `pets`.
 - Prova del 14 novembre 2026, due file Python e tre regole di store: `basic_publish("orders", "order.created", …)` e `basic_consume("order.created", on_order)` si uniscono in `store:amqp/order.created`. Due limiti:

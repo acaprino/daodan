@@ -6,7 +6,7 @@ Daodan deve saper rispondere a due domande che la lettura del codice lascia aper
 
 ## Parole
 
-- **Passo di analisi:** uno dei quattro modi con cui Daodan ricava fatti dal codice (statico, inferenza, dinamico, semantico). «Livello» resta la parola delle viste di un flusso ([fase 2](2026-11-09-flow-model.md), sezione 5).
+- **Passo di analisi:** uno dei quattro modi con cui Daodan ricava fatti dal codice (statico, inferenza, dinamico, semantico). «Livello» resta la parola delle viste di un flusso ([fase 2](2026-11-18-flussi-e-mappa-del-sistema.md), sezione 5).
 - **Osservato:** provenienza di un fatto visto durante un'esecuzione. Si distingue da «provato» (il motore lo dimostra dal codice) e da «dedotto» (una regola accoppia i due capi).
 - **Container:** processo isolato dall'host, con il suo file system e con rete e risorse limitate.
 - **Motore di container:** il programma che avvia i container e parla la Docker Engine API.

@@ -15,7 +15,7 @@ Prova se senior-review trova, in una review per area e non per commit, un bug re
 
 ## Parametri per le misure sui flussi
 
-Questo benchmark è uno dei casi delle spec [fase 2](../../docs/specs/2026-11-09-flow-model.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md), sullo stesso target.
+Questo benchmark è uno dei casi delle spec [fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md), sullo stesso target.
 
 | Misura | Valore |
 |---|---|
