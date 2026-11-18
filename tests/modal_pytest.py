@@ -4,7 +4,7 @@
     python tests/modal_pytest.py -q                      # every suite under tests/
 
 The launcher starts `modal run` on this file with the arguments as given; the container holds the checkout as it
-is on disk (plugins, tests, benchmarks), runs `python -B -m pytest -p no:cacheprovider` in
+is on disk (plugins, tests, benchmarks, docs), runs `python -B -m pytest -p no:cacheprovider` in
 it, streams the output and ends with pytest's exit code. Several suites at once: `-n 8`, one per core (pytest-xdist is there).
 """
 from __future__ import annotations
@@ -66,7 +66,7 @@ if LOCAL:
     # The project-model fixtures go up as they are (mix-edge-vendored commits node_modules/ on purpose), in a
     # folder of their own: a "!" exception in `skipped` would stop Modal pruning the skipped folders.
     fixtures = "project-model/fixtures"
-    for folder in ("plugins", "tests", "benchmarks"):
+    for folder in ("plugins", "tests", "benchmarks", "docs"):
         image = image.add_local_dir(REPO / folder, f"{REMOTE}/{folder}", ignore=[*skipped, fixtures])
     image = image.add_local_dir(REPO / "benchmarks" / fixtures, f"{REMOTE}/benchmarks/{fixtures}")
     image = image.add_local_file(REPO / "AGENTS.md", f"{REMOTE}/AGENTS.md")
