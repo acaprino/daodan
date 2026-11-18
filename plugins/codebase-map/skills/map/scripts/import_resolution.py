@@ -331,11 +331,11 @@ def _module_candidates(candidate: str, importer: str) -> list[str]:
     suffix = Path(importer).suffix.lower()
     if suffix == ".py":
         return [candidate + ".py", candidate + "/__init__.py"]
-    if suffix in {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".vue", ".svelte"}:
+    if suffix in {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".vue", ".svelte", ".astro"}:
         extensions = (".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".vue", ".svelte")
         paths = [candidate]
         # TS source commonly imports the JavaScript path emitted by its build.
-        if suffix in {".ts", ".tsx", ".vue", ".svelte"}:
+        if suffix in {".ts", ".tsx", ".vue", ".svelte", ".astro"}:
             for emitted, source in ((".js", ".ts"), (".jsx", ".tsx"), (".mjs", ".mts"), (".cjs", ".cts")):
                 if candidate.endswith(emitted):
                     paths.insert(0, candidate[:-len(emitted)] + source)
@@ -402,7 +402,7 @@ def resolved_imports(manifest: dict, config: dict | None = None, *,
     return dict(iter_resolved_imports(manifest, config, include_self=include_self))
 
 
-_SCRIPT_SUFFIXES = {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".vue", ".svelte"}
+_SCRIPT_SUFFIXES = {".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".vue", ".svelte", ".astro"}
 
 
 class _ImportResolver:

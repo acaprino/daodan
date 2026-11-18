@@ -64,6 +64,7 @@ class Language:
     CSHARP = "csharp"
     VUE = "vue"
     SVELTE = "svelte"
+    ASTRO = "astro"
     MARKUP = "markup"
     C = "c"
     CPP = "cpp"
@@ -83,6 +84,7 @@ SUPPORTED_LANGUAGES: tuple[str, ...] = (
     Language.CSHARP,
     Language.VUE,
     Language.SVELTE,
+    Language.ASTRO,
     Language.MARKUP,
     Language.C,
     Language.CPP,
@@ -136,8 +138,9 @@ SUPPORTED_EXTENSIONS: dict[str, str] = {
     # Single-file frontend components.
     ".vue": Language.VUE,
     ".svelte": Language.SVELTE,
+    ".astro": Language.ASTRO,
     # Markup: the rules of its `<style>` blocks.
-    **dict.fromkeys((".astro", ".cshtml", ".ejs", ".erb", ".ftl", ".handlebars", ".hbs", ".htm", ".html", ".j2",
+    **dict.fromkeys((".cshtml", ".ejs", ".erb", ".ftl", ".handlebars", ".hbs", ".htm", ".html", ".j2",
                      ".jinja", ".jsp", ".jspx", ".liquid", ".mustache", ".njk", ".razor", ".twig", ".vm",
                      ".xhtml"), Language.MARKUP),
     # Stylesheets. Indented Sass is read as the SCSS its indentation implies;
@@ -276,6 +279,9 @@ def get_adapter(language: str) -> LanguageAdapter:
     if language == Language.SVELTE:
         from . import sfc as _mod
         return _mod.svelte_adapter
+    if language == Language.ASTRO:
+        from . import sfc as _mod
+        return _mod.astro_adapter
     if language == Language.MARKUP:
         from . import markup as _mod
         return _mod.adapter

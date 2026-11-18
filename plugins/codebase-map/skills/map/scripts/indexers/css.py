@@ -130,7 +130,7 @@ MIN_FREE = 1536 * 2**20  # 1,458 MB peak of the TypeScript run on tududi (benchm
 ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "stylesheet", (LANGUAGE,), frozenset(), False
 READS = SUFFIXES  # the stage hands `index` the snapshot's files with these suffixes
 # The snapshot's languages whose files bring this entry into the pass.
-SNAPSHOT_LANGUAGES = ("css", "markup", "vue", "svelte")
+SNAPSHOT_LANGUAGES = ("css", "markup", "vue", "svelte", "astro")
 PINS = Path(__file__).resolve().with_name("css_engines")  # package.json and lockfile of the engines
 NODE_OPTIONS = "--max-old-space-size=6144"
 TIMEOUT = 3600

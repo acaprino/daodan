@@ -75,9 +75,9 @@ def _versions(language) -> dict:
 def parser_profile(path: Path, language: str | None = None) -> dict:
     """Effective backend for this file, without reading its source bytes."""
     language = language or SUPPORTED_EXTENSIONS.get(path.suffix.lower())
-    if language in {"java", "javascript", "typescript", "rust", "go", "kotlin", "csharp", "vue", "svelte", "c", "cpp"}:
+    if language in {"java", "javascript", "typescript", "rust", "go", "kotlin", "csharp", "vue", "svelte", "astro", "c", "cpp"}:
         from languages._treesitter import get_parser
-        grammar = "tsx" if path.suffix.lower() == ".tsx" else ("typescript" if language in {"vue", "svelte"} else language)
+        grammar = "tsx" if path.suffix.lower() == ".tsx" else ("typescript" if language in {"vue", "svelte", "astro"} else language)
         loaded = get_parser(grammar)
         if not loaded:
             # A declared gap, never a weaker reading: the reason is part of the profile, so the file is read

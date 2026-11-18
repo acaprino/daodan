@@ -151,8 +151,9 @@ def _record_parse(entry: dict, result, text: str, lines: list[str], profile: dic
     # A loaded grammar can fail on this particular source and fall back.
     # Retain the availability profile for freshness checks, but do not cache
     # this result as a successful native parse. The reader returns it in full.
+    # A component without a script gives its grammar nothing to parse: no fallback.
     if profile["backend"] == "tree-sitter" and not any(
-        note.startswith("parser=tree-sitter") for note in result.notes
+        note.startswith(("parser=tree-sitter", "parser=sfc-no-script")) for note in result.notes
     ):
         entry["status"] = "parse-error"
     # A bare specifier can be a configured alias or workspace package. Its

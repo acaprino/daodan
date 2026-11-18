@@ -244,6 +244,8 @@ COMPLEXITY_PATTERNS_PER_LANG: dict[str, list[str]] = {
         r"\bonMount\b",
     ],
 }
+# An Astro file's script is TypeScript (`languages/sfc.py`).
+COMPLEXITY_PATTERNS_PER_LANG["astro"] = COMPLEXITY_PATTERNS_PER_LANG["typescript"]
 
 
 def find_patterns(content: str, patterns: list[str]) -> list[str]:

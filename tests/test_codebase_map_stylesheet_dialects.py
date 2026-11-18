@@ -248,16 +248,19 @@ class StyleBlockTests(unittest.TestCase):
         self.assertEqual([s for s in symbols(result) if s[1] == "rule"],
                          [(".card", "rule", 8, 8), (":global(.dark) .card", "rule", 9, 9)])
 
+    def test_astro_style_block_beside_its_frontmatter(self):
+        self.assertEqual(SUPPORTED_EXTENSIONS.get(".astro"), "astro")
+        result = get_adapter("astro").parse(ASTRO, "Title.astro")
+        self.assertEqual([s for s in symbols(result) if s[1] == "rule"], [(".title", "rule", 6, 6)])
+
     def test_markup_files_have_the_rules_of_their_style_blocks(self):
         self.assertEqual(SUPPORTED_EXTENSIONS.get(".html"), "markup")
         self.assertEqual(SUPPORTED_EXTENSIONS.get(".ejs"), "markup")
-        self.assertEqual(SUPPORTED_EXTENSIONS.get(".astro"), "markup")
         self.assertEqual(symbols(get_adapter("markup").parse(HTML, "index.html")), [
             (".shell", "rule", 5, 5),
             ("@media (max-width: 600px)", "at-rule", 6, 8),
             ("@media (max-width: 600px) { .shell }", "rule", 7, 7),
         ])
-        self.assertEqual(symbols(get_adapter("markup").parse(ASTRO, "Title.astro")), [(".title", "rule", 6, 6)])
         self.assertEqual(symbols(get_adapter("markup").parse(EJS, "nav.ejs")), [(".nav", "rule", 2, 2)])
         self.assertEqual(symbols(get_adapter("markup").parse("<p>x</p>\n", "plain.html")), [])
 

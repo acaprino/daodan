@@ -13,7 +13,7 @@ import snapshot
 NAME, VERSION, RANK = "snapshot.py", snapshot.STORE_SCHEMA, "scanner"
 NAMES = {"python": "Python", "java": "Java", "javascript": "JavaScript", "typescript": "TypeScript", "sql": "SQL",
          "plsql": "PLSQL", "rust": "Rust", "go": "Go", "kotlin": "Kotlin", "csharp": "C#", "vue": "Vue",
-         "svelte": "Svelte", "c": "C", "cpp": "C++", "css": "CSS"}
+         "svelte": "Svelte", "astro": "Astro", "c": "C", "cpp": "C++", "css": "CSS"}
 
 
 def run(context) -> dict:

@@ -13,6 +13,7 @@ SCRIPTS = REPO_ROOT / "plugins/codebase-map/skills/map/scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
+import import_resolution  # noqa: E402
 import resolve_edges  # noqa: E402
 import semantic_index  # noqa: E402
 import semantic_store  # noqa: E402
@@ -282,6 +283,85 @@ class SingleFileComponentTests(unittest.TestCase):
             self.assertEqual(len(svelte_calls), 1)
             self.assertEqual(svelte_calls[0]["resolution"], "resolved")
             self.assertTrue(svelte_calls[0]["target_id"].startswith("util.ts::function@"))
+
+    # The frontmatter (TypeScript) imports a component and a module, the `<script>` (TypeScript too) another module.
+    ASTRO_SOURCE = (
+        '---\n'
+        'import Header from "./Header.astro";\n'
+        'import { formatLabel } from "./util";\n'
+        'const title: string = formatLabel("Home");\n'
+        '---\n'
+        '<Header title={title} />\n'
+        '<script>\n'
+        '  import { track } from "./track";\n'
+        '  track("home");\n'
+        '</script>\n'
+        '<style>\n'
+        '.hero { color: red; }\n'
+        '</style>\n'
+    )
+
+    def test_astro_frontmatter_and_script_are_read_at_their_own_positions(self):
+        self.assertEqual(SUPPORTED_EXTENSIONS.get(".astro"), "astro")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "site"
+            root.mkdir(parents=True)
+            (root / "util.ts").write_text("export function formatLabel(s: string): string { return s; }\n",
+                                          encoding="utf-8")
+            (root / "track.ts").write_text("export function track(event: string): void {}\n", encoding="utf-8")
+            (root / "Header.astro").write_text("---\nconst { title } = Astro.props;\n---\n<h1>{title}</h1>\n",
+                                               encoding="utf-8")
+            (root / "Page.astro").write_text(self.ASTRO_SOURCE, encoding="utf-8")
+            lines = self.ASTRO_SOURCE.split("\n")
+
+            manifest = snapshot.build_manifest(root)
+            page = manifest["files"]["Page.astro"]
+            self.assertEqual(page["language"], "astro")
+            self.assertEqual(page["status"], "parsed")
+            self.assertEqual(page["imports"], ["./Header.astro", "./track", "./util"])
+            self.assertEqual(manifest["files"]["Header.astro"]["status"], "parsed")
+            # The style block's rule is still a symbol at its line.
+            self.assertEqual(page["symbols"][".hero"]["start"], 12)
+
+            # Each import where the file writes it.
+            imports = {item["local"]: item["span"] for item in page["semantic"]["imports"]}
+            self.assertEqual({name: span[0] for name, span in imports.items()},
+                             {"Header": 2, "formatLabel": 3, "track": 8})
+
+            # The import of a component names its file, the one of a module its `.ts`.
+            resolved = import_resolution.resolved_imports(manifest)["Page.astro"]
+            self.assertEqual(resolved["./Header.astro"], ["Header.astro"])
+            self.assertEqual(resolved["./util"], ["util.ts"])
+            self.assertEqual(resolved["./track"], ["track.ts"])
+
+            index = semantic_index.build_semantic_index(manifest)
+            self.assertEqual(index["coverage"]["Page.astro"]["status"], "ast")
+            calls = {r["parts"][0]: r for r in index["references"] if r["file"] == "Page.astro" and r["kind"] == "call"}
+            self.assertEqual(set(calls), {"formatLabel", "track"})
+            self.assertTrue(calls["formatLabel"]["target_id"].startswith("util.ts::function@"))
+            self.assertTrue(calls["track"]["target_id"].startswith("track.ts::function@"))
+            for name, ref in calls.items():  # the span is the file's own, line and column
+                line, column = ref["span"][0], ref["span"][1]
+                self.assertEqual(lines[line - 1][column:column + len(name)], name)
+
+    def test_astro_without_frontmatter_keeps_its_styles_and_has_no_code(self):
+        source = '<div class="x">hi</div>\n<style>\n.x { color: blue; }\n</style>\n'
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "site"
+            root.mkdir(parents=True)
+            (root / "Plain.astro").write_text(source, encoding="utf-8")
+            entry = snapshot.build_manifest(root)["files"]["Plain.astro"]
+            self.assertEqual(entry["status"], "parsed")
+            self.assertEqual(entry["imports"], [])
+            self.assertEqual(entry["symbols"][".x"]["start"], 3)
+
+    def test_an_astro_fence_after_an_element_is_not_frontmatter(self):
+        """The compiler opens the frontmatter at a `---` before any element (withastro/compiler
+        internal/token.go: "If we see an element before "---", ignore any future "---""): after one it is text."""
+        source = '<div>first</div>\n---\nimport Header from "./Header.astro";\n---\n'
+        result = get_adapter("astro").parse(source, "Late.astro")
+        self.assertEqual(result.imports, [])
+        self.assertEqual(get_adapter("astro").count_imports(source), 0)
 
 
 class TauriCrossLanguageBridgeTests(unittest.TestCase):

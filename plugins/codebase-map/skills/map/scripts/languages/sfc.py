@@ -1,7 +1,7 @@
 """
-Single-File Component (Vue `.vue` and Svelte `.svelte`) adapter.
+Single-File Component (Vue `.vue`, Svelte `.svelte` and Astro `.astro`) adapter.
 
-Masks everything outside `<script ...>...</script>` blocks with spaces while
+Masks everything outside `<script ...>...</script>` blocks, and an Astro file's frontmatter, with spaces while
 preserving exact UTF-8 byte offsets and line numbers, then delegates script
 parsing to the TypeScript or JavaScript adapter so `ParseResult.semantic` spans
 align 1:1 with the original `.vue` or `.svelte` file on disk. The rules of the
@@ -15,6 +15,12 @@ and reads are references of a template scope under the module's; a handler that 
 v-for alias, a slot's props, an each block's context and index, a snippet and its parameters, `let:`, `@const`,
 an await block's value and error) are declared in the scope of their element or block. An assignment in a
 handler writes the script's binding, as one in the script does.
+
+An Astro file's script is its frontmatter, the code between a `---` fence before any element and the next one
+(withastro/compiler `internal/token.go`: "If we see an element before "---", ignore any future "---""), and its
+`<script>` blocks, all TypeScript ("The Astro component script is TypeScript", docs.astro.build, Astro
+components); they are read as one module. Its template is not read: the product has no reader of it, which its
+notes say.
 """
 
 from __future__ import annotations
@@ -25,7 +31,7 @@ from .base import ParseResult
 from .comments import CommentToken, extract_c_style_comments
 from .semantic import _JavaScriptEvidence
 
-__all__ = ["vue_adapter", "svelte_adapter", "mask_non_script"]
+__all__ = ["vue_adapter", "svelte_adapter", "astro_adapter", "mask_non_script"]
 
 _SCRIPT_BLOCK_RE = re.compile(
     rb"<script\b(?P<attrs>[^>]*)>(?P<body>.*?)</script\s*>",
@@ -35,10 +41,13 @@ _TS_ATTR_RE = re.compile(
     rb"""\blang\s*=\s*['"]?(?:ts|tsx|typescript)\b""",
     re.IGNORECASE,
 )
+# Astro's frontmatter: a fence that only blanks precede, to the next fence opening a line.
+_FRONTMATTER_RE = re.compile(rb"\A\s*---(?P<body>.*?)^[ \t]*---", re.DOTALL | re.MULTILINE)
 
 
-def mask_non_script(content: str) -> tuple[str, bool, bool]:
-    """Return `(masked_source, is_typescript, has_script)` with identical byte offsets per line."""
+def mask_non_script(content: str, frontmatter: bool = False) -> tuple[str, bool, bool]:
+    """Return `(masked_source, is_typescript, has_script)` with identical byte offsets per line; `frontmatter`
+    keeps an Astro frontmatter's code too, and every script of such a file is TypeScript."""
     raw = content.encode("utf-8")
     masked = bytearray(len(raw))
     for i, b in enumerate(raw):
@@ -52,8 +61,13 @@ def mask_non_script(content: str) -> tuple[str, bool, bool]:
             is_ts = True
         start, end = match.span("body")
         masked[start:end] = raw[start:end]
+    fence = _FRONTMATTER_RE.match(raw) if frontmatter else None
+    if fence:
+        has_script = True
+        start, end = fence.span("body")
+        masked[start:end] = raw[start:end]
 
-    return masked.decode("utf-8", errors="replace"), is_ts, has_script
+    return masked.decode("utf-8", errors="replace"), is_ts or frontmatter, has_script
 
 
 def _flat(node) -> list:
@@ -392,8 +406,8 @@ def template_semantics(content: str, language: str, is_ts: bool, payload: dict) 
 
 
 class _SfcAdapter:
-    def __init__(self, language: str) -> None:
-        self.language = language
+    def __init__(self, language: str, frontmatter: bool = False) -> None:
+        self.language, self.frontmatter = language, frontmatter
 
     def parse(self, content: str, file_path: str) -> ParseResult:
         from .markup import style_symbols
@@ -406,7 +420,7 @@ class _SfcAdapter:
         from . import javascript as _js
         from . import typescript as _ts
 
-        masked, is_ts, has_script = mask_non_script(content)
+        masked, is_ts, has_script = mask_non_script(content, self.frontmatter)
         if not has_script:
             result = ParseResult(
                 file_path=file_path,
@@ -431,7 +445,9 @@ class _SfcAdapter:
             result.file_path = file_path
             result.language = self.language
             result.notes = [f"{n} ({self.language})" for n in result.notes]
-        if result.semantic is not None:
+        if self.frontmatter:
+            result.notes.append(f"template not read: no reader of the {self.language} template in the product")
+        elif result.semantic is not None:
             unread = template_semantics(content, self.language, is_ts, result.semantic)
             result.notes += [unread] if unread else []
         return result
@@ -439,13 +455,14 @@ class _SfcAdapter:
     def count_imports(self, content: str) -> int:
         from . import javascript as _js
 
-        masked, _, has_script = mask_non_script(content)
+        masked, _, has_script = mask_non_script(content, self.frontmatter)
         return _js.adapter.count_imports(masked) if has_script else 0
 
     def extract_comments(self, content: str) -> list[CommentToken]:
-        masked, _, has_script = mask_non_script(content)
+        masked, _, has_script = mask_non_script(content, self.frontmatter)
         return extract_c_style_comments(masked) if has_script else []
 
 
 vue_adapter = _SfcAdapter("vue")
 svelte_adapter = _SfcAdapter("svelte")
+astro_adapter = _SfcAdapter("astro", frontmatter=True)

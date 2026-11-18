@@ -32,7 +32,7 @@ PHASE_FILES = (
 # `src/app/service.py::Class.method`
 CITE_SYMBOL = re.compile(r"([\w./\\-]+\.[A-Za-z0-9_]+)::([A-Za-z_][\w.]*)")
 # Files whose symbols include stylesheet rules: their selectors are cited whole.
-_RULE_SUFFIXES = _STYLESHEET_SUFFIXES + (".vue", ".svelte") + tuple(
+_RULE_SUFFIXES = _STYLESHEET_SUFFIXES + (".vue", ".svelte", ".astro") + tuple(
     suffix for suffix, language in SUPPORTED_EXTENSIONS.items() if language == "markup")
 # `theme.css::.dark #root > div:first-child`: a stylesheet symbol carries spaces
 # and punctuation the bare form cannot, so it is cited inside backticks and

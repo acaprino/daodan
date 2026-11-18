@@ -183,3 +183,16 @@ def test_a_project_of_components_alone_brings_the_stylesheet_graph_into_the_pass
     snapshot.write_snapshot(root, tmp_path / "manifest.sqlite")
     with open_snapshot(tmp_path / "manifest.sqlite") as store:
         assert "stylesheet" in engine_pass.pass_languages(store.connection)
+
+
+def test_astro_styles_bring_the_stylesheet_graph_and_its_code_is_a_no_analyzer_gap(tmp_path):
+    """An Astro file's style blocks bring the stylesheet graph into the pass, which reads it (`css.READS`); its
+    code, which no engine indexes, is named by `no_analyzer`. A markup page, which holds no code, is not."""
+    root = _project(tmp_path / "proj", {"Page.astro": '---\nimport { f } from "./f";\nf();\n---\n'
+                                                      '<p class="x">x</p>\n<style>\n.x { color: red }\n</style>\n',
+                                        "page.html": '<p class="x">x</p>\n'})
+    snapshot.write_snapshot(root, tmp_path / "manifest.sqlite")
+    assert ".astro" in css.READS
+    with open_snapshot(tmp_path / "manifest.sqlite") as store:
+        assert "stylesheet" in engine_pass.pass_languages(store.connection)
+        assert engine_pass.no_analyzer(store.connection) == {"astro": 1}

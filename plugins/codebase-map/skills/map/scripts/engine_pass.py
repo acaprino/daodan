@@ -84,12 +84,15 @@ def unparsed(connection) -> dict[str, str]:
 
 
 def no_analyzer(connection) -> dict[str, int]:
-    """The snapshot's languages no analyzer lists, each with its files: in the snapshot, in no graph."""
+    """The snapshot's languages no analyzer lists, each with its files: in the snapshot, in no graph. A graph built
+    from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph's) serves a language whose files the
+    snapshot reads no code of; the code of one it does read (an Astro file's script) needs an analyzer of its own."""
     import indexers
-    served = set(ENGINE_LANGUAGES) | {language for analyzer in indexers.analyzers()
-                                      for language in getattr(analyzer, "SNAPSHOT_LANGUAGES", ())}
+    from semantic_store import READ
+    styles = {language for analyzer in indexers.analyzers() for language in getattr(analyzer, "SNAPSHOT_LANGUAGES", ())}
     counts = {language: sum(count for status, count in files.items() if status != "excluded")
-              for language, files in _statuses(connection).items() if language not in served}
+              for language, files in _statuses(connection).items()
+              if language not in ENGINE_LANGUAGES and (language not in styles or set(files) & set(READ))}
     return {language: count for language, count in sorted(counts.items()) if count}
 
 
