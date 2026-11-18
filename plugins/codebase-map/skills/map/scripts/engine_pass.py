@@ -14,6 +14,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 from datetime import datetime, timezone
 from importlib import metadata
 from pathlib import Path
@@ -147,7 +148,9 @@ def pass_state(manifest: Path) -> dict | None:
             return {"state": "stopped", "reason": last.get("reason")}
         return {"state": "finished", "languages": last.get("languages") or {}}
     if running.is_file():
-        return {"state": "failed", "reason": "the engine pass ended without a report; see " + LOG_NAME}
+        code = marker.get("exit_code")
+        return {"state": "failed", "reason": "the engine pass ended without a report"
+                + (f" (exit code {code})" if type(code) is int else "") + "; see " + LOG_NAME}
     return None
 
 
@@ -667,7 +670,20 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
             return {**edge_state(manifest), "action": "none"}
     started = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     running_path.write_text(json.dumps({"pid": child.pid, "started_at": started}) + "\n", encoding="utf-8")
+    threading.Thread(target=_note_exit, args=(child, running_path), daemon=True).start()
     return {**edge_state(manifest), "action": "started"}
+
+
+def _note_exit(child, record: Path) -> None:
+    """While the process that started the pass lives, it waits for it and keeps its exit code in the record: a
+    pass ended from outside writes nothing, and on POSIX one nobody waits for stays a process that answers."""
+    code = child.wait()
+    try:
+        marker = json.loads(record.read_text(encoding="utf-8"))
+        if type(code) is int and marker.get("pid") == child.pid:
+            record.write_text(json.dumps({**marker, "exit_code": code}) + "\n", encoding="utf-8")
+    except (OSError, ValueError):
+        pass  # the record is another pass's by now, or gone with its snapshot
 
 
 def reset_pass(manifest: Path) -> dict | None:

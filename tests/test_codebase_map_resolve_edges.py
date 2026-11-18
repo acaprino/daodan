@@ -755,6 +755,20 @@ class PassLifecycleTests(unittest.TestCase):
         self.assertEqual(state["state"], "failed")
         self.assertIn(resolve_edges.LOG_NAME, state["reason"])
 
+    def test_a_pass_that_ends_with_no_report_says_the_exit_code_its_starter_saw(self):
+        """A pass ended from outside writes nothing: the process that started it keeps how it ended."""
+        with mock.patch.object(engine_pass, "engine_command", return_value=[sys.executable, "-c", "raise SystemExit(3)"]):
+            started = resolve_edges.ensure_edges(self.manifest)
+        self.assertEqual(started["action"], "started")
+        deadline = time.monotonic() + 30
+        state = resolve_edges.edge_state(self.manifest)
+        while "exit code" not in str(state.get("reason")) and time.monotonic() < deadline:
+            time.sleep(0.1)
+            state = resolve_edges.edge_state(self.manifest)
+        self.assertEqual(state["state"], "failed")
+        self.assertIn("exit code 3", state["reason"])
+        self.assertIn(resolve_edges.LOG_NAME, state["reason"])
+
     def test_the_edge_view_carries_coverage_and_names_a_running_pass(self):
         import edge_view
         self.record(pid=os.getpid(), started_at="2026-11-08T00:00:00Z")
