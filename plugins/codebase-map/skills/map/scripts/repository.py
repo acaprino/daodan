@@ -8,7 +8,8 @@ Git is the one program started here, and no file of the repository chooses anoth
 the system's configuration (so no filter, credential helper or alias they define, which a `.gitattributes` of the
 repository could name), with `tree_scope.GIT_OPTIONS` (no fsmonitor, no hooks), no hook template, no submodule, no
 symbolic link written, and only the transports `ALLOWED` lists. The checkout is shallow, of one branch, and lives
-under the app's work folder at `repositories/<owner>/<name>/<commit>`: a commit's folder is written once and reused.
+under the app's work folder at `repositories/<owner>/<name>/<commit>/source`: a commit's checkout is written once and
+reused, and its folder holds the analysis beside the checkout, so that nothing Daodan writes is inside the project.
 """
 from __future__ import annotations
 
@@ -27,6 +28,7 @@ ALLOWED = ("https",)  # the transports Git may use; a test's local repository ad
 STATES = ("accessible", "empty", "not_accessible", "network")
 NETWORK = ("could not resolve host", "failed to connect", "timed out", "connection reset", "ssl", "network is")
 LIST_SECONDS, CLONE_SECONDS = 30, 900
+CHECKOUT = "source"  # the checkout in its commit's folder: what is written about it goes beside it, never in it
 
 
 def parse(address: str) -> dict:
@@ -92,8 +94,8 @@ def branches(address: str, work: Path) -> dict:
 
 
 def _clone(source: str, branch: str, folder: Path, work: Path, transports=ALLOWED) -> tuple[Path, str]:
-    """A shallow checkout of `branch` of `source` under `folder`, in the folder named by its commit; that folder
-    and the commit. A commit already there is not fetched again."""
+    """A shallow checkout of `branch` of `source` under `folder`, in `CHECKOUT` of the folder named by its commit;
+    the checkout's folder and the commit. A commit already there is not fetched again."""
     if not BRANCH.fullmatch(branch) or ".." in branch:
         raise ValueError("the branch name is not one this app asks Git for")
     folder.mkdir(parents=True, exist_ok=True)
@@ -107,8 +109,9 @@ def _clone(source: str, branch: str, folder: Path, work: Path, transports=ALLOWE
         commit = named.stdout.strip()
         if named.returncode or not re.fullmatch(r"[0-9a-f]{40,64}", commit):
             raise ValueError("the checkout has no commit: " + named.stderr.strip()[-200:])
-        target = folder / commit
+        target = folder / commit / CHECKOUT
         if not target.exists():
+            target.parent.mkdir(exist_ok=True)
             os.replace(incoming, target)
         return target, commit
     except subprocess.TimeoutExpired:

@@ -185,7 +185,7 @@ def build_envelope(run_dir: Path) -> dict:
                        lines=[item.get("start"), item.get("end")], freshness=freshness.get((path, item["symbol"])),
                        description=purpose.get((path, item["symbol"])))
                 relation("defines", f"file:{path}", ref)
-        # Imports between files, read in blocks the reader accepts.
+        # Imports and resolved calls between files, read in blocks the reader accepts.
         for chunk in _chunks(paths):
             packet = source_reader.graph_packet(store, chunk, 1, LIMIT)
             if len(packet.get("imports", [])) >= LIMIT:
@@ -193,6 +193,15 @@ def build_envelope(run_dir: Path) -> dict:
             for link in packet.get("imports", []):
                 if f"file:{link['source']}" in entities and f"file:{link['target']}" in entities:
                     relation("imports", f"file:{link['source']}", f"file:{link['target']}")
+            if "calls" in packet.get("truncated", []):
+                gaps.append({"refs": [], "reason": f"calls of a block reached the reader limit of {LIMIT}"})
+            for call in packet.get("calls", []):  # a call resolved to a callable of another file
+                source, target = f"file:{call['file']}", f"file:{(call.get('target_id') or '').split('::')[0]}"
+                if source != target and source in entities and target in entities:
+                    relation("calls", source, target)
+                    found = relations[f"calls:{source}->{target}"]
+                    found["counts"] = {"calls": found.get("counts", {}).get("calls", 0) + 1}
+                    found["evidence"] = [*found["evidence"], {"path": call["file"], "line": call["span"][0]}][:20]
 
     # Memberships: a file belongs to every logical module that holds it; build and virtual units are physical groups.
     for module in graph.get("modules", []):

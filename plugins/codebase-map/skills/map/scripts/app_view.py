@@ -44,7 +44,8 @@ def premap(stack: dict, modules: dict, files: dict) -> dict:
             "description": described.get(module["id"], {}).get("description") or "",
             "manifest": next(iter(declared + [item["path"] for item in module.get("libraries", [])]), None),
             "dependencies": [{"name": item["name"], "scope": item["ecosystem"], "state": "declared",
-                              "source": item["path"] + (f":{item['line']}" if item.get("line") else "")}
+                              "source": item["path"] + (f":{item['line']}" if item.get("line") else ""),
+                              **({"version": item["version"]} if item.get("version") else {})}
                              for item in module.get("libraries", [])]})
         for ident in module.get("technologies", []):
             found = known.get(ident)
@@ -72,7 +73,8 @@ def graph(envelope: dict) -> dict:
     """The envelope's files grouped into nodes, and the relations between groups with their counts and sites."""
     entities = {item["ref"]: item for item in envelope["entities"]}
     files = sorted(ref for ref, item in entities.items() if item["type"] == "file")
-    groups = [ref for ref, item in entities.items() if item["type"] not in STRUCTURE]
+    # a virtual module is the tree no build names, not a group of its own: its files show by their directories
+    groups = [ref for ref, item in entities.items() if item["type"] not in (*STRUCTURE, "virtual")]
     owner: dict[str, str] = {}
     if len(groups) >= 2:
         level = "modules"

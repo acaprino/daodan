@@ -12,8 +12,9 @@ pre-map, stack, and the pass that builds the graph beside it), `visual.make_serv
 its token, `engines` the model a question is given to, and `app_view` the run in the shapes the page draws (the
 pre-map, the graph in groups). It prints the page's address, which carries the token.
 
-One repository and branch is active at a time. Selecting it is work off the request: the page asks, reads
-`/api/app/state` and the run's events, and opens the explorer of the graph (`/`, the compiled viewer) on the run.
+One repository and branch is active at a time. Selecting it is work off the request: the page asks, observes
+`/api/stream` (the app's state whenever it changes, the run's events as they are written), and opens the explorer of
+the graph (`/`, the compiled viewer) on the run.
 The explorer's routes are the service's own (`visual.live_routes`), bound to the active checkout; before one is
 selected they answer that none is.
 
@@ -28,6 +29,7 @@ import secrets
 import subprocess
 import sys
 import threading
+import time
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -44,6 +46,8 @@ PLUGIN = SCRIPT_DIR.parents[2]
 VIEWER, PAGE = PLUGIN / "assets" / "viewer", PLUGIN / "assets" / "app"
 SYSTEM = ("You answer questions about one codebase that Daodan has mapped. Read it only with the tools given: "
           "search first, then read what you need. Say what you could not establish instead of guessing.")
+FINAL = ("fresh", "unavailable", "failed", "off")  # the pass's states that change no more by themselves
+TURN, RECHECK = 0.5, 1.5  # seconds between two reads of the stream, and between two reads of a running pass's state
 
 
 class App:
@@ -83,10 +87,13 @@ class App:
         try:
             checked = repository.checkout(url, branch, self.work)
             self.job = {"state": "preparing", "step": "snapshot", "detail": f"commit {checked['commit'][:12]}"}
-            service = MapService(checked["path"])
+            checkout = Path(checked["path"])
+            service = MapService(checkout.parent)  # the analysis beside the checkout, never inside the project
             run_id = f"app-{checked['commit'][:12]}"
             if run_id not in [run["run_id"] for run in service.runs()["runs"]]:
-                service.create_run(".", run_id)
+                service.create_run(checkout.name, run_id)
+            else:
+                service.index(run_id)  # a run already there: a pass that failed starts again
             with self._lock:
                 self.service, self.context = service, {**checked, "run_id": run_id}
                 self.job = {"state": "ready", "step": None, "detail": ""}
@@ -95,6 +102,12 @@ class App:
             self.job = {"state": "failed", "step": self.job["step"], "detail": cause[:600]}
             return
         self._warm()
+
+    def retry(self, body: dict) -> dict:
+        """Start again the selected run's pass where it failed; one that is fresh, running or unavailable stays."""
+        service, run_id = self._active()
+        service.index(run_id)
+        return self.state({})
 
     def _warm(self) -> None:
         """Fetch the MCP server's own packages now, so that a command-line engine finds it ready when it starts."""
@@ -112,17 +125,64 @@ class App:
             return None
         return {"command": "uv", "args": ["--directory", PLUGIN.as_posix(), "run", "--no-config", "--no-project",
                                           "--script", (SCRIPT_DIR / "mcp_server.py").as_posix(), "--project",
-                                          Path(self.context["path"]).as_posix()]}
+                                          Path(self.context["path"]).parent.as_posix()]}
+
+    def _held(self) -> dict:
+        """The part of the state this process holds, cheap to read: the run's states are read from its store."""
+        return {"job": self.job, "context": self.context, "engine": engines.described(self.engine), "mcp": self.mcp(),
+                "mcp_ready": self.mcp_ready, "asked": {key: self.asked[key] for key in ("state", "question", "cause")}}
 
     def state(self, query: dict) -> dict:
         service, context = self.service, self.context
         status = service.status(context["run_id"]) if service is not None else {}
         engine = status.get("engine") or {}
-        return {"job": self.job, "context": context, "engine": engines.described(self.engine), "mcp": self.mcp(),
-                "mcp_ready": self.mcp_ready,
+        return {**self._held(),
                 "run": {"pipeline": status.get("pipeline"), "progress": status.get("progress"),
-                        "pass": {key: engine.get(key) for key in ("state", "reason")}} if status else None,
-                "asked": {key: self.asked[key] for key in ("state", "question", "cause")}}
+                        "pass": {key: engine.get(key) for key in ("state", "reason")}} if status else None}
+
+    def stream(self, explorer):
+        """`/api/stream` of the app, for a page that observes: the explorer's frames on the active run (`explorer`
+        is `visual.live_stream`'s, read once a turn from the cursors so far), and an `app` frame with the app's state
+        first and whenever it changes. Before a selection the state alone; after one, the new run from its start.
+        The run's states are read again after its events, and every RECHECK seconds while its pass runs. A failure
+        ends the stream with a `failure` frame; the stream ends after `max_seconds` (15, at most 60), and the page
+        opens it again from its cursors."""
+        def frames(query: dict, should_stop):
+            deadline = time.monotonic() + min(float(query.get("max_seconds", 15)), 60.0)
+            run, kind = query.get("run"), "snapshot"
+            cursors = {key: int(query.get(key, 0)) for key in ("after", "pipeline_after", "pulse_after")}
+            held = shown = None
+            checked = 0.0
+            while not should_stop():
+                try:
+                    found, context = None, self.context
+                    if context is not None and self.service is not None:
+                        if context["run_id"] != run:
+                            run, kind, cursors = context["run_id"], "snapshot", dict.fromkeys(cursors, 0)
+                        [(_, found)] = explorer({"run": run, "once": "1", **cursors}, should_stop)
+                        events, pulse = found["run_events"], found["pulse"]
+                        cursors = {"after": events["next_cursor"], "pipeline_after": events["pipeline"]["next_cursor"],
+                                   "pulse_after": pulse["next_cursor"]}
+                    news = bool(found) and bool(events["events"] or events["pipeline"]["events"] or pulse["events"])
+                    now = self._held()
+                    running = not shown or not shown["run"] or shown["run"]["pass"]["state"] not in FINAL
+                    if now != held or news or (running and time.monotonic() - checked >= RECHECK):
+                        held, checked = now, time.monotonic()
+                        state = self.state({})
+                        if state != shown:  # before the events it follows, so that the page knows their run
+                            shown = state
+                            yield "app", state
+                    if news or (found and kind == "snapshot"):
+                        yield kind, found
+                        kind = "update"
+                except (ValueError, KeyError, TypeError, OSError) as error:
+                    yield "failure", {"error": str(error)}
+                    return
+                if time.monotonic() >= deadline:
+                    return
+                time.sleep(TURN)
+
+        return frames
 
     # -- the views of the page -------------------------------------------------------------------------------------
 
@@ -237,9 +297,11 @@ class App:
         routes = {**visual.live_routes(active), "/api/app/state": self.state, "/api/app/answer": self.answer,
                   "/api/app/premap": self.premap, "/api/app/graph": self.graph}
         actions = {**visual.live_actions(active), "/api/app/check": self.check, "/api/app/select": self.select,
+                   "/api/app/retry": self.retry,
                    "/api/app/engine": self.configure, "/api/app/probe": self.probe, "/api/app/ask": self.ask}
-        return visual.make_server(None, VIEWER, port, routes=routes, actions=actions, token=token,
-                                  stream=visual.live_stream(active), mounts={"app": PAGE})
+        stream = {"/api/stream": self.stream(visual.live_stream(active)["/api/stream"])}
+        return visual.make_server(None, VIEWER, port, routes=routes, actions=actions, token=token, stream=stream,
+                                  mounts={"app": PAGE})
 
     def close(self) -> None:
         self._stop.set()

@@ -95,7 +95,8 @@ def test_a_checkout_runs_nothing_the_user_s_configuration_or_the_repository_name
     work = tmp_path / "work"
     path, commit = repository._clone(origin.as_uri(), "main", work / "r", work, transports=("file",))
     assert not mark.exists()
-    assert path.name == commit == git(origin, "rev-parse", "HEAD") and (path / "a.py").read_text() == "x = 1\n"
+    assert path.parent.name == commit == git(origin, "rev-parse", "HEAD") and path.name == repository.CHECKOUT
+    assert (path / "a.py").read_text() == "x = 1\n"
     assert repository._clone(origin.as_uri(), "main", work / "r", work, transports=("file",))[0] == path  # reused
     assert [item.name for item in (work / "r").iterdir()] == [commit]
     with pytest.raises(ValueError):
@@ -228,6 +229,19 @@ def request(port: int, path: str, body=None, token: str | None = "t"):
         connection.close()
 
 
+def stream(port: int, query: str) -> list[tuple[str, dict]]:
+    """The frames of one `/api/stream`, read to its end."""
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=60)
+    try:
+        connection.request("GET", "/api/stream?token=t&" + query)
+        answer = connection.getresponse()
+        assert answer.status == 200 and answer.getheader("Content-Type").startswith("text/event-stream")
+        blocks = [block.split("\n") for block in answer.read().decode("utf-8").split("\n\n") if block]
+    finally:
+        connection.close()
+    return [(name.removeprefix("event: "), json.loads(data.removeprefix("data: "))) for name, data in blocks]
+
+
 def test_a_further_folder_is_served_under_its_name(tmp_path):
     (tmp_path / "viewer").mkdir()
     (tmp_path / "viewer" / "index.html").write_text("viewer", encoding="utf-8")
@@ -265,6 +279,15 @@ def test_the_pre_map_lists_the_units_with_their_declared_libraries_and_the_unit_
         app_view.premap({"state": "needs_refresh", "reason": "stale"}, {}, {})
 
 
+def test_a_declared_library_passes_its_version_on_and_one_without_has_none():
+    stack = {"technologies": [], "modules": [{"id": "pkg", "name": "pkg", "paths": ["pkg"], "technologies": [],
+                                              "toolchains": [], "libraries": [
+        {"ecosystem": "pypi", "name": "pytest", "path": "pkg/pyproject.toml", "line": 9, "version": ">=8,<9"},
+        {"ecosystem": "pypi", "name": "rich", "path": "pkg/pyproject.toml", "line": 10}]}]}
+    found = app_view.premap(stack, {}, {})
+    assert [dep.get("version", "absent") for dep in found["units"][0]["dependencies"]] == [">=8,<9", "absent"]
+
+
 def test_the_graph_groups_files_by_their_smallest_module_or_else_by_their_directory():
     def entity(ref, kind, **fields):
         return {"ref": ref, "type": kind, "name": ref.split(":", 1)[1], **fields}
@@ -295,6 +318,13 @@ def test_the_graph_groups_files_by_their_smallest_module_or_else_by_their_direct
     assert {node["id"]: node["files"] for node in alone["nodes"]} == {
         "directory:app": ["app/main.py"], "directory:app/lib": ["app/lib/util.py"], "directory:docs": ["docs/a.md"]}
     assert [(edge["id"], edge["counts"]) for edge in alone["edges"]] == [("directory:app->directory:app/lib", {"imports": 1})]
+    # the tree no build names is not a module: with it, the files still show by their directories
+    tree = app_view.graph({**envelope, "entities": [*(item for item in envelope["entities"] if item["ref"] != "build:lib"),
+                                                    entity("virtual:tree", "virtual")],
+                           "memberships": [*envelope["memberships"], *(
+                               {"member": f"file:{path}", "group": "virtual:tree", "view": "physical"}
+                               for path in ("app/main.py", "app/lib/util.py", "docs/a.md"))]})
+    assert (tree["level"], tree["nodes"], tree["edges"]) == ("directories", alone["nodes"], alone["edges"])
 
 
 def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monkeypatch):
@@ -313,6 +343,9 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         assert request(port, "/app/")[0] == 200 and request(port, "/api/app/state", token=None)[0] == 403
         for path in ("/api/runs", "/api/app/premap", "/api/app/graph"):
             assert request(port, path) == (400, {"error": "no repository is selected"})
+        alone = stream(port, "run=app-000000000000&after=3&max_seconds=1")  # before a selection: the state alone
+        assert [(name, data["job"]["state"], data["context"]) for name, data in alone] == [("app", "idle", None)]
+        assert request(port, "/api/stream?once=1", token=None)[0] == 403
         assert request(port, "/api/app/select", {"url": "https://example.com/o/n", "branch": "main"})[0] == 400
         status, state = request(port, "/api/app/select", {"url": found["url"], "branch": "main"})
         assert status == 200 and state["job"]["state"] in ("preparing", "ready")
@@ -322,7 +355,24 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
             state = request(port, "/api/app/state")[1]
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}
         assert state["context"]["run_id"] == "app-aaaaaaaaaaaa" and state["run"]["pipeline"]["scan"] == "fresh"
-        assert state["mcp"]["args"][-2:] == ["--project", project.as_posix()]
+        assert state["mcp"]["args"][-2:] == ["--project", project.parent.as_posix()]
+        # what Daodan writes about the checkout is beside it: a container's output may not be inside the project
+        assert (project.parent / ".daodan").is_dir() and not (project / ".daodan").exists()
+        # The page observes: the run's events from its start and the app's state, then again from the cursors.
+        seen = stream(port, "run=app-000000000000&after=3&max_seconds=1")
+        first = next(data for name, data in seen if name == "snapshot")["run_events"]
+        assert first["run_id"] == "app-aaaaaaaaaaaa" and first["pipeline"]["events"][0]["kind"] == "step.started"
+        told = [data for name, data in seen if name == "app"][-1]
+        assert told["context"]["run_id"] == "app-aaaaaaaaaaaa" and told["run"]["pipeline"]["scan"] == "fresh"
+        last = [data for name, data in seen if name in ("snapshot", "update")][-1]
+        cursors = (last["run_events"]["next_cursor"], last["run_events"]["pipeline"]["next_cursor"],
+                   last["pulse"]["next_cursor"])
+        again = stream(port, "run=app-aaaaaaaaaaaa&after=%d&pipeline_after=%d&pulse_after=%d&max_seconds=1" % cursors)
+
+        def delivered(frames):
+            return {json.dumps(item) for _, data in frames if "run_events" in data
+                    for item in (*data["run_events"]["events"], *data["run_events"]["pipeline"]["events"])}
+        assert [name for name, _ in again][:2] == ["app", "snapshot"] and not delivered(again) & delivered(seen)
         assert [run["run_id"] for run in request(port, "/api/runs")[1]["runs"]] == ["app-aaaaaaaaaaaa"]
         premap = request(port, "/api/app/premap")[1]
         assert premap["files"] == ["a.py"] and premap["languages"] == [{"name": "Python", "files": 1}]
@@ -336,3 +386,37 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         app.close()
         server.shutdown()
         server.server_close()
+
+
+def test_a_pass_that_failed_starts_again_when_asked_and_when_its_commit_is_selected_again(tmp_path, monkeypatch):
+    """A pass that did not start (no memory free, say) is not the run's last word: asking again, or selecting the
+    same commit again, has the service repair it; a run already there is never created twice."""
+    asked = []
+
+    class Service:
+        def __init__(self, root):
+            asked.append(("root", Path(root).name))
+
+        def runs(self):
+            return {"runs": [{"run_id": "app-aaaaaaaaaaaa"}]}
+
+        def create_run(self, *given):
+            asked.append(("create", *given))
+
+        def index(self, run_id):
+            asked.append(("index", run_id))
+
+        def status(self, run_id):
+            return {}
+
+    monkeypatch.setattr(launcher, "MapService", Service)
+    monkeypatch.setattr(repository, "checkout", lambda address, branch, work: {
+        "repository": {}, "branch": branch, "commit": "a" * 40, "path": str(tmp_path / "commit" / "source")})
+    monkeypatch.setattr(launcher.App, "_warm", lambda self: None)
+    app = launcher.App(tmp_path / "work", environment={})
+    with pytest.raises(ValueError, match="no repository is selected"):
+        app.retry({})
+    app._prepare("https://github.com/o/n", "main")
+    assert app.job["state"] == "ready" and asked == [("root", "commit"), ("index", "app-aaaaaaaaaaaa")]
+    assert app.retry({})["context"]["run_id"] == "app-aaaaaaaaaaaa"
+    assert asked[2:] == [("index", "app-aaaaaaaaaaaa")]

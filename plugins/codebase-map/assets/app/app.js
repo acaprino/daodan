@@ -11,8 +11,8 @@ async function answer(response) {
 const get = path => fetch(path, { headers: auth, cache: 'no-store' }).then(answer);
 const post = (path, body) => fetch(path, { method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(answer);
 
-const STORAGE = 'daodan-app-v1';
-const defaults = { screen: 'analysis', analysisStage: 'repository', repositoryUrl: '', runId: '', treeMode: 'directories', treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '', graphDirection: 'out', graphDepth: '1', graphKind: 'all' };
+const STORAGE = 'daodan-app-v2';  // v2: the graph opens whole, so what v1 kept of its filters is dropped
+const defaults = { screen: 'analysis', analysisStage: 'repository', repositoryUrl: '', runId: '', treeMode: 'directories', treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '', graphDirection: 'both', graphDepth: 'all', graphKind: 'all' };
 let state = { ...defaults }, storageAvailable = true, toastTimer, modalReturnFocus = null;
 try { const stored = JSON.parse(localStorage.getItem(STORAGE) || 'null'); if (stored && typeof stored === 'object') state = { ...defaults, ...stored }; } catch { storageAvailable = false; }
 if (!['analysis', 'graph', 'engine'].includes(state.screen)) state.screen = 'analysis';
@@ -23,8 +23,8 @@ let server = null, serverError = '';
 let checked = null, checkedUrl = '', branch = '', checking = false, checkError = '', selectError = '', selecting = false, generation = 0;
 let PREMAP = null, premapRun = '', premapError = '';
 let GRAPH = null, graphRun = '', graphError = '', graphLoading = false;
-let events = [], cursors = { after: 0, pipeline_after: 0 }, eventsRun = '';
-let engineDraft = null, engineSaid = '', engineTone = '', question = '', asked = null, pollTimer = 0, shown = '';
+let events = [], cursors = { after: 0, pipeline_after: 0, pulse_after: 0 }, eventsRun = '';
+let engineDraft = null, engineSaid = '', engineTone = '', question = '', asked = null, shown = '';
 const FINAL = ['fresh', 'unavailable', 'failed', 'off'];
 const STEPS = [['scan', 'Scan · inventario e moduli'], ['stack', 'Stack · tecnologie e librerie'], ['analyze', 'Analyze · analyzer per linguaggio'], ['dynamic', 'Dynamic · osservazione dei test'], ['union', 'Union · collegamento dei grafi']];
 const STEP = Object.fromEntries(STEPS.map(([id, label]) => [id, label.split(' · ')[0]]));
@@ -45,17 +45,25 @@ function explorerUrl() { return `/?token=${encodeURIComponent(token)}&run=${enco
 
 // -- the server --------------------------------------------------------------------------------------------------
 
-async function refresh() {
-  clearTimeout(pollTimer);
-  try {
-    server = await get('/api/app/state');
-    serverError = '';
-  } catch (error) {
-    serverError = error.message;
-    render();
-    pollTimer = setTimeout(refresh, 4000);
-    return;
-  }
+// The page observes `/api/stream`: the app's state (`app`) first and whenever it changes, the run's events
+// (`snapshot`, `update`) as they are written. A stream lasts a minute and opens again from the cursors; nothing asks
+// on a timer.
+function observe() {
+  const source = new EventSource('/api/stream?' + new URLSearchParams({ token, max_seconds: 60, run: eventsRun, ...cursors }));
+  let heard = false;
+  source.addEventListener('app', message => { heard = true; applyState(JSON.parse(message.data)); });
+  for (const name of ['snapshot', 'update']) source.addEventListener(name, message => { heard = true; applyEvents(JSON.parse(message.data)); });
+  source.addEventListener('failure', message => { heard = false; serverError = JSON.parse(message.data).error; render(); });
+  source.onerror = () => {  // the stream ended, or the server did not answer it: after a frame again at once
+    source.close();
+    if (!heard) { serverError ||= 'lo stream del server non risponde'; render(); }
+    setTimeout(observe, heard ? 0 : 4000);
+  };
+}
+
+function applyState(found) {
+  server = found;
+  serverError = '';
   const c = ctx();
   if (engineDraft === null) engineDraft = { ...server.engine, api_key: '' };
   if (c && state.runId !== c.run_id) {  // what the browser kept belongs to another run
@@ -71,33 +79,32 @@ async function refresh() {
       toast('Contesto pronto: ' + slug() + ' · ' + c.branch);
     }
   }
-  let grown = false;
-  if (c) {
-    try { grown = await readEvents(c.run_id); } catch (error) { toast('Eventi non letti: ' + error.message); }
-  }
-  if (c && (grown || graphRun !== c.run_id) && (state.analysisStage !== 'repository' || state.screen === 'graph')) loadGraph();
-  if (c && premapRun !== c.run_id && ['premap', 'synthesis'].includes(state.analysisStage)) loadPremap();
-  const signature = JSON.stringify([server.job, c?.run_id, pass(), server.run?.progress, events.length, server.engine, server.mcp_ready, server.asked]);
-  if (signature !== shown) {
-    shown = signature;
-    if (state.screen === 'analysis' && state.analysisStage === 'analysis' && document.getElementById('run-title')) updateAnalysisRun();
-    else render();
-  }
-  if (server.job.state === 'preparing' || (c && !FINAL.includes(pass().state)) || server.asked?.state === 'running') pollTimer = setTimeout(refresh, 1500);
+  loadViews();
+  show();
 }
 
-async function readEvents(run) {
-  if (eventsRun !== run) { events = []; cursors = { after: 0, pipeline_after: 0 }; eventsRun = run; }
-  let grown = false;
-  for (let page = 0; page < 20; page++) {
-    const found = await get(`/api/events?run=${encodeURIComponent(run)}&after=${cursors.after}&pipeline_after=${cursors.pipeline_after}&limit=100`);
-    if (eventsRun !== run) return false;
-    cursors = { after: found.next_cursor, pipeline_after: found.pipeline.next_cursor };
-    events.push(...found.events.map(e => ({ ...e, run: true })), ...found.pipeline.events);
-    grown ||= found.pipeline.events.some(e => e.kind === 'step.finished' || e.kind === 'graph.ready');
-    if (!found.has_more && !found.pipeline.has_more) break;
-  }
-  return grown;
+function applyEvents(found) {
+  const run = found.run_events;
+  if (eventsRun !== run.run_id) { events = []; eventsRun = run.run_id; }
+  cursors = { after: run.next_cursor, pipeline_after: run.pipeline.next_cursor, pulse_after: found.pulse.next_cursor };
+  events.push(...run.events.map(e => ({ ...e, run: true })), ...run.pipeline.events);
+  const grown = run.pipeline.events.some(e => e.kind === 'step.finished' || e.kind === 'graph.ready');
+  if (grown && ctx()?.run_id === run.run_id && (state.analysisStage !== 'repository' || state.screen === 'graph')) loadGraph();
+  show();
+}
+
+function loadViews() {  // what the stage on screen draws, read once a run
+  const c = ctx();
+  if (c && graphRun !== c.run_id && (state.analysisStage !== 'repository' || state.screen === 'graph')) loadGraph();
+  if (c && premapRun !== c.run_id && ['premap', 'synthesis'].includes(state.analysisStage)) loadPremap();
+}
+
+function show() {  // draws again what a frame changed
+  const signature = JSON.stringify([server?.job, ctx()?.run_id, pass(), server?.run?.progress, events.length, server?.engine, server?.mcp_ready, server?.asked]);
+  if (signature === shown) return;
+  shown = signature;
+  if (state.screen === 'analysis' && state.analysisStage === 'analysis' && document.getElementById('run-title')) updateAnalysisRun();
+  else render();
 }
 
 async function loadPremap() {
@@ -123,7 +130,10 @@ async function loadGraph() {
     const found = await get('/api/app/graph');
     if (ctx()?.run_id !== run) return;
     GRAPH = found; graphRun = run; graphError = '';
-    if (!GRAPH.nodes.some(n => n.id === state.graphRoot)) state.graphRoot = [...GRAPH.nodes].sort((a, b) => b.files.length - a.files.length)[0]?.id || '';
+    if (!GRAPH.nodes.some(n => n.id === state.graphRoot)) {
+      const related = id => GRAPH.edges.filter(e => e.source === id || e.target === id).length;  // the group with most relations first
+      state.graphRoot = [...GRAPH.nodes].sort((a, b) => related(b.id) - related(a.id) || b.files.length - a.files.length)[0]?.id || '';
+    }
   } catch (error) {
     graphError = error.message;
     graphRun = run;
@@ -185,7 +195,6 @@ async function selectRepository() {
     selectError = error.message;
   }
   render();
-  if (selecting) refresh();
 }
 
 function repositoryContext() {
@@ -282,7 +291,7 @@ function premapScreen() {
       <section class="panel"><div class="panel-head"><h2>Tecnologie e framework</h2><span class="badge">Riconosciuti</span></div><div class="technology-list">${PREMAP.technologies.map(t => `<div class="technology-row"><div><strong>${esc(t.name)}</strong><span class="badge">${esc(t.category)}</span></div><p>${esc(t.version || (t.state === 'declared' ? 'Versione non dichiarata' : 'Versione non registrata'))}</p><code>${esc(t.source)}</code></div>`).join('') || '<p class="muted small" style="padding:16px">Nessuna tecnologia riconosciuta nei manifest.</p>'}</div></section>
     </aside>
   </div>
-  <section class="panel dependency-panel" aria-labelledby="dependency-title"><div class="panel-head"><div><h2 id="dependency-title">Librerie prima dell’analisi</h2><p class="muted small">Dichiarazioni dei manifest, lette dallo step stack.</p></div><span class="badge">Dipendenze dichiarate</span></div><div class="dependency-table-wrap"><table class="dependency-table"><thead><tr><th>Dipendenza</th><th>Versione dichiarata</th><th>Ecosistema</th><th>Fonte</th></tr></thead><tbody>${PREMAP.dependencies.map(d => `<tr><td><strong>${esc(d.name)}</strong></td><td><code>Non registrata</code></td><td><span class="badge">${esc(d.scope)}</span></td><td><code>${esc(d.source)}</code></td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nessuna libreria dichiarata nei manifest.</td></tr>'}</tbody></table></div><p class="aside-note">Una dichiarazione non dimostra che una libreria sia installata, risolta o chiamata. Le versioni non sono ancora nel record dello step stack.</p></section>`;
+  <section class="panel dependency-panel" aria-labelledby="dependency-title"><div class="panel-head"><div><h2 id="dependency-title">Librerie prima dell’analisi</h2><p class="muted small">Dichiarazioni dei manifest, lette dallo step stack.</p></div><span class="badge">Dipendenze dichiarate</span></div><div class="dependency-table-wrap"><table class="dependency-table"><thead><tr><th>Dipendenza</th><th>Versione dichiarata</th><th>Ecosistema</th><th>Fonte</th></tr></thead><tbody>${PREMAP.dependencies.map(d => `<tr><td><strong>${esc(d.name)}</strong></td><td><code>${esc(d.version || 'Non scritta nel manifest')}</code></td><td><span class="badge">${esc(d.scope)}</span></td><td><code>${esc(d.source)}</code></td></tr>`).join('') || '<tr><td colspan="4" class="muted">Nessuna libreria dichiarata nei manifest.</td></tr>'}</tbody></table></div><p class="aside-note">Una dichiarazione non dimostra che una libreria sia installata, risolta o chiamata. La versione è quella scritta nel manifest, non quella installata.</p></section>`;
 }
 
 function languageColor(name) {
@@ -354,22 +363,34 @@ function premapSelection() {
 
 function pipelineEvents() { return events.filter(e => !e.run); }
 
+// The run's steps as SmoothUI's AITaskList draws them, in the states their events say: the pass's state is the
+// engine's, whose end does not end the steps after it. The note comes from the run: the progress, the cause of a
+// step that failed or of an analyzer that could not run, and the pass's cause for a step the run will not reach.
 function steps() {
-  const status = {}, notes = {};
+  const status = {}, causes = {}, failed = {};
   for (const e of pipelineEvents()) {
-    if (e.kind === 'step.started') status[e.step] = 'running';
+    if (e.kind === 'step.started') { status[e.step] = 'running'; causes[e.step] = []; delete failed[e.step]; }
     if (e.kind === 'step.finished') status[e.step] = 'done';
-    if (e.kind === 'analyzer.unavailable') notes[e.step] = (e.analyzer || 'analyzer') + ' non disponibile';
+    if (e.kind === 'step.failed' || (e.kind === 'log' && e.level === 'error' && e.data?.cause)) failed[e.step] = e.data?.cause || e.message;
+    if (e.kind === 'analyzer.unavailable') (causes[e.step] ||= []).push(`${e.analyzer || 'analyzer'}: ${e.data?.cause || e.message}`);
   }
-  const progress = server?.run?.progress;
+  const progress = server?.run?.progress, p = pass(), of = id => failed[id] ? 'failed' : status[id] || 'pending';
+  const reached = !complete() || STEPS.some(([id]) => of(id) === 'running');  // a step still runs: the next may start
   return STEPS.map(([id, label]) => {
-    let s = status[id] || 'pending';
-    if (s === 'running' && complete() && pass().state !== 'fresh') s = 'failed';
-    const note = s === 'done' ? (notes[id] ? 'Completata con lacune · ' + notes[id] : 'Completata')
+    const s = of(id), cause = causes[id]?.join(' · ');
+    const note = s === 'done' ? (cause ? 'Completata con lacune · ' + cause : 'Completata')
       : s === 'running' ? 'In corso' + (progress?.step === id && progress.total ? ` · ${progress.done}/${progress.total}` : '')
-        : s === 'failed' ? 'Interrotta' : complete() ? 'Non eseguita' : 'In attesa';
+        : s === 'failed' ? 'Non riuscita · ' + failed[id]
+          : reached ? 'In attesa' : 'Non eseguita' + (p.reason ? ' · ' + p.reason : '');
     return { id, label, status: s, note };
   });
+}
+
+function mountPipeline() {
+  const host = document.getElementById('smooth-analysis-tasks');
+  if (!host) return;
+  if (window.DaodanSmoothUI) window.DaodanSmoothUI.mount(host, Object.values(STEP).join(' → '), steps());
+  else host.textContent = 'Passi della pipeline non disegnati: smoothui.bundle.js non è stato caricato.';
 }
 
 function runPercent() {
@@ -383,23 +404,11 @@ function runPercent() {
 function runPhaseLabel() {
   const running = steps().find(t => t.status === 'running');
   if (running) return running.label;
-  return { fresh: 'Pipeline completata', unavailable: 'Pipeline completata con lacune', failed: 'Pipeline interrotta', off: 'Passaggio del grafo spento' }[pass().state] || 'In attesa del passaggio del grafo';
+  return { fresh: 'Pipeline completata', unavailable: 'Pipeline completata con lacune', failed: 'Pipeline conclusa, grafo delle chiamate non rifinito', off: 'Passaggio del grafo spento' }[pass().state] || 'In attesa del passaggio del grafo';
 }
 
 function statusLabel() {
-  return { fresh: 'Completata', unavailable: 'Completata con lacune', failed: 'Interrotta', off: 'Spenta' }[pass().state] || 'In esecuzione';
-}
-
-function taskBox(status) {
-  const color = status === 'failed' ? 'oklch(63% 0.21 25)' : 'oklch(72% 0.17 150)';
-  const rect = `<rect x="1" y="1" width="12" height="12" rx="3.5" stroke-width="1.4" fill="${color}" fill-opacity="${status === 'done' ? '.12' : '0'}" stroke="${status === 'pending' || status === 'running' ? 'currentColor' : color}"></rect>`;
-  const mark = status === 'done' ? 'M 3.5 7.5 L 6 10 L 10.5 4.5' : status === 'failed' ? 'M 5 5 L 9 9 M 9 5 L 5 9' : '';
-  return rect + (mark ? `<path class="ai-task-draw" d="${mark}" fill="none" pathLength="1" stroke="${color}" stroke-dasharray="1 1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>` : '');
-}
-
-function taskList() {
-  const tasks = steps();
-  return `<div class="daodan-pipeline"><div class="w-full rounded-xl border border-border bg-background p-3 smooth-tasks"><div class="mb-1.5 flex items-baseline justify-between"><p class="font-medium text-foreground text-sm">Scan → Stack → Analyze → Dynamic → Union</p><p class="text-muted-foreground text-xs tabular-nums">${tasks.filter(t => t.status === 'done').length}/${tasks.length}</p></div><ul class="list-none">${tasks.map(t => `<li class="list-none" style="opacity:${t.status === 'done' ? .65 : 1}"><span class="relative flex items-start gap-2 py-1"><span class="mt-0.5 flex size-3.5 shrink-0 items-center justify-center"><svg aria-hidden="true" class="size-3.5" viewBox="0 0 14 14">${taskBox(t.status)}</svg></span><span class="min-w-0 flex-1 text-foreground text-sm leading-snug">${esc(t.label)}</span><span class="shrink-0 text-muted-foreground text-xs tabular-nums">${esc(t.note)}</span>${t.status === 'running' ? '<span class="task-running" aria-hidden="true"></span>' : ''}</span></li>`).join('')}</ul></div></div>`;
+  return { fresh: 'Completata', unavailable: 'Completata con lacune', failed: 'Da riprovare', off: 'Spenta' }[pass().state] || 'In esecuzione';
 }
 
 function runHelp() {
@@ -411,7 +420,7 @@ function runHelp() {
 function passAlert() {
   const p = pass();
   if (!['unavailable', 'failed', 'off'].includes(p.state)) return '';
-  return `<strong>${p.state === 'failed' ? 'Il passaggio che rifinisce il grafo delle chiamate si è interrotto.' : 'Lacuna: il passaggio che rifinisce il grafo delle chiamate non è disponibile.'}</strong><br>${esc(p.reason || 'Nessuna causa registrata.')}`;
+  return `<strong>${p.state === 'failed' ? 'Il passaggio che rifinisce il grafo delle chiamate non è riuscito.' : 'Lacuna: il passaggio che rifinisce il grafo delle chiamate non è disponibile.'}</strong><br>${esc(p.reason || 'Nessuna causa registrata.')}${p.state === 'failed' ? `<br><button data-action="retry-pass" style="margin-top:10px">${icon('play')}Riprova il passaggio</button>` : ''}`;
 }
 
 const RUN_EVENT = { run_created: 'Run creato', engine_started: 'Passaggio del grafo avviato', engine_unavailable: 'Passaggio del grafo non disponibile', engine_failed: 'Passaggio del grafo interrotto', index_failed: 'Indice lessicale non costruito', modules_failed: 'Grafo dei moduli non costruito' };
@@ -455,7 +464,7 @@ function buildStatus() {
 function analysisRunScreen() {
   const c = ctx(), percent = runPercent(), alert = passAlert();
   return `<div class="source-note">${icon('info')}<div><strong>Analisi del commit ${esc(c.commit.slice(0, 12))}.</strong><p>Avanzamento ed eventi sono quelli del run <code>${esc(c.run_id)}</code>. Il grafo cresce solo quando la pipeline scrive un artefatto.</p></div></div>
-  <div class="run-build-layout"><section class="panel" aria-labelledby="run-title"><div class="panel-body"><div class="run-status"><div><p class="eyebrow">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="row"><span class="badge ${pass().state === 'failed' ? 'bad' : 'cyan'}" id="run-badge"><span class="dot"></span>${statusLabel()}</span></div></div><div class="progress-number"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="progress" role="progressbar" aria-label="Passi completati della pipeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" id="run-progress"><span id="progress-fill" style="width:${percent}%"></span></div><p class="run-help" id="run-help">${esc(runHelp())}</p><div id="smooth-analysis-tasks">${taskList()}</div><div id="run-error" class="alert ${pass().state === 'failed' ? 'error' : ''}" style="margin-top:16px" role="status" ${alert ? '' : 'hidden'}>${alert}</div></div><div class="run-footer"><span class="muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span><span id="run-button-wrap">${runButton()}</span></div></section>
+  <div class="run-build-layout"><section class="panel" aria-labelledby="run-title"><div class="panel-body"><div class="run-status"><div><p class="eyebrow">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="row"><span class="badge ${pass().state === 'failed' ? 'bad' : 'cyan'}" id="run-badge"><span class="dot"></span>${statusLabel()}</span><span id="run-button-wrap">${runButton()}</span></div></div><div class="progress-number"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="progress" role="progressbar" aria-label="Passi completati della pipeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" id="run-progress"><span id="progress-fill" style="width:${percent}%"></span></div><p class="run-help" id="run-help">${esc(runHelp())}</p><div id="smooth-analysis-tasks" class="daodan-pipeline"></div><div id="run-error" class="alert ${pass().state === 'failed' ? 'error' : ''}" style="margin-top:16px" role="status" ${alert ? '' : 'hidden'}>${alert}</div></div><div class="run-footer"><span class="muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span></div></section>
   <section class="panel building-panel" aria-labelledby="building-title"><div class="panel-head"><div><h2 id="building-title">Costruzione del grafo</h2><p class="muted small">Gruppi di file e relazioni dal grafo del run.</p></div><span class="badge" id="build-level">${levelLabel()}</span></div><div class="build-viewport" id="build-viewport">${buildPreview()}</div><div class="build-foot"><span id="build-counts">${buildCounts()}</span><span id="build-status">${buildStatus()}</span></div></section></div>
   <section class="panel run-activity" aria-labelledby="activity-title"><div class="panel-head"><h2 id="activity-title">Eventi e feedback</h2><span class="badge">${logItems().length} eventi</span></div><div class="logs" id="logs" aria-live="polite" aria-relevant="additions">${renderLogs()}</div></section>`;
 }
@@ -473,7 +482,7 @@ function updateAnalysisRun() {
   badge.className = 'badge ' + (pass().state === 'failed' ? 'bad' : 'cyan');
   badge.innerHTML = '<span class="dot"></span>' + statusLabel();
   document.getElementById('run-help').textContent = runHelp();
-  document.getElementById('smooth-analysis-tasks').innerHTML = taskList();
+  mountPipeline();
   const error = document.getElementById('run-error');
   error.hidden = !alert;
   error.className = 'alert ' + (pass().state === 'failed' ? 'error' : '');
@@ -628,7 +637,9 @@ function render() {
   const scroll = document.getElementById('graph-viewport');
   const graphScroll = scroll ? { left: scroll.scrollLeft, top: scroll.scrollTop } : null;
   if (state.screen === 'engine' && document.getElementById('question')) question = document.getElementById('question').value;
+  window.DaodanSmoothUI?.unmount();  // its host goes with the markup it is in
   document.getElementById('main').innerHTML = state.screen === 'graph' ? graph() : state.screen === 'engine' ? engineScreen() : analysisWorkspace();
+  mountPipeline();
   document.querySelectorAll('[data-screen]').forEach(b => { if (b.classList.contains('nav-item') && b.dataset.screen === state.screen) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   const c = ctx(), preparing = server?.job.state === 'preparing';
   document.getElementById('crumb-screen').textContent = { analysis: 'Analisi', graph: 'Grafo', engine: 'Motore e domande' }[state.screen];
@@ -678,8 +689,7 @@ document.addEventListener('click', async event => {
   if (b.dataset.analysisStage) {
     state.screen = 'analysis';
     state.analysisStage = b.dataset.analysisStage;
-    if (b.dataset.analysisStage !== 'repository') refresh();
-    if (['premap', 'synthesis'].includes(state.analysisStage)) loadPremap();
+    loadViews();
     render();
     return;
   }
@@ -702,6 +712,7 @@ document.addEventListener('click', async event => {
   switch (b.dataset.action) {
     case 'use-repository': await selectRepository(); break;
     case 'retry-premap': premapRun = ''; loadPremap(); break;
+    case 'retry-pass': try { applyState(await post('/api/app/retry', {})); } catch (error) { toast(error.message); } break;
     case 'close-modal': closeModal(); break;
     case 'snapshot': snapshotModal(); break;
     case 'open-explorer': window.open(explorerUrl(), '_blank', 'noopener'); break;
@@ -762,5 +773,5 @@ document.addEventListener('toggle', event => {
 document.addEventListener('keydown', event => { const dialog = document.querySelector('.modal'); if (!dialog) return; if (event.key === 'Escape') { event.preventDefault(); closeModal(); return; } if (event.key === 'Tab') { const focusable = [...dialog.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled),a[href],[tabindex="0"]')]; const first = focusable[0], last = focusable.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); } } });
 
 render();
-refresh();
+observe();
 if (!storageAvailable) toast('Archiviazione del browser non disponibile: le scelte durano questa apertura.');

@@ -69,6 +69,11 @@ class EnvelopeTests(unittest.TestCase):
         self.assertEqual(envelope["schema"], "daodan/visual@1")
         refs = {entity["ref"]: entity for entity in envelope["entities"]}
         self.assertIn("imports:file:src/app/a.py->file:src/app/b.py", {relation["ref"] for relation in envelope["relations"]})
+        # a call the snapshot resolved to a callable of another file is a relation between the two files
+        called = next(relation for relation in envelope["relations"]
+                      if relation["ref"] == "calls:file:src/app/a.py->file:src/app/b.py")
+        self.assertEqual((called["source"], called["target"], called["counts"], called["evidence"]),
+                         ("file:src/app/a.py", "file:src/app/b.py", {"calls": 1}, [{"path": "src/app/a.py", "line": 5}]))
         logical = [item for item in envelope["memberships"] if item["member"] == "file:src/app/b.py" and item["view"] == "logical"]
         self.assertEqual(sorted(item["group"] for item in logical), ["component:helpers", "component:runner"])
         physical_groups = {item["group"] for item in envelope["memberships"] if item["view"] == "physical"}
