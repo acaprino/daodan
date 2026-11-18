@@ -10,12 +10,15 @@ from __future__ import annotations
 import http.client
 import json
 import os
+import shutil
 import subprocess
 import sys
 import threading
 import time
+from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import quote
 
 import pytest
 
@@ -308,15 +311,15 @@ def test_the_graph_groups_files_by_their_smallest_module_or_else_by_their_direct
                 "memberships": [{"member": "file:app/main.py", "group": "build:app", "view": "physical"},
                                 {"member": "file:app/lib/util.py", "group": "build:app", "view": "physical"},
                                 {"member": "file:app/lib/util.py", "group": "build:lib", "view": "physical"}],
-                "gaps": [], "meta": {}}
+                "gaps": [], "meta": {}, "technologies": []}
     found = app_view.graph(envelope)
-    assert (found["level"], found["files"], found["symbols"]) == ("modules", 3, 1)
+    assert (found["grouping"], found["files"], found["symbols"]) == ("modules", 3, 1)
     assert {node["id"]: node["files"] for node in found["nodes"]} == {"build:app": ["app/main.py"],
                                                                       "build:lib": ["app/lib/util.py"]}
     assert [(edge["id"], edge["counts"]) for edge in found["edges"]] == [("build:app->build:lib", {"imports": 1, "calls": 3})]
     assert found["unassigned"] == {"count": 1, "areas": [("docs", 1)]}
     alone = app_view.graph({**envelope, "entities": [item for item in envelope["entities"] if item["ref"] != "build:lib"]})
-    assert alone["level"] == "directories" and alone["unassigned"]["count"] == 0
+    assert alone["grouping"] == "directories" and alone["unassigned"]["count"] == 0
     assert {node["id"]: node["files"] for node in alone["nodes"]} == {
         "directory:app": ["app/main.py"], "directory:app/lib": ["app/lib/util.py"], "directory:docs": ["docs/a.md"]}
     assert [(edge["id"], edge["counts"]) for edge in alone["edges"]] == [("directory:app->directory:app/lib", {"imports": 1})]
@@ -326,7 +329,354 @@ def test_the_graph_groups_files_by_their_smallest_module_or_else_by_their_direct
                            "memberships": [*envelope["memberships"], *(
                                {"member": f"file:{path}", "group": "virtual:tree", "view": "physical"}
                                for path in ("app/main.py", "app/lib/util.py", "docs/a.md"))]})
-    assert (tree["level"], tree["nodes"], tree["edges"]) == ("directories", alone["nodes"], alone["edges"])
+    assert (tree["grouping"], tree["nodes"], tree["edges"]) == ("directories", alone["nodes"], alone["edges"])
+
+
+@pytest.fixture(scope="module")
+def levels(tmp_path_factory):
+    """A run with three build units, a service the stack recognises, a framework two of them declare, a framework
+    only mentioned and a library the registry does not know, a deduced link between two units and a module with a
+    directory whose files call each other, one holding a class with two methods."""
+    import mcp_service
+    pets = HERE.parent / "benchmarks/connection-points/fixtures/pets"
+    project = tmp_path_factory.mktemp("levels") / "project"
+    shutil.copytree(pets / "app", project)
+    files = {"web/package.json": json.dumps({"name": "web", "version": "1.0.0", "dependencies": {
+                 "stripe": "^14.0.0", "express": "^4.19.0", "@acme/widgets": "^1.0.0"}}, indent=2),  # express: line 6
+             "web/lib/pay.js": 'const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);\nmodule.exports = stripe;\n',
+             "web/lib/trace.js": "module.exports = process.env.OTEL_SERVICE_NAME;\n",
+             "admin/package.json": json.dumps({"name": "admin", "version": "1.0.0", "dependencies": {
+                 "express": "^4.19.0"}}, indent=2),  # express: line 5
+             "admin/index.js": "module.exports = 1;\n",
+             "admin/next.config.js": "module.exports = {};\n",  # Next.js by its file alone: no `next` package
+             "server/store/outbox.py": "from .db import save\n\n\nclass Outbox:\n    def push(self, item):\n"
+                                       "        return save(item)\n\n    def size(self):\n        return 0\n\n\n"
+                                       "def drain():\n    return []\n",
+             "server/pyproject.toml": '[project]\nname = "server"\nversion = "0.1.0"\n',
+             "server/__init__.py": "",
+             "server/jobs.py": "from .store.db import load\n\n\ndef nightly():\n    return load()\n",
+             "server/store/__init__.py": "",
+             "server/store/db.py": "def save(item):\n    return [item]\n\n\ndef load():\n    return save(1)\n",
+             "server/store/cache.py": "from .db import save\n\n\ndef remember(item):\n    return save(item)\n"}
+    for rel, text in files.items():
+        (project / rel).parent.mkdir(parents=True, exist_ok=True)
+        (project / rel).write_text(text, encoding="utf-8")
+    git(project, "init", "-q")
+    git(project, "add", "-A")
+    git(project, "commit", "-q", "-m", "levels")
+    service = mcp_service.MapService(project)
+    service.create_run(".", "levels", engine=False)
+    service.flows("levels", rules=json.loads((pets / "rules.json").read_text(encoding="utf-8"))["rules"])
+    return service
+
+
+def leveled(service, folder: Path):
+    """An app on the run of `levels`, with nothing kept yet."""
+    app = launcher.App(folder / "work", environment={})
+    app.service, app.context = service, {"run_id": "levels", "path": str(service.project_root)}
+    return app
+
+
+def group_of(found: dict, path: str) -> str:
+    return next(node["id"] for node in found["nodes"] if path in node["files"])
+
+
+def test_the_first_level_is_the_graph_in_groups_and_reads_no_outline(levels, tmp_path, monkeypatch):
+    run = levels.root / "runs" / "levels"
+    whole = app_view.graph(visual.build_envelope(run))
+
+    def refused(*args, **kwargs):
+        raise AssertionError("the first level read the symbols of a file")
+    monkeypatch.setattr(visual.source_reader, "outline_manifest", refused)
+    monkeypatch.setattr(visual.semantic_store, "query_meta_code", refused)
+    top = leveled(levels, tmp_path).graph({})
+    shown = ("grouping", "edges", "files", "unassigned")
+    assert {key: top[key] for key in shown} == {key: whole[key] for key in shown}
+    # no node is in an open group; an external service is a node of the level infrastruttura, a group of codice
+    assert [{**node, "group": None, "level": "infrastruttura" if node["location"] == "external" else "codice"}
+            for node in whole["nodes"]] == top["nodes"]
+    assert (top["levels"], top["grouping"], top["open"]) == (["codice", "infrastruttura"], "modules", [])
+    web, server = group_of(top, "web/api.ts"), group_of(top, "server/app.py")
+    edges = {(edge["source"], edge["target"], edge["status"]): edge for edge in top["edges"]}
+    assert edges[(web, server, "uncertain")]["counts"] == {"calls": 1}  # the deduced link, uncertain apart
+    assert "uses" in edges[(web, "external:stripe", "confirmed")]["counts"]
+
+
+def opened(app, *groups: str) -> dict:
+    return app.graph({"open": json.dumps(list(groups))})
+
+
+def arrows(found: dict) -> dict:
+    assert len({node["id"] for node in found["nodes"]}) == len(found["nodes"])  # a node reached twice is one node
+    return {(edge["source"], edge["target"], edge["status"]): edge for edge in found["edges"]}
+
+
+def test_a_group_opens_in_place_and_its_summary_arrows_become_the_arrows_of_what_it_holds(levels, tmp_path):
+    app = leveled(levels, tmp_path)
+    top = app.graph({})
+    web, server = group_of(top, "web/api.ts"), group_of(top, "server/app.py")
+    store = f"{server}#server/store"
+    # A module open: its files and directory carry it as their group, every other first-level node is still there.
+    one = opened(app, server)
+    held = {node["id"]: node for node in one["nodes"] if node["group"] == server}
+    assert [(group["id"], group["parent"]) for group in one["open"]] == [(server, None)]
+    assert set(held) == {"file:server/pyproject.toml", "file:server/__init__.py", "file:server/app.py",
+                         "file:server/jobs.py", store}
+    assert held[store]["files"] == ["server/store/__init__.py", "server/store/cache.py", "server/store/db.py",
+                                    "server/store/outbox.py"]
+    assert {node["id"] for node in one["nodes"] if node["group"] is None} == {node["id"] for node in top["nodes"]} - {server}
+    # the summary arrow from the other module becomes the arrow to the file that holds both its ends' sites,
+    # with the same counts, status and evidence: the uncertain one stays apart and uncertain
+    before, after = arrows(top), arrows(one)
+    for status in ("confirmed", "uncertain"):
+        assert {key: after[(web, "file:server/app.py", status)][key] for key in ("counts", "status", "evidence")} == \
+            {key: before[(web, server, status)][key] for key in ("counts", "status", "evidence")}
+    assert after[("file:server/jobs.py", store, "confirmed")]["counts"] == {"imports": 1, "calls": 1}
+    # Two groups open: the arrows run between what they hold; a service used by two of them is one node.
+    two = arrows(opened(app, web, server))
+    assert two[("file:web/api.ts", "file:server/app.py", "confirmed")]["counts"] == {"calls": 2}
+    assert two[("file:web/api.ts", "file:server/app.py", "uncertain")]["counts"] == {"calls": 1}
+    assert two[("file:web/package.json", "external:stripe", "confirmed")]["counts"] == {"uses": 1}
+    assert two[(f"{web}#web/lib", "external:stripe", "uncertain")]["counts"] == {"uses": 1}
+    # An inner directory open inside the open module, whatever the order asked.
+    inner = opened(app, store, server)
+    assert [(group["id"], group["parent"]) for group in inner["open"]] == [(server, None), (store, server)]
+    assert {node["id"] for node in inner["nodes"] if node["group"] == store} == {
+        "file:server/store/__init__.py", "file:server/store/cache.py", "file:server/store/db.py",
+        "file:server/store/outbox.py"}
+    deep = arrows(inner)
+    assert deep[("file:server/jobs.py", "file:server/store/db.py", "confirmed")]["counts"] == {"imports": 1, "calls": 1}
+    assert deep[("file:server/store/cache.py", "file:server/store/db.py", "confirmed")]["counts"] == {"imports": 1, "calls": 1}
+    # A file open inside the open directory inside the open module: its symbols, the calls among them, and the calls of
+    # closed files lifted to what shows them now; its import has no symbol at its end and stays on the open file.
+    db, cache = "file:server/store/db.py", "file:server/store/cache.py"
+    save, load = "symbol:server/store/db.py::save", "symbol:server/store/db.py::load"
+    three = opened(app, server, store, db)
+    assert [(group["id"], group["parent"]) for group in three["open"]] == [(server, None), (store, server), (db, store)]
+    assert {node["id"] for node in three["nodes"] if node["group"] == db} == {save, load}
+    split = arrows(three)
+    assert (split[(load, save, "confirmed")]["counts"], split[(load, save, "confirmed")]["evidence"]) == (
+        {"calls": 1}, [{"kind": "calls", "path": "server/store/db.py", "line": 6}])
+    assert split[(cache, save, "confirmed")]["evidence"] == [{"kind": "calls", "path": "server/store/cache.py", "line": 5}]
+    assert split[("file:server/jobs.py", load, "confirmed")]["counts"] == {"calls": 1}
+    assert split[(cache, db, "confirmed")]["counts"] == {"imports": 1}
+    # a call out of an open file to a closed one goes to the closed file
+    assert arrows(opened(app, server, store, cache))[("symbol:server/store/cache.py::remember", db, "confirmed")][
+        "counts"] == {"calls": 1}
+    # closing the file gives the summary arrow back, with the same evidence
+    assert arrows(opened(app, server, store))[(cache, db, "confirmed")] == deep[(cache, db, "confirmed")]
+    assert deep[(cache, db, "confirmed")]["counts"] == {"imports": 1, "calls": 1}
+    # The gaps survive opening, and closing gives the first level back.
+    assert inner["gaps"] == top["gaps"] and top["gaps"]
+    assert opened(app) == top
+
+
+def test_a_framework_a_module_declares_is_in_its_stack_open_or_closed_and_never_a_node_and_a_tool_or_a_mention_is_not(
+        levels, tmp_path):
+    import technologies
+    from snapshot_store import resolve_run_snapshot
+    run = levels.root / "runs" / "levels"
+    stack = technologies.ensure(resolve_run_snapshot(run, json.loads((run / "state.json").read_text(encoding="utf-8"))))
+    assert "opentelemetry" in {item["id"] for item in stack["mentioned"]}  # a framework only mentioned
+    assert {"nodejs"} == {item["id"] for item in stack["technologies"] if item["category"] == "tool"}
+    # The first level: each module carries the frameworks it declares, with the declaring file and line, and the count
+    # of its other declared libraries (@acme/widgets: the registry does not know it; stripe is a node of its own).
+    app = leveled(levels, tmp_path)
+    top = app.graph({})
+    web, admin, server = (group_of(top, path) for path in ("web/api.ts", "admin/index.js", "server/app.py"))
+    express = {"id": "express", "name": "Express", "kind": "project", "mark": "express"}
+    shown = {node["id"]: node for node in top["nodes"]}
+    assert (shown[web]["projects"], shown[web]["other_dependencies"]) == (
+        [{**express, "evidence": [{"path": "web/package.json", "line": 6}]}], 1)
+    # The stack is one: a framework the step recognises by a file's name is in it as one a package declares, with
+    # that file as its evidence (the page's «Tecnologie e framework» lists it: the card must not say less).
+    assert "nextjs" in {item["id"] for item in stack["technologies"] if item["category"] == "framework"}
+    assert shown[admin]["projects"][0] == {**express, "evidence": [{"path": "admin/package.json", "line": 5}]}
+    assert [(item["id"], item["name"], item["kind"], [site["path"] for site in item["evidence"]])
+            for item in shown[admin]["projects"][1:]] == [("nextjs", "Next.js", "project", ["admin/next.config.js"])]
+    assert (shown[server]["projects"], shown[server]["other_dependencies"]) == ([], 0)
+    assert {project["id"] for node in top["nodes"] for project in node.get("projects", ())} == {"express", "nextjs"}
+    # Open, the frame of the module keeps its stack; at no detail is a framework, a tool or a mention a node or an end.
+    one, two = opened(app, web), opened(app, web, admin, f"{web}#web/lib")
+    assert next(item for item in one["open"] if item["id"] == web)["projects"] == shown[web]["projects"]
+    assert next(item for item in two["open"] if item["id"] == admin)["projects"] == shown[admin]["projects"]
+    for found in (top, one, two):
+        ends = {node["id"] for node in found["nodes"]} | {
+            end for edge in found["edges"] for end in (edge["source"], edge["target"])}
+        assert not ends & {"external:express", "external:nodejs", "external:opentelemetry"}
+    assert opened(app) == top
+    # codice alone keeps the stack, the module's own, and drops the services
+    code = {node["id"]: node for node in app.graph({"levels": json.dumps(["codice"])})["nodes"]}
+    assert code[web]["projects"] == shown[web]["projects"] and "external:stripe" not in code
+
+
+def test_a_symbol_holding_others_opens_into_them_and_a_closed_class_keeps_its_calls_counts_and_lines(levels, tmp_path):
+    app = leveled(levels, tmp_path)
+    server = group_of(app.graph({}), "server/app.py")
+    store, outbox, db = f"{server}#server/store", "file:server/store/outbox.py", "file:server/store/db.py"
+    klass, drain = "symbol:server/store/outbox.py::Outbox", "symbol:server/store/outbox.py::drain"
+    push, size = "symbol:server/store/outbox.py::Outbox.push", "symbol:server/store/outbox.py::Outbox.size"
+    call = {"calls": 1}, [{"kind": "calls", "path": "server/store/outbox.py", "line": 6}]
+    # The file open: its outermost symbols, the class holding its methods; the method's call to the closed file is
+    # lifted to the class with its count and line.
+    file = opened(app, server, store, outbox)
+    shown = {node["id"]: node for node in file["nodes"] if node["group"] == outbox}
+    assert set(shown) == {klass, drain} and sorted(shown[klass]["members"]) == [push, size]
+    closed = arrows(file)[(klass, db, "confirmed")]
+    assert (closed["counts"], closed["evidence"]) == call
+    # The class open: its methods, the call from the method itself.
+    method = opened(app, server, store, outbox, klass)
+    assert [(item["id"], item["parent"]) for item in method["open"]][-1] == (klass, outbox)
+    assert {node["id"] for node in method["nodes"] if node["group"] == klass} == {push, size}
+    open_call = arrows(method)[(push, db, "confirmed")]
+    assert (open_call["counts"], open_call["evidence"]) == call
+    assert not any(klass == key[0] for key in arrows(method))
+    # Closing the class gives its arrow back; closing the file gives the summary between the files.
+    assert arrows(opened(app, server, store, outbox))[(klass, db, "confirmed")] == closed
+    assert arrows(opened(app, server, store))[(outbox, db, "confirmed")]["counts"] == {"imports": 1, "calls": 1}
+
+
+def test_a_file_a_symbol_a_node_the_run_does_not_show_or_a_path_is_refused_as_a_group(levels, tmp_path):
+    app = leveled(levels, tmp_path)
+    server = group_of(app.graph({}), "server/app.py")
+    for asked in (["component:nowhere"], ["file:server/missing.py"], ["../../etc/passwd"], ["file:../server/app.py"],
+                  ["file:/etc/passwd"], [f"{server}#.."], [f"{server}#server/../web"], [f"{server}#server/store/"],
+                  ["#server/store"], ["symbol:server/store/db.py::save"], ["external:stripe"],
+                  [f"{server}#server/store"], ["file:server/app.py"], ["external:express"],
+                  [server, f"{server}#server/store", "file:server/store/db.py", "symbol:server/store/db.py::save"]):
+        with pytest.raises(ValueError, match="to open: "):
+            opened(app, *asked)
+    with pytest.raises(ValueError, match='to open: "symbol:server/store/db.py::save"'):  # the id, as the page drops it
+        opened(app, server, "symbol:server/store/db.py::save")
+    for value in ("not json", "{}", "[1]", '"build:web"'):
+        with pytest.raises(ValueError, match="list of node ids"):
+            app.graph({"open": value})
+    for file in ("../server/app.py", "server/app.py", "symbol:server/store/db.py::save", server, "file:nowhere.py"):
+        with pytest.raises(ValueError):
+            app.symbols({"file": file})
+    # the graph is the system map's levels codice and infrastruttura; codice alone has no external node nor its arrows;
+    # a level the app does not build is refused, never served as the code's
+    both = app.graph({"levels": json.dumps(["infrastruttura", "codice"])})
+    assert both == app.graph({}) and both["levels"] == ["codice", "infrastruttura"]
+    code = app.graph({"levels": json.dumps(["codice"])})
+    assert code["levels"] == ["codice"] and {node["level"] for node in code["nodes"]} == {"codice"}
+    assert not any(end.startswith("external:") for edge in code["edges"] for end in (edge["source"], edge["target"]))
+    assert {node["id"] for node in code["nodes"]} == {node["id"] for node in both["nodes"]} - {"external:stripe"}
+    for asked, why in ((["funzioni"], "'funzioni' is not built in the app yet"), (["Funzionale"], "no level 'Funzionale'"),
+                       (["infrastruttura"], "only beside 'codice'"), ([], "a JSON list of levels"),
+                       ("codice", "a JSON list of levels")):
+        with pytest.raises(ValueError, match=why):
+            app.graph({"levels": json.dumps(asked) if isinstance(asked, list) else asked})
+
+
+def test_the_inspector_of_a_file_has_its_symbols_and_calls_with_lines_read_for_that_file_only(levels, tmp_path,
+                                                                                              monkeypatch):
+    app, asked = leveled(levels, tmp_path), []
+
+    def counted(run_dir, path, _original=visual.file_symbols):
+        asked.append(path)
+        return _original(run_dir, path)
+    monkeypatch.setattr(visual, "file_symbols", counted)
+    server = group_of(app.graph({}), "server/app.py")
+    store = f"{server}#server/store"
+    opened(app, server, store)
+    assert asked == []  # opening a module or a directory reads no symbol
+    found = app.symbols({"file": "file:server/store/db.py"})  # the file closed: its inspector
+    assert asked == ["server/store/db.py"]
+    save, load = "symbol:server/store/db.py::save", "symbol:server/store/db.py::load"
+    assert [(symbol["id"], symbol["lines"]) for symbol in found["symbols"]] == [(save, [1, 2]), (load, [5, 6])]
+    calls = {(call["source"], call["target"]): call for call in found["calls"]}
+    assert (calls[(load, save)]["counts"], calls[(load, save)]["evidence"]) == (
+        {"calls": 1}, [{"kind": "calls", "path": "server/store/db.py", "line": 6}])
+    assert calls[("file:server/store/cache.py", save)]["evidence"] == [
+        {"kind": "calls", "path": "server/store/cache.py", "line": 5}]
+    assert calls[("file:server/jobs.py", load)]["counts"] == {"calls": 1}
+    # opening the file reads what the inspector read, once; opening another reads that one only
+    opened(app, server, store, "file:server/store/db.py")
+    assert asked == ["server/store/db.py"]
+    opened(app, server, store, "file:server/store/cache.py")
+    assert asked == ["server/store/db.py", "server/store/cache.py"]
+
+
+def test_a_level_is_computed_once_per_state_of_the_run_and_again_when_the_run_changes(levels, tmp_path, monkeypatch):
+    import card_store
+    import semantic_store
+    from snapshot_store import open_snapshot, resolve_run_snapshot
+    import confinement
+    app, computed = leveled(levels, tmp_path), Counter()
+
+    def busy(*args, **kwargs):
+        raise confinement.ProjectBusy("project lock is held by another helper; retry after that invocation finishes")
+    with monkeypatch.context() as patch:  # a busy project answers busy (the route's 503) and keeps nothing
+        patch.setattr(visual, "build_envelope", busy)
+        with pytest.raises(confinement.ProjectBusy):
+            app.graph({})
+    for name in ("build_envelope", "file_symbols"):
+        def counted(*args, _original=getattr(visual, name), _name=name, **kwargs):
+            computed[_name] += 1
+            return _original(*args, **kwargs)
+        monkeypatch.setattr(visual, name, counted)
+    file = "file:server/store/db.py"
+    top = app.graph({})
+    server = group_of(top, "server/app.py")
+    first = [top, opened(app, server), opened(app, server, f"{server}#server/store"), app.symbols({"file": file})]
+    assert computed == {"build_envelope": 1, "file_symbols": 1}
+
+    def refused(*args, **kwargs):
+        raise AssertionError("a kept level read the run again")
+    with monkeypatch.context() as patch:
+        for owner, name in ((visual.source_reader, "graph_packet"), (visual.source_reader, "outline_manifest"),
+                            (visual, "build_envelope"), (visual, "file_symbols")):
+            patch.setattr(owner, name, refused)
+        assert [app.graph({}), opened(app, server), opened(app, f"{server}#server/store", server),
+                app.symbols({"file": file})] == first
+    # a card written on a symbol changes the run's data: what was kept is computed again, and shows it
+    run = levels.root / "runs" / "levels"
+    manifest = resolve_run_snapshot(run, json.loads((run / "state.json").read_text(encoding="utf-8")))
+    with open_snapshot(manifest) as store:
+        semantic_store.upsert_meta_cards(store, card_store.default_cards_path(manifest),
+                                         [{"file": "server/store/db.py", "symbol": "save", "purpose": "Saves an item."}])
+    after = app.symbols({"file": file})
+    assert computed == {"build_envelope": 2, "file_symbols": 2}
+    assert next(symbol for symbol in after["symbols"] if symbol["name"] == "save")["responsibility"] == "Saves an item."
+
+
+def test_the_first_level_and_an_opening_ask_the_readers_as_often_however_many_symbols_the_files_hold(tmp_path,
+                                                                                                    monkeypatch):
+    """A guard that does not depend on the machine: two runs of 240 files, one function each or eight, ask the
+    readers the same number of times for the first level and for opening a group, and never for a file's outline or
+    cards."""
+    import mcp_service
+    import semantic_store
+    import snapshot_store
+    asked = []
+    for functions in (1, 8):
+        project = tmp_path / f"functions-{functions}"
+        for number in range(240):
+            path = project / f"pkg{number % 12}" / f"m{number}.py"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("".join(f"def f{k}():\n    return {k}\n\n\n" for k in range(functions)), encoding="utf-8")
+        git(project, "init", "-q")
+        git(project, "add", "-A")
+        git(project, "commit", "-q", "-m", "many")
+        service = mcp_service.MapService(project)
+        service.create_run(".", "levels", engine=False)
+        calls = Counter()
+        with monkeypatch.context() as patch:
+            for owner, name in ((visual.source_reader, "outline_manifest"), (visual.source_reader, "graph_packet"),
+                                (semantic_store, "query_meta_code"), (snapshot_store.SnapshotStore, "get_file")):
+                def counted(*args, _original=getattr(owner, name), _name=name, **kwargs):
+                    calls[_name] += 1
+                    return _original(*args, **kwargs)
+                patch.setattr(owner, name, counted)
+            app = leveled(service, tmp_path / f"app-{functions}")
+            top = app.graph({})
+            inside = opened(app, "directory:pkg0")
+        assert top["files"] == 240
+        assert len([node for node in inside["nodes"] if node["group"] == "directory:pkg0"]) == 20
+        asked.append(calls)
+    assert asked[0] == asked[1]
+    assert (asked[0]["outline_manifest"], asked[0]["query_meta_code"], asked[0]["graph_packet"]) == (0, 0, 1)
 
 
 def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monkeypatch):
@@ -380,6 +730,11 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         assert premap["files"] == ["a.py"] and premap["languages"] == [{"name": "Python", "files": 1}]
         drawn = request(port, "/api/app/graph")[1]
         assert drawn["files"] == 1 and sum(len(node["files"]) for node in drawn["nodes"]) == 1
+        assert drawn["open"] == []
+        shown = request(port, "/api/app/graph?open=" + quote(json.dumps(["directory:."])))[1]  # opened in place
+        assert [(node["id"], node["group"]) for node in shown["nodes"]] == [("file:a.py", "directory:.")]
+        assert request(port, "/api/app/graph?open=" + quote(json.dumps(["../a.py"])))[0] == 400
+        assert [symbol["name"] for symbol in request(port, "/api/app/symbols?file=file%3Aa.py")[1]["symbols"]] == ["f"]
         status, told = request(port, "/api/app/link", {})  # the service gives the rule format; no engine is chosen
         assert status == 200 and told["links"]["state"] == "no_engine"
         described = request(port, "/api/app/engine", {"engine": "openai", "model": "m", "api_key": "sk-secret"})[1]
@@ -558,6 +913,9 @@ def test_the_mark_of_a_registry_entry_is_served_by_its_id_and_nothing_else_is(tm
 
     monkeypatch.setattr(service_registry, "mark_file", mark_file)
     app = launcher.App(tmp_path / "work", environment={})
+    # an entry whose mark is in its owner's package: the test's own, the distributed registry ships every mark it has
+    app.registry["packaged.example"] = {"id": "packaged.example", "mark": None,
+                                        "mark_source": {"url": "https://owner.example/icons.zip"}}
     server = app.serve(token="t")
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
@@ -570,13 +928,13 @@ def test_the_mark_of_a_registry_entry_is_served_by_its_id_and_nothing_else_is(tm
         assert raw(port, "/api/app/mark?token=t")[0] == 400
         assert raw(port, "/api/app/mark?id=adobe.analytics&token=t")[0] == 404  # an entry without a mark: no image
         started = time.monotonic()
-        assert raw(port, "/api/app/mark?id=aws.amplifyhosting&token=t")[0] == 404
-        assert time.monotonic() - started < 5 and asked == ["aws.amplifyhosting"]
+        assert raw(port, "/api/app/mark?id=packaged.example&token=t")[0] == 404
+        assert time.monotonic() - started < 5 and asked == ["packaged.example"]
         held.set()
         deadline = time.monotonic() + 30
-        while (found := raw(port, "/api/app/mark?id=aws.amplifyhosting&token=t"))[0] != 200 and time.monotonic() < deadline:
+        while (found := raw(port, "/api/app/mark?id=packaged.example&token=t"))[0] != 200 and time.monotonic() < deadline:
             time.sleep(0.05)
-        assert found == (200, "image/svg+xml", stripe) and asked == ["aws.amplifyhosting"]  # fetched once
+        assert found == (200, "image/svg+xml", stripe) and asked == ["packaged.example"]  # fetched once
     finally:
         held.set()
         app.close()
