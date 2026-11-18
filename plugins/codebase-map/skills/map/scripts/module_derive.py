@@ -213,7 +213,8 @@ def _merge_units(units: list[dict]) -> dict[tuple[str, str, str | None], dict]:
                 "directory": unit["directory"], "name": unit["name"], "aliases": list(unit["aliases"]),
                 "kinds": [unit["kind"]], "ecosystems": [unit["ecosystem"]], "description": unit["description"],
                 "manifests": [unit["path"]], "evidence": [{"path": unit["path"], "line": unit["line"]}],
-                "dependencies": set(unit["dependencies"]), "path_dependencies": list(unit["path_dependencies"]),
+                "dependencies": set(unit["dependencies"]), "versions": {unit["path"]: dict(unit["versions"])},
+                "path_dependencies": list(unit["path_dependencies"]),
                 "patterns": [(pattern, unit["path"]) for pattern in unit["members"]], "registered_by": []}
             continue
         if merged["name"] is None:
@@ -227,6 +228,7 @@ def _merge_units(units: list[dict]) -> dict[tuple[str, str, str | None], dict]:
         merged["manifests"].append(unit["path"])
         merged["evidence"].append({"path": unit["path"], "line": unit["line"]})
         merged["dependencies"].update(unit["dependencies"])
+        merged["versions"].setdefault(unit["path"], {}).update(unit["versions"])
         merged["path_dependencies"].extend(unit["path_dependencies"])
         merged["patterns"].extend((pattern, unit["path"]) for pattern in unit["members"])
     return by_directory
@@ -253,7 +255,8 @@ def _register_members(inventory: _Inventory, by_directory: dict, gaps: list[dict
                     by_directory[member_key] = {
                         "directory": member, "name": None, "aliases": [], "kinds": ["workspace-member"],
                         "ecosystems": [merged["ecosystems"][0]], "description": None, "manifests": [],
-                        "evidence": [], "dependencies": set(), "path_dependencies": [], "patterns": [], "registered_by": []}
+                        "evidence": [], "dependencies": set(), "versions": {}, "path_dependencies": [], "patterns": [],
+                        "registered_by": []}
                 site = {"path": manifest, "line": _line_of(inventory.text(manifest), pattern)}
                 by_directory[member_key]["registered_by"].append((key, site))
                 by_directory[member_key]["evidence"].append(site)
@@ -278,6 +281,7 @@ def _build_module(inventory: _Inventory, merged: dict, by_directory: dict) -> di
         "excluded": excluded, "manifests": sorted(merged["manifests"]),
         "registered_by": sorted({key[0] for key, _ in merged["registered_by"]}), "registrations": merged["registered_by"],
         "evidence": merged["evidence"], "dependencies": sorted(merged["dependencies"]),
+        "versions": merged["versions"],  # manifest -> dependency -> its version requirement: the pre-map's, not modules.json's
         "path_dependencies": merged["path_dependencies"], "conflicts": [], "gaps": [], "status": "confirmed",
     }
 
@@ -659,6 +663,7 @@ def derive(store, *, ledger: list[dict] | None = None) -> dict:
     modules.sort(key=lambda m: m["id"])
     for module in modules:
         module.pop("path_dependencies", None)
+        module.pop("versions", None)
     return _graph(store, inventory, modules, edge_list, gaps)
 
 

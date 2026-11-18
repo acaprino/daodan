@@ -75,6 +75,52 @@ def _names(values) -> list[str]:
     return []
 
 
+# PEP 508: a name, its extras, the version specifier (bare or in parentheses), then the markers after `;`.
+REQUIREMENT = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:\[[^\]]*\])?\s*\(?\s*([<>=!~][^;()@]*?)\s*\)?\s*(?:;|$)")
+GEM_REQUIREMENTS = r"""((?:\s*,\s*['"][^'"]*['"])*)"""  # the string arguments after a gem's name
+
+
+def requirement_version(text: str) -> str | None:
+    """The version specifier of a PEP 508 requirement as written, None when it has none (a bare name, a URL)."""
+    match = REQUIREMENT.match(text)
+    return match.group(2) if match else None
+
+
+def _versions(values) -> dict[str, str]:
+    """Each dependency's version requirement as the manifest writes it: a list's PEP 508 specifier; a table's string
+    value or its `version` (Poetry, Cargo, pubspec, Composer). One with none (a path, a URL, a workspace) is absent."""
+    found: dict[str, str] = {}
+    if isinstance(values, dict):
+        for name, spec in values.items():
+            spec = spec.get("version") if isinstance(spec, dict) else spec
+            if isinstance(name, str) and isinstance(spec, str) and spec.strip():
+                found[name] = spec.strip()
+    elif isinstance(values, list):
+        for item in values:
+            match = REQUIREMENT.match(item) if isinstance(item, str) else None
+            if match:
+                found.setdefault(match.group(1), match.group(2))
+    return found
+
+
+def pom_version(value: str | None, properties: dict) -> str | None:
+    """A pom's `<version>`: the literal, or the value of the property of the same pom it names (`${jackson.version}`);
+    None for one the pom does not define (a parent's, the build's)."""
+    named = re.fullmatch(r"\$\{([^}]+)\}", value or "")
+    value = properties.get(named.group(1)) if named else value
+    return value if value and "$" not in value else None
+
+
+def msbuild_version(node) -> str | None:
+    """A `PackageReference`'s or `PackageVersion`'s `VersionOverride` or `Version`, attribute or child element; None
+    for none or one naming an MSBuild property, which only MSBuild's evaluation states."""
+    for field in ("VersionOverride", "Version"):
+        value = node.get(field) or next((c.text for c in node if c.tag.split("}")[-1] == field and c.text), None)
+        if value and value.strip():
+            return value.strip() if "$(" not in value else None
+    return None
+
+
 def _table(value) -> dict:
     return value if isinstance(value, dict) else {}
 
@@ -91,9 +137,10 @@ def _dependency_name(name: str, family: str) -> str:
 
 
 def _unit(rel: str, kind: str, name: str | None = None, **fields) -> dict:
-    """One build unit as a manifest declares it; `directory` is the unit root."""
+    """One build unit as a manifest declares it; `directory` is the unit root; `versions`, a dependency's version
+    requirement as the manifest writes it, for those that have one."""
     record = {"path": rel, "directory": _dirname(rel), "kind": kind, "name": name, "aliases": [],
-              "description": None, "dependencies": [], "path_dependencies": [], "members": [],
+              "description": None, "dependencies": [], "versions": {}, "path_dependencies": [], "members": [],
               "line": None}
     record.update(fields)
     return record
@@ -114,6 +161,9 @@ def _package_json(inv, rel, text):
     deps = set()
     for key in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
         deps.update(_names(data.get(key)))
+        for dep, spec in _versions(_table(data.get(key))).items():  # a range or a tag; `proto:`, a URL, a path is none
+            if not re.search(r"[:/]", spec):
+                unit["versions"].setdefault(dep, spec)
         for dep, spec in _table(data.get(key)).items():
             if isinstance(spec, str) and spec.startswith(("file:", "link:")):
                 unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec.split(":", 1)[1])})
@@ -149,6 +199,10 @@ def _deno(inv, rel, text):
     if import_map in inv.headers:
         imports.update(_table(_table(json.loads(inv.text(import_map))).get("imports")))
     unit["dependencies"] = sorted(k for k, v in imports.items() if isinstance(v, str) and not v.startswith((".", "/")))
+    for alias, specifier in imports.items():  # `npm:` and `jsr:` specifiers: `scheme:[@scope/]name[@version][/path]`
+        match = re.match(r"^(?:npm|jsr):(?:@[^/@]+/)?[^/@]+@([^/]+)", specifier) if isinstance(specifier, str) else None
+        if match:
+            unit["versions"][alias] = match.group(1)
     workspace = data.get("workspace")
     if isinstance(workspace, dict):
         workspace = workspace.get("members")
@@ -184,18 +238,18 @@ def _pyproject(inv, rel, text):
     _described(unit, project)
     if unit["description"] is None:
         _described(unit, poetry)
-    deps = set(_names(project.get("dependencies")))
-    build = data.get("build-system")
-    if isinstance(build, dict):
-        deps.update(_names(build.get("requires")))
-    for group in (project.get("optional-dependencies") or {}).values() if isinstance(project.get("optional-dependencies"), dict) else []:
-        deps.update(_names(group))
-    deps.update(d for d in _names(poetry.get("dependencies")) if d != "python")
-    for group in [*_table(data.get("dependency-groups")).values(),
+    deps = set()
+    for group in [project.get("dependencies"), _table(data.get("build-system")).get("requires"),
+                  *_table(project.get("optional-dependencies")).values(), poetry.get("dependencies"),
+                  *_table(data.get("dependency-groups")).values(),
                   *_table(_table(tool.get("pdm")).get("dev-dependencies")).values(),
                   *(_table(g).get("dependencies") for g in _table(poetry.get("group")).values()),
                   *(_table(e).get("dependencies") for e in _table(_table(tool.get("hatch")).get("envs")).values())]:
         deps.update(_names(group))
+        for dep, version in _versions(group).items():
+            unit["versions"].setdefault(dep, version)
+    if "python" in _table(poetry.get("dependencies")):
+        deps.discard("python")  # Poetry's interpreter, not a package
     unit["dependencies"] = sorted(deps)
     workspace = uv.get("workspace") if isinstance(uv.get("workspace"), dict) else {}
     if isinstance(workspace.get("members"), list):
@@ -218,8 +272,9 @@ def _setup_cfg(inv, rel, text):
     requirements = [parser.get("options", "install_requires", fallback="")]
     if parser.has_section("options.extras_require"):
         requirements += [value for _, value in parser.items("options.extras_require")]
-    return [_unit(rel, "python-package", name.strip() if name else None,
-                  dependencies=_names([line for value in requirements for line in value.splitlines()]))]
+    lines = [line for value in requirements for line in value.splitlines()]
+    return [_unit(rel, "python-package", name.strip() if name else None, dependencies=_names(lines),
+                  versions=_versions(lines))]
 
 
 def _setup_py(inv, rel, text):
@@ -235,10 +290,13 @@ def _cargo(inv, rel, text):
     deps = set()
     for holder in [data, *_table(data.get("target")).values()]:
         for key in ("dependencies", "dev-dependencies", "build-dependencies"):
-            for dep, spec in _table(_table(holder).get(key)).items():
-                spec = _table(spec)
+            for dep, raw in _table(_table(holder).get(key)).items():
+                spec = _table(raw)
                 dep = spec["package"] if isinstance(spec.get("package"), str) else dep
                 deps.add(dep)
+                version = raw if isinstance(raw, str) else spec.get("version")  # `{ workspace = true }` has none
+                if isinstance(version, str) and version:
+                    unit["versions"].setdefault(dep, version)
                 if isinstance(spec.get("path"), str):
                     unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
                 elif isinstance(spec.get("git"), str):
@@ -268,9 +326,10 @@ def _go_mod(inv, rel, text):
             requiring = False
             continue
         declaration = require.group(1) if require else line if requiring else ""
-        match = re.fullmatch(r'("[^"]+"|[^\s"]+)\s+v[^\s]+', declaration)
+        match = re.fullmatch(r'("[^"]+"|[^\s"]+)\s+(v[^\s]+)', declaration)
         if match and comment.strip() != "indirect":
             deps.add(match.group(1).strip('"'))
+            unit["versions"][match.group(1).strip('"')] = match.group(2)
     unit["dependencies"] = sorted(deps)
     for dep, target in re.findall(r"^\s*(?:replace\s+)?(\S+)(?:\s+\S+)?\s+=>\s+(\.{1,2}/\S+|/\S+)", text, re.M):
         unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], target)})
@@ -300,6 +359,7 @@ def _pom(inv, rel, text):
     if group and artifact:
         unit["aliases"] = [f"{group}:{artifact}"]
     deps = set()
+    properties = {node.tag.split("}")[-1]: (node.text or "").strip() for node in root.findall(f"{ns}properties/*")}
     plugins = root.findall(f"{ns}build/{ns}plugins/{ns}plugin")
     used = [node for plugin in plugins for tag in ("dependency", "path") for node in plugin.iter(ns + tag)]
     for dep in [*root.findall(f"{ns}dependencies/{ns}dependency"), *plugins, *used]:
@@ -309,6 +369,9 @@ def _pom(inv, rel, text):
             if dep_group in ("${project.groupId}", "${pom.groupId}"):
                 dep_group = group
             deps.add(f"{dep_group}:{name}" if dep_group else name)
+            version = pom_version(child(dep, "version"), properties)
+            if version:
+                unit["versions"].setdefault(f"{dep_group}:{name}" if dep_group else name, version)
     unit["dependencies"] = sorted(deps)
     members = [m.text.strip() for m in root.findall(f"{ns}modules/{ns}module") if m.text and m.text.strip()]
     if members:
@@ -383,6 +446,9 @@ def _msbuild_project(inv, rel, text):
                                               "path": _dirname(_join(unit["directory"], target))})
         elif node.tag.endswith("PackageReference") and node.get("Include"):
             unit["dependencies"].append(node.get("Include"))
+            version = msbuild_version(node)
+            if version:
+                unit["versions"][node.get("Include")] = version
     unit["dependencies"].sort()
     return [unit]
 
@@ -395,6 +461,7 @@ def _composer(inv, rel, text):
     _described(unit, data)
     unit["dependencies"] = sorted(n for n in {*_names(data.get("require")), *_names(data.get("require-dev"))}
                                   if "/" in n)  # `php`, `ext-json`: the platform, not a package
+    unit["versions"] = {**_versions(_table(data.get("require-dev"))), **_versions(_table(data.get("require")))}
     for repo in data.get("repositories", []) if isinstance(data.get("repositories"), list) else []:
         if isinstance(repo, dict) and repo.get("type") == "path" and isinstance(repo.get("url"), str):
             unit["members"].append(repo["url"])
@@ -404,15 +471,24 @@ def _composer(inv, rel, text):
 def _gemspec(inv, rel, text):
     match = re.search(r"""\.name\s*=\s*['"]([^'"]+)['"]""", text)
     unit = _unit(rel, "ruby-gem", match.group(1) if match else PurePosixPath(rel).stem)
-    unit["dependencies"] = sorted(set(re.findall(r"""add(?:_runtime|_development)?_dependency\s*\(?\s*['"]([^'"]+)['"]""", text)))
+    _gems(unit, re.findall(r"""add(?:_runtime|_development)?_dependency\s*\(?\s*['"]([^'"]+)['"]""" + GEM_REQUIREMENTS,
+                           text))
     return [unit]
+
+
+def _gems(unit: dict, found: list[tuple[str, str]]) -> None:
+    """RubyGems' `name, *requirements`: the requirements, the strings after the name, joined as RubyGems prints them."""
+    unit["dependencies"] = sorted({name for name, _ in found})
+    for name, requirements in found:
+        if requirements:
+            unit["versions"].setdefault(name, ", ".join(re.findall(r"""['"]([^'"]*)['"]""", requirements)))
 
 
 def _gemfile(inv, rel, text):
     unit = _unit(rel, "ruby-bundle", None)
     for gem, path in re.findall(r"""gem\s+['"]([^'"]+)['"][^\n]*?path:\s*['"]([^'"]+)['"]""", text):
         unit["path_dependencies"].append({"name": gem, "path": _join(unit["directory"], path)})
-    unit["dependencies"] = sorted(set(re.findall(r"""^\s*gem\s+['"]([^'"]+)['"]""", text, re.M)))
+    _gems(unit, re.findall(r"""^\s*gem\s+['"]([^'"]+)['"]""" + GEM_REQUIREMENTS, text, re.M))
     return [unit]
 
 
@@ -431,6 +507,7 @@ def _pubspec(inv, rel, text):
                 if isinstance(spec, dict) and isinstance(spec.get("path"), str):
                     unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
     unit["dependencies"] = sorted(deps)
+    unit["versions"] = {**_versions(_table(data.get("dev_dependencies"))), **_versions(_table(data.get("dependencies")))}
     workspace = data.get("workspace")
     if isinstance(workspace, list):
         unit["kind"] = "dart-workspace"
@@ -450,7 +527,13 @@ def _package_swift(inv, rel, text):
     unit = _unit(rel, "swift-package", name.group(1) if name else None)
     for path in re.findall(r"""\.package\s*\(\s*(?:name\s*:\s*"[^"]+"\s*,\s*)?path\s*:\s*"([^"]+)\"""", text):
         unit["path_dependencies"].append({"name": PurePosixPath(path).name, "path": _join(unit["directory"], path)})
-    unit["dependencies"] = sorted(set(re.findall(r"""\.package\s*\([^)]*?url\s*:\s*"[^"]*/([^/"]+?)(?:\.git)?\"""", text)))
+    # SwiftPM's requirement is the argument after the URL (`from: "2.0.0"`, `"1.0.0"..<"2.0.0"`, `.exact("1.2.3")`);
+    # a branch or a revision names a commit, not a version.
+    found = re.findall(r"""\.package\s*\([^)]*?url\s*:\s*"[^"]*/([^/"]+?)(?:\.git)?\""""
+                       r"""(?:\s*,\s*((?:[^()]|\([^()]*\))*?)\s*\))?""", text)
+    unit["dependencies"] = sorted({name for name, _ in found})
+    unit["versions"] = {name: requirement for name, requirement in found
+                        if requirement and not re.match(r"\.?(?:branch|revision)\b", requirement)}
     return [unit]
 
 
@@ -465,7 +548,9 @@ def _mix(inv, rel, text):
         unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], path)})
     for dep in re.findall(r"\{\s*:(\w+)\s*,[^}]*?in_umbrella:\s*true", text):
         unit["path_dependencies"].append({"name": dep, "path": None})
-    unit["dependencies"] = sorted(set(re.findall(r"""\{\s*:(\w+)\s*,\s*"[~>=<\d]""", text)))
+    found = re.findall(r"""\{\s*:(\w+)\s*,\s*"([~>=<\d][^"]*)\"""", text)  # Mix's `{:name, requirement, opts}`
+    unit["dependencies"] = sorted({name for name, _ in found})
+    unit["versions"] = dict(reversed(found))
     return [unit]
 
 

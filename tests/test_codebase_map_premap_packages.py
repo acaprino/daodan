@@ -10,8 +10,203 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import premap  # noqa: E402
-from premap import dotnet, gradle, maven, module_graph, renovate  # noqa: E402
+from premap import dotnet, gradle, jvm_files, maven, module_graph, project_files, renovate, requirements  # noqa: E402
 import snapshot  # noqa: E402
+from snapshot_store import open_snapshot  # noqa: E402
+
+
+def _versions(tmp_path, files, source) -> dict:
+    """(ecosystem, name, declared file) -> the `version` one source states for that package, None for none."""
+    project = tmp_path / "proj"
+    for rel, text in files.items():
+        path = project / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    with open_snapshot(manifest) as store:
+        result = source.run(premap.Context(manifest, store)) or {}
+    return {(p["ecosystem"], p["name"], p["declared_in"].split("#", 1)[0]): p.get("version")
+            for p in (result.get("facts") or {}).get("packages") or []}
+
+
+def test_module_graph_packages_carry_the_version_each_manifest_writes(tmp_path):
+    files = {
+        "web/package.json": '{"name": "web", "dependencies": {"react": "^18.2.0", "lodash": "catalog:",'
+                            ' "left": "github:acme/left"}, "devDependencies": {"vitest": "1.6.0"}}',
+        "deno/deno.json": '{"name": "@acme/deno", "imports": {"preact": "npm:preact@^10.19.0",'
+                          ' "assert": "jsr:@std/assert@^1.0.0", "oak": "https://deno.land/x/oak@v12/mod.ts"}}',
+        "py/pyproject.toml": '[project]\nname = "py"\ndependencies = ["requests>=2.31,<3", "rich",'
+                             ' "httpx[http2] (>=0.27) ; python_version >= \'3.9\'", "wheel @ https://x.org/w.whl"]\n'
+                             '[tool.poetry.dependencies]\npython = "^3.11"\nclick = "^8.1"\n'
+                             'pydantic = { version = "^2.0", extras = ["email"] }\n',
+        "cfg/setup.cfg": "[metadata]\nname = cfg\n[options]\ninstall_requires =\n    attrs>=23\n",
+        "rs/Cargo.toml": '[package]\nname = "rs"\n[dependencies]\nserde = "1.0"\n'
+                         'tokio = { version = "1", features = ["full"] }\nshared = { workspace = true }\n',
+        "go/go.mod": "module example.com/go\n\ngo 1.22\n\nrequire (\n\tgithub.com/gin-gonic/gin v1.9.1\n)\n",
+        "php/composer.json": '{"name": "acme/php", "require": {"php": ">=8.1", "symfony/console": "^7.0"}}',
+        "dart/pubspec.yaml": "name: dart\ndependencies:\n  dio: ^5.0.0\n  http:\n    hosted: https://pub.dev\n"
+                             "    version: ^1.2.0\n  local:\n    path: ../local\n",
+        "rb/Gemfile": 'source "https://rubygems.org"\ngem "rails", "~> 7.1"\ngem "puma", ">= 6", "< 7"\ngem "pry"\n',
+        "gem/acme.gemspec": 'Gem::Specification.new do |s|\n  s.name = "acme"\n  s.add_dependency "thor", "~> 1.3"\nend\n',
+        "ex/mix.exs": 'defmodule Ex.MixProject do\n  def project, do: [app: :ex, deps: deps()]\n'
+                      '  defp deps, do: [{:phoenix, "~> 1.7.0"}, {:jason, ">= 0.0.0", only: :test}]\nend\n',
+        "swift/Package.swift": '// swift-tools-version:5.9\nimport PackageDescription\nlet package = Package(name: "sw",'
+                               ' dependencies: [.package(url: "https://github.com/apple/swift-nio.git", from: "2.62.0")])\n',
+        "jvm/pom.xml": '<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>com.acme</groupId>'
+                       "<artifactId>jvm</artifactId><properties><jackson.version>2.17.0</jackson.version></properties>"
+                       "<dependencies>"
+                       "<dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId>"
+                       "<version>${jackson.version}</version></dependency>"
+                       "<dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId>"
+                       "<version>33.0.0-jre</version></dependency>"
+                       "<dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId>"
+                       "<version>${slf4j.version}</version></dependency>"
+                       "<dependency><groupId>org.springframework</groupId><artifactId>spring-web</artifactId></dependency>"
+                       "</dependencies></project>",
+        "cs/App.csproj": '<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>'
+                         '<PackageReference Include="Serilog" Version="3.1.1" />'
+                         '<PackageReference Include="Polly"><Version>8.2.0</Version></PackageReference>'
+                         '<PackageReference Include="Dapper" Version="$(DapperVersion)" />'
+                         '<PackageReference Include="xunit" /></ItemGroup></Project>',
+    }
+    got = _versions(tmp_path, files, module_graph)
+    assert {key: version for key, version in got.items() if version} == {
+        ("npm", "react", "web/package.json"): "^18.2.0",
+        ("npm", "vitest", "web/package.json"): "1.6.0",
+        ("npm", "preact", "deno/deno.json"): "^10.19.0",
+        ("npm", "assert", "deno/deno.json"): "^1.0.0",
+        ("pypi", "requests", "py/pyproject.toml"): ">=2.31,<3",
+        ("pypi", "httpx", "py/pyproject.toml"): ">=0.27",
+        ("pypi", "click", "py/pyproject.toml"): "^8.1",
+        ("pypi", "pydantic", "py/pyproject.toml"): "^2.0",
+        ("pypi", "attrs", "cfg/setup.cfg"): ">=23",
+        ("crates", "serde", "rs/Cargo.toml"): "1.0",
+        ("crates", "tokio", "rs/Cargo.toml"): "1",
+        ("go", "github.com/gin-gonic/gin", "go/go.mod"): "v1.9.1",
+        ("composer", "symfony/console", "php/composer.json"): "^7.0",
+        ("pub", "dio", "dart/pubspec.yaml"): "^5.0.0",
+        ("pub", "http", "dart/pubspec.yaml"): "^1.2.0",
+        ("rubygems", "rails", "rb/Gemfile"): "~> 7.1",
+        ("rubygems", "puma", "rb/Gemfile"): ">= 6, < 7",
+        ("rubygems", "thor", "gem/acme.gemspec"): "~> 1.3",
+        ("hex", "phoenix", "ex/mix.exs"): "~> 1.7.0",
+        ("hex", "jason", "ex/mix.exs"): ">= 0.0.0",
+        ("swiftpm", "swift-nio", "swift/Package.swift"): 'from: "2.62.0"',
+        ("maven", "com.fasterxml.jackson.core:jackson-databind", "jvm/pom.xml"): "2.17.0",
+        ("maven", "com.google.guava:guava", "jvm/pom.xml"): "33.0.0-jre",
+        ("nuget", "Serilog", "cs/App.csproj"): "3.1.1",
+        ("nuget", "Polly", "cs/App.csproj"): "8.2.0",
+    }
+    for absent in [("npm", "lodash", "web/package.json"), ("npm", "left", "web/package.json"),
+                   ("npm", "oak", "deno/deno.json"), ("pypi", "rich", "py/pyproject.toml"),
+                   ("pypi", "wheel", "py/pyproject.toml"), ("crates", "shared", "rs/Cargo.toml"),
+                   ("rubygems", "pry", "rb/Gemfile"), ("maven", "org.slf4j:slf4j-api", "jvm/pom.xml"),
+                   ("maven", "org.springframework:spring-web", "jvm/pom.xml"), ("nuget", "Dapper", "cs/App.csproj"),
+                   ("nuget", "xunit", "cs/App.csproj")]:
+        assert absent in got and got[absent] is None, absent
+
+
+def test_requirements_files_carry_each_line_s_specifier(tmp_path):
+    files = {"requirements.txt": "fastapi>=0.115,<1\nuvicorn[standard] == 0.30.1 ; python_version >= '3.9'\n"
+                                 "httpx==0.27.0 --hash=sha256:abc\nanyio==4.4.0 \\\n    --hash=sha256:def\n"
+                                 "rich\npkg @ https://x.org/pkg.whl\n-r dev.txt\n",
+             "dev.txt": "pytest~=8.0  # tests\n"}
+    got = _versions(tmp_path, files, requirements)
+    assert got == {("pypi", "fastapi", "requirements.txt"): ">=0.115,<1",
+                   ("pypi", "uvicorn", "requirements.txt"): "== 0.30.1",
+                   ("pypi", "httpx", "requirements.txt"): "==0.27.0",
+                   ("pypi", "anyio", "requirements.txt"): "==4.4.0",
+                   ("pypi", "rich", "requirements.txt"): None,
+                   ("pypi", "pkg", "requirements.txt"): None,
+                   ("pypi", "pytest", "dev.txt"): "~=8.0"}
+
+
+def test_jvm_files_carry_pom_and_gradle_versions_and_the_catalog_s(tmp_path):
+    files = {
+        "pom.xml": '<project xmlns="http://maven.apache.org/POM/4.0.0">'
+                   "<parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId>"
+                   "<version>3.2.0</version></parent><groupId>com.acme</groupId><artifactId>api</artifactId>"
+                   "<properties><jackson.version>2.17.0</jackson.version></properties><dependencies>"
+                   "<dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId>"
+                   "<version>${jackson.version}</version></dependency>"
+                   "<dependency><groupId>org.slf4j</groupId><artifactId>slf4j-api</artifactId>"
+                   "<version>${slf4j.version}</version></dependency>"
+                   "<dependency><groupId>org.springframework</groupId><artifactId>spring-web</artifactId></dependency>"
+                   "</dependencies><build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                   "<version>3.13.0</version></plugin></plugins></build></project>\n",
+        "g/settings.gradle.kts": 'rootProject.name = "g"\n',
+        "g/gradle/libs.versions.toml": (
+            '[versions]\nktor = "3.0.0"\n[libraries]\n'
+            'ktor-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }\n'
+            'junit = { group = "org.junit.jupiter", name = "junit-jupiter", version = "5.11.0" }\n'
+            'slf4j = { module = "org.slf4j:slf4j-api" }\n'
+            'strict = { module = "a.b:c", version = { strictly = "1.0" } }\n'
+            '[plugins]\nspring = { id = "org.springframework.boot", version = "3.4.0" }\n'),
+        "g/build.gradle.kts": (
+            'plugins {\n  id("org.springframework.boot") version "3.4.0"\n  kotlin("plugin.serialization") version "2.0.0"\n'
+            '  id("io.spring.dependency-management")\n}\n'
+            'dependencies {\n  implementation("org.junit.jupiter:junit-jupiter:5.11.0")\n'
+            '  implementation("com.squareup.okhttp3:okhttp")\n  implementation("io.x:y:$yVersion")\n'
+            '  implementation(libs.ktor.core)\n}\n'),
+        "h/settings.gradle": "rootProject.name = 'h'\n",
+        "h/build.gradle": "plugins {\n  id 'org.flywaydb.flyway' version '10.0.0'\n}\n",
+    }
+    got = _versions(tmp_path, files, jvm_files)
+    toml, kts = "g/gradle/libs.versions.toml", "g/build.gradle.kts"
+    assert got == {
+        ("maven", "org.springframework.boot:spring-boot-starter-parent", "pom.xml"): "3.2.0",
+        ("maven", "com.fasterxml.jackson.core:jackson-databind", "pom.xml"): "2.17.0",
+        ("maven", "org.slf4j:slf4j-api", "pom.xml"): None,
+        ("maven", "org.springframework:spring-web", "pom.xml"): None,
+        ("maven", "org.apache.maven.plugins:maven-compiler-plugin", "pom.xml"): "3.13.0",
+        ("maven", "io.ktor:ktor-server-core", toml): "3.0.0",
+        ("maven", "org.junit.jupiter:junit-jupiter", toml): "5.11.0",
+        ("maven", "org.slf4j:slf4j-api", toml): None,
+        ("maven", "a.b:c", toml): None,
+        ("maven", "org.springframework.boot", toml): "3.4.0",
+        ("maven", "org.springframework.boot", kts): "3.4.0",
+        ("maven", "org.jetbrains.kotlin.plugin.serialization", kts): "2.0.0",
+        ("maven", "io.spring.dependency-management", kts): None,
+        ("maven", "org.junit.jupiter:junit-jupiter", kts): "5.11.0",
+        ("maven", "com.squareup.okhttp3:okhttp", kts): None,
+        ("maven", "io.x:y", kts): None,
+        ("maven", "io.ktor:ktor-server-core", kts): "3.0.0",
+        ("maven", "org.flywaydb.flyway", "h/build.gradle"): "10.0.0",
+    }
+
+
+def test_project_files_carry_the_project_s_version_or_the_central_one(tmp_path):
+    files = {
+        "Directory.Packages.props": '<Project><ItemGroup><PackageVersion Include="xunit" Version="2.9.0" />'
+                                    '<PackageVersion Include="Polly" Version="8.2.0" /></ItemGroup></Project>',
+        "src/App/App.csproj": '<Project Sdk="Microsoft.NET.Sdk.Web"><ItemGroup>'
+                              '<PackageReference Include="Serilog" Version="3.1.1" />'
+                              '<PackageReference Include="Dapper"><Version>2.1.35</Version></PackageReference>'
+                              '<PackageReference Include="xunit" />'
+                              '<PackageReference Include="Polly" VersionOverride="8.4.0" />'
+                              '<PackageReference Include="Npgsql" Version="$(NpgsqlVersion)" />'
+                              '<PackageReference Include="Humanizer" /></ItemGroup></Project>',
+        "other/Other.csproj": '<Project Sdk="Microsoft.NET.Sdk"><ItemGroup><PackageReference Include="xunit" />'
+                              "</ItemGroup></Project>",
+        "other/Directory.Packages.props": '<Project><ItemGroup><PackageVersion Include="xunit" Version="2.8.0" />'
+                                          "</ItemGroup></Project>",
+    }
+    got = _versions(tmp_path, files, project_files)
+    app = "src/App/App.csproj"
+    assert got == {
+        ("nuget", "xunit", "Directory.Packages.props"): "2.9.0",
+        ("nuget", "Polly", "Directory.Packages.props"): "8.2.0",
+        ("nuget", "Microsoft.AspNetCore.App", app): None,
+        ("nuget", "Serilog", app): "3.1.1",
+        ("nuget", "Dapper", app): "2.1.35",
+        ("nuget", "xunit", app): "2.9.0",
+        ("nuget", "Polly", app): "8.4.0",
+        ("nuget", "Npgsql", app): None,
+        ("nuget", "Humanizer", app): None,
+        ("nuget", "xunit", "other/Directory.Packages.props"): "2.8.0",
+        ("nuget", "xunit", "other/Other.csproj"): "2.8.0",  # the nearest Directory.Packages.props above the project
+    }
 
 
 def test_readers_collect_declared_packages_across_jvm_dotnet_flutter_pip_and_docker(tmp_path):
@@ -120,3 +315,39 @@ def test_model_sources_emit_packages_without_changing_recorded_commands(tmp_path
     assert ("maven", "org.postgresql:postgresql", "pom.xml") in {
         (p["ecosystem"], p["name"], p["declared_in"]) for p in mvn_read["facts"]["packages"]
     }
+
+
+def test_renovate_carries_the_value_the_file_writes_and_maven_s_effective_pom_none(tmp_path):
+    class Ctx:
+        root, stated = tmp_path, {}
+        inventory = type("Inv", (), {"files": ["pom.xml"], "directories": {"."}, "text": lambda self, _rel: ""})()
+
+    report = json.dumps({"repositories": {"local": {"packageFiles": {
+        "npm": [{"packageFile": "package.json", "deps": [
+            {"depName": "react", "currentValue": "^18.2.0"},
+            {"depName": "@acme/lib", "currentValue": "file:../lib", "skipReason": "file"},
+            {"depName": "is-number", "currentValue": "7.0.0", "skipReason": "github-token-required",
+             "currentRawValue": "git+https://github.com/jonschlinkert/is-number.git#7.0.0"},
+            {"depName": "left", "currentValue": "^1.0.0", "currentRawValue": "npm:right@^1.0.0"},
+            {"depName": "vitest"}]}],
+        "gradle": [{"packageFile": "gradle/libs.versions.toml", "deps": [
+            {"depName": "io.coil-kt.coil3:coil-compose", "currentValue": "3.6.3", "sharedVariableName": "coil"}]}],
+        "dockerfile": [{"packageFile": "Dockerfile", "deps": [
+            {"depName": "postgres", "currentValue": "16-alpine"}, {"depName": "redis", "currentDigest": "sha256:ab"}]}],
+    }}}})
+    got = renovate.read(Ctx(), [{"tool": "renovate"}], [{"returncode": 0, "stdout": report, "stderr": ""}])
+    assert {(p["name"], p.get("version")) for p in got["facts"]["packages"]} == {
+        ("react", "^18.2.0"), ("@acme/lib", None), ("is-number", None), ("left", None), ("vitest", None),
+        ("io.coil-kt.coil3:coil-compose", None), ("postgres", "16-alpine"), ("redis", None)}
+
+    effective = ('<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>com.acme</groupId><artifactId>svc</artifactId>'
+                 "<build><directory>/work/target</directory></build><dependencies><dependency><groupId>com.fasterxml"
+                 ".jackson.core</groupId><artifactId>jackson-databind</artifactId><version>2.17.2</version></dependency>"
+                 "</dependencies></project>")
+    model = maven.read(Ctx(), [{"cwd": "."}], [{"returncode": 0, "stdout": effective, "stderr": "", "root": "/work"}])
+    assert [p.get("version") for p in model["facts"]["packages"]] == [None]  # inherited and interpolated: not written
+    reader = {"ecosystem": "maven", "name": "com.fasterxml.jackson.core:jackson-databind", "declared_in": "pom.xml",
+              "version": "2.17.0"}
+    joined = premap.join([{"source": "maven@3.10.0", "rank": "model", "facts": model["facts"]},
+                          {"source": "jvm_files@1", "rank": "reader", "facts": {"packages": [reader]}}])["packages"]
+    assert [(p["version"], p.get("conflicts")) for p in joined] == [("2.17.0", None)]

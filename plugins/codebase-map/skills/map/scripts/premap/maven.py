@@ -10,7 +10,10 @@ folders (the build's own and the ones a plugin's configuration names, `PLUGIN_SO
 origins of the repositories and plugin repositories it resolves from (Central from the super POM, those the pom or a
 parent declares), and what maven-compiler-plugin leaves out of each source folder it compiles (`compile_excludes`,
 its `excludes` and `testExcludes`, each pattern relative to that folder); the reactor is a `maven` workspace with the folders of the projects its root's modules list, profiles
-included, as members. A pom.xml no reactor holds states nothing: Maven does not build it.
+included, as members. The dependencies it lists that the reactor does not build are its packages, without a version:
+the effective pom's is the one after inheritance and interpolation (a parent's or a BOM's `dependencyManagement`, a
+property), not the text the pom writes, which `jvm_files` states. A pom.xml no reactor holds states nothing: Maven
+does not build it.
 """
 from __future__ import annotations
 

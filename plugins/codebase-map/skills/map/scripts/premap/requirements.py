@@ -17,9 +17,10 @@ import posixpath
 from pathlib import PurePosixPath
 import re
 
+from build_units import requirement_version
 from premap.origins import origin, requirement
 
-NAME, VERSION, RANK = "requirements", "daodan/premap/v1", "reader"
+NAME, VERSION, RANK = "requirements", "daodan/premap/v2", "reader"
 INCLUDE = re.compile(r"^(-r|--requirement|-c|--constraint)(?:\s+|=)(\S+)$")
 INDEX = re.compile(r"^(?:-i|--index-url|--extra-index-url|-f|--find-links)(?:\s+|=)(\S+)$")
 EDITABLE = re.compile(r"^(?:-e|--editable)(?:\s+|=)(\S+)$")
@@ -179,7 +180,10 @@ def run(context):
                 continue
             if match := PKG_NAME.match(stripped):
                 norm = re.sub(r"[-_.]+", "-", match.group(1)).lower()
+                # the PEP 508 requirement before pip's own options (` --hash=...`) and a line continuation
+                version = requirement_version(re.split(r"\s+(?:--|\\$)", stripped, maxsplit=1)[0])
                 if (norm, rel) not in seen_pkgs:
                     seen_pkgs.add((norm, rel))
-                    packages.append({"ecosystem": "pypi", "name": norm, "declared_in": f"{rel}#L{number}"})
+                    packages.append({"ecosystem": "pypi", "name": norm, "declared_in": f"{rel}#L{number}",
+                                     **({"version": version} if version else {})})
     return {"facts": {"units": units, **({"packages": packages} if packages else {})}, "gaps": gaps}

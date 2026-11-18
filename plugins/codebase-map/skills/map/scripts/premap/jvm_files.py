@@ -16,18 +16,21 @@ import re
 import tomllib
 import xml.etree.ElementTree as ET
 
+from build_units import pom_version
 import confinement
 
-NAME, VERSION, RANK = "jvm-files", "daodan/premap/v2", "reader"
+NAME, VERSION, RANK = "jvm-files", "daodan/premap/v3", "reader"
 WRAPPERS = {"gradle": ("gradle/wrapper/gradle-wrapper.properties", r"gradle-([0-9][^-/]*)-(?:bin|all)\.zip$"),
             "maven": (".mvn/wrapper/maven-wrapper.properties", r"apache-maven-([0-9][^-/]*)-bin\.zip$")}
 JAVA_PROPERTIES = ("maven.compiler.release", "maven.compiler.source", "maven.compiler.target", "java.version",
                    "kotlin.compiler.jvmTarget")  # the last: the bytecode level kotlin-maven-plugin writes
 COMPILER_FIELDS = ("release", "source", "target")
 PLACEHOLDER = re.compile(r"^\$\{([^}]+)\}$")
-GRADLE_PLUGIN = re.compile(r"""\bid\s*\(\s*['"]([^'"]+)['"]\s*\)|\bid\s+['"]([^'"]+)['"]""")
-KOTLIN_PLUGIN = re.compile(r"""\bkotlin\s*\(\s*['"]([^'"]+)['"]\s*\)""")
-GRADLE_COORD = re.compile(r"""['"]([A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+)(?::[^'"\s]+)?['"]""")
+PLUGIN_VERSION = r"""(?:\s+version\s+['"]([^'"]+)['"])?"""  # `id("x") version "1.0"`, Groovy's `id 'x' version '1.0'`
+GRADLE_PLUGIN = re.compile(r"""\bid(?:\s*\(\s*['"]([^'"]+)['"]\s*\)|\s+['"]([^'"]+)['"])""" + PLUGIN_VERSION)
+KOTLIN_PLUGIN = re.compile(r"""\bkotlin\s*\(\s*['"]([^'"]+)['"]\s*\)""" + PLUGIN_VERSION)
+# Gradle's string notation `group:name[:version[:classifier]][@extension]`
+GRADLE_COORD = re.compile(r"""['"]([A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+)(?::([^'"\s:@]+)[^'"\s]*)?['"]""")
 TOML_MODULE = re.compile(r"""module\s*=\s*['"]([^'"]+:[^'"]+)['"]""")
 TOML_GROUP_NAME = re.compile(r"""group\s*=\s*['"]([^'"]+)['"].*?name\s*=\s*['"]([^'"]+)['"]""")
 TOML_PLUGIN_ID = re.compile(r"""\bid\s*=\s*['"]([^'"]+)['"]""")
@@ -35,28 +38,40 @@ CATALOG = "gradle/libs.versions.toml"  # the `libs` catalog Gradle reads beside 
 ACCESSOR = re.compile(r"\blibs\.([A-Za-z0-9_.]+)")
 
 
-def _catalog(text: str) -> dict[str, list[str]]:
+def _catalog(text: str) -> dict[str, list[tuple[str, str | None]]]:
     """A version catalog's accessors (`junit.jupiter`, `plugins.spring.boot`, `bundles.web`) -> the coordinates or
-    plugin ids they stand for: Gradle turns `-`, `_` and `.` of an alias into the accessor's dots."""
+    plugin ids they stand for, each with its version: Gradle turns `-`, `_` and `.` of an alias into the accessor's
+    dots; an entry's version is its `version` or the `[versions]` entry its `version.ref` names, a string (a rich
+    version, `{ strictly = ... }`, is several constraints, not one)."""
     try:
         data = tomllib.loads(text)
     except tomllib.TOMLDecodeError:
         return {}
     key = lambda alias: re.sub(r"[-_.]", ".", alias)  # noqa: E731
+    versions = data.get("versions") if isinstance(data.get("versions"), dict) else {}
+
+    def version(value: dict):
+        found = value.get("version")
+        if isinstance(found, dict) and isinstance(found.get("ref"), str):  # `version.ref = "x"`
+            found = versions.get(found["ref"])
+        return found if isinstance(found, str) else None
+
     libraries = {}
     for alias, value in (data.get("libraries") or {}).items():
         if isinstance(value, str):  # `group:name:version`
-            coord = ":".join(value.split(":")[:2])
+            coord, pinned = ":".join(value.split(":")[:2]), (value.split(":")[2:3] or [None])[0]
         else:
             coord = value.get("module") or (value.get("group") and value.get("name")
                                             and f"{value['group']}:{value['name']}")
+            pinned = version(value)
         if coord:
-            libraries[key(alias)] = [coord]
+            libraries[key(alias)] = [(coord, pinned)]
     out = dict(libraries)
     for alias, value in (data.get("plugins") or {}).items():
-        plugin = value.split(":", 1)[0] if isinstance(value, str) else value.get("id")
+        plugin, pinned = ((value.split(":", 1) + [None])[:2] if isinstance(value, str)
+                          else (value.get("id"), version(value)))
         if plugin:
-            out[f"plugins.{key(alias)}"] = [plugin]
+            out[f"plugins.{key(alias)}"] = [(plugin, pinned)]
     for alias, members in (data.get("bundles") or {}).items():
         out[f"bundles.{key(alias)}"] = [c for m in members if isinstance(m, str) for c in libraries.get(key(m), [])]
     return out
@@ -133,7 +148,10 @@ def _pom_packages(rel: str, text: str, own: set[str], packages: list[dict], seen
     except ET.ParseError:
         return
 
-    def add(group: str, artifact: str) -> None:
+    properties = {_local(c.tag): (c.text or "").strip() for node in project if _local(node.tag) == "properties"
+                  for c in node}
+
+    def add(group: str, artifact: str, version: str | None) -> None:
         if not artifact or "$" in artifact or "$" in group:
             return
         coord = f"{group}:{artifact}" if group else artifact
@@ -142,61 +160,58 @@ def _pom_packages(rel: str, text: str, own: set[str], packages: list[dict], seen
         if (coord.casefold(), rel) not in seen:
             seen.add((coord.casefold(), rel))
             line = _line(text, f">{artifact}<")
-            packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{line}" if line else rel})
+            version = pom_version(version, properties)
+            packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{line}" if line else rel,
+                             **({"version": version} if version else {})})
 
     for node in project:
         if _local(node.tag) == "parent":
             fields = {_local(c.tag): (c.text or "").strip() for c in node}
-            add(fields.get("groupId", ""), fields.get("artifactId", ""))
+            add(fields.get("groupId", ""), fields.get("artifactId", ""), fields.get("version"))
     for node in project.iter():
         tag = _local(node.tag)
         if tag in ("dependency", "plugin"):
             fields = {_local(c.tag): (c.text or "").strip() for c in node}
             group = fields.get("groupId", "org.apache.maven.plugins" if tag == "plugin" else "")
-            add(group, fields.get("artifactId", ""))
+            add(group, fields.get("artifactId", ""), fields.get("version"))
 
 
 def _gradle_packages(rel: str, text: str, packages: list[dict], seen: set, accessors: dict | None = None) -> None:
     base = PurePosixPath(rel).name
+
+    def add(name: str, number: int, version: str | None = None) -> None:
+        """A build script's version naming a variable (`$kotlinVersion`) is the value only Gradle computes: none."""
+        if (name.casefold(), rel) not in seen:
+            seen.add((name.casefold(), rel))
+            packages.append({"ecosystem": "maven", "name": name, "declared_in": f"{rel}#L{number}",
+                             **({"version": version} if version and "$" not in version else {})})
+
+    pinned = {}  # a catalog's own entries take their version from the parsed catalog, not from the line
+    if base.endswith(".toml"):
+        pinned = {name: version for found in _catalog(text).values() for name, version in found}
     for number, line in enumerate(text.splitlines(), 1):
         code = line.split("//" if not base.endswith(".toml") else "#", 1)[0]
         if base.endswith(".toml"):
             for m in TOML_MODULE.finditer(code):
-                coord = m.group(1)
-                if (coord.casefold(), rel) not in seen:
-                    seen.add((coord.casefold(), rel))
-                    packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
+                add(m.group(1), number, pinned.get(m.group(1)))
             for m in TOML_GROUP_NAME.finditer(code):
-                coord = f"{m.group(1)}:{m.group(2)}"
-                if (coord.casefold(), rel) not in seen:
-                    seen.add((coord.casefold(), rel))
-                    packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
+                add(f"{m.group(1)}:{m.group(2)}", number, pinned.get(f"{m.group(1)}:{m.group(2)}"))
             for m in TOML_PLUGIN_ID.finditer(code):
-                pid = m.group(1)
-                if "." in pid and (pid.casefold(), rel) not in seen:
-                    seen.add((pid.casefold(), rel))
-                    packages.append({"ecosystem": "maven", "name": pid, "declared_in": f"{rel}#L{number}"})
+                if "." in m.group(1):
+                    add(m.group(1), number, pinned.get(m.group(1)))
             continue
         for m in GRADLE_PLUGIN.finditer(code):
             pid = m.group(1) or m.group(2)
-            if pid and "." in pid and (pid.casefold(), rel) not in seen:
-                seen.add((pid.casefold(), rel))
-                packages.append({"ecosystem": "maven", "name": pid, "declared_in": f"{rel}#L{number}"})
+            if pid and "." in pid:
+                add(pid, number, m.group(3))
         for m in KOTLIN_PLUGIN.finditer(code):
-            kid = f"org.jetbrains.kotlin.{m.group(1)}"
-            if (kid.casefold(), rel) not in seen:
-                seen.add((kid.casefold(), rel))
-                packages.append({"ecosystem": "maven", "name": kid, "declared_in": f"{rel}#L{number}"})
+            add(f"org.jetbrains.kotlin.{m.group(1)}", number, m.group(2))
         for m in GRADLE_COORD.finditer(code):
-            coord = m.group(1)
-            if not coord.startswith(":") and "$" not in coord and (coord.casefold(), rel) not in seen:
-                seen.add((coord.casefold(), rel))
-                packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
+            if not m.group(1).startswith(":") and "$" not in m.group(1):
+                add(m.group(1), number, m.group(2))
         for m in ACCESSOR.finditer(code) if accessors else ():
-            for coord in _uses(accessors, m.group(1)):
-                if (coord.casefold(), rel) not in seen:
-                    seen.add((coord.casefold(), rel))
-                    packages.append({"ecosystem": "maven", "name": coord, "declared_in": f"{rel}#L{number}"})
+            for coord, version in _uses(accessors, m.group(1)):
+                add(coord, number, version)
 
 
 def run(context):

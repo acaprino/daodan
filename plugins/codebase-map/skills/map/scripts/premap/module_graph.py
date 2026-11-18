@@ -162,7 +162,8 @@ def facts(graph: dict) -> dict:
 
 
 def _declared_packages(graph: dict, inventory) -> list[dict]:
-    """Declared package and container image signs from manifests, pubspec SDKs, Dockerfiles and Compose files."""
+    """Declared package and container image signs from manifests, pubspec SDKs, Dockerfiles and Compose files; a
+    manifest's package has the `version` its reader read there (`build_units`), none where it gives none."""
     units = [m for m in graph["modules"] if m["provenance"] == "build"]
     own = {(PACKAGE_ECOSYSTEM.get(e), name.casefold()) for m in units for e in m.get("ecosystems", [])
            for name in [m["name"], *m["aliases"]] if name}
@@ -179,14 +180,15 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
     packages: list[dict] = []
     seen: set[tuple[str, str, str]] = set()
 
-    def add(ecosystem: str, name: str, path: str, line: int | None) -> None:
+    def add(ecosystem: str, name: str, path: str, line: int | None, version: str | None = None) -> None:
         if not name or not path or (ecosystem, name.casefold()) in own:
             return
         declared_in = f"{path}#L{line}" if line else path
         key = (ecosystem, name.casefold(), path)
         if key not in seen:
             seen.add(key)
-            packages.append({"ecosystem": ecosystem, "name": name, "declared_in": declared_in})
+            packages.append({"ecosystem": ecosystem, "name": name, "declared_in": declared_in,
+                             **({"version": version} if version else {})})
 
     for unit in units:
         ecosystems = sorted({PACKAGE_ECOSYSTEM[e] for e in unit.get("ecosystems", []) if e in PACKAGE_ECOSYSTEM})
@@ -201,7 +203,7 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
                      or (needle != name and re.search(rf"""(^|[\s"'/:>]){re.escape(needle)}($|[\s"'=<>~^@:,\[/<])""", text))),
                     (unit["manifests"][0] if unit["manifests"] else None, None),
                 )
-                add(ecosystem, name, path, line)
+                add(ecosystem, name, path, line, ((unit.get("versions") or {}).get(path) or {}).get(name))
 
     for rel in inventory.files:
         base = PurePosixPath(rel).name

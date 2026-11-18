@@ -132,12 +132,13 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
         tools = [e["id"] for e in matched if e.get("category") == "tool"]
         libs = []
         seen_libs = set()
-        for eco, pkg_name, pkg_path, pkg_line in raw_packages:
+        for eco, pkg_name, pkg_path, pkg_line, version in raw_packages:
             if pkg_path in owned and not _versions_only(pkg_path) and (eco, pkg_name.casefold()) not in seen_libs:
                 seen_libs.add((eco, pkg_name.casefold()))
                 reg_entry = known_pkg.get((pkg_name.casefold(), pkg_path))
                 libs.append({
                     "ecosystem": eco, "name": pkg_name, "path": pkg_path, "line": pkg_line,
+                    **({"version": version} if version else {}),
                     **({"id": reg_entry["id"], "title": reg_entry["name"]} if reg_entry else {}),
                 })
         libs.sort(key=lambda x: (x["ecosystem"], x["name"].casefold()))

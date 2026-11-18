@@ -200,6 +200,24 @@ def test_a_package_of_the_version_catalog_goes_to_the_build_script_that_uses_it_
     assert not units[":"]["libraries"]
 
 
+def test_a_library_has_the_version_its_package_fact_states_and_none_where_the_manifest_writes_none(tmp_path):
+    """The declared requirement, never resolved: a range as package.json writes it, the catalog's version of the
+    `libs.*` accessor the build script uses; a Git reference has none, and the key is absent."""
+    record = _stack(tmp_path, {
+        "ui/package.json": '{"name": "ui", "dependencies": {"vue": "^3.5.0", "left": "github:acme/left"}}\n',
+        "settings.gradle.kts": 'rootProject.name = "inventory"\ninclude(":domain")\n',
+        "gradle/libs.versions.toml": (
+            '[versions]\njackson = "2.18.1"\n\n[libraries]\n'
+            'jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }\n'),
+        "domain/build.gradle.kts": "dependencies {\n    implementation(libs.jackson.databind)\n}\n",
+    })
+    units = {u["paths"][0]: u for u in record["units"]}
+    assert {lib["name"]: lib.get("version", "absent") for lib in units["ui"]["libraries"]} == {
+        "vue": "^3.5.0", "left": "absent"}
+    assert {lib["name"]: lib.get("version") for lib in units["domain"]["libraries"]} == {
+        "com.fasterxml.jackson.core:jackson-databind": "2.18.1"}
+
+
 def test_an_entry_a_line_only_mentions_is_no_module_s_and_stays_in_mentioned_with_its_signs(tmp_path):
     """A package or file the project declares is a `declared` sign, an env-prefix token in a line a `mentioned` one;
     an entry with no declared sign is in no module's lists, for every prefix of the registry alike."""

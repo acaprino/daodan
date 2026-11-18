@@ -55,15 +55,16 @@ def _split_declared_in(declared_in: str | None) -> tuple[str | None, int | None]
     return file, None
 
 
-def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | None, int | None]]:
-    """(ecosystem, name, path, line) from Step 1's `packages`, `services` and `docker_builds`."""
+def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | None, int | None, str | None]]:
+    """(ecosystem, name, path, line, version) from Step 1's `packages`, `services` and `docker_builds`; `version`,
+    the package fact's (as its manifest writes it), None for none and for an image."""
     raw = facts.get("packages")
     if raw is None and "sources" not in facts:
         raw = package_facts(manifest)
-    out: list[tuple[str, str, str | None, int | None]] = []
+    out: list[tuple[str, str, str | None, int | None, str | None]] = []
     for item in raw or ():
         path, line = _split_declared_in(item.get("declared_in"))
-        out.append((item["ecosystem"], item["name"], path, line))
+        out.append((item["ecosystem"], item["name"], path, line, item.get("version")))
     seen = {sign[:3] for sign in out}
     for service in facts.get("services") or ():
         if service.get("image"):
@@ -71,7 +72,7 @@ def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | No
             img = _image(service["image"])
             if ("docker", img, path) not in seen:
                 seen.add(("docker", img, path))
-                out.append(("docker", img, path, None))
+                out.append(("docker", img, path, None, None))
     for build in facts.get("docker_builds") or ():
         dockerfile = build.get("dockerfile")
         for stage in build.get("stages") or ():
@@ -80,7 +81,7 @@ def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | No
                 img = _image(base)
                 if ("docker", img, dockerfile) not in seen:
                     seen.add(("docker", img, dockerfile))
-                    out.append(("docker", img, dockerfile, stage.get("line")))
+                    out.append(("docker", img, dockerfile, stage.get("line"), None))
     return out
 
 
@@ -92,7 +93,7 @@ def entry_category(entry: dict) -> str:
 class Project(NamedTuple):
     """What a checker reads, without what the pre-map excludes: the declared packages and images
     (`step1_packages`), the files, and a file's lines."""
-    packages: list[tuple[str, str, str | None, int | None]]
+    packages: list[tuple[str, str, str | None, int | None, str | None]]
     files: list[str]
     lines: Callable[[str], list[str]]
 
@@ -116,7 +117,7 @@ def check_packages(entries: list[dict], project: Project) -> dict:
         for key in (entry["id"], entry.get("name") or ""):
             named.setdefault(key.casefold(), entry)
     found, gaps, seen = [], [], set()
-    for ecosystem, name, path, line in project.packages:
+    for ecosystem, name, path, line, *_ in project.packages:  # a version is no sign
         low = name.lower()
         ids = list(by_package.get((ecosystem, low), []))
         if ecosystem == "maven" and ":" in low:

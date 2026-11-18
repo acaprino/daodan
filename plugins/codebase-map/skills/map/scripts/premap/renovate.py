@@ -11,7 +11,8 @@ a workflow sets up). A
 constraint is kept only when the file writes its value (Renovate derives `npm` from a lockfile's format and repeats
 a root's `packageManager` on each member), a package only with a version (a pnpm `catalog:` reference has none: the
 catalog states it). A wrapper's entry for itself is not a toolchain: the Maven wrapper gives Maven's version, not
-its own. The other packages a file declares are not the pre-map's: each analyzer's build tool resolves them.
+its own. Each other package a file declares is a `packages` fact, with `version` the `currentValue` the file writes
+at it (`WRITTEN_ELSEWHERE`), never resolved: each analyzer's build tool resolves it.
 
 Of a service container a GitHub Actions job declares, Renovate's github-actions manager keeps the image alone
 (`lib/modules/manager/github-actions/schema.ts`). Where a workflow of `.github/workflows` names `services` or runs
@@ -52,6 +53,9 @@ VERSION_MANAGERS = {"asdf", "mise", "proto", "nvm", "nodenv", "pyenv", "rust-too
                     "maven-wrapper", "bazelisk", "ruby-version", "bun-version", "terraform-version"}
 TOOL_DEPTYPES = {"engines", "packageManager", "volta", "golang", "toolchain", "requires-python", "required_version"}
 WRAPPER_SELF = {"maven-wrapper", "gradle-wrapper"}  # a wrapper manager's entry for the wrapper itself, not the tool
+# A dependency's `currentValue` the file does not write at it: a variable's (a property, a catalog's version), one
+# read out of other text (a Git reference, an alias: `currentRawValue` holds it), one Renovate skips (a path, a URL)
+WRITTEN_ELSEWHERE = ("sharedVariableName", "currentRawValue", "skipReason")
 IMAGE_MANAGERS = {"dockerfile", "docker-compose", "devcontainer"}
 DOCKER_RUNTIMES = {"node": "node", "python": "python", "golang": "go", "rust": "rust", "ruby": "ruby",
                    "openjdk": "java", "eclipse-temurin": "java", "amazoncorretto": "java", "maven": "maven",
@@ -705,9 +709,11 @@ def read(context, commands, results):
                 if eco and manager not in VERSION_MANAGERS and dep.get("depType") not in TOOL_DEPTYPES and (
                         name not in (package_file.get("extractedConstraints") or {})):
                     pkg_name = name.split("@", 1)[0].split(":", 1)[0] if eco == "docker" else name
+                    written = isinstance(current, str) and current and not any(map(dep.get, WRITTEN_ELSEWHERE))
                     if pkg_name and (eco, pkg_name.casefold(), path) not in seen_pkgs:
                         seen_pkgs.add((eco, pkg_name.casefold(), path))
-                        packages.append({"ecosystem": eco, "name": pkg_name, "declared_in": path})
+                        packages.append({"ecosystem": eco, "name": pkg_name, "declared_in": path,
+                                         **({"version": current} if written else {})})
                 tool = _tool(name) if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES else (
                     DOCKER_RUNTIMES.get(name, DEV_CONTAINERS.get(name)) if manager in IMAGE_MANAGERS
                     else _package_tool(manager, name, dep))

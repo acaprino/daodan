@@ -650,7 +650,8 @@ def test_a_constraint_renovate_extracts_from_the_file_is_a_toolchain_not_a_packa
                                                     "deps": [{"depName": "python", "currentValue": "^3.10", "depType": "dependencies"},
                                                              {"depName": "rich", "currentValue": "^13", "depType": "dependencies"}]}]})
     assert facts == {"toolchains": [{"tool": "python", "version": "^3.10", "declared_in": "pyproject.toml"}],
-                     "packages": [{"ecosystem": "pypi", "name": "rich", "declared_in": "pyproject.toml"}]}
+                     "packages": [{"ecosystem": "pypi", "name": "rich", "declared_in": "pyproject.toml",
+                                   "version": "^13"}]}
 
 
 def test_the_sdk_of_global_json_is_the_dotnet_toolchain(tmp_path):
