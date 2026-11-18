@@ -73,8 +73,9 @@ def graph(envelope: dict) -> dict:
     """The envelope's files grouped into nodes, and the relations between groups with their counts and sites."""
     entities = {item["ref"]: item for item in envelope["entities"]}
     files = sorted(ref for ref, item in entities.items() if item["type"] == "file")
-    # a virtual module is the tree no build names, not a group of its own: its files show by their directories
-    groups = [ref for ref, item in entities.items() if item["type"] not in (*STRUCTURE, "virtual")]
+    # a virtual module is the tree no build names, not a group of its own: its files show by their directories;
+    # a store is a member of a node, not a group (the system map's «nodo»), and holds no file
+    groups = [ref for ref, item in entities.items() if item["type"] not in (*STRUCTURE, "virtual", "store")]
     owner: dict[str, str] = {}
     if len(groups) >= 2:
         level = "modules"
@@ -107,22 +108,26 @@ def graph(envelope: dict) -> dict:
         source, target = relation["source"], relation["target"]
         if relation["kind"] in ("contains", "defines"):
             continue
+        key = {"key": relation["key"]} if "key" in relation else {}  # a deduced link keeps its count, sites and key
         if source in nodes and target in nodes:  # a relation between modules, counted by the envelope
             counts, site = relation.get("counts") or {relation["kind"]: 1}, None
         elif source in owner and target in owner:  # a relation between files, counted once
-            source, target, counts = owner[source], owner[target], {relation["kind"]: 1}
-            site = {"kind": relation["kind"], "path": relation["source"].removeprefix("file:"), "line": None,
-                    "target": relation["target"].removeprefix("file:")}
+            source, target = owner[source], owner[target]
+            counts = relation["counts"] if key else {relation["kind"]: 1}
+            site = None if key else {"kind": relation["kind"], "path": relation["source"].removeprefix("file:"),
+                                     "line": None, "target": relation["target"].removeprefix("file:")}
         else:
             continue
         if source == target:
             continue
-        edge = edges.setdefault((source, target), {"id": f"{source}->{target}", "source": source, "target": target,
-                                                   "counts": {}, "status": relation["status"], "evidence": []})
+        uncertain = relation["status"] == "uncertain"  # an uncertain link is its own edge, never counted as certain
+        edge = edges.setdefault((source, target, uncertain), {
+            "id": f"{source}->{target}" + (" uncertain" if uncertain else ""), "source": source, "target": target,
+            "counts": {}, "status": relation["status"], "evidence": []})
         for kind, count in counts.items():
             edge["counts"][kind] = edge["counts"].get(kind, 0) + count
         sites = relation.get("evidence", []) if site is None else [site]
-        edge["evidence"].extend([{"kind": relation["kind"], **item} for item in sites][:EVIDENCE - len(edge["evidence"])])
+        edge["evidence"].extend([{"kind": relation["kind"], **item, **key} for item in sites][:EVIDENCE - len(edge["evidence"])])
     alone = [entities[ref]["path"] for ref in files if ref not in owner]
     areas = Counter(PurePosixPath(path).parent.as_posix() for path in alone)
     return {"level": level, "nodes": sorted(nodes.values(), key=lambda node: node["name"]),

@@ -380,7 +380,7 @@ class HandlerRouteTests(unittest.TestCase):
         self.assertEqual(linked, {("web/client.ts::loadPlans", "api/controller.js::status"),
                                   ("web/client.ts::readBilling", "api/controller.js::status"),
                                   ("web/client.ts::addTask", "api/routes.js::POST /task")})
-        self.assertEqual(self.links["routes"], {"offered": 2, "called": 3, "linked": 3})
+        self.assertEqual(self.links["routes"], {"offered": 2, "called": 4, "linked": 3})  # GET /task/{}: no route
 
     def test_an_inline_handler_is_named_by_its_route_and_holds_its_accesses(self):
         self.assertEqual(self.links["stores"]["db/tasks"], {"writes": ["api/routes.js::POST /task"], "reads": []})
@@ -397,7 +397,7 @@ class HandlerRouteTests(unittest.TestCase):
 
     def test_a_handler_that_is_no_function_is_a_gap(self):
         self.assertEqual([g["reason"] for g in self.links["gaps"]],
-                         ["offre: handler not a function", "rotta: route not a literal"])  # a computed path too
+                         ["offre: handler not a function", "route api GET /task/{}: no handler"])  # a single side
 
     def test_handler_is_an_argument_or_last_and_excludes_decorates(self):
         for rule, message in (
@@ -407,6 +407,77 @@ class HandlerRouteTests(unittest.TestCase):
                   "route": {"service": "a", "method": "GET", "path": "arg0"}}, "handler or decorates")):
             with self.subTest(message=message), self.assertRaisesRegex(ValueError, message):
                 flows.validate_rules([rule])
+
+
+class RestSchemaTests(unittest.TestCase):
+    """REST links by method and path schema, on the fixture in benchmarks/connection-points/fixtures/pets."""
+
+    CASE = ROOT / "benchmarks/connection-points/fixtures/pets"
+
+    @classmethod
+    def setUpClass(cls):
+        cls.work = Path(tempfile.mkdtemp(prefix="flow-rest-")).resolve()
+        app = cls.work / "app"
+        shutil.copytree(cls.CASE / "app", app)
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+            subprocess.run(command, cwd=app, check=True, capture_output=True)
+        manifest = cls.work / "snapshot/manifest.sqlite"
+        snapshot.main(["write", str(app), "--out", str(manifest), "--no-engine", "--no-index"])
+        cls.links = flows.link_facts(manifest, flows.load_rules(cls.CASE / "rules.json"))
+        cls.expected = json.loads((cls.CASE / "expected.json").read_text(encoding="utf-8"))
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.work, True)
+
+    def test_a_call_joins_the_route_its_method_and_path_schema_meet(self):
+        linked = {(e["from"], e["to"], tuple(e["route"])) for e in self.links["edges"] if e.get("route")}
+        self.assertEqual(linked, {(l["caller"], l["handler"], tuple(l["route"])) for l in self.expected["links"]})
+        self.assertEqual(self.links["routes"], self.expected["routes"])
+
+    def test_a_schema_that_meets_several_routes_is_uncertain_and_no_link(self):
+        uncertain = [(g["symbol"], g["candidates"]) for g in self.links["gaps"] if g.get("candidates")]
+        self.assertEqual(uncertain, [(u["caller"], u["candidates"]) for u in self.expected["uncertain"]])
+        self.assertNotIn("web/api.ts::fetchBreed", {e["from"] for e in self.links["edges"] if e.get("route")})
+
+    def test_a_computed_path_is_a_gap_and_a_route_nobody_calls_a_single_side(self):
+        self.assertEqual([(g["symbol"], g["reason"]) for g in self.links["gaps"] if not g.get("candidates")],
+                         [(g["caller"], "rotta: route not a literal") for g in self.expected["gaps"]])
+        for side in self.expected["uncalled"]:
+            self.assertIn((side["handler"], "rotta"), {(e["symbol"], e["kind"]) for e in self.links["entries"]})
+            self.assertNotIn(side["handler"], {e["to"] for e in self.links["edges"] if e.get("route")})
+            self.assertNotIn(side["handler"], {g.get("symbol") for g in self.links["gaps"]})
+
+    def test_a_path_key_keeps_the_schema_and_drops_base_url_and_query(self):
+        key = flows.REST.key
+        for path in ("/api/dogs/${dogId}", "/api/dogs/<int:id>", "/api/dogs/<id>", "/api/dogs/:id",
+                     "/api/dogs/{id}", "api/dogs/{id:int}/", "${BASE}/api/dogs/${id}?full=1#top",
+                     "https://example.org:5000/api/dogs/${id}", "${A}${B}/api/dogs/${x ? '?' : y}"):
+            with self.subTest(path=path):
+                self.assertEqual(key("api", "get", path), ("api", "GET", "/api/dogs/{}"))
+        self.assertEqual(key("api", "GET", "/<lang>/about"), ("api", "GET", "/{}/about"))  # declared, not computed
+        self.assertEqual(key("api", "GET", "/api/tasks${query}"), ("api", "GET", "/api/tasks{}"))
+        for path in ("${API}${path}", "${API}/${path}", "${API}api/dogs", "${API}", "", "/api/${x"):
+            with self.subTest(path=path):
+                self.assertIsNone(key("api", "GET", path))
+        self.assertIsNone(key(None, "GET", "/a"))
+
+    def test_the_most_literal_route_wins_and_a_tie_is_uncertain(self):
+        routes = [{"id": r, "key": flows.REST.key("api", "GET", r)}
+                  for r in ("/api/dogs/search", "/api/dogs/<int:id>", "/api/tasks", "/api/cats/<a>", "/api/cats/<b>")]
+
+        def met(path, method="GET"):
+            [(_, found)] = flows.join(flows.REST, [{"key": flows.REST.key("api", method, path)}], routes)
+            return [r["id"] for r in found]
+        self.assertEqual(met("/api/dogs/search"), ["/api/dogs/search"])
+        self.assertEqual(met("/api/dogs/7"), ["/api/dogs/<int:id>"])
+        self.assertEqual(met("/api/dogs/${id}"), ["/api/dogs/<int:id>"])  # a placeholder meets a placeholder first
+        self.assertEqual(met("/api/tasks${query}"), ["/api/tasks"])  # loose: the hole glued to a literal
+        self.assertEqual(met("/api/cats/${id}"), ["/api/cats/<a>", "/api/cats/<b>"])
+        self.assertEqual(len(met("/api/${kind}/${id}")), 4)  # holes meet literals loosely: every candidate stays
+        self.assertEqual(met("/api/dogs/7", "POST"), [])
+        self.assertEqual(met("/api/dogs/7/x"), [])
 
 
 class StoreReadTests(unittest.TestCase):

@@ -34,6 +34,7 @@ import socket
 import sys
 import tempfile
 import time
+from collections import defaultdict
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path, PurePosixPath
@@ -211,7 +212,8 @@ def build_envelope(run_dir: Path) -> dict:
             if f"file:{path}" in entities:
                 memberships.append({"member": f"file:{path}", "group": ref, "view": view})
 
-    envelope_flows = _flows(manifest, entities, by_id, graph, gaps, entity)
+    envelope_flows, linked = _flows(manifest, entities, by_id, graph, gaps, entity)
+    relations.update((item["ref"], item) for item in linked if item["source"] in entities and item["target"] in entities)
     for found in entities.values():
         if "address" in found:
             found["address"] = sanitize_address(found["address"])
@@ -241,11 +243,62 @@ def _cards_digest(cards_path: Path, root: str) -> str | None:
     return hashlib.sha256(json.dumps(rows, sort_keys=True, default=str).encode("utf-8")).hexdigest()
 
 
-def _flows(manifest: Path, entities: dict, by_id: dict, graph: dict, gaps: list, entity) -> list[dict]:
-    """The run's flows, one per entry point, when link rules are recorded beside its snapshot."""
+def _site(site: str) -> dict:
+    path, _, line = site.rpartition(":")
+    return {"path": path, "line": int(line)} if line.isdigit() else {"path": site, "line": None}
+
+
+def _link_relations(links: dict) -> list[dict]:
+    """The deduced links between two files, one relation per kind, files, key and certainty: a route call
+    `calls` the file whose route it reaches (`uncertain` when several do), a reader `reads` the file that writes
+    the store key it reads. Evidence: the asking sites, then the offering ones. A single side is no relation."""
+    found: dict[tuple, dict] = {}
+
+    def add(kind, link_type, key, status, asking, offering):
+        source, target = _site(asking)["path"], _site(offering[0])["path"]
+        if source == target:
+            return
+        ref = f"{kind}:file:{source}->file:{target} {link_type} {key}" + (" uncertain" if status == "uncertain" else "")
+        item = found.setdefault(ref, {"ref": ref, "kind": kind, "source": f"file:{source}", "target": f"file:{target}",
+                                      "status": status, "origin": "dedotto", "link_type": link_type, "key": key,
+                                      "counts": {kind: 0}, "asking": [], "offering": []})
+        item["counts"][kind] += 1
+        item["asking"] += [asking] if asking not in item["asking"] else []
+        item["offering"] += [site for site in offering if site not in item["offering"]]
+
+    for edge in links["edges"]:
+        if edge.get("route") and edge.get("offered"):
+            add("calls", "rest", " ".join(edge["route"]), "confirmed", edge["site"], [edge["offered"]])
+    for gap in links["gaps"]:
+        by_file = defaultdict(list)
+        for site in gap.get("offered", []):
+            by_file[_site(site)["path"]].append(site)
+        for sites in by_file.values():
+            add("calls", "rest", " ".join(gap["key"]), "uncertain", gap["site"], sites)
+    writers = defaultdict(list)
+    for edge in links["edges"]:
+        if edge["type"] == "scrive":
+            writers[edge["to"]].append(edge["site"])
+    for edge in links["edges"]:
+        if edge["type"] == "legge":
+            by_file = defaultdict(list)
+            for site in writers.get(edge["from"], []):
+                by_file[_site(site)["path"]].append(site)
+            for sites in by_file.values():
+                add("reads", "store", edge["from"][len("store:"):], "confirmed", edge["site"], sites)
+    out = []
+    for item in found.values():  # both sides in the 20 sites a relation keeps
+        sites = item.pop("asking")[:10] + item.pop("offering")[:10]
+        out.append({**item, "evidence": [_site(site) for site in sites]})
+    return out
+
+
+def _flows(manifest: Path, entities: dict, by_id: dict, graph: dict, gaps: list, entity) -> tuple[list[dict], list[dict]]:
+    """The run's flows, one per entry point, and its deduced links as relations, when link rules are recorded
+    beside its snapshot."""
     rules_path = Path(manifest).with_name("flow-rules.json")
     if not rules_path.is_file():
-        return []
+        return [], []
     import flows
     links = flows.cached_links(Path(manifest), flows.load_rules(rules_path))
     names = {module["name"]: by_id[module["id"]] for module in graph.get("modules", []) if module["id"] in by_id}
@@ -282,7 +335,7 @@ def _flows(manifest: Path, entities: dict, by_id: dict, graph: dict, gaps: list,
             entities[target]["node_type"] = kind
     for gap in links["gaps"]:
         gaps.append({"refs": [ref(gap["symbol"])] if gap.get("symbol") else [], "reason": f"flow: {gap['reason']} ({gap['site']})"})
-    return out
+    return out, _link_relations(links)
 
 
 def validate_envelope(envelope: dict) -> None:

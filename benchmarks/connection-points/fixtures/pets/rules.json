@@ -1,0 +1,9 @@
+{
+  "schema": "daodan/flow-rules/v1",
+  "rules": [
+    {"written": "fetch", "in": ["web"], "link": "rotta",
+     "route": {"service": "api", "method": "arg1.method|GET", "path": "arg0"}},
+    {"written": "app.route", "in": ["server"], "link": "offre", "decorates": true,
+     "route": {"service": "api", "method": "GET", "path": "arg0"}}
+  ]
+}

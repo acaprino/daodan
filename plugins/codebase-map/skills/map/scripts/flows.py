@@ -30,7 +30,8 @@ What (`link`):
   `path`, each a literal, `argN`, `partN`, `argN.argM` (an argument of the call written
   as argument N: `fetch(apiPath('/x'))`) or `argN.key` (a key of the object written there:
   `{method: 'POST'}`), with `|value` for when that argument or key is absent. `strip`, a field of the rule beside
-  `route`, removes a leading text from the path. With `decorates` the route
+  `route`, removes a leading text from the path. The path is read as a schema (`REST`): query
+  and base URL are cut, each parameter is `{}`, a template counts. With `decorates` the route
   belongs to the decorated function; with `handler` (`argN` or `last`) to the
   function passed there, named or written in place (then named by its route,
   `METHOD path`), as when a route is registered outside any function.
@@ -43,7 +44,8 @@ A store rule may name the store's `node_type`, from the closed list of the flow 
 
 A value counts only when it is a literal or a constant bound to one; a computed
 one is a gap, never a guess. A store link needs the same store and key, a route
-link the same service, method and path. External modules of the module graph are
+link the same service and method and a path schema that meets: the most literal
+route wins, a tie is an uncertain link, a gap with its candidates. External modules of the module graph are
 nodes too: a symbol in a file an external module cites as evidence uses it. Code outside
 any named function, a callback passed as an argument included, belongs to its module,
 the node `file::<module>`; a route it declares or an entry point needs a named function.
@@ -61,6 +63,7 @@ import re
 import sys
 from collections import defaultdict, deque
 from pathlib import Path
+from typing import Callable, NamedTuple
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -72,7 +75,7 @@ import snapshot  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
 
 RULES_SCHEMA = "daodan/flow-rules/v1"
-LINKS_SCHEMA = "daodan/flow-links/v1"
+LINKS_SCHEMA = "daodan/flow-links/v2"  # v2: a route link and an uncertain one name the offering sites
 FLOW_SCHEMA = "daodan/flow/v1"
 LINKS = ("scrive", "legge", "rotta", "offre", "attiva", "ingresso")
 MAX_EDGES = 5000
@@ -507,7 +510,7 @@ def _arguments_with_positions(text: str, line: int, column: int):
     return out
 
 
-def _nested(spec: str, call: dict, facts, strip: str):
+def _nested(spec: str, call: dict, facts, strip: str, template: bool = False):
     """`argN.argM`, argument M of the call written as argument N; `argN.key`, the literal value of `key`
     in the object written as argument N; after `|`, the value when that argument or key is absent."""
     match = _NESTED.match(spec)
@@ -521,7 +524,7 @@ def _nested(spec: str, call: dict, facts, strip: str):
             if called else None
         if args is None:
             return None
-        return _value(inner, {**call, "args": args}, facts, strip) if int(inner[3:]) < len(args) else default
+        return _value(inner, {**call, "args": args}, facts, strip, template) if int(inner[3:]) < len(args) else default
     if not (text.startswith("{") and text.endswith("}")):
         return None
     parts = call_arguments("(" + text[1:-1] + ")") or []
@@ -534,11 +537,11 @@ def _nested(spec: str, call: dict, facts, strip: str):
     return default
 
 
-def _value(spec, call, facts, strip: str = ""):
+def _value(spec, call, facts, strip: str = "", template: bool = False):
     """A rule field: a literal string, `argN` read from the call, `partN` of the written callee,
-    or a value nested in an argument (`_nested`)."""
+    or a value nested in an argument (`_nested`). A template is refused unless `template`."""
     if _NESTED.match(str(spec)):
-        return _nested(str(spec), call, facts, strip)
+        return _nested(str(spec), call, facts, strip, template)
     match = _ARG.match(str(spec))
     if match is None:
         return spec
@@ -551,7 +554,99 @@ def _value(spec, call, facts, strip: str = ""):
     value = facts.literal(text, call["file"], line, column)
     if value is not None and strip and value.startswith(strip):
         value = value[len(strip):]
-    return None if value is None or "${" in value else value
+    return None if value is None or ("${" in value and not template) else value
+
+
+# ---------------------------------------------------------------- link types
+
+class LinkType(NamedTuple):
+    """A link type: its name, its role pair (who asks, who offers), how the raw values a rule reads become a
+    key (None: a gap) and how an asking key meets an offering one (None: they do not; higher is closer)."""
+    name: str
+    pair: tuple[str, str]
+    key: Callable[..., tuple | None]
+    meet: Callable[[tuple, tuple], tuple | None]
+
+
+def join(kind: LinkType, asking: list[dict], offering: list[dict]) -> list[tuple[dict, list[dict]]]:
+    """Each asking point (a dict with a `key`) with the offering points it meets best: one is a link,
+    several an uncertain link, none a single side."""
+    out = []
+    for point in asking:
+        met = [(m, o) for o in offering if (m := kind.meet(point["key"], o["key"])) is not None]
+        best = max((m for m, _ in met), default=None)
+        out.append((point, [o for m, o in met if m == best]))
+    return out
+
+
+_PATH_BASE = re.compile(r"^[A-Za-z][\w+.-]*://[^/]*")  # scheme and host
+_PATH_PARAMETER = re.compile(r"<[^<>/]*>|\{[^{}/]*\}")  # a parameter declared inside a segment
+
+
+def _holes(text: str) -> str | None:
+    """The text with every `${...}` as `\\0`; None when one is not closed."""
+    out, i = [], 0
+    while i < len(text):
+        if not text.startswith("${", i):
+            out.append(text[i])
+            i += 1
+            continue
+        depth, j = 0, i + 1
+        while j < len(text):
+            depth += {"{": 1, "}": -1}.get(text[j], 0)
+            if depth == 0:
+                break
+            j += 1
+        if depth:
+            return None
+        out.append("\0")
+        i = j + 1
+    return "".join(out)
+
+
+def _rest_key(service, method, path) -> tuple | None:
+    """(service, METHOD, path schema). The query, the fragment and the base URL before the first segment,
+    literal or not, are not part of the key; a parameter, interpolated (`${id}`) or declared (`:id`, `<id>`,
+    `{id}`), is `{}`. A path whose first segment is interpolated is computed: a gap."""
+    text = None if None in (service, method, path) else _holes(path)
+    if text is None:
+        return None
+    text = re.split(r"[?#]", text, maxsplit=1)[0]
+    rest = _PATH_BASE.sub("", text.lstrip("\0"), count=1)
+    if not rest or rest != text and not rest.startswith("/"):
+        return None  # an interpolation glued to what follows it, or nothing after the base
+    segments = [s for s in rest.split("/") if s]
+    if segments and "\0" in segments[0]:
+        return None
+    segments = ["{}" if s.startswith(":") else _PATH_PARAMETER.sub("{}", s.replace("\0", "{}")) for s in segments]
+    return str(service), str(method).upper(), "/" + "/".join(segments)
+
+
+def _segment_grade(asked: str, offered: str) -> int | None:
+    """2 the same, 1 a literal filling a parameter, 0 a hole glued to a literal that must equal one, None no."""
+    if asked == offered:
+        return 2
+    if offered == "{}":
+        return 1
+    if "{}" in asked and "{" not in offered:
+        pattern = "".join("[^/]*" if part == "{}" else re.escape(part) for part in re.split(r"(\{\})", asked))
+        return 0 if re.fullmatch(pattern, offered) else None
+    return None
+
+
+def _rest_meet(asked: tuple, offered: tuple) -> tuple | None:
+    """Same service, method and number of segments, every segment meeting; (True, total) when no hole has to
+    equal a literal, the most literal route first; (False, 0) otherwise, so loose candidates always tie."""
+    if asked[:2] != offered[:2]:
+        return None
+    calls, routes = asked[2].strip("/").split("/"), offered[2].strip("/").split("/")
+    grades = [_segment_grade(c, r) for c, r in zip(calls, routes)] if len(calls) == len(routes) else [None]
+    if None in grades:
+        return None
+    return (True, sum(grades)) if min(grades) >= 1 else (False, 0)
+
+
+REST = LinkType("rest", ("rotta", "offre"), _rest_key, _rest_meet)  # the guide's "metodo e schema del percorso"
 
 
 _HANDLE = re.compile(r"=\s*(?:await\s+)?[A-Za-z_$][\w$.]*?(?:\.([A-Za-z_$][\w$]*)|\[\s*([^\]]+?)\s*\])\s*(?:#.*|//.*|;)?$")
@@ -745,15 +840,14 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                             held[(ref["file"], key)] = found[0]
                         else:
                             calls.append({"from": owner, "to": found[0], "site": site, "origin": "dedotto"})
-                elif link in ("rotta", "offre"):
+                elif link in REST.pair:
                     route = rule["route"]
-                    identity = (_value(route["service"], call, facts), _value(route["method"], call, facts),
-                                _value(route["path"], call, facts, rule.get("strip", "")))
-                    if None in identity:
+                    key = REST.key(_value(route["service"], call, facts), _value(route["method"], call, facts),
+                                   _value(route["path"], call, facts, rule.get("strip", ""), template=True))
+                    if key is None:
                         gaps.append({"site": site, "symbol": owner, "reason": f"{link}: route not a literal"})
                         continue
-                    record = {"symbol": owner, "service": identity[0], "method": identity[1].upper(),
-                              "path": identity[2], "site": site}
+                    record = {"symbol": owner, "key": key, "site": site}
                     (routes_offered if link == "offre" else route_calls).append(record)
                     if link == "offre":
                         entries.append({"symbol": owner, "kind": "rotta", "site": site})
@@ -803,18 +897,15 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             edges.append({"from": access["symbol"], "to": store_node, "type": "scrive", "origin": "dedotto", "site": access["site"]})
         else:
             edges.append({"from": store_node, "to": access["symbol"], "type": "legge", "origin": "dedotto", "site": access["site"]})
-    handlers = defaultdict(list)
-    for offer in routes_offered:
-        handlers[(offer["service"], offer["method"], offer["path"])].append(offer)
-    for call in route_calls:
-        found = handlers.get((call["service"], call["method"], call["path"]), [])
+    for call, found in join(REST, route_calls, routes_offered):
         if len(found) != 1:
-            gaps.append({"site": call["site"], "symbol": call["symbol"],
-                         "reason": f"route {call['service']} {call['method']} {call['path']}: "
-                                   f"{'no handler' if not found else 'several handlers'}"})
+            gap = {"site": call["site"], "symbol": call["symbol"],
+                   "reason": f"route {' '.join(call['key'])}: {'several handlers' if found else 'no handler'}"}
+            gaps.append({**gap, "key": list(call["key"]), "candidates": sorted(o["symbol"] for o in found),
+                         "offered": sorted(o["site"] for o in found)} if found else gap)
             continue
         edges.append({"from": call["symbol"], "to": found[0]["symbol"], "type": "chiama", "origin": "dedotto",
-                      "site": call["site"], "route": [call["service"], call["method"], call["path"]]})
+                      "site": call["site"], "route": list(found[0]["key"]), "offered": found[0]["site"]})
     for action in actions:
         edges.append({"from": action["symbol"], "to": action["handler"], "type": "attiva", "origin": "dedotto",
                       "site": action["site"], "label": action["label"]})
@@ -834,7 +925,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             "entries": sorted({(e["symbol"], e["kind"]): e for e in entries}.values(), key=lambda e: (e["kind"], e["symbol"])),
             "edges": sorted(unique.values(), key=lambda e: (e["from"], e["to"], e["type"], e["site"])),
             "store_types": {rule["store"]: rule["node_type"] for rule in rules if rule.get("node_type")},
-            "routes": {"offered": len({(o["service"], o["method"], o["path"]) for o in routes_offered}),
+            "routes": {"offered": len({o["key"] for o in routes_offered}),
                        "called": len(route_calls), "linked": sum(1 for e in unique.values() if e.get("route"))},
             "external": [{"name": m["name"], "status": m["status"]} for m in external],
             "gaps": sorted(gaps, key=lambda g: (g["site"], g["reason"]))}
@@ -844,7 +935,7 @@ def cached_links(manifest: Path, rules: list[dict]) -> dict:
     """`link_facts`, kept beside the snapshot until the rules, the snapshot or the engine store change."""
     import hashlib
     manifest = Path(manifest)
-    stamp = [json.dumps(rules, sort_keys=True)]
+    stamp = [LINKS_SCHEMA, json.dumps(rules, sort_keys=True)]
     for path in (manifest, manifest.with_name("engine-edges.sqlite")):
         stamp.append(str(path.stat().st_mtime_ns) if path.is_file() else "-")
     key = hashlib.sha256("\0".join(stamp).encode("utf-8")).hexdigest()

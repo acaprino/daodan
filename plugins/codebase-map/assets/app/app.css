@@ -10,3 +10,4 @@
 .heading-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 .repository-preparation:not(:empty){margin-top:16px}.repository-preparation p{overflow-wrap:anywhere}
 body .run-build-layout .smooth-tasks>ul>li>span>span:nth-child(3){width:calc(100% - 22px);flex-shrink:1}
+.connections path.uncertain{stroke-dasharray:5 4}

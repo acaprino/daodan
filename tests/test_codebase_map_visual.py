@@ -174,5 +174,99 @@ class FlowEnvelopeTests(unittest.TestCase):
             service.flows("flows", rules=[{**rules[0], "node_type": "nave"}])
 
 
+class LinkRelationTests(unittest.TestCase):
+    """A deduced link is a relation between the files of its two sides, which the graph lifts to their groups."""
+
+    @classmethod
+    def setUpClass(cls):
+        pets = ROOT / "benchmarks/connection-points/fixtures/pets"
+        cls.project = Path(tempfile.mkdtemp(prefix="map-visual-links-")).resolve()
+        shutil.copytree(pets / "app", cls.project, dirs_exist_ok=True)
+        files = {"web/package.json": '{"name": "web", "version": "1.0.0"}\n',
+                 "server/pyproject.toml": '[project]\nname = "server"\nversion = "0.1.0"\n',
+                 "worker/pyproject.toml": '[project]\nname = "worker"\nversion = "0.1.0"\n',
+                 "server/cache.py": 'def remember(dogs):\n    cache.set("dogs", dogs)\n',
+                 "worker/job.py": 'def report():\n    return cache.get("dogs")\n'}
+        for rel, text in files.items():
+            (cls.project / rel).parent.mkdir(parents=True, exist_ok=True)
+            (cls.project / rel).write_text(text, encoding="utf-8")
+        git_project(cls.project)
+        service = mcp_service.MapService(cls.project)
+        service.create_run(".", "links", engine=False)
+        run = cls.project / ".daodan/map/runs/links"
+        cls.before = visual.build_envelope(run)
+        rules = json.loads((pets / "rules.json").read_text(encoding="utf-8"))["rules"]
+        rules += [{"written": "cache.set", "in": ["server"], "link": "scrive", "store": "cache", "key": "arg0"},
+                  {"written": "cache.get", "in": ["worker"], "link": "legge", "store": "cache", "key": "arg0"}]
+        service.flows("links", rules=rules)
+        cls.after = visual.build_envelope(run)
+        visual.validate_envelope(cls.after)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.project, True)
+
+    def deduced(self, envelope):
+        return {item["key"]: item for item in envelope["relations"] if item.get("origin") == "dedotto"}
+
+    def group_of(self, graph, path):
+        return next(node["id"] for node in graph["nodes"] if path in node["files"])
+
+    def test_a_route_call_is_a_relation_with_its_key_both_sides_and_a_count(self):
+        found = self.deduced(self.after)
+        dog = found["api GET /api/dogs/{}"]
+        self.assertEqual({k: dog[k] for k in ("kind", "source", "target", "status", "link_type", "counts")},
+                         {"kind": "calls", "source": "file:web/api.ts", "target": "file:server/app.py",
+                          "status": "confirmed", "link_type": "rest", "counts": {"calls": 1}})
+        self.assertEqual(dog["evidence"], [{"path": "web/api.ts", "line": 10}, {"path": "server/app.py", "line": 11}])
+        self.assertIn("api GET /api/dogs", found)
+        graph = visual_app_graph(self.after)
+        web, server = self.group_of(graph, "web/api.ts"), self.group_of(graph, "server/app.py")
+        self.assertNotEqual(web, server)
+        edge = next(edge for edge in graph["edges"] if (edge["source"], edge["target"], edge["status"]) == (web, server, "confirmed"))
+        self.assertEqual(edge["counts"], {"calls": 2})
+        self.assertIn({"kind": "calls", "path": "web/api.ts", "line": 10, "key": "api GET /api/dogs/{}"}, edge["evidence"])
+        self.assertIn({"kind": "calls", "path": "server/app.py", "line": 11, "key": "api GET /api/dogs/{}"}, edge["evidence"])
+
+    def test_without_modules_the_relation_is_between_directories_and_a_store_is_no_group(self):
+        kept = [item for item in self.after["entities"] if item["type"] in ("file", "directory", "symbol", "store")]
+        store = {"ref": "store:cache/cats", "type": "store", "name": "cache/cats"}
+        graph = visual_app_graph({**self.after, "entities": [*kept, store]})
+        self.assertEqual(graph["level"], "directories")
+        self.assertIn(("directory:web", "directory:server", {"calls": 2}),
+                      [(edge["source"], edge["target"], edge["counts"]) for edge in graph["edges"]])
+
+    def test_without_rules_no_relation_is_deduced_and_the_graph_is_the_same(self):
+        self.assertEqual(self.deduced(self.before), {})
+        plain = [item for item in self.after["relations"] if item.get("origin") != "dedotto"]
+        self.assertEqual(visual_app_graph({**self.after, "relations": plain})["edges"], visual_app_graph(self.before)["edges"])
+
+    def test_an_uncertain_link_is_a_relation_marked_uncertain_never_counted_as_certain(self):
+        breed = self.deduced(self.after)["api GET /api/breeds/{}"]
+        self.assertEqual((breed["status"], breed["counts"], breed["target"]), ("uncertain", {"calls": 1}, "file:server/app.py"))
+        self.assertEqual(breed["evidence"], [{"path": "web/api.ts", "line": 15}, {"path": "server/app.py", "line": 16},
+                                             {"path": "server/app.py", "line": 21}])
+        graph = visual_app_graph(self.after)
+        web, server = self.group_of(graph, "web/api.ts"), self.group_of(graph, "server/app.py")
+        between = {edge["status"]: edge["counts"] for edge in graph["edges"] if (edge["source"], edge["target"]) == (web, server)}
+        self.assertEqual(between, {"confirmed": {"calls": 2}, "uncertain": {"calls": 1}})
+        self.assertNotIn("api GET /api/health", self.deduced(self.after))  # a route nobody calls is a single side
+
+    def test_a_store_written_in_one_module_and_read_in_another_is_a_relation(self):
+        dogs = self.deduced(self.after)["cache/dogs"]
+        self.assertEqual({k: dogs[k] for k in ("kind", "source", "target", "status", "link_type", "counts", "evidence")},
+                         {"kind": "reads", "source": "file:worker/job.py", "target": "file:server/cache.py",
+                          "status": "confirmed", "link_type": "store", "counts": {"reads": 1},
+                          "evidence": [{"path": "worker/job.py", "line": 2}, {"path": "server/cache.py", "line": 2}]})
+        graph = visual_app_graph(self.after)
+        worker, server = self.group_of(graph, "worker/job.py"), self.group_of(graph, "server/cache.py")
+        self.assertIn((worker, server, {"reads": 1}), [(e["source"], e["target"], e["counts"]) for e in graph["edges"]])
+
+
+def visual_app_graph(envelope):
+    import app_view
+    return app_view.graph(envelope)
+
+
 if __name__ == "__main__":
     unittest.main()

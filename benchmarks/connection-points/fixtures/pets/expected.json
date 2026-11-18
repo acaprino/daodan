@@ -1,0 +1,24 @@
+{
+  "schema": "daodan/flow-fixture-expected/v1",
+  "case": "shaped like github-samples/pets-workshop, measured 18 November 2026: template fetches with a base URL from a variable, Flask-style routes with typed parameters",
+  "note": "Written before the code. `route`: the key of the route the link reaches (service, method, path schema with every parameter as {}).",
+  "links": [
+    {"caller": "web/api.ts::fetchDogs", "handler": "server/app.py::get_dogs", "route": ["api", "GET", "/api/dogs"],
+     "why": "the base URL is a variable before the first segment; the query string is not part of the key"},
+    {"caller": "web/api.ts::fetchDog", "handler": "server/app.py::get_dog", "route": ["api", "GET", "/api/dogs/{}"],
+     "why": "`${dogId}` and `<int:id>` are both one placeholder"}
+  ],
+  "uncertain": [
+    {"caller": "web/api.ts::fetchBreed", "key": ["api", "GET", "/api/breeds/{}"],
+     "candidates": ["server/app.py::get_breed", "server/app.py::get_breed_by_name"],
+     "why": "two routes have the same schema; the converter that tells them apart is not read"}
+  ],
+  "gaps": [
+    {"caller": "web/api.ts::fetchAny", "why": "`${API_SERVER_URL}${path}`: the path itself is computed"}
+  ],
+  "uncalled": [
+    {"handler": "server/app.py::health", "route": ["api", "GET", "/api/health"],
+     "why": "a single side: an entry point no client in the project calls, not a gap"}
+  ],
+  "routes": {"offered": 4, "called": 3, "linked": 2}
+}

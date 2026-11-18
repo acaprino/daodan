@@ -109,3 +109,21 @@ A chain from a UI component to the database:
 
 - `public/sw.js` and the end-to-end tests also send requests; they are outside the perimeter.
 - The 371 routes without callers are not checked one by one beyond the `/api` list above.
+
+## In the product, 18 November 2026
+
+`flows.py` joins `rotta` and `offre` through the link type `REST` with this benchmark's segment grades
+(`points._grade`, `_match`): the most literal route wins, a tie is uncertain, loose candidates always tie.
+
+| Parameter | Value |
+| --- | --- |
+| case | `fixtures/pets`, shaped like github-samples/pets-workshop, where nothing joined: `fetch` with `` `${API_SERVER_URL}/api/dogs?page=…` `` and `` `…/api/dogs/${dogId}` `` against `@app.route('/api/dogs/<int:id>')` |
+| expected | `fixtures/pets/expected.json`, written before the code: 2 links, 1 uncertain link (two routes `/api/breeds/{}`), 1 gap (`` `${API_SERVER_URL}${path}` ``), 1 route nobody calls |
+| rules | `fixtures/pets/rules.json`: `fetch` and `app.route`, as a model writes them for the project |
+| test | `tests/test_codebase_map_flows.py`, `RestSchemaTests` |
+
+Result: 5 of 5 expected, before the change 0 links and 4 gaps. Where the product differs from `points.py`: a
+leading part before the first `/segment`, a scheme and host or an interpolation, is the base URL and is cut
+(the client reader here has no base and needs `getApiPath` declared); a declared parameter (`:id`, `<id>`, `{id}`) may lead,
+an interpolated first segment is a gap; no method wildcard, no `ALL`, no catch-all `{*}`; an uncertain link
+is a gap with its candidates, not an edge, so a flow never follows a guess.
