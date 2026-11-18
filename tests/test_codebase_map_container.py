@@ -913,34 +913,208 @@ class FakeEngineTest(unittest.TestCase):
         self.assertTrue(caught.exception.remedy)
         fetched.assert_not_called()
 
-    def test_beside_a_running_kiri_of_the_user_daodan_starts_no_engine_and_says_why(self):
-        """D-219: Kiri 0.2.0 refuses a second engine in WSL, and two Kiri engines, even in distributions of their
-        own, share the WSL VM's network and the nftables table `kiri` each rebuilds at start and removes at stop.
-        With the user's Kiri running and its `docker` not answering, Daodan's engine never starts: a Gap names that
-        distribution, and WSL is asked only which distributions run; nothing is imported, started, stopped or
-        downloaded (the owner's rule: never restart, stop or reconfigure the user's Kiri)."""
-        asked = []
+    def test_beside_a_running_kiri_of_the_user_daodan_starts_its_own_in_a_network_of_its_own(self):
+        """D-219: Kiri engines in WSL share the VM's network namespace, where each builds at start and removes at stop
+        the nftables table `kiri`. Daodan's daemon runs in a network namespace of its own, joined to the outside by
+        pasta (`DAEMON`), so beside the user's running Kiri Daodan starts its own: WSL is asked only about Daodan's
+        distribution, what an earlier run left of it ends once the engine is Daodan's to use (the lock), and nothing
+        names the user's distribution (the owner's rule: never use, restart, stop or reconfigure it)."""
+        events = []
 
         def wsl(*args, timeout=120):
-            asked.append(args)
+            events.append(("wsl", args))
             return subprocess.CompletedProcess(args, 0, b"kiri\nUbuntu\n", b"")
 
+        class Daemon:
+            def __init__(self, argv, **_):
+                events.append(("start", tuple(argv)))
+
+            def poll(self):
+                return None
+
+            def wait(self, timeout=None):
+                return 0
+
+        lock = types.SimpleNamespace(LK_NBLCK=2, locking=lambda *_: events.append(("lock", ())))
+        answer = subprocess.CompletedProcess([], 0, b"linux\n", b"")
         with mock.patch.object(container.os, "name", "nt"), mock.patch.dict(os.environ, {"DAODAN_CONTAINER": ""}), \
-                mock.patch.object(container, "program", return_value=None), \
+                mock.patch.dict(sys.modules, {"msvcrt": lock}), \
+                mock.patch.object(container, "program", side_effect=AssertionError("no engine of the user's")), \
                 mock.patch.object(container, "wsl_executable", return_value="wsl.exe"), \
                 mock.patch.object(container, "wsl", side_effect=wsl), \
-                mock.patch.object(container, "download") as fetched, \
-                mock.patch.object(container, "engine_home", side_effect=AssertionError("no engine of Daodan's")):
-            with self.assertRaises(container.Gap) as caught:
-                container.find_engine()
-        self.assertEqual(caught.exception.cause,
-                         "another Kiri engine runs in WSL (kiri); Daodan's would reset its network rules")
-        self.assertEqual(caught.exception.remedy,
-                         "open that Kiri so that `docker` answers, or stop it with wsl --terminate kiri")
-        self.assertEqual(asked, [("-l", "--running", "-q")])
-        fetched.assert_not_called()
+                mock.patch.object(container, "engine_home", return_value=self.scratch / "home"), \
+                mock.patch.object(container, "ensure_distro", return_value=(False, "2026.05.26-r0")), \
+                mock.patch.object(container.subprocess, "Popen", Daemon), \
+                mock.patch.object(container, "cli", return_value=answer):
+            engine = container.find_engine()
+            engine.stop()
+        self.assertEqual(engine.name, f"daodan-kiri@{container.KIRI_VERSION}+pasta@2026.05.26-r0")  # in every record
+        self.assertEqual(engine.argv[1:3] + engine.argv[-3:], ("-d", container.DISTRO, "/usr/bin/docker", "-H",
+                                                               container.SOCKET))
+        terminate = ("wsl", ("--terminate", container.DISTRO))
+        self.assertEqual([kind for kind, _ in events], ["lock", "wsl", "start", "wsl"])
+        self.assertEqual((events[1], events[3]), (terminate, terminate))
+        started = events[2][1]
+        self.assertEqual(started[1:3] + started[-3:], ("-d", container.DISTRO, "/bin/sh", "-c", container.DAEMON))
+        self.assertNotIn("kiri", [arg for _, args in events for arg in args])
+        netns = container.NETNS
+        self.assertIn(f"unshare --net={netns} true", container.DAEMON)
+        self.assertIn(f"--netns {netns}", container.DAEMON)  # pasta joins it to the outside
+        self.assertTrue(container.DAEMON.endswith(f"exec nsenter --net={netns} /usr/bin/kiri daemon"))
 
-    # Section 3: an engine the user already has is used as it is.
+    def test_on_windows_no_engine_of_the_user_is_ever_started(self):
+        """The owner's rule (spec of the dynamic step, 15 November): on Windows the engine is always Daodan's own
+        Kiri, never the Docker, Podman or Kiri the user has. A `docker` and a `podman` on PATH that would leave a
+        mark, and answer as a Linux engine, are never started."""
+        bin_dir, mark = self.scratch / "bin", self.scratch / "asked"
+        bin_dir.mkdir()
+        for name in ("docker", "podman"):  # `.cmd`: the name `program` finds on Windows
+            script = bin_dir / f"{name}.cmd"
+            if os.name == "nt":
+                script.write_text(f'@echo {name}>> "{mark}"\r\n@echo linux\r\n')
+            else:
+                script.write_text(f'#!/bin/sh\necho {name} >> "{mark}"\necho linux\n')
+                script.chmod(0o755)
+        own = container.Engine(f"daodan-kiri@{container.KIRI_VERSION}", ("wsl.exe",))
+        with mock.patch.dict(os.environ, {"PATH": str(bin_dir), "DAODAN_CONTAINER": ""}), \
+                mock.patch.object(container.os, "name", "nt"), \
+                mock.patch.object(container, "own_engine", return_value=own):
+            found = container.find_engine()
+        self.assertIs(found, own)
+        self.assertFalse(mark.exists())
+
+    def distro_fakes(self) -> types.SimpleNamespace:
+        """`ensure_distro`'s world for the rest of the test: the pinned Alpine base served, Kiri's files, and a WSL that
+        records each call and answers the command run in the distribution with `install` (code, stdout, stderr), or
+        raises it; by default apk-tools 3.0.9's answer in Alpine 3.24 (notes, section 8)."""
+        served, binaries = self.scratch / "served", self.scratch / "bin"
+        served.mkdir()
+        binaries.mkdir()
+        arch = container.architecture()
+        with tarfile.open(served / Path(container.ALPINE[arch][0]).name, "w:gz") as out:
+            for name, content in {"etc/alpine-release": b"3.24.4\n", "etc/apk/keys/alpine.rsa.pub": b"a key\n"}.items():
+                info = tarfile.TarInfo(name)
+                info.size = len(content)
+                out.addfile(info, io.BytesIO(content))
+        for name in container.KIRI_FILES.values():
+            (binaries / name).write_bytes(name.encode())
+        world = types.SimpleNamespace(fetched=[], asked=[], imported={}, install=(
+            0, b"(1/1) Installing passt (2026.05.26-r0)\nOK: 8784 KiB in 17 packages\n", b""))
+
+        def download(url, target, *, sha256=None):
+            world.fetched.append((url, sha256))
+            return Path(shutil.copyfile(served / Path(url).name, target))
+
+        def wsl(*args, timeout=120):
+            world.asked.append(args)
+            if args[0] == "--import":
+                with tarfile.open(args[3]) as rootfs:
+                    world.imported = {member.name: (member.mode, member.uid, rootfs.extractfile(member).read())
+                                      for member in rootfs if member.isfile()}
+            if args[0] != "-d":
+                return subprocess.CompletedProcess(args, 0, b"", b"")
+            if isinstance(world.install, BaseException):
+                raise world.install
+            return subprocess.CompletedProcess(args, *world.install)
+
+        for name, fake in (("download", download), ("wsl", wsl), ("kiri_files", lambda home: binaries)):
+            self.enterContext(mock.patch.object(container, name, side_effect=fake))
+        return world
+
+    def test_daodan_s_distribution_gets_pasta_from_apk_checked_against_its_pinned_base_s_keys(self):
+        """pasta joins Daodan's distribution at import, installed by apk in the distribution from the repositories its
+        pinned Alpine base names, the signature checked against the keys that base carries (apk's own defaults, never
+        `--allow-untrusted`, never a package unpacked by hand): only the base is downloaded. The version apk says it
+        installed is kept with the distribution and named by the engine. The folder is named by what decides the
+        result, the install included, so a distribution imported another way is unregistered and imported again;
+        once imported, it is used as it is."""
+        home = self.scratch / "home"
+        home.mkdir()
+        world = self.distro_fakes()
+        arch = container.architecture()
+        older = {container.DISTRO: str(home / "distro-5e639bca07d0"), "kiri": r"C:\kiri"}
+        with mock.patch.object(container, "registered_distros", return_value=("kiri", older)):
+            self.assertEqual(container.ensure_distro(home), (False, "2026.05.26-r0"))
+        self.assertEqual(world.fetched, [container.ALPINE[arch]])
+        self.assertEqual([args[0] for args in world.asked], ["--unregister", "--import", "-d"])
+        self.assertEqual(world.asked[2], ("-d", container.DISTRO, "--cd", "/", "--exec", *container.INSTALL_PASTA))
+        self.assertEqual(container.INSTALL_PASTA, ("/sbin/apk", "add", "--no-cache", "passt"))
+        self.assertNotIn("usr/bin/pasta", world.imported)
+        self.assertEqual(world.imported["usr/bin/kiri"], (0o755, 0, b"kiri"))
+        self.assertIn("etc/wsl.conf", world.imported)
+        self.assertFalse((home / "rootfs.tar").exists())
+        folders = [path for path in home.iterdir() if path.is_dir() and path.name.startswith("distro-")]
+        self.assertEqual([str(folder) for folder in folders], [world.asked[1][2]])
+        world.asked.clear()
+        current = {container.DISTRO: str(folders[0]), "kiri": r"C:\kiri"}
+        with mock.patch.object(container, "registered_distros", return_value=("kiri", current)):
+            self.assertEqual(container.ensure_distro(home), (False, "2026.05.26-r0"))
+            self.assertEqual(world.asked, [])
+            with mock.patch.object(container, "INSTALL_PASTA", (*container.INSTALL_PASTA, "nftables")):
+                container.ensure_distro(home)
+        self.assertEqual([args[0] for args in world.asked], ["--unregister", "--import", "-d"])
+        self.assertNotEqual(world.asked[1][2], str(folders[0]))
+        self.assertEqual(world.fetched, [container.ALPINE[arch]])
+
+    def test_a_failed_pasta_install_is_a_gap_and_leaves_no_distribution_registered(self):
+        """apk's answers in Alpine 3.24 (notes, section 7) when the mirror is not reached, when the index's signature
+        does not verify against the base's keys, when the package is not there, and no answer in time: each a Gap with
+        apk's words and a remedy, the distribution unregistered and its folder gone. One that stays registered (its
+        removal failed, or a run ended between import and install) has no record of pasta, so the next start imports
+        it again: never a start without pasta."""
+        world = self.distro_fakes()
+        fetching = "WARNING: fetching https://dl-cdn.alpinelinux.org/alpine/v3.24/main/x86_64/APKINDEX.tar.gz: "
+        unselected = "ERROR: unable to select packages:\n  passt (no such package):\n    required by: world[passt]\n"
+        installed = world.install
+        for index, (answer, cause, remedy) in enumerate((
+                ((1, b"", f"{fetching}DNS: transient error (try again later)\n{unselected}".encode()), "DNS", "connection"),
+                ((1, b"", f"{fetching}UNTRUSTED signature\n{unselected}".encode()), "UNTRUSTED signature", "keys"),
+                ((1, b"", unselected.encode()), "passt (no such package)", "update Daodan"),
+                (subprocess.TimeoutExpired("wsl.exe", 300), "300 s", "connection"))):
+            home = self.scratch / f"home-{index}"
+            home.mkdir()
+            world.install, world.asked = answer, []
+            with self.subTest(cause), \
+                    mock.patch.object(container, "registered_distros", return_value=("kiri", {"kiri": r"C:\kiri"})):
+                with self.assertRaises(container.Gap) as caught:
+                    container.ensure_distro(home)
+                self.assertIn(cause, caught.exception.cause)
+                self.assertIn(remedy, caught.exception.remedy)
+                self.assertEqual([args[:2] for args in world.asked],
+                                 [("--import", container.DISTRO), ("-d", container.DISTRO),
+                                  ("--unregister", container.DISTRO)])
+                self.assertFalse(Path(world.asked[0][2]).exists())
+                self.assertFalse((home / "rootfs.tar").exists())
+        left = {container.DISTRO: world.asked[0][2], "kiri": r"C:\kiri"}  # its removal failed
+        Path(left[container.DISTRO]).mkdir()
+        world.install, world.asked = installed, []
+        with mock.patch.object(container, "registered_distros", return_value=("kiri", left)):
+            self.assertEqual(container.ensure_distro(home), (False, "2026.05.26-r0"))
+        self.assertEqual([args[0] for args in world.asked], ["--unregister", "--import", "-d"])
+
+    def test_an_imported_distribution_is_used_whichever_folder_carries_the_long_path_prefix(self):
+        """WSL's `BasePath` and Daodan's own folder (a LOCALAPPDATA given as `\\\\?\\D:\\...`) may each carry the
+        `\\\\?\\` prefix of long paths or not: compared in one form, the distribution already imported is used as it is,
+        never unregistered and imported again with its images lost."""
+        home = self.scratch / "home"
+        home.mkdir()
+        world = self.distro_fakes()
+        with mock.patch.object(container, "registered_distros", return_value=(None, {})):
+            container.ensure_distro(home)
+        folder, prefix = world.asked[0][2], "\\\\?\\"
+        world.asked.clear()
+        pairs = [(home, prefix + folder)]
+        if os.name == "nt":  # only there is a path with the prefix a path
+            pairs += [(Path(prefix + str(home)), folder), (Path(prefix + str(home)), prefix + folder)]
+        for given, registered in pairs:
+            with self.subTest(home=str(given), registered=registered), \
+                    mock.patch.object(container, "registered_distros",
+                                      return_value=(None, {container.DISTRO: registered})):
+                self.assertEqual(container.ensure_distro(given), (True, "2026.05.26-r0"))
+        self.assertEqual(world.asked, [])
+
+    # Section 3: elsewhere, where Daodan brings no engine, the one the user already has is used as it is.
+    @unittest.skipIf(os.name == "nt", "on Windows the engine is always Daodan's own")
     def test_the_user_engine_is_used_and_not_modified(self):
         bin_dir = self.scratch / "bin"
         bin_dir.mkdir()
@@ -997,6 +1171,12 @@ def test_on_modal_apt_updates_and_downloads_from_debian_s_plain_http_archive_thr
 
 SMOKE = os.environ.get("DAODAN_CONTAINER_SMOKE") == "1"
 ALPINE = "alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf"
+# nft in a root of its own inside Daodan's distribution, fetched and checked by apk; it reads the namespace it runs in.
+PROBE = ("[ -x /opt/daodan-probe/usr/sbin/nft ] || apk --root /opt/daodan-probe --initdb --keys-dir /etc/apk/keys "
+         "--repositories-file /etc/apk/repositories --no-cache --quiet add nftables")
+# What the network namespace of every WSL distribution holds, read from Daodan's distribution outside its own.
+SHARED = ("chroot /opt/daodan-probe nft list ruleset; ip -o link | cut -d: -f2 | sort; ip route; ip -6 route; "
+          "cat /proc/sys/net/ipv4/ip_forward /proc/sys/net/ipv6/conf/all/forwarding")
 
 
 def user_settings() -> dict:
@@ -1008,7 +1188,10 @@ def user_settings() -> dict:
         import winreg
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as key:
             settings["user PATH"] = winreg.QueryValueEx(key, "Path")[0]
-        settings["wsl"] = container.registered_distros()
+        default, folders = container.registered_distros()
+        # Daodan's distribution is not the user's: that it is registered counts, not the folder an import names.
+        settings["wsl"] = (default, {name: path for name, path in folders.items() if name != container.DISTRO},
+                           container.DISTRO in folders)
     return settings
 
 
@@ -1073,19 +1256,91 @@ class RealEngineSmokeTest(unittest.TestCase):
         self.assertEqual(container.cli(engine, "system", "df").stdout, held)
 
     @unittest.skipUnless(os.name == "nt", "Daodan brings its own engine only on Windows")
+    def test_own_engine_leaves_the_network_wsl_shares_as_it_was(self):
+        """D-219, on this machine: every WSL distribution shares the VM's network namespace, where a Kiri builds and
+        removes its nftables table. Daodan's runs in a namespace of its own (`DAEMON`), so that shared namespace
+        (tables, links, routes, forwarding) is the same before, during and after a run of Daodan's engine, and
+        `nft monitor` there sees no event while it pulls, runs a container without network and lets a preparation
+        reach a registry through the proxy; Daodan's table is in its own namespace. The shared namespace is read
+        from Daodan's distribution, outside its namespace, with nft installed by apk into a root of its own
+        (`PROBE`). The import is part of the run: the distribution is imported again, so apk's install of pasta, with
+        the shared namespace's sockets, is between `before` and `installed`. Another engine that changes the shared
+        namespace meanwhile fails it too: the output says what."""
+        free = container.free_memory()
+        if free is not None and free < 4 * 2**30:
+            self.skipTest(f"{free / 2**30:.1f} GB free, under 4 GB")
+        before_settings = user_settings()
+        home = container.engine_home()
+        container.ensure_distro(home)
+        argv = container.distro_argv()
+
+        def shell(script: str) -> str:
+            answer = subprocess.run([*argv, "/bin/sh", "-c", script], capture_output=True, text=True, timeout=600)
+            self.assertEqual(answer.returncode, 0, answer.stdout + answer.stderr)
+            return answer.stdout
+
+        shell(PROBE)
+        before = shell(SHARED)
+        container.remove_distro()
+        pasta = container.ensure_distro(home)[1]
+        shell(PROBE)
+        installed = shell(SHARED)
+        engine = container.find_engine()
+        self.assertEqual(engine.name, f"daodan-kiri@{container.KIRI_VERSION}+pasta@{pasta}")
+        monitor = subprocess.Popen([*argv, "/bin/sh", "-c", "exec chroot /opt/daodan-probe nft monitor"],
+                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        try:
+            version = container.cli(engine, "version", "--format", "{{.Server.Os}} {{.Server.Version}}").stdout.decode()
+            pinned = container.pin(lambda *args, timeout=300: container.cli(engine, *args, timeout=timeout), ALPINE, 600)
+            line = container.checked(container.cli(
+                engine, "run", "--rm", "--network", "none", pinned, "sh", "-c", "echo printed without a network; "
+                "ip -o link | cut -d: -f2 | tr -d ' ' | tr '\\n' ' '"), "run").stdout.decode().strip()
+            ours = shell(f"nsenter --net={container.NETNS} chroot /opt/daodan-probe nft list tables")
+            during = shell(SHARED)
+            scratch = Path(tempfile.mkdtemp(prefix="daodan-shared-network-smoke-"))
+            self.addCleanup(shutil.rmtree, scratch, ignore_errors=True)
+            (scratch / "project").mkdir()
+            reach = ("import urllib.request; urllib.request.urlopen('https://pypi.org/simple/', timeout=20); "
+                     "print('reached')")
+            result = container.run_commands(scratch / "project", [
+                {"tool": "python", "argv": ["python", "-c", reach], "network": "registries"},
+                {"tool": "python", "argv": ["python", "-c", reach], "network": "none"}],
+                image=container.PROXY_IMAGE, out_dir=scratch / "out", engine=engine, memory=256 * 2**20, pids=64,
+                timeout=120, prepare_timeout=300)  # it stops the engine at its end
+        finally:
+            engine.stop()
+            events = monitor.communicate(timeout=60)[0]
+        after = shell(SHARED)
+        print(json.dumps({"before": before, "installed": installed, "during": during, "after": after, "events": events,
+                          "version": version, "pasta": pasta, "pinned": pinned, "line": line, "ours": ours,
+                          "results": [(item["returncode"], item["stdout"].strip()) for item in result["results"]]},
+                         indent=1))
+        self.assertEqual(version.strip(), f"linux {container.KIRI_VERSION}")
+        self.assertEqual(line, "printed without a network\nlo")
+        self.assertIn("table ip kiri", ours)
+        self.assertEqual((installed, during, after), (before, before, before))
+        self.assertEqual(events.strip(), "")
+        self.assertEqual(result["state"], "done", result)
+        early, late = result["results"]
+        self.assertEqual((early["returncode"], early["stdout"].strip()), (0, "reached"))
+        self.assertNotEqual(late["returncode"], 0)
+        self.assertEqual(user_settings(), before_settings)
+
+    @unittest.skipUnless(os.name == "nt", "Daodan brings its own engine only on Windows")
     def test_own_engine_installs_into_the_shared_directory(self):
         free = shutil.disk_usage(Path(container.engine_home().anchor)).free
         if free < container.ENGINE_DISK_MIN:
             self.skipTest(f"{free / 2**20:.0f} MB free on the shared directory's disk")
         before = user_settings()
-        registered = container.DISTRO in before["wsl"][1]
+        registered = before["wsl"][2]
         try:
             home = container.engine_home()
             container.kiri_files(home)
-            remove = container.ensure_distro(home)
+            remove, pasta = container.ensure_distro(home)
             argv = container.distro_argv()
             probes = {"docker": [*argv, "/usr/bin/docker", "--version"],
                       "kiri": [*argv, "/usr/bin/kiri"],
+                      "pasta": [*argv, "/usr/bin/pasta", "--version"],
                       "cgroup": [*argv, "/bin/sh", "-c", "grep ' /sys/fs/cgroup ' /proc/mounts"]}
             answers = {name: subprocess.run(probe, capture_output=True, text=True, timeout=60)
                        for name, probe in probes.items()}
@@ -1093,11 +1348,13 @@ class RealEngineSmokeTest(unittest.TestCase):
                 print(name, answer.returncode, answer.stdout.strip()[:200], answer.stderr.strip()[:200])
             self.assertIn("29.9.2", answers["docker"].stdout)
             self.assertIn("kiri raw run", answers["kiri"].stderr)
+            # The version on record is the program's: passt's 2026_05_26.<commit> is Alpine's 2026.05.26-r<n>.
+            self.assertIn("pasta " + pasta.split("-r")[0].replace(".", "_"), answers["pasta"].stdout)
             self.assertIn("cgroup2", answers["cgroup"].stdout)
         finally:
             if not registered:
                 container.remove_distro()
-        print(json.dumps({"home": str(home), "remove_after_use": remove,
+        print(json.dumps({"home": str(home), "remove_after_use": remove, "pasta": pasta,
                           "files": sorted(str(path.relative_to(home)) for path in home.rglob("*") if path.is_file())}))
         self.assertEqual(user_settings(), before)
 

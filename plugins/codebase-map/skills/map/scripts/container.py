@@ -39,12 +39,14 @@ runs before its tests run at the end of the preparation; with services, the pod 
 preparation's network while they run, and leaves it, the proxy gone, before the execution.
 
 The engine is reached only through a Docker-compatible command line (`create`, `cp`,
-`start`, `rm`, `network`, `volume`), so it can be replaced. An engine the user already has
-(`docker`, then `podman`) is used as found: no context, no configuration, no option of
-Daodan's. Otherwise, on Windows, Daodan runs Kiri at a pinned version in a WSL 2
-distribution of its own under the shared directory, never through Kiri's Windows app or
-installer. Kiri engines in one WSL VM share its network namespace and each rebuilds and
-removes the same nftables table, so Daodan's engine never starts beside another one.
+`start`, `rm`, `network`, `volume`), so it can be replaced. On Windows it is always Daodan's
+own: Kiri at a pinned version in a WSL 2 distribution of its own under the shared directory,
+never through Kiri's Windows app or installer, never the user's Docker, Podman or Kiri. Every
+WSL distribution shares the VM's network namespace, where a Kiri builds and removes its
+nftables table; Daodan's daemon runs in a namespace of its own, which pasta joins to the
+outside with sockets, so it starts beside another Kiri and changes nothing of that shared
+namespace. Elsewhere Daodan brings no engine: the user's (`docker`, then `podman`) is used as
+found, with no context, no configuration, no option of Daodan's.
 `DAODAN_CONTAINER=off` leaves every run without an engine, a gap at once (the test suites).
 
 Standard library only.
@@ -264,14 +266,27 @@ ALPINE = {
     "arm64": ("https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/aarch64/alpine-minirootfs-3.24.4-aarch64.tar.gz",
               "4b14c18f7e90a063b61462ea1462a5732c154bf6adad594974fe6487cd98a8de"),
 }
+# pasta (`DAEMON`), from Alpine's passt, installed at import by apk in the distribution: from the repositories the
+# pinned base names, its signature checked against the keys the base carries, apk's own defaults. Its only network is
+# its own sockets in the namespace every WSL distribution shares, closed when it exits; it keeps no cache.
+INSTALL_PASTA = ("/sbin/apk", "add", "--no-cache", "passt")
+PASTA_RECORD = "pasta-version"  # in the distribution's folder: the version apk installed, written once it has
 DISTRO = "daodan-kiri"
 SOCKET = "unix:///root/.kiri/run/docker.sock"
 # No Windows drives and no Windows programs inside Daodan's distribution.
 WSL_CONF = ("[boot]\nsystemd=false\n[automount]\nenabled=false\nmountFsTab=false\n"
             "[interop]\nenabled=false\nappendWindowsPath=false\n[user]\ndefault=root\n")
+NETNS = "/run/daodan/net"  # Daodan's network namespace, bound on the distribution's /run: it ends when the distribution does
+# The daemon in that namespace: Kiri builds and removes its nftables table, bridges and forwarding there, never in the
+# namespace every WSL distribution shares. pasta gives it `eth0` with the VM's address and default route and carries its
+# traffic as sockets of the shared namespace, adding no interface, route, table or setting there; it forwards no port
+# and maps no address to the VM's loopback, and stays root (`--runas 0`) to join a namespace root made.
 # The routers move off 80 and 443, which WSL would forward to the user's localhost.
 DAEMON = ("grep -qs ' /sys/fs/cgroup cgroup2 ' /proc/mounts || { echo 'daodan: no cgroup v2 at /sys/fs/cgroup'; exit 3; }; "
-          "export HOME=/root KIRI_HTTP_PORT=47080 KIRI_HTTPS_PORT=47443; exec /usr/bin/kiri daemon")
+          f"mkdir -p /run/daodan && : > {NETNS} && unshare --net={NETNS} true && /usr/bin/pasta --config-net -q "
+          f"-t none -u none -T none -U none --no-map-gw --runas 0 --netns {NETNS} "
+          "|| { echo 'daodan: no network namespace of its own for the engine'; exit 4; }; "
+          f"export HOME=/root KIRI_HTTP_PORT=47080 KIRI_HTTPS_PORT=47443; exec nsenter --net={NETNS} /usr/bin/kiri daemon")
 LXSS = r"Software\Microsoft\Windows\CurrentVersion\Lxss"
 # Engine, Alpine base, the import's temporary rootfs and the distribution's disk before any image.
 ENGINE_DISK_MIN = 2**30
@@ -361,15 +376,29 @@ def registered_distros() -> tuple[str | None, dict[str, str]]:
                     folder = winreg.QueryValueEx(entry, "BasePath")[0]
                 except OSError:
                     continue
-            names[guid], folders[name] = name, folder.removeprefix("\\\\?\\")
+            names[guid], folders[name] = name, folder
     return names.get(default), folders
 
 
-def find_engine(*, own: bool = True) -> Engine:
-    """The user's engine that answers (`docker`, then `podman`), else Daodan's own; a Gap when none can run, and
-    at once with `DAODAN_CONTAINER=off` (the test suites, which start no container)."""
+def same_folder(one: str | Path, other: str | Path) -> bool:
+    """Two Windows folders in one form: WSL's `BasePath` and Daodan's own (from LOCALAPPDATA) may each carry the
+    `\\\\?\\` prefix of long paths or not."""
+    def form(path: str | Path) -> str:
+        return os.path.normcase(os.path.abspath(str(path).removeprefix("\\\\?\\")))
+    return form(one) == form(other)
+
+
+def find_engine() -> Engine:
+    """On Windows always Daodan's own engine, never one the user has (spec of the dynamic step); elsewhere, where
+    Daodan brings none, the user's (`user_engine`). A Gap when none can run, and at once with `DAODAN_CONTAINER=off`
+    (the test suites, which start no container)."""
     if os.environ.get("DAODAN_CONTAINER") == "off":
         raise Gap("container engine off (DAODAN_CONTAINER=off)", "unset DAODAN_CONTAINER to run in a container")
+    return own_engine() if os.name == "nt" else user_engine()
+
+
+def user_engine() -> Engine:
+    """The user's engine that answers, `docker` then `podman`; a Gap without one."""
     for name, probe in (("docker", ("version", "--format", "{{.Server.Os}}")),
                         ("podman", ("info", "--format", "{{.Host.Os}}"))):
         path = program(name)  # never the project's own, from the working directory
@@ -381,9 +410,8 @@ def find_engine(*, own: bool = True) -> Engine:
             continue
         if answer.returncode == 0 and answer.stdout.decode("utf-8", "replace").strip() == "linux":
             return Engine(name, (path,))
-    if not own:
-        raise Gap("no container engine answers: neither docker nor podman", "start Docker or Podman")
-    return own_engine()
+    raise Gap("no container engine answers: neither docker nor podman",
+              "install Docker or Podman; Daodan brings its own engine only on Windows")
 
 
 def kiri_files(home: Path) -> Path:
@@ -436,16 +464,20 @@ def rpm_extract(package: Path, wanted: dict[str, Path]) -> None:
         raise ValueError(f"{package.name} lacks {', '.join(sorted(remaining))}")
 
 
-def ensure_distro(home: Path) -> bool:
-    """Daodan's distribution imported from Alpine plus Kiri; True when it must go after use."""
+def ensure_distro(home: Path) -> tuple[bool, str]:
+    """Daodan's distribution imported from Alpine plus Kiri, with pasta installed by apk: whether it must go after
+    use, and the version of pasta."""
+    arch = architecture()
     default, folders = registered_distros()
-    folder = home / "distro"
-    current = folders.get(DISTRO)
-    if current and os.path.normcase(os.path.abspath(current)) == os.path.normcase(str(folder)):
-        return default in (None, DISTRO)
+    # Named by what decides the result: one an older Daodan made another way is imported again.
+    made_from = json.dumps([ALPINE[arch], INSTALL_PASTA, KIRI_PACKAGES[arch], WSL_CONF]).encode("utf-8")
+    folder = home / f"distro-{hashlib.sha256(made_from).hexdigest()[:12]}"
+    current, record = folders.get(DISTRO), folder / PASTA_RECORD
+    if current and same_folder(current, folder) and record.is_file():
+        return default in (None, DISTRO), record.read_text(encoding="utf-8")
     if current:
         remove_distro()
-    url, digest = ALPINE[architecture()]
+    url, digest = ALPINE[arch]
     base = home / Path(url).name
     try:
         if not base.is_file():
@@ -473,7 +505,31 @@ def ensure_distro(home: Path) -> bool:
     if imported.returncode != 0:
         message = imported.stdout.decode("utf-8", "replace").strip() or imported.stderr.decode("utf-8", "replace").strip()
         raise Gap(f"WSL 2 could not import Daodan's distribution: {message}", WSL_ENABLE)
-    return default is None
+    return default is None, install_pasta(folder)
+
+
+def install_pasta(folder: Path) -> str:
+    """apk's install of pasta into the distribution just imported at `folder`, and the version apk says it installed,
+    kept there (`PASTA_RECORD`); a Gap with apk's words otherwise, the distribution unregistered and its folder gone:
+    never one without pasta."""
+    try:
+        answer = wsl("-d", DISTRO, "--cd", "/", "--exec", *INSTALL_PASTA, timeout=300)
+    except subprocess.TimeoutExpired:
+        answer = None
+    said = " ".join((answer.stdout + answer.stderr).decode("utf-8", "replace").split()) if answer else ""
+    installed = re.search(r"Installing passt \(([^)\s]+)\)", said) if answer and answer.returncode == 0 else None
+    if installed:
+        (folder / PASTA_RECORD).write_text(installed[1], encoding="utf-8")
+        return installed[1]
+    remove_distro()
+    shutil.rmtree(folder, ignore_errors=True)
+    if "UNTRUSTED" in said:
+        remedy = "retry on another connection; Alpine's index must verify against the keys of Daodan's Alpine base"
+    elif not answer or "fetching" in said:
+        remedy = "check the connection to dl-cdn.alpinelinux.org and retry"
+    else:
+        remedy = "update Daodan: the repositories of its Alpine release did not give passt"
+    raise Gap(f"apk did not install pasta into Daodan's distribution: {said or 'no answer within 300 s'}", remedy)
 
 
 def remove_distro() -> None:
@@ -485,15 +541,12 @@ def distro_argv() -> tuple[str, ...]:
 
 
 def own_engine() -> Engine:
-    """Daodan's Kiri in its WSL distribution, its daemon started for one operation; a Gap where it cannot run."""
+    """Daodan's Kiri in its WSL distribution, its daemon started for one operation in a network namespace of its own
+    (`DAEMON`), whatever else runs in WSL; a Gap where it cannot run."""
     if os.name != "nt":
         raise Gap("no container engine answers: neither docker nor podman",
                   "install Docker or Podman; Daodan brings its own engine only on Windows")
-    running = wsl("-l", "--running", "-q")  # a Gap without WSL (`wsl_program`)
-    others = [name for name in running.stdout.decode("utf-8", "replace").split() if "kiri" in name.lower() and name != DISTRO]
-    if others:
-        raise Gap(f"another Kiri engine runs in WSL ({', '.join(others)}); Daodan's would reset its network rules",
-                  "open that Kiri so that `docker` answers, or stop it with wsl --terminate " + others[0])
+    wsl_program()  # a Gap without WSL, before anything is downloaded
     home = engine_home()
     home.mkdir(parents=True, exist_ok=True)
     free = shutil.disk_usage(home).free
@@ -508,7 +561,8 @@ def own_engine() -> Engine:
         lock.close()
         raise Gap("Daodan's container engine is busy with another operation", "wait until it ends and retry")
     try:
-        remove_after = ensure_distro(home)
+        remove_after, pasta = ensure_distro(home)
+        wsl("--terminate", DISTRO)  # what a run that ended without `stop` left: its daemon, pasta, the namespace
         log = (home / "daemon.log").open("wb")
         daemon = subprocess.Popen([*distro_argv(), "/bin/sh", "-c", DAEMON], stdin=subprocess.DEVNULL,
                                   stdout=log, stderr=subprocess.STDOUT, env={**os.environ, "WSL_UTF8": "1"})
@@ -527,7 +581,8 @@ def own_engine() -> Engine:
             remove_distro()
         lock.close()
 
-    engine = Engine(f"daodan-kiri@{KIRI_VERSION}", (*distro_argv(), "/usr/bin/docker", "-H", SOCKET), stop)
+    engine = Engine(f"daodan-kiri@{KIRI_VERSION}+pasta@{pasta}", (*distro_argv(), "/usr/bin/docker", "-H", SOCKET),
+                    stop)
     for _ in range(60):
         if daemon.poll() is not None:
             break

@@ -46,7 +46,7 @@ def test_a_program_is_found_on_absolute_path_entries_only(tmp_path, monkeypatch)
                                                     / "System32" / "wsl.exe"))
     monkeypatch.delenv("DAODAN_CONTAINER", raising=False)
     with pytest.raises(container.Gap):
-        container.find_engine(own=False)  # no docker, no podman: the project's are never started
+        container.user_engine()  # no docker, no podman: the project's are never started
     tool = _planted(tools, "npm")
     monkeypatch.setenv("PATH", os.pathsep.join([".", str(tools)]))
     assert tree_scope.program("npm") == str(tool)
