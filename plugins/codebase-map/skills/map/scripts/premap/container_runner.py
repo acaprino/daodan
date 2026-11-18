@@ -64,10 +64,13 @@ DOCKERFILE = (f"mkdir -p {STATE}/dockerfile && cp {IN}/dockerfile_stages.go {STA
 TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the registries, extra hosts, memory GB
     "go": {"files": [GO], "setup": [UNPACK["go"]], "runs_on": ("go",)},
     "daodan-enry": {"files": [GO, (None, None, "enry_facts.go")], "setup": [UNPACK["go"], ENRY], "registries": True},
+    # `values`: the true values of the tracked .env files beside the copy (`container.run_commands`), which Daodan's
+    # helper alone reads, for Compose: it builds Daodan's own Go and runs BuildKit's parser and Compose's `config`,
+    # no code of the project (D-311)
     "daodan-dockerfile": {"files": [GO, (None, None, "dockerfile_stages.go"), (*compose.DOWNLOAD, "docker-compose")],
                           "setup": [UNPACK["go"], DOCKERFILE, f"cp {IN}/docker-compose {T}/bin/docker-compose"
                                                               f" && chmod 755 {T}/bin/docker-compose"],
-                          "registries": True},
+                          "registries": True, "values": True},
     "cargo": {"files": preparation.NEEDS["rust"]["files"], "setup": preparation.NEEDS["rust"]["setup"],
               "runs_on": ("rust",)},
     "uv": {"files": [preparation.UV],
@@ -176,7 +179,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         def contained(given: list[dict], allowed: tuple, out: str) -> dict:
             return container.run_commands(
                 project, given, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / out,
-                engine=engine, inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
+                values=spec.get("values", False), engine=engine, inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
                 registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
                 memory=int(spec.get("memory", 2) * 2**30), timeout=1800)
 

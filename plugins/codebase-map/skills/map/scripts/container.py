@@ -128,14 +128,18 @@ REACH = ("import socket, sys\nfor port in sys.argv[1:]:\n"
 DOTENV = (".env", ".env.*")  # of the names Daodan never reads, those the copy carries where Git tracks the file
 EXAMPLES = ("example", "sample", "template", "dist")  # the last part of an .env file's name the project publishes
 TEXTS = (".log", ".txt")  # the outputs that are a run's text, masked as its logs are (`masker`)
+STREAMS = ("stdout", "stderr")  # what a command of `run_commands` printed: a run's text too, never removed
 JSONS = (".json",)  # the outputs that are JSON, masked string by string so they stay JSON (`scrubbed`)
 UNMASKED = re.compile(r"(?i)true|false|yes|no|on|off|\d{1,5}")  # values the text's own words and ports would be
-DOTENV_VALUES = STATE + "/dotenv-values.json"  # in the pre-map's container only (`named`), never an output
+DOTENV_VALUES = STATE + "/dotenv-values.json"  # in the container of Daodan's helper only (`named`), never an output
+PUBLIC_SECONDS = 60  # how long the reader of the .env files looks for their values in the project (`RESOLVE`)
 MARKER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_.-]*)\}")  # where a fact names a variable of a tracked .env file
 # Runs in a container of Daodan's (`dotenv_values`), in the folder of the copy, over the tracked .env files its
 # arguments name: each variable's value as Compose's reader gives it (quotes, comments, references to those
-# before it and their defaults), on one line after its mark.
-RESOLVE = r'''import json, os, re, sys
+# before it and their defaults), on one line after its mark. With DAODAN_PUBLIC, its seconds, a second line names the
+# values the other files under the folder hold, in their path or their content (`.env*` files aside), read by
+# pieces of 1 MiB: one pass, bounded in memory by the piece and in time by the seconds.
+RESOLVE = r'''import fnmatch, json, os, re, sys, time
 LINE = re.compile(r"[ \t]*(?:export[ \t]+)?([A-Za-z_][A-Za-z0-9_.-]*)[ \t]*=[ \t]*(.*)")
 REF = re.compile(r"\$(?:\{([A-Za-z_][A-Za-z0-9_]*)(?:(:?[-+?])([^}]*))?\}|([A-Za-z_][A-Za-z0-9_]*))")
 ESCAPES = {"n": "\n", "t": "\t", "r": "\r"}
@@ -172,8 +176,36 @@ def values(text):
     return known
 
 
-print("@@daodan-dotenv " + json.dumps({os.path.normpath(path): values(open(path, encoding="utf-8", errors="replace").read())
-                                       for path in sys.argv[1:]}))
+def public(found, seconds):
+    wanted = {value.encode("utf-8", "replace") for held in found.values() for value in held.values() if value}
+    held, until = set(), time.monotonic() + seconds
+    for top, _, names in os.walk("."):
+        for name in names:
+            if not wanted or time.monotonic() >= until:  # what is not read in time stays secret
+                return held
+            if fnmatch.fnmatch(name.lower(), ".env") or fnmatch.fnmatch(name.lower(), ".env.*"):
+                continue
+            rel = os.path.relpath(os.path.join(top, name), ".").replace(os.sep, "/")
+            seen = {value for value in wanted if value in rel.encode("utf-8", "replace")}
+            tail = b""
+            try:
+                with open(rel, "rb") as handle:
+                    while wanted - seen and time.monotonic() < until and (piece := handle.read(1 << 20)):
+                        data = tail + piece
+                        seen |= {value for value in wanted - seen if value in data}
+                        keep = max(map(len, wanted - seen), default=1) - 1
+                        tail = data[len(data) - keep:] if keep else b""
+            except OSError:  # a file it cannot read publishes nothing
+                pass
+            held, wanted = held | seen, wanted - seen
+    return held
+
+
+found = {os.path.normpath(path): values(open(path, encoding="utf-8", errors="replace").read()) for path in sys.argv[1:]}
+print("@@daodan-dotenv " + json.dumps(found))
+if os.environ.get("DAODAN_PUBLIC"):
+    print("@@daodan-public " + json.dumps(sorted(value.decode("utf-8", "replace") for value in public(
+        found, float(os.environ["DAODAN_PUBLIC"])))))
 '''
 # Runs in its own container; argv: port, then the allowed hosts, CONNECT to their port 443; a host given as
 # `http://<host>` (the apt sources a base image names over plain HTTP) is reached by plain HTTP at its port 80, only
@@ -675,11 +707,15 @@ def example(name: str) -> bool:
     return dotenv(name) and name.lower().rsplit(".", 1)[-1] in EXAMPLES
 
 
-def secret(values: dict[str, dict[str, str]]) -> dict[str, dict[str, str]]:
-    """The values of the tracked `.env` files (`dotenv_values`) that are secret, those of an `example` file aside:
-    what the masks hide and an output must not hold. A value an example shares with a true file stays, by the true
-    file's variable."""
-    return {path: found for path, found in values.items() if not example(posixpath.basename(path))}
+def secret(values: dict[str, dict[str, str]], public=()) -> dict[str, dict[str, str]]:
+    """The values of the tracked `.env` files (`dotenv_values`) that are secret: what the masks hide and an output
+    must not hold. Those of an `example` file are aside (D-291), and so is a value in `public`, which the project's
+    other tracked files hold (`RESOLVE`): the project publishes it (`VERTEX_LOCATION=global` beside
+    `globalButtonHaptic.ts`, D-311). A value an example shares with a true file stays, by the true file's
+    variable."""
+    kept = {path: {name: value for name, value in found.items() if value not in public}
+            for path, found in values.items() if not example(posixpath.basename(path))}
+    return {path: found for path, found in kept.items() if found}
 
 
 def _withheld(relative: str, path: Path, mode: int | None) -> dict:
@@ -736,11 +772,12 @@ def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None =
     What Git ignores stays out. A tracked file keeps the executable bit Git records, also where the disk has none.
     A link Git tracks whose target lies inside the project is that link in the copy, never followed; one whose
     target lies outside stays out, a `link_outside` gap of the returned `gaps`, which the run's result carries.
-    The `.env` files Git tracks are in it, `dotenv` naming them; any other file the snapshot never reads is a
-    `file_withheld` gap.
+    The `.env` files Git tracks are in it, `dotenv` naming them, and `published` the other files Git tracks, where
+    their values may stand (`dotenv_values`); any other file the snapshot never reads is a `file_withheld` gap.
     """
     walked, files, tracked_links, gaps = carried(project)
     secrets = [relative for relative, path, _ in files if dotenv(path.name)]
+    published = [relative for relative, path, mode in files if mode is not None and not dotenv(path.name)]
     folders = {"work", *(f"work/{folder}" for folder in walked if folder != ".")}
     kept = [(f"work/{relative}", path, mode) for relative, path, mode in files]
     links = [(f"work/{relative}", path, link) for relative, path, link in tracked_links]
@@ -768,7 +805,7 @@ def copy_perimeter(project: Path, target: Path, inputs: dict[str, Path] | None =
     with target.open("rb") as handle:
         return {"files": len(kept) - len(inputs or {}), "inputs": len(inputs or {}), "links": len(links),
                 "sha256": hashlib.file_digest(handle, "sha256").hexdigest(), "gaps": gaps,
-                **({"dotenv": secrets} if secrets else {})}
+                **({"dotenv": secrets, "published": published} if secrets else {})}
 
 
 def named(root: str = WORKDIR, values: str | None = None) -> str:
@@ -779,7 +816,8 @@ def named(root: str = WORKDIR, values: str | None = None) -> str:
     and blank lines stay, any other line goes (the rest of a value over several). The pre-map's commands run after
     it (`run_commands`): what they print holds no value of those files. With `values`, a path outside the copy,
     the files' values are written there first (`RESOLVE`, by file), once: the container's own, never an output,
-    for Daodan's helper that resolves a placeholder to a path of the checkout (`docker_build`)."""
+    for Daodan's helper that resolves a placeholder to a path of the checkout (`docker_build`), in its container
+    alone (`run_commands`' `values`), where no code of the project runs."""
     awk = ('function hex(s, out, i) { out = ""; for (i = 1; i <= length(s); i++) '
            'out = out sprintf("%02x", ord[substr(s, i, 1)]); return out } '
            'BEGIN { for (i = 1; i < 256; i++) ord[sprintf("%c", i)] = i; file = hex(ENVIRON["REL"]) } '
@@ -798,22 +836,26 @@ def named(root: str = WORKDIR, values: str | None = None) -> str:
                    f"do REL=\"${{f#{root}/}}\" awk '{awk}' \"$f\" > \"$f.daodan\" && mv -f \"$f.daodan\" \"$f\"; done\n")
 
 
-def dotenv_values(run: Callable, copy: Path, files: list[str], token: str) -> dict[str, dict[str, str]]:
-    """The variables of the tracked `.env` files of the copy (`files`, relative to the project), by file, read in a
-    container of Daodan's: `RESOLVE` in the proxy's image with no network, over those files alone at their place
-    under /work; `run` is the engine's command line. The values live in the run, for the services that name them
-    (`filled`) and the masks (`masker`), never on record. RuntimeError when the container does not answer."""
+def dotenv_values(run: Callable, copy: Path, files: list[str], token: str,
+                  tracked: list[str] = ()) -> tuple[dict[str, dict[str, str]], set[str]]:
+    """The variables of the tracked `.env` files of the copy (`files`, relative to the project), by file, and the
+    values the project's other tracked files (`tracked`) hold, which it publishes (`secret`): read in a container
+    of Daodan's, `RESOLVE` in the proxy's image with no network, over those files alone at their place under /work,
+    within `PUBLIC_SECONDS`; `run` is the engine's command line. The values live in the run, for the services that
+    name them (`filled`) and the masks (`masker`), never on record. RuntimeError when the container does not
+    answer."""
     box = f"daodan-dotenv-{token}"
     try:
         checked(run("create", "--name", box, "--network", "none", "--memory", str(64 * 2**20), "--pids-limit", "16",
-                    "--security-opt", "no-new-privileges", "-w", WORKDIR, PROXY_IMAGE, "python3", "-c", RESOLVE,
-                    *files), "create of the reader of the .env files")
-        with bound(copy, [[rel, f"{WORKDIR}/{rel}"] for rel in files]) as handle:
+                    "--security-opt", "no-new-privileges", "-e", f"DAODAN_PUBLIC={PUBLIC_SECONDS}", "-w", WORKDIR,
+                    PROXY_IMAGE, "python3", "-c", RESOLVE, *files), "create of the reader of the .env files")
+        with bound(copy, [[rel, f"{WORKDIR}/{rel}"] for rel in (*files, *tracked)]) as handle:
             checked(run("cp", "-", f"{box}:/", stdin=handle), "cp of the .env files")
-        said = run("start", "-a", box, timeout=120)
+        said = run("start", "-a", box, timeout=PUBLIC_SECONDS + 120)
     finally:
         run("rm", "-f", box)
-    return dotenv_answer(said.stdout.decode("utf-8", "replace"), said.returncode)
+    text = said.stdout.decode("utf-8", "replace")
+    return dotenv_answer(text, said.returncode), published(text)
 
 
 def dotenv_answer(stdout: str, code: int | None) -> dict[str, dict[str, str]]:
@@ -823,6 +865,14 @@ def dotenv_answer(stdout: str, code: int | None) -> dict[str, dict[str, str]]:
             return json.loads(line[len("@@daodan-dotenv "):])
     raise RuntimeError(f"the reader of the tracked .env files answered with code {code} and no values: the run, which "
                        "could not mask them in what it keeps, does not start")
+
+
+def published(stdout: str) -> set[str]:
+    """The values `RESOLVE` found in the project's other files (`DAODAN_PUBLIC`), none without its line."""
+    for line in stdout.splitlines():
+        if line.startswith("@@daodan-public "):
+            return set(json.loads(line[len("@@daodan-public "):]))
+    return set()
 
 
 def _labels(values: dict[str, dict[str, str]]) -> dict[str, list[str]]:
@@ -899,7 +949,8 @@ def mask_file(path, hide: Callable[[str], str] | None) -> None:
 
 def _mask_json(path: Path, hide: Callable[[str], str]) -> None:
     """A JSON output written again with `hide`'s masks in each of its strings, keys too, so it stays JSON whatever
-    escapes a value takes there; one that is not JSON is masked as text."""
+    escapes a value takes there, and in each number, which becomes the string of its mask where one holds a value;
+    one that is not JSON is masked as text."""
     try:
         document = json.loads(path.read_bytes())
     except ValueError:
@@ -908,6 +959,8 @@ def _mask_json(path: Path, hide: Callable[[str], str]) -> None:
     def masked(item):
         if isinstance(item, str):
             return hide(item)
+        if isinstance(item, (int, float)) and not isinstance(item, bool):
+            return said if (said := hide(json.dumps(item))) != json.dumps(item) else item
         if isinstance(item, list):
             return [masked(part) for part in item]
         return {hide(key): masked(part) for key, part in item.items()} if isinstance(item, dict) else item
@@ -918,24 +971,23 @@ def _mask_json(path: Path, hide: Callable[[str], str]) -> None:
 
 def scrubbed(paths: list[str], hide: Callable[[str], str] | None, values: dict[str, dict[str, str]],
              root) -> tuple[list[str], list[dict]]:
-    """The outputs `paths` a run keeps, with no value of the tracked `.env` files (`dotenv_values`) in them: a text
-    output masked as the logs are, a JSON one string by string (`_mask_json`); one whose bytes still hold a value
-    (an index, an object file, a value inside a longer word) is never patched: it is removed, and a gap names it by
-    its path under `root` and the variables that hold the value."""
+    """The outputs `paths` a run keeps, with no secret value of the tracked `.env` files (`secret`) in them. Text is
+    masked as the logs are and kept, a text output or what a command printed (`STREAMS`), a JSON one string by
+    string and number by number (`_mask_json`): a result is never destroyed for a coincidence. Any other output
+    whose bytes hold a value (an index, an object file) is never patched: it is removed, and a gap names it by its
+    path under `root` and the variables that hold the value."""
     labels = _labels(values) if hide else {}
     if not labels:
         return list(paths), []
     kept, gaps = [], []
     for item in paths:
         path = Path(item)
-        if not path.is_file():
-            kept.append(item)
-            continue
-        if path.name.endswith(TEXTS):
+        if path.is_file() and (path.name.endswith(TEXTS) or path.name in STREAMS):
             mask_file(path, hide)
-        elif path.name.endswith(JSONS):
+        elif path.is_file() and path.name.endswith(JSONS):
             _mask_json(path, hide)
-        data = path.read_bytes()
+        data = path.read_bytes() if path.is_file() and path.suffix not in (*TEXTS, *JSONS) and (
+            path.name not in STREAMS) else b""
         names = sorted({label for value, said in labels.items() if value.encode("utf-8") in data for label in said})
         if not names:
             kept.append(item)
@@ -1354,9 +1406,12 @@ def bound(copy: Path, files: list[list[str]]):
     out = tempfile.TemporaryFile()
     with tarfile.open(copy) as source, tarfile.open(fileobj=out, mode="w") as target:
         members = source.getmembers()
+        by_name = {member.name: member for member in members}  # a file at once, a folder by its members
         for origin, destination in files:
             prefix, root = posixpath.normpath(posixpath.join("work", origin)), destination.strip("/")
-            held = [member for member in members if member.name == prefix or member.name.startswith(prefix + "/")]
+            one = by_name.get(prefix)
+            held = [one] if one is not None and not one.isdir() else [
+                member for member in members if member.name == prefix or member.name.startswith(prefix + "/")]
             for member in held:
                 target.addfile(member.replace(name=root + member.name[len(prefix):], deep=False),
                                source.extractfile(member) if member.isfile() else None)
@@ -1530,7 +1585,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                      cpus: float | None = None, registries: tuple[str, ...] = REGISTRIES,
                      engine: Engine | str | None = None,
                      inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None,
-                     keep_root: bool = False, dotenv_env: list[tuple[str, str]] = ()) -> dict:
+                     keep_root: bool = False, dotenv_env: list[tuple[str, str]] = (), blind: bool = False) -> dict:
     """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
@@ -1550,7 +1605,9 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     everything the preparation wrote
     (a Dockerfile's build stage installs into the image's own folders: `docker_build.py`): its container committed
     as `daodan-prepared-<token>`, on record before it exists and removed by name as the volumes are; an engine that
-    does not commit it is a gap with its answer.
+    does not commit it is a gap with its answer. `blind`: the command never sees a value of the tracked .env files
+    (`run_commands`, over their placeholders): without services or `dotenv_env`, which take the values, none is
+    read, and what the run keeps is neither masked nor withheld.
     """
     project, out_dir = Path(project).resolve(), Path(out_dir).resolve()
     if out_dir == project or project in out_dir.parents:
@@ -1598,9 +1655,11 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             digest = copy_perimeter(project, copy, given)
             if digest["gaps"]:  # what the copy left out of the project (`copy_perimeter`)
                 result["gaps"] = digest["gaps"]
-            values = dotenv_values(engine_cli, copy, digest["dotenv"], token) if digest.get("dotenv") else {}
-            hide = masker(secret(values))
-            if said_partial := partial(secret(values)):  # what the masks leave, said once
+            values, public = dotenv_values(engine_cli, copy, digest["dotenv"], token, digest["published"]) if (
+                digest.get("dotenv") and not (blind and not services and not dotenv_env)) else ({}, set())
+            hidden_values = secret(values, public)  # not an example's, nor a value the project publishes
+            hide = masker(hidden_values)
+            if said_partial := partial(hidden_values):  # what the masks leave, said once
                 result["gaps"] = [*(result.get("gaps") or ()), *said_partial]
             pinned = [filled(item, values) for item in pinned]  # the values only here, never on record
             exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
@@ -1610,7 +1669,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             def hidden(row: dict) -> dict:  # what the run printed, masked in its log, its outputs and its row
                 mask_file(row.get("log"), hide)
                 if row.get("outputs"):
-                    row["outputs"], withheld = scrubbed(row["outputs"], hide, secret(values), out_dir)
+                    row["outputs"], withheld = scrubbed(row["outputs"], hide, hidden_values, out_dir)
                     result["gaps"] = [*(result.get("gaps") or ()), *withheld]
                 return mask_row(row, hide)
 
@@ -1736,17 +1795,20 @@ def command_lines(commands: list[tuple[int, dict]], into: str) -> str:
         cwd = posixpath.normpath(posixpath.join(WORKDIR, item.get("cwd") or "."))
         words = ["env", *(f"{key}={value}" for key, value in (item.get("env") or {}).items()), *item["argv"]]
         lines.append(f"mkdir -p {folder}; (cd {shlex.quote(cwd)} && exec {shlex.join(map(str, words))}) "
-                     f"> {folder}/stdout 2> {folder}/stderr; echo $? > {folder}/code")
+                     f"> {folder}/{STREAMS[0]} 2> {folder}/{STREAMS[1]}; echo $? > {folder}/code")
     return "\n".join(lines) + "\nexit 0\n"
 
 
-def run_commands(project: Path, commands: list[dict], *, image: str, out_dir: Path, **options) -> dict:
+def run_commands(project: Path, commands: list[dict], *, image: str, out_dir: Path, values: bool = False,
+                 **options) -> dict:
     """Commands as data, each `{tool, argv, cwd, env, network}`, in one container run over a copy of `project`:
     those whose `network` is "registries" in the preparation, the others ("none", the default) in execution.
     `cwd` is relative to the copy. The result of `run_in_container` (`options` are its own), with `root`, the
     copy's folder, and `results`: each command's `returncode` (None when it did not run), `stdout` and `stderr`,
-    in the given order. The commands describe the project and keep no value of its tracked `.env` files: those
-    hold each value's name before they run (`named`)."""
+    in the given order. The commands describe the project and see no value of its tracked `.env` files: those
+    hold each value's name before they run (`named`), so what they print is kept as printed (`blind`). With
+    `values`, for Daodan's helper alone, which runs no code of the project (`daodan-dockerfile`), the true values
+    lie beside the copy (`DOTENV_VALUES`) and the run keeps the check."""
     for item in commands:
         target = posixpath.normpath(posixpath.join(WORKDIR, item.get("cwd") or "."))
         inside = target == WORKDIR or target.startswith(WORKDIR + "/")
@@ -1756,17 +1818,17 @@ def run_commands(project: Path, commands: list[dict], *, image: str, out_dir: Pa
     early = [(n, item) for n, item in enumerate(commands) if item.get("network") == "registries"]
     late = [(n, item) for n, item in enumerate(commands) if item.get("network", "none") == "none"]
     kept_results = f"{STATE}/results"
-    carry = named(values=DOTENV_VALUES) + f"mkdir -p {RESULTS}\n" + (f"cp -R {kept_results}/. {RESULTS}/ 2>/dev/null\n" if early else "")
+    placed = named(values=DOTENV_VALUES if values else None)
+    carry = placed + f"mkdir -p {RESULTS}\n" + (f"cp -R {kept_results}/. {RESULTS}/ 2>/dev/null\n" if early else "")
     out_dir = Path(out_dir)
     shutil.rmtree(out_dir / Path(RESULTS).name, ignore_errors=True)
     result = run_in_container(project, ["sh", "-c", carry + command_lines(late, RESULTS)], image=image,
-                              out_dir=out_dir, outputs=[RESULTS], **options,
-                              prepare=["sh", "-c", named(values=DOTENV_VALUES) + command_lines(early, kept_results)]
-                              if early else None)
+                              out_dir=out_dir, outputs=[RESULTS], blind=not values, **options,
+                              prepare=["sh", "-c", placed + command_lines(early, kept_results)] if early else None)
     folder, results = out_dir / Path(RESULTS).name, []
     for number in range(len(commands)):
         read = {name: (folder / str(number) / name).read_text(encoding="utf-8", errors="replace")
-                if (folder / str(number) / name).is_file() else "" for name in ("code", "stdout", "stderr")}
+                if (folder / str(number) / name).is_file() else "" for name in ("code", *STREAMS)}
         code = read.pop("code").strip()
         results.append({"returncode": int(code) if code.lstrip("-").isdigit() else None, **read})
     return {**result, "root": WORKDIR, "results": results}

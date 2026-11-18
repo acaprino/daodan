@@ -196,19 +196,21 @@ def _hosts(box, pinned) -> None:
         box.exec("sh", "-c", f"echo 127.0.0.1 {shlex.quote(name)} >> /etc/hosts").wait()
 
 
-def _dotenv(token: str, files: list, options: dict) -> dict:
+def _dotenv(token: str, files: list, options: dict) -> tuple[dict, set]:
     """`container.dotenv_values` on Modal: `container.RESOLVE` in a Sandbox of Python's with no network, over the
-    tracked .env files alone of this run's copy on the volume."""
+    tracked files of this run's copy on the volume that `reader.list` names (the .env files and the others, where
+    their values may stand)."""
     import container
     box = modal.Sandbox.create(image=modal.Image.debian_slim(python_version="3.13"), block_network=True,
                                app=options["app"], volumes=options["volumes"], timeout=600, cpu=0.25, memory=256)
     try:
-        members = " ".join(shlex.quote(f"work/{rel}") for rel in files)
-        process = box.exec("sh", "-c", f"tar -xf /results/{SCRATCH}/{token}/copy.tar -C / {members} && cd "
-                           f"{container.WORKDIR} && exec python3 -c {shlex.quote(container.RESOLVE)} "
-                           + " ".join(map(shlex.quote, files)), timeout=300)
+        scratch = f"/results/{SCRATCH}/{token}"
+        process = box.exec("sh", "-c", f"tar -xf {scratch}/copy.tar -C / --verbatim-files-from --null -T "
+                           f"{scratch}/reader.list && cd {container.WORKDIR} && DAODAN_PUBLIC="
+                           f"{container.PUBLIC_SECONDS} exec python3 -c {shlex.quote(container.RESOLVE)} "
+                           + " ".join(map(shlex.quote, files)), timeout=container.PUBLIC_SECONDS + 300)
         said = process.stdout.read()
-        return container.dotenv_answer(said, process.wait())
+        return container.dotenv_answer(said, process.wait()), container.published(said)
     finally:
         box.terminate()
 
@@ -222,7 +224,7 @@ def vm(command, services) -> bool:
 
 
 def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), env=None, timeout=600,
-                prepare_timeout=1800, memory=2 * 2**30, inputs=None, dotenv_env=(), **_):
+                prepare_timeout=1800, memory=2 * 2**30, inputs=None, dotenv_env=(), blind=False, **_):
     """`container.run_in_container` on Modal Sandboxes: the same arguments and result (the module's docstring),
     `container.beside`'s services, variables and steps included. With steps and services, the services start in
     the preparation's sandbox, the steps beside them, and start again from what they kept (the snapshot holds
@@ -273,10 +275,15 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         digest = container.copy_perimeter(Path(project), scratch / "copy.tar", given)
         if digest["gaps"]:  # what the copy left out of the project, as `run_in_container` says it
             result["gaps"] = digest["gaps"]
+        read = digest.get("dotenv") and not (blind and not services and not dotenv_env)  # as `run_in_container`
+        if read:  # what the reader of the .env files reads (`container.dotenv_values`), beside the copy
+            (scratch / "reader.list").write_bytes(b"".join(f"work/{rel}".encode() + b"\0"
+                                                           for rel in (*digest["dotenv"], *digest["published"])))
         volume.commit()
-        values = _dotenv(token, digest["dotenv"], options) if digest.get("dotenv") else {}
-        hide = container.masker(container.secret(values))
-        if said_partial := container.partial(container.secret(values)):  # what the masks leave, said once
+        values, public = _dotenv(token, digest["dotenv"], options) if read else ({}, set())
+        secret = container.secret(values, public)
+        hide = container.masker(secret)
+        if said_partial := container.partial(secret):  # what the masks leave, said once
             result["gaps"] = [*(result.get("gaps") or ()), *said_partial]
         services = [container.filled(item, values) for item in services]  # the values only here, never on record
         exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
@@ -361,7 +368,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
                     bundle.extractall(out_dir, members=members, filter="data")
                     result["outputs"] += [str(out_dir / m.name) for m in members if m.isfile()]
             # no value of the tracked .env files in what the run keeps (`container.scrubbed`)
-            result["outputs"], withheld = container.scrubbed(result["outputs"], hide, container.secret(values), out_dir)
+            result["outputs"], withheld = container.scrubbed(result["outputs"], hide, secret, out_dir)
             result["gaps"] = [*(result.get("gaps") or ()), *withheld]
         result.update(exit_code=row.get("exit_code"),
                       state={"exited": "done", "timeout": "timeout"}.get(row["outcome"], "failed"))

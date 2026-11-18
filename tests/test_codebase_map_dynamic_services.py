@@ -798,7 +798,8 @@ def test_in_the_pre_map_s_container_each_value_of_a_tracked_env_file_is_its_name
     assert (work / "deploy" / ".env.ci").read_text(encoding="utf-8") == f"TOKEN={placed('deploy/.env.ci', 'TOKEN')}\n"
     with mock.patch.object(container, "run_in_container", return_value={"state": "done"}) as ran:
         container.run_commands(tmp_path / "p", [{"tool": "t", "argv": ["true"], "network": "registries"},
-                                                {"tool": "t", "argv": ["true"]}], image="i", out_dir=tmp_path / "out")
+                                                {"tool": "t", "argv": ["true"]}], image="i", out_dir=tmp_path / "out",
+                               values=True)  # the values beside the copy: Daodan's helper alone (D-311)
     assert ran.call_args.args[1][2].startswith(container.named(values=container.DOTENV_VALUES)) and ran.call_args.kwargs["prepare"][2].startswith(
         container.named(values=container.DOTENV_VALUES))
 
@@ -885,8 +886,9 @@ def test_each_value_of_a_tracked_env_file_is_masked_wherever_it_stands_and_a_sho
 
 def test_an_output_keeps_no_value_masked_as_text_or_as_json_or_is_withheld(tmp_path):
     """A `-DVERSION=<value>` build: its log is masked as text; its compilation database as JSON, string by string,
-    so it stays JSON whatever escapes the value takes there; an output whose bytes still hold a value (an index, an
-    object file, a number) is never patched: it is removed, a gap naming the variables and the output."""
+    so it stays JSON whatever escapes the value takes there, a number that is a value too; an output that is not
+    text and holds a value (an index, an object file) is never patched: it is removed, a gap naming the variables
+    and the output."""
     values = {".env": {"VERSION": "clé-1.28.0", "BUILD": "20261116", "DEBUG": "true"}}
     hide = container.masker(values)
     out = tmp_path / "out"
@@ -903,23 +905,110 @@ def test_an_output_keeps_no_value_masked_as_text_or_as_json_or_is_withheld(tmp_p
         (out / rel).write_bytes(data)
     paths = [str(out / rel) for rel in files]
     kept, gaps = container.scrubbed(paths, hide, values, out)
-    assert kept == [str(out / rel) for rel in ("build/build.log", "build/compile_commands.json", "build/notes.txt",
-                                               "build/clean.json")]
+    assert kept == [str(out / rel) for rel in ("build/build.log", "build/compile_commands.json", "build/count.json",
+                                               "build/notes.txt", "build/clean.json")]
     assert (out / "build/notes.txt").read_text(encoding="utf-8") == "v[.env:VERSION]\n"  # inside a longer word
     assert (out / "build/build.log").read_text(encoding="utf-8") == "-- VERSION [.env:VERSION]\n"
     [database] = json.loads((out / "build/compile_commands.json").read_text(encoding="utf-8"))
     assert database["command"] == 'c++ -DVERSION=\\"[.env:VERSION]\\" -DDEBUG=true -c main.cpp'
     assert (out / "build/clean.json").read_bytes() == files["build/clean.json"]  # nothing masked: as written
+    assert json.loads((out / "build/count.json").read_text(encoding="utf-8")) == {"build": "[.env:BUILD]"}  # D-311
     assert [(gap["kind"], gap["path"], gap["variables"]) for gap in gaps] == [
-        ("output_withheld", "build/index.scip", [".env:VERSION"]),
-        ("output_withheld", "build/count.json", [".env:BUILD"])]
+        ("output_withheld", "build/index.scip", [".env:VERSION"])]
     assert gaps[0]["detail"] == ("build/index.scip holds the value of .env:VERSION, which Daodan keeps nowhere: the "
                                  "output is not kept")
     assert sorted(p.relative_to(out).as_posix() for p in out.rglob("*") if p.is_file()) == [
-        "build/build.log", "build/clean.json", "build/compile_commands.json", "build/notes.txt"]
+        "build/build.log", "build/clean.json", "build/compile_commands.json", "build/count.json", "build/notes.txt"]
     assert not any(b"cl\xc3\xa9-1.28.0" in p.read_bytes() or b"20261116" in p.read_bytes()
                    for p in out.rglob("*") if p.is_file())
     assert container.scrubbed(paths[:1], None, {}, out) == (paths[:1], [])  # no value: nothing read
+
+
+def test_a_value_the_project_s_other_files_hold_is_public_and_text_is_masked_never_withheld(tmp_path):
+    """phazly-app, 18 November 2026 (D-311): go-enry's answer, which lists the paths, was withheld for
+    `VERTEX_LOCATION=global` beside `globalButtonHaptic.ts`, and the language scan failed. The reader of the tracked
+    `.env` files (`RESOLVE` with `DAODAN_PUBLIC`, its seconds) says which values the other files hold, in a path or
+    in their content, the `.env*` files aside, reading each file by pieces: those are public (`secret`). Text is
+    masked and kept, a JSON output string by string and number by number; only another output that holds a
+    secret value is withheld."""
+    files = {".env.dev": "VERTEX_LOCATION=global\nMONGODB_FOOD_DATABASE=phazly\nAPI_KEY=sk-live-9f31\n"
+                         "BUILD_NUMBER=98317713\n",
+             ".env.prod": "PHAZLY_ENV=prod\nREGION=europe-west8\n", ".env.example": "OTHER=sk-live-9f31\n",
+             "react-app/src/lib/globalButtonHaptic.ts": "export {}\n", "assets/producthunt.svg": "<svg/>\n",
+             "package.json": '{"name": "phazly-app"}\n'}
+    for rel, text in files.items():
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).write_text(text, encoding="utf-8", newline="\n")
+    (tmp_path / "big.bin").write_bytes(b"x" * (2**20 - 5) + b"europe-west8\n")  # across the first piece's end
+    dotenv = [".env.dev", ".env.prod", ".env.example"]
+
+    def read(seconds: str | None):
+        said = subprocess.run([sys.executable, "-c", container.RESOLVE, *dotenv], cwd=tmp_path, capture_output=True,
+                              text=True, timeout=60, env={**os.environ, **({"DAODAN_PUBLIC": seconds} if seconds else {})})
+        return container.dotenv_answer(said.stdout, said.returncode), container.published(said.stdout)
+
+    values, public = read(str(container.PUBLIC_SECONDS))
+    assert public == {"global", "phazly", "prod", "europe-west8"}  # the key stands only in .env files
+    assert container.secret(values, public) == {".env.dev": {"API_KEY": "sk-live-9f31", "BUILD_NUMBER": "98317713"}}
+    assert read("0")[1] == set() and read(None)[1] == set()  # nothing read in time, or not asked: all stays secret
+    assert container.secret(values) == {path: found for path, found in values.items() if path != ".env.example"}
+    kept = container.secret(values, public)
+    out = tmp_path / "out"
+    (out / "results/1").mkdir(parents=True)
+    answer = json.dumps([{"path": "react-app/src/lib/globalButtonHaptic.ts", "language": "TypeScript"},
+                         {"path": "assets/producthunt.svg", "language": "SVG"}]).encode()
+    written = {"stdout": answer, "stderr": b"warning: sk-live-9f31\n", "count.json": b'{"build": 98317713}',
+               "public.scip": b"\x08global\x00prod\x00", "index.scip": b"\x08sk-live-9f31\x00"}
+    for name, data in written.items():
+        (out / "results/1" / name).write_bytes(data)
+    produced = [str(out / "results/1" / name) for name in written]
+    left, gaps = container.scrubbed(produced, container.masker(kept), kept, out)
+    assert left == produced[:4]
+    assert [(gap["path"], gap["variables"]) for gap in gaps] == [("results/1/index.scip", [".env.dev:API_KEY"])]
+    assert (out / "results/1/stdout").read_bytes() == answer  # the public words as they were
+    assert (out / "results/1/public.scip").read_bytes() == written["public.scip"]
+    assert (out / "results/1/stderr").read_text(encoding="utf-8") == "warning: [.env.dev:API_KEY]\n"
+    assert json.loads((out / "results/1/count.json").read_text(encoding="utf-8")) == {
+        "build": "[.env.dev:BUILD_NUMBER]"}
+    project = git_project(tmp_path / "project", {".env.dev": "A=b\n", "src/phazly.md": "x\n", "notes.txt": "y\n"},
+                          [".env.dev", "src/phazly.md"])
+    digest = container.copy_perimeter(project, tmp_path / "copy.tar")
+    assert digest["dotenv"] == [".env.dev"] and digest["published"] == ["src/phazly.md"]  # what Git tracks alone
+
+
+def test_a_pre_map_command_never_sees_a_value_and_only_daodan_s_helper_gets_them(tmp_path):
+    """D-311: the pre-map's commands run over placeholders (`named`), so no value is read for them and what they
+    wrote is kept as written (`blind`); the true values are written beside the copy (`DOTENV_VALUES`) only in the
+    container of Daodan's helper that reads them (`daodan-dockerfile`, which runs no code of the project), whose
+    run keeps the check. Gradle, Maven, npm or CMake, which run the project's code, never find them."""
+    commands = [{"tool": "t", "argv": ["true"], "network": "registries"}, {"tool": "t", "argv": ["true"]}]
+    with mock.patch.object(container, "run_in_container", return_value={"state": "done"}) as ran:
+        container.run_commands(tmp_path / "p", commands, image="i", out_dir=tmp_path / "out")
+        container.run_commands(tmp_path / "p", commands, image="i", out_dir=tmp_path / "out", values=True)
+    plain, helper = ran.call_args_list
+    for script in (plain.args[1][2], plain.kwargs["prepare"][2]):
+        assert script.startswith(container.named()) and container.DOTENV_VALUES not in script
+    assert plain.kwargs["blind"] is True and helper.kwargs["blind"] is False
+    assert helper.args[1][2].startswith(container.named(values=container.DOTENV_VALUES))
+    assert [tool for tool, spec in container_runner.TOOLS.items() if spec.get("values")] == ["daodan-dockerfile"]
+    assert not {"runs_on", "restores"} & set(container_runner.TOOLS["daodan-dockerfile"])  # no project toolchain
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
+    manifest = tmp_path / "snap" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    given = []
+
+    def recorded(project, commands, **options):
+        given.append(options.get("values", False))
+        return {"state": "done", "root": "/work", "results": [{"returncode": 0, "stdout": "", "stderr": ""}] * len(
+            commands)}
+
+    with mock.patch.object(container, "run_commands", recorded), \
+            mock.patch.object(container_runner, "fetched", lambda url, sha, name: Path("/host") / name):
+        for tool in ("daodan-dockerfile", "renovate", "cargo"):
+            container_runner.runner(manifest)([{"tool": tool, "argv": [tool], "cwd": ".", "env": {}}])
+    assert given == [True, False, False]
 
 
 def test_the_readers_on_the_host_never_read_a_file_daodan_never_reads(tmp_path):
@@ -1612,7 +1701,7 @@ class PodTest(unittest.TestCase):
         """A short value is masked where it stands whole (`DB=app` in the log, `application` as it was); the result
         says so once, as `partial` words it."""
         project = git_project(self.scratch / "short", {".env": "DB=app\nDEBUG=true\nSECRET_KEY=changethis\n",
-                                                       "app.js": "\n"}, [".env", "app.js"])
+                                                       "main.js": "\n"}, [".env", "main.js"])  # no path holds `app`
         result = container.run_in_container(project, ["sh", "-c", "cat .env && echo application"],
                                             image="fake/runtime:1", out_dir=self.out, engine=self.engine)
         assert result["state"] == "done", result
@@ -1620,6 +1709,69 @@ class PodTest(unittest.TestCase):
         assert "DB=[.env:DB]" in log and "application" in log and "SECRET_KEY=[.env:SECRET_KEY]" in log
         assert [(gap["kind"], gap["variables"]) for gap in result["gaps"] if gap["kind"] == "mask_partial"] == [
             ("mask_partial", [".env:DB", ".env:DEBUG"])]
+
+    def phazly_project(self) -> Path:
+        """acaprino/phazly-app's words (D-311): its `.env.dev` and `.env.prod` hold values its files' names hold;
+        the API key stands in a note Git does not track, which publishes nothing."""
+        return git_project(self.scratch / "phazly", {
+            ".env.dev": "VERTEX_LOCATION=global\nMONGODB_FOOD_DATABASE=phazly\nAPI_KEY=sk-live-9f31\n",
+            ".env.prod": "PHAZLY_ENV=prod\n", "react-app/src/lib/globalButtonHaptic.ts": "export {}\n",
+            "references/phazly.md": "# notes\n", "producthunt.svg": "<svg/>\n", "notes.txt": "sk-live-9f31\n"},
+            [".env.dev", ".env.prod", "react-app/src/lib/globalButtonHaptic.ts", "references/phazly.md",
+             "producthunt.svg"])
+
+    def test_a_value_the_project_publishes_is_no_secret_and_an_answer_listing_the_paths_is_kept(self):
+        """phazly-app, 18 November 2026: go-enry's answer listed `globalButtonHaptic.ts` and was withheld for
+        `VERTEX_LOCATION=global`. A value the project's tracked files hold, by name or by content, is its public
+        text: the answer, an index and the log keep it as written, and no gap names it."""
+        answer = ('[{"path": "react-app/src/lib/globalButtonHaptic.ts"}, {"path": "references/phazly.md"}, '
+                  '{"path": "producthunt.svg"}]')
+        script = (f"mkdir -p ../daodan/out && printf '%s' '{answer}' > ../daodan/out/stdout"
+                  " && printf 'scip\\000global prod phazly\\001' > ../daodan/out/index.scip && echo region global env prod")
+        result = container.run_in_container(self.phazly_project(), ["sh", "-c", script], image="fake/runtime:1",
+                                            out_dir=self.out, engine=self.engine, outputs=["/daodan/out"])
+        assert result["state"] == "done", result
+        assert sorted(Path(path).name for path in result["outputs"]) == ["index.scip", "stdout"]
+        assert (self.out / "out" / "stdout").read_text(encoding="utf-8") == answer
+        assert (self.out / "out" / "index.scip").read_bytes() == b"scip\x00global prod phazly\x01"
+        assert not [gap for gap in result.get("gaps") or () if gap["kind"] in ("output_withheld", "mask_partial")]
+        assert "region global env prod" in (self.out / "execute.log").read_text(encoding="utf-8")
+        [reader] = self.created("daodan-dotenv-")
+        assert f"DAODAN_PUBLIC={container.PUBLIC_SECONDS}" in reader
+
+    def test_a_value_only_the_env_files_hold_is_masked_in_text_and_withholds_an_output_that_is_not(self):
+        """The API key stands in no tracked file but `.env.dev`: what the run printed and a JSON answer name the
+        variable in its place, and an index that holds it is withheld, the gap naming the variable."""
+        script = ("mkdir -p ../daodan/out && key=$(sed -n 's/^API_KEY=//p' .env.dev) && echo \"key $key\""
+                  " && printf '{\"key\": \"%s\"}' \"$key\" > ../daodan/out/answer.json"
+                  " && printf 'scip\\000%s\\001' \"$key\" > ../daodan/out/index.scip")
+        result = container.run_in_container(self.phazly_project(), ["sh", "-c", script], image="fake/runtime:1",
+                                            out_dir=self.out, engine=self.engine, outputs=["/daodan/out"])
+        assert result["state"] == "done", result
+        assert [Path(path).name for path in result["outputs"]] == ["answer.json"]
+        assert json.loads((self.out / "out" / "answer.json").read_text(encoding="utf-8")) == {
+            "key": "[.env.dev:API_KEY]"}
+        assert "key [.env.dev:API_KEY]" in (self.out / "execute.log").read_text(encoding="utf-8")
+        [gap] = [gap for gap in result["gaps"] if gap["kind"] == "output_withheld"]
+        assert gap["path"] == "out/index.scip" and gap["variables"] == [".env.dev:API_KEY"]
+        assert not any(b"sk-live-9f31" in path.read_bytes() for path in self.out.rglob("*") if path.is_file())
+
+    def test_a_command_that_never_saw_a_value_keeps_what_it_wrote_untouched(self):
+        """Over the placeholders (`named`), as a pre-map command runs (`run_commands`, `blind`): no reader starts,
+        and what it wrote, text or not, is kept as written, with no mask and no gap."""
+        script = (container.named(".") + "mkdir -p ../daodan/out && cat .env > ../daodan/out/stdout"
+                  " && printf 'scip\\000%s\\001' \"$(cat .env)\" > ../daodan/out/index.scip && cat .env")
+        result = container.run_in_container(self.dotenv_project(), ["sh", "-c", script], image="fake/runtime:1",
+                                            out_dir=self.out, engine=self.engine, outputs=["/daodan/out"], blind=True)
+        assert result["state"] == "done", result
+        assert self.created("daodan-dotenv-") == []
+        printed = (f"SECRET_KEY={placed('.env', 'SECRET_KEY')}\n"
+                   f"POSTGRES_PASSWORD={placed('.env', 'POSTGRES_PASSWORD')}\n")
+        assert (self.out / "out" / "stdout").read_text(encoding="utf-8") == printed
+        assert (self.out / "out" / "index.scip").read_bytes() == b"scip\x00" + printed.rstrip("\n").encode() + b"\x01"
+        assert sorted(Path(path).name for path in result["outputs"]) == ["index.scip", "stdout"]
+        assert not result.get("gaps") and printed in (self.out / "execute.log").read_text(encoding="utf-8")
+        assert not any(b"changethis" in path.read_bytes() for path in self.out.rglob("*") if path.is_file())
 
     def test_a_tracked_env_file_whose_values_cannot_be_read_stops_the_run_with_its_cause(self):
         (self.state / "no-dotenv").write_text("", encoding="utf-8")
