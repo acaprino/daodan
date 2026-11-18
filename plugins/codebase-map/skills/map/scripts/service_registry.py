@@ -30,6 +30,7 @@ if str(SCRIPT_DIR) not in sys.path:
 import flows  # noqa: E402
 import premap  # noqa: E402
 from premap.module_graph import normalize_image as _image, package_facts  # noqa: E402
+from mark_svg import MAX_MARK, clean_svg, safe_member  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 REGISTRY = SCRIPT_DIR.parent / "data" / "service-registry.json"
@@ -38,6 +39,41 @@ OWN = ('"daodan/service-registry/', '"daodan/registry-additions/')
 
 def load(path: Path | None = None) -> dict:
     return json.loads(Path(path or REGISTRY).read_text(encoding="utf-8"))
+
+
+def mark_file(entry: dict, data: Path | None = None) -> Path | None:
+    """The SVG a page shows for an entry's mark, or None: the file shipped in `marks/`, or the one the owner's package
+    holds (`mark_source`), taken out on first use into the folder of the shared download, clean (`clean_svg`).
+
+    The package comes through `preparation.fetched`, which checks its sha256; only the member named is read, never
+    extracted. Any failure (no network, a package that changed, a member that is missing, too large or not safe) is
+    None: the graph then draws the generic icon of the entry's type."""
+    data = data or REGISTRY.parent
+    if entry.get("mark"):
+        path = data / entry["mark"]
+        return path if path.is_file() else None
+    source = entry.get("mark_source")
+    try:
+        import hashlib
+        import zipfile
+        from urllib.parse import urlparse
+        import preparation
+        member = source["member"]
+        if not safe_member(member):
+            return None
+        package = preparation.fetched(source["url"], source["sha256"], PurePosixPath(urlparse(source["url"]).path).name)
+        out = package.parent / "marks" / re.sub(r"[^\w.-]+", "_", member)
+        if out.is_file() and clean_svg(out.read_bytes()) == out.read_text(encoding="utf-8"):
+            return out
+        if hashlib.sha256(package.read_bytes()).hexdigest() != source["sha256"]:
+            return None
+        with zipfile.ZipFile(package) as archive, archive.open(member) as file:
+            svg = clean_svg(file.read(MAX_MARK + 1))
+        out.parent.mkdir(exist_ok=True)
+        out.write_text(svg, encoding="utf-8", newline="\n")
+        return out
+    except Exception:  # noqa: BLE001 - whatever the download, the archive or the file does, the answer is no mark
+        return None
 
 
 def _is_excluded(rel: str | None, left_out: tuple[str, ...]) -> bool:
@@ -213,7 +249,7 @@ def run(manifest: Path, registry: dict | None = None, facts: dict | None = None)
         kind = "project" if category != "service" else "service"
         signs = {(s["sign"], s["value"], s["path"], s["line"]): s for s in found[ident]}
         out.append({"id": entry.get("id"), "name": entry.get("name"), "kind": kind, "category": category,
-                    "type": entry.get("type"), "site": entry.get("site"), "icon": entry.get("icon"),
+                    "type": entry.get("type"), "site": entry.get("site"), "mark": entry.get("mark"),
                     "source": "registry",
                     "signs": sorted(signs.values(), key=lambda s: (s["sign"], s["path"] or "", s["line"] or 0, s["value"]))})
     return {"found": out, "checkers": checkers, "gaps": gaps}

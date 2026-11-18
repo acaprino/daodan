@@ -294,7 +294,7 @@ def services_section(registry: dict, stack: dict) -> list[str]:
         row = by_type[e.get("type") or "—"]
         row[0] += 1
         row[1] += bool(e.get("signs"))
-        row[2] += bool(e.get("icon"))
+        row[2] += bool(e.get("mark") or e.get("mark_source"))
     signs = collections.Counter(k for e in services if e.get("signs") for k, v in e["signs"].items() if v)
     found_in = collections.Counter(i for record in stack["fixtures"].values() for i in record.get("ids") or ())
     listed = sorted((e for e in services if e.get("signs") and service_registry.entry_category(e) == "service"),
@@ -302,7 +302,8 @@ def services_section(registry: dict, stack: dict) -> list[str]:
     apart = sum(1 for e in services if e.get("signs")) - len(listed)
     return ["## Servizi esterni", "",
             f"Le voci `service` del catalogo: {_n(len(services))}, {_n(sum(r[1] for r in by_type.values()))} con "
-            f"segni per riconoscerle, {_n(sum(r[2] for r in by_type.values()))} con un marchio (`icon`). Segni per "
+            f"segni per riconoscerle, {_n(sum(r[2] for r in by_type.values()))} con un marchio: {_n(sum(1 for e in services if e.get("mark")))} con il file nel prodotto (`mark`), "
+            f"{_n(sum(1 for e in services if e.get("mark_source")))} scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per "
             "specie, sulle voci che ne hanno: " + ", ".join(f"`{k}` {_n(v)}" for k, v in sorted(signs.items())) + ". "
             f"Di quelle con segni, {_n(apart)} hanno la categoria `framework` o `tool` e stanno nella lista della "
             "sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.", "",
@@ -310,7 +311,7 @@ def services_section(registry: dict, stack: dict) -> list[str]:
                     [[k, _n(a), _n(b), _n(c)] for k, (a, b, c) in sorted(by_type.items(), key=lambda x: -x[1][0])]),
             "", f"<details><summary>Servizi riconoscibili: {len(listed)} voci</summary>", "",
             *_table(["Servizio", "Id", "Tipo", "Segni", "Marchio", f"Fixture in cui lo step lo trova ({STACK[1]})"],
-                    [[e["name"], f"`{e['id']}`", e.get("type") or "—", _signs(e), "sì" if e.get("icon") else "no",
+                    [[e["name"], f"`{e['id']}`", e.get("type") or "—", _signs(e), "sì" if e.get("mark") else "al primo uso" if e.get("mark_source") else "no",
                       found_in.get(e["id"], 0)] for e in listed]), "", "</details>", ""]
 
 

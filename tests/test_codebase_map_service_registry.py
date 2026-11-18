@@ -3,6 +3,7 @@
 import copy
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -15,6 +16,8 @@ import service_registry  # noqa: E402
 
 REGISTRY = ROOT / "plugins/codebase-map/skills/map/data/service-registry.json"
 ADDITIONS = ROOT / "plugins/codebase-map/skills/map/data/registry-additions.json"
+NOTICES = ROOT / "plugins/codebase-map/skills/map/data/REGISTRY-NOTICES.md"
+DATA = REGISTRY.parent
 
 
 class DistributedRegistryTests(unittest.TestCase):
@@ -31,7 +34,7 @@ class DistributedRegistryTests(unittest.TestCase):
         self.assertEqual(self.entries["stripe"]["signs"]["packages"]["pypi"], ["stripe"])
         for ident in ("mongodb", "fastapi", "react", "docker"):
             self.assertIn(ident, self.entries)
-        self.assertEqual(self.entries["stripe"]["icon"], "stripe")
+        self.assertEqual(self.entries["stripe"]["mark"], "marks/stripe.svg")
 
     def test_no_entry_comes_from_webappanalyzer(self):
         sources = {source for entry in self.entries.values() for source in entry["from"]}
@@ -52,7 +55,7 @@ class DistributedRegistryTests(unittest.TestCase):
         signs = {"packages": {"npm": ["googleapis", "passport-google-oauth20"], "pypi": ["x"]}, "patterns": {},
                  "env": ["GOOGLE_CLOUD_PROJECT"], "hosts": [], "files": []}
         entries = {"gcp": {"id": "gcp", "name": "GCP", "kind": "service", "type": "servizio o API", "site": None,
-                           "icon": None, "signs": signs, "from": ["stack-analyser"]}}
+                           "mark": None, "signs": signs, "from": ["stack-analyser"]}}
         registry_build.apply_additions(entries, [{"id": "gcp", "wrong_signs": {
             "packages": {"npm": ["passport-google-oauth20"], "pypi": ["x"]}}, "by": "catalog"}])
         self.assertEqual(entries["gcp"]["signs"]["packages"], {"npm": ["googleapis"]})
@@ -67,7 +70,7 @@ class DistributedRegistryTests(unittest.TestCase):
 
 class CheckTests(unittest.TestCase):
     ENTRY = {"id": "stripe", "name": "Stripe", "kind": "service", "type": "gateway", "site": "https://stripe.com",
-             "icon": "stripe", "signs": {"packages": {"npm": ["stripe"]}, "patterns": {}, "env": ["STRIPE_"],
+             "mark": None, "signs": {"packages": {"npm": ["stripe"]}, "patterns": {}, "env": ["STRIPE_"],
                                          "hosts": [], "files": []}, "from": ["stack-analyser"]}
 
     def problems(self, change, size=1000):
@@ -302,3 +305,299 @@ class RecognizeTests(unittest.TestCase):
         found = {e["id"]: {(s["sign"], s["value"]) for s in e["signs"]} for e in answer["found"]}
         self.assertTrue({("package", "stripe"), ("env", "STRIPE_SECRET_KEY")} <= found["stripe"])
         self.assertNotIn("file", {sign for signs in found.values() for sign, _ in signs})
+
+
+HOSTILE = b"""<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ed="http://ed.example/ns"
+     onload="alert(1)" width="48" height="48" viewBox="0 0 24 24">
+  <script>alert(2)</script>
+  <metadata>editor junk</metadata>
+  <ed:namedview/>
+  <foreignObject><iframe xmlns="http://www.w3.org/1999/xhtml" src="http://evil.example/"/></foreignObject>
+  <defs><linearGradient id="g"><stop offset="0" stop-color="#fff"/></linearGradient></defs>
+  <path id="p" d="M0 0h24v24H0z" fill="url(#g)" onclick="alert(3)" stroke="url(http://evil.example/x#y)"
+        style="fill:#c00;background:url(http://evil.example/b.png)"/>
+  <use href="http://evil.example/x.svg#a"/><use xlink:href="#p"/>
+  <a href="javascript:alert(4)"><circle r="3"/></a>
+</svg>"""
+TINY = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><path d="M0 0h1z"/></svg>'
+
+
+class MarkFileTests(unittest.TestCase):
+    def test_the_sanitiser_keeps_the_drawing_and_nothing_that_runs_or_fetches(self):
+        out = registry_build.clean_svg(HOSTILE)
+        for banned in ("script", "onload", "onclick", "foreignObject", "iframe", "evil.example", "javascript", "metadata",
+                       "namedview", "alert", "background"):
+            self.assertNotIn(banned, out)
+        for kept in ('viewBox="0 0 24 24"', 'd="M0 0h24v24H0z"', 'fill="url(#g)"', 'href="#p"', "linearGradient", "#c00"):
+            self.assertIn(kept, out)
+        self.assertNotIn("width=", out.split(">", 1)[0])
+        self.assertEqual(registry_build.clean_svg(out.encode()), out)  # cleaning again changes nothing
+
+    def test_a_brand_colour_goes_on_the_root_so_that_an_image_shows_it(self):
+        out = registry_build.clean_svg(TINY, fill="#635BFF")
+        self.assertIn('fill="#635BFF"', out.split(">", 1)[0])
+
+    def test_a_file_that_is_not_a_small_plain_drawing_is_refused(self):
+        svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1">%s</svg>'
+        refused = {
+            "a raster": svg % '<image href="data:image/png;base64,AAAA"/>',
+            "text needing fonts": svg % "<text>Logo</text>",
+            "a style that imports": svg % '<style>@import url("http://evil.example/a.css");</style><path d="M0 0z"/>',
+            "an entity": '<!DOCTYPE svg [<!ENTITY a "aaaa">]>' + svg % "<path d='M0 0z'/>",
+            "another document": '<html xmlns="http://www.w3.org/1999/xhtml"/>',
+            "no size": '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0z"/></svg>',
+            "not xml": "<svg",
+            "too large": svg % ('<path d="M0 0z"/>' * 5000),
+        }
+        for why, text in refused.items():
+            with self.assertRaises(ValueError, msg=why):
+                registry_build.clean_svg(text.encode())
+        plain = svg % "<style>.a{fill:#fff}</style><path class='a' d='M0 0z'/>"
+        self.assertIn(".a{fill:#fff}", registry_build.clean_svg(plain.encode()))
+
+    def test_check_fails_on_a_mark_file_that_is_missing_orphan_or_not_clean(self):
+        entries = [{**CheckTests.ENTRY, "id": f"e{n}", "mark": f"marks/e{n}.svg"} for n in range(1000)]
+        value = {"schema": registry_build.SCHEMA, "entries": entries}
+        good = registry_build.clean_svg(TINY)
+        with tempfile.TemporaryDirectory() as folder:
+            data = Path(folder)
+            (data / "marks").mkdir()
+            for entry in entries:
+                (data / entry["mark"]).write_text(good, encoding="utf-8")
+            self.assertEqual(registry_build.check(value, data), [])
+            (data / "marks/e1.svg").unlink()
+            (data / "marks/stray.svg").write_text(good, encoding="utf-8")
+            (data / "marks/e2.svg").write_text(good.replace("<path", "<script/><path"), encoding="utf-8")
+            problems = " ".join(registry_build.check(value, data))
+            self.assertIn("e1: marks/e1.svg is missing", problems)
+            self.assertIn("marks/stray.svg: no entry names this file", problems)
+            self.assertIn("e2: marks/e2.svg is not what the sanitiser makes of it", problems)
+        entries[0]["mark"] = "../outside.svg"
+        self.assertIn("e0: mark is", " ".join(registry_build.check(value)))
+
+
+class MarkJoinTests(unittest.TestCase):
+    ICONS = [{"title": "Stripe", "slug": "stripe", "hex": "635BFF"},
+             {"title": "Deep Lake", "slug": "activeloop", "hex": "FFB746",
+              "aliases": {"dup": [{"title": "Deep Lake"}], "aka": ["Active Loop"]}},
+             {"title": "Acme", "slug": "acme", "hex": "000000", "aliases": {"loc": {"it-IT": "Acme Italia"}}},
+             {"title": "Neptune", "slug": "neptune", "hex": "4D5FFF"}]
+
+    def test_names_join_by_case_punctuation_a_company_suffix_and_the_collection_s_own_aliases(self):
+        index = registry_build.mark_index(self.ICONS)
+
+        def find(name, ident="x"):
+            return (registry_build.simple_icon({"id": ident, "name": name}, index) or {}).get("slug")
+
+        self.assertEqual(find("STRIPE"), "stripe")
+        self.assertEqual(find("Stripe, Inc."), "stripe")
+        self.assertEqual(find("Acme Italia"), "acme")
+        self.assertEqual(find("Active-Loop"), "activeloop")
+        self.assertEqual(find("Deep Lake"), "activeloop")
+        self.assertEqual(find("anything", "stripe"), "stripe")
+
+    def test_the_name_of_another_vendor_s_product_is_not_the_mark_of_a_service_that_has_it_in_its_name(self):
+        index = registry_build.mark_index(self.ICONS)
+        self.assertIsNone(registry_build.simple_icon({"id": "aws.neptune", "name": "AWS Neptune"}, index))
+
+    def test_apply_marks_writes_one_clean_file_per_entry_and_removes_the_files_nobody_names(self):
+        entries = {"stripe": {"id": "stripe", "name": "Stripe", "mark": "marks/old.svg", "from": ["stack-analyser"]},
+                   "nomark": {"id": "nomark", "name": "Nomark", "mark": "marks/stale.svg", "from": ["simple-icons"]},
+                   "own": {"id": "own", "name": "Own", "mark": "marks/own.svg", "from": ["additions"]},
+                   "packaged": {"id": "packaged", "name": "Packaged", "mark": None, "from": ["additions"]}}
+        svg = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Stripe</title><path d="M0 0h24z"/></svg>'
+        with tempfile.TemporaryDirectory() as folder:
+            data = Path(folder)
+            (data / "marks").mkdir()
+            for name in ("stale", "own", "old", "orphan"):
+                (data / "marks" / f"{name}.svg").write_text("<svg/>", encoding="utf-8")
+            package = {"url": "https://owner.example/p.zip", "sha256": "a" * 64, "member": "A.svg", "terms": "https://owner.example/t"}
+            registry_build.apply_marks(entries, self.ICONS, lambda slug: svg, data, {
+                "own": {"mark": "marks/own.svg"}, "packaged": {"mark_source": package}, "stripe": {"mark_source": package}})
+            self.assertEqual(entries["stripe"]["mark"], "marks/stripe.svg")
+            self.assertEqual(entries["stripe"]["from"], ["simple-icons", "stack-analyser"])
+            self.assertIn('fill="#635BFF"', (data / "marks/stripe.svg").read_text(encoding="utf-8"))
+            self.assertIsNone(entries["nomark"]["mark"])
+            self.assertEqual(entries["nomark"]["from"], [])
+            self.assertEqual(entries["own"]["mark"], "marks/own.svg")
+            self.assertEqual((entries["packaged"]["mark"], entries["packaged"]["mark_source"]), (None, package))
+            self.assertNotIn("mark_source", entries["stripe"])  # a file and a package are two cases, never both
+            self.assertEqual(sorted(p.name for p in (data / "marks").iterdir()), ["own.svg", "stripe.svg"])
+
+
+class DistributedMarkTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.value = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        cls.entries = cls.value["entries"]
+
+    def test_every_mark_is_a_clean_file_in_the_plugin_and_every_file_is_named_by_an_entry(self):
+        self.assertEqual(registry_build.check(self.value, DATA), [])
+
+    def test_the_recognisable_services_that_have_a_mark_do_not_drop_below_426(self):
+        """500 was asked for and 426 reached: 332 marks of Simple Icons, 10 official files, 84 icons of AWS, Azure and Google
+        Cloud fetched from the owner's package. 179 recognisable services have none: Simple Icons lacks them and
+        their owner's terms were not found to allow shipping, or were not researched (see REGISTRY-NOTICES.md)."""
+        with_mark = [e for e in self.entries if e["kind"] == "service" and e["signs"] and (e["mark"] or e.get("mark_source"))]
+        self.assertGreaterEqual(len(with_mark), 426)
+
+    def test_an_official_mark_is_recorded_with_its_source_the_day_and_the_owner_s_terms(self):
+        notices = NOTICES.read_text(encoding="utf-8")
+        official = [r for r in json.loads(ADDITIONS.read_text(encoding="utf-8"))["entries"] if r.get("mark")]
+        for record in official:
+            source = record["mark_origin"]
+            self.assertTrue(source["url"].startswith("https://"), record["id"])
+            self.assertRegex(source["date"], r"^\d{4}-\d{2}-\d{2}$")
+            self.assertIn(record["id"], notices)
+            self.assertIn(source["url"], notices)
+            self.assertNotIn("simple-icons", next(e for e in self.entries if e["id"] == record["id"])["from"])
+        packages = {r["mark_source"]["url"]: r["mark_source"] for r in json.loads(ADDITIONS.read_text(encoding="utf-8"))["entries"]
+                    if r.get("mark_source")}
+        for url, package in packages.items():
+            for field in ("url", "sha256", "terms"):
+                self.assertIn(package[field], notices, f"{field} of {url}")
+
+
+class MarkFileOfAnEntryTests(unittest.TestCase):
+    """`service_registry.mark_file`: the file a page shows for an entry, shipped or taken out of the owner's package."""
+
+    def setUp(self):
+        import hashlib
+        import io
+        import zipfile
+        import preparation
+        self.preparation, self.tmp = preparation, tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.calls = []
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as package:
+            package.writestr("Icons/Compute/Lambda.svg", HOSTILE)
+            package.writestr("Icons/Big.svg", b"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'>" + b"<g/>" * 40000 + b"</svg>")
+        self.archive = Path(self.tmp.name) / "owner-package.zip"
+        self.archive.write_bytes(buffer.getvalue())
+        self.sha = hashlib.sha256(buffer.getvalue()).hexdigest()
+        self.entry = {"id": "aws.lambda", "mark": None, "mark_source": {
+            "url": "https://owner.example/owner-package.zip", "sha256": self.sha, "member": "Icons/Compute/Lambda.svg",
+            "terms": "https://owner.example/terms"}}
+        self.fetched = preparation.fetched
+        preparation.fetched = self.fake
+        self.addCleanup(setattr, preparation, "fetched", self.fetched)
+
+    def fake(self, url, sha256, name):
+        self.calls.append((url, sha256, name))
+        return self.archive
+
+    def with_source(self, **change):
+        return {**self.entry, "mark_source": {**self.entry["mark_source"], **change}}
+
+    def test_a_shipped_mark_is_the_file_in_the_plugin(self):
+        path = service_registry.mark_file({"id": "stripe", "mark": "marks/stripe.svg", "mark_source": None})
+        self.assertEqual(path, DATA / "marks/stripe.svg")
+        self.assertIsNone(service_registry.mark_file({"id": "x", "mark": "marks/not-there.svg"}))
+        self.assertIsNone(service_registry.mark_file({"id": "x", "mark": None}))
+
+    def test_a_package_mark_is_downloaded_through_the_verified_download_and_comes_out_clean(self):
+        path = service_registry.mark_file(self.entry)
+        self.assertEqual(self.calls, [("https://owner.example/owner-package.zip", self.sha, "owner-package.zip")])
+        self.assertEqual(path.parent.parent, self.archive.parent)  # beside the package in the shared cache
+        text = path.read_text(encoding="utf-8")
+        self.assertEqual(registry_build.clean_svg(HOSTILE), text)
+        for banned in ("script", "onload", "evil.example"):
+            self.assertNotIn(banned, text)
+        self.assertEqual(service_registry.mark_file(self.entry), path)  # again: the file is there
+
+    def test_any_failure_is_no_mark_never_an_error(self):
+        import container
+
+        def refused(url, sha256, name):
+            raise container.Gap("could not be downloaded", "check the network")
+
+        cases = {
+            "member that leaves the package": self.with_source(member="../Lambda.svg"),
+            "member that is not there": self.with_source(member="Icons/Nothing.svg"),
+            "member that is too large": self.with_source(member="Icons/Big.svg"),
+            "member that is not an svg": self.with_source(member="Icons/Compute/Lambda.png"),
+            "package that is not the one pinned": self.with_source(sha256="0" * 64),
+            "package without a member": {**self.entry, "mark_source": {"url": "https://owner.example/p.zip"}},
+        }
+        for why, entry in cases.items():
+            self.assertIsNone(service_registry.mark_file(entry), why)
+        self.preparation.fetched = refused
+        self.assertIsNone(service_registry.mark_file(self.entry), "download that fails")
+        self.archive.write_bytes(b"not a zip")
+        self.preparation.fetched = self.fake
+        self.assertIsNone(service_registry.mark_file(self.with_source(sha256=__import__("hashlib").sha256(b"not a zip").hexdigest())), "not a zip")
+
+
+class PackageMarkTests(unittest.TestCase):
+    def test_check_knows_the_two_shapes_and_refuses_both_at_once_and_an_unsafe_member(self):
+        package = {"url": "https://owner.example/p.zip", "sha256": "a" * 64, "member": "Icons/A.svg",
+                   "terms": "https://owner.example/terms"}
+
+        def problems(**change):
+            entries = [{**CheckTests.ENTRY, "id": f"e{n}", "mark": None} for n in range(1000)]
+            entries[0].update({"mark_source": package, **change})
+            return " ".join(registry_build.check({"schema": registry_build.SCHEMA, "entries": entries}))
+
+        self.assertEqual(problems(), "")
+        self.assertIn("e0: mark and mark_source are two cases", problems(mark="marks/e0.svg"))
+        for bad in ({**package, "member": "../A.svg"}, {**package, "member": "/etc/a.svg"}, {**package, "sha256": "xyz"},
+                    {**package, "url": "http://owner.example/p.zip"}, {**package, "terms": "owner terms"}, {"url": "https://a.b/c"}):
+            self.assertIn("e0: mark_source is", problems(mark_source=bad))
+
+    def test_add_package_mark_records_the_hash_of_the_package_and_keeps_nothing_of_it(self):
+        import io
+        import zipfile
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as package:
+            package.writestr("Icons/A.svg", registry_build.clean_svg(TINY))
+        with tempfile.TemporaryDirectory() as folder:
+            data = Path(folder)
+            entries = [{**CheckTests.ENTRY, "id": f"e{n}", "mark": None} for n in range(1000)]
+            entries[0]["id"] = "aws.x"
+            registry = {"schema": registry_build.SCHEMA, "entries": entries}
+            (data / "service-registry.json").write_text(json.dumps(registry), encoding="utf-8")
+            (data / "registry-additions.json").write_text(json.dumps({"entries": []}), encoding="utf-8")
+            (data / "p.zip").write_bytes(buffer.getvalue())
+            args = ("aws.x", "https://owner.example/p.zip", data / "p.zip", "Icons/A.svg", "https://owner.example/terms",
+                    data / "service-registry.json", data / "registry-additions.json")
+            self.assertEqual(registry_build.add_package_mark(*args), 0)
+            written = json.loads((data / "service-registry.json").read_text(encoding="utf-8"))["entries"][0]
+            self.assertEqual(written["mark_source"]["member"], "Icons/A.svg")
+            self.assertEqual(len(written["mark_source"]["sha256"]), 64)
+            self.assertFalse((data / "marks").exists())
+            self.assertEqual(registry_build.add_package_mark("aws.x", args[1], args[2], "Icons/Nothing.svg", *args[4:]), 1)
+
+
+class NewServiceFromAMarkTests(unittest.TestCase):
+    ICONS = MarkJoinTests.ICONS
+    OWNERS = {"acme": {"github.com/acme"}, "acme-py": {"github.com/acme"}, "acme-known": {"github.com/acme"},
+              "acme-other": {"github.com/other"}}
+    CHECK = {"owners": lambda eco, name: NewServiceFromAMarkTests.OWNERS.get(name), "site": lambda url: "ok" in url}
+
+    def test_the_prompt_lists_the_marks_that_have_no_entry_and_no_other(self):
+        registry = {"entries": [{"id": "stripe", "name": "Stripe", "kind": "service", "from": []}]}
+        prompt = registry_build.model_input(registry, self.ICONS)
+        lines = prompt.splitlines()
+        self.assertIn("Acme", lines)
+        self.assertNotIn("Stripe", lines)
+
+    def test_a_new_entry_is_kept_with_packages_of_one_owner_and_no_package_another_entry_has(self):
+        entries = {"known": {"id": "known", "name": "Known", "signs": {"packages": {"npm": ["acme-known"]}}}}
+
+        def one(**change):
+            proposal = {"id": "acme", "name": "Acme", "kind": "service", "type": "servizio o API", "site": "https://ok.example",
+                        "packages": {"npm": ["acme"], "pypi": ["acme-py"]}}
+            return registry_build.accept([{**proposal, **change}], entries, self.CHECK)
+
+        kept, refused = one()
+        self.assertEqual((kept[0]["id"], kept[0]["signs"]["packages"], refused), ("acme", {"npm": ["acme"], "pypi": ["acme-py"]}, []))
+        kept, refused = one(packages={"npm": ["acme"], "pypi": ["acme-other"]})
+        self.assertEqual(kept[0]["signs"]["packages"], {"npm": ["acme"]})
+        self.assertIn("another owner", " ".join(refused))
+        kept, refused = one(packages={"npm": ["acme-known"]})
+        self.assertEqual(kept, [])
+        self.assertIn("already has", " ".join(refused))
+        kept, refused = one(site="https://down.example")
+        self.assertEqual(kept, [])

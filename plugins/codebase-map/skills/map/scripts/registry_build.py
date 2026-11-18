@@ -5,15 +5,20 @@
 """Build the registry of external services and projects from public catalogs. A development tool.
 
 Sources, at fixed versions: the rules of stack-analyser (MIT), evaluated in Node with
-`register` replaced by a collector; the marks of Simple Icons (CC0), joined by name;
+`register` replaced by a collector; the marks of Simple Icons (CC0), joined by name and written, clean, as one SVG
+per entry in `data/marks/ID.svg` (the entry's `mark`), and the official marks of the services Simple Icons lacks
+(`add-mark`: the owner's file, its URL, the day and its terms, kept in the additions and in REGISTRY-NOTICES.md);
 the entries of the CNCF Landscape (CC BY 4.0) with name, category and site; and
 `registry-additions.json`, what the catalogs lack and the machine verified.
 
     python registry_build.py build --out FILE [--cache DIR]
-    python registry_build.py check FILE
+    python registry_build.py check FILE        # also the marks beside FILE: each file named, clean, none left over
+    python registry_build.py marks [--registry FILE] [--additions FILE] [--cache DIR]
+    python registry_build.py add-mark ID SVG --url URL [--terms URL]
+    python registry_build.py add-package-mark ID ZIP --url URL --member PATH --terms URL
     python registry_build.py derive [--registry FILE] [--additions FILE]
     python registry_build.py verify-additions [--additions FILE]
-    python registry_build.py model-input > PROMPT; claude -p ... < PROMPT > ANSWER
+    python registry_build.py model-input [--icons] > PROMPT; claude -p ... < PROMPT > ANSWER
     python registry_build.py accept ANSWER
 
 `derive` looks for the packages a catalog lists only for npm on PyPI, crates.io and
@@ -38,6 +43,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import date
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -45,6 +51,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import flows  # noqa: E402
+from mark_svg import clean_svg, safe_member  # noqa: E402
 
 SCHEMA = "daodan/service-registry/v1"
 ADDITIONS_SCHEMA = "daodan/registry-additions/v1"
@@ -54,6 +61,8 @@ KINDS = ("service", "project")
 CATEGORIES = ("framework", "library", "tool", "service")
 SIGNS = ("packages", "patterns", "env", "hosts", "files")
 MIN_ENTRIES = 1000
+MARKS = "marks"  # the folder of the marks, beside the registry: one SVG per entry, named by the entry's id
+MARK_PATH = re.compile(rf"{MARKS}/[a-z0-9][a-z0-9._-]*\.svg")
 STACK_ANALYSER = ("@specfy/stack-analyser", "1.27.6")
 SIMPLE_ICONS = ("simple-icons", "16.37.0")
 CNCF_COMMIT = "75b47639d132b3a7afa31ecc84a90f61b8072dd6"
@@ -78,8 +87,10 @@ _SUFFIXES = ("-node", "-js", ".js", "js", "-sdk", "-client", "-api")
 
 # ---------------------------------------------------------------- check
 
-def check(value: object) -> list[str]:
-    """What breaks the registry's rules, one line each; empty when it holds."""
+def check(value: object, data: Path | None = None) -> list[str]:
+    """What breaks the registry's rules, one line each; empty when it holds.
+
+    With `data`, the folder that holds the registry, the marks it names must be there, clean, and no other."""
     if not isinstance(value, dict) or value.get("schema") != SCHEMA or not isinstance(value.get("entries"), list):
         return [f"the registry is {SCHEMA} with a list of entries"]
     problems, seen = [], set()
@@ -104,7 +115,43 @@ def check(value: object) -> list[str]:
             problems.append(f"{ident}: signs are null or have at least one of {', '.join(SIGNS)}")
         if not entry.get("from") or not set(entry["from"]) <= set(SOURCES):
             problems.append(f"{ident}: from names one or more of {', '.join(SOURCES)}")
+        mark, package = entry.get("mark"), entry.get("mark_source")
+        if mark is not None and not (isinstance(mark, str) and MARK_PATH.fullmatch(mark)):
+            problems.append(f"{ident}: mark is null or a file like {MARKS}/NAME.svg")
+        elif mark and data is not None:
+            problems += _mark_problems(ident, mark, data)
+        if mark and package:
+            problems.append(f"{ident}: mark and mark_source are two cases, an entry has one")
+        if package is not None and not _package_ok(package):
+            problems.append(f"{ident}: mark_source is {', '.join(PACKAGE_KEYS)}: https URLs, the sha256 and a safe member")
+    if data is not None:
+        named = {e.get("mark") for e in value["entries"]}
+        problems += [f"{MARKS}/{f.name}: no entry names this file" for f in sorted((data / MARKS).glob("*"))
+                     if f"{MARKS}/{f.name}" not in named]
     return problems
+
+
+PACKAGE_KEYS = ("url", "sha256", "member", "terms")  # the official package a mark is downloaded from
+
+
+def _package_ok(package: object) -> bool:
+    return (isinstance(package, dict) and set(package) == set(PACKAGE_KEYS)
+            and all(isinstance(package[k], str) and package[k].startswith("https://") for k in ("url", "terms"))
+            and isinstance(package["sha256"], str) and re.fullmatch(r"[0-9a-f]{64}", package["sha256"]) is not None
+            and safe_member(package["member"]))
+
+
+def _mark_problems(ident: str, mark: str, data: Path) -> list[str]:
+    path = data / mark
+    if not path.is_file():
+        return [f"{ident}: {mark} is missing"]
+    try:
+        text = path.read_text(encoding="utf-8")
+        if clean_svg(text.encode("utf-8")) == text:
+            return []
+    except (ValueError, UnicodeDecodeError):
+        pass
+    return [f"{ident}: {mark} is not what the sanitiser makes of it"]
 
 
 # ---------------------------------------------------------------- names and owners
@@ -143,6 +190,63 @@ def _norm(name: str) -> str:
 
 def _slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", str(name).casefold()).strip("-")
+
+
+# ---------------------------------------------------------------- marks
+
+_COMPANY = {"inc", "ltd", "llc", "corp", "corporation", "gmbh", "co", "company", "limited"}
+
+
+def mark_index(icons: list[dict]) -> dict[str, dict]:
+    """Simple Icons by every name the collection gives an icon: title, slug, `aka`, `dup` and `loc`."""
+    index = {}
+    for icon in icons:
+        aliases = icon.get("aliases", {})
+        names = [icon["title"], icon["slug"], *aliases.get("aka", []), *(d["title"] for d in aliases.get("dup", [])),
+                 *aliases.get("loc", {}).values()]
+        for name in names:
+            index.setdefault(_norm(name), icon)
+    return index
+
+
+def simple_icon(entry: dict, index: dict[str, dict]) -> dict | None:
+    """The icon that has the entry's name (or its id) up to case, punctuation and a closing company word."""
+    words = re.findall(r"[a-z0-9]+", entry["name"].casefold())
+    if len(words) > 1 and words[-1] in _COMPANY:
+        words = words[:-1]
+    return index.get("".join(words)) or index.get(_norm(entry["name"])) or index.get(_norm(entry["id"]))
+
+
+def apply_marks(entries: dict[str, dict], icons: list[dict], read_svg, data: Path, official: dict[str, dict]) -> list[str]:
+    """Give each entry its mark: the Simple Icons one, written clean into `data/marks`, else its official one
+    (`official`: id to a record with `mark`, a file kept as it is, or `mark_source`, a package it is downloaded from).
+    Files nobody names are removed. Returns what it refused, one line each."""
+    index, refused, keep = mark_index(icons), [], set()
+    folder = data / MARKS
+    folder.mkdir(parents=True, exist_ok=True)
+    for ident, entry in entries.items():
+        record = official.get(ident) or {}
+        sources, mark, package = set(entry["from"]) - {"simple-icons"}, record.get("mark"), record.get("mark_source")
+        icon = simple_icon(entry, index)
+        if icon:
+            try:
+                svg = clean_svg(read_svg(icon["slug"]), "#" + icon["hex"])
+            except (ValueError, OSError) as error:
+                refused.append(f"{ident}: {icon['slug']}: {error}")
+            else:
+                mark, package = f"{MARKS}/{ident.lower()}.svg", None
+                (data / mark).write_text(svg, encoding="utf-8", newline="\n")
+                sources.add("simple-icons")
+        entry["mark"], entry["from"] = mark, sorted(sources)
+        entry.pop("mark_source", None)
+        if package and not mark:
+            entry["mark_source"] = package
+        if mark:
+            keep.add(Path(mark).name)
+    for stale in folder.glob("*"):
+        if stale.name not in keep:
+            stale.unlink()
+    return refused
 
 
 # ---------------------------------------------------------------- network
@@ -307,7 +411,7 @@ def _from_rule(rule: dict) -> dict:
     _add_signs(signs, {})
     kind = "service" if rule["type"] in SERVICES or rule["type"] in SERVICE_TYPES else "project"
     node_type = SERVICE_TYPES.get(rule["type"], "servizio o API" if kind == "service" else "altro")
-    return {"id": rule["tech"], "name": rule["name"], "kind": kind, "type": node_type, "site": None, "icon": None,
+    return {"id": rule["tech"], "name": rule["name"], "kind": kind, "type": node_type, "site": None, "mark": None,
             "signs": signs, "from": ["stack-analyser"]}
 
 
@@ -318,11 +422,11 @@ def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
         entry = entries.get(record["id"])
         if entry is None:
             entry = entries[record["id"]] = {"id": record["id"], "name": record["name"], "kind": record["kind"],
-                                             "type": record["type"], "site": None, "icon": None,
+                                             "type": record["type"], "site": None, "mark": None,
                                              "signs": _empty_signs(), "from": []}
         elif entry["signs"] is None:
             entry["signs"] = _empty_signs()
-        for name in ("name", "kind", "type", "site", "category", "icon"):
+        for name in ("name", "kind", "type", "site", "category", "mark", "mark_source"):
             if record.get(name):
                 entry[name] = record[name]
         _add_signs(entry["signs"], record.get("signs", {}))
@@ -332,7 +436,7 @@ def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
             entry["signs"] = None
 
 
-def build(cache: Path, additions: Path) -> dict:
+def build(cache: Path, additions: Path, data: Path) -> dict:
     entries, by_name = {}, {}
     for rule in stack_analyser_rules(cache):
         entry = _from_rule(rule)
@@ -353,18 +457,17 @@ def build(cache: Path, additions: Path) -> dict:
             ident += "-cncf"
         entries[ident] = {"id": ident, "name": item["name"], "kind": "service" if hosted else "project",
                           "type": CNCF_TYPES.get(item["subcategory"], "servizio o API" if hosted else "altro"),
-                          "site": item.get("homepage_url"), "icon": None, "signs": _empty_signs(),
+                          "site": item.get("homepage_url"), "mark": None, "signs": _empty_signs(),
                           "from": ["cncf-landscape"]}
         by_name[_norm(item["name"])] = ident
     apply_additions(entries, json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else [])
-    icons = {}
-    for icon in simple_icons(cache):
-        for name in [icon["title"], icon["slug"], *icon.get("aliases", {}).get("aka", [])]:
-            icons.setdefault(_norm(name), icon["slug"])
+    root = _tarball(*SIMPLE_ICONS, cache)
+    records = json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []
+    refused = apply_marks(entries, simple_icons(cache), lambda slug: (root / "icons" / f"{slug}.svg").read_bytes(), data,
+                          {r["id"]: r for r in records if r.get("mark") or r.get("mark_source")})
+    if refused:
+        print("\n".join(refused), file=sys.stderr)
     for entry in entries.values():
-        entry["icon"] = icons.get(_norm(entry["name"])) or icons.get(_norm(entry["id"]))
-        if entry["icon"]:
-            entry["from"] = sorted(set(entry["from"]) | {"simple-icons"})
         if not any(entry["signs"].values()):
             entry["signs"] = None
     return {"schema": SCHEMA, "versions": {"stack-analyser": STACK_ANALYSER[1], "simple-icons": SIMPLE_ICONS[1],
@@ -539,8 +642,28 @@ for a line of the list, id and the fields you add are enough.
 """
 
 
-def model_input(registry: dict) -> str:
-    """The prompt: entries known only on npm, and entries of stack-analyser without a site."""
+ICONS_PROMPT = """Below are names of brands that have a mark (a logo) and no entry in a registry of external services.
+Choose the ones that are external services a software project calls or uses through a package: hosted APIs, SaaS,
+databases, clouds, authentication, payments, messaging, monitoring, AI. Leave out companies and products that have
+no developer service, end-user apps, and libraries or frameworks that are not a service.
+For each one chosen give: id (lowercase), name exactly as listed, kind "service", type (one of: {types}), site
+(the official one) and packages: the official SDK or client package on npm, pypi, crates or go (a Go module path),
+only the ones you know with confidence; an entry without a package is not wanted.
+Answer with JSON only, no prose: {{"entries": [{{"id": "...", "name": "...", "kind": "service", "type": "...",
+"site": "https://...", "packages": {{"npm": ["..."], "pypi": ["..."], "crates": ["..."], "go": ["..."]}}}}]}}
+
+{lines}
+"""
+
+
+def model_input(registry: dict, icons: list[dict] | None = None) -> str:
+    """The prompt: entries known only on npm and without a site, or, with `icons`, the marks that have no entry."""
+    if icons is not None:
+        index = mark_index(icons)
+        named = {_norm(e["name"]) for e in registry["entries"]} | {_norm(e["id"]) for e in registry["entries"]}
+        used = {i["slug"] for e in registry["entries"] if (i := simple_icon(e, index))}
+        lines = [i["title"] for i in icons if i["slug"] not in used and _norm(i["title"]) not in named]
+        return ICONS_PROMPT.format(types=", ".join(flows.NODE_TYPES), lines="\n".join(lines))
     lines = []
     for entry in registry["entries"]:
         packages = (entry.get("signs") or {}).get("packages") or {}
@@ -570,7 +693,8 @@ def accept(proposals: list[dict], entries: dict[str, dict], check: dict = NETWOR
     """Additions from a model's proposals, kept only where the machine verifies them, and why the rest is not.
 
     A package of a known entry needs the owner of the entry's first npm package, when it has one;
-    a new entry needs a name, a kind, a type, packages that exist and a site that answers.
+    a new entry needs a name, a kind, a type, packages that exist and have one owner among them, no package that
+    another entry has already, and a site that answers.
     """
     by_name = {_norm(e["name"]): i for i, e in entries.items()}
     kept, refused = [], []
@@ -588,6 +712,8 @@ def accept(proposals: list[dict], entries: dict[str, dict], check: dict = NETWOR
                 continue
             for name in names:
                 found = check["owners"](ecosystem, name)
+                if entry is None and main is None and found:  # a new entry: its first package names the owner
+                    main = found
                 if found is None:
                     refused.append(f"{ident}: {ecosystem} has no package {name}")
                 elif main and not main & found:
@@ -598,6 +724,11 @@ def accept(proposals: list[dict], entries: dict[str, dict], check: dict = NETWOR
         if site and not check["site"](site):
             refused.append(f"{ident}: {site} does not answer")
             site = None
+        taken = [i for i, e in entries.items() if entry is None and any(
+            n in (((e.get("signs") or {}).get("packages") or {}).get(eco) or []) for eco, ns in packages.items() for n in ns)]
+        if taken:
+            refused.append(f"{ident}: has packages that {', '.join(taken)} already has")
+            continue
         if entry is None:
             if (not packages or proposal.get("kind") not in KINDS or proposal.get("type") not in flows.NODE_TYPES
                     or not proposal.get("name") or not site):
@@ -608,6 +739,91 @@ def accept(proposals: list[dict], entries: dict[str, dict], check: dict = NETWOR
         elif packages or site:
             kept.append({"id": ident, **({"site": site} if site else {}), "signs": {"packages": packages}, "by": "model"})
     return kept, refused
+
+
+def _write(path: Path, value: object) -> None:
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+
+
+def sync_additions(incoming: list[dict], registry: Path, additions: Path) -> int:
+    """Merge records into the additions and into the registry the way `build` does; refuse what breaks `check`."""
+    add_doc = json.loads(additions.read_text(encoding="utf-8"))
+    by_key = {(e["id"], e.get("by")): e for e in add_doc["entries"]}
+    for item in incoming:
+        by_key[(item["id"], item.get("by"))] = item
+    add_doc["entries"] = sorted(by_key.values(), key=lambda e: (e["id"], e.get("by") or ""))
+    reg_doc = json.loads(registry.read_text(encoding="utf-8"))
+    entries = {e["id"]: e for e in reg_doc["entries"]}
+    apply_additions(entries, incoming)
+    reg_doc["entries"] = [entries[k] for k in sorted(entries)]
+    problems = check(reg_doc, registry.parent)
+    if problems:
+        print("\n".join(problems), file=sys.stderr)
+        return 1
+    _write(additions, add_doc)
+    _write(registry, reg_doc)
+    print(f"{len(reg_doc['entries'])} entries -> {registry}")
+    return 0
+
+
+def add_mark(ident: str, source: Path, url: str, terms: str | None, registry: Path, additions: Path) -> int:
+    """Take the owner's SVG into `marks/` (clean) and record where it came from; one that Simple Icons has is refused."""
+    entry = next((e for e in json.loads(registry.read_text(encoding="utf-8"))["entries"] if e["id"] == ident), None)
+    if entry is None or "simple-icons" in entry["from"]:
+        print(f"{ident}: no such entry, or its mark is the one of Simple Icons", file=sys.stderr)
+        return 1
+    try:
+        svg = clean_svg(source.read_bytes())
+    except ValueError as error:
+        print(f"{ident}: {source.name}: {error}", file=sys.stderr)
+        return 1
+    mark = f"{MARKS}/{ident.lower()}.svg"
+    (registry.parent / MARKS).mkdir(exist_ok=True)
+    (registry.parent / mark).write_text(svg, encoding="utf-8", newline="\n")
+    source_record = {"url": url, **({"terms": terms} if terms else {}), "date": date.today().isoformat()}
+    return sync_additions([{"id": ident, "mark": mark, "mark_origin": source_record, "by": "official"}], registry, additions)
+
+
+def add_package_mark(ident: str, url: str, archive: Path, member: str, terms: str, registry: Path, additions: Path) -> int:
+    """Record that an entry's mark is `member` of the owner's package at `url`, which `archive` is a copy of: its
+    sha256 is taken, and the member must come out of `clean_svg`. Nothing of the package is kept in the repository."""
+    import hashlib
+    import zipfile
+    entry = next((e for e in json.loads(registry.read_text(encoding="utf-8"))["entries"] if e["id"] == ident), None)
+    if entry is None or "simple-icons" in entry["from"] or not safe_member(member):
+        print(f"{ident}: no such entry, its mark is the one of Simple Icons, or the member is not safe", file=sys.stderr)
+        return 1
+    try:
+        with zipfile.ZipFile(archive) as package:
+            clean_svg(package.read(member))
+    except (OSError, KeyError, ValueError, zipfile.BadZipFile) as error:
+        print(f"{ident}: {member}: {error}", file=sys.stderr)
+        return 1
+    source = {"url": url, "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(), "member": member, "terms": terms}
+    return sync_additions([{"id": ident, "mark_source": source, "by": "official"}], registry, additions)
+
+
+def set_marks(registry: Path, additions: Path, cache: Path) -> int:
+    """Give every entry of the registry its mark (see `apply_marks`) and write the registry and the files."""
+    cache.mkdir(parents=True, exist_ok=True)
+    reg_doc = json.loads(registry.read_text(encoding="utf-8"))
+    entries = {e["id"]: {("mark" if k == "icon" else k): (None if k == "icon" else v) for k, v in e.items()}
+               for e in reg_doc["entries"]}
+    records = json.loads(additions.read_text(encoding="utf-8"))["entries"] if additions.is_file() else []
+    root = _tarball(*SIMPLE_ICONS, cache)
+    refused = apply_marks(entries, simple_icons(cache), lambda slug: (root / "icons" / f"{slug}.svg").read_bytes(),
+                          registry.parent, {r["id"]: r for r in records if r.get("mark") or r.get("mark_source")})
+    reg_doc["entries"] = [entries[k] for k in sorted(entries)]
+    problems = check(reg_doc, registry.parent)
+    print("\n".join(refused + problems), file=sys.stderr)
+    if problems:
+        return 1
+    _write(registry, reg_doc)
+    marked = [e for e in reg_doc["entries"] if e["mark"] or e.get("mark_source")]
+    print(json.dumps({"entries with a mark file": sum(1 for e in marked if e["mark"]),
+                      "entries with a package": sum(1 for e in marked if e.get("mark_source")),
+                      "services with signs and either": sum(1 for e in marked if e["kind"] == "service" and e["signs"])}))
+    return 0
 
 
 def main(argv=None) -> int:
@@ -624,60 +840,67 @@ def main(argv=None) -> int:
     derive_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
     input_parser = sub.add_parser("model-input")
     input_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
+    input_parser.add_argument("--icons", action="store_true", help="ask for the services of the marks that have no entry")
+    input_parser.add_argument("--cache", type=Path, default=Path.home() / ".cache/daodan/registry-build")
     accept_parser = sub.add_parser("accept")
     accept_parser.add_argument("answer", type=Path, help="the model's JSON answer")
     accept_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
     accept_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
     verify_parser = sub.add_parser("verify-additions")
     verify_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
+    package_parser = sub.add_parser("add-package-mark")
+    package_parser.add_argument("id")
+    package_parser.add_argument("archive", type=Path, help="a copy of the owner's package, downloaded into a folder of its own")
+    package_parser.add_argument("--url", required=True, help="where the package is, at a fixed version")
+    package_parser.add_argument("--member", required=True, help="the SVG inside the package")
+    package_parser.add_argument("--terms", required=True, help="the owner's page of terms for the mark")
+    package_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
+    package_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
+    marks_parser = sub.add_parser("marks")
+    marks_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
+    marks_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
+    marks_parser.add_argument("--cache", type=Path, default=Path.home() / ".cache/daodan/registry-build")
+    mark_parser = sub.add_parser("add-mark")
+    mark_parser.add_argument("id")
+    mark_parser.add_argument("file", type=Path, help="the owner's SVG, downloaded into a folder of its own")
+    mark_parser.add_argument("--url", required=True, help="where the file came from")
+    mark_parser.add_argument("--terms", help="the owner's page of terms for the mark, when there is one")
+    mark_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
+    mark_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
     sync_parser = sub.add_parser("sync-additions")
     sync_parser.add_argument("source", type=Path)
     sync_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
     sync_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
     args = parser.parse_args(argv)
     if args.command == "sync-additions":
-        incoming = json.loads(args.source.read_text(encoding="utf-8"))
-        add_doc = json.loads(args.additions.read_text(encoding="utf-8"))
-        by_key = {(e["id"], e.get("by")): e for e in add_doc["entries"]}
-        for item in incoming:
-            by_key[(item["id"], item.get("by"))] = item
-        add_doc["entries"] = sorted(by_key.values(), key=lambda e: (e["id"], e.get("by") or ""))
-        reg_doc = json.loads(args.registry.read_text(encoding="utf-8"))
-        entries = {e["id"]: e for e in reg_doc["entries"]}
-        apply_additions(entries, incoming)
-        reg_doc["entries"] = [entries[k] for k in sorted(entries)]
-        problems = check(reg_doc)
-        if problems:
-            print("\n".join(problems), file=sys.stderr)
-            return 1
-        args.additions.write_text(json.dumps(add_doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        args.registry.write_text(json.dumps(reg_doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        print(f"{len(reg_doc['entries'])} entries -> {args.registry}")
-        return 0
+        return sync_additions(json.loads(args.source.read_text(encoding="utf-8")), args.registry, args.additions)
+    if args.command == "add-mark":
+        return add_mark(args.id, args.file, args.url, args.terms, args.registry, args.additions)
+    if args.command == "add-package-mark":
+        return add_package_mark(args.id, args.url, args.archive, args.member, args.terms, args.registry, args.additions)
+    if args.command == "marks":
+        return set_marks(args.registry, args.additions, args.cache)
     if args.command == "build":
         args.cache.mkdir(parents=True, exist_ok=True)
-        value = build(args.cache, args.additions)
+        value = build(args.cache, args.additions, args.out.parent)
         args.out.write_text(json.dumps(value, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         print(f"{len(value['entries'])} entries -> {args.out}")
         return 0
     if args.command == "model-input":
-        print(model_input(json.loads(args.registry.read_text(encoding="utf-8"))))
+        args.cache.mkdir(parents=True, exist_ok=True)
+        print(model_input(json.loads(args.registry.read_text(encoding="utf-8")), simple_icons(args.cache) if args.icons else None))
         return 0
     if args.command == "accept":
         text = args.answer.read_text(encoding="utf-8")
         answer = json.loads(text[text.index("{"): text.rindex("}") + 1])
         entries = {e["id"]: e for e in json.loads(args.registry.read_text(encoding="utf-8"))["entries"]}
         kept, refused = accept(answer["entries"], entries)
-        records = json.loads(args.additions.read_text(encoding="utf-8"))["entries"] if args.additions.is_file() else []
-        records = [r for r in records if r.get("by") != "model"] + kept
-        args.additions.write_text(json.dumps({"schema": ADDITIONS_SCHEMA, "entries": sorted(
-            records, key=lambda r: (r["id"], r.get("by", "")))}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         print(json.dumps({"kept": len(kept), "refused": refused}, ensure_ascii=False, indent=1))
-        return 0
+        return sync_additions(kept, args.registry, args.additions)  # the registry takes what the additions now hold
     if args.command == "derive":
         print(json.dumps(derive(args.registry, args.additions)))
         return 0
-    problems = (check(json.loads(args.file.read_text(encoding="utf-8"))) if args.command == "check"
+    problems = (check(json.loads(args.file.read_text(encoding="utf-8")), args.file.parent) if args.command == "check"
                 else verify_additions(args.additions))
     print("\n".join(problems) or "ok")
     return 1 if problems else 0

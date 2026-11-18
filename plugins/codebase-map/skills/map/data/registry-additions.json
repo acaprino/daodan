@@ -2,6 +2,39 @@
  "schema": "daodan/registry-additions/v1",
  "entries": [
   {
+   "id": "1password",
+   "name": "1Password",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://1password.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@1password/sdk"
+     ],
+     "pypi": [
+      "onepassword-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "activeloop",
+   "name": "Activeloop",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.activeloop.ai",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "deeplake"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "actixweb",
    "name": "Actix Web",
    "kind": "project",
@@ -29,6 +62,39 @@
    "owner": "github.com/adyen"
   },
   {
+   "id": "aftership",
+   "name": "AfterShip",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.aftership.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "aftership"
+     ],
+     "pypi": [
+      "aftership"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "agora",
+   "name": "Agora",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.agora.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "agora-rtc-sdk-ng"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "aiohttp",
    "name": "aiohttp",
    "kind": "project",
@@ -38,6 +104,51 @@
     "packages": {
      "pypi": [
       "aiohttp"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "airbrake",
+   "name": "Airbrake",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.airbrake.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@airbrake/node"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "alby",
+   "name": "Alby",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://getalby.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@getalby/sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "alchemy",
+   "name": "Alchemy",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.alchemy.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "alchemy-sdk"
      ]
     }
    },
@@ -63,6 +174,42 @@
    "site": "https://www.algolia.com",
    "signs": {
     "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "algorand",
+   "name": "Algorand",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://algorand.co",
+   "signs": {
+    "packages": {
+     "npm": [
+      "algosdk"
+     ],
+     "pypi": [
+      "py-algorand-sdk"
+     ],
+     "go": [
+      "github.com/algorand/go-algorand-sdk/v2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "alipay",
+   "name": "Alipay",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://global.alipay.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "alipay-sdk"
+     ]
+    }
    },
    "by": "model"
   },
@@ -239,6 +386,57 @@
    "by": "catalog"
   },
   {
+   "id": "app-store",
+   "name": "App Store",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://developer.apple.com/app-store/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@apple/app-store-server-library"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "appwrite",
+   "name": "Appwrite",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://appwrite.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "appwrite"
+     ],
+     "pypi": [
+      "appwrite"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "arcgis",
+   "name": "ArcGIS",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.arcgis.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@arcgis/core"
+     ],
+     "pypi": [
+      "arcgis"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "archunit",
    "name": "ArchUnit",
    "kind": "project",
@@ -340,6 +538,16 @@
    "by": "model"
   },
   {
+   "id": "aws.amplifyhosting",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Front-End-Web-Mobile/64/Arch_AWS-Amplify_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.apigateway",
    "signs": {
     "packages": {
@@ -352,6 +560,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.apigateway",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Networking-Content-Delivery/64/Arch_Amazon-API-Gateway_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.athena",
    "signs": {
     "packages": {
@@ -362,6 +580,26 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.athena",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-Athena_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.bedrock",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Bedrock_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.cloudformation",
@@ -388,6 +626,26 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.cloudfront",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Networking-Content-Delivery/64/Arch_Amazon-CloudFront_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.cloudsearch",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-CloudSearch_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.cloudwatch",
    "signs": {
     "packages": {
@@ -398,6 +656,56 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.cloudwatch",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Management-Tools/64/Arch_Amazon-CloudWatch_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.codebuild",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Developer-Tools/64/Arch_AWS-CodeBuild_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.codepipeline",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Developer-Tools/64/Arch_AWS-CodePipeline_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.cognito",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Security-Identity/64/Arch_Amazon-Cognito_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.comprehend",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Comprehend_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.documentdb",
@@ -412,6 +720,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.documentdb",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-DocumentDB_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.dynamodb",
    "signs": {
     "packages": {
@@ -422,6 +740,26 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.dynamodb",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-DynamoDB_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.ebs",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Storage/64/Arch_Amazon-Elastic-Block-Store_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.ec2",
@@ -436,6 +774,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.ec2",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Compute/64/Arch_Amazon-EC2_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.ecr",
    "signs": {
     "packages": {
@@ -446,6 +794,16 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.ecr",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Containers/64/Arch_Amazon-Elastic-Container-Registry_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.ecs",
@@ -460,6 +818,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.ecs",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Containers/64/Arch_Amazon-Elastic-Container-Service_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.efs",
    "signs": {
     "packages": {
@@ -470,6 +838,16 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.efs",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Storage/64/Arch_Amazon-EFS_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.eks",
@@ -484,6 +862,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.eks",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Containers/64/Arch_Amazon-Elastic-Kubernetes-Service_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.elasticache",
    "signs": {
     "packages": {
@@ -494,6 +882,36 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.elasticache",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-ElastiCache_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.fargate",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Containers/64/Arch_AWS-Fargate_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.glacier",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Storage/64/Arch_Amazon-Simple-Storage-Service-Glacier_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.glue",
@@ -508,6 +926,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.glue",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_AWS-Glue_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.kafka",
    "signs": {
     "packages": {
@@ -518,6 +946,16 @@
    },
    "by": "derive",
    "owner": "github.com/pulumi"
+  },
+  {
+   "id": "aws.kafka",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-Managed-Streaming-for-Apache-Kafka_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.kinesis",
@@ -532,6 +970,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.kinesis",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-Kinesis_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.kms",
    "signs": {
     "packages": {
@@ -542,6 +990,26 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.kms",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Security-Identity/64/Arch_AWS-Key-Management-Service_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.lambda",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Compute/64/Arch_AWS-Lambda_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.lightsail",
@@ -556,6 +1024,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.lightsail",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Compute/64/Arch_Amazon-Lightsail_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.memorydb",
    "signs": {
     "packages": {
@@ -566,6 +1044,26 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.memorydb",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-MemoryDB_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.mq",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Application-Integration/64/Arch_Amazon-MQ_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.neptune",
@@ -580,6 +1078,36 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.neptune",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-Neptune_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.opensearch",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-OpenSearch-Service_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.polly",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Polly_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.rds",
    "signs": {
     "packages": {
@@ -590,6 +1118,16 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.rds",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-RDS_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.redshift",
@@ -604,6 +1142,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.redshift",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-Redshift_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.rekognition",
    "signs": {
     "packages": {
@@ -614,6 +1162,26 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.rekognition",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Rekognition_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.s3",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Storage/64/Arch_Amazon-Simple-Storage-Service_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.sagemaker",
@@ -628,6 +1196,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.sagemaker",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-SageMaker-AI_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.secretsmanager",
    "signs": {
     "packages": {
@@ -638,6 +1216,16 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.secretsmanager",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Security-Identity/64/Arch_AWS-Secrets-Manager_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.ses",
@@ -652,6 +1240,26 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.ses",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Business-Applications/64/Arch_Amazon-Simple-Email-Service_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.sfn",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Application-Integration/64/Arch_AWS-Step-Functions_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.sns",
    "signs": {
     "packages": {
@@ -662,6 +1270,16 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.sns",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Application-Integration/64/Arch_Amazon-Simple-Notification-Service_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "aws.sqs",
@@ -676,6 +1294,16 @@
    "owner": "github.com/aws"
   },
   {
+   "id": "aws.sqs",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Application-Integration/64/Arch_Amazon-Simple-Queue-Service_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "aws.timestream",
    "signs": {
     "packages": {
@@ -686,6 +1314,36 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.timestream",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-Timestream_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.transcribe",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Transcribe_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "aws.translate",
+   "mark_source": {
+    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
+    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
+    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Translate_64.svg",
+    "terms": "https://aws.amazon.com/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "awscdk",
@@ -732,6 +1390,96 @@
    "by": "model"
   },
   {
+   "id": "azure.aks",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/compute/10023-icon-service-Kubernetes-Services.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "azure.cosmosdb",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "azure.functions",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/compute/10029-icon-service-Function-Apps.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "azure.mariadb",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/databases/10123-icon-service-Azure-Database-MariaDB-Server.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "azure.mysql",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/databases/10122-icon-service-Azure-Database-MySQL-Server.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "azure.openai",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/ai + machine learning/03438-icon-service-Azure-OpenAI.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "azure.postgres",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/databases/10131-icon-service-Azure-Database-PostgreSQL-Server.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "azure.redis",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Cache-Redis.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
+   "id": "azure.sql",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/databases/02390-icon-service-Azure-SQL.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "azure.staticwebapps",
    "signs": {
     "packages": {
@@ -742,6 +1490,16 @@
    },
    "by": "derive",
    "owner": "github.com/azure"
+  },
+  {
+   "id": "azure.staticwebapps",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
   },
   {
    "id": "azure.storage",
@@ -759,9 +1517,49 @@
    "owner": "github.com/azure"
   },
   {
+   "id": "azure.storage",
+   "mark_source": {
+    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
+    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
+    "member": "Azure_Public_Service_Icons/Icons/storage/10086-icon-service-Storage-Accounts.svg",
+    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
+   },
+   "by": "official"
+  },
+  {
    "id": "babel",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "backblaze",
+   "name": "Backblaze",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.backblaze.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "backblaze-b2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "backendless",
+   "name": "Backendless",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://backendless.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "backendless"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "bigcommerce",
@@ -774,6 +1572,54 @@
    },
    "by": "derive",
    "owner": "github.com/bigcommerce"
+  },
+  {
+   "id": "binance",
+   "name": "Binance",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.binance.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@binance/connector"
+     ],
+     "pypi": [
+      "binance-connector"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "bitly",
+   "name": "Bitly",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://bitly.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "bitly"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "bitwarden",
+   "name": "Bitwarden",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://bitwarden.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@bitwarden/sdk-napi"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "blazor",
@@ -791,6 +1637,21 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "bluesky",
+   "name": "Bluesky",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://bsky.app",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@atproto/api"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "boto3",
@@ -816,10 +1677,58 @@
    "by": "model"
   },
   {
+   "id": "braintree",
+   "name": "Braintree",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.braintreepayments.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "braintree"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "braintrust",
+   "name": "Braintrust",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.braintrust.dev",
+   "signs": {
+    "packages": {
+     "npm": [
+      "braintrust"
+     ],
+     "pypi": [
+      "braintrust"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "bugsnag",
    "site": "https://www.bugsnag.com",
    "signs": {
     "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "bunq",
+   "name": "bunq",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.bunq.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "bunq-sdk"
+     ]
+    }
    },
    "by": "model"
   },
@@ -829,6 +1738,36 @@
     "packages": {
      "go": [
       "github.com/caddyserver/caddy/v2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "campaign-monitor",
+   "name": "Campaign Monitor",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.campaignmonitor.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "createsend-node"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "camunda",
+   "name": "Camunda",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://camunda.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@camunda8/sdk"
      ]
     }
    },
@@ -867,6 +1806,34 @@
    "by": "model"
   },
   {
+   "id": "chartmogul",
+   "name": "ChartMogul",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://chartmogul.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "chartmogul-node"
+     ],
+     "pypi": [
+      "chartmogul"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "checkov",
+   "mark": "marks/checkov.svg",
+   "mark_origin": {
+    "url": "https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/web/images/checkov-logo.svg",
+    "terms": "https://github.com/bridgecrewio/checkov/blob/main/LICENSE",
+    "date": "2026-11-18"
+   },
+   "by": "official"
+  },
+  {
    "id": "chi",
    "name": "Chi",
    "kind": "project",
@@ -881,6 +1848,36 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "chromatic",
+   "name": "Chromatic",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.chromatic.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "chromatic"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "civo",
+   "name": "Civo",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.civo.com",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/civo/civogo"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "click",
@@ -945,10 +1942,55 @@
    "by": "model"
   },
   {
+   "id": "cockroach-labs",
+   "name": "Cockroach Labs",
+   "kind": "service",
+   "type": "database",
+   "site": "https://www.cockroachlabs.com",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/cockroachdb/cockroach-go/v2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "codesandbox",
+   "name": "CodeSandbox",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://codesandbox.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@codesandbox/sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "cohereai",
    "site": "https://cohere.com",
    "signs": {
     "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "coinbase",
+   "name": "Coinbase",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.coinbase.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@coinbase/coinbase-sdk"
+     ]
+    }
    },
    "by": "model"
   },
@@ -967,6 +2009,24 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "conekta",
+   "name": "Conekta",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.conekta.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "conekta"
+     ],
+     "pypi": [
+      "conekta"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "consul",
@@ -1003,6 +2063,21 @@
    "owner": "github.com/contentful"
   },
   {
+   "id": "contentstack",
+   "name": "Contentstack",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.contentstack.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "contentstack"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "couchbase",
    "signs": {
     "packages": {
@@ -1018,9 +2093,39 @@
    "owner": "github.com/couchbase"
   },
   {
+   "id": "coze",
+   "name": "Coze",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.coze.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@coze/api"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "cypressci",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "d-wave-systems",
+   "name": "D-Wave Systems",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.dwavesys.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "dwave-ocean-sdk"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "dask",
@@ -1080,6 +2185,42 @@
    "by": "model"
   },
   {
+   "id": "deepgram",
+   "name": "Deepgram",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://deepgram.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@deepgram/sdk"
+     ],
+     "pypi": [
+      "deepgram-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "deepl",
+   "name": "DeepL",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.deepl.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "deepl-node"
+     ],
+     "pypi": [
+      "deepl"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "digitalocean",
    "signs": {
     "packages": {
@@ -1090,6 +2231,21 @@
    },
    "by": "derive",
    "owner": "github.com/pulumi"
+  },
+  {
+   "id": "directus",
+   "name": "Directus",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://directus.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@directus/sdk"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "django",
@@ -1134,6 +2290,34 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "dodo-payments",
+   "name": "Dodo Payments",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://dodopayments.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "dodopayments"
+     ],
+     "pypi": [
+      "dodopayments"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "dokku",
+   "mark": "marks/dokku.svg",
+   "mark_origin": {
+    "url": "https://raw.githubusercontent.com/dokku/dokku/master/docs/assets/dokku-logo.svg",
+    "terms": "https://github.com/dokku/dokku/blob/master/LICENSE",
+    "date": "2026-11-18"
+   },
+   "by": "official"
   },
   {
    "id": "dotnet-aspire",
@@ -1312,6 +2496,49 @@
    "by": "model"
   },
   {
+   "id": "event-store",
+   "name": "Event Store",
+   "kind": "service",
+   "type": "database",
+   "site": "https://www.eventstore.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@eventstore/db-client"
+     ],
+     "go": [
+      "github.com/EventStore/EventStore-Client-Go"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "evernote",
+   "name": "Evernote",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://evernote.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "evernote"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "expodev",
+   "mark": "marks/expodev.svg",
+   "mark_origin": {
+    "url": "https://raw.githubusercontent.com/expo/logos/main/svg/logo-type-a.svg",
+    "terms": "https://expo.dev/brand",
+    "date": "2026-11-18"
+   },
+   "by": "official"
+  },
+  {
    "id": "exposed",
    "name": "Exposed",
    "kind": "project",
@@ -1428,6 +2655,21 @@
    "by": "catalog"
   },
   {
+   "id": "formbricks",
+   "name": "Formbricks",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://formbricks.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@formbricks/js"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "foundationdb",
    "signs": {
     "packages": {
@@ -1474,6 +2716,16 @@
    "by": "model"
   },
   {
+   "id": "gcp.aiplatform",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "ai_platform/ai_platform.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.appengine",
    "signs": {
     "packages": {
@@ -1484,6 +2736,16 @@
    },
    "by": "derive",
    "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.appengine",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "app_engine/app_engine.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
   },
   {
    "id": "gcp.artifactregistry",
@@ -1498,6 +2760,26 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.artifactregistry",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "artifact_registry/artifact_registry.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.bigquery",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
+    "member": "Unique Icons/BigQuery/SVG/BigQuery-512-color.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.bigtable",
    "signs": {
     "packages": {
@@ -1508,6 +2790,26 @@
    },
    "by": "derive",
    "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.bigtable",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "bigtable/bigtable.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.cloudbuild",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "cloud_build/cloud_build.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
   },
   {
    "id": "gcp.cloudrun",
@@ -1522,6 +2824,26 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.cloudrun",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
+    "member": "Unique Icons/Cloud Run/SVG/CloudRun-512-color-rgb.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.dataflow",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "dataflow/dataflow.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.dataproc",
    "signs": {
     "packages": {
@@ -1532,6 +2854,16 @@
    },
    "by": "derive",
    "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.dataproc",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "dataproc/dataproc.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
   },
   {
    "id": "gcp.datastore",
@@ -1546,6 +2878,16 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.datastore",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "datastore/datastore.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.dialogflow",
    "signs": {
     "packages": {
@@ -1556,6 +2898,16 @@
    },
    "by": "derive",
    "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.dialogflow",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "dialogflow/dialogflow.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
   },
   {
    "id": "gcp.dns",
@@ -1573,6 +2925,26 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.dns",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "cloud_dns/cloud_dns.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.functions",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "cloud_functions/cloud_functions.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.gce",
    "signs": {
     "packages": {
@@ -1583,6 +2955,36 @@
    },
    "by": "derive",
    "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.gce",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
+    "member": "Unique Icons/Compute Engine/SVG/ComputeEngine-512-color-rgb.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.gcs",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
+    "member": "Unique Icons/Cloud Storage/SVG/Cloud_Storage-512-color.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.gke",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
+    "member": "Unique Icons/GKE/SVG/GKE-512-color.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
   },
   {
    "id": "gcp.kms",
@@ -1597,6 +2999,16 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.kms",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "key_management_service/key_management_service.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.language",
    "signs": {
     "packages": {
@@ -1607,6 +3019,16 @@
    },
    "by": "derive",
    "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.language",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "cloud_natural_language_api/cloud_natural_language_api.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
   },
   {
    "id": "gcp.logging",
@@ -1621,6 +3043,16 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.logging",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "cloud_logging/cloud_logging.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.memorystore",
    "signs": {
     "packages": {
@@ -1631,6 +3063,16 @@
    },
    "by": "derive",
    "owner": "github.com/googleapis"
+  },
+  {
+   "id": "gcp.memorystore",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "memorystore/memorystore.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
   },
   {
    "id": "gcp.pubsub",
@@ -1657,6 +3099,16 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.secretmanager",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "secret_manager/secret_manager.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.spanner",
    "signs": {
     "packages": {
@@ -1672,6 +3124,26 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.spanner",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
+    "member": "Unique Icons/Cloud Spanner/SVG/CloudSpanner-512-color.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.speech",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "speech-to-text/speech-to-text.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gcp.sql",
    "signs": {
     "packages": {
@@ -1682,6 +3154,16 @@
    },
    "by": "derive",
    "owner": "github.com/googlecloudplatform"
+  },
+  {
+   "id": "gcp.sql",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
+    "member": "Unique Icons/Cloud SQL/SVG/CloudSQL-512-color.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
   },
   {
    "id": "gcp.tasks",
@@ -1696,6 +3178,36 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gcp.tasks",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "cloud_tasks/cloud_tasks.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.vertex",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
+    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
+    "member": "Unique Icons/Vertex AI/SVG/VertexAI-512-color.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
+   "id": "gcp.vision",
+   "mark_source": {
+    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
+    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
+    "member": "cloud_vision_api/cloud_vision_api.svg",
+    "terms": "https://cloud.google.com/icons"
+   },
+   "by": "official"
+  },
+  {
    "id": "gin",
    "name": "Gin",
    "kind": "project",
@@ -1705,6 +3217,21 @@
     "packages": {
      "go": [
       "github.com/gin-gonic/gin"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "giphy",
+   "name": "GIPHY",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://giphy.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@giphy/js-fetch-api"
      ]
     }
    },
@@ -1737,6 +3264,36 @@
    "id": "golang",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "google-ads",
+   "name": "Google Ads",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://ads.google.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "google-ads"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "google-earth-engine",
+   "name": "Google Earth Engine",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://earthengine.google.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@google/earthengine"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "google.meet",
@@ -1978,6 +3535,72 @@
    "owner": "github.com/inngest"
   },
   {
+   "id": "internet-archive",
+   "name": "Internet Archive",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://archive.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "internetarchive"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "internet-computer",
+   "name": "Internet Computer",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://internetcomputer.org",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@dfinity/agent"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "ionos",
+   "name": "Ionos",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.ionos.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "ionoscloud"
+     ],
+     "go": [
+      "github.com/ionos-cloud/sdk-go/v6"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "iota",
+   "name": "IOTA",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.iota.org",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@iota/sdk"
+     ],
+     "pypi": [
+      "iota-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "jackson",
    "name": "Jackson",
    "kind": "project",
@@ -2023,6 +3646,21 @@
    "by": "model"
   },
   {
+   "id": "jfrog",
+   "name": "JFrog",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://jfrog.com",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/jfrog/jfrog-client-go"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "jinja",
    "name": "Jinja",
    "kind": "project",
@@ -2032,6 +3670,36 @@
     "packages": {
      "pypi": [
       "jinja2"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "jira-software",
+   "name": "Jira Software",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.atlassian.com/software/jira",
+   "signs": {
+    "packages": {
+     "npm": [
+      "jira-client"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "jitsi",
+   "name": "Jitsi",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://jitsi.org",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@jitsi/react-sdk"
      ]
     }
    },
@@ -2100,6 +3768,39 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "kaggle",
+   "name": "Kaggle",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.kaggle.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "kaggle"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "keeper",
+   "name": "Keeper",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.keepersecurity.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@keeper-security/secrets-manager-core"
+     ],
+     "pypi": [
+      "keepercommander"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "keras",
@@ -2219,6 +3920,57 @@
    "by": "model"
   },
   {
+   "id": "langchain-corporate",
+   "name": "LangChain Corporate",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.langchain.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "langsmith"
+     ],
+     "pypi": [
+      "langsmith"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "lets-encrypt",
+   "name": "Let's Encrypt",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://letsencrypt.org",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "acme"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "line",
+   "name": "LINE",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://developers.line.biz",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@line/bot-sdk"
+     ],
+     "pypi": [
+      "line-bot-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "liquibase",
    "name": "Liquibase",
    "kind": "project",
@@ -2233,6 +3985,43 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "livechat",
+   "name": "LiveChat",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.livechat.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@livechat/customer-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "livekit",
+   "name": "LiveKit",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://livekit.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "livekit-server-sdk",
+      "livekit-client"
+     ],
+     "pypi": [
+      "livekit-api"
+     ],
+     "go": [
+      "github.com/livekit/server-sdk-go/v2"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "llamaindex",
@@ -2290,6 +4079,66 @@
    "by": "catalog"
   },
   {
+   "id": "looker",
+   "name": "Looker",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://cloud.google.com/looker",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@looker/sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "loom",
+   "name": "Loom",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.loom.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@loomhq/record-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "loops",
+   "name": "Loops",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://loops.so",
+   "signs": {
+    "packages": {
+     "npm": [
+      "loops"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "magic",
+   "name": "Magic",
+   "kind": "service",
+   "type": "autenticazione",
+   "site": "https://magic.link",
+   "signs": {
+    "packages": {
+     "npm": [
+      "magic-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "mailchimp",
    "site": "https://mailchimp.com",
    "signs": {
@@ -2310,6 +4159,24 @@
    "owner": "github.com/mailgun"
   },
   {
+   "id": "mailtrap",
+   "name": "Mailtrap",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://mailtrap.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "mailtrap"
+     ],
+     "pypi": [
+      "mailtrap"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "mapstruct",
    "name": "MapStruct",
    "kind": "project",
@@ -2326,6 +4193,21 @@
    "by": "catalog"
   },
   {
+   "id": "maptiler",
+   "name": "MapTiler",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.maptiler.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@maptiler/sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "matplotlib",
    "name": "Matplotlib",
    "kind": "project",
@@ -2335,6 +4217,21 @@
     "packages": {
      "pypi": [
       "matplotlib"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "matrix",
+   "name": "Matrix",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://matrix.org",
+   "signs": {
+    "packages": {
+     "npm": [
+      "matrix-js-sdk"
      ]
     }
    },
@@ -2366,6 +4263,24 @@
    "by": "model"
   },
   {
+   "id": "mercado-pago",
+   "name": "Mercado Pago",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.mercadopago.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "mercadopago"
+     ],
+     "pypi": [
+      "mercadopago"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "micronaut",
    "name": "Micronaut",
    "kind": "project",
@@ -2380,6 +4295,21 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "microstrategy",
+   "name": "MicroStrategy",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.microstrategy.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "mstrio-py"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "mistralai",
@@ -2424,6 +4354,36 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "modal",
+   "name": "Modal",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://modal.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "modal"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "modelscope",
+   "name": "ModelScope",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://modelscope.cn",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "modelscope"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "mongodb",
@@ -2543,6 +4503,21 @@
    "by": "model"
   },
   {
+   "id": "nhost",
+   "name": "Nhost",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://nhost.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@nhost/nhost-js"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "nodejs",
    "category": "tool",
    "by": "catalog"
@@ -2651,6 +4626,21 @@
    "by": "model"
   },
   {
+   "id": "opencage",
+   "name": "OpenCage",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://opencagedata.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "opencage"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "opencv",
    "signs": {
     "packages": {
@@ -2662,6 +4652,39 @@
      ],
      "go": [
       "gocv.io/x/gocv"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "openrouter",
+   "name": "OpenRouter",
+   "kind": "service",
+   "type": "gateway",
+   "site": "https://openrouter.ai",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@openrouter/sdk"
+     ],
+     "pypi": [
+      "openrouter"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "opensea",
+   "name": "OpenSea",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://opensea.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "opensea-js"
      ]
     }
    },
@@ -2685,6 +4708,21 @@
    "id": "opentelemetry",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "openzeppelin",
+   "name": "OpenZeppelin",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.openzeppelin.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@openzeppelin/defender-sdk"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "optimizely",
@@ -2777,12 +4815,78 @@
    "by": "catalog"
   },
   {
+   "id": "patreon",
+   "name": "Patreon",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.patreon.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "patreon"
+     ],
+     "pypi": [
+      "patreon"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "paypal",
    "site": "https://www.paypal.com",
    "signs": {
     "packages": {
      "pypi": [
       "paypalrestsdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "percy",
+   "name": "Percy",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://percy.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@percy/cli"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "perplexity",
+   "name": "Perplexity",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.perplexity.ai",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@perplexity-ai/perplexity_ai"
+     ],
+     "pypi": [
+      "perplexityai"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "pexels",
+   "name": "Pexels",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.pexels.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "pexels"
      ]
     }
    },
@@ -2873,6 +4977,16 @@
    "by": "model"
   },
   {
+   "id": "pinecone",
+   "mark": "marks/pinecone.svg",
+   "mark_origin": {
+    "url": "https://www.pinecone.io/images/brand/pinecone-logomark-black.svg",
+    "terms": "https://www.pinecone.io/brand/",
+    "date": "2026-11-18"
+   },
+   "by": "official"
+  },
+  {
    "id": "pip",
    "name": "pip",
    "kind": "project",
@@ -2939,11 +5053,41 @@
    "by": "catalog"
   },
   {
+   "id": "pocketbase",
+   "name": "PocketBase",
+   "kind": "service",
+   "type": "database",
+   "site": "https://pocketbase.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "pocketbase"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "podman",
    "signs": {
     "packages": {
      "go": [
       "github.com/containers/podman/v5"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "poe",
+   "name": "Poe",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://poe.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "fastapi-poe"
      ]
     }
    },
@@ -2962,6 +5106,21 @@
      ],
      "crates": [
       "polars"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "polkadot",
+   "name": "Polkadot",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://polkadot.network",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@polkadot/api"
      ]
     }
    },
@@ -3018,6 +5177,21 @@
    "by": "catalog"
   },
   {
+   "id": "prismic",
+   "name": "Prismic",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://prismic.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@prismicio/client"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "protobuf",
    "name": "Protocol Buffers",
    "kind": "project",
@@ -3033,6 +5207,28 @@
      ],
      "go": [
       "google.golang.org/protobuf"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "pusher",
+   "name": "Pusher",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://pusher.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "pusher",
+      "pusher-js"
+     ],
+     "pypi": [
+      "pusher"
+     ],
+     "go": [
+      "github.com/pusher/pusher-http-go/v5"
      ]
     }
    },
@@ -3078,6 +5274,39 @@
    "site": "https://www.python.org",
    "signs": {
     "packages": {}
+   },
+   "by": "model"
+  },
+  {
+   "id": "qase",
+   "name": "Qase",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://qase.io",
+   "signs": {
+    "packages": {
+     "npm": [
+      "qaseio"
+     ],
+     "pypi": [
+      "qase-api-client"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "qlik",
+   "name": "Qlik",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.qlik.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@qlik/api"
+     ]
+    }
    },
    "by": "model"
   },
@@ -3153,6 +5382,21 @@
    "owner": "github.com/railwayapp"
   },
   {
+   "id": "rarible",
+   "name": "Rarible",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://rarible.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@rarible/sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "ray",
    "name": "Ray",
    "kind": "project",
@@ -3162,6 +5406,24 @@
     "packages": {
      "pypi": [
       "ray"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "razorpay",
+   "name": "Razorpay",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://razorpay.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "razorpay"
+     ],
+     "pypi": [
+      "razorpay"
      ]
     }
    },
@@ -3201,6 +5463,24 @@
    "by": "catalog"
   },
   {
+   "id": "readme",
+   "name": "ReadMe",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://readme.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "readmeio"
+     ],
+     "pypi": [
+      "readme-metrics"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "redis",
    "signs": {
     "packages": {
@@ -3234,6 +5514,21 @@
     "packages": {
      "go": [
       "github.com/redis/go-redis/v9"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "removebg",
+   "name": "remove.bg",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.remove.bg",
+   "signs": {
+    "packages": {
+     "npm": [
+      "remove.bg"
      ]
     }
    },
@@ -3320,6 +5615,36 @@
    "owner": "github.com/rethinkdb"
   },
   {
+   "id": "roboflow",
+   "name": "Roboflow",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://roboflow.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "roboflow"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "rocket-chat",
+   "name": "Rocket.Chat",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.rocket.chat",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@rocket.chat/sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "rollbar",
    "signs": {
     "packages": {
@@ -3393,6 +5718,21 @@
    "id": "rust",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "sauce-labs",
+   "name": "Sauce Labs",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://saucelabs.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "saucelabs"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "scalatest",
@@ -3525,6 +5865,21 @@
    "by": "model"
   },
   {
+   "id": "shortcut",
+   "name": "Shortcut",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://shortcut.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@useshortcut/client"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "sidekiq",
    "name": "Sidekiq",
    "kind": "project",
@@ -3585,6 +5940,21 @@
    "by": "catalog"
   },
   {
+   "id": "smartthings",
+   "name": "SmartThings",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.smartthings.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@smartthings/core-sdk"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "snowflake",
    "signs": {
     "packages": {
@@ -3597,6 +5967,21 @@
    "owner": "github.com/pulumi"
   },
   {
+   "id": "solana",
+   "name": "Solana",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://solana.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@solana/web3.js"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "spacy",
    "name": "spaCy",
    "kind": "project",
@@ -3606,6 +5991,24 @@
     "packages": {
      "pypi": [
       "spacy"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "sparkpost",
+   "name": "SparkPost",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.sparkpost.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "sparkpost"
+     ],
+     "pypi": [
+      "sparkpost"
      ]
     }
    },
@@ -3906,6 +6309,56 @@
    "by": "model"
   },
   {
+   "id": "supabase.auth",
+   "mark": "marks/supabase.auth.svg",
+   "mark_origin": {
+    "url": "https://supabase.com/brand-assets/supabase-icon-green-transparent.svg",
+    "terms": "https://supabase.com/brand-assets",
+    "date": "2026-11-18"
+   },
+   "by": "official"
+  },
+  {
+   "id": "supabase.functions",
+   "mark": "marks/supabase.functions.svg",
+   "mark_origin": {
+    "url": "https://supabase.com/brand-assets/supabase-icon-green-transparent.svg",
+    "terms": "https://supabase.com/brand-assets",
+    "date": "2026-11-18"
+   },
+   "by": "official"
+  },
+  {
+   "id": "supabase.postgres",
+   "mark": "marks/supabase.postgres.svg",
+   "mark_origin": {
+    "url": "https://supabase.com/brand-assets/supabase-icon-green-transparent.svg",
+    "terms": "https://supabase.com/brand-assets",
+    "date": "2026-11-18"
+   },
+   "by": "official"
+  },
+  {
+   "id": "supabase.realtime",
+   "mark": "marks/supabase.realtime.svg",
+   "mark_origin": {
+    "url": "https://supabase.com/brand-assets/supabase-icon-green-transparent.svg",
+    "terms": "https://supabase.com/brand-assets",
+    "date": "2026-11-18"
+   },
+   "by": "official"
+  },
+  {
+   "id": "supabase.storage",
+   "mark": "marks/supabase.storage.svg",
+   "mark_origin": {
+    "url": "https://supabase.com/brand-assets/supabase-icon-green-transparent.svg",
+    "terms": "https://supabase.com/brand-assets",
+    "date": "2026-11-18"
+   },
+   "by": "official"
+  },
+  {
    "id": "surrealdb",
    "signs": {
     "packages": {
@@ -3955,6 +6408,21 @@
    },
    "by": "derive",
    "owner": "github.com/tensorflow"
+  },
+  {
+   "id": "teradata",
+   "name": "Teradata",
+   "kind": "service",
+   "type": "database",
+   "site": "https://www.teradata.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "teradatasql"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "terraform",
@@ -4013,6 +6481,21 @@
    "by": "catalog"
   },
   {
+   "id": "thirdweb",
+   "name": "thirdweb",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://thirdweb.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "thirdweb"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "thymeleaf",
    "name": "Thymeleaf",
    "kind": "project",
@@ -4028,6 +6511,24 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "todoist",
+   "name": "Todoist",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://todoist.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@doist/todoist-api-typescript"
+     ],
+     "pypi": [
+      "todoist-api-python"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "tokio",
@@ -4070,6 +6571,16 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "twentycrm",
+   "mark": "marks/twentycrm.svg",
+   "mark_origin": {
+    "url": "https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-website/public/images/core/logo.svg",
+    "terms": "https://twenty.com/terms",
+    "date": "2026-11-18"
+   },
+   "by": "official"
   },
   {
    "id": "twilio",
@@ -4147,6 +6658,21 @@
    "by": "model"
   },
   {
+   "id": "unsplash",
+   "name": "Unsplash",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://unsplash.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "unsplash-js"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "upstash.redis",
    "signs": {
     "packages": {
@@ -4218,6 +6744,21 @@
    "owner": "github.com/vercel"
   },
   {
+   "id": "vimeo",
+   "name": "Vimeo",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://vimeo.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@vimeo/vimeo"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "viper",
    "name": "Viper",
    "kind": "project",
@@ -4233,9 +6774,42 @@
    "by": "model"
   },
   {
+   "id": "virustotal",
+   "name": "VirusTotal",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.virustotal.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "vt-py"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "vite",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "vonage",
+   "name": "Vonage",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.vonage.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@vonage/server-sdk"
+     ],
+     "pypi": [
+      "vonage"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "vue-router",
@@ -4252,6 +6826,21 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "wakatime",
+   "name": "WakaTime",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://wakatime.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "wakatime"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "wandb",
@@ -4283,6 +6872,21 @@
    "by": "model"
   },
   {
+   "id": "webex",
+   "name": "Webex",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://developer.webex.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "webex"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
    "id": "webflow",
    "signs": {
     "packages": {
@@ -4298,6 +6902,39 @@
    "id": "webpack",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "what3words",
+   "name": "what3words",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://what3words.com",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@what3words/api"
+     ],
+     "pypi": [
+      "what3words"
+     ]
+    }
+   },
+   "by": "model"
+  },
+  {
+   "id": "xendit",
+   "name": "Xendit",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://www.xendit.co",
+   "signs": {
+    "packages": {
+     "npm": [
+      "xendit-node"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "xunit",
@@ -4316,6 +6953,21 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "yandex-cloud",
+   "name": "Yandex Cloud",
+   "kind": "service",
+   "type": "servizio o API",
+   "site": "https://cloud.yandex.com",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "yandexcloud"
+     ]
+    }
+   },
+   "by": "model"
   },
   {
    "id": "yarn",

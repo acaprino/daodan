@@ -176,7 +176,7 @@ Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `lib
 | --- | --- | --- |
 | framework | 313 | 68 |
 | tool | 23 | 26 |
-| service | 491 | 2 |
+| service | 601 | 2 |
 | library | 0 | 0 |
 
 Il catalogo non distingue un framework da una libreria: delle 332 voci `project` riconoscibili, 245 sono `framework` solo per il default, senza una `category` scritta. Per distinguerli servirebbe una `category` (`framework`, `library` o `tool`) su ogni voce `project` con segni.
@@ -539,30 +539,39 @@ Riconoscimento dello stack sul corpus, giro del 17 novembre 2026 (`benchmarks/pr
 
 ## Servizi esterni
 
-Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un marchio (`icon`). Segni per specie, sulle voci che ne hanno: `env` 160, `files` 48, `packages` 457, `patterns` 159. Di quelle con segni, 4 hanno la categoria `framework` o `tool` e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
+Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un marchio: 347 con il file nel prodotto (`mark`), 84 scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per specie, sulle voci che ne hanno: `env` 160, `files` 48, `packages` 567, `patterns` 159. Di quelle con segni, 4 hanno la categoria `framework` o `tool` e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
 
 | Tipo | Voci | Con segni | Con marchio |
 | --- | --- | --- | --- |
-| servizio o API | 469 | 347 | 175 |
-| database | 111 | 103 | 32 |
-| autenticazione | 16 | 16 | 6 |
-| gateway | 15 | 15 | 10 |
-| coda | 14 | 14 | 4 |
+| servizio o API | 573 | 451 | 329 |
+| database | 115 | 107 | 73 |
+| autenticazione | 17 | 17 | 9 |
+| gateway | 16 | 16 | 11 |
+| coda | 14 | 14 | 9 |
 
-<details><summary>Servizi riconoscibili: 491 voci</summary>
+<details><summary>Servizi riconoscibili: 601 voci</summary>
 
 | Servizio | Id | Tipo | Segni | Marchio | Fixture in cui lo step lo trova (17 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
+| 1Password | `1password` | servizio o API | npm, pypi | sì | 0 |
+| Activeloop | `activeloop` | servizio o API | pypi | sì | 0 |
 | Adminer | `adminer` | servizio o API | docker | sì | 2 |
 | Adobe Analytics | `adobe.analytics` | servizio o API | npm, env | no | 0 |
 | Adobe Experience Manager | `adobe.experiencemanager` | servizio o API | npm, env | no | 0 |
 | Adyen | `adyen` | gateway | composer, npm, pypi, rubygems, env | sì | 0 |
+| AfterShip | `aftership` | servizio o API | npm, pypi | sì | 0 |
+| Agora | `agora` | servizio o API | npm | sì | 0 |
+| Airbrake | `airbrake` | servizio o API | npm | sì | 0 |
 | Airbyte | `airbyte` | servizio o API | docker, terraform | sì | 0 |
 | Aircall | `aircall` | servizio o API | npm, terraform-resource, env | sì | 0 |
 | Airtable | `airtable` | servizio o API | composer, npm, env | sì | 0 |
 | Akamai | `akamai` | servizio o API | npm, terraform, env | sì | 0 |
+| Alby | `alby` | servizio o API | npm | sì | 0 |
+| Alchemy | `alchemy` | servizio o API | npm | sì | 0 |
 | Algolia | `algolia` | database | composer, crates, github-actions, npm, pypi, rubygems, terraform-resource, env | sì | 1 |
+| Algorand | `algorand` | servizio o API | go, npm, pypi | sì | 0 |
 | Alibaba Cloud | `alibabacloud` | servizio o API | composer, github-actions, terraform | sì | 0 |
+| Alipay | `alipay` | servizio o API | npm | sì | 0 |
 | Amplitude Analytics | `amplitude` | servizio o API | composer, go, npm, terraform-resource, env | no | 0 |
 | Anthropic | `anthropic` | servizio o API | go, npm, pypi, env | sì | 0 |
 | Apache Airflow | `apache_airflow` | servizio o API | docker | sì | 0 |
@@ -579,9 +588,12 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Apache Storm | `apache_storm` | servizio o API | docker | sì | 0 |
 | Apideck | `apideck` | servizio o API | composer, go, npm, pypi | no | 0 |
 | Apify | `apify` | servizio o API | crates, go, npm, pypi, terraform-resource, env | no | 0 |
+| App Store | `app-store` | servizio o API | npm | sì | 0 |
 | Apple | `apple` | servizio o API | env | sì | 0 |
 | AppSignal | `appsignal` | servizio o API | docker, npm, pypi, rubygems | sì | 0 |
 | AppVeyor | `appveyor` | servizio o API | files | sì | 0 |
+| Appwrite | `appwrite` | servizio o API | go, npm, pypi | sì | 0 |
+| ArcGIS | `arcgis` | servizio o API | npm, pypi | sì | 0 |
 | Asana | `asana` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource, env | sì | 0 |
 | Atlassian | `atlassian` | servizio o API | pypi | sì | 0 |
 | Atlassian Bitbucket | `atlassian.bitbucket` | servizio o API | composer | no | 0 |
@@ -589,114 +601,128 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Atlassian Trello | `atlassian.trello` | servizio o API | composer, github-actions, npm, rubygems | no | 0 |
 | Auth0 | `auth0` | autenticazione | composer, crates, go, npm, pypi, rubygems, terraform, env | sì | 0 |
 | AWS | `aws` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, terraform | no | 8 |
-| AWS ActiveMQ | `aws.mq` | coda | crates, go, npm, rubygems, terraform-resource | no | 0 |
-| AWS Amplify Hosting | `aws.amplifyhosting` | servizio o API | npm, terraform-resource | no | 0 |
-| AWS Api Gateway | `aws.apigateway` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Athena | `aws.athena` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Bedrock | `aws.bedrock` | servizio o API | npm | no | 0 |
-| AWS Block Storage | `aws.ebs` | database | crates, go, npm, rubygems, terraform-resource | no | 0 |
-| AWS CloudFront | `aws.cloudfront` | database | composer, crates, github-actions, go, npm, pypi, rubygems, terraform-resource, env | no | 0 |
-| AWS Cloudsearch | `aws.cloudsearch` | database | crates, go, npm, rubygems, terraform-resource | no | 0 |
-| AWS Cloudwatch | `aws.cloudwatch` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Code Build | `aws.codebuild` | servizio o API | crates, github-actions, go, npm, rubygems, terraform-resource | no | 0 |
-| AWS Code Pipeline | `aws.codepipeline` | servizio o API | github-actions | no | 0 |
-| AWS Cognito | `aws.cognito` | autenticazione | go, npm, rubygems | no | 0 |
-| AWS Comprehend | `aws.comprehend` | servizio o API | npm | no | 0 |
-| AWS Compute | `aws.ec2` | servizio o API | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Container | `aws.ecs` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Container Registry | `aws.ecr` | database | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Document DB | `aws.documentdb` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS DynamoDB | `aws.dynamodb` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS ElastiCache | `aws.elasticache` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Fargate | `aws.fargate` | servizio o API | github-actions | no | 0 |
-| AWS File System | `aws.efs` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Glacier | `aws.glacier` | database | crates, go, npm, rubygems, terraform-resource | no | 0 |
-| AWS Glue | `aws.glue` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Kafka | `aws.kafka` | coda | npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Kinesis | `aws.kinesis` | coda | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Kms | `aws.kms` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Kubernetes | `aws.eks` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Lambda | `aws.lambda` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | no | 0 |
-| AWS Lightsail | `aws.lightsail` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS MemoryDB | `aws.memorydb` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Neptune | `aws.neptune` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Notification Service | `aws.sns` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Opensearch | `aws.opensearch` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Polly | `aws.polly` | servizio o API | crates, go, npm, rubygems | no | 0 |
-| AWS RDS | `aws.rds` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Redshift | `aws.redshift` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Rekognition | `aws.rekognition` | servizio o API | crates, go, npm, pypi, rubygems | no | 0 |
-| AWS S3 | `aws.s3` | database | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | no | 9 |
-| AWS SageMaker | `aws.sagemaker` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Secrets Manager | `aws.secretsmanager` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 1 |
-| AWS Simple Email Service | `aws.ses` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS SQS | `aws.sqs` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Step Functions | `aws.sfn` | servizio o API | crates, go, npm, rubygems, terraform-resource | no | 0 |
-| AWS Timestream | `aws.timestream` | database | crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| AWS Transcribe | `aws.transcribe` | servizio o API | npm | no | 0 |
-| AWS Translate | `aws.translate` | servizio o API | crates, go, npm, rubygems | no | 0 |
+| AWS ActiveMQ | `aws.mq` | coda | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Amplify Hosting | `aws.amplifyhosting` | servizio o API | npm, terraform-resource | al primo uso | 0 |
+| AWS Api Gateway | `aws.apigateway` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Athena | `aws.athena` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Bedrock | `aws.bedrock` | servizio o API | npm | al primo uso | 0 |
+| AWS Block Storage | `aws.ebs` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| AWS CloudFront | `aws.cloudfront` | database | composer, crates, github-actions, go, npm, pypi, rubygems, terraform-resource, env | al primo uso | 0 |
+| AWS Cloudsearch | `aws.cloudsearch` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Cloudwatch | `aws.cloudwatch` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Code Build | `aws.codebuild` | servizio o API | crates, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Code Pipeline | `aws.codepipeline` | servizio o API | github-actions | al primo uso | 0 |
+| AWS Cognito | `aws.cognito` | autenticazione | go, npm, rubygems | al primo uso | 0 |
+| AWS Comprehend | `aws.comprehend` | servizio o API | npm | al primo uso | 0 |
+| AWS Compute | `aws.ec2` | servizio o API | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Container | `aws.ecs` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Container Registry | `aws.ecr` | database | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Document DB | `aws.documentdb` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS DynamoDB | `aws.dynamodb` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS ElastiCache | `aws.elasticache` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Fargate | `aws.fargate` | servizio o API | github-actions | al primo uso | 0 |
+| AWS File System | `aws.efs` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Glacier | `aws.glacier` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Glue | `aws.glue` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Kafka | `aws.kafka` | coda | npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Kinesis | `aws.kinesis` | coda | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Kms | `aws.kms` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Kubernetes | `aws.eks` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Lambda | `aws.lambda` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Lightsail | `aws.lightsail` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS MemoryDB | `aws.memorydb` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Neptune | `aws.neptune` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Notification Service | `aws.sns` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Opensearch | `aws.opensearch` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Polly | `aws.polly` | servizio o API | crates, go, npm, rubygems | al primo uso | 0 |
+| AWS RDS | `aws.rds` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Redshift | `aws.redshift` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Rekognition | `aws.rekognition` | servizio o API | crates, go, npm, pypi, rubygems | al primo uso | 0 |
+| AWS S3 | `aws.s3` | database | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 9 |
+| AWS SageMaker | `aws.sagemaker` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Secrets Manager | `aws.secretsmanager` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
+| AWS Simple Email Service | `aws.ses` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS SQS | `aws.sqs` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Step Functions | `aws.sfn` | servizio o API | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Timestream | `aws.timestream` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| AWS Transcribe | `aws.transcribe` | servizio o API | npm | al primo uso | 0 |
+| AWS Translate | `aws.translate` | servizio o API | crates, go, npm, rubygems | al primo uso | 0 |
 | Azure | `azure` | servizio o API | crates, docker, github-actions, go, npm, pypi, rubygems, terraform | no | 1 |
-| Azure Cosmos DB | `azure.cosmosdb` | database | crates, go, npm, rubygems, terraform-resource | no | 0 |
-| Azure Functions | `azure.functions` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | no | 0 |
-| Azure Kubernetes | `azure.aks` | servizio o API | terraform-resource | no | 0 |
-| Azure MariaDB | `azure.mariadb` | database | crates, go, npm, rubygems, terraform-resource | no | 0 |
-| Azure MySQL | `azure.mysql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | no | 0 |
-| Azure Openai | `azure.openai` | servizio o API | npm | no | 0 |
-| Azure Postgres | `azure.postgres` | database | crates, github-actions, go, npm, rubygems, terraform-resource | no | 0 |
-| Azure Redis | `azure.redis` | database | crates, go, npm, rubygems, terraform-resource | no | 0 |
-| Azure SQL | `azure.sql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | no | 0 |
-| Azure Static Web Apps | `azure.staticwebapps` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | no | 1 |
-| Azure Storage | `azure.storage` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 1 |
+| Azure Cosmos DB | `azure.cosmosdb` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Azure Functions | `azure.functions` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Azure Kubernetes | `azure.aks` | servizio o API | terraform-resource | al primo uso | 0 |
+| Azure MariaDB | `azure.mariadb` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Azure MySQL | `azure.mysql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Azure Openai | `azure.openai` | servizio o API | npm | al primo uso | 0 |
+| Azure Postgres | `azure.postgres` | database | crates, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Azure Redis | `azure.redis` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Azure SQL | `azure.sql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Azure Static Web Apps | `azure.staticwebapps` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | al primo uso | 1 |
+| Azure Storage | `azure.storage` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
 | AzureCI | `azure.ci` | servizio o API | files | no | 0 |
+| Backblaze | `backblaze` | servizio o API | npm | sì | 0 |
+| Backendless | `backendless` | servizio o API | npm | sì | 0 |
 | Base44 | `base44` | servizio o API | npm | no | 0 |
 | Beehiiv | `beehiiv` | servizio o API | npm, env | no | 0 |
 | Better Auth | `betterauth` | autenticazione | npm, env | sì | 0 |
 | Better Stack | `betterstack` | servizio o API | composer, npm, rubygems, terraform, env | sì | 0 |
 | BigCommerce | `bigcommerce` | servizio o API | composer, npm, pypi, terraform-resource | sì | 0 |
+| Binance | `binance` | servizio o API | npm, pypi | sì | 0 |
 | Bing Maps | `azure.maps` | servizio o API | npm, terraform-resource, env | no | 0 |
 | Bitbucket Pipelines | `atlassian.bitbucketpipelines` | servizio o API | files | no | 0 |
+| Bitly | `bitly` | servizio o API | npm | sì | 0 |
+| Bitwarden | `bitwarden` | servizio o API | npm | sì | 0 |
 | Blackfire | `blackfire` | servizio o API | composer, docker, env | no | 0 |
+| Bluesky | `bluesky` | servizio o API | npm | sì | 0 |
 | Box | `box` | servizio o API | composer, npm, pypi | sì | 0 |
+| Braintree | `braintree` | servizio o API | npm | sì | 0 |
+| Braintrust | `braintrust` | servizio o API | npm, pypi | sì | 0 |
 | Brevo | `brevo` | servizio o API | composer, go, npm, rubygems, env | sì | 0 |
 | Browser Use | `browseruse` | servizio o API | pypi | no | 0 |
 | Browserbase | `browerbase` | servizio o API | composer, pypi | no | 0 |
 | Browserstack | `browserstack` | servizio o API | npm, rubygems, files | no | 1 |
 | Bugsnag | `bugsnag` | servizio o API | composer, go, npm, pypi, rubygems, env | no | 0 |
+| bunq | `bunq` | servizio o API | pypi | sì | 0 |
 | Caddy | `caddy` | servizio o API | docker, go, files | sì | 2 |
 | Cal.com | `calcom` | servizio o API | npm | sì | 0 |
 | Calendly | `calendly` | servizio o API | npm, env | sì | 0 |
+| Campaign Monitor | `campaign-monitor` | servizio o API | npm | sì | 0 |
+| Camunda | `camunda` | servizio o API | npm | sì | 0 |
 | Celery | `celery` | coda | pypi | sì | 2 |
 | Chargebee | `chargebee` | gateway | composer, go, npm, pypi, rubygems, env | no | 0 |
-| Checkov | `checkov` | servizio o API | docker, github-actions | no | 0 |
+| ChartMogul | `chartmogul` | servizio o API | npm, pypi | sì | 0 |
+| Checkov | `checkov` | servizio o API | docker, github-actions | sì | 0 |
 | ChromaDB | `chromadb` | database | pypi | no | 0 |
+| Chromatic | `chromatic` | servizio o API | npm | sì | 0 |
 | CircleCI | `circleci` | servizio o API | github-actions, rubygems, files | sì | 0 |
 | CirrusCI | `cirrusci` | servizio o API | files | sì | 0 |
+| Civo | `civo` | servizio o API | go | sì | 0 |
 | Clerk | `clerk` | autenticazione | go, npm, pypi, rubygems, env | sì | 0 |
 | ClickHouse | `clickhouse` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform, terraform-resource | sì | 2 |
 | ClickSend | `clicksend` | servizio o API | npm, env | no | 0 |
 | ClickUp | `clickup` | servizio o API | env | sì | 0 |
-| Cloud AI Platform | `gcp.aiplatform` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Artifact Registry | `gcp.artifactregistry` | database | go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud BigQuery | `gcp.bigquery` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud BigTable | `gcp.bigtable` | database | composer, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Build | `gcp.cloudbuild` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Dataflow | `gcp.dataflow` | servizio o API | composer, go, npm, rubygems, terraform-resource | no | 0 |
-| Cloud Dataproc | `gcp.dataproc` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Datastore | `gcp.datastore` | database | composer, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Dialogflow | `gcp.dialogflow` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Functions | `gcp.functions` | servizio o API | composer, github-actions, go, npm, rubygems, terraform-resource | no | 0 |
-| Cloud KMS | `gcp.kms` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | no | 1 |
-| Cloud Language | `gcp.language` | servizio o API | composer, go, npm, pypi, rubygems | no | 0 |
-| Cloud Logging | `gcp.logging` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Memorystore | `gcp.memorystore` | database | composer, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Run | `gcp.cloudrun` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Secret Manager | `gcp.secretmanager` | database | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | no | 1 |
-| Cloud Spanner | `gcp.spanner` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Speech | `gcp.speech` | servizio o API | composer, go, npm, pypi, rubygems | no | 0 |
-| Cloud SQL | `gcp.sql` | database | composer, go, npm, rubygems, terraform-resource | no | 0 |
-| Cloud Storage | `gcp.gcs` | database | composer, crates, github-actions, go, npm, pypi, rubygems, terraform-resource | no | 2 |
-| Cloud Tasks | `gcp.tasks` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | no | 0 |
-| Cloud Vision | `gcp.vision` | servizio o API | composer, go, npm, pypi, rubygems | no | 0 |
+| Cloud AI Platform | `gcp.aiplatform` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Artifact Registry | `gcp.artifactregistry` | database | go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud BigQuery | `gcp.bigquery` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud BigTable | `gcp.bigtable` | database | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Build | `gcp.cloudbuild` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Dataflow | `gcp.dataflow` | servizio o API | composer, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Dataproc | `gcp.dataproc` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Datastore | `gcp.datastore` | database | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Dialogflow | `gcp.dialogflow` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Functions | `gcp.functions` | servizio o API | composer, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud KMS | `gcp.kms` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
+| Cloud Language | `gcp.language` | servizio o API | composer, go, npm, pypi, rubygems | al primo uso | 0 |
+| Cloud Logging | `gcp.logging` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Memorystore | `gcp.memorystore` | database | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Run | `gcp.cloudrun` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Secret Manager | `gcp.secretmanager` | database | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
+| Cloud Spanner | `gcp.spanner` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Speech | `gcp.speech` | servizio o API | composer, go, npm, pypi, rubygems | al primo uso | 0 |
+| Cloud SQL | `gcp.sql` | database | composer, go, npm, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Storage | `gcp.gcs` | database | composer, crates, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 2 |
+| Cloud Tasks | `gcp.tasks` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Cloud Vision | `gcp.vision` | servizio o API | composer, go, npm, pypi, rubygems | al primo uso | 0 |
 | CloudBees | `cloudbees` | servizio o API | env | sì | 0 |
 | CloudBees Codeship | `cloudbees.codeship` | servizio o API | files | no | 0 |
 | Cloudflare | `cloudflare` | servizio o API | composer, crates, npm, pypi, rubygems, terraform, env | sì | 0 |
@@ -704,23 +730,30 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Cloudflare R2 | `cloudflare.r2` | database | npm, terraform-resource | no | 0 |
 | Cloudflare Workers | `cloudflare.workers` | servizio o API | crates, github-actions, npm, terraform-resource, files | sì | 0 |
 | Cloudinary | `cloudinary` | servizio o API | composer, go, npm, pypi, rubygems, env | sì | 0 |
+| Cockroach Labs | `cockroach-labs` | database | go | sì | 0 |
 | CockroachDB | `cockroachdb` | database | composer, terraform | no | 0 |
 | Code Climate | `codeclimate` | servizio o API | github-actions, files | sì | 0 |
 | Codecov | `codecov` | servizio o API | github-actions, files | sì | 5 |
+| CodeSandbox | `codesandbox` | servizio o API | npm | sì | 0 |
 | CodeSandboxCI | `codesandboxci` | servizio o API | files | no | 0 |
 | Cohere AI | `cohereai` | servizio o API | go, npm, pypi, env | no | 0 |
+| Coinbase | `coinbase` | servizio o API | npm | sì | 0 |
 | Commercetools | `commercetools` | servizio o API | npm | no | 0 |
 | Composio | `composio` | servizio o API | npm, pypi, env | no | 0 |
 | Concourse CI | `concourseci` | servizio o API | files | no | 0 |
+| Conekta | `conekta` | servizio o API | npm, pypi | sì | 0 |
 | Confluence | `atlassian.confluence` | servizio o API | docker, github-actions, npm | sì | 0 |
 | Consul | `consul` | servizio o API | docker, go | sì | 0 |
 | Contentful | `contentful` | servizio o API | composer, npm, pypi, env | sì | 0 |
+| Contentstack | `contentstack` | servizio o API | npm | sì | 0 |
 | Convex | `convexdb` | database | crates, npm, pypi, terraform-resource, env | sì | 0 |
 | Couchbase | `couchbase` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform, terraform-resource | sì | 0 |
 | Coveralls | `coveralls` | servizio o API | github-actions, go, npm, rubygems | sì | 1 |
+| Coze | `coze` | servizio o API | npm | sì | 0 |
 | CrateDB | `cratedb` | database | docker | sì | 0 |
 | Crawl4AI | `crawl4ai` | servizio o API | docker, pypi, env | no | 0 |
 | Crowdin | `crowdin` | servizio o API | composer, npm, files | sì | 6 |
+| D-Wave Systems | `d-wave-systems` | servizio o API | pypi | sì | 0 |
 | Databricks | `databricks` | servizio o API | github-actions, go, pypi, terraform, terraform-resource, env | sì | 0 |
 | Databuddy | `databuddy` | servizio o API | npm, env | no | 0 |
 | Datadog | `datadog` | servizio o API | composer, crates, docker, github-actions, go, npm, pypi, rubygems, terraform, terraform-resource, env | sì | 1 |
@@ -728,16 +761,20 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Dataiku | `dataiku` | servizio o API | pypi | sì | 0 |
 | Datastax | `datastax` | database | composer, terraform, terraform-resource | sì | 0 |
 | Dato CMS | `datocms` | servizio o API | npm | sì | 0 |
+| Deepgram | `deepgram` | servizio o API | npm, pypi | sì | 0 |
+| DeepL | `deepl` | servizio o API | npm, pypi | sì | 0 |
 | Deepseek | `deepseek` | servizio o API | npm, pypi, env | sì | 0 |
 | Deepsource | `deepsource` | servizio o API | github-actions, files | no | 0 |
 | Deno Deploy | `denodeploy` | servizio o API | deno, github-actions | sì | 0 |
 | Dependabot | `dependabot` | servizio o API | github-actions, rubygems, files | sì | 0 |
 | Depot.dev | `depotdev` | servizio o API | github-actions, files | no | 2 |
 | DigitalOcean | `digitalocean` | servizio o API | github-actions, npm, pypi, terraform | sì | 0 |
+| Directus | `directus` | servizio o API | npm | sì | 0 |
 | Discord | `discord` | servizio o API | github-actions, npm, env | sì | 1 |
 | Discourse | `discourse` | servizio o API | docker | sì | 0 |
 | Docusign | `docusign` | servizio o API | composer, npm, rubygems, env | no | 0 |
-| Dokku | `dokku` | servizio o API | docker, github-actions, env | no | 0 |
+| Dodo Payments | `dodo-payments` | servizio o API | npm, pypi | sì | 0 |
+| Dokku | `dokku` | servizio o API | docker, github-actions, env | sì | 0 |
 | DroneCI | `droneci` | servizio o API | docker, files | no | 0 |
 | Dropbox | `dropbox` | servizio o API | composer, pypi, env | sì | 0 |
 | Drupal | `drupal` | servizio o API | composer, docker | sì | 0 |
@@ -747,7 +784,9 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Elasticsearch | `elasticsearch` | database | composer, crates, docker, github-actions, go, npm, pypi, rubygems, terraform, terraform-resource, env | sì | 2 |
 | Elevenlabs | `elevenlabs` | servizio o API | npm, pypi, env | sì | 0 |
 | Equinix | `equinix` | servizio o API | terraform | no | 0 |
-| Expo.dev | `expodev` | servizio o API | github-actions, files | no | 0 |
+| Event Store | `event-store` | database | go, npm | sì | 0 |
+| Evernote | `evernote` | servizio o API | npm | sì | 0 |
+| Expo.dev | `expodev` | servizio o API | github-actions, files | sì | 0 |
 | Facebook | `facebook` | servizio o API | npm, env | sì | 0 |
 | Fastly | `fastly` | servizio o API | crates, go, npm, pypi, rubygems, env | sì | 0 |
 | Fathom | `fathom` | servizio o API | npm, env | sì | 0 |
@@ -756,12 +795,14 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Firebase Firestore | `firebase.firestore` | database | composer, terraform-resource | no | 0 |
 | Firecrawl | `firecrawl` | servizio o API | composer, crates, go, pypi, env | no | 0 |
 | Flyio | `flyio` | servizio o API | github-actions, terraform, files | sì | 1 |
+| Formbricks | `formbricks` | servizio o API | npm | sì | 0 |
 | Freshdesk | `freshdesk` | servizio o API | composer, go, npm, pypi, rubygems, env | no | 0 |
 | Frontegg | `frontegg` | autenticazione | npm, pypi, terraform | no | 0 |
 | Fusionauth | `fusionauth` | autenticazione | composer, go, npm, pypi, rubygems | sì | 0 |
 | GCP | `gcp` | servizio o API | composer, github-actions, npm, pypi, terraform, env | no | 3 |
 | Gemini AI | `geminiai` | servizio o API | npm, pypi, env | no | 0 |
 | Ghost | `ghost` | servizio o API | docker, npm, env | sì | 0 |
+| GIPHY | `giphy` | servizio o API | npm | sì | 0 |
 | Gitbook | `gitbook` | servizio o API | npm | sì | 0 |
 | Gitea | `gitea` | servizio o API | go | sì | 0 |
 | GitGuardian | `gitguardian` | servizio o API | docker, github-actions, go | no | 0 |
@@ -770,17 +811,19 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Github Pages | `github.pages` | servizio o API | github-actions, files | sì | 7 |
 | Gitlab CI | `gitlab.ci` | servizio o API | files | no | 0 |
 | Gmail | `google.gmail` | servizio o API | npm, rubygems | sì | 0 |
+| Google Ads | `google-ads` | servizio o API | npm, pypi | sì | 0 |
 | Google Analytics | `google.analytics` | servizio o API | composer, npm, pypi, terraform-resource, env | sì | 0 |
-| Google App Engine | `gcp.appengine` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | no | 0 |
+| Google App Engine | `gcp.appengine` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
 | Google Calendar | `google.calendar` | servizio o API | composer, npm, pypi, rubygems | sì | 0 |
 | Google Chat | `google.chat` | servizio o API | npm, rubygems, terraform-resource | sì | 0 |
-| Google Compute | `gcp.gce` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | no | 1 |
-| Google DNS | `gcp.dns` | servizio o API | go, npm, pypi, rubygems, terraform-resource | no | 0 |
+| Google Compute | `gcp.gce` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
+| Google DNS | `gcp.dns` | servizio o API | go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
 | Google Docs | `google.docs` | servizio o API | npm, rubygems | sì | 0 |
 | Google Drive | `google.drive` | servizio o API | crates, npm, rubygems, terraform-resource | sì | 0 |
+| Google Earth Engine | `google-earth-engine` | servizio o API | npm | sì | 0 |
 | Google Forms | `google.forms` | servizio o API | npm, rubygems, terraform-resource | sì | 0 |
 | Google Keep | `google.keep` | servizio o API | rubygems | sì | 0 |
-| Google Kubernetes | `gcp.gke` | servizio o API | github-actions, terraform-resource | no | 0 |
+| Google Kubernetes | `gcp.gke` | servizio o API | github-actions, terraform-resource | al primo uso | 0 |
 | Google Maps | `gcp.maps` | servizio o API | go, npm, pypi, rubygems, env | sì | 0 |
 | Google Meet | `google.meet` | servizio o API | npm, pypi, rubygems | sì | 0 |
 | Google Pay | `google.pay` | gateway | npm, env | sì | 0 |
@@ -808,16 +851,27 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Hypertune | `hypertune` | servizio o API | npm | no | 0 |
 | IBM Cloud | `ibmcloud` | servizio o API | terraform | no | 0 |
 | ifttt | `ifttt` | servizio o API | env | sì | 0 |
+| Immich | `immich` | servizio o API | npm | sì | 0 |
 | Infisical | `infisical` | servizio o API | docker, npm, files, env | no | 0 |
 | InfluxDB | `influxdb` | database | composer, crates, docker, go, npm, pypi, rubygems | sì | 0 |
 | Inngest | `inngest` | servizio o API | crates, go, npm, pypi, env | no | 1 |
 | Instagram | `instagram` | servizio o API | env | sì | 0 |
 | Integration.app | `integrationapp` | servizio o API | npm | no | 0 |
 | Intercom | `intercom` | servizio o API | composer, npm, rubygems, env | sì | 0 |
+| Internet Archive | `internet-archive` | servizio o API | pypi | sì | 0 |
+| Internet Computer | `internet-computer` | servizio o API | npm | sì | 0 |
 | Intuit | `intuit` | gateway | env | sì | 0 |
+| Ionos | `ionos` | servizio o API | go, pypi | sì | 0 |
+| IOTA | `iota` | servizio o API | npm, pypi | sì | 0 |
+| Jellyfin | `jellyfin` | servizio o API | npm | sì | 0 |
 | Jenkins | `jenkins` | servizio o API | docker, pypi, rubygems, files | sì | 0 |
+| JFrog | `jfrog` | servizio o API | go | sì | 0 |
 | Jira | `atlassian.jira` | servizio o API | composer, crates, docker, github-actions, npm, rubygems, terraform-resource | sì | 0 |
+| Jira Software | `jira-software` | servizio o API | npm | sì | 0 |
+| Jitsi | `jitsi` | servizio o API | npm | sì | 0 |
 | Joomla! | `joomla` | servizio o API | composer, docker | sì | 0 |
+| Kaggle | `kaggle` | servizio o API | pypi | sì | 0 |
+| Keeper | `keeper` | servizio o API | npm, pypi | sì | 0 |
 | Kentico | `kentico` | servizio o API | npm, rubygems | sì | 0 |
 | Kibana | `kibana` | servizio o API | docker, env | sì | 1 |
 | Kinde | `kinde` | autenticazione | composer, npm, pypi, rubygems | no | 0 |
@@ -828,32 +882,49 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Koyeb | `koyeb` | servizio o API | npm, files | sì | 0 |
 | Kubernetes | `kubernetes` | servizio o API | composer, crates, github-actions, npm, pypi, rubygems, terraform, files | sì | 1 |
 | Lago | `lago` | servizio o API | docker, go, npm, pypi, rubygems, env | no | 0 |
+| LangChain Corporate | `langchain-corporate` | servizio o API | npm, pypi | sì | 0 |
 | LaunchDarkly | `launchdarkly` | servizio o API | composer, crates, github-actions, go, npm, rubygems, terraform, env | no | 0 |
 | Lemon Squeezy | `lemonsqueezy` | gateway | composer, go, npm, rubygems, env | sì | 0 |
+| Let's Encrypt | `lets-encrypt` | servizio o API | pypi | sì | 0 |
 | libSQL | `libsql` | database | composer, crates, go, npm, pypi, rubygems | no | 0 |
+| LINE | `line` | servizio o API | npm, pypi | sì | 0 |
 | Linear | `linear` | servizio o API | npm, pypi, env | sì | 0 |
 | Linkedin | `linkedin` | servizio o API | env | no | 0 |
+| LiveChat | `livechat` | servizio o API | npm | sì | 0 |
+| LiveKit | `livekit` | servizio o API | go, npm, pypi | sì | 0 |
+| LM Studio | `lm-studio` | servizio o API | npm, pypi | sì | 0 |
 | LogRocket | `logrocket` | servizio o API | npm | no | 0 |
 | LogSnag | `logsnag` | servizio o API | npm, pypi, env | no | 0 |
 | Logstash | `logstash` | servizio o API | docker, go, npm, rubygems | sì | 1 |
 | Logto | `logtoio` | autenticazione | composer, go, npm, pypi, rubygems, env | no | 0 |
+| Looker | `looker` | servizio o API | npm | sì | 0 |
+| Loom | `loom` | servizio o API | npm | sì | 0 |
+| Loops | `loops` | servizio o API | npm | sì | 0 |
 | Lovable | `lovable` | servizio o API | npm | no | 0 |
 | Magento | `magento` | servizio o API | composer, npm | no | 0 |
+| Magic | `magic` | autenticazione | npm | sì | 0 |
 | Mailchimp | `mailchimp` | servizio o API | composer, npm, rubygems, terraform-resource, env | sì | 0 |
 | Mailgun | `mailgun` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Mailjet | `mailjet` | servizio o API | composer, crates, npm, rubygems, env | no | 0 |
+| Mailtrap | `mailtrap` | servizio o API | npm, pypi | sì | 0 |
 | Mapbox | `mapbox` | servizio o API | composer, crates, npm, pypi, rubygems, env | sì | 0 |
+| MapTiler | `maptiler` | servizio o API | npm | sì | 0 |
 | MariaDB | `mariadb` | database | docker, npm, rubygems | sì | 6 |
 | Matomo | `matomo` | servizio o API | docker, env | sì | 0 |
+| Matrix | `matrix` | servizio o API | npm | sì | 0 |
 | Mattermost | `mattermost` | servizio o API | npm | sì | 0 |
 | Meilisearch | `meilisearch` | database | composer, crates, docker, go, npm, pypi, rubygems, env | sì | 1 |
 | Memcached | `memcached` | database | crates, docker, npm, rubygems, env | no | 0 |
+| Mercado Pago | `mercado-pago` | servizio o API | go, npm, pypi | sì | 0 |
 | Merge.dev | `mergedev` | servizio o API | composer, go, npm, pypi, rubygems | no | 0 |
 | Metabase | `metabase` | servizio o API | docker, npm | sì | 0 |
+| MicroStrategy | `microstrategy` | servizio o API | pypi | sì | 0 |
 | MilvusDB | `milvusdb` | database | docker, go, npm, pypi, terraform-resource, env | no | 0 |
 | Miro | `miro` | servizio o API | npm, env | sì | 0 |
 | Mistral AI | `mistralai` | servizio o API | go, npm, pypi, env | sì | 0 |
 | Mixpanel | `mixpanel` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource, env | sì | 0 |
+| Modal | `modal` | servizio o API | pypi | sì | 0 |
+| ModelScope | `modelscope` | servizio o API | pypi | sì | 0 |
 | Monday | `monday` | servizio o API | npm | no | 0 |
 | Mongo Express | `mongoexpress` | servizio o API | docker | no | 2 |
 | MongoDB | `mongodb` | database | composer, crates, docker, maven, npm, nuget, pypi, rubygems, terraform-resource, env | sì | 4 |
@@ -869,6 +940,7 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | New Relic | `newrelic` | servizio o API | composer, go, npm, pypi, rubygems, terraform, env | sì | 0 |
 | Nextcloud | `nextcloud` | servizio o API | docker | sì | 0 |
 | Nginx | `nginx` | servizio o API | docker, files | sì | 7 |
+| Nhost | `nhost` | servizio o API | npm | sì | 0 |
 | Notion | `notion` | servizio o API | composer, crates, npm, rubygems, env | sì | 0 |
 | Novy | `novu` | servizio o API | composer, docker, go, npm, pypi, rubygems | sì | 0 |
 | NX Cloud | `nxcloud` | servizio o API | npm | no | 0 |
@@ -878,6 +950,10 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | OneDrive | `microsoft.onedrive` | servizio o API | composer, crates, npm, terraform-resource | no | 0 |
 | OnlineOrNot | `onlineornot` | servizio o API | npm | no | 0 |
 | Openai | `openai` | servizio o API | composer, go, npm, pypi, env | no | 5 |
+| OpenCage | `opencage` | servizio o API | pypi | sì | 0 |
+| OpenRouter | `openrouter` | gateway | npm, pypi | sì | 0 |
+| OpenSea | `opensea` | servizio o API | npm | sì | 0 |
+| OpenZeppelin | `openzeppelin` | servizio o API | npm | sì | 0 |
 | Optimizely | `optimizely` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, env | no | 0 |
 | Oracle Cloud | `oraclecloud` | servizio o API | composer, npm, rubygems, terraform | no | 0 |
 | Oracle Database | `oracledatabase` | database | pypi | no | 0 |
@@ -893,19 +969,26 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Pagerduty | `pagerduty` | servizio o API | composer, crates, npm, pypi, rubygems, terraform, env | sì | 0 |
 | Papertrail | `papertrail` | servizio o API | composer, go, npm, rubygems, env | no | 0 |
 | Paragon | `useparagon` | servizio o API | npm | no | 0 |
+| Patreon | `patreon` | servizio o API | npm, pypi | sì | 0 |
 | Payload | `payloadcms` | servizio o API | npm | sì | 0 |
 | Paypal | `paypal` | gateway | composer, crates, go, npm, pypi, rubygems, env | sì | 0 |
 | Paystack | `paystack` | gateway | npm, env | no | 0 |
 | Percona | `percona` | database | docker | no | 0 |
+| Percy | `percy` | servizio o API | npm | sì | 0 |
+| Perplexity | `perplexity` | servizio o API | npm, pypi | sì | 0 |
 | Perplexity AI | `perplexityai` | servizio o API | npm, env | no | 0 |
-| Pinecone | `pinecone` | database | crates, go, npm, pypi, terraform, terraform-resource, env | no | 0 |
+| Pexels | `pexels` | servizio o API | npm | sì | 0 |
+| Pinecone | `pinecone` | database | crates, go, npm, pypi, terraform, terraform-resource, env | sì | 0 |
 | Pingdom | `pingdom` | servizio o API | terraform, env | sì | 0 |
 | Pirsch Analytics | `pirschanalytics` | servizio o API | composer, go, npm, rubygems | no | 0 |
 | PlaceKit | `placekit` | servizio o API | npm | no | 0 |
 | PlanetScale | `planetscale` | database | github-actions | sì | 0 |
 | Platform.sh | `platformsh` | servizio o API | files | sì | 0 |
 | Plausible | `plausible` | servizio o API | composer, docker, go, npm, rubygems, env | no | 0 |
+| PocketBase | `pocketbase` | database | npm, pypi | sì | 0 |
+| Poe | `poe` | servizio o API | pypi | sì | 0 |
 | Polar | `polarsh` | gateway | composer, go, npm, pypi, env | no | 0 |
+| Polkadot | `polkadot` | servizio o API | npm | sì | 0 |
 | Postgres | `postgresql` | database | composer, crates, deno, docker, hex, maven, npm, nuget, rubygems, terraform-resource, env | sì | 32 |
 | Postgrest | `postgrest` | servizio o API | docker | no | 0 |
 | PostHog | `posthog` | servizio o API | composer, crates, go, npm, pypi, rubygems, env | sì | 2 |
@@ -913,20 +996,28 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Postmark | `postmark` | servizio o API | composer, npm, rubygems | no | 0 |
 | Prestashop | `prestashop` | servizio o API | composer | sì | 0 |
 | Prisma Cloud | `prismacloud` | servizio o API | terraform | no | 0 |
+| Prismic | `prismic` | servizio o API | npm | sì | 0 |
 | Prometheus | `prometheus` | servizio o API | composer, crates, docker, go, npm, rubygems | sì | 2 |
 | PropelAuth | `propelauth` | autenticazione | crates, go, npm, pypi | no | 0 |
 | PubSub | `gcp.pubsub` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
 | Puppeteer | `puppeteer` | servizio o API | docker, npm | sì | 1 |
+| Pusher | `pusher` | servizio o API | go, npm, pypi | sì | 0 |
+| Qase | `qase` | servizio o API | npm, pypi | sì | 0 |
 | Qdrant | `qdrant` | database | composer, crates, docker, go, npm, pypi, terraform-resource, env | sì | 0 |
+| Qlik | `qlik` | servizio o API | npm | sì | 0 |
 | Qovery | `qovery` | servizio o API | docker, github-actions, go, npm, terraform | no | 0 |
 | Qovery Cluster | `qovery.cluster` | servizio o API | terraform-resource | no | 0 |
 | Qovery Database | `qovery.database` | database | terraform-resource | no | 0 |
 | QuestDB | `questdb` | database | crates, docker, go, npm, pypi | no | 0 |
 | RabbitMQ | `rabbitmq` | coda | composer, crates, docker, maven, npm, nuget, pypi, rubygems, env | sì | 4 |
 | Railway | `railway` | servizio o API | github-actions, npm, pypi, terraform, files, env | sì | 1 |
+| Rarible | `rarible` | servizio o API | npm | sì | 0 |
+| Razorpay | `razorpay` | servizio o API | go, npm, pypi | sì | 0 |
+| ReadMe | `readme` | servizio o API | npm, pypi | sì | 0 |
 | Reddit | `reddit` | servizio o API | npm, env | sì | 0 |
 | Redis | `redis` | database | composer, crates, docker, go, maven, npm, nuget, pypi, rubygems, terraform, terraform-resource, env | sì | 19 |
 | RelativeCI | `relativeci` | servizio o API | github-actions, npm, files | no | 0 |
+| remove.bg | `removebg` | servizio o API | npm | sì | 0 |
 | Render | `render` | servizio o API | files | sì | 1 |
 | Replicate | `replicate` | servizio o API | go, npm, pypi, env | sì | 0 |
 | Replit | `replit` | servizio o API | npm, files | sì | 0 |
@@ -934,11 +1025,14 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Resend | `resend` | servizio o API | composer, crates, go, npm, pypi, rubygems, env | sì | 1 |
 | RethinkDB | `rethinkdb` | database | composer, docker, go, npm, pypi, rubygems | no | 0 |
 | RevenueCat | `revenuecat` | gateway | npm, env | sì | 0 |
+| Roboflow | `roboflow` | servizio o API | pypi | sì | 0 |
+| Rocket.Chat | `rocket-chat` | servizio o API | npm | sì | 0 |
 | Rollbar | `rollbar` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform, env | sì | 1 |
 | Salesforce | `salesforce` | servizio o API | npm, terraform, env | no | 0 |
 | Sanity | `sanity` | servizio o API | npm | sì | 0 |
 | SAP | `sap` | servizio o API | npm | sì | 0 |
 | SAS | `sas` | servizio o API | pypi | no | 0 |
+| Sauce Labs | `sauce-labs` | servizio o API | npm | sì | 0 |
 | Scaleway | `scaleway` | servizio o API | github-actions, go, npm, pypi, terraform | sì | 0 |
 | Scaleway Container | `scaleway.container` | servizio o API | terraform-resource | no | 0 |
 | Scaleway Database | `scaleway.database` | database | terraform-resource | no | 0 |
@@ -957,15 +1051,19 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Sentry | `sentry` | servizio o API | composer, crates, docker, github-actions, go, npm, pypi, rubygems, env | sì | 4 |
 | ServiceNow | `servicenow` | servizio o API | rubygems | no | 0 |
 | Shopify | `shopify` | servizio o API | composer, npm, pypi, rubygems | sì | 0 |
+| Shortcut | `shortcut` | servizio o API | npm | sì | 0 |
 | Signoz | `signoz` | servizio o API | docker, env | no | 0 |
 | Simple Analytics | `simpleanalytics` | servizio o API | npm, env | sì | 0 |
 | Sitecore | `sitecore` | servizio o API | npm | sì | 0 |
 | Sitecore XM cloud | `sitecore.xmlcloud` | servizio o API | npm | no | 0 |
 | Slack | `slack` | servizio o API | composer, crates, docker, github-actions, go, npm, pypi, rubygems, terraform, env | no | 0 |
+| SmartThings | `smartthings` | servizio o API | npm | sì | 0 |
 | Snowflake | `snowflake` | database | crates, npm, pypi, rubygems, terraform, terraform-resource | sì | 0 |
 | Snyk | `snyk` | servizio o API | docker, github-actions, npm, terraform, files, env | sì | 0 |
+| Solana | `solana` | servizio o API | npm | sì | 0 |
 | SonarCloud | `sonarcloud` | servizio o API | github-actions | no | 0 |
 | SonarQube | `sonarqube` | servizio o API | docker, files | no | 0 |
+| SparkPost | `sparkpost` | servizio o API | npm, pypi | sì | 0 |
 | Split | `splitio` | servizio o API | go, npm, rubygems | no | 0 |
 | Splunk | `splunk` | servizio o API | pypi, terraform, env | sì | 0 |
 | Spotify | `spotify` | servizio o API | npm, env | sì | 0 |
@@ -979,11 +1077,11 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | StyleCI | `styleci` | servizio o API | files | no | 0 |
 | Stytch | `stytch` | autenticazione | crates, go, npm, pypi, rubygems | no | 0 |
 | Supabase | `supabase` | servizio o API | docker, github-actions, npm, pypi, env | sì | 0 |
-| Supabase Auth | `supabase.auth` | autenticazione | docker, npm | no | 0 |
-| Supabase Functions | `supabase.functions` | servizio o API | npm | no | 0 |
-| Supabase Postgres | `supabase.postgres` | database | composer, docker, github-actions, npm | no | 0 |
-| Supabase Realtime | `supabase.realtime` | coda | docker, npm | no | 0 |
-| Supabase Storage | `supabase.storage` | database | docker, npm | no | 0 |
+| Supabase Auth | `supabase.auth` | autenticazione | docker, npm | sì | 0 |
+| Supabase Functions | `supabase.functions` | servizio o API | npm | sì | 0 |
+| Supabase Postgres | `supabase.postgres` | database | composer, docker, github-actions, npm | sì | 0 |
+| Supabase Realtime | `supabase.realtime` | coda | docker, npm | sì | 0 |
+| Supabase Storage | `supabase.storage` | database | docker, npm | sì | 0 |
 | SuperTokens | `supertokens` | autenticazione | go, npm, pypi | no | 0 |
 | SurrealDB | `surrealdb` | database | crates, docker, npm, pypi | sì | 0 |
 | Swiftype | `swiftype` | database | composer, npm, pypi, rubygems | no | 0 |
@@ -994,18 +1092,22 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Telegraf | `telegraf` | servizio o API | docker | no | 0 |
 | Telegram | `telegram` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, env | sì | 0 |
 | Tencent Cloud | `tencentcloud` | servizio o API | composer, pypi, terraform | no | 0 |
+| Teradata | `teradata` | database | pypi | sì | 0 |
+| thirdweb | `thirdweb` | servizio o API | npm | sì | 0 |
 | TiDB | `tidb` | database | docker | sì | 0 |
 | Tika | `apachetika` | servizio o API | docker, pypi | no | 1 |
 | TimescaleDB | `timescaledb` | database | docker, terraform | no | 0 |
 | Tinybird | `tinybird` | servizio o API | npm, env | no | 0 |
+| Todoist | `todoist` | servizio o API | npm, pypi | sì | 0 |
 | Traefik | `traefik` | servizio o API | docker, go, files | no | 1 |
 | Tray.ai | `trayio` | servizio o API | npm | no | 0 |
 | Truffle Security | `trufflesecurity` | servizio o API | docker, github-actions | no | 0 |
 | Turso | `tursodb` | database | npm, env | sì | 0 |
-| Twenty CRM | `twentycrm` | servizio o API | docker | no | 0 |
+| Twenty CRM | `twentycrm` | servizio o API | docker | sì | 0 |
 | Twilio | `twilio` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource, env | no | 0 |
 | Twitch | `twitch` | servizio o API | npm, env | sì | 0 |
 | Typesense | `typesense` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform-resource | no | 0 |
+| Unsplash | `unsplash` | servizio o API | npm | sì | 0 |
 | Upstash | `upstash` | servizio o API | npm | sì | 1 |
 | Upstash Kafka | `upstash.kafka` | coda | npm, env | no | 0 |
 | Upstash QStash | `upstash.qstash` | coda | npm | no | 0 |
@@ -1023,10 +1125,16 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | Vercel KV | `vercel.kv` | database | npm | no | 1 |
 | Vercel Postgres | `vercel.postgres` | database | npm | no | 0 |
 | Veriff | `veriff` | servizio o API | npm, rubygems | no | 0 |
-| Vertex AI | `gcp.vertex` | servizio o API | npm, pypi, env | no | 1 |
+| Vertex AI | `gcp.vertex` | servizio o API | npm, pypi, env | al primo uso | 1 |
 | VictoriaMetrics | `victoriametrics` | database | docker | sì | 0 |
+| Vimeo | `vimeo` | servizio o API | npm | sì | 0 |
+| VirusTotal | `virustotal` | servizio o API | pypi | sì | 0 |
+| Vonage | `vonage` | servizio o API | npm, pypi | sì | 0 |
+| WakaTime | `wakatime` | servizio o API | pypi | sì | 0 |
+| Webex | `webex` | servizio o API | npm | sì | 0 |
 | Webflow | `webflow` | servizio o API | npm, pypi, terraform-resource, env | sì | 0 |
 | Weights & Biases | `wandb` | servizio o API | pypi | sì | 0 |
+| what3words | `what3words` | servizio o API | npm, pypi | sì | 0 |
 | WhatsApp | `whatsapp` | servizio o API | npm, env | sì | 0 |
 | Wikipedia | `wikipedia` | servizio o API | npm, pypi, env | sì | 0 |
 | Wiz | `wiz` | servizio o API | terraform, env | no | 0 |
@@ -1036,6 +1144,8 @@ Le voci `service` del catalogo: 625, 495 con segni per riconoscerle, 227 con un 
 | WorkOS | `workos` | autenticazione | composer, go, npm, pypi, rubygems, env | no | 0 |
 | X | `twitter` | servizio o API | npm, pypi, terraform-resource, env | sì | 0 |
 | X AI | `xai` | servizio o API | npm, pypi, env | no | 0 |
+| Xendit | `xendit` | servizio o API | npm | sì | 0 |
+| Yandex Cloud | `yandex-cloud` | servizio o API | pypi | sì | 0 |
 | Yousign | `yousign` | servizio o API | composer | no | 0 |
 | Youtube | `youtube` | servizio o API | pypi, env | sì | 0 |
 | Zapier | `zapier` | servizio o API | npm, env | sì | 0 |
