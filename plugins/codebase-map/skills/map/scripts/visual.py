@@ -11,9 +11,10 @@ the run has link rules, its flows (`flows`). States keep the producers' values:
 `provenance`, `status` and card `freshness` are distinct fields, never promoted.
 
 Every node carries `location` (`internal`, `external`) and, when known, `node_type`
-from the closed list of the flow model: an external module is a service or API, a
-route handler a service or API, the symbol that binds a user action a screen, a store
-the type its link rule names. A node of unknown type has none.
+from the closed list of the flow model: an external module is a service or API, a service
+the stack recognises the type of its registry entry, a route handler a service or API, the
+symbol that binds a user action a screen, a store the type its link rule names. A node of
+unknown type has none.
 
     python visual.py envelope RUN_DIR [--out FILE]
     python visual.py export RUN_DIR        # publishes .daodan/map/views/<run>/<digest>/visual.json
@@ -203,6 +204,28 @@ def build_envelope(run_dir: Path) -> dict:
                     found = relations[f"calls:{source}->{target}"]
                     found["counts"] = {"calls": found.get("counts", {}).get("calls", 0) + 1}
                     found["evidence"] = [*found["evidence"], {"path": call["file"], "line": call["span"][0]}][:20]
+
+    # Services the stack recognises (one it only saw mentioned is no module's, nor a node): external modules the
+    # registry proposes, with type, site and mark, used by each file that shows them; a mention is an uncertain use.
+    import service_registry
+    marked = {entry["id"] for entry in service_registry.load()["entries"] if entry.get("mark") or entry.get("mark_source")}
+    for item in stack["technologies"]:
+        if item["category"] != "service":
+            continue
+        ref = f"external:{item['id']}"
+        proposed = {} if ref in entities else {  # a module the project declares keeps its own states and evidence
+            "provenance": "registry", "status": "inferred",
+            "evidence": [{"path": s["path"], "line": s["line"]} for s in item["signs"] if s["strength"] == "declared" and s["path"]][:20]}
+        entity(ref, "external", item["name"], location="external", node_type=item["type"], site=item["site"],
+               mark=item["id"] if item["id"] in marked else None, **proposed)
+        for sign in item["signs"]:
+            source, certain = f"file:{sign['path']}", sign["strength"] == "declared"
+            if source in entities:
+                key = f"uses:{source}->{ref}" + ("" if certain else " uncertain")
+                used = relations.setdefault(key, {"ref": key, "kind": "uses", "source": source, "target": ref, "counts": {"uses": 0},
+                                                  "status": "confirmed" if certain else "uncertain", "evidence": []})
+                used["counts"]["uses"] += 1
+                used["evidence"] = [*used["evidence"], {"path": sign["path"], "line": sign["line"]}][:20]
 
     # Memberships: a file belongs to every logical module that holds it; build and virtual units are physical groups.
     for module in graph.get("modules", []):
@@ -495,13 +518,16 @@ def live_actions(service) -> dict:
 
 def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes: dict | None = None,
                 actions: dict | None = None, token: str | None = None,
-                stream: dict | None = None, mounts: dict | None = None) -> ThreadingHTTPServer:
+                stream: dict | None = None, mounts: dict | None = None, files: dict | None = None) -> ThreadingHTTPServer:
     """A server on 127.0.0.1, read-only without `actions`: the viewer's files listed at start, and the export's envelope.
 
     `mounts` maps a name to a further folder of files, served under `/<name>/` by the same rules as the assets.
 
     `routes` maps an exact path to a function of the query that returns JSON, in place of
-    an export: a ValueError, a missing parameter or an unreadable file answers 400.
+    an export: a ValueError, a missing parameter or an unreadable file answers 400; a project
+    another helper holds (`confinement.ProjectBusy`) answers 503, busy now, as an action does.
+    `files` maps an exact path to a function of the query that returns the file to serve, or None
+    for none (404); the token may come in the query, as for the stream: an image sends no header.
     `actions` maps an exact path to a function of a POSTed JSON object of at most 16 KiB;
     a POST from another origin, or one that is not JSON, is refused before it is read.
     With `token`, every route and action also needs the `X-Daodan-Token` header: another
@@ -524,7 +550,7 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
             allowed[f"{prefix}/"] = allowed[f"{prefix}/index.html"]
     if export_dir is not None:
         allowed["/data/visual.json"] = Path(export_dir).resolve() / "visual.json"
-    routes, actions, stream = routes or {}, actions or {}, stream or {}
+    routes, actions, stream, files = routes or {}, actions or {}, stream or {}, files or {}
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):  # noqa: N802 - the stdlib names the method
@@ -542,8 +568,21 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
                     return self._json(403, {"error": "refused"})
                 try:
                     return self._json(200, routes[address.path](query))
+                except confinement.ProjectBusy as error:
+                    return self._json(503, {"error": str(error)})
                 except (ValueError, KeyError, TypeError, OSError) as error:
                     return self._json(400, {"error": str(error)})
+            if address.path in files:
+                if not self._authorized(query.get("token")):
+                    return self._json(403, {"error": "refused"})
+                try:
+                    found = files[address.path](query)
+                    body = None if found is None else found.read_bytes()
+                except (ValueError, KeyError, TypeError, OSError) as error:
+                    return self._json(400, {"error": str(error)})
+                if body is None:
+                    return self._send(404, b"not found", "text/plain; charset=utf-8")
+                return self._send(200, body, _TYPES.get(found.suffix.lower(), "application/octet-stream"))
             if address.path == "/data/visual.json" and not self._authorized():
                 return self._json(403, {"error": "refused"})
             target = allowed.get(address.path)
@@ -567,6 +606,8 @@ def make_server(export_dir: Path | None, assets_dir: Path, port: int = 0, routes
                 if not isinstance(body, dict):
                     raise ValueError("the body is not a JSON object")
                 return self._json(200, action(body))
+            except confinement.ProjectBusy as error:
+                return self._json(503, {"error": str(error)})
             except (ValueError, KeyError, TypeError, OSError) as error:
                 return self._json(400, {"error": str(error)})
 

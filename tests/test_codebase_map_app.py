@@ -530,3 +530,95 @@ def test_finding_the_links_runs_once_at_a_time_and_stops_with_the_app(tmp_path, 
     engine.go.set()
     told = settled(app)
     assert len(engine.started) == 1 and told["state"] == "failed" and "stopped" in told["cause"]
+
+
+def raw(port: int, path: str) -> tuple[int, str, bytes]:
+    """Status, type and body of a GET, as an image asks it: no header, the token in the address."""
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=60)
+    try:
+        connection.request("GET", path)
+        answer = connection.getresponse()
+        return answer.status, answer.getheader("Content-Type"), answer.read()
+    finally:
+        connection.close()
+
+
+def test_the_mark_of_a_registry_entry_is_served_by_its_id_and_nothing_else_is(tmp_path, monkeypatch):
+    """The page asks a node's mark by its registry id; a mark taken out of its owner's package on first use is fetched
+    off the request, so the answer is no mark until it is there, never a wait."""
+    import service_registry
+    shipped, held, asked = service_registry.mark_file, threading.Event(), []
+
+    def mark_file(entry):
+        if not entry.get("mark_source"):
+            return shipped(entry)
+        asked.append(entry["id"])
+        held.wait(30)
+        return shipped({"mark": "marks/stripe.svg"})
+
+    monkeypatch.setattr(service_registry, "mark_file", mark_file)
+    app = launcher.App(tmp_path / "work", environment={})
+    server = app.serve(token="t")
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        port = server.server_address[1]
+        stripe = (service_registry.REGISTRY.parent / "marks/stripe.svg").read_bytes()
+        assert raw(port, "/api/app/mark?id=stripe&token=t") == (200, "image/svg+xml", stripe)
+        assert raw(port, "/api/app/mark?id=stripe")[0] == 403
+        for wrong in ("nope", "marks/stripe.svg", "../data/marks/stripe.svg", ""):
+            assert raw(port, f"/api/app/mark?id={wrong}&token=t")[0] == 400, wrong
+        assert raw(port, "/api/app/mark?token=t")[0] == 400
+        assert raw(port, "/api/app/mark?id=adobe.analytics&token=t")[0] == 404  # an entry without a mark: no image
+        started = time.monotonic()
+        assert raw(port, "/api/app/mark?id=aws.amplifyhosting&token=t")[0] == 404
+        assert time.monotonic() - started < 5 and asked == ["aws.amplifyhosting"]
+        held.set()
+        deadline = time.monotonic() + 30
+        while (found := raw(port, "/api/app/mark?id=aws.amplifyhosting&token=t"))[0] != 200 and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert found == (200, "image/svg+xml", stripe) and asked == ["aws.amplifyhosting"]  # fetched once
+    finally:
+        held.set()
+        app.close()
+        server.shutdown()
+        server.server_close()
+
+
+def test_a_busy_project_is_no_failure_the_stream_skips_a_turn_and_a_read_answers_busy(tmp_path, monkeypatch):
+    """Another helper holding the project's lock is busy now: the stream reads again at its next turn and a route
+    answers 503, which the page reads as «Daodan è occupato»."""
+    import confinement
+
+    def busy():
+        return confinement.ProjectBusy("project lock is held by another helper; retry after that invocation finishes")
+
+    class Service:
+        asked = 0
+
+        def status(self, run_id):
+            Service.asked += 1
+            if Service.asked == 1:
+                raise busy()
+            return {"pipeline": {"scan": "fresh"}, "progress": None, "engine": {"state": "fresh", "reason": None}}
+
+    def explorer(query, should_stop):
+        return [("snapshot", {"run_events": {"events": [], "next_cursor": 0, "pipeline": {"events": [], "next_cursor": 0}},
+                              "pulse": {"events": [], "next_cursor": 0}})]
+
+    monkeypatch.setattr(launcher, "TURN", 0.01)
+    app = launcher.App(tmp_path / "work", environment={})
+    app.service, app.context = Service(), {"run_id": "r", "path": str(tmp_path / "checkout")}
+    frames = list(app.stream(explorer)({"run": "r", "max_seconds": "1"}, lambda: False))
+    assert [name for name, _ in frames] == ["app", "snapshot"] and Service.asked == 2
+    assert frames[0][1]["run"]["pipeline"] == {"scan": "fresh"}
+
+    def refused(query):
+        raise busy()
+
+    server = visual.make_server(None, tmp_path, routes={"/api/app/graph": refused}, token="t")
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        assert request(server.server_address[1], "/api/app/graph") == (503, {"error": str(busy())})
+    finally:
+        server.shutdown()
+        server.server_close()

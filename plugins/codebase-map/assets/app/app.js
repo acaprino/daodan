@@ -5,6 +5,7 @@ const token = new URLSearchParams(location.search).get('token') ?? '';
 const auth = { 'X-Daodan-Token': token };
 async function answer(response) {
   const body = await response.json().catch(() => ({}));
+  if (response.status === 503) throw Object.assign(new Error('Daodan è occupato'), { busy: true });  // another helper holds the project now
   if (!response.ok) throw new Error(body.error || `il server ha risposto ${response.status}`);
   return body;
 }
@@ -118,8 +119,9 @@ async function loadPremap() {
     if (ctx()?.run_id !== run) return;
     PREMAP = { ...found, dependencies: found.units.flatMap(u => u.dependencies.map(d => ({ ...d, unit: u.name }))) };
   } catch (error) {
-    premapError = error.message;
     premapRun = '';
+    if (error.busy) { toast(error.message + ', riprovo'); setTimeout(loadPremap, 2000); return; }
+    premapError = error.message;
   }
   render();
 }
@@ -134,9 +136,11 @@ async function loadGraph() {
     GRAPH = found; graphRun = run; graphError = '';
     if (!GRAPH.nodes.some(n => n.id === state.graphRoot)) {
       const related = id => GRAPH.edges.filter(e => e.source === id || e.target === id).length;  // the group with most relations first
-      state.graphRoot = [...GRAPH.nodes].sort((a, b) => related(b.id) - related(a.id) || b.files.length - a.files.length)[0]?.id || '';
+      const outside = n => Number(n.location === 'external');  // a group of the project before an external node
+      state.graphRoot = [...GRAPH.nodes].sort((a, b) => outside(a) - outside(b) || related(b.id) - related(a.id) || b.files.length - a.files.length)[0]?.id || '';
     }
   } catch (error) {
+    if (error.busy) { toast(error.message + ', riprovo'); setTimeout(loadGraph, 2000); return; }  // what is drawn stays
     graphError = error.message;
     graphRun = run;
   } finally {
@@ -457,6 +461,10 @@ function runButton() {
 function nodeName(n) { return n.kind === 'directory' && n.name === '.' ? 'radice del repository' : n.name; }
 const NODE_STATUS = { confirmed: 'confermato', inferred: 'inferito', incomplete: 'incompleto', proposed: 'proposto' };
 function nodeState(n) { return n.location === 'external' ? 'esterno' : NODE_STATUS[n.status] || n.status || 'senza stato'; }
+function nodeFacts(n) { return n.location === 'external' ? [n.node_type, 'esterno'].filter(Boolean).join(' · ') : `${n.files.length} file · ${nodeState(n)}`; }
+// A node's picture: the mark of its registry entry, from the app's server; without one, or when it does not load, the icon of its kind.
+function nodeIcon(n) { return n.mark ? `<img class="mark" src="${esc('/api/app/mark?' + new URLSearchParams({ id: n.mark, token }))}" alt="">` : icon(n.location === 'external' ? 'external' : 'layers'); }
+document.addEventListener('error', event => { if (event.target.matches?.('img.mark')) event.target.outerHTML = icon('external'); }, true);
 function levelLabel() { return GRAPH?.level === 'modules' ? 'Moduli' : 'Directory'; }
 
 function buildPreview() {
@@ -465,7 +473,7 @@ function buildPreview() {
   if (!g || !g.nodes.length) return `<div class="build-empty">${icon('graph')}<h3>Prima l’inventario, poi le relazioni.</h3><p>${g ? 'Il grafo del run non ha ancora gruppi di file.' : 'Lettura del grafo del run…'}<br>I nodi compaiono quando la pipeline scrive un artefatto.</p></div>`;
   const width = 624, cols = 3, height = Math.max(300, Math.ceil(g.nodes.length / cols) * 92 + 46);
   const position = new Map(g.nodes.map((n, i) => [n.id, { x: 22 + (i % cols) * 201, y: 24 + Math.floor(i / cols) * 92 }]));
-  return `<div class="build-world" style="width:${width}px;height:${height}px"><svg class="build-connections" width="${width}" height="${height}" aria-hidden="true">${g.edges.map(e => { const a = position.get(e.source), b = position.get(e.target); return `<path d="M${a.x + 88},${a.y + 59} C${a.x + 88},${a.y + 79} ${b.x + 88},${b.y - 20} ${b.x + 88},${b.y}"></path>`; }).join('')}</svg>${g.nodes.map(n => { const p = position.get(n.id); return `<button class="build-node" data-build-node="${esc(n.id)}" style="left:${p.x}px;top:${p.y}px">${icon(n.location === 'external' ? 'external' : 'layers')}<span>${esc(nodeName(n))}<small>${n.files.length} file · ${esc(nodeState(n))}</small></span></button>`; }).join('')}</div>`;
+  return `<div class="build-world" style="width:${width}px;height:${height}px"><svg class="build-connections" width="${width}" height="${height}" aria-hidden="true">${g.edges.map(e => { const a = position.get(e.source), b = position.get(e.target); return `<path d="M${a.x + 88},${a.y + 59} C${a.x + 88},${a.y + 79} ${b.x + 88},${b.y - 20} ${b.x + 88},${b.y}"></path>`; }).join('')}</svg>${g.nodes.map(n => { const p = position.get(n.id); return `<button class="build-node" data-build-node="${esc(n.id)}" style="left:${p.x}px;top:${p.y}px">${nodeIcon(n)}<span>${esc(nodeName(n))}<small>${esc(nodeFacts(n))}</small></span></button>`; }).join('')}</div>`;
 }
 
 function buildCounts() { return GRAPH ? `${GRAPH.nodes.length} ${GRAPH.level === 'modules' ? 'moduli' : 'directory'} · ${GRAPH.edges.length} relazioni · ${number(GRAPH.files)} file` : '—'; }
@@ -536,7 +544,7 @@ function synthesisScreen() {
   const top = [...GRAPH.nodes].sort((a, b) => b.files.length - a.files.length).slice(0, 3), gaps = gapLines();
   const modules = GRAPH.level === 'modules';
   return `<div class="source-note">${icon('info')}<div><strong>Sintesi testuale in attesa.</strong><p>Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run <code>${esc(ctx().run_id)}</code>. Le domande al motore sono in «Motore e domande».</p></div></div><div class="metrics"><div class="metric"><div class="value">${GRAPH.nodes.length}</div><p>${modules ? 'Moduli' : 'Directory con file'}</p><small>Gruppi del grafo</small></div><div class="metric"><div class="value">${GRAPH.edges.length}</div><p>Relazioni statiche</p><small>Non tracce runtime</small></div><div class="metric"><div class="value">${number(GRAPH.files)}</div><p>File nel grafo</p><small>Snapshot del commit ${esc(ctx().commit.slice(0, 7))}</small></div><div class="metric"><div class="value">${number(modules ? GRAPH.unassigned.count : GRAPH.symbols)}</div><p>${modules ? 'File senza modulo' : 'Simboli definiti'}</p><small>${modules ? 'Lacuna esplicita del grafo' : 'Dall’outline dei file'}</small></div></div>
-  <div class="synthesis-layout"><section class="panel"><div class="panel-head"><h2>Responsabilità da esplorare</h2><span class="badge">${levelLabel()}</span></div><div class="synthesis-components">${top.map(n => `<button data-preview-node="${esc(n.id)}"><span class="synthesis-icon">${icon('layers')}</span><span><strong>${esc(nodeName(n))}</strong><p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><small>${n.files.length} file · ${esc(nodeState(n))}</small></span>${icon('arrow')}</button>`).join('') || '<p class="muted small" style="padding:16px">Nessun gruppo nel grafo.</p>'}</div></section><aside class="stack"><section class="panel"><div class="panel-head"><h2>Dipendenze dopo l’analisi</h2></div><div class="panel-body"><span class="badge orange">Risoluzione non disponibile</span><p class="synthesis-note">${PREMAP ? number(PREMAP.dependencies.length) + ' librerie dichiarate nei manifest. ' : ''}Daodan non risolve le versioni installate: un riferimento statico non prova quale versione di una libreria sia usata.</p></div></section><section class="panel"><div class="panel-head"><h2>Cosa manca al quadro</h2></div><div class="panel-body"><ul class="synthesis-gaps">${gaps.slice(0, 8).map(g => `<li>${esc(g)}</li>`).join('') || '<li>Nessuna lacuna registrata dal run.</li>'}</ul>${gaps.length > 8 ? `<p class="muted small">Altre ${gaps.length - 8} lacune in «Provenienza e lacune».</p>` : ''}<button class="textbutton" data-action="snapshot">${icon('file')}Provenienza e lacune</button></div></section></aside></div>`;
+  <div class="synthesis-layout"><section class="panel"><div class="panel-head"><h2>Responsabilità da esplorare</h2><span class="badge">${levelLabel()}</span></div><div class="synthesis-components">${top.map(n => `<button data-preview-node="${esc(n.id)}"><span class="synthesis-icon">${icon('layers')}</span><span><strong>${esc(nodeName(n))}</strong><p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><small>${esc(nodeFacts(n))}</small></span>${icon('arrow')}</button>`).join('') || '<p class="muted small" style="padding:16px">Nessun gruppo nel grafo.</p>'}</div></section><aside class="stack"><section class="panel"><div class="panel-head"><h2>Dipendenze dopo l’analisi</h2></div><div class="panel-body"><span class="badge orange">Risoluzione non disponibile</span><p class="synthesis-note">${PREMAP ? number(PREMAP.dependencies.length) + ' librerie dichiarate nei manifest. ' : ''}Daodan non risolve le versioni installate: un riferimento statico non prova quale versione di una libreria sia usata.</p></div></section><section class="panel"><div class="panel-head"><h2>Cosa manca al quadro</h2></div><div class="panel-body"><ul class="synthesis-gaps">${gaps.slice(0, 8).map(g => `<li>${esc(g)}</li>`).join('') || '<li>Nessuna lacuna registrata dal run.</li>'}</ul>${gaps.length > 8 ? `<p class="muted small">Altre ${gaps.length - 8} lacune in «Provenienza e lacune».</p>` : ''}<button class="textbutton" data-action="snapshot">${icon('file')}Provenienza e lacune</button></div></section></aside></div>`;
 }
 
 // -- the graph -----------------------------------------------------------------------------------------------------
@@ -565,17 +573,18 @@ function visibleGraph() {
 
 function graphCanvas(g) {
   if (!g.nodes.length) return '<div class="empty"><h2>Nessun gruppo trovato</h2><p style="margin:10px 0">Cambia ricerca o amplia il perimetro del grafo.</p><button data-action="clear-graph">Azzera filtri</button></div>';
-  const ordered = [...g.nodes].sort((a, b) => a.id === state.graphRoot ? -1 : b.id === state.graphRoot ? 1 : a.name.localeCompare(b.name, 'it'));
+  const outside = n => Number(n.location === 'external');  // external nodes after the project's groups
+  const ordered = [...g.nodes].sort((a, b) => a.id === state.graphRoot ? -1 : b.id === state.graphRoot ? 1 : outside(a) - outside(b) || a.name.localeCompare(b.name, 'it'));
   const cols = Math.min(3, ordered.length), width = Math.max(650, cols * 254 + 50), height = Math.max(460, Math.ceil(ordered.length / cols) * 130 + 90);
   const positions = new Map(ordered.map((n, i) => [n.id, { x: 30 + (i % cols) * 254, y: 42 + Math.floor(i / cols) * 130 }]));
   const paths = g.edges.map(e => { const a = positions.get(e.source), b = positions.get(e.target), same = a.y === b.y; const fromX = a.x + 102, fromY = a.y + 74, toX = b.x + 102, toY = b.y; const d = same ? `M${a.x + 204},${a.y + 37} C${a.x + 230},${a.y + 37} ${b.x - 26},${b.y + 37} ${b.x},${b.y + 37}` : `M${fromX},${fromY} C${fromX},${fromY + 32} ${toX},${toY - 32} ${toX},${toY}`; return `<path d="${d}" marker-end="url(#arrowhead)"${e.status === 'uncertain' ? ' class="uncertain"' : ''}><title>${esc(nodeName(nodeById(e.source)))} → ${esc(nodeName(nodeById(e.target)))} · ${Object.entries(e.counts).map(([k, v]) => esc(k) + ': ' + v).join(', ')}${e.status === 'uncertain' ? ' · incerto' : ''}</title></path>`; }).join('');
-  return `<div class="graph-world" style="width:${width}px;height:${height}px"><svg class="connections" width="${width}" height="${height}" aria-hidden="true"><defs><marker id="arrowhead" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" style="fill:var(--edge);stroke:none"></path></marker></defs>${paths}</svg>${ordered.map(n => { const p = positions.get(n.id); return `<button class="graph-node ${n.id === state.graphRoot ? 'selected' : ''} ${n.location === 'external' ? 'external' : ''}" data-node="${esc(n.id)}" aria-pressed="${n.id === state.graphRoot}" style="left:${p.x}px;top:${p.y}px"><span class="node-icon">${icon(n.location === 'external' ? 'external' : 'layers')}</span><span><span class="node-name">${esc(nodeName(n))}</span><small>${n.files.length} file · ${esc(nodeState(n))}</small></span></button>`; }).join('')}</div>`;
+  return `<div class="graph-world" style="width:${width}px;height:${height}px"><svg class="connections" width="${width}" height="${height}" aria-hidden="true"><defs><marker id="arrowhead" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" style="fill:var(--edge);stroke:none"></path></marker></defs>${paths}</svg>${ordered.map(n => { const p = positions.get(n.id); return `<button class="graph-node ${n.id === state.graphRoot ? 'selected' : ''} ${n.location === 'external' ? 'external' : ''}" data-node="${esc(n.id)}" aria-pressed="${n.id === state.graphRoot}" style="left:${p.x}px;top:${p.y}px"><span class="node-icon">${nodeIcon(n)}</span><span><span class="node-name">${esc(nodeName(n))}</span><small>${esc(nodeFacts(n))}</small></span></button>`; }).join('')}</div>`;
 }
 
 function inspector() {
   const n = nodeById(state.graphRoot);
   const related = GRAPH.edges.filter(e => e.source === n.id || e.target === n.id);
-  return `<aside class="graph-inspector" aria-label="Dettaglio del gruppo"><p class="eyebrow">${GRAPH.level === 'modules' ? 'Modulo selezionato' : 'Directory selezionata'}</p><h2>${esc(nodeName(n))}</h2><span class="badge ${n.location === 'external' ? '' : 'cyan'}">${n.location === 'external' ? 'Dipendenza esterna' : esc(nodeState(n))}</span><p class="description">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><div class="inspector-block"><h3>Perimetro</h3><dl class="facts"><dt>File assegnati</dt><dd>${n.files.length}</dd><dt>Relazioni statiche</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || (n.kind === 'directory' ? 'Directory del checkout' : 'Non registrata'))}</dd></dl></div><div class="inspector-block"><h3>Evidenze</h3><ul class="source-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="muted">Nessuna evidenza dichiarata.</li>'}</ul></div><div class="inspector-block"><h3>File del gruppo</h3><ul class="source-list">${n.files.slice(0, 4).map(path => `<li><button data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="textbutton small" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div></aside>`;
+  return `<aside class="graph-inspector" aria-label="Dettaglio del gruppo"><p class="eyebrow">${n.location === 'external' ? 'Nodo esterno selezionato' : GRAPH.level === 'modules' ? 'Modulo selezionato' : 'Directory selezionata'}</p><h2>${esc(nodeName(n))}</h2><span class="badge ${n.location === 'external' ? '' : 'cyan'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="description">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><div class="inspector-block"><h3>Perimetro</h3><dl class="facts"><dt>File assegnati</dt><dd>${n.files.length}</dd><dt>Relazioni statiche</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || (n.kind === 'directory' ? 'Directory del checkout' : 'Non registrata'))}</dd></dl></div><div class="inspector-block"><h3>Evidenze</h3><ul class="source-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="muted">Nessuna evidenza dichiarata.</li>'}</ul></div><div class="inspector-block"><h3>File del gruppo</h3><ul class="source-list">${n.files.slice(0, 4).map(path => `<li><button data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="textbutton small" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div></aside>`;
 }
 
 function graph() {
@@ -718,7 +727,7 @@ document.addEventListener('click', async event => {
   }
   if (b.dataset.buildNode) {
     const n = nodeById(b.dataset.buildNode);
-    modal(esc(nodeName(n)), `${GRAPH.level === 'modules' ? 'Modulo' : 'Directory'} del grafo di questo run.`, `<p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><p class="muted small" style="margin-top:16px">${n.files.length} file · ${esc(nodeState(n))} · commit ${esc(ctx().commit.slice(0, 12))}</p>`, `<button data-preview-node="${esc(n.id)}">${icon('graph')}Apri nel grafo</button><button class="primary" data-action="close-modal">Chiudi dettaglio</button>`);
+    modal(esc(nodeName(n)), `${GRAPH.level === 'modules' ? 'Modulo' : 'Directory'} del grafo di questo run.`, `<p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><p class="muted small" style="margin-top:16px">${esc(nodeFacts(n))} · commit ${esc(ctx().commit.slice(0, 12))}</p>`, `<button data-preview-node="${esc(n.id)}">${icon('graph')}Apri nel grafo</button><button class="primary" data-action="close-modal">Chiudi dettaglio</button>`);
     return;
   }
   if (b.dataset.previewNode) { closeModal(); state.graphRoot = b.dataset.previewNode; state.graphDepth = '1'; state.graphSearch = ''; navigate('graph'); return; }

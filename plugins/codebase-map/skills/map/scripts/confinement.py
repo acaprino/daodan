@@ -22,6 +22,10 @@ class ConfinementError(ValueError):
     """A path or project binding could not be confined safely."""
 
 
+class ProjectBusy(ConfinementError):
+    """Another helper holds the project's lock: busy now, the same operation may be asked again."""
+
+
 @contextmanager
 def project_lock(project: Path):
     """Serialize local helpers without creating or relocating a lock file.
@@ -50,7 +54,7 @@ def project_lock(project: Path):
         try:
             outcome = kernel.WaitForSingleObject(handle, max(0, int(LOCK_TIMEOUT_SECONDS * 1000)))
             if outcome == 0x102:
-                raise ConfinementError("project lock is held by another helper; retry after that invocation finishes")
+                raise ProjectBusy("project lock is held by another helper; retry after that invocation finishes")
             if outcome not in {0, 0x80}:  # WAIT_OBJECT_0 or WAIT_ABANDONED
                 raise ConfinementError(f"project lock failed: {ctypes.WinError(ctypes.get_last_error())}")
             acquired = True
@@ -73,7 +77,7 @@ def project_lock(project: Path):
                 except BlockingIOError as error:
                     remaining = deadline - time.monotonic()
                     if remaining <= 0:
-                        raise ConfinementError("project lock is held by another helper; retry after that invocation finishes") from error
+                        raise ProjectBusy("project lock is held by another helper; retry after that invocation finishes") from error
                     time.sleep(min(0.02, remaining))
             yield
         finally:

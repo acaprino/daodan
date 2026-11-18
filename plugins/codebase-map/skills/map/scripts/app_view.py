@@ -2,7 +2,8 @@
 
 Composition only: the stack, the modules and the envelope are the service's; the files and their languages are the
 run's snapshot headers. Nothing of the project runs. The graph groups files by module when the run has two or more,
-otherwise by the directory that holds them, and counts the relations between groups.
+otherwise by the directory that holds them, and counts the relations between groups; an external node (a service, say)
+holds no file and is drawn beside the groups at either level.
 """
 from __future__ import annotations
 
@@ -76,8 +77,10 @@ def graph(envelope: dict) -> dict:
     # a virtual module is the tree no build names, not a group of its own: its files show by their directories;
     # a store is a member of a node, not a group (the system map's «nodo»), and holds no file
     groups = [ref for ref, item in entities.items() if item["type"] not in (*STRUCTURE, "virtual", "store")]
+    # an external node holds no file: it does not choose the level, and it is drawn beside the groups at either one
+    outside = [ref for ref in groups if entities[ref].get("location") == "external"]
     owner: dict[str, str] = {}
-    if len(groups) >= 2:
+    if len(groups) - len(outside) >= 2:
         level = "modules"
         sizes = Counter(item["group"] for item in envelope["memberships"] if item["group"] in groups)
         for item in envelope["memberships"]:  # a file in nested modules belongs to the smallest
@@ -92,9 +95,10 @@ def graph(envelope: dict) -> dict:
             owner[ref] = f"directory:{parent}"
             if owner[ref] not in entities:
                 entities[owner[ref]] = {"ref": owner[ref], "type": "directory", "name": parent, "path": parent}
-        groups = sorted(set(owner.values()))
-    nodes = {ref: {"id": ref, "name": entities[ref]["path"] if level == "directories" else entities[ref]["name"],
+        groups = sorted(set(owner.values())) + outside
+    nodes = {ref: {"id": ref, "name": entities[ref]["name"] if ref in outside or level == "modules" else entities[ref]["path"],
                    "kind": entities[ref]["type"], "location": entities[ref].get("location", "internal"),
+                   "node_type": entities[ref].get("node_type"), "mark": entities[ref].get("mark"),
                    "status": entities[ref].get("status") or ("confirmed" if level == "directories" else None),
                    "provenance": entities[ref].get("provenance"),
                    "responsibility": entities[ref].get("description") or "",
@@ -116,6 +120,8 @@ def graph(envelope: dict) -> dict:
             counts = relation["counts"] if key else {relation["kind"]: 1}
             site = None if key else {"kind": relation["kind"], "path": relation["source"].removeprefix("file:"),
                                      "line": None, "target": relation["target"].removeprefix("file:")}
+        elif source in owner and target in nodes:  # a file's relation to a node without files: its count and sites
+            source, counts, site = owner[source], relation.get("counts") or {relation["kind"]: 1}, None
         else:
             continue
         if source == target:

@@ -263,6 +263,78 @@ class LinkRelationTests(unittest.TestCase):
         self.assertIn((worker, server, {"reads": 1}), [(e["source"], e["target"], e["counts"]) for e in graph["edges"]])
 
 
+class ServiceNodeTests(unittest.TestCase):
+    """A service the stack recognises is an external node with its name, type and mark, used by the files that show
+    it; a framework is the stack of a module, not a node, and a service only mentioned in a line is no node."""
+
+    MANIFEST = ('{\n  "name": "shop",\n  "version": "1.0.0",\n  "dependencies": {\n    "express": "^4.18.0",\n'
+                '    "stripe": "^14.0.0",\n    "@adobe/aio-lib-analytics": "^3.0.0"\n  }\n}\n')
+
+    @classmethod
+    def setUpClass(cls):
+        cls.project = Path(tempfile.mkdtemp(prefix="map-visual-services-")).resolve()
+        files = {"package.json": cls.MANIFEST,
+                 "src/pay.js": 'const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);\nmodule.exports = stripe;\n',
+                 "src/config.js": "module.exports = { key: process.env.FIREBASE_API_KEY };\n"}
+        for rel, text in files.items():
+            (cls.project / rel).parent.mkdir(parents=True, exist_ok=True)
+            (cls.project / rel).write_text(text, encoding="utf-8")
+        git_project(cls.project)
+        mcp_service.MapService(cls.project).create_run(".", "services", engine=False)
+        run = cls.project / ".daodan/map/runs/services"
+        import technologies
+        cls.stack = technologies.ensure(resolve_run_snapshot(run, json.loads((run / "state.json").read_text(encoding="utf-8"))))
+        cls.envelope = visual.build_envelope(run)
+        visual.validate_envelope(cls.envelope)
+        cls.refs = {item["ref"]: item for item in cls.envelope["entities"]}
+        cls.line = cls.MANIFEST.splitlines().index('    "stripe": "^14.0.0",') + 1
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.project, True)
+
+    def test_a_declared_service_is_an_external_node_used_by_the_file_that_declares_it(self):
+        stripe = self.refs["external:stripe"]
+        self.assertEqual({k: stripe.get(k) for k in ("type", "name", "location", "node_type", "mark", "provenance")},
+                         {"type": "external", "name": "Stripe", "location": "external", "node_type": "gateway",
+                          "mark": "stripe", "provenance": "registry"})
+        self.assertEqual(stripe["evidence"], [{"path": "package.json", "line": self.line}])
+        uses = {item["ref"]: item for item in self.envelope["relations"] if item["kind"] == "uses"}
+        declared = uses["uses:file:package.json->external:stripe"]
+        self.assertEqual((declared["status"], declared["counts"], declared["evidence"]),
+                         ("confirmed", {"uses": 1}, [{"path": "package.json", "line": self.line}]))
+        # a line that names it, in a file that does not declare it, is a use the graph keeps uncertain
+        mentioned = uses["uses:file:src/pay.js->external:stripe uncertain"]
+        self.assertEqual((mentioned["status"], mentioned["evidence"]), ("uncertain", [{"path": "src/pay.js", "line": 1}]))
+
+    def test_the_app_graph_draws_the_node_beside_the_groups_used_by_the_group_of_each_file(self):
+        graph = visual_app_graph(self.envelope)
+        self.assertEqual(graph["level"], "directories")  # an external node is no group of files
+        nodes = {node["id"]: node for node in graph["nodes"]}
+        self.assertEqual({k: nodes["external:stripe"][k] for k in ("name", "kind", "location", "node_type", "mark", "files")},
+                         {"name": "Stripe", "kind": "external", "location": "external", "node_type": "gateway",
+                          "mark": "stripe", "files": []})
+        uses = {(edge["source"], edge["target"], edge["status"]): edge for edge in graph["edges"] if "uses" in edge["counts"]}
+        self.assertEqual(uses[("directory:.", "external:stripe", "confirmed")]["evidence"],
+                         [{"kind": "uses", "path": "package.json", "line": self.line}])
+        self.assertEqual(uses[("directory:src", "external:stripe", "uncertain")]["counts"], {"uses": 1})
+
+    def test_an_entry_without_a_mark_is_a_node_all_the_same_with_no_image_to_ask(self):
+        adobe = self.refs["external:adobe.analytics"]
+        self.assertEqual((adobe["name"], adobe["location"], adobe.get("mark")), ("Adobe Analytics", "external", None))
+        self.assertIn("uses:file:package.json->external:adobe.analytics", {item["ref"] for item in self.envelope["relations"]})
+
+    def test_a_framework_or_a_library_is_no_node(self):
+        externals = {ref for ref, item in self.refs.items() if item["type"] == "external"}
+        self.assertIn("express", {item["id"] for item in self.envelope["technologies"]})  # the stack has it
+        self.assertEqual(externals, {"external:stripe", "external:adobe.analytics"})
+
+    def test_a_service_only_mentioned_in_a_line_is_no_node(self):
+        self.assertIn("firebase", {item["id"] for item in self.stack["mentioned"]})  # the stack keeps it apart
+        self.assertNotIn("external:firebase", self.refs)
+        self.assertNotIn("firebase", {item["target"].removeprefix("external:") for item in self.envelope["relations"]})
+
+
 def visual_app_graph(envelope):
     import app_view
     return app_view.graph(envelope)

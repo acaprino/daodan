@@ -9,8 +9,9 @@
 
 The launcher composes what exists and owns its end: `repository` gives the checkout, `MapService` the run (snapshot,
 pre-map, stack, and the pass that builds the graph beside it), `visual.make_server` the transport on 127.0.0.1 with
-its token, `engines` the model a question is given to, and `app_view` the run in the shapes the page draws (the
-pre-map, the graph in groups). It prints the page's address, which carries the token.
+its token, `engines` the model a question is given to, `app_view` the run in the shapes the page draws (the
+pre-map, the graph in groups), and `service_registry` the mark of an external node. It prints the page's address,
+which carries the token.
 
 One repository and branch is active at a time. Selecting it is work off the request: the page asks, observes
 `/api/stream` (the app's state whenever it changes, the run's events as they are written), and opens the explorer of
@@ -33,6 +34,7 @@ import subprocess
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -40,8 +42,10 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import app_view  # noqa: E402
+import confinement  # noqa: E402
 import engines  # noqa: E402
 import repository  # noqa: E402
+import service_registry  # noqa: E402
 import visual  # noqa: E402
 from mcp_service import MapService  # noqa: E402
 
@@ -80,6 +84,8 @@ class App:
         self.engine = engines.setting(environment) if environment is not None else engines.setting()
         self.asked = {"state": "idle", "question": "", "text": "", "events": [], "cause": None}
         self.linked = {"state": "idle", "cause": None}  # the links between modules: see `link`
+        self.registry = {entry["id"]: entry for entry in service_registry.load()["entries"]}  # whose marks `mark` serves
+        self._marks, self._fetch = {}, ThreadPoolExecutor(max_workers=1)  # the marks fetched on first use, one at a time
         self._lock, self._stop = threading.Lock(), threading.Event()
 
     # -- the repository -------------------------------------------------------------------------------------------
@@ -164,8 +170,9 @@ class App:
         is `visual.live_stream`'s, read once a turn from the cursors so far), and an `app` frame with the app's state
         first and whenever it changes. Before a selection the state alone; after one, the new run from its start.
         The run's states are read again after its events, and every RECHECK seconds while its pass runs. A failure
-        ends the stream with a `failure` frame; the stream ends after `max_seconds` (15, at most 60), and the page
-        opens it again from its cursors."""
+        ends the stream with a `failure` frame; a project another helper holds is busy, not failed: that turn gives
+        nothing and the next reads again. The stream ends after `max_seconds` (15, at most 60), and the page opens it
+        again from its cursors."""
         def frames(query: dict, should_stop):
             deadline = time.monotonic() + min(float(query.get("max_seconds", 15)), 60.0)
             run, kind = query.get("run"), "snapshot"
@@ -174,26 +181,29 @@ class App:
             checked = 0.0
             while not should_stop():
                 try:
-                    found, context = None, self.context
+                    found, context, moved = None, self.context, cursors
                     if context is not None and self.service is not None:
                         if context["run_id"] != run:
                             run, kind, cursors = context["run_id"], "snapshot", dict.fromkeys(cursors, 0)
                         [(_, found)] = explorer({"run": run, "once": "1", **cursors}, should_stop)
                         events, pulse = found["run_events"], found["pulse"]
-                        cursors = {"after": events["next_cursor"], "pipeline_after": events["pipeline"]["next_cursor"],
-                                   "pulse_after": pulse["next_cursor"]}
+                        moved = {"after": events["next_cursor"], "pipeline_after": events["pipeline"]["next_cursor"],
+                                 "pulse_after": pulse["next_cursor"]}
                     news = bool(found) and bool(events["events"] or events["pipeline"]["events"] or pulse["events"])
                     now = self._held()
                     running = not shown or not shown["run"] or shown["run"]["pass"]["state"] not in FINAL
                     if now != held or news or (running and time.monotonic() - checked >= RECHECK):
-                        held, checked = now, time.monotonic()
                         state = self.state({})
+                        held, checked = now, time.monotonic()
                         if state != shown:  # before the events it follows, so that the page knows their run
                             shown = state
                             yield "app", state
                     if news or (found and kind == "snapshot"):
                         yield kind, found
                         kind = "update"
+                    cursors = moved  # the turn is over: what it read is given
+                except confinement.ProjectBusy:
+                    pass  # another helper holds the project now: the turn is skipped, the next one reads it again
                 except (ValueError, KeyError, TypeError, OSError) as error:
                     yield "failure", {"error": str(error)}
                     return
@@ -220,6 +230,21 @@ class App:
         """The run's graph in groups, as the page draws it while it grows; the explorer (`/`) shows it whole."""
         service, run = self._active()
         return app_view.graph(visual.build_envelope(service.root / "runs" / run))
+
+    def mark(self, query: dict) -> Path | None:
+        """The mark of the registry entry `id` (`service_registry.mark_file`), or None: the page draws the icon of the
+        node's type. A mark taken out of its owner's package on first use is fetched off the request: until it is
+        there, and after it failed, the answer is None, so that no page or graph waits on a download."""
+        entry = self.registry.get(query["id"])
+        if entry is None:
+            raise ValueError("the registry has no entry with this id")
+        if entry.get("mark") or not entry.get("mark_source"):
+            return service_registry.mark_file(entry)
+        with self._lock:
+            if entry["id"] not in self._marks:
+                self._marks[entry["id"]] = self._fetch.submit(service_registry.mark_file, entry)
+            fetched = self._marks[entry["id"]]
+        return fetched.result() if fetched.done() else None
 
     # -- the engine -----------------------------------------------------------------------------------------------
 
@@ -382,10 +407,11 @@ class App:
                    "/api/app/link": self.link}
         stream = {"/api/stream": self.stream(visual.live_stream(active)["/api/stream"])}
         return visual.make_server(None, VIEWER, port, routes=routes, actions=actions, token=token, stream=stream,
-                                  mounts={"app": PAGE})
+                                  mounts={"app": PAGE}, files={"/api/app/mark": self.mark})
 
     def close(self) -> None:
         self._stop.set()
+        self._fetch.shutdown(wait=False, cancel_futures=True)
 
 
 def main(argv=None) -> int:
