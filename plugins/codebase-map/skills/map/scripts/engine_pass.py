@@ -674,6 +674,15 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
     return {**edge_state(manifest), "action": "started"}
 
 
+def deaf_to_console_break() -> None:
+    """On Windows a Ctrl+Break sent to a console ends, with no word and exit code 0xC000013A, every Python attached
+    to it that does not handle it: so ended the pass on 18 November 2026, beside the programs it starts. The pass
+    is no console program: it says that one came and goes on. Elsewhere there is no such signal."""
+    if hasattr(signal, "SIGBREAK"):
+        signal.signal(signal.SIGBREAK, lambda number, frame: print(
+            "a console break reached the pass and was ignored", file=sys.stderr, flush=True))
+
+
 def _note_exit(child, record: Path) -> None:
     """While the process that started the pass lives, it waits for it and keeps its exit code in the record: a
     pass ended from outside writes nothing, and on POSIX one nobody waits for stays a process that answers."""
