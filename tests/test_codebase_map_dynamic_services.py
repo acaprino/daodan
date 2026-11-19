@@ -2092,10 +2092,11 @@ def test_on_modal_a_tracked_env_file_s_value_reaches_the_service_and_nothing_the
     the logs, the text outputs, the record and the result name the variable where the tests printed its value."""
     from indexers import typescript
     secret = "s3cr3t" + uuid.uuid4().hex[:8]
+    # `-h localhost`: the image's first server, the one that makes the database, answers on its socket only
     fact = {"name": "db", "image": "postgres:16-alpine", "declared_in": "ci.yml#jobs.t.steps.1.services.db",
             "host": "localhost", "env": {"POSTGRES_DB": "${DB_NAME}", "POSTGRES_HOST_AUTH_METHOD": "trust"},
             "dotenv": {"DB_NAME": ".env"}, "job_env": {"DATABASE_URL": f"postgres://postgres@localhost:5432/{secret}"},
-            "healthcheck": {"test": ["CMD-SHELL", "pg_isready -U postgres -d ${DB_NAME}"], "interval": "1s",
+            "healthcheck": {"test": ["CMD-SHELL", "pg_isready -h localhost -U postgres -d ${DB_NAME}"], "interval": "1s",
                             "retries": 60}}
     planned = dynamic.services({"services": [fact]})
     project = git_project(tmp_path / "proj", {".env": f"DB_NAME={secret}\n", "sql.py": SQL}, [".env", "sql.py"])
