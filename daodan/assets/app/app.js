@@ -679,7 +679,7 @@ function engineScreen() {
   const openai = d.engine === 'openai';
   const c = ctx();
   return heading('Motore e domande', 'Chiedi al codice.', 'Il motore legge la mappa solo con le operazioni di Daodan: cerca, poi legge quello che serve.') + `<div class="repository-layout"><section class="panel" aria-labelledby="ask-title"><div class="panel-head"><h2 id="ask-title">Domanda sul repository</h2><span class="badge">${c ? esc(slug(c)) : 'Nessuna repository'}</span></div><div class="panel-body"><form id="ask-form" novalidate><div class="field"><label for="question">Domanda</label><textarea id="question" rows="4" placeholder="Dove viene firmato un token, e chi lo verifica?" ${!c ? 'disabled' : ''}>${esc(question)}</textarea><p class="muted small">${c ? 'Il motore usa il run ' + esc(c.run_id) + '.' : 'Seleziona prima una repository: il motore la legge dal suo run.'}</p></div><button type="submit" class="primary" id="ask-button" style="margin-top:12px" ${!c || server?.asked?.state === 'running' || !server?.engine?.engine ? 'disabled' : ''}>${icon(server?.asked?.state === 'running' ? 'spinner' : 'play')}${server?.asked?.state === 'running' ? 'Il motore risponde…' : 'Chiedi'}</button>${c && !server?.engine?.engine ? '<p class="muted small">Scegli e salva prima un motore.</p>' : ''}</form><div id="answer-box" class="answer-box" aria-live="polite">${answerMarkup()}</div></div></section>
-  <aside class="stack"><section class="panel" aria-labelledby="engine-title"><div class="panel-head"><h2 id="engine-title">Motore</h2><span class="badge ${server?.engine?.engine ? 'cyan' : ''}">${esc(server?.engine?.engine || 'Non scelto')}</span></div><div class="panel-body"><form id="engine-form" novalidate><div class="field"><label for="engine-name">Motore</label><select id="engine-name">${selectOptions([['', 'Nessuno'], ...engines.map(e => [e, { openai: 'Endpoint compatibile OpenAI', claude: 'Claude Code (riga di comando)', codex: 'Codex (riga di comando)' }[e] || e])], d.engine || '')}</select></div>${openai ? `<div class="field"><label for="base-url">Indirizzo dell’endpoint</label><input id="base-url" type="url" value="${esc(d.base_url)}"></div><div class="field"><label for="model">Modello</label><input id="model" type="text" value="${esc(d.model)}"></div><div class="field"><label for="api-key">Chiave</label><input id="api-key" type="password" autocomplete="off" value="${esc(d.api_key)}" placeholder="${server?.engine?.api_key === 'set' ? 'Impostata' : 'Va nel deposito delle credenziali del sistema'}">${server?.engine?.deposit ? `<p class="muted small">La chiave resta in memoria fino alla chiusura: ${esc(server.engine.deposit)}.</p>` : ''}</div>` : ''}<div class="row"><button type="submit" id="engine-save">${icon('check')}Salva</button><button type="button" data-action="probe" id="engine-probe">${icon('reload')}Prova il motore</button></div><p id="engine-said" class="${engineTone === 'bad' ? 'error-text' : 'repository-auth-copy'}" role="status">${esc(engineSaid)}</p></form></div></section><section class="panel"><div class="panel-head"><h2>Server MCP</h2></div><div class="panel-body">${server?.mcp ? `<p class="repository-auth-copy">Per una sessione tua: avvia Daodan sul checkout con</p><code style="overflow-wrap:anywhere">${esc([server.mcp.command, ...server.mcp.args].join(' '))}</code><p class="muted small" style="margin-top:12px">Pacchetti del server: ${esc(server.mcp_ready === 'ready' ? 'pronti' : server.mcp_ready)}</p>` : '<p class="repository-auth-copy">Disponibile dopo la selezione di una repository.</p>'}</div></section></aside></div>`;
+  <aside class="stack"><section class="panel" aria-labelledby="engine-title"><div class="panel-head"><h2 id="engine-title">Motore</h2><span class="badge ${server?.engine?.engine ? 'cyan' : ''}">${esc(server?.engine?.engine || 'Non scelto')}</span></div><div class="panel-body"><form id="engine-form" novalidate><div class="field"><label for="engine-name">Motore</label><select id="engine-name">${selectOptions([['', 'Nessuno'], ...engines.map(e => [e, { openai: 'Endpoint compatibile OpenAI', claude: 'Claude Code (riga di comando)', codex: 'Codex (riga di comando)' }[e] || e])], d.engine || '')}</select></div>${openai ? `<div class="field"><label for="base-url">Indirizzo dell’endpoint</label><input id="base-url" type="url" value="${esc(d.base_url)}"></div><div class="field"><label for="model">Modello</label><input id="model" type="text" value="${esc(d.model)}"></div><div class="field"><label for="api-key">Chiave</label><input id="api-key" type="password" autocomplete="off" value="${esc(d.api_key)}" placeholder="${server?.engine?.api_key === 'set' ? 'Impostata' : 'Va nel deposito delle credenziali del sistema'}"></div>` : ''}${server?.engine?.unkept ? `<p class="muted small">Non conservato per il prossimo avvio: ${esc(server.engine.unkept)}.</p>` : ''}<div class="row"><button type="submit" id="engine-save">${icon('check')}Salva</button><button type="button" data-action="probe" id="engine-probe">${icon('reload')}Prova il motore</button>${openai && server?.engine?.api_key === 'set' ? `<button type="button" data-action="forget-key">${icon('close')}Rimuovi la chiave</button>` : ''}</div><p id="engine-said" class="${engineTone === 'bad' ? 'error-text' : 'repository-auth-copy'}" role="status">${esc(engineSaid)}</p></form></div></section><section class="panel"><div class="panel-head"><h2>Server MCP</h2></div><div class="panel-body">${server?.mcp ? `<p class="repository-auth-copy">Per una sessione tua: avvia Daodan sul checkout con</p><code style="overflow-wrap:anywhere">${esc([server.mcp.command, ...server.mcp.args].join(' '))}</code><p class="muted small" style="margin-top:12px">Pacchetti del server: ${esc(server.mcp_ready === 'ready' ? 'pronti' : server.mcp_ready)}</p>` : '<p class="repository-auth-copy">Disponibile dopo la selezione di una repository.</p>'}</div></section></aside></div>`;
 }
 
 function answerMarkup() {
@@ -694,11 +694,16 @@ function readEngineForm() {
   for (const [id, key] of [['base-url', 'base_url'], ['model', 'model'], ['api-key', 'api_key']]) if (document.getElementById(id)) engineDraft[key] = value(id).trim();
 }
 
-async function saveEngine() {
+// The setting in the form: a key left empty is left out, and the server keeps the one it has.
+function engineBody() {
   readEngineForm();
   const body = { engine: engineDraft.engine, base_url: engineDraft.base_url || '', model: engineDraft.model || '' };
   if (engineDraft.api_key) body.api_key = engineDraft.api_key;
-  const described = await post('/api/app/engine', body);
+  return body;
+}
+
+async function saveEngine() {
+  const described = await post('/api/app/engine', engineBody());
   server.engine = described;
   engineDraft = { ...described, api_key: '' };
 }
@@ -822,11 +827,14 @@ document.addEventListener('click', async event => {
     case 'clear-tree-search': state.treeSearch = ''; render(); break;
     case 'clear-graph': state.graphSearch = ''; state.graphDepth = 'all'; state.graphDirection = 'both'; state.graphKind = 'all'; render(); toast('Filtri azzerati: tutti i gruppi del grafo sono visibili.'); break;
     case 'component-files': { const n = nodeById(state.graphRoot); modal('File di ' + esc(nodeName(n)), 'File assegnati al gruppo nel grafo del run.', `<ul class="source-list">${n.files.map(p => `<li><code>${esc(p)}</code></li>`).join('')}</ul>`, `<button class="primary" data-action="close-modal">Chiudi elenco</button>`); break; }
+    case 'forget-key':
+      try { server.engine = await post('/api/app/engine', { api_key: '' }); engineSaid = server.engine.api_key === 'set' ? 'Chiave rimossa: resta quella dell’ambiente.' : 'Chiave rimossa.'; engineTone = 'good'; } catch (error) { engineSaid = error.message; engineTone = 'bad'; }
+      render();
+      break;
     case 'probe': {
       engineSaid = 'Prova in corso…'; engineTone = ''; render();
       try {
-        await saveEngine();
-        const found = await post('/api/app/probe', {});
+        const found = await post('/api/app/probe', engineBody());
         const tools = found.tools === null ? 'strumenti tramite MCP' : found.tools ? 'chiama gli strumenti' : 'non ha chiamato lo strumento';
         engineSaid = found.reachable ? `${found.engine}: risponde, ${tools}.` : `${found.engine}: non risponde. ${found.detail || ''}`;
         engineTone = found.reachable && found.tools !== false ? 'good' : 'bad';

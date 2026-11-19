@@ -18,7 +18,8 @@ asked for, its arguments and what it answered), `log`. `cancelled()` is asked be
 `configured` builds the engine of a setting; `probe` asks it for a word and, where it has tools, for a tool call.
 `kept` writes a setting for the next start and `recalled` reads it: engine, address and model in the work folder, the
 key only in the system's deposit of secrets (`keyring`: the credential manager on Windows, Secret Service or KWallet
-on Linux), which encrypts it with the person's account.
+on Linux), which encrypts it with the person's account. A folder or a deposit that fails is a cause the setting
+carries (`unread`, `unkept`), never a failure of the start.
 """
 from __future__ import annotations
 
@@ -236,53 +237,74 @@ class Codex(_CommandLine):
             state["error"] = f"codex: {event.get('message') or (event.get('error') or {}).get('message')}"
 
 
-def setting(environment=os.environ) -> dict:
-    """The engine the environment asks for: `{engine, base_url, model, api_key}`; none of it is written anywhere."""
-    return {"engine": environment.get("DAODAN_ENGINE") or None,
-            "base_url": environment.get("DAODAN_OPENAI_BASE_URL") or "https://api.openai.com/v1",
-            "model": environment.get("DAODAN_OPENAI_MODEL") or "",
-            "api_key": environment.get("DAODAN_OPENAI_API_KEY") or environment.get("OPENAI_API_KEY") or ""}
+def _asked(environment) -> dict:
+    """What Daodan's variables of the environment name, without what they leave out."""
+    asked = {"engine": environment.get("DAODAN_ENGINE"), "base_url": environment.get("DAODAN_OPENAI_BASE_URL"),
+             "model": environment.get("DAODAN_OPENAI_MODEL"), "api_key": environment.get("DAODAN_OPENAI_API_KEY")}
+    return {name: value for name, value in asked.items() if value}
+
+
+def setting(environment=os.environ, saved: dict | None = None) -> dict:
+    """The engine to use, `{engine, base_url, model, api_key}`, each part from the first that has it: Daodan's
+    variables of the environment, `saved`, the general `OPENAI_API_KEY`, the defaults. None of it is written here."""
+    return {"engine": None, "base_url": "https://api.openai.com/v1", "model": "",
+            "api_key": environment.get("OPENAI_API_KEY") or "", **(saved or {}), **_asked(environment)}
 
 
 def recalled(folder: Path, environment=os.environ) -> dict:
-    """The setting of a start: what the environment asks for and, over it, what `kept` wrote in `folder` and the key
-    the system's deposit holds. A deposit that cannot be read leaves the environment's key."""
+    """The setting of a start: `setting` over what `kept` wrote in `folder` and the key the system's deposit holds.
+    `unread` is why the folder's file was not read, `unkept` why the deposit was not, each None when it was."""
     import keyring  # here, not above: running an engine needs no deposit
-    import keyring.errors
-    chosen = setting(environment)
+    saved, unread, unkept = {}, None, None
     if (folder / STORE).is_file():
-        with closing(sqlite3.connect(folder / STORE)) as db:
-            chosen.update((name, value) for name, value in db.execute("SELECT name, value FROM setting")
-                          if name in KEPT)
+        try:
+            with closing(sqlite3.connect(folder / STORE)) as db:
+                saved = {name: value for name, value in db.execute("SELECT name, value FROM setting") if name in KEPT}
+        except sqlite3.Error as error:
+            unread = f"the saved engine is not read ({error}): saving one replaces it"
     try:
-        chosen["api_key"] = keyring.get_password(DEPOSIT, ENTRY) or chosen["api_key"]
-    except keyring.errors.KeyringError:
-        pass
-    return chosen
+        key = keyring.get_password(DEPOSIT, ENTRY)
+    except Exception as error:  # noqa: BLE001 a deposit raises its system's own errors, not only keyring's
+        key, unkept = None, f"the system's deposit of secrets is not read ({type(error).__name__})"
+    return {**setting(environment, {**saved, **({"api_key": key} if key else {})}), "unread": unread, "unkept": unkept}
 
 
 def kept(chosen: dict, folder: Path, key: str | None = None) -> str | None:
-    """Keep `chosen` for the next start: engine, address and model in `folder`. A `key` the person gave goes to the
-    system's deposit; the answer is why the deposit did not take it, so it lives in this process only, else None."""
+    """Keep `chosen` for the next start: engine, address and model in `folder`, written whole beside the file kept
+    and put in its place, so a file that cannot be read is replaced. `key` is the key the person gave, empty to
+    forget the one kept, None to leave it: the system's deposit takes it, and the answer is why it did not, else
+    None. A folder that cannot be written is an OSError, and nothing is kept."""
     import keyring
     import keyring.errors
-    with closing(sqlite3.connect(folder / STORE)) as db, db:
-        db.execute("CREATE TABLE IF NOT EXISTS setting (name TEXT PRIMARY KEY, value TEXT)")
-        db.executemany("INSERT OR REPLACE INTO setting VALUES (?, ?)", [(name, chosen.get(name)) for name in KEPT])
-    if not key:
+    fresh = folder / f"{STORE}.new"
+    try:
+        fresh.unlink(missing_ok=True)
+        with closing(sqlite3.connect(fresh)) as db, db:
+            db.execute("CREATE TABLE setting (name TEXT PRIMARY KEY, value TEXT)")
+            db.executemany("INSERT INTO setting VALUES (?, ?)", [(name, chosen.get(name)) for name in KEPT])
+        os.replace(fresh, folder / STORE)
+    except sqlite3.Error as error:
+        raise OSError(f"the engine is not kept in {folder}: {error}") from error
+    if key is None:
         return None
     try:
-        keyring.set_password(DEPOSIT, ENTRY, key)
-    except keyring.errors.KeyringError as error:
-        return f"the system's deposit of secrets did not take the key ({type(error).__name__})"
+        try:  # first, so a key replaced leaves no copy: the Windows deposit keeps the old one under a second name
+            keyring.delete_password(DEPOSIT, ENTRY)
+        except keyring.errors.PasswordDeleteError:
+            pass  # none was kept
+        if key:
+            keyring.set_password(DEPOSIT, ENTRY, key)
+    except Exception as error:  # noqa: BLE001 as in `recalled`
+        return f"the system's deposit of secrets did not {'take' if key else 'forget'} the key ({type(error).__name__})"
     return None
 
 
 def described(chosen: dict) -> dict:
-    """A setting as it may be shown: the key is said `set` or `missing`, never itself; `deposit` is why a key the
-    person gave is in this process only, None when the deposit holds it."""
+    """A setting as it may be shown: the key is said `set` or `missing`, never itself; `unkept` is why what the
+    person saved is not all kept (a file not read, a key that is in this process only), None when it is."""
     return {"engine": chosen.get("engine"), "base_url": chosen.get("base_url"), "model": chosen.get("model"),
-            "api_key": "set" if chosen.get("api_key") else "missing", "deposit": chosen.get("deposit"),
+            "api_key": "set" if chosen.get("api_key") else "missing",
+            "unkept": "; ".join(filter(None, (chosen.get("unread"), chosen.get("unkept")))) or None,
             "engines": list(ENGINES)}
 
 

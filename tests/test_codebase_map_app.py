@@ -11,6 +11,7 @@ import http.client
 import json
 import os
 import shutil
+import sqlite3
 import subprocess
 import sys
 import threading
@@ -23,6 +24,7 @@ from urllib.parse import quote
 import keyring
 import keyring.backend
 import keyring.backends.fail
+import keyring.errors
 import pytest
 
 HERE = Path(__file__).resolve().parent
@@ -57,10 +59,16 @@ class Deposit(keyring.backend.KeyringBackend):
         return self.held.get((service, username))
 
     def set_password(self, service, username, password):
+        if (service, username) in self.held:  # as the Windows one does: a replaced secret stays under a second name
+            self.held[(service, f"{username}@{service}")] = self.held[(service, username)]
         self.held[(service, username)] = password
 
     def delete_password(self, service, username):
-        del self.held[(service, username)]
+        found = [name for name in ((service, username), (service, f"{username}@{service}")) if name in self.held]
+        if not found:
+            raise keyring.errors.PasswordDeleteError(service)
+        for name in found:
+            del self.held[name]
 
 
 @pytest.fixture(autouse=True)
@@ -198,11 +206,20 @@ def test_an_endpoint_that_is_not_reached_fails_with_its_cause():
 def test_a_saved_engine_comes_back_at_the_next_start_and_its_key_is_only_in_the_deposit(tmp_path, deposit):
     work, saved = tmp_path / "work", {"engine": "openai", "base_url": "https://e.example/v1", "model": "m"}
     described = launcher.App(work, environment={}).configure({**saved, "api_key": "sk-secret"})
-    assert described["api_key"] == "set" and described["deposit"] is None
-    again = launcher.App(work, environment={"DAODAN_OPENAI_MODEL": "other", "OPENAI_API_KEY": "sk-environment"})
-    assert again.engine == {**saved, "api_key": "sk-secret"}  # what the person saved, over what the environment asks
-    assert list(deposit.held.values()) == ["sk-secret"]
+    assert described["api_key"] == "set" and described["unkept"] is None
+    again = launcher.App(work, environment={"OPENAI_API_KEY": "sk-general"}).engine  # the general key is the last resort
+    assert {name: again[name] for name in (*saved, "api_key")} == {**saved, "api_key": "sk-secret"}
+    assert engines.described(again)["unkept"] is None and list(deposit.held.values()) == ["sk-secret"]
     assert not [path for path in work.rglob("*") if path.is_file() and b"sk-secret" in path.read_bytes()]
+
+
+def test_what_daodan_s_variables_of_the_environment_name_wins_over_what_was_saved(tmp_path):
+    work = tmp_path / "work"
+    launcher.App(work, environment={}).configure(
+        {"engine": "openai", "base_url": "https://e.example/v1", "model": "m", "api_key": "sk-secret"})
+    again = launcher.App(work, environment={"DAODAN_OPENAI_MODEL": "other", "DAODAN_OPENAI_API_KEY": "sk-asked"}).engine
+    assert [again[name] for name in ("engine", "base_url", "model", "api_key")] == [
+        "openai", "https://e.example/v1", "other", "sk-asked"]
 
 
 def test_a_key_of_the_environment_is_not_copied_in_the_deposit(tmp_path, deposit):
@@ -211,16 +228,82 @@ def test_a_key_of_the_environment_is_not_copied_in_the_deposit(tmp_path, deposit
     assert deposit.held == {}
 
 
+def test_a_replaced_key_does_not_stay_in_the_deposit_and_an_empty_one_forgets_it(tmp_path, deposit):
+    work = tmp_path / "work"
+    app = launcher.App(work, environment={"OPENAI_API_KEY": "sk-general"})
+    app.configure({"engine": "openai", "model": "m", "api_key": "sk-old"})
+    app.configure({"api_key": "sk-new"})
+    assert list(deposit.held.values()) == ["sk-new"]
+    described = app.configure({"api_key": ""})
+    assert deposit.held == {} and described["unkept"] is None
+    assert app.engine["api_key"] == "sk-general"  # what a start would find now
+    assert launcher.App(work, environment={}).engine["api_key"] == ""
+
+
 def test_without_a_deposit_the_key_stays_in_memory_and_the_setting_says_why(tmp_path):
     keyring.set_keyring(keyring.backends.fail.Keyring())
     work = tmp_path / "work"
     app = launcher.App(work, environment={})
     described = app.configure({"engine": "openai", "model": "m", "api_key": "sk-secret"})
-    assert described["api_key"] == "set" and "keyring" in described["deposit"].lower()
+    assert described["api_key"] == "set" and "did not take the key" in described["unkept"]
     assert app.engine["api_key"] == "sk-secret"
-    again = launcher.App(work, environment={})
-    assert (again.engine["engine"], again.engine["model"], again.engine["api_key"]) == ("openai", "m", "")
+    assert "did not take the key" in app.configure({"model": "n"})["unkept"]  # still so: the key was not given again
+    again = launcher.App(work, environment={}).engine
+    assert (again["engine"], again["model"], again["api_key"]) == ("openai", "n", "")
+    assert "deposit of secrets is not read" in engines.described(again)["unkept"]
     assert not [path for path in work.rglob("*") if path.is_file() and b"sk-secret" in path.read_bytes()]
+
+
+def test_a_deposit_that_fails_in_its_own_way_is_a_cause_and_never_a_failure_of_the_app(tmp_path):
+    class Broken(Deposit):
+        def get_password(self, service, username):
+            raise RuntimeError("the deposit is locked")
+
+        set_password = delete_password = get_password
+
+    keyring.set_keyring(Broken())
+    app = launcher.App(tmp_path / "work", environment={})
+    assert "RuntimeError" in engines.described(app.engine)["unkept"]
+    described = app.configure({"engine": "openai", "model": "m", "api_key": "sk-secret"})
+    assert "RuntimeError" in described["unkept"] and app.engine["api_key"] == "sk-secret"
+    keyring.set_keyring(Deposit())
+    assert app.configure({"api_key": "sk-secret"})["unkept"] is None  # given again, and taken
+
+
+def _another_schema(path: Path) -> None:
+    with sqlite3.connect(path) as db:
+        db.execute("CREATE TABLE setting (other TEXT)")
+    db.close()
+
+
+@pytest.mark.parametrize("spoil", [lambda path: path.write_bytes(b"not a database, and longer than its header" * 4),
+                                   lambda path: path.write_bytes(b""), _another_schema])
+def test_a_saved_engine_that_cannot_be_read_does_not_stop_the_start_and_the_next_save_replaces_it(tmp_path, spoil):
+    work = tmp_path / "work"
+    work.mkdir()
+    spoil(work / engines.STORE)
+    app = launcher.App(work, environment={})
+    assert app.engine["engine"] is None and "saved engine is not read" in engines.described(app.engine)["unkept"]
+    assert app.configure({"engine": "claude"})["unkept"] is None
+    again = launcher.App(work, environment={}).engine
+    assert again["engine"] == "claude" and engines.described(again)["unkept"] is None
+
+
+def test_a_setting_that_cannot_be_written_is_refused_and_changes_nothing(tmp_path, deposit):
+    work = tmp_path / "work"
+    app = launcher.App(work, environment={})
+    (work / f"{engines.STORE}.new").mkdir()  # where a setting is written before it replaces the one kept
+    with pytest.raises(OSError):
+        app.configure({"engine": "openai", "model": "m", "api_key": "sk-secret"})
+    assert app.engine["engine"] is None and app.engine["api_key"] == "" and deposit.held == {}
+
+
+def test_a_probe_tries_the_setting_it_is_given_and_keeps_nothing(tmp_path, endpoint, deposit):
+    work = tmp_path / "work"
+    app = launcher.App(work, environment={})
+    found = app.probe({"engine": "openai", "base_url": endpoint, "model": "m", "api_key": "sk-secret"})
+    assert found["engine"] == "openai" and Endpoint.seen[0][1] == "Bearer sk-secret"
+    assert app.engine["engine"] is None and deposit.held == {} and not (work / engines.STORE).exists()
 
 
 def test_a_command_line_engine_starts_without_the_tools_that_run_commands(tmp_path):

@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import secrets
 import subprocess
 import sys
@@ -90,14 +91,16 @@ def _cause(error: Exception) -> str:
 class App:
     """The active repository, the work that prepares it and the question asked of the engine."""
 
-    def __init__(self, work: Path, environment=None):
+    def __init__(self, work: Path, environment=os.environ):
         self.work = Path(work).resolve()
         self.work.mkdir(parents=True, exist_ok=True)
         self.service: MapService | None = None
         self.context: dict | None = None
         self.job = {"state": "idle", "step": None, "detail": ""}
         self.mcp_ready = "not prepared"  # whether the MCP server's own packages are fetched: said in the state
-        self.engine = engines.recalled(self.work, *(() if environment is None else (environment,)))
+        self.environment = environment  # what `setting` reads again when a key is forgotten
+        self.engine = engines.recalled(self.work, environment)
+        self._saving = threading.Lock()  # one `configure` at a time: the folder, the deposit and `engine` agree
         self.asked = {"state": "idle", "question": "", "text": "", "events": [], "cause": None}
         self.linked = {"state": "idle", "cause": None}  # the links between modules: see `link`
         self.registry = {entry["id"]: entry for entry in service_registry.load()["entries"]}  # whose marks `mark` serves
@@ -310,25 +313,34 @@ class App:
 
     # -- the engine -----------------------------------------------------------------------------------------------
 
-    def configure(self, body: dict) -> dict:
-        """Choose the engine and, for an endpoint, its address, model and key; a key left out stays as it is. The
-        choice is kept for the next start, a key given here in the system's deposit."""
+    def _chosen(self, body: dict) -> dict:
+        """The setting `body` asks for over the one in use: the engine and, for an endpoint, its address, model and
+        key. A key left out stays as it is; an empty one leaves the key a start would find without it."""
         chosen = {**self.engine, **{key: body[key] for key in ("engine", "base_url", "model") if key in body}}
-        if body.get("api_key"):
-            chosen["api_key"] = body["api_key"]
+        if "api_key" in body:
+            chosen["api_key"] = body["api_key"] or engines.setting(self.environment)["api_key"]
         if any(not isinstance(chosen[key], str) for key in ("base_url", "model", "api_key")) \
                 or chosen["engine"] not in (None, *engines.ENGINES):
             raise ValueError(f"the engine is one of {', '.join(engines.ENGINES)}, with text for its settings")
-        cause = engines.kept(chosen, self.work, body.get("api_key"))
-        if body.get("api_key"):
-            chosen["deposit"] = cause
-        self.engine = chosen
+        return chosen
+
+    def configure(self, body: dict) -> dict:
+        """Use the setting `body` asks for and keep it for the next start: the choice in the work folder, a key
+        given here in the system's deposit, an empty one forgotten there."""
+        with self._saving:
+            chosen = self._chosen(body)
+            cause = engines.kept(chosen, self.work, (body["api_key"] or "") if "api_key" in body else None)
+            chosen["unread"] = None  # the folder holds this setting now
+            if "api_key" in body:
+                chosen["unkept"] = cause
+            self.engine = chosen
         return engines.described(chosen)
 
     def probe(self, body: dict) -> dict:
+        """Whether the engine of the setting `body` asks for answers; nothing of it is used or kept."""
         folder = self.work / "engine"
         folder.mkdir(exist_ok=True)
-        return engines.probe(engines.configured(self.engine), folder)
+        return engines.probe(engines.configured(self._chosen(body)), folder)
 
     def _tools(self) -> list[dict]:
         """The service's operations on the active run, as the tools of an engine asked over an API: they read, and
