@@ -600,7 +600,9 @@ def _spawn_detached(command: list[str], log) -> subprocess.Popen:
                "close_fds": True}
     if os.name != "nt":
         return subprocess.Popen(command, start_new_session=True, **options)
-    detached = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    # CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP: a console of its own, with no window. Under DETACHED_PROCESS the
+    # interpreter a venv's launcher starts opens a console window, and closing it ends the pass with 0xC000013A.
+    detached = 0x08000000 | 0x00000200
     try:
         # Outlive a host that closes its job object when the calling command ends.
         return subprocess.Popen(command, creationflags=detached | 0x01000000, **options)
@@ -672,15 +674,6 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
     running_path.write_text(json.dumps({"pid": child.pid, "started_at": started}) + "\n", encoding="utf-8")
     threading.Thread(target=_note_exit, args=(child, running_path), daemon=True).start()
     return {**edge_state(manifest), "action": "started"}
-
-
-def deaf_to_console_break() -> None:
-    """On Windows a Ctrl+Break sent to a console ends, with no word and exit code 0xC000013A, every Python attached
-    to it that does not handle it: so ended the pass on 18 November 2026, beside the programs it starts. The pass
-    is no console program: it says that one came and goes on. Elsewhere there is no such signal."""
-    if hasattr(signal, "SIGBREAK"):
-        signal.signal(signal.SIGBREAK, lambda number, frame: print(
-            "a console break reached the pass and was ignored", file=sys.stderr, flush=True))
 
 
 def _note_exit(child, record: Path) -> None:

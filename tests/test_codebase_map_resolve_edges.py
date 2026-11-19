@@ -755,6 +755,15 @@ class PassLifecycleTests(unittest.TestCase):
         self.assertEqual(state["state"], "failed")
         self.assertIn(resolve_edges.LOG_NAME, state["reason"])
 
+    def test_on_windows_the_pass_has_a_console_of_its_own_and_no_window(self):
+        """Under DETACHED_PROCESS the interpreter a venv's launcher starts opens a console window, and closing that
+        window ends the pass with no word and exit code 0xC000013A: so it ended on Windows 11, 19 November 2026."""
+        with mock.patch.object(engine_pass.os, "name", "nt"), mock.patch.object(subprocess, "Popen") as popen:
+            engine_pass._spawn_detached(["engine"], None)
+        flags = popen.call_args.kwargs["creationflags"]
+        self.assertTrue(flags & 0x08000000 and flags & 0x00000200)  # CREATE_NO_WINDOW, CREATE_NEW_PROCESS_GROUP
+        self.assertFalse(flags & 0x00000008)  # DETACHED_PROCESS: no console, and CREATE_NO_WINDOW is ignored with it
+
     def test_a_pass_that_ends_with_no_report_says_the_exit_code_its_starter_saw(self):
         """A pass ended from outside writes nothing: the process that started it keeps how it ended."""
         with mock.patch.object(engine_pass, "engine_command", return_value=[sys.executable, "-c", "raise SystemExit(3)"]):

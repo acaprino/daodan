@@ -156,7 +156,6 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"error": f"no such manifest: {manifest}"}), file=sys.stderr)
         return 2
     if args.whole_pass:
-        engine_pass.deaf_to_console_break()
         # The detached pass starts at scan when model commands are still unrun, else at stack.
         import pipeline
         import premap
