@@ -23,7 +23,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "plugins/senior-review/skills/review-preparation/scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "daodan/core"))
 from composition import relative  # noqa: E402
 
 TOKENS = ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")

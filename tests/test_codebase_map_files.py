@@ -8,7 +8,7 @@ from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 import snapshot
 

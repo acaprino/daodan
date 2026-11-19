@@ -17,7 +17,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 APP = HERE / "app"
-for scripts in ("plugins/codebase-map/skills/map/scripts", "plugins/senior-review/skills/review-preparation/scripts"):
+for scripts in ("daodan/core",):
     sys.path.insert(0, str(REPO / scripts))
 import composition  # noqa: E402
 import snapshot  # noqa: E402
@@ -48,7 +48,7 @@ class FixtureTest(unittest.TestCase):
                       "grounding": {"scope_id": "candidate", "candidate": CANDIDATE, "conclusion_paths": paths}}
             bindings = {"candidate": CANDIDATE, "knowledge_selection": "", "output_dir": ".team-review/jobs",
                         "selection": "automatic", "coverage": {"files": str(files), "root": str(root), "budget": budget}}
-            prepared = composition.bind(roster, bindings, REPO / "plugins/senior-review")
+            prepared = composition.bind(roster, bindings, composition.DEFAULT_ROOT)
 
         groups = [job["paths"] for job in prepared["jobs"]]
         self.assertGreaterEqual(len(groups), 3)

@@ -56,7 +56,7 @@ import modal
 HERE = Path(__file__).resolve().parent
 LOCAL = (HERE / "score.py").is_file()
 REPO = HERE.parents[1] if LOCAL else Path("/")
-REMOTE_SCRIPTS = "/daodan/map/scripts"  # container paths: POSIX strings, whatever runs the client
+REMOTE_SCRIPTS = "/daodan/map/core"  # container paths: POSIX strings, whatever runs the client
 REMOTE_PM = "/pm"
 REMOTE_FOLDER = "/folder"
 SCRATCH = "project-model/pipeline-scratch"  # on the volume: each run's copy, removed when the run ends
@@ -68,7 +68,7 @@ DOCKER = ("https://download.docker.com/linux/static/stable/x86_64/docker-29.10.0
 ENGINE = "/daodan/engine"  # where its binaries lie in a sandbox
 VM = {"vm_runtime": True}  # the `experimental_options` of a VM Sandbox (client 1.5: no `runtime` argument yet)
 
-SCRIPTS, DATA = "plugins/codebase-map/skills/map/scripts", "plugins/codebase-map/skills/map/data"
+SCRIPTS, DATA = "daodan/core", "daodan/data"
 REMOTE_DATA = "/daodan/map/data"  # the scripts read it beside their folder (`service_registry.REGISTRY`)
 # what a round uploads, each with its path in the repository: DAODAN_SCRIPTS names the tool's scripts to run when
 # not the checkout's (a committed copy while files are edited), with the data beside them; the driver itself goes

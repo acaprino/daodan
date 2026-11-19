@@ -7,7 +7,7 @@ import tempfile
 import unittest
 import subprocess
 
-SCRIPTS = Path(__file__).resolve().parents[1] / 'plugins/codebase-map/skills/map/scripts'
+SCRIPTS = Path(__file__).resolve().parents[1] / 'daodan/core'
 sys.path.insert(0, str(SCRIPTS))
 import context_packet as packets
 import snapshot

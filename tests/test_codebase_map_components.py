@@ -25,7 +25,7 @@ from pathlib import Path
 import pytest
 
 HERE = Path(__file__).resolve().parent
-SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = HERE.parent / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 

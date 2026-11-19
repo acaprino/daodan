@@ -17,7 +17,7 @@ if not any(name.startswith("DAODAN_") and name.endswith("_SMOKE") and value == "
 
 @pytest.fixture(scope="session", autouse=True)
 def _grammars():
-    scripts = str(Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts")
+    scripts = str(Path(__file__).resolve().parents[1] / "daodan/core")
     if scripts not in sys.path:
         sys.path.insert(0, scripts)
     from languages import _treesitter

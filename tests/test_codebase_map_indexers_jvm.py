@@ -31,7 +31,7 @@ from pathlib import Path
 from unittest import mock
 
 HERE = Path(__file__).resolve().parent
-SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = HERE.parent / "daodan/core"
 for path in (str(SCRIPTS), str(HERE)):
     if path not in sys.path:
         sys.path.insert(0, path)

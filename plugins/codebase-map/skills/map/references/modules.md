@@ -1,6 +1,6 @@
 # Modules
 
-`scripts/modules.py` derives the modules of a snapshot and the relations
+`daodan modules` derives the modules of a snapshot and the relations
 between them, beside the manifest: `modules.json` (`daodan/module-graph/v1`)
 and its `modules.md` view. `snapshot.py write` and `codebase_map_create_run`
 build it (`--no-modules` skips it); `modules.py build MANIFEST [--check]`

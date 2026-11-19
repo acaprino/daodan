@@ -20,8 +20,8 @@ import modal
 HERE = Path(__file__).resolve().parent
 # Paths of the checkout exist only on the local side; the container reads /daodan/map and /audit.
 ROOT = HERE.parents[1] if modal.is_local() else Path("/")
-PLUGIN = ROOT / "plugins/codebase-map/skills/map" if modal.is_local() else Path("/daodan/map")
-SCRIPTS = "/daodan/map/scripts"
+PLUGIN = ROOT / "daodan" if modal.is_local() else Path("/daodan/map")
+SCRIPTS = "/daodan/map/core"
 RESULTS = HERE / "results"
 TAG = "inference-audit"
 

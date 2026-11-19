@@ -44,7 +44,7 @@ import modal  # noqa: E402
 
 LOCAL = modal.is_local()
 ROOT = HERE if LOCAL else Path("/pm")
-PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
+PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
 TOOLS = ("specfy_stack_analyser", "vercel_fs_detectors", "netlify_build_info", "alizer", "railpack_info",
          "daodan_registry")
 STORE = "project-model/frameworks"
@@ -176,7 +176,7 @@ def _measure(tool: str, name: str, mode: str, source: Path, work: Path, limit: i
     before = _listing(source)
     env = {**os.environ, "NODE_OPTIONS": "--require /tmp/pm_hook.js", "PM_FIXTURE_ROOT": str(source.resolve()),
            "PM_HOOK_LOG": str(hook), "HOME": f"/tmp/pm-home-{tool}",
-           "PM_PLUGIN_SCRIPTS": "/daodan/map/scripts"}
+           "PM_PLUGIN_SCRIPTS": "/daodan/map/core"}
     child = [sys.executable, "/pm/modal_frameworks.py", "child", tool, str(source), str(work / "w"), str(answer)]
     if mode == "traced":
         argv = ["strace", "-f", "-qq", "-s", "300", "-e", "trace=execve,connect", "-o", str(trace), *child]

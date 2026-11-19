@@ -39,7 +39,7 @@ import modal
 
 HERE = Path(__file__).resolve().parent
 LOCAL = modal.is_local()
-PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
+PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
 AUDIT = HERE if LOCAL else Path("/audit")
 RESULTS = HERE / "results"
 APP = "daodan-clang-toolchain"
@@ -345,7 +345,7 @@ def compare(old: dict, new: dict, examples: int = 15) -> dict:
 def prove(cases: list[str]) -> dict:
     import certifi
     os.environ["SSL_CERT_FILE"] = certifi.where()
-    sys.path[:0] = [str(AUDIT), str(PLUGIN / "scripts")]
+    sys.path[:0] = [str(AUDIT), str(PLUGIN / "core")]
     import lang_clang
     from adapters import clang as adapter
     report = {"base": BASE, "cases": {}}

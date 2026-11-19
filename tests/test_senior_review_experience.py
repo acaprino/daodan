@@ -9,10 +9,10 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-PLUGIN = Path(__file__).resolve().parents[1] / "plugins/senior-review"
-for directory in ("skills/review-preparation/scripts", "skills/review-consolidation/scripts"):
-    if str(PLUGIN / directory) not in sys.path:
-        sys.path.insert(0, str(PLUGIN / directory))
+REPO = Path(__file__).resolve().parents[1]
+PLUGIN = REPO / "daodan/review"  # the catalog, its roles and contracts
+if str(REPO / "daodan/core") not in sys.path:
+    sys.path.insert(0, str(REPO / "daodan/core"))
 
 import composition  # noqa: E402
 import review_experience as experience  # noqa: E402

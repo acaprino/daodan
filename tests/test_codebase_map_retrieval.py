@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 import snapshot
 import retrieval
@@ -224,7 +224,7 @@ class RetrievalTests(unittest.TestCase):
             retrieval.search(self.index, "tax", anchors=[], limit=2, embedding_result={"results": []})
 
     def test_context_contract_exports_four_schemas_and_i1_fields(self):
-        plugin = SCRIPTS.parents[2]
+        plugin = SCRIPTS.parents[1] / "plugins/codebase-map"
         metadata = tomllib.loads((plugin / "plugin.toml").read_text())
         self.assertIn("contracts/context.toml", metadata["contracts"]["exports"])
         contract = tomllib.loads((plugin / "contracts/context.toml").read_text())

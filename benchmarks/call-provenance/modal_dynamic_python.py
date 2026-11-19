@@ -36,7 +36,7 @@ ROWS = "inference-audit/strong-python/semver.json"
 GRAPH = "inference-audit/graph-python-semver.json"
 WORK = Path("/work/src")
 # The recorder is the plugin's: the dynamic step's Python observer carries the same file.
-RECORDER = HERE.parents[1] / "plugins/codebase-map/skills/map/scripts/dynamic/python_record.py"
+RECORDER = HERE.parents[1] / "daodan/core/dynamic/python_record.py"
 
 # The 16 calls no static source gives a project target (benchmarks/inference-audit/README.md, Python):
 # file, line, name token ("" for a computed callee), nth occurrence on the line.

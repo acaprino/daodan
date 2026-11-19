@@ -27,7 +27,7 @@ import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[1]
-SCRIPTS = HERE.parents[1] / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = HERE.parents[1] / "daodan/core"
 for path in (str(SCRIPTS), str(HERE), str(HERE / "tools")):
     if path not in sys.path:
         sys.path.insert(0, path)

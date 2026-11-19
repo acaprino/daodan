@@ -1,15 +1,9 @@
 {
   "mcpServers": {
     "codebase-map": {
-      "command": "uv",
+      "command": "daodan",
       "args": [
-        "--directory",
-        "${CLAUDE_PLUGIN_ROOT}",
-        "run",
-        "--no-config",
-        "--no-project",
-        "--script",
-        "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py",
+        "mcp",
         "--project",
         "${CLAUDE_PROJECT_DIR}"
       ]

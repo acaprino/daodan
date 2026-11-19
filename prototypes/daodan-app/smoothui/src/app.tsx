@@ -1,4 +1,4 @@
-// The bridge of the app's page (plugins/codebase-map/assets/app): AITaskList over the run's steps. The page passes
+// The bridge of the app's page (daodan/assets/app): AITaskList over the run's steps. The page passes
 // every task with its state and note; nothing here decides one.
 import { createRoot, type Root } from "react-dom/client";
 import AITaskList, { type AITask } from "./ai-task-list";

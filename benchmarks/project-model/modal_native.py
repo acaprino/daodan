@@ -34,7 +34,7 @@ import modal
 HERE = Path(__file__).resolve().parent
 LOCAL = modal.is_local()
 ROOT = HERE if LOCAL else Path("/pm")
-PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
+PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
 STORE = "project-model/native"
 CANARY = "/tmp/pm-canary"
 MODES = ("online", "offline_warm", "offline_cold", "newer")

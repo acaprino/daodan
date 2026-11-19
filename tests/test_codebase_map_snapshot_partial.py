@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "plugins/codebase-map/skills/map/scripts"))
+sys.path.insert(0, str(ROOT / "daodan/core"))
 
 import code_graph  # noqa: E402
 import snapshot  # noqa: E402

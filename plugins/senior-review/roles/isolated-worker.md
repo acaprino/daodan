@@ -3,7 +3,7 @@ name: isolated-worker
 description: >
   Isolated worker of a senior-review run: executes the one brief its prompt carries (a discovery job, a verification lens, the completeness critic or another inline brief) and writes the assigned result.
   TRIGGER WHEN: a senior-review coordinator dispatches a prepared job or an inline brief.
-  DO NOT TRIGGER WHEN: outside a senior-review run, or the brief names its own role (Lens 0 uses premise-auditor).
+  DO NOT TRIGGER WHEN: outside a senior-review run.
 model: inherit
 color: cyan
 tools: Read, Write, Glob, Grep, Bash

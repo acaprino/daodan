@@ -20,7 +20,7 @@ Browser, probe e codice importato si eseguono esclusivamente nel container Daoda
 2. Preparare l'archivio senza eseguire codice del progetto:
 
    ```powershell
-   git archive --format=tar --output="$qaDir/source.tar" HEAD prototypes/daodan-app benchmarks/standalone-app plugins/codebase-map/skills/map/scripts benchmarks/scope-resolution/app/packages/orders/pricing.py
+   git archive --format=tar --output="$qaDir/source.tar" HEAD prototypes/daodan-app benchmarks/standalone-app daodan/core benchmarks/scope-resolution/app/packages/orders/pricing.py
    ```
 
 3. Preparare l'immagine senza codice del progetto; l'installazione avviene nel container:

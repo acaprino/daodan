@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent / "plugins/codebase-map/skills/map/scripts"))
+sys.path.insert(0, str(HERE.parent / "daodan/core"))
 
 import dynamic  # noqa: E402
 import premap  # noqa: E402

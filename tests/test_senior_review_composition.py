@@ -1,6 +1,6 @@
 """composition.py binds a computed roster into jobs made of focused role files.
 
-Pinned behaviours: the catalog is derived from plugin.toml and readable by
+Pinned behaviours: the catalog is derived from catalog.toml and readable by
 review_roster.py; a composition expands to leaf roles without copying prose;
 digests are stable and change with a role file; uncovered required specialists
 get their own job except in light, which folds them into its single job; an
@@ -21,8 +21,8 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PLUGIN_ROOT = REPO_ROOT / "plugins/senior-review"
-SCRIPTS = PLUGIN_ROOT / "skills/review-preparation/scripts"
+PLUGIN_ROOT = REPO_ROOT / "daodan/review"  # the catalog, its roles and contracts
+SCRIPTS = REPO_ROOT / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
@@ -44,7 +44,7 @@ BINDINGS = {"candidate": CANDIDATE, "knowledge_selection": "", "output_dir": ".t
 
 
 class CatalogTest(unittest.TestCase):
-    def test_catalog_matches_plugin_toml_and_feeds_review_roster(self):
+    def test_catalog_matches_catalog_toml_and_feeds_review_roster(self):
         catalog = composition.load_catalog(PLUGIN_ROOT)
         entries = {row["id"]: row for row in catalog["entries"]}
         self.assertEqual(len(entries), 68)
@@ -84,9 +84,9 @@ class BindTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "roles").mkdir()
-            (root / composition.COMMON).parent.mkdir(parents=True)
+            (root / composition.COMMON).parent.mkdir(parents=True, exist_ok=True)
             (root / composition.COMMON).write_text("common\n", encoding="utf-8")
-            (root / "plugin.toml").write_text(
+            (root / "catalog.toml").write_text(
                 'name = "senior-review"\n[components]\nroles = ["a", "b", "pair"]\n'
                 '[reviewers.compositions.pair]\nmembers = ["senior-review:a", "senior-review:b"]\n', encoding="utf-8")
             (root / "roles/a.md").write_text("A\n", encoding="utf-8")

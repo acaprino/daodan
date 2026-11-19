@@ -97,7 +97,7 @@ def test_a_failed_fixture_has_no_record_and_no_score():
 def test_the_driver_uploads_the_data_its_scripts_read_beside_their_folder_and_its_own_files():
     import modal_stack
     paths = {repo for _, repo in modal_stack.UPLOADED}
-    assert "plugins/codebase-map/skills/map/data" in paths, paths  # D-287
+    assert "daodan/data" in paths, paths  # D-287
     assert {"benchmarks/project-model/score.py", "benchmarks/project-model/modal_stack.py"} <= paths
 
 

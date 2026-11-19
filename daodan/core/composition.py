@@ -3,13 +3,13 @@
 ``review_roster.py`` computes the rigor and an automatic roster; team-review's Phase 1
 replaces that roster with the reviewers it chose (``selection`` in the bindings). This
 helper decides how those identities become isolated jobs. Each roster identity becomes one job; a composition from
-``plugin.toml`` expands to its leaf roles, so a tailored reviewer is a list of
+``catalog.toml`` expands to its leaf roles, so a tailored reviewer is a list of
 focused role files plus the shared conventions, never a merged body. The output
 names files and SHA-256 digests only: role prose is never copied into the plan.
 
 Commands:
 
-- ``catalog``: the reviewer catalog derived from ``plugin.toml`` (``id``,
+- ``catalog``: the reviewer catalog derived from ``catalog.toml`` (``id``,
   ``kind``, ``members``), the entries ``review_roster.py`` reads from its
   ``--context``.
 - ``bind``: ``ROSTER.json`` + ``BINDINGS.json`` -> ``PREPARED-REVIEW.json`` with
@@ -55,8 +55,8 @@ SCHEMA = "daodan/prepared-review/v1"
 COVERAGE_SCHEMA = "daodan/review-coverage/v1"
 FILES_SCHEMA = "codebase-map/files/v1"
 PLUGIN = "senior-review"
-COMMON = Path("skills/review-quality-gates/references/reviewer-common.md")
-DEFAULT_ROOT = Path(__file__).resolve().parents[3]
+COMMON = Path("reviewer-common.md")
+DEFAULT_ROOT = Path(__file__).resolve().parents[1] / "review"  # the catalog, its roles and contracts
 AUTOMATIC_SOURCES = {"computed-roster", "code-review-floor"}
 # Source bytes per group job, calibrated by benchmarks/whole-source-coverage. It
 # sizes the groups; it neither bounds token cost nor sets the host's parallelism.
@@ -81,7 +81,7 @@ def input_modes() -> tuple:
 
 
 def load_catalog(plugin_root: Path) -> dict:
-    manifest = tomllib.loads((plugin_root / "plugin.toml").read_text(encoding="utf-8"))
+    manifest = tomllib.loads((plugin_root / "catalog.toml").read_text(encoding="utf-8"))
     compositions = {f"{PLUGIN}:{name}": list(table["members"])
                     for name, table in manifest.get("reviewers", {}).get("compositions", {}).items()}
     entries = []
@@ -346,7 +346,7 @@ def bind(roster: dict, bindings: dict, plugin_root: Path) -> dict:
             for row in group:
                 pending[row["path"]]["job_id"] = job_id
     result = {**roster, "schema": SCHEMA, "roster_schema": ROSTER_SCHEMA, "common": common,
-              "catalog_sha256": sha256(plugin_root / "plugin.toml"), "jobs": jobs,
+              "catalog_sha256": sha256(plugin_root / "catalog.toml"), "jobs": jobs,
               "gaps": list(dict.fromkeys(gaps))}
     if cover is not None:
         result["coverage"] = {"schema": COVERAGE_SCHEMA, "files": cover["files"], "root": cover["root"].as_posix(),
@@ -438,7 +438,7 @@ def load_result(path: Path):
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--plugin-root", type=Path, default=DEFAULT_ROOT, help="directory holding plugin.toml")
+    parser.add_argument("--plugin-root", type=Path, default=DEFAULT_ROOT, help="directory holding catalog.toml")
     sub = parser.add_subparsers(dest="command", required=True)
     catalog_parser = sub.add_parser("catalog")
     catalog_parser.add_argument("--out", required=True)
@@ -452,7 +452,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "catalog":
-        catalog = load_catalog(args.plugin_root)
+        catalog = {**load_catalog(args.plugin_root), "root": Path(args.plugin_root).resolve().as_posix()}
         Path(args.out).write_text(json.dumps(catalog, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(json.dumps({"entries": len(catalog["entries"])}))
         return 0

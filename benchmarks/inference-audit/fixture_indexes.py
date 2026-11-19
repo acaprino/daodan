@@ -24,7 +24,7 @@ import modal
 
 HERE = Path(__file__).resolve().parent
 LOCAL = modal.is_local()
-PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
+PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
 FIXTURES = HERE.parents[1] / "tests/fixtures/code-graph" if LOCAL else None
 STORE = "inference-audit/fixture-indexes"
 KEPT = {"index.scip", "expected.json"}  # the fixture's own files, never uploaded

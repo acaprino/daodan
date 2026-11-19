@@ -28,8 +28,8 @@ import modal
 
 HERE = Path(__file__).resolve().parent
 LOCAL = modal.is_local()
-PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
-SCRIPTS = str(PLUGIN / "scripts")
+PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
+SCRIPTS = str(PLUGIN / "core")
 RESULTS = HERE / "results"
 TAG = "inference-audit"
 STORE = f"{TAG}/graph-python"  # per case: engine.json, the index files, run.json, work.tar.gz

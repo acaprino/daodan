@@ -669,7 +669,7 @@ def main(argv=None) -> int:
     export_parser.add_argument("run_dir", type=Path)
     serve_parser = sub.add_parser("serve", help="serve an export and the viewer on 127.0.0.1")
     serve_parser.add_argument("export_dir", type=Path)
-    serve_parser.add_argument("--assets", type=Path, default=SCRIPT_DIR.parents[2] / "assets" / "viewer")
+    serve_parser.add_argument("--assets", type=Path, default=SCRIPT_DIR.parent / "assets" / "viewer")
     serve_parser.add_argument("--port", type=int, default=0)
     args = parser.parse_args(argv)
     if args.command == "envelope":

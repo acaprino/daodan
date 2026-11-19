@@ -17,7 +17,7 @@ from pathlib import Path
 
 
 SERVER = (Path(__file__).resolve().parents[1] /
-          "plugins/codebase-map/skills/map/scripts/mcp_server.py")
+          "daodan/core/mcp_server.py")
 HAS_SDK = importlib.util.find_spec("mcp") is not None
 
 

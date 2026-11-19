@@ -24,6 +24,6 @@ function licenseNotices() {
 export default defineConfig({
   base: './',
   plugins: [licenseNotices()],
-  build: { outDir: '../assets/viewer', emptyOutDir: true, chunkSizeWarningLimit: 2500 },
+  build: { outDir: '../daodan/assets/viewer', emptyOutDir: true, chunkSizeWarningLimit: 2500 },
   worker: { format: 'es' },
 });

@@ -1,6 +1,6 @@
 # Learned facts
 
-N is 3, or `form_after` of `review-experience/settings.json` beside the ledger when that file exists; pass the same N to both commands. `SENIOR_ROOT` is the installed senior-review provider.
+N is 3, or `form_after` of `review-experience/settings.json` beside the ledger when that file exists; pass the same N to both commands.
 
 ## Brief
 
@@ -11,7 +11,7 @@ independent` receive facts, and only facts of the review's own basis; a mode out
 Delete any existing `FACTS.json`, then run:
 
 ```text
-python "${SENIOR_ROOT}/skills/review-consolidation/scripts/review_experience.py" brief --project PROJECT --roster PREPARED-REVIEW.json --form-after N --out FACTS.json
+daodan review_experience brief --project PROJECT --roster PREPARED-REVIEW.json --form-after N --out FACTS.json
 ```
 
 After a non-zero exit report the facts as unavailable with the printed reason and never read FACTS.json. Otherwise append this block to each discovery job's dispatch prompt, a line per fact in `jobs[].members[].facts` of its `job_id`:
@@ -35,7 +35,7 @@ creates no outcome; an unknown `verification` is an error.
 After the checks close, persist in `deliveries[<key>].findings[]` the `file`, `line`, `premise` and `introduced_by_candidate` of every reported finding, and the worker's `declined` list in `deliveries[<key>].declined`. Keep the Lens `check` deliveries the protocol requires. `file` is the repository-relative POSIX path (no backslash, drive letter, leading slash or `..`); `line` is the first line of the finding as an integer (a range or list reduces to it). Do not persist a finding that cannot be reduced; count it. Then run `record` once per review; a second call after a success appends the same rows again:
 
 ```text
-python "${SENIOR_ROOT}/skills/review-consolidation/scripts/review_experience.py" record --project PROJECT --run-id RUN_ID --review-id REVIEW_ID --form-after N
+daodan review_experience record --project PROJECT --run-id RUN_ID --review-id REVIEW_ID --form-after N
 ```
 
 It prints `{rows_written, rows_skipped, ended_fact_ids}`. This protocol write outside the run is allowed in every shape, light included, and touches no application file.

@@ -5,23 +5,19 @@
 The declared `codebase-map` server runs over stdio:
 
 ```text
-uv --directory <installed-plugin-root> run --no-config --no-project --script <installed-plugin-root>/skills/map/scripts/mcp_server.py --project <project-root>
+daodan mcp --project <project-root>
 ```
 
-`--directory` takes `uv` out of the analyzed project before it looks for an
-interpreter: started in the project's folder, `uv` runs the interpreter of a
-`.venv` it finds there or above, whatever the other options say. `--no-config
---no-project` keep it from reading a `uv.toml`, `pyproject.toml` or
-`.python-version`. A repository under analysis never chooses the package index
-or interpreter of its own analyzer: keep the three in any custom registration,
-and pass `--project`, since the working directory is no longer the project. `uv`
-provisions the official MCP Python SDK
-2.x; the server requires Python 3.12 or later (`requires-python` header plus a
-startup check). Parser dependencies stay optional with the CLI's diagnostics
-and fallbacks; `mcp_service.py` and the build stay standard-library-only.
+`daodan` is the installed application (`uv tool install`): the plugin calls it
+and holds no code. The command runs on the application's own interpreter and
+imports nothing from the folder it is started in, so a repository under analysis
+never chooses the interpreter or the packages of its own analyzer; pass
+`--project` in any custom registration. The installation carries the official MCP
+Python SDK 2.x and the parsers; the server requires Python 3.12 or later (a
+startup check). `mcp_service.py` and the build stay standard-library-only.
 
 Build the map with the runtime that serves it: `codebase_map_create_run` on
-this server, or `snapshot.py write` under the same `uv` environment. The lexical
+this server, or `daodan snapshot write` of the same installation. The lexical
 index records the SQLite version and parser fingerprint that built it, so a map
 written by another Python reads as `stale` (`codebase_map_index` rebuilds the
 index; a different parser set needs a new run). Run creation also derives the

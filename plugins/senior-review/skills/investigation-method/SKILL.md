@@ -54,6 +54,11 @@ the perimeter and its own hypothesis:
 | State, ordering, invariants | `senior-review:logic-integrity-auditor` |
 | Anything else | `senior-review:code-auditor` |
 
+A verifier is a role of the Daodan application, not a registered agent: dispatch
+`senior-review:isolated-worker` with a brief that gives its role file to read
+first, `<root>/roles/<name>.md` (`daodan composition catalog --out CATALOG.json`
+writes `root` and, for a composition, its `members`).
+
 The verifier's mandate is the hypothesis, not a hunt: `CONFIRMED` with the
 `file:line` chain from trigger to symptom, `REFUTED` with the contradicting
 `file:line`, or `UNCERTAIN` with what would settle it. A sharper hypothesis it

@@ -12,8 +12,8 @@ preflight lineage; copy this snapshot's own `git` into state through the resolve
 ### Count scope and write
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" scope <target>
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" write <target> \
+daodan snapshot scope <target>
+daodan snapshot write <target> \
   --out <run-dir>/snapshot/manifest.sqlite
 ```
 
@@ -21,7 +21,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" write <target> \
 Explicit JSON:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" write <target> \
+daodan snapshot write <target> \
   --format json --out <run-dir>/snapshot/manifest.json
 ```
 
@@ -45,7 +45,7 @@ Runs without this record are JSON only; never rewrite them.
 Use `snapshot.py resolve` for current, existing and parent runs:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" resolve <run-dir>
+daodan snapshot resolve <run-dir>
 ```
 
 It returns `path`, `format`, `storage_version`, `file_count` and small `metadata`
@@ -55,7 +55,7 @@ Missing, linked, ambiguous or misdeclared files fail; the mirror supplies no bin
 Resolve `parent_manifest` before same-target reuse, including selected full analysis:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" write <target> \
+daodan snapshot write <target> \
   --format "$snapshot_format" --out "$source_manifest" --reuse "$parent_manifest"
 ```
 
@@ -70,9 +70,9 @@ Root/target/fingerprint mismatch rebuilds; malformed input preserves the output.
 ### Diff and carry
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" diff \
+daodan snapshot diff \
   <parent-run-dir> <target> --out <run-dir> --verify [--threshold 0.4] [--flags '{"depth":"full"}']
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" carry <parent-run-dir> <run-dir>
+daodan snapshot carry <parent-run-dir> <run-dir>
 ```
 
 Require `--verify` for freshness: it hashes every file. `--threshold` is the affected
@@ -89,14 +89,14 @@ from a verified partial/team parent. Classic never carries team `08`.
 ### Prepare, check and publish
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" register $RUN_DIR
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" prepare $RUN_DIR \
+daodan snapshot register $RUN_DIR
+daodan snapshot prepare $RUN_DIR \
   [--phase N] [--stop-after N]
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" prepare $RUN_DIR \
+daodan snapshot prepare $RUN_DIR \
   --resume-from [N] --run-name <exact-id> [--mode classic|team] [--flags '<JSON>']
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" check $RUN_DIR --json
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" publish $RUN_DIR
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" unregister $RUN_DIR
+daodan snapshot check $RUN_DIR --json
+daodan snapshot publish $RUN_DIR
+daodan snapshot unregister $RUN_DIR
 ```
 
 Register after state initialization; unregister on cancellation, partial delivery
@@ -133,9 +133,7 @@ parses with the running grammar. The MCP server installs the parsers itself (tre
 tree-sitter-language-pack, sqlglot) through `uv`; a shell snapshot uses them when installed:
 
 ```bash
-pip install -r "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/requirements.txt"
-# alternatively:
-uv pip install -r "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/requirements.txt"
+uv tool install git+https://github.com/acaprino/daodan  # the application, with its parsers
 ```
 
 Python uses stdlib `ast`, SQL/PL-SQL regex DDL, CSS/SCSS/LESS the tokenizer.

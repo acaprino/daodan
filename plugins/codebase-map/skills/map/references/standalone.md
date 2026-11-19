@@ -27,7 +27,7 @@ workflows require their method's authorization.
    deepening implicitly. A composed producer instead follows its authorized refresh,
    re-derivation or blocking procedure; these obligations remain.
 
-5. **Open the explorer.** `python <plugin>/skills/map/scripts/visual.py export
+5. **Open the explorer.** `daodan visual export
    .daodan/map/runs/<run-id>` publishes the run's envelope (`daodan/visual@1`)
    under `.daodan/map/views/<run-id>/<digest>/`, once per input digest, and prints
    that directory. `visual.py serve <that directory>` prints

@@ -4,7 +4,7 @@
     python tests/modal_pytest.py -q                      # every suite under tests/
 
 The launcher starts `modal run` on this file with the arguments as given; the container holds the checkout as it
-is on disk (plugins, tests, benchmarks, docs), runs `python -B -m pytest -p no:cacheprovider` in
+is on disk (daodan, plugins, tests, benchmarks, docs), runs `python -B -m pytest -p no:cacheprovider` in
 it, streams the output and ends with pytest's exit code. Several suites at once: `-n 8`, one per core (pytest-xdist is there).
 """
 from __future__ import annotations
@@ -42,7 +42,7 @@ COMPONENTS_VUE2 = ("vue@3.5.22", "typescript@5.6.3", "@vue/language-core@2.2.12"
 # The @babel/core the JavaScript recorder prints with, as the observer installs it (`dynamic/javascript.py`: its
 # BABEL, from npm without install scripts), in a layer of its own: the recorder's tests under a real Node
 # (test_codebase_map_dynamic_javascript.py) find it through DAODAN_TEST_BABEL.
-OBSERVER = REPO / "plugins/codebase-map/skills/map/scripts/dynamic/javascript.py"
+OBSERVER = REPO / "daodan/core/dynamic/javascript.py"
 BABEL = (re.search(r'^BABEL = "([^"]+)"', OBSERVER.read_text(encoding="utf-8"), re.M)[1] if LOCAL else "",
          "/opt/babel/node_modules/@babel/core")
 # Debian's headless JDK 17 builds and runs the JVM recorder in its own tests (test_codebase_map_dynamic_jvm.py);
@@ -66,10 +66,11 @@ if LOCAL:
     # The project-model fixtures go up as they are (mix-edge-vendored commits node_modules/ on purpose), in a
     # folder of their own: a "!" exception in `skipped` would stop Modal pruning the skipped folders.
     fixtures = "project-model/fixtures"
-    for folder in ("plugins", "tests", "benchmarks", "docs"):
+    for folder in ("daodan", "plugins", "tests", "benchmarks", "docs"):
         image = image.add_local_dir(REPO / folder, f"{REMOTE}/{folder}", ignore=[*skipped, fixtures])
     image = image.add_local_dir(REPO / "benchmarks" / fixtures, f"{REMOTE}/benchmarks/{fixtures}")
-    image = image.add_local_file(REPO / "AGENTS.md", f"{REMOTE}/AGENTS.md")
+    for file in ("AGENTS.md", "pyproject.toml", "README.md", "LICENSE"):
+        image = image.add_local_file(REPO / file, f"{REMOTE}/{file}")
 app = modal.App("daodan-tests", image=image)
 
 

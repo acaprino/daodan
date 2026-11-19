@@ -242,7 +242,7 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
             import threading
             import visual
             token = secrets.token_urlsafe(24)
-            explorer.append((visual.make_server(None, visual.SCRIPT_DIR.parents[2] / "assets" / "viewer",
+            explorer.append((visual.make_server(None, visual.SCRIPT_DIR.parent / "assets" / "viewer",
                                                 routes=visual.live_routes(service),
                                                 actions=visual.live_actions(service), token=token,
                                                 stream=visual.live_stream(service)), token))

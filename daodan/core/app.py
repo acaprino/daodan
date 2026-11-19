@@ -49,8 +49,8 @@ import service_registry  # noqa: E402
 import visual  # noqa: E402
 from mcp_service import MapService  # noqa: E402
 
-PLUGIN = SCRIPT_DIR.parents[2]
-VIEWER, PAGE = PLUGIN / "assets" / "viewer", PLUGIN / "assets" / "app"
+PACKAGE = SCRIPT_DIR.parent
+VIEWER, PAGE = PACKAGE / "assets" / "viewer", PACKAGE / "assets" / "app"
 SYSTEM = ("You answer questions about one codebase that Daodan has mapped. Read it only with the tools given: "
           "search first, then read what you need. Say what you could not establish instead of guessing.")
 ROUNDS = 3  # the times the engine corrects its link rules on what the machine left unlinked
@@ -147,7 +147,7 @@ class App:
         """How a command-line engine, or a session of the person's, starts Daodan's MCP server on the checkout."""
         if self.context is None:
             return None
-        return {"command": "uv", "args": ["--directory", PLUGIN.as_posix(), "run", "--no-config", "--no-project",
+        return {"command": "uv", "args": ["--directory", PACKAGE.as_posix(), "run", "--no-config", "--no-project",
                                           "--script", (SCRIPT_DIR / "mcp_server.py").as_posix(), "--project",
                                           Path(self.context["path"]).parent.as_posix()]}
 

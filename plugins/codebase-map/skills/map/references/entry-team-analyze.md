@@ -64,7 +64,7 @@ Read named core sections by locating headings or fenced skeletons before bounded
 4. Detect an update base, unless `--no-update` was passed. From `runs.json`, take `latest_completed`. It is a candidate parent when it is a completed **team** run, its `target` normalizes to this target, and its snapshot resolves through `snapshot.py resolve <parent-run-dir>`. With a candidate, run the change set once over the whole target:
 
    ```bash
-   python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" diff \
+   daodan snapshot diff \
      .daodan/map/runs/<parent-id> <target> --out $RUN_DIR --verify --flags '<this run's flags as JSON>'
    ```
 
@@ -143,7 +143,7 @@ Otherwise, run the detection chain (first rule that matches wins):
 3. **Layer split:**
    - `src/{backend,frontend}`, `src/{api,web}`, `src/{server,client}`, or root-level `backend/` + `frontend/`
 4. **Language split:**
-   - Use `${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/classifier.py` to count files per language
+   - Use `daodan classifier` to count files per language
    - If ≥2 languages with ≥20 files each: partition per language (`*.py` -> "python", `*.ts/*.tsx` -> "typescript")
    - Stylesheets (`css` in the classifier's counts) never form a language partition and never count toward the two languages: they stay in the partition of the code they style, because a cascade finding needs the stylesheet and the component tree side by side
 5. **Fallback:** single partition wrapping the entire target, name = `root`
@@ -217,7 +217,7 @@ Keep storage separate from flags; resume preserves the recorded selection.
 Immediately after the scope is settled, either by existing authorization or by an answer, write this run's snapshot over the whole target, before any worker is dispatched:
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/snapshot.py" write \
+daodan snapshot write \
   <target> --format "$snapshot_format" --out "$source_manifest"
 ```
 

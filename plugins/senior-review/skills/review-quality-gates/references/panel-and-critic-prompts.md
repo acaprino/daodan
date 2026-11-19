@@ -57,7 +57,7 @@ the basis. Missing required basis/policy is a coverage gap, not a reason to excl
 a finding as preexisting. Keep these inputs with the assigned finding and output.
 
 Dispatch one isolated worker per lens per finding through the consuming workflow's host harness:
-- **Lens 0:** `senior-review:premise-auditor` in Mode 2.
+- **Lens 0:** the role `senior-review:premise-auditor` in Mode 2, on `senior-review:isolated-worker`.
 - **Lenses 1-3:** `senior-review:isolated-worker` with the lens-specific briefs below.
 
 Each lens stage is one wave: all findings' briefs for that lens in a single turn.

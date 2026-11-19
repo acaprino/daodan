@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "plugins/codebase-map/skills/map/scripts"))
+sys.path.insert(0, str(ROOT / "daodan/core"))
 
 import premap  # noqa: E402
 from premap import autotools, make  # noqa: E402

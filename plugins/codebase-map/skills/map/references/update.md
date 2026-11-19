@@ -1,6 +1,6 @@
 # Incremental update
 
-`scripts/snapshot.py` mechanically prepares snapshot, change-set, carry and gate
+`daodan snapshot` mechanically prepares snapshot, change-set, carry and gate
 inputs. Snapshots record file size/mtime/content hashes, symbol
 spans/body hashes and git metadata. A method edit also changes its enclosing
 class hash. Phase 1 in `references/phases-1-2.md` owns inventory categories,

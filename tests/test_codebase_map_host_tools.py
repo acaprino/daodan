@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 
 import resolve_edges as rx  # noqa: E402

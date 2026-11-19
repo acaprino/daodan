@@ -4,7 +4,7 @@ import sys
 import unittest
 from pathlib import Path
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 

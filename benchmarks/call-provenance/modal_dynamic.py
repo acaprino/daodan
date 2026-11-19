@@ -18,7 +18,7 @@ import modal
 
 COMMIT = "71da9d7b34dfd1600657e9c5ddf40420206fd263"
 HERE = Path(__file__).resolve().parent
-RECORDER = HERE.parents[1] / "plugins/codebase-map/skills/map/scripts/dynamic/javascript_record.js"
+RECORDER = HERE.parents[1] / "daodan/core/dynamic/javascript_record.js"
 
 image = (
     modal.Image.from_registry("node:22-bookworm", add_python="3.12")

@@ -107,7 +107,7 @@ def launch_project(given, environment=os.environ) -> Path:
     value = given or environment.get("CLAUDE_PROJECT_DIR")
     if not value:
         raise ValueError("no project: pass --project <root>, or start the server from a host that sets "
-                         "CLAUDE_PROJECT_DIR; the folder the server starts in is the plugin's, not a project")
+                         "CLAUDE_PROJECT_DIR; the folder the server starts in is never taken for one")
     return Path(value)
 
 

@@ -60,22 +60,27 @@ the required specialists into its single job. See [senior-review](plugins/senior
 
 ## Install
 
+Daodan is an application; the plugins are light skills that tell a harness how to
+use it.
+
 ```text
-claude plugin marketplace add acaprino/daodan
+uv tool install git+https://github.com/acaprino/daodan   # the application: `daodan app`, `daodan mcp`
+claude plugin marketplace add acaprino/daodan            # optional: the skills for Claude Code
 claude plugin install codebase-map@daodan
 claude plugin install senior-review@daodan
 ```
 
-From a checkout, `claude plugin marketplace add <path>` registers the folder
-instead. The map entry is the skill `/codebase-map:map <request>`; the
-`codebase-map` MCP server starts with the plugin under `uv`. `/reload-plugins`
-re-reads the plugin files but does not restart that server.
+`daodan app` starts the standalone app (a GitHub repository, an OpenAI-compatible
+endpoint or a local command-line engine). From a checkout, `uv tool install <path>`
+and `claude plugin marketplace add <path>` use the folder instead. The map entry is
+the skill `/codebase-map:map <request>`; its `codebase-map` MCP server is
+`daodan mcp`. `/reload-plugins` re-reads the plugin files but does not restart
+that server.
 
 ## Requirements
 
-- Python ≥ 3.12, standard library for the scripts; the MCP server runs under
-  `uv`, which provisions `mcp`. `tree-sitter`, `sqlglot`, `scip`/`jedi` optional
-  for higher-fidelity parsing and resolution.
+- Python ≥ 3.12. The installation carries `mcp`, `tree-sitter` and `sqlglot`;
+  `scip`/`jedi` are optional, for higher-fidelity resolution.
 - A host that can run shell commands and dispatch isolated agent contexts.
   Plugin content is host-generic; command and worker bindings come from the host.
 

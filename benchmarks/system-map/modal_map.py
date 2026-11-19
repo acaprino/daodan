@@ -22,7 +22,7 @@ import modal
 
 HERE = Path(__file__).resolve().parent
 PLUGIN = HERE.parents[1] / "plugins/codebase-map" if modal.is_local() else Path("/daodan/plugins/codebase-map")
-SCRIPTS = "/daodan/plugins/codebase-map/skills/map/scripts"
+SCRIPTS = "/daodan/daodan/core"
 RESULTS = HERE / "results"
 CAPS = (12_000, 24_000, 48_000, 0)  # 0: no cap, the whole brief
 HOLDERS = (5, 8, 12)

@@ -1,7 +1,7 @@
-"""The command lines the host starts for the plugin (`.mcp.json`, `hooks/hooks.json`, `plugin.toml`). The host
-starts them in the analyzed project's folder, and uv runs the interpreter of a `.venv` it finds from its working
-directory up, whatever `--no-config --no-project` say: so each line takes uv out of the project first
-(`--directory`), and the server is told its project (AGENTS.md: nothing of the project runs on the host).
+"""The command lines the host starts for the plugin (`.mcp.json`, `hooks/hooks.json`, `plugin.toml`): the
+installed `daodan`. The host starts them in the analyzed project's folder; the command imports its tools from its
+own `core/` and nothing from the folder it starts in, and the server is told its project (AGENTS.md: nothing of
+the project runs on the host).
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_launch.py
 """
@@ -20,10 +20,15 @@ from unittest import mock
 
 import pytest
 
-PLUGIN = Path(__file__).resolve().parents[1] / "plugins/codebase-map"
+REPO = Path(__file__).resolve().parents[1]
+PLUGIN, PACKAGE = REPO / "plugins/codebase-map", REPO / "daodan"
 # What stands in for the server: it says how it was started.
-SCRIPT = ('# /// script\n# requires-python = ">=3.12"\n# dependencies = []\n# ///\n'
-          'import json, os, sys\nprint(json.dumps({"argv": sys.argv[1:], "cwd": os.getcwd()}))\n')
+SCRIPT = 'import json, os, sys\nprint(json.dumps({"argv": sys.argv[1:], "cwd": os.getcwd()}))\n'
+# What an installer writes for `[project.scripts] daodan`: a file outside the project that calls the entry.
+COMMAND = 'import sys\nfrom daodan.__main__ import main\nsys.exit(main())\n'
+# Files of the project named as Daodan's own and as modules it imports: each leaves a mark when run.
+TRAPS = ("daodan/__init__.py", "daodan/__main__.py", "mcp_server.py", "snapshot.py", "sitecustomize.py",
+         "usercustomize.py", "json.py", "runpy.py", "core/mcp_server.py")
 
 
 def launches() -> dict[str, list[str]]:
@@ -44,56 +49,49 @@ def test_the_manifest_declares_the_server_as_the_host_starts_it():
 
 
 @pytest.mark.parametrize("name", sorted(launches()))
-@pytest.mark.skipif(os.name == "nt" or not shutil.which("uv"),
-                    reason="uv itself runs the line, where a file is a program")
-def test_uv_started_in_a_project_runs_nothing_of_it(tmp_path, name):
-    """A project whose `.venv` holds programs named as an interpreter's, whose version files name another, and
-    whose uv settings no uv can read. The line, started in the project's folder as the host starts it and with
-    nothing in uv's cache (a first start: uv looks for an interpreter only until the script has an environment
-    there), runs its script on uv's own Python, outside the project; none of the project's programs leaves a
-    mark. The server
-    gets the project's folder as the host gives it (`${CLAUDE_PROJECT_DIR}`: the folder it would have started
-    in); the hook reads it from its input."""
-    project, plugin, mark = tmp_path / "project", tmp_path / "plugin", tmp_path / "mark"
-    python = project / "its-python"
-    (project / ".venv/bin").mkdir(parents=True)
-    for program in (python, project / ".venv/bin/python", project / ".venv/bin/python3"):
-        program.write_text(f'#!/bin/sh\necho "$0 $*" >> "{mark}"\nexit 1\n', encoding="utf-8")
-        program.chmod(0o755)
-    (project / ".venv/pyvenv.cfg").write_text(f"home = {project}\n", encoding="utf-8")
-    for version_file in (".python-version", ".python-versions"):
-        (project / version_file).write_text(f"{python}\n", encoding="utf-8")
-    for settings in ("uv.toml", "pyproject.toml"):
-        (project / settings).write_text("no uv reads [this\n", encoding="utf-8")
-    script = plugin / "skills/map/scripts/mcp_server.py"
-    script.parent.mkdir(parents=True)
-    script.write_text(SCRIPT, encoding="utf-8")
-    given = {"${CLAUDE_PLUGIN_ROOT}": str(plugin), "${CLAUDE_PROJECT_DIR}": str(project)}  # as the host fills them
-    words = launches()[name]
-    for variable, value in given.items():
-        words = [word.replace(variable, value) for word in words]
-    assert words[0] == "uv" and str(script) in words and not any("${" in word for word in words)
-    def first(command: list[str], cache: str) -> subprocess.CompletedProcess:
-        env = {**os.environ, "UV_CACHE_DIR": str(tmp_path / cache), "UV_OFFLINE": "1", "UV_PYTHON_DOWNLOADS": "never"}
-        return subprocess.run(command, cwd=project, env=env, capture_output=True, text=True, timeout=300)
+def test_daodan_started_in_a_project_runs_nothing_of_it(tmp_path, name):
+    """A project that holds files named as Daodan's own and as the modules it imports, each leaving a mark when
+    run. The line, started in the project's folder as the host starts it, runs the server of the installation and
+    none of them. The server gets the project's folder as the host gives it (`${CLAUDE_PROJECT_DIR}`); the hook
+    reads it from its input."""
+    project, site, mark = tmp_path / "project", tmp_path / "site", tmp_path / "mark"
+    for trap in TRAPS:
+        (project / trap).parent.mkdir(parents=True, exist_ok=True)
+        (project / trap).write_text(f"open({str(mark)!r}, 'a').write(__file__)\n", encoding="utf-8")
+    (site / "daodan/core").mkdir(parents=True)  # the installation: the entry as it is, a stand-in for the server
+    for entry in ("__init__.py", "__main__.py"):
+        shutil.copy(PACKAGE / entry, site / "daodan" / entry)
+    (site / "daodan/core/mcp_server.py").write_text(SCRIPT, encoding="utf-8")
+    command = tmp_path / "bin/daodan"
+    command.parent.mkdir()
+    command.write_text(COMMAND, encoding="utf-8")
+    words = [word.replace("${CLAUDE_PROJECT_DIR}", str(project)) for word in launches()[name]]
+    assert words[0] == "daodan" and not any("${" in word for word in words)
+    env = {**os.environ, "PYTHONPATH": str(site)}
 
-    done = first(words, "cache")
+    done = subprocess.run([sys.executable, str(command), *words[1:]], cwd=project, env=env, capture_output=True,
+                          text=True, timeout=300)
     assert not mark.exists(), mark.read_text(encoding="utf-8")
     assert done.returncode == 0, done.stderr
     started = json.loads(done.stdout)
-    assert Path(started["cwd"]) == plugin
     assert started["argv"] == (["--project", str(project)] if name == "server" else ["--hook"])
-    # The same line started where the host starts it, without the option that takes uv out: uv runs the project's.
-    at = words.index("--directory")
-    inside = first([*words[:at], *words[at + 2:]], "another cache")
-    assert mark.exists(), (inside.stdout, inside.stderr)
+    # The traps are live: the same entry asked as a module of the folder it starts in runs the project's.
+    subprocess.run([sys.executable, "-m", "daodan", *words[1:]], cwd=project, env=env, capture_output=True, timeout=300)
+    assert mark.exists()
+
+
+def test_the_command_refuses_what_is_not_a_tool_of_the_core(tmp_path):
+    for words in (["../../outside"], ["no_such_tool"], [str(tmp_path / "x")], []):
+        done = subprocess.run([sys.executable, str(PACKAGE / "__main__.py"), *words], capture_output=True, text=True,
+                              timeout=300)
+        assert done.returncode == 2 and "daodan app" in done.stderr, (words, done)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 12), reason="the server requires Python 3.12")
 def test_the_server_takes_its_project_from_the_launch_never_from_where_it_starts(tmp_path, monkeypatch, capsys):
-    """`uv --directory` starts the server in the plugin's folder: its project is `--project`, else the host's
-    CLAUDE_PROJECT_DIR, and with neither it stops with the cause instead of mapping the folder it stands in."""
-    monkeypatch.syspath_prepend(str(PLUGIN / "skills/map/scripts"))
+    """The server's project is `--project`, else the host's CLAUDE_PROJECT_DIR, and with neither it stops with the
+    cause instead of mapping the folder it stands in."""
+    monkeypatch.syspath_prepend(str(PACKAGE / "core"))
     for name in ("anyio", "mcp", "mcp.server", "mcp.server.mcpserver", "mcp.server.mcpserver.exceptions", "mcp.types"):
         try:
             importlib.import_module(name)

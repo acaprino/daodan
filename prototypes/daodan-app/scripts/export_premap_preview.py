@@ -46,7 +46,7 @@ for path in files:
                                          "source": path, "state": "declared"})
     units.append(unit)
 
-runtime = "plugins/codebase-map/skills/map/scripts/mcp_server.py"
+runtime = "daodan/core/mcp_server.py"
 text = (ROOT / runtime).read_text(encoding="utf-8")
 block = text.split("# /// script", 1)[1].split("# ///", 1)[0]
 metadata = tomllib.loads("\n".join(line.removeprefix("# ") for line in block.splitlines()))
@@ -58,7 +58,7 @@ units.append({"id": runtime, "name": "Runtime Codebase Map", "root": runtime_roo
 technologies.append({"name": "Python", "version": metadata["requires-python"], "category": "Runtime",
                      "source": runtime, "unit": runtime, "state": "declared"})
 # What Daodan itself recognizes in `plugins/`, with no tool of the project run.
-sys.path.insert(0, str(ROOT / "plugins/codebase-map/skills/map/scripts"))
+sys.path.insert(0, str(ROOT / "daodan/core"))
 import premap  # noqa: E402
 import snapshot  # noqa: E402
 import technologies as stack  # noqa: E402

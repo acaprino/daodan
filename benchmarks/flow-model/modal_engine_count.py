@@ -16,7 +16,7 @@ import modal
 
 HERE = Path(__file__).resolve().parent
 # Paths of the checkout exist only on the local side; the container reads /daodan/scripts.
-SCRIPTS = HERE.parents[1] / "plugins/codebase-map/skills/map/scripts" if modal.is_local() else Path("/daodan/scripts")
+SCRIPTS = HERE.parents[1] / "daodan/core" if modal.is_local() else Path("/daodan/scripts")
 RESULTS = HERE / "results"
 
 CASES = {

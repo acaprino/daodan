@@ -40,7 +40,7 @@ LOCAL = (HERE / "score.py").is_file()
 REPO = HERE.parents[1] if LOCAL else Path("/")
 GO = ("go1.27.3.linux-amd64.tar.gz", "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40")
 NODE = "v24.22.3"  # `premap/renovate.py` NODE
-REMOTE_SCRIPTS = "/daodan/map/scripts"  # container paths: POSIX strings, whatever runs the client
+REMOTE_SCRIPTS = "/daodan/map/core"  # container paths: POSIX strings, whatever runs the client
 REMOTE_PM = "/pm"
 
 image = (modal.Image.debian_slim(python_version="3.12")
@@ -56,11 +56,11 @@ image = (modal.Image.debian_slim(python_version="3.12")
          .pip_install("uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
          .env({"PATH": f"/root/.cargo/bin:/usr/local/go/bin:/opt/node-{NODE}-linux-x64/bin:/usr/local/bin:/usr/bin:/bin"}))
 if LOCAL:
-    image = (image.add_local_file(REPO / "plugins/codebase-map/skills/map/scripts/premap/enry_facts.go",
+    image = (image.add_local_file(REPO / "daodan/core/premap/enry_facts.go",
                                   "/opt/daodan-enry/main.go", copy=True)
              .run_commands("cd /opt/daodan-enry && go mod init daodan-enry && go get github.com/go-enry/go-enry/v2@v2.9.6"
                            " && go build -o /usr/local/bin/daodan-enry .")
-             .add_local_dir(REPO / "plugins/codebase-map/skills/map/scripts", REMOTE_SCRIPTS,
+             .add_local_dir(REPO / "daodan/core", REMOTE_SCRIPTS,
                                  ignore=["**/__pycache__/**"])
              .add_local_dir(HERE / "fixtures", f"{REMOTE_PM}/fixtures")
              .add_local_file(HERE / "score.py", f"{REMOTE_PM}/score.py")
@@ -221,7 +221,7 @@ def _languages(manifest: Path, log: list) -> dict:
 
 @app.local_entrypoint()
 def main(store: str = "", score: str = "", out: str = "", runs: str = ""):
-    local = code_hash(Path(__file__), REPO / "plugins/codebase-map/skills/map/scripts/premap")
+    local = code_hash(Path(__file__), REPO / "daodan/core/premap")
     print("code", local, flush=True)
     if store:
         answer = store_outputs.remote([s for s in store.split(",") if s])

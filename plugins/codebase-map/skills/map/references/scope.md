@@ -1,6 +1,6 @@
 # Progressive code scope
 
-`scripts/scope_planner.py` selects evidence for an analysis or intervention using
+`daodan scope_planner` selects evidence for an analysis or intervention using
 existing snapshots, verified lexical and engine edges and optional local retrieval.
 It performs machine computation only. It never starts an encoder, calls an LLM,
 refreshes an index, edits project source or closes a process gate. The complete

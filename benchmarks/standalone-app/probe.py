@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPTS = ROOT / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = ROOT / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 
 import mcp_service  # noqa: E402

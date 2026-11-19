@@ -28,8 +28,8 @@ import modal
 
 HERE = Path(__file__).resolve().parent
 LOCAL = modal.is_local()
-PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
-SCRIPTS = str(PLUGIN / "scripts")
+PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
+SCRIPTS = str(PLUGIN / "core")
 RESULTS = HERE / "results"
 AUDIT = HERE if LOCAL else Path("/audit")
 TAG = "inference-audit"

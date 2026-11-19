@@ -29,7 +29,7 @@ and requirements, never fabricated additions. Context binds `review_basis`,
 evidence and compiled catalog:
 
 ```text
-python "${CLAUDE_PLUGIN_ROOT}/skills/review-preparation/scripts/review_roster.py" compute --shape light --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json --id ID --stage STAGE --out ROSTER.json
+daodan review_roster compute --shape light --kind KIND --diff DIFF.patch [--impact IMPACT.json] --context CONTEXT.json --id ID --stage STAGE --out ROSTER.json
 ```
 
 Use `senior-review:review-preparation`, `references/composition.md`, with that

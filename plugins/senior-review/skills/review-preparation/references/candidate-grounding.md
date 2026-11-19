@@ -101,7 +101,7 @@ The caller supplies shape; the helper computes rigor.
 Before any dispatch:
 
 ```text
-python "${CLAUDE_PLUGIN_ROOT}/skills/review-preparation/scripts/review_roster.py" compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] [--technologies TECHNOLOGIES.json] --context CONTEXT.json [--rigor quick|standard|deep] [--deeper] --id ID --stage STAGE --out ROSTER.json
+daodan review_roster compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] [--technologies TECHNOLOGIES.json] --context CONTEXT.json [--rigor quick|standard|deep] [--deeper] --id ID --stage STAGE --out ROSTER.json
 ```
 
 Complete the roster through

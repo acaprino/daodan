@@ -39,7 +39,7 @@ binding, declare independent verification unavailable instead of inventing one.
 
 ## Reviewer Pipeline Conventions
 
-Discovery reviewers read `references/reviewer-common.md` for evidence, coverage,
+Discovery reviewers read `reviewer-common.md` (in the `root` of `CATALOG.json`) for evidence, coverage,
 knowledge accounting and compact delivery; roles own domain methods. Provider
 reviewers receive these conventions through their briefs:
 

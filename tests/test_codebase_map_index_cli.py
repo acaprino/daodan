@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SNAPSHOT = REPO_ROOT / "plugins/codebase-map/skills/map/scripts/snapshot.py"
+SNAPSHOT = REPO_ROOT / "daodan/core/snapshot.py"
 
 
 class IndexCliTests(unittest.TestCase):

@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-for path in (str(ROOT / "plugins/codebase-map/skills/map/scripts"), str(ROOT / "tests")):
+for path in (str(ROOT / "daodan/core"), str(ROOT / "tests")):
     if path not in sys.path:
         sys.path.insert(0, path)
 

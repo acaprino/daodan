@@ -17,7 +17,7 @@ Gli altri URL validi aprono una demo generica: esistenza, accessibilità e visib
 
 ## Riproduzione
 
-- Nel container, `uv run --no-project --with-requirements plugins/codebase-map/skills/map/scripts/requirements.txt python -B prototypes/daodan-app/scripts/export_premap_preview.py` aggiorna inventario e JSON incorporato nella pagina. Linguaggi, tecnologie e versioni dichiarate vengono da Daodan (snapshot di `plugins/`, step `stack`, toolchain della pre-mappa); file, unità e versioni delle dipendenze da Git e dai manifest.
+- Nel container, `uv run --no-project --with-requirements daodan/core/requirements.txt python -B prototypes/daodan-app/scripts/export_premap_preview.py` aggiorna inventario e JSON incorporato nella pagina. Linguaggi, tecnologie e versioni dichiarate vengono da Daodan (snapshot di `plugins/`, step `stack`, toolchain della pre-mappa); file, unità e versioni delle dipendenze da Git e dai manifest.
 - Per ricompilare SmoothUI nel container, eseguire `npm ci` e `npm run build` nella cartella `smoothui`.
 - Il benchmark browser e i parametri misurati sono in [standalone-app](../../benchmarks/standalone-app/README.md).
 

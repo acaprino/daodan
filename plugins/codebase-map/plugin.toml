@@ -21,9 +21,8 @@ policies = ["write-confinement"]
 exports = ["contracts/context.toml"]
 
 [[mcp.servers]]
-# `${CLAUDE_PLUGIN_ROOT}` is the installed plugin root and `${CLAUDE_PROJECT_DIR}` the folder the host starts in,
-# both filled by the host (see .mcp.json). uv starts outside the project (`--directory`): it runs the
-# interpreter of a `.venv` it finds from its working directory up.
+# `daodan` is the installed application (`uv tool install`), which the plugin calls and does not hold;
+# `${CLAUDE_PROJECT_DIR}` is the folder the host starts in, filled by the host (see .mcp.json).
 name = "codebase-map"
-command = "uv"
-args = ["--directory", "${CLAUDE_PLUGIN_ROOT}", "run", "--no-config", "--no-project", "--script", "${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/mcp_server.py", "--project", "${CLAUDE_PROJECT_DIR}"]
+command = "daodan"
+args = ["mcp", "--project", "${CLAUDE_PROJECT_DIR}"]

@@ -34,8 +34,8 @@ import modal
 
 HERE = Path(__file__).resolve().parent
 LOCAL = modal.is_local()
-PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
-SCRIPTS = str(PLUGIN / "scripts")
+PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
+SCRIPTS = str(PLUGIN / "core")
 RESULTS = HERE / "results"
 TAG = "inference-audit"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")
@@ -45,7 +45,7 @@ from indexers import css  # noqa: E402
 from modal_audit import CASES, _source  # noqa: E402
 
 NODE = ("v22.23.4", "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce")  # as modal_scip.py
-ENGINES = PLUGIN / "scripts/indexers/css_engines"
+ENGINES = PLUGIN / "core/indexers/css_engines"
 TESTS = HERE.parents[1] / "tests" if LOCAL else Path("/tests")
 # One small project per family, pinned by commit (tududi from modal_audit.CASES).
 CSS_CASES = {

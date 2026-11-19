@@ -28,8 +28,13 @@ Codebase Map tools; it dispatches nothing and starts no analysis.
 Keep one review preparation and final report owner; required workers retain isolation.
 
 The isolated-worker binding is `senior-review:isolated-worker`, five tools and no
-host extras: jobs, lenses 1-3, critic, history, hygiene and minimal-fix briefs run
-on it. Where the host has not registered it, declare those workers unavailable
+host extras: jobs, lenses 0-3, critic, history, hygiene and minimal-fix briefs run
+on it. It is the plugin's only registered agent. A catalog identity
+(`senior-review:<name>`) names a role of the Daodan application, not an agent:
+it runs on the isolated worker, whose brief gives the role file
+`<root>/roles/<name>.md` to read first (`root` of `CATALOG.json`, from
+`daodan composition catalog`; a composition is its members' files), and its
+delivery keeps the identity as `role`. Where the host has not registered it, declare those workers unavailable
 and the review incomplete; never substitute the host's generic worker or invent a role.
 Dispatch in waves: every worker of one step that depends on no other goes out in a
 single turn, and the coordinator waits for that wave's results without spending a

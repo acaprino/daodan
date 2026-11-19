@@ -7,8 +7,8 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SCRIPTS = next((parent / "plugins/codebase-map/skills/map/scripts" for parent in Path(__file__).resolve().parents
-                if (parent / "plugins/codebase-map/skills/map/scripts").is_dir()), Path("/daodan/map/scripts"))
+SCRIPTS = next((parent / "daodan/core" for parent in Path(__file__).resolve().parents
+                if (parent / "daodan/core").is_dir()), Path("/daodan/map/core"))
 sys.path.insert(0, str(SCRIPTS))
 
 

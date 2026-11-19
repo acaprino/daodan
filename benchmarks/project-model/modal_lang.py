@@ -112,10 +112,10 @@ def _image():
         .run_function(_convert)
         .add_local_file(ROOT / "tools/enry_facts.go", "/opt/enryfacts/main.go", copy=True)
         .run_commands(GO_FACTS)
-        .env({"DAODAN_SCRIPTS": "/daodan/map/scripts", "LINGUIST_DATA": DATA})
+        .env({"DAODAN_SCRIPTS": "/daodan/map/core", "LINGUIST_DATA": DATA})
     )
     return (
-        image.add_local_dir(REPO / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map"), "/daodan/map",
+        image.add_local_dir(REPO / "daodan" if LOCAL else Path("/daodan/map"), "/daodan/map",
                             ignore=["**/__pycache__/**", "**/tests/**"])
         .add_local_dir(ROOT / "tools", "/pm/tools", ignore=["**/__pycache__/**"])
         .add_local_dir(ROOT / "fixtures", "/pm/fixtures")
@@ -379,12 +379,12 @@ def _serve(tool: str, mode: str, only: list[str]) -> dict:
     import time
     started = time.time()
     local = code_sha256(Path("/pm/tools"))
-    print("adapters", local, "plugin", plugin_sha256(Path("/daodan/map/scripts")), flush=True)
+    print("adapters", local, "plugin", plugin_sha256(Path("/daodan/map/core")), flush=True)
     runner = Path("/tmp/run_one.py")
     runner.write_text(RUN_ONE, encoding="utf-8")
     python = [sys.executable, "-I", str(runner)]
     base_seconds, base_mb, _ = _timed([sys.executable, "-I", "-c", "pass"])
-    meta = {"tool": tool, "mode": mode, "adapters_sha256": local, "plugin_sha256": plugin_sha256(Path("/daodan/map/scripts")),
+    meta = {"tool": tool, "mode": mode, "adapters_sha256": local, "plugin_sha256": plugin_sha256(Path("/daodan/map/core")),
             "baseline": {"seconds": base_seconds, "peak_mb": base_mb}, "strace": None}
     if mode == "net":
         control = Path("/tmp/control.log")
@@ -643,7 +643,7 @@ if __name__ == "__main__":
         print(modal.Function.from_name(APP, "clone").remote(only))
     elif args.command == "spawn":
         print("local adapters", code_sha256(HERE / "tools"))
-        print("local plugin", plugin_sha256(REPO / "plugins/codebase-map/skills/map/scripts"))
+        print("local plugin", plugin_sha256(REPO / "daodan/core"))
         for mode in args.modes.split(","):
             function = modal.Function.from_name(APP, mode)
             for tool in chosen:

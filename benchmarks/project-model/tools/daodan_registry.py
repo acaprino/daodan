@@ -1,7 +1,7 @@
 """Baseline, read only: Daodan's service registry, called the way `system_brief.py` calls it.
 
 `snapshot.py write <dir> --out manifest.sqlite --no-engine --no-index`, then `service_registry.recognize(manifest)`
-(`plugins/codebase-map/skills/map/scripts/service_registry.py` with `data/service-registry.json`). The registry
+(`daodan/core/service_registry.py` with `data/service-registry.json`). The registry
 knows names, a kind (`service` or `project`) and a type, not frameworks: `frameworks` is not given. Services are the
 recognised entries of kind `service`; the kind of the answer is the registry type (RANK_KINDS translates it); the
 evidence is the first sign's file. Every recognised entry, `project` ones included, is in `detail.ids`, for the
@@ -17,8 +17,8 @@ import _fw
 
 VERSION = "service-registry v1 (stack-analyser 1.27.6, simple-icons 16.37.0, cncf-landscape 75b47639)"
 SCRIPTS = Path(os.environ.get("PM_PLUGIN_SCRIPTS") or
-               (next((p / "plugins/codebase-map/skills/map/scripts" for p in Path(__file__).resolve().parents
-                      if (p / "plugins/codebase-map/skills/map/scripts").is_dir()), "/daodan/map/scripts")))
+               (next((p / "daodan/core" for p in Path(__file__).resolve().parents
+                      if (p / "daodan/core").is_dir()), "/daodan/map/core")))
 RANK_KINDS = {"database": "database", "coda": "queue", "autenticazione": "authentication", "gateway": "gateway",
               "servizio o API": "service"}
 

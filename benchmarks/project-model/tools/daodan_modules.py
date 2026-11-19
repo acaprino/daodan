@@ -16,8 +16,8 @@ import native_common as common
 
 VERSION = "modules.py of the checkout (daodan/module-graph/v1)"
 COMMAND = "snapshot.py write <fixture> --out <work>/manifest.sqlite --no-engine --no-index; modules.json"
-SCRIPTS = next((p / "plugins/codebase-map/skills/map/scripts" for p in Path(__file__).resolve().parents
-                if (p / "plugins/codebase-map/skills/map/scripts").is_dir()), Path("/daodan/map/scripts"))
+SCRIPTS = next((p / "daodan/core" for p in Path(__file__).resolve().parents
+                if (p / "daodan/core").is_dir()), Path("/daodan/map/core"))
 LAST: dict = {}
 
 

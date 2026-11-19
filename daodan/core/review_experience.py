@@ -298,7 +298,7 @@ def _dict(value):
 @functools.cache
 def input_modes():
     """The closed `input_mode` enum of the reviewer-binding contract, read once."""
-    contract = Path(__file__).resolve().parents[3] / "contracts/reviewer-binding.toml"
+    contract = Path(__file__).resolve().parents[1] / "review/contracts/reviewer-binding.toml"
     try:
         return tuple(tomllib.loads(contract.read_text(encoding="utf-8"))["fields"]["input_mode"]["values"])
     except (OSError, ValueError, KeyError, TypeError) as error:

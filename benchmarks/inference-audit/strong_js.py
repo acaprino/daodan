@@ -30,8 +30,8 @@ except ImportError:  # the local comparison runs without Modal
 
 HERE = Path(__file__).resolve().parent
 LOCAL = modal is None or modal.is_local()
-PLUGIN = HERE.parents[1] / "plugins/codebase-map/skills/map" if LOCAL else Path("/daodan/map")
-SCRIPTS = str(PLUGIN / "scripts")
+PLUGIN = HERE.parents[1] / "daodan" if LOCAL else Path("/daodan/map")
+SCRIPTS = str(PLUGIN / "core")
 RESULTS = HERE / "results"
 TAG = "inference-audit"
 sys.path.insert(0, str(HERE) if LOCAL else "/audit")

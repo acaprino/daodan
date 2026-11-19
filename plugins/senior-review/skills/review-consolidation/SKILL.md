@@ -56,7 +56,7 @@ Workers deliver native reports, never separate UI or another final synthesis.
 The saved native Markdown report stays the authoritative `output_path`. When HTML
 is requested, the final writer saves the final-report record as `final-report.json`
 beside the Markdown, with the verified findings as `retained_findings`, then runs
-`scripts/review_html.py render final-report.json --out REPORT.html [--root PROJECT_ROOT]`.
+`daodan review_html render final-report.json --out REPORT.html [--root PROJECT_ROOT]`.
 Reviewer results precede verification: rendered alone, the page marks its findings
 unverified. The page holds an index by finding and by file,
 one section per finding, an accept/reject choice per fix and a reply block to

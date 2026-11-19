@@ -13,9 +13,8 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = REPO_ROOT / "plugins/senior-review"
-for scripts in ("skills/review-preparation/scripts", "skills/review-consolidation/scripts"):
-    if str(PLUGIN / scripts) not in sys.path:
-        sys.path.insert(0, str(PLUGIN / scripts))
+if str(REPO_ROOT / "daodan/core") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "daodan/core"))
 
 import composition  # noqa: E402
 import review_experience  # noqa: E402
@@ -38,9 +37,8 @@ def frontmatter(path: Path) -> dict:
 class IsolatedWorkerTest(unittest.TestCase):
     def test_registered_agents_exist(self):
         manifest = json.loads((PLUGIN / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
-        self.assertIn("./roles/isolated-worker.md", manifest["agents"])
-        for agent in manifest["agents"]:
-            self.assertTrue((PLUGIN / agent).is_file(), agent)
+        self.assertEqual(manifest["agents"], ["./roles/isolated-worker.md"])  # the reviewers are the application's
+        self.assertTrue((PLUGIN / "roles/isolated-worker.md").is_file())
 
     def test_worker_has_five_tools(self):
         fields = frontmatter(PLUGIN / "roles/isolated-worker.md")
@@ -49,7 +47,7 @@ class IsolatedWorkerTest(unittest.TestCase):
         self.assertEqual(fields["tools"], "Read, Write, Glob, Grep, Bash")
 
     def test_worker_is_not_a_reviewer(self):
-        ids = {entry["id"] for entry in composition.load_catalog(PLUGIN)["entries"]}
+        ids = {entry["id"] for entry in composition.load_catalog(composition.DEFAULT_ROOT)["entries"]}
         self.assertNotIn(WORKER, ids)
 
     def test_roster_allows_dispatch(self):

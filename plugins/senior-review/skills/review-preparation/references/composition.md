@@ -28,9 +28,11 @@ offline conflict policy requires transaction integrity; client-declared authorit
 requires authoritative authorization and any implicated domain invariant. A note
 without the receiving obligation and its source/policy cannot close coverage.
 
-The reviewer catalog is `plugin.toml`: `[components].roles` are the identities,
-`[reviewers.compositions]` the members. `scripts/composition.py catalog` writes
-it as `CATALOG.json`; include it in the context supplied to `review_roster.py`.
+The reviewer catalog is the application's (`catalog.toml`, with its `roles/`,
+`contracts/` and `reviewer-common.md` beside it): `[components].roles` are the
+identities, `[reviewers.compositions]` the members. `daodan composition catalog`
+writes it as `CATALOG.json`, whose `root` is that folder: every `source_bindings`
+and `common` path is relative to it; include it in the context supplied to `review_roster.py`.
 A composition expands to its leaf roles; a method binding, when a host supplies
 one, also retains its audit-only method task. An identity absent from the
 catalog, a missing role file, unknown applicability or an unmet prerequisite
@@ -85,11 +87,11 @@ digests plus `reviewer-common.md`), `output_path` and `status`. Role prose is
 never copied: a worker receives the files the bindings name. Session
 permissions and the read-only review contract still govern every operation.
 
-With `SENIOR_ROOT` the verified installed senior-review provider:
+The commands of the installed application:
 
 ```text
-python "${SENIOR_ROOT}/skills/review-preparation/scripts/composition.py" catalog --out CATALOG.json
-python "${SENIOR_ROOT}/skills/review-preparation/scripts/composition.py" bind --roster ROSTER.json --bindings BINDINGS.json --out PREPARED-REVIEW.json
+daodan composition catalog --out CATALOG.json
+daodan composition bind --roster ROSTER.json --bindings BINDINGS.json --out PREPARED-REVIEW.json
 ```
 
 An `unbound` job (identity or role file missing) leaves the exit status non-zero

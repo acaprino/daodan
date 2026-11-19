@@ -25,7 +25,7 @@ from unittest import mock
 import pytest
 
 HERE = Path(__file__).resolve().parent
-SCRIPTS = HERE.parent / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = HERE.parent / "daodan/core"
 sys.path.insert(0, str(SCRIPTS))
 
 import code_graph  # noqa: E402

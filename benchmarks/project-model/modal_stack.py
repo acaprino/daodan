@@ -42,7 +42,7 @@ REPO = HERE.parents[1] if LOCAL else Path("/repo")
 FIXTURES = Path(os.environ.get("DAODAN_FIXTURES") or HERE / "fixtures")
 APP, STORE, REAL_STORE = "daodan-pm-stack", "project-model/stack", "project-model/native-real"
 FAMILIES = ("js", "py", "jvm", "sys", "mix", "real")
-SCRIPTS, DATA = "plugins/codebase-map/skills/map/scripts", "plugins/codebase-map/skills/map/data"
+SCRIPTS, DATA = "daodan/core", "daodan/data"
 # what the container holds, each at its repository path under /repo; the data sit beside the scripts
 UPLOADED = ((REPO / SCRIPTS, SCRIPTS), (REPO / DATA, DATA),
             (HERE / "score.py", "benchmarks/project-model/score.py"),

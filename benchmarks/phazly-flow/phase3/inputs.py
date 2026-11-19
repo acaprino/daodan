@@ -14,7 +14,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "plugins/codebase-map/skills/map/scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "daodan/core"))
 import flows  # noqa: E402
 
 LIMIT, SHARE, CAP = 120_000, 2, 12_000

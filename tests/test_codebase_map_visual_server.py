@@ -18,7 +18,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import mcp_service  # noqa: E402
@@ -91,7 +91,7 @@ class ServerTests(unittest.TestCase):
 class CommittedViewerTests(unittest.TestCase):
     """The compiled viewer the plugin ships: served by default, with its notices, loading nothing remote."""
 
-    ASSETS = SCRIPTS.parents[2] / "assets" / "viewer"
+    ASSETS = SCRIPTS.parent / "assets" / "viewer"
     # A namespace or an error link inside the bundle is text; loading code or styles from elsewhere is not allowed.
     REMOTE = re.compile(r"""(?:\bimport\s*\(|\bfrom\s*|new\s+Worker\s*\(|url\(|\bsrc=|\bhref=)\s*['"`]?https?://""")
 

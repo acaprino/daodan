@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sys.path[:0] = [str(HERE), str(HERE.parents[1] / "plugins/codebase-map/skills/map/scripts")]
+sys.path[:0] = [str(HERE), str(HERE.parents[1] / "daodan/core")]
 
 import modal_pipeline  # noqa: E402
 from dynamic import callgrind  # noqa: E402

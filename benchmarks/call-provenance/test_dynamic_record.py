@@ -21,7 +21,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 FIXTURE = HERE / "fixtures" / "python"
-RECORDER = HERE.parents[1] / "plugins/codebase-map/skills/map/scripts/dynamic/python_record.py"
+RECORDER = HERE.parents[1] / "daodan/core/dynamic/python_record.py"
 
 
 def lines(name: str) -> list[str]:

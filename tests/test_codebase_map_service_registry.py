@@ -8,15 +8,15 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = ROOT / "plugins/codebase-map/skills/map/scripts"
+SCRIPTS = ROOT / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 import registry_build  # noqa: E402
 import service_registry  # noqa: E402
 
-REGISTRY = ROOT / "plugins/codebase-map/skills/map/data/service-registry.json"
-ADDITIONS = ROOT / "plugins/codebase-map/skills/map/data/registry-additions.json"
-NOTICES = ROOT / "plugins/codebase-map/skills/map/data/REGISTRY-NOTICES.md"
+REGISTRY = ROOT / "daodan/data/service-registry.json"
+ADDITIONS = ROOT / "daodan/data/registry-additions.json"
+NOTICES = ROOT / "daodan/data/REGISTRY-NOTICES.md"
 DATA = REGISTRY.parent
 
 

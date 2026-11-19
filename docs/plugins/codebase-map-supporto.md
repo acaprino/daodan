@@ -1,6 +1,6 @@
 # Codebase Map: che cosa supporta
 
-Scritto da `plugins/codebase-map/skills/map/scripts/support_table.py` con i dati del prodotto e i risultati dei benchmark nel repository: non si modifica a mano, si riscrive con `python support_table.py build`, e `tests/test_codebase_map_support_table.py` fallisce se il file non è quello che lo script scrive.
+Scritto da `daodan/core/support_table.py` con i dati del prodotto e i risultati dei benchmark nel repository: non si modifica a mano, si riscrive con `python support_table.py build`, e `tests/test_codebase_map_support_table.py` fallisce se il file non è quello che lo script scrive.
 
 Misure, ognuna con il suo file e la sua data:
 
@@ -1159,7 +1159,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un 
 
 ## Letture proprie di framework e dialetti
 
-Oltre al riconoscimento: i componenti Vue e Svelte entrano nell'indice di scip-typescript (`indexers/components.py`) e il loro `<script>` nello snapshot (`languages/sfc.py`); il grafo dei fogli di stile (`indexers/css.py`) legge questi file con i parser fissati in `plugins/codebase-map/skills/map/scripts/indexers/css_engines/package.json`: @astrojs/compiler 4.0.0, @vue/compiler-sfc 3.5.45, less 4.9.1, sass-parser 0.5.6, stylus 0.64.0, svelte 5.57.3, typescript 5.9.3. La sua misura è la riga `stylesheet` della sezione Analizzatori.
+Oltre al riconoscimento: i componenti Vue e Svelte entrano nell'indice di scip-typescript (`indexers/components.py`) e il loro `<script>` nello snapshot (`languages/sfc.py`); il grafo dei fogli di stile (`indexers/css.py`) legge questi file con i parser fissati in `daodan/core/indexers/css_engines/package.json`: @astrojs/compiler 4.0.0, @vue/compiler-sfc 3.5.45, less 4.9.1, sass-parser 0.5.6, stylus 0.64.0, svelte 5.57.3, typescript 5.9.3. La sua misura è la riga `stylesheet` della sezione Analizzatori.
 
 | Estensioni | Lettura |
 | --- | --- |

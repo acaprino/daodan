@@ -3,7 +3,7 @@
     MODAL_CONFIG_PATH="C:/Users/alfio/.modal.toml" modal run prototypes/daodan-app/smoothui/modal_build.py
 
 The container gets this folder without node_modules and builds both entries of build.mjs; the entrypoint writes the
-app's files to plugins/codebase-map/assets/app when the build changed them (smoothui.bundle.js and its licence notices)
+app's files to daodan/assets/app when the build changed them (smoothui.bundle.js and its licence notices)
 and keeps smoothui.css unless the build adds a class. The mockup's own bundle stays as committed.
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ from pathlib import Path
 import modal
 
 HERE = Path(__file__).resolve().parent
-ASSETS = "plugins/codebase-map/assets/app"  # where build.mjs writes the app's bundle, from the checkout's root
+ASSETS = "daodan/assets/app"  # where build.mjs writes the app's bundle, from the checkout's root
 WORK = Path("/build/prototypes/daodan-app/smoothui")  # the checkout's layout, so that build.mjs's paths hold
 FILES = ("smoothui.bundle.js", "smoothui.bundle.js.LEGAL.txt", "smoothui.css")
 # Daodan's Node (`preparation.NODE`), checked by its sha256.

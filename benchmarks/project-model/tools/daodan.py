@@ -17,7 +17,7 @@ from pathlib import Path
 from _lang import files, read_text, table
 
 VERSION = "main working tree"
-SCRIPTS = Path(os.environ.get("DAODAN_SCRIPTS") or Path(__file__).resolve().parents[3] / "plugins/codebase-map/skills/map/scripts")
+SCRIPTS = Path(os.environ.get("DAODAN_SCRIPTS") or Path(__file__).resolve().parents[3] / "daodan/core")
 NAMES = {"python": "Python", "java": "Java", "javascript": "JavaScript", "typescript": "TypeScript", "sql": "SQL",
          "plsql": "PLSQL", "rust": "Rust", "go": "Go", "kotlin": "Kotlin", "csharp": "C#", "vue": "Vue",
          "svelte": "Svelte", "c": "C", "cpp": "C++"}

@@ -83,7 +83,8 @@ Use canonical skeletons in owned output. Put partition identity below titles, ne
 
 ## Resources
 
-Python >= 3.12 scripts: `${CLAUDE_PLUGIN_ROOT}/skills/map/scripts/`.
+The tools are commands of the installed Daodan application (`uv tool install`, Python >= 3.12): `daodan <name> ...`
+runs the tool `<name>.py` named below and in the references; the plugin holds no code.
 Language Support above applies throughout. These are the entry points; the
 other modules beside them are libraries they import.
 

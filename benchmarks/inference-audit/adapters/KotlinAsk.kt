@@ -1,5 +1,5 @@
 // Targeted questions to the Kotlin Analysis API in standalone mode, for adapters/kotlin_analysis.py.
-// A copy of the map's resolver (plugins/codebase-map/skills/map/scripts/engines/KotlinResolver.kt) with one
+// A copy of the map's resolver (daodan/core/engines/KotlinResolver.kt) with one
 // source module per compile task, one library module per jar, and a description of each answer.
 //
 // Configuration lines, in dependency order: `module <name>`, then for that module `source <file>`,

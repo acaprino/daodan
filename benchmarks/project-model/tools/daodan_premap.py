@@ -13,8 +13,8 @@ from pathlib import Path
 
 import native_common as common
 
-SCRIPTS = next((p / "plugins/codebase-map/skills/map/scripts" for p in Path(__file__).resolve().parents
-                if (p / "plugins/codebase-map/skills/map/scripts").is_dir()), Path("/daodan/map/scripts"))
+SCRIPTS = next((p / "daodan/core" for p in Path(__file__).resolve().parents
+                if (p / "daodan/core").is_dir()), Path("/daodan/map/core"))
 VERSION = "premap of the checkout (daodan/premap/v1)"
 COMMAND = "snapshot.py write <fixture> --out <work>/manifest.sqlite --no-engine --no-index; premap.write(manifest)"
 FACETS = ("languages", "excluded", "units", "workspace", "toolchains", "dependencies")

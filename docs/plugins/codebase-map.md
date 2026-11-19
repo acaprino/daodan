@@ -104,7 +104,7 @@ Ogni corsa dice come sono finiti i suoi test: `ran`, `timeout`, `killed`, `not_s
 
 ## Script
 
-In `skills/map/scripts/`, Python con sola libreria standard salvo gli opzionali detti. Punti d'ingresso (`SKILL.md`, sezione Resources):
+In `daodan/core/`, Python con sola libreria standard salvo gli opzionali detti. Punti d'ingresso (`SKILL.md`, sezione Resources):
 
 - `snapshot.py`: `scope`, `write`, `index`, `search`, `resolve`, `runtime`, `diff`, `carry`, `prepare`, `check`, `publish`, `register`, `unregister`, `meta-query`, `meta-upsert`, `edit-impact`, `symbols-at`, `stale-callers`, `context`, `technologies`, `files`, `refresh`, `hook`.
 - `source_reader.py`: `outline` (metadati dei simboli), `graph` (chiamanti e chiamati dal manifest, 1-3 salti), `read` (blocchi di sorgente verificati per simbolo, intervallo o file intero).
@@ -122,7 +122,7 @@ Gli altri moduli sono librerie: `snapshot_store.py` e `semantic_store.py` (stora
 
 ## Server MCP
 
-`uv --directory <plugin> run --no-config --no-project --script <plugin>/skills/map/scripts/mcp_server.py --project <radice>` (`.mcp.json`). `--directory` porta uv fuori dal progetto analizzato prima che cerchi un interprete: avviato nella cartella del progetto, uv esegue l'interprete di un `.venv` che trova lì o sopra, qualunque cosa dicano gli altri flag; `--no-config --no-project` gli impediscono di leggere `uv.toml`, `pyproject.toml` e `.python-version`. Così il progetto analizzato non sceglie interprete né indice dei pacchetti del proprio analizzatore; l'hook parte allo stesso modo e legge il progetto dal suo input. Il progetto è fissato all'avvio da `--project` o, se manca, da `CLAUDE_PROJECT_DIR`; senza nessuno dei due il server si ferma con la causa, perché la cartella in cui parte è quella del plugin. Ogni target è relativo, ogni run-id seleziona esattamente `.daodan/map/runs/<run-id>/`; percorsi esterni, traversal, symlink e junction sono rifiutati. `--store <percorso>` sposta l'intero store in una dot directory del progetto, marcata da `.daodan-map-store.json`. La mappa va costruita con lo stesso runtime che la serve: l'indice lessicale registra versione di SQLite e impronta dei parser, e una mappa scritta da un altro Python risulta `stale` (`codebase_map_index` ricostruisce l'indice).
+`daodan mcp --project <radice>` (`.mcp.json`): il comando dell'applicazione installata, che gira sul proprio interprete e non importa nulla dalla cartella in cui parte. Così il progetto analizzato non sceglie interprete né pacchetti del proprio analizzatore; l'hook parte allo stesso modo e legge il progetto dal suo input. Il progetto è fissato all'avvio da `--project` o, se manca, da `CLAUDE_PROJECT_DIR`; senza nessuno dei due il server si ferma con la causa, perché la cartella in cui parte non è un progetto dichiarato. Ogni target è relativo, ogni run-id seleziona esattamente `.daodan/map/runs/<run-id>/`; percorsi esterni, traversal, symlink e junction sono rifiutati. `--store <percorso>` sposta l'intero store in una dot directory del progetto, marcata da `.daodan-map-store.json`. La mappa va costruita con lo stesso runtime che la serve: l'indice lessicale registra versione di SQLite e impronta dei parser, e una mappa scritta da un altro Python risulta `stale` (`codebase_map_index` ricostruisce l'indice).
 
 Ventisei tool, tutti con risposta JSON (`references/mcp.md` ha i parametri completi):
 
@@ -204,4 +204,4 @@ Tre fatti dell'host non sono misurati: le suite girano su Linux, dove nessuno de
 
 ## Test
 
-In `tests/` alla radice del repository: 85 file `test_codebase_map_*.py` e 13 file `test_xray_*.py`, più `skills/map/scripts/tests/test_modules.py`. Le suite girano su Modal, in un container Linux sull'albero di lavoro, mai sul PC: `python tests/modal_pytest.py <argomenti di pytest>` dalla radice (`tests/modal_pytest.py`).
+In `tests/` alla radice del repository: 85 file `test_codebase_map_*.py` e 13 file `test_xray_*.py`, più `daodan/core/tests/test_modules.py`. Le suite girano su Modal, in un container Linux sull'albero di lavoro, mai sul PC: `python tests/modal_pytest.py <argomenti di pytest>` dalla radice (`tests/modal_pytest.py`).

@@ -36,7 +36,7 @@ import service_registry  # noqa: E402
 from indexers import css  # noqa: E402
 from premap import suffix_table  # noqa: E402
 
-ROOT = SCRIPT_DIR.parents[4]
+ROOT = SCRIPT_DIR.parents[1]
 DOC = ROOT / "docs/plugins/codebase-map-supporto.md"
 RESULTS = ROOT / "benchmarks/project-model/results"
 RUN = "2026-11-16-finale"  # the last pipeline run over the whole corpus; the later ones have a few cases each
@@ -360,7 +360,7 @@ def render() -> str:
         raise SystemExit(f"{file} is from code {stack['code']['local']}, not {code}: write its date in STACK")
     cards = _cards()
     lines = ["# Codebase Map: che cosa supporta", "",
-             "Scritto da `plugins/codebase-map/skills/map/scripts/support_table.py` con i dati del prodotto e i "
+             "Scritto da `daodan/core/support_table.py` con i dati del prodotto e i "
              "risultati dei benchmark nel repository: non si modifica a mano, si riscrive con "
              "`python support_table.py build`, e `tests/test_codebase_map_support_table.py` fallisce se il file non "
              "è quello che lo script scrive.", "",

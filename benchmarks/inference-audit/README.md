@@ -1394,7 +1394,7 @@ Cosa manca a questa misura:
 
 ### 14 novembre 2026, il grafo dei fogli di stile nel plugin
 
-Il grafo dei fogli di stile ora sta nel plugin, in `plugins/codebase-map/skills/map/scripts/indexers/`: `css.py`, un adattatore per motore con il suo `.js`, e i motori fissati in `css_engines/` (`package.json`, `package-lock.json` con l'integrity sha512 di tutti i 126 pacchetti). `lang_css.py` resta il driver per Modal e importa dal plugin. Nel prodotto lo stage non è ancora attivo: arriva con il giro guidato dalla pre-mappa.
+Il grafo dei fogli di stile ora sta nel plugin, in `daodan/core/indexers/`: `css.py`, un adattatore per motore con il suo `.js`, e i motori fissati in `css_engines/` (`package.json`, `package-lock.json` con l'integrity sha512 di tutti i 126 pacchetti). `lang_css.py` resta il driver per Modal e importa dal plugin. Nel prodotto lo stage non è ancora attivo: arriva con il giro guidato dalla pre-mappa.
 
 Cosa cambia rispetto al benchmark:
 - Nessun adattatore installa o lancia un motore. Ognuno riceve un runner, `runner(script, payload)`, che lancia lo script nella radice del progetto e aggiunge `engines`, la cartella del `package.json` dei motori. Su Modal è `node_runner` di `lang_css.py`; nel prodotto lo darà il container.

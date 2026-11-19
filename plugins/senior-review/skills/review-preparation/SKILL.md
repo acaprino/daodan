@@ -31,7 +31,7 @@ the actual candidate and leave any gate needing that comparison unavailable.
 | Always, before the variant | `references/candidate-grounding.md`: target kind/basis, governing snapshot policy, ground-truth gate, evidence pack, budget and roster by kind |
 | Then | `references/<variant>.md` |
 | Reviewer selection | `references/stack-dimensions.md`, then `references/knowledge-bindings.md` |
-| Reviewer catalog | `plugin.toml` (`[components].roles`, `[reviewers.compositions]`) read by `scripts/composition.py catalog`, which writes `CATALOG.json`; descriptions shortlist candidates; Phase 1 reads their mandates to choose suitable reviewers |
+| Reviewer catalog | The application's `catalog.toml` (`[components].roles`, `[reviewers.compositions]`) read by `daodan composition catalog`, which writes `CATALOG.json`; descriptions shortlist candidates; Phase 1 reads their mandates to choose suitable reviewers |
 | Always, after the roster | `references/composition.md`: bind and validate specialist jobs before recording the complete review or dispatching |
 
 Execute preparation once. Team review Phase 1 understands the scoped object

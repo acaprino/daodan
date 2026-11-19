@@ -21,8 +21,8 @@ def test_scripts_lookup_from_a_shallow_folder(tmp_path):
     found = subprocess.run([sys.executable, "-I", "-c", code],
                            cwd=tmp_path, capture_output=True, text=True, timeout=60)
     assert found.returncode == 0, found.stderr
-    assert found.stdout.strip() in ("/daodan/map/scripts",
-                                    *(str(parent / "plugins/codebase-map/skills/map/scripts").replace("\\", "/")
+    assert found.stdout.strip() in ("/daodan/map/core",
+                                    *(str(parent / "daodan/core").replace("\\", "/")
                                       for parent in tmp_path.parents))
 
 
