@@ -109,13 +109,17 @@ def test_stack_emits_frameworks_libraries_services_and_tools_for_concrete_logica
     # Concrete JVM module: frameworks, services, and uncataloged libraries all present
     api = by_id["api"]
     assert api["nature"] == "concrete"
-    assert {"spring-boot", "jackson", "junit-jupiter"} <= set(api["frameworks"])
+    # three classes of the unit's stack: a framework, a library the registry knows, a test tool
+    assert "spring-boot" in api["frameworks"] and "junit-jupiter" in api["tools"]
+    assert "jackson" in {lib.get("id") for lib in api["libraries"]} and "jackson" not in api["frameworks"]
+    assert {"spring-boot", "jackson", "junit-jupiter"} <= set(api["technologies"])
     assert "postgresql" in api["services"]
     assert any(lib["name"] == "com.acme.internal:custom-util" and lib["ecosystem"] == "maven" for lib in api["libraries"])
 
     # Concrete .NET module
     web_cs = by_id["web@dotnet"] if "web@dotnet" in by_id else next(m for m in record["modules"] if m["paths"] == ["dotnet"])
-    assert {"aspnetcore", "entity-framework-core", "xunit"} <= set(web_cs["frameworks"])
+    assert "aspnetcore" in web_cs["frameworks"] and "xunit" in web_cs["tools"]
+    assert {"aspnetcore", "entity-framework-core", "xunit"} <= set(web_cs["technologies"])
     assert any(lib["name"] == "Company.SecretLib" and lib["ecosystem"] == "nuget" for lib in web_cs["libraries"])
 
     # Concrete Flutter module

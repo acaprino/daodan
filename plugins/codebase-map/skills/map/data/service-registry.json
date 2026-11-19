@@ -99,7 +99,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "ada",
@@ -229,9 +230,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "adyen",
@@ -500,7 +503,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "airbrake",
@@ -823,7 +827,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "algolia",
@@ -1119,9 +1124,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "amazon-cloudwatch",
@@ -1317,9 +1324,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "angularjs",
@@ -1375,7 +1384,8 @@
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "antd",
@@ -1397,9 +1407,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "antdicons",
@@ -1420,8 +1432,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "anteon",
@@ -1518,7 +1532,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "apache-brpc",
@@ -1766,9 +1781,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "apache_airflow",
@@ -2106,9 +2123,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "apachetika",
@@ -2279,8 +2298,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "apisix",
@@ -2672,7 +2693,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "ardc-nectar-research-cloud-magnum-service",
@@ -2742,8 +2763,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "arkflow",
@@ -2788,8 +2811,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "arkui",
@@ -2813,8 +2838,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "armada",
@@ -2936,8 +2963,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "aserto",
@@ -3021,8 +3050,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "astro",
@@ -3045,9 +3076,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "astron-agent",
@@ -3151,8 +3184,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "atlassian",
@@ -3814,7 +3849,8 @@
     "additions",
     "cncf-landscape",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "aws.cloudfront",
@@ -5498,7 +5534,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "axolotl",
@@ -5532,7 +5569,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "azure",
@@ -6359,9 +6397,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "bash",
@@ -6628,8 +6668,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "bitly",
@@ -6760,8 +6802,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "bloombase",
@@ -6865,9 +6909,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "bootstrapicons",
@@ -6891,8 +6937,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "bosh",
@@ -6938,7 +6986,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "bouncy-castle",
@@ -7322,8 +7371,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "bundler",
@@ -7344,8 +7395,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "bunkerweb",
@@ -7411,9 +7464,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "bytebase",
@@ -7437,9 +7492,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "c",
@@ -7685,9 +7742,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "capsule",
@@ -7891,7 +7950,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "causely",
@@ -8069,9 +8128,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "chalice",
@@ -8296,9 +8357,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "chef-habitat",
@@ -8698,7 +8761,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "clickhouse",
@@ -9324,7 +9388,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "cockroach-labs",
@@ -9475,9 +9540,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "coder",
@@ -9925,7 +9992,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "containerd-wasm",
@@ -10701,7 +10769,7 @@
     "additions",
     "stack-analyser"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "cyso-managed-kubernetes",
@@ -10760,9 +10828,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "daisyui",
@@ -10783,9 +10853,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "dalec",
@@ -10896,7 +10968,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "databend",
@@ -11278,7 +11351,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "deepchecks",
@@ -11485,9 +11559,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "denodeploy",
@@ -11770,8 +11846,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "dify",
@@ -11852,8 +11930,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "directus",
@@ -11989,7 +12069,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "docker",
@@ -12109,9 +12190,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "doctrinephp",
@@ -12132,9 +12215,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "docusaurus",
@@ -12158,9 +12243,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "docusign",
@@ -12401,8 +12488,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "droneci",
@@ -12697,7 +12786,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "eclipse-che",
@@ -12755,8 +12845,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "ejbca-community",
@@ -12955,9 +13047,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "elevenlabs",
@@ -13016,9 +13110,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "elfconv",
@@ -13064,8 +13160,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "emberjs",
@@ -13091,9 +13189,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "embrace",
@@ -13204,13 +13304,13 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "envoy",
    "name": "Envoy",
    "kind": "project",
-   "type": "altro",
+   "type": "gateway",
    "site": "https://www.envoyproxy.io",
    "mark": null,
    "signs": {
@@ -13227,7 +13327,8 @@
    "from": [
     "additions",
     "cncf-landscape"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "envoy-ai-gateway",
@@ -13414,7 +13515,7 @@
    "id": "etcd",
    "name": "etcd",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://etcd.io/",
    "mark": "marks/etcd.svg",
    "signs": {
@@ -13432,7 +13533,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "eunomia-bpf",
@@ -13563,8 +13665,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "expontech",
@@ -13599,7 +13703,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "express",
@@ -13620,9 +13724,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "external-secrets",
@@ -13794,7 +13900,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "fastify",
@@ -13816,9 +13923,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "fastly",
@@ -13968,8 +14077,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "featurehub",
@@ -14246,7 +14357,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "flatcar-container-linux",
@@ -14336,7 +14448,7 @@
    "id": "fluentd",
    "name": "Fluentd",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://www.fluentd.org/",
    "mark": "marks/fluentd.svg",
    "signs": {
@@ -14354,7 +14466,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "fluentui",
@@ -14375,8 +14488,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "fluid",
@@ -14490,9 +14605,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "fonio",
@@ -14530,9 +14647,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "foreman",
@@ -14639,7 +14758,8 @@
    "from": [
     "additions",
     "cncf-landscape"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "freshdesk",
@@ -14740,8 +14860,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "fusionauth",
@@ -14813,7 +14935,7 @@
     "additions",
     "simple-icons"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "gatsby",
@@ -14848,9 +14970,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "gcore-managed-kubernetes",
@@ -16239,7 +16363,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "giphy",
@@ -16454,7 +16579,7 @@
    "id": "gitlab",
    "name": "Gitlab",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://about.gitlab.com/",
    "mark": "marks/gitlab.svg",
    "signs": {
@@ -16487,10 +16612,12 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "gitlab.ci",
@@ -16658,8 +16785,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "gocd",
@@ -16717,8 +16846,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "goenv",
@@ -16737,8 +16868,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "gofr",
@@ -16809,8 +16942,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "goldilocks",
@@ -17423,8 +17558,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "gradio",
@@ -17445,9 +17582,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "gradle-build-tool",
@@ -17685,9 +17824,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "groq",
@@ -17770,7 +17911,7 @@
     "additions",
     "cncf-landscape"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "grype",
@@ -17865,7 +18006,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "gvisor",
@@ -18181,9 +18323,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "healthchecksio",
@@ -18303,8 +18447,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "heroku",
@@ -18357,9 +18503,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "hertzbeat",
@@ -18440,8 +18588,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "hibernate",
@@ -18466,7 +18616,7 @@
     "additions",
     "simple-icons"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "higress",
@@ -18588,7 +18738,7 @@
    "id": "honeycomb",
    "name": "Honeycomb",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://www.honeycomb.io/",
    "mark": null,
    "signs": {
@@ -18608,7 +18758,8 @@
    "from": [
     "additions",
     "cncf-landscape"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "honojs",
@@ -18629,8 +18780,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "horovod",
@@ -18776,9 +18929,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "httpd",
@@ -18824,7 +18979,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "huatuo",
@@ -18944,8 +19100,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "huggingface",
@@ -19008,9 +19166,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "humio",
@@ -19365,8 +19525,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "infinidat",
@@ -19812,9 +19974,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "ionicons",
@@ -19835,8 +19999,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "ionir",
@@ -20022,13 +20188,13 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "jaeger",
    "name": "Jaeger",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://www.jaegertracing.io/",
    "mark": "marks/jaeger.svg",
    "signs": {
@@ -20046,7 +20212,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "java",
@@ -20111,9 +20278,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "jellyfin",
@@ -20207,9 +20376,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "jfrog",
@@ -20292,7 +20463,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "jira-software",
@@ -20359,8 +20531,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "joomla",
@@ -20438,8 +20612,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "jsx",
@@ -20498,7 +20674,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "junit-jupiter",
@@ -20523,7 +20699,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "jupyter",
@@ -20546,7 +20722,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "k0rdent",
@@ -20622,9 +20799,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "k6-cncf",
@@ -20700,7 +20879,8 @@
    "from": [
     "additions",
     "cncf-landscape"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "kagent",
@@ -21067,7 +21247,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "kestra",
@@ -21085,7 +21266,7 @@
    "id": "keycloak",
    "name": "Keycloak",
    "kind": "project",
-   "type": "altro",
+   "type": "autenticazione",
    "site": "https://www.keycloak.org/",
    "mark": "marks/keycloak.svg",
    "signs": {
@@ -21106,7 +21287,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "keylime",
@@ -21383,8 +21565,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "knix",
@@ -21430,9 +21614,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "koalaanalytics",
@@ -21477,7 +21663,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "kong",
@@ -21617,7 +21803,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "kots",
@@ -22831,8 +23017,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "kyverno",
@@ -22945,7 +23133,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "langchain-corporate",
@@ -23019,9 +23208,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "last9",
@@ -23208,8 +23399,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "libredb-studio",
@@ -23314,9 +23507,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "lightrun",
@@ -23522,7 +23717,7 @@
     "simple-icons",
     "stack-analyser"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "litjs",
@@ -23543,9 +23738,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "litmus",
@@ -23669,7 +23866,8 @@
    "from": [
     "additions",
     "cncf-landscape"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "llm-d",
@@ -23804,7 +24002,7 @@
     "additions",
     "simple-icons"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "loggie",
@@ -24024,7 +24222,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "longhorn",
@@ -24129,8 +24327,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "lovable",
@@ -24204,8 +24404,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "lumigo",
@@ -24425,7 +24627,7 @@
    "id": "mailhog",
    "name": "Mailhog",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": null,
    "mark": null,
    "signs": {
@@ -24443,8 +24645,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "mailjet",
@@ -24538,8 +24742,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "mapbox",
@@ -24603,7 +24809,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "maptiler",
@@ -24726,9 +24932,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "materialui",
@@ -24750,9 +24958,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "matlab",
@@ -24812,7 +25022,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "matrix",
@@ -24913,9 +25124,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "mcp-gateway-registry",
@@ -25317,9 +25530,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "mewz",
@@ -25620,9 +25835,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "mirantis-kubernetes-engine",
@@ -25739,8 +25956,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "mixpanel",
@@ -25809,8 +26028,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "mlflow",
@@ -25834,7 +26055,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "mlrun",
@@ -25869,9 +26091,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "mockito",
@@ -25895,7 +26119,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "mockserver",
@@ -26037,8 +26261,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "monday",
@@ -26348,7 +26574,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "muiicons",
@@ -26369,8 +26595,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "mulesoft",
@@ -26751,9 +26979,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "net",
@@ -27029,9 +27259,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "nginx",
@@ -27317,7 +27549,7 @@
    "id": "nomad",
    "name": "Nomad",
    "kind": "project",
-   "type": "altro",
+   "type": "servizio o API",
    "site": "https://www.nomadproject.io/",
    "mark": "marks/nomad.svg",
    "signs": {
@@ -27335,7 +27567,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "nops",
@@ -27529,9 +27762,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "numaflow",
@@ -27566,7 +27801,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "nunit",
@@ -27589,7 +27825,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "nuodb",
@@ -27662,9 +27898,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "nvidia-kubernetes-engine-nvke",
@@ -27719,9 +27957,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "nxcloud",
@@ -27766,9 +28006,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "oauth2-proxy",
@@ -28290,9 +28532,11 @@
     ]
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "openbao",
@@ -28394,7 +28638,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "openebs",
@@ -28739,7 +28984,7 @@
    "id": "opensearch",
    "name": "OpenSearch",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://opensearch.org",
    "mark": "marks/opensearch.svg",
    "signs": {
@@ -28760,7 +29005,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "opensergo",
@@ -28854,7 +29100,7 @@
     "simple-icons",
     "stack-analyser"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "opentofu",
@@ -29530,7 +29776,8 @@
    "from": [
     "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "ozone",
@@ -29703,7 +29950,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "pandora2-0",
@@ -29807,8 +30055,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "parseable",
@@ -29868,7 +30118,7 @@
     "additions",
     "simple-icons"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "patreon",
@@ -30229,8 +30479,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "phoenix",
@@ -30301,9 +30553,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "php",
@@ -30343,7 +30597,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "phpcomposer",
@@ -30375,8 +30630,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "phppest",
@@ -30397,8 +30654,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "phpstan",
@@ -30447,8 +30706,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "picocli",
@@ -30471,7 +30732,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "pillow",
@@ -30493,7 +30754,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "pinecone",
@@ -30604,7 +30866,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "pipecd",
@@ -30659,8 +30922,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "pipy",
@@ -30911,7 +31176,7 @@
     "additions",
     "stack-analyser"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "plotly",
@@ -30934,7 +31199,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "plural",
@@ -31043,7 +31309,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "podman-container-tools",
@@ -31121,9 +31388,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "polardb",
@@ -31173,7 +31442,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "polarsh",
@@ -31560,9 +31830,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "prefect",
@@ -31688,9 +31960,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "prisma-cloud-by-palo-alto-networks",
@@ -31924,7 +32198,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "pubnub-functions",
@@ -31977,10 +32252,12 @@
     ]
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "puppet",
@@ -32086,7 +32363,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "pydantic-ai",
@@ -32133,7 +32411,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "python",
@@ -32187,10 +32466,12 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "pytorch-distributeddataparallel-ddp",
@@ -32568,9 +32849,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "r",
@@ -32693,8 +32976,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "radixui",
@@ -32718,9 +33003,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "radware-kwaap",
@@ -32969,7 +33256,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "razee",
@@ -33067,9 +33355,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "react-email",
@@ -33093,7 +33383,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "react-native",
@@ -33138,8 +33428,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "reacticons",
@@ -33160,8 +33452,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "reactive-interaction-gateway",
@@ -33195,9 +33489,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "readme",
@@ -33246,9 +33542,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "red-hat-build-of-microshift",
@@ -33445,9 +33743,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "refinedev",
@@ -33470,9 +33770,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "rekaui",
@@ -33493,9 +33795,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "relativeci",
@@ -33546,8 +33850,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "remixrouter",
@@ -33569,8 +33875,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "remixrun",
@@ -33592,9 +33900,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "removebg",
@@ -33638,8 +33948,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "render",
@@ -33820,7 +34132,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "resend",
@@ -33884,7 +34197,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "rethinkdb",
@@ -34132,7 +34445,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "rollup",
@@ -34205,8 +34519,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "rubocop",
@@ -34260,7 +34576,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "rubyenv",
@@ -34279,8 +34596,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "rudder",
@@ -34497,8 +34816,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "sandstone",
@@ -34697,7 +35018,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "scale",
@@ -35076,7 +35397,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "scipy",
@@ -35099,7 +35421,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "score",
@@ -35163,7 +35486,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "screwdriver",
@@ -35667,9 +35991,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "sequelruby",
@@ -35690,8 +36016,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "serde",
@@ -35713,7 +36041,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "sermant",
@@ -35858,8 +36187,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "shardingsphere",
@@ -35967,8 +36298,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "shortcut",
@@ -36051,7 +36384,7 @@
     "additions",
     "simple-icons"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "sidero-talos-linux",
@@ -36211,9 +36544,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "simplyblock",
@@ -36454,8 +36789,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "slim",
@@ -36694,9 +37031,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "soda-foundation",
@@ -36812,8 +37151,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "sonarcloud",
@@ -36854,8 +37195,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "sonarqube",
@@ -36963,7 +37306,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "sparkpost",
@@ -37036,7 +37380,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "spicedb",
@@ -37551,7 +37896,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "sqlite",
@@ -37614,7 +37960,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "sqreen",
@@ -37928,9 +38274,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "stolon",
@@ -38026,9 +38374,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "strands",
@@ -38117,7 +38467,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "strimzi",
@@ -38528,8 +38879,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "supertokens",
@@ -38615,9 +38968,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "sveltekit",
@@ -38638,8 +38993,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "swc",
@@ -38666,7 +39023,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "swift",
@@ -38768,9 +39126,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "sysbox",
@@ -38843,8 +39203,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "taikun-cloudworks-wasm",
@@ -38910,8 +39272,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "talend-data-streams",
@@ -38968,8 +39332,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "tanstackstart",
@@ -38990,8 +39356,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "tarantool",
@@ -39078,9 +39446,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "tdengine",
@@ -39431,7 +39801,8 @@
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "tensorflow-distributed",
@@ -39539,8 +39910,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "terramate",
@@ -39618,7 +39991,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "testinglibrary",
@@ -39639,9 +40012,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "testkube",
@@ -39676,7 +40051,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "tetragon",
@@ -39833,7 +40208,7 @@
     "additions",
     "simple-icons"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "tidb",
@@ -40013,8 +40388,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "todoist",
@@ -40075,7 +40452,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "topaz",
@@ -40320,7 +40698,7 @@
    "id": "trino",
    "name": "Trino",
    "kind": "project",
-   "type": "altro",
+   "type": "database",
    "site": "https://trino.io/",
    "mark": "marks/trino.svg",
    "signs": {
@@ -40338,7 +40716,8 @@
     "additions",
     "cncf-landscape",
     "simple-icons"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "triton",
@@ -40399,9 +40778,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "trufflesecurity",
@@ -40473,9 +40854,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "tursodb",
@@ -40544,8 +40927,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "twilio",
@@ -40707,8 +41092,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "typeorm",
@@ -40729,9 +41116,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "typer",
@@ -40754,7 +41143,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "typescript",
@@ -40783,7 +41173,8 @@
     "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "typesense",
@@ -40875,8 +41266,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "umijs",
@@ -40900,8 +41293,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "unikraft",
@@ -41176,7 +41571,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "urunc",
@@ -41269,7 +41664,8 @@
    "from": [
     "additions",
     "simple-icons"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "v8",
@@ -41320,8 +41716,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "valibot",
@@ -41342,8 +41740,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "valkey",
@@ -41847,7 +42247,8 @@
    },
    "from": [
     "additions"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "virtasant",
@@ -41966,9 +42367,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "vitess",
@@ -42005,9 +42408,11 @@
     ]
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "vllm",
@@ -42259,9 +42664,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "vue-router",
@@ -42284,7 +42691,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "vuejs",
@@ -42321,8 +42728,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "vultr-kubernetes-engine",
@@ -42690,8 +43099,10 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "wavm",
@@ -42741,7 +43152,8 @@
    "from": [
     "additions",
     "cncf-landscape"
-   ]
+   ],
+   "category": "service"
   },
   {
    "id": "webassembly-language-runtimes-for-python-and-php-by-vmware-labs",
@@ -43414,7 +43826,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "tool"
   },
   {
    "id": "yandex-cloud",
@@ -43483,7 +43895,7 @@
    "from": [
     "additions"
    ],
-   "category": "framework"
+   "category": "library"
   },
   {
    "id": "ydb",
@@ -43540,8 +43952,10 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
-   ]
+   ],
+   "category": "framework"
   },
   {
    "id": "yoke",
@@ -43799,10 +44213,12 @@
     "files": []
    },
    "from": [
+    "additions",
     "cncf-landscape",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "tool"
   },
   {
    "id": "zipkin",
@@ -43877,9 +44293,11 @@
     "files": []
    },
    "from": [
+    "additions",
     "simple-icons",
     "stack-analyser"
-   ]
+   ],
+   "category": "library"
   },
   {
    "id": "zookeeper",

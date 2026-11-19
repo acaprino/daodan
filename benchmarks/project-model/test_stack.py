@@ -62,6 +62,19 @@ def test_a_service_entry_is_a_service_with_its_first_evidence_and_no_unit():
     assert not any(f["name"] in ("Postgres", "Redis") for f in faces["frameworks"])
 
 
+def test_a_library_and_a_tool_stay_in_the_frameworks_face_and_a_project_of_category_service_is_a_service():
+    """`expected.json` lists libraries and tools among its frameworks (Zod, Vite, Jest): the face keeps every class but
+    `service`, as before the registry wrote them; Kafka, a `project` of category `service`, is a service."""
+    sign = [{"sign": "package", "value": "x", "path": "web/package.json", "line": 3}]
+    record = {"technologies": [{"id": "zod", "name": "Zod", "kind": "project", "category": "library", "signs": sign},
+                               {"id": "vite", "name": "Vite", "kind": "project", "category": "tool", "signs": sign},
+                               {"id": "kafka", "name": "Kafka", "kind": "service", "category": "service", "signs": sign}],
+              "units": [{"id": "web", "name": "web", "paths": ["web"], "technologies": ["zod", "vite", "kafka"]}]}
+    faces = score.technologies_faces(record)
+    assert [(f["name"], f["unit"]) for f in faces["frameworks"]] == [("Zod", "web"), ("Vite", "web")]
+    assert faces["services"] == [{"name": "Kafka", "evidence": "web/package.json"}]
+
+
 def test_a_root_unit_holds_the_signs_of_every_path():
     record = {"technologies": [{"id": "x", "name": "X", "kind": "project", "signs": [
         {"sign": "package", "value": "x", "path": "deep/er/package.json", "line": 1}]}],

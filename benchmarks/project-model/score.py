@@ -512,10 +512,10 @@ def _within(path, roots):
 def technologies_faces(record):
     """The `frameworks` and `services` of the `stack` step's record (`technologies.json`, daodan/technologies/v1).
 
-    The record has no framework type: every `project` entry is offered as a framework of each build unit that holds
-    it (the entry's `evidence` is its first sign inside that unit), unitless when no unit holds it; every `service`
-    entry is a service, with its first sign as evidence. Which project entries are libraries or tools is for
-    `score_technologies`, which counts those apart."""
+    Every entry whose `category` is not `service` (a framework, a library or a tool: `expected.json` lists all three
+    among its frameworks) is offered as a framework of each build unit that holds it (the entry's `evidence` is its
+    first sign inside that unit), unitless when no unit holds it; every `service` entry is a service, with its first
+    sign as evidence. What `expected.json` does not list is for `score_technologies`, which counts it apart."""
     held = {}
     for unit in record.get("units") or []:
         for ident in unit.get("technologies") or []:
@@ -550,9 +550,9 @@ def _bare(items):
 def score_technologies(expected, record):
     """`technologies.json` against `expected.json` on `frameworks` and `services`; None without a record.
 
-    `expected.json` counts the frameworks a project uses, with some libraries; the record cannot tell a framework
-    from a library or a tool. What it offers beyond `expected` is therefore not a false framework: it moves from
-    `extra` to `counted_apart`. Services are complete in `expected.json`, so a service beyond it stays `extra`.
+    `expected.json` counts the frameworks a project uses, with some libraries and tools, and not all of them; the
+    face offers all three (`technologies_faces`). What it offers beyond `expected` is therefore not a false framework:
+    it moves from `extra` to `counted_apart`. Services are complete in `expected.json`, so a service beyond it stays `extra`.
     `frameworks_by_name` scores the names alone, one per project: units are named as each reader names them, and a
     `unit` that differs turns a found framework into a wrong one (or, where `unknown` limits the units, a missed one)."""
     if record is None:

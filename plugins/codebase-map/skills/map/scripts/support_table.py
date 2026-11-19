@@ -32,15 +32,17 @@ import languages  # noqa: E402
 import module_derive  # noqa: E402
 import premap  # noqa: E402
 import preparation  # noqa: E402
+import registry_build  # noqa: E402
 import service_registry  # noqa: E402
-from indexers import css  # noqa: E402
+from indexers import components, css, css_tailwind  # noqa: E402
+from languages import sfc  # noqa: E402
 from premap import suffix_table  # noqa: E402
 
 ROOT = SCRIPT_DIR.parents[4]
 DOC = ROOT / "docs/plugins/codebase-map-supporto.md"
 RESULTS = ROOT / "benchmarks/project-model/results"
 RUN = "2026-11-16-finale"  # the last pipeline run over the whole corpus; the later ones have a few cases each
-STACK = ("daodan_stack.json", "17 novembre 2026", "d96bc1ec3246636d")  # file, date, the code its records name
+STACK = ("daodan_stack.json", "19 novembre 2026", "c6be10745cedb94d")  # file, date, the code its records name
 REGISTER = ROOT / "docs/verification/2026-11-16-registro-difetti.md"
 CENSUS = ROOT / "docs/research/2026-11-14-punti-di-connessione.md"
 ENGINES_PACKAGE = SCRIPT_DIR / "indexers/css_engines/package.json"
@@ -49,6 +51,15 @@ MONTHS = ("gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio"
           "novembre", "dicembre")
 RANKS = {"model": "modello: il comando del build tool, nel container", "reader": "lettore: legge i file",
          "scanner": "scanner: legge ogni file"}
+# An ecosystem of the registry's package signs and the languages, by the snapshot's names, of the code that declares
+# its packages; an image or a CI action is no code.
+PACKAGE_LANGUAGES = {"npm": ("javascript", "typescript"), "deno": ("javascript", "typescript"), "pypi": ("python",),
+                     "crates": ("rust",), "go": ("go",), "maven": ("java", "kotlin"), "nuget": ("csharp",),
+                     "composer": ("php",), "rubygems": ("ruby",), "hex": ("elixir",), "pub": ("dart",),
+                     "terraform": ("hcl",), "terraform-resource": ("hcl",), "docker": (), "github-actions": ()}
+# A registry entry Daodan reads beyond its language, and what its readers key that reading on: a file suffix or the
+# package `indexers/css_tailwind.py` asks for. `own_reading` says the reading from the readers' own constants.
+OWN_READINGS = {"vue": ".vue", "sveltejs": ".svelte", "astro": ".astro", "tailwind": css_tailwind.PACKAGE}
 
 
 def _rel(path: Path) -> str:
@@ -232,6 +243,35 @@ def _signs(entry: dict) -> str:
     return ", ".join(parts)
 
 
+def own_reading(key: str) -> str:
+    """What Daodan reads beyond the language of the files or the package `key`, from its readers' constants; empty
+    when no reader takes it."""
+    parts = []
+    if key in components.SUFFIXES:
+        parts.append("componenti nell'indice di scip-typescript (`indexers/components.py`)")
+    language = languages.SUPPORTED_EXTENSIONS.get(key)
+    adapter = languages.get_adapter(language) if language else None
+    if isinstance(adapter, type(sfc.vue_adapter)):
+        parts.append(("frontmatter e `<script>` nello snapshot, il template no" if adapter.frontmatter
+                      else "`<script>` e template nello snapshot") + " (`languages/sfc.py`)")
+    if key in css.COMPONENTS:
+        parts.append("stili con il compilatore del framework "
+                     f"(`indexers/{css.COMPONENTS[key].__name__.rsplit('.', 1)[-1]}.py`)")
+    if key == css_tailwind.PACKAGE:
+        parts.append("quali classi sono sue utility, dal Tailwind del progetto nel container "
+                     "(`indexers/css_tailwind.py`)")
+    return "; ".join(parts)
+
+
+def _analysed(entry: dict, reads: dict) -> str:
+    """The languages of the entry's package ecosystems (`PACKAGE_LANGUAGES`) an analyzer reads, then those none reads."""
+    signs = entry.get("signs") or {}
+    names = dict.fromkeys(language for ecosystem in sorted({*(signs.get("packages") or {}), *(signs.get("patterns") or {})})
+                          for language in PACKAGE_LANGUAGES[ecosystem])
+    return ", ".join([suffix_table.NAMES.get(name, name) for name in names if reads.get(name)]
+                     + [f"{name}: nessun analizzatore" for name in names if not reads.get(name)]) or "—"
+
+
 def stack_section(registry: dict, stack: dict) -> list[str]:
     entries = registry["entries"]
     known = [e for e in entries if e.get("signs")]
@@ -263,32 +303,51 @@ def stack_section(registry: dict, stack: dict) -> list[str]:
     listed = sorted((e for e in known if service_registry.entry_category(e) != "service"),
                     key=lambda e: (service_registry.entry_category(e), e["name"].casefold()))
     file, date, _ = STACK
+    reads, by_id = _analyzer_reads(), {e["id"]: e for e in entries}
+    readings = {ident: own_reading(key) for ident, key in OWN_READINGS.items()}
+    read_names = [by_id[ident]["name"] for ident in OWN_READINGS if ident in by_id]
+    default = (f"Delle {_n(len(projects))} voci `project` riconoscibili, {_of(len(defaulted), 'è', 'sono')} "
+               "`framework` solo per il default, senza una `category` scritta: per distinguerle serve una `category` "
+               "(`framework`, `library` o `tool`) su ognuna." if defaulted else
+               f"Ognuna delle {_n(len(projects))} voci `project` riconoscibili ha la sua `category` scritta: nessuna "
+               "è `framework` solo per il default.")
     return ["## Framework, librerie e strumenti", "",
             "Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `libraries`, `services` e "
             "`tools`. La classe di una voce del catalogo (`data/service-registry.json`) la decide "
             "`service_registry.entry_category`: la `category` della voce se c'è, altrimenti `service` per una voce "
-            "`service` e `framework` per ogni altra. Le `libraries` sono tutti i pacchetti che l'unità dichiara, nel "
-            "catalogo o no: il catalogo non ha voci di classe `library`.", "",
+            "`service` e `framework` per ogni altra. I `frameworks` di un'unità sono le voci `framework`; le "
+            "`libraries` sono tutti i pacchetti che dichiara, nel catalogo o no, con l'id della voce che il catalogo "
+            "ne ha. Sul grafo dell'app un modulo mostra come tessere le voci `framework` e `library` che un suo file "
+            "dichiara; uno strumento non è una tessera, un servizio è un nodo esterno.", "",
             *_table(["Classe", "Voci riconoscibili (con segni)", "Voci con la categoria scritta, fra tutte"],
-                    [[c, _n(classes.get(c, 0)), _n(written.get(c, 0))]
-                     for c in ("framework", "tool", "service", "library")]), "",
-            f"Il catalogo non distingue un framework da una libreria: delle {_n(len(projects))} voci `project` "
-            f"riconoscibili, {_n(len(defaulted))} sono `framework` solo per il default, senza una `category` scritta. "
-            "Per distinguerli servirebbe una `category` (`framework`, `library` o `tool`) su ogni voce `project` "
-            "con segni.", "",
+                    [[c, _n(classes.get(c, 0)), _n(written.get(c, 0))] for c in registry_build.CATEGORIES]), "",
+            default, "",
             f"Riconoscimento dello stack sul corpus, giro del {date} (`{_rel(RESULTS / file)}`), "
             f"{len(scored)} fixture su {len(stack['fixtures'])} con record; per nome conta un nome una volta per "
             "fixture, per unità ogni unità che lo tiene.", "",
             *_table(["Famiglia", "Fixture", "Framework per nome", "Framework per unità", "Servizi"], face_rows), "",
-            "<details><summary>Framework e strumenti riconoscibili: "
+            "Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: un suo "
+            "segno (un pacchetto, un'immagine, un file) è nel progetto; vale per ogni voce. Codice analizzato: il "
+            "codice del progetto che la dichiara è letto dall'analizzatore del suo linguaggio; la colonna dà questi "
+            "linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha "
+            "analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo "
+            f"per {_of(len(read_names), 'voce', 'voci')} ({', '.join(read_names)}). Rotte e collegamenti fra le parti "
+            "vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` "
+            "applica a chiamate, decoratori e attributi, per qualunque framework. Nessun framework ha le rotte lette "
+            "dal posto di un file (le pagine di Next.js, Nuxt, SvelteKit, Remix o Astro): è un buco dichiarato.", "",
+            "<details><summary>Framework, librerie e strumenti riconoscibili: "
             f"{len(listed)} voci</summary>", "",
-            *_table(["Voce", "Id", "Classe", "Segni", f"Fixture in cui lo step la trova ({date})"],
-                    [[e["name"], f"`{e['id']}`", service_registry.entry_category(e), _signs(e), found_in.get(e["id"], 0)]
+            *_table(["Voce", "Id", "Classe", "Segni", "Codice analizzato", "Lettura propria",
+                     f"Fixture in cui lo step la trova ({date})"],
+                    [[e["name"], f"`{e['id']}`", service_registry.entry_category(e), _signs(e), _analysed(e, reads),
+                      readings.get(e["id"]) or "—", found_in.get(e["id"], 0)]
                      for e in listed]), "", "</details>", ""]
 
 
 def services_section(registry: dict, stack: dict) -> list[str]:
-    services = [e for e in registry["entries"] if e["kind"] == "service"]
+    services = [e for e in registry["entries"]
+                if e["kind"] == "service" or service_registry.entry_category(e) == "service"]
+    projects = sum(1 for e in services if e["kind"] == "project")
     by_type = collections.defaultdict(lambda: [0, 0, 0])
     for e in services:
         row = by_type[e.get("type") or "—"]
@@ -299,14 +358,19 @@ def services_section(registry: dict, stack: dict) -> list[str]:
     found_in = collections.Counter(i for record in stack["fixtures"].values() for i in record.get("ids") or ())
     listed = sorted((e for e in services if e.get("signs") and service_registry.entry_category(e) == "service"),
                     key=lambda e: e["name"].casefold())
-    apart = sum(1 for e in services if e.get("signs")) - len(listed)
+    apart = collections.Counter(service_registry.entry_category(e) for e in services if e.get("signs")
+                                and service_registry.entry_category(e) != "service")
     return ["## Servizi esterni", "",
-            f"Le voci `service` del catalogo: {_n(len(services))}, {_n(sum(r[1] for r in by_type.values()))} con "
+            f"Le voci di servizio del catalogo: {_n(len(services))}, {_n(len(services) - projects)} di `kind` "
+            f"`service` e {_n(projects)} di `kind` `project` con la `category` `service` (un software che gira "
+            f"accanto al sistema e a cui il codice si connette); {_n(sum(r[1] for r in by_type.values()))} con "
             f"segni per riconoscerle, {_n(sum(r[2] for r in by_type.values()))} con un marchio: {_n(sum(1 for e in services if e.get("mark")))} con il file nel prodotto (`mark`), "
             f"{_n(sum(1 for e in services if e.get("mark_source")))} scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per "
             "specie, sulle voci che ne hanno: " + ", ".join(f"`{k}` {_n(v)}" for k, v in sorted(signs.items())) + ". "
-            f"Di quelle con segni, {_n(apart)} hanno la categoria `framework` o `tool` e stanno nella lista della "
-            "sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.", "",
+            + (f"Di quelle con segni, {_n(sum(apart.values()))} hanno un'altra categoria ("
+               + ", ".join(f"`{c}` {_n(n)}" for c, n in sorted(apart.items())) + ") e stanno nella lista della "
+               "sezione precedente. " if apart else "")
+            + "Il riconoscimento misurato è la colonna Servizi della sezione precedente.", "",
             *_table(["Tipo", "Voci", "Con segni", "Con marchio"],
                     [[k, _n(a), _n(b), _n(c)] for k, (a, b, c) in sorted(by_type.items(), key=lambda x: -x[1][0])]),
             "", f"<details><summary>Servizi riconoscibili: {len(listed)} voci</summary>", "",

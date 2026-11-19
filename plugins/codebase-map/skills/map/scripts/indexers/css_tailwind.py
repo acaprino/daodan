@@ -19,14 +19,15 @@ from .css_sass import failure
 
 SCRIPT = Path(__file__).resolve().with_suffix(".js")
 CONFIGS = ("tailwind.config.js", "tailwind.config.cjs", "tailwind.config.mjs", "tailwind.config.ts")
+PACKAGE = "tailwindcss"  # the npm package of the Tailwind asked
 
 
 def declared(project_dir: Path) -> bool:
     """Whether the project has a Tailwind to ask: a `package.json` outside dependency folders that names
-    `tailwindcss`, or one installed at the root."""
-    if (project_dir / "node_modules/tailwindcss/package.json").is_file():
+    `PACKAGE`, or one installed at the root."""
+    if (project_dir / "node_modules" / PACKAGE / "package.json").is_file():
         return True
-    return any('"tailwindcss"' in path.read_text(encoding="utf-8", errors="replace")
+    return any(f'"{PACKAGE}"' in path.read_text(encoding="utf-8", errors="replace")
                for path in project_dir.rglob("package.json")
                if not any(part in DEPENDENCY_DIRS or part.startswith(".")
                           for part in path.relative_to(project_dir).parent.parts))

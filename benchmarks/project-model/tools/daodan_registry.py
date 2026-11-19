@@ -2,8 +2,8 @@
 
 `snapshot.py write <dir> --out manifest.sqlite --no-engine --no-index`, then `service_registry.recognize(manifest)`
 (`plugins/codebase-map/skills/map/scripts/service_registry.py` with `data/service-registry.json`). The registry
-knows names, a kind (`service` or `project`) and a type, not frameworks: `frameworks` is not given. Services are the
-recognised entries of kind `service`; the kind of the answer is the registry type (RANK_KINDS translates it); the
+knows names, a kind, a category and a type; `frameworks` is not given. Services are the recognised entries whose
+category is `service` (`recognize` gives them kind `service`, a `project` entry of that category too); the kind of the answer is the registry type (RANK_KINDS translates it); the
 evidence is the first sign's file. Every recognised entry, `project` ones included, is in `detail.ids`, for the
 comparison with the stack-analyser CLI.
 """
