@@ -16,6 +16,9 @@ asked for, its arguments and what it answered), `log`. `cancelled()` is asked be
   or write files: what the analysed project holds is read through Daodan's tools, and its code runs nowhere here.
 
 `configured` builds the engine of a setting; `probe` asks it for a word and, where it has tools, for a tool call.
+`kept` writes a setting for the next start and `recalled` reads it: engine, address and model in the work folder, the
+key only in the system's deposit of secrets (`keyring`: the credential manager on Windows, Secret Service or KWallet
+on Linux), which encrypts it with the person's account.
 """
 from __future__ import annotations
 
@@ -23,10 +26,12 @@ import json
 import os
 import secrets
 import shutil
+import sqlite3
 import subprocess
 import threading
 import urllib.error
 import urllib.request
+from contextlib import closing
 from pathlib import Path
 
 ENGINES = ("openai", "claude", "codex")
@@ -34,6 +39,8 @@ TURNS = 24  # the model's turns in one task: a loop of tool calls ends there
 SECONDS = 900  # one task
 ANSWER = 20_000  # the characters of a tool's answer given back to the model
 SERVER = "daodan"  # the name Daodan's MCP server has for a command-line engine
+KEPT = ("engine", "base_url", "model")  # what of a setting the work folder keeps: never the key
+STORE, DEPOSIT, ENTRY = "settings.sqlite", "daodan", "openai-api-key"  # the folder's file; the key's place in the deposit
 
 
 def _outcome(state: str, text: str = "", session: str | None = None, cause: str | None = None) -> dict:
@@ -237,10 +244,46 @@ def setting(environment=os.environ) -> dict:
             "api_key": environment.get("DAODAN_OPENAI_API_KEY") or environment.get("OPENAI_API_KEY") or ""}
 
 
+def recalled(folder: Path, environment=os.environ) -> dict:
+    """The setting of a start: what the environment asks for and, over it, what `kept` wrote in `folder` and the key
+    the system's deposit holds. A deposit that cannot be read leaves the environment's key."""
+    import keyring  # here, not above: running an engine needs no deposit
+    import keyring.errors
+    chosen = setting(environment)
+    if (folder / STORE).is_file():
+        with closing(sqlite3.connect(folder / STORE)) as db:
+            chosen.update((name, value) for name, value in db.execute("SELECT name, value FROM setting")
+                          if name in KEPT)
+    try:
+        chosen["api_key"] = keyring.get_password(DEPOSIT, ENTRY) or chosen["api_key"]
+    except keyring.errors.KeyringError:
+        pass
+    return chosen
+
+
+def kept(chosen: dict, folder: Path, key: str | None = None) -> str | None:
+    """Keep `chosen` for the next start: engine, address and model in `folder`. A `key` the person gave goes to the
+    system's deposit; the answer is why the deposit did not take it, so it lives in this process only, else None."""
+    import keyring
+    import keyring.errors
+    with closing(sqlite3.connect(folder / STORE)) as db, db:
+        db.execute("CREATE TABLE IF NOT EXISTS setting (name TEXT PRIMARY KEY, value TEXT)")
+        db.executemany("INSERT OR REPLACE INTO setting VALUES (?, ?)", [(name, chosen.get(name)) for name in KEPT])
+    if not key:
+        return None
+    try:
+        keyring.set_password(DEPOSIT, ENTRY, key)
+    except keyring.errors.KeyringError as error:
+        return f"the system's deposit of secrets did not take the key ({type(error).__name__})"
+    return None
+
+
 def described(chosen: dict) -> dict:
-    """A setting as it may be shown: the key is said `set` or `missing`, never itself."""
+    """A setting as it may be shown: the key is said `set` or `missing`, never itself; `deposit` is why a key the
+    person gave is in this process only, None when the deposit holds it."""
     return {"engine": chosen.get("engine"), "base_url": chosen.get("base_url"), "model": chosen.get("model"),
-            "api_key": "set" if chosen.get("api_key") else "missing", "engines": list(ENGINES)}
+            "api_key": "set" if chosen.get("api_key") else "missing", "deposit": chosen.get("deposit"),
+            "engines": list(ENGINES)}
 
 
 def configured(chosen: dict):

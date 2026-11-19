@@ -59,7 +59,7 @@ image = (modal.Image.debian_slim(python_version="3.13")
          .run_commands("npm install --prefix /opt/components-vue2 --no-audit --no-fund --ignore-scripts "
                        + " ".join(COMPONENTS_VUE2))
          .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
-                      "sqlglot>=30"))
+                      "sqlglot>=30", "keyring>=25"))
 if LOCAL:
     # The results stay: suites replay the recorded answers kept there. The explorer's sources are no suite's.
     skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "codebase-explorer/**"]

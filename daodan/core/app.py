@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"]
+# dependencies = ["tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25"]
 # ///
 """The standalone app: one local server, from the address of a public repository to its graph.
 
@@ -21,7 +21,8 @@ selected they answer that none is.
 
 A question to the engine is the same: asked, then read. The engine reads the project only through Daodan's
 operations (functions of this process for an API, the MCP server for a command line): nothing of the analysed
-project runs on this machine. The engine's key stays in this process's memory, said `set` or `missing`.
+project runs on this machine. The chosen engine is kept in the work folder for the next start and its key in the
+system's deposit of secrets (`engines.kept`); the key is said `set` or `missing`, never itself.
 Finding the links between modules is a task of the engine too: it writes the project's link rules through the flows
 tool and corrects them on what stays unlinked; what they link is the service's answer, never the engine's words.
 """
@@ -96,7 +97,7 @@ class App:
         self.context: dict | None = None
         self.job = {"state": "idle", "step": None, "detail": ""}
         self.mcp_ready = "not prepared"  # whether the MCP server's own packages are fetched: said in the state
-        self.engine = engines.setting(environment) if environment is not None else engines.setting()
+        self.engine = engines.recalled(self.work, *(() if environment is None else (environment,)))
         self.asked = {"state": "idle", "question": "", "text": "", "events": [], "cause": None}
         self.linked = {"state": "idle", "cause": None}  # the links between modules: see `link`
         self.registry = {entry["id"]: entry for entry in service_registry.load()["entries"]}  # whose marks `mark` serves
@@ -310,13 +311,17 @@ class App:
     # -- the engine -----------------------------------------------------------------------------------------------
 
     def configure(self, body: dict) -> dict:
-        """Choose the engine and, for an endpoint, its address, model and key; a key left out stays as it is."""
+        """Choose the engine and, for an endpoint, its address, model and key; a key left out stays as it is. The
+        choice is kept for the next start, a key given here in the system's deposit."""
         chosen = {**self.engine, **{key: body[key] for key in ("engine", "base_url", "model") if key in body}}
         if body.get("api_key"):
             chosen["api_key"] = body["api_key"]
         if any(not isinstance(chosen[key], str) for key in ("base_url", "model", "api_key")) \
                 or chosen["engine"] not in (None, *engines.ENGINES):
             raise ValueError(f"the engine is one of {', '.join(engines.ENGINES)}, with text for its settings")
+        cause = engines.kept(chosen, self.work, body.get("api_key"))
+        if body.get("api_key"):
+            chosen["deposit"] = cause
         self.engine = chosen
         return engines.described(chosen)
 

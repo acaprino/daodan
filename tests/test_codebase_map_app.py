@@ -20,6 +20,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import quote
 
+import keyring
+import keyring.backend
+import keyring.backends.fail
 import pytest
 
 HERE = Path(__file__).resolve().parent
@@ -40,6 +43,32 @@ CLEAN = {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHO
 def git(folder: Path, *arguments: str) -> str:
     return subprocess.run(["git", *arguments], cwd=folder, env={**os.environ, **CLEAN}, check=True,
                           capture_output=True, text=True).stdout.strip()
+
+
+class Deposit(keyring.backend.KeyringBackend):
+    """The system's deposit of secrets, held by the test: no test writes in the person's own."""
+    priority = 1
+
+    def __init__(self):
+        super().__init__()
+        self.held = {}
+
+    def get_password(self, service, username):
+        return self.held.get((service, username))
+
+    def set_password(self, service, username, password):
+        self.held[(service, username)] = password
+
+    def delete_password(self, service, username):
+        del self.held[(service, username)]
+
+
+@pytest.fixture(autouse=True)
+def deposit():
+    previous, held = keyring.get_keyring(), Deposit()
+    keyring.set_keyring(held)
+    yield held
+    keyring.set_keyring(previous)
 
 
 @pytest.fixture
@@ -164,6 +193,34 @@ def test_an_endpoint_that_is_not_reached_fails_with_its_cause():
         engines.configured({"engine": None})
     with pytest.raises(ValueError):
         engines.configured({"engine": "openai", "base_url": "ftp://x", "model": "m"})
+
+
+def test_a_saved_engine_comes_back_at_the_next_start_and_its_key_is_only_in_the_deposit(tmp_path, deposit):
+    work, saved = tmp_path / "work", {"engine": "openai", "base_url": "https://e.example/v1", "model": "m"}
+    described = launcher.App(work, environment={}).configure({**saved, "api_key": "sk-secret"})
+    assert described["api_key"] == "set" and described["deposit"] is None
+    again = launcher.App(work, environment={"DAODAN_OPENAI_MODEL": "other", "OPENAI_API_KEY": "sk-environment"})
+    assert again.engine == {**saved, "api_key": "sk-secret"}  # what the person saved, over what the environment asks
+    assert list(deposit.held.values()) == ["sk-secret"]
+    assert not [path for path in work.rglob("*") if path.is_file() and b"sk-secret" in path.read_bytes()]
+
+
+def test_a_key_of_the_environment_is_not_copied_in_the_deposit(tmp_path, deposit):
+    app = launcher.App(tmp_path / "work", environment={"OPENAI_API_KEY": "sk-environment"})
+    assert app.configure({"engine": "openai", "model": "m"})["api_key"] == "set"
+    assert deposit.held == {}
+
+
+def test_without_a_deposit_the_key_stays_in_memory_and_the_setting_says_why(tmp_path):
+    keyring.set_keyring(keyring.backends.fail.Keyring())
+    work = tmp_path / "work"
+    app = launcher.App(work, environment={})
+    described = app.configure({"engine": "openai", "model": "m", "api_key": "sk-secret"})
+    assert described["api_key"] == "set" and "keyring" in described["deposit"].lower()
+    assert app.engine["api_key"] == "sk-secret"
+    again = launcher.App(work, environment={})
+    assert (again.engine["engine"], again.engine["model"], again.engine["api_key"]) == ("openai", "m", "")
+    assert not [path for path in work.rglob("*") if path.is_file() and b"sk-secret" in path.read_bytes()]
 
 
 def test_a_command_line_engine_starts_without_the_tools_that_run_commands(tmp_path):
