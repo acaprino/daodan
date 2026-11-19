@@ -1,6 +1,6 @@
 # Benchmark: flussi e unità della fase 2
 
-Prova la [spec della fase 2](../../docs/specs/2026-11-09-flow-model.md). Le soglie sono scritte qui prima di ogni misura; i casi reali sono [`polar-flow`](../polar-flow/README.md), [`tududi-flow`](../tududi-flow/README.md) e [`phazly-flow`](../phazly-flow/README.md), ognuno con i propri valori attesi. Tutto gira su Modal; sulla macchina locale solo caricamento degli input e lettura dei risultati.
+Prova la [spec della fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md). Le soglie sono scritte qui prima di ogni misura; i casi reali sono [`polar-flow`](../polar-flow/README.md), [`tududi-flow`](../tududi-flow/README.md) e [`phazly-flow`](../phazly-flow/README.md), ognuno con i propri valori attesi. Tutto gira su Modal; sulla macchina locale solo caricamento degli input e lettura dei risultati.
 
 ## Parametri e soglie
 

@@ -10,8 +10,8 @@
 The launcher composes what exists and owns its end: `repository` gives the checkout, `MapService` the run (snapshot,
 pre-map, stack, and the pass that builds the graph beside it), `visual.make_server` the transport on 127.0.0.1 with
 its token, `engines` the model a question is given to, `app_view` the run in the shapes the page draws (the
-pre-map, the graph in groups), and `service_registry` the mark of an external node. It prints the page's address,
-which carries the token.
+pre-map, the graph with its groups open in place), and `service_registry` the mark of an external node. It prints the page's
+address, which carries the token.
 
 One repository and branch is active at a time. Selecting it is work off the request: the page asks, observes
 `/api/stream` (the app's state whenever it changes, the run's events as they are written), and opens the explorer of
@@ -34,6 +34,7 @@ import subprocess
 import sys
 import threading
 import time
+from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -63,7 +64,21 @@ LINKS = ("Write the link rules of the project of run `{run}`: the machine applie
          "rules on those leftovers and record them again, at most {rounds} times, then stop.\n\n"
          "The technologies of each build unit:\n{technologies}\n\nThe rule format:\n{format}")
 FINAL = ("fresh", "unavailable", "failed", "off")  # the pass's states that change no more by themselves
+LEVELS = 64  # answers of the graph kept for the run's data (open sets, files' symbols), least recently asked dropped first
 TURN, RECHECK = 0.5, 1.5  # seconds between two reads of the stream, and between two reads of a running pass's state
+
+
+def _listed(query: dict, name: str, why: str) -> list | None:
+    """The JSON list of the query's `name`, None when absent; anything else is refused with `why`."""
+    if query.get(name) is None:
+        return None
+    try:
+        found = json.loads(query[name])
+    except ValueError:
+        raise ValueError(why) from None
+    if not isinstance(found, list):
+        raise ValueError(why)
+    return found
 
 
 def _cause(error: Exception) -> str:
@@ -87,6 +102,7 @@ class App:
         self.registry = {entry["id"]: entry for entry in service_registry.load()["entries"]}  # whose marks `mark` serves
         self._marks, self._fetch = {}, ThreadPoolExecutor(max_workers=1)  # the marks fetched on first use, one at a time
         self._lock, self._stop = threading.Lock(), threading.Event()
+        self._levels, self._graphing = {}, threading.Lock()  # the graph's answers kept for the run's data: see `_kept`
 
     # -- the repository -------------------------------------------------------------------------------------------
 
@@ -227,9 +243,54 @@ class App:
         return app_view.premap(service.stack(run), service.modules(run), app_view.headers(service.root / "runs" / run))
 
     def graph(self, query: dict) -> dict:
-        """The run's graph in groups, as the page draws it while it grows; the explorer (`/`) shows it whole."""
+        """The run's graph at the system map's `levels` (a JSON list; `app_view.levels`: the app builds codice and
+        infrastruttura) with the groups of `open` (a JSON list of node ids) open in place (`app_view.view`); the
+        explorer (`/`) shows it whole."""
+        shown = app_view.levels(_listed(query, "levels", "levels is a JSON list of levels"))
+        groups = _listed(query, "open", "open is a JSON list of node ids") or []
+        if not all(isinstance(item, str) for item in groups):
+            raise ValueError("open is a JSON list of node ids")
+        groups = tuple(sorted(set(groups)))
+        return self._kept(("graph", shown, groups), lambda envelope, run_dir: app_view.view(
+            envelope, groups, shown, self._file_symbols(run_dir)))
+
+    def symbols(self, query: dict) -> dict:
+        """The inspector's data of the run's `file` (a node id), open or not: its symbols and their calls, with lines
+        (`app_view.symbols`), read for that file only."""
+        file = query.get("file")
+        return self._kept(("symbols", file), lambda envelope, run_dir: app_view.symbols(
+            envelope, file, self._file_symbols(run_dir)))
+
+    def _file_symbols(self, run_dir: Path):
+        """`visual.file_symbols`, read once per file and per state of the run's data, for an open file and for the
+        inspector alike; asked while `_kept` holds its lock."""
+        answers = self._levels["answers"]
+
+        def read(path: str) -> dict:
+            if ("file", path) not in answers:
+                answers[("file", path)] = visual.file_symbols(run_dir, path)
+            return answers[("file", path)]
+        return read
+
+    def _kept(self, key: tuple, compute):
+        """What `compute(envelope, run_dir)` answers for `key`, kept: the run's envelope without the files' symbols is
+        built once per state of the data it reads (`visual.inputs_stamp`), and each answer once on it; a change of
+        that data throws all away, and at most LEVELS answers stay. One is computed at a time: who asks meanwhile
+        waits, and finds it kept."""
         service, run = self._active()
-        return app_view.graph(visual.build_envelope(service.root / "runs" / run))
+        run_dir = service.root / "runs" / run
+        with self._graphing:
+            stamp = (run_dir, visual.inputs_stamp(run_dir))
+            if self._levels.get("stamp") != stamp:
+                self._levels = {"stamp": stamp, "envelope": visual.build_envelope(run_dir, symbols=False),
+                                "answers": OrderedDict()}
+            answers = self._levels["answers"]
+            if key not in answers:
+                answers[key] = compute(self._levels["envelope"], run_dir)
+                while len(answers) > LEVELS:
+                    answers.popitem(last=False)
+            answers.move_to_end(key)
+            return answers[key]
 
     def mark(self, query: dict) -> Path | None:
         """The mark of the registry entry `id` (`service_registry.mark_file`), or None: the page draws the icon of the
@@ -400,7 +461,7 @@ class App:
 
         active = Active()
         routes = {**visual.live_routes(active), "/api/app/state": self.state, "/api/app/answer": self.answer,
-                  "/api/app/premap": self.premap, "/api/app/graph": self.graph}
+                  "/api/app/premap": self.premap, "/api/app/graph": self.graph, "/api/app/symbols": self.symbols}
         actions = {**visual.live_actions(active), "/api/app/check": self.check, "/api/app/select": self.select,
                    "/api/app/retry": self.retry,
                    "/api/app/engine": self.configure, "/api/app/probe": self.probe, "/api/app/ask": self.ask,

@@ -1,6 +1,6 @@
 # Benchmark: un conteggio letto a un'altra granularità, in un servizio
 
-Caso per le spec [fase 2](../../docs/specs/2026-11-09-flow-model.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md): un servizio senza interfaccia, [polarsource/polar](https://github.com/polarsource/polar), con un difetto reale già corretto. Una concessione di beneficio è registrata per membro; la revoca la conta per cliente. Il codice di polar non è copiato qui; le run e i loro artefatti restano fuori dal repository.
+Caso per le spec [fase 2](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md) e [fase 3](../../docs/specs/2026-11-09-flows-in-review.md): un servizio senza interfaccia, [polarsource/polar](https://github.com/polarsource/polar), con un difetto reale già corretto. Una concessione di beneficio è registrata per membro; la revoca la conta per cliente. Il codice di polar non è copiato qui; le run e i loro artefatti restano fuori dal repository.
 
 ## Parametri
 

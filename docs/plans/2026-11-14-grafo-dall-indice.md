@@ -21,7 +21,7 @@ Pre-mappa del progetto aggiunta il 14 novembre 2026 su richiesta del proprietari
 **Spec:**
 - `docs/specs/2026-11-08-risoluzione-chiamate-motore.md` resta. Cambiano i requisiti 5, 11, 12 (Node), 18 e 20: il task 6 li riscrive come revisione della stessa spec.
 - `docs/specs/2026-11-12-passo-dinamico.md` fornisce il container.
-- `docs/specs/2026-11-12-mappa-del-sistema.md` usa archi, buchi ed esterni.
+- `docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md` usa archi, buchi ed esterni.
 
 **Misure di partenza:** `benchmarks/inference-audit/README.md`, sezioni del 13 novembre 2026.
 

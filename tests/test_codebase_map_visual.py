@@ -232,7 +232,7 @@ class LinkRelationTests(unittest.TestCase):
         kept = [item for item in self.after["entities"] if item["type"] in ("file", "directory", "symbol", "store")]
         store = {"ref": "store:cache/cats", "type": "store", "name": "cache/cats"}
         graph = visual_app_graph({**self.after, "entities": [*kept, store]})
-        self.assertEqual(graph["level"], "directories")
+        self.assertEqual(graph["grouping"], "directories")
         self.assertIn(("directory:web", "directory:server", {"calls": 2}),
                       [(edge["source"], edge["target"], edge["counts"]) for edge in graph["edges"]])
 
@@ -309,7 +309,7 @@ class ServiceNodeTests(unittest.TestCase):
 
     def test_the_app_graph_draws_the_node_beside_the_groups_used_by_the_group_of_each_file(self):
         graph = visual_app_graph(self.envelope)
-        self.assertEqual(graph["level"], "directories")  # an external node is no group of files
+        self.assertEqual(graph["grouping"], "directories")  # an external node is no group of files
         nodes = {node["id"]: node for node in graph["nodes"]}
         self.assertEqual({k: nodes["external:stripe"][k] for k in ("name", "kind", "location", "node_type", "mark", "files")},
                          {"name": "Stripe", "kind": "external", "location": "external", "node_type": "gateway",

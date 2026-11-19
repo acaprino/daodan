@@ -6,7 +6,7 @@
 
 ## 1. Obiettivo e contenuti
 
-Consentire a sviluppatori, consulenti e interlocutori di progetto di capire un sistema passando dalla panoramica alle sorgenti. I flussi (percorsi tecnici, dati, user journey) sono cammini sulle stesse entità, riaperti il 9 novembre 2026: li definisce la [spec dei flussi](../specs/2026-11-09-flow-model.md). La stessa entità deve rimanere riconoscibile fra le viste.
+Consentire a sviluppatori, consulenti e interlocutori di progetto di capire un sistema passando dalla panoramica alle sorgenti. I flussi (percorsi tecnici, dati, user journey) sono cammini sulle stesse entità, riaperti il 9 novembre 2026: li definisce la [spec dei flussi](../specs/2026-11-18-flussi-e-mappa-del-sistema.md). La stessa entità deve rimanere riconoscibile fra le viste.
 
 | Vista | Domanda a cui risponde | Contenuti |
 | --- | --- | --- |
@@ -39,6 +39,16 @@ La freschezza visualizzata è relativa allo snapshot: senza un nuovo controllo D
 Un dato strutturalmente corrotto blocca il caricamento del nuovo export; una lacuna dichiarata è invece contenuto visualizzabile. Le descrizioni obsolete restano consultabili ma etichettate.
 
 ## 4. Accettazione
+
+**Estensione proposta il 18 novembre 2026.** Chi chiede di analizzare un sistema deve poter scoprire dalla mappa finale quali funzionalità offre, anche senza conoscerne nomi, ingressi o rami. La stessa mappa permette di delimitare una review per funzionalità, ramo o componente. [Spec dei flussi multilivello](../specs/2026-11-18-flussi-e-mappa-del-sistema.md)
+
+| Caso di accettazione dell’estensione | Risultato atteso |
+| --- | --- |
+| Esplorare una funzionalità con un ingresso utente e uno automatico | Aprendo la funzionalità si vedono entrambi i rami. Cambiare prospettiva conserva la selezione e permette di raggiungere le evidenze. Richiuderla ripristina il nodo iniziale. |
+| Chiedere una review della funzionalità | Il perimetro comprende tutte le varianti individuate, motiva i file e i simboli da revisionare e segnala i tratti irrisolti. Se si chiede un solo ramo, include anche il codice condiviso che può determinarne l’esito. |
+| Chiedere una review di un componente | La mappa identifica i flussi che attraversano il componente e indica dove ciascuno lo usa. |
+
+**Casi della versione approvata l’8 novembre 2026**
 
 | Caso | Risultato osservabile |
 | --- | --- |

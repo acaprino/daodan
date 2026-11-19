@@ -53,4 +53,5 @@ allo stesso modo. Lezioni e correzioni in `results/findings.md`.
 - C3, C4, C5 e C7 vengono dal giro precedente alle due correzioni del testo.
 - Isolamento dichiarato dalle sessioni, non verificabile dalla traccia. Opus è lo stesso modello che ha scritto il benchmark.
 - Attese scritte da chi ha scritto spec e fixture; quella di C8 è cambiata dopo aver visto le sessioni.
+- Fixture cambiata il 18 novembre 2026: `orders`, `payments` e `shipping` hanno ciascuno il proprio `pyproject.toml`. Dal 14 novembre (`708eae48f`) il lettore dei moduli non inventa i membri di un workspace: senza manifest restava un solo modulo, e C4 dava `resolved` al posto di `clarify`.
 - Non provati: diff e PR reali, `symbols_at`, `stale_callers`, repository grandi, import tra package, una review completa con questa Phase 0.

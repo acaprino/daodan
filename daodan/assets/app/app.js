@@ -13,17 +13,19 @@ const get = path => fetch(path, { headers: auth, cache: 'no-store' }).then(answe
 const post = (path, body) => fetch(path, { method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(answer);
 
 const STORAGE = 'daodan-app-v2';  // v2: the graph opens whole, so what v1 kept of its filters is dropped
-const defaults = { screen: 'analysis', analysisStage: 'repository', repositoryUrl: '', runId: '', treeMode: 'directories', treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '', graphDirection: 'both', graphDepth: 'all', graphKind: 'all' };
+const defaults = { screen: 'analysis', analysisStage: 'repository', repositoryUrl: '', runId: '', treeMode: 'directories', treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '', graphOpen: [], graphDirection: 'both', graphDepth: 'all', graphKind: 'all' };
 let state = { ...defaults }, storageAvailable = true, toastTimer, modalReturnFocus = null;
 try { const stored = JSON.parse(localStorage.getItem(STORAGE) || 'null'); if (stored && typeof stored === 'object') state = { ...defaults, ...stored }; } catch { storageAvailable = false; }
 if (!['analysis', 'graph', 'engine'].includes(state.screen)) state.screen = 'analysis';
 if (!['repository', 'premap', 'analysis', 'synthesis'].includes(state.analysisStage)) state.analysisStage = 'repository';
+if (!Array.isArray(state.graphOpen) || state.graphOpen.some(id => typeof id !== 'string')) state.graphOpen = [];
 
 // What the server answered: never kept in the browser.
 let server = null, serverError = '';
 let checked = null, checkedUrl = '', branch = '', checking = false, checkError = '', selectError = '', selecting = false, generation = 0;
 let PREMAP = null, premapRun = '', premapError = '';
 let GRAPH = null, graphRun = '', graphError = '', graphLoading = false;
+let SYMBOLS = null;  // the inspector's file: its symbols and calls, asked when the file is selected
 let events = [], cursors = { after: 0, pipeline_after: 0, pulse_after: 0 }, eventsRun = '';
 let engineDraft = null, engineSaid = '', engineTone = '', question = '', asked = null, shown = '';
 const FINAL = ['fresh', 'unavailable', 'failed', 'off'];
@@ -70,7 +72,7 @@ function applyState(found) {
   if (engineDraft === null) engineDraft = { ...server.engine, api_key: '' };
   if (c && state.runId !== c.run_id) {  // what the browser kept belongs to another run
     if (state.runId && state.analysisStage !== 'repository') state.analysisStage = 'premap';
-    Object.assign(state, { runId: c.run_id, treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '' });
+    Object.assign(state, { runId: c.run_id, treeSearch: '', treeSelected: '', treeOpen: {}, graphSearch: '', graphRoot: '', graphOpen: [] });
     PREMAP = GRAPH = null;
   }
   if (!c) state.runId = '';
@@ -98,7 +100,7 @@ function applyEvents(found) {
 
 function loadViews() {  // what the stage on screen draws, read once a run
   const c = ctx();
-  if (c && graphRun !== c.run_id && (state.analysisStage !== 'repository' || state.screen === 'graph')) loadGraph();
+  if (c && graphRun !== graphKey() && (state.analysisStage !== 'repository' || state.screen === 'graph')) loadGraph();
   if (c && premapRun !== c.run_id && ['premap', 'synthesis'].includes(state.analysisStage)) loadPremap();
 }
 
@@ -126,26 +128,41 @@ async function loadPremap() {
   render();
 }
 
+// The graph opens its groups in place: the graph screen asks with the groups it holds open (`graphOpen`), the
+// analysis's preview and synthesis with none. The server keeps each answer until the run's data change.
+function shownOpen() { return state.screen === 'graph' ? [...state.graphOpen].sort() : []; }
+function graphKey() { return (ctx()?.run_id || '') + ' ' + JSON.stringify(shownOpen()); }
+const outside = n => Number(n.location === 'external');  // a group of the project before an external node
+const opens = n => n.files.length > 0 || (n.members || []).length > 0;  // files, or the projects or symbols it holds
+function closeGroup(id) {  // with the groups open inside it: `open` lists a parent before what it holds
+  const gone = new Set([id]);
+  for (const group of GRAPH?.open || []) if (gone.has(group.parent)) gone.add(group.id);
+  state.graphOpen = state.graphOpen.filter(item => !gone.has(item));
+}
+
 async function loadGraph() {
-  const run = ctx()?.run_id;
+  const run = ctx()?.run_id, open = shownOpen(), key = graphKey();
   if (!run || graphLoading) return;
   graphLoading = true;
+  if (GRAPH?.open.length && !open.length) GRAPH = null;  // the first grouping is never drawn from an opened graph
   try {
-    const found = await get('/api/app/graph');
+    const found = await get('/api/app/graph' + (open.length ? '?' + new URLSearchParams({ open: JSON.stringify(open) }) : ''));
     if (ctx()?.run_id !== run) return;
-    GRAPH = found; graphRun = run; graphError = '';
-    if (!GRAPH.nodes.some(n => n.id === state.graphRoot)) {
-      const related = id => GRAPH.edges.filter(e => e.source === id || e.target === id).length;  // the group with most relations first
-      const outside = n => Number(n.location === 'external');  // a group of the project before an external node
-      state.graphRoot = [...GRAPH.nodes].sort((a, b) => outside(a) - outside(b) || related(b.id) - related(a.id) || b.files.length - a.files.length)[0]?.id || '';
+    GRAPH = found; graphRun = key; graphError = ''; SYMBOLS = null;
+    if (!GRAPH.nodes.some(n => n.id === state.graphRoot)) {  // a group just opened keeps the focus inside it
+      const related = id => GRAPH.edges.filter(e => e.source === id || e.target === id).length;  // the node with most relations first
+      const inside = GRAPH.nodes.filter(n => n.group === state.graphRoot);
+      state.graphRoot = [...(inside.length ? inside : GRAPH.nodes)].sort((a, b) => outside(a) - outside(b) || related(b.id) - related(a.id) || b.files.length - a.files.length)[0]?.id || '';
     }
   } catch (error) {
     if (error.busy) { toast(error.message + ', riprovo'); setTimeout(loadGraph, 2000); return; }  // what is drawn stays
-    graphError = error.message;
-    graphRun = run;
+    const refused = open.length && /to open: (".*")$/.exec(error.message);  // a group the run no longer shows: dropped, the others stay
+    if (refused) { closeGroup(JSON.parse(refused[1])); graphRun = ''; toast(error.message); }
+    else { graphError = error.message; graphRun = key; }
   } finally {
     graphLoading = false;
   }
+  if (ctx()?.run_id === run && graphRun !== graphKey()) return loadGraph();  // the groups wanted changed meanwhile
   if (state.screen === 'analysis' && state.analysisStage === 'analysis' && document.getElementById('build-viewport')) updateAnalysisRun();
   else render();
 }
@@ -461,11 +478,21 @@ function runButton() {
 function nodeName(n) { return n.kind === 'directory' && n.name === '.' ? 'radice del repository' : n.name; }
 const NODE_STATUS = { confirmed: 'confermato', inferred: 'inferito', incomplete: 'incompleto', proposed: 'proposto' };
 function nodeState(n) { return n.location === 'external' ? 'esterno' : NODE_STATUS[n.status] || n.status || 'senza stato'; }
-function nodeFacts(n) { return n.location === 'external' ? [n.node_type, 'esterno'].filter(Boolean).join(' · ') : `${n.files.length} file · ${nodeState(n)}`; }
+function nodeFacts(n) { return n.location === 'external' ? [n.node_type, 'esterno'].filter(Boolean).join(' · ') : n.kind === 'symbol' ? ['righe ' + (n.lines || []).join('–'), n.members ? `${n.members.length} simboli` : '', n.node_type].filter(Boolean).join(' · ') : `${n.files.length} file · ${nodeState(n)}`; }
+const STACK_SHOWN = 2;  // the tiles that fit the text column of a card; the inspector lists them all
+function markImg(id) { return `<img class="mark" src="${esc('/api/app/mark?' + new URLSearchParams({ id, token }))}" alt="">`; }
+// The frameworks a group declares, as tiles under its name, on its card and on its frame when it is open.
+function stackRow(n) { const p = n.projects || []; return p.length ? `<span class="stack-row" title="Stack: ${esc(p.map(x => x.name).join(', '))}">${p.slice(0, STACK_SHOWN).map(x => `<span class="stack-tile">${markImg(x.mark)}<span>${esc(x.name)}</span></span>`).join('')}${p.length > STACK_SHOWN ? `<span class="stack-more">+${p.length - STACK_SHOWN}</span>` : ''}</span>` : ''; }
+function stackBlock(n) { return `<div class="inspector-block"><h3>Stack</h3><ul class="source-list stack-list">${(n.projects || []).map(x => `<li>${markImg(x.mark)}<span>${esc(x.name)}</span>${x.evidence.map(e => `<code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code>`).join('')}</li>`).join('') || '<li class="muted">Nessun framework riconosciuto dal registro.</li>'}</ul>${n.other_dependencies ? `<p class="muted small">Altre dipendenze dichiarate: ${n.other_dependencies}</p>` : ''}</div>`; }
 // A node's picture: the mark of its registry entry, from the app's server; without one, or when it does not load, the icon of its kind.
-function nodeIcon(n) { return n.mark ? `<img class="mark" src="${esc('/api/app/mark?' + new URLSearchParams({ id: n.mark, token }))}" alt="">` : icon(n.location === 'external' ? 'external' : 'layers'); }
+function nodeIcon(n) { return n.mark ? markImg(n.mark) : icon(n.location === 'external' ? 'external' : 'layers'); }
 document.addEventListener('error', event => { if (event.target.matches?.('img.mark')) event.target.outerHTML = icon('external'); }, true);
-function levelLabel() { return GRAPH?.level === 'modules' ? 'Moduli' : 'Directory'; }
+function levelLabel() { return GRAPH?.grouping === 'modules' ? 'Moduli' : 'Directory'; }
+// The system map's levels the graph shows, by their own names, never «the» graph: the app builds codice and infrastruttura.
+function levelsName() { return (GRAPH?.levels || []).map(level => level[0].toUpperCase() + level.slice(1)).join(' · '); }
+const SELECTED = { directory: 'Directory selezionata', file: 'File selezionato', symbol: 'Simbolo selezionato' };
+// The name of a node or of an open group, for an arrow that ends on either.
+function endName(id) { const n = GRAPH.nodes.find(item => item.id === id); return n ? nodeName(n) : GRAPH.open.find(group => group.id === id)?.name || id; }
 
 function buildPreview() {
   if (graphError) return `<div class="build-empty">${icon('warning')}<h3>Grafo non disponibile.</h3><p>${esc(graphError)}</p></div>`;
@@ -476,7 +503,7 @@ function buildPreview() {
   return `<div class="build-world" style="width:${width}px;height:${height}px"><svg class="build-connections" width="${width}" height="${height}" aria-hidden="true">${g.edges.map(e => { const a = position.get(e.source), b = position.get(e.target); return `<path d="M${a.x + 88},${a.y + 59} C${a.x + 88},${a.y + 79} ${b.x + 88},${b.y - 20} ${b.x + 88},${b.y}"></path>`; }).join('')}</svg>${g.nodes.map(n => { const p = position.get(n.id); return `<button class="build-node" data-build-node="${esc(n.id)}" style="left:${p.x}px;top:${p.y}px">${nodeIcon(n)}<span>${esc(nodeName(n))}<small>${esc(nodeFacts(n))}</small></span></button>`; }).join('')}</div>`;
 }
 
-function buildCounts() { return GRAPH ? `${GRAPH.nodes.length} ${GRAPH.level === 'modules' ? 'moduli' : 'directory'} · ${GRAPH.edges.length} relazioni · ${number(GRAPH.files)} file` : '—'; }
+function buildCounts() { return GRAPH ? `${GRAPH.nodes.length} ${GRAPH.grouping === 'modules' ? 'moduli' : 'directory'} · ${GRAPH.edges.length} relazioni · ${number(GRAPH.files)} file` : '—'; }
 function buildStatus() {
   if (graphLoading) return 'Lettura del grafo…';
   if (pipelineEvents().some(e => e.kind === 'graph.ready')) return 'Grafo completo scritto';
@@ -487,7 +514,7 @@ function analysisRunScreen() {
   const c = ctx(), percent = runPercent(), alert = passAlert();
   return `<div class="source-note">${icon('info')}<div><strong>Analisi del commit ${esc(c.commit.slice(0, 12))}.</strong><p>Avanzamento ed eventi sono quelli del run <code>${esc(c.run_id)}</code>. Il grafo cresce solo quando la pipeline scrive un artefatto.</p></div></div>
   <div class="run-build-layout"><section class="panel" aria-labelledby="run-title"><div class="panel-body"><div class="run-status"><div><p class="eyebrow">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="row"><span class="badge ${pass().state === 'failed' ? 'bad' : 'cyan'}" id="run-badge"><span class="dot"></span>${statusLabel()}</span><span id="run-button-wrap">${runButton()}</span></div></div><div class="progress-number"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="progress" role="progressbar" aria-label="Passi completati della pipeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" id="run-progress"><span id="progress-fill" style="width:${percent}%"></span></div><p class="run-help" id="run-help">${esc(runHelp())}</p><div id="smooth-analysis-tasks" class="daodan-pipeline"></div><div id="run-error" class="alert ${pass().state === 'failed' ? 'error' : ''}" style="margin-top:16px" role="status" ${alert ? '' : 'hidden'}>${alert}</div><div id="links-block" class="source-note" style="margin:16px 0 0">${linksBlock()}</div></div><div class="run-footer"><span class="muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span></div></section>
-  <section class="panel building-panel" aria-labelledby="building-title"><div class="panel-head"><div><h2 id="building-title">Costruzione del grafo</h2><p class="muted small">Gruppi di file e relazioni dal grafo del run.</p></div><span class="badge" id="build-level">${levelLabel()}</span></div><div class="build-viewport" id="build-viewport">${buildPreview()}</div><div class="build-foot"><span id="build-counts">${buildCounts()}</span><span id="build-status">${buildStatus()}</span></div></section></div>
+  <section class="panel building-panel" aria-labelledby="building-title"><div class="panel-head"><div><h2 id="building-title">Costruzione del grafo</h2><p class="muted small">Gruppi di file e relazioni dal grafo del run.</p></div><span class="badge" id="build-level">${esc(levelsName() || levelLabel())}</span></div><div class="build-viewport" id="build-viewport">${buildPreview()}</div><div class="build-foot"><span id="build-counts">${buildCounts()}</span><span id="build-status">${buildStatus()}</span></div></section></div>
   <section class="panel run-activity" aria-labelledby="activity-title"><div class="panel-head"><h2 id="activity-title">Eventi e feedback</h2><span class="badge">${logItems().length} eventi</span></div><div class="logs" id="logs" aria-live="polite" aria-relevant="additions">${renderLogs()}</div></section>`;
 }
 
@@ -522,7 +549,7 @@ function updateAnalysisRun() {
     viewport.dataset.drawn = drawn;
     viewport.scrollLeft = left; viewport.scrollTop = top;
   }
-  document.getElementById('build-level').textContent = levelLabel();
+  document.getElementById('build-level').textContent = levelsName() || levelLabel();
   document.getElementById('build-counts').textContent = buildCounts();
   document.getElementById('build-status').textContent = buildStatus();
   document.getElementById('graph-nav-count').textContent = GRAPH ? GRAPH.nodes.length : '—';
@@ -542,9 +569,9 @@ function gapLines() {
 function synthesisScreen() {
   if (!GRAPH) return graphError ? `<div class="alert error" role="alert"><strong>Grafo non disponibile.</strong> ${esc(graphError)}</div>` : waiting('Lettura del grafo…', 'Gruppi, relazioni e lacune del run.');
   const top = [...GRAPH.nodes].sort((a, b) => b.files.length - a.files.length).slice(0, 3), gaps = gapLines();
-  const modules = GRAPH.level === 'modules';
-  return `<div class="source-note">${icon('info')}<div><strong>Sintesi testuale in attesa.</strong><p>Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run <code>${esc(ctx().run_id)}</code>. Le domande al motore sono in «Motore e domande».</p></div></div><div class="metrics"><div class="metric"><div class="value">${GRAPH.nodes.length}</div><p>${modules ? 'Moduli' : 'Directory con file'}</p><small>Gruppi del grafo</small></div><div class="metric"><div class="value">${GRAPH.edges.length}</div><p>Relazioni statiche</p><small>Non tracce runtime</small></div><div class="metric"><div class="value">${number(GRAPH.files)}</div><p>File nel grafo</p><small>Snapshot del commit ${esc(ctx().commit.slice(0, 7))}</small></div><div class="metric"><div class="value">${number(modules ? GRAPH.unassigned.count : GRAPH.symbols)}</div><p>${modules ? 'File senza modulo' : 'Simboli definiti'}</p><small>${modules ? 'Lacuna esplicita del grafo' : 'Dall’outline dei file'}</small></div></div>
-  <div class="synthesis-layout"><section class="panel"><div class="panel-head"><h2>Responsabilità da esplorare</h2><span class="badge">${levelLabel()}</span></div><div class="synthesis-components">${top.map(n => `<button data-preview-node="${esc(n.id)}"><span class="synthesis-icon">${icon('layers')}</span><span><strong>${esc(nodeName(n))}</strong><p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><small>${esc(nodeFacts(n))}</small></span>${icon('arrow')}</button>`).join('') || '<p class="muted small" style="padding:16px">Nessun gruppo nel grafo.</p>'}</div></section><aside class="stack"><section class="panel"><div class="panel-head"><h2>Dipendenze dopo l’analisi</h2></div><div class="panel-body"><span class="badge orange">Risoluzione non disponibile</span><p class="synthesis-note">${PREMAP ? number(PREMAP.dependencies.length) + ' librerie dichiarate nei manifest. ' : ''}Daodan non risolve le versioni installate: un riferimento statico non prova quale versione di una libreria sia usata.</p></div></section><section class="panel"><div class="panel-head"><h2>Cosa manca al quadro</h2></div><div class="panel-body"><ul class="synthesis-gaps">${gaps.slice(0, 8).map(g => `<li>${esc(g)}</li>`).join('') || '<li>Nessuna lacuna registrata dal run.</li>'}</ul>${gaps.length > 8 ? `<p class="muted small">Altre ${gaps.length - 8} lacune in «Provenienza e lacune».</p>` : ''}<button class="textbutton" data-action="snapshot">${icon('file')}Provenienza e lacune</button></div></section></aside></div>`;
+  const modules = GRAPH.grouping === 'modules';
+  return `<div class="source-note">${icon('info')}<div><strong>Sintesi testuale in attesa.</strong><p>Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run <code>${esc(ctx().run_id)}</code>. Le domande al motore sono in «Motore e domande».</p></div></div><div class="metrics"><div class="metric"><div class="value">${GRAPH.nodes.length}</div><p>${modules ? 'Moduli' : 'Directory con file'}</p><small>Gruppi del grafo</small></div><div class="metric"><div class="value">${GRAPH.edges.length}</div><p>Relazioni statiche</p><small>Non tracce runtime</small></div><div class="metric"><div class="value">${number(GRAPH.files)}</div><p>File nel grafo</p><small>Snapshot del commit ${esc(ctx().commit.slice(0, 7))}</small></div><div class="metric"><div class="value">${number(modules ? GRAPH.unassigned.count : GRAPH.nodes.filter(n => n.location === 'external').length)}</div><p>${modules ? 'File senza modulo' : 'Nodi esterni'}</p><small>${modules ? 'Lacuna esplicita del grafo' : 'Servizi riconosciuti dallo stack'}</small></div></div>
+  <div class="synthesis-layout"><section class="panel"><div class="panel-head"><h2>Responsabilità da esplorare</h2><span class="badge">${esc(levelsName())}</span></div><div class="synthesis-components">${top.map(n => `<button data-preview-node="${esc(n.id)}"><span class="synthesis-icon">${icon('layers')}</span><span><strong>${esc(nodeName(n))}</strong><p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><small>${esc(nodeFacts(n))}</small></span>${icon('arrow')}</button>`).join('') || '<p class="muted small" style="padding:16px">Nessun gruppo nel grafo.</p>'}</div></section><aside class="stack"><section class="panel"><div class="panel-head"><h2>Dipendenze dopo l’analisi</h2></div><div class="panel-body"><span class="badge orange">Risoluzione non disponibile</span><p class="synthesis-note">${PREMAP ? number(PREMAP.dependencies.length) + ' librerie dichiarate nei manifest. ' : ''}Daodan non risolve le versioni installate: un riferimento statico non prova quale versione di una libreria sia usata.</p></div></section><section class="panel"><div class="panel-head"><h2>Cosa manca al quadro</h2></div><div class="panel-body"><ul class="synthesis-gaps">${gaps.slice(0, 8).map(g => `<li>${esc(g)}</li>`).join('') || '<li>Nessuna lacuna registrata dal run.</li>'}</ul>${gaps.length > 8 ? `<p class="muted small">Altre ${gaps.length - 8} lacune in «Provenienza e lacune».</p>` : ''}<button class="textbutton" data-action="snapshot">${icon('file')}Provenienza e lacune</button></div></section></aside></div>`;
 }
 
 // -- the graph -----------------------------------------------------------------------------------------------------
@@ -567,24 +594,71 @@ function visibleGraph() {
     nodes = nodes.filter(n => found.has(n.id));
   }
   if (state.graphSearch.trim()) { const q = state.graphSearch.trim().toLowerCase(); nodes = nodes.filter(n => [n.name, n.id, n.responsibility, ...n.files].join(' ').toLowerCase().includes(q)); }
-  const ids = new Set(nodes.map(n => n.id));
+  const ids = new Set([...nodes.map(n => n.id), ...GRAPH.open.map(group => group.id)]);  // an open group holds the arrows of its own
   return { nodes, edges: edges.filter(e => ids.has(e.source) && ids.has(e.target)) };
 }
 
 function graphCanvas(g) {
   if (!g.nodes.length) return '<div class="empty"><h2>Nessun gruppo trovato</h2><p style="margin:10px 0">Cambia ricerca o amplia il perimetro del grafo.</p><button data-action="clear-graph">Azzera filtri</button></div>';
-  const outside = n => Number(n.location === 'external');  // external nodes after the project's groups
-  const ordered = [...g.nodes].sort((a, b) => a.id === state.graphRoot ? -1 : b.id === state.graphRoot ? 1 : outside(a) - outside(b) || a.name.localeCompare(b.name, 'it'));
-  const cols = Math.min(3, ordered.length), width = Math.max(650, cols * 254 + 50), height = Math.max(460, Math.ceil(ordered.length / cols) * 130 + 90);
-  const positions = new Map(ordered.map((n, i) => [n.id, { x: 30 + (i % cols) * 254, y: 42 + Math.floor(i / cols) * 130 }]));
-  const paths = g.edges.map(e => { const a = positions.get(e.source), b = positions.get(e.target), same = a.y === b.y; const fromX = a.x + 102, fromY = a.y + 74, toX = b.x + 102, toY = b.y; const d = same ? `M${a.x + 204},${a.y + 37} C${a.x + 230},${a.y + 37} ${b.x - 26},${b.y + 37} ${b.x},${b.y + 37}` : `M${fromX},${fromY} C${fromX},${fromY + 32} ${toX},${toY - 32} ${toX},${toY}`; return `<path d="${d}" marker-end="url(#arrowhead)"${e.status === 'uncertain' ? ' class="uncertain"' : ''}><title>${esc(nodeName(nodeById(e.source)))} → ${esc(nodeName(nodeById(e.target)))} · ${Object.entries(e.counts).map(([k, v]) => esc(k) + ': ' + v).join(', ')}${e.status === 'uncertain' ? ' · incerto' : ''}</title></path>`; }).join('');
-  return `<div class="graph-world" style="width:${width}px;height:${height}px"><svg class="connections" width="${width}" height="${height}" aria-hidden="true"><defs><marker id="arrowhead" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" style="fill:var(--edge);stroke:none"></path></marker></defs>${paths}</svg>${ordered.map(n => { const p = positions.get(n.id); return `<button class="graph-node ${n.id === state.graphRoot ? 'selected' : ''} ${n.location === 'external' ? 'external' : ''}" data-node="${esc(n.id)}" aria-pressed="${n.id === state.graphRoot}" style="left:${p.x}px;top:${p.y}px"><span class="node-icon">${nodeIcon(n)}</span><span><span class="node-name">${esc(nodeName(n))}</span><small>${esc(nodeFacts(n))}</small></span></button>`; }).join('')}</div>`;
+  // The grid of the page, row after row: an open group starts a row and is drawn around what it holds, which can hold
+  // an open group in turn; the rest stays in its order. Laid out again at each step.
+  const order = (a, b) => a.id === state.graphRoot ? -1 : b.id === state.graphRoot ? 1 : outside(a) - outside(b) || a.name.localeCompare(b.name, 'it');
+  const cols = Math.min(3, g.nodes.length), positions = new Map(), placed = [], frames = [];
+  let y = 42, right = cols * 254 + 20;
+  const place = (holder, depth) => {
+    const x0 = 30 + depth * 18;
+    let col = 0;
+    for (const item of [...g.nodes.filter(n => n.group === holder), ...GRAPH.open.filter(o => o.parent === holder)].sort(order)) {
+      if (!('parent' in item)) {
+        positions.set(item.id, { x: x0 + col * 254, y }); placed.push(item); right = Math.max(right, x0 + col * 254 + 250);
+        if (++col === cols) { col = 0; y += 130; }
+        continue;
+      }
+      if (col) { col = 0; y += 130; }
+      const top = y;
+      y += 44;
+      place(item.id, depth + 1);
+      frames.push({ ...item, x: x0 - 10, y: top, height: Math.max(52, y - top - 40) });
+      y += 18;
+    }
+    if (col) y += 130;
+  };
+  place(null, 0);
+  const width = Math.max(650, right + 40), height = Math.max(460, y + 48);
+  const point = (id, dy) => { const p = positions.get(id) || frames.find(f => f.id === id); return p ? [p.x + 102, p.y + (positions.has(id) || !dy ? dy : 44)] : [0, 0]; };
+  const frameMarkup = frames.map(f => `<section class="graph-group" style="left:${f.x}px;top:${f.y}px;width:${right + 12 - f.x}px;height:${f.height}px" aria-label="Gruppo aperto ${esc(nodeName(f))}"><div class="graph-group-head"><span class="eyebrow">${{ directory: 'Directory aperta', file: 'File aperto', symbol: 'Simbolo aperto' }[f.kind] || 'Modulo aperto'}</span><strong>${esc(nodeName(f))}</strong>${stackRow(f)}<button class="textbutton small" data-close-node="${esc(f.id)}" aria-label="Chiudi ${esc(nodeName(f))}">${icon('close')}Chiudi</button></div></section>`).join('');
+  const paths = g.edges.map(e => { const a = positions.get(e.source), b = positions.get(e.target), same = a && b && a.y === b.y; const [fromX, fromY] = point(e.source, 74), [toX, toY] = point(e.target, 0); const d = same ? `M${a.x + 204},${a.y + 37} C${a.x + 230},${a.y + 37} ${b.x - 26},${b.y + 37} ${b.x},${b.y + 37}` : `M${fromX},${fromY} C${fromX},${fromY + 32} ${toX},${toY - 32} ${toX},${toY}`; return `<path d="${d}" marker-end="url(#arrowhead)"${e.status === 'uncertain' ? ' class="uncertain"' : ''}><title>${esc(endName(e.source))} → ${esc(endName(e.target))} · ${Object.entries(e.counts).map(([k, v]) => esc(k) + ': ' + v).join(', ')}${e.status === 'uncertain' ? ' · incerto' : ''}</title></path>`; }).join('');
+  return `<div class="graph-world" style="width:${width}px;height:${height}px">${frameMarkup}<svg class="connections" width="${width}" height="${height}" aria-hidden="true"><defs><marker id="arrowhead" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" style="fill:var(--edge);stroke:none"></path></marker></defs>${paths}</svg>${placed.map(n => { const p = positions.get(n.id); return `<button class="graph-node ${n.id === state.graphRoot ? 'selected' : ''} ${n.location === 'external' ? 'external' : ''}" data-node="${esc(n.id)}" aria-pressed="${n.id === state.graphRoot}" style="left:${p.x}px;top:${p.y}px"><span class="node-icon">${nodeIcon(n)}</span><span><span class="node-name">${esc(nodeName(n))}</span>${stackRow(n)}<small>${esc(nodeFacts(n))}</small></span></button>${opens(n) ? `<button class="node-open" data-open-node="${esc(n.id)}" style="left:${p.x + 210}px;top:${p.y + 21}px" aria-label="Apri ${esc(nodeName(n))}" title="Apri sul posto">${icon('chevron')}</button>` : ''}`; }).join('')}</div>`;
 }
 
 function inspector() {
   const n = nodeById(state.graphRoot);
   const related = GRAPH.edges.filter(e => e.source === n.id || e.target === n.id);
-  return `<aside class="graph-inspector" aria-label="Dettaglio del gruppo"><p class="eyebrow">${n.location === 'external' ? 'Nodo esterno selezionato' : GRAPH.level === 'modules' ? 'Modulo selezionato' : 'Directory selezionata'}</p><h2>${esc(nodeName(n))}</h2><span class="badge ${n.location === 'external' ? '' : 'cyan'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="description">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><div class="inspector-block"><h3>Perimetro</h3><dl class="facts"><dt>File assegnati</dt><dd>${n.files.length}</dd><dt>Relazioni statiche</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || (n.kind === 'directory' ? 'Directory del checkout' : 'Non registrata'))}</dd></dl></div><div class="inspector-block"><h3>Evidenze</h3><ul class="source-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="muted">Nessuna evidenza dichiarata.</li>'}</ul></div><div class="inspector-block"><h3>File del gruppo</h3><ul class="source-list">${n.files.slice(0, 4).map(path => `<li><button data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="textbutton small" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div></aside>`;
+  return `<aside class="graph-inspector" aria-label="Dettaglio del gruppo"><p class="eyebrow">${n.location === 'external' ? 'Nodo esterno selezionato' : SELECTED[n.kind] || 'Modulo selezionato'}</p><h2>${esc(nodeName(n))}</h2><span class="badge ${n.location === 'external' ? '' : 'cyan'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="description">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p>${opens(n) ? `<button class="primary" data-open-node="${esc(n.id)}">${icon('layers')}Apri sul posto</button>` : ''}<div class="inspector-block"><h3>Perimetro</h3><dl class="facts">${n.kind === 'symbol' ? `<dt>Righe</dt><dd>${esc((n.lines || []).join('–'))}</dd>${n.members ? `<dt>Simboli dentro</dt><dd>${n.members.length}</dd>` : ''}` : `<dt>File assegnati</dt><dd>${n.files.length}</dd>`}<dt>Relazioni statiche</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || { directory: 'Directory del checkout', file: 'File del checkout', symbol: 'Outline del file' }[n.kind] || 'Non registrata')}</dd></dl></div>${n.projects ? stackBlock(n) : ''}${n.kind === 'file' ? symbolsBlock(n) : ''}<div class="inspector-block"><h3>Evidenze</h3><ul class="source-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="muted">Nessuna evidenza dichiarata.</li>'}</ul></div>${n.kind === 'symbol' ? '' : `<div class="inspector-block"><h3>File del gruppo</h3><ul class="source-list">${n.files.slice(0, 4).map(path => `<li><button data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="textbutton small" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div>`}</aside>`;
+}
+
+// A file is the lowest node: its symbols and the calls among them, with their lines, are the inspector's, asked when
+// the file is selected and kept by the server like the graph.
+function symbolsBlock(n) {
+  const block = body => `<div class="inspector-block"><h3>Simboli e chiamate</h3>${body}</div>`;
+  if (SYMBOLS?.file !== n.id) loadSymbols(n.id);
+  if (SYMBOLS.loading) return block('<p class="muted small">Lettura dei simboli…</p>');
+  if (SYMBOLS.error) return block(`<p class="muted small">${esc(SYMBOLS.error)}</p>`);
+  const name = ref => SYMBOLS.symbols.find(s => s.id === ref)?.name || ref.replace(/^file:/, '');
+  const sites = call => call.evidence.map(e => esc(e.path.split('/').pop() + ':' + e.line)).join(', ');
+  return block(`<ul class="source-list">${SYMBOLS.symbols.map(s => `<li><code>${esc(s.name)}</code> <span class="muted small">righe ${esc((s.lines || []).join('–'))}${s.freshness ? ' · ' + esc(s.freshness) : ''}</span></li>`).join('') || '<li class="muted">Nessun simbolo nell’outline.</li>'}</ul><ul class="source-list">${SYMBOLS.calls.map(c => `<li><code>${esc(name(c.source))} → ${esc(name(c.target))}</code> <span class="muted small">${sites(c)}${c.status === 'uncertain' ? ' · incerta' : ''}</span></li>`).join('') || '<li class="muted">Nessuna chiamata risolta da o verso i suoi simboli.</li>'}</ul>`);
+}
+
+async function loadSymbols(file) {
+  SYMBOLS = { file, loading: true };
+  try {
+    const found = await get('/api/app/symbols?' + new URLSearchParams({ file }));
+    if (SYMBOLS?.file === file) SYMBOLS = found;
+  } catch (error) {
+    if (error.busy) { setTimeout(() => { if (SYMBOLS?.file === file) loadSymbols(file); }, 2000); return; }
+    if (SYMBOLS?.file === file) SYMBOLS = { file, error: error.message };
+  }
+  if (state.screen === 'graph') render();
 }
 
 function graph() {
@@ -594,7 +668,7 @@ function graph() {
   if (graphError) return head + `<div class="alert error" role="alert"><strong>Grafo non disponibile.</strong> ${esc(graphError)}</div>`;
   if (!GRAPH) return head + waiting('Lettura del grafo…', 'Gruppi, relazioni e lacune del run.');
   const g = visibleGraph();
-  return head + `<div class="graph-toolbar"><label class="searchbox">${icon('search')}<span class="sr-only">Cerca un gruppo o un file</span><input id="graph-search" type="search" placeholder="Cerca gruppo o file…" value="${esc(state.graphSearch)}"></label><div class="filter-row"><label class="field-inline">Direzione<select id="graph-direction">${selectOptions([['out', 'Dipendenze →'], ['in', '← Chiamanti'], ['both', 'Entrambe ↔']], state.graphDirection)}</select></label><label class="field-inline">Profondità<select id="graph-depth">${selectOptions([['1', '1 livello'], ['2', '2 livelli'], ['all', 'Tutto il grafo']], state.graphDepth)}</select></label><label class="field-inline">Relazioni<select id="graph-kind">${selectOptions([['all', 'Tutte'], ['calls', 'Chiamate'], ['imports', 'Import'], ['uses', 'Utilizzi']], state.graphKind)}</select></label><button class="textbutton small" data-action="clear-graph">Azzera filtri</button><span class="muted small" style="margin-left:auto">${g.nodes.length} / ${GRAPH.nodes.length} ${GRAPH.level === 'modules' ? 'moduli' : 'directory'}</span></div></div><div class="graph-layout"><section class="graph-stage" aria-label="Grafo interattivo"><div class="graph-viewport" id="graph-viewport">${graphCanvas(g)}</div><div class="graph-foot"><span><span style="color:var(--accent)">■</span> ${levelLabel()} &nbsp; <span style="color:var(--muted)">□</span> Esterno</span><span>${g.edges.length} relazioni visibili · seleziona un nodo</span></div></section>${inspector()}</div>`;
+  return head + `<div class="graph-toolbar"><label class="searchbox">${icon('search')}<span class="sr-only">Cerca un gruppo o un file</span><input id="graph-search" type="search" placeholder="Cerca gruppo o file…" value="${esc(state.graphSearch)}"></label><div class="filter-row"><label class="field-inline">Direzione<select id="graph-direction">${selectOptions([['out', 'Dipendenze →'], ['in', '← Chiamanti'], ['both', 'Entrambe ↔']], state.graphDirection)}</select></label><label class="field-inline">Profondità<select id="graph-depth">${selectOptions([['1', '1 livello'], ['2', '2 livelli'], ['all', 'Tutto il grafo']], state.graphDepth)}</select></label><label class="field-inline">Relazioni<select id="graph-kind">${selectOptions([['all', 'Tutte'], ['calls', 'Chiamate'], ['imports', 'Import'], ['uses', 'Utilizzi']], state.graphKind)}</select></label><button class="textbutton small" data-action="clear-graph">Azzera filtri</button><span class="badge cyan" style="margin-left:auto" title="Livelli della mappa del sistema mostrati">${esc(levelsName())}</span><span class="muted small">${g.nodes.length} / ${GRAPH.nodes.length} nodi</span></div></div><div class="graph-layout"><section class="graph-stage" aria-label="Grafo interattivo"><div class="graph-viewport" id="graph-viewport">${graphCanvas(g)}</div><div class="graph-foot"><span><span style="color:var(--accent)">■</span> ${levelLabel()} &nbsp; <span style="color:var(--muted)">□</span> Esterno</span><span>${g.edges.length} relazioni visibili · seleziona un nodo, apri ${icon('chevron')} sul posto</span></div></section>${inspector()}</div>`;
 }
 
 // -- the engine ----------------------------------------------------------------------------------------------------
@@ -682,7 +756,7 @@ function render() {
 
 function navigate(screen) {
   state.screen = screen;
-  if (screen === 'graph' && ctx() && graphRun !== ctx().run_id) loadGraph();
+  loadViews();  // the graph screen draws its level, the analysis the first one
   render();
   window.scrollTo({ top: 0, behavior: 'instant' });
   document.getElementById('main').focus({ preventScroll: true });
@@ -693,7 +767,7 @@ function closeModal() { document.getElementById('modal-root').innerHTML = ''; do
 
 function snapshotModal() {
   const m = GRAPH?.meta || {}, gaps = gapLines();
-  modal('Provenienza e lacune del grafo', 'Dati del run selezionato; nessun file del progetto è stato eseguito.', `<dl class="facts"><dt>Repository</dt><dd><code>${esc(slug())}</code></dd><dt>Branch e commit</dt><dd><code>${esc(ctx()?.branch)}</code> · <code>${esc(ctx()?.commit.slice(0, 12))}</code></dd><dt>Run</dt><dd><code>${esc(ctx()?.run_id)}</code></dd><dt>Grafo costruito</dt><dd>${esc(m.created_at || '—')}</dd><dt>File / simboli</dt><dd>${number(GRAPH?.files)} / ${number(GRAPH?.symbols)}</dd><dt>${levelLabel()} / relazioni</dt><dd>${GRAPH?.nodes.length ?? '—'} / ${GRAPH?.edges.length ?? '—'}</dd><dt>Passaggio del grafo</dt><dd>${esc(pass().state || '—')}</dd></dl><p class="eyebrow" style="margin:20px 0 10px">Limiti dichiarati</p><div class="alert">Le relazioni statiche non dimostrano un comportamento runtime. L’assenza di un arco di chiamata non dimostra indipendenza.</div><ul class="checked-list">${gaps.map(g => `<li>${icon('info')}<span>${esc(g)}</span></li>`).join('') || `<li>${icon('check')}<span>Nessuna lacuna registrata dal run.</span></li>`}</ul><p class="small muted" style="margin-top:16px">Digest dello snapshot: <code style="overflow-wrap:anywhere">${esc(m.snapshot_digest || '—')}</code></p>`, `<button class="primary" data-action="close-modal">${icon('check')}Chiudi</button>`);
+  modal('Provenienza e lacune del grafo', 'Dati del run selezionato; nessun file del progetto è stato eseguito.', `<dl class="facts"><dt>Repository</dt><dd><code>${esc(slug())}</code></dd><dt>Branch e commit</dt><dd><code>${esc(ctx()?.branch)}</code> · <code>${esc(ctx()?.commit.slice(0, 12))}</code></dd><dt>Run</dt><dd><code>${esc(ctx()?.run_id)}</code></dd><dt>Grafo costruito</dt><dd>${esc(m.created_at || '—')}</dd><dt>File</dt><dd>${number(GRAPH?.files)}</dd><dt>${levelLabel()} / relazioni</dt><dd>${GRAPH?.nodes.length ?? '—'} / ${GRAPH?.edges.length ?? '—'}</dd><dt>Passaggio del grafo</dt><dd>${esc(pass().state || '—')}</dd></dl><p class="eyebrow" style="margin:20px 0 10px">Limiti dichiarati</p><div class="alert">Le relazioni statiche non dimostrano un comportamento runtime. L’assenza di un arco di chiamata non dimostra indipendenza.</div><ul class="checked-list">${gaps.map(g => `<li>${icon('info')}<span>${esc(g)}</span></li>`).join('') || `<li>${icon('check')}<span>Nessuna lacuna registrata dal run.</span></li>`}</ul><p class="small muted" style="margin-top:16px">Digest dello snapshot: <code style="overflow-wrap:anywhere">${esc(m.snapshot_digest || '—')}</code></p>`, `<button class="primary" data-action="close-modal">${icon('check')}Chiudi</button>`);
 }
 
 function premapProvenance() {
@@ -703,7 +777,7 @@ function premapProvenance() {
 
 function sourceModal(path) {
   const edges = GRAPH.edges.flatMap(e => e.evidence.filter(ev => ev.path === path || ev.target === path).map(ev => ({ ...ev, source: e.source, target: e.target, status: e.status })));
-  modal(esc(path.split('/').pop()), 'File dello snapshot del run.', `<p style="overflow-wrap:anywhere"><code>${esc(path)}</code></p><p class="muted" style="font-size:12px;margin:12px 0 16px">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</p><h3 style="margin-bottom:12px">Riferimenti statici</h3><ul class="checked-list">${edges.slice(0, 8).map(e => `<li>${icon('arrow')}<span>${esc(nodeName(nodeById(e.source)))} → ${esc(nodeName(nodeById(e.target)))}<br><code>${esc(e.kind)}${e.key ? ' · ' + esc(e.key) + (e.status === 'uncertain' ? ' · incerto' : '') : ''}${e.line ? ' · riga ' + e.line : ''}${e.target && e.path === path ? ' · ' + esc(e.target) : ''}</code></span></li>`).join('') || '<li>Nessuna relazione tra gruppi cita questo file.</li>'}</ul>`, `<button class="primary" data-action="close-modal">Chiudi dettaglio</button>`);
+  modal(esc(path.split('/').pop()), 'File dello snapshot del run.', `<p style="overflow-wrap:anywhere"><code>${esc(path)}</code></p><p class="muted" style="font-size:12px;margin:12px 0 16px">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</p><h3 style="margin-bottom:12px">Riferimenti statici</h3><ul class="checked-list">${edges.slice(0, 8).map(e => `<li>${icon('arrow')}<span>${esc(endName(e.source))} → ${esc(endName(e.target))}<br><code>${esc(e.kind)}${e.key ? ' · ' + esc(e.key) + (e.status === 'uncertain' ? ' · incerto' : '') : ''}${e.line ? ' · riga ' + e.line : ''}${e.target && e.path === path ? ' · ' + esc(e.target) : ''}</code></span></li>`).join('') || '<li>Nessuna relazione tra gruppi cita questo file.</li>'}</ul>`, `<button class="primary" data-action="close-modal">Chiudi dettaglio</button>`);
 }
 
 document.addEventListener('click', async event => {
@@ -727,10 +801,12 @@ document.addEventListener('click', async event => {
   }
   if (b.dataset.buildNode) {
     const n = nodeById(b.dataset.buildNode);
-    modal(esc(nodeName(n)), `${GRAPH.level === 'modules' ? 'Modulo' : 'Directory'} del grafo di questo run.`, `<p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><p class="muted small" style="margin-top:16px">${esc(nodeFacts(n))} · commit ${esc(ctx().commit.slice(0, 12))}</p>`, `<button data-preview-node="${esc(n.id)}">${icon('graph')}Apri nel grafo</button><button class="primary" data-action="close-modal">Chiudi dettaglio</button>`);
+    modal(esc(nodeName(n)), `${GRAPH.grouping === 'modules' ? 'Modulo' : 'Directory'} del grafo di questo run.`, `<p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><p class="muted small" style="margin-top:16px">${esc(nodeFacts(n))} · commit ${esc(ctx().commit.slice(0, 12))}</p>`, `<button data-preview-node="${esc(n.id)}">${icon('graph')}Apri nel grafo</button><button class="primary" data-action="close-modal">Chiudi dettaglio</button>`);
     return;
   }
-  if (b.dataset.previewNode) { closeModal(); state.graphRoot = b.dataset.previewNode; state.graphDepth = '1'; state.graphSearch = ''; navigate('graph'); return; }
+  if (b.dataset.previewNode) { closeModal(); state.graphRoot = b.dataset.previewNode; state.graphOpen = []; state.graphDepth = '1'; state.graphSearch = ''; navigate('graph'); return; }
+  if (b.dataset.openNode) { state.graphOpen = [...new Set([...state.graphOpen, b.dataset.openNode])]; state.graphRoot = b.dataset.openNode; loadGraph(); render(); return; }  // in place: the focus stays inside it
+  if (b.dataset.closeNode) { closeGroup(b.dataset.closeNode); state.graphRoot = b.dataset.closeNode; loadGraph(); render(); return; }  // the group closed is selected again
   if (b.dataset.node) { state.graphRoot = b.dataset.node; render(); toast('Selezionato: ' + nodeName(nodeById(state.graphRoot))); return; }
   if (b.dataset.sourcePath) { sourceModal(b.dataset.sourcePath); return; }
   switch (b.dataset.action) {
@@ -742,7 +818,7 @@ document.addEventListener('click', async event => {
     case 'snapshot': snapshotModal(); break;
     case 'open-explorer': window.open(explorerUrl(), '_blank', 'noopener'); break;
     case 'premap-provenance': premapProvenance(); break;
-    case 'open-full-graph': state.graphDepth = 'all'; state.graphSearch = ''; navigate('graph'); break;
+    case 'open-full-graph': state.graphDepth = 'all'; state.graphSearch = ''; state.graphOpen = []; navigate('graph'); break;
     case 'clear-tree-search': state.treeSearch = ''; render(); break;
     case 'clear-graph': state.graphSearch = ''; state.graphDepth = 'all'; state.graphDirection = 'both'; state.graphKind = 'all'; render(); toast('Filtri azzerati: tutti i gruppi del grafo sono visibili.'); break;
     case 'component-files': { const n = nodeById(state.graphRoot); modal('File di ' + esc(nodeName(n)), 'File assegnati al gruppo nel grafo del run.', `<ul class="source-list">${n.files.map(p => `<li><code>${esc(p)}</code></li>`).join('')}</ul>`, `<button class="primary" data-action="close-modal">Chiudi elenco</button>`); break; }

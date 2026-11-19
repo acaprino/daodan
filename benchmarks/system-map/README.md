@@ -1,6 +1,6 @@
 # Benchmark: mappa del sistema
 
-Prova la [spec della mappa del sistema](../../docs/specs/2026-11-12-mappa-del-sistema.md), misure da 1 a 6. Le soglie sono scritte qui prima di ogni misura; il proprietario può cambiarle. I casi sono quelli dei benchmark dei flussi: [`phazly-flow`](../phazly-flow/README.md), [`polar-flow`](../polar-flow/README.md) e [`tududi-flow`](../tududi-flow/README.md). Le regole di collegamento ci sono per phazly e per tududi (`benchmarks/tududi-flow/rules.json`, scritte a mano il 12 novembre 2026 per la misura 2: store di Zustand, chiamate `fetch(getApiPath(...))`, rotte di Express, modelli di Sequelize). Il codice dei casi non entra qui: solo nomi di file e valori attesi. Le run girano su Modal, in un processo nuovo.
+Prova la [spec della mappa del sistema](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md), misure da 1 a 6. Le soglie sono scritte qui prima di ogni misura; il proprietario può cambiarle. I casi sono quelli dei benchmark dei flussi: [`phazly-flow`](../phazly-flow/README.md), [`polar-flow`](../polar-flow/README.md) e [`tududi-flow`](../tududi-flow/README.md). Le regole di collegamento ci sono per phazly e per tududi (`benchmarks/tududi-flow/rules.json`, scritte a mano il 12 novembre 2026 per la misura 2: store di Zustand, chiamate `fetch(getApiPath(...))`, rotte di Express, modelli di Sequelize). Il codice dei casi non entra qui: solo nomi di file e valori attesi. Le run girano su Modal, in un processo nuovo.
 
 ## Soglie
 
@@ -153,3 +153,23 @@ Prova a costo zero dei flussi costruiti dalla macchina: `python anchors.py LINKS
 - Nessun percorso si allarga: 0 file fuori dal riferimento in tutti e 3 i flussi, fra 4 e 6 file o chiavi per flusso.
 - Ogni nodo mancante corrisponde a un buco del grafo già visto, e la prova lo localizza: l'interfaccia chiama le funzioni dell'abbonamento attraverso un contesto React (`startCheckout` da `useSubscription()`), e le regole non leggono `db[USAGE_EVENTS_COLLECTION]`. Nessuno dei due è dichiarato oggi.
 - Nei tre flussi non ci sono servizi esterni: senza il grafo dei moduli, i collegamenti `usa` verso Stripe e Google Play mancano da questi dati.
+
+## Confronto proposto per i flussi multilivello
+
+Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md). **Confronto proposto, ancora da eseguire su Modal.**
+
+**Scoperta cieca.** Ogni variante riceve la stessa richiesta, «analizza questo sistema», e lo stesso snapshot completo. Il mapper vede i normali artefatti dell'analisi, inclusi i nomi presenti nel prodotto. Prompt, regole e card accessibili al mapper devono essere privi di etichette provenienti dal valutatore o da mappe di flussi già compilate per la prova. I riferimenti manuali, le aree attese, i nomi e il numero di processi e rami rimangono fuori dall'ambiente dell'agente. Il valutatore li confronta con la mappa salvata **prima** di formulare richieste di review.
+
+| Variante | Compito |
+| --- | --- |
+| A, attuale | Eseguire il mapper attuale sull'intero sistema. |
+| B, grafo | Partire da ingressi ed effetti dell'intero inventario. Il modello identifica processi e varianti. La macchina verifica i percorsi. |
+| C, grafo e card | Come B, aggiungendo l'accesso mirato alle card di simbolo aggiornate. B e C possono richiedere gli stessi estratti di sorgente. |
+
+**Casi.** Su Phazly valutare dopo la scoperta i tre flussi noti dell'area pagamenti. Il riferimento storico copre quell'area soltanto. Gli altri flussi scoperti vanno giudicati a parte prima di contarli come errati. Per misurare la scoperta di un intero sistema, predisporre in repository una fixture con inventario manuale indipendente ed esaustivo. Deve comprendere più funzionalità, una funzionalità con ramo utente e cron, un modulo condiviso con un altro processo e un effetto il cui ingresso resta irrisolto. Gli estremi dati a mano nella prova del 13 novembre restano un controllo separato del tracciatore.
+
+**Parametri e misure.** Fare due ripetizioni indipendenti per variante e caso, a parità di grafo, modello, tetto di contesto e budget. Registrare flussi e varianti mancanti, estranei, accorpati o duplicati, verificandoli per ingressi, effetti e membri anche quando il nome differisce. Contare gli estremi spiegati, esclusi con motivo, irrisolti e non esaminati. Misurare token osservati di input e output, aperture e costo dell'intero run, distinguendo riuso e prima generazione delle card. Valgono le soglie storiche applicabili per riproduzione sull'area di riferimento, stabilità e costo a sistema. Il riferimento parziale di Phazly non misura il richiamo globale.
+
+**Criteri sulla fixture completa.** Il mapper deve scoprire tutti i processi e tutte le varianti attesi, conservare il modulo condiviso una sola volta e rendere conto di ogni estremo, inclusa l'origine irrisolta. Nessun arco causale senza evidenza. Aprire il processo deve mostrare i due rami e richiuderlo deve ripristinare la selezione, con zero chiamate LLM. Solo a questo punto chiedere una review della funzionalità e poi del solo ramo automatico. Nel primo caso sono attesi entrambi i percorsi, nel secondo il gestore del cron e il codice condiviso pertinente. In entrambi i casi verificare la motivazione dei file, i file di solo contesto e le lacune rispetto al riferimento.
+
+A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo non espone un ingresso o un effetto, attribuire l'omissione alla raccolta delle evidenze. Se il riferimento è visibile al modello e viene interpretato male, attribuirla alla scoperta semantica. **Risultati del nuovo protocollo e fixture completa: da produrre.**

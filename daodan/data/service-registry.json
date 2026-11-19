@@ -3550,7 +3550,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": "https://aws.amazon.com",
-   "mark": null,
+   "mark": "marks/aws.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -3638,7 +3638,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.amplifyhosting.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -3660,13 +3660,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Front-End-Web-Mobile/64/Arch_AWS-Amplify_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.apigateway",
@@ -3674,7 +3668,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.apigateway.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -3706,13 +3700,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Networking-Content-Delivery/64/Arch_Amazon-API-Gateway_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.athena",
@@ -3720,7 +3708,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.athena.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -3755,13 +3743,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-Athena_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.bedrock",
@@ -3769,7 +3751,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.bedrock.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -3788,13 +3770,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Bedrock_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.cloudformation",
@@ -3846,7 +3822,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.cloudfront.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -3887,13 +3863,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Networking-Content-Delivery/64/Arch_Amazon-CloudFront_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.cloudsearch",
@@ -3901,7 +3871,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.cloudsearch.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -3930,13 +3900,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-CloudSearch_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.cloudwatch",
@@ -3944,7 +3908,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.cloudwatch.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -3976,13 +3940,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Management-Tools/64/Arch_Amazon-CloudWatch_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.codebuild",
@@ -3990,7 +3948,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.codebuild.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4021,13 +3979,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Developer-Tools/64/Arch_AWS-CodeBuild_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.codepipeline",
@@ -4035,7 +3987,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": "https://aws.amazon.com/codepipeline/",
-   "mark": null,
+   "mark": "marks/aws.codepipeline.svg",
    "signs": {
     "packages": {
      "github-actions": [
@@ -4051,13 +4003,7 @@
     "additions",
     "cncf-landscape",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Developer-Tools/64/Arch_AWS-CodePipeline_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.cognito",
@@ -4065,7 +4011,7 @@
    "kind": "service",
    "type": "autenticazione",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.cognito.svg",
    "signs": {
     "packages": {
      "go": [
@@ -4086,13 +4032,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Security-Identity/64/Arch_Amazon-Cognito_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.comprehend",
@@ -4100,7 +4040,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.comprehend.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4116,13 +4056,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Comprehend_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.documentdb",
@@ -4130,7 +4064,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.documentdb.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4162,13 +4096,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-DocumentDB_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.dynamodb",
@@ -4176,7 +4104,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.dynamodb.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4220,13 +4148,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-DynamoDB_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.ebs",
@@ -4234,7 +4156,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.ebs.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4263,13 +4185,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Storage/64/Arch_Amazon-Elastic-Block-Store_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.ec2",
@@ -4277,7 +4193,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.ec2.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4312,13 +4228,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Compute/64/Arch_Amazon-EC2_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.ecr",
@@ -4326,7 +4236,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.ecr.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4361,13 +4271,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Containers/64/Arch_Amazon-Elastic-Container-Registry_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.ecs",
@@ -4375,7 +4279,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.ecs.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4407,13 +4311,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Containers/64/Arch_Amazon-Elastic-Container-Service_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.efs",
@@ -4421,7 +4319,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.efs.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4453,13 +4351,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Storage/64/Arch_Amazon-EFS_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.eks",
@@ -4467,7 +4359,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.eks.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4500,13 +4392,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Containers/64/Arch_Amazon-Elastic-Kubernetes-Service_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.elasticache",
@@ -4514,7 +4400,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.elasticache.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4549,13 +4435,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-ElastiCache_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.fargate",
@@ -4563,7 +4443,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.fargate.svg",
    "signs": {
     "packages": {
      "github-actions": [
@@ -4578,13 +4458,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Containers/64/Arch_AWS-Fargate_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.glacier",
@@ -4592,7 +4466,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.glacier.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4620,13 +4494,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Storage/64/Arch_Amazon-Simple-Storage-Service-Glacier_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.glue",
@@ -4634,7 +4502,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.glue.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4666,13 +4534,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_AWS-Glue_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.kafka",
@@ -4680,7 +4542,7 @@
    "kind": "service",
    "type": "coda",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.kafka.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4706,13 +4568,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-Managed-Streaming-for-Apache-Kafka_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.kinesis",
@@ -4720,7 +4576,7 @@
    "kind": "service",
    "type": "coda",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.kinesis.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4757,13 +4613,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-Kinesis_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.kms",
@@ -4771,7 +4621,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.kms.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4803,13 +4653,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Security-Identity/64/Arch_AWS-Key-Management-Service_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.lambda",
@@ -4817,7 +4661,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": "https://aws.amazon.com/lambda/",
-   "mark": null,
+   "mark": "marks/aws.lambda.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4861,13 +4705,7 @@
     "additions",
     "cncf-landscape",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Compute/64/Arch_AWS-Lambda_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.lightsail",
@@ -4875,7 +4713,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.lightsail.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4907,13 +4745,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Compute/64/Arch_Amazon-Lightsail_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.memorydb",
@@ -4921,7 +4753,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.memorydb.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4953,13 +4785,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-MemoryDB_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.mq",
@@ -4967,7 +4793,7 @@
    "kind": "service",
    "type": "coda",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.mq.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -4996,13 +4822,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Application-Integration/64/Arch_Amazon-MQ_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.neptune",
@@ -5010,7 +4830,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.neptune.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5042,13 +4862,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-Neptune_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.opensearch",
@@ -5056,7 +4870,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.opensearch.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5088,13 +4902,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-OpenSearch-Service_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.polly",
@@ -5102,7 +4910,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.polly.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5127,13 +4935,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Polly_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.rds",
@@ -5141,7 +4943,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.rds.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5180,13 +4982,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-RDS_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.redshift",
@@ -5194,7 +4990,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.redshift.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5229,13 +5025,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Analytics/64/Arch_Amazon-Redshift_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.rekognition",
@@ -5243,7 +5033,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.rekognition.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5271,13 +5061,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Rekognition_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.s3",
@@ -5285,7 +5069,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.s3.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5328,13 +5112,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Storage/64/Arch_Amazon-Simple-Storage-Service_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.sagemaker",
@@ -5342,7 +5120,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.sagemaker.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5374,13 +5152,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-SageMaker-AI_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.secretsmanager",
@@ -5388,7 +5160,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.secretsmanager.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5423,13 +5195,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Security-Identity/64/Arch_AWS-Secrets-Manager_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.ses",
@@ -5437,7 +5203,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.ses.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5476,13 +5242,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Business-Applications/64/Arch_Amazon-Simple-Email-Service_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.sfn",
@@ -5490,7 +5250,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.sfn.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5519,13 +5279,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Application-Integration/64/Arch_AWS-Step-Functions_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.sns",
@@ -5533,7 +5287,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.sns.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5569,13 +5323,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Application-Integration/64/Arch_Amazon-Simple-Notification-Service_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.sqs",
@@ -5583,7 +5331,7 @@
    "kind": "service",
    "type": "coda",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.sqs.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5621,13 +5369,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Application-Integration/64/Arch_Amazon-Simple-Queue-Service_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.timestream",
@@ -5635,7 +5377,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.timestream.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5670,13 +5412,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Databases/64/Arch_Amazon-Timestream_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.transcribe",
@@ -5684,7 +5420,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.transcribe.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5701,13 +5437,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Transcribe_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "aws.translate",
@@ -5715,7 +5445,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/aws.translate.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -5740,13 +5470,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://d1.awsstatic.com/onedam/marketing-channels/website/public/shared/architecture-icon-release/Icon-package_07312026.5846e92413caa21490223536cc97f1269e44fa92.zip",
-    "sha256": "d2d166c453526471749d520e0db022c459abef759d2946cf2dd1d1c992dc6526",
-    "member": "Architecture-Service-Icons_07312026/Arch_Artificial-Intelligence/64/Arch_Amazon-Translate_64.svg",
-    "terms": "https://aws.amazon.com/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "awscdk",
@@ -5816,7 +5540,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": "https://azure.microsoft.com",
-   "mark": null,
+   "mark": "marks/azure.svg",
    "signs": {
     "packages": {
      "terraform": [
@@ -5976,7 +5700,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.aks.svg",
    "signs": {
     "packages": {},
     "patterns": {
@@ -5991,13 +5715,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/compute/10023-icon-service-Kubernetes-Services.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.ci",
@@ -6005,7 +5723,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.ci.svg",
    "signs": {
     "packages": {},
     "patterns": {},
@@ -6017,6 +5735,7 @@
     ]
    },
    "from": [
+    "additions",
     "stack-analyser"
    ]
   },
@@ -6026,7 +5745,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.cosmosdb.svg",
    "signs": {
     "packages": {
      "rubygems": [
@@ -6058,13 +5777,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/databases/10121-icon-service-Azure-Cosmos-DB.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.functions",
@@ -6072,7 +5785,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": "https://azure.microsoft.com/en-us/services/functions/",
-   "mark": null,
+   "mark": "marks/azure.functions.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -6107,13 +5820,7 @@
     "additions",
     "cncf-landscape",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/compute/10029-icon-service-Function-Apps.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.maps",
@@ -6121,7 +5828,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.maps.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -6142,6 +5849,7 @@
     "files": []
    },
    "from": [
+    "additions",
     "stack-analyser"
    ]
   },
@@ -6151,7 +5859,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.mariadb.svg",
    "signs": {
     "packages": {
      "rubygems": [
@@ -6179,13 +5887,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/databases/10123-icon-service-Azure-Database-MariaDB-Server.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.mysql",
@@ -6193,7 +5895,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.mysql.svg",
    "signs": {
     "packages": {
      "rubygems": [
@@ -6224,13 +5926,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/databases/10122-icon-service-Azure-Database-MySQL-Server.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.openai",
@@ -6238,7 +5934,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.openai.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -6254,13 +5950,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/ai + machine learning/03438-icon-service-Azure-OpenAI.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.postgres",
@@ -6268,7 +5958,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.postgres.svg",
    "signs": {
     "packages": {
      "rubygems": [
@@ -6299,13 +5989,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/databases/10131-icon-service-Azure-Database-PostgreSQL-Server.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.redis",
@@ -6313,7 +5997,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.redis.svg",
    "signs": {
     "packages": {
      "rubygems": [
@@ -6341,13 +6025,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/databases/10137-icon-service-Cache-Redis.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.sql",
@@ -6355,7 +6033,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.sql.svg",
    "signs": {
     "packages": {
      "github-actions": [
@@ -6386,13 +6064,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/databases/02390-icon-service-Azure-SQL.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.staticwebapps",
@@ -6400,7 +6072,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.staticwebapps.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -6432,13 +6104,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/web/01007-icon-service-Static-Apps.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "azure.storage",
@@ -6446,7 +6112,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/azure.storage.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -6505,13 +6171,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://arch-center.azureedge.net/icons/Azure_Public_Service_Icons_V25.zip",
-    "sha256": "f293d99252b3638557dd08ccbff9f2529083473d39b373fb2af29a7200351339",
-    "member": "Azure_Public_Service_Icons/Icons/storage/10086-icon-service-Storage-Accounts.svg",
-    "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/"
-   }
+   ]
   },
   {
    "id": "babel",
@@ -15210,7 +14870,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": "https://cloud.google.com",
-   "mark": null,
+   "mark": "marks/gcp.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15256,7 +14916,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.aiplatform.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15287,13 +14947,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "ai_platform/ai_platform.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.appengine",
@@ -15301,7 +14955,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.appengine.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15335,13 +14989,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "app_engine/app_engine.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.artifactregistry",
@@ -15349,7 +14997,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.artifactregistry.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15378,13 +15026,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "artifact_registry/artifact_registry.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.bigquery",
@@ -15392,7 +15034,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.bigquery.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15430,13 +15072,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
-    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
-    "member": "Unique Icons/BigQuery/SVG/BigQuery-512-color.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.bigtable",
@@ -15444,7 +15080,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.bigtable.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15475,13 +15111,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "bigtable/bigtable.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.cloudbuild",
@@ -15489,7 +15119,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.cloudbuild.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15520,13 +15150,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "cloud_build/cloud_build.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.cloudrun",
@@ -15534,7 +15158,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.cloudrun.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15569,13 +15193,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
-    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
-    "member": "Unique Icons/Cloud Run/SVG/CloudRun-512-color-rgb.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.containerregistry",
@@ -15595,7 +15213,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.dataflow.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15623,13 +15241,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "dataflow/dataflow.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.dataproc",
@@ -15637,7 +15249,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.dataproc.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15668,13 +15280,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "dataproc/dataproc.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.datastore",
@@ -15682,7 +15288,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.datastore.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15713,13 +15319,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "datastore/datastore.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.dialogflow",
@@ -15727,7 +15327,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.dialogflow.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15758,13 +15358,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "dialogflow/dialogflow.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.dns",
@@ -15772,7 +15366,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.dns.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15800,13 +15394,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "cloud_dns/cloud_dns.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.functions",
@@ -15814,7 +15402,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.functions.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15849,13 +15437,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "cloud_functions/cloud_functions.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.gce",
@@ -15863,7 +15445,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.gce.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15897,13 +15479,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
-    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
-    "member": "Unique Icons/Compute Engine/SVG/ComputeEngine-512-color-rgb.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.gcs",
@@ -15911,7 +15487,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.gcs.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -15953,13 +15529,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
-    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
-    "member": "Unique Icons/Cloud Storage/SVG/Cloud_Storage-512-color.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.gke",
@@ -15967,7 +15537,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.gke.svg",
    "signs": {
     "packages": {
      "github-actions": [
@@ -15986,13 +15556,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
-    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
-    "member": "Unique Icons/GKE/SVG/GKE-512-color.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.kms",
@@ -16000,7 +15564,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.kms.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16031,13 +15595,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "key_management_service/key_management_service.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.language",
@@ -16045,7 +15603,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.language.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16073,13 +15631,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "cloud_natural_language_api/cloud_natural_language_api.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.logging",
@@ -16087,7 +15639,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.logging.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16121,13 +15673,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "cloud_logging/cloud_logging.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.maps",
@@ -16173,7 +15719,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.memorystore.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16204,13 +15750,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "memorystore/memorystore.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.pubsub",
@@ -16218,7 +15758,7 @@
    "kind": "service",
    "type": "coda",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.pubsub.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16265,7 +15805,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.secretmanager.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16299,13 +15839,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "secret_manager/secret_manager.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.spanner",
@@ -16313,7 +15847,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.spanner.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16347,13 +15881,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
-    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
-    "member": "Unique Icons/Cloud Spanner/SVG/CloudSpanner-512-color.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.speech",
@@ -16361,7 +15889,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.speech.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16389,13 +15917,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "speech-to-text/speech-to-text.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.sql",
@@ -16403,7 +15925,7 @@
    "kind": "service",
    "type": "database",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.sql.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16431,13 +15953,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
-    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
-    "member": "Unique Icons/Cloud SQL/SVG/CloudSQL-512-color.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.tasks",
@@ -16445,7 +15961,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.tasks.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16476,13 +15992,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "cloud_tasks/cloud_tasks.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.translate",
@@ -16529,7 +16039,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.vertex.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16551,13 +16061,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/core-products-icons.zip",
-    "sha256": "6531a10f58bc599c24d9a455d81dd757c1a03c3c43da9cddf639b859c1c1eece",
-    "member": "Unique Icons/Vertex AI/SVG/VertexAI-512-color.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gcp.vision",
@@ -16565,7 +16069,7 @@
    "kind": "service",
    "type": "servizio o API",
    "site": null,
-   "mark": null,
+   "mark": "marks/gcp.vision.svg",
    "signs": {
     "packages": {
      "npm": [
@@ -16593,13 +16097,7 @@
    "from": [
     "additions",
     "stack-analyser"
-   ],
-   "mark_source": {
-    "url": "https://services.google.com/fh/files/misc/google-cloud-legacy-icons.zip",
-    "sha256": "a6d9d7921758042538b462f03cf64614c2cebd96743b3ed63580a769fc7de3e9",
-    "member": "cloud_vision_api/cloud_vision_api.svg",
-    "terms": "https://cloud.google.com/icons"
-   }
+   ]
   },
   {
    "id": "gear",

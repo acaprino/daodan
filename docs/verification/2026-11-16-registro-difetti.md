@@ -46,7 +46,7 @@ Convenzioni:
 
 ### Lingua
 
-- `tutti` (90): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287, D-295, D-296, D-297, D-298, D-299, D-300, D-303, D-304, D-305, D-306, D-308, D-309, D-310, D-311
+- `tutti` (91): D-001, D-004, D-005, D-018, D-019, D-022, D-023, D-024, D-031, D-032, D-033, D-034, D-035, D-036, D-037, D-038, D-039, D-062, D-065, D-066, D-067, D-068, D-069, D-070, D-071, D-081, D-082, D-115, D-149, D-167, D-168, D-172, D-182, D-196, D-201, D-202, D-203, D-204, D-205, D-206, D-207, D-211, D-212, D-213, D-214, D-215, D-216, D-217, D-218, D-219, D-222, D-228, D-233, D-234, D-235, D-243, D-244, D-245, D-250, D-251, D-260, D-261, D-262, D-263, D-264, D-269, D-274, D-275, D-279, D-280, D-281, D-282, D-283, D-285, D-286, D-287, D-295, D-296, D-297, D-298, D-299, D-300, D-303, D-304, D-305, D-306, D-308, D-309, D-310, D-311, D-312
 - `java` (48): D-003, D-016, D-025, D-026, D-027, D-044, D-049, D-050, D-054, D-055, D-057, D-058, D-063, D-064, D-083, D-090, D-091, D-092, D-093, D-094, D-095, D-096, D-099, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-108, D-109, D-111, D-112, D-178, D-179, D-181, D-208, D-220, D-221, D-223, D-224, D-226, D-229, D-265, D-284, D-293, D-294
 - `c` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-134, D-136, D-137, D-142, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-255, D-259, D-265, D-266, D-267, D-268, D-271, D-277
 - `cpp` (37): D-029, D-043, D-060, D-061, D-076, D-077, D-121, D-122, D-123, D-124, D-125, D-126, D-127, D-128, D-130, D-131, D-132, D-133, D-135, D-137, D-177, D-209, D-210, D-227, D-229, D-230, D-236, D-240, D-255, D-259, D-265, D-266, D-268, D-271, D-272, D-277, D-278
@@ -81,7 +81,7 @@ Convenzioni:
 - `documenti` (6): D-222, D-227, D-229, D-230, D-231, D-232
 - `parser` (4): D-037, D-165, D-166, D-307
 - `driver Modal` (1): D-209
-- `explorer` (4): D-211, D-305, D-306, D-309
+- `explorer` (5): D-211, D-305, D-306, D-309, D-312
 - `processo` (1): D-280
 
 ### Tipo
@@ -91,7 +91,7 @@ Convenzioni:
 - `sicurezza` (30): D-032, D-034, D-040, D-041, D-042, D-063, D-064, D-161, D-203, D-204, D-205, D-229, D-239, D-240, D-245, D-248, D-250, D-253, D-256, D-257, D-258, D-263, D-264, D-276, D-281, D-282, D-283, D-285, D-286, D-311
 - `benchmark` (13): D-220, D-221, D-223, D-224, D-225, D-226, D-228, D-233, D-234, D-235, D-243, D-251, D-287
 - `documentazione` (6): D-222, D-227, D-229, D-230, D-231, D-232
-- `prestazioni` (4): D-123, D-187, D-189, D-302
+- `prestazioni` (5): D-123, D-187, D-189, D-302, D-312
 
 ### Origine
 
@@ -103,7 +103,7 @@ Convenzioni:
 - `prova sull'host` (10): D-036, D-038, D-039, D-040, D-041, D-042, D-084, D-086, D-245, D-250
 - `spec` (7): D-199, D-200, D-212, D-216, D-219, D-229, D-230
 - `conferma` (5): D-057, D-058, D-136, D-158, D-187
-- `corsa su un progetto` (16): D-031, D-043, D-085, D-087, D-206, D-288, D-289, D-290, D-291, D-305, D-306, D-307, D-308, D-309, D-310, D-311
+- `corsa su un progetto` (17): D-031, D-043, D-085, D-087, D-206, D-288, D-289, D-290, D-291, D-305, D-306, D-307, D-308, D-309, D-310, D-311, D-312
 - `test` (4): D-083, D-211, D-222, D-244
 - `fixtures` (3): D-176, D-196, D-209
 - `real-3` (3): D-099, D-178, D-182
@@ -213,7 +213,7 @@ Convenzioni:
 
 ## Indice
 
-311 schede: 250 risolte, 18 aperte, 43 buchi dichiarati.
+312 schede: 251 risolte, 18 aperte, 43 buchi dichiarati.
 
 ### Pre-mappa, snapshot e preparazione
 
@@ -497,7 +497,7 @@ Convenzioni:
 
 ### Container, servizi e driver Modal
 
-32 schede: 28 risolto, 1 aperto, 3 buco dichiarato.
+33 schede: 29 risolto, 1 aperto, 3 buco dichiarato.
 
 | Id | Nome | Progetto o caso | Stato | Commit | Tag |
 | --- | --- | --- | --- | --- | --- |
@@ -533,6 +533,7 @@ Convenzioni:
 | D-306 | Il grafo dell'app mostrava un nodo solo e nessuna relazione | pets-workshop | risolto | `eccfb7d8a` | tutti · explorer · completezza · corsa su un progetto |
 | D-309 | L'app diceva «Server non raggiungibile» quando il progetto era solo occupato | pets-workshop | risolto | `57ca5e6ef` | tutti · explorer · correttezza · corsa su un progetto |
 | D-311 | Il controllo dei valori del `.env` buttava le risposte della pre-mappa per una coincidenza | phazly-app | risolto | `065ceea64` | tutti · container · completezza, sicurezza · corsa su un progetto · go-enry, Renovate, BuildKit, Cargo |
+| D-312 | Il grafo dell'app rifaceva tutta la busta a ogni richiesta: 245 secondi su 2.408 file | phazly-app | risolto | `9bf4a7936` | tutti · explorer · prestazioni · corsa su un progetto |
 
 ### Benchmark e documenti
 
@@ -4599,6 +4600,19 @@ Casi che il giro aggiunge alle schede esistenti (da accodare alla loro «Descriz
 - **Verifica:** da `065ceea64`, su Modal: `tests/test_codebase_map_dynamic_services.py` (`test_a_value_the_project_s_other_files_hold_is_public_and_text_is_masked_never_withheld`, `test_a_pre_map_command_never_sees_a_value_and_only_daodan_s_helper_gets_them`, `PodTest.test_a_value_the_project_publishes_is_no_secret_and_an_answer_listing_the_paths_is_kept`, `PodTest.test_a_value_only_the_env_files_hold_is_masked_in_text_and_withholds_an_output_that_is_not`, `PodTest.test_a_command_that_never_saw_a_value_keeps_what_it_wrote_untouched`); i file dei test del container, dei servizi e della pre-mappa interi: 193 passati, 5 saltati. Non verificati: una pre-mappa vera su phazly-app, il costo della passata sui suoi 5.258 file, `sandbox_run` su Modal.
 - **Stato:** risolto.
 - **Note:** D-283, D-291.
+
+#### D-312 Il grafo dell'app rifaceva tutta la busta a ogni richiesta: 245 secondi su 2.408 file
+- **Tag:** lingua tutti · area explorer · tipo prestazioni · origine corsa su un progetto · strumento —
+- **Descrizione:** app standalone, 18 novembre: `GET /api/app/graph` di phazly-app (2.408 file; 20 nodi e 26 relazioni al livello dei moduli) risponde in 245 secondi, e la pagina lo richiede a ogni scrittura dell'analisi. Su un progetto di 78 file risponde in meno di un secondo.
+- **Spiegazione:** `App.graph` chiamava `visual.build_envelope` per intero a ogni richiesta: l'outline di ogni file per i suoi simboli (una chiamata per file, ognuna con l'elenco di tutti i percorsi), la freschezza delle schede e le chiamate risolte, anche per mostrare i soli moduli.
+- **Progetto e caso:** phazly-app (`0b61be6b7eea`) — corsa nell'app, 18 novembre 2026.
+- **Rimedio:** `9bf4a7936`, `scripts/app.py`, `scripts/app_view.py`, `scripts/visual.py`, `assets/app/app.js`:
+  - il grafo si chiede per livelli e per gruppi aperti (`levels`, `open`); il primo livello non legge i simboli di nessun file;
+  - i simboli di un file si leggono quando si apre o si ispeziona quel file (`visual.file_symbols`);
+  - una risposta resta finché i dati del run non cambiano (`visual.inputs_stamp`), al più 64.
+- **Verifica:** da `9bf4a7936`, `tests/test_codebase_map_app.py`: i test contano le letture (il primo livello e l'apertura di un gruppo non leggono simboli; una seconda richiesta non ricalcola; un cambio dei dati del run ricalcola).
+- **Stato:** risolto. Il tempo su un progetto grande non è misurato di nuovo: la misura va fatta su Modal. Il primo livello chiama ancora `graph_packet` una volta ogni 1.000 file.
+- **Note:** D-305, D-309.
 
 ### Benchmark e documenti
 

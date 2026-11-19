@@ -435,22 +435,29 @@ class DistributedMarkTests(unittest.TestCase):
     def test_every_mark_is_a_clean_file_in_the_plugin_and_every_file_is_named_by_an_entry(self):
         self.assertEqual(registry_build.check(self.value, DATA), [])
 
-    def test_the_recognisable_services_that_have_a_mark_do_not_drop_below_426(self):
-        """500 was asked for and 426 reached: 332 marks of Simple Icons, 10 official files, 84 icons of AWS, Azure and Google
-        Cloud fetched from the owner's package. 179 recognisable services have none: Simple Icons lacks them and
-        their owner's terms were not found to allow shipping, or were not researched (see REGISTRY-NOTICES.md)."""
-        with_mark = [e for e in self.entries if e["kind"] == "service" and e["signs"] and (e["mark"] or e.get("mark_source"))]
-        self.assertGreaterEqual(len(with_mark), 426)
+    def test_the_recognisable_services_that_have_a_mark_do_not_drop_below_432(self):
+        """500 was asked for and 432 reached, each with its file in the plugin: 332 marks of Simple Icons, 10 official
+        files, 90 pictograms Daodan drew for the services of AWS, Azure and Google Cloud. 173 recognisable services have
+        none: Simple Icons lacks them and their owner's terms were not found to allow shipping, or were not researched
+        (see REGISTRY-NOTICES.md)."""
+        with_mark = [e for e in self.entries if e["kind"] == "service" and e["signs"] and e["mark"]]
+        self.assertGreaterEqual(len(with_mark), 432)
 
-    def test_an_official_mark_is_recorded_with_its_source_the_day_and_the_owner_s_terms(self):
+    def test_a_shipped_mark_that_is_not_of_simple_icons_says_where_it_comes_from(self):
+        """An owner's file: its URL and the day. A drawing of Daodan's: that it is Daodan's and the day. Both are named
+        in the notices."""
         notices = NOTICES.read_text(encoding="utf-8")
-        official = [r for r in json.loads(ADDITIONS.read_text(encoding="utf-8"))["entries"] if r.get("mark")]
-        for record in official:
+        shipped = [r for r in json.loads(ADDITIONS.read_text(encoding="utf-8"))["entries"] if r.get("mark")]
+        self.assertEqual(sum(r["by"] == "daodan" for r in shipped), 90)
+        for record in shipped:
             source = record["mark_origin"]
-            self.assertTrue(source["url"].startswith("https://"), record["id"])
             self.assertRegex(source["date"], r"^\d{4}-\d{2}-\d{2}$")
-            self.assertIn(record["id"], notices)
-            self.assertIn(source["url"], notices)
+            self.assertIn(f"`{record['id']}`", notices)
+            if record["by"] == "daodan":
+                self.assertEqual(source["drawn_by"], "Daodan", record["id"])
+            else:
+                self.assertTrue(source["url"].startswith("https://"), record["id"])
+                self.assertIn(source["url"], notices)
             self.assertNotIn("simple-icons", next(e for e in self.entries if e["id"] == record["id"])["from"])
         packages = {r["mark_source"]["url"]: r["mark_source"] for r in json.loads(ADDITIONS.read_text(encoding="utf-8"))["entries"]
                     if r.get("mark_source")}
@@ -568,6 +575,33 @@ class PackageMarkTests(unittest.TestCase):
             self.assertEqual(len(written["mark_source"]["sha256"]), 64)
             self.assertFalse((data / "marks").exists())
             self.assertEqual(registry_build.add_package_mark("aws.x", args[1], args[2], "Icons/Nothing.svg", *args[4:]), 1)
+
+    def test_a_mark_daodan_drew_takes_the_place_of_the_package_and_says_so(self):
+        """A service whose mark was fetched from its owner's package gets a file Daodan drew: the entry names the file
+        and no package, and the additions keep one record of its mark, Daodan's, with the day and no owner's URL."""
+        import io
+        import zipfile
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as package:
+            package.writestr("Icons/A.svg", registry_build.clean_svg(TINY))
+        with tempfile.TemporaryDirectory() as folder:
+            data = Path(folder)
+            entries = [{**CheckTests.ENTRY, "id": f"e{n}", "mark": None} for n in range(1000)]
+            entries[0]["id"] = "aws.x"
+            files = (data / "service-registry.json", data / "registry-additions.json")
+            files[0].write_text(json.dumps({"schema": registry_build.SCHEMA, "entries": entries}), encoding="utf-8")
+            files[1].write_text(json.dumps({"entries": []}), encoding="utf-8")
+            (data / "p.zip").write_bytes(buffer.getvalue())
+            (data / "drawn.svg").write_bytes(TINY)
+            self.assertEqual(registry_build.add_package_mark("aws.x", "https://owner.example/p.zip", data / "p.zip",
+                                                             "Icons/A.svg", "https://owner.example/terms", *files), 0)
+            self.assertEqual(registry_build.add_mark("aws.x", data / "drawn.svg", None, None, *files, own=True), 0)
+            written = json.loads(files[0].read_text(encoding="utf-8"))["entries"][0]
+            self.assertEqual((written["id"], written["mark"], written.get("mark_source")), ("aws.x", "marks/aws.x.svg", None))
+            self.assertTrue((data / "marks/aws.x.svg").is_file())
+            records = [r for r in json.loads(files[1].read_text(encoding="utf-8"))["entries"] if r["id"] == "aws.x"]
+            self.assertEqual([(r["by"], r.get("mark"), "mark_source" in r, sorted(r["mark_origin"])) for r in records],
+                             [("daodan", "marks/aws.x.svg", False, ["date", "drawn_by"])])
 
 
 class NewServiceFromAMarkTests(unittest.TestCase):

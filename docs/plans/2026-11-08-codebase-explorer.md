@@ -14,7 +14,7 @@
 
 ## Vincoli
 
-- Flussi solo come li definisce la [fase 2](../specs/2026-11-09-flow-model.md): l'envelope li riceve in `flows` quando il run ha regole di collegamento; nessuna inferenza nell'esportatore o nel viewer.
+- Flussi solo come li definisce la [fase 2](../specs/2026-11-18-flussi-e-mappa-del-sistema.md): l'envelope li riceve in `flows` quando il run ha regole di collegamento; nessuna inferenza nell'esportatore o nel viewer.
 - `visual.py` usa solo la libreria standard e le API di `snapshot_store`, `modules`, `source_reader`, `semantic_store`; non legge tabelle SQLite direttamente e non richiede il server MCP.
 - Stati mai promossi: `provenance` (`build`, `declared`, `proposed`), `status` (`confirmed`, `inferred`, `incomplete`) e freschezza delle schede (`fresh`, `stale_body`, `stale_interface`, `stale_callee`, `orphan`, `uncovered`) restano campi distinti, con i valori dei produttori.
 - Export legato al run e al digest dei suoi input, mai al mirror; scritto solo se valido, mai sovrascrivendo un export precedente.

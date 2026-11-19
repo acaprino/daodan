@@ -103,8 +103,7 @@ def _module_index(service, run_id, t, state):
     result = service.modules(run_id)
     fresh = result.get("graph_state") == "fresh"
     modules = result.get("modules") or []
-    nodes = [PREFIX + p if not p.startswith(PREFIX) else p
-             for m in modules for p in m.get("paths", []) if p != "."]
+    nodes = [_full(p) for m in modules for p in m.get("paths", []) if p != "."]
     t.add("modules", {"list": True}, None, "hits" if fresh else "gap",
           "indice dei moduli prima della ricerca lessicale (fallback moduli)", nodes)
     if not fresh:
@@ -116,7 +115,7 @@ def _module_index(service, run_id, t, state):
 
 def _full(path):
     """I path dei moduli sono project-relative nello spike e repo-relative nei run dentro il repo."""
-    return path if path.startswith(PREFIX) else PREFIX + path
+    return path if (path + "/").startswith(PREFIX) else PREFIX + path  # the project's own root is full too
 
 
 def _module_of(path, index):

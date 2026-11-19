@@ -539,15 +539,15 @@ Riconoscimento dello stack sul corpus, giro del 17 novembre 2026 (`benchmarks/pr
 
 ## Servizi esterni
 
-Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un marchio: 347 con il file nel prodotto (`mark`), 84 scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per specie, sulle voci che ne hanno: `env` 160, `files` 48, `packages` 567, `patterns` 159. Di quelle con segni, 4 hanno la categoria `framework` o `tool` e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
+Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un marchio: 437 con il file nel prodotto (`mark`), 0 scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per specie, sulle voci che ne hanno: `env` 160, `files` 48, `packages` 567, `patterns` 159. Di quelle con segni, 4 hanno la categoria `framework` o `tool` e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
 
 | Tipo | Voci | Con segni | Con marchio |
 | --- | --- | --- | --- |
-| servizio o API | 573 | 451 | 329 |
+| servizio o API | 573 | 451 | 334 |
 | database | 115 | 107 | 73 |
 | autenticazione | 17 | 17 | 9 |
 | gateway | 16 | 16 | 11 |
-| coda | 14 | 14 | 9 |
+| coda | 14 | 14 | 10 |
 
 <details><summary>Servizi riconoscibili: 601 voci</summary>
 
@@ -600,66 +600,66 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un 
 | Atlassian OpsGenie | `atlassian.opsgenie` | servizio o API | npm, pypi | no | 0 |
 | Atlassian Trello | `atlassian.trello` | servizio o API | composer, github-actions, npm, rubygems | no | 0 |
 | Auth0 | `auth0` | autenticazione | composer, crates, go, npm, pypi, rubygems, terraform, env | sì | 0 |
-| AWS | `aws` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, terraform | no | 8 |
-| AWS ActiveMQ | `aws.mq` | coda | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Amplify Hosting | `aws.amplifyhosting` | servizio o API | npm, terraform-resource | al primo uso | 0 |
-| AWS Api Gateway | `aws.apigateway` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Athena | `aws.athena` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Bedrock | `aws.bedrock` | servizio o API | npm | al primo uso | 0 |
-| AWS Block Storage | `aws.ebs` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| AWS CloudFront | `aws.cloudfront` | database | composer, crates, github-actions, go, npm, pypi, rubygems, terraform-resource, env | al primo uso | 0 |
-| AWS Cloudsearch | `aws.cloudsearch` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Cloudwatch | `aws.cloudwatch` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Code Build | `aws.codebuild` | servizio o API | crates, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Code Pipeline | `aws.codepipeline` | servizio o API | github-actions | al primo uso | 0 |
-| AWS Cognito | `aws.cognito` | autenticazione | go, npm, rubygems | al primo uso | 0 |
-| AWS Comprehend | `aws.comprehend` | servizio o API | npm | al primo uso | 0 |
-| AWS Compute | `aws.ec2` | servizio o API | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Container | `aws.ecs` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Container Registry | `aws.ecr` | database | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Document DB | `aws.documentdb` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS DynamoDB | `aws.dynamodb` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS ElastiCache | `aws.elasticache` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Fargate | `aws.fargate` | servizio o API | github-actions | al primo uso | 0 |
-| AWS File System | `aws.efs` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Glacier | `aws.glacier` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Glue | `aws.glue` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Kafka | `aws.kafka` | coda | npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Kinesis | `aws.kinesis` | coda | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Kms | `aws.kms` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Kubernetes | `aws.eks` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Lambda | `aws.lambda` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Lightsail | `aws.lightsail` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS MemoryDB | `aws.memorydb` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Neptune | `aws.neptune` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Notification Service | `aws.sns` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Opensearch | `aws.opensearch` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Polly | `aws.polly` | servizio o API | crates, go, npm, rubygems | al primo uso | 0 |
-| AWS RDS | `aws.rds` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Redshift | `aws.redshift` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Rekognition | `aws.rekognition` | servizio o API | crates, go, npm, pypi, rubygems | al primo uso | 0 |
-| AWS S3 | `aws.s3` | database | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 9 |
-| AWS SageMaker | `aws.sagemaker` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Secrets Manager | `aws.secretsmanager` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
-| AWS Simple Email Service | `aws.ses` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS SQS | `aws.sqs` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Step Functions | `aws.sfn` | servizio o API | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Timestream | `aws.timestream` | database | crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| AWS Transcribe | `aws.transcribe` | servizio o API | npm | al primo uso | 0 |
-| AWS Translate | `aws.translate` | servizio o API | crates, go, npm, rubygems | al primo uso | 0 |
-| Azure | `azure` | servizio o API | crates, docker, github-actions, go, npm, pypi, rubygems, terraform | no | 1 |
-| Azure Cosmos DB | `azure.cosmosdb` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Azure Functions | `azure.functions` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Azure Kubernetes | `azure.aks` | servizio o API | terraform-resource | al primo uso | 0 |
-| Azure MariaDB | `azure.mariadb` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Azure MySQL | `azure.mysql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Azure Openai | `azure.openai` | servizio o API | npm | al primo uso | 0 |
-| Azure Postgres | `azure.postgres` | database | crates, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Azure Redis | `azure.redis` | database | crates, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Azure SQL | `azure.sql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Azure Static Web Apps | `azure.staticwebapps` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | al primo uso | 1 |
-| Azure Storage | `azure.storage` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
-| AzureCI | `azure.ci` | servizio o API | files | no | 0 |
+| AWS | `aws` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, terraform | sì | 8 |
+| AWS ActiveMQ | `aws.mq` | coda | crates, go, npm, rubygems, terraform-resource | sì | 0 |
+| AWS Amplify Hosting | `aws.amplifyhosting` | servizio o API | npm, terraform-resource | sì | 0 |
+| AWS Api Gateway | `aws.apigateway` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Athena | `aws.athena` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Bedrock | `aws.bedrock` | servizio o API | npm | sì | 0 |
+| AWS Block Storage | `aws.ebs` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
+| AWS CloudFront | `aws.cloudfront` | database | composer, crates, github-actions, go, npm, pypi, rubygems, terraform-resource, env | sì | 0 |
+| AWS Cloudsearch | `aws.cloudsearch` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
+| AWS Cloudwatch | `aws.cloudwatch` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Code Build | `aws.codebuild` | servizio o API | crates, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
+| AWS Code Pipeline | `aws.codepipeline` | servizio o API | github-actions | sì | 0 |
+| AWS Cognito | `aws.cognito` | autenticazione | go, npm, rubygems | sì | 0 |
+| AWS Comprehend | `aws.comprehend` | servizio o API | npm | sì | 0 |
+| AWS Compute | `aws.ec2` | servizio o API | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Container | `aws.ecs` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Container Registry | `aws.ecr` | database | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Document DB | `aws.documentdb` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS DynamoDB | `aws.dynamodb` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS ElastiCache | `aws.elasticache` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Fargate | `aws.fargate` | servizio o API | github-actions | sì | 0 |
+| AWS File System | `aws.efs` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Glacier | `aws.glacier` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
+| AWS Glue | `aws.glue` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Kafka | `aws.kafka` | coda | npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Kinesis | `aws.kinesis` | coda | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Kms | `aws.kms` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Kubernetes | `aws.eks` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Lambda | `aws.lambda` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
+| AWS Lightsail | `aws.lightsail` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS MemoryDB | `aws.memorydb` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Neptune | `aws.neptune` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Notification Service | `aws.sns` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Opensearch | `aws.opensearch` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Polly | `aws.polly` | servizio o API | crates, go, npm, rubygems | sì | 0 |
+| AWS RDS | `aws.rds` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Redshift | `aws.redshift` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Rekognition | `aws.rekognition` | servizio o API | crates, go, npm, pypi, rubygems | sì | 0 |
+| AWS S3 | `aws.s3` | database | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | sì | 9 |
+| AWS SageMaker | `aws.sagemaker` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Secrets Manager | `aws.secretsmanager` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 1 |
+| AWS Simple Email Service | `aws.ses` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS SQS | `aws.sqs` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Step Functions | `aws.sfn` | servizio o API | crates, go, npm, rubygems, terraform-resource | sì | 0 |
+| AWS Timestream | `aws.timestream` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS Transcribe | `aws.transcribe` | servizio o API | npm | sì | 0 |
+| AWS Translate | `aws.translate` | servizio o API | crates, go, npm, rubygems | sì | 0 |
+| Azure | `azure` | servizio o API | crates, docker, github-actions, go, npm, pypi, rubygems, terraform | sì | 1 |
+| Azure Cosmos DB | `azure.cosmosdb` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
+| Azure Functions | `azure.functions` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | sì | 0 |
+| Azure Kubernetes | `azure.aks` | servizio o API | terraform-resource | sì | 0 |
+| Azure MariaDB | `azure.mariadb` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
+| Azure MySQL | `azure.mysql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
+| Azure Openai | `azure.openai` | servizio o API | npm | sì | 0 |
+| Azure Postgres | `azure.postgres` | database | crates, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
+| Azure Redis | `azure.redis` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
+| Azure SQL | `azure.sql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
+| Azure Static Web Apps | `azure.staticwebapps` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | sì | 1 |
+| Azure Storage | `azure.storage` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 1 |
+| AzureCI | `azure.ci` | servizio o API | files | sì | 0 |
 | Backblaze | `backblaze` | servizio o API | npm | sì | 0 |
 | Backendless | `backendless` | servizio o API | npm | sì | 0 |
 | Base44 | `base44` | servizio o API | npm | no | 0 |
@@ -668,7 +668,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un 
 | Better Stack | `betterstack` | servizio o API | composer, npm, rubygems, terraform, env | sì | 0 |
 | BigCommerce | `bigcommerce` | servizio o API | composer, npm, pypi, terraform-resource | sì | 0 |
 | Binance | `binance` | servizio o API | npm, pypi | sì | 0 |
-| Bing Maps | `azure.maps` | servizio o API | npm, terraform-resource, env | no | 0 |
+| Bing Maps | `azure.maps` | servizio o API | npm, terraform-resource, env | sì | 0 |
 | Bitbucket Pipelines | `atlassian.bitbucketpipelines` | servizio o API | files | no | 0 |
 | Bitly | `bitly` | servizio o API | npm | sì | 0 |
 | Bitwarden | `bitwarden` | servizio o API | npm | sì | 0 |
@@ -701,28 +701,28 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un 
 | ClickHouse | `clickhouse` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform, terraform-resource | sì | 2 |
 | ClickSend | `clicksend` | servizio o API | npm, env | no | 0 |
 | ClickUp | `clickup` | servizio o API | env | sì | 0 |
-| Cloud AI Platform | `gcp.aiplatform` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Artifact Registry | `gcp.artifactregistry` | database | go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud BigQuery | `gcp.bigquery` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud BigTable | `gcp.bigtable` | database | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Build | `gcp.cloudbuild` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Dataflow | `gcp.dataflow` | servizio o API | composer, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Dataproc | `gcp.dataproc` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Datastore | `gcp.datastore` | database | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Dialogflow | `gcp.dialogflow` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Functions | `gcp.functions` | servizio o API | composer, github-actions, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud KMS | `gcp.kms` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
-| Cloud Language | `gcp.language` | servizio o API | composer, go, npm, pypi, rubygems | al primo uso | 0 |
-| Cloud Logging | `gcp.logging` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Memorystore | `gcp.memorystore` | database | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Run | `gcp.cloudrun` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Secret Manager | `gcp.secretmanager` | database | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
-| Cloud Spanner | `gcp.spanner` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Speech | `gcp.speech` | servizio o API | composer, go, npm, pypi, rubygems | al primo uso | 0 |
-| Cloud SQL | `gcp.sql` | database | composer, go, npm, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Storage | `gcp.gcs` | database | composer, crates, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 2 |
-| Cloud Tasks | `gcp.tasks` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
-| Cloud Vision | `gcp.vision` | servizio o API | composer, go, npm, pypi, rubygems | al primo uso | 0 |
+| Cloud AI Platform | `gcp.aiplatform` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Artifact Registry | `gcp.artifactregistry` | database | go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud BigQuery | `gcp.bigquery` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud BigTable | `gcp.bigtable` | database | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Build | `gcp.cloudbuild` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Dataflow | `gcp.dataflow` | servizio o API | composer, go, npm, rubygems, terraform-resource | sì | 0 |
+| Cloud Dataproc | `gcp.dataproc` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Datastore | `gcp.datastore` | database | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Dialogflow | `gcp.dialogflow` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Functions | `gcp.functions` | servizio o API | composer, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
+| Cloud KMS | `gcp.kms` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 1 |
+| Cloud Language | `gcp.language` | servizio o API | composer, go, npm, pypi, rubygems | sì | 0 |
+| Cloud Logging | `gcp.logging` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Memorystore | `gcp.memorystore` | database | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Run | `gcp.cloudrun` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Secret Manager | `gcp.secretmanager` | database | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | sì | 1 |
+| Cloud Spanner | `gcp.spanner` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Speech | `gcp.speech` | servizio o API | composer, go, npm, pypi, rubygems | sì | 0 |
+| Cloud SQL | `gcp.sql` | database | composer, go, npm, rubygems, terraform-resource | sì | 0 |
+| Cloud Storage | `gcp.gcs` | database | composer, crates, github-actions, go, npm, pypi, rubygems, terraform-resource | sì | 2 |
+| Cloud Tasks | `gcp.tasks` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Cloud Vision | `gcp.vision` | servizio o API | composer, go, npm, pypi, rubygems | sì | 0 |
 | CloudBees | `cloudbees` | servizio o API | env | sì | 0 |
 | CloudBees Codeship | `cloudbees.codeship` | servizio o API | files | no | 0 |
 | Cloudflare | `cloudflare` | servizio o API | composer, crates, npm, pypi, rubygems, terraform, env | sì | 0 |
@@ -799,7 +799,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un 
 | Freshdesk | `freshdesk` | servizio o API | composer, go, npm, pypi, rubygems, env | no | 0 |
 | Frontegg | `frontegg` | autenticazione | npm, pypi, terraform | no | 0 |
 | Fusionauth | `fusionauth` | autenticazione | composer, go, npm, pypi, rubygems | sì | 0 |
-| GCP | `gcp` | servizio o API | composer, github-actions, npm, pypi, terraform, env | no | 3 |
+| GCP | `gcp` | servizio o API | composer, github-actions, npm, pypi, terraform, env | sì | 3 |
 | Gemini AI | `geminiai` | servizio o API | npm, pypi, env | no | 0 |
 | Ghost | `ghost` | servizio o API | docker, npm, env | sì | 0 |
 | GIPHY | `giphy` | servizio o API | npm | sì | 0 |
@@ -813,17 +813,17 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un 
 | Gmail | `google.gmail` | servizio o API | npm, rubygems | sì | 0 |
 | Google Ads | `google-ads` | servizio o API | npm, pypi | sì | 0 |
 | Google Analytics | `google.analytics` | servizio o API | composer, npm, pypi, terraform-resource, env | sì | 0 |
-| Google App Engine | `gcp.appengine` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Google App Engine | `gcp.appengine` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Google Calendar | `google.calendar` | servizio o API | composer, npm, pypi, rubygems | sì | 0 |
 | Google Chat | `google.chat` | servizio o API | npm, rubygems, terraform-resource | sì | 0 |
-| Google Compute | `gcp.gce` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | al primo uso | 1 |
-| Google DNS | `gcp.dns` | servizio o API | go, npm, pypi, rubygems, terraform-resource | al primo uso | 0 |
+| Google Compute | `gcp.gce` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | sì | 1 |
+| Google DNS | `gcp.dns` | servizio o API | go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Google Docs | `google.docs` | servizio o API | npm, rubygems | sì | 0 |
 | Google Drive | `google.drive` | servizio o API | crates, npm, rubygems, terraform-resource | sì | 0 |
 | Google Earth Engine | `google-earth-engine` | servizio o API | npm | sì | 0 |
 | Google Forms | `google.forms` | servizio o API | npm, rubygems, terraform-resource | sì | 0 |
 | Google Keep | `google.keep` | servizio o API | rubygems | sì | 0 |
-| Google Kubernetes | `gcp.gke` | servizio o API | github-actions, terraform-resource | al primo uso | 0 |
+| Google Kubernetes | `gcp.gke` | servizio o API | github-actions, terraform-resource | sì | 0 |
 | Google Maps | `gcp.maps` | servizio o API | go, npm, pypi, rubygems, env | sì | 0 |
 | Google Meet | `google.meet` | servizio o API | npm, pypi, rubygems | sì | 0 |
 | Google Pay | `google.pay` | gateway | npm, env | sì | 0 |
@@ -999,7 +999,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un 
 | Prismic | `prismic` | servizio o API | npm | sì | 0 |
 | Prometheus | `prometheus` | servizio o API | composer, crates, docker, go, npm, rubygems | sì | 2 |
 | PropelAuth | `propelauth` | autenticazione | crates, go, npm, pypi | no | 0 |
-| PubSub | `gcp.pubsub` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
+| PubSub | `gcp.pubsub` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Puppeteer | `puppeteer` | servizio o API | docker, npm | sì | 1 |
 | Pusher | `pusher` | servizio o API | go, npm, pypi | sì | 0 |
 | Qase | `qase` | servizio o API | npm, pypi | sì | 0 |
@@ -1125,7 +1125,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 431 con un 
 | Vercel KV | `vercel.kv` | database | npm | no | 1 |
 | Vercel Postgres | `vercel.postgres` | database | npm | no | 0 |
 | Veriff | `veriff` | servizio o API | npm, rubygems | no | 0 |
-| Vertex AI | `gcp.vertex` | servizio o API | npm, pypi, env | al primo uso | 1 |
+| Vertex AI | `gcp.vertex` | servizio o API | npm, pypi, env | sì | 1 |
 | VictoriaMetrics | `victoriametrics` | database | docker | sì | 0 |
 | Vimeo | `vimeo` | servizio o API | npm | sì | 0 |
 | VirusTotal | `virustotal` | servizio o API | pypi | sì | 0 |

@@ -7,14 +7,15 @@
 Sources, at fixed versions: the rules of stack-analyser (MIT), evaluated in Node with
 `register` replaced by a collector; the marks of Simple Icons (CC0), joined by name and written, clean, as one SVG
 per entry in `data/marks/ID.svg` (the entry's `mark`), and the official marks of the services Simple Icons lacks
-(`add-mark`: the owner's file, its URL, the day and its terms, kept in the additions and in REGISTRY-NOTICES.md);
+(`add-mark`: the owner's file, its URL, the day and its terms, or with `--own` a drawing of Daodan's, kept in the
+additions and in REGISTRY-NOTICES.md);
 the entries of the CNCF Landscape (CC BY 4.0) with name, category and site; and
 `registry-additions.json`, what the catalogs lack and the machine verified.
 
     python registry_build.py build --out FILE [--cache DIR]
     python registry_build.py check FILE        # also the marks beside FILE: each file named, clean, none left over
     python registry_build.py marks [--registry FILE] [--additions FILE] [--cache DIR]
-    python registry_build.py add-mark ID SVG --url URL [--terms URL]
+    python registry_build.py add-mark ID SVG (--url URL [--terms URL] | --own)
     python registry_build.py add-package-mark ID ZIP --url URL --member PATH --terms URL
     python registry_build.py derive [--registry FILE] [--additions FILE]
     python registry_build.py verify-additions [--additions FILE]
@@ -429,6 +430,8 @@ def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
         for name in ("name", "kind", "type", "site", "category", "mark", "mark_source"):
             if record.get(name):
                 entry[name] = record[name]
+        if record.get("mark"):
+            entry.pop("mark_source", None)  # a file and a package are two cases: the record's file stays
         _add_signs(entry["signs"], record.get("signs", {}))
         _drop_signs(entry["signs"], record.get("wrong_signs", {}))
         entry["from"] = sorted(set(entry["from"]) | {"additions"})
@@ -750,6 +753,9 @@ def sync_additions(incoming: list[dict], registry: Path, additions: Path) -> int
     add_doc = json.loads(additions.read_text(encoding="utf-8"))
     by_key = {(e["id"], e.get("by")): e for e in add_doc["entries"]}
     for item in incoming:
+        if item.get("mark") or item.get("mark_source"):  # one record gives an entry its mark: the new one
+            for key in [k for k, e in by_key.items() if k[0] == item["id"] and (e.get("mark") or e.get("mark_source"))]:
+                del by_key[key]
         by_key[(item["id"], item.get("by"))] = item
     add_doc["entries"] = sorted(by_key.values(), key=lambda e: (e["id"], e.get("by") or ""))
     reg_doc = json.loads(registry.read_text(encoding="utf-8"))
@@ -766,8 +772,10 @@ def sync_additions(incoming: list[dict], registry: Path, additions: Path) -> int
     return 0
 
 
-def add_mark(ident: str, source: Path, url: str, terms: str | None, registry: Path, additions: Path) -> int:
-    """Take the owner's SVG into `marks/` (clean) and record where it came from; one that Simple Icons has is refused."""
+def add_mark(ident: str, source: Path, url: str | None, terms: str | None, registry: Path, additions: Path,
+             own: bool = False) -> int:
+    """Take an SVG into `marks/` (clean) and record where it came from: the owner's file at `url`, or with `own` a
+    drawing of Daodan's, which takes the place of a package's. One that Simple Icons has is refused."""
     entry = next((e for e in json.loads(registry.read_text(encoding="utf-8"))["entries"] if e["id"] == ident), None)
     if entry is None or "simple-icons" in entry["from"]:
         print(f"{ident}: no such entry, or its mark is the one of Simple Icons", file=sys.stderr)
@@ -780,8 +788,11 @@ def add_mark(ident: str, source: Path, url: str, terms: str | None, registry: Pa
     mark = f"{MARKS}/{ident.lower()}.svg"
     (registry.parent / MARKS).mkdir(exist_ok=True)
     (registry.parent / mark).write_text(svg, encoding="utf-8", newline="\n")
-    source_record = {"url": url, **({"terms": terms} if terms else {}), "date": date.today().isoformat()}
-    return sync_additions([{"id": ident, "mark": mark, "mark_origin": source_record, "by": "official"}], registry, additions)
+    today = date.today().isoformat()
+    source_record = {"drawn_by": "Daodan", "date": today} if own else {
+        "url": url, **({"terms": terms} if terms else {}), "date": today}
+    return sync_additions([{"id": ident, "mark": mark, "mark_origin": source_record,
+                            "by": "daodan" if own else "official"}], registry, additions)
 
 
 def add_package_mark(ident: str, url: str, archive: Path, member: str, terms: str, registry: Path, additions: Path) -> int:
@@ -863,7 +874,9 @@ def main(argv=None) -> int:
     mark_parser = sub.add_parser("add-mark")
     mark_parser.add_argument("id")
     mark_parser.add_argument("file", type=Path, help="the owner's SVG, downloaded into a folder of its own")
-    mark_parser.add_argument("--url", required=True, help="where the file came from")
+    origin = mark_parser.add_mutually_exclusive_group(required=True)
+    origin.add_argument("--url", help="where the owner's file came from")
+    origin.add_argument("--own", action="store_true", help="the file is a drawing of Daodan's")
     mark_parser.add_argument("--terms", help="the owner's page of terms for the mark, when there is one")
     mark_parser.add_argument("--registry", type=Path, default=DATA / "service-registry.json")
     mark_parser.add_argument("--additions", type=Path, default=DATA / "registry-additions.json")
@@ -875,7 +888,7 @@ def main(argv=None) -> int:
     if args.command == "sync-additions":
         return sync_additions(json.loads(args.source.read_text(encoding="utf-8")), args.registry, args.additions)
     if args.command == "add-mark":
-        return add_mark(args.id, args.file, args.url, args.terms, args.registry, args.additions)
+        return add_mark(args.id, args.file, args.url, args.terms, args.registry, args.additions, args.own)
     if args.command == "add-package-mark":
         return add_package_mark(args.id, args.url, args.archive, args.member, args.terms, args.registry, args.additions)
     if args.command == "marks":

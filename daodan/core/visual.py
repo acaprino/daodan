@@ -51,7 +51,7 @@ import modules  # noqa: E402
 import snapshot  # noqa: E402
 import semantic_store  # noqa: E402
 import source_reader  # noqa: E402
-from snapshot_store import file_headers, logical_digest, open_snapshot, resolve_run_snapshot  # noqa: E402
+from snapshot_store import logical_digest, open_snapshot, resolve_run_snapshot  # noqa: E402
 
 SCHEMA = "daodan/visual@1"
 LIMIT = 1000  # the readers' maximum per list: larger inputs are split, never cut in silence
@@ -84,7 +84,60 @@ def _module_ref(module: dict) -> str:
     return f"{kind}:{module['id']}"
 
 
-def build_envelope(run_dir: Path) -> dict:
+def _collector(entities: dict, relations: dict):
+    """`entity` and `relation`, which add to `entities` and `relations` by ref, a second time merging the fields."""
+    def entity(ref: str, kind: str, name: str, **fields) -> dict:
+        found = entities.setdefault(ref, {"ref": ref, "type": kind, "name": name, "technical": ref.split(":", 1)[1],
+                                          "description": "", "evidence": [], "gaps": []})
+        found.update({key: value for key, value in fields.items() if value is not None})
+        return found
+
+    def relation(kind: str, source: str, target: str, status: str = "confirmed", **fields) -> None:
+        ref = f"{kind}:{source}->{target}"
+        found = relations.setdefault(ref, {"ref": ref, "kind": kind, "source": source, "target": target,
+                                           "status": status, "evidence": []})
+        found.update(fields)
+
+    return entity, relation
+
+
+def _call(relations: dict, source: str, target: str, call: dict) -> None:
+    """A resolved call from `source` to `target`, counted, with its site among the 20 a relation keeps."""
+    ref = f"calls:{source}->{target}"
+    found = relations.setdefault(ref, {"ref": ref, "kind": "calls", "source": source, "target": target,
+                                       "status": "confirmed", "evidence": []})
+    found["counts"] = {"calls": found.get("counts", {}).get("calls", 0) + 1}
+    found["evidence"] = [*found["evidence"], {"path": call["file"], "line": call["span"][0]}][:20]
+
+
+def _symbols(store, paths: list[str], cards_path: Path, entity, relation, gaps: list) -> None:
+    """The symbols of `paths` from their outlines, with the card freshness the semantic store records and the card's
+    purpose."""
+    freshness, purpose = {}, {}
+    if store.format == "sqlite":
+        for chunk in _chunks(paths):
+            meta = semantic_store.query_meta_code(store, cards_path=cards_path, paths=chunk,
+                                                  include_history=False, limit=LIMIT * 20)
+            for row in meta.get("symbols", []):
+                freshness[(row["file"], row["name"])] = row["freshness"]
+                purpose[(row["file"], row["name"])] = (row.get("card") or {}).get("purpose")
+    for path in paths:
+        outline = source_reader.outline_manifest(store, path, None, LIMIT)
+        if outline.get("truncated"):
+            gaps.append({"refs": [f"file:{path}"], "reason": f"symbols truncated at {LIMIT}"})
+        for item in outline.get("items", []):
+            if not item.get("symbol"):
+                continue
+            ref = f"symbol:{path}::{item['symbol']}"
+            entity(ref, "symbol", item["symbol"], path=path, location="internal",
+                   lines=[item.get("start"), item.get("end")], freshness=freshness.get((path, item["symbol"])),
+                   description=purpose.get((path, item["symbol"])))
+            relation("defines", f"file:{path}", ref)
+
+
+def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
+    """The run's envelope; without `symbols`, no file's outline or cards are read and its symbols are only the ends
+    of its flows (the app's graph reads a file's symbols when the file is opened: `file_symbols`)."""
     run_dir = Path(run_dir)
     state = json.loads((run_dir / "state.json").read_text(encoding="utf-8"))
     manifest = resolve_run_snapshot(run_dir, state)
@@ -98,18 +151,7 @@ def build_envelope(run_dir: Path) -> dict:
     relations: dict[str, dict] = {}
     memberships: list[dict] = []
     gaps: list[dict] = []
-
-    def entity(ref: str, kind: str, name: str, **fields) -> dict:
-        found = entities.setdefault(ref, {"ref": ref, "type": kind, "name": name, "technical": ref.split(":", 1)[1],
-                                          "description": "", "evidence": [], "gaps": []})
-        found.update({key: value for key, value in fields.items() if value is not None})
-        return found
-
-    def relation(kind: str, source: str, target: str, status: str = "confirmed", **fields) -> None:
-        ref = f"{kind}:{source}->{target}"
-        found = relations.setdefault(ref, {"ref": ref, "kind": kind, "source": source, "target": target,
-                                           "status": status, "evidence": []})
-        found.update(fields)
+    entity, relation = _collector(entities, relations)
 
     # Modules: components, features, external modules and build units, with their own states.
     by_id = {}
@@ -152,8 +194,8 @@ def build_envelope(run_dir: Path) -> dict:
     with open_snapshot(manifest) as store:
         root, target = store["root"], store["target"]
         snapshot_digest = logical_digest(store)
-        paths = sorted(file_headers(store))
-        headers = file_headers(store)
+        headers = dict(store.iter_file_headers_only())  # one pass, without the symbols a file's entry carries
+        paths = sorted(headers)
         # Directories and files: the physical hierarchy.
         for path in paths:
             file_ref = f"file:{path}"
@@ -166,27 +208,8 @@ def build_envelope(run_dir: Path) -> dict:
                 relation("contains", directory, child)
                 memberships.append({"member": child, "group": directory, "view": "physical"})
                 child, parent = directory, parent.parent
-        # Symbols, with the card freshness the semantic store records and the card's purpose.
-        freshness, purpose = {}, {}
-        if store.format == "sqlite":
-            for chunk in _chunks(paths):
-                meta = semantic_store.query_meta_code(store, cards_path=cards_path, paths=chunk,
-                                                      include_history=False, limit=LIMIT * 20)
-                for row in meta.get("symbols", []):
-                    freshness[(row["file"], row["name"])] = row["freshness"]
-                    purpose[(row["file"], row["name"])] = (row.get("card") or {}).get("purpose")
-        for path in paths:
-            outline = source_reader.outline_manifest(store, path, None, LIMIT)
-            if outline.get("truncated"):
-                gaps.append({"refs": [f"file:{path}"], "reason": f"symbols truncated at {LIMIT}"})
-            for item in outline.get("items", []):
-                if not item.get("symbol"):
-                    continue
-                ref = f"symbol:{path}::{item['symbol']}"
-                entity(ref, "symbol", item["symbol"], path=path, location="internal",
-                       lines=[item.get("start"), item.get("end")], freshness=freshness.get((path, item["symbol"])),
-                       description=purpose.get((path, item["symbol"])))
-                relation("defines", f"file:{path}", ref)
+        if symbols:
+            _symbols(store, paths, cards_path, entity, relation, gaps)
         # Imports and resolved calls between files, read in blocks the reader accepts.
         for chunk in _chunks(paths):
             packet = source_reader.graph_packet(store, chunk, 1, LIMIT)
@@ -200,10 +223,7 @@ def build_envelope(run_dir: Path) -> dict:
             for call in packet.get("calls", []):  # a call resolved to a callable of another file
                 source, target = f"file:{call['file']}", f"file:{(call.get('target_id') or '').split('::')[0]}"
                 if source != target and source in entities and target in entities:
-                    relation("calls", source, target)
-                    found = relations[f"calls:{source}->{target}"]
-                    found["counts"] = {"calls": found.get("counts", {}).get("calls", 0) + 1}
-                    found["evidence"] = [*found["evidence"], {"path": call["file"], "line": call["span"][0]}][:20]
+                    _call(relations, source, target, call)
 
     # Services the stack recognises (one it only saw mentioned is no module's, nor a node): external modules the
     # registry proposes, with type, site and mark, used by each file that shows them; a mention is an uncertain use.
@@ -253,9 +273,57 @@ def build_envelope(run_dir: Path) -> dict:
         "gaps": gaps,
         "flows": envelope_flows,
         "technologies": [{"id": item["id"], "name": item["name"], "type": item["type"] or "altro",
-                          "paths": sorted({sign["path"] for sign in item["signs"] if sign["path"]})}
+                          "category": item["category"],
+                          "paths": sorted({sign["path"] for sign in item["signs"] if sign["path"]}),
+                          # the declared sites by which a module's stack holds it, as `technologies.ensure` matches them
+                          "evidence": [{"path": sign["path"], "line": sign["line"]} for sign in item["signs"]
+                                       if sign["strength"] == "declared" and sign["path"] and not (
+                                           sign["sign"] == "package" and technologies._versions_only(sign["path"]))]}
                          for item in stack["technologies"]],
     }
+
+
+def file_symbols(run_dir: Path, path: str) -> dict:
+    """The symbols of the file `path` of the run, as the envelope has them (outline, card freshness and purpose), and
+    the resolved calls that start or end in the file, each with its site and the declaration it reaches, with the first
+    line of every declaration the reader gave: the app's graph puts each end on a symbol by its lines
+    (`app_view`). Only this file's symbols are read."""
+    run_dir = Path(run_dir)
+    manifest = resolve_run_snapshot(run_dir, json.loads((run_dir / "state.json").read_text(encoding="utf-8")))
+    entities: dict[str, dict] = {}
+    gaps: list[dict] = []
+    entity, relation = _collector(entities, {})
+    with open_snapshot(manifest) as store:
+        _symbols(store, [path], card_store.default_cards_path(manifest), entity, relation, gaps)
+        packet = source_reader.graph_packet(store, [path], 1, LIMIT)
+    if "calls" in packet.get("truncated", []):
+        gaps.append({"refs": [f"file:{path}"], "reason": f"calls of the file reached the reader limit of {LIMIT}"})
+    return {"entities": list(entities.values()), "gaps": gaps,
+            "calls": [{"id": call["id"], "file": call["file"], "line": call["span"][0], "target_id": call["target_id"]}
+                      for call in packet.get("calls", []) if call.get("target_id")],
+            "declarations": {item["id"]: item["span"][0] for item in packet.get("declarations", [])}}
+
+
+def inputs_stamp(run_dir: Path) -> tuple:
+    """What `build_envelope` and `file_symbols` read that the run's work writes, by size and modification time: the
+    run's state and snapshot, the module graph and its ledger, the stack, the link rules, the engine store and the
+    cards. The same stamp is the same envelope; taking it opens nothing (as `flows.cached_links` keys its links)."""
+    import technologies
+    run_dir = Path(run_dir)
+    manifest = run_dir / "snapshot" / "manifest.sqlite"
+    read = [run_dir / "state.json", manifest, manifest.with_suffix(".json"), modules.graph_name(manifest),
+            manifest.with_name(modules.LEDGER_FILE), technologies.path(manifest), manifest.with_name("flow-rules.json"),
+            manifest.with_name("engine-edges.sqlite"), card_store.default_cards_path(manifest)]
+    stamp = []
+    for path in read:
+        for item in (path, path.with_name(path.name + "-wal")):  # a SQLite store writes its log first
+            try:
+                found = item.stat()
+            except FileNotFoundError:
+                stamp.append((str(item), None))
+            else:
+                stamp.append((str(item), found.st_mtime_ns, found.st_size))
+    return tuple(stamp)
 
 
 def _cards_digest(cards_path: Path, root: str) -> str | None:

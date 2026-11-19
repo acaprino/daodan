@@ -3,7 +3,7 @@
 - **Stato:** proposto. Le decisioni 1, 2, 3, 6b e 7 riportano parole del proprietario del 18 novembre 2026; le decisioni 4, 5 e 6a hanno il principio suo e la forma proposta, da confermare.
 - **Data:** 2026-11-18
 - **Ambito:** `plugins/codebase-map/skills/map/scripts/` (`flows.py`, `visual.py`, `module_derive.py`, `app.py`, `app_view.py`, `registry_build.py`), `plugins/codebase-map/skills/map/data/`, `benchmarks/connection-points/`, `docs/plugins/`
-- **Si appoggia a:** la guida [Punti di connessione](../research/2026-11-14-punti-di-connessione.md) (ruoli, tipi, chiavi), la spec [Flussi e unità](../specs/2026-11-09-flow-model.md) (le regole di collegamento), la spec [Mappa del sistema](../specs/2026-11-12-mappa-del-sistema.md) (il registro dei servizi esterni). Questo ADR non le ripete: dice cosa da oggi è deciso.
+- **Si appoggia a:** la guida [Punti di connessione](../research/2026-11-14-punti-di-connessione.md) (ruoli, tipi, chiavi), la spec [Flussi e unità](../specs/2026-11-18-flussi-e-mappa-del-sistema.md) (le regole di collegamento), la spec [Mappa del sistema](../specs/2026-11-18-flussi-e-mappa-del-sistema.md) (il registro dei servizi esterni). Questo ADR non le ripete: dice cosa da oggi è deciso.
 
 ## Contesto e problema
 
@@ -38,6 +38,8 @@ Non si può prevedere ogni tipo di scambio fra due nodi. Si danno basi solide e 
 ### 5. Il modello propone, la macchina verifica
 
 L'aiuto del modello ha quattro posti: scrive le regole del progetto, una volta; riceve solo i resti (i lati singoli e le lacune) e propone una correzione alle regole, che la macchina riapplica; sceglie fra candidati incerti, e il legame resta marcato `proposto`; dà i nomi. Ogni legame dice da dove viene: trovato nel codice, dedotto da una regola, proposto dal modello. Le regole si salvano accanto allo snapshot, così rifare il grafo non richiama il modello. Senza modello Daodan funziona e dichiara le lacune.
+
+**Estensione proposta per la fase finale.** A partire dal grafo del run, Daodan segue gli ingressi fino agli effetti e risale dagli effetti agli ingressi. Il modello interpreta i percorsi nel contesto del sistema e propone funzionalità e varianti. La macchina verifica i riferimenti e conserva l’evidenza di ogni passaggio. Raggruppare due rami sotto una funzionalità non stabilisce un legame causale tra loro. Il run salva la mappa con gli estremi spiegati, esclusi con motivo o irrisolti, indicando quelli rimasti da esaminare. Viewer, MCP e review consultano lo stesso risultato. [Spec della fase finale](../specs/2026-11-18-flussi-e-mappa-del-sistema.md)
 
 ### 6. L'anagrafica di ciò che Daodan supporta
 
