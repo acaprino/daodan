@@ -170,18 +170,18 @@ Riconosciute: `android-build-tools` `android-sdk` `autotools` `bazel` `buf` `bun
 
 ## Framework, librerie e strumenti
 
-Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `libraries`, `services` e `tools`. La classe di una voce del catalogo (`data/service-registry.json`) la decide `service_registry.entry_category`: la `category` della voce se c'è, altrimenti `service` per una voce `service` e `framework` per ogni altra. Le `libraries` sono tutti i pacchetti che l'unità dichiara, nel catalogo o no: il catalogo non ha voci di classe `library`.
+Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `libraries`, `services` e `tools`. La classe di una voce del catalogo (`data/service-registry.json`) la decide `service_registry.entry_category`: la `category` della voce se c'è, altrimenti `service` per una voce `service` e `framework` per ogni altra. I `frameworks` di un'unità sono le voci `framework`; le `libraries` sono tutti i pacchetti che dichiara, nel catalogo o no, con l'id della voce che il catalogo ne ha. Sul grafo dell'app un modulo mostra come tessere le voci `framework` e `library` che un suo file dichiara; uno strumento non è una tessera, un servizio è un nodo esterno.
 
 | Classe | Voci riconoscibili (con segni) | Voci con la categoria scritta, fra tutte |
 | --- | --- | --- |
-| framework | 313 | 68 |
-| tool | 23 | 26 |
-| service | 601 | 2 |
-| library | 0 | 0 |
+| framework | 103 | 103 |
+| library | 124 | 124 |
+| tool | 95 | 98 |
+| service | 615 | 16 |
 
-Il catalogo non distingue un framework da una libreria: delle 332 voci `project` riconoscibili, 245 sono `framework` solo per il default, senza una `category` scritta. Per distinguerli servirebbe una `category` (`framework`, `library` o `tool`) su ogni voce `project` con segni.
+Ognuna delle 332 voci `project` riconoscibili ha la sua `category` scritta: nessuna è `framework` solo per il default.
 
-Riconoscimento dello stack sul corpus, giro del 17 novembre 2026 (`benchmarks/project-model/results/daodan_stack.json`), 178 fixture su 180 con record; per nome conta un nome una volta per fixture, per unità ogni unità che lo tiene.
+Riconoscimento dello stack sul corpus, giro del 19 novembre 2026 (`benchmarks/project-model/results/daodan_stack.json`), 178 fixture su 180 con record; per nome conta un nome una volta per fixture, per unità ogni unità che lo tiene.
 
 | Famiglia | Fixture | Framework per nome | Framework per unità | Servizi |
 | --- | --- | --- | --- | --- |
@@ -190,368 +190,356 @@ Riconoscimento dello stack sul corpus, giro del 17 novembre 2026 (`benchmarks/pr
 | jvm | 34 | 36 / 42 (85,7 %) | 37 / 43 (86,0 %), 0 sbagliati | 1 / 2 (50,0 %), 0 in più |
 | sys | 25 | 2 / 2 (100,0 %) | 1 / 2 (50,0 %), 1 sbagliato | nessuno atteso, 0 in più |
 | mix | 30 | 29 / 31 (93,5 %) | 32 / 37 (86,5 %), 0 sbagliati | 11 / 33 (33,3 %), 1 in più |
-| real | 10 | 99 / 127 (78,0 %) | 177 / 251 (70,5 %), 12 sbagliati | 29 / 84 (34,5 %), 8 in più |
-| stack | 38 | 182 / 352 (51,7 %) | 290 / 653 (44,4 %), 37 sbagliati | 93 / 395 (23,5 %), 53 in più |
-| tutte | 178 | 362 / 568 (63,7 %) | 552 / 1.001 (55,1 %), 50 sbagliati | 137 / 518 (26,4 %), 62 in più |
+| real | 10 | 99 / 127 (78,0 %) | 177 / 251 (70,5 %), 12 sbagliati | 30 / 84 (35,7 %), 9 in più |
+| stack | 38 | 182 / 352 (51,7 %) | 290 / 653 (44,4 %), 37 sbagliati | 96 / 395 (24,3 %), 55 in più |
+| tutte | 178 | 362 / 568 (63,7 %) | 552 / 1.001 (55,1 %), 50 sbagliati | 141 / 518 (27,2 %), 65 in più |
 
-<details><summary>Framework e strumenti riconoscibili: 336 voci</summary>
+Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: un suo segno (un pacchetto, un'immagine, un file) è nel progetto; vale per ogni voce. Codice analizzato: il codice del progetto che la dichiara è letto dall'analizzatore del suo linguaggio; la colonna dà questi linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Nessun framework ha le rotte lette dal posto di un file (le pagine di Next.js, Nuxt, SvelteKit, Remix o Astro): è un buco dichiarato.
 
-| Voce | Id | Classe | Segni | Fixture in cui lo step la trova (17 novembre 2026) |
-| --- | --- | --- | --- | --- |
-| .NET Aspire | `dotnet-aspire` | framework | nuget | 3 |
-| .NET MAUI | `dotnet-maui` | framework | nuget | 1 |
-| Actix Web | `actixweb` | framework | crates | 2 |
-| AdonisJS | `adonisjs` | framework | npm | 0 |
-| aiohttp | `aiohttp` | framework | pypi | 1 |
-| Alembic | `alembic` | framework | pypi | 3 |
-| Alpine.js | `alpinejs` | framework | npm | 2 |
-| Android | `android` | framework | maven | 5 |
-| Angular | `angular` | framework | npm, files | 4 |
-| AngularJS | `angularjs` | framework | npm | 0 |
-| Ansible | `ansible` | framework | docker, github-actions, pypi | 0 |
-| Ant Design | `antd` | framework | npm | 1 |
-| Ant Design Icons | `antdicons` | framework | npm | 1 |
-| Apache Beam | `apache-beam` | framework | go, pypi | 0 |
-| Apache Thrift | `apache_thrift` | framework | crates, docker, go, npm, rubygems | 0 |
-| Api Platform | `apiplatform` | framework | composer, npm | 0 |
-| Apollo Server | `apollo-server` | framework | npm | 1 |
-| ArchUnit | `archunit` | framework | maven | 1 |
-| AriaKit UI | `ariakitui` | framework | npm | 0 |
-| Ark UI | `arkui` | framework | npm | 0 |
-| ArkType | `arktype` | framework | npm | 0 |
-| asdf | `asdf` | framework | files | 0 |
-| ASP.NET Core | `aspnetcore` | framework | nuget | 6 |
-| Assemble | `assemble` | framework | npm | 0 |
-| Astro | `astro` | framework | npm, files | 1 |
-| AtlasGo | `atlasgo` | framework | docker, github-actions, terraform, files | 0 |
-| AWS CDK | `awscdk` | framework | go, npm, pypi | 0 |
-| AWS CloudFormation | `aws.cloudformation` | framework | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | 0 |
-| Axum | `axum` | framework | crates | 3 |
-| Base UI | `baseui` | framework | npm | 0 |
-| Biome JS | `biomejs` | framework | npm, files | 4 |
-| Blazor | `blazor` | framework | nuget | 1 |
-| Blitzjs | `blitzjs` | framework | npm | 0 |
-| Bootstrap | `bootstrap` | framework | npm | 5 |
-| Bootstrap Icons | `bootstrapicons` | framework | npm | 1 |
-| Boto3 | `boto3` | framework | pypi | 4 |
-| Bun | `bunsh` | framework | files | 0 |
-| Bundler | `bundler` | framework | rubygems | 0 |
-| Bytebase | `bytebase` | framework | docker, github-actions | 0 |
-| Capacitor | `capacitorjs` | framework | npm, files | 1 |
-| Cats | `cats` | framework | maven | 1 |
-| Chakra UI | `chakraui` | framework | npm | 0 |
-| Chef | `chef` | framework | docker | 0 |
-| Chi | `chi` | framework | go | 4 |
-| Click | `click` | framework | pypi | 8 |
-| Cobra | `cobra` | framework | go | 2 |
-| CodeMirror | `codemirror` | framework | npm | 8 |
-| Compose Multiplatform | `compose-multiplatform` | framework | maven | 2 |
-| containerd | `containerd` | framework | go | 0 |
-| Cordova | `apacheCordova` | framework | npm | 0 |
-| CypressCI | `cypressci` | framework | docker, github-actions, npm, rubygems, files | 3 |
-| D3.js | `d3js` | framework | npm | 1 |
-| daisyUI | `daisyui` | framework | npm | 1 |
-| Dask | `dask` | framework | pypi | 0 |
-| dbt | `dbt` | framework | pypi | 0 |
-| Deno | `deno` | framework | docker, github-actions, files | 1 |
-| Diesel | `dieselrs` | framework | crates | 0 |
-| Dioxus | `dioxus` | framework | crates | 0 |
-| Django | `django` | framework | pypi | 7 |
-| Docsify | `docsify` | framework | npm | 0 |
-| Doctrine | `doctrinephp` | framework | composer | 2 |
-| Docusaurus | `docusaurus` | framework | npm, files | 1 |
-| Drizzle ORM | `drizzleorm` | framework | npm | 0 |
-| Duende IdentityServer | `duende-identityserver` | framework | nuget | 1 |
-| Echo | `echo` | framework | go | 1 |
-| EffectJS | `effectjs` | framework | npm | 0 |
-| Electron | `electron` | framework | github-actions, npm | 1 |
-| Eleventy | `eleventy` | framework | github-actions, npm, files | 0 |
-| ElysiaJS | `elysiajs` | framework | npm | 0 |
-| Ember | `emberjs` | framework | npm, files | 0 |
-| ent. | `goent` | framework | go | 0 |
-| Entity Framework Core | `entity-framework-core` | framework | nuget | 5 |
-| Envoy | `envoy` | framework | go | 0 |
-| etcd | `etcd` | framework | go | 0 |
-| ExpoJS | `expojs` | framework | npm | 3 |
-| Exposed | `exposed` | framework | maven | 1 |
-| Express | `express` | framework | npm | 9 |
-| FastAPI | `fastapi` | framework | pypi | 6 |
-| Fastify | `fastify` | framework | npm | 0 |
-| FastMCP | `fastmcp` | framework | pypi | 1 |
-| Feather Icons | `feathericons` | framework | npm | 0 |
-| Fern | `builtwithfern` | framework | files | 0 |
-| Flask | `flask` | framework | pypi | 5 |
-| Fluent UI | `fluentui` | framework | npm | 0 |
-| Fluentd | `fluentd` | framework | go | 0 |
-| Flutter | `flutter` | framework | pub | 2 |
-| Flyway | `flyway` | framework | docker, github-actions | 0 |
-| Font Awesome | `fontawesome` | framework | npm | 2 |
-| FoundationDB | `foundationdb` | framework | pypi | 0 |
-| FumaDocs | `fumadocs` | framework | npm | 1 |
-| Gatling | `gatling` | framework | maven | 1 |
-| Gatsby | `gatsby` | framework | github-actions, npm, files | 0 |
-| Gin | `gin` | framework | go | 1 |
-| Gitlab | `gitlab` | framework | composer, crates, npm, pypi, rubygems, terraform, terraform-resource | 0 |
-| goenv | `goenv` | framework | files | 0 |
-| GolangCI Lint | `golangcilint` | framework | docker, github-actions, go, files | 3 |
-| GORM | `gorm` | framework | go | 2 |
-| Gradio | `gradio` | framework | pypi | 1 |
-| Grafana K6 | `k6` | framework | docker, go, npm | 0 |
-| Gridsome | `gridsome` | framework | npm, files | 0 |
-| gRPC | `grpc` | framework | go, maven, npm, nuget, pypi | 5 |
-| Gunicorn | `gunicorn` | framework | pypi | 6 |
-| Headless UI | `headlessui` | framework | npm | 1 |
-| Hero UI | `heroui` | framework | npm | 0 |
-| Heroicons | `heroicons` | framework | npm | 2 |
-| HexoJS | `hexojs` | framework | npm | 0 |
-| Hibernate | `hibernate` | framework | maven | 1 |
-| Honeycomb | `honeycomb` | framework | go, pypi | 0 |
-| HonoJS | `honojs` | framework | npm | 2 |
-| HTMX | `htmx` | framework | npm | 3 |
-| HTTPX | `httpx` | framework | pypi | 4 |
-| HugeIcons | `hugeicons` | framework | npm | 0 |
-| Hugo | `hugo` | framework | docker, github-actions, npm, files | 1 |
-| Inferno | `infernojs` | framework | npm | 0 |
-| Ionic | `ionic` | framework | npm | 0 |
-| Ionicons | `ionicons` | framework | npm | 0 |
-| Jackson | `jackson` | framework | maven | 4 |
-| Jaeger | `jaeger` | framework | go | 0 |
-| Jekyll | `jekyll` | framework | github-actions, rubygems, files | 0 |
-| Jest | `jest` | framework | npm, files | 9 |
-| Jinja | `jinja` | framework | pypi | 6 |
-| Joi | `joijs` | framework | npm | 0 |
-| JSON Schema | `jsonschema` | framework | composer, crates, go, npm, pypi, rubygems | 5 |
-| JUnit | `junit` | framework | maven | 22 |
-| JUnit Jupiter | `junit-jupiter` | framework | maven | 7 |
-| Jupyter | `jupyter` | framework | pypi | 0 |
-| Kafka | `kafka` | framework | maven, nuget | 1 |
-| Keras | `keras` | framework | pypi | 0 |
-| Keycloak | `keycloak` | framework | npm, pypi | 0 |
-| Knex | `knex` | framework | npm | 0 |
-| Koa | `koa` | framework | npm | 0 |
-| Koin | `koin` | framework | maven | 2 |
-| Kotlin Multiplatform | `kotlin-multiplatform` | framework | maven | 3 |
-| kotlinx.serialization | `kotlinx-serialization` | framework | maven | 2 |
-| Ktor | `ktor` | framework | maven | 2 |
-| Kysely | `kysely` | framework | npm | 1 |
-| LangChain | `langchain` | framework | npm, pypi | 1 |
-| Laravel | `laravel` | framework | composer, files | 3 |
-| Lego | `goacmelego` | framework | docker, go, files | 0 |
-| Lexical Editor | `lexicaleditor` | framework | npm | 0 |
-| Lighthouse | `lighthouse` | framework | docker, github-actions, npm | 1 |
-| Liquibase | `liquibase` | framework | docker, github-actions, maven | 1 |
-| Lit | `litjs` | framework | npm | 0 |
-| LlamaIndex | `llamaindex` | framework | pypi | 0 |
-| Locust | `locust` | framework | pypi | 2 |
-| Lombok | `lombok` | framework | maven | 2 |
-| Lord Icon | `lordicon` | framework | npm | 0 |
-| Lucide Icons | `lucideicons` | framework | npm | 7 |
-| Mailhog | `mailhog` | framework | docker, go | 1 |
-| Mantine UI | `mantineui` | framework | npm | 0 |
-| MapStruct | `mapstruct` | framework | maven | 3 |
-| Material Design Icons | `materialdesignicons` | framework | npm | 0 |
-| Material UI | `materialui` | framework | npm | 0 |
-| Matplotlib | `matplotlib` | framework | pypi | 1 |
-| MCP | `mcp` | framework | npm, pypi, rubygems | 2 |
-| Meteor | `meteorjs` | framework | npm, files | 0 |
-| Micronaut | `micronaut` | framework | maven | 0 |
-| Mintlify | `mintlify` | framework | npm, files | 0 |
-| Mithril | `mithriljs` | framework | npm | 0 |
-| MkDocs | `mkdocs` | framework | docker, pypi, files | 2 |
-| Mlflow | `mlflow` | framework | pypi | 0 |
-| Mocha | `mochajs` | framework | npm, files | 1 |
-| Mockito | `mockito` | framework | maven | 2 |
-| Monaco Editor | `monacoeditor` | framework | npm | 1 |
-| MSTest | `mstest` | framework | nuget | 1 |
-| MUI Icons | `muiicons` | framework | npm | 0 |
-| NestJS | `nestjs` | framework | npm, files | 2 |
-| Next.js | `nextjs` | framework | npm, files | 5 |
-| Nomad | `nomad` | framework | go | 0 |
-| NuGet | `nuget` | framework | files | 0 |
-| NumPy | `numpy` | framework | pypi | 3 |
-| NUnit | `nunit` | framework | nuget | 1 |
-| Nuxt.js | `nuxtjs` | framework | npm, files | 2 |
-| nvm | `nvm` | framework | files | 0 |
-| NX | `nxjs` | framework | npm, files | 1 |
-| OpenAPI | `openapi` | framework | composer, crates, go, npm, pypi, rubygems, files | 10 |
-| OpenCV | `opencv` | framework | crates, go, pypi | 0 |
-| OpenSearch | `opensearch` | framework | go, pypi | 0 |
-| OpenTelemetry | `opentelemetry` | framework | composer, crates, docker, github-actions, go, npm, pypi, rubygems, env | 3 |
-| OxLint | `oxlint` | framework | npm, pypi, files | 1 |
-| pandas | `pandas` | framework | pypi | 2 |
-| Parcel | `parceljs` | framework | npm | 0 |
-| Passport | `passport` | framework | npm | 2 |
-| Phaser | `phaserjs` | framework | npm | 0 |
-| Phoenix | `phoenix` | framework | hex | 3 |
-| Phoenix LiveView | `phoenix-liveview` | framework | hex | 3 |
-| Phosphor Icons | `phosphoreicons` | framework | npm | 0 |
-| PHP | `php` | framework | docker, github-actions, files | 7 |
-| PHP Pest | `phppest` | framework | composer | 0 |
-| phpenv | `phpenv` | framework | files | 0 |
-| PHPUnit | `phpunit` | framework | composer, files | 5 |
-| picocli | `picocli` | framework | maven | 1 |
-| Pillow | `pillow` | framework | pypi | 5 |
-| pip | `pip` | framework | pypi | 0 |
-| pipenv | `pipenv` | framework | files | 0 |
-| Playwright | `playwright` | framework | docker, github-actions, maven, npm, nuget, pypi, files | 12 |
-| Plotly | `plotly` | framework | pypi | 0 |
-| Podman | `podman` | framework | go | 0 |
-| Poetry | `poetry` | framework | files | 0 |
-| Polars | `polars` | framework | crates, pypi | 0 |
-| Preact | `preactjs` | framework | npm | 1 |
-| Prisma | `prisma` | framework | npm, files | 4 |
-| Protocol Buffers | `protobuf` | framework | crates, go, pypi | 7 |
-| Pulumi | `pulumi` | framework | go, npm, pypi, files | 0 |
-| Pydantic | `pydantic` | framework | pypi | 6 |
-| pytest | `pytest` | framework | pypi | 9 |
-| Pytorch | `pytorch` | framework | pypi | 0 |
-| Quarkus | `quarkus` | framework | maven | 1 |
-| Qwik | `qwikjs` | framework | npm | 0 |
-| Radix Icons | `radixicons` | framework | npm | 0 |
-| Radix UI | `radixui` | framework | npm | 3 |
-| Ray | `ray` | framework | pypi | 0 |
-| React | `react` | framework | npm | 18 |
-| React Email | `react-email` | framework | npm | 3 |
-| React Email | `reactemail` | framework | npm | 2 |
-| React Icons | `reacticons` | framework | npm | 2 |
-| React Native | `react-native` | framework | npm | 3 |
-| React Router | `reactrouterdom` | framework | npm | 7 |
-| Read The Docs | `readthedocs` | framework | docker, files | 0 |
-| RedwoodJs | `redwoodjs` | framework | npm, files | 0 |
-| Refine | `refinedev` | framework | npm | 0 |
-| Reka UI | `rekaui` | framework | npm | 0 |
-| Remix | `remixrun` | framework | npm | 0 |
-| Remix Icons | `remixicons` | framework | npm | 0 |
-| Remix Router | `remixrouter` | framework | npm | 0 |
-| Remult | `remult` | framework | npm | 0 |
-| Requests | `requests` | framework | pypi | 9 |
-| Resilience4j | `resilience4j` | framework | maven | 1 |
-| Rolldown | `rolldown` | framework | crates, npm | 1 |
-| Rspack | `rspack` | framework | npm, files | 0 |
-| Ruby | `ruby` | framework | docker, github-actions, files | 7 |
-| Ruby on Rails | `rails` | framework | npm, rubygems | 3 |
-| rubyenv | `rubyenv` | framework | files | 0 |
-| Sandpack | `sandpackeditor` | framework | npm | 0 |
-| ScalaTest | `scalatest` | framework | maven | 1 |
-| scikit-learn | `scikitlearn` | framework | pypi | 1 |
-| SciPy | `scipy` | framework | pypi | 0 |
-| Scrapy | `scrapy` | framework | pypi | 0 |
-| Sequel | `sequelruby` | framework | rubygems | 0 |
-| Sequelize | `sequelize` | framework | npm, files | 1 |
-| Serde | `serde` | framework | crates | 8 |
-| Shadcn | `shadcn` | framework | npm | 0 |
-| Shopify Hydrogen | `shopify.hydrogen` | framework | npm | 0 |
-| Sidekiq | `sidekiq` | framework | rubygems | 2 |
-| Simple Icons | `simpleicons` | framework | npm | 0 |
-| Sinatra | `sinatra` | framework | rubygems | 1 |
-| Slate | `slatedocs` | framework | docker | 0 |
-| Slim | `slim` | framework | composer | 1 |
-| Socket.io | `socketio` | framework | npm, pypi | 2 |
-| Solid js | `solidjs` | framework | npm | 0 |
-| SonarLint | `sonarlint` | framework | files | 0 |
-| spaCy | `spacy` | framework | pypi | 0 |
-| Sphinx | `sphinx` | framework | pypi | 2 |
-| Spring AI | `spring-ai` | framework | maven | 0 |
-| Spring Boot | `spring-boot` | framework | maven | 7 |
-| Spring Boot Admin | `spring-boot-admin` | framework | maven | 1 |
-| Spring Cloud Config | `spring-cloud-config` | framework | maven | 1 |
-| Spring Cloud Gateway | `spring-cloud-gateway` | framework | maven | 0 |
-| Spring Cloud Netflix | `spring-cloud-netflix` | framework | maven | 1 |
-| Spring Data JPA | `spring-data-jpa` | framework | maven | 5 |
-| Spring MVC | `spring-mvc` | framework | maven | 6 |
-| Spring Security | `spring-security` | framework | maven | 2 |
-| Spring WebFlux | `spring-webflux` | framework | maven | 0 |
-| SQLAlchemy | `sqlalchemy` | framework | pypi | 3 |
-| SQLModel | `sqlmodel` | framework | pypi | 1 |
-| Stencil | `stenciljs` | framework | npm | 0 |
-| Storybook | `storybook` | framework | npm, files | 2 |
-| Streamlit | `streamlit` | framework | pypi | 0 |
-| Superstruct | `superstruct` | framework | npm | 0 |
-| Svelte | `sveltejs` | framework | npm, files | 2 |
-| SvelteKit | `sveltekit` | framework | npm | 1 |
-| SWC | `swc` | framework | crates, npm | 4 |
-| Symfony | `symfony` | framework | composer | 0 |
-| Tabler | `tablericons` | framework | npm | 1 |
-| Tailwind | `tailwind` | framework | npm, files | 12 |
-| TanStack Router | `tanstackrouter` | framework | npm | 1 |
-| Tanstack Start | `tanstackstart` | framework | npm | 0 |
-| Tauri | `tauri` | framework | crates, npm, files | 3 |
-| Tensorflow | `tensorflow` | framework | crates, docker, go, npm, pypi | 0 |
-| Terragrunt | `terragrunt` | framework | files | 0 |
-| Testcontainers | `testcontainers` | framework | maven, nuget, pypi | 2 |
-| Testing Library | `testinglibrary` | framework | npm | 11 |
-| TestNG | `testng` | framework | maven | 1 |
-| Thymeleaf | `thymeleaf` | framework | maven | 3 |
-| Tiptap | `tiptap` | framework | npm | 3 |
-| Tokio | `tokio` | framework | crates | 4 |
-| Trino | `trino` | framework | pypi | 0 |
-| TRPC | `trpc` | framework | npm | 1 |
-| Turborepo | `turborepo` | framework | npm, files | 2 |
-| Twig | `twigphp` | framework | composer | 1 |
-| TypeBox | `typebox` | framework | npm | 0 |
-| TypeORM | `typeorm` | framework | npm | 1 |
-| Typer | `typer` | framework | pypi | 2 |
-| Typescript | `typescript` | framework | go, npm, files | 35 |
-| Ultracite | `ultracite` | framework | npm | 0 |
-| UmiJS | `umijs` | framework | npm, files | 0 |
-| urql | `urql` | framework | npm | 1 |
-| uv | `uv` | framework | pypi | 1 |
-| Vale | `vale` | framework | docker, github-actions, files | 1 |
-| Valibot | `valibot` | framework | npm | 0 |
-| Viper | `viper` | framework | go | 3 |
-| VitePress | `vitepress` | framework | npm, files | 1 |
-| Vitest | `vitest` | framework | npm, files | 11 |
-| Vue Router | `vue-router` | framework | npm | 2 |
-| Vue.js | `vue` | framework | npm | 8 |
-| VuePress | `vuepress` | framework | npm, files | 0 |
-| Wasp | `wasp` | framework | files | 0 |
-| Weaviate | `weaviate` | framework | go, pypi | 0 |
-| xUnit | `xunit` | framework | nuget | 2 |
-| YARP | `yarp` | framework | nuget | 0 |
-| Yii2 | `yii2` | framework | composer | 0 |
-| Zig | `zig` | framework | github-actions | 0 |
-| Zod | `zod` | framework | npm | 7 |
-| Babel | `babel` | tool | npm | 8 |
-| Docker | `docker` | tool | github-actions, go, npm, pypi, files | 40 |
-| Esbuild | `esbuild` | tool | go, npm | 5 |
-| Eslint | `eslint` | tool | npm, files | 23 |
-| Golang | `golang` | tool | docker, files | 20 |
-| Helm | `helm` | tool | github-actions, go, rubygems, terraform, files | 4 |
-| NodeJS | `nodejs` | tool | docker, files | 61 |
-| npm | `npm` | tool | files | 0 |
-| PHPStan | `phpstan` | tool | composer, files | 2 |
-| pnpm | `pnpm` | tool | files | 0 |
-| Prettier | `prettier` | tool | npm, files | 14 |
-| Python | `python` | tool | docker, github-actions, files | 16 |
-| Renovate | `renovate` | tool | npm, files | 6 |
-| Rollup | `rollup` | tool | npm | 4 |
-| Rubocop | `rubocop` | tool | files | 1 |
-| Ruff | `ruff` | tool | pypi | 14 |
-| Rust | `rust` | tool | docker, files | 17 |
-| Stylelint | `stylelint` | tool | files | 2 |
-| Terraform | `terraform` | tool | github-actions, go, npm, pypi, files | 2 |
-| TravisCI | `travisci` | tool | rubygems, files | 1 |
-| Vite | `vite` | tool | npm | 18 |
-| Webpack | `webpack` | tool | npm | 3 |
-| Yarn | `yarn` | tool | files | 0 |
+<details><summary>Framework, librerie e strumenti riconoscibili: 322 voci</summary>
+
+| Voce | Id | Classe | Segni | Codice analizzato | Lettura propria | Fixture in cui lo step la trova (19 novembre 2026) |
+| --- | --- | --- | --- | --- | --- | --- |
+| .NET Aspire | `dotnet-aspire` | framework | nuget | C# | — | 3 |
+| .NET MAUI | `dotnet-maui` | framework | nuget | C# | — | 1 |
+| Actix Web | `actixweb` | framework | crates | Rust | — | 2 |
+| AdonisJS | `adonisjs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| aiohttp | `aiohttp` | framework | pypi | Python | — | 1 |
+| Alpine.js | `alpinejs` | framework | npm | JavaScript, TypeScript | — | 2 |
+| Android | `android` | framework | maven | Java, Kotlin | — | 5 |
+| Angular | `angular` | framework | npm, files | JavaScript, TypeScript | — | 4 |
+| AngularJS | `angularjs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Api Platform | `apiplatform` | framework | composer, npm | JavaScript, TypeScript, php: nessun analizzatore | — | 0 |
+| Apollo Server | `apollo-server` | framework | npm | JavaScript, TypeScript | — | 1 |
+| ASP.NET Core | `aspnetcore` | framework | nuget | C# | — | 6 |
+| Assemble | `assemble` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Astro | `astro` | framework | npm, files | JavaScript, TypeScript | frontmatter e `<script>` nello snapshot, il template no (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_astro.py`) | 1 |
+| Axum | `axum` | framework | crates | Rust | — | 3 |
+| Blazor | `blazor` | framework | nuget | C# | — | 1 |
+| Blitzjs | `blitzjs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Capacitor | `capacitorjs` | framework | npm, files | JavaScript, TypeScript | — | 1 |
+| Chi | `chi` | framework | go | Go | — | 4 |
+| Compose Multiplatform | `compose-multiplatform` | framework | maven | Java, Kotlin | — | 2 |
+| Cordova | `apacheCordova` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Dioxus | `dioxus` | framework | crates | Rust | — | 0 |
+| Django | `django` | framework | pypi | Python | — | 7 |
+| Docsify | `docsify` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Docusaurus | `docusaurus` | framework | npm, files | JavaScript, TypeScript | — | 1 |
+| Duende IdentityServer | `duende-identityserver` | framework | nuget | C# | — | 1 |
+| Echo | `echo` | framework | go | Go | — | 1 |
+| Electron | `electron` | framework | github-actions, npm | JavaScript, TypeScript | — | 1 |
+| Eleventy | `eleventy` | framework | github-actions, npm, files | JavaScript, TypeScript | — | 0 |
+| ElysiaJS | `elysiajs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Ember | `emberjs` | framework | npm, files | JavaScript, TypeScript | — | 0 |
+| ExpoJS | `expojs` | framework | npm | JavaScript, TypeScript | — | 3 |
+| Express | `express` | framework | npm | JavaScript, TypeScript | — | 9 |
+| FastAPI | `fastapi` | framework | pypi | Python | — | 6 |
+| Fastify | `fastify` | framework | npm | JavaScript, TypeScript | — | 0 |
+| FastMCP | `fastmcp` | framework | pypi | Python | — | 1 |
+| Flask | `flask` | framework | pypi | Python | — | 5 |
+| Flutter | `flutter` | framework | pub | dart: nessun analizzatore | — | 2 |
+| FumaDocs | `fumadocs` | framework | npm | JavaScript, TypeScript | — | 1 |
+| Gatsby | `gatsby` | framework | github-actions, npm, files | JavaScript, TypeScript | — | 0 |
+| Gin | `gin` | framework | go | Go | — | 1 |
+| Gradio | `gradio` | framework | pypi | Python | — | 1 |
+| Gridsome | `gridsome` | framework | npm, files | JavaScript, TypeScript | — | 0 |
+| HexoJS | `hexojs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| HonoJS | `honojs` | framework | npm | JavaScript, TypeScript | — | 2 |
+| Hugo | `hugo` | framework | docker, github-actions, npm, files | JavaScript, TypeScript | — | 1 |
+| Inferno | `infernojs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Ionic | `ionic` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Jekyll | `jekyll` | framework | github-actions, rubygems, files | ruby: nessun analizzatore | — | 0 |
+| Koa | `koa` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Kotlin Multiplatform | `kotlin-multiplatform` | framework | maven | Java, Kotlin | — | 3 |
+| Ktor | `ktor` | framework | maven | Java, Kotlin | — | 2 |
+| Laravel | `laravel` | framework | composer, files | php: nessun analizzatore | — | 3 |
+| Lit | `litjs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Meteor | `meteorjs` | framework | npm, files | JavaScript, TypeScript | — | 0 |
+| Micronaut | `micronaut` | framework | maven | Java, Kotlin | — | 0 |
+| Mithril | `mithriljs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| MkDocs | `mkdocs` | framework | docker, pypi, files | Python | — | 2 |
+| NestJS | `nestjs` | framework | npm, files | JavaScript, TypeScript | — | 2 |
+| Next.js | `nextjs` | framework | npm, files | JavaScript, TypeScript | — | 5 |
+| Nuxt.js | `nuxtjs` | framework | npm, files | JavaScript, TypeScript | — | 2 |
+| Phaser | `phaserjs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Phoenix | `phoenix` | framework | hex | elixir: nessun analizzatore | — | 3 |
+| Phoenix LiveView | `phoenix-liveview` | framework | hex | elixir: nessun analizzatore | — | 3 |
+| Preact | `preactjs` | framework | npm | JavaScript, TypeScript | — | 1 |
+| Quarkus | `quarkus` | framework | maven | Java, Kotlin | — | 1 |
+| Qwik | `qwikjs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| React | `react` | framework | npm | JavaScript, TypeScript | — | 18 |
+| React Native | `react-native` | framework | npm | JavaScript, TypeScript | — | 3 |
+| RedwoodJs | `redwoodjs` | framework | npm, files | JavaScript, TypeScript | — | 0 |
+| Refine | `refinedev` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Remix | `remixrun` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Ruby on Rails | `rails` | framework | npm, rubygems | JavaScript, TypeScript, ruby: nessun analizzatore | — | 3 |
+| Scrapy | `scrapy` | framework | pypi | Python | — | 0 |
+| Shopify Hydrogen | `shopify.hydrogen` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Sinatra | `sinatra` | framework | rubygems | ruby: nessun analizzatore | — | 1 |
+| Slate | `slatedocs` | framework | docker | — | — | 0 |
+| Slim | `slim` | framework | composer | php: nessun analizzatore | — | 1 |
+| Solid js | `solidjs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Sphinx | `sphinx` | framework | pypi | Python | — | 2 |
+| Spring AI | `spring-ai` | framework | maven | Java, Kotlin | — | 0 |
+| Spring Boot | `spring-boot` | framework | maven | Java, Kotlin | — | 7 |
+| Spring Boot Admin | `spring-boot-admin` | framework | maven | Java, Kotlin | — | 1 |
+| Spring Cloud Config | `spring-cloud-config` | framework | maven | Java, Kotlin | — | 1 |
+| Spring Cloud Gateway | `spring-cloud-gateway` | framework | maven | Java, Kotlin | — | 0 |
+| Spring Cloud Netflix | `spring-cloud-netflix` | framework | maven | Java, Kotlin | — | 1 |
+| Spring Data JPA | `spring-data-jpa` | framework | maven | Java, Kotlin | — | 5 |
+| Spring MVC | `spring-mvc` | framework | maven | Java, Kotlin | — | 6 |
+| Spring Security | `spring-security` | framework | maven | Java, Kotlin | — | 2 |
+| Spring WebFlux | `spring-webflux` | framework | maven | Java, Kotlin | — | 0 |
+| Stencil | `stenciljs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Streamlit | `streamlit` | framework | pypi | Python | — | 0 |
+| Svelte | `sveltejs` | framework | npm, files | JavaScript, TypeScript | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_svelte.py`) | 2 |
+| SvelteKit | `sveltekit` | framework | npm | JavaScript, TypeScript | — | 1 |
+| Symfony | `symfony` | framework | composer | php: nessun analizzatore | — | 0 |
+| Tanstack Start | `tanstackstart` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Tauri | `tauri` | framework | crates, npm, files | Rust, JavaScript, TypeScript | — | 3 |
+| UmiJS | `umijs` | framework | npm, files | JavaScript, TypeScript | — | 0 |
+| VitePress | `vitepress` | framework | npm, files | JavaScript, TypeScript | — | 1 |
+| Vue.js | `vue` | framework | npm | JavaScript, TypeScript | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_vue.py`) | 8 |
+| VuePress | `vuepress` | framework | npm, files | JavaScript, TypeScript | — | 0 |
+| Wasp | `wasp` | framework | files | — | — | 0 |
+| Yii2 | `yii2` | framework | composer | php: nessun analizzatore | — | 0 |
+| Ant Design | `antd` | library | npm | JavaScript, TypeScript | — | 1 |
+| Ant Design Icons | `antdicons` | library | npm | JavaScript, TypeScript | — | 1 |
+| Apache Beam | `apache-beam` | library | go, pypi | Go, Python | — | 0 |
+| Apache Thrift | `apache_thrift` | library | crates, docker, go, npm, rubygems | Rust, Go, JavaScript, TypeScript, ruby: nessun analizzatore | — | 0 |
+| AriaKit UI | `ariakitui` | library | npm | JavaScript, TypeScript | — | 0 |
+| Ark UI | `arkui` | library | npm | JavaScript, TypeScript | — | 0 |
+| ArkType | `arktype` | library | npm | JavaScript, TypeScript | — | 0 |
+| Base UI | `baseui` | library | npm | JavaScript, TypeScript | — | 0 |
+| Bootstrap | `bootstrap` | library | npm | JavaScript, TypeScript | — | 5 |
+| Bootstrap Icons | `bootstrapicons` | library | npm | JavaScript, TypeScript | — | 1 |
+| Boto3 | `boto3` | library | pypi | Python | — | 4 |
+| Cats | `cats` | library | maven | Java, Kotlin | — | 1 |
+| Chakra UI | `chakraui` | library | npm | JavaScript, TypeScript | — | 0 |
+| Click | `click` | library | pypi | Python | — | 8 |
+| Cobra | `cobra` | library | go | Go | — | 2 |
+| CodeMirror | `codemirror` | library | npm | JavaScript, TypeScript | — | 8 |
+| D3.js | `d3js` | library | npm | JavaScript, TypeScript | — | 1 |
+| daisyUI | `daisyui` | library | npm | JavaScript, TypeScript | — | 1 |
+| Dask | `dask` | library | pypi | Python | — | 0 |
+| Diesel | `dieselrs` | library | crates | Rust | — | 0 |
+| Doctrine | `doctrinephp` | library | composer | php: nessun analizzatore | — | 2 |
+| Drizzle ORM | `drizzleorm` | library | npm | JavaScript, TypeScript | — | 0 |
+| EffectJS | `effectjs` | library | npm | JavaScript, TypeScript | — | 0 |
+| ent. | `goent` | library | go | Go | — | 0 |
+| Entity Framework Core | `entity-framework-core` | library | nuget | C# | — | 5 |
+| Exposed | `exposed` | library | maven | Java, Kotlin | — | 1 |
+| Feather Icons | `feathericons` | library | npm | JavaScript, TypeScript | — | 0 |
+| Fluent UI | `fluentui` | library | npm | JavaScript, TypeScript | — | 0 |
+| Font Awesome | `fontawesome` | library | npm | JavaScript, TypeScript | — | 2 |
+| GORM | `gorm` | library | go | Go | — | 2 |
+| gRPC | `grpc` | library | go, maven, npm, nuget, pypi | Go, Java, Kotlin, JavaScript, TypeScript, C#, Python | — | 5 |
+| Headless UI | `headlessui` | library | npm | JavaScript, TypeScript | — | 1 |
+| Hero UI | `heroui` | library | npm | JavaScript, TypeScript | — | 0 |
+| Heroicons | `heroicons` | library | npm | JavaScript, TypeScript | — | 2 |
+| Hibernate | `hibernate` | library | maven | Java, Kotlin | — | 1 |
+| HTMX | `htmx` | library | npm | JavaScript, TypeScript | — | 3 |
+| HTTPX | `httpx` | library | pypi | Python | — | 4 |
+| HugeIcons | `hugeicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| Ionicons | `ionicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| Jackson | `jackson` | library | maven | Java, Kotlin | — | 4 |
+| Jinja | `jinja` | library | pypi | Python | — | 6 |
+| Joi | `joijs` | library | npm | JavaScript, TypeScript | — | 0 |
+| JSON Schema | `jsonschema` | library | composer, crates, go, npm, pypi, rubygems | Rust, Go, JavaScript, TypeScript, Python, php: nessun analizzatore, ruby: nessun analizzatore | — | 5 |
+| Keras | `keras` | library | pypi | Python | — | 0 |
+| Knex | `knex` | library | npm | JavaScript, TypeScript | — | 0 |
+| Koin | `koin` | library | maven | Java, Kotlin | — | 2 |
+| kotlinx.serialization | `kotlinx-serialization` | library | maven | Java, Kotlin | — | 2 |
+| Kysely | `kysely` | library | npm | JavaScript, TypeScript | — | 1 |
+| LangChain | `langchain` | library | npm, pypi | JavaScript, TypeScript, Python | — | 1 |
+| Lexical Editor | `lexicaleditor` | library | npm | JavaScript, TypeScript | — | 0 |
+| LlamaIndex | `llamaindex` | library | pypi | Python | — | 0 |
+| Lombok | `lombok` | library | maven | Java, Kotlin | — | 2 |
+| Lord Icon | `lordicon` | library | npm | JavaScript, TypeScript | — | 0 |
+| Lucide Icons | `lucideicons` | library | npm | JavaScript, TypeScript | — | 7 |
+| Mantine UI | `mantineui` | library | npm | JavaScript, TypeScript | — | 0 |
+| MapStruct | `mapstruct` | library | maven | Java, Kotlin | — | 3 |
+| Material Design Icons | `materialdesignicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| Material UI | `materialui` | library | npm | JavaScript, TypeScript | — | 0 |
+| Matplotlib | `matplotlib` | library | pypi | Python | — | 1 |
+| MCP | `mcp` | library | npm, pypi, rubygems | JavaScript, TypeScript, Python, ruby: nessun analizzatore | — | 2 |
+| Mlflow | `mlflow` | library | pypi | Python | — | 0 |
+| Monaco Editor | `monacoeditor` | library | npm | JavaScript, TypeScript | — | 1 |
+| MUI Icons | `muiicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| NumPy | `numpy` | library | pypi | Python | — | 3 |
+| OpenAPI | `openapi` | library | composer, crates, go, npm, pypi, rubygems, files | Rust, Go, JavaScript, TypeScript, Python, php: nessun analizzatore, ruby: nessun analizzatore | — | 10 |
+| OpenCV | `opencv` | library | crates, go, pypi | Rust, Go, Python | — | 0 |
+| OpenTelemetry | `opentelemetry` | library | composer, crates, docker, github-actions, go, npm, pypi, rubygems, env | Rust, Go, JavaScript, TypeScript, Python, php: nessun analizzatore, ruby: nessun analizzatore | — | 3 |
+| pandas | `pandas` | library | pypi | Python | — | 2 |
+| Passport | `passport` | library | npm | JavaScript, TypeScript | — | 2 |
+| Phosphor Icons | `phosphoreicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| picocli | `picocli` | library | maven | Java, Kotlin | — | 1 |
+| Pillow | `pillow` | library | pypi | Python | — | 5 |
+| Plotly | `plotly` | library | pypi | Python | — | 0 |
+| Polars | `polars` | library | crates, pypi | Rust, Python | — | 0 |
+| Prisma | `prisma` | library | npm, files | JavaScript, TypeScript | — | 4 |
+| Protocol Buffers | `protobuf` | library | crates, go, pypi | Rust, Go, Python | — | 7 |
+| Pydantic | `pydantic` | library | pypi | Python | — | 6 |
+| Pytorch | `pytorch` | library | pypi | Python | — | 0 |
+| Radix Icons | `radixicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| Radix UI | `radixui` | library | npm | JavaScript, TypeScript | — | 3 |
+| Ray | `ray` | library | pypi | Python | — | 0 |
+| React Email | `react-email` | library | npm | JavaScript, TypeScript | — | 3 |
+| React Email | `reactemail` | library | npm | JavaScript, TypeScript | — | 2 |
+| React Icons | `reacticons` | library | npm | JavaScript, TypeScript | — | 2 |
+| React Router | `reactrouterdom` | library | npm | JavaScript, TypeScript | — | 7 |
+| Reka UI | `rekaui` | library | npm | JavaScript, TypeScript | — | 0 |
+| Remix Icons | `remixicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| Remix Router | `remixrouter` | library | npm | JavaScript, TypeScript | — | 0 |
+| Remult | `remult` | library | npm | JavaScript, TypeScript | — | 0 |
+| Requests | `requests` | library | pypi | Python | — | 9 |
+| Resilience4j | `resilience4j` | library | maven | Java, Kotlin | — | 1 |
+| Sandpack | `sandpackeditor` | library | npm | JavaScript, TypeScript | — | 0 |
+| scikit-learn | `scikitlearn` | library | pypi | Python | — | 1 |
+| SciPy | `scipy` | library | pypi | Python | — | 0 |
+| Sequel | `sequelruby` | library | rubygems | ruby: nessun analizzatore | — | 0 |
+| Sequelize | `sequelize` | library | npm, files | JavaScript, TypeScript | — | 1 |
+| Serde | `serde` | library | crates | Rust | — | 8 |
+| Shadcn | `shadcn` | library | npm | JavaScript, TypeScript | — | 0 |
+| Sidekiq | `sidekiq` | library | rubygems | ruby: nessun analizzatore | — | 2 |
+| Simple Icons | `simpleicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| Socket.io | `socketio` | library | npm, pypi | JavaScript, TypeScript, Python | — | 2 |
+| spaCy | `spacy` | library | pypi | Python | — | 0 |
+| SQLAlchemy | `sqlalchemy` | library | pypi | Python | — | 3 |
+| SQLModel | `sqlmodel` | library | pypi | Python | — | 1 |
+| Superstruct | `superstruct` | library | npm | JavaScript, TypeScript | — | 0 |
+| Tabler | `tablericons` | library | npm | JavaScript, TypeScript | — | 1 |
+| Tailwind | `tailwind` | library | npm, files | JavaScript, TypeScript | quali classi sono sue utility, dal Tailwind del progetto nel container (`indexers/css_tailwind.py`) | 12 |
+| TanStack Router | `tanstackrouter` | library | npm | JavaScript, TypeScript | — | 1 |
+| Tensorflow | `tensorflow` | library | crates, docker, go, npm, pypi | Rust, Go, JavaScript, TypeScript, Python | — | 0 |
+| Testing Library | `testinglibrary` | library | npm | JavaScript, TypeScript | — | 11 |
+| Thymeleaf | `thymeleaf` | library | maven | Java, Kotlin | — | 3 |
+| Tiptap | `tiptap` | library | npm | JavaScript, TypeScript | — | 3 |
+| Tokio | `tokio` | library | crates | Rust | — | 4 |
+| TRPC | `trpc` | library | npm | JavaScript, TypeScript | — | 1 |
+| Twig | `twigphp` | library | composer | php: nessun analizzatore | — | 1 |
+| TypeBox | `typebox` | library | npm | JavaScript, TypeScript | — | 0 |
+| TypeORM | `typeorm` | library | npm | JavaScript, TypeScript | — | 1 |
+| Typer | `typer` | library | pypi | Python | — | 2 |
+| urql | `urql` | library | npm | JavaScript, TypeScript | — | 1 |
+| Valibot | `valibot` | library | npm | JavaScript, TypeScript | — | 0 |
+| Viper | `viper` | library | go | Go | — | 3 |
+| Vue Router | `vue-router` | library | npm | JavaScript, TypeScript | — | 2 |
+| YARP | `yarp` | library | nuget | C# | — | 0 |
+| Zod | `zod` | library | npm | JavaScript, TypeScript | — | 7 |
+| Alembic | `alembic` | tool | pypi | Python | — | 3 |
+| Ansible | `ansible` | tool | docker, github-actions, pypi | Python | — | 0 |
+| ArchUnit | `archunit` | tool | maven | Java, Kotlin | — | 1 |
+| asdf | `asdf` | tool | files | — | — | 0 |
+| AtlasGo | `atlasgo` | tool | docker, github-actions, terraform, files | hcl: nessun analizzatore | — | 0 |
+| AWS CDK | `awscdk` | tool | go, npm, pypi | Go, JavaScript, TypeScript, Python | — | 0 |
+| AWS CloudFormation | `aws.cloudformation` | tool | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | Rust, Go, JavaScript, TypeScript, Python, ruby: nessun analizzatore, hcl: nessun analizzatore | — | 0 |
+| Babel | `babel` | tool | npm | JavaScript, TypeScript | — | 8 |
+| Biome JS | `biomejs` | tool | npm, files | JavaScript, TypeScript | — | 4 |
+| Bun | `bunsh` | tool | files | — | — | 0 |
+| Bundler | `bundler` | tool | rubygems | ruby: nessun analizzatore | — | 0 |
+| Bytebase | `bytebase` | tool | docker, github-actions | — | — | 0 |
+| Chef | `chef` | tool | docker | — | — | 0 |
+| containerd | `containerd` | tool | go | Go | — | 0 |
+| CypressCI | `cypressci` | tool | docker, github-actions, npm, rubygems, files | JavaScript, TypeScript, ruby: nessun analizzatore | — | 3 |
+| dbt | `dbt` | tool | pypi | Python | — | 0 |
+| Deno | `deno` | tool | docker, github-actions, files | — | — | 1 |
+| Docker | `docker` | tool | github-actions, go, npm, pypi, files | Go, JavaScript, TypeScript, Python | — | 40 |
+| Esbuild | `esbuild` | tool | go, npm | Go, JavaScript, TypeScript | — | 5 |
+| Eslint | `eslint` | tool | npm, files | JavaScript, TypeScript | — | 23 |
+| Fern | `builtwithfern` | tool | files | — | — | 0 |
+| Flyway | `flyway` | tool | docker, github-actions | — | — | 0 |
+| Gatling | `gatling` | tool | maven | Java, Kotlin | — | 1 |
+| goenv | `goenv` | tool | files | — | — | 0 |
+| Golang | `golang` | tool | docker, files | — | — | 20 |
+| GolangCI Lint | `golangcilint` | tool | docker, github-actions, go, files | Go | — | 3 |
+| Grafana K6 | `k6` | tool | docker, go, npm | Go, JavaScript, TypeScript | — | 0 |
+| Gunicorn | `gunicorn` | tool | pypi | Python | — | 6 |
+| Helm | `helm` | tool | github-actions, go, rubygems, terraform, files | Go, ruby: nessun analizzatore, hcl: nessun analizzatore | — | 4 |
+| Jest | `jest` | tool | npm, files | JavaScript, TypeScript | — | 9 |
+| JUnit | `junit` | tool | maven | Java, Kotlin | — | 22 |
+| JUnit Jupiter | `junit-jupiter` | tool | maven | Java, Kotlin | — | 7 |
+| Jupyter | `jupyter` | tool | pypi | Python | — | 0 |
+| Lego | `goacmelego` | tool | docker, go, files | Go | — | 0 |
+| Lighthouse | `lighthouse` | tool | docker, github-actions, npm | JavaScript, TypeScript | — | 1 |
+| Liquibase | `liquibase` | tool | docker, github-actions, maven | Java, Kotlin | — | 1 |
+| Locust | `locust` | tool | pypi | Python | — | 2 |
+| Mintlify | `mintlify` | tool | npm, files | JavaScript, TypeScript | — | 0 |
+| Mocha | `mochajs` | tool | npm, files | JavaScript, TypeScript | — | 1 |
+| Mockito | `mockito` | tool | maven | Java, Kotlin | — | 2 |
+| MSTest | `mstest` | tool | nuget | C# | — | 1 |
+| NodeJS | `nodejs` | tool | docker, files | — | — | 61 |
+| npm | `npm` | tool | files | — | — | 0 |
+| NuGet | `nuget` | tool | files | — | — | 0 |
+| NUnit | `nunit` | tool | nuget | C# | — | 1 |
+| nvm | `nvm` | tool | files | — | — | 0 |
+| NX | `nxjs` | tool | npm, files | JavaScript, TypeScript | — | 1 |
+| OxLint | `oxlint` | tool | npm, pypi, files | JavaScript, TypeScript, Python | — | 1 |
+| Parcel | `parceljs` | tool | npm | JavaScript, TypeScript | — | 0 |
+| PHP | `php` | tool | docker, github-actions, files | — | — | 7 |
+| PHP Pest | `phppest` | tool | composer | php: nessun analizzatore | — | 0 |
+| phpenv | `phpenv` | tool | files | — | — | 0 |
+| PHPStan | `phpstan` | tool | composer, files | php: nessun analizzatore | — | 2 |
+| PHPUnit | `phpunit` | tool | composer, files | php: nessun analizzatore | — | 5 |
+| pip | `pip` | tool | pypi | Python | — | 0 |
+| pipenv | `pipenv` | tool | files | — | — | 0 |
+| Playwright | `playwright` | tool | docker, github-actions, maven, npm, nuget, pypi, files | Java, Kotlin, JavaScript, TypeScript, C#, Python | — | 12 |
+| pnpm | `pnpm` | tool | files | — | — | 0 |
+| Podman | `podman` | tool | go | Go | — | 0 |
+| Poetry | `poetry` | tool | files | — | — | 0 |
+| Prettier | `prettier` | tool | npm, files | JavaScript, TypeScript | — | 14 |
+| Pulumi | `pulumi` | tool | go, npm, pypi, files | Go, JavaScript, TypeScript, Python | — | 0 |
+| pytest | `pytest` | tool | pypi | Python | — | 9 |
+| Python | `python` | tool | docker, github-actions, files | — | — | 16 |
+| Read The Docs | `readthedocs` | tool | docker, files | — | — | 0 |
+| Renovate | `renovate` | tool | npm, files | JavaScript, TypeScript | — | 6 |
+| Rolldown | `rolldown` | tool | crates, npm | Rust, JavaScript, TypeScript | — | 1 |
+| Rollup | `rollup` | tool | npm | JavaScript, TypeScript | — | 4 |
+| Rspack | `rspack` | tool | npm, files | JavaScript, TypeScript | — | 0 |
+| Rubocop | `rubocop` | tool | files | — | — | 1 |
+| Ruby | `ruby` | tool | docker, github-actions, files | — | — | 7 |
+| rubyenv | `rubyenv` | tool | files | — | — | 0 |
+| Ruff | `ruff` | tool | pypi | Python | — | 14 |
+| Rust | `rust` | tool | docker, files | — | — | 17 |
+| ScalaTest | `scalatest` | tool | maven | Java, Kotlin | — | 1 |
+| SonarLint | `sonarlint` | tool | files | — | — | 0 |
+| Storybook | `storybook` | tool | npm, files | JavaScript, TypeScript | — | 2 |
+| Stylelint | `stylelint` | tool | files | — | — | 2 |
+| SWC | `swc` | tool | crates, npm | Rust, JavaScript, TypeScript | — | 4 |
+| Terraform | `terraform` | tool | github-actions, go, npm, pypi, files | Go, JavaScript, TypeScript, Python | — | 2 |
+| Terragrunt | `terragrunt` | tool | files | — | — | 0 |
+| Testcontainers | `testcontainers` | tool | maven, nuget, pypi | Java, Kotlin, C#, Python | — | 2 |
+| TestNG | `testng` | tool | maven | Java, Kotlin | — | 1 |
+| TravisCI | `travisci` | tool | rubygems, files | ruby: nessun analizzatore | — | 1 |
+| Turborepo | `turborepo` | tool | npm, files | JavaScript, TypeScript | — | 2 |
+| Typescript | `typescript` | tool | go, npm, files | Go, JavaScript, TypeScript | — | 35 |
+| Ultracite | `ultracite` | tool | npm | JavaScript, TypeScript | — | 0 |
+| uv | `uv` | tool | pypi | Python | — | 1 |
+| Vale | `vale` | tool | docker, github-actions, files | — | — | 1 |
+| Vite | `vite` | tool | npm | JavaScript, TypeScript | — | 18 |
+| Vitest | `vitest` | tool | npm, files | JavaScript, TypeScript | — | 11 |
+| Webpack | `webpack` | tool | npm | JavaScript, TypeScript | — | 3 |
+| xUnit | `xunit` | tool | nuget | C# | — | 2 |
+| Yarn | `yarn` | tool | files | — | — | 0 |
+| Zig | `zig` | tool | github-actions | — | — | 0 |
 
 </details>
 
 ## Servizi esterni
 
-Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un marchio: 437 con il file nel prodotto (`mark`), 0 scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per specie, sulle voci che ne hanno: `env` 160, `files` 48, `packages` 567, `patterns` 159. Di quelle con segni, 4 hanno la categoria `framework` o `tool` e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
+Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `project` con la `category` `service` (un software che gira accanto al sistema e a cui il codice si connette); 619 con segni per riconoscerle, 445 con un marchio: 445 con il file nel prodotto (`mark`), 0 scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per specie, sulle voci che ne hanno: `env` 160, `files` 48, `packages` 581, `patterns` 159. Di quelle con segni, 4 hanno un'altra categoria (`library` 1, `tool` 3) e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
 
 | Tipo | Voci | Con segni | Con marchio |
 | --- | --- | --- | --- |
-| servizio o API | 573 | 451 | 334 |
-| database | 115 | 107 | 73 |
-| autenticazione | 17 | 17 | 9 |
-| gateway | 16 | 16 | 11 |
-| coda | 14 | 14 | 10 |
+| servizio o API | 579 | 457 | 338 |
+| database | 120 | 112 | 76 |
+| autenticazione | 18 | 18 | 10 |
+| gateway | 17 | 17 | 11 |
+| coda | 15 | 15 | 10 |
 
-<details><summary>Servizi riconoscibili: 601 voci</summary>
+<details><summary>Servizi riconoscibili: 615 voci</summary>
 
-| Servizio | Id | Tipo | Segni | Marchio | Fixture in cui lo step lo trova (17 novembre 2026) |
+| Servizio | Id | Tipo | Segni | Marchio | Fixture in cui lo step lo trova (19 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
 | 1Password | `1password` | servizio o API | npm, pypi | sì | 0 |
 | Activeloop | `activeloop` | servizio o API | pypi | sì | 0 |
@@ -693,7 +681,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | ChartMogul | `chartmogul` | servizio o API | npm, pypi | sì | 0 |
 | Checkov | `checkov` | servizio o API | docker, github-actions | sì | 0 |
 | ChromaDB | `chromadb` | database | pypi | no | 0 |
-| Chromatic | `chromatic` | servizio o API | npm | sì | 0 |
+| Chromatic | `chromatic` | servizio o API | npm | sì | 1 |
 | CircleCI | `circleci` | servizio o API | github-actions, rubygems, files | sì | 0 |
 | CirrusCI | `cirrusci` | servizio o API | files | sì | 0 |
 | Civo | `civo` | servizio o API | go | sì | 0 |
@@ -783,7 +771,9 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Elastic Cloud | `elasticcloud` | servizio o API | terraform | sì | 0 |
 | Elasticsearch | `elasticsearch` | database | composer, crates, docker, github-actions, go, npm, pypi, rubygems, terraform, terraform-resource, env | sì | 2 |
 | Elevenlabs | `elevenlabs` | servizio o API | npm, pypi, env | sì | 0 |
+| Envoy | `envoy` | gateway | go | no | 0 |
 | Equinix | `equinix` | servizio o API | terraform | no | 0 |
+| etcd | `etcd` | database | go | sì | 0 |
 | Event Store | `event-store` | database | go, npm | sì | 0 |
 | Evernote | `evernote` | servizio o API | npm | sì | 0 |
 | Expo.dev | `expodev` | servizio o API | github-actions, files | sì | 0 |
@@ -794,8 +784,10 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Firebase | `firebase` | servizio o API | crates, github-actions, npm, pypi, rubygems, files, env | sì | 1 |
 | Firebase Firestore | `firebase.firestore` | database | composer, terraform-resource | no | 0 |
 | Firecrawl | `firecrawl` | servizio o API | composer, crates, go, pypi, env | no | 0 |
+| Fluentd | `fluentd` | servizio o API | go | sì | 0 |
 | Flyio | `flyio` | servizio o API | github-actions, terraform, files | sì | 1 |
 | Formbricks | `formbricks` | servizio o API | npm | sì | 0 |
+| FoundationDB | `foundationdb` | database | pypi | no | 0 |
 | Freshdesk | `freshdesk` | servizio o API | composer, go, npm, pypi, rubygems, env | no | 0 |
 | Frontegg | `frontegg` | autenticazione | npm, pypi, terraform | no | 0 |
 | Fusionauth | `fusionauth` | autenticazione | composer, go, npm, pypi, rubygems | sì | 0 |
@@ -809,6 +801,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | GitHub | `github` | servizio o API | composer, npm, pypi, rubygems, terraform, terraform-resource, files | sì | 1 |
 | GitHub CodeQL | `github.codeql` | servizio o API | github-actions | no | 0 |
 | Github Pages | `github.pages` | servizio o API | github-actions, files | sì | 7 |
+| Gitlab | `gitlab` | servizio o API | composer, crates, npm, pypi, rubygems, terraform, terraform-resource | sì | 0 |
 | Gitlab CI | `gitlab.ci` | servizio o API | files | no | 0 |
 | Gmail | `google.gmail` | servizio o API | npm, rubygems | sì | 0 |
 | Google Ads | `google-ads` | servizio o API | npm, pypi | sì | 0 |
@@ -841,6 +834,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Heroku | `heroku` | servizio o API | composer, github-actions, rubygems, terraform | no | 0 |
 | Hetzner | `hetzner` | servizio o API | composer, go, pypi, rubygems, terraform | sì | 0 |
 | Honeybadger | `honeybadger` | servizio o API | composer, go, npm, pypi, rubygems, env | sì | 0 |
+| Honeycomb | `honeycomb` | servizio o API | go, pypi | no | 0 |
 | Hostinger | `hostinger` | servizio o API | composer, npm, pypi | sì | 0 |
 | Hotjar | `hotjar` | servizio o API | npm, env | sì | 0 |
 | HSQLDB | `hsqldb` | database | maven | no | 1 |
@@ -863,16 +857,19 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Intuit | `intuit` | gateway | env | sì | 0 |
 | Ionos | `ionos` | servizio o API | go, pypi | sì | 0 |
 | IOTA | `iota` | servizio o API | npm, pypi | sì | 0 |
-| Jellyfin | `jellyfin` | servizio o API | npm | sì | 0 |
+| Jaeger | `jaeger` | servizio o API | go | sì | 0 |
+| Jellyfin | `jellyfin` | servizio o API | npm | sì | 1 |
 | Jenkins | `jenkins` | servizio o API | docker, pypi, rubygems, files | sì | 0 |
 | JFrog | `jfrog` | servizio o API | go | sì | 0 |
 | Jira | `atlassian.jira` | servizio o API | composer, crates, docker, github-actions, npm, rubygems, terraform-resource | sì | 0 |
 | Jira Software | `jira-software` | servizio o API | npm | sì | 0 |
 | Jitsi | `jitsi` | servizio o API | npm | sì | 0 |
 | Joomla! | `joomla` | servizio o API | composer, docker | sì | 0 |
+| Kafka | `kafka` | coda | maven, nuget | no | 1 |
 | Kaggle | `kaggle` | servizio o API | pypi | sì | 0 |
 | Keeper | `keeper` | servizio o API | npm, pypi | sì | 0 |
 | Kentico | `kentico` | servizio o API | npm, rubygems | sì | 0 |
+| Keycloak | `keycloak` | autenticazione | npm, pypi | sì | 0 |
 | Kibana | `kibana` | servizio o API | docker, env | sì | 1 |
 | Kinde | `kinde` | autenticazione | composer, npm, pypi, rubygems | no | 0 |
 | Klarna | `klarna` | gateway | rubygems, terraform-resource, env | sì | 0 |
@@ -882,7 +879,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Koyeb | `koyeb` | servizio o API | npm, files | sì | 0 |
 | Kubernetes | `kubernetes` | servizio o API | composer, crates, github-actions, npm, pypi, rubygems, terraform, files | sì | 1 |
 | Lago | `lago` | servizio o API | docker, go, npm, pypi, rubygems, env | no | 0 |
-| LangChain Corporate | `langchain-corporate` | servizio o API | npm, pypi | sì | 0 |
+| LangChain Corporate | `langchain-corporate` | servizio o API | npm, pypi | sì | 1 |
 | LaunchDarkly | `launchdarkly` | servizio o API | composer, crates, github-actions, go, npm, rubygems, terraform, env | no | 0 |
 | Lemon Squeezy | `lemonsqueezy` | gateway | composer, go, npm, rubygems, env | sì | 0 |
 | Let's Encrypt | `lets-encrypt` | servizio o API | pypi | sì | 0 |
@@ -891,7 +888,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Linear | `linear` | servizio o API | npm, pypi, env | sì | 0 |
 | Linkedin | `linkedin` | servizio o API | env | no | 0 |
 | LiveChat | `livechat` | servizio o API | npm | sì | 0 |
-| LiveKit | `livekit` | servizio o API | go, npm, pypi | sì | 0 |
+| LiveKit | `livekit` | servizio o API | go, npm, pypi | sì | 1 |
 | LM Studio | `lm-studio` | servizio o API | npm, pypi | sì | 0 |
 | LogRocket | `logrocket` | servizio o API | npm | no | 0 |
 | LogSnag | `logsnag` | servizio o API | npm, pypi, env | no | 0 |
@@ -905,6 +902,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Magic | `magic` | autenticazione | npm | sì | 0 |
 | Mailchimp | `mailchimp` | servizio o API | composer, npm, rubygems, terraform-resource, env | sì | 0 |
 | Mailgun | `mailgun` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| Mailhog | `mailhog` | servizio o API | docker, go | no | 1 |
 | Mailjet | `mailjet` | servizio o API | composer, crates, npm, rubygems, env | no | 0 |
 | Mailtrap | `mailtrap` | servizio o API | npm, pypi | sì | 0 |
 | Mapbox | `mapbox` | servizio o API | composer, crates, npm, pypi, rubygems, env | sì | 0 |
@@ -941,6 +939,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Nextcloud | `nextcloud` | servizio o API | docker | sì | 0 |
 | Nginx | `nginx` | servizio o API | docker, files | sì | 7 |
 | Nhost | `nhost` | servizio o API | npm | sì | 0 |
+| Nomad | `nomad` | servizio o API | go | sì | 0 |
 | Notion | `notion` | servizio o API | composer, crates, npm, rubygems, env | sì | 0 |
 | Novy | `novu` | servizio o API | composer, docker, go, npm, pypi, rubygems | sì | 0 |
 | NX Cloud | `nxcloud` | servizio o API | npm | no | 0 |
@@ -953,6 +952,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | OpenCage | `opencage` | servizio o API | pypi | sì | 0 |
 | OpenRouter | `openrouter` | gateway | npm, pypi | sì | 0 |
 | OpenSea | `opensea` | servizio o API | npm | sì | 0 |
+| OpenSearch | `opensearch` | database | go, pypi | sì | 0 |
 | OpenZeppelin | `openzeppelin` | servizio o API | npm | sì | 0 |
 | Optimizely | `optimizely` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, env | no | 0 |
 | Oracle Cloud | `oraclecloud` | servizio o API | composer, npm, rubygems, terraform | no | 0 |
@@ -1001,7 +1001,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | PropelAuth | `propelauth` | autenticazione | crates, go, npm, pypi | no | 0 |
 | PubSub | `gcp.pubsub` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Puppeteer | `puppeteer` | servizio o API | docker, npm | sì | 1 |
-| Pusher | `pusher` | servizio o API | go, npm, pypi | sì | 0 |
+| Pusher | `pusher` | servizio o API | go, npm, pypi | sì | 1 |
 | Qase | `qase` | servizio o API | npm, pypi | sì | 0 |
 | Qdrant | `qdrant` | database | composer, crates, docker, go, npm, pypi, terraform-resource, env | sì | 0 |
 | Qlik | `qlik` | servizio o API | npm | sì | 0 |
@@ -1101,6 +1101,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | Todoist | `todoist` | servizio o API | npm, pypi | sì | 0 |
 | Traefik | `traefik` | servizio o API | docker, go, files | no | 1 |
 | Tray.ai | `trayio` | servizio o API | npm | no | 0 |
+| Trino | `trino` | database | pypi | sì | 0 |
 | Truffle Security | `trufflesecurity` | servizio o API | docker, github-actions | no | 0 |
 | Turso | `tursodb` | database | npm, env | sì | 0 |
 | Twenty CRM | `twentycrm` | servizio o API | docker | sì | 0 |
@@ -1131,6 +1132,7 @@ Le voci `service` del catalogo: 735, 605 con segni per riconoscerle, 437 con un 
 | VirusTotal | `virustotal` | servizio o API | pypi | sì | 0 |
 | Vonage | `vonage` | servizio o API | npm, pypi | sì | 0 |
 | WakaTime | `wakatime` | servizio o API | pypi | sì | 0 |
+| Weaviate | `weaviate` | database | go, pypi | no | 0 |
 | Webex | `webex` | servizio o API | npm | sì | 0 |
 | Webflow | `webflow` | servizio o API | npm, pypi, terraform-resource, env | sì | 0 |
 | Weights & Biases | `wandb` | servizio o API | pypi | sì | 0 |

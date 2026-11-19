@@ -43,11 +43,23 @@ class DistributedRegistryTests(unittest.TestCase):
 
     def test_a_category_is_the_entry_s_own_field_never_its_name(self):
         for ident, category in (("eslint", "tool"), ("docker", "tool"), ("renovate", "tool"), ("nodejs", "tool"),
-                                ("cypressci", "framework"), ("opentelemetry", "framework"), ("playwright", "framework")):
+                                ("cypressci", "tool"), ("opentelemetry", "library"), ("playwright", "tool")):
             self.assertEqual((ident, self.entries[ident].get("category")), (ident, category))
         self.assertEqual(service_registry.entry_category({"id": "eslint", "kind": "project"}), "framework")
         self.assertEqual(service_registry.entry_category({"id": "playwright", "kind": "service"}), "service")
         self.assertEqual(service_registry.entry_category({"id": "x", "kind": "service", "category": "tool"}), "tool")
+
+    def test_every_recognisable_project_has_its_category_written_and_none_is_a_framework_by_default(self):
+        """A model proposed the categories (`REGISTRY-NOTICES.md`); the machine checks the value, these the classes."""
+        self.assertEqual([i for i, e in self.entries.items()
+                          if e["kind"] == "project" and e.get("signs") and not e.get("category")], [])
+        for category, idents in (("framework", ("angular", "django", "express", "nextjs")),
+                                 ("library", ("numpy", "boto3", "sqlalchemy", "d3js", "fontawesome")),
+                                 ("tool", ("jest", "biomejs", "ansible", "asdf", "alembic")),
+                                 ("service", ("kafka", "etcd", "keycloak"))):
+            for ident in idents:
+                self.assertEqual((ident, self.entries[ident]["kind"], self.entries[ident].get("category")),
+                                 (ident, "project", category))
 
     def test_a_sign_a_catalog_gives_wrongly_is_taken_away_by_an_addition(self):
         self.assertNotIn("passport-google-oauth20", self.entries["gcp"]["signs"]["packages"]["npm"])
@@ -635,3 +647,15 @@ class NewServiceFromAMarkTests(unittest.TestCase):
         self.assertIn("already has", " ".join(refused))
         kept, refused = one(site="https://down.example")
         self.assertEqual(kept, [])
+
+
+def test_a_record_that_only_adds_to_an_entry_may_come_before_the_one_that_makes_it():
+    """`build` applies the additions in the order of their file, by id and by `by`: a `catalog` record that only gives
+    a category comes before the `model` record that makes the entry, and the entry is made all the same."""
+    entries: dict = {}
+    registry_build.apply_additions(entries, [
+        {"id": "new", "category": "library", "by": "catalog"},
+        {"id": "new", "name": "New", "kind": "project", "type": "altro", "site": "https://new.example",
+         "signs": {"packages": {"npm": ["new"]}}, "by": "model"}])
+    assert (entries["new"]["name"], entries["new"]["category"]) == ("New", "library")
+    assert entries["new"]["signs"]["packages"] == {"npm": ["new"]}

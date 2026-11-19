@@ -224,7 +224,7 @@ def _node(item: dict, name: str, status: str | None = None) -> dict:
 def _top(envelope: dict) -> tuple[str, dict, list, dict, dict]:
     """How the graph groups files when it opens (`modules` or `directories`), the entities (with the directories it
     groups by), the files, the groups as nodes with their files, and the group of each file. An external project (a
-    framework, the registry's `kind` `project`) is no node: each group carries those its files declare (`projects`),
+    framework or a library, the registry's `kind` `project`) is no node: each group carries those its files declare (`projects`),
     with the declaring sites."""
     entities = {item["ref"]: item for item in envelope["entities"]}
     files = sorted(ref for ref, item in entities.items() if item["type"] == "file")
@@ -259,27 +259,31 @@ def _top(envelope: dict) -> tuple[str, dict, list, dict, dict]:
     return grouping, entities, files, nodes, owner
 
 
+TILES = ("framework", "library")  # the registry's categories a module shows; a service is a node, a tool neither
+
+
 def _stack(technologies: list, entities: dict, nodes: dict, owner: dict) -> None:
-    """Each group's stack, as the stack step has it (the envelope's `technologies`): the frameworks one of its files
-    declares, by a package's line or by a file's name (`projects`: the registry id, which the mark route takes,
-    name, kind `project`, and the declaring sites), and the count of its other declared libraries, known to the
-    registry or not, but neither a framework nor a service, which has its node (`other_dependencies`). A framework a
-    line only mentions is not listed."""
+    """Each group's stack, as the stack step has it (the envelope's `technologies`): the frameworks and libraries of
+    the registry one of its files declares, by a package's line or by a file's name (`projects`: the registry id,
+    which the mark route takes, name, kind `project`, its `category` and the declaring sites), and the count of its
+    other declared packages, known to the registry or not, neither a tile nor a service, which has its node
+    (`other_dependencies`). One a line only mentions is not listed."""
     projects: dict[str, dict] = {ref: {} for ref, node in nodes.items() if node["location"] != "external"}
     others: dict[str, set] = {ref: set() for ref in projects}
+    shown = {item["id"] for item in technologies if item["category"] in (*TILES, "service")}
     for item in technologies:
-        for site in item["evidence"] if item["category"] == "framework" else ():
+        for site in item["evidence"] if item["category"] in TILES else ():
             ref = owner.get(f"file:{site['path']}")
             if ref in projects:
                 found = projects[ref].setdefault(item["id"], {"id": item["id"], "name": item["name"], "kind": "project",
-                                                              "mark": item["id"], "evidence": []})
+                                                              "category": item["category"], "mark": item["id"],
+                                                              "evidence": []})
                 if site not in found["evidence"]:
                     found["evidence"].append(site)
     for entity in entities.values():
-        named = {*(entity.get("frameworks") or ()), *(entity.get("services") or ())}
         for item in entity.get("libraries") or ():
             ref = owner.get(f"file:{item['path']}")
-            if ref in projects and item.get("id") not in named:
+            if ref in projects and item.get("id") not in shown:
                 others[ref].add((item["ecosystem"], item["name"].casefold()))
     for ref, found in projects.items():
         for item in found.values():

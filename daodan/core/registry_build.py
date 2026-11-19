@@ -418,8 +418,9 @@ def _from_rule(rule: dict) -> dict:
 
 def apply_additions(entries: dict[str, dict], records: list[dict]) -> None:
     """Merge curated/verified `additions` records into `entries` in place; a record's `wrong_signs` take away the
-    signs a catalog gives the entry wrongly."""
-    for record in records:
+    signs a catalog gives the entry wrongly. The records that make an entry (they have its `name`) come first,
+    whatever their order: another may only add to it."""
+    for record in sorted(records, key=lambda record: "name" not in record):
         entry = entries.get(record["id"])
         if entry is None:
             entry = entries[record["id"]] = {"id": record["id"], "name": record["name"], "kind": record["kind"],

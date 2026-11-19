@@ -335,14 +335,15 @@ def test_the_graph_groups_files_by_their_smallest_module_or_else_by_their_direct
 @pytest.fixture(scope="module")
 def levels(tmp_path_factory):
     """A run with three build units, a service the stack recognises, a framework two of them declare, a framework
-    only mentioned and a library the registry does not know, a deduced link between two units and a module with a
+    only mentioned, a library the registry knows, a tool and a library it does not know, a deduced link between two units and a module with a
     directory whose files call each other, one holding a class with two methods."""
     import mcp_service
     pets = HERE.parent / "benchmarks/connection-points/fixtures/pets"
     project = tmp_path_factory.mktemp("levels") / "project"
     shutil.copytree(pets / "app", project)
     files = {"web/package.json": json.dumps({"name": "web", "version": "1.0.0", "dependencies": {
-                 "stripe": "^14.0.0", "express": "^4.19.0", "@acme/widgets": "^1.0.0"}}, indent=2),  # express: line 6
+                 "stripe": "^14.0.0", "express": "^4.19.0", "@acme/widgets": "^1.0.0", "zod": "^3.23.0",
+                 "jest": "^29.7.0"}}, indent=2),  # express: line 6, zod (a library) 8, jest (a tool) 9
              "web/lib/pay.js": 'const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);\nmodule.exports = stripe;\n',
              "web/lib/trace.js": "module.exports = process.env.OTEL_SERVICE_NAME;\n",
              "admin/package.json": json.dumps({"name": "admin", "version": "1.0.0", "dependencies": {
@@ -478,16 +479,20 @@ def test_a_framework_a_module_declares_is_in_its_stack_open_or_closed_and_never_
     run = levels.root / "runs" / "levels"
     stack = technologies.ensure(resolve_run_snapshot(run, json.loads((run / "state.json").read_text(encoding="utf-8"))))
     assert "opentelemetry" in {item["id"] for item in stack["mentioned"]}  # a framework only mentioned
-    assert {"nodejs"} == {item["id"] for item in stack["technologies"] if item["category"] == "tool"}
-    # The first level: each module carries the frameworks it declares, with the declaring file and line, and the count
-    # of its other declared libraries (@acme/widgets: the registry does not know it; stripe is a node of its own).
+    assert {"jest", "nodejs"} == {item["id"] for item in stack["technologies"] if item["category"] == "tool"}
+    assert next(unit for unit in stack["units"] if unit["paths"] == ["web"])["frameworks"] == ["express"]  # zod is no framework
+    # The first level: each module carries the frameworks and libraries it declares, each with its category, the
+    # declaring file and line, and the count of its other declared packages (@acme/widgets: the registry does not
+    # know it; jest: a tool, no tile; zod: a tile, not counted again; stripe is a node of its own).
     app = leveled(levels, tmp_path)
     top = app.graph({})
     web, admin, server = (group_of(top, path) for path in ("web/api.ts", "admin/index.js", "server/app.py"))
-    express = {"id": "express", "name": "Express", "kind": "project", "mark": "express"}
+    express = {"id": "express", "name": "Express", "kind": "project", "category": "framework", "mark": "express"}
+    zod = {"id": "zod", "name": "Zod", "kind": "project", "category": "library", "mark": "zod"}
     shown = {node["id"]: node for node in top["nodes"]}
     assert (shown[web]["projects"], shown[web]["other_dependencies"]) == (
-        [{**express, "evidence": [{"path": "web/package.json", "line": 6}]}], 1)
+        [{**express, "evidence": [{"path": "web/package.json", "line": 6}]},
+         {**zod, "evidence": [{"path": "web/package.json", "line": 8}]}], 2)
     # The stack is one: a framework the step recognises by a file's name is in it as one a package declares, with
     # that file as its evidence (the page's «Tecnologie e framework» lists it: the card must not say less).
     assert "nextjs" in {item["id"] for item in stack["technologies"] if item["category"] == "framework"}
@@ -495,7 +500,7 @@ def test_a_framework_a_module_declares_is_in_its_stack_open_or_closed_and_never_
     assert [(item["id"], item["name"], item["kind"], [site["path"] for site in item["evidence"]])
             for item in shown[admin]["projects"][1:]] == [("nextjs", "Next.js", "project", ["admin/next.config.js"])]
     assert (shown[server]["projects"], shown[server]["other_dependencies"]) == ([], 0)
-    assert {project["id"] for node in top["nodes"] for project in node.get("projects", ())} == {"express", "nextjs"}
+    assert {project["id"] for node in top["nodes"] for project in node.get("projects", ())} == {"express", "nextjs", "zod"}
     # Open, the frame of the module keeps its stack; at no detail is a framework, a tool or a mention a node or an end.
     one, two = opened(app, web), opened(app, web, admin, f"{web}#web/lib")
     assert next(item for item in one["open"] if item["id"] == web)["projects"] == shown[web]["projects"]
@@ -503,7 +508,8 @@ def test_a_framework_a_module_declares_is_in_its_stack_open_or_closed_and_never_
     for found in (top, one, two):
         ends = {node["id"] for node in found["nodes"]} | {
             end for edge in found["edges"] for end in (edge["source"], edge["target"])}
-        assert not ends & {"external:express", "external:nodejs", "external:opentelemetry"}
+        assert not ends & {"external:express", "external:zod", "external:jest", "external:nodejs",
+                           "external:opentelemetry"}
     assert opened(app) == top
     # codice alone keeps the stack, the module's own, and drops the services
     code = {node["id"]: node for node in app.graph({"levels": json.dumps(["codice"])})["nodes"]}

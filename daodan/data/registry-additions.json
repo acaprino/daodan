@@ -36,6 +36,11 @@
   },
   {
    "id": "actixweb",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "actixweb",
    "name": "Actix Web",
    "kind": "project",
    "type": "altro",
@@ -48,6 +53,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "adonisjs",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "adyen",
@@ -93,6 +103,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "aiohttp",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "aiohttp",
@@ -156,6 +171,11 @@
   },
   {
    "id": "alembic",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "alembic",
    "name": "Alembic",
    "kind": "project",
    "type": "altro",
@@ -214,6 +234,11 @@
    "by": "model"
   },
   {
+   "id": "alpinejs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "amplitude",
    "signs": {
     "packages": {
@@ -243,6 +268,11 @@
    "by": "catalog"
   },
   {
+   "id": "angular",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "angularjs",
    "name": "AngularJS",
    "kind": "project",
@@ -260,6 +290,11 @@
   },
   {
    "id": "ansible",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "ansible",
    "signs": {
     "packages": {
      "pypi": [
@@ -270,12 +305,27 @@
    "by": "model"
   },
   {
+   "id": "antd",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "antdicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "anthropic",
    "site": "https://www.anthropic.com",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "apache-beam",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "apache-beam",
@@ -309,6 +359,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "apacheCordova",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "apache_cassandra",
@@ -353,6 +408,11 @@
    "by": "model"
   },
   {
+   "id": "apache_thrift",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "apify",
    "signs": {
     "packages": {
@@ -366,6 +426,11 @@
    },
    "by": "derive",
    "owner": "github.com/apify"
+  },
+  {
+   "id": "apiplatform",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "apollo-server",
@@ -440,7 +505,7 @@
    "id": "archunit",
    "name": "ArchUnit",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://www.archunit.org",
    "signs": {
@@ -453,12 +518,32 @@
    "by": "catalog"
   },
   {
+   "id": "ariakitui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "arktype",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "arkui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "asana",
    "site": "https://asana.com",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "asdf",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "aspnetcore",
@@ -479,6 +564,21 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "assemble",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "astro",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "atlasgo",
+   "category": "tool",
    "by": "catalog"
   },
   {
@@ -605,6 +705,11 @@
     "date": "2026-11-18"
    },
    "by": "daodan"
+  },
+  {
+   "id": "aws.cloudformation",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "aws.cloudformation",
@@ -1310,6 +1415,11 @@
   },
   {
    "id": "awscdk",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "awscdk",
    "name": "AWS CDK",
    "kind": "project",
    "type": "altro",
@@ -1328,6 +1438,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "axum",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "axum",
@@ -1541,6 +1656,11 @@
    "by": "model"
   },
   {
+   "id": "baseui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "bigcommerce",
    "signs": {
     "packages": {
@@ -1569,6 +1689,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "biomejs",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "bitly",
@@ -1618,6 +1743,11 @@
    "by": "catalog"
   },
   {
+   "id": "blitzjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "bluesky",
    "name": "Bluesky",
    "kind": "service",
@@ -1631,6 +1761,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "bootstrap",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "bootstrapicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "boto3",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "boto3",
@@ -1697,6 +1842,16 @@
    "by": "model"
   },
   {
+   "id": "builtwithfern",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "bundler",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "bunq",
    "name": "bunq",
    "kind": "service",
@@ -1710,6 +1865,16 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "bunsh",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "bytebase",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "caddy",
@@ -1753,10 +1918,15 @@
    "by": "model"
   },
   {
+   "id": "capacitorjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "cats",
    "name": "Cats",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://typelevel.org/cats/",
    "signs": {
@@ -1775,6 +1945,11 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "chakraui",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "chargebee",
@@ -1811,6 +1986,11 @@
     "date": "2026-11-18"
    },
    "by": "official"
+  },
+  {
+   "id": "chef",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "chi",
@@ -1857,6 +2037,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "click",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "click",
@@ -1907,6 +2092,11 @@
   },
   {
    "id": "cobra",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "cobra",
    "name": "Cobra",
    "kind": "project",
    "type": "altro",
@@ -1934,6 +2124,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "codemirror",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "codesandbox",
@@ -2020,6 +2215,11 @@
   },
   {
    "id": "containerd",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "containerd",
    "signs": {
     "packages": {
      "go": [
@@ -2088,7 +2288,7 @@
   },
   {
    "id": "cypressci",
-   "category": "framework",
+   "category": "tool",
    "by": "catalog"
   },
   {
@@ -2105,6 +2305,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "d3js",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "daisyui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "dask",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "dask",
@@ -2147,6 +2362,11 @@
    },
    "by": "derive",
    "owner": "github.com/datadog"
+  },
+  {
+   "id": "dbt",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "dbt",
@@ -2200,6 +2420,16 @@
    "by": "model"
   },
   {
+   "id": "deno",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "dieselrs",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "digitalocean",
    "signs": {
     "packages": {
@@ -2210,6 +2440,11 @@
    },
    "by": "derive",
    "owner": "github.com/pulumi"
+  },
+  {
+   "id": "dioxus",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "directus",
@@ -2225,6 +2460,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "django",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "django",
@@ -2261,6 +2501,21 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "docsify",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "doctrinephp",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "docusaurus",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "docusign",
@@ -2336,6 +2591,11 @@
    "by": "catalog"
   },
   {
+   "id": "drizzleorm",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "dropbox",
    "site": "https://www.dropbox.com",
    "signs": {
@@ -2380,6 +2640,11 @@
   },
   {
    "id": "echo",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "echo",
    "name": "Echo",
    "kind": "project",
    "type": "altro",
@@ -2394,12 +2659,22 @@
    "by": "model"
   },
   {
+   "id": "effectjs",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "elasticsearch",
    "site": "https://www.elastic.co/elasticsearch",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "electron",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "elevenlabs",
@@ -2410,10 +2685,25 @@
    "by": "model"
   },
   {
+   "id": "eleventy",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "elysiajs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "emberjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "entity-framework-core",
    "name": "Entity Framework Core",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://learn.microsoft.com/ef/core/",
    "signs": {
@@ -2429,6 +2719,12 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "envoy",
+   "category": "service",
+   "by": "catalog",
+   "type": "gateway"
   },
   {
    "id": "envoy",
@@ -2462,6 +2758,12 @@
    "id": "eslint",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "etcd",
+   "category": "service",
+   "by": "catalog",
+   "type": "database"
   },
   {
    "id": "etcd",
@@ -2518,10 +2820,15 @@
    "by": "official"
   },
   {
+   "id": "expojs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "exposed",
    "name": "Exposed",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://github.com/JetBrains/Exposed",
    "signs": {
@@ -2531,6 +2838,16 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "express",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "fastapi",
+   "category": "framework",
    "by": "catalog"
   },
   {
@@ -2547,6 +2864,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "fastify",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "fastly",
@@ -2580,6 +2902,11 @@
    "by": "catalog"
   },
   {
+   "id": "feathericons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "firebase",
    "site": "https://firebase.google.com",
    "signs": {
@@ -2590,6 +2917,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "flask",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "flask",
@@ -2608,6 +2940,12 @@
   },
   {
    "id": "fluentd",
+   "category": "service",
+   "by": "catalog",
+   "type": "servizio o API"
+  },
+  {
+   "id": "fluentd",
    "signs": {
     "packages": {
      "go": [
@@ -2616,6 +2954,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "fluentui",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "flutter",
@@ -2631,6 +2974,16 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "flyway",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "fontawesome",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -2650,6 +3003,11 @@
   },
   {
    "id": "foundationdb",
+   "category": "service",
+   "by": "catalog"
+  },
+  {
+   "id": "foundationdb",
    "signs": {
     "packages": {
      "pypi": [
@@ -2660,10 +3018,15 @@
    "by": "model"
   },
   {
+   "id": "fumadocs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "gatling",
    "name": "Gatling",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://gatling.io",
    "signs": {
@@ -2673,6 +3036,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "gatsby",
+   "category": "framework",
    "by": "catalog"
   },
   {
@@ -3179,6 +3547,11 @@
   },
   {
    "id": "gin",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "gin",
    "name": "Gin",
    "kind": "project",
    "type": "altro",
@@ -3231,7 +3604,33 @@
    "by": "model"
   },
   {
+   "id": "gitlab",
+   "category": "service",
+   "by": "catalog",
+   "type": "servizio o API"
+  },
+  {
+   "id": "goacmelego",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "goent",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "goenv",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "golang",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "golangcilint",
    "category": "tool",
    "by": "catalog"
   },
@@ -3278,6 +3677,21 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "gorm",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "gradio",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "gridsome",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "groq",
    "site": "https://groq.com",
    "signs": {
@@ -3289,7 +3703,7 @@
    "id": "grpc",
    "name": "gRPC",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://grpc.io",
    "signs": {
@@ -3335,6 +3749,11 @@
   },
   {
    "id": "gunicorn",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "gunicorn",
    "name": "Gunicorn",
    "kind": "project",
    "type": "altro",
@@ -3377,6 +3796,11 @@
    "owner": "github.com/pulumi"
   },
   {
+   "id": "headlessui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "helm",
    "category": "tool",
    "by": "catalog"
@@ -3393,6 +3817,16 @@
    "by": "model"
   },
   {
+   "id": "heroicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "heroui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "hetzner",
    "site": "https://www.hetzner.com",
    "signs": {
@@ -3401,10 +3835,15 @@
    "by": "model"
   },
   {
+   "id": "hexojs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "hibernate",
    "name": "Hibernate",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://hibernate.org",
    "signs": {
@@ -3416,6 +3855,12 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "honeycomb",
+   "category": "service",
+   "by": "catalog",
+   "type": "servizio o API"
   },
   {
    "id": "honeycomb",
@@ -3432,6 +3877,11 @@
    "by": "model"
   },
   {
+   "id": "honojs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "hsqldb",
    "name": "HSQLDB",
    "kind": "service",
@@ -3445,6 +3895,16 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "htmx",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "httpx",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -3471,12 +3931,27 @@
    "by": "model"
   },
   {
+   "id": "hugeicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "huggingface",
    "site": "https://huggingface.co",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "hugo",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "infernojs",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "influxdb",
@@ -3535,6 +4010,16 @@
    "by": "model"
   },
   {
+   "id": "ionic",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "ionicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "ionos",
    "name": "Ionos",
    "kind": "service",
@@ -3574,7 +4059,7 @@
    "id": "jackson",
    "name": "Jackson",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://github.com/FasterXML/jackson",
    "signs": {
@@ -3587,6 +4072,12 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "jaeger",
+   "category": "service",
+   "by": "catalog",
+   "type": "servizio o API"
   },
   {
    "id": "jaeger",
@@ -3605,6 +4096,11 @@
    "by": "catalog"
   },
   {
+   "id": "jekyll",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "jenkins",
    "signs": {
     "packages": {
@@ -3614,6 +4110,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "jest",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "jfrog",
@@ -3629,6 +4130,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "jinja",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "jinja",
@@ -3676,10 +4182,20 @@
    "by": "model"
   },
   {
+   "id": "joijs",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "jsonschema",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "junit",
    "name": "JUnit",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://junit.org/junit4/",
    "signs": {
@@ -3695,7 +4211,7 @@
    "id": "junit-jupiter",
    "name": "JUnit Jupiter",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://junit.org/junit5/",
    "signs": {
@@ -3707,6 +4223,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "jupyter",
+   "category": "tool",
    "by": "catalog"
   },
   {
@@ -3725,6 +4246,11 @@
    "by": "model"
   },
   {
+   "id": "k6",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "kafka",
    "signs": {
     "packages": {
@@ -3737,6 +4263,7 @@
      ]
     }
    },
+   "category": "service",
    "by": "catalog"
   },
   {
@@ -3774,6 +4301,11 @@
   },
   {
    "id": "keras",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "keras",
    "name": "Keras",
    "kind": "project",
    "type": "altro",
@@ -3786,6 +4318,12 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "keycloak",
+   "category": "service",
+   "by": "catalog",
+   "type": "autenticazione"
   },
   {
    "id": "keycloak",
@@ -3802,10 +4340,20 @@
    "by": "model"
   },
   {
+   "id": "knex",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "koa",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "koin",
    "name": "Koin",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://insert-koin.io",
    "signs": {
@@ -3842,7 +4390,7 @@
    "id": "kotlinx-serialization",
    "name": "kotlinx.serialization",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://github.com/Kotlin/kotlinx.serialization",
    "signs": {
@@ -3873,6 +4421,16 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "kysely",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "langchain",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -3908,6 +4466,11 @@
    "by": "model"
   },
   {
+   "id": "laravel",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "lets-encrypt",
    "name": "Let's Encrypt",
    "kind": "service",
@@ -3921,6 +4484,16 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "lexicaleditor",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "lighthouse",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "line",
@@ -3944,7 +4517,7 @@
    "id": "liquibase",
    "name": "Liquibase",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://www.liquibase.org",
    "signs": {
@@ -3954,6 +4527,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "litjs",
+   "category": "framework",
    "by": "catalog"
   },
   {
@@ -3995,6 +4573,11 @@
   },
   {
    "id": "llamaindex",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "llamaindex",
    "signs": {
     "packages": {
      "pypi": [
@@ -4008,7 +4591,7 @@
    "id": "locust",
    "name": "Locust",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://locust.io",
    "signs": {
@@ -4036,7 +4619,7 @@
    "id": "lombok",
    "name": "Lombok",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://projectlombok.org",
    "signs": {
@@ -4094,6 +4677,16 @@
    "by": "model"
   },
   {
+   "id": "lordicon",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "lucideicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "magic",
    "name": "Magic",
    "kind": "service",
@@ -4129,6 +4722,12 @@
    "owner": "github.com/mailgun"
   },
   {
+   "id": "mailhog",
+   "category": "service",
+   "by": "catalog",
+   "type": "servizio o API"
+  },
+  {
    "id": "mailtrap",
    "name": "Mailtrap",
    "kind": "service",
@@ -4147,10 +4746,15 @@
    "by": "model"
   },
   {
+   "id": "mantineui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "mapstruct",
    "name": "MapStruct",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://mapstruct.org",
    "signs": {
@@ -4176,6 +4780,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "materialdesignicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "materialui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "matplotlib",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "matplotlib",
@@ -4210,6 +4829,11 @@
   {
    "id": "maven",
    "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "mcp",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -4251,6 +4875,11 @@
    "by": "model"
   },
   {
+   "id": "meteorjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "micronaut",
    "name": "Micronaut",
    "kind": "project",
@@ -4282,6 +4911,11 @@
    "by": "model"
   },
   {
+   "id": "mintlify",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "mistralai",
    "site": "https://mistral.ai",
    "signs": {
@@ -4290,12 +4924,27 @@
    "by": "model"
   },
   {
+   "id": "mithriljs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "mixpanel",
    "site": "https://mixpanel.com",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "mkdocs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "mlflow",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "mlflow",
@@ -4309,10 +4958,15 @@
    "by": "model"
   },
   {
+   "id": "mochajs",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "mockito",
    "name": "Mockito",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://site.mockito.org",
    "signs": {
@@ -4356,6 +5010,11 @@
    "by": "model"
   },
   {
+   "id": "monacoeditor",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "mongodb",
    "signs": {
     "packages": {
@@ -4386,7 +5045,7 @@
    "id": "mstest",
    "name": "MSTest",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://learn.microsoft.com/dotnet/core/testing/unit-testing-with-mstest",
    "signs": {
@@ -4397,6 +5056,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "muiicons",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -4450,6 +5114,11 @@
    "by": "model"
   },
   {
+   "id": "nestjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "newrelic",
    "signs": {
     "packages": {
@@ -4471,6 +5140,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "nextjs",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "nhost",
@@ -4502,6 +5176,12 @@
   },
   {
    "id": "nomad",
+   "category": "service",
+   "by": "catalog",
+   "type": "servizio o API"
+  },
+  {
+   "id": "nomad",
    "signs": {
     "packages": {
      "go": [
@@ -4514,6 +5194,16 @@
   {
    "id": "npm",
    "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "nuget",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "numpy",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -4535,7 +5225,7 @@
    "id": "nunit",
    "name": "NUnit",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://nunit.org",
    "signs": {
@@ -4545,6 +5235,21 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "nuxtjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "nvm",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "nxjs",
+   "category": "tool",
    "by": "catalog"
   },
   {
@@ -4596,6 +5301,11 @@
    "by": "model"
   },
   {
+   "id": "openapi",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "opencage",
    "name": "OpenCage",
    "kind": "service",
@@ -4609,6 +5319,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "opencv",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "opencv",
@@ -4662,6 +5377,12 @@
   },
   {
    "id": "opensearch",
+   "category": "service",
+   "by": "catalog",
+   "type": "database"
+  },
+  {
+   "id": "opensearch",
    "signs": {
     "packages": {
      "pypi": [
@@ -4676,7 +5397,7 @@
   },
   {
    "id": "opentelemetry",
-   "category": "framework",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -4731,6 +5452,11 @@
   },
   {
    "id": "oxlint",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "oxlint",
    "signs": {
     "packages": {
      "pypi": [
@@ -4755,6 +5481,11 @@
   },
   {
    "id": "pandas",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "pandas",
    "name": "pandas",
    "kind": "project",
    "type": "altro",
@@ -4769,10 +5500,15 @@
    "by": "model"
   },
   {
+   "id": "parceljs",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "passport",
    "name": "Passport",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "autenticazione",
    "site": "https://www.passportjs.org",
    "signs": {
@@ -4863,6 +5599,11 @@
    "by": "model"
   },
   {
+   "id": "phaserjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "phoenix",
    "name": "Phoenix",
    "kind": "project",
@@ -4895,6 +5636,16 @@
    "by": "catalog"
   },
   {
+   "id": "phosphoreicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "php",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "php",
    "site": "https://www.php.net",
    "signs": {
@@ -4903,7 +5654,22 @@
    "by": "model"
   },
   {
+   "id": "phpenv",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "phppest",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "phpstan",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "phpunit",
    "category": "tool",
    "by": "catalog"
   },
@@ -4911,7 +5677,7 @@
    "id": "picocli",
    "name": "picocli",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://picocli.info",
    "signs": {
@@ -4921,6 +5687,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "pillow",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -4958,6 +5729,11 @@
   },
   {
    "id": "pip",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "pip",
    "name": "pip",
    "kind": "project",
    "type": "altro",
@@ -4972,9 +5748,14 @@
    "by": "model"
   },
   {
+   "id": "pipenv",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "playwright",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "signs": {
     "packages": {
      "npm": [
@@ -5001,6 +5782,11 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "plotly",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "plotly",
@@ -5039,6 +5825,11 @@
   },
   {
    "id": "podman",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "podman",
    "signs": {
     "packages": {
      "go": [
@@ -5062,6 +5853,16 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "poetry",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "polars",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "polars",
@@ -5142,8 +5943,18 @@
    "by": "catalog"
   },
   {
+   "id": "preactjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "prettier",
    "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "prisma",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -5160,6 +5971,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "protobuf",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "protobuf",
@@ -5181,6 +5997,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "pulumi",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "pusher",
@@ -5206,6 +6027,11 @@
   },
   {
    "id": "pydantic",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "pydantic",
    "name": "Pydantic",
    "kind": "project",
    "type": "altro",
@@ -5218,6 +6044,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "pytest",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "pytest",
@@ -5246,6 +6077,11 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "pytorch",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "qase",
@@ -5309,6 +6145,11 @@
    "owner": "github.com/questdb"
   },
   {
+   "id": "qwikjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "rabbitmq",
    "signs": {
     "packages": {
@@ -5321,6 +6162,16 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "radixicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "radixui",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -5368,6 +6219,11 @@
   },
   {
    "id": "ray",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "ray",
    "name": "Ray",
    "kind": "project",
    "type": "altro",
@@ -5400,10 +6256,15 @@
    "by": "model"
   },
   {
+   "id": "react",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "react-email",
    "name": "React Email",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://react.email",
    "signs": {
@@ -5433,6 +6294,21 @@
    "by": "catalog"
   },
   {
+   "id": "reactemail",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "reacticons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "reactrouterdom",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "readme",
    "name": "ReadMe",
    "kind": "service",
@@ -5449,6 +6325,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "readthedocs",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "redis",
@@ -5490,6 +6371,36 @@
    "by": "model"
   },
   {
+   "id": "redwoodjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "refinedev",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "rekaui",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "remixicons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "remixrouter",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "remixrun",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "removebg",
    "name": "remove.bg",
    "kind": "service",
@@ -5503,6 +6414,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "remult",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "renovate",
@@ -5543,6 +6459,11 @@
   },
   {
    "id": "requests",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "requests",
    "name": "Requests",
    "kind": "project",
    "type": "altro",
@@ -5560,7 +6481,7 @@
    "id": "resilience4j",
    "name": "Resilience4j",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://resilience4j.readme.io",
    "signs": {
@@ -5636,6 +6557,11 @@
   },
   {
    "id": "rolldown",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "rolldown",
    "signs": {
     "packages": {
      "crates": [
@@ -5652,7 +6578,17 @@
    "by": "catalog"
   },
   {
+   "id": "rspack",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "rubocop",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "ruby",
    "category": "tool",
    "by": "catalog"
   },
@@ -5663,6 +6599,11 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "rubyenv",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "ruff",
@@ -5690,6 +6631,11 @@
    "by": "catalog"
   },
   {
+   "id": "sandpackeditor",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "sauce-labs",
    "name": "Sauce Labs",
    "kind": "service",
@@ -5708,7 +6654,7 @@
    "id": "scalatest",
    "name": "ScalaTest",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://www.scalatest.org",
    "signs": {
@@ -5737,6 +6683,11 @@
   },
   {
    "id": "scikitlearn",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "scikitlearn",
    "name": "scikit-learn",
    "kind": "project",
    "type": "altro",
@@ -5752,6 +6703,11 @@
   },
   {
    "id": "scipy",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "scipy",
    "name": "SciPy",
    "kind": "project",
    "type": "altro",
@@ -5764,6 +6720,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "scrapy",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "scrapy",
@@ -5809,6 +6770,21 @@
    "by": "model"
   },
   {
+   "id": "sequelize",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "sequelruby",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "serde",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "serde",
    "name": "Serde",
    "kind": "project",
@@ -5824,6 +6800,11 @@
    "by": "model"
   },
   {
+   "id": "shadcn",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "shopify",
    "signs": {
     "packages": {
@@ -5833,6 +6814,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "shopify.hydrogen",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "shortcut",
@@ -5853,7 +6839,7 @@
    "id": "sidekiq",
    "name": "Sidekiq",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "coda",
    "site": "https://sidekiq.org",
    "signs": {
@@ -5863,6 +6849,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "simpleicons",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -5892,6 +6883,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "slatedocs",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "slim",
@@ -5937,6 +6933,11 @@
    "owner": "github.com/pulumi"
   },
   {
+   "id": "socketio",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "solana",
    "name": "Solana",
    "kind": "service",
@@ -5950,6 +6951,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "solidjs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "sonarlint",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "spacy",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "spacy",
@@ -5983,6 +6999,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "sphinx",
+   "category": "framework",
+   "by": "catalog"
   },
   {
    "id": "sphinx",
@@ -6188,6 +7209,11 @@
   },
   {
    "id": "sqlalchemy",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "sqlalchemy",
    "site": "https://www.sqlalchemy.org",
    "signs": {
     "packages": {}
@@ -6206,7 +7232,7 @@
    "id": "sqlmodel",
    "name": "SQLModel",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://sqlmodel.tiangolo.com",
    "signs": {
@@ -6216,6 +7242,21 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "stenciljs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "storybook",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "streamlit",
+   "category": "framework",
    "by": "catalog"
   },
   {
@@ -6329,6 +7370,11 @@
    "by": "official"
   },
   {
+   "id": "superstruct",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "surrealdb",
    "signs": {
     "packages": {
@@ -6344,6 +7390,21 @@
    "owner": "github.com/surrealdb"
   },
   {
+   "id": "sveltejs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "sveltekit",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "swc",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "swc",
    "signs": {
     "packages": {
@@ -6356,6 +7417,16 @@
    "owner": "github.com/swc-project"
   },
   {
+   "id": "symfony",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "tablericons",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "tailscale",
    "signs": {
     "packages": {
@@ -6366,6 +7437,31 @@
    },
    "by": "derive",
    "owner": "github.com/pulumi"
+  },
+  {
+   "id": "tailwind",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "tanstackrouter",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "tanstackstart",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "tauri",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "tensorflow",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "tensorflow",
@@ -6412,10 +7508,15 @@
    "owner": "github.com/hashicorp"
   },
   {
+   "id": "terragrunt",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "testcontainers",
    "name": "Testcontainers",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://testcontainers.com",
    "signs": {
@@ -6435,10 +7536,15 @@
    "by": "catalog"
   },
   {
+   "id": "testinglibrary",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "testng",
    "name": "TestNG",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://testng.org",
    "signs": {
@@ -6469,7 +7575,7 @@
    "id": "thymeleaf",
    "name": "Thymeleaf",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://www.thymeleaf.org",
    "signs": {
@@ -6480,6 +7586,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "tiptap",
+   "category": "library",
    "by": "catalog"
   },
   {
@@ -6499,6 +7610,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "tokio",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "tokio",
@@ -6533,6 +7649,12 @@
   },
   {
    "id": "trino",
+   "category": "service",
+   "by": "catalog",
+   "type": "database"
+  },
+  {
+   "id": "trino",
    "signs": {
     "packages": {
      "pypi": [
@@ -6543,6 +7665,16 @@
    "by": "model"
   },
   {
+   "id": "trpc",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "turborepo",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "twentycrm",
    "mark": "marks/twentycrm.svg",
    "mark_origin": {
@@ -6551,6 +7683,11 @@
     "date": "2026-11-18"
    },
    "by": "official"
+  },
+  {
+   "id": "twigphp",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "twilio",
@@ -6573,6 +7710,21 @@
    "by": "model"
   },
   {
+   "id": "typebox",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "typeorm",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "typer",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
    "id": "typer",
    "name": "Typer",
    "kind": "project",
@@ -6586,6 +7738,11 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "typescript",
+   "category": "tool",
+   "by": "catalog"
   },
   {
    "id": "typescript",
@@ -6628,6 +7785,16 @@
    "by": "model"
   },
   {
+   "id": "ultracite",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "umijs",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "unsplash",
    "name": "Unsplash",
    "kind": "service",
@@ -6658,7 +7825,7 @@
    "id": "urql",
    "name": "urql",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "altro",
    "site": "https://commerce.nearform.com/open-source/urql/",
    "signs": {
@@ -6669,6 +7836,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "uv",
+   "category": "tool",
    "by": "catalog"
   },
   {
@@ -6685,6 +7857,16 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "vale",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "valibot",
+   "category": "library",
+   "by": "catalog"
   },
   {
    "id": "vault",
@@ -6730,6 +7912,11 @@
   },
   {
    "id": "viper",
+   "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "viper",
    "name": "Viper",
    "kind": "project",
    "type": "altro",
@@ -6764,6 +7951,16 @@
    "by": "catalog"
   },
   {
+   "id": "vitepress",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "vitest",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
    "id": "vonage",
    "name": "Vonage",
    "kind": "service",
@@ -6782,10 +7979,15 @@
    "by": "model"
   },
   {
+   "id": "vue",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
    "id": "vue-router",
    "name": "Vue Router",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "schermata",
    "site": "https://router.vuejs.org",
    "signs": {
@@ -6795,6 +7997,11 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "vuepress",
+   "category": "framework",
    "by": "catalog"
   },
   {
@@ -6826,6 +8033,16 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "wasp",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "weaviate",
+   "category": "service",
+   "by": "catalog"
   },
   {
    "id": "weaviate",
@@ -6910,7 +8127,7 @@
    "id": "xunit",
    "name": "xUnit",
    "kind": "project",
-   "category": "framework",
+   "category": "tool",
    "type": "altro",
    "site": "https://xunit.net",
    "signs": {
@@ -6948,7 +8165,7 @@
    "id": "yarp",
    "name": "YARP",
    "kind": "project",
-   "category": "framework",
+   "category": "library",
    "type": "gateway",
    "site": "https://microsoft.github.io/reverse-proxy/",
    "signs": {
@@ -6958,6 +8175,21 @@
      ]
     }
    },
+   "by": "catalog"
+  },
+  {
+   "id": "yii2",
+   "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "zig",
+   "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "zod",
+   "category": "library",
    "by": "catalog"
   }
  ]
