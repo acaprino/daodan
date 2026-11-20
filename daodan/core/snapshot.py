@@ -1626,10 +1626,12 @@ def cmd_hook(args: argparse.Namespace) -> int:
 
 
 def inventory_rows(manifest: Path) -> list[dict]:
-    """Every snapshot file with the identity of its bytes, sorted by path: the inventory a review splits."""
+    """Every snapshot file with the identity of its bytes, sorted by path: the inventory a review splits.
+    `status` and `imports` (the modules as the source writes them) tell a review which libraries a file uses."""
     with open_snapshot(Path(manifest)) as store:
         rows = [{"path": path, "sha256": entry["raw_hash"], "size": entry["size"],
-                 "lines": entry.get("lines"), "language": entry.get("language")}
+                 "lines": entry.get("lines"), "language": entry.get("language"),
+                 "status": entry.get("status"), "imports": list(entry.get("imports") or [])}
                 for path, entry in store.iter_file_headers_only()]
     return sorted(rows, key=lambda row: row["path"])
 

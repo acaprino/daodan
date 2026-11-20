@@ -1,4 +1,4 @@
-"""snapshot.py files lists the snapshot inventory: path, content hash, size and language."""
+"""snapshot.py files lists the snapshot inventory: path, content hash, size, language, parse status and imports."""
 import hashlib
 import json
 import sys
@@ -13,7 +13,7 @@ sys.path.insert(0, str(SCRIPTS))
 import snapshot
 
 FILES = {
-    "pkg/a.py": b"def f():\n    return 1\n",
+    "pkg/a.py": b"import stripe\n\n\ndef f():\n    return 1\n",
     "web/b.ts": b"export const x = 1;\n",
     "README.md": b"# Fixture\n",
 }
@@ -48,6 +48,9 @@ class SnapshotFilesTest(unittest.TestCase):
                 self.assertIsInstance(rows[rel]["lines"], int)
             self.assertEqual(rows["pkg/a.py"]["language"], "python")
             self.assertEqual(rows["web/b.ts"]["language"], "typescript")
+            self.assertEqual((rows["pkg/a.py"]["status"], rows["pkg/a.py"]["imports"]), ("parsed", ["stripe"]))
+            self.assertEqual(rows["web/b.ts"]["imports"], [])
+            self.assertIsNone(rows["README.md"]["language"])
 
 
 if __name__ == "__main__":

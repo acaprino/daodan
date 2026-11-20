@@ -34,7 +34,8 @@ on probes; every change to them is recorded with the probe that motivated it.
 Usage:
 
     python review_roster.py compute --shape light|branch [--kind changeset|plan|spec|doc]
-        --diff DIFF.patch [--numstat NUMSTAT.txt] [--impact IMPACT.json] [--context CONTEXT.json] [--deeper]
+        --diff DIFF.patch [--numstat NUMSTAT.txt] [--impact IMPACT.json] [--context CONTEXT.json]
+        [--technologies TECHNOLOGIES.json --files FILES.json] [--deeper]
         [--id REVIEW_ID --stage STAGE] --out ROSTER.json
     python review_roster.py check --roster ROSTER.json --dispatch DISPATCH.json
 """
@@ -132,6 +133,11 @@ TECHNOLOGY_ROLE = {
     "tauri": "senior-review:tauri-auditor",
     "stripe": "senior-review:stripe-auditor",
 }
+# A declared library is not yet a use: its specialist joins only when a changed production file or a one-hop
+# neighbour of the bound map imports one of these modules (`snapshot.py files`), in a language whose imports keep
+# the package as written. Short of that proof the declaration still adds it (the 3 cases of benchmarks/stack-reviewers).
+TECHNOLOGY_IMPORTS = {"stripe": ("stripe", "@stripe")}
+IMPORT_LANGUAGES = {"python", "javascript", "typescript"}
 SIGNAL_ROLE = {
     "accessibility": "senior-review:accessibility-auditor",
     "performance": "senior-review:performance-auditor",
@@ -565,15 +571,46 @@ def unit_technologies(technologies: dict | None, paths: list[str]) -> list[str]:
     return sorted(found)
 
 
+def unused_technologies(declared: list[str], paths: list[str], map_signals: dict, files: dict | None,
+                        technologies: dict | None) -> tuple[list[dict], list[str]]:
+    """The declared ids of TECHNOLOGY_IMPORTS that no file of the change imports, and a gap for each kept on doubt."""
+    suppressed, gaps = [], []
+    for technology in declared:
+        names = TECHNOLOGY_IMPORTS.get(technology)
+        if names is None:
+            continue
+        keep = f"{technology}: %s; its specialist stays from the unit manifest"
+        if not isinstance(files, dict) or not technologies or files.get("manifest") != technologies.get("manifest"):
+            gaps.append(keep % "no file inventory of the candidate snapshot")
+            continue
+        if not map_signals["available"]:
+            gaps.append(keep % "no bound impact packet, one-hop neighbours unknown")
+            continue
+        rows = {row.get("path"): row for row in files.get("files", [])}
+        checked = sorted(set(paths) | {path for path in map_signals["read_scope"] if classify_path(path) == "production"})
+        unknown = [path for path in checked if (rows.get(path) or {}).get("language") not in IMPORT_LANGUAGES
+                   or rows[path].get("status") != "parsed"]
+        if any(module == name or module.startswith((name + ".", name + "/"))
+               for path in checked if path not in unknown for module in rows[path].get("imports", []) for name in names):
+            continue
+        if unknown:
+            gaps.append(keep % f"imports unknown for {', '.join(unknown[:5])}")
+            continue
+        suppressed.append({"technology": technology, "role": TECHNOLOGY_ROLE[technology], "checked": checked,
+                           "reason": "no changed file nor one-hop neighbour of the bound map imports it"})
+    return suppressed, gaps
+
+
 def signal_roles(signals: dict, kind: str, roster: list[str]) -> list[str]:
     added = []
     for language in signals["languages"] if kind == "changeset" else ():
         role = LANGUAGE_ROLE.get(language)
         if role and role not in roster + added:
             added.append(role)
+    unused = {row["technology"] for row in signals.get("suppressed", [])}
     for technology in signals["technologies"] if kind == "changeset" else ():
         role = TECHNOLOGY_ROLE.get(technology)
-        if role and role not in roster + added:
+        if role and technology not in unused and role not in roster + added:
             added.append(role)
     for name, present in signals["content"].items():
         if present and (kind != "changeset" or name not in PROSE_ONLY_SIGNALS) and SIGNAL_ROLE[name] not in roster + added:
@@ -586,7 +623,8 @@ def signal_roles(signals: dict, kind: str, roster: list[str]) -> list[str]:
 
 def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | None, deeper: bool,
             kind: str = "changeset", review_id: str | None = None, stage: str | None = None,
-            *, context: dict | None = None, rigor: str | None = None, technologies: dict | None = None) -> dict:
+            *, context: dict | None = None, rigor: str | None = None, technologies: dict | None = None,
+            files: dict | None = None) -> dict:
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {', '.join(KINDS)}")
     if rigor is not None and rigor not in RIGOR:
@@ -638,13 +676,17 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
     for name in ("tauri", "workspace"):
         content[name] = content[name] or any(SIGNAL_PATHS[name].search(path) for path in all_paths)
     content["testing"] = any(kind == "test" for kind in kinds.values())
+    declared = unit_technologies(technologies if bound else None, production)
+    suppressed, usage_gaps = unused_technologies(declared, changed_paths, map_signals, files,
+                                                 technologies if bound else None)
     signals = {
         "files": len(rows),
         "production_files": len(production),
         "lines": lines,
         "modules": modules,
         "languages": languages,
-        "technologies": unit_technologies(technologies if bound else None, production),
+        "technologies": declared,
+        "suppressed": suppressed,
         "symbols": touched_symbols(diff) if basis == "changeset" else [],
         "interface_changed": sorted(set(interfaces) | set(map_signals["interface_changed"])),
         "effects_changed": map_signals["effects_changed"],
@@ -660,6 +702,7 @@ def compute(shape: str, diff: str, numstat: list[dict] | None, impact: dict | No
                                                ("inventory", "sources", "configurations", "requirements")}, "context")
     if technologies is not None and not bound:
         gaps.append("technologies record is not of the candidate snapshot (root, target): unit technologies unknown")
+    gaps += usage_gaps
     if basis == "content" and not context.get("inventory"):
         gaps.append("content inventory unavailable or empty; explicit target paths remain in scope")
     if not all(content.values()):
@@ -766,6 +809,7 @@ def main(argv=None) -> int:
     compute_parser.add_argument("--numstat", help="git diff --numstat output; derived from the diff when absent")
     compute_parser.add_argument("--impact", help="snapshot.py edit-impact JSON for the changed symbols")
     compute_parser.add_argument("--technologies", help="snapshot.py technologies JSON of the candidate's map run")
+    compute_parser.add_argument("--files", help="snapshot.py files JSON of the same snapshot: imports per file")
     compute_parser.add_argument("--context", help="prepared review basis, scope, snapshot locators and evidence JSON")
     compute_parser.add_argument("--rigor", choices=RIGOR, help="how much scrutiny the request asks for, as the model read it; default standard")
     compute_parser.add_argument("--deeper", action="store_true", help="the caller asked for one rigor more")
@@ -782,7 +826,8 @@ def main(argv=None) -> int:
         context = json.loads(Path(args.context).read_text(encoding="utf-8")) if args.context else None
         result = compute(args.shape, diff, numstat, impact, args.deeper, args.kind, args.review_id, args.stage,
                          context=context, rigor=args.rigor,
-                         technologies=json.loads(Path(args.technologies).read_text(encoding="utf-8")) if args.technologies else None)
+                         technologies=json.loads(Path(args.technologies).read_text(encoding="utf-8")) if args.technologies else None,
+                         files=json.loads(Path(args.files).read_text(encoding="utf-8")) if args.files else None)
         Path(args.out).write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(json.dumps({"rigor": result["rigor"], "roster": result["roster"], "reasons": result["reasons"], "gaps": result["gaps"]}))
         return 0

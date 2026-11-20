@@ -4,8 +4,8 @@
 
 I due snapshot sono della stessa cartella, scritti prima e dopo il commit target con `snapshot.py write --no-engine`:
 `review_roster.py` rifiuta un confronto fra radici diverse. In `OUT` restano `stale.json`, `impact.json`,
-`technologies.json`, `context.json` e `roster.json`. Stampa rigor, job con i membri, e la riga di `stack-dichiarato`
-per ogni unità che il diff tocca.
+`technologies.json`, `files.json`, `context.json` e `roster.json`. Stampa rigor, job con i membri, le voci di stack
+soppresse o tenute per l'uso e la riga di `stack-dichiarato` per ogni unità che il diff tocca.
 """
 
 import json
@@ -33,16 +33,22 @@ def main(base: str, candidate: str, diff: str, out: Path) -> None:
     (out / "impact.json").write_text(tool("snapshot.py", "edit-impact", candidate, "--no-source", *targets),
                                      encoding="utf-8")
     tool("snapshot.py", "technologies", candidate, "--out", str(out / "technologies.json"))
+    tool("snapshot.py", "files", candidate, "--out", str(out / "files.json"))
     catalog = composition.load_catalog(composition.DEFAULT_ROOT)
     context = {"candidate": stale["candidate"], "base": stale["base"], "stale_callers": stale, "catalog": catalog}
     (out / "context.json").write_text(json.dumps(context), encoding="utf-8")
     tool("review_roster.py", "compute", "--shape", "branch", "--rigor", "standard", "--diff", diff,
          "--impact", str(out / "impact.json"), "--technologies", str(out / "technologies.json"),
-         "--context", str(out / "context.json"), "--out", str(out / "roster.json"))
+         "--files", str(out / "files.json"), "--context", str(out / "context.json"), "--out", str(out / "roster.json"))
 
     roster = json.loads((out / "roster.json").read_text(encoding="utf-8"))
     entries = {row["id"]: row for row in catalog["entries"]}
     print(f"rigor {roster['rigor']}, {len(roster['roster'])} job, mappa {roster['signals']['map_available']}")
+    for row in roster["signals"]["suppressed"]:
+        print(f"soppresso {row['role'].removeprefix('senior-review:')}: {row['reason']} ({len(row['checked'])} file)")
+    for gap in roster["gaps"]:
+        if gap.split(":", 1)[0] in review_roster.TECHNOLOGY_IMPORTS:
+            print(f"tenuto: {gap}")
     for role in roster["roster"]:
         print(f"  {role.removeprefix('senior-review:')} {len(composition.leaf_roles(role, entries))}")
     changed = [row["path"] for row in roster["grounding"]["changes"]]

@@ -101,7 +101,7 @@ The caller supplies shape; the helper computes rigor.
 Before any dispatch:
 
 ```text
-daodan review_roster compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] [--technologies TECHNOLOGIES.json] --context CONTEXT.json [--rigor quick|standard|deep] [--deeper] --id ID --stage STAGE --out ROSTER.json
+daodan review_roster compute --shape branch --kind KIND --diff DIFF.patch [--impact IMPACT.json] [--technologies TECHNOLOGIES.json --files FILES.json] --context CONTEXT.json [--rigor quick|standard|deep] [--deeper] --id ID --stage STAGE --out ROSTER.json
 ```
 
 Complete the roster through
@@ -115,6 +115,9 @@ many callers force `deep`, even when `quick` was asked; size alone raises nothin
 the record of the map's `stack` step, frameworks, libraries, tools and services per build unit;
 without a usable run, omit it. It counts only when its `root` and `target` are
 the `candidate` locators; otherwise the roster ignores it and states the gap.
+`FILES.json` is `snapshot.py files` on the same snapshot: with it and a bound
+impact packet, a declared library that no changed file nor one-hop neighbour
+imports adds no specialist (`signals.suppressed`); without them it still does.
 
 The technical context carries the prepared `review_basis`
 (`changeset`, `content`, or `claims`), `scope_id`, `conclusion_paths`,

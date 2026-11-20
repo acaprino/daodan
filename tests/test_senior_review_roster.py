@@ -39,6 +39,33 @@ def compute(diff=PLAIN, shape="branch", kind="changeset", **extra):
     return review_roster.compute(shape, diff, None, None, deeper, kind, "r1", "standalone", **extra)
 
 
+MAPPED = {"root": "/project", "target": ".", "created_at": "2026-11-20T00:00:00Z", "parser_fingerprint": "p1",
+          "repo_revision": None}
+MANIFEST = "/project/.map/snapshot.sqlite"
+
+
+def mapped(changed, imports, neighbour=None, *, language="python", manifest=MANIFEST, bound=True):
+    """A branch roster of one changed file of a unit that declares Stripe, with a bound map whose changed symbol
+    calls into `neighbour`. `imports` maps a path to its imports in `snapshot.py files`; None as a value is a file
+    without a parser, None as the whole is no inventory at all."""
+    before = {"body_hash": "b1", "interface_hash": "i1", "effects_hash": "e1"}
+    after = {**before, "body_hash": "b2"}
+    symbol = f"{changed}::run"
+    impact = {"schema": "daodan/edit-impact/v2", "root": "/project", "target": ".", "targets": [{
+        "symbol_id": symbol, "file": changed, "start": 1, "end": 2, **after, "callers": {"total": 0, "listed": []},
+        "callees": {"total": 1 if neighbour else 0, "listed": [{"file": neighbour}] if neighbour else []}}]}
+    delta = {"schema": "daodan/stale-callers/v1", "base": MAPPED, "candidate": MAPPED, "changed": [
+        {"symbol_id": symbol, "file": changed, "change_kind": "body_only", "old": before, "new": after}]}
+    context = {"candidate": MAPPED, "base": MAPPED, "stale_callers": delta}
+    technologies = {**SNAPSHOT, "manifest": MANIFEST, "units": [{"paths": ["."], "technologies": ["stripe"]}]}
+    files = None if imports is None else {"schema": "codebase-map/files/v1", "manifest": manifest, "files": [
+        {"path": path, "language": None if found is None else language,
+         "status": "file-level" if found is None else "parsed", "imports": found or []}
+        for path, found in imports.items()]}
+    return review_roster.compute("branch", diff_of(changed), None, impact if bound else None, False, "changeset",
+                                 "r1", "standalone", context=context, technologies=technologies, files=files)
+
+
 class RigorTest(unittest.TestCase):
     def test_default_is_standard_and_the_field_is_rigor(self):
         roster = compute()
@@ -101,6 +128,36 @@ class RigorTest(unittest.TestCase):
         for text in ("+.row.stripe { background: #eee }", "+// zebra stripe rows", "+Add a Stripe section to the page"):
             plain = compute(diff_of("web/table.go").replace("+x = 2", text))
             self.assertNotIn("senior-review:stripe-auditor", plain["roster"], text)
+
+    def test_a_declared_library_needs_a_file_of_the_change_that_imports_it(self):
+        def run(imports, neighbour=None, **kwargs):
+            return mapped("app/billing.py", imports, neighbour, **kwargs)
+
+        unused = run({"app/billing.py": ["app.integrations.stripe.service", "decimal"]})
+        self.assertNotIn("senior-review:stripe-auditor", unused["roster"])
+        self.assertEqual(unused["signals"]["technologies"], ["stripe"])
+        self.assertEqual(unused["signals"]["suppressed"], [{
+            "technology": "stripe", "role": "senior-review:stripe-auditor", "checked": ["app/billing.py"],
+            "reason": "no changed file nor one-hop neighbour of the bound map imports it"}])
+        self.assertIn("senior-review:stripe-auditor", run({"app/billing.py": ["stripe"]})["roster"])
+        helper = run({"app/billing.py": ["app.payments"], "app/payments.py": ["stripe.error"]}, "app/payments.py")
+        self.assertIn("senior-review:stripe-auditor", helper["roster"])
+        self.assertEqual(helper["signals"]["suppressed"], [])
+        script = mapped("web/pay.tsx", {"web/pay.tsx": ["@stripe/stripe-js"]}, language="typescript")
+        self.assertIn("senior-review:stripe-auditor", script["roster"])
+
+    def test_a_declared_library_keeps_its_specialist_when_its_use_is_unknown(self):
+        unknown = {
+            "no inventory": mapped("app/billing.py", None),
+            "another snapshot": mapped("app/billing.py", {"app/billing.py": []}, manifest="/elsewhere.sqlite"),
+            "no bound map": mapped("app/billing.py", {"app/billing.py": []}, bound=False),
+            "a neighbour without imports": mapped("app/billing.py", {"app/billing.py": [], "app/hooks.rb": None},
+                                                  "app/hooks.rb"),
+        }
+        for name, roster in unknown.items():
+            self.assertIn("senior-review:stripe-auditor", roster["roster"], name)
+            self.assertEqual(roster["signals"]["suppressed"], [], name)
+            self.assertTrue(any(gap.startswith("stripe:") for gap in roster["gaps"]), name)
 
     def test_a_tauri_test_or_workspace_path_adds_its_specialist(self):
         tauri = compute(diff_of("src-tauri/src/commands.rs"))
