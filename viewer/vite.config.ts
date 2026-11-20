@@ -1,6 +1,23 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
+
+// Both distributed pages share Imago's styles. Reject a second control stylesheet at build time.
+function imagoStyles(): Plugin {
+  const css = dirname(fileURLToPath(import.meta.resolve('@acaprino/imago/css/imago.css')));
+  return {
+    name: 'imago-styles', enforce: 'pre',
+    transform(_source, id) {
+      const path = id.split('?')[0];
+      if (!path.endsWith('.css')) return;
+      const fromImago = relative(css, path);
+      if (isAbsolute(fromImago) || fromImago === '..' || fromImago.startsWith('..' + sep)) {
+        this.error(`Define shared styles in @acaprino/imago: ${path}`);
+      }
+    },
+  };
+}
 
 // Include notices from the packages in each emitted page. The ELK worker has a separate build.
 function licenseNotices(viewer: boolean): Plugin {
@@ -35,7 +52,7 @@ function licenseNotices(viewer: boolean): Plugin {
 export default defineConfig(({ mode }) => ({
   root: mode === 'app' ? 'app' : '.',
   base: './',
-  plugins: [licenseNotices(mode !== 'app')],
+  plugins: [imagoStyles(), licenseNotices(mode !== 'app')],
   build: {
     outDir: mode === 'app' ? '../../daodan/assets/app' : '../daodan/assets/viewer',
     emptyOutDir: true, chunkSizeWarningLimit: 2500,

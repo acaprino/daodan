@@ -77,7 +77,7 @@ the skill `/codebase-map:map <request>`; its `codebase-map` MCP server is
 `daodan mcp`. `/reload-plugins` re-reads the plugin files but does not restart
 that server.
 
-The standalone app and graph explorer share Imago. Their sources are in `viewer/app/`
+Both packaged interfaces use Imago for controls, layouts and styles. Their sources are in `viewer/app/`
 and `viewer/src/`. To rebuild the offline pages packaged with Python, run `npm ci`
 and `npm run build` in `viewer/`. Run `npm test` for the explorer model and
 `npm run test:ui` for the packaged pages after installing Playwright Chromium.

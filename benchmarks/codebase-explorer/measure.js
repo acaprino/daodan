@@ -41,10 +41,10 @@ async (mcpPage) => {
     const graph = await page.evaluate(() => new Promise((resolve, reject) => {
       const deadline = performance.now() + 60000;
       const check = () => {
-        const foot = document.querySelector('.canvas-foot')?.textContent ?? '';
+        const foot = document.querySelector('[data-graph-counts]')?.textContent ?? '';
         const visible = Number(foot.match(/^(\d+) nodi/)?.[1] ?? NaN);
         const drawn = document.querySelectorAll('.im-graph-node').length;
-        const failed = document.querySelector('.canvas-state.bad')?.textContent;
+        const failed = document.querySelector('.im-canvas-message[role="alert"]')?.textContent;
         if (failed) return reject(new Error(failed));
         if (visible > 0 && drawn === visible) {
           return requestAnimationFrame(() => requestAnimationFrame(() => resolve({
@@ -66,7 +66,7 @@ async (mcpPage) => {
         const start = performance.now();
         button.click();
         await new Promise(resolve => {
-          const check = () => (document.querySelector('.inspector h2')?.textContent === name
+          const check = () => (document.querySelector('.im-detail-panel h2')?.textContent === name
             ? requestAnimationFrame(() => resolve()) : requestAnimationFrame(check));
           requestAnimationFrame(check);
         });
@@ -81,8 +81,8 @@ async (mcpPage) => {
       const painted = label => new Promise(resolve => {
         const check = () => {
           const on = document.querySelector('.im-tab[aria-selected="true"]')?.textContent === label;
-          const pending = [...document.querySelectorAll('.canvas-state')].some(item => item.textContent.startsWith('Dispongo'));
-          const visible = Number(document.querySelector('.canvas-foot')?.textContent.match(/^(\d+) nodi/)?.[1] ?? NaN);
+          const pending = [...document.querySelectorAll('.im-canvas-message')].some(item => item.textContent.startsWith('Dispongo'));
+          const visible = Number(document.querySelector('[data-graph-counts]')?.textContent.match(/^(\d+) nodi/)?.[1] ?? NaN);
           const drawn = document.querySelectorAll('.im-graph-node').length;
           if (on && !pending && visible > 0 && drawn === visible) requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
           else requestAnimationFrame(check);
