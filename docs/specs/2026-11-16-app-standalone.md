@@ -6,7 +6,7 @@
 
 Daodan possiede già analisi, dati persistenti e report, ma la sessione host esegue il ragionamento e coordina i worker. La web app deve poter avviare e seguire lo stesso lavoro con Claude Code locale, Codex locale o un endpoint compatibile OpenAI, mantenendo una sola logica applicativa.
 
-Oggi `MapService` è indipendente dal runtime MCP. `make_server`, `live_routes` e `live_actions` espongono già run, eventi, richieste e finding. L'avvio HTTP vive nel tool MCP; le richieste passano da `pending` a `taken` e `done`, ma nessun consumer autonomo avvia gli agenti. Il mockup business SmoothUI è una dimostrazione, non una UI già collegata.
+Oggi `MapService` è indipendente dal runtime MCP. `make_server`, `live_routes` e `live_actions` espongono già run, eventi, richieste e finding. L'avvio HTTP vive nel tool MCP; le richieste passano da `pending` a `taken` e `done`, ma nessun consumer autonomo avvia gli agenti.
 
 ## Soluzione
 
@@ -38,15 +38,13 @@ Le dipendenze vanno verso il nucleo. Solo l'avvio sceglie gli adattatori concret
 2. **Analisi.** Esporre step, analyzer e unità in lavorazione, avanzamento, messaggi, errori e lacune. Il grafo si costruisce con i risultati disponibili: aggiungere nodi e archi quando un artefatto canonico è stato scritto, senza animare relazioni inventate. Riutilizzare eventi e lettura delle viste esistenti, mostrando stato parziale e provenienza. Pausa, annullamento e ripresa conservano il lavoro acquisito; non presentare la sola animazione come avanzamento reale.
 3. **Sintesi e grafo.** Rendere consultabili sintesi, responsabilità, relazioni, flussi, evidenze e limiti man mano che sono disponibili; al termine presentare l'esito finale e il grafo esplorabile con filtri e inspector. Finché una sintesi non è prodotta, indicarla come in attesa. Tornare alla pre-mappa o ricaricare la pagina conserva stato e selezioni.
 
-Il mockup mantiene il tema business originale SmoothUI. Accesso GitHub e selezione sono dimostrativi: non eseguono login o clone. Le viste distinguono contesto selezionato, inventario e manifesti locali, snapshot storico e avanzamento simulato. La crescita progressiva della demo non dichiara un'analisi del branch scelto.
-
-Gli scenari offline sono deterministici: `acaprino/daodan` è l'esempio accessibile senza login; `organizzazione-demo/progetto-privato` richiede login e riprova sullo stesso URL; `organizzazione-demo/non-disponibile` resta inaccessibile anche dopo login; `organizzazione-demo/errore-rete` produce un errore di connessione simulato. Gli altri URL validi aprono una demo generica con esistenza e visibilità non verificate. Esiti e login simulato persistono; i salvataggi della precedente scelta pubblico/privato richiedono una nuova verifica dell'URL.
+L'app di analisi e l'esploratore usano Imago. I sorgenti delle due interfacce si trovano in [viewer/app](../../viewer/app/) e [viewer/src](../../viewer/src/).
 
 ### Perimetro della review
 
 La code review può avere un obiettivo facoltativo. Da quello e dalla mappa Daodan ricava un perimetro proposto di moduli, funzioni/simboli e file/cartelle, includendo chiamanti e dipendenze pertinenti. La UI mostra la corrispondenza fra questi livelli, le evidenze e le lacune, e permette di correggere il perimetro. Senza obiettivo usa il changeset o il progetto scelto. Nessun campo di questo tipo condiziona l'avvio dell'analisi della codebase.
 
-Nel mockup il perimetro storico deriva dai record della review campione; per un nuovo testo libero senza motore collegato il perimetro resta da calcolare, senza fingere un'inferenza.
+Finché il motore non produce un perimetro per un nuovo obiettivo, la UI lo indica come da calcolare.
 
 ## Decisioni architetturali
 
@@ -61,7 +59,7 @@ Nel mockup il perimetro storico deriva dai record della review campione; per un 
 - **API compatibili OpenAI.** Configurare endpoint, modello e credenziale. Il primo protocollo è Chat Completions, con una prova di capacità per chiamate agli strumenti e streaming; Responses si aggiunge quando un endpoint concreto lo richiede. Il relativo adattatore ospita il ciclo richiesta al modello, esecuzione degli strumenti Daodan e ritorno dei risultati. Il coordinatore mantiene lo stesso metodo di analisi/review usato con i CLI. Credenziali nel backend, tramite ambiente o portachiavi del sistema; mai negli artefatti del progetto o nei log.
 - **Workflow e report unici.** La pipeline deterministica resta proprietaria del grafo; i motori svolgono i compiti di ragionamento. Le istruzioni Markdown dei ruoli restano riusabili, con caricamento e strumenti adattati al motore. Il coordinatore deve preservare auditor, verifiche e isolamento di senior-review; il generatore HTML esistente rende gli stessi finding consolidati. Non sostituire il metodo con una generica richiesta di review al modello.
 - **Errori e ciclo di vita espliciti.** Timeout e annullamento arrivano ai processi figli, con chiusura e raccolta dell'esito prima di dichiarare il lavoro fermo. Mai mantenere il lock del progetto durante attese LLM. Al riavvio una richiesta rimasta presa diventa interrotta, da riconciliare con processo/sessione prima della ripresa: non rilanciarla automaticamente. Conservare output parziali come tali e mantenere i controlli di pubblicazione canonici.
-- **Avvio locale.** Il launcher avvia il server; il contesto del progetto si crea dalla selezione GitHub nella UI. Porta e cartella di lavoro sono configurazioni del launcher. Riutilizzare binding a loopback, token, controlli Host/Origin e allowlist degli asset. La UI deriva dal mockup business SmoothUI, con asset compilati locali. Non cambiare framework HTTP per ottenere soltanto un nuovo entry point.
+- **Avvio locale.** Il launcher avvia il server; il contesto del progetto si crea dalla selezione GitHub nella UI. Porta e cartella di lavoro sono configurazioni del launcher. Riutilizzare binding a loopback, token, controlli Host/Origin e allowlist degli asset. Il server distribuisce gli asset Imago compilati inclusi nel pacchetto. Non cambiare framework HTTP per ottenere soltanto un nuovo entry point.
 
 ## Servizio sul PC, codice del progetto in Kiri
 
@@ -88,11 +86,11 @@ La superficie principale è l'API locale osservata da un client, precedente già
 
 La futura implementazione deve provare sullo stesso ingresso un intero lavoro con un motore controllato: eventi, completamento, errore, timeout, annullamento e riavvio. Ogni adattatore reale richiede poi uno smoke test esplicito nel proprio ambiente. Il benchmark attuale non dimostra esecuzione LLM, cancellazione di processi o compatibilità di un provider API.
 
-Per la UI verificare ingresso con un solo URL senza scelta di visibilità, accesso pubblico senza login, login condizionale e riprova dello stesso URL, accesso ancora negato e rete, scelta branch e default `main`/`master`/default remoto, invalidazione al cambio e reload. Coprire cambi URL A→B→A durante verifica/login, logout privato e migrazione dello stato precedente. Seguire poi pre-mappa, avvio senza obiettivo o dialogo testuale, crescita del grafo, pausa/ripresa e sintesi finale, oltre ad alberi e ricerca. La review deve accettare l'obiettivo vuoto e distinguere il perimetro storico da quello non ancora calcolato per un nuovo testo. Il benchmark registra viewport, eventi simulati, risultati e limiti: non sostituisce login, checkout o analisi collegati al backend.
+Per la UI verificare ingresso con un solo URL senza scelta di visibilità, accesso pubblico senza login, login condizionale e riprova dello stesso URL, accesso ancora negato e rete, scelta branch e default `main`/`master`/default remoto, invalidazione al cambio e reload. Coprire cambi URL A→B→A durante verifica/login, logout privato e migrazione dello stato precedente. Seguire poi pre-mappa, avvio senza obiettivo o dialogo testuale, crescita del grafo, pausa/ripresa e sintesi finale, oltre ad alberi e ricerca. La review deve accettare l'obiettivo vuoto e distinguere il perimetro storico da quello non ancora calcolato per un nuovo testo. Verificare login, checkout e analisi anche con il backend collegato.
 
 ## Fuori ambito
 
-In questo passo: backend completo, modifica della pipeline, collegamento produttivo del mockup, distribuzione installabile e migrazione massiva dei plugin. Nel primo rilascio: hosting remoto, multiutenza, scheduler distribuito, controllo di sessioni personali già attive e portabilità automatica della cronologia fra motori.
+In questo passo: backend completo, modifica della pipeline, distribuzione installabile e migrazione massiva dei plugin. Nel primo rilascio: hosting remoto, multiutenza, scheduler distribuito, controllo di sessioni personali già attive e portabilità automatica della cronologia fra motori.
 
 ## Note
 

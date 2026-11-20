@@ -4,60 +4,34 @@ Prova di riuso per la [spec dell'app](../../docs/specs/2026-11-16-app-standalone
 
 ## Esecuzione nel container
 
-Browser, probe e codice importato si eseguono esclusivamente nel container Daodan. Richiede Git e un motore compatibile con Docker; l'immagine ufficiale Chromium è fissata per digest e Playwright alla versione 1.64.1. Nessuna credenziale GitHub o API key. I comandi seguenti usano un checkout revisionato e versionato: `git archive HEAD` verifica il commit, non le modifiche locali. Non eseguire gli script direttamente sull'host.
+Dalla radice del checkout, preparare un archivio del commit da verificare e un container Python dedicato.
 
-1. Creare nomi temporanei dedicati dalla radice del checkout:
+```powershell
+$qaDir = Join-Path ([IO.Path]::GetTempPath()) ('daodan-qa-' + [guid]::NewGuid().ToString('N'))
+$qaContainer = 'daodan-qa-' + [guid]::NewGuid().ToString('N')
+$qaImage = 'python:3.13-slim'
+if (Test-Path -LiteralPath 'DAODAN_EXECUTION_CANARY') { throw 'Canary già presente nel checkout' }
+New-Item -ItemType Directory -Path $qaDir
+git archive --format=tar --output="$qaDir/source.tar" HEAD daodan/core benchmarks/standalone-app/probe.py benchmarks/standalone-app/fixtures/execution_canary.py
+if ($LASTEXITCODE -ne 0) { throw 'Archivio non creato' }
+docker create --name $qaContainer --network none --memory 3g --memory-swap 3g --cpus 2 --pids-limit 512 --shm-size 512m --cap-drop ALL --security-opt no-new-privileges $qaImage sh -ec 'mkdir -p /work /out && tar -xf /tmp/source.tar -C /work && cd /work && python -B benchmarks/standalone-app/fixtures/execution_canary.py && python -B benchmarks/standalone-app/probe.py --repeat 3 --requests 4 --out /out/results.json'
+if ($LASTEXITCODE -ne 0) { throw 'Container non creato' }
+try {
+    docker cp "$qaDir/source.tar" "${qaContainer}:/tmp/source.tar"
+    if ($LASTEXITCODE -ne 0) { throw 'Archivio non copiato' }
+    docker start -a $qaContainer
+    if ((docker inspect --format '{{.State.ExitCode}}' $qaContainer) -ne '0') { throw 'Probe fallito' }
+    docker cp "${qaContainer}:/out/results.json" $qaDir
+    if ($LASTEXITCODE -ne 0) { throw 'Risultati mancanti' }
+    docker cp "${qaContainer}:/work/DAODAN_EXECUTION_CANARY" $qaDir
+    if ($LASTEXITCODE -ne 0) { throw 'Canary mancante nel container' }
+} finally {
+    docker rm $qaContainer
+    if (Test-Path -LiteralPath 'DAODAN_EXECUTION_CANARY') { throw 'Canary apparso nel checkout' }
+}
+```
 
-   ```powershell
-   $qaDir = Join-Path ([IO.Path]::GetTempPath()) ('daodan-qa-' + [guid]::NewGuid().ToString('N'))
-   $qaContainer = 'daodan-qa-' + [guid]::NewGuid().ToString('N')
-   $qaPrepare = 'daodan-prepare-' + [guid]::NewGuid().ToString('N')
-   $qaImage = 'daodan-standalone-qa:' + [guid]::NewGuid().ToString('N')
-   if (Test-Path -LiteralPath 'DAODAN_EXECUTION_CANARY') { throw 'Canary già presente sull’host: verificare la causa prima di proseguire' }
-   New-Item -ItemType Directory -Path $qaDir
-   ```
-
-2. Preparare l'archivio senza eseguire codice del progetto:
-
-   ```powershell
-   git archive --format=tar --output="$qaDir/source.tar" HEAD prototypes/daodan-app benchmarks/standalone-app daodan/core benchmarks/scope-resolution/app/packages/orders/pricing.py
-   ```
-
-3. Preparare l'immagine senza codice del progetto; l'installazione avviene nel container:
-
-   ```powershell
-   $qaBase = 'mcr.microsoft.com/playwright/python:v1.64.1-noble@sha256:330d401ae23c905896a0c26c66c36fc971b621519e7b11b435a8328d7bf6e031'
-   docker pull $qaBase
-   docker create --name $qaPrepare $qaBase python -m pip install --no-cache-dir playwright==1.64.1
-   docker start -a $qaPrepare
-   if ((docker inspect --format '{{.State.ExitCode}}' $qaPrepare) -ne '0') { throw 'Preparazione fallita: nessun ripiego host' }
-   docker commit $qaPrepare $qaImage
-   docker rm $qaPrepare
-   ```
-
-4. Copiare il sorgente ed eseguire entrambe le prove senza rete o mount dell'host:
-
-   ```powershell
-   docker create --name $qaContainer --network none --memory 3g --memory-swap 3g --cpus 2 --pids-limit 512 --shm-size 512m --cap-drop ALL --security-opt no-new-privileges $qaImage sh -lc 'mkdir -p /work /out && tar -xf /tmp/source.tar -C /work && cd /work && python -B benchmarks/standalone-app/fixtures/execution_canary.py && python -B benchmarks/standalone-app/probe.py --repeat 3 --requests 4 --out /out/results.json && python -B benchmarks/standalone-app/ui_flow.py --out /out/ui-results.json --artifacts /out/screenshots'
-   docker cp "$qaDir/source.tar" "${qaContainer}:/tmp/source.tar"
-   docker start -a $qaContainer
-   $qaExit = docker inspect --format '{{.State.ExitCode}}' $qaContainer
-   ```
-
-5. Recuperare soltanto le evidenze e rimuovere il container dedicato:
-
-   ```powershell
-   docker cp "${qaContainer}:/out/." $qaDir
-   docker cp "${qaContainer}:/work/DAODAN_EXECUTION_CANARY" $qaDir
-   docker rm $qaContainer
-   docker rmi $qaImage
-   if (Test-Path -LiteralPath 'DAODAN_EXECUTION_CANARY') { throw 'Canary apparso sull’host: verificare il confine di esecuzione' }
-   if ($qaExit -ne '0') { throw "Benchmark fallito (exit $qaExit); evidenze in $qaDir" }
-   ```
-
-Il canary è un file del progetto che scrive un segno quando eseguito: deve comparire soltanto nelle evidenze copiate dal container. L'assenza del segno nel checkout host prima e dopo controlla che archivio e trasferimenti non abbiano eseguito il sorgente.
-
-Questo percorso è stato eseguito con Kiri in WSL 2. Non richiede il builder: nella prova locale `docker build` ha completato l'installazione ma fallito l'esportazione con `Internal: input/output error`. La preparazione sopra ha invece prodotto l'immagine effettivamente usata dalle prove.
+Il probe gira senza rete e senza mount dell'host. La directory temporanea raccoglie il risultato JSON e il canary prodotto dal codice eseguito nel container.
 
 ## Probe HTTP e parametri
 
@@ -82,24 +56,8 @@ La precedente misura Windows, Python 3.13.14, registrava 9 controlli in 2,477 s:
 
 Conferma del 17 novembre 2026 sul commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`, escludendo le modifiche locali: **9/9 controlli HTTP passati** con gli stessi parametri (3 cicli, 4 richieste, 2 consumer), in 1,678 s. Python 3.13.18 su Linux, container Daodan su Kiri 0.2.1, senza rete né mount host, con limiti di 1 GiB, 2 CPU e 256 processi.
 
-## Percorso UI
+## Test delle interfacce Imago
 
-La stessa esecuzione nel container esercita il [prototipo versionato](../../prototypes/daodan-app/README.md) con Chromium standard di Playwright. `--out` sceglie il JSON dei risultati e `--artifacts` la directory degli screenshot; i default rimangono locali al checkout del container.
+La [suite browser](../../viewer/test/browser.mjs) esercita gli asset distribuiti dell'app e dell'esploratore. Il comando è `npm run test:ui` dalla directory `viewer/`, in un ambiente con le dipendenze del viewer e Chromium di Playwright installati.
 
-Parametri: viewport desktop 1440×1000 e mobile 390×844, timer originali della demo da 2.200 ms accelerati con `clock.run_for`, senza riscrivere lo stato per simulare l'avanzamento. `ui-results.json` registra i controlli e l'hash della pagina; gli screenshot locali sono esclusi da Git.
-
-La prova segue repository/branch, pre-mappa, alberi, avvio senza obiettivo, crescita del grafo, pausa, ripristino e sintesi; controlla inoltre l'obiettivo facoltativo e il perimetro della review. Login GitHub, dati privati e branch alternativi sono dimostrazioni esplicite. I contatori visualizzati devono coincidere con il JSON incorporato e con `assets/premap-preview.json`, senza valori congelati nel test.
-
-Le regressioni coprono `constructor/nested/probe.ts`, `__proto__/probe.ts` e `toString/probe.ts`; invalidazione del retry per cambio branch, ritorno al branch iniziale e logout; annullamento degli avvii e delle aperture pre-mappa pendenti. La calcolatrice confronta risultati e importi visualizzati con `pricing.py` eseguito in Python: include 1,25 €/10%, 100 €/10%, 200 €/10%, frazioni e sconto completo. L'helper monetario verifica anche pareggi, 1.005, valori negativi e grandi valori finiti. Nessuna riscrittura dello stato di avanzamento; soltanto l'inventario viene sostituito temporaneamente per la fixture dell'albero.
-
-Misura del 16 novembre 2026 nel container Linux: **52/52 controlli superati**, Chromium 156.0.8078.4, nessun errore runtime o richiesta esterna, nessun overflow a 1440/390 px. Prima delle correzioni, gli stessi 52 controlli hanno prodotto 8 fallimenti attesi; dopo le correzioni, tutti passano. Per 1,25 €/10% la UI mostra 1,38 € e 1,23 €, come Python. Il canary ha scritto il marker soltanto nel container; assente sull'host prima e dopo la prova.
-
-Le precedenti **44/44** su Windows riguardano un dataset e un hash HTML precedenti e rimangono misure storiche. Il processo termina con codice diverso da zero se un controllo fallisce; `ui-results.json` registra hash della pagina, ambiente, conteggi e prove puntuali.
-
-Conferma del 17 novembre 2026 sullo stesso commit `f992db5609c72cd8bdc0d0d9c5da8696acade82a`: **52/52 controlli UI passati**, Chromium 156.0.8078.4, container Daodan su Kiri 0.2.1. Rete disabilitata, nessun mount host, limiti di 3 GiB, 2 CPU, 512 processi e 512 MiB di memoria condivisa; canary assente dal checkout host prima e dopo. Nessuna nuova misura LLM.
-
-## Limiti
-
-Verifica del flusso URL unico, 17 novembre 2026: **68/68 controlli UI passati**, Python 3.13.18 e Chromium 156.0.8078.4. Include accesso anonimo, login condizionale sullo stesso URL, accesso negato, errore di rete, migrazione e annullamento delle verifiche obsolete. Risultato corrente in `ui-results.json`; le misure precedenti restano storiche. Esecuzione su Kiri con base Python Debian già presente (`sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90`), Playwright 1.64.1 e Chromium headless installati nel container di preparazione; codice copiato in un secondo container senza rete o mount host, 2 GiB, 2 CPU, 512 processi e 512 MiB condivisi. Canary presente soltanto nel container, assente sull'host.
-
-Le prove validano il confine già esistente e il prototipo, non implementano il launcher o un coordinatore. Nessuna esecuzione LLM, clone, OAuth reale, analisi completa, cancellazione di processi, ripresa di sessioni o chiamata a provider API. Il mobile è una viewport Chromium, non un dispositivo fisico. La corrispondenza del grafo e la correttezza dei reviewer hanno benchmark propri.
+Le misure UI in `container-results.json` appartengono al prototipo ritirato. La [review storica](../../docs/reviews/2026-11-16-standalone-app.md) conserva i riferimenti ai sorgenti e ai risultati di quella prova.

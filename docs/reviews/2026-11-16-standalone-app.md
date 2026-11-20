@@ -1,3 +1,7 @@
+# Review storica del prototipo standalone
+
+I percorsi e i numeri di riga si riferiscono ai [sorgenti esaminati](https://github.com/acaprino/daodan/tree/b1f14ac08fa3cc0e1b047150ff505a93b01f5a57/prototypes/daodan-app).
+
 Consultare le prove in `benchmarks/standalone-app/container-results.json`: i cinque rilievi sono stati corretti e verificati nel container.
 
 Stato aggiornato il 17 novembre 2026. Il riscontro di Claude conferma i cinque difetti e ne classifica tre P2 e due P3. I rilievi e le righe qui sotto documentano la review originaria; la verifica delle correzioni segue in fondo.
@@ -54,6 +58,4 @@ Le regressioni sono state scritte prima delle correzioni. Nel container Linux ha
 
 L'esecuzione usa Kiri già attivo in WSL 2: rete `none`, nessun mount host, 3 GiB di memoria, 2 CPU, 512 processi, 512 MiB di memoria condivisa e privilegi ridotti. L'immagine ufficiale è fissata per digest; Playwright viene installato in una preparazione priva del sorgente del progetto. Il README documenta la sequenza `create`/installazione/`commit` realmente riuscita: il builder Kiri aveva completato l'installazione ma fallito l'esportazione dell'immagine con `Internal: input/output error`.
 
-Le misure correnti sono in `benchmarks/standalone-app/results.json`, `benchmarks/standalone-app/ui-results.json` e `benchmarks/standalone-app/container-results.json`. L'hash HTML verificato è `6286984165ea9d2a25b5b9a433c2b558772a27d65356ddec72ca732ad49264ed`. La review indipendente finale non ha rilevato altri difetti nel perimetro delle cinque correzioni. Non ha rieseguito le prove; ha letto sorgenti ed evidenze e verificato l'hash. Restano fuori verifica dispositivi fisici, interruzioni forzate della preparazione e backend OAuth/clone/LLM.
-
-Passo successivo: consultare i risultati puntuali in `benchmarks/standalone-app/ui-results.json`.
+Le misure della review sono archiviate con [i risultati HTTP, UI e del container](https://github.com/acaprino/daodan/tree/7dbe517b94fc9aed5ba2be2172215b397866c0cf/benchmarks/standalone-app). L'hash HTML verificato è `6286984165ea9d2a25b5b9a433c2b558772a27d65356ddec72ca732ad49264ed`. La review indipendente finale non ha rilevato altri difetti nel perimetro delle cinque correzioni. Non ha rieseguito le prove; ha letto sorgenti ed evidenze e verificato l'hash. Restano fuori verifica dispositivi fisici, interruzioni forzate della preparazione e backend OAuth/clone/LLM.
