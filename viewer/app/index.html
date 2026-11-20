@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="it" data-im-app="daodan" data-im-look="smooth" data-im-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Daodan · Analisi</title>
+</head>
+<body>
+<div class="im-shell" data-im-sidebar="on">
+  <a class="skip" href="#main">Vai al contenuto</a>
+  <header class="im-titlebar">
+    <button type="button" class="im-icon-btn im-sidebar-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Navigazione" title="Navigazione">☰</button>
+    <div class="im-brand"><span class="im-mark" aria-hidden="true">d.</span><strong class="im-wordmark">Daodan</strong></div>
+    <span class="im-spacer"></span><span class="im-chip" id="context-source"></span>
+  </header>
+  <div class="im-body">
+    <aside class="im-panel im-sidebar" id="sidebar" aria-label="Area di lavoro">
+      <header class="im-panel-header"><span class="im-avatar" id="selected-repository-mark">D</span><div class="im-row-text"><strong class="im-row-title" id="selected-repository-name">Seleziona repository</strong><small class="im-row-sub" id="selected-repository-meta">GitHub · pubblica</small></div></header>
+      <nav class="im-panel-body im-list" aria-label="Navigazione principale">
+        <button class="im-row nav-item" aria-label="Analisi" data-screen="analysis" title="Analisi" aria-current="page"><span class="im-rail-item" data-icon="analysis"></span><span class="im-row-text">Analisi</span></button>
+        <button class="im-row nav-item" aria-label="Grafo" data-screen="graph" title="Grafo"><span class="im-rail-item" data-icon="graph"></span><span class="im-row-text">Grafo</span><span class="im-count im-row-meta" id="graph-nav-count">–</span></button>
+        <button class="im-row nav-item" aria-label="Motore e domande" data-screen="engine" title="Motore e domande"><span class="im-rail-item" data-icon="review"></span><span class="im-row-text">Motore e domande</span></button>
+      </nav>
+      <footer class="im-panel-foot"><div class="im-stack"><strong>App locale</strong><span>Il codice resta sul tuo disco.</span><small id="engine-foot">Motore non scelto.</small></div></footer>
+    </aside>
+    <section class="app-work">
+      <div class="im-status"><span>Progetti / <strong id="crumb-project">–</strong> / <span id="crumb-screen">Analisi</span></span></div>
+      <main id="main" class="im-panel-body im-content-text" tabindex="-1"></main>
+    </section>
+  </div>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

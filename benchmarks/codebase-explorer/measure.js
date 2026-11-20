@@ -43,13 +43,13 @@ async (mcpPage) => {
       const check = () => {
         const foot = document.querySelector('.canvas-foot')?.textContent ?? '';
         const visible = Number(foot.match(/^(\d+) nodi/)?.[1] ?? NaN);
-        const drawn = document.querySelectorAll('.react-flow__node').length;
+        const drawn = document.querySelectorAll('.im-graph-node').length;
         const failed = document.querySelector('.canvas-state.bad')?.textContent;
         if (failed) return reject(new Error(failed));
         if (visible > 0 && drawn === visible) {
           return requestAnimationFrame(() => requestAnimationFrame(() => resolve({
             painted_ms: Math.round(performance.now()), nodes: visible,
-            edges: document.querySelectorAll('.react-flow__edge').length, footer: foot,
+            edges: document.querySelectorAll('.im-graph-edge').length, footer: foot,
           })));
         }
         if (performance.now() > deadline) return reject(new Error(`not painted in 60 s: ${drawn}/${visible} nodes`));
@@ -58,11 +58,11 @@ async (mcpPage) => {
       check();
     }));
     const selections = await page.evaluate(async () => {
-      const buttons = [...document.querySelectorAll('.react-flow__node .node-button')];
       const times = [];
       for (let i = 0; i < 20; i += 1) {
+        const buttons = document.querySelectorAll('.im-graph-node');
         const button = buttons[Math.floor((i * buttons.length) / 20)];
-        const name = button.querySelector('.node-name').textContent;
+        const name = button.querySelector('.im-row-title').textContent;
         const start = performance.now();
         button.click();
         await new Promise(resolve => {
@@ -80,16 +80,16 @@ async (mcpPage) => {
     const relayout_ms = await page.evaluate(async () => {
       const painted = label => new Promise(resolve => {
         const check = () => {
-          const on = document.querySelector('.tab.on')?.textContent === label;
+          const on = document.querySelector('.im-tab[aria-selected="true"]')?.textContent === label;
           const pending = [...document.querySelectorAll('.canvas-state')].some(item => item.textContent.startsWith('Dispongo'));
           const visible = Number(document.querySelector('.canvas-foot')?.textContent.match(/^(\d+) nodi/)?.[1] ?? NaN);
-          const drawn = document.querySelectorAll('.react-flow__node').length;
+          const drawn = document.querySelectorAll('.im-graph-node').length;
           if (on && !pending && visible > 0 && drawn === visible) requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
           else requestAnimationFrame(check);
         };
         requestAnimationFrame(check);
       });
-      const tab = label => [...document.querySelectorAll('.tab')].find(button => button.textContent === label);
+      const tab = label => [...document.querySelectorAll('.im-tab')].find(button => button.textContent === label);
       tab('Fisica').click();
       await painted('Fisica');
       const start = performance.now();

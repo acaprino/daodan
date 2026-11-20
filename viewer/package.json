@@ -6,16 +6,18 @@
   "scripts": {
     "test": "node --test \"test/*.test.ts\"",
     "dev": "vite --host 127.0.0.1",
-    "build": "vite build"
+    "build": "vite build && vite build --mode app",
+    "test:ui": "node test/browser.mjs"
   },
   "dependencies": {
-    "@xyflow/react": "12.12.1",
+    "@acaprino/imago": "github:acaprino/imago#0cde01240aa64d8ca34ed8fd370515f71322e6c4",
     "elkjs": "0.12.1",
     "lucide-react": "1.70.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "playwright": "1.63.0",
     "vite": "8.3.6"
   }
 }

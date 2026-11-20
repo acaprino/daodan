@@ -43,17 +43,17 @@ export function Session({ onPick, onRun }: { onPick: (file: string) => void; onR
     <div className="block">
       <h3>Chiedi alla sessione</h3>
       <form onSubmit={send} className="ask">
-        <select aria-label="Cosa" value={form.kind} onChange={event => setForm({ ...form, kind: event.target.value })}>{KINDS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-        <select aria-label="Perimetro" value={form.scope} onChange={event => setForm({ ...form, scope: event.target.value })}>{SCOPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-        <input aria-label={form.scope === 'feature' ? 'Funzionalità' : 'Indicazioni'} placeholder={form.scope === 'feature' ? 'Nome della funzionalità' : 'Indicazioni per la sessione'}
+        <select className="im-select" aria-label="Cosa" value={form.kind} onChange={event => setForm({ ...form, kind: event.target.value })}>{KINDS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+        <select className="im-select" aria-label="Perimetro" value={form.scope} onChange={event => setForm({ ...form, scope: event.target.value })}>{SCOPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+        <input className="im-input" aria-label={form.scope === 'feature' ? 'Funzionalità' : 'Indicazioni'} placeholder={form.scope === 'feature' ? 'Nome della funzionalità' : 'Indicazioni per la sessione'}
           value={form.text} required={needsText} maxLength={2000} onChange={event => setForm({ ...form, text: event.target.value })} />
-        <button type="submit" className="go">Invia</button>
+        <button type="submit" className="im-btn im-btn--primary">Invia</button>
       </form>
       <p className="muted">La richiesta resta in attesa finché la sessione non la prende: chiedile «esegui le richieste della UI».</p>
       <h3>Analisi statica, senza modello</h3>
       <form onSubmit={analyze} className="ask">
-        <input aria-label="Nome del run" placeholder="nome-del-run" value={runId} required pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={event => setRunId(event.target.value)} />
-        <button type="submit" className="go">Crea il run</button>
+        <input className="im-input" aria-label="Nome del run" placeholder="nome-del-run" value={runId} required pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={event => setRunId(event.target.value)} />
+        <button type="submit" className="im-btn im-btn--primary">Crea il run</button>
       </form>
       {error && <p className="bad" role="alert">{error}</p>}
     </div>
@@ -61,7 +61,7 @@ export function Session({ onPick, onRun }: { onPick: (file: string) => void; onR
       <h3>Richieste · {requests.length}</h3>
       <ul className="links">{requests.slice().reverse().map(item => <li key={item.id} className="request">
         <span><b>#{item.id}</b> {item.kind} · {item.scope}{item.text ? ` · ${item.text}` : ''}</span>
-        <span className={`chip ${item.state}`}>{STATES[item.state] ?? item.state}</span>
+        <span className="im-chip" data-im-tone={item.state === 'done' ? 'ok' : 'info'}>{STATES[item.state] ?? item.state}</span>
         {item.message && <span className="muted">{item.message}</span>}
       </li>)}</ul>
       {!requests.length && <p className="muted">Nessuna richiesta.</p>}
@@ -69,7 +69,7 @@ export function Session({ onPick, onRun }: { onPick: (file: string) => void; onR
     <div className="block">
       <h3>Finding · {findings.length}</h3>
       <ul className="links">{findings.map((item, index) => <li key={index}>
-        <button type="button" className="finding" onClick={() => item.file && onPick(item.file)}>
+        <button type="button" className="im-row finding" onClick={() => item.file && onPick(item.file)}>
           <span><b className={`sev ${item.severity ?? ''}`}>{item.severity ?? 'unknown'}</b> <code>{item.file ?? 'unknown'}:{item.line ?? '?'}</code></span>
           <span>{item.title ?? item.premise ?? 'unknown'}</span>
           {item.example && <span className="muted">{item.example}</span>}

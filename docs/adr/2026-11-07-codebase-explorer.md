@@ -3,6 +3,8 @@
 **Stato:** approvata l'8 novembre 2026. **Data:** 7 novembre 2026.
 **Requisiti:** [FRD](../frd/2026-11-07-codebase-explorer.md). **Proprietario:** `codebase-map`.
 
+**Aggiornamento del 20 novembre 2026.** L'app di analisi e l'esploratore usano `@acaprino/imago/graph` per disegnare e navigare i grafi. Nell'esploratore ELK continua a calcolare posizioni e percorsi in un Web Worker. La valutazione di React Flow riportata qui documenta la scelta precedente.
+
 ## 1. Contesto e decisione proposta
 
 L'utente ha scelto una UI originale ispirata alle capacità esplorative di Floorplan, riusando librerie. Si riprendono idee generali: navigazione progressiva, nomi comprensibili, ispettore collegato al codice ed elementi evidenziati. Non si adottano codice, template, asset, schema `graph@1` o orchestratore Floorplan.

@@ -12,6 +12,4 @@ const options = {
   legalComments: "linked",
 };
 await build({ ...options, entryPoints: ["src/index.tsx"], outfile: "smoothui.bundle.js" });
-// The app's page mounts the same task list with the run's steps.
-await build({ ...options, entryPoints: ["src/app.tsx"], outfile: "../../../daodan/assets/app/smoothui.bundle.js" });
 execFileSync(process.execPath, [resolve("node_modules/@tailwindcss/cli/dist/index.mjs"), "-i", "src/theme.css", "-o", "smoothui.css", "--minify"], { stdio: "inherit" });

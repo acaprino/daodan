@@ -39,4 +39,7 @@ def test_the_wheel_holds_the_command_and_what_its_tools_read(tmp_path):
         entry = next(name for name in names if name.endswith(".dist-info/entry_points.txt"))
         assert "daodan = daodan.__main__:main" in archive.read(entry).decode("utf-8")
     assert not [name for name in HELD if name not in names]
+    for page in ("app", "viewer"):
+        assets = REPO / "daodan" / "assets" / page
+        assert {path.relative_to(REPO).as_posix() for path in assets.rglob("*") if path.is_file()} <= names
     assert sum(name.startswith("daodan/data/marks/") for name in names) == len(list((REPO / "daodan/data/marks").iterdir()))
