@@ -111,6 +111,30 @@ Applicato (Scelte, 6). Prova: `tests/test_codebase_map_reactive_server.py`; `tes
 4. Il server MCP espone lo strumento `codebase_map_stack`, la risorsa `daodan://project/live` e notifiche di avanzamento e di aggiornamento che non bloccano.
 5. Il server dell'interfaccia inoltra `pipeline_after` e `run=working` in `/api/events`, aggiunge `/api/modules`, `/api/stack` e lo stream `/api/stream`, solo da loopback e con il token, chiuso in modo pulito allo spegnimento, e dà `nature`, `languages`, `toolchains`, `frameworks`, `libraries`, `services` e `tools` nelle entità senza aspettare il container.
 
+### 7. Analisi unificata: niente si fa due volte
+
+*Proposta della seconda revisione esterna del 20 novembre 2026, fatta sulla spec divisa (commit `98f360b73`): il proprietario la conferma punto per punto. I fatti sul codice sono verificati lo stesso giorno, non misurati.*
+
+**Scopo.** Dato uno snapshot del progetto, Daodan produce il grafo più completo che riesce a verificare, nel minor tempo e con il minor consumo di CPU, RAM e disco, a parità di copertura. Pre-mappa, moduli, statico, inferenza e dinamico condividono preparazione e risultati; le interfacce fanno parte del progetto analizzato dall'inizio.
+
+1. **Che cosa si condivide già.**
+   - La preparazione, una per analisi: proposta decisa («Preparazione»; task 1b).
+   - Uno step fresco non si rifà (sezione 1), e un linguaggio già osservato con lo stesso registratore non si osserva di nuovo (`dynamic.run`).
+   - Il gestore di un controllo viene dall'indice che l'analyzer scrive già (sezione 2; [interfacce del progetto](2026-11-19-interfacce-del-progetto.md), 6.5).
+   - L'esplorazione delle interfacce e la corsa del programma partono dal container preparato, senza un'installazione loro (interfacce, 7.1; [registro dell'esecuzione](2026-11-19-esecuzione-del-programma.md), sezione 4): proposta.
+2. **Che cosa si fa ancora più di una volta.**
+   - Le dipendenze di un progetto Node si ripristinano tre volte (task 1b).
+   - Lo stesso codice è caricato da più programmi nello step 2. Dopo scip-python gira un secondo passaggio di Pyright sullo stesso ambiente (`indexers/python_unbound.py`). Dopo scip-typescript il passaggio del controllore ricostruisce il programma in un altro processo (`indexers/typescript_unbound.js`), e il grafo dei fogli di stile ne costruisce un terzo (`indexers/css_typescript.py`). Ognuno risponde a una domanda diversa; il costo di caricare il programma si paga ogni volta.
+   - Lo stato del passaggio è per linguaggio, non per modulo (`engine_pass.py`): quanto si rifà dopo una modifica a un solo modulo non è misurato.
+   - L'app può partire tre volte: come `webServer` dei test Playwright (step 3), nella corsa del programma e nell'esplorazione delle interfacce. Le ultime due sono proposta, e nessun testo dice che condividono un avvio.
+   - L'esplorazione aziona ogni controllo una volta, anche quelli che un test del progetto ha già azionato.
+3. **Regole proposte.**
+   - **Un indice per unità e tecnologia, letto da tutti:** interfacce, flussi e review. Un secondo programma sullo stesso codice entra solo se riusa il programma già caricato dal primo, oppure con il suo costo misurato e scritto.
+   - **Un avvio dell'app per stato dei dati.** Esplorazione e corsa del programma riusano l'avvio dei test quando lo stato lo consente; se un test ha cambiato i dati ripartono da uno stato pulito, dal container preparato, senza un nuovo ripristino.
+   - **L'esplorazione lavora sullo scoperto.** Prima i controlli e i collegamenti che nessun arco osservato dai test raggiunge; ciò che i test hanno già azionato non si ripete, e la risposta dice quale fonte ha visto ogni controllo.
+   - **Una superficie nuova dichiara** come si riconosce, quali indici riusa e come si osserva in esecuzione: entra nella stessa pipeline, senza una pre-mappa, una build o un'analisi per linguaggio sue (interfacce, sezione 3).
+4. **La misura.** Tre corse sullo stesso progetto: da zero, senza modifiche, dopo una modifica a un solo modulo. Per ognuna: tempo totale, CPU, picco di RAM, spazio temporaneo, ripristini, indicizzazioni, avvii dell'app. Accanto, i collegamenti attesi ritrovati, prima di tutto interfaccia → gestore → backend o comando nativo: senza questa colonna un costo che scende può voler dire che si è analizzato meno. Parametri e risultati nel README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md) (task 2b del [piano](../plans/2026-11-20-analisi-unificata.md)).
+
 ## Scelte
 
 1. **La scansione resta intera.** Lo step 1 comprende i comandi di modello della pre-mappa (Renovate, npm, Go, Cargo, uv, tsc), nel container. Misurato sui 122 progetti il 15 novembre 2026: la pre-mappa dura 5 s di mediana e 103 s al massimo, Renovate 4,8 s di mediana; un indicizzatore dura minuti. Spostarli negli analyzer dividerebbe la struttura del progetto fra due step e farebbe cambiare la pre-mappa a chi la legge. Lo step 1 emette avanzamento per fonte: chi guarda vede i lettori finire subito e i comandi dopo.
@@ -133,3 +157,9 @@ Dalla [spec dei flussi e della mappa del sistema](2026-11-18-flussi-e-mappa-del-
 Dalla [spec dei flussi e della mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), «Decisioni aperte», con il suo numero.
 
 - **3.** La prova 0 sui cinque casi, dopo il via del proprietario con il costo stimato (piano del 20 novembre, task 2).
+
+Dalla seconda revisione esterna del 20 novembre 2026 (sezione 7):
+
+- **U1. Tutta l'analisi nel container?** La revisione propone di lasciare all'host solo avvio, avanzamento e lettura dei risultati. Oggi snapshot, stack e unione girano sull'host, e scip-python sull'host su Linux e macOS: leggono il progetto e non lo eseguono, che è ciò che la regola di `AGENTS.md` chiede. A favore: un ambiente solo e artefatti condivisi senza copie. Contro: la sezione 6 (sotto il blocco del progetto nulla aspetta il container, e la scansione veloce dura pochi millisecondi a ogni modifica) e l'uso senza motore di container, dove oggi Daodan dà comunque snapshot e grafo statico con le lacune. Raccomandazione: no; condividere gli artefatti attraverso lo store e tenere sull'host ciò che solo legge. **Deciso dal proprietario il 20 novembre 2026: no**, come la raccomandazione.
+- **U2. Le regole della sezione 7.3** (un indice letto da tutti, un avvio per stato dei dati, l'esplorazione sullo scoperto): entrano dopo la misura del task 2b, che dice quanto costa oggi ogni doppione.
+- Le decisioni sulle superfici (osservare le interfacce desktop Python, il ponte Tauri) sono in [interfacce del progetto](2026-11-19-interfacce-del-progetto.md), «Da decidere».

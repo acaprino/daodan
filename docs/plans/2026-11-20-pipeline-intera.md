@@ -3,7 +3,7 @@
 **Obiettivo:** ogni pezzo dei due giorni attaccato a un passo che Daodan ha già, in ordine, e una prova che rifà tutto da zero sui cinque casi.
 **Vincoli:** quelli del [piano del 19 novembre](2026-11-19-verso-i-riferimenti.md#vincoli); in più, nessun pezzo legge o installa di nuovo ciò che un passo già legge o installa.
 
-**Diviso per aspetto il 20 novembre 2026**, su richiesta del proprietario: [analisi unificata](2026-11-20-analisi-unificata.md) (task 0–2), [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) (task 3–8 e 11), [ricerca e pacchetto di review](2026-11-20-ricerca-e-pacchetto-di-review.md) (task 9–10c). Qui restano la pipeline (sezione 1), che cosa gira dove (2), l'ordine (3) con il task 12, la prova da zero (4), ciò che si toglie (5) e le decisioni (6).
+**Diviso per aspetto il 20 novembre 2026**, su richiesta del proprietario: [analisi unificata](2026-11-20-analisi-unificata.md) (task 0–2b), [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) (task 3–8, 11 e 11b), [ricerca e pacchetto di review](2026-11-20-ricerca-e-pacchetto-di-review.md) (task 9–10c). Qui restano la pipeline (sezione 1), che cosa gira dove (2), l'ordine (3) con il task 12, la prova da zero (4), ciò che si toglie (5) e le decisioni (6).
 
 ## 1. La pipeline, un passo per riga
 
@@ -71,6 +71,7 @@ Ogni task: prima il test rosso, poi il codice; tocca solo i file che nomina. Dop
 | 1 | Il container nella run della mappa su Modal | [analisi unificata](2026-11-20-analisi-unificata.md) |
 | 1b | Una preparazione sola per analisi | [analisi unificata](2026-11-20-analisi-unificata.md) |
 | 2 | Un job per tutta la catena e la sua tabella | [analisi unificata](2026-11-20-analisi-unificata.md) |
+| 2b | Tre corse sullo stesso progetto, i costi accanto alla copertura | [analisi unificata](2026-11-20-analisi-unificata.md) |
 | 3 | Il gestore dall'estremo del motore | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 | 4 | Evento o no, ed etichetta secondo accname | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 | 5 | Noir nella pre-mappa | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
@@ -84,6 +85,7 @@ Ogni task: prima il test rosso, poi il codice; tocca solo i file che nomina. Dop
 | 10b | Il pacchetto di una review dalla ricerca | [ricerca e pacchetto di review](2026-11-20-ricerca-e-pacchetto-di-review.md) |
 | 10c | L'embedder propone gli abbinamenti, non li decide | [ricerca e pacchetto di review](2026-11-20-ricerca-e-pacchetto-di-review.md) |
 | 11 | La fonte osservata | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
+| 11b | Gli eventi fra pagina e guscio Tauri | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 | 12 | La mappa nel grafo dell'app | qui sotto |
 
 12. **La mappa nel grafo dell'app** (F1, F2, F3, F5). `app_view.product` dalla mappa e dall'anagrafica, apertura sul posto e trascinamento (F2, che la prova di F5 controlla), un flusso acceso, la prova nel browser nel container.
