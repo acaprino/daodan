@@ -1,0 +1,34 @@
+# Piano: ingressi e flussi, la macchina mostra e il modello nomina
+
+**Obiettivo:** la macchina legge gli ingressi (controlli dell'interfaccia, rotte, comandi e gli altri tipi), compone un percorso per ingresso e lo certifica; ciò che esce verso un modello passa il controllo dei segreti.
+**Parte di:** [piano della pipeline intera](2026-11-20-pipeline-intera.md), diviso per aspetto il 20 novembre 2026 su richiesta del proprietario. Quel piano tiene l'ordine fra i tre piani (sezione 3), che cosa gira dove (sezione 2) e la prova da zero (sezione 4); i numeri dei task sono rimasti gli stessi. **Spec:** [ingressi e scoperta dei flussi](../specs/2026-11-20-ingressi-e-scoperta-dei-flussi.md); per 7b la [mappa del sistema](../specs/2026-11-18-flussi-e-mappa-del-sistema.md), sezione 8; per 7c la [ricerca e pacchetto di review](../specs/2026-11-20-ricerca-e-pacchetto-di-review.md), 11.4 e 11.5.
+**Vincoli:** quelli del piano della pipeline intera. Ogni task: prima il test rosso, poi il codice; tocca solo i file che nomina. Nessun modello vede un progetto privato prima del task 8.
+
+## Task
+
+- **3.** **Il gestore dall'estremo del motore.** `entries._handlers` (markup) e il ramo `self.`/`this.` di `entries._function` prendono prima il `read` risolto in quel punto (`Facts.reads`), come `_function` fa già per un nome semplice; senza motore restano `local_function` e `_method`, e il candidato dice da dove viene il gestore.
+   Test: in `tests/test_codebase_map_entries.py` un gestore importato da un altro file e uno destrutturato da un hook, con righe del motore registrate. Riusa: `edge_view`, `Facts.reads`.
+
+- **4.** **Evento o no, ed etichetta secondo accname.** Dalla definizione che il task 3 trova, letta dall'albero: chi restituisce solo markup (una funzione di resa) non è un evento; un valore restituito non lo esclude, perché un gestore può avere un effetto e restituire un valore; l'etichetta segue l'ordine del nome accessibile del W3C.
+   Test: in `tests/test_codebase_map_entries.py` un gestore da un hook di un altro file, una funzione scritta sul posto con due chiamate, una proprietà passata a un componente figlio, un gestore che ha un effetto e restituisce un valore, un'etichetta dal testo, una da `aria-label` e un nome accessibile composto (`aria-labelledby`). Riusa: `entry-queries.json`, `entries._label`.
+
+- **5.** **Noir nella pre-mappa.** `premap/noir.py`, `TOOLS["noir"]` (1.5.0, url e sha256), il record in `premap-runs/noir/`; `entries.candidates` lo legge con `entries.noir`.
+   Test: un JSON di Noir registrato dà i candidati; senza motore di container la sorgente è una lacuna con la causa. Riusa: `premap/enry.py` come forma di sorgente, `QUERIES["noir"]`.
+
+- **6.** **Le forme si classificano una volta** (C4.5). La tabella numerata delle forme nella risposta `needs_rules` e nel prompt `LINKS`; la risposta `{riga: tipo}` diventa regole con la provenienza; una forma del registro non si chiede. Le regole si applicano sugli stessi legami letti dall'albero: `flows._attribute_actions`, che oggi rilegge il markup a righe con un'espressione regolare, li prende da `entries.bindings` (revisione esterna, I4). Il tipo dato a una forma è uno dei dieci o «nessun ingresso»: un altro è rifiutato.
+   Test: come C4.5, passi 1 e 2; un attributo su più righe classificato e applicato dall'inizio alla fine; un tipo fuori dall'elenco rifiutato. Riusa: `entries.shapes`, `flows.validate_rules`, la confezione di `system_brief`.
+
+- **7.** **Le schede dei percorsi nel nucleo.** `cards` e `verify` passano in `daodan/core/traces.py`; gli ingressi sono i candidati classificati, non un `ENTRY_GLOB`; un flusso certificato entra in `system_map.record`, uno rifiutato torna con il motivo. Una correzione su una lacuna vale solo se un collegamento dello snapshot prova la destinazione che dichiara (`verso`): oggi `verify` controlla che il testo citato sia sulla riga, non dove porta (revisione esterna, B1); senza quella prova la lacuna resta e il flusso non si registra come certificato.
+   Test: `benchmarks/system-map/test_traces.py` portato in `tests/`, più un flusso certificato e registrato, e una citazione vera con una destinazione sbagliata: lacuna tenuta, nessuna registrazione, anche dopo aver riletto la mappa. Riusa: `traces.py`, `system_map.record`.
+
+- **7b.** **La mappa non perde ciò che rifiuta** (revisione esterna, I1 e I2). In `system_map.py`: `remove` vale solo dentro lo `scope` della proposta; una freccia rifiutata resta nel flusso con la causa, e un flusso con un tratto rifiutato lo dice; salvare una proposta non rinnova i digest dei record che non tocca; `on` fra due nodi con codice cita il suo punto.
+   Test: una rimozione fuori area rifiutata; `A → B → C` con un secondo ramo interrotto, che resta visibile; una citazione cambiata resta scaduta dopo il salvataggio di un'altra area. Riusa: `_record_flows`, `_write`.
+
+- **7c.** **I flussi dicono ciò che non sanno** (revisione esterna, I3). In `flows.py` e `system_brief.py`: un arco osservato porta la sua origine fino alla risposta (oggi diventa `diretto`, e la scheda scrive `dinamico: no` sempre); una lacuna senza simbolo entra nel percorso che la tocca; `through` senza attraversamenti non è «completo»; un'unità con un file oltre il limite lo dice, con i byte.
+   Test: uno per ognuna delle quattro. Riusa: `edge_view`, `flows.trace`, `flows.units`.
+
+- **8.** **Secretlint su ciò che esce.** Ogni risposta consegnata a un motore passa da `secret_mask.masked`, nei due punti da cui esce: gli strumenti di `App._tools` e le risposte del server MCP (letture, scheda, schede dei percorsi, moduli, stack, ricerca, grafo, rotte, store, lacune, errori; revisione esterna, B4); la risposta conta i segreti mascherati; senza eseguibile nulla esce, con la lacuna. Prima si misura il tempo di un avvio per testo.
+   Test: una chiave finta torna mascherata in una lettura e in un risultato strutturato (una lacuna, una rotta); con l'eseguibile assente o fallito nessuna risposta esce. Riusa: `secret_mask` e il suo test del segno.
+
+- **11.** **La fonte osservata** (decisione 2). Nella run dell'osservatore JavaScript, sull'app avviata nel container preparato: un'esplorazione che parte dalle rotte lette in modo statico, apre ogni pagina, legge ruolo e nome accessibile dei controlli, aziona ogni controllo una volta e registra le chiamate che partono, seguendo i collegamenti nuovi entro un tetto di passi; candidati con fonte `osservato`. Prima si valuta una soluzione pronta per l'esplorazione.
+   Test: un progetto senza configurazione di Playwright, con due controlli nella stessa pagina che azionano gestori diversi: ogni chiamata è attribuita al suo controllo, e una chiamata di cui non si sa la causa (un timer) resta senza controllo. Riusa: preparazione e registratore di `dynamic/javascript.py`, `PLAYWRIGHT_CONFIGS`.

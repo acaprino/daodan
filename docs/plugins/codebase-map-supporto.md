@@ -1175,7 +1175,7 @@ Oltre al riconoscimento: i componenti Vue e Svelte entrano nell'indice di scip-t
 
 ## Collegamenti dei flussi
 
-`scripts/flows.py` applica regole di collegamento di 6 specie: `scrive` `legge` `rotta` `offre` `attiva` `ingresso`; un nodo di store ha uno di 10 tipi: `attore` `schermata` `funzionalità` `servizio o API` `gateway` `database` `coda` `autenticazione` `dispositivo` `altro`. Il censimento ([2026-11-14-punti-di-connessione.md](../research/2026-11-14-punti-di-connessione.md)) cataloga 26 tipi di punto di connessione; quali il prodotto unisce lo dice la sua sezione «Stato». Riconoscimento per tipo: non misurato.
+`scripts/flows.py` applica regole di collegamento di 6 specie: `scrive` `legge` `rotta` `offre` `attiva` `ingresso`; un nodo di store ha uno di 11 tipi: `attore` `schermata` `funzionalità` `servizio o API` `gateway` `database` `coda` `autenticazione` `dispositivo` `filesystem` `altro`. Il censimento ([2026-11-14-punti-di-connessione.md](../research/2026-11-14-punti-di-connessione.md)) cataloga 26 tipi di punto di connessione; quali il prodotto unisce lo dice la sua sezione «Stato». Riconoscimento per tipo: non misurato.
 
 | Coppia | Tipi nel censimento | Tipi |
 | --- | --- | --- |

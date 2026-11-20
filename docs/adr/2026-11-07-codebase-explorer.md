@@ -27,7 +27,7 @@ flowchart LR
 
 I flussi sono stati riaperti il 9 novembre 2026 ([spec](../specs/2026-11-18-flussi-e-mappa-del-sistema.md)): `daodan/visual@1` li porterà come elenco `flows` di riferimenti a entità e relazioni esistenti, senza nuove entità; fino alla misura del modello nessun campo o vista di flusso è implementato.
 
-**Estensione proposta il 18 novembre 2026.** Codebase Map scopre funzionalità e varianti prima dell’export. Il viewer proietta ciascuna funzionalità come nodo espandibile sui rami della mappa salvata. I rami che attraversano lo stesso servizio rimandano alla stessa entità. Cambi di prospettiva, espansioni e contrazioni usano i riferimenti del run e richiedono zero chiamate al modello. [Decisione sulla scoperta dei flussi](2026-11-18-grafo-dei-moduli-dai-flussi.md)
+**Estensione proposta il 18 novembre 2026.** Codebase Map scopre funzionalità e varianti prima dell’export. Il viewer proietta ciascuna funzionalità come nodo espandibile sui rami della mappa salvata. I rami che attraversano lo stesso servizio rimandano alla stessa entità. Cambi di prospettiva, espansioni e contrazioni usano i riferimenti del run e richiedono zero chiamate al modello. [Scoperta dei flussi](../specs/2026-11-18-flussi-e-mappa-del-sistema.md), sezione 7 e Principio 4
 
 ## 2. Librerie, alternative e ricerca
 

@@ -1,6 +1,6 @@
 # Revisori per framework e librerie: specializzazione dallo stack del modulo
 
-**Stato:** proposta, 19 novembre 2026. Nulla è applicato. Il pilota misurato il 20 novembre non promuove nessuna voce: vedi «Esito della prova». Presuppone lo Step 2 dello stack per modulo ([ADR del 17 novembre 2026](../adr/2026-11-17-mappa-moduli-stack-e-reattivita.md) e commit `94df39bad`) e la selezione dei revisori di [`2026-11-07-review-context-and-selection.md`](2026-11-07-review-context-and-selection.md).
+**Stato:** proposta, 19 novembre 2026. Nulla è applicato. Il pilota misurato il 20 novembre non promuove nessuna voce: vedi «Esito della prova». Presuppone lo Step 2 dello stack per modulo ([pipeline di analisi](2026-11-15-pipeline-di-analisi.md), sezione 1, «Stack», e commit `94df39bad`) e la selezione dei revisori di [`2026-11-07-review-context-and-selection.md`](2026-11-07-review-context-and-selection.md).
 
 Ora che `technologies.py` distingue per ogni modulo i **framework** (103 riconoscibili nel registro) e le **librerie** (124 catalogate più ogni pacchetto dichiarato), Daodan deve usare quel fatto nella review senza moltiplicare i subagenti, senza attivarsi a vuoto sui monoliti e senza portare nei prompt regole di stile o comandi sull'host.
 

@@ -1,6 +1,6 @@
 # Pipeline di analisi: step, analyzer con adattatori, listener
 
-**Stato:** approvata dal proprietario il 15 novembre 2026, che ha lasciato a Claude le scelte rimaste (sezione «Scelte»). Lo step 3 è applicato (`pipeline.Dynamic`, `dynamic/`), con gli osservatori di Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#.
+**Stato:** approvata dal proprietario il 15 novembre 2026, che ha lasciato a Claude le scelte rimaste (sezione «Scelte»). Lo step 3 è applicato (`pipeline.Dynamic`, `dynamic/`), con gli osservatori di Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#. Le regole della mappa dei moduli e dello stack (sezione 1, «Scansione: la mappa dei moduli» e «Stack») e della reattività (sezione 6) le ha decise il proprietario il 17 novembre 2026 e sono applicate; i motivi sono in «Scelte», 4–6. Il 20 novembre 2026, con la divisione per aspetto della [spec dei flussi](2026-11-18-flussi-e-mappa-del-sistema.md), stanno qui l'analisi unificata: una preparazione per analisi («Preparazione»), uno strumento ufficiale per linguaggio (sezione 2), la scelta 7 con i suoi limiti e ciò che resta da decidere. **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
 
 Il proprietario chiede (15 novembre 2026) un codice modulare, pulito e manutenibile: un'architettura a step, il pattern adapter, e la possibilità di registrare listener dell'intero processo di analisi. Primo step: una scansione veloce di moduli e tecnologie; poi, per ogni linguaggio o framework trovato, un'istanza dell'analyzer che sotto usa lo strumento specifico. Il processo dà feedback, informazioni, log, eventi e avanzamento fino alla generazione del grafo completo.
 
@@ -36,6 +36,20 @@ Il proprietario chiede (15 novembre 2026) un codice modulare, pulito e manutenib
 
 La pipeline finisce con il grafo completo; i flussi lo leggono dopo, fuori da essa. Un modulo `pipeline` elenca gli step in ordine; ogni step ha lo stesso contratto: `inputs` (ciò che legge), `run(context)`, `outputs` (ciò che scrive). Uno step è fresco quando i suoi ingressi non sono cambiati: lo stesso controllo per impronta che pre-mappa e store usano già, scritto una volta. Lo step 3 segue il disegno del [passo dinamico](2026-11-12-passo-dinamico.md) ed è applicato (`pipeline.Dynamic`, `dynamic/`); lo step 4 entra con il disegno dei punti di connessione (`benchmarks/connection-points/`).
 
+**Scansione: la mappa dei moduli.** Applicato (Scelte, 4). Prova: `tests/test_codebase_map_modules.py` (`test_contract_directory_and_source_do_not_declare_module`), `tests/test_codebase_map_premap_packages.py`, `tests/test_codebase_map_stack_rationalized.py`.
+
+1. `modules.json` è la mappa sola dei moduli. Ogni modulo dichiara `nature`: `concrete`, un'unità di build con un artefatto o sorgenti compilati (i manifest letti e le unità che i comandi di modello della pre-mappa scoprono); `logical`, un modulo dichiarato (`codebase-modules.json`) o proposto (`proposals.json`), interno o esterno; `virtual`, un workspace, una solution o un reactor senza artefatto proprio (`provenance: "build"`), e il modulo implicito `source-tree` (`provenance: "virtual"`) dei file sorgente o di esecuzione che nessuna unità di build copre e che non sono già letti come manifest.
+2. Ogni modulo dice `languages`, i file per linguaggio al netto di `excluded`, e `toolchains`, `{tool, version, declared_in}`: quelle dichiarate nei suoi file o ereditate dal workspace che lo contiene, più gli strumenti che i suoi ecosistemi e linguaggi chiedono.
+3. La pre-mappa ha la faccetta `packages`, `{ecosystem, name, declared_in, version}`: la versione è il testo che il manifest scrive in quel punto, assente dove non ne scrive, mai risolta né letta da un lockfile, senza dipendenze transitive; `dependencies` resta rifiutata dal contratto. La popolano i lettori che ci sono (`module_graph`, `requirements`, `jvm_files`, `project_files`) e i comandi di modello (`renovate`, `maven`, `gradle`, `dotnet`), con gli stessi `argv`.
+4. `modules.sync_with_premap` allinea `modules.json` alla pre-mappa (unità di modello, `excluded`, `languages`, `toolchains`) in una scrittura sola.
+5. `modules.json`, `premap.json` e `technologies.json` restano negli stessi percorsi, per CLI, MCP, viewer e benchmark.
+
+**Stack.** Applicato (Scelte, 5). Prova: `tests/test_codebase_map_stack_rationalized.py`; README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md), «Lo step `stack` sul corpus».
+
+1. `service_registry.recognize` legge i fatti della scansione (`packages`, `services`, `docker_builds`, `excluded`) senza rileggere i file, applica `excluded` a ogni tipo di segno e dà a ogni voce la sua categoria (framework, libreria, strumento, servizio: [flussi e mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), 5.1).
+2. `technologies.json` dà per ogni modulo, anche `logical` e `virtual`, `{id, name, kind, nature, provenance, paths, languages, toolchains, frameworks, libraries, services, tools, technologies}`, più la vista `units` delle unità fisiche e virtuali. `libraries` elenca tutte le librerie che il modulo dichiara: arricchite dal registro quando le conosce, mai tolte se sono fuori catalogo.
+3. Il registro copre anche gli ecosistemi `maven`, `nuget`, `pub`, `hex` e `swiftpm`, e tiene framework ed esecutori dei test (Playwright, Cypress, JUnit, Spring Boot, ASP.NET Core, Flutter, OpenTelemetry SDK) separati dai servizi esterni.
+
 Lo step 3 ha un osservatore per tecnologia, con lo stesso pattern degli analyzer: un modulo di `dynamic/` che si dichiara (`ENTRY`, `VERSION`, `LANGUAGES`), elencato da `dynamic.observers()`. Parte per le tecnologie che hanno un grafo statico nello store, prende il comando dei test dalla pre-mappa e usa gli eventi degli analyzer (`analyzer.started`, `progress`, `gap`, `analyzer.finished`, `analyzer.unavailable`). Una tecnologia senza osservatore, un progetto senza un comando dichiarato e una corsa senza motore di container sono lacune: la pipeline arriva comunque all'unione. `DAODAN_DYNAMIC=off` salta lo step.
 
 ### 2. Analyzer: un'istanza per tecnologia trovata
@@ -43,6 +57,7 @@ Lo step 3 ha un osservatore per tecnologia, con lo stesso pattern degli analyzer
 - Ogni adattatore si dichiara da solo (`ENTRY`, `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`): i linguaggi che indicizza e i tipi di unità della pre-mappa da cui prende la struttura (`go-module`, `gradle-project`, `cmake-target`, …). Le voci del passaggio si costruiscono da queste dichiarazioni (`indexers.analyzers`), dal più leggero in memoria al più pesante: uno che esaurisce la memoria ferma quelli dopo.
 - Lo step 2 crea un'istanza per ogni tecnologia presente: parte quando lo snapshot ha file dei suoi linguaggi, anche fuori da ogni unità (il codice senza file di build non si perde), e prende le sue unità dalla pre-mappa.
 - Interfaccia comune: `structure(premap)`, `index(...)`, le correzioni del grafo opzionali di oggi (`hops`, `same_range`, `classify`, `static`, `refine`, `missing`, `tasks`).
+- **Uno strumento ufficiale per linguaggio, nessun lettore scritto a mano accanto.** *Deciso dal proprietario il 20 novembre 2026.* Chi ha bisogno di un fatto del codice (la funzione che un legame nomina, il tipo di un attributo) lo prende dall'indice che l'analyzer scrive già nel container preparato: nessun secondo programma e nessuna seconda installazione. Motivo: [ingressi e scoperta dei flussi](2026-11-20-ingressi-e-scoperta-dei-flussi.md), motivo 14.
 - I fogli di stile diventano un adattatore come gli altri. I motori per posizione restano solo dove nessun indicizzatore serve la tecnologia (Vue, Svelte), come adattatori; Jedi per Python si toglie.
 
 ### 3. Listener
@@ -66,6 +81,7 @@ Ogni comando nel container, della pre-mappa o di un analyzer, ha prima ciò che 
 - **Compilatori:** un file di toolchain CMake (o un file cross di Meson, un profilo Conan) che nomina un compilatore noto (`COMPILERS`) lo porta sul path; ogni preset di configure gira.
 - **Un comando dichiara ciò che gli serve** (`needs`), il runner lo prepara una volta per run. Ciò che non si può installare o ripristinare resta una lacuna che lo nomina: un configure che fallisce dice quale compilatore o pacchetto manca.
 - Se un progetto dichiara due gestori (vcpkg e Conan), vince quello che i preset nominano, altrimenti vcpkg; una lacuna `choice` lo dice.
+- **Una preparazione per analisi.** *Proposta, decisa dal proprietario il 20 novembre 2026.* La prima preparazione di un'analisi lascia il container preparato (`run_in_container(keep_root=True)`), e gli step dopo partono da quello: un progetto Node non ripristina più le dipendenze tre volte (`tsc` nella scansione, scip-typescript nell'analisi, l'osservatore nel dinamico). L'immagine preparata è legata allo snapshot e ai lockfile e si toglie a fine analisi. Motivo: «Scelte», 7; task 1b del [piano del 20 novembre](../plans/2026-11-20-pipeline-intera.md).
 
 ### 4. Codice
 
@@ -85,8 +101,35 @@ Ogni passo lascia i test verdi e le uscite uguali, controllate con le registrazi
 4. `resolve_edges.py` diviso; i motori per posizione rimasti come adattatori, Jedi tolto.
 5. `snapshot.py` e `modules.py` spezzati.
 
+### 6. Sotto il blocco del progetto nulla aspetta il container
+
+Applicato (Scelte, 6). Prova: `tests/test_codebase_map_reactive_server.py`; `tests/test_codebase_map_mcp.py` (`test_events_and_status_follow_the_analysis_pipeline_of_the_run`).
+
+1. Sotto `project_lock` girano solo letture dello snapshot: la scansione veloce (`Scan(fast=True)`, senza runner, pochi millisecondi) e lo stack. Così fanno `MapService.create_run` e l'aggiornamento dell'hook `PostToolUse` (`snapshot.refresh_working --hook`). Il resto lo fa il processo staccato (`resolve_edges.py --pass`), fuori dal blocco: la scansione, se restano comandi di modello `not_run`, poi stack, analisi, dinamico e unione.
+2. `snapshot.py write` da riga di comando fa la scansione intera e lo stack prima di avviare il passaggio del motore.
+3. `MapService` dà `stack(run_id, module=None)`; `status(run_id)` dice lo stato degli step della pipeline e del run `working`; `modules(run_id)` porta `nature`, `languages` e `toolchains`; a ogni evento del servizio o aggiornamento dell'hook si registra un impulso (`live-pulse.jsonl`).
+4. Il server MCP espone lo strumento `codebase_map_stack`, la risorsa `daodan://project/live` e notifiche di avanzamento e di aggiornamento che non bloccano.
+5. Il server dell'interfaccia inoltra `pipeline_after` e `run=working` in `/api/events`, aggiunge `/api/modules`, `/api/stack` e lo stream `/api/stream`, solo da loopback e con il token, chiuso in modo pulito allo spegnimento, e dà `nature`, `languages`, `toolchains`, `frameworks`, `libraries`, `services` e `tools` nelle entità senza aspettare il container.
+
 ## Scelte
 
 1. **La scansione resta intera.** Lo step 1 comprende i comandi di modello della pre-mappa (Renovate, npm, Go, Cargo, uv, tsc), nel container. Misurato sui 122 progetti il 15 novembre 2026: la pre-mappa dura 5 s di mediana e 103 s al massimo, Renovate 4,8 s di mediana; un indicizzatore dura minuti. Spostarli negli analyzer dividerebbe la struttura del progetto fra due step e farebbe cambiare la pre-mappa a chi la legge. Lo step 1 emette avanzamento per fonte: chi guarda vede i lettori finire subito e i comandi dopo.
 2. **Un'istanza per tecnologia, non per unità.** Un analyzer riceve tutte le unità della sua tecnologia e decide come girarle (una build per cartella, un configure per unità): le unità della stessa tecnologia condividono strumenti e dipendenze, e un container per unità costerebbe il tempo fisso ogni volta.
 3. **Lo step 4 dice ciò che il 3 ha osservato.** Per ogni tecnologia con archi osservati: quanti siti e quanti buchi chiusi, quelli campionati a parte; come lacune, i test che non sono arrivati in fondo, i file con chiamate che nessun test ha eseguito e gli archi osservati che contraddicono un arco provato. Una tecnologia senza archi osservati resta una lacuna, con la causa che lo step 3 ha dato.
+4. **Una mappa dei moduli sola** (sezione 1, «Scansione»). Deciso dal proprietario il 17 novembre 2026. Perché: `modules.py` (`modules.json`), `premap/module_graph.py` (`premap.json`) e `technologies.py` (`technologies.json`) davano unità e tipi diversi; i file fuori da ogni manifest restavano senza modulo (17 fixture su 140 del corpus) e né linguaggi né toolchain erano del singolo modulo; la pre-mappa leggeva i pacchetti e li scartava. Scartato: tenere tre modelli di modulo affiancati. Prova: quella della sezione; il numero 17 su 140 non ha una misura che lo rifà.
+5. **Lo stack dai fatti della scansione** (sezione 1, «Stack»). Deciso dal proprietario il 17 novembre 2026. Perché: `service_registry.py` e `system_brief.py` rileggevano `Dockerfile`, `compose*.yml` e `requirements*.txt` con espressioni regolari, ignoravano cinque ecosistemi, confondevano framework ed esecutori dei test con servizi esterni e tacevano le librerie fuori catalogo. Dopo il cambio, sul corpus, i framework per nome salgono da 211 a 363 su 568; per unità i trovati da 268 a 364 su 1.001 ma gli sbagliati da 35 a 208 (la tecnologia giusta sull'unità sbagliata), poi corretti a 553 con 50 sbagliati. Scartato: rileggere i file nello stack. Prova: README di `benchmarks/project-model`, «Lo step `stack` sul corpus». La scheda del sistema legge ancora `Dockerfile` e Compose a righe (`system_brief._declared`).
+6. **Sotto il blocco del progetto nulla aspetta il container** (sezione 6). Deciso dal proprietario il 17 novembre 2026. Perché: l'aggiornamento dell'hook `PostToolUse` eseguiva la pipeline fino alla scansione con il runner del container dentro `project_lock`, e così bloccava `MapService`, l'interfaccia e gli strumenti MCP; `create_run` non eseguiva scansione né stack nel passaggio asincrono, e `/api/events` non inoltrava `pipeline_after` né dava uno stream. Scartato: aspettare il container sotto il blocco. Prova: quella della sezione.
+7. **Il container su Modal e una preparazione per analisi** (già motivo 15 della spec dei flussi; «Limiti delle prove», 10). Decisi dal proprietario il 20 novembre: la prova da zero gira con il container di Daodan nelle Modal Sandbox (piano del 20 novembre, task 1); le dipendenze si installano una volta per analisi, subito (task 1b; la raccomandazione era di rimandarlo). Perché: finora ogni misura di `benchmarks/system-map` su Modal è girata senza container (scip-typescript `unavailable`, nessun passo dinamico), e un progetto Node ripristina le dipendenze tre volte (`tsc`, scip-typescript, l'osservatore). Scartato: restare senza container per il costo delle Sandbox. Prova: da fare; quella del task 1 è `engine-report.json` con scip-typescript `fresh` su `js-vite-react-ts`, quella del task 1b tre passi con un ripristino solo.
+
+## Limiti delle prove
+
+Dalla [spec dei flussi e della mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), «Assunzioni e limiti noti», con il loro numero.
+
+- **10.** **Senza container.** Ogni misura di `benchmarks/system-map` su Modal è girata senza motore di container: scip-typescript `unavailable`, nessun passo dinamico, nessun collegamento osservato. Sono misure statiche le mappe delle run, le reti degli ingressi, le schede dei percorsi e il lettore del framework, su albero nudo e poi tolto; non ne dipendono l'accordo fra mappatori, i legami fra flussi, la ricerca e Noir. Quali indicizzatori nativi abbiano girato in ogni run non è registrato (Scelte, 7).
+- **20.** **Il container su Modal non è quello di Daodan** (B2): la preparazione nella sandbox ha la rete aperta, senza il proxy dei soli registri, e `registries` è ignorato (`benchmarks/project-model/modal_pipeline.py`, docstring). Una prova su Modal non prova quel confine (task 1).
+
+## Da decidere
+
+Dalla [spec dei flussi e della mappa del sistema](2026-11-18-flussi-e-mappa-del-sistema.md), «Decisioni aperte», con il suo numero.
+
+- **3.** La prova 0 sui cinque casi, dopo il via del proprietario con il costo stimato (piano del 20 novembre, task 2).
