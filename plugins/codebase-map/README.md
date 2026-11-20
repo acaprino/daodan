@@ -19,7 +19,7 @@ Installazione: `claude plugin install codebase-map@daodan` (marketplace `acaprin
 - Risoluzione delle chiamate: risolutore lessicale più la pipeline che parte con ogni snapshot: un analyzer per tecnologia, il passo dinamico sui test del progetto nel container di Daodan e l'unione dei grafi ([Pipeline](../../docs/plugins/codebase-map.md#pipeline)); la copertura si legge per linguaggio ([Copertura](../../docs/plugins/codebase-map.md#copertura)).
 - Python richiesto: **>= 3.12**.
 - `tree-sitter`, `tree-sitter-language-pack` e `sqlglot` li installa il server MCP; uno snapshot da shell li usa se installati.
-- Mappa del sistema: `codebase_map_flows` con `brief`, `map`, `about` e `levels` propone e verifica nodi con un nome, flussi e livelli; formato in `skills/map/references/system-map.md`, agente `system-mapper`.
+- Mappa del sistema: `codebase_map_flows` con `brief`, `map`, `about` e `levels` propone e verifica nodi con un nome, flussi e livelli; formato in `daodan/references/system-map.md`, agente `system-mapper`.
 - Esploratore: `daodan visual export <run>` pubblica la vista di un run e `visual.py serve <export>` la apre su `127.0.0.1`, con viste Logica e Fisica, flussi e tipi di nodo; comandi in `skills/map/references/standalone.md`.
 
 [Disegno comune](../../docs/specs/2026-11-03-semantic-review-foundation.md) · [Riferimento del plugin](../../docs/plugins/codebase-map.md)

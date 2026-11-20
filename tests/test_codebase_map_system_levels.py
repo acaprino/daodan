@@ -101,6 +101,12 @@ class LevelTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "level"):
             self.view(["fisico"])
 
+    def test_the_home_level_of_the_new_types_and_of_a_queue(self):
+        homes = {kind: system_levels.levels_of({"type": kind, "position": "internal"})
+                 for kind in ("filesystem", "coda", "applicazione", "lavoro a orario")}
+        self.assertEqual(homes, {"filesystem": ["infrastruttura"], "coda": ["infrastruttura"],
+                                 "applicazione": ["persone"], "lavoro a orario": ["funzioni"]})
+
     def test_inside_a_node(self):
         opened = system_levels.inside(self.m, "Pagamento", self.links)
         self.assertEqual({r["id"] for r in opened["members"]}, {"store:db/payments", "store:web state/payment"})

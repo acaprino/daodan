@@ -1,0 +1,98 @@
+{
+  "about": "How the entry readers (daodan/core/entries.py) read the syntax tree: the framework's knowledge as data, keyed by grammar of tree-sitter-language-pack (flows spec, principle 2 and point 5.9). `grammars` names the grammar of a language the snapshot reads without tree-sitter. In `queries` one query per grammar, as lines, the forms of a binding each a pattern of its own (in an alternation nested in another, tree-sitter loses matches); a string names the grammar whose query it shares, and `code` the grammar of the expressions written as text in the markup. Captures: @tag and @element, a tag and its element; @event, the attribute as written (several nodes, from the first to the last); @handler, a name that binds when it names a function of the project; @inline, a function written in place as the handler, which binds each function of the project it calls as the snapshot resolved the call; @called, what the event calls, a candidate also when it does not resolve; @code, an expression written as text, read with the `code` grammar; @name, @hint, @text and @computed, the parts of the label; @key, the literal key of a translation call. A capture starting with _ serves a predicate; @method, the method of `this` a handler names. In `calls`, by grammar, how a call labels the control it creates or binds: `text`, a query whose @text is the content of a literal; `label`, the keywords that carry a label; `positional`, whether the first literal by position labels the control a call creates; `setters`, the methods that set it later. In `decorators`, one query per grammar for the decorators and annotations of a function or method, each read from the file's tree (the snapshot keeps them only as folded text): @decorator, one decorator, and @definition, the function it decorates; @name, a decorator's name as written; @argument, beside its @name, the text of a first argument that is a text literal. In `noir`, the entry kind each protocol of OWASP Noir's endpoints is; another protocol stays a shape to classify.",
+  "grammars": {"markup": "angular", "python": "python"},
+  "noir": {"http": "rotta", "cli": "comando", "universal-link": "evento del sistema operativo",
+           "mobile-scheme": "evento del sistema operativo"},
+  "decorators": {
+    "python": {"query": [
+      "(decorated_definition (decorator) @decorator definition: (function_definition) @definition)",
+      "(decorator [(identifier) (attribute)] @name)",
+      "(decorator (call function: (_) @name))",
+      "(decorator (call function: (_) @name arguments: (argument_list . [(string . (string_start) . (string_content) @argument . (string_end) .) (keyword_argument value: (string . (string_start) . (string_content) @argument . (string_end) .))])))"
+    ]},
+    "java": {"query": [
+      "[(method_declaration (modifiers [(annotation) (marker_annotation)] @decorator)) (constructor_declaration (modifiers [(annotation) (marker_annotation)] @decorator))] @definition",
+      "[(annotation name: (_) @name) (marker_annotation name: (_) @name)]",
+      "(annotation name: (_) @name arguments: (annotation_argument_list . [(string_literal . (string_fragment) @argument .) (element_value_pair value: (string_literal . (string_fragment) @argument .))]))"
+    ]},
+    "kotlin": {"query": [
+      "(function_declaration (modifiers (annotation) @decorator)) @definition",
+      "(annotation [(user_type) @name (constructor_invocation (user_type) @name)])",
+      "(annotation (constructor_invocation (user_type) @name (value_arguments . (value_argument (string_literal . (string_content) @argument .) .))))"
+    ]},
+    "csharp": {"query": [
+      "(method_declaration (attribute_list (attribute) @decorator)) @definition",
+      "(attribute name: (_) @name)",
+      "(attribute name: (_) @name (attribute_argument_list . (attribute_argument (string_literal . (string_literal_content) @argument .) .)))"
+    ]},
+    "rust": {"query": [
+      "(_ (attribute_item (attribute) @decorator) . (attribute_item)* . (function_item) @definition)",
+      "(attribute . (_) @name)",
+      "(attribute . (_) @name arguments: (token_tree . (string_literal . (string_content) @argument .)))"
+    ]},
+    "typescript": {"query": [
+      "(class_body (decorator) @decorator . (decorator)* . (method_definition) @definition)",
+      "(decorator [(identifier) (member_expression)] @name)",
+      "(decorator (call_expression function: (_) @name))",
+      "(decorator (call_expression function: (_) @name arguments: (arguments . (string . (string_fragment) @argument .))))"
+    ]},
+    "tsx": {"query": "typescript"},
+    "javascript": {"query": [
+      "(method_definition (decorator) @decorator) @definition",
+      "(decorator [(identifier) (member_expression)] @name)",
+      "(decorator (call_expression function: (_) @name))",
+      "(decorator (call_expression function: (_) @name arguments: (arguments . (string . (string_fragment) @argument .))))"
+    ]}
+  },
+  "calls": {
+    "python": {"text": "(string . (string_start) . (string_content) @text . (string_end) .)",
+               "label": ["text", "label", "title"], "positional": true,
+               "setters": ["setText", "setTitle", "setWindowTitle", "config", "configure"]}
+  },
+  "queries": {
+    "javascript": {"query": [
+      "(jsx_element open_tag: (jsx_opening_element) @tag) @element",
+      "(jsx_self_closing_element) @tag @element",
+      "(jsx_attribute (property_identifier) @event (jsx_expression [(identifier) @handler (member_expression object: (this) property: (property_identifier) @method) @called]))",
+      "(jsx_attribute (property_identifier) @event (jsx_expression [(arrow_function) (function_expression)] @inline))",
+      "(jsx_attribute (property_identifier) @event (jsx_expression (ternary_expression [consequence: (identifier) @handler alternative: (identifier) @handler])))",
+      "(jsx_attribute (property_identifier) @event (jsx_expression (ternary_expression consequence: [(arrow_function) (function_expression)] @inline)))",
+      "(jsx_attribute (property_identifier) @event (jsx_expression (ternary_expression alternative: [(arrow_function) (function_expression)] @inline)))",
+      "(jsx_attribute (property_identifier) @_name [(string (string_fragment) @name) (jsx_expression (string (string_fragment) @name))] (#eq? @_name \"aria-label\"))",
+      "(jsx_attribute (property_identifier) @_name [(string (string_fragment) @hint) (jsx_expression (string (string_fragment) @hint))] (#any-of? @_name \"title\" \"placeholder\"))",
+      "(jsx_element (jsx_text) @text)",
+      "(jsx_element (jsx_expression) @computed)",
+      "(program (expression_statement [(identifier) @called (call_expression function: (identifier) @called) (arrow_function body: (call_expression function: (identifier) @called))]))",
+      "(call_expression function: [(identifier) @_t (member_expression property: (property_identifier) @_t)] arguments: (arguments . (string (string_fragment) @key)) (#match? @_t \"^[$]?t$\"))"
+    ]},
+    "tsx": {"query": "javascript"},
+    "vue": {"code": "javascript", "query": [
+      "(element [(start_tag) (self_closing_tag)] @tag) @element",
+      "(directive_attribute \"@\" @event (directive_value) @event (quoted_attribute_value (attribute_value) @code))",
+      "(directive_attribute (directive_name) @event @_on \":\" (directive_value) @event (quoted_attribute_value (attribute_value) @code) (#eq? @_on \"v-on\"))",
+      "(attribute (attribute_name) @_name (quoted_attribute_value (attribute_value) @name) (#eq? @_name \"aria-label\"))",
+      "(attribute (attribute_name) @_name (quoted_attribute_value (attribute_value) @hint) (#any-of? @_name \"title\" \"placeholder\"))",
+      "(element (text) @text)",
+      "(element (interpolation (raw_text) @code))"
+    ]},
+    "svelte": {"code": "javascript", "query": [
+      "(element [(start_tag) (self_closing_tag)] @tag) @element",
+      "(attribute (attribute_name) @event (expr_attribute_value (expression (raw_text_expr) @code)) (#match? @event \"^on\"))",
+      "(attribute (attribute_name) @_name (quoted_attribute_value (attribute_value) @name) (#eq? @_name \"aria-label\"))",
+      "(attribute (attribute_name) @_name (quoted_attribute_value (attribute_value) @hint) (#any-of? @_name \"title\" \"placeholder\"))",
+      "(element (text) @text)",
+      "(element (expression (raw_text_expr) @code))"
+    ]},
+    "angular": {"code": "javascript", "query": [
+      "(element [(start_tag) (self_closing_tag)] @tag) @element",
+      "(event_binding \"(\" @event \")\" @event (expression (call_expression function: (identifier) @called)))",
+      "(attribute (attribute_name) @event (quoted_attribute_value (attribute_value) @code) (#match? @event \"^on\"))",
+      "(attribute (attribute_name) @_name (quoted_attribute_value (attribute_value) @name) (#eq? @_name \"aria-label\") (#not-match? @name \"[{]\"))",
+      "(attribute (attribute_name) @_name (quoted_attribute_value (attribute_value) @hint) (#any-of? @_name \"title\" \"placeholder\") (#not-match? @hint \"[{]\"))",
+      "(element (text) @text)",
+      "(element (interpolation) @computed)",
+      "(call_expression function: (identifier) @_t arguments: (arguments . (string) @key) (#match? @_t \"^[$]?t$\"))",
+      "(expression (string) @key pipes: (pipe_sequence (pipe_call name: (identifier) @_pipe)) (#eq? @_pipe \"translate\"))"
+    ]}
+  }
+}

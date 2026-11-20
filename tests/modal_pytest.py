@@ -45,6 +45,12 @@ COMPONENTS_VUE2 = ("vue@3.5.22", "typescript@5.6.3", "@vue/language-core@2.2.12"
 OBSERVER = REPO / "daodan/core/dynamic/javascript.py"
 BABEL = (re.search(r'^BABEL = "([^"]+)"', OBSERVER.read_text(encoding="utf-8"), re.M)[1] if LOCAL else "",
          "/opt/babel/node_modules/@babel/core")
+# Secretlint's own executable (`secret_mask.ASSETS`, checked by its sha256): the test that starts the real tool on a
+# trap project (test_codebase_map_host_programs.py) finds it through DAODAN_SECRETLINT.
+SECRETLINT = ("https://github.com/secretlint/secretlint/releases/download/v14.0.1/secretlint-14.0.1-linux-x64",
+              "4fe869e7fe3d1bb3bf24003bea6b556d3a6d5343c393ca85301cae70c935fa98", "/opt/secretlint")
+FETCH_SECRETLINT = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
+                    "assert hashlib.sha256(data).hexdigest() == '%s'; open('%s', 'wb').write(data)\"" % SECRETLINT)
 # Debian's headless JDK 17 builds and runs the JVM recorder in its own tests (test_codebase_map_dynamic_jvm.py);
 # its package wants the manual folder the slim image leaves out.
 image = (modal.Image.debian_slim(python_version="3.13")
@@ -59,10 +65,13 @@ image = (modal.Image.debian_slim(python_version="3.13")
          .run_commands("npm install --prefix /opt/components-vue2 --no-audit --no-fund --ignore-scripts "
                        + " ".join(COMPONENTS_VUE2))
          .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
-                      "sqlglot>=30", "keyring>=25"))
+                      "sqlglot>=30", "keyring>=25")
+         .run_commands(FETCH_SECRETLINT, f"chmod +x {SECRETLINT[2]}"))
 if LOCAL:
     # The results stay: suites replay the recorded answers kept there. The explorer's sources are no suite's.
-    skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "codebase-explorer/**"]
+    skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "codebase-explorer/**",
+               # private projects' reference maps and what was measured on them: out of git, and out of the container
+               "system-map/expected/*-system.json", "system-map/results/system/**"]
     # The project-model fixtures go up as they are (mix-edge-vendored commits node_modules/ on purpose), in a
     # folder of their own: a "!" exception in `skipped` would stop Modal pruning the skipped folders.
     fixtures = "project-model/fixtures"
@@ -80,7 +89,7 @@ def pytest(arguments: list) -> int:
     subprocess.run(["git", "init", "-q", REMOTE], check=False)  # suites that ask for the work tree's root
     command = [sys.executable, "-B", "-m", "pytest", "-p", "no:cacheprovider", *arguments]
     print("$", shlex.join(command), flush=True)
-    environment = {**os.environ, "PYTHONUTF8": "1", "DAODAN_TEST_BABEL": BABEL[1]}
+    environment = {**os.environ, "PYTHONUTF8": "1", "DAODAN_TEST_BABEL": BABEL[1], "DAODAN_SECRETLINT": SECRETLINT[2]}
     return subprocess.run(command, cwd=REMOTE, env=environment).returncode
 
 

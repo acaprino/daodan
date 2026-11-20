@@ -386,7 +386,7 @@ class MapServiceTests(unittest.TestCase):
         from pipeline import events as pipeline_events
         self.create()
         journal = self.service.root / "runs/example/snapshot" / pipeline_events.JOURNAL
-        # The run's creation runs the scan without the container, and the stack (ADR 2026-11-17, decision 3).
+        # The run's creation runs the scan without the container, and the stack (pipeline spec of 15 November 2026, section 6).
         progress = self.service.status("example")["progress"]
         self.assertEqual((progress["step"], progress["done"]), ("scan", progress["total"]))
         start = len(pipeline_events.read(journal)[0])

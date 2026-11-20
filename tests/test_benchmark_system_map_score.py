@@ -80,5 +80,209 @@ class ScoreTests(unittest.TestCase):
         self.assertEqual(score.score_externals(brief, expected)["wrong"], ["billing"])
 
 
+# A whole-system reference made up here: depth 0 to 3, folders, children of their parent's type, store keys,
+# symbols of one file in two nodes, a generated file, an actor and an external with its registry id.
+FILES = ["README.md", ".github/workflows/ci.yml", "docs/guide.md", "scripts/deploy.sh",
+         "web/app.tsx", "web/lib/api.ts", "web/pages/login.tsx", "web/pages/cart.tsx", "web/pages/cart_item.tsx",
+         "web/components/button.tsx", "web/components/modal.tsx", "web/hooks/use_cart.ts",
+         "api/main.py", "api/models.py", "api/routes/auth.py", "api/routes/orders.py", "api/routes/orders_admin.py",
+         "api/tests/test_orders.py", "api/migrations/001_init.sql", "jobs/nightly.py", "jobs/cleanup.py"]
+
+
+def _node(name, kind, inside=None, members=(), **more):
+    return {"name": name, "type": kind, **({"inside": inside} if inside else {}),
+            **({"members": list(members)} if members else {}), **more}
+
+
+def _flow(name, kinds, nodes, entries, effects):
+    return {"name": name, "types": kinds, "nodes": nodes, "entries": [{"node": n} for n in entries],
+            "effects": [{"node": n} for n in effects]}
+
+
+REFERENCE = {
+    "nodes": [_node("Shop", "altro", None, ["web", "api", "jobs"]),
+              _node("Web app", "applicazione", "Shop", ["web"]),
+              _node("Login", "schermata", "Web app", ["web/pages/login.tsx"]),
+              _node("Cart", "schermata", "Web app", ["web/pages/cart.tsx", "web/lib/api.ts", "web/hooks/use_cart.ts"]),
+              _node("Cart item", "schermata", "Cart", ["web/pages/cart_item.tsx"]),
+              _node("API", "servizio o API", "Shop", ["api/main.py::app", "api/routes"]),
+              _node("Auth routes", "servizio o API", "API", ["api/routes/auth.py"]),
+              _node("Order routes", "servizio o API", "API", ["api/routes/orders.py", "api/routes/orders_admin.py"]),
+              _node("Database", "database", "Shop", ["store:pg/orders", "store:pg/users"]),
+              _node("Order", "entità", "Database", ["store:pg/orders", "api/models.py::Order"]),
+              _node("User", "entità", "Database", ["store:pg/users", "api/models.py::User"]),
+              _node("Cache", "database", "Shop", ["store:redis/users"]),
+              _node("Nightly job", "lavoro a orario", "Shop",
+                    ["jobs", "jobs/generated/a.py", "jobs/generated/b.py", "jobs/generated/c.py"]),
+              _node("Customer", "attore", position="external"),
+              _node("Stripe", "gateway", position="external", registry="stripe", family="provider",
+                    role="charges the cards", mode="SDK")],
+    "flows": [_flow("Sign in", ["funzionale"], ["Customer", "Login", "Auth routes", "User"], ["Customer"], ["User"]),
+              _flow("Checkout", ["funzionale"], ["Customer", "Cart", "Cart item", "Order routes", "Stripe", "Order"],
+                    ["Cart"], ["Order", "Stripe"]),
+              _flow("Nightly cleanup", ["operativo"], ["Nightly job", "Order", "Cache"], ["Nightly job"], ["Cache"])]}
+
+
+def as_proposal(reference: dict) -> dict:
+    """A reference as a proposed map: what a map carries, every arrow proved."""
+    fields = ("name", "type", "position", "inside", "members", "registry", "family", "role", "mode")
+    return {"nodes": [{k: n[k] for k in fields if k in n} for n in reference["nodes"]],
+            "flows": [{"name": f["name"], "types": f["types"], "nodes": f["nodes"],
+                       "arrows": [{"status": "proved"}] * (len(f["nodes"]) - 1)} for f in reference["flows"]]}
+
+
+def _depth(node: dict, by: dict) -> int:
+    depth = 0
+    while node.get("inside") in by and depth < 20:
+        node, depth = by[node["inside"]], depth + 1
+    return depth
+
+
+def fuse_level_2(proposal: dict) -> dict:
+    """Every node of depth 2 merged into its parent: its members, its children and its place in the flows."""
+    by = {n["name"]: n for n in proposal["nodes"]}
+    fused = {n["name"]: n["inside"] for n in proposal["nodes"] if _depth(n, by) == 2}
+    nodes = []
+    for node in proposal["nodes"]:
+        if node["name"] in fused:
+            continue
+        taken = [m for c in proposal["nodes"] if fused.get(c["name"]) == node["name"] for m in c.get("members", [])]
+        node = {**node, **({"members": list(dict.fromkeys(node.get("members", []) + taken))} if taken else {})}
+        if node.get("inside") in fused:
+            node["inside"] = fused[node["inside"]]
+        nodes.append(node)
+    flows = []
+    for flow in proposal["flows"]:
+        names = list(dict.fromkeys(fused.get(n, n) for n in flow["nodes"]))
+        flows.append({**flow, "nodes": names, "arrows": [{"status": "proved"}] * (len(names) - 1)})
+    return {**proposal, "nodes": nodes, "flows": flows}
+
+
+def rename(proposal: dict) -> dict:
+    new = {n["name"]: f"node {i}" for i, n in enumerate(proposal["nodes"])}
+    nodes = [{**n, "name": new[n["name"]], **({"inside": new[n["inside"]]} if n.get("inside") in new else {})}
+             for n in proposal["nodes"]]
+    flows = [{**f, "name": f"flow {i}", "nodes": [new[n] for n in f["nodes"]]} for i, f in enumerate(proposal["flows"])]
+    return {**proposal, "nodes": nodes, "flows": flows}
+
+
+def swap_types(proposal: dict) -> dict:
+    kinds = sorted({n["type"] for n in proposal["nodes"]})
+    return {**proposal, "nodes": [{**n, "type": kinds[(kinds.index(n["type"]) + 1) % len(kinds)]}
+                                  for n in proposal["nodes"]]}
+
+
+def folder_mirror(files: list[str]) -> dict:
+    """One node per folder of the snapshot, inside the folder that holds it: the tree, not the system."""
+    folders = sorted({"/".join(f.split("/")[:k]) for f in files for k in range(f.count("/") + 1)})
+    return {"nodes": [{"name": d or ".", "type": "altro", "members": [d or "."],
+                       **({"inside": d.rpartition("/")[0] or "."} if d else {})} for d in folders], "flows": []}
+
+
+class SystemScoreTests(unittest.TestCase):
+    def setUp(self):
+        self.full = score.score_system(as_proposal(REFERENCE), REFERENCE, FILES)
+
+    def test_the_reference_against_itself_finds_everything(self):
+        result = self.full
+        self.assertEqual(result["nodes"]["by_depth"], {"0-1": {"found": 7, "of": 7}, "2": {"found": 6, "of": 6},
+                                                       "3+": {"found": 1, "of": 1}})
+        self.assertEqual((result["nodes"]["found"], result["nodes"]["of"], result["nodes"]["missing"]), (14, 14, []))
+        self.assertEqual(result["nodes"]["by_type"]["schermata"], {"found": 3, "of": 3})
+        self.assertEqual(result["apart"], {"found": 1, "of": 1})   # the actor: no files, no registry id
+        self.assertEqual(result["precision"], {"found": 15, "of": 15, "share": 1.0})
+        self.assertEqual(result["single_folder"], 0.133)            # Web app and Nightly job are one folder each
+        self.assertEqual(result["type"], {"same": 15, "of": 15, "share": 1.0})
+        self.assertEqual(result["inside"], {"kept": 12, "of_found": 12, "of": 12, "share": 1.0})
+        self.assertEqual(result["flows"], {"found": 3, "of": 3, "missing": [],
+                                           "by_type": {"funzionale": {"found": 2, "of": 2},
+                                                       "operativo": {"found": 1, "of": 1}}})
+        self.assertEqual(result["flows_depth_1"], {"share": 1.0, "of": 3})
+        self.assertEqual((result["entries"], result["effects"]), ({"found": 3, "of": 3}, {"found": 4, "of": 4}))
+        self.assertEqual(result["arrows"], {"proved": 10, "declared": 0, "refused": 0, "refused_share": 0.0})
+        self.assertEqual(result["reach"], {"found": 7, "of": 7})
+        self.assertEqual(result["services"], {"of": 1, "family": 1, "role": 1, "mode": 1})
+
+    def test_a_node_that_names_one_file_of_a_part_reaches_the_part_without_finding_it(self):
+        pointer = {"nodes": [{"name": "Shop site", "type": "schermata", "members": ["web/pages/cart.tsx"]},
+                             {"name": "Backend", "type": "servizio o API", "members": ["api/main.py"]},
+                             {"name": "Buyer", "type": "attore", "position": "external"},
+                             {"name": "Stripe", "type": "gateway", "position": "external"},   # no registry id
+                             {"name": "Spread", "type": "altro", "members": ["jobs/nightly.py", "api/models.py"]}],
+                   "flows": []}
+        result = score.score_system(pointer, REFERENCE, FILES)
+        self.assertEqual((result["nodes"]["found"], result["precision"]["found"]), (0, 1))
+        # Shop, Web app, API, and Stripe by its name; half of a node's files in a part do not reach it
+        self.assertEqual(result["reach"], {"found": 4, "of": 7})
+
+    def test_names_never_count(self):
+        self.assertEqual(score.score_system(rename(as_proposal(REFERENCE)), REFERENCE, FILES), self.full)
+
+    def test_fusing_level_2_into_the_parents_loses_level_2_and_the_fine_flows(self):
+        result = score.score_system(fuse_level_2(as_proposal(REFERENCE)), REFERENCE, FILES)
+        self.assertEqual(result["nodes"]["by_depth"], {"0-1": {"found": 7, "of": 7}, "2": {"found": 0, "of": 6},
+                                                       "3+": {"found": 1, "of": 1}})
+        self.assertEqual(result["nodes"]["found"], 8)
+        self.assertEqual(result["precision"]["share"], 1.0)
+        self.assertEqual(result["inside"], {"kept": 5, "of_found": 5, "of": 12, "share": 1.0})
+        self.assertEqual((result["flows"]["found"], result["flows_depth_1"]["share"]), (1, 1.0))
+        self.assertEqual((result["entries"], result["effects"]), ({"found": 1, "of": 3}, {"found": 1, "of": 4}))
+
+    def test_swapping_the_types_loses_the_type_and_what_has_no_files(self):
+        result = score.score_system(swap_types(as_proposal(REFERENCE)), REFERENCE, FILES)
+        self.assertEqual(result["type"], {"same": 0, "of": 14, "share": 0.0})
+        self.assertEqual((result["nodes"]["found"], result["apart"]["found"]), (14, 0))
+        self.assertEqual(result["precision"]["share"], 0.933)
+        self.assertEqual((result["flows"]["found"], result["entries"]["found"]), (3, 2))
+
+    def test_a_folder_mirror_has_low_precision(self):
+        result = score.score_system(folder_mirror(FILES), REFERENCE, FILES)
+        self.assertEqual(result["precision"], {"found": 4, "of": 15, "share": 0.267})
+        self.assertEqual(result["single_folder"], 1.0)
+        self.assertEqual((result["nodes"]["found"], result["flows"]["found"]), (4, 0))
+
+    def test_a_generated_file_out_of_the_snapshot_does_not_count(self):
+        jobs = {"nodes": [{"name": "Jobs", "type": "altro", "members": ["jobs"]}], "flows": []}
+        self.assertNotIn("Nightly job", score.score_system(jobs, REFERENCE, FILES)["nodes"]["missing"])
+
+    def test_a_loaded_node_counts_its_files_and_keeps_the_symbols_the_reference_splits(self):
+        loaded = {"nodes": [{"name": "Backend", "type": "servizio o API", "members": ["api/routes"],
+                             "files": ["api/main.py", "api/routes/auth.py", "api/routes/orders.py",
+                                       "api/routes/orders_admin.py"]},
+                            {"name": "Orders", "type": "entità", "members": ["store:db/orders", "api/models.py::Order"],
+                             "files": ["api/models.py"]},   # "orders" is one store key only: the store's name drops
+                            {"name": "Users", "type": "entità", "members": ["store:db/users", "api/models.py::User"],
+                             "files": ["api/models.py"]}],  # "users" is in two stores: it keeps the name
+                  "flows": []}
+        missing = score.score_system(loaded, REFERENCE, FILES)["nodes"]["missing"]
+        self.assertIn("User", missing)
+        self.assertFalse({"API", "Order"} & set(missing))
+
+    def test_an_external_with_a_registry_id_never_stands_for_an_actor(self):
+        stripe = {"nodes": [{"name": "Pay", "type": "attore", "position": "external", "registry": "stripe"}],
+                  "flows": []}
+        result = score.score_system(stripe, REFERENCE, FILES)
+        self.assertEqual((result["apart"]["found"], result["nodes"]["found"]), (0, 1))
+
+    def test_one_flow_holding_every_node_finds_no_flow(self):
+        proposal = as_proposal(REFERENCE)
+        everything = {"name": "All", "types": ["funzionale"], "nodes": [n["name"] for n in proposal["nodes"]],
+                      "arrows": []}
+        self.assertEqual(score.score_system({**proposal, "flows": [everything]}, REFERENCE, FILES)["flows"]["found"], 0)
+
+    def test_a_found_service_counts_the_same_family_and_whether_role_and_mode_are_there(self):
+        expected = {"nodes": [_node("Stripe", "gateway", position="external", registry="stripe", family="provider",
+                                    role="charges the cards", mode="SDK"),
+                              _node("Sendgrid", "servizio o API", position="external", registry="sendgrid",
+                                    family="provider", role="sends the mails", mode="HTTP API")], "flows": []}
+        proposed = {"nodes": [_node("Pay", "gateway", position="external", registry="stripe", family="provider",
+                                    role="payments", mode="library"),
+                              _node("Mail", "servizio o API", position="external", registry="sendgrid",
+                                    family="piattaforma di integrazione", role="mail")], "flows": []}
+        result = score.score_system(proposed, expected, FILES)
+        self.assertEqual(result["nodes"]["found"], 2)
+        self.assertEqual(result["services"], {"of": 2, "family": 1, "role": 2, "mode": 1})
+
+
 if __name__ == "__main__":
     unittest.main()

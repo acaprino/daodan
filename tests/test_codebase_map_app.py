@@ -833,6 +833,7 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
     monkeypatch.setattr(repository, "checkout", lambda address, branch, work: {
         "repository": found, "branch": branch, "commit": "a" * 40, "path": str(project)})
     monkeypatch.setattr(launcher.App, "_warm", lambda self: setattr(self, "mcp_ready", "ready"))  # no download
+    monkeypatch.setattr(launcher.App, "_follow", lambda self: None)  # the chain at the pass's end: its own tests
     app = launcher.App(tmp_path / "work", environment={})
     server = app.serve(token="t")
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -883,6 +884,8 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         assert [symbol["name"] for symbol in request(port, "/api/app/symbols?file=file%3Aa.py")[1]["symbols"]] == ["f"]
         status, told = request(port, "/api/app/link", {})  # the service gives the rule format; no engine is chosen
         assert status == 200 and told["links"]["state"] == "no_engine"
+        status, told = request(port, "/api/app/map", {})  # no engine is chosen: nothing is asked of the service
+        assert status == 200 and told["mapped"]["state"] == "no_engine"
         described = request(port, "/api/app/engine", {"engine": "openai", "model": "m", "api_key": "sk-secret"})[1]
         assert described["api_key"] == "set" and "sk-secret" not in json.dumps(request(port, "/api/app/state")[1])
         assert request(port, "/api/app/engine", {"engine": "other"})[0] == 400
@@ -930,18 +933,22 @@ def test_a_pass_that_failed_starts_again_when_asked_and_when_its_commit_is_selec
 RULE = {"written": "fetch", "in": ["app/client"], "link": "rotta", "route": {"service": "api", "method": "GET", "path": "arg0"}}
 
 
+PROPOSAL = {"nodes": [{"name": "Prodotto", "type": "altro", "members": ["."]}], "flows": []}
+
+
 class Flows:
-    """The service's flows as the app reads them: the rule format until rules are recorded, then what they link; a
-    rule without its link is refused with the service's reason."""
+    """The service's flows as the app reads them: the rule format until rules are recorded, then what they link, the
+    system brief, and a map proposal recorded and reported; a rule without its link and a proposal without nodes are
+    refused with the service's reason."""
 
     def __init__(self):
-        self.rules, self.asked = None, []
+        self.rules, self.map, self.asked = None, None, []
 
     def status(self, run_id):
         return {}
 
-    def flows(self, run_id, rules=None):
-        self.asked.append(rules)
+    def flows(self, run_id, rules=None, brief=False, map=None):
+        self.asked.append(("map", map) if map is not None else "brief" if brief else rules)
         if rules is not None:
             if any("link" not in rule for rule in rules):
                 raise ValueError("rule 0: link must be one of scrive, legge, rotta, offre, attiva, ingresso")
@@ -949,9 +956,28 @@ class Flows:
         if self.rules is None:
             return {"status": "needs_rules", "run_id": run_id, "format": "the rule format v1",
                     "technologies": [{"unit": "app/server", "technologies": ["flask"]}]}
+        if brief:
+            return {"status": "ok", "run_id": run_id, "brief": "the brief", "format": "the map format v1", "areas": []}
+        if map is not None:
+            if not map.get("nodes"):
+                raise ValueError("a proposal names its nodes")
+            self.map = map
+            return {"status": "ok", "run_id": run_id, "nodes": [{"name": node["name"], "status": "accepted"}
+                                                                for node in map["nodes"]], "flows": []}
         return {"status": "ok", "run_id": run_id, "entries": [], "entry_count": 0,
                 "routes": {"offered": 2, "called": 2, "linked": 2}, "stores": {}, "store_count": 0, "gaps": [],
                 "gap_count": 0, "external": []}
+
+    def system_map(self, run_id):
+        self.asked.append("system_map")
+        if self.map is None:
+            return {"status": "no_map", "run_id": run_id, "reason": "no system map is recorded: propose one with map"}
+        return {"status": "ok", "run_id": run_id, "nodes": {"accepted": len(self.map["nodes"])}, "flows": {},
+                "coverage": LEFT}
+
+
+LEFT = {"entries": {"in": 0, "of": 1, "left": ["app/client.py::main"]}, "stores": {"in": 0, "of": 0, "left": []},
+        "routes": {"in": 0, "of": 0, "left": []}}
 
 
 def linking(tmp_path, environment=None):
@@ -961,11 +987,11 @@ def linking(tmp_path, environment=None):
     return app
 
 
-def settled(app) -> dict:
+def settled(app, held: str = "linked") -> dict:
     deadline = time.monotonic() + 60
-    while app.linked["state"] == "running" and time.monotonic() < deadline:
+    while getattr(app, held)["state"] == "running" and time.monotonic() < deadline:
         time.sleep(0.05)
-    return app.linked
+    return getattr(app, held)
 
 
 def openai(endpoint) -> dict:
@@ -1009,7 +1035,8 @@ def test_an_engine_that_records_no_valid_rules_fails_with_the_cause(tmp_path, en
     assert told["state"] == "failed" and "no rules" in told["cause"]  # its words are no result
 
 
-def test_finding_the_links_runs_once_at_a_time_and_stops_with_the_app(tmp_path, monkeypatch):
+@pytest.mark.parametrize("action, held, shown", [("link", "linked", "links"), ("map", "mapped", "mapped")])
+def test_the_links_and_the_map_run_once_at_a_time_and_stop_with_the_app(tmp_path, monkeypatch, action, held, shown):
     class Waiting:
         def __init__(self):
             self.started, self.go = [], threading.Event()
@@ -1022,15 +1049,200 @@ def test_finding_the_links_runs_once_at_a_time_and_stops_with_the_app(tmp_path, 
     engine = Waiting()
     monkeypatch.setattr(engines, "configured", lambda chosen: engine)
     app = linking(tmp_path)
-    app.link({})
+    assert getattr(app, action)({})[shown]["state"] == "running"
     with pytest.raises(ValueError, match="wait"):
-        app.link({})
+        getattr(app, action)({})
+    with pytest.raises(ValueError, match="wait"):  # both write the link rules: the other waits too
+        getattr(app, "map" if action == "link" else "link")({})
     with pytest.raises(ValueError, match="in progress"):
         app.select({"url": "https://github.com/o/n", "branch": "main"})
     app.close()
     engine.go.set()
-    told = settled(app)
+    told = settled(app, held)
     assert len(engine.started) == 1 and told["state"] == "failed" and "stopped" in told["cause"]
+
+
+def test_mapping_without_an_engine_says_what_to_do_and_writes_nothing(tmp_path):
+    app = linking(tmp_path)
+    told = app.map({})["mapped"]
+    assert told["state"] == "no_engine" and "engine" in told["cause"]
+    assert app.service.asked == ["system_map"] and not (tmp_path / "work" / "engine").exists()  # read, nothing written or run
+
+
+def test_the_engine_records_a_map_through_the_flows_tool_and_the_service_says_its_nodes_flows_and_remainder(
+        tmp_path, endpoint, monkeypatch):
+    monkeypatch.setattr(Endpoint, "call", ("codebase_map_flows", json.dumps({"map": PROPOSAL})))
+    app = linking(tmp_path, openai(endpoint))
+    app.service.rules = [RULE]
+    assert app.map({})["mapped"]["state"] == "running"
+    assert settled(app, "mapped") == {"state": "done", "cause": None, "nodes": {"accepted": 1}, "flows": {},
+                                      "left": LEFT}
+    assert app.service.asked == ["system_map", ("map", PROPOSAL), "system_map"]  # none recorded, the proposal, the map
+    first = Endpoint.seen[0][2]
+    tool = next(tool["function"] for tool in first["tools"] if tool["function"]["name"] == "codebase_map_flows")
+    assert set(tool["parameters"]["properties"]) == {"rules", "brief", "map", "about"}
+    task = first["messages"][-1]["content"]
+    assert "app-r" in task and "`brief` true" in task and "needs_rules" in task and "«Sequence»" in task
+    assert app.state({})["mapped"]["state"] == "done" and "sk-secret" not in json.dumps(app.state({}))
+
+
+def test_the_service_says_the_recorded_map_in_counts_with_its_remainder_or_that_there_is_none(levels):
+    import system_map
+    assert levels.system_map("levels") == {"status": "no_map", "run_id": "levels",
+                                           "reason": "no system map is recorded: propose one with map"}
+    proposal = {"scope": ["funzioni principali"],
+                "nodes": [{"name": "Cliente", "type": "attore", "position": "external", "evidence": ["web/api.ts"]},
+                          {"name": "Web", "type": "applicazione", "members": ["web"]}],
+                "flows": [{"name": "Ricerca di un cane", "area": "funzioni principali", "types": ["funzionale"],
+                           "nodes": ["Cliente", "Web"], "arrows": [{"from": "Cliente", "to": "Web", "data": "a page",
+                                                                     "kind": "attiva", "cite": "web/api.ts:4"}]}]}
+    report = levels.flows("levels", map=proposal)
+    written = levels.root / "runs" / "levels" / "snapshot" / system_map.FILE
+    try:
+        found = levels.system_map("levels")
+        assert (found["status"], found["nodes"], found["flows"]) == ("ok", {"accepted": 2}, {"accepted": 1})
+        assert found["coverage"] == report["coverage"] and found["coverage"]["entries"]["left"]  # what is left out
+    finally:
+        written.unlink()  # the run is the module's: it goes on without a map
+
+
+def test_a_question_runs_as_the_links_do_and_without_an_engine_is_refused(tmp_path, endpoint, monkeypatch):
+    with pytest.raises(ValueError, match="no engine"):
+        linking(tmp_path).ask({"question": "where?"})
+    monkeypatch.setattr(Endpoint, "call", ("codebase_map_flows", "{}"))
+    app = linking(tmp_path, openai(endpoint))
+    assert app.ask({"question": "where?"}) == {"state": "running"}
+    settled(app, "asked")
+    found = app.answer({})
+    assert (found["state"], found["question"], [event["kind"] for event in found["events"]]) == (
+        "done", "where?", ["tool", "text", "text"])
+    assert "needs_rules" in found["text"] and Endpoint.seen[0][2]["messages"][0]["content"] == launcher.SYSTEM
+
+
+def test_a_refused_proposal_ends_the_map_with_the_service_s_cause(tmp_path, endpoint, monkeypatch):
+    monkeypatch.setattr(Endpoint, "call", ("codebase_map_flows", json.dumps({"map": {"flows": []}})))
+    app = linking(tmp_path, openai(endpoint))
+    app.service.rules = [RULE]
+    app.map({})
+    told = settled(app, "mapped")
+    assert told["state"] == "failed" and "a proposal names its nodes" in told["cause"]  # the service's own reason
+    assert app.service.map is None
+
+
+class Passing(Flows):
+    """`Flows` with the selected run's pass: each `index` starts the next of `passes`, whose states are read in turn,
+    the last one staying; with none left the pass stays as it is, as a fresh one does."""
+
+    def __init__(self, *passes):
+        super().__init__()
+        self.passes, self.states = list(passes), ["missing"]
+
+    def runs(self):
+        return {"runs": [{"run_id": "app-aaaaaaaaaaaa"}]}
+
+    def index(self, run_id):
+        if self.passes:
+            self.states = list(self.passes.pop(0))
+
+    def status(self, run_id):
+        return {"engine": {"state": self.states.pop(0) if len(self.states) > 1 else self.states[0], "reason": None}}
+
+
+class Doing:
+    """An engine that records through the flows tool what its task asks, rules for the links and a proposal for the
+    map, or ends with `cause`; it keeps each task's first word and the links' state when the task began."""
+
+    def __init__(self, app, cause=None):
+        self.app, self.cause, self.started = app, cause, []
+
+    def run(self, task, say, cancelled):
+        word = task["prompt"].split()[0]
+        self.started.append((word, self.app.linked["state"]))
+        if self.cause:
+            return {"state": "failed", "text": "", "session": None, "cause": self.cause}
+        flows = next(tool["call"] for tool in task["tools"] if tool["name"] == "codebase_map_flows")
+        flows({"rules": [RULE]} if word == "Write" else {"map": PROPOSAL})
+        return {"state": "done", "text": "", "session": None, "cause": None}
+
+
+def selecting(tmp_path, monkeypatch, service):
+    """An app that selects a commit whose run's service is `service`, reading the pass and the work at short turns."""
+    monkeypatch.setattr(launcher, "MapService", lambda root: service)
+    monkeypatch.setattr(repository, "checkout", lambda address, branch, work: {
+        "repository": {}, "branch": branch, "commit": "a" * 40, "path": str(tmp_path / "commit" / "source")})
+    monkeypatch.setattr(launcher.App, "_warm", lambda self: None)
+    monkeypatch.setattr(launcher, "RECHECK", 0.01)
+    monkeypatch.setattr(launcher, "TURN", 0.01)
+    return launcher.App(tmp_path / "work", environment={})
+
+
+def ended(app, held: str) -> dict:
+    """The work kept in `held` once it has started and ended."""
+    deadline = time.monotonic() + 20
+    while getattr(app, held)["state"] in ("idle", "running") and time.monotonic() < deadline:
+        time.sleep(0.02)
+    return getattr(app, held)
+
+
+def quiet(query, should_stop):
+    """The explorer's frame of a run without events."""
+    return [("snapshot", {"run_events": {"events": [], "next_cursor": 0, "pipeline": {"events": [], "next_cursor": 0}},
+                          "pulse": {"events": [], "next_cursor": 0}})]
+
+
+def test_when_the_pass_ends_fresh_the_links_and_then_the_map_start_by_themselves_once(tmp_path, monkeypatch):
+    service = Passing(("running", "running", "failed"), ("running", "fresh"))
+    app = selecting(tmp_path, monkeypatch, service)
+    engine = Doing(app)
+    monkeypatch.setattr(engines, "configured", lambda chosen: engine)
+    app._prepare("https://github.com/o/n", "main")  # the pass ends failed: nothing starts
+    assert (engine.started, app.linked["state"], app.mapped["state"]) == ([], "idle", "idle")
+    app.retry({})  # the pass starts again and ends fresh
+    assert ended(app, "mapped") == {"state": "done", "cause": None, "nodes": {"accepted": 1}, "flows": {}, "left": LEFT}
+    assert engine.started == [("Write", "running"), ("Map", "done")]  # the map once the links are found
+    assert app.linked == {"state": "done", "cause": None, "routes": {"offered": 2, "called": 2, "linked": 2},
+                          "stores": 0, "gaps": 0}
+    read = list(service.asked)
+    # reads of the state, a page that observes, the pass asked again and a second follower start nothing
+    for _ in range(3):
+        app.state({})
+    assert [name for name, _ in app.stream(quiet)({"run": "app-aaaaaaaaaaaa", "max_seconds": "0.3"}, lambda: False)]
+    app.retry({})
+    app._follow()
+    assert len(engine.started) == 2 and service.asked == read
+
+
+def test_with_the_rules_and_a_map_recorded_for_the_snapshot_no_engine_is_asked_again(tmp_path, monkeypatch):
+    service = Passing(("fresh",))
+    service.rules, service.map = [RULE], PROPOSAL
+    app = selecting(tmp_path, monkeypatch, service)
+    engine = Doing(app)
+    monkeypatch.setattr(engines, "configured", lambda chosen: engine)
+    app._prepare("https://github.com/o/n", "main")
+    assert ended(app, "mapped") == {"state": "done", "cause": None, "nodes": {"accepted": 1}, "flows": {}, "left": LEFT}
+    assert app.linked["state"] == "done" and engine.started == []
+    assert service.asked == [None, "system_map"]  # what is recorded is read, nothing is written
+
+
+def test_without_an_engine_the_state_says_the_part_left_uncovered_its_cause_and_the_remedy(tmp_path, monkeypatch):
+    app = selecting(tmp_path, monkeypatch, Passing(("running", "fresh")))
+    app._prepare("https://github.com/o/n", "main")
+    told = app.state({})
+    assert told["links"]["state"] == told["mapped"]["state"] == "no_engine"
+    cause = told["mapped"]["cause"]
+    assert "the links are not found" in cause and "no engine is chosen" in cause and "set the engine" in cause
+    assert app.service.asked == [None] and not (tmp_path / "work" / "engine").exists()  # the map is not started
+
+
+def test_links_that_are_not_found_leave_the_map_not_started_with_their_cause(tmp_path, monkeypatch):
+    service = Passing(("fresh",))
+    app = selecting(tmp_path, monkeypatch, service)
+    engine = Doing(app, cause="the model is not reached")
+    monkeypatch.setattr(engines, "configured", lambda chosen: engine)
+    app._prepare("https://github.com/o/n", "main")
+    assert ended(app, "mapped") == {"state": "failed", "cause": "the links are not found: the model is not reached"}
+    assert app.linked == {"state": "failed", "cause": "the model is not reached"}
+    assert engine.started == [("Write", "running")] and "system_map" not in service.asked
 
 
 def raw(port: int, path: str) -> tuple[int, str, bytes]:
@@ -1105,14 +1317,10 @@ def test_a_busy_project_is_no_failure_the_stream_skips_a_turn_and_a_read_answers
                 raise busy()
             return {"pipeline": {"scan": "fresh"}, "progress": None, "engine": {"state": "fresh", "reason": None}}
 
-    def explorer(query, should_stop):
-        return [("snapshot", {"run_events": {"events": [], "next_cursor": 0, "pipeline": {"events": [], "next_cursor": 0}},
-                              "pulse": {"events": [], "next_cursor": 0}})]
-
     monkeypatch.setattr(launcher, "TURN", 0.01)
     app = launcher.App(tmp_path / "work", environment={})
     app.service, app.context = Service(), {"run_id": "r", "path": str(tmp_path / "checkout")}
-    frames = list(app.stream(explorer)({"run": "r", "max_seconds": "1"}, lambda: False))
+    frames = list(app.stream(quiet)({"run": "r", "max_seconds": "1"}, lambda: False))
     assert [name for name, _ in frames] == ["app", "snapshot"] and Service.asked == 2
     assert frames[0][1]["run"]["pipeline"] == {"scan": "fresh"}
 

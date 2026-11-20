@@ -32,7 +32,8 @@ description: >
 ## How This Skill Is Invoked
 
 `references/entry-analyze.md` dispatches isolated `codebase-map:map-analyst`;
-`references/entry-team-analyze.md` uses isolated partition workers. Entries own
+`references/entry-team-analyze.md` uses isolated partition workers. Both end by
+dispatching `codebase-map:system-mapper` on the whole system. Entries own
 `.daodan/map/` publication (`references/run.md`).
 Loading `codebase-map:map` starts no analysis or run.
 

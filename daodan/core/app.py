@@ -25,6 +25,7 @@ project runs on this machine. The chosen engine is kept in the work folder for t
 system's deposit of secrets (`engines.kept`); the key is said `set` or `missing`, never itself.
 Finding the links between modules is a task of the engine too: it writes the project's link rules through the flows
 tool and corrects them on what stays unlinked; what they link is the service's answer, never the engine's words.
+When the selected run's pass ends fresh, the app finds the links and then maps the system by itself, once.
 """
 from __future__ import annotations
 
@@ -65,6 +66,14 @@ LINKS = ("Write the link rules of the project of run `{run}`: the machine applie
          "each call or value no rule links, with its reason. A rule it refuses comes back with why. Correct your "
          "rules on those leftovers and record them again, at most {rounds} times, then stop.\n\n"
          "The technologies of each build unit:\n{technologies}\n\nThe rule format:\n{format}")
+MAP = ("Map the system of run `{run}`: the machine checks every proposal against the code's links and records what "
+       "holds, and your final words are not a result. Read the code only with the tools given. Begin with "
+       "`codebase_map_flows` with `brief` true. While it answers `needs_rules`, write the link rules in the format it "
+       "gives, record them with `rules` and ask again. Then follow «Sequence» in the map format it returns, for the "
+       "whole system.")
+LINKED = {"routes": "routes", "stores": "store_count", "gaps": "gap_count"}  # what the state says of the links
+DRAWN = {"nodes": "nodes", "flows": "flows", "left": "coverage"}  # what the state says of the system map
+WRITING = "the engine is writing the link rules or the system map: wait for it"  # `link` and `map`: one at a time
 FINAL = ("fresh", "unavailable", "failed", "off")  # the pass's states that change no more by themselves
 LEVELS = 64  # answers of the graph kept for the run's data (open sets, files' symbols), least recently asked dropped first
 TURN, RECHECK = 0.5, 1.5  # seconds between two reads of the stream, and between two reads of a running pass's state
@@ -88,6 +97,22 @@ def _cause(error: Exception) -> str:
     return str(error) if isinstance(error, ValueError) else f"{type(error).__name__}: {error}"
 
 
+def _refusals(kept: list):
+    """What an engine says, kept when it is the flows tool refusing a call: the service's reason, for an engine that
+    passes the tool's answer on."""
+    def said(kind, name=None, answer=None, **data):
+        if kind == "tool" and str(name).endswith("codebase_map_flows") and str(answer).startswith('{"error"'):
+            kept.append(answer)
+    return said
+
+
+def _why(outcome: dict, refused: list, recorded: str) -> str:
+    """Why an engine's work recorded nothing: the service's last refusal, or how the engine ended."""
+    return (f"the service refused the last call: {refused[-1]}" if refused else outcome["cause"]
+            or ("the engine was stopped" if outcome["state"] == "cancelled"
+                else f"the engine ended and recorded no {recorded}"))
+
+
 class App:
     """The active repository, the work that prepares it and the question asked of the engine."""
 
@@ -103,6 +128,8 @@ class App:
         self._saving = threading.Lock()  # one `configure` at a time: the folder, the deposit and `engine` agree
         self.asked = {"state": "idle", "question": "", "text": "", "events": [], "cause": None}
         self.linked = {"state": "idle", "cause": None}  # the links between modules: see `link`
+        self.mapped = {"state": "idle", "cause": None}  # the system map: see `map`
+        self._following = None  # the selection whose pass's end is followed: see `_follow`
         self.registry = {entry["id"]: entry for entry in service_registry.load()["entries"]}  # whose marks `mark` serves
         self._marks, self._fetch = {}, ThreadPoolExecutor(max_workers=1)  # the marks fetched on first use, one at a time
         self._lock, self._stop = threading.Lock(), threading.Event()
@@ -119,11 +146,13 @@ class App:
         if not isinstance(branch, str):
             raise ValueError("the branch is a name")
         with self._lock:
-            if "running" in (self.asked["state"], self.linked["state"]) or self.job["state"] == "preparing":
+            if "running" in (self.asked["state"], self.linked["state"], self.mapped["state"]) \
+                    or self.job["state"] == "preparing":
                 raise ValueError("work is in progress: wait for it, or stop the app")
             self.job = {"state": "preparing", "step": "checkout", "detail": f"{found['url']} at {branch}"}
             self.service = self.context = None
             self.linked = {"state": "idle", "cause": None}
+            self.mapped = {"state": "idle", "cause": None}
             self.mcp_ready = "not prepared"
         threading.Thread(target=self._prepare, args=(found["url"], branch), daemon=True).start()
         return self.state({})
@@ -146,12 +175,63 @@ class App:
             self.job = {"state": "failed", "step": self.job["step"], "detail": _cause(error)[:600]}
             return
         self._warm()
+        self._follow()
 
     def retry(self, body: dict) -> dict:
         """Start again the selected run's pass where it failed; one that is fresh, running or unavailable stays."""
         service, run_id = self._active()
         service.index(run_id)
+        threading.Thread(target=self._follow, daemon=True).start()
         return self.state({})
+
+    def _follow(self) -> None:
+        """When the selected run's pass ends `fresh`, find the links and then map the system (`link`, `map`): once for
+        a selection, however often it is followed again. A pass that ends otherwise starts nothing, and `retry` follows
+        it again; another selection or the app's end stops the wait. Links that are not found leave the map not started,
+        with their cause; a failure of the chain is the map's cause."""
+        with self._lock:
+            service, context = self.service, self.context
+            if context is None or self._following is context:
+                return
+            self._following = context
+        try:
+            if self._pass_end(service, context) != "fresh":
+                with self._lock:
+                    if self._following is context:
+                        self._following = None
+                return
+            for held in ("linked", "mapped"):
+                self._settled(held)  # what the person asked meanwhile ends first: what it records is not asked again
+            self.link({})
+            linked = self._settled("linked")
+            if linked["state"] == "done":
+                self.map({})
+                return
+            ended = {"state": linked["state"], "cause": f"the links are not found: {linked['cause']}"}
+        except Exception as error:  # noqa: BLE001 - the page reads why the chain stopped
+            ended = {"state": "failed", "cause": _cause(error)}
+        with self._lock:
+            if self.context is context and self.mapped["state"] != "running" and not self._stop.is_set():
+                self.mapped = ended
+
+    def _pass_end(self, service: MapService, context: dict) -> str | None:
+        """How the selected run's pass ends, read every RECHECK seconds while it runs; None when another selection or
+        the app's end comes first."""
+        while self.context is context and not self._stop.is_set():
+            try:
+                engine = service.status(context["run_id"]).get("engine") or {}
+                if engine.get("state") != "running":
+                    return engine.get("state")
+            except confinement.ProjectBusy:
+                pass  # another helper holds the project now: the next turn reads again
+            self._stop.wait(RECHECK)
+        return None
+
+    def _settled(self, held: str) -> dict:
+        """The work kept in `held` once it does not run, read every TURN seconds; as it is when the app ends."""
+        while getattr(self, held)["state"] == "running" and not self._stop.wait(TURN):
+            pass
+        return getattr(self, held)
 
     def _warm(self) -> None:
         """Fetch the MCP server's own packages now, so that a command-line engine finds it ready when it starts."""
@@ -175,7 +255,7 @@ class App:
         """The part of the state this process holds, cheap to read: the run's states are read from its store."""
         return {"job": self.job, "context": self.context, "engine": engines.described(self.engine), "mcp": self.mcp(),
                 "mcp_ready": self.mcp_ready, "asked": {key: self.asked[key] for key in ("state", "question", "cause")},
-                "links": self.linked}
+                "links": self.linked, "mapped": self.mapped}
 
     def state(self, query: dict) -> dict:
         service, context = self.service, self.context
@@ -344,7 +424,7 @@ class App:
 
     def _tools(self) -> list[dict]:
         """The service's operations on the active run, as the tools of an engine asked over an API: they read, and
-        the flows tool records the project's link rules."""
+        the flows tool records the project's link rules and its system map."""
         service, run = self.service, self.context["run_id"]
         text, names = {"type": "string"}, {"type": "array", "items": {"type": "string"}}
 
@@ -365,44 +445,82 @@ class App:
                                       "`symbols` or `ranges`.",
                  {"requests": {"type": "array", "items": {"type": "object"}}}, ["requests"],
                  lambda a: service.read(run, a["requests"])),
-            tool("codebase_map_flows", "The project's link rules: `rules` records them, and the answer is what they "
-                                       "link (routes, stores, gaps) or why a rule is refused; without them, what the "
-                                       "recorded rules link or the rule format.",
-                 {"rules": {"type": "array", "items": {"type": "object"}}}, [],
-                 lambda a: service.flows(run, rules=a.get("rules"))),
+            tool("codebase_map_flows", "The project's link rules and its system map. `rules` records the rules, and the "
+                                       "answer is what they link (routes, stores, gaps) or why a rule is refused; with "
+                                       "nothing, what the recorded rules link or the rule format. `brief` gives the "
+                                       "system brief and the map format; `map` records a proposal and reports it; "
+                                       "`about` answers for an area, a flow or a node.",
+                 {"rules": {"type": "array", "items": {"type": "object"}}, "brief": {"type": "boolean"},
+                  "map": {"type": "object"}, "about": text}, [],
+                 lambda a: service.flows(run, **{key: a[key] for key in ("rules", "brief", "map", "about") if key in a})),
         ]
+
+    def _engage(self, held: str, busy: str, running: dict, start, beside: tuple = ()) -> None:
+        """The engine's work kept in `held` (asked, linked, mapped), one at a time: it is `running` until it ends, and
+        another asked meanwhile, or while a work `beside` names runs, is refused with `busy`. `start()` gives its end at
+        once, or its task, what is said while the engine runs and what the engine's outcome ends as; the engine runs in
+        a thread of its own. Without an engine the end is `no_engine` and nothing is written; a failure anywhere is an
+        end with its cause."""
+        with self._lock:
+            if any(getattr(self, name)["state"] == "running" for name in (held, *beside)):
+                raise ValueError(busy)
+            setattr(self, held, running)
+
+        def failed(error: Exception) -> dict:
+            return {**running, "state": "failed", "cause": _cause(error)}
+
+        try:
+            begun = start()
+            if isinstance(begun, dict):  # ended before an engine was needed
+                setattr(self, held, begun)
+                return
+            try:
+                engine = engines.configured(self.engine)
+            except ValueError as error:  # no engine is chosen, or it lacks what it needs: the engine screen says
+                setattr(self, held, {**running, "state": "no_engine",
+                                     "cause": f"{error}; set the engine on its screen, then ask again"})
+                return
+            task, said, ended = begun
+            folder = self.work / "engine"
+            folder.mkdir(exist_ok=True)
+            task = {**task, "tools": self._tools(), "mcp": self.mcp(), "cwd": str(folder)}
+        except Exception as error:  # noqa: BLE001 - the page reads why the work failed
+            setattr(self, held, failed(error))
+            return
+
+        def work():
+            try:
+                outcome = engine.run(task, said, self._stop.is_set)
+            except Exception as error:  # noqa: BLE001 - the page reads why the engine failed
+                outcome = {"state": "failed", "text": "", "session": None, "cause": f"{type(error).__name__}: {error}"}
+            try:
+                setattr(self, held, ended(outcome))
+            except Exception as error:  # noqa: BLE001 - the page reads why the work failed
+                setattr(self, held, failed(error))
+
+        threading.Thread(target=work, daemon=True).start()
 
     def ask(self, body: dict) -> dict:
         """Give the engine a question about the active run; `answer` reads how it goes."""
         question = body["question"]
         if not isinstance(question, str) or not question.strip():
             raise ValueError("the question is text")
-        engine = engines.configured(self.engine)
-        with self._lock:
-            if self.service is None:
-                raise ValueError("no repository is selected")
-            if self.asked["state"] == "running":
-                raise ValueError("the engine is answering: wait for it")
-            self.asked = asked = {"state": "running", "question": question, "text": "", "events": [], "cause": None}
-        folder = self.work / "engine"
-        folder.mkdir(exist_ok=True)
-        task = {"system": SYSTEM, "prompt": f"The run is `{self.context['run_id']}`.\n\n{question}",
-                "tools": self._tools(), "mcp": self.mcp(), "cwd": str(folder)}
+        engines.configured(self.engine)  # without an engine the question is refused, before anything starts
+        _, run = self._active()
+        asked = {"state": "running", "question": question, "text": "", "events": [], "cause": None}
 
         def said(kind, **data):
             asked["events"].append({"kind": kind, **data})
             if kind == "text":
                 asked["text"] += data["text"]
 
-        def work():
-            try:
-                outcome = engine.run(task, said, self._stop.is_set)
-            except Exception as error:  # noqa: BLE001 - the page reads why the engine failed
-                outcome = {"state": "failed", "text": "", "cause": f"{type(error).__name__}: {error}"}
-            asked.update(state=outcome["state"], cause=outcome["cause"], text=outcome["text"] or asked["text"])
+        def ended(outcome):
+            return {**asked, "state": outcome["state"], "cause": outcome["cause"],
+                    "text": outcome["text"] or asked["text"]}
 
-        threading.Thread(target=work, daemon=True).start()
-        return {"state": "running"}
+        self._engage("asked", "the engine is answering: wait for it", asked, lambda: (
+            {"system": SYSTEM, "prompt": f"The run is `{run}`.\n\n{question}"}, said, ended))
+        return {"state": self.asked["state"]}
 
     def answer(self, query: dict) -> dict:
         after = int(query.get("after", 0))
@@ -414,55 +532,45 @@ class App:
         the service answers and writes the rules through the flows tool; at its end the service says what they link.
         Rules recorded before are the service's already: no engine is asked again."""
         service, run = self._active()
-        with self._lock:
-            if self.linked["state"] == "running":
-                raise ValueError("the engine is finding the links: wait for it")
-            self.linked = {"state": "running", "cause": None}
-        try:
-            needs = service.flows(run)
-        except Exception as error:  # noqa: BLE001 - the page reads why the links were not found
-            self.linked = {"state": "failed", "cause": _cause(error)}
-            return self.state({})
-        if needs.get("status") != "needs_rules":
-            self.linked = self._counted(needs)
-            return self.state({})
-        try:
-            engine = engines.configured(self.engine)
-        except ValueError as error:  # no engine is chosen, or it lacks what it needs: the engine screen says
-            self.linked = {"state": "no_engine", "cause": str(error)}
-            return self.state({})
-        folder = self.work / "engine"
-        folder.mkdir(exist_ok=True)
-        technologies = needs.get("technologies") or needs.get("technologies_unavailable")
-        task = {"prompt": LINKS.format(run=run, rounds=ROUNDS, format=needs["format"],
-                                       technologies=json.dumps(technologies, ensure_ascii=False)),
-                "tools": self._tools(), "mcp": self.mcp(), "cwd": str(folder)}
         refused = []
 
-        def said(kind, name=None, answer=None, **data):  # a rule the service refused: its reason, if the engine says it
-            if kind == "tool" and str(name).endswith("codebase_map_flows") and str(answer).startswith('{"error"'):
-                refused.append(answer)
+        def start():
+            needs = service.flows(run)
+            if needs.get("status") != "needs_rules":
+                return self._counted(needs)
+            technologies = needs.get("technologies") or needs.get("technologies_unavailable")
+            task = {"prompt": LINKS.format(run=run, rounds=ROUNDS, format=needs["format"],
+                                           technologies=json.dumps(technologies, ensure_ascii=False))}
+            return task, _refusals(refused), lambda outcome: self._counted(
+                service.flows(run), _why(outcome, refused, "rules"))
 
-        def work():
-            try:
-                outcome = engine.run(task, said, self._stop.is_set)
-                why = (f"the last rules were refused: {refused[-1]}" if refused else outcome["cause"]
-                       or ("the engine was stopped" if outcome["state"] == "cancelled"
-                           else "the engine ended and recorded no rules"))
-                self.linked = self._counted(service.flows(run), why)
-            except Exception as error:  # noqa: BLE001 - the page reads why the links were not found
-                self.linked = {"state": "failed", "cause": _cause(error)}
+        self._engage("linked", WRITING, {"state": "running", "cause": None}, start, beside=("mapped",))
+        return self.state({})
 
-        threading.Thread(target=work, daemon=True).start()
+    def map(self, body: dict) -> dict:
+        """Map the active run's system: the engine follows the sequence of the map format the service gives, writing
+        the link rules first when the run has none; at its end the service says the recorded map's nodes and flows
+        and what its coverage leaves out. A map recorded before is the service's already: no engine is asked again."""
+        service, run = self._active()
+        refused = []
+
+        def start():
+            recorded = service.system_map(run)
+            if recorded.get("status") == "ok":
+                return self._counted(recorded, kept=DRAWN)
+            return {"prompt": MAP.format(run=run)}, _refusals(refused), lambda outcome: self._counted(
+                service.system_map(run), _why(outcome, refused, "map"), DRAWN)
+
+        self._engage("mapped", WRITING, {"state": "running", "cause": None}, start, beside=("linked",))
         return self.state({})
 
     @staticmethod
-    def _counted(answer: dict, cause: str | None = None) -> dict:
-        """What the service says the recorded rules link, or why it says nothing."""
+    def _counted(answer: dict, cause: str | None = None, kept: dict = LINKED) -> dict:
+        """What the service says was recorded, its fields `kept` (the state's name: the answer's), or why it says
+        nothing."""
         if answer.get("status") != "ok":
             return {"state": "failed", "cause": cause or answer.get("reason") or f"the service answered {answer}"[:600]}
-        return {"state": "done", "cause": None, "routes": answer["routes"], "stores": answer["store_count"],
-                "gaps": answer["gap_count"]}
+        return {"state": "done", "cause": None, **{name: answer[field] for name, field in kept.items()}}
 
     # -- the transport --------------------------------------------------------------------------------------------
 
@@ -482,7 +590,7 @@ class App:
         actions = {**visual.live_actions(active), "/api/app/check": self.check, "/api/app/select": self.select,
                    "/api/app/retry": self.retry,
                    "/api/app/engine": self.configure, "/api/app/probe": self.probe, "/api/app/ask": self.ask,
-                   "/api/app/link": self.link}
+                   "/api/app/link": self.link, "/api/app/map": self.map}
         stream = {"/api/stream": self.stream(visual.live_stream(active)["/api/stream"])}
         return visual.make_server(None, VIEWER, port, routes=routes, actions=actions, token=token, stream=stream,
                                   mounts={"app": PAGE}, files={"/api/app/mark": self.mark})

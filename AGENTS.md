@@ -9,6 +9,9 @@ Il codice del progetto analizzato gira solo nel container di Daodan, mai sull'ho
 - **Minimalismo, semplicità e token saving sono il mantra del progetto.**
 - Usa il modello più piccolo che rappresenta il requisito: non aggiungere campi, contratti, fasi o astrazioni finché un'esigenza concreta non li giustifica.
 - Riusa strutture e strumenti esistenti; evita duplicazioni, sinonimi per lo stesso concetto e documentazione che ripete ciò che è già chiaro altrove.
+- **Usa soluzioni o librerie pronte quando si prestano al nostro scopo e alle nostre esigenze**, prima di scrivere codice a mano: ciò che Daodan ha già, la libreria standard, una libreria pubblica mantenuta e con licenza adatta. Per un problema che altri hanno già risolto (leggere codice, markup o un formato di dati, riconoscere segreti, confrontare versioni) il codice a mano entra solo con scritto accanto quale soluzione pronta è stata valutata e perché non si presta.
+- **Codice sorgente e markup si leggono dall'albero sintattico (tree-sitter), mai con espressioni regolari né con scansioni scritte a mano.** Un'espressione regolare è ammessa solo su testo senza grammatica (un nome di file, una riga di log, un identificativo), con il motivo accanto.
+- Chi verifica un lavoro, suo o di un agente, controlla il metodo prima dei test: test verdi su una soluzione scritta a mano dove ne esiste una pronta non sono una verifica.
 - Progetta per stabilità, pulizia, eleganza e manutenibilità: moduli coesi, responsabilità chiare, interfacce piccole e dipendenze esplicite. Usa pattern consolidati quando semplificano un'esigenza concreta.
 - Mantieni il nucleo applicativo indipendente da UI, trasporti HTTP/MCP e motori LLM; gli adattatori riusano la stessa logica applicativa.
 - Gestisci esplicitamente errori, timeout e ciclo di vita di processi e risorse; verifica i percorsi di errore rilevanti con test mirati.

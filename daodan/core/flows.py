@@ -83,7 +83,7 @@ MODULE = "<module>"  # the node of the code a file runs outside any named functi
 _FIELDS = {"callee", "written", "attribute", "in", "link", "store", "key", "actions_in", "route", "strip",
            "decorates", "handler", "entry", "node_type"}
 NODE_TYPES = ("attore", "schermata", "funzionalità", "servizio o API", "gateway", "database", "coda",
-              "autenticazione", "dispositivo", "altro")
+              "autenticazione", "dispositivo", "filesystem", "altro")
 _ARG = re.compile(r"(arg|part)(\d+)$")
 _NESTED = re.compile(r"arg(\d+)\.(arg\d+|[A-Za-z_$][\w$]*)(?:\|(.*))?$")
 _IDENT = re.compile(r"[A-Za-z_$][\w$]*$")

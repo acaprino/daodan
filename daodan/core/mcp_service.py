@@ -7,6 +7,7 @@ record service operations, while state and delivery checks remain authoritative.
 
 from __future__ import annotations
 
+from collections import Counter
 from contextlib import ExitStack, contextmanager
 from contextvars import ContextVar
 from datetime import datetime, timezone
@@ -713,8 +714,8 @@ class MapService:
                     answer["technologies_unavailable"] = f"{type(error).__name__}: {error}"
                 return answer
             if brief or map is not None or about is not None:
-                return {"status": "ok", "run_id": run_id,
-                        **self._system_map(manifest.path, flow_model.load_rules(recorded), brief, map, about, levels)}
+                return self._system_map(run_id, manifest.path, flow_model.load_rules(recorded), brief, map, about,
+                                        levels)
             links = flow_model.cached_links(manifest.path, flow_model.load_rules(recorded))
             if start is None:
                 return {"status": "ok", "run_id": run_id, "entries": links["entries"][:limit],
@@ -745,21 +746,42 @@ class MapService:
                 flow["edges"] = flow["edges"][:limit]
             return {"status": "ok", "run_id": run_id, **flow}
 
-    @staticmethod
-    def _system_map(manifest, rules, brief, proposal, about, levels):
+    def system_map(self, run_id):
+        """The recorded system map in counts: its nodes and flows by status and what its coverage leaves out, as a
+        report gives it; `no_map` without one. The app reads it when a mapping ends; the mapper reads `flows`."""
+        import flows as flow_model
+        with self._operation():
+            _, _, manifest, _ = self._bound_run(run_id)
+            if gate := snapshot.query_gate(manifest.path):
+                return gate
+            recorded = manifest.path.with_name("flow-rules.json")
+            rules = flow_model.load_rules(recorded) if recorded.is_file() else []
+            return self._system_map(run_id, manifest.path, rules, False, None, None, None)
+
+    @classmethod
+    def _system_map(cls, run_id, manifest, rules, brief, proposal, about, levels):
         import system_brief
-        import system_levels
         import system_map
-        if brief:
+        if brief:  # the data first, the format and its «Sequence» last; the brief gets what the rest leaves
             value = system_brief.brief(manifest, rules)
             reference = Path(__file__).resolve().parent.parent / "references" / "system-map.md"
-            return {"brief": value["text"], "truncated": value["truncated"], "steps": value["steps"],
-                    "format": reference.read_text(encoding="utf-8"), "areas": list(system_map.AREAS)}
+            return system_brief.fit(value, {"status": "ok", "run_id": run_id, "brief": "", "truncated": 0,
+                                            "steps": value["steps"], "areas": list(system_map.AREAS),
+                                            "format": reference.read_text(encoding="utf-8")})
+        return {"status": "ok", "run_id": run_id, **cls._map_answer(manifest, rules, proposal, about, levels)}
+
+    @staticmethod
+    def _map_answer(manifest, rules, proposal, about, levels):
+        import system_levels
+        import system_map
         if proposal is not None:
             return system_map.record(manifest, rules, proposal)
         system = system_map.load(manifest, rules)
         if system is None:
             return {"status": "no_map", "reason": "no system map is recorded: propose one with map"}
+        if about is None:  # the whole map, in counts: `system_map`
+            return {**{part: dict(Counter(item["status"] for item in system[part])) for part in ("nodes", "flows")},
+                    "coverage": system_map._reported(system["coverage"])}
         if levels:
             import flows as flow_model
             links = flow_model.cached_links(manifest, rules) if "codice" in levels else None

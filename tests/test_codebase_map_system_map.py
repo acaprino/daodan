@@ -27,7 +27,7 @@ TEST_MAP = {
         {"name": "API pagamenti", "type": "servizio o API", "members": ["server/payments.py", "server/gateway.py"],
          "on": ["Server shop"]},
         {"name": "Pagamento", "type": "entità", "members": ["store:db/payments", "store:web state/payment"]},
-        {"name": "card payment provider", "type": "gateway", "position": "external", "evidence": ["server/gateway.py"]},
+        {"name": "Stripe", "type": "gateway", "position": "external", "evidence": ["server/gateway.py"]},
         {"name": "Riprova", "type": "funzionalità", "members": ["server/jobs.py"]},
         {"name": "Server shop", "type": "dispositivo", "position": "external", "evidence": ["server/http.py"]},
         {"name": "Fantasma", "type": "schermata", "members": ["web/nope.ts"]},
@@ -35,14 +35,14 @@ TEST_MAP = {
     ],
     "flows": [
         {"name": "Pagare un ordine", "area": "pagamenti e abbonamenti", "types": ["funzionale"],
-         "nodes": ["Cliente", "Checkout", "Badge pagamento", "API pagamenti", "Pagamento", "card payment provider"],
+         "nodes": ["Cliente", "Checkout", "Badge pagamento", "API pagamenti", "Pagamento", "Stripe"],
          "arrows": [
              {"from": "Cliente", "to": "Checkout", "data": "clic su Paga", "kind": "attiva", "cite": "web/checkout.ts:22"},
              {"from": "Checkout", "to": "API pagamenti", "data": "ordine da pagare"},
              {"from": "API pagamenti", "to": "Pagamento", "data": "esito dell'addebito"},
              {"from": "Pagamento", "to": "Badge pagamento", "data": "stato del pagamento"},
              {"from": "Checkout", "to": "Badge pagamento", "data": "stato del pagamento"},
-             {"from": "API pagamenti", "to": "card payment provider", "data": "importo", "kind": "usa",
+             {"from": "API pagamenti", "to": "Stripe", "data": "importo", "kind": "usa",
               "cite": "server/gateway.py:1"},
              {"from": "Badge pagamento", "to": "API pagamenti", "data": "richiesta di stato"},
          ]},
@@ -78,6 +78,13 @@ class ValidateTests(unittest.TestCase):
     def test_a_node_type_out_of_the_list(self):
         self.refused(lambda v: node(v, "Checkout").update(type="pagina"), "type")
 
+    def test_the_new_node_types_and_a_devops_flow_are_accepted(self):
+        for kind in ("filesystem", "applicazione", "lavoro a orario"):
+            system_map.validate(changed(lambda v, kind=kind: node(v, "Riprova").update(type=kind)))
+        system_map.validate(changed(lambda v: v["flows"][1].update(types=["devops"])))
+        flows.validate_rules([{"link": "scrive", "callee": "a.py::save", "store": "disk", "key": "arg0",
+                               "node_type": "filesystem"}])
+
     def test_two_names_equal_but_for_case_and_accents(self):
         self.refused(lambda v: node(v, "Riprova").update(name="pagaménto"), "name")
 
@@ -96,6 +103,8 @@ class ValidateTests(unittest.TestCase):
         self.refused(lambda v: v["flows"][1]["nodes"].append("Magazzino"), "nodes")
         self.refused(lambda v: v["flows"][1]["arrows"][0].update(to="Checkout"), "to")
         self.refused(lambda v: node(v, "API pagamenti").update(on=["Magazzino"]), "on")
+        self.refused(lambda v: node(v, "Checkout").update(inside="Magazzino"), "inside names Magazzino")
+        self.refused(lambda v: node(v, "Checkout").update(inside=["Badge pagamento"]), "inside")
 
     def test_an_arrow_says_what_passes_and_what_it_asserts(self):
         self.refused(lambda v: v["flows"][1]["arrows"][0].pop("data"), "data")
@@ -106,6 +115,11 @@ class ValidateTests(unittest.TestCase):
 
     def test_every_area_is_declared_without_scope(self):
         self.refused(lambda v: v["areas"].pop(0), "areas")
+
+    def test_an_empty_scope_is_the_whole_system(self):
+        # A model writes the field it does not use as null or as an empty list: it means what leaving it out means.
+        for empty in (None, []):
+            self.assertNotIn("scope", system_map.validate(changed(lambda v: v.update(scope=empty))))
 
     def test_with_scope_a_flow_stays_inside_it(self):
         def scoped(v):
@@ -122,6 +136,36 @@ class ValidateTests(unittest.TestCase):
         self.refused(lambda v: node(v, "Checkout").update(owner="team"), "owner")
         self.refused(lambda v: v["flows"][0]["arrows"][0].update(weight=1), "weight")
         self.refused(lambda v: v.update(version=2), "version")
+
+    def test_an_external_service_says_its_registry_id_family_role_and_mode(self):
+        service = {"registry": "stripe", "family": "provider", "role": "charges the cards", "mode": "SDK"}
+        value = system_map.validate(changed(lambda v: node(v, "Stripe").update(service)))
+        self.assertLessEqual(service.items(), node(value, "Stripe").items())
+        self.assertNotIn("family", node(system_map.validate(copy.deepcopy(TEST_MAP)), "Stripe"))
+        self.refused(lambda v: node(v, "Checkout").update(registry="stripe"), "registry")
+        self.refused(lambda v: node(v, "Stripe").update(registry="nessuno"), "registry nessuno")
+        self.refused(lambda v: node(v, "Checkout").update(family="provider"), "family")
+        self.refused(lambda v: node(v, "Cliente").update(role="pays"), "role")
+        self.refused(lambda v: node(v, "Server shop").update(mode="HTTP"), "mode")
+        self.refused(lambda v: node(v, "Stripe").update(family="vendor"), "family")
+        self.refused(lambda v: node(v, "Stripe").update(role=""), "role")
+        self.refused(lambda v: node(v, "Stripe").update(mode=["SDK"]), "mode")
+
+
+class NameTests(unittest.TestCase):
+    def test_a_flow_name_that_begins_with_an_empty_word(self):
+        for name in ("Gestione degli ordini", "ELABORAZIONE pagamenti", "Procèsso di reso", "management of orders",
+                     "Handling refunds", "Processing: payments"):
+            self.assertIn("name the action", system_map.flow_name_problem(name) or "", name)
+        for name in ("Rimborso dell'ordine", "Ordini in gestione", "Processore di code"):
+            self.assertIsNone(system_map.flow_name_problem(name), name)
+
+    def test_an_external_node_begins_with_the_name_of_its_registry_entry(self):
+        for name in ("Stripe", "stripe · pagamenti"):
+            self.assertIsNone(system_map.registry_name_problem(name, "stripe"), name)
+        for name in ("Pagamenti", "Stripes"):
+            self.assertIn("Stripe,", system_map.registry_name_problem(name, "stripe") or "", name)
+        self.assertIsNone(system_map.registry_name_problem("Pagamenti", "not-yet-in-the-registry"))
 
 
 def fixture(holder) -> None:
@@ -222,7 +266,7 @@ class VerifyTests(Fixture):
     def test_an_arrow_with_an_end_without_code_is_declared(self):
         self.assertEqual(self.arrow("Cliente", "Checkout")["status"], "declared")
         self.assertEqual(self.arrow("Cliente", "Checkout")["asserts"], ["attiva"])
-        self.assertEqual(self.arrow("API pagamenti", "card payment provider")["status"], "declared")
+        self.assertEqual(self.arrow("API pagamenti", "Stripe")["status"], "declared")
 
     def test_an_arrow_no_link_proves_is_refused(self):
         refused = self.arrow("Badge pagamento", "API pagamenti")
@@ -254,6 +298,15 @@ class VerifyTests(Fixture):
         report = self.check(changed(lambda v: node(v, "API pagamenti").update(on=["Fantasma"])))
         self.assertEqual(self.node("API pagamenti", report)["status"], "refused")
         self.assertIn("Fantasma", self.node("API pagamenti", report)["reason"])
+
+    def test_inside_that_goes_round_in_a_circle_is_refused(self):
+        report = self.check(changed(lambda v: (node(v, "Checkout").update(inside="Badge pagamento"),
+                                               node(v, "Badge pagamento").update(inside="Checkout"),
+                                               node(v, "Riprova").update(inside="Checkout"))))
+        for name in ("Checkout", "Badge pagamento"):
+            self.assertIn("circle", self.node(name, report)["reason"])
+        self.assertIn("Checkout", self.node("Riprova", report)["reason"])
+        self.assertEqual(self.node("API pagamenti", report)["status"], "accepted")
 
     def test_a_shared_file_proves_no_arrow_by_itself(self):
         def share(v):
@@ -326,6 +379,23 @@ class RecordTests(unittest.TestCase):
         self.assertEqual(report["coverage"]["routes"]["left"], ["admin/orders.py::list_all_orders", "server/orders.py::list_orders"])
         self.assertEqual(len(self.load()["coverage"]["entries"]["left"]), 3)
 
+    def test_a_node_of_many_files_reports_them_by_directory_and_the_map_keeps_the_names(self):
+        # A node that is a whole part resolves to every file of it: named one by one, the report would not be read.
+        from unittest import mock
+        with mock.patch.object(system_map, "LEFT_LISTED", 1):
+            report = self.record(TEST_MAP)
+            about = system_map.about(self.load(), "pagamenti e abbonamenti")
+        api = self.node_report(report, "API pagamenti")
+        self.assertNotIn("files", api)
+        self.assertEqual(api["files_by_directory"], {"server": 2})
+        self.assertEqual(about["files_by_directory"], {"server": 2, "web": 2})
+        self.assertEqual(about["flows"][0]["files_by_directory"], {"server": 2, "web": 2})
+        self.assertEqual(self.node_report(report, "Cliente")["files"], [])   # a short list stays a list
+        self.assertEqual(by_id(self.load(), "nodes", api["id"])["files"], ["server/gateway.py", "server/payments.py"])
+        many = [f"app/{a}/{b}/f{n}.py" for a in "xy" for b in "pq" for n in range(3)]
+        with mock.patch.object(system_map, "LEFT_LISTED", 3):
+            self.assertEqual(system_map.listed(many), {"files_by_directory": {"app/x": 6, "app/y": 6}})
+
     def test_coverage_counts_what_the_accepted_flows_hold(self):
         report = self.record(TEST_MAP)
         coverage = report["coverage"]
@@ -350,7 +420,7 @@ class RecordTests(unittest.TestCase):
         self.assertEqual([f["name"] for f in area["flows"]], ["Pagare un ordine"])
         self.assertEqual(area["flows"][0]["files"], ["server/gateway.py", "server/payments.py", "web/badge.ts",
                                                      "web/checkout.ts"])
-        self.assertEqual((area["externals"], area["unseen"]), (["card payment provider", "Cliente"], []))
+        self.assertEqual((area["externals"], area["unseen"]), (["Cliente", "Stripe"], []))
         self.assertEqual(system_map.about(system, "riprova-dei-pagamenti")["kind"], "flow")
         self.record(changed(lambda v: node(v, "Server shop").update(position="unseen", evidence=[], where="infra")))
         self.assertEqual(system_map.about(self.load(), "Server shop")["unseen"], [{"name": "Server shop", "where": "infra"}])
@@ -403,6 +473,11 @@ class RecordTests(unittest.TestCase):
         system = self.load()
         self.assertIn("nowhere", system["gaps"][0]["reason"])
         self.assertNotIn("X", names(system))
+        (self.project / system_map.DECLARED_FILE).write_text(json.dumps(
+            {"schema": system_map.DECLARED_SCHEMA, "nodes": [{"id": "x", "name": "X", "type": "schermata",
+                                                              "members": ["web/cart.ts"], "inside": "altrove"}]}))
+        refresh(self)
+        self.assertIn("altrove", self.load()["gaps"][0]["reason"])
 
     def test_a_proposal_removes_nothing_it_does_not_name(self):
         self.record(TEST_MAP)
@@ -444,6 +519,47 @@ class RecordTests(unittest.TestCase):
         self.declare(id="badge-pagamento", name="Badge pagamento")
         self.assertNotIn("badge-pagamento", self.record(proposal)["removed"])
         self.assertIn("Badge pagamento", names(self.load()))
+
+    def test_a_node_inside_another_is_its_part_and_stays_outside_the_flows(self):
+        shop = {"name": "Negozio web", "type": "schermata", "members": ["web/checkout.ts", "web/badge.ts"]}
+        button = {"name": "Pulsante paga", "type": "schermata", "members": ["web/checkout.ts"], "inside": "Checkout"}
+        cart = {"name": "Carrello", "type": "schermata", "members": ["web/cart.ts"]}
+
+        def tree(v):
+            node(v, "Checkout")["inside"] = node(v, "Badge pagamento")["inside"] = "Negozio web"
+            v["nodes"] += [copy.deepcopy(shop), copy.deepcopy(button), copy.deepcopy(cart)]
+        report = self.record(changed(tree))
+        self.assertEqual({n: self.node_report(report, n)["status"] for n in ("Negozio web", "Pulsante paga", "Checkout")},
+                         {"Negozio web": "accepted", "Pulsante paga": "accepted", "Checkout": "accepted"})
+        self.assertIn("inside", self.node_report(report, "Carrello")["reason"])
+        system = self.load()
+        self.assertEqual((by_id(system, "nodes", "checkout")["inside"], by_id(system, "nodes", "pulsante-paga")["inside"]),
+                         ("Negozio web", "Checkout"))
+        self.assertNotIn("inside", by_id(system, "nodes", "negozio-web"))
+        recorded = json.loads((self.manifest.parent / system_map.FILE).read_text(encoding="utf-8"))
+        self.assertEqual(next(n for n in recorded["nodes"] if n["id"] == "checkout")["inside"], "negozio-web")
+        self.assertNotIn("carrello", [n["id"] for n in recorded["nodes"]])
+        stray = self.record(with_node(name="Altro pulsante", members=["web/checkout.ts"], inside="Badge pagamento"))
+        self.assertIn("repeats node checkout", self.node_report(stray, "Altro pulsante")["reason"])
+
+    def test_load_gives_an_external_service_its_registry_id_family_role_and_mode(self):
+        service = {"registry": "stripe", "family": "provider", "role": "charges the cards", "mode": "SDK"}
+        self.record(changed(lambda v: node(v, "Stripe").update(service)))
+        self.assertLessEqual(service.items(), by_id(self.load(), "nodes", "stripe").items())
+
+    def test_a_badly_named_flow_or_service_is_refused_alone(self):
+        def bad(v):
+            v["flows"][1]["name"] = "Gestione dei pagamenti rifiutati"
+            v["nodes"].append({"name": "Pagamenti", "type": "gateway", "position": "external",
+                               "evidence": ["server/payments.py"], "registry": "stripe"})
+        report = self.record(changed(bad))
+        flow = next(f for f in report["flows"] if f["name"] == "Gestione dei pagamenti rifiutati")
+        self.assertEqual(flow["status"], "refused")
+        self.assertIn("Gestione", flow["reason"])
+        self.assertEqual(self.node_report(report, "Pagamenti")["status"], "refused")
+        self.assertIn("Stripe", self.node_report(report, "Pagamenti")["reason"])
+        self.assertEqual([f["status"] for f in report["flows"] if f is not flow], ["accepted"])
+        self.assertEqual([f["id"] for f in self.load()["flows"]], ["pagare-un-ordine"])
 
     def test_a_changed_file_is_proved_again_or_sent_back(self):
         self.record(TEST_MAP)

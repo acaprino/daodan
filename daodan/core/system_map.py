@@ -17,7 +17,9 @@ only what those links say. An arrow with an end without code, or one that says
 """
 from __future__ import annotations
 
+import functools
 import json
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -32,14 +34,20 @@ import snapshot  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 SCHEMA = "daodan/system-map/v1"
-NODE_TYPES = flows.NODE_TYPES + ("entità",)
+NODE_TYPES = flows.NODE_TYPES + ("entità", "applicazione", "lavoro a orario")
 POSITIONS = ("internal", "external", "unseen")
-FLOW_TYPES = ("funzionale", "operativo", "tecnico", "dati", "hardware")
+FLOW_TYPES = ("funzionale", "operativo", "tecnico", "dati", "hardware", "devops")
 AREAS = ("accesso e identità", "funzioni principali", "pagamenti e abbonamenti", "dati dell'utente",
          "integrazioni esterne", "comunicazioni", "amministrazione", "esercizio")
 ARROW_KINDS = ("chiama", "attiva", "scrive", "legge", "usa", "trasferisce", "stessa informazione")
+# Given by the owner on 19 November 2026: a provider makes the program work, an integration platform is a system of
+# others the program exchanges data with.
+FAMILIES = ("provider", "piattaforma di integrazione")
+NOT_SERVICES = ("attore", "dispositivo", "filesystem")  # external nodes that are not a system of others
+_SERVICE_FIELDS = ("family", "role", "mode")
 _MAP_FIELDS = {"schema", "nodes", "flows", "areas", "scope", "remove"}
-_NODE_FIELDS = {"id", "name", "type", "position", "members", "evidence", "on", "where"}
+_NODE_FIELDS = {"id", "name", "type", "position", "members", "evidence", "on", "inside", "where", "registry",
+                *_SERVICE_FIELDS}
 _FLOW_FIELDS = {"id", "name", "area", "types", "nodes", "arrows", "paths"}
 _ARROW_FIELDS = {"from", "to", "data", "kind", "cite"}
 _AREA_FIELDS = {"name", "present"}
@@ -91,6 +99,8 @@ def _node(record) -> dict:
         raise ValueError(f"{where}: position must be one of {', '.join(POSITIONS)}")
     for field in ("members", "evidence", "on"):
         out[field] = _texts(record, field, where)
+    if "inside" in record:
+        out["inside"] = _text(record, "inside", where)
     if out["position"] == "internal" and not out["members"]:
         raise ValueError(f"{where}: an internal node has members")
     if out["position"] != "internal" and out["members"]:
@@ -101,7 +111,58 @@ def _node(record) -> dict:
         out["where"] = _text(record, "where", where)
     elif "where" in record:
         raise ValueError(f"{where}: where belongs to an unseen node")
+    return {**out, **_service(record, out, where)}
+
+
+@functools.cache
+def _registry_names() -> dict[str, str]:
+    import service_registry
+    return {entry["id"]: entry["name"] for entry in service_registry.load()["entries"]}
+
+
+# The checks a machine makes on names without error; the other rules are in references/system-map.md, «Names».
+EMPTY_WORDS = ("gestione", "elaborazione", "processo", "management", "handling", "processing")
+
+
+def flow_name_problem(name: str) -> str | None:
+    """Why a flow's name does not stand: its first word is an empty one, compared without case and accents."""
+    first = re.match(r"\w*", name.strip()).group()
+    if key(first) in EMPTY_WORDS:
+        return f"the name must not begin with {first}, a word that says nothing: name the action and its object"
+    return None
+
+
+def registry_name_problem(name: str, registry: str | None) -> str | None:
+    """Why an external node's name does not stand: it does not begin with the name of its registry entry."""
+    proper = _registry_names().get(registry)
+    if proper and not re.match(re.escape(key(proper)) + r"(\W|$)", key(name)):
+        return f"the name must begin with {proper}, the name of registry entry {registry}"
+    return None
+
+
+def _service(record: dict, node: dict, where: str) -> dict:
+    """An external node's registry id; a service of others also says its family, what it is for and how the program
+    connects to it."""
+    out, external = {}, node["position"] == "external"
+    if "registry" in record:
+        if not external:
+            raise ValueError(f"{where}: only an external node has a registry id")
+        out["registry"] = _text(record, "registry", where)
+        if out["registry"] not in _registry_names():
+            raise ValueError(f"{where}: registry {out['registry']} is not an id of the service registry")
+    given = [field for field in _SERVICE_FIELDS if field in record]
+    if given and (not external or node["type"] in NOT_SERVICES):
+        raise ValueError(f"{where}: only an external service has {', '.join(given)}")
+    for field in given:
+        out[field] = _text(record, field, where)
+    if out.get("family", FAMILIES[0]) not in FAMILIES:
+        raise ValueError(f"{where}: family must be one of {', '.join(FAMILIES)}")
     return out
+
+
+def _named(record: dict) -> list[str]:
+    """The nodes a node names: those it runs on and the one it is inside."""
+    return record["on"] + ([record["inside"]] if record.get("inside") else [])
 
 
 def _arrow(record, where: str, names: set[str]) -> dict:
@@ -152,7 +213,7 @@ def _flow(record, nodes: set[str], present: set[str] | None, scope: set[str] | N
 def validate(value: object, known: set[str] = frozenset()) -> dict:
     """The proposal in its normal form, or a ValueError that names the wrong field.
 
-    `known` holds the keys of the nodes already in the map, which flows and `on` may name.
+    `known` holds the keys of the nodes already in the map, which flows, `on` and `inside` may name.
     """
     value = _fields(value, _MAP_FIELDS, "the system map")
     if value.get("schema", SCHEMA) != SCHEMA:
@@ -161,10 +222,8 @@ def validate(value: object, known: set[str] = frozenset()) -> dict:
         if not isinstance(value.get(field, []), list):
             raise ValueError(f"{field} must be a list")
     scope = None
-    if "scope" in value:
+    if value.get("scope"):  # absent, null or empty: the whole system
         scope = _texts(value, "scope", "the system map")
-        if not scope:
-            raise ValueError("scope names at least one area")
     areas, seen = [], {}
     for record in value.get("areas", []):
         record = _fields(record, _AREA_FIELDS, "an area")
@@ -187,9 +246,10 @@ def validate(value: object, known: set[str] = frozenset()) -> dict:
         names[key(record["name"])] = record["name"]
         nodes.append(record)
     for record in nodes:
-        missing = [n for n in record["on"] if key(n) not in names and key(n) not in known]
-        if missing:
-            raise ValueError(f"node {record['name']}: on names {', '.join(missing)}, not in the map")
+        for field, values in (("on", record["on"]), ("inside", [record["inside"]] if "inside" in record else [])):
+            missing = [n for n in values if key(n) not in names and key(n) not in known]
+            if missing:
+                raise ValueError(f"node {record['name']}: {field} names {', '.join(missing)}, not in the map")
     present = {name for name, flag in seen.items() if flag} | {key(a) for a in scope or []}
     flow_list, flow_names = [], set()
     for record in value.get("flows", []):
@@ -268,13 +328,24 @@ def _check_nodes(manifest: Path, links: dict, records: list[dict], headers: dict
         if problems:
             report["reason"] = "; ".join(problems)
         out[record["id"]] = {"report": report, "record": record, "whole": whole, "symbols": symbols, "others": others}
+    for ident, item in out.items():  # `inside` climbs towards the whole system, never back to the node
+        at, seen = item["record"].get("inside"), set()
+        while at in out and at != ident and at not in seen:
+            seen.add(at)
+            at = out[at]["record"].get("inside")
+        if at == ident:
+            report = item["report"]
+            report.update(status="refused", reason="; ".join(filter(None, (report.get("reason"),
+                                                                           "inside goes round in a circle"))))
     changed = True
-    while changed:  # `on` names accepted nodes only
+    while changed:  # `on` and `inside` name accepted nodes only
         changed = False
         for item in out.values():
-            refused = [out[i]["report"]["name"] for i in item["record"]["on"] if out[i]["report"]["status"] != "accepted"]
+            refused = [out[i]["report"]["name"] for i in _named(item["record"])
+                       if out[i]["report"]["status"] != "accepted"]
             if refused and item["report"]["status"] == "accepted":
-                item["report"].update(status="refused", reason=f"on names refused nodes: {', '.join(refused)}")
+                item["report"].update(status="refused",
+                                      reason=f"on or inside names refused nodes: {', '.join(refused)}")
                 changed = True
     return out
 
@@ -385,7 +456,8 @@ def _verify(manifest: Path, links: dict, nodes: list[dict], flow_records: list[d
 
 def _by_key(value: dict) -> tuple[list[dict], list[dict]]:
     """A validated proposal with each name as its own id."""
-    nodes = [{**n, "id": key(n["name"]), "on": [key(o) for o in n["on"]]} for n in value["nodes"]]
+    nodes = [{**n, "id": key(n["name"]), "on": [key(o) for o in n["on"]],
+              **({"inside": key(n["inside"])} if "inside" in n else {})} for n in value["nodes"]]
     flow_records = [{**f, "nodes": [key(n) for n in f["nodes"]],
                      "arrows": [{**a, "from": key(a["from"]), "to": key(a["to"])} for a in f["arrows"]]}
                     for f in value["flows"]]
@@ -403,7 +475,8 @@ def verify(manifest: Path, links: dict, value: dict) -> dict:
 FILE = "system-map.json"
 DECLARED_FILE = "codebase-system-map.json"
 DECLARED_SCHEMA = "daodan/declared-system-map/v1"
-_STORED = ("id", "name", "type", "position", "members", "evidence", "on", "where")
+_STORED = ("id", "name", "type", "position", "members", "evidence", "on", "inside", "where", "registry",
+           *_SERVICE_FIELDS)
 
 
 def _read_declared(manifest: Path, headers: dict, known: set[str]) -> tuple[dict, list[dict]]:
@@ -423,8 +496,8 @@ def _read_declared(manifest: Path, headers: dict, known: set[str]) -> tuple[dict
         if any("id" not in n for n in nodes):
             raise ValueError("every declared node has its id")
         ids = known | {n["id"] for n in nodes}
-        if unknown := sorted({o for n in nodes for o in n["on"]} - ids):
-            raise ValueError(f"on names unknown ids {', '.join(unknown)}")
+        if unknown := sorted({o for n in nodes for o in _named(n)} - ids):
+            raise ValueError(f"on or inside names unknown ids {', '.join(unknown)}")
         flow_records = [_flow(f, ids, None, None) for f in value.get("flows", [])]
         if any("id" not in f for f in flow_records):
             raise ValueError("every declared flow has its id")
@@ -463,6 +536,24 @@ def _site_file(site: str) -> str:
 
 
 LEFT_LISTED = 40  # past this many, a report lists what coverage leaves out by directory; the map keeps the names
+
+
+def listed(files: list[str]) -> dict:
+    """A list of files as a report gives it back: a long one is counted by directory, cut higher until the
+    directories are few. A node that is a whole part resolves to every file of it, and an answer naming them one by
+    one is too long to be read."""
+    if len(files) <= LEFT_LISTED:
+        return {"files": files}
+    folders = [path.rsplit("/", 1)[0] if "/" in path else "." for path in files]
+    depth = max(folder.count("/") + 1 for folder in folders)
+    while True:
+        by = {}
+        for folder in folders:
+            where = "/".join(folder.split("/")[:depth])
+            by[where] = by.get(where, 0) + 1
+        if len(by) <= LEFT_LISTED or depth == 1:
+            return {"files_by_directory": dict(sorted(by.items()))}
+        depth -= 1
 
 
 def _reported(coverage: dict) -> dict:
@@ -508,6 +599,7 @@ def _evaluate(manifest: Path, links: dict, state: dict, headers: dict) -> dict:
         changed = _changed(record.get("digests", {}), headers)
         fresh = state_of in ok and (record["position"] == "internal" or not changed)
         out_nodes.append({**{k: record[k] for k in _STORED if k in record}, "on": [name[o] for o in record["on"]],
+                          **({"inside": name[record["inside"]]} if record.get("inside") else {}),
                           "status": state_of, **({"reason": checked["reason"]} if "reason" in checked else {}),
                           "files": checked["files"], "fresh": fresh, "changed_files": [] if fresh else changed})
     out_flows, holders = [], []
@@ -564,15 +656,21 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
     links = flows.cached_links(manifest, rules)
     headers = _headers(manifest)
     state = _state(manifest, headers)
-    nodes, flow_records, declared = state["nodes"], state["flows"], state["declared"]
-    before = {**nodes, **flow_records}
-    node_names = {key(n["name"]): i for i, n in nodes.items()}
-    flow_names = {key(f["name"]): i for i, f in flow_records.items()}
-    proposal = validate(value, known=set(node_names) | set(nodes))
-    taken = set(nodes) | set(flow_records)
-    ident, node_reports, changes = {}, {}, {}
+    node_names = {key(n["name"]): i for i, n in state["nodes"].items()}
+    proposal = validate(value, known=set(node_names) | set(state["nodes"]))
+    taken = set(state["nodes"]) | set(state["flows"])
+    ident, node_reports, candidate, resolve = _record_nodes(state, proposal, node_names, taken)
+    settled = _record_flows(manifest, links, headers, state, proposal, candidate, resolve, taken)
+    return _write(manifest, links, headers, state, proposal, (ident, node_reports, candidate), settled)
 
-    # Nodes: an id or a current name recalls a node; a new one must not repeat an existing one.
+
+def _record_nodes(state: dict, proposal: dict, node_names: dict, taken: set[str]):
+    """Per proposed node the id it recalls or takes, the reports of those refused, the candidate map, the resolver.
+
+    An id or a current name recalls a node; a new one must not repeat an existing one.
+    """
+    nodes, declared = state["nodes"], state["declared"]
+    ident, node_reports, changes = {}, {}, {}
     fresh_nodes = []
     for p in proposal["nodes"]:
         target = p.get("id") or node_names.get(key(p["name"]))
@@ -583,6 +681,9 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
             node_reports[key(p["name"])] = {"id": target, "name": p["name"], "status": "confirmed",
                                             "reason": f"confirmed by the project; rename it in {DECLARED_FILE}"}
             ident[key(p["name"])] = target
+        elif problem := registry_name_problem(p["name"], p.get("registry")):
+            node_reports[key(p["name"])] = {"name": p["name"], "status": "refused", "reason": problem}
+            ident[key(p["name"])] = None
         elif target and node_names.get(key(p["name"]), target) != target:
             node_reports[key(p["name"])] = {"name": p["name"], "status": "refused",
                                             "reason": f"node {node_names[key(p['name'])]} already has this name"}
@@ -593,9 +694,13 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
         else:
             fresh_nodes.append(p)
     current = {i: {**n, **changes.get(i, {})} for i, n in nodes.items()}
+    up = _parents(nodes, changes, fresh_nodes)
     for p in fresh_nodes:
         basis = "members" if p["position"] == "internal" else "evidence"
-        twin = next((i for i, n in current.items() if n["type"] == p["type"] and _nested(n[basis], p[basis])), None)
+        # A part inside a node, or the node a part is inside, does not repeat it.
+        twin = next((i for i, n in current.items() if n["type"] == p["type"] and _nested(n[basis], p[basis])
+                     and key(n["name"]) not in _above(up, key(p["name"]))
+                     and key(p["name"]) not in _above(up, key(n["name"]))), None)
         if twin:
             node_reports[key(p["name"])] = {"name": p["name"], "status": "refused",
                                             "reason": f"repeats node {twin}: the same {basis}, or nested ones"}
@@ -612,8 +717,40 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
     for i, p in changes.items():
         on = [resolve(o) for o in p["on"]]
         candidate[i] = {**{k: v for k, v in p.items() if k in _STORED}, "id": i, "on": [o for o in on if o]}
+        inside = resolve(p["inside"]) if "inside" in p else None  # like `on`, a refused parent is dropped
+        candidate[i].pop("inside", None)
+        candidate[i].update({"inside": inside} if inside else {})
+    return ident, node_reports, candidate, resolve
 
-    # Flows: the proposal adds or changes the ones it names; a flow leaves only when `remove` names it.
+
+def _parents(nodes: dict, changes: dict, fresh: list[dict]) -> dict[str, str]:
+    """Per node, by name key, the key of the node it is inside, over the map as the proposal would leave it."""
+    stored = {i: n for i, n in nodes.items() if i not in changes}
+    names = {i: key(n["name"]) for i, n in {**stored, **changes}.items()}
+    known = set(names.values()) | {key(p["name"]) for p in fresh}
+    up = {names[i]: names.get(n["inside"]) for i, n in stored.items() if n.get("inside")}
+    for p in [*changes.values(), *fresh]:
+        if p.get("inside"):
+            up[key(p["name"])] = key(p["inside"]) if key(p["inside"]) in known else names.get(p["inside"])
+    return up
+
+
+def _above(up: dict[str, str], name: str) -> set[str]:
+    """The keys of the nodes a node is inside, up to the top."""
+    seen = set()
+    while (name := up.get(name)) is not None and name not in seen:
+        seen.add(name)
+    return seen
+
+
+def _record_flows(manifest: Path, links: dict, headers: dict, state: dict, proposal: dict, candidate: dict,
+                  resolve, taken: set[str]):
+    """The proposal adds or changes the flows it names; a flow leaves only when `remove` names it.
+
+    Gives the flow reports, the flows the map keeps, the nodes as the trial verified them and what `remove` left.
+    """
+    flow_records, declared = state["flows"], state["declared"]
+    flow_names = {key(f["name"]): i for i, f in flow_records.items()}
     flow_reports, flow_changes, held = {}, {}, set()
     dropped, not_removed = set(), []
     for name in proposal.get("remove", []):
@@ -643,6 +780,8 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
         elif target in declared:
             flow_reports[key(f["name"])] = {"id": target, "name": f["name"], "status": "confirmed",
                                             "reason": f"confirmed by the project; change it in {DECLARED_FILE}"}
+        elif problem := flow_name_problem(f["name"]):
+            refuse(f, target, problem)
         elif None in refs:
             refuse(f, target, f"nodes refused: {', '.join(n for n, r in zip(f['nodes'], refs) if r is None)}")
         elif twin:
@@ -666,14 +805,26 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
         else:
             flow_changes[i]["arrows"] = [a for a, r in zip(flow_changes[i]["arrows"], result["arrows"])
                                          if r["status"] != "refused"]
+    final_flows = {**kept_flows, **{i: flow_records[i] for i in held}, **flow_changes}
+    return flow_reports, final_flows, checked, not_removed
+
+
+def _write(manifest: Path, links: dict, headers: dict, state: dict, proposal: dict, node_part: tuple,
+           flow_part: tuple) -> dict:
+    """Keep the nodes the map still holds, write the map with its freshness and report what changed."""
+    ident, node_reports, candidate = node_part
+    flow_reports, final_flows, checked, not_removed = flow_part
+    nodes, declared = state["nodes"], state["declared"]
+    before = {**nodes, **state["flows"]}
     # A refused change leaves the node as it was; a new refused node is not recorded.
     final_nodes = {i: (n if checked[i]["status"] == "accepted" or i not in nodes else nodes[i])
                    for i, n in candidate.items() if checked[i]["status"] == "accepted" or i in nodes}
-    final_flows = {**kept_flows, **{i: flow_records[i] for i in held}, **flow_changes}
-    used = {i for f in final_flows.values() for i in f["nodes"]} | (declared & set(final_nodes))
+    # A node stays while a flow uses it, the project confirms it, it is inside a node or `on` or `inside` names it.
+    used = {i for f in final_flows.values() for i in f["nodes"]} | (declared & set(final_nodes)) | {
+        i for i, n in final_nodes.items() if n.get("inside")}
     stack = list(used)
     while stack:
-        for target in final_nodes.get(stack.pop(), {}).get("on", []):
+        for target in _named(final_nodes.get(stack.pop(), {"on": []})):
             if target not in used:
                 used.add(target)
                 stack.append(target)
@@ -705,9 +856,13 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
             node_reports[key(p["name"])] = {"id": ident[key(p["name"])], **checked[ident[key(p["name"])]]}
         report = node_reports[key(p["name"])]
         if report["status"] == "accepted" and report["id"] not in final_nodes:
-            report.update(status="refused", reason="no flow uses it and no node names it in on")
+            report.update(status="refused",
+                          reason="no flow uses it, it is inside no node and no node names it in on or inside")
     proposed = {flow_reports[key(f["name"])].get("id") for f in proposal["flows"]}
-    return {"nodes": [node_reports[key(p["name"])] for p in proposal["nodes"]],
+    def short(report):
+        return {**{k: v for k, v in report.items() if k != "files"}, **listed(report["files"])} if "files" in report else report
+
+    return {"nodes": [short(node_reports[key(p["name"])]) for p in proposal["nodes"]],
             "flows": [flow_reports[key(f["name"])] for f in proposal["flows"]],
             "failing": [f["id"] for f in system["flows"] if f["id"] not in proposed and f["status"] not in
                         ("accepted", "confirmed")],
@@ -753,8 +908,8 @@ def about(system: dict, name: str) -> dict:
 
     return {"kind": kind, "name": label,
             "flows": [{"id": f["id"], "name": f["name"], "area": f["area"], "status": f["status"],
-                       "files": files(by_name[n] for n in f["nodes"])} for f in chosen],
+                       **listed(files(by_name[n] for n in f["nodes"]))} for f in chosen],
             "nodes": [{k_: n[k_] for k_ in ("id", "name", "type", "position", "status")} for n in involved],
-            "files": files(involved),
+            **listed(files(involved)),
             "externals": sorted((n["name"] for n in involved if n["position"] == "external"), key=key),
             "unseen": [{"name": n["name"], "where": n["where"]} for n in involved if n["position"] == "unseen"]}

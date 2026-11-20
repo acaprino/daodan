@@ -30,7 +30,8 @@ import system_map  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 SCHEMA = "daodan/system-brief/v1"
-CAP = 24_000        # characters: at 48,000 tududi's brief answer (51.9 KB) passed the host's tool-output limit
+LIMIT = 31_800      # characters of an answer as JSON: on phazly a brief answer of 31.8 KB passed the host's
+                    # tool-output limit, on tududi one of 51.9 KB did not; the brief gets what the rest leaves
 HOLDERS = 8         # past this many, a group's entry points are summed up by directory
 HOSTING = {"vercel.json", "netlify.toml", "fly.toml", "render.yaml", "app.yaml", "app.json", "firebase.json",
            "railway.json", "railway.toml", "serverless.yml", "serverless.yaml", "wrangler.toml", "catalog-info.yaml"}
@@ -146,49 +147,102 @@ def _externals(graph: dict, record: dict) -> list[dict]:
     return sorted(out.values(), key=lambda e: system_map.key(e["name"]))
 
 
+# Headed sections, not tags: one line per label, the same convention as the map format that follows the brief.
+HEADER = "\n".join((
+    "# System brief",
+    "What the machine found in this snapshot with its analysis steps, without a model.",
+    "Sections, in this order: Steps that ran; Counts; Modules (M) and top Directories (D) with their files; "
+    "Externals (X), services of others, with `id` when the service registry has it; Other dependencies (O), per "
+    "module the ones the registry does not know; Runtime files (R) for running and release, and what they Declare (S); "
+    "names the project Confirmed (N); flow Cards (C); Entry points (E) with kind and `file:line`, alone when they reach "
+    "no resource another reaches; Groups (G), a resource two or more entry points reach, with them.",
+    "One item per line, numbered in its section; a number stays the same for the same snapshot. "
+    "A line `- N more` sums up the rest of a section.",
+    "What is not here the machine did not find: `entry points 0` means the machine found none, not that the system "
+    "has none; a step marked no did not run. An empty section is left out."))
+
+
+def _sections(value: dict) -> list[tuple[str, list[str]]]:
+    """The sections before the entry points, each a label and its lines."""
+    routes = value["routes"]
+    return [
+        ("Steps", [", ".join(f"{k} {'yes' if v else 'no'}" for k, v in value["steps"].items())]),
+        ("Counts", [f"entry points {value['entries']}", f"store keys {value['stores']}",
+                    f"routes {routes['offered']} offered, {routes['called']} called, {routes['linked']} linked",
+                    *(["links " + ", ".join(f"{k} {n}" for k, n in value["links"].items())] if value["links"] else [])]),
+        ("Modules", [f"M{i} {m['name']} ({m['kind']}, {m['files']} files)" for i, m in enumerate(value["modules"], 1)]),
+        ("Directories", [f"D{i} {d} ({n} files)" for i, (d, n) in enumerate(value["directories"].items(), 1)]),
+        ("Externals", [f"X{i} {e['name']}{' id ' + e['id'] if 'registry' in e['from'] else ''} [{e['type']}] "
+                       f"from {', '.join(e['from'])}: {', '.join(e['paths'][:3])}"
+                       for i, e in enumerate(value["externals"], 1)]),
+        ("Other dependencies", [f"O{i} {u} {n}" for i, (u, n) in enumerate(value["other_dependencies"].items(), 1)]),
+        ("Runtime files", [f"R{i} {rel}" for i, rel in enumerate(value["runtime_files"], 1)]),
+        ("Declared", [f"S{i} {d['kind']} {d['name']}" + (f" ({d['image']})" if d.get("image") else "")
+                      + f" in {d['file']}:{d['line']}" for i, d in enumerate(value["declared"], 1)]),
+        ("Confirmed", [f"N{i} {name}" for i, name in enumerate(value["confirmed"], 1)]),
+        ("Cards", [f"C{i} {name}" for i, name in enumerate(value["cards"], 1)])]
+
+
+def _join(sections: list[tuple[str, list[str]]]) -> str:
+    return "\n".join([HEADER, *(f"## {label}\n" + "\n".join(lines) for label, lines in sections if lines)])
+
+
+def _by_directory(symbols) -> str:
+    counts = Counter(PurePosixPath(s.split("::")[0]).parent.as_posix() for s in symbols)
+    return ", ".join(f"{d} {n}" for d, n in sorted(counts.items()))
+
+
 def _text(value: dict, cap: int, holders: int) -> tuple[str, int]:
-    steps = ", ".join(f"{k} {'yes' if v else 'no'}" for k, v in value["steps"].items())
-    head = [f"# System brief\nSteps: {steps}",
-            "Modules: " + "; ".join(f"{m['name']} ({m['kind']}, {m['files']} files)" for m in value["modules"]),
-            "Directories: " + "; ".join(f"{d} {n}" for d, n in value["directories"].items()),
-            f"Entry points: {value['entries']}; store keys: {value['stores']}; routes: {value['routes']['offered']} "
-            f"offered, {value['routes']['called']} called, {value['routes']['linked']} linked; "
-            "links: " + ", ".join(f"{k} {n}" for k, n in value["links"].items()),
-            "Externals: " + "; ".join(f"{e['name']} [{e['type']}] from {', '.join(e['from'])}: "
-                                      f"{', '.join(e['paths'][:3])}" for e in value["externals"]),
-            "Other dependencies: " + "; ".join(f"{u} {n}" for u, n in value["other_dependencies"].items()),
-            "Runtime files: " + ", ".join(value["runtime_files"]),
-            "Declared: " + "; ".join(f"{d['kind']} {d['name']}" + (f" ({d['image']})" if d.get("image") else "")
-                                     + f" in {d['file']}" for d in value["declared"]),
-            "Alone: " + ", ".join(value["alone"]),
-            "Confirmed: " + ", ".join(value["confirmed"]),
-            "Cards: " + ", ".join(value["cards"]),
-            "Groups (resource, entry points that touch it):"]
-    text = "\n".join(line for line in head if not line.endswith(": "))  # an empty section costs tokens
-    lines = []
-    for group in value["groups"]:
-        entries = group["entries"]
-        listed = ", ".join(entries) if len(entries) <= holders else \
-            "by directory " + ", ".join(f"{d} {n}" for d, n in group["by_directory"].items())
-        lines.append(f"- {group['resource']} ({len(entries)}): {listed}")
-    kept = len(lines)
-    while kept and len(text) + sum(len(line) + 1 for line in lines[:kept]) + _tail(value, kept) > cap:
-        kept -= 1
-    rest = value["groups"][kept:]
-    body = lines[:kept]
-    if rest:
-        body.append(f"- {len(rest)} more groups, fewest entry points: "
-                    + ", ".join(f"{g['resource']} ({len(g['entries'])})" for g in rest))
-    out = "\n".join([text, *body])
-    return (out if len(out) <= cap else out[: cap - 1] + "…"), len(rest)
+    """The brief packed for a model; past `cap` the groups with fewest entry points are summed up, and with them
+    the entry points no remaining line names."""
+    number = {e["symbol"]: i for i, e in enumerate(value["entry_points"], 1)}
+    alone = set(value["alone"])
+    named = [sorted(number[s] for s in g["entries"]) if len(g["entries"]) <= holders else []
+             for g in value["groups"]]
+    lines = [f"G{i} {g['resource']} ({len(g['entries'])}): "
+             + (", ".join(f"E{n}" for n in refs) if refs else "by directory " + _by_directory(g["entries"]))
+             for i, (g, refs) in enumerate(zip(value["groups"], named), 1)]
+    head = _sections(value)
+
+    def compose(kept: int) -> str:
+        shown = {number[s] for s in alone} | {n for refs in named[:kept] for n in refs}
+        entries = [f"E{n} {e['symbol']} [{', '.join(e['kinds'])}] at {e['site']}"
+                   + (", alone" if e["symbol"] in alone else "")
+                   for n, e in enumerate(value["entry_points"], 1) if n in shown]
+        hidden = [e["symbol"] for n, e in enumerate(value["entry_points"], 1) if n not in shown]
+        if hidden:
+            entries.append(f"- {len(hidden)} more entry points, by directory: {_by_directory(hidden)}")
+        groups = lines[:kept]
+        if kept < len(lines):
+            groups.append(f"- {len(lines) - kept} more groups, fewest entry points: "
+                          + ", ".join(f"G{i} {g['resource']} ({len(g['entries'])})"
+                                      for i, g in enumerate(value["groups"][kept:], kept + 1)))
+        return _join([*head, ("Entry points", entries), ("Groups", groups)])
+
+    low, high = 0, len(lines)  # the most groups that fit, by bisection: the text grows with the groups kept
+    while low < high:
+        middle = (low + high + 1) // 2
+        low, high = (middle, high) if len(compose(middle)) <= cap else (low, middle - 1)
+    kept, out = low, compose(low)
+    return (out if len(out) <= cap else out[: cap - 1] + "…"), len(lines) - kept
 
 
-def _tail(value: dict, kept: int) -> int:
-    rest = value["groups"][kept:]
-    return 0 if not rest else 40 + sum(len(g["resource"]) + 8 for g in rest)
+def fit(value: dict, answer: dict, limit: int = LIMIT, holders: int = HOLDERS) -> dict:
+    """`answer` with the brief in what is left of `limit` after its other keys, whatever their length."""
+    def sized(cap: int) -> tuple[dict, int]:
+        text, truncated = _text(value, cap, holders)
+        out = {**answer, "brief": text, "truncated": truncated}
+        return out, len(json.dumps(out)) - limit
+
+    cap = limit - len(json.dumps({**answer, "brief": "", "truncated": 0}))
+    out, over = sized(max(cap, 1))
+    while over > 0 and cap > 1:  # what JSON adds to the text (escapes) is known once the text is
+        cap -= over
+        out, over = sized(max(cap, 1))
+    return out
 
 
-def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, holders: int = HOLDERS) -> dict:
+def brief(manifest: Path, rules: list[dict]) -> dict:
     """The system brief of a snapshot under its link rules."""
     manifest = Path(manifest).resolve()
     links = flows.cached_links(manifest, rules)
@@ -214,17 +268,21 @@ def brief(manifest: Path, rules: list[dict], *, cap: int = CAP, holders: int = H
         cards = sorted({c.get("name", "") for c in json.loads(cards_file.read_text(encoding="utf-8")).get("cards", {}).values()} - {""})
     except (OSError, ValueError, AttributeError):
         cards = []
+    found = defaultdict(list)
+    for entry in links["entries"]:
+        found[entry["symbol"]].append(entry)
     value = {"schema": SCHEMA,
              "steps": {"statico": True, "inferenza": bool(rules), "dinamico": False, "semantico": system is not None},
              "modules": [{"name": m["name"], "kind": m["kind"], "provenance": m["provenance"], "files": len(m.get("files", []))}
                          for m in graph["modules"]],
              "directories": dict(sorted(Counter(f.split("/", 1)[0] if "/" in f else "." for f in files).items())),
-             "entries": len({e["symbol"] for e in links["entries"]}), "stores": len(links["stores"]),
+             "entries": len(found), "stores": len(links["stores"]),
+             "entry_points": [{"symbol": s, "kinds": sorted({e["kind"] for e in found[s]}),
+                               "site": min(e["site"] for e in found[s])} for s in sorted(found)],
              "routes": links["routes"], "links": dict(sorted(Counter(e["origin"] for e in links["edges"]).items())),
              "externals": externals, "other_dependencies": other, "runtime_files": runtime,
              "declared": [d for rel in runtime for d in _declared(rel, texts[rel])],
              "groups": groups, "alone": alone,
              "confirmed": [n["name"] for n in (system or {}).get("nodes", []) if n["status"] == "confirmed"],
              "cards": cards}
-    value["text"], value["truncated"] = _text(value, cap, holders)
     return value

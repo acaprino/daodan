@@ -1,0 +1,58 @@
+"""The regular expressions of the core do not grow (AGENTS.md: source code and markup are read from the syntax tree).
+
+    python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_patterns.py
+
+ALLOWED is what each file of `daodan/core/` had on 20 November 2026, counted with Python's own parser: every call of
+`re.compile`, `re.search` and the like. A file may go down, never up; a new file starts at zero. When a file goes
+down, lower its number here, so that the count cannot come back. Which of them read code or markup, and must become
+a query on the tree, is the plan's Task H2: this test only keeps the number from growing meanwhile.
+"""
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+CORE = Path(__file__).resolve().parents[1] / "daodan" / "core"
+USES = {"compile", "search", "match", "fullmatch", "finditer", "findall", "sub", "subn", "split"}
+ALLOWED = {
+    "build_units.py": 48, "cascade_scan.py": 8, "change_set.py": 4, "classifier.py": 1, "code_graph.py": 1,
+    "comment_rewriter.py": 135, "container.py": 11, "doc_review.py": 23, "docker_build.py": 12,
+    "dynamic/__init__.py": 2, "dynamic/callgrind.py": 4, "dynamic/clang.py": 3, "dynamic/dotnet.py": 6,
+    "dynamic/go.py": 1, "dynamic/javascript.py": 5, "dynamic/jvm.py": 4, "dynamic/python.py": 9, "dynamic/rust.py": 2,
+    "engine_tools.py": 1, "flows.py": 31, "import_resolution.py": 1, "indexers/clang.py": 12,
+    "indexers/clang_run.py": 7, "indexers/csharp.py": 8, "indexers/css.py": 60, "indexers/go.py": 7,
+    "indexers/java.py": 6, "indexers/jvm.py": 11, "indexers/kotlin.py": 1, "indexers/python.py": 12,
+    "indexers/python_unbound.py": 1, "indexers/rust.py": 8, "indexers/typescript.py": 6, "languages/__init__.py": 5,
+    "languages/cfamily.py": 19, "languages/csharp.py": 7, "languages/go.py": 14, "languages/java.py": 10,
+    "languages/javascript.py": 20, "languages/kotlin.py": 11, "languages/markup.py": 2, "languages/plsql.py": 9,
+    "languages/python.py": 1, "languages/rust.py": 16, "languages/sfc.py": 3, "languages/sql.py": 20,
+    "languages/stylesheet.py": 34, "languages/typescript.py": 3, "mark_svg.py": 11, "mcp_service.py": 1,
+    "module_inventory.py": 3, "module_records.py": 2, "modules.py": 1, "position_stage.py": 1,
+    "premap/__init__.py": 1, "premap/autotools.py": 3, "premap/cmake.py": 6, "premap/compose.py": 10,
+    "premap/dockerfile.py": 2, "premap/gitmodules.py": 3, "premap/gradle.py": 2, "premap/jvm_files.py": 13,
+    "premap/make.py": 3, "premap/meson.py": 1, "premap/module_graph.py": 5, "premap/npm_lock.py": 2,
+    "premap/npm_tests.py": 11, "premap/origins.py": 3, "premap/project_files.py": 1, "premap/python_build.py": 1,
+    "premap/python_tests.py": 10, "premap/renovate.py": 14, "premap/requirements.py": 10, "premap/sbt.py": 2,
+    "premap/tsc.py": 1, "premap/uv.py": 1, "preparation.py": 15, "registry_build.py": 11, "repository.py": 3,
+    "retrieval.py": 4, "review_experience.py": 3, "review_roster.py": 31, "run_store.py": 1, "semantic_map.py": 3,
+    "semantic_store.py": 1, "service_registry.py": 4, "snapshot.py": 2, "source_files.py": 3, "support_table.py": 4,
+    "symbols_at.py": 1, "system_brief.py": 3, "system_map.py": 2, "usage_finder.py": 6,
+}
+
+
+def uses(path: Path) -> int:
+    """The calls of the `re` module in a file."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    return sum(isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+               and isinstance(node.func.value, ast.Name) and node.func.value.id == "re" and node.func.attr in USES
+               for node in ast.walk(tree))
+
+
+def test_no_file_of_the_core_has_more_regular_expressions_than_it_had():
+    found = {path.relative_to(CORE).as_posix(): uses(path) for path in sorted(CORE.rglob("*.py"))}
+    grown = {name: (count, ALLOWED.get(name, 0)) for name, count in found.items() if count > ALLOWED.get(name, 0)}
+    assert grown == {}, f"more regular expressions than allowed (found, allowed): {grown}"
+
+
+def test_the_count_only_goes_down():
+    assert sum(ALLOWED.values()) <= 846  # 20 November 2026; lower it with the files

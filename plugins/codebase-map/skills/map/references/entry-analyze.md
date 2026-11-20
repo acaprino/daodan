@@ -3,12 +3,13 @@
 ## Coordinator boundary
 
 Resolve the run, present scope, dispatch one isolated `codebase-map:map-analyst`,
-verify its delivery and publish only when the gate permits it. Do not read analyzed
-source or execute phase procedures in this context. Helpers may inventory and
-parse it mechanically. If required isolation is unavailable, stop with that
-capability gap. Honor existing authorization; ask only for an unresolved choice
-or an explicitly requested approval. Questions stay in this answerable context.
-Never enter plan mode or apply changes to analyzed source.
+verify its delivery, publish only when the gate permits it and end with the system
+map. Do not read analyzed source or execute phase procedures in this context.
+Helpers may inventory and parse it mechanically. If required isolation is
+unavailable, stop with that capability gap. Honor existing authorization; ask
+only for an unresolved choice or an explicitly requested approval. Questions
+stay in this answerable context. Never enter plan mode or apply changes to
+analyzed source.
 
 ## Method loads
 
@@ -162,10 +163,15 @@ The helper replaces the whole mirror and updates the registry as specified in
 failed or aborted delivery, record recoverable state and invoke
 `snapshot.py unregister $RUN_DIR`; the mirror stays untouched.
 
+Last, for every delivered run, published or partial, dispatch
+`codebase-map:system-mapper` with the run id on the whole system and wait for its
+answer.
+
 Present exact run directory, parent and publication/partial status, produced
 files, inventory/read-in-depth/runtime coverage (runtime: `snapshot.py runtime`, `references/phase-7.md`),
-risks and documentation gaps. Updates link `changes.md` and count confirmed,
-revised, retired and added claims. Derive a prioritized action plan from cited
-findings and offer development, readability or knowledge work as a separate task.
+risks, documentation gaps, and the system map's counts and what it leaves out.
+Updates link `changes.md` and count confirmed, revised, retired and added claims.
+Derive a prioritized action plan from cited findings and offer development,
+readability or knowledge work as a separate task.
 Specific downstream invocations retain this run and snapshot; only an explicitly
 latest-state consumer reads the mutable mirror.

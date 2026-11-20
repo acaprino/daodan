@@ -196,7 +196,7 @@ Not analyzed: <N> dot directories (<names>), <N> paths Git ignores (ignore rules
 
 Mode: <full or partition-level update, depth and active flags>
 Spawn plan: <structure count> structure + <behavior count> behavior + <quality count> quality
-            + <synthesizer count> synthesizer + <mapper count> interconnect-mapper = <total> agents.
+            + <synthesizer count> synthesizer + <mapper count> interconnect-mapper + 1 system-mapper = <total> agents.
 ```
 
 **Proceed when the scope is settled.** A fresh analysis of the requested target, including the default cwd, needs no additional acceptance of routine detected partitions. The same applies to an explicitly requested full run (`--no-update`), an eligible update already chosen in conversation, and a recommendation authorized by `--yes` or ordinary language such as "proceed with your recommendation". Honor partition lists already supplied by the user. State the chosen scope and continue to snapshot creation and worker dispatch in the same turn. Do not demand a flag, an option letter, or a repeated confirmation.
@@ -415,7 +415,9 @@ Workers never load presentation instructions.
    rollback protection. `--skip-synthesis` results stay in the run without
    publication; record partial status, invoke `snapshot.py unregister $RUN_DIR`,
    and leave the mirror/latest pointer intact.
-4. Present summary:
+4. For a published or partial run, dispatch `codebase-map:system-mapper` with the
+   run id on the whole system and wait for its answer.
+5. Present summary:
 
 ```
 Codebase Map (team mode) complete for: <target>
@@ -436,11 +438,12 @@ Summary:
   - Anti-patterns:   <count>  |  Red flags: <count>  |  Tech debt: <count>
   - Documentation gaps: <count>
   - Cross-partition flows: <count>
+  - System map: <the mapper's counts>  |  Left out: <what its coverage leaves out, the links the rules miss>
 ```
 
 On an incremental run, name the parent run-id on the `Parent:` line and list each partition using `partitions[i].update` in place of its raw status: `<name>: copied` or `<name>: re-analyzed ([N] affected files)`, except a partition whose `status` is `"failed"` still reports `failed`. Point at `.daodan/map/runs/<run-id>/changes.md ## Partitions` for the full detail. A full run keeps today's format: `Parent: none (full run)`, and every partition reports `done` or `failed`.
 
-5. Present independent next-step suggestions, with the exact run directory and
+6. Present independent next-step suggestions, with the exact run directory and
 source snapshot attached. A host documentation workflow may create or fix
 project instructions as separately authorized.
 Development fixes and review are separate scoped tasks. Do not apply quick fixes
@@ -462,7 +465,7 @@ Resuming dispatches fresh workers as needed. Worker contexts are not restored ac
 ## Quick Examples
 
 - `.` — auto-detect, full depth; a fresh run proceeds after the scope preview
-- `. --depth=lite` — lite mode (2N+2 agents)
+- `. --depth=lite` — lite mode (2N+3 agents)
 - `. --critical` — prioritize security paths in Phase 3-4
 - `. --partition packages/api --partition packages/web --yes` — manual partitions, auto-accept
 - `. --skip-interconnect` — stop at Phase 2

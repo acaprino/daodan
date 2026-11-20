@@ -24,7 +24,8 @@ if str(SCRIPT_DIR) not in sys.path:
 import system_map  # noqa: E402
 
 LEVELS = ("persone", "funzioni", "dati", "codice", "infrastruttura")
-_HOME = {"attore": "persone", "schermata": "persone", "entità": "dati", "database": "infrastruttura",
+_HOME = {"attore": "persone", "schermata": "persone", "applicazione": "persone", "entità": "dati",
+         "database": "infrastruttura", "coda": "infrastruttura", "filesystem": "infrastruttura",
          "dispositivo": "infrastruttura"}
 MAX_PATHS = 2000
 
