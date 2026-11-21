@@ -1,5 +1,5 @@
 import '@acaprino/imago/css/imago.css';
-import { createRegistry, fileTree, footerKeys, formatKeys, iconButtonHtml, iconMarkup as icon, inspector, metric, notify, openMenu, PALETTE_COMMAND, renderShellFrame, roving, SEARCH_COMMAND, segmentedControl, setProgress, shellFrameHtml, stepList, tabNavigationHtml, titlebarHtml } from '@acaprino/imago/ui';
+import { buttonHtml, createRegistry, fileTree, footerKeys, formatKeys, iconButtonHtml, iconMarkup as icon, inspector, LOADING_DELAY_MS, metric, notify, noteHtml, openMenu, PALETTE_COMMAND, panelStateHtml, renderShellFrame, roving, SEARCH_COMMAND, segmentedControl, setProgress, shellFrameHtml, showAfter, stepList, tabNavigationHtml, titlebarHtml } from '@acaprino/imago/ui';
 import { graphView } from '@acaprino/imago/graph';
 import { applyStored, graphControls, mountPage, storageOrNull } from '../src/page';
 
@@ -51,10 +51,26 @@ function esc(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({ '&'
 // Ctrl+F: the search of the screen in view; a screen without one says so.
 function searchView() {
   const field = document.querySelector('#graph-search, #premap-search');
-  if (field) field.focus(); else toast('Questa schermata non ha una ricerca.');
+  if (field) field.focus(); else notice('Questa schermata non ha una ricerca.');
 }
 
-function toast(message) { notify(shell, message, { timeoutMs: 4500, dismissLabel: 'Chiudi' }); }
+// A result is a notice, which goes by itself; an error stays until it is dismissed and starts with the word.
+const notice = message => notify(shell, message, { dismissLabel: 'Chiudi' });
+const failure = message => notify(shell, message, { tone: 'err', errorWord: 'Errore', dismissLabel: 'Chiudi' });
+
+// A load shows its waiting panel only when it takes longer than LOADING_DELAY_MS; one that ends sooner shows nothing.
+const waits = new Set(), timers = {};
+function startWait(name) {
+  timers[name]?.();
+  waits.delete(name);
+  timers[name] = showAfter(LOADING_DELAY_MS, () => { waits.add(name); render(); });
+}
+function endWait(name) { timers[name]?.(); timers[name] = null; waits.delete(name); }
+const panelHtml = (inner, busy = false) => `<section class="im-panel"${busy ? ' aria-busy="true"' : ''}><div class="im-panel-body">${inner}</div></section>`;
+function loadingPanel(name, rows = 3) { return waits.has(name) ? panelHtml(panelStateHtml({ kind: 'loading', rows }), true) : ''; }
+const retryButton = (action, label = 'Riprova') => buttonHtml(label, action, { icon: 'reload' });
+const failedPanel = (text, action) => panelHtml(panelStateHtml({ kind: 'error', text, retryHtml: retryButton(action), errorWord: 'Errore' }));
+const busyIcon = (busy, name) => busy ? '<span class="im-spinner" aria-hidden="true"></span>' : icon(name);
 
 function heading(eyebrow, title, description, action = '') { return `<div class="im-split im-cluster"><div><p class="im-kicker">${eyebrow}</p><h1>${title}</h1><p>${description}</p></div>${action}</div>`; }
 function selectOptions(items, value) { return items.map(([v, label]) => `<option value="${esc(v)}" ${String(v) === String(value) ? 'selected' : ''}>${esc(label)}</option>`).join(''); }
@@ -90,6 +106,7 @@ function applyState(found) {
     JSON.stringify(server.mapped) !== JSON.stringify(found.mapped);
   server = found;
   serverError = '';
+  endWait('server');
   const c = ctx();
   if (engineDraft === null) engineDraft = { ...server.engine, api_key: '' };
   if (c && state.runId !== c.run_id) {  // what the browser kept belongs to another run
@@ -102,7 +119,7 @@ function applyState(found) {
     selecting = false;
     if (c && server.job.state === 'ready') {
       state.analysisStage = 'premap';
-      toast('Contesto pronto: ' + slug() + ' · ' + c.branch);
+      notice('Contesto pronto: ' + slug() + ' · ' + c.branch);
     }
   }
   if (linked || mappingChanged || pathPage?.run !== c?.run_id) pathPage = null;
@@ -142,15 +159,17 @@ function show() {  // draws again what a frame changed
 async function loadPremap() {
   const run = ctx()?.run_id;
   if (!run || premapRun === run) return;
-  premapRun = run; premapError = ''; PREMAP = null;
+  premapRun = run; premapError = ''; PREMAP = null; startWait('premap');
   try {
     const found = await get('/api/app/premap');
     if (ctx()?.run_id !== run) return;
     PREMAP = { ...found, dependencies: found.units.flatMap(u => u.dependencies.map(d => ({ ...d, unit: u.name }))) };
   } catch (error) {
     premapRun = '';
-    if (error.busy) { toast(error.message + ', riprovo'); setTimeout(loadPremap, 2000); return; }
+    if (error.busy) { notice(error.message + ', riprovo'); setTimeout(loadPremap, 2000); return; }
     premapError = error.message;
+  } finally {
+    endWait('premap');
   }
   render();
 }
@@ -170,7 +189,7 @@ function closeGroup(id) {  // with the groups open inside it: `open` lists a par
 async function loadGraph() {
   const run = ctx()?.run_id, open = shownOpen(), key = graphKey();
   if (!run || graphLoading) return;
-  graphLoading = true;
+  graphLoading = true; startWait('graph');
   if (GRAPH?.open.length && !open.length) GRAPH = null;  // the first grouping is never drawn from an opened graph
   try {
     const found = await get('/api/app/graph' + (open.length ? '?' + new URLSearchParams({ open: JSON.stringify(open) }) : ''));
@@ -182,12 +201,12 @@ async function loadGraph() {
       state.graphRoot = [...(inside.length ? inside : GRAPH.nodes)].sort((a, b) => outside(a) - outside(b) || related(b.id) - related(a.id) || b.files.length - a.files.length)[0]?.id || '';
     }
   } catch (error) {
-    if (error.busy) { toast(error.message + ', riprovo'); setTimeout(loadGraph, 2000); return; }  // what is drawn stays
+    if (error.busy) { notice(error.message + ', riprovo'); setTimeout(loadGraph, 2000); return; }  // what is drawn stays
     const refused = open.length && /to open: (".*")$/.exec(error.message);  // a group the run no longer shows: dropped, the others stay
-    if (refused) { closeGroup(JSON.parse(refused[1])); graphRun = ''; toast(error.message); }
+    if (refused) { closeGroup(JSON.parse(refused[1])); graphRun = ''; failure(error.message); }
     else { graphError = error.message; graphRun = key; }
   } finally {
-    graphLoading = false;
+    graphLoading = false; endWait('graph');
   }
   if (ctx()?.run_id === run && graphRun !== graphKey()) return loadGraph();  // the groups wanted changed meanwhile
   if (state.screen === 'analysis' && state.analysisStage === 'analysis' && document.getElementById('build-viewport')) updateAnalysisRun();
@@ -231,7 +250,7 @@ async function verifyRepositoryUrl() {
   }
   checking = false;
   render();
-  if (checked?.state === 'accessible') toast(`${checked.repository.owner}/${checked.repository.name}: ${checked.branches.length} branch letti da GitHub.`);
+  if (checked?.state === 'accessible') notice(`${checked.repository.owner}/${checked.repository.name}: ${checked.branches.length} branch letti da GitHub.`);
 }
 
 async function selectRepository() {
@@ -257,8 +276,8 @@ function preparation() {
   const job = server?.job;
   if (!job || job.state === 'idle') return '';
   const step = { checkout: 'Checkout del branch', snapshot: 'Snapshot e pre-mappa' }[job.step] || job.step || '';
-  if (job.state === 'preparing') return `<p class="im-muted" role="status">${'<span class="im-spinner" aria-hidden="true"></span>'} Preparazione in corso: ${esc(step)}${job.detail ? ' · ' + esc(job.detail) : ''}.</p>`;
-  if (job.state === 'failed') return `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Preparazione non riuscita (${esc(step)}).</strong><br>${esc(job.detail)}</div>`;
+  if (job.state === 'preparing') return `<span class="im-loader" role="status"><span class="im-spinner" aria-hidden="true"></span>Preparazione in corso: ${esc(step)}${job.detail ? ' · ' + esc(job.detail) : ''}.</span>`;
+  if (job.state === 'failed') return noteHtml({ tone: 'err', title: `Preparazione non riuscita (${step}).`, message: job.detail });
   return '';
 }
 
@@ -271,15 +290,15 @@ function repositoryScreen() {
     empty: 'La repository non ha branch: non c’è nulla da analizzare.',
   }[checked.state] + (checked.detail ? ' (' + checked.detail + ')' : '') : '';
   const c = ctx();
-  return `<div class="im-note">${icon('info')}<div><strong>Repository GitHub pubblica</strong><p>Daodan legge i branch e scarica quello scelto in sola lettura; nulla del progetto viene eseguito su questa macchina. Il login GitHub non è disponibile in questa versione.</p></div></div><div class="im-auto-grid"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Repository GitHub</h2><span class="im-chip">Selezione del progetto</span></div><div class="im-inset im-stack"><form id="repository-form" novalidate><div class="im-field"><label class="im-field-label" for="repository-url">URL GitHub</label><input class="im-input" id="repository-url" type="url" value="${esc(state.repositoryUrl)}" placeholder="https://github.com/proprietario/repository" aria-describedby="repository-url-help repository-error repository-access-feedback" ${checkError ? 'aria-invalid="true"' : ''}><p id="repository-url-help" class="im-muted im-caption">Inserisci l’URL e verifica l’accesso. Senza login si aprono solo repository pubbliche.</p><p id="repository-error" class="im-field-error" role="alert">${esc(checkError)}</p><p id="repository-access-feedback" class="im-muted" role="status">${esc(feedback)}</p></div><button class="im-btn" type="submit" id="verify-repository" ${checking ? 'disabled' : ''}>${icon(checking ? 'spinner' : 'check')}${checking ? 'Verifica…' : 'Verifica accesso'}</button></form>
-  <div><div class="im-field"><label class="im-field-label" for="repository-branch">Branch da analizzare</label><select class="im-select" id="repository-branch" ${!repo || checking || preparing ? 'disabled' : ''}>${repo ? selectOptions(repo.branches.map(b => [b.name, b.name + ' · ' + b.commit.slice(0, 12)]), branch) : '<option>Verifica prima l’accesso</option>'}</select></div><p class="im-muted im-caption">Preferenza automatica: <code>main</code>, poi <code>master</code>, altrimenti il branch predefinito della repository.</p>${repo ? `<p>${repo.branches.length} branch letti ora da GitHub; predefinito <code>${esc(repo.default || '—')}</code>.</p>` : ''}</div><div class="im-section">${preparation()}${selectError ? `<p class="im-text-err" role="alert">${esc(selectError)}</p>` : ''}</div><div class="im-split im-cluster"><p class="im-muted im-caption">Un altro repository o branch prepara un nuovo checkout; lo stesso commit riusa l’analisi già fatta.</p><button class="im-btn im-btn--primary" data-action="use-repository" id="use-repository" ${!repo || checking || preparing ? 'disabled' : ''}>${preparing ? '<span class="im-spinner" aria-hidden="true"></span>' + 'Preparazione…' : 'Apri pre-mappa ' + icon('arrow')}</button></div></div></section>
+  return noteHtml({ icon: 'info', title: 'Repository GitHub pubblica', message: 'Daodan legge i branch e scarica quello scelto in sola lettura; nulla del progetto viene eseguito su questa macchina. Il login GitHub non è disponibile in questa versione.' }) + `<div class="im-auto-grid"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Repository GitHub</h2><span class="im-chip">Selezione del progetto</span></div><div class="im-inset im-stack"><form id="repository-form" novalidate><div class="im-field"><label class="im-field-label" for="repository-url">URL GitHub</label><input class="im-input" id="repository-url" type="url" value="${esc(state.repositoryUrl)}" placeholder="https://github.com/proprietario/repository" aria-describedby="repository-url-help repository-error repository-access-feedback" ${checkError ? 'aria-invalid="true"' : ''}><p id="repository-url-help" class="im-muted im-caption">Inserisci l’URL e verifica l’accesso. Senza login si aprono solo repository pubbliche.</p><p id="repository-error" class="im-field-error" role="alert">${checkError ? 'Errore: ' + esc(checkError) : ''}</p><p id="repository-access-feedback" class="im-muted" role="status">${esc(feedback)}</p></div><button class="im-btn" type="submit" id="verify-repository" ${checking ? 'aria-busy="true"' : ''}>${busyIcon(checking, 'check')}Verifica accesso</button></form>
+  <div><div class="im-field"><label class="im-field-label" for="repository-branch">Branch da analizzare</label><select class="im-select" id="repository-branch" ${!repo || checking || preparing ? 'disabled' : ''}>${repo ? selectOptions(repo.branches.map(b => [b.name, b.name + ' · ' + b.commit.slice(0, 12)]), branch) : '<option>Verifica prima l’accesso</option>'}</select></div><p class="im-muted im-caption">Preferenza automatica: <code>main</code>, poi <code>master</code>, altrimenti il branch predefinito della repository.</p>${repo ? `<p>${repo.branches.length} branch letti ora da GitHub; predefinito <code>${esc(repo.default || '—')}</code>.</p>` : ''}</div><div class="im-section">${preparation()}${selectError ? noteHtml({ tone: 'err', title: 'Selezione non riuscita.', message: selectError }) : ''}</div><div class="im-split im-cluster"><p class="im-muted im-caption">Un altro repository o branch prepara un nuovo checkout; lo stesso commit riusa l’analisi già fatta.</p><button class="im-btn im-btn--primary" data-action="use-repository" id="use-repository" ${preparing ? 'aria-busy="true"' : !repo || checking ? 'disabled' : ''}>${preparing ? '<span class="im-spinner" aria-hidden="true"></span>Apri pre-mappa' : 'Apri pre-mappa ' + icon('arrow')}</button></div></div></section>
   <aside class="im-stack"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Accesso GitHub</h2>${icon('code')}</div><div class="im-inset im-stack"><span class="im-chip">Non connesso</span><h3>Login non disponibile</h3><p class="im-muted">In questa versione Daodan legge solo repository pubbliche, senza account. Un accesso negato non dimostra che la repository sia privata: può non esistere o mancare un permesso.</p></div></section><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Contesto attivo</h2></div><div class="im-inset im-stack">${c ? `<ul class="im-detail-list"><li><strong>Repository</strong><span><code>${esc(slug(c))}</code></span></li><li><strong>Branch e commit</strong><span><code>${esc(c.branch)}</code> · <code>${esc(c.commit.slice(0, 12))}</code></span></li><li><strong>Run</strong><span><code>${esc(c.run_id)}</code></span></li></ul><button class="im-btn im-btn--ghost im-btn--sm" data-analysis-stage="premap">Torna alla pre-mappa ${icon('arrow')}</button>` : `<p class="im-muted">${preparing ? 'Preparazione in corso: il contesto sarà pronto alla fine del checkout e dello snapshot.' : 'Nessuna repository selezionata sul server.'}</p>`}</div></section></aside></div>`;
 }
 
 // -- the analysis workspace ---------------------------------------------------------------------------------------
 
 function analysisWorkspace() {
-  if (!server) return heading('Codebase intelligence', 'Analisi del repository', 'Lettura dello stato del server…') + (serverError ? `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Server non raggiungibile.</strong> ${esc(serverError)}</div>` : waiting('Lettura dello stato…', 'Repository, run e passaggi li dice il server.'));
+  if (!server) return heading('Codebase intelligence', 'Analisi del repository', 'Lettura dello stato del server…') + (serverError ? serverNote() : loadingPanel('server'));
   if (!ctx() && state.analysisStage !== 'repository') state.analysisStage = 'repository';
   if (state.analysisStage === 'synthesis' && !complete()) state.analysisStage = 'analysis';
   const stage = state.analysisStage;
@@ -293,9 +312,11 @@ function analysisWorkspace() {
   const action = stage === 'premap' ? `<button class="im-btn im-btn--primary" data-analysis-stage="analysis">${icon('play')}Segui l’analisi</button>`
     : stage === 'synthesis' ? `<button class="im-btn im-btn--primary" data-action="open-full-graph">${icon('graph')}Esplora il grafo completo</button>`
       : stage === 'analysis' ? `<button class="im-btn" data-action="open-explorer">${icon('external')}Apri l’esploratore</button>` : '';
-  return heading(eyebrow, title, description, action) + '<nav id="stage-nav" aria-label="Percorso di analisi"></nav>' + (serverError ? `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Server non raggiungibile.</strong> ${esc(serverError)}</div>` : '') +
+  return heading(eyebrow, title, description, action) + '<nav id="stage-nav" aria-label="Percorso di analisi"></nav>' + (serverError ? serverNote() : '') +
     (stage === 'repository' ? repositoryScreen() : repositoryContext() + (stage === 'premap' ? premapScreen() : stage === 'synthesis' ? synthesisScreen() : analysisRunScreen()));
 }
+
+const serverNote = () => noteHtml({ tone: 'err', title: 'Server non raggiungibile.', message: serverError });
 
 function selectStage(id) {
   state.screen = 'analysis';
@@ -316,10 +337,6 @@ function mountStageNav() {
   }))));
 }
 
-function waiting(title, text) {
-  return `<div data-im-surface="sheet" class="im-surface im-inset im-stack" role="status"><div class="im-stack"><h2 class="im-loader"><span class="im-spinner" aria-hidden="true"></span>${title}</h2><p class="im-muted">${text}</p></div></div>`;
-}
-
 // -- 1. pre-map ----------------------------------------------------------------------------------------------------
 
 function premapSourceLine() {
@@ -336,8 +353,8 @@ function dependencyRow(dependency) {
 }
 
 function premapScreen() {
-  if (premapError) return `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Pre-mappa non disponibile.</strong> ${esc(premapError)}</div><button class="im-btn" data-action="retry-premap">${icon('reload')}Riprova</button>`;
-  if (!PREMAP) return waiting('Lettura della pre-mappa…', 'Inventario dello snapshot, tecnologie e manifest del run.');
+  if (premapError) return failedPanel('Pre-mappa non disponibile: ' + premapError, 'retry-premap');
+  if (!PREMAP) return loadingPanel('premap');
   const languages = PREMAP.languages;
   return premapSourceLine() + `<div class="im-metric-grid">
     ${metric(document, String(number(PREMAP.files.length)), 'File nello snapshot', 'Inventario del checkout').outerHTML}
@@ -527,7 +544,9 @@ function runHelp() {
 function passAlert() {
   const p = pass();
   if (!['unavailable', 'failed', 'off'].includes(p.state)) return '';
-  return `<strong>${p.state === 'failed' ? 'Il passaggio che rifinisce il grafo delle chiamate non è riuscito.' : 'Lacuna: il passaggio che rifinisce il grafo delle chiamate non è disponibile.'}</strong><br>${esc(p.reason || 'Nessuna causa registrata.')}${p.state === 'failed' ? `<br><button class="im-btn" data-action="retry-pass">${icon('play')}Riprova il passaggio</button>` : ''}`;
+  return noteHtml({ tone: p.state === 'failed' ? 'err' : 'warn',
+    title: p.state === 'failed' ? 'Il passaggio che rifinisce il grafo delle chiamate non è riuscito.' : 'Lacuna: il passaggio che rifinisce il grafo delle chiamate non è disponibile.',
+    message: p.reason || 'Nessuna causa registrata.', actionsHtml: p.state === 'failed' ? buttonHtml('Riprova il passaggio', 'retry-pass', { icon: 'play' }) : '' });
 }
 
 const RUN_EVENT = { run_created: 'Run creato', engine_started: 'Passaggio del grafo avviato', engine_unavailable: 'Passaggio del grafo non disponibile', engine_failed: 'Passaggio del grafo interrotto', index_failed: 'Indice lessicale non costruito', modules_failed: 'Grafo dei moduli non costruito' };
@@ -564,19 +583,19 @@ function mapNotice() {
   const cause = map.cause === 'the recorded map still has stale or incomplete records'
     ? 'Alcune prove sono incomplete o si riferiscono a una revisione precedente.' : map.cause;
   const tone = partial || map.state === 'no_engine' ? 'warn' : map.state === 'failed' ? 'err' : 'info';
-  return `<div class="im-note im-note--block" data-im-tone="${tone}" role="status"><strong>${title}</strong>${counts.length ? `<p>Da verificare: ${counts.join(', ')}.</p>` : ''}${cause ? `<p>${esc(cause)}</p>` : ''}</div>`;
+  return noteHtml({ tone, title, message: [counts.length && `Da verificare: ${counts.join(', ')}.`, cause].filter(Boolean).join(' ') });
 }
-function linksBlock() {
+function linksNote() {
   const l = server?.links || { state: 'idle' }, chosen = Boolean(server?.engine?.engine), running = l.state === 'running';
   const said = { idle: 'Non ancora cercati: il motore scrive le regole del progetto, la macchina le applica e decide ogni legame.', running: 'In corso: il motore scrive le regole, la macchina le applica e gli rimanda quello che resta scollegato.', done: 'Trovati dalla macchina con le regole del progetto.', failed: 'Non trovati.', no_engine: 'Nessun motore scelto.' }[l.state] || l.state;
-  const counts = l.state === 'done' ? `<p>${plural(l.routes.called, 'richiesta', 'richieste')}, ${plural(l.routes.offered, 'rotta', 'rotte')}, ${plural(l.routes.linked, 'legame', 'legami')}, ${plural(l.gaps, 'lacuna', 'lacune')}${l.stores ? ', ' + plural(l.stores, 'archivio', 'archivi') : ''}</p>` : '';
-  const cause = l.state === 'failed' && l.cause ? `<div class="im-note im-note--block" data-im-tone="err" role="status">${esc(l.cause)}</div>` : '';
-  const action = `<button class="im-btn" data-action="find-links" ${chosen && !running ? '' : 'disabled'}>${icon(running ? 'spinner' : 'play')}${running ? 'Ricerca in corso' : 'Trova i legami'}</button>${chosen ? '' : `<button class="im-btn" data-screen="engine">${icon('arrow')}Scegli il motore</button>`}`;
-  return `${icon('graph')}<div><strong>Legami tra i moduli</strong><p>${said}</p>${counts}${cause}<div class="im-cluster">${action}</div>${chosen ? '' : '<p>Scegli e salva prima un motore.</p>'}</div>`;
+  const counts = l.state === 'done' ? `${plural(l.routes.called, 'richiesta', 'richieste')}, ${plural(l.routes.offered, 'rotta', 'rotte')}, ${plural(l.routes.linked, 'legame', 'legami')}, ${plural(l.gaps, 'lacuna', 'lacune')}${l.stores ? ', ' + plural(l.stores, 'archivio', 'archivi') : ''}.` : '';
+  const action = `<button class="im-btn" data-action="find-links" ${running ? 'aria-busy="true"' : chosen ? '' : 'disabled title="Scegli e salva prima un motore."'}>${busyIcon(running, 'play')}Trova i legami</button>${chosen ? '' : `<button class="im-btn" data-screen="engine">${icon('arrow')}Scegli il motore</button>`}`;
+  return noteHtml({ icon: 'graph', title: 'Legami tra i moduli', tone: l.state === 'failed' ? 'err' : undefined,
+    message: [said, counts, l.state === 'failed' && l.cause, chosen ? '' : 'Scegli e salva prima un motore.'].filter(Boolean).join(' '), actionsHtml: action });
 }
 
 function runButton() {
-  return complete() ? `<button id="run-toggle" class="im-btn im-btn--primary" data-analysis-stage="synthesis">${icon('document')}Leggi sintesi</button>` : `<button class="im-btn" id="run-toggle" disabled>${'<span class="im-spinner" aria-hidden="true"></span>'}Analisi in corso</button>`;
+  return complete() ? `<button id="run-toggle" class="im-btn im-btn--primary" data-analysis-stage="synthesis">${icon('document')}Leggi sintesi</button>` : `<button class="im-btn" id="run-toggle" aria-busy="true">${busyIcon(true)}Analisi in corso</button>`;
 }
 
 function nodeName(n) { return n.kind === 'directory' && n.name === '.' ? 'radice del repository' : n.name; }
@@ -590,7 +609,7 @@ function stackRow(n) { const p = n.projects || []; return p.length ? `<span clas
 function stackBlock(n) { return `<div class="im-section"><h3>Stack</h3><ul class="im-detail-list">${(n.projects || []).map(x => `<li>${markImg(x.mark)}<span>${esc(x.name)}</span><span class="im-chip">${esc(x.category)}</span>${x.evidence.map(e => `<code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code>`).join('')}</li>`).join('') || '<li class="im-muted">Nessun framework o libreria riconosciuti dal registro.</li>'}</ul>${n.other_dependencies ? `<p class="im-muted im-caption">Altre dipendenze dichiarate: ${n.other_dependencies}</p>` : ''}</div>`; }
 // A node's picture: the mark of its registry entry, from the app's server; without one, or when it does not load, the icon of its kind.
 function nodeIcon(n) { return n.mark ? markImg(n.mark) : icon(n.location === 'external' ? 'external' : 'layers'); }
-document.addEventListener('error', event => { if (event.target.matches?.('img.mark')) event.target.outerHTML = icon('external'); }, true);
+document.addEventListener('error', event => { if (event.target.matches?.('img.im-inline-mark')) event.target.outerHTML = icon('external'); }, true);
 function levelLabel() { return GRAPH?.grouping === 'modules' ? 'Moduli' : 'Directory'; }
 // The system map's levels the graph shows, by their own names, never «the» graph: the app builds codice and infrastruttura.
 function levelsName() { return (GRAPH?.levels || []).map(level => level[0].toUpperCase() + level.slice(1)).join(' · '); }
@@ -599,9 +618,10 @@ const SELECTED = { directory: 'Directory selezionata', file: 'File selezionato',
 function endName(id) { const n = GRAPH.nodes.find(item => item.id === id); return n ? nodeName(n) : GRAPH.open.find(group => group.id === id)?.name || id; }
 
 function buildPreview() {
-  if (graphError) return `<div class="im-empty">${icon('warning')}<h3>Grafo non disponibile.</h3><p>${esc(graphError)}</p></div>`;
+  if (graphError) return panelStateHtml({ kind: 'error', text: 'Grafo non disponibile: ' + graphError, retryHtml: retryButton('retry-graph'), errorWord: 'Errore' });
   const g = GRAPH;
-  if (!g || !g.nodes.length) return `<div class="im-empty">${icon('graph')}<h3>Prima l’inventario, poi le relazioni.</h3><p>${g ? 'Il grafo del run non ha ancora gruppi di file.' : 'Lettura del grafo del run…'}<br>I nodi compaiono quando la pipeline scrive un artefatto.</p></div>`;
+  if (!g) return waits.has('graph') ? panelStateHtml({ kind: 'loading', rows: 3 }) : '';
+  if (!g.nodes.length) return panelStateHtml({ kind: 'empty', title: 'Prima l’inventario, poi le relazioni.', text: 'Il grafo del run non ha ancora gruppi di file. I nodi compaiono quando la pipeline scrive un artefatto.' });
   return '<div class="im-fill" id="preview-diagram"></div>';
 }
 
@@ -648,8 +668,8 @@ function buildStatus() {
 
 function analysisRunScreen() {
   const c = ctx(), percent = runPercent(), alert = passAlert();
-  return `<div class="im-note">${icon('info')}<div><strong>Analisi del commit ${esc(c.commit.slice(0, 12))}.</strong><p>Avanzamento ed eventi sono quelli del run <code>${esc(c.run_id)}</code>. Il grafo cresce solo quando la pipeline scrive un artefatto.</p></div></div>
-  <div class="im-auto-grid"><section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="run-title"><div class="im-inset im-stack"><div class="im-split im-cluster"><div><p class="im-kicker">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="im-cluster"><span class="im-chip" data-im-tone="${pass().state === 'failed' ? 'err' : 'accent'}" id="run-badge"><span class="im-dot"></span>${statusLabel()}</span><span id="run-button-wrap">${runButton()}</span></div></div><div class="im-metric-value"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="im-progress" role="progressbar" aria-label="Passi completati della pipeline" id="run-progress"></div><p id="run-help">${esc(runHelp())}</p><div id="pipeline-steps"></div><div id="run-error" class="im-note im-note--block" data-im-tone="${pass().state === 'failed' ? 'err' : 'warn'}" role="status" ${alert ? '' : 'hidden'}>${alert}</div><div id="map-status">${mapNotice()}</div><div id="links-block" class="im-note">${linksBlock()}</div></div><div class="im-panel-foot im-cluster"><span class="im-muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span></div></section>
+  return noteHtml({ icon: 'info', title: `Analisi del commit ${c.commit.slice(0, 12)}.`, message: `Avanzamento ed eventi sono quelli del run ${c.run_id}. Il grafo cresce solo quando la pipeline scrive un artefatto.` }) + `
+  <div class="im-auto-grid"><section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="run-title"><div class="im-inset im-stack"><div class="im-split im-cluster"><div><p class="im-kicker">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="im-cluster"><span class="im-chip" data-im-tone="${pass().state === 'failed' ? 'err' : 'accent'}" id="run-badge"><span class="im-dot"></span>${statusLabel()}</span><span id="run-button-wrap">${runButton()}</span></div></div><div class="im-metric-value"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="im-progress" role="progressbar" aria-label="Passi completati della pipeline" id="run-progress"></div><p id="run-help">${esc(runHelp())}</p><div id="pipeline-steps"></div><div id="run-error" ${alert ? '' : 'hidden'}>${alert}</div><div id="map-status">${mapNotice()}</div><div id="links-block">${linksNote()}</div></div><div class="im-panel-foot im-cluster"><span class="im-muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span></div></section>
   <section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="building-title"><div class="im-panel-header im-split"><div><h2 id="building-title">Costruzione del grafo</h2><p class="im-muted im-caption">Gruppi di file e relazioni dal grafo del run.</p></div><span class="im-chip" id="build-level">${esc(levelsName() || levelLabel())}</span></div><div class="im-canvas-frame im-canvas-frame--preview" id="build-viewport">${buildPreview()}</div><div class="im-panel-foot im-cluster"><span id="build-counts">${buildCounts()}</span><span id="build-status">${buildStatus()}</span></div></section></div>
   <section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="activity-title"><div class="im-panel-header im-split"><h2 id="activity-title">Eventi e feedback</h2><span class="im-chip">${logItems().length} eventi</span></div><div class="im-scroll im-scroll--bounded" id="logs" aria-live="polite" aria-relevant="additions">${renderLogs()}</div></section>`;
 }
@@ -669,10 +689,8 @@ function updateAnalysisRun() {
   mountPipeline();
   const error = document.getElementById('run-error');
   error.hidden = !alert;
-  error.className = 'im-note im-note--block';
-  error.dataset.imTone = pass().state === 'failed' ? 'err' : 'warn';
   error.innerHTML = alert;
-  document.getElementById('links-block').innerHTML = linksBlock();
+  document.getElementById('links-block').innerHTML = linksNote();
   document.getElementById('map-status').innerHTML = mapNotice();
   const hadFocus = document.activeElement?.id === 'run-toggle';
   document.getElementById('run-button-wrap').innerHTML = runButton();
@@ -704,7 +722,7 @@ function gapLines() {
 
 async function loadPathPage(id = null, offset = 0, previous = null, focus = false) {
   const page = { run: ctx().run_id, id, offset, previous };
-  pathPage = page;
+  pathPage = page; startWait('paths');
   const query = new URLSearchParams({ offset });
   if (id === orphanWrites) query.set('effects', '1');
   else if (id) query.set('id', id);
@@ -716,6 +734,7 @@ async function loadPathPage(id = null, offset = 0, previous = null, focus = fals
     if (!Array.isArray(rows)) throw new Error(result.reason || 'La pagina dei percorsi non è disponibile.');
     page.result = result;
   } catch (error) { page.error = error.message; }
+  endWait('paths');
   if (page === pathPage && viewingPaths()) drawPaths(focus);
 }
 
@@ -731,8 +750,8 @@ function pathContents() {
   const top = '<div class="im-panel-header im-split"><h2 id="flow-paths-title">Percorsi per ingresso</h2>' +
     (page?.id ? '<button class="im-btn im-btn--ghost im-btn--sm" data-action="path-list">Torna agli ingressi</button>' :
       '<button class="im-btn im-btn--ghost im-btn--sm" data-action="path-effects">Scritture senza ingresso</button>') + '</div>';
-  if (!page || (!page.result && !page.error)) return top + '<p class="im-inset im-muted" role="status">Lettura delle prove…</p>';
-  if (page.error) return top + `<div class="im-inset"><p role="alert">${esc(page.error)}</p><button class="im-btn" data-action="path-retry">Riprova</button></div>`;
+  if (!page || (!page.result && !page.error)) return top + '<div class="im-panel-body">' + (waits.has('paths') ? panelStateHtml({ kind: 'loading', rows: 2 }) : '') + '</div>';
+  if (page.error) return top + '<div class="im-panel-body">' + panelStateHtml({ kind: 'error', text: page.error, retryHtml: retryButton('path-retry'), errorWord: 'Errore' }) + '</div>';
   const { card, cards, steps, effects, count, next_offset } = page.result;
   const items = page.id === orphanWrites ? effects : page.id ? steps : cards;
   const previous = page.previous && page.id === page.previous.id;
@@ -775,11 +794,11 @@ function pathContents() {
 }
 
 function synthesisScreen() {
-  const notice = mapNotice() + `<section class="im-surface im-panel" data-im-surface="sheet" id="flow-paths" tabindex="-1" aria-labelledby="flow-paths-title">${pathContents()}</section>`;
-  if (!GRAPH) return notice + (graphError ? `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Grafo non disponibile.</strong> ${esc(graphError)}</div>` : waiting('Lettura del grafo…', 'Gruppi, relazioni e lacune del run.'));
+  const intro = mapNotice() + `<section class="im-surface im-panel" data-im-surface="sheet" id="flow-paths" tabindex="-1" aria-labelledby="flow-paths-title">${pathContents()}</section>`;
+  if (!GRAPH) return intro + (graphError ? failedPanel('Grafo non disponibile: ' + graphError, 'retry-graph') : loadingPanel('graph'));
   const top = [...GRAPH.nodes].sort((a, b) => b.files.length - a.files.length).slice(0, 3), gaps = gapLines();
   const modules = GRAPH.grouping === 'modules';
-  return `${notice}<div class="im-note">${icon('info')}<div><strong>Sintesi testuale in attesa.</strong><p>Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run <code>${esc(ctx().run_id)}</code>. Le domande al motore sono in «Motore e domande».</p></div></div><div class="im-metric-grid">${metric(document, String(GRAPH.nodes.length), modules ? 'Moduli' : 'Directory con file', 'Gruppi del grafo').outerHTML}${metric(document, String(GRAPH.edges.length), 'Relazioni nel grafo', runtimeSummary(GRAPH.edges) || 'Tra i gruppi visualizzati').outerHTML}${metric(document, String(number(GRAPH.files)), 'File nel grafo', `Snapshot del commit ${ctx().commit.slice(0, 7)}`).outerHTML}${metric(document, String(number(modules ? GRAPH.unassigned.count : GRAPH.nodes.filter(n => n.location === 'external').length)), modules ? 'File senza modulo' : 'Nodi esterni', modules ? 'Lacuna esplicita del grafo' : 'Servizi riconosciuti dallo stack').outerHTML}</div>
+  return `${intro}${noteHtml({ icon: 'info', title: 'Sintesi testuale in attesa.', message: `Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run ${ctx().run_id}. Le domande al motore sono in «Motore e domande».` })}<div class="im-metric-grid">${metric(document, String(GRAPH.nodes.length), modules ? 'Moduli' : 'Directory con file', 'Gruppi del grafo').outerHTML}${metric(document, String(GRAPH.edges.length), 'Relazioni nel grafo', runtimeSummary(GRAPH.edges) || 'Tra i gruppi visualizzati').outerHTML}${metric(document, String(number(GRAPH.files)), 'File nel grafo', `Snapshot del commit ${ctx().commit.slice(0, 7)}`).outerHTML}${metric(document, String(number(modules ? GRAPH.unassigned.count : GRAPH.nodes.filter(n => n.location === 'external').length)), modules ? 'File senza modulo' : 'Nodi esterni', modules ? 'Lacuna esplicita del grafo' : 'Servizi riconosciuti dallo stack').outerHTML}</div>
   <div class="im-auto-grid"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Responsabilità da esplorare</h2><span class="im-chip">${esc(levelsName())}</span></div><div class="im-stack">${top.map(n => `<button class="im-btn" data-preview-node="${esc(n.id)}"><span>${icon('layers')}</span><span><strong>${esc(nodeName(n))}</strong><p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><small>${esc(nodeFacts(n))}</small></span>${icon('arrow')}</button>`).join('') || '<p class="im-muted im-caption">Nessun gruppo nel grafo.</p>'}</div></section><aside class="im-stack"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Dipendenze dopo l’analisi</h2></div><div class="im-inset im-stack"><p>${PREMAP ? `${number(PREMAP.dependencies.filter(d => d.resolved_version).length)} voci con versione risolta nel modello di build.` : 'Inventario delle dipendenze non disponibile.'}</p></div></section><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Cosa manca al quadro</h2></div><div class="im-inset im-stack"><ul>${gaps.slice(0, 8).map(g => `<li>${esc(g)}</li>`).join('') || '<li>Nessuna lacuna registrata dal run.</li>'}</ul>${gaps.length > 8 ? `<p class="im-muted im-caption">Altre ${gaps.length - 8} lacune in «Provenienza e lacune».</p>` : ''}<button class="im-btn im-btn--ghost" data-action="snapshot">${icon('file')}Provenienza e lacune</button></div></section></aside></div>`;
 }
 
@@ -809,7 +828,7 @@ function visibleGraph() {
 
 function graphCanvas(g) {
   if (g.nodes.length) return '<div class="im-fill" id="map-diagram"></div>';
-  return '<div class="im-empty"><h2>Nessun gruppo trovato</h2><p>Cambia ricerca o amplia il perimetro del grafo.</p><button class="im-btn" data-action="clear-graph">Azzera filtri</button></div>';
+  return panelStateHtml({ kind: 'empty', title: 'Nessun gruppo trovato', text: 'Cambia ricerca o amplia il perimetro del grafo.', actionHtml: '<button class="im-btn" data-action="clear-graph">Azzera filtri</button>' });
 }
 function mapScene(g) {
   // The grid of the page, row after row: an open group starts a row and is drawn around what it holds, which can hold
@@ -871,7 +890,7 @@ function mountDiagram() {
     diagram = graphView(host, { label: preview ? 'Costruzione del grafo' : 'Grafo del codice', controls: graphControls,
       onSelect(id) {
         if (preview) previewNode(id, document.activeElement);
-        else { state.graphRoot = id; wantGroup = true; render(); toast('Selezionato: ' + nodeName(nodeById(id))); }
+        else { state.graphRoot = id; wantGroup = true; render(); notice('Selezionato: ' + nodeName(nodeById(id))); }
       }, onOpen: openGroup,
     });
   }
@@ -890,8 +909,8 @@ function groupDetails() {
 function symbolsBlock(n) {
   const block = body => `<div class="im-section"><h3>Simboli e chiamate</h3>${body}</div>`;
   if (SYMBOLS?.file !== n.id) loadSymbols(n.id);
-  if (SYMBOLS.loading) return block('<p class="im-muted im-caption">Lettura dei simboli…</p>');
-  if (SYMBOLS.error) return block(`<p class="im-muted im-caption">${esc(SYMBOLS.error)}</p>`);
+  if (SYMBOLS.loading) return block('<span class="im-loader" role="status"><span class="im-spinner" aria-hidden="true"></span>Lettura dei simboli…</span>');
+  if (SYMBOLS.error) return block(noteHtml({ tone: 'err', title: 'Simboli non disponibili.', message: SYMBOLS.error, actionsHtml: retryButton('retry-symbols') }));
   const name = ref => SYMBOLS.symbols.find(s => s.id === ref)?.name || ref.replace(/^file:/, '');
   const sites = call => call.evidence.map(e => esc(e.path.split('/').pop() + ':' + e.line)).join(', ');
   return block(`<ul class="im-detail-list">${SYMBOLS.symbols.map(s => `<li><code>${esc(s.name)}</code> <span class="im-muted im-caption">righe ${esc((s.lines || []).join('–'))}${s.freshness ? ' · ' + esc(s.freshness) : ''}</span></li>`).join('') || '<li class="im-muted">Nessun simbolo nell’outline.</li>'}</ul><ul class="im-detail-list">${SYMBOLS.calls.map(c => `<li><code>${esc(name(c.source))} → ${esc(name(c.target))}</code> <span class="im-muted im-caption">${[sites(c), proofLabel(c.status, c.conflict)].filter(Boolean).join(' · ')}</span></li>`).join('') || '<li class="im-muted">Nessuna chiamata risolta da o verso i suoi simboli.</li>'}</ul>`);
@@ -912,9 +931,9 @@ async function loadSymbols(file) {
 function graph() {
   const action = ctx() ? `<div class="im-cluster"><button class="im-btn" data-action="snapshot">${icon('file')}Grafo e lacune</button><button class="im-btn" data-action="open-explorer">${icon('external')}Esploratore completo</button></div>` : '';
   const head = heading('Esplora le relazioni', 'Grafo del codice', 'Gruppi di file, dipendenze e percorsi del run. Ogni relazione conserva le sue evidenze.', action);
-  if (!ctx()) return head + `<div class="im-empty"><h2>Nessun grafo</h2><p>Seleziona prima una repository e un branch.</p><button class="im-btn" data-screen="analysis">Vai al repository</button></div>`;
-  if (graphError) return head + `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Grafo non disponibile.</strong> ${esc(graphError)}</div>`;
-  if (!GRAPH) return head + waiting('Lettura del grafo…', 'Gruppi, relazioni e lacune del run.');
+  if (!ctx()) return head + panelHtml(panelStateHtml({ kind: 'empty', title: 'Nessun grafo', text: 'Seleziona prima una repository e un branch.', actionHtml: '<button class="im-btn" data-screen="analysis">Vai al repository</button>' }));
+  if (graphError) return head + failedPanel('Grafo non disponibile: ' + graphError, 'retry-graph');
+  if (!GRAPH) return head + loadingPanel('graph');
   const g = visibleGraph();
   return head + `<div class="im-content-toolbar"><label class="im-input">${icon('search')}<span class="im-visually-hidden">Cerca un gruppo o un file</span><input id="graph-search" type="search" placeholder="Cerca gruppo o file…" value="${esc(state.graphSearch)}"></label><div class="im-cluster"><label class="im-field">Direzione<select class="im-select" id="graph-direction">${selectOptions([['out', 'Dipendenze →'], ['in', '← Chiamanti'], ['both', 'Entrambe ↔']], state.graphDirection)}</select></label><label class="im-field">Profondità<select class="im-select" id="graph-depth">${selectOptions([['1', '1 livello'], ['2', '2 livelli'], ['all', 'Tutto il grafo']], state.graphDepth)}</select></label><label class="im-field">Relazioni<select class="im-select" id="graph-kind">${selectOptions([['all', 'Tutte'], ['calls', 'Chiamate'], ['imports', 'Import'], ['uses', 'Utilizzi']], state.graphKind)}</select></label><button class="im-btn im-btn--ghost im-btn--sm" data-action="clear-graph">Azzera filtri</button><span class="im-chip" data-im-tone="accent" data-im-align="end" title="Livelli della mappa del sistema mostrati">${esc(levelsName())}</span><span class="im-muted im-caption">${g.nodes.length} / ${GRAPH.nodes.length} nodi</span></div></div><section aria-label="Grafo interattivo"><div class="im-canvas-frame" id="graph-viewport">${graphCanvas(g)}</div><div class="im-content-toolbar im-cluster"><span><span class="im-text-accent">■</span> ${levelLabel()} &nbsp; <span class="im-muted">□</span> Esterno</span><span>${g.edges.length} relazioni visibili · seleziona un nodo, apri ${icon('chevron')} sul posto</span></div></section>`;
 }
@@ -926,14 +945,14 @@ function engineScreen() {
   const engines = server?.engine?.engines || [];
   const openai = d.engine === 'openai';
   const c = ctx();
-  return heading('Motore e domande', 'Chiedi al codice.', 'Il motore legge la mappa solo con le operazioni di Daodan: cerca, poi legge quello che serve.') + `<div class="im-auto-grid"><section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="ask-title"><div class="im-panel-header im-split"><h2 id="ask-title">Domanda sul repository</h2><span class="im-chip">${c ? esc(slug(c)) : 'Nessuna repository'}</span></div><div class="im-inset im-stack"><form id="ask-form" novalidate><div class="im-field"><label class="im-field-label" for="question">Domanda</label><textarea class="im-input" id="question" rows="4" placeholder="Dove viene firmato un token, e chi lo verifica?" ${!c ? 'disabled' : ''}>${esc(question)}</textarea><p class="im-muted im-caption">${c ? 'Il motore usa il run ' + esc(c.run_id) + '.' : 'Seleziona prima una repository: il motore la legge dal suo run.'}</p></div><button class="im-btn im-btn--primary" type="submit" id="ask-button" ${!c || server?.asked?.state === 'running' || !server?.engine?.engine ? 'disabled' : ''}>${icon(server?.asked?.state === 'running' ? 'spinner' : 'play')}${server?.asked?.state === 'running' ? 'Il motore risponde…' : 'Chiedi'}</button>${c && !server?.engine?.engine ? '<p class="im-muted im-caption">Scegli e salva prima un motore.</p>' : ''}</form><div id="answer-box" aria-live="polite">${answerMarkup()}</div></div></section>
+  return heading('Motore e domande', 'Chiedi al codice.', 'Il motore legge la mappa solo con le operazioni di Daodan: cerca, poi legge quello che serve.') + `<div class="im-auto-grid"><section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="ask-title"><div class="im-panel-header im-split"><h2 id="ask-title">Domanda sul repository</h2><span class="im-chip">${c ? esc(slug(c)) : 'Nessuna repository'}</span></div><div class="im-inset im-stack"><form id="ask-form" novalidate><div class="im-field"><label class="im-field-label" for="question">Domanda</label><textarea class="im-input" id="question" rows="4" placeholder="Dove viene firmato un token, e chi lo verifica?" ${!c ? 'disabled' : ''}>${esc(question)}</textarea><p class="im-muted im-caption">${c ? 'Il motore usa il run ' + esc(c.run_id) + '.' : 'Seleziona prima una repository: il motore la legge dal suo run.'}</p></div><button class="im-btn im-btn--primary" type="submit" id="ask-button" ${server?.asked?.state === 'running' ? 'aria-busy="true"' : !c || !server?.engine?.engine ? 'disabled' : ''}>${busyIcon(server?.asked?.state === 'running', 'play')}Chiedi</button>${c && !server?.engine?.engine ? '<p class="im-muted im-caption">Scegli e salva prima un motore.</p>' : ''}</form><div id="answer-box" aria-live="polite">${answerMarkup()}</div></div></section>
   <aside class="im-stack"><section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="engine-title"><div class="im-panel-header im-split"><h2 id="engine-title">Motore</h2><span class="im-chip" data-im-tone="${server?.engine?.engine ? 'accent' : 'info'}">${esc(server?.engine?.engine || 'Non scelto')}</span></div><div class="im-inset im-stack"><form id="engine-form" novalidate><div class="im-field"><label class="im-field-label" for="engine-name">Motore</label><select class="im-select" id="engine-name">${selectOptions([['', 'Nessuno'], ...engines.map(e => [e, { openai: 'Endpoint compatibile OpenAI', claude: 'Claude Code (riga di comando)', codex: 'Codex (riga di comando)' }[e] || e])], d.engine || '')}</select></div>${openai ? `<div class="im-field"><label class="im-field-label" for="base-url">Indirizzo dell’endpoint</label><input class="im-input" id="base-url" type="url" value="${esc(d.base_url)}"></div><div class="im-field"><label class="im-field-label" for="model">Modello</label><input class="im-input" id="model" type="text" value="${esc(d.model)}"></div><div class="im-field"><label class="im-field-label" for="api-key">Chiave</label><input class="im-input" id="api-key" type="password" autocomplete="off" value="${esc(d.api_key)}" placeholder="${server?.engine?.api_key === 'set' ? 'Impostata' : 'Va nel deposito delle credenziali del sistema'}"></div>` : ''}${server?.engine?.unkept ? `<p class="im-muted im-caption">Non conservato per il prossimo avvio: ${esc(server.engine.unkept)}.</p>` : ''}<div class="im-cluster"><button class="im-btn" type="submit" id="engine-save">${icon('check')}Salva</button><button class="im-btn" type="button" data-action="probe" id="engine-probe">${icon('reload')}Prova il motore</button>${openai && server?.engine?.api_key === 'set' ? `<button class="im-btn" type="button" data-action="forget-key">${icon('close')}Rimuovi la chiave</button>` : ''}</div><p id="engine-said" class="${engineTone === 'bad' ? 'im-text-err' : 'im-muted'}" role="status">${esc(engineSaid)}</p></form></div></section><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Server MCP</h2></div><div class="im-inset im-stack">${server?.mcp ? `<p class="im-muted">Per una sessione tua: avvia Daodan sul checkout con</p><code>${esc([server.mcp.command, ...server.mcp.args].join(' '))}</code><p class="im-muted im-caption">Pacchetti del server: ${esc(server.mcp_ready === 'ready' ? 'pronti' : server.mcp_ready)}</p>` : '<p class="im-muted">Disponibile dopo la selezione di una repository.</p>'}</div></section></aside></div>`;
 }
 
 function answerMarkup() {
   if (!asked) return server?.asked?.question ? `<p class="im-muted im-caption">Ultima domanda: ${esc(server.asked.question)} · ${esc(server.asked.state)}${server.asked.cause ? ' · ' + esc(server.asked.cause) : ''}</p>` : '';
   const tools = asked.tools.map(t => `<li><code>${esc(t)}</code></li>`).join('');
-  return `${tools ? `<p class="im-kicker">Operazioni di Daodan usate</p><ul class="im-detail-list">${tools}</ul>` : ''}<p class="im-kicker">Risposta</p><p class="im-readout">${esc(asked.text || (asked.state === 'running' ? 'In attesa del motore…' : ''))}</p>${asked.state !== 'running' && asked.state !== 'done' ? `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>${esc(asked.state)}</strong> ${esc(asked.cause || '')}</div>` : ''}`;
+  return `${tools ? `<p class="im-kicker">Operazioni di Daodan usate</p><ul class="im-detail-list">${tools}</ul>` : ''}<p class="im-kicker">Risposta</p><p class="im-readout">${esc(asked.text || (asked.state === 'running' ? 'In attesa del motore…' : ''))}</p>${asked.state !== 'running' && asked.state !== 'done' ? noteHtml({ tone: 'err', title: asked.state, message: asked.cause || '' }) : ''}`;
 }
 
 function readEngineForm() {
@@ -1099,7 +1118,7 @@ function drawInspector() {
 
 function snapshotDetail(opener) {
   const m = GRAPH?.meta || {}, gaps = gapLines();
-  detail('Provenienza e lacune del grafo', 'Dati registrati nel run selezionato.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug())}</code></dd><dt>Branch e commit</dt><dd><code>${esc(ctx()?.branch)}</code> · <code>${esc(ctx()?.commit.slice(0, 12))}</code></dd><dt>Run</dt><dd><code>${esc(ctx()?.run_id)}</code></dd><dt>Grafo costruito</dt><dd>${esc(m.created_at || '—')}</dd><dt>File</dt><dd>${number(GRAPH?.files)}</dd><dt>${levelLabel()} / relazioni</dt><dd>${GRAPH?.nodes.length ?? '—'} / ${GRAPH?.edges.length ?? '—'}</dd><dt>Passaggio del grafo</dt><dd>${esc(pass().state || '—')}</dd></dl><p class="im-kicker">Limiti dichiarati</p><div class="im-note">Le relazioni osservate provengono da chiamate registrate durante l’esecuzione. Le relazioni campionate provengono dal profiler. Possono esserci altre chiamate.</div><ul class="im-detail-list">${gaps.map(g => `<li>${icon('info')}<span>${esc(g)}</span></li>`).join('') || `<li>${icon('check')}<span>Nessuna lacuna registrata dal run.</span></li>`}</ul><p class="im-caption im-muted">Digest dello snapshot: <code>${esc(m.snapshot_digest || '—')}</code></p>`, '', opener);
+  detail('Provenienza e lacune del grafo', 'Dati registrati nel run selezionato.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug())}</code></dd><dt>Branch e commit</dt><dd><code>${esc(ctx()?.branch)}</code> · <code>${esc(ctx()?.commit.slice(0, 12))}</code></dd><dt>Run</dt><dd><code>${esc(ctx()?.run_id)}</code></dd><dt>Grafo costruito</dt><dd>${esc(m.created_at || '—')}</dd><dt>File</dt><dd>${number(GRAPH?.files)}</dd><dt>${levelLabel()} / relazioni</dt><dd>${GRAPH?.nodes.length ?? '—'} / ${GRAPH?.edges.length ?? '—'}</dd><dt>Passaggio del grafo</dt><dd>${esc(pass().state || '—')}</dd></dl><p class="im-kicker">Limiti dichiarati</p>${noteHtml({ message: 'Le relazioni osservate provengono da chiamate registrate durante l’esecuzione. Le relazioni campionate provengono dal profiler. Possono esserci altre chiamate.' })}<ul class="im-detail-list">${gaps.map(g => `<li>${icon('info')}<span>${esc(g)}</span></li>`).join('') || `<li>${icon('check')}<span>Nessuna lacuna registrata dal run.</span></li>`}</ul><p class="im-caption im-muted">Digest dello snapshot: <code>${esc(m.snapshot_digest || '—')}</code></p>`, '', opener);
 }
 
 function premapProvenance(opener) {
@@ -1114,7 +1133,7 @@ function sourceDetail(path, opener) {
 
 document.addEventListener('click', async event => {
   const b = event.target.closest('button');
-  if (!b || b.disabled) return;
+  if (!b || b.disabled || b.getAttribute('aria-busy') === 'true') return;  // a busy button ignores a second press, the keyboard's too
   if (b.dataset.screen) { navigate(b.dataset.screen); return; }
   if (b.dataset.action === 'screen') { navigate(b.dataset.id, true); return; }
   if (b.dataset.action === 'views') { viewsMenu(b); return; }
@@ -1144,15 +1163,17 @@ document.addEventListener('click', async event => {
     case 'path-retry': loadPathPage(pathPage.id, pathPage.offset, pathPage.previous, true); break;
     case 'use-repository': await selectRepository(); break;
     case 'retry-premap': premapRun = ''; loadPremap(); break;
-    case 'retry-pass': try { applyState(await post('/api/app/retry', {})); } catch (error) { toast(error.message); } break;
-    case 'find-links': try { applyState(await post('/api/app/link', {})); } catch (error) { toast(error.message); } break;
+    case 'retry-graph': graphError = ''; graphRun = ''; loadGraph(); break;
+    case 'retry-symbols': SYMBOLS = null; drawn = null; wantGroup = true; render(); break;
+    case 'retry-pass': try { applyState(await post('/api/app/retry', {})); } catch (error) { failure(error.message); } break;
+    case 'find-links': try { applyState(await post('/api/app/link', {})); } catch (error) { failure(error.message); } break;
     case 'close-detail': inspector(shell).close(); break;
     case 'snapshot': snapshotDetail(b); break;
     case 'open-explorer': window.open(explorerUrl(), '_blank', 'noopener'); break;
     case 'premap-provenance': premapProvenance(b); break;
     case 'open-full-graph': state.graphDepth = 'all'; state.graphSearch = ''; state.graphOpen = []; navigate('graph'); break;
     case 'clear-tree-search': state.treeSearch = ''; render(); break;
-    case 'clear-graph': state.graphSearch = ''; state.graphDepth = 'all'; state.graphDirection = 'both'; state.graphKind = 'all'; render(); toast('Filtri azzerati: tutti i gruppi del grafo sono visibili.'); break;
+    case 'clear-graph': state.graphSearch = ''; state.graphDepth = 'all'; state.graphDirection = 'both'; state.graphKind = 'all'; render(); notice('Filtri azzerati: tutti i gruppi del grafo sono visibili.'); break;
     case 'component-files': { const n = nodeById(state.graphRoot); detail('File di ' + nodeName(n), 'File assegnati al gruppo nel grafo del run.', `<ul class="im-detail-list">${n.files.map(p => `<li><code>${esc(p)}</code></li>`).join('')}</ul>`, '', b, true); break; }
     case 'forget-key':
       try { server.engine = await post('/api/app/engine', { api_key: '' }); engineSaid = server.engine.api_key === 'set' ? 'Chiave rimossa: resta quella dell’ambiente.' : 'Chiave rimossa.'; engineTone = 'good'; } catch (error) { engineSaid = error.message; engineTone = 'bad'; }
@@ -1205,6 +1226,7 @@ document.addEventListener('change', event => {
 
 
 writeFrame();
+startWait('server');
 render();
 observe();
-if (!storageAvailable) toast('Archiviazione del browser non disponibile: le scelte durano questa apertura.');
+if (!storageAvailable) notice('Archiviazione del browser non disponibile: le scelte durano questa apertura.');

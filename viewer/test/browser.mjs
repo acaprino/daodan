@@ -5,9 +5,11 @@ import { chromium } from 'playwright';
 const assets = new URL('../../daodan/assets/', import.meta.url);
 const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta.url)));
 let pathsClassified = false;
+// What the fixture server does next, so that a test can make a route fail or wait.
+const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0 };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
-  id: name, name, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
+  id: name, name, mark: name === 'Client' ? 'react' : undefined, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
 }));
 const graph = { grouping: 'directories', nodes: groups, open: [], edges: ['confirmed', 'observed', 'sampled'].map(status => ({
     source: 'Client', target: 'Server', counts: { calls: 1 }, status, evidence: [],
@@ -40,16 +42,26 @@ try {
         site: 'ui.ts:8', end: 'lacuna', confidence: 'sampled', reason: 'Destinazione campionata' }];
       return route.fulfill({ json: { card, steps: [steps[offset]], offset, count: 2, next_offset: offset ? null : 1 } });
     }
+    if (path === '/api/app/link') return route.fulfill(mode.linkStatus === 200 ? { json: {} } : { status: mode.linkStatus, json: { error: 'collegamento non riuscito' } });
+    if (path === '/api/app/check') {
+      await new Promise(resolve => setTimeout(resolve, mode.checkDelay));
+      return route.fulfill({ json: { state: 'accessible', repository: { owner: 'demo', name: 'shop' }, default: 'main',
+        branches: [{ name: 'main', commit: '1'.repeat(40) }] } });
+    }
     if (path === '/api/app/graph') {
+      if (mode.graphStatus !== 200) return route.fulfill({ status: mode.graphStatus, json: { error: 'grafo non letto' } });
       const open = JSON.parse(url.searchParams.get('open') || '[]');
       return route.fulfill({ json: open.length ? { ...graph, open: [{ ...groups[0], parent: null }],
         nodes: [{ ...groups[0], id: 'child', name: 'main.ts', group: 'Client' }, groups[1]] } : graph });
     }
-    if (path === '/api/app/premap') return route.fulfill({ json: {
+    if (path === '/api/app/premap') {
+      await new Promise(resolve => setTimeout(resolve, mode.premapDelay));
+      return route.fulfill({ json: {
       files: ['src/main.ts'], technologies: [], languages: [],
       units: [{ id: 'web', name: 'web', kind: 'npm', root: '.', manifest: 'package.json', status: 'confirmed',
         dependencies: [{ name: 'left-pad', scope: 'runtime', state: 'declared', source: 'package.json', version: '^1.3.0', direct: true }] }],
-    } });
+      } });
+    }
     if (path === '/data/visual.json') return route.fulfill({ json: envelope });
     if (path.startsWith('/api/')) return route.fulfill({ status: 404, json: {} });
     const app = path.startsWith('/app/');
@@ -67,12 +79,18 @@ try {
       }
       close() {}
     };
-  }, { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: {}, links: { state: 'idle' } });
+  }, { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: { engine: 'claude', engines: ['claude'] }, links: { state: 'idle' } });
   await page.goto('http://daodan.test/app/?token=test');
   const appCss = await page.locator('link[rel="stylesheet"]').getAttribute('href');
   assert.equal(await page.locator('body > .im-shell').count(), 1);
   const selectable = locator => locator.evaluate(el => getComputedStyle(el).userSelect !== 'none');
   const palette = page.getByRole('dialog', { name: 'Cerca un comando' });
+  // A tone is one of the four statuses; the accent stays on a chip or a dot, as data. The graph's edges have their own.
+  const tonesAreCanon = async () => {
+    const found = await page.evaluate(() => [...document.querySelectorAll('[data-im-tone]')].filter(el => !el.closest('svg'))
+      .map(el => [el.dataset.imTone, el.className]));
+    for (const [tone, name] of found) assert.ok(['ok', 'warn', 'err', 'info'].includes(tone) || (tone === 'accent' && /(^| )im-(chip|dot)( |$)/.test(name)), `${tone} on ${name}`);
+  };
   const choose = async command => {
     await page.keyboard.press('Control+k');
     await palette.getByRole('option', { name: command }).click();
@@ -93,7 +111,21 @@ try {
   const screens = await tabs.getByRole('tab').allInnerTexts();
   assert.deepEqual(screens, ['Analisi', 'Grafo', 'Motore e domande']);
   assert.equal(await page.locator('.im-sidebar').count(), 0);
+  await page.locator('#verify-repository').click();
+  assert.match(await page.locator('#repository-error').innerText(), /^Errore: /);
+  await page.locator('#repository-url').fill('https://github.com/demo/shop');
+  mode.checkDelay = 600;
+  await page.locator('#verify-repository').click();
+  await page.waitForFunction(() => document.getElementById('verify-repository').getAttribute('aria-busy') === 'true');
+  assert.equal(await page.locator('#verify-repository').innerText(), 'Verifica accesso');
+  await page.waitForFunction(() => document.getElementById('verify-repository').getAttribute('aria-busy') !== 'true');
+  await tonesAreCanon();
+  mode.graphStatus = 500;
+  mode.premapDelay = 1000;
   await page.locator('#stage-premap').click();
+  await page.locator('[data-im-state-layer="loading"]').waitFor();
+  await page.getByRole('tree').waitFor();
+  mode.premapDelay = 0;
   await page.locator('#context-repo').waitFor();
   assert.equal(await page.locator('#context-repo').innerText(), 'demo/shop');
   assert.equal(await page.locator('#context-branch').innerText(), 'main');
@@ -109,7 +141,6 @@ try {
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Enter');
   assert.equal(await page.getByRole('tab', { name: /^Grafo/ }).getAttribute('aria-selected'), 'true');
-  assert.equal(await page.getByRole('tab', { name: /^Grafo/ }).locator('.im-count').innerText(), '2');
   await page.keyboard.press('ArrowLeft');
   await page.keyboard.press('Enter');
   assert.equal(await tabs.getByRole('tab', { name: 'Analisi' }).getAttribute('aria-selected'), 'true');
@@ -132,14 +163,35 @@ try {
   await page.keyboard.press('Escape');
   assert.ok(await detail.isHidden());
   assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Provenienza');
+  await tabs.getByRole('tab', { name: 'Grafo' }).click();
+  const failed = page.locator('.im-failure');
+  assert.match(await failed.innerText(), /Errore[\s\S]*grafo non letto[\s\S]*Riprova/);
+  mode.graphStatus = 200;
+  await failed.getByRole('button', { name: 'Riprova' }).click();
+  await page.getByRole('region', { name: 'Grafo del codice' }).waitFor();
+  assert.equal(await tabs.getByRole('tab', { name: /^Grafo/ }).locator('.im-count').innerText(), '2');
+  await tonesAreCanon();
+  await tabs.getByRole('tab', { name: /^Analisi/ }).click();
   await page.locator('#stage-analysis').click();
   await page.locator('#preview-diagram .im-graph-node').first().waitFor();
   assert.equal(await page.locator('#pipeline-steps li').count(), 5);
+  await page.waitForFunction(() => !document.querySelector('img.im-inline-mark'));  // the mark that does not load is the icon
+  assert.ok(await page.locator('#preview-diagram [data-im-node="Client"] .im-icon').count() > 0);
+  mode.linkStatus = 500;
+  await page.getByRole('button', { name: 'Trova i legami' }).click();
+  const linkError = page.locator('.im-notice', { hasText: 'collegamento non riuscito' });
+  await linkError.waitFor();
+  assert.match(await linkError.innerText(), /Errore/);
+  await page.waitForTimeout(6500);
+  assert.equal(await linkError.count(), 1);
+  await linkError.getByRole('button', { name: 'Chiudi' }).click();
+  assert.equal(await linkError.count(), 0);
+  await tonesAreCanon();
   const partialMap = { state: 'incomplete', cause: 'the recorded map still has stale or incomplete records',
     needs_review: { nodes: { count: 2, ids: ['a', 'b'] }, flows: { count: 1, ids: ['c'] },
       refused_proposals: { count: 1, ids: ['request:d'] } } };
   await page.evaluate(mapped => window.setMapState(mapped), partialMap);
-  const notice = page.locator('#map-status [role="status"]');
+  const notice = page.locator('#map-status .im-note');
   await notice.getByText('Mappa del sistema parziale').waitFor();
   assert.match(await notice.innerText(), /2 nodi, 1 flusso, 1 proposta rifiutata/);
   assert.match(await notice.innerText(), /revisione precedente/);
@@ -222,6 +274,7 @@ try {
   await page.getByRole('menuitemradio', { name: 'Motore e domande' }).click();
   await page.getByRole('menu').waitFor({ state: 'detached' });
   await page.locator('#question').waitFor({ state: 'visible' });
+  await tonesAreCanon();
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 
   await page.setViewportSize({ width: 1280, height: 850 });
