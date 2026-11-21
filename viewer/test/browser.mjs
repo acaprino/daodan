@@ -46,7 +46,9 @@ try {
         nodes: [{ ...groups[0], id: 'child', name: 'main.ts', group: 'Client' }, groups[1]] } : graph });
     }
     if (path === '/api/app/premap') return route.fulfill({ json: {
-      files: ['src/main.ts'], units: [], technologies: [], languages: [], dependencies: [],
+      files: ['src/main.ts'], technologies: [], languages: [],
+      units: [{ id: 'web', name: 'web', kind: 'npm', root: '.', manifest: 'package.json', status: 'confirmed',
+        dependencies: [{ name: 'left-pad', scope: 'runtime', state: 'declared', source: 'package.json', version: '^1.3.0', direct: true }] }],
     } });
     if (path === '/data/visual.json') return route.fulfill({ json: envelope });
     if (path.startsWith('/api/')) return route.fulfill({ status: 404, json: {} });
@@ -87,8 +89,30 @@ try {
   await page.reload();
   await page.locator('#stage-premap').waitFor();
   assert.equal(await theme(), 'dark');
-  const nav = page.getByRole('navigation', { name: 'Navigazione principale' });
+  const tabs = page.getByRole('tablist', { name: 'Schermate' });
+  const screens = await tabs.getByRole('tab').allInnerTexts();
+  assert.deepEqual(screens, ['Analisi', 'Grafo', 'Motore e domande']);
+  assert.equal(await page.locator('.im-sidebar').count(), 0);
   await page.locator('#stage-premap').click();
+  await page.locator('#context-repo').waitFor();
+  assert.equal(await page.locator('#context-repo').innerText(), 'demo/shop');
+  assert.equal(await page.locator('#context-branch').innerText(), 'main');
+  assert.equal(await page.locator('#context-commit').innerText(), '1'.repeat(12));
+  assert.equal(await page.locator('#context-run-id').innerText(), 'demo');
+  assert.ok(await selectable(page.locator('#context-commit')));
+  assert.ok(await selectable(page.locator('.im-table td strong', { hasText: 'left-pad' })));
+  const footer = page.locator('.im-footer');
+  assert.match(await footer.innerText(), /App locale/);
+  assert.match(await footer.locator('.im-footer-keys').innerText(), /Ctrl\s*K[\s\S]*Ctrl\s*F/);
+  assert.equal(await page.locator('#service-dot').getAttribute('data-im-tone'), 'ok');
+  await tabs.getByRole('tab', { name: 'Analisi' }).focus();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Enter');
+  assert.equal(await page.getByRole('tab', { name: /^Grafo/ }).getAttribute('aria-selected'), 'true');
+  assert.equal(await page.getByRole('tab', { name: /^Grafo/ }).locator('.im-count').innerText(), '2');
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('Enter');
+  assert.equal(await tabs.getByRole('tab', { name: 'Analisi' }).getAttribute('aria-selected'), 'true');
   const directories = page.getByRole('radio', { name: 'Directory', exact: true });
   const units = page.getByRole('radio', { name: 'Unità tecniche' });
   await directories.focus();
@@ -148,11 +172,11 @@ try {
   await page.locator('#preview-diagram .im-graph-node').first().click();
   assert.ok(await page.getByRole('dialog').isVisible());
   await page.keyboard.press('Escape');
-  await nav.getByRole('button', { name: 'Grafo', exact: true }).click();
+  await tabs.getByRole('tab', { name: /^Grafo/ }).click();
   const diagram = page.getByRole('region', { name: 'Grafo del codice' });
   await page.keyboard.press('Control+f');
   assert.equal(await page.evaluate(() => document.activeElement?.id), 'graph-search');
-  await nav.getByRole('button', { name: 'Grafo', exact: true }).focus();
+  await tabs.getByRole('tab', { name: /^Grafo/ }).focus();
   await page.keyboard.press('F6');
   assert.ok(await inContent());
   await diagram.locator('[data-im-node="Client"] .im-graph-node').press('ArrowRight');
@@ -174,8 +198,10 @@ try {
   await diagram.getByRole('button', { name: 'Chiudi Client' }).click();
   await diagram.getByRole('button', { name: 'Apri Client' }).waitFor();
   await page.setViewportSize({ width: 390, height: 820 });
-  await page.getByRole('button', { name: 'Navigazione', exact: true }).click();
-  await nav.getByRole('button', { name: 'Motore e domande' }).click();
+  assert.equal(await tabs.isVisible(), false);
+  await page.getByRole('button', { name: 'Schermate', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'Motore e domande' }).click();
+  await page.getByRole('menu').waitFor({ state: 'detached' });
   await page.locator('#question').waitFor({ state: 'visible' });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 

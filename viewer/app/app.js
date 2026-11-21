@@ -1,5 +1,5 @@
 import '@acaprino/imago/css/imago.css';
-import { iconMarkup as icon, metric, segmentedControl, setProgress, stepList, createRegistry, fileTree, keyCaps, notify, openFormDialog, PALETTE_COMMAND } from '@acaprino/imago/ui';
+import { createRegistry, fileTree, footerKeys, formatKeys, iconMarkup as icon, metric, notify, openFormDialog, openMenu, PALETTE_COMMAND, renderShellFrame, roving, SEARCH_COMMAND, segmentedControl, setProgress, shellFrameHtml, stepList, tabNavigationHtml, titlebarHtml } from '@acaprino/imago/ui';
 import { graphView } from '@acaprino/imago/graph';
 import { applyStored, graphControls, mountPage, storageOrNull } from '../src/page';
 
@@ -8,10 +8,6 @@ const shell = document.querySelector('.im-shell');
 const page = () => document.querySelector('#main > .im-panel-body');
 applyStored(document.documentElement, storageOrNull());
 const registry = createRegistry();
-mountPage(shell, registry, { search: searchView });
-const commands = document.getElementById('command-button');
-commands.append(' ', keyCaps(document, 'Ctrl+K'));
-commands.addEventListener('click', () => registry.get(PALETTE_COMMAND)?.run());
 let activeDialog, diagram, diagramHost, diagramKey, previewVersion;
 
 // The app's page: the journey of the mockup (repository, pre-map, analysis, synthesis and graph) over the local server.
@@ -692,7 +688,7 @@ function updateAnalysisRun() {
   document.getElementById('build-level').textContent = levelsName() || levelLabel();
   document.getElementById('build-counts').textContent = buildCounts();
   document.getElementById('build-status').textContent = buildStatus();
-  document.getElementById('graph-nav-count').textContent = GRAPH ? GRAPH.nodes.length : '—';
+  updateChrome();
 }
 
 // -- 3. synthesis --------------------------------------------------------------------------------------------------
@@ -986,6 +982,57 @@ async function ask() {
 
 // -- the page ------------------------------------------------------------------------------------------------------
 
+// -- the frame -----------------------------------------------------------------------------------------------------
+
+// The window of Imago, written once: the three screens are the views of the title bar, the repository and the run are
+// the status row, and the service (the app is local, the server answers, the engine) is the footer. The sidebar has no
+// room in it: the app has one context at a time and no list of objects.
+const SCREENS = [['analysis', 'Analisi', 'Vai ad Analisi'], ['graph', 'Grafo', 'Vai al Grafo'], ['engine', 'Motore e domande', 'Vai a Motore e domande']];
+const screenTabs = () => SCREENS.map(([id, label]) => ({ id, label, controls: 'main', count: id === 'graph' ? GRAPH?.nodes.length : 0, countLabel: 'gruppi' }));
+
+function writeFrame() {
+  renderShellFrame(shell, shellFrameHtml({
+    titlebarHtml: titlebarHtml({ brand: { name: 'Daodan' }, navigationHtml: tabNavigationHtml(screenTabs(), state.screen, { label: 'Schermate', action: 'screen' }),
+      views: { label: 'Schermate', action: 'views' }, commands: { label: 'Comandi', action: 'palette', shortcut: formatKeys('Ctrl+K').join(' ') } }),
+    statusHtml: '<span class="im-chip" id="context-state"></span><span class="im-status-text" id="context-text"></span><span class="im-spacer"></span><span class="im-status-end" id="context-run"></span>',
+    contentHtml: '', contentLabel: 'Analisi', skipLabel: 'Vai al contenuto', inspectorLabel: 'Dettaglio',
+    footerHtml: '<span class="im-dot" id="service-dot"></span><span class="im-footer-text" id="service-text"></span><span class="im-spacer"></span>',
+  }));
+  mountPage(shell, registry, { search: searchView });
+  for (const [id, , title] of SCREENS) registry.register({ id: 'daodan.screen.' + id, title, group: 'Schermate', run: () => navigate(id) });
+  roving(shell.querySelector('.im-titlebar'), { item: '[role="tab"]', orientation: 'horizontal', onSelect: tab => tab.click() });
+  shell.querySelector('.im-footer').append(footerKeys(document, registry, [PALETTE_COMMAND, SEARCH_COMMAND, { keys: 'F6', title: 'Area successiva' }]));
+}
+
+function viewsMenu(anchor) {  // a radio item stays open: choosing a view closes the menu, and the page takes the focus
+  const close = openMenu(anchor, SCREENS.map(([id, label]) => ({ label, checked: () => state.screen === id, run: () => { close(); navigate(id); } })));
+}
+
+// What a frame of the server or a click changes in the frame: the tab in view and its count, the context, the service.
+function updateChrome() {
+  const c = ctx(), preparing = server?.job.state === 'preparing', engine = server?.engine?.engine;
+  for (const tab of shell.querySelectorAll('.im-titlebar [role="tab"]')) {
+    const on = tab.dataset.id === state.screen;
+    tab.setAttribute('aria-selected', String(on));
+    if (on) tab.setAttribute('aria-current', 'page'); else tab.removeAttribute('aria-current');
+    if (tab.dataset.id !== 'graph') continue;
+    const count = GRAPH?.nodes.length || 0, badge = tab.querySelector('.im-count');
+    if (count && !badge) tab.insertAdjacentHTML('beforeend', '<span class="im-count" aria-hidden="true"></span>');
+    if (!count) badge?.remove(); else tab.querySelector('.im-count').textContent = count;
+    if (count) tab.setAttribute('aria-label', `Grafo, ${count} gruppi`); else tab.removeAttribute('aria-label');
+  }
+  const main = document.getElementById('main'), name = SCREENS.find(([id]) => id === state.screen)[1];
+  main.setAttribute('aria-label', name);
+  const chip = document.getElementById('context-state');
+  chip.textContent = c ? 'Contesto pronto' : preparing ? 'Preparazione in corso' : 'Nessuna repository';
+  if (c) chip.dataset.imTone = 'ok'; else if (preparing) chip.dataset.imTone = 'info'; else delete chip.dataset.imTone;
+  document.getElementById('context-text').innerHTML = c ? `<code id="context-repo" class="im-content-text">${esc(slug(c))}</code> · <code id="context-branch" class="im-content-text">${esc(c.branch)}</code> · <code id="context-commit" class="im-content-text">${esc(c.commit.slice(0, 12))}</code>` : '';
+  document.getElementById('context-run').innerHTML = c ? `run <code id="context-run-id" class="im-content-text">${esc(c.run_id)}</code>` : '';
+  const reachable = Boolean(server) && !serverError;
+  document.getElementById('service-dot').dataset.imTone = reachable ? 'ok' : 'err';
+  document.getElementById('service-text').textContent = (reachable ? 'App locale: il codice resta sul tuo disco' : 'Server non raggiungibile') + ' · ' + (engine ? 'Motore: ' + engine : 'Motore non scelto');
+}
+
 function render() {
   const focused = document.activeElement, activeId = focused?.id;
   let start, end;
@@ -1003,27 +1050,17 @@ function render() {
     const card = [...(diagramHost?.querySelectorAll('[data-im-node]') ?? [])].find(el => el.dataset.imNode === focusedGraphNode);
     card?.querySelector(focused.classList.contains('im-graph-open') ? '.im-graph-open' : '.im-graph-node')?.focus({ preventScroll: true });
   }
-  document.querySelectorAll('[data-screen]').forEach(b => { if (b.closest('#sidebar') && b.dataset.screen === state.screen) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-  const c = ctx(), preparing = server?.job.state === 'preparing';
-  document.getElementById('crumb-screen').textContent = { analysis: 'Analisi', graph: 'Grafo', engine: 'Motore e domande' }[state.screen];
-  document.getElementById('crumb-project').textContent = c ? c.repository.name : '—';
-  document.getElementById('graph-nav-count').textContent = GRAPH ? GRAPH.nodes.length : '—';
-  document.getElementById('selected-repository-mark').textContent = c ? c.repository.name[0].toUpperCase() : 'D';
-  document.getElementById('selected-repository-name').textContent = c ? c.repository.name : preparing ? 'Preparazione…' : 'Seleziona repository';
-  document.getElementById('selected-repository-meta').textContent = c ? c.branch + ' · ' + c.commit.slice(0, 7) : 'GitHub · pubblica';
-  document.getElementById('context-source').innerHTML = c ? '<code>' + esc(slug(c)) + '</code><span>·</span><code>' + esc(c.branch) + '</code>' : '<span>' + (preparing ? 'Preparazione in corso' : 'Nessuna repository') + '</span>';
-  document.getElementById('engine-foot').textContent = server?.engine?.engine ? 'Motore: ' + server.engine.engine + '.' : 'Motore non scelto.';
-  document.querySelectorAll('[data-icon]').forEach(el => el.innerHTML = icon(el.dataset.icon));
+  updateChrome();
   if (activeId) { const el = document.getElementById(activeId); if (el) { el.focus({ preventScroll: true }); if (start != null && typeof el.setSelectionRange === 'function') try { el.setSelectionRange(start, end); } catch { } } }
   save();
 }
 
-function navigate(screen) {
+function navigate(screen, keepFocus = false) {  // a tab keeps its focus, a menu or a command takes it to the page
   state.screen = screen;
   loadViews();  // the graph screen draws its level, the analysis the first one
   render();
   page().scrollTop = 0;
-  document.getElementById('main').focus({ preventScroll: true });
+  if (!keepFocus) document.getElementById('main').focus({ preventScroll: true });
 }
 
 function modal(title, description, body, footer) {
@@ -1054,6 +1091,9 @@ document.addEventListener('click', async event => {
   const b = event.target.closest('button');
   if (!b || b.disabled) return;
   if (b.dataset.screen) { navigate(b.dataset.screen); return; }
+  if (b.dataset.action === 'screen') { navigate(b.dataset.id, true); return; }
+  if (b.dataset.action === 'views') { viewsMenu(b); return; }
+  if (b.dataset.action === 'palette') { registry.get(PALETTE_COMMAND)?.run(); return; }
   if (b.dataset.analysisStage) { selectStage(b.dataset.analysisStage); return; }
 
 
@@ -1139,6 +1179,7 @@ document.addEventListener('change', event => {
 
 
 
+writeFrame();
 render();
 observe();
 if (!storageAvailable) toast('Archiviazione del browser non disponibile: le scelte durano questa apertura.');
