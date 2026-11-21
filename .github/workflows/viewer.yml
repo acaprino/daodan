@@ -47,6 +47,14 @@ jobs:
       # The committed pages are what the source builds.
       - run: git diff --exit-code -- ../daodan/assets
 
+      # When the committed pages differ, keep what the source builds so it can be committed (the pages are not built by hand).
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: built-assets
+          path: daodan/assets
+          retention-days: 3
+
       - run: npx playwright install --with-deps chromium
 
       - run: npm run test:ui
