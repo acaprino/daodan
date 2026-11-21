@@ -68,7 +68,7 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 
 | Fonte | Versione | Modo | Modulo | Casi per stato |
 | --- | --- | --- | --- | --- |
-| `modules.py` | daodan/module-graph/v1+compose.1.pyyaml.6.0.4.unit-resolution.2 | lettore: legge i file | `premap/module_graph.py` | ran 122 |
+| `modules.py` | daodan/module-graph/v1+compose.1.pyyaml.6.0.4.unit-resolution.3.image.2 | lettore: legge i file | `premap/module_graph.py` | ran 122 |
 | `python-build` | daodan/premap/v3 | lettore: legge i file | `premap/python_build.py` | not_needed 110, ran 12 |
 | `requirements` | daodan/premap/v2 | lettore: legge i file | `premap/requirements.py` | not_needed 114, ran 8 |
 | `python-tests` | daodan/premap/v1 | lettore: legge i file | `premap/python_tests.py` | not_needed 115, ran 7 |
@@ -175,12 +175,12 @@ Lo step `stack` (`scripts/technologies.py`) dà a ogni unità `frameworks`, `lib
 
 | Classe | Voci riconoscibili (con segni) | Voci con la categoria scritta, fra tutte |
 | --- | --- | --- |
-| framework | 103 | 103 |
-| library | 124 | 124 |
-| tool | 95 | 98 |
-| service | 615 | 16 |
+| framework | 138 | 138 |
+| library | 197 | 197 |
+| tool | 127 | 130 |
+| service | 700 | 103 |
 
-Ognuna delle 332 voci `project` riconoscibili ha la sua `category` scritta: nessuna è `framework` solo per il default.
+Ognuna delle 479 voci `project` riconoscibili ha la sua `category` scritta: nessuna è `framework` solo per il default.
 
 Riconoscimento dello stack sul corpus, giro del 19 novembre 2026 (`benchmarks/project-model/results/daodan_stack.json`), 178 fixture su 180 con record; per nome conta un nome una volta per fixture, per unità ogni unità che lo tiene.
 
@@ -197,7 +197,7 @@ Riconoscimento dello stack sul corpus, giro del 19 novembre 2026 (`benchmarks/pr
 
 Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: un suo segno (un pacchetto, un'immagine, un file) è nel progetto; vale per ogni voce. Codice analizzato: il codice del progetto che la dichiara è letto dall'analizzatore del suo linguaggio; la colonna dà questi linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Nessun framework ha le rotte lette dal posto di un file (le pagine di Next.js, Nuxt, SvelteKit, Remix o Astro): è un buco dichiarato.
 
-<details><summary>Framework, librerie e strumenti riconoscibili: 322 voci</summary>
+<details><summary>Framework, librerie e strumenti riconoscibili: 462 voci</summary>
 
 | Voce | Id | Classe | Segni | Codice analizzato | Lettura propria | Fixture in cui lo step la trova (19 novembre 2026) |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -219,12 +219,18 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Blazor | `blazor` | framework | nuget | C# | — | 1 |
 | Blitzjs | `blitzjs` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Capacitor | `capacitorjs` | framework | npm, files | JavaScript, TypeScript | — | 1 |
+| Celery | `celery` | framework | pypi | Python | — | 2 |
 | Chi | `chi` | framework | go | Go | — | 4 |
+| Compose for Wear OS | `compose-for-wear-os` | framework | maven | Java, Kotlin | — | 0 |
 | Compose Multiplatform | `compose-multiplatform` | framework | maven | Java, Kotlin | — | 2 |
+| Connect | `connectrpc` | framework | go | Go | — | 0 |
 | Cordova | `apacheCordova` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Dioxus | `dioxus` | framework | crates | Rust | — | 0 |
 | Django | `django` | framework | pypi | Python | — | 7 |
+| Django Channels | `django-channels` | framework | pypi | Python | — | 0 |
+| Django REST framework | `django-rest-framework` | framework | pypi | Python | — | 0 |
 | Docsify | `docsify` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Docus | `docus` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Docusaurus | `docusaurus` | framework | npm, files | JavaScript, TypeScript | — | 1 |
 | Duende IdentityServer | `duende-identityserver` | framework | nuget | C# | — | 1 |
 | Echo | `echo` | framework | go | Go | — | 1 |
@@ -232,47 +238,64 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Eleventy | `eleventy` | framework | github-actions, npm, files | JavaScript, TypeScript | — | 0 |
 | ElysiaJS | `elysiajs` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Ember | `emberjs` | framework | npm, files | JavaScript, TypeScript | — | 0 |
-| ExpoJS | `expojs` | framework | npm | JavaScript, TypeScript | — | 3 |
+| Expo | `expojs` | framework | npm | JavaScript, TypeScript | — | 3 |
 | Express | `express` | framework | npm | JavaScript, TypeScript | — | 9 |
+| ExUnit | `exunit` | framework |  | — | — | 0 |
 | FastAPI | `fastapi` | framework | pypi | Python | — | 6 |
+| FastEndpoints | `fastendpoints` | framework | nuget | C# | — | 0 |
 | Fastify | `fastify` | framework | npm | JavaScript, TypeScript | — | 0 |
 | FastMCP | `fastmcp` | framework | pypi | Python | — | 1 |
+| Fiber | `fiber` | framework | go | Go | — | 0 |
 | Flask | `flask` | framework | pypi | Python | — | 5 |
 | Flutter | `flutter` | framework | pub | dart: nessun analizzatore | — | 2 |
+| flutter_test | `flutter-test` | framework | pub | dart: nessun analizzatore | — | 0 |
 | FumaDocs | `fumadocs` | framework | npm | JavaScript, TypeScript | — | 1 |
 | Gatsby | `gatsby` | framework | github-actions, npm, files | JavaScript, TypeScript | — | 0 |
 | Gin | `gin` | framework | go | Go | — | 1 |
 | Gradio | `gradio` | framework | pypi | Python | — | 1 |
 | Gridsome | `gridsome` | framework | npm, files | JavaScript, TypeScript | — | 0 |
 | HexoJS | `hexojs` | framework | npm | JavaScript, TypeScript | — | 0 |
-| HonoJS | `honojs` | framework | npm | JavaScript, TypeScript | — | 2 |
+| Hono | `honojs` | framework | npm | JavaScript, TypeScript | — | 2 |
 | Hugo | `hugo` | framework | docker, github-actions, npm, files | JavaScript, TypeScript | — | 1 |
 | Inferno | `infernojs` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Ionic | `ionic` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Jekyll | `jekyll` | framework | github-actions, rubygems, files | ruby: nessun analizzatore | — | 0 |
+| Jetpack Compose | `jetpack-compose` | framework | maven | Java, Kotlin | — | 0 |
 | Koa | `koa` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Kotlin Multiplatform | `kotlin-multiplatform` | framework | maven | Java, Kotlin | — | 3 |
 | Ktor | `ktor` | framework | maven | Java, Kotlin | — | 2 |
+| LangChain4j | `langchain4j` | framework | maven | Java, Kotlin | — | 0 |
 | Laravel | `laravel` | framework | composer, files | php: nessun analizzatore | — | 3 |
 | Lit | `litjs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| MapKit | `mapkit` | framework |  | — | — | 0 |
+| Materialize | `materialize-css` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Meteor | `meteorjs` | framework | npm, files | JavaScript, TypeScript | — | 0 |
+| Metro | `metro-kotlin` | framework | maven | Java, Kotlin | — | 0 |
 | Micronaut | `micronaut` | framework | maven | Java, Kotlin | — | 0 |
 | Mithril | `mithriljs` | framework | npm | JavaScript, TypeScript | — | 0 |
 | MkDocs | `mkdocs` | framework | docker, pypi, files | Python | — | 2 |
+| MudBlazor | `mudblazor` | framework | nuget | C# | — | 0 |
+| MyBatis | `mybatis` | framework | maven | Java, Kotlin | — | 0 |
 | NestJS | `nestjs` | framework | npm, files | JavaScript, TypeScript | — | 2 |
 | Next.js | `nextjs` | framework | npm, files | JavaScript, TypeScript | — | 5 |
 | Nuxt.js | `nuxtjs` | framework | npm, files | JavaScript, TypeScript | — | 2 |
 | Phaser | `phaserjs` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Phoenix | `phoenix` | framework | hex | elixir: nessun analizzatore | — | 3 |
 | Phoenix LiveView | `phoenix-liveview` | framework | hex | elixir: nessun analizzatore | — | 3 |
+| Pico CSS | `pico-css` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Preact | `preactjs` | framework | npm | JavaScript, TypeScript | — | 1 |
+| proptest | `proptest` | framework | crates | Rust | — | 0 |
 | Quarkus | `quarkus` | framework | maven | Java, Kotlin | — | 1 |
+| Quarkus REST | `quarkus-rest` | framework | maven | Java, Kotlin | — | 0 |
+| Quarkus WebSockets Next | `quarkus-websockets-next` | framework | maven | Java, Kotlin | — | 0 |
 | Qwik | `qwikjs` | framework | npm | JavaScript, TypeScript | — | 0 |
 | React | `react` | framework | npm | JavaScript, TypeScript | — | 18 |
 | React Native | `react-native` | framework | npm | JavaScript, TypeScript | — | 3 |
 | RedwoodJs | `redwoodjs` | framework | npm, files | JavaScript, TypeScript | — | 0 |
 | Refine | `refinedev` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Remix | `remixrun` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Roq | `roq` | framework | maven | Java, Kotlin | — | 0 |
+| rstest | `rstest` | framework | crates | Rust | — | 0 |
 | Ruby on Rails | `rails` | framework | npm, rubygems | JavaScript, TypeScript, ruby: nessun analizzatore | — | 3 |
 | Scrapy | `scrapy` | framework | pypi | Python | — | 0 |
 | Shopify Hydrogen | `shopify.hydrogen` | framework | npm | JavaScript, TypeScript | — | 0 |
@@ -282,156 +305,244 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Solid js | `solidjs` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Sphinx | `sphinx` | framework | pypi | Python | — | 2 |
 | Spring AI | `spring-ai` | framework | maven | Java, Kotlin | — | 0 |
+| Spring AMQP | `spring-amqp` | framework | maven | Java, Kotlin | — | 0 |
 | Spring Boot | `spring-boot` | framework | maven | Java, Kotlin | — | 7 |
 | Spring Boot Admin | `spring-boot-admin` | framework | maven | Java, Kotlin | — | 1 |
 | Spring Cloud Config | `spring-cloud-config` | framework | maven | Java, Kotlin | — | 1 |
 | Spring Cloud Gateway | `spring-cloud-gateway` | framework | maven | Java, Kotlin | — | 0 |
 | Spring Cloud Netflix | `spring-cloud-netflix` | framework | maven | Java, Kotlin | — | 1 |
+| Spring Data Elasticsearch | `spring-data-elasticsearch` | framework | maven | Java, Kotlin | — | 0 |
 | Spring Data JPA | `spring-data-jpa` | framework | maven | Java, Kotlin | — | 5 |
+| Spring Data MongoDB | `spring-data-mongodb` | framework | maven | Java, Kotlin | — | 0 |
+| Spring Data Redis | `spring-data-redis` | framework | maven | Java, Kotlin | — | 0 |
 | Spring MVC | `spring-mvc` | framework | maven | Java, Kotlin | — | 6 |
 | Spring Security | `spring-security` | framework | maven | Java, Kotlin | — | 2 |
 | Spring WebFlux | `spring-webflux` | framework | maven | Java, Kotlin | — | 0 |
 | Stencil | `stenciljs` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Stimulus | `stimulus` | framework | composer, npm | JavaScript, TypeScript, php: nessun analizzatore | — | 0 |
+| Strawberry GraphQL | `strawberry-graphql` | framework | pypi | Python | — | 0 |
 | Streamlit | `streamlit` | framework | pypi | Python | — | 0 |
 | Svelte | `sveltejs` | framework | npm, files | JavaScript, TypeScript | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_svelte.py`) | 2 |
 | SvelteKit | `sveltekit` | framework | npm | JavaScript, TypeScript | — | 1 |
+| SwiftUI | `swiftui` | framework |  | — | — | 0 |
 | Symfony | `symfony` | framework | composer | php: nessun analizzatore | — | 0 |
 | Tanstack Start | `tanstackstart` | framework | npm | JavaScript, TypeScript | — | 0 |
 | Tauri | `tauri` | framework | crates, npm, files | Rust, JavaScript, TypeScript | — | 3 |
+| test | `dart-test` | framework | pub | dart: nessun analizzatore | — | 0 |
+| UIKit | `uikit` | framework |  | — | — | 0 |
 | UmiJS | `umijs` | framework | npm, files | JavaScript, TypeScript | — | 0 |
 | VitePress | `vitepress` | framework | npm, files | JavaScript, TypeScript | — | 1 |
-| Vue.js | `vue` | framework | npm | JavaScript, TypeScript | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_vue.py`) | 8 |
+| Vue.js | `vue` | framework | maven, npm | Java, Kotlin, JavaScript, TypeScript | componenti nell'indice di scip-typescript (`indexers/components.py`); `<script>` e template nello snapshot (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_vue.py`) | 8 |
 | VuePress | `vuepress` | framework | npm, files | JavaScript, TypeScript | — | 0 |
+| Vuetify | `vuetify` | framework | npm | JavaScript, TypeScript | — | 0 |
+| Wagtail | `wagtail` | framework | pypi | Python | — | 0 |
 | Wasp | `wasp` | framework | files | — | — | 0 |
+| Yew | `yew` | framework | crates | Rust | — | 0 |
 | Yii2 | `yii2` | framework | composer | php: nessun analizzatore | — | 0 |
+| _hyperscript | `hyperscript` | library | npm | JavaScript, TypeScript | — | 0 |
 | Ant Design | `antd` | library | npm | JavaScript, TypeScript | — | 1 |
 | Ant Design Icons | `antdicons` | library | npm | JavaScript, TypeScript | — | 1 |
+| Apache Avro | `avro` | library | maven | Java, Kotlin | — | 0 |
 | Apache Beam | `apache-beam` | library | go, pypi | Go, Python | — | 0 |
 | Apache Thrift | `apache_thrift` | library | crates, docker, go, npm, rubygems | Rust, Go, JavaScript, TypeScript, ruby: nessun analizzatore | — | 0 |
 | AriaKit UI | `ariakitui` | library | npm | JavaScript, TypeScript | — | 0 |
 | Ark UI | `arkui` | library | npm | JavaScript, TypeScript | — | 0 |
 | ArkType | `arktype` | library | npm | JavaScript, TypeScript | — | 0 |
 | Base UI | `baseui` | library | npm | JavaScript, TypeScript | — | 0 |
-| Bootstrap | `bootstrap` | library | npm | JavaScript, TypeScript | — | 5 |
+| Basecoat | `basecoat` | library | npm | JavaScript, TypeScript | — | 0 |
+| Bootstrap | `bootstrap` | library | composer, maven, npm | Java, Kotlin, JavaScript, TypeScript, php: nessun analizzatore | — | 5 |
 | Bootstrap Icons | `bootstrapicons` | library | npm | JavaScript, TypeScript | — | 1 |
 | Boto3 | `boto3` | library | pypi | Python | — | 4 |
+| Broadway | `broadway` | library | hex | elixir: nessun analizzatore | — | 0 |
+| BullMQ | `bullmq` | library | npm | JavaScript, TypeScript | — | 0 |
+| Casbin | `casbin` | library | go | Go | — | 0 |
+| Catalyst | `github-catalyst` | library | npm | JavaScript, TypeScript | — | 0 |
 | Cats | `cats` | library | maven | Java, Kotlin | — | 1 |
 | Chakra UI | `chakraui` | library | npm | JavaScript, TypeScript | — | 0 |
+| clap | `clap` | library | crates | Rust | — | 0 |
+| class-transformer | `class-transformer` | library | npm | JavaScript, TypeScript | — | 0 |
+| class-validator | `class-validator` | library | npm | JavaScript, TypeScript | — | 0 |
 | Click | `click` | library | pypi | Python | — | 8 |
 | Cobra | `cobra` | library | go | Go | — | 2 |
 | CodeMirror | `codemirror` | library | npm | JavaScript, TypeScript | — | 8 |
+| Coil | `coil` | library | maven | Java, Kotlin | — | 0 |
 | D3.js | `d3js` | library | npm | JavaScript, TypeScript | — | 1 |
 | daisyUI | `daisyui` | library | npm | JavaScript, TypeScript | — | 1 |
+| dart_mappable | `dart-mappable` | library | pub | dart: nessun analizzatore | — | 0 |
 | Dask | `dask` | library | pypi | Python | — | 0 |
 | Diesel | `dieselrs` | library | crates | Rust | — | 0 |
-| Doctrine | `doctrinephp` | library | composer | php: nessun analizzatore | — | 2 |
+| Doctrine ORM | `doctrinephp` | library | composer | php: nessun analizzatore | — | 2 |
+| DOMPurify | `dompurify` | library | maven, npm | Java, Kotlin, JavaScript, TypeScript | — | 0 |
 | Drizzle ORM | `drizzleorm` | library | npm | JavaScript, TypeScript | — | 0 |
+| Ecto | `ecto` | library | hex | elixir: nessun analizzatore | — | 0 |
 | EffectJS | `effectjs` | library | npm | JavaScript, TypeScript | — | 0 |
+| Element Plus | `element-plus` | library | npm | JavaScript, TypeScript | — | 0 |
+| ELK.js | `elkjs` | library | npm | JavaScript, TypeScript | — | 0 |
 | ent. | `goent` | library | go | Go | — | 0 |
 | Entity Framework Core | `entity-framework-core` | library | nuget | C# | — | 5 |
+| Expo Router | `expo-router` | library | npm | JavaScript, TypeScript | — | 0 |
 | Exposed | `exposed` | library | maven | Java, Kotlin | — | 1 |
 | Feather Icons | `feathericons` | library | npm | JavaScript, TypeScript | — | 0 |
 | Fluent UI | `fluentui` | library | npm | JavaScript, TypeScript | — | 0 |
-| Font Awesome | `fontawesome` | library | npm | JavaScript, TypeScript | — | 2 |
+| flutter_rust_bridge | `flutter-rust-bridge` | library | crates, pub | Rust, dart: nessun analizzatore | — | 0 |
+| Font Awesome | `fontawesome` | library | maven, npm | Java, Kotlin, JavaScript, TypeScript | — | 2 |
 | GORM | `gorm` | library | go | Go | — | 2 |
-| gRPC | `grpc` | library | go, maven, npm, nuget, pypi | Go, Java, Kotlin, JavaScript, TypeScript, C#, Python | — | 5 |
+| graphql_client | `graphql-client-rust` | library | crates | Rust | — | 0 |
+| gRPC | `grpc` | library | crates, go, maven, npm, nuget, pypi | Rust, Go, Java, Kotlin, JavaScript, TypeScript, C#, Python | — | 5 |
+| gRPC-Gateway | `grpc-gateway` | library | go | Go | — | 0 |
 | Headless UI | `headlessui` | library | npm | JavaScript, TypeScript | — | 1 |
 | Hero UI | `heroui` | library | npm | JavaScript, TypeScript | — | 0 |
 | Heroicons | `heroicons` | library | npm | JavaScript, TypeScript | — | 2 |
 | Hibernate | `hibernate` | library | maven | Java, Kotlin | — | 1 |
+| Hibernate Reactive | `hibernate-reactive` | library | maven | Java, Kotlin | — | 0 |
+| Horologist | `horologist` | library | maven | Java, Kotlin | — | 0 |
 | HTMX | `htmx` | library | npm | JavaScript, TypeScript | — | 3 |
 | HTTPX | `httpx` | library | pypi | Python | — | 4 |
 | HugeIcons | `hugeicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| Hyper | `hyper-rust` | library | crates | Rust | — | 0 |
+| Imago | `imago` | library | npm | JavaScript, TypeScript | — | 0 |
 | Ionicons | `ionicons` | library | npm | JavaScript, TypeScript | — | 0 |
 | Jackson | `jackson` | library | maven | Java, Kotlin | — | 4 |
 | Jinja | `jinja` | library | pypi | Python | — | 6 |
+| JMS Serializer | `jms-serializer` | library | composer | php: nessun analizzatore | — | 0 |
 | Joi | `joijs` | library | npm | JavaScript, TypeScript | — | 0 |
+| jOOQ | `jooq` | library | maven | Java, Kotlin | — | 0 |
 | JSON Schema | `jsonschema` | library | composer, crates, go, npm, pypi, rubygems | Rust, Go, JavaScript, TypeScript, Python, php: nessun analizzatore, ruby: nessun analizzatore | — | 5 |
+| Json.NET | `json-net` | library | nuget | C# | — | 0 |
+| Juniper | `juniper` | library | crates | Rust | — | 0 |
 | Keras | `keras` | library | pypi | Python | — | 0 |
+| keyring | `keyring` | library | pypi | Python | — | 0 |
 | Knex | `knex` | library | npm | JavaScript, TypeScript | — | 0 |
 | Koin | `koin` | library | maven | Java, Kotlin | — | 2 |
+| kotlinx.html | `kotlinx-html` | library | maven | Java, Kotlin | — | 0 |
 | kotlinx.serialization | `kotlinx-serialization` | library | maven | Java, Kotlin | — | 2 |
 | Kysely | `kysely` | library | npm | JavaScript, TypeScript | — | 1 |
 | LangChain | `langchain` | library | npm, pypi | JavaScript, TypeScript, Python | — | 1 |
 | Lexical Editor | `lexicaleditor` | library | npm | JavaScript, TypeScript | — | 0 |
+| LikeC4 | `likec4` | library | npm | JavaScript, TypeScript | — | 0 |
 | LlamaIndex | `llamaindex` | library | pypi | Python | — | 0 |
 | Lombok | `lombok` | library | maven | Java, Kotlin | — | 2 |
 | Lord Icon | `lordicon` | library | npm | JavaScript, TypeScript | — | 0 |
 | Lucide Icons | `lucideicons` | library | npm | JavaScript, TypeScript | — | 7 |
 | Mantine UI | `mantineui` | library | npm | JavaScript, TypeScript | — | 0 |
 | MapStruct | `mapstruct` | library | maven | Java, Kotlin | — | 3 |
+| Marked | `marked` | library | maven, npm | Java, Kotlin, JavaScript, TypeScript | — | 0 |
+| marshmallow | `marshmallow` | library | pypi | Python | — | 0 |
 | Material Design Icons | `materialdesignicons` | library | npm | JavaScript, TypeScript | — | 0 |
 | Material UI | `materialui` | library | npm | JavaScript, TypeScript | — | 0 |
 | Matplotlib | `matplotlib` | library | pypi | Python | — | 1 |
-| MCP | `mcp` | library | npm, pypi, rubygems | JavaScript, TypeScript, Python, ruby: nessun analizzatore | — | 2 |
+| MessagePack | `messagepack-dotnet` | library | nuget | C# | — | 0 |
+| MiniJinja | `minijinja` | library | crates | Rust | — | 0 |
 | Mlflow | `mlflow` | library | pypi | Python | — | 0 |
+| Mockall | `mockall` | library | crates | Rust | — | 0 |
+| Model Context Protocol SDK | `mcp` | library | npm, pypi, rubygems | JavaScript, TypeScript, Python, ruby: nessun analizzatore | — | 2 |
 | Monaco Editor | `monacoeditor` | library | npm | JavaScript, TypeScript | — | 1 |
+| Mongoose | `mongoose` | library | npm | JavaScript, TypeScript | — | 0 |
+| Mono.Cecil | `mono-cecil` | library | nuget | C# | — | 0 |
 | MUI Icons | `muiicons` | library | npm | JavaScript, TypeScript | — | 0 |
 | NumPy | `numpy` | library | pypi | Python | — | 3 |
+| Oban | `oban` | library | hex | elixir: nessun analizzatore | — | 0 |
 | OpenAPI | `openapi` | library | composer, crates, go, npm, pypi, rubygems, files | Rust, Go, JavaScript, TypeScript, Python, php: nessun analizzatore, ruby: nessun analizzatore | — | 10 |
 | OpenCV | `opencv` | library | crates, go, pypi | Rust, Go, Python | — | 0 |
-| OpenTelemetry | `opentelemetry` | library | composer, crates, docker, github-actions, go, npm, pypi, rubygems, env | Rust, Go, JavaScript, TypeScript, Python, php: nessun analizzatore, ruby: nessun analizzatore | — | 3 |
+| OpenTelemetry | `opentelemetry` | library | composer, crates, docker, github-actions, go, npm, nuget, pypi, rubygems, env | Rust, Go, JavaScript, TypeScript, C#, Python, php: nessun analizzatore, ruby: nessun analizzatore | — | 3 |
+| Panache | `panache` | library | maven | Java, Kotlin | — | 0 |
 | pandas | `pandas` | library | pypi | Python | — | 2 |
 | Passport | `passport` | library | npm | JavaScript, TypeScript | — | 2 |
+| Pebble | `pebble` | library | maven | Java, Kotlin | — | 0 |
 | Phosphor Icons | `phosphoreicons` | library | npm | JavaScript, TypeScript | — | 0 |
 | picocli | `picocli` | library | maven | Java, Kotlin | — | 1 |
 | Pillow | `pillow` | library | pypi | Python | — | 5 |
+| Pinia | `pinia` | library | npm | JavaScript, TypeScript | — | 0 |
 | Plotly | `plotly` | library | pypi | Python | — | 0 |
 | Polars | `polars` | library | crates, pypi | Rust, Python | — | 0 |
 | Prisma | `prisma` | library | npm, files | JavaScript, TypeScript | — | 4 |
-| Protocol Buffers | `protobuf` | library | crates, go, pypi | Rust, Go, Python | — | 7 |
+| Protocol Buffers | `protobuf` | library | crates, go, maven, npm, pypi | Rust, Go, Java, Kotlin, JavaScript, TypeScript, Python | — | 7 |
 | Pydantic | `pydantic` | library | pypi | Python | — | 6 |
 | Pytorch | `pytorch` | library | pypi | Python | — | 0 |
+| PyYAML | `pyyaml` | library | pypi | Python | — | 0 |
+| Qmgo | `qmgo` | library | go | Go | — | 0 |
+| Qute | `qute` | library | maven | Java, Kotlin | — | 0 |
 | Radix Icons | `radixicons` | library | npm | JavaScript, TypeScript | — | 0 |
 | Radix UI | `radixui` | library | npm | JavaScript, TypeScript | — | 3 |
+| Ratatui | `ratatui` | library | crates | Rust | — | 0 |
 | Ray | `ray` | library | pypi | Python | — | 0 |
+| React DOM | `react-dom` | library | npm | JavaScript, TypeScript | — | 0 |
 | React Email | `react-email` | library | npm | JavaScript, TypeScript | — | 3 |
 | React Email | `reactemail` | library | npm | JavaScript, TypeScript | — | 2 |
+| React Flow | `react-flow` | library | npm | JavaScript, TypeScript | — | 0 |
 | React Icons | `reacticons` | library | npm | JavaScript, TypeScript | — | 2 |
+| React Native Elements | `react-native-elements` | library | npm | JavaScript, TypeScript | — | 0 |
+| React Navigation | `react-navigation` | library | npm | JavaScript, TypeScript | — | 0 |
 | React Router | `reactrouterdom` | library | npm | JavaScript, TypeScript | — | 7 |
+| Refena | `refena` | library | pub | dart: nessun analizzatore | — | 0 |
 | Reka UI | `rekaui` | library | npm | JavaScript, TypeScript | — | 0 |
 | Remix Icons | `remixicons` | library | npm | JavaScript, TypeScript | — | 0 |
 | Remix Router | `remixrouter` | library | npm | JavaScript, TypeScript | — | 0 |
 | Remult | `remult` | library | npm | JavaScript, TypeScript | — | 0 |
 | Requests | `requests` | library | pypi | Python | — | 9 |
 | Resilience4j | `resilience4j` | library | maven | Java, Kotlin | — | 1 |
+| Routerino | `routerino` | library | pub | dart: nessun analizzatore | — | 0 |
+| RQ | `rq` | library | pypi | Python | — | 0 |
 | Sandpack | `sandpackeditor` | library | npm | JavaScript, TypeScript | — | 0 |
+| Sass parser | `sass-parser` | library | npm | JavaScript, TypeScript | — | 0 |
 | scikit-learn | `scikitlearn` | library | pypi | Python | — | 1 |
 | SciPy | `scipy` | library | pypi | Python | — | 0 |
+| SeaORM | `sea-orm` | library | crates | Rust | — | 0 |
 | Sequel | `sequelruby` | library | rubygems | ruby: nessun analizzatore | — | 0 |
 | Sequelize | `sequelize` | library | npm, files | JavaScript, TypeScript | — | 1 |
 | Serde | `serde` | library | crates | Rust | — | 8 |
+| serde_json | `serde-json` | library | crates | Rust | — | 0 |
 | Shadcn | `shadcn` | library | npm | JavaScript, TypeScript | — | 0 |
 | Sidekiq | `sidekiq` | library | rubygems | ruby: nessun analizzatore | — | 2 |
 | Simple Icons | `simpleicons` | library | npm | JavaScript, TypeScript | — | 0 |
+| SmallRye Reactive Messaging | `smallrye-reactive-messaging` | library | maven | Java, Kotlin | — | 0 |
 | Socket.io | `socketio` | library | npm, pypi | JavaScript, TypeScript, Python | — | 2 |
+| Solid Queue | `solid-queue` | library | rubygems | ruby: nessun analizzatore | — | 0 |
 | spaCy | `spacy` | library | pypi | Python | — | 0 |
 | SQLAlchemy | `sqlalchemy` | library | pypi | Python | — | 3 |
+| SQLGlot | `sqlglot` | library | pypi | Python | — | 0 |
 | SQLModel | `sqlmodel` | library | pypi | Python | — | 1 |
+| sqlx | `sqlx-go` | library | go | Go | — | 0 |
+| SQLx | `sqlx-rust` | library | crates | Rust | — | 0 |
 | Superstruct | `superstruct` | library | npm | JavaScript, TypeScript | — | 0 |
-| Tabler | `tablericons` | library | npm | JavaScript, TypeScript | — | 1 |
-| Tailwind | `tailwind` | library | npm, files | JavaScript, TypeScript | quali classi sono sue utility, dal Tailwind del progetto nel container (`indexers/css_tailwind.py`) | 12 |
+| Tabler | `tabler` | library | npm | JavaScript, TypeScript | — | 0 |
+| Tabler Icons | `tablericons` | library | npm | JavaScript, TypeScript | — | 1 |
+| Tailwind | `tailwind` | library | hex, npm, files | JavaScript, TypeScript, elixir: nessun analizzatore | quali classi sono sue utility, dal Tailwind del progetto nel container (`indexers/css_tailwind.py`) | 12 |
 | TanStack Router | `tanstackrouter` | library | npm | JavaScript, TypeScript | — | 1 |
+| tempfile | `tempfile-rust` | library | crates | Rust | — | 0 |
 | Tensorflow | `tensorflow` | library | crates, docker, go, npm, pypi | Rust, Go, JavaScript, TypeScript, Python | — | 0 |
+| testify | `testify` | library | go | Go | — | 0 |
 | Testing Library | `testinglibrary` | library | npm | JavaScript, TypeScript | — | 11 |
 | Thymeleaf | `thymeleaf` | library | maven | Java, Kotlin | — | 3 |
 | Tiptap | `tiptap` | library | npm | JavaScript, TypeScript | — | 3 |
 | Tokio | `tokio` | library | crates | Rust | — | 4 |
+| Tree-sitter | `tree-sitter` | library | pypi | Python | — | 0 |
+| Tree-sitter Language Pack | `tree-sitter-language-pack` | library | pypi | Python | — | 0 |
 | TRPC | `trpc` | library | npm | JavaScript, TypeScript | — | 1 |
+| ts-rest | `ts-rest` | library | npm | JavaScript, TypeScript | — | 0 |
+| Turbo | `hotwire-turbo` | library | npm, rubygems | JavaScript, TypeScript, ruby: nessun analizzatore | — | 0 |
 | Twig | `twigphp` | library | composer | php: nessun analizzatore | — | 1 |
 | TypeBox | `typebox` | library | npm | JavaScript, TypeScript | — | 0 |
 | TypeORM | `typeorm` | library | npm | JavaScript, TypeScript | — | 1 |
 | Typer | `typer` | library | pypi | Python | — | 2 |
+| urfave/cli | `urfave-cli` | library | go | Go | — | 0 |
 | urql | `urql` | library | npm | JavaScript, TypeScript | — | 1 |
 | Valibot | `valibot` | library | npm | JavaScript, TypeScript | — | 0 |
 | Viper | `viper` | library | go | Go | — | 3 |
-| Vue Router | `vue-router` | library | npm | JavaScript, TypeScript | — | 2 |
+| Vue Router | `vue-router` | library | maven, npm | Java, Kotlin, JavaScript, TypeScript | — | 2 |
+| WatermelonDB | `watermelondb` | library | npm | JavaScript, TypeScript | — | 0 |
+| webview2-com | `webview2-com` | library | crates | Rust | — | 0 |
+| Windows for Rust | `windows-rs` | library | crates | Rust | — | 0 |
+| wiremock | `wiremock-rs` | library | crates | Rust | — | 0 |
 | YARP | `yarp` | library | nuget | C# | — | 0 |
 | Zod | `zod` | library | npm | JavaScript, TypeScript | — | 7 |
 | Alembic | `alembic` | tool | pypi | Python | — | 3 |
 | Ansible | `ansible` | tool | docker, github-actions, pypi | Python | — | 0 |
+| Apache JMeter | `jmeter` | tool | maven | Java, Kotlin | — | 0 |
 | ArchUnit | `archunit` | tool | maven | Java, Kotlin | — | 1 |
+| Artillery | `artillery` | tool | npm | JavaScript, TypeScript | — | 0 |
 | asdf | `asdf` | tool | files | — | — | 0 |
+| Astro compiler | `astro-compiler` | tool | npm | JavaScript, TypeScript | — | 0 |
 | AtlasGo | `atlasgo` | tool | docker, github-actions, terraform, files | hcl: nessun analizzatore | — | 0 |
 | AWS CDK | `awscdk` | tool | go, npm, pypi | Go, JavaScript, TypeScript, Python | — | 0 |
 | AWS CloudFormation | `aws.cloudformation` | tool | crates, github-actions, go, npm, pypi, rubygems, terraform-resource | Rust, Go, JavaScript, TypeScript, Python, ruby: nessun analizzatore, hcl: nessun analizzatore | — | 0 |
@@ -440,34 +551,47 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Bun | `bunsh` | tool | files | — | — | 0 |
 | Bundler | `bundler` | tool | rubygems | ruby: nessun analizzatore | — | 0 |
 | Bytebase | `bytebase` | tool | docker, github-actions | — | — | 0 |
+| Capybara | `capybara` | tool | rubygems | ruby: nessun analizzatore | — | 0 |
 | Chef | `chef` | tool | docker | — | — | 0 |
 | containerd | `containerd` | tool | go | Go | — | 0 |
-| CypressCI | `cypressci` | tool | docker, github-actions, npm, rubygems, files | JavaScript, TypeScript, ruby: nessun analizzatore | — | 3 |
+| Create React App | `create-react-app` | tool | npm | JavaScript, TypeScript | — | 0 |
+| Cypress | `cypressci` | tool | docker, github-actions, npm, rubygems | JavaScript, TypeScript, ruby: nessun analizzatore | — | 3 |
 | dbt | `dbt` | tool | pypi | Python | — | 0 |
 | Deno | `deno` | tool | docker, github-actions, files | — | — | 1 |
+| Detox | `detox` | tool | npm | JavaScript, TypeScript | — | 0 |
 | Docker | `docker` | tool | github-actions, go, npm, pypi, files | Go, JavaScript, TypeScript, Python | — | 40 |
-| Esbuild | `esbuild` | tool | go, npm | Go, JavaScript, TypeScript | — | 5 |
+| Esbuild | `esbuild` | tool | go, hex, npm | Go, JavaScript, TypeScript, elixir: nessun analizzatore | — | 5 |
 | Eslint | `eslint` | tool | npm, files | JavaScript, TypeScript | — | 23 |
 | Fern | `builtwithfern` | tool | files | — | — | 0 |
 | Flyway | `flyway` | tool | docker, github-actions | — | — | 0 |
+| FsCheck | `fscheck` | tool | nuget | C# | — | 0 |
 | Gatling | `gatling` | tool | maven | Java, Kotlin | — | 1 |
 | goenv | `goenv` | tool | files | — | — | 0 |
 | Golang | `golang` | tool | docker, files | — | — | 20 |
 | GolangCI Lint | `golangcilint` | tool | docker, github-actions, go, files | Go | — | 3 |
 | Grafana K6 | `k6` | tool | docker, go, npm | Go, JavaScript, TypeScript | — | 0 |
+| GraphiQL | `graphiql` | tool | npm | JavaScript, TypeScript | — | 0 |
 | Gunicorn | `gunicorn` | tool | pypi | Python | — | 6 |
+| Hatchling | `hatchling` | tool | pypi | Python | — | 0 |
 | Helm | `helm` | tool | github-actions, go, rubygems, terraform, files | Go, ruby: nessun analizzatore, hcl: nessun analizzatore | — | 4 |
 | Jest | `jest` | tool | npm, files | JavaScript, TypeScript | — | 9 |
+| JHipster | `jhipster` | tool | maven, npm | Java, Kotlin, JavaScript, TypeScript | — | 0 |
 | JUnit | `junit` | tool | maven | Java, Kotlin | — | 22 |
 | JUnit Jupiter | `junit-jupiter` | tool | maven | Java, Kotlin | — | 7 |
 | Jupyter | `jupyter` | tool | pypi | Python | — | 0 |
+| Kotest | `kotest` | tool | maven | Java, Kotlin | — | 0 |
+| kotlin.test | `kotlin-test` | tool | maven | Java, Kotlin | — | 0 |
 | Lego | `goacmelego` | tool | docker, go, files | Go | — | 0 |
+| Less | `less` | tool | npm | JavaScript, TypeScript | — | 0 |
 | Lighthouse | `lighthouse` | tool | docker, github-actions, npm | JavaScript, TypeScript | — | 1 |
 | Liquibase | `liquibase` | tool | docker, github-actions, maven | Java, Kotlin | — | 1 |
 | Locust | `locust` | tool | pypi | Python | — | 2 |
+| Material for MkDocs | `mkdocs-material` | tool | pypi | Python | — | 0 |
 | Mintlify | `mintlify` | tool | npm, files | JavaScript, TypeScript | — | 0 |
-| Mocha | `mochajs` | tool | npm, files | JavaScript, TypeScript | — | 1 |
+| Mocha | `mochajs` | tool | npm | JavaScript, TypeScript | — | 1 |
 | Mockito | `mockito` | tool | maven | Java, Kotlin | — | 2 |
+| MockK | `mockk` | tool | maven | Java, Kotlin | — | 0 |
+| MockServer | `mockserver` | tool | maven | Java, Kotlin | — | 0 |
 | MSTest | `mstest` | tool | nuget | C# | — | 1 |
 | NodeJS | `nodejs` | tool | docker, files | — | — | 61 |
 | npm | `npm` | tool | files | — | — | 0 |
@@ -475,7 +599,9 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | NUnit | `nunit` | tool | nuget | C# | — | 1 |
 | nvm | `nvm` | tool | files | — | — | 0 |
 | NX | `nxjs` | tool | npm, files | JavaScript, TypeScript | — | 1 |
+| oapi-codegen | `oapi-codegen` | tool | go | Go | — | 0 |
 | OxLint | `oxlint` | tool | npm, pypi, files | JavaScript, TypeScript, Python | — | 1 |
+| Pact | `pact` | tool | maven | Java, Kotlin | — | 0 |
 | Parcel | `parceljs` | tool | npm | JavaScript, TypeScript | — | 0 |
 | PHP | `php` | tool | docker, github-actions, files | — | — | 7 |
 | PHP Pest | `phppest` | tool | composer | php: nessun analizzatore | — | 0 |
@@ -492,34 +618,48 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Pulumi | `pulumi` | tool | go, npm, pypi, files | Go, JavaScript, TypeScript, Python | — | 0 |
 | pytest | `pytest` | tool | pypi | Python | — | 9 |
 | Python | `python` | tool | docker, github-actions, files | — | — | 16 |
+| Quinoa | `quinoa` | tool | maven | Java, Kotlin | — | 0 |
 | Read The Docs | `readthedocs` | tool | docker, files | — | — | 0 |
 | Renovate | `renovate` | tool | npm, files | JavaScript, TypeScript | — | 6 |
+| Reqnroll | `reqnroll` | tool | nuget | C# | — | 0 |
+| REST Assured | `rest-assured` | tool | maven | Java, Kotlin | — | 0 |
+| Robolectric | `robolectric` | tool | maven | Java, Kotlin | — | 0 |
 | Rolldown | `rolldown` | tool | crates, npm | Rust, JavaScript, TypeScript | — | 1 |
 | Rollup | `rollup` | tool | npm | JavaScript, TypeScript | — | 4 |
 | Rspack | `rspack` | tool | npm, files | JavaScript, TypeScript | — | 0 |
+| RSpec | `rspec` | tool | rubygems | ruby: nessun analizzatore | — | 0 |
 | Rubocop | `rubocop` | tool | files | — | — | 1 |
 | Ruby | `ruby` | tool | docker, github-actions, files | — | — | 7 |
 | rubyenv | `rubyenv` | tool | files | — | — | 0 |
 | Ruff | `ruff` | tool | pypi | Python | — | 14 |
 | Rust | `rust` | tool | docker, files | — | — | 17 |
 | ScalaTest | `scalatest` | tool | maven | Java, Kotlin | — | 1 |
+| SharpFuzz | `sharpfuzz` | tool | nuget | C# | — | 0 |
 | SonarLint | `sonarlint` | tool | files | — | — | 0 |
+| sqlc | `sqlc` | tool | go | Go | — | 0 |
+| SQLDelight | `sqldelight` | tool | maven | Java, Kotlin | — | 0 |
 | Storybook | `storybook` | tool | npm, files | JavaScript, TypeScript | — | 2 |
 | Stylelint | `stylelint` | tool | files | — | — | 2 |
+| Stylus | `stylus` | tool | npm | JavaScript, TypeScript | — | 0 |
 | SWC | `swc` | tool | crates, npm | Rust, JavaScript, TypeScript | — | 4 |
 | Terraform | `terraform` | tool | github-actions, go, npm, pypi, files | Go, JavaScript, TypeScript, Python | — | 2 |
 | Terragrunt | `terragrunt` | tool | files | — | — | 0 |
-| Testcontainers | `testcontainers` | tool | maven, nuget, pypi | Java, Kotlin, C#, Python | — | 2 |
+| Testcontainers | `testcontainers` | tool | go, maven, nuget, pypi | Go, Java, Kotlin, C#, Python | — | 2 |
 | TestNG | `testng` | tool | maven | Java, Kotlin | — | 1 |
 | TravisCI | `travisci` | tool | rubygems, files | ruby: nessun analizzatore | — | 1 |
 | Turborepo | `turborepo` | tool | npm, files | JavaScript, TypeScript | — | 2 |
-| Typescript | `typescript` | tool | go, npm, files | Go, JavaScript, TypeScript | — | 35 |
+| Typescript | `typescript` | tool | go, npm | Go, JavaScript, TypeScript | — | 35 |
 | Ultracite | `ultracite` | tool | npm | JavaScript, TypeScript | — | 0 |
+| UnoCSS | `unocss` | tool | npm | JavaScript, TypeScript | — | 0 |
 | uv | `uv` | tool | pypi | Python | — | 1 |
 | Vale | `vale` | tool | docker, github-actions, files | — | — | 1 |
-| Vite | `vite` | tool | npm | JavaScript, TypeScript | — | 18 |
+| Vite | `vite` | tool | npm, files | JavaScript, TypeScript | — | 18 |
+| Vite+ | `vite-plus` | tool | npm | JavaScript, TypeScript | — | 0 |
 | Vitest | `vitest` | tool | npm, files | JavaScript, TypeScript | — | 11 |
+| Vue SFC compiler | `vue-sfc-compiler` | tool | npm | JavaScript, TypeScript | — | 0 |
 | Webpack | `webpack` | tool | npm | JavaScript, TypeScript | — | 3 |
+| Webpack Encore | `webpack-encore` | tool | npm | JavaScript, TypeScript | — | 0 |
+| WireMock | `wiremock-java` | tool | maven | Java, Kotlin | — | 0 |
 | xUnit | `xunit` | tool | nuget | C# | — | 2 |
 | Yarn | `yarn` | tool | files | — | — | 0 |
 | Zig | `zig` | tool | github-actions | — | — | 0 |
@@ -528,17 +668,19 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 
 ## Servizi esterni
 
-Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `project` con la `category` `service` (un software che gira accanto al sistema e a cui il codice si connette); 619 con segni per riconoscerle, 445 con un marchio: 445 con il file nel prodotto (`mark`), 0 scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per specie, sulle voci che ne hanno: `env` 160, `files` 48, `packages` 581, `patterns` 159. Di quelle con segni, 4 hanno un'altra categoria (`library` 1, `tool` 3) e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
+Le voci di servizio del catalogo: 833, 813 di `kind` `service` e 20 di `kind` `project` con la `category` `service` (un software che gira accanto al sistema e a cui il codice si connette); 703 con segni per riconoscerle, 444 con un marchio: 444 con il file nel prodotto (`mark`), 0 scaricato al primo uso dalla fonte ufficiale (`mark_source`). Segni per specie, sulle voci che ne hanno: `env` 179, `files` 44, `hosts` 34, `packages` 633, `patterns` 159, `source` 1. Di quelle con segni, 3 hanno un'altra categoria (`tool` 3) e stanno nella lista della sezione precedente. Il riconoscimento misurato è la colonna Servizi della sezione precedente.
 
 | Tipo | Voci | Con segni | Con marchio |
 | --- | --- | --- | --- |
-| servizio o API | 579 | 457 | 338 |
-| database | 120 | 112 | 76 |
-| autenticazione | 18 | 18 | 10 |
+| servizio o API | 640 | 518 | 336 |
+| database | 123 | 115 | 77 |
+| autenticazione | 29 | 29 | 10 |
 | gateway | 17 | 17 | 11 |
-| coda | 15 | 15 | 10 |
+| coda | 15 | 15 | 9 |
+| filesystem | 6 | 6 | 0 |
+| altro | 3 | 3 | 1 |
 
-<details><summary>Servizi riconoscibili: 615 voci</summary>
+<details><summary>Servizi riconoscibili: 700 voci</summary>
 
 | Servizio | Id | Tipo | Segni | Marchio | Fixture in cui lo step lo trova (19 novembre 2026) |
 | --- | --- | --- | --- | --- | --- |
@@ -554,13 +696,15 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Airbyte | `airbyte` | servizio o API | docker, terraform | sì | 0 |
 | Aircall | `aircall` | servizio o API | npm, terraform-resource, env | sì | 0 |
 | Airtable | `airtable` | servizio o API | composer, npm, env | sì | 0 |
+| Akahu | `akahu` | servizio o API | npm | no | 0 |
 | Akamai | `akamai` | servizio o API | npm, terraform, env | sì | 0 |
 | Alby | `alby` | servizio o API | npm | sì | 0 |
 | Alchemy | `alchemy` | servizio o API | npm | sì | 0 |
 | Algolia | `algolia` | database | composer, crates, github-actions, npm, pypi, rubygems, terraform-resource, env | sì | 1 |
 | Algorand | `algorand` | servizio o API | go, npm, pypi | sì | 0 |
 | Alibaba Cloud | `alibabacloud` | servizio o API | composer, github-actions, terraform | sì | 0 |
-| Alipay | `alipay` | servizio o API | npm | sì | 0 |
+| Alipay | `alipay` | servizio o API | maven, npm | sì | 0 |
+| Aliyun OSS | `aliyun-oss` | filesystem | go, maven | no | 0 |
 | Amplitude Analytics | `amplitude` | servizio o API | composer, go, npm, terraform-resource, env | no | 0 |
 | Anthropic | `anthropic` | servizio o API | go, npm, pypi, env | sì | 0 |
 | Apache Airflow | `apache_airflow` | servizio o API | docker | sì | 0 |
@@ -575,6 +719,7 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Apache Solr | `apache_solr` | database | docker | sì | 0 |
 | Apache Spark | `apache_spark` | database | docker, pypi | sì | 0 |
 | Apache Storm | `apache_storm` | servizio o API | docker | sì | 0 |
+| Apicurio Registry | `apicurio-registry` | coda | docker | no | 0 |
 | Apideck | `apideck` | servizio o API | composer, go, npm, pypi | no | 0 |
 | Apify | `apify` | servizio o API | crates, go, npm, pypi, terraform-resource, env | no | 0 |
 | App Store | `app-store` | servizio o API | npm | sì | 0 |
@@ -587,7 +732,9 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Atlassian | `atlassian` | servizio o API | pypi | sì | 0 |
 | Atlassian Bitbucket | `atlassian.bitbucket` | servizio o API | composer | no | 0 |
 | Atlassian OpsGenie | `atlassian.opsgenie` | servizio o API | npm, pypi | no | 0 |
-| Atlassian Trello | `atlassian.trello` | servizio o API | composer, github-actions, npm, rubygems | no | 0 |
+| Atlassian Trello | `atlassian.trello` | servizio o API | composer, github-actions, npm, rubygems, hosts | no | 0 |
+| Atuin Hub | `atuin-hub` | servizio o API | hosts | no | 0 |
+| Atuin Sync | `atuin-sync` | servizio o API | hosts | no | 0 |
 | Auth0 | `auth0` | autenticazione | composer, crates, go, npm, pypi, rubygems, terraform, env | sì | 0 |
 | AWS | `aws` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, terraform | sì | 8 |
 | AWS ActiveMQ | `aws.mq` | coda | crates, go, npm, rubygems, terraform-resource | sì | 0 |
@@ -627,27 +774,32 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | AWS RDS | `aws.rds` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | AWS Redshift | `aws.redshift` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | AWS Rekognition | `aws.rekognition` | servizio o API | crates, go, npm, pypi, rubygems | sì | 0 |
-| AWS S3 | `aws.s3` | database | composer, crates, docker, github-actions, go, npm, rubygems, terraform-resource | sì | 9 |
+| AWS S3 | `aws.s3` | database | composer, crates, docker, github-actions, go, hex, npm, rubygems, terraform-resource | sì | 9 |
 | AWS SageMaker | `aws.sagemaker` | servizio o API | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | AWS Secrets Manager | `aws.secretsmanager` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 1 |
 | AWS Simple Email Service | `aws.ses` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
-| AWS SQS | `aws.sqs` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| AWS SQS | `aws.sqs` | coda | composer, crates, go, hex, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | AWS Step Functions | `aws.sfn` | servizio o API | crates, go, npm, rubygems, terraform-resource | sì | 0 |
 | AWS Timestream | `aws.timestream` | database | crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | AWS Transcribe | `aws.transcribe` | servizio o API | npm | sì | 0 |
 | AWS Translate | `aws.translate` | servizio o API | crates, go, npm, rubygems | sì | 0 |
 | Azure | `azure` | servizio o API | crates, docker, github-actions, go, npm, pypi, rubygems, terraform | sì | 1 |
+| Azure AI Document Intelligence | `azure.documentintelligence` | servizio o API | pypi | no | 0 |
+| Azure Application Insights | `azure.applicationinsights` | servizio o API | nuget | no | 0 |
+| Azure Blob Storage | `azure.blobstorage` | filesystem | composer, crates, go, npm, pypi, rubygems, terraform-resource | no | 0 |
+| Azure Container Apps | `azure.containerapps` | servizio o API | nuget | no | 0 |
 | Azure Cosmos DB | `azure.cosmosdb` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
 | Azure Functions | `azure.functions` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | sì | 0 |
+| Azure Key Vault | `azure.keyvault` | servizio o API | nuget, env | no | 0 |
 | Azure Kubernetes | `azure.aks` | servizio o API | terraform-resource | sì | 0 |
 | Azure MariaDB | `azure.mariadb` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
 | Azure MySQL | `azure.mysql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
-| Azure Openai | `azure.openai` | servizio o API | npm | sì | 0 |
+| Azure Openai | `azure.openai` | servizio o API | npm, nuget | sì | 0 |
 | Azure Postgres | `azure.postgres` | database | crates, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
 | Azure Redis | `azure.redis` | database | crates, go, npm, rubygems, terraform-resource | sì | 0 |
 | Azure SQL | `azure.sql` | database | crates, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
 | Azure Static Web Apps | `azure.staticwebapps` | servizio o API | crates, github-actions, npm, rubygems, terraform-resource | sì | 1 |
-| Azure Storage | `azure.storage` | database | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 1 |
+| Azure Storage | `azure.storage` | database | composer, crates, npm, rubygems, terraform-resource | sì | 1 |
 | AzureCI | `azure.ci` | servizio o API | files | sì | 0 |
 | Backblaze | `backblaze` | servizio o API | npm | sì | 0 |
 | Backendless | `backendless` | servizio o API | npm | sì | 0 |
@@ -669,15 +821,15 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Brevo | `brevo` | servizio o API | composer, go, npm, rubygems, env | sì | 0 |
 | Browser Use | `browseruse` | servizio o API | pypi | no | 0 |
 | Browserbase | `browerbase` | servizio o API | composer, pypi | no | 0 |
+| Browserless | `browserless` | servizio o API | docker, env | no | 0 |
 | Browserstack | `browserstack` | servizio o API | npm, rubygems, files | no | 1 |
 | Bugsnag | `bugsnag` | servizio o API | composer, go, npm, pypi, rubygems, env | no | 0 |
 | bunq | `bunq` | servizio o API | pypi | sì | 0 |
-| Caddy | `caddy` | servizio o API | docker, go, files | sì | 2 |
+| Caddy | `caddy` | servizio o API | docker, go | sì | 2 |
 | Cal.com | `calcom` | servizio o API | npm | sì | 0 |
 | Calendly | `calendly` | servizio o API | npm, env | sì | 0 |
 | Campaign Monitor | `campaign-monitor` | servizio o API | npm | sì | 0 |
 | Camunda | `camunda` | servizio o API | npm | sì | 0 |
-| Celery | `celery` | coda | pypi | sì | 2 |
 | Chargebee | `chargebee` | gateway | composer, go, npm, pypi, rubygems, env | no | 0 |
 | ChartMogul | `chartmogul` | servizio o API | npm, pypi | sì | 0 |
 | Checkov | `checkov` | servizio o API | docker, github-actions | sì | 0 |
@@ -700,6 +852,7 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Cloud Datastore | `gcp.datastore` | database | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Cloud Dialogflow | `gcp.dialogflow` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Cloud Functions | `gcp.functions` | servizio o API | composer, github-actions, go, npm, rubygems, terraform-resource | sì | 0 |
+| Cloud Functions for Firebase | `firebase.functions` | servizio o API | npm, pypi | no | 0 |
 | Cloud KMS | `gcp.kms` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 1 |
 | Cloud Language | `gcp.language` | servizio o API | composer, go, npm, pypi, rubygems | sì | 0 |
 | Cloud Logging | `gcp.logging` | servizio o API | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
@@ -717,6 +870,7 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Cloudflare | `cloudflare` | servizio o API | composer, crates, npm, pypi, rubygems, terraform, env | sì | 0 |
 | Cloudflare Pages | `cloudflare.pages` | servizio o API | github-actions, terraform-resource | sì | 0 |
 | Cloudflare R2 | `cloudflare.r2` | database | npm, terraform-resource | no | 0 |
+| Cloudflare Turnstile | `cloudflare.turnstile` | servizio o API | npm, env | no | 0 |
 | Cloudflare Workers | `cloudflare.workers` | servizio o API | crates, github-actions, npm, terraform-resource, files | sì | 0 |
 | Cloudinary | `cloudinary` | servizio o API | composer, go, npm, pypi, rubygems, env | sì | 0 |
 | Cockroach Labs | `cockroach-labs` | database | go | sì | 0 |
@@ -724,7 +878,6 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Code Climate | `codeclimate` | servizio o API | github-actions, files | sì | 0 |
 | Codecov | `codecov` | servizio o API | github-actions, files | sì | 5 |
 | CodeSandbox | `codesandbox` | servizio o API | npm | sì | 0 |
-| CodeSandboxCI | `codesandboxci` | servizio o API | files | no | 0 |
 | Cohere AI | `cohereai` | servizio o API | go, npm, pypi, env | no | 0 |
 | Coinbase | `coinbase` | servizio o API | npm | sì | 0 |
 | Commercetools | `commercetools` | servizio o API | npm | no | 0 |
@@ -736,6 +889,7 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Contentful | `contentful` | servizio o API | composer, npm, pypi, env | sì | 0 |
 | Contentstack | `contentstack` | servizio o API | npm | sì | 0 |
 | Convex | `convexdb` | database | crates, npm, pypi, terraform-resource, env | sì | 0 |
+| CoreDNS | `coredns` | altro | docker | no | 0 |
 | Couchbase | `couchbase` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform, terraform-resource | sì | 0 |
 | Coveralls | `coveralls` | servizio o API | github-actions, go, npm, rubygems | sì | 1 |
 | Coze | `coze` | servizio o API | npm | sì | 0 |
@@ -755,11 +909,13 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Deepseek | `deepseek` | servizio o API | npm, pypi, env | sì | 0 |
 | Deepsource | `deepsource` | servizio o API | github-actions, files | no | 0 |
 | Deno Deploy | `denodeploy` | servizio o API | deno, github-actions | sì | 0 |
-| Dependabot | `dependabot` | servizio o API | github-actions, rubygems, files | sì | 0 |
+| Dependabot | `dependabot` | servizio o API | github-actions, rubygems | sì | 0 |
 | Depot.dev | `depotdev` | servizio o API | github-actions, files | no | 2 |
+| diagrams.net | `diagrams-net` | servizio o API | hosts | no | 0 |
 | DigitalOcean | `digitalocean` | servizio o API | github-actions, npm, pypi, terraform | sì | 0 |
 | Directus | `directus` | servizio o API | npm | sì | 0 |
 | Discord | `discord` | servizio o API | github-actions, npm, env | sì | 1 |
+| Discord OAuth | `discord.oauth` | autenticazione | composer | no | 0 |
 | Discourse | `discourse` | servizio o API | docker | sì | 0 |
 | Docusign | `docusign` | servizio o API | composer, npm, rubygems, env | no | 0 |
 | Dodo Payments | `dodo-payments` | servizio o API | npm, pypi | sì | 0 |
@@ -768,45 +924,57 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Dropbox | `dropbox` | servizio o API | composer, pypi, env | sì | 0 |
 | Drupal | `drupal` | servizio o API | composer, docker | sì | 0 |
 | DuckDB | `duckdb` | database | go, npm, pypi, terraform-resource | sì | 0 |
+| DuckDuckGo Icons | `duckduckgo-icons` | servizio o API | hosts | no | 0 |
 | Dynatrace | `dynatrace` | servizio o API | npm, env | sì | 0 |
+| eID Easy | `eideasy` | servizio o API | npm, hosts | no | 0 |
 | Elastic Cloud | `elasticcloud` | servizio o API | terraform | sì | 0 |
 | Elasticsearch | `elasticsearch` | database | composer, crates, docker, github-actions, go, npm, pypi, rubygems, terraform, terraform-resource, env | sì | 2 |
 | Elevenlabs | `elevenlabs` | servizio o API | npm, pypi, env | sì | 0 |
-| Envoy | `envoy` | gateway | go | no | 0 |
+| Enable Banking | `enable-banking` | servizio o API | hosts | no | 0 |
+| Envoy | `envoy` | gateway | docker, go | no | 0 |
 | Equinix | `equinix` | servizio o API | terraform | no | 0 |
 | etcd | `etcd` | database | go | sì | 0 |
 | Event Store | `event-store` | database | go, npm | sì | 0 |
 | Evernote | `evernote` | servizio o API | npm | sì | 0 |
 | Expo.dev | `expodev` | servizio o API | github-actions, files | sì | 0 |
 | Facebook | `facebook` | servizio o API | npm, env | sì | 0 |
+| FastAPI Cloud | `fastapi-cloud` | servizio o API | env | no | 0 |
 | Fastly | `fastly` | servizio o API | crates, go, npm, pypi, rubygems, env | sì | 0 |
 | Fathom | `fathom` | servizio o API | npm, env | sì | 0 |
 | Figma | `figma` | servizio o API | npm, env | sì | 0 |
 | Firebase | `firebase` | servizio o API | crates, github-actions, npm, pypi, rubygems, files, env | sì | 1 |
+| Firebase Analytics | `firebase.analytics` | servizio o API | maven | no | 0 |
+| Firebase Cloud Messaging | `firebase.messaging` | servizio o API | maven | no | 0 |
 | Firebase Firestore | `firebase.firestore` | database | composer, terraform-resource | no | 0 |
 | Firecrawl | `firecrawl` | servizio o API | composer, crates, go, pypi, env | no | 0 |
-| Fluentd | `fluentd` | servizio o API | go | sì | 0 |
+| Firepit | `firepit` | servizio o API | docker | no | 0 |
+| flagd | `flagd` | servizio o API | crates, docker, go, maven | no | 0 |
+| Fluentd | `fluentd` | servizio o API | docker, go | sì | 0 |
 | Flyio | `flyio` | servizio o API | github-actions, terraform, files | sì | 1 |
 | Formbricks | `formbricks` | servizio o API | npm | sì | 0 |
 | FoundationDB | `foundationdb` | database | pypi | no | 0 |
 | Freshdesk | `freshdesk` | servizio o API | composer, go, npm, pypi, rubygems, env | no | 0 |
+| Friendly Captcha | `friendly-captcha` | servizio o API | npm, env | no | 0 |
 | Frontegg | `frontegg` | autenticazione | npm, pypi, terraform | no | 0 |
 | Fusionauth | `fusionauth` | autenticazione | composer, go, npm, pypi, rubygems | sì | 0 |
 | GCP | `gcp` | servizio o API | composer, github-actions, npm, pypi, terraform, env | sì | 3 |
-| Gemini AI | `geminiai` | servizio o API | npm, pypi, env | no | 0 |
+| Gemini AI | `geminiai` | servizio o API | npm, pypi, env, hosts | no | 0 |
 | Ghost | `ghost` | servizio o API | docker, npm, env | sì | 0 |
 | GIPHY | `giphy` | servizio o API | npm | sì | 0 |
 | Gitbook | `gitbook` | servizio o API | npm | sì | 0 |
 | Gitea | `gitea` | servizio o API | go | sì | 0 |
 | GitGuardian | `gitguardian` | servizio o API | docker, github-actions, go | no | 0 |
-| GitHub | `github` | servizio o API | composer, npm, pypi, rubygems, terraform, terraform-resource, files | sì | 1 |
+| GitHub | `github` | servizio o API | composer, npm, pypi, rubygems, terraform, terraform-resource, files, hosts | sì | 1 |
 | GitHub CodeQL | `github.codeql` | servizio o API | github-actions | no | 0 |
+| GitHub OAuth | `github.oauth` | autenticazione | npm | no | 0 |
 | Github Pages | `github.pages` | servizio o API | github-actions, files | sì | 7 |
 | Gitlab | `gitlab` | servizio o API | composer, crates, npm, pypi, rubygems, terraform, terraform-resource | sì | 0 |
 | Gitlab CI | `gitlab.ci` | servizio o API | files | no | 0 |
-| Gmail | `google.gmail` | servizio o API | npm, rubygems | sì | 0 |
+| GitLab OAuth | `gitlab.oauth` | autenticazione | composer | no | 0 |
+| Gmail | `google.gmail` | servizio o API | npm, rubygems, env | sì | 0 |
+| GoCardless Bank Account Data | `gocardless-bank-account-data` | servizio o API | hosts | no | 0 |
 | Google Ads | `google-ads` | servizio o API | npm, pypi | sì | 0 |
-| Google Analytics | `google.analytics` | servizio o API | composer, npm, pypi, terraform-resource, env | sì | 0 |
+| Google Analytics | `google.analytics` | servizio o API | composer, npm, pypi, terraform-resource, env, hosts | sì | 0 |
 | Google App Engine | `gcp.appengine` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Google Calendar | `google.calendar` | servizio o API | composer, npm, pypi, rubygems | sì | 0 |
 | Google Chat | `google.chat` | servizio o API | npm, rubygems, terraform-resource | sì | 0 |
@@ -820,17 +988,26 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Google Kubernetes | `gcp.gke` | servizio o API | github-actions, terraform-resource | sì | 0 |
 | Google Maps | `gcp.maps` | servizio o API | go, npm, pypi, rubygems, env | sì | 0 |
 | Google Meet | `google.meet` | servizio o API | npm, pypi, rubygems | sì | 0 |
+| Google OAuth | `google.oauth` | autenticazione | npm | no | 0 |
 | Google Pay | `google.pay` | gateway | npm, env | sì | 0 |
+| Google reCAPTCHA | `google.recaptcha` | servizio o API | pypi, env | no | 0 |
 | Google Sheets | `google.sheets` | servizio o API | composer, crates, npm, rubygems, terraform-resource | sì | 0 |
 | Google Slides | `google.slides` | servizio o API | npm, rubygems | sì | 0 |
 | Google Tasks | `google.tasks` | servizio o API | npm, rubygems | sì | 0 |
 | Google Translate | `gcp.translate` | servizio o API | composer, go, npm, pypi, rubygems | sì | 0 |
+| Gotenberg | `gotenberg` | servizio o API | docker, pypi | no | 0 |
 | Grafana | `grafana` | servizio o API | docker, terraform | sì | 1 |
+| Grafana LGTM | `grafana.lgtm` | servizio o API | docker | no | 0 |
+| Gravatar | `gravatar` | servizio o API | env | no | 0 |
+| Graylog | `graylog` | altro | nuget | sì | 0 |
+| GreenMail | `greenmail` | servizio o API | docker | no | 0 |
 | Groq | `groq` | servizio o API | npm, pypi, env | no | 0 |
 | H2 | `h2` | database | maven | no | 3 |
 | Hanko | `hanko` | autenticazione | npm | no | 0 |
 | HAProxy | `haproxy` | servizio o API | docker | sì | 0 |
 | HashiCorp Vault | `vault` | servizio o API | go | sì | 0 |
+| hCaptcha | `hcaptcha` | servizio o API | env | no | 0 |
+| Help Scout | `help-scout` | servizio o API | env | no | 0 |
 | HERE Maps | `heremaps` | servizio o API | npm, env | no | 0 |
 | Heroku | `heroku` | servizio o API | composer, github-actions, rubygems, terraform | no | 0 |
 | Hetzner | `hetzner` | servizio o API | composer, go, pypi, rubygems, terraform | sì | 0 |
@@ -840,6 +1017,7 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Hotjar | `hotjar` | servizio o API | npm, env | sì | 0 |
 | HSQLDB | `hsqldb` | database | maven | no | 1 |
 | HTTPD | `httpd` | servizio o API | docker, files | no | 0 |
+| Huawei Cloud OBS | `huawei-obs` | filesystem | go | no | 0 |
 | HubSpot | `hubspot` | servizio o API | composer, npm | sì | 0 |
 | Hugging Face | `huggingface` | servizio o API | npm, pypi, env | sì | 1 |
 | HyperDX | `hyperdx` | servizio o API | go, npm | no | 0 |
@@ -847,10 +1025,12 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | IBM Cloud | `ibmcloud` | servizio o API | terraform | no | 0 |
 | ifttt | `ifttt` | servizio o API | env | sì | 0 |
 | Immich | `immich` | servizio o API | npm | sì | 0 |
+| Inbucket | `inbucket` | servizio o API | docker | no | 0 |
 | Infisical | `infisical` | servizio o API | docker, npm, files, env | no | 0 |
 | InfluxDB | `influxdb` | database | composer, crates, docker, go, npm, pypi, rubygems | sì | 0 |
 | Inngest | `inngest` | servizio o API | crates, go, npm, pypi, env | no | 1 |
 | Instagram | `instagram` | servizio o API | env | sì | 0 |
+| Instana | `instana` | altro | composer, docker, maven, npm, pypi | no | 0 |
 | Integration.app | `integrationapp` | servizio o API | npm | no | 0 |
 | Intercom | `intercom` | servizio o API | composer, npm, rubygems, env | sì | 0 |
 | Internet Archive | `internet-archive` | servizio o API | pypi | sì | 0 |
@@ -858,10 +1038,12 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Intuit | `intuit` | gateway | env | sì | 0 |
 | Ionos | `ionos` | servizio o API | go, pypi | sì | 0 |
 | IOTA | `iota` | servizio o API | npm, pypi | sì | 0 |
-| Jaeger | `jaeger` | servizio o API | go | sì | 0 |
+| IPinfo | `ipinfo` | servizio o API | hosts | no | 0 |
+| Jaeger | `jaeger` | servizio o API | docker, go | sì | 0 |
 | Jellyfin | `jellyfin` | servizio o API | npm | sì | 1 |
 | Jenkins | `jenkins` | servizio o API | docker, pypi, rubygems, files | sì | 0 |
 | JFrog | `jfrog` | servizio o API | go | sì | 0 |
+| JHipster Control Center | `jhipster-control-center` | servizio o API | docker | no | 0 |
 | Jira | `atlassian.jira` | servizio o API | composer, crates, docker, github-actions, npm, rubygems, terraform-resource | sì | 0 |
 | Jira Software | `jira-software` | servizio o API | npm | sì | 0 |
 | Jitsi | `jitsi` | servizio o API | npm | sì | 0 |
@@ -870,7 +1052,7 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Kaggle | `kaggle` | servizio o API | pypi | sì | 0 |
 | Keeper | `keeper` | servizio o API | npm, pypi | sì | 0 |
 | Kentico | `kentico` | servizio o API | npm, rubygems | sì | 0 |
-| Keycloak | `keycloak` | autenticazione | npm, pypi | sì | 0 |
+| Keycloak | `keycloak` | autenticazione | docker, npm, pypi | sì | 0 |
 | Kibana | `kibana` | servizio o API | docker, env | sì | 1 |
 | Kinde | `kinde` | autenticazione | composer, npm, pypi, rubygems | no | 0 |
 | Klarna | `klarna` | gateway | rubygems, terraform-resource, env | sì | 0 |
@@ -881,13 +1063,17 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Kubernetes | `kubernetes` | servizio o API | composer, crates, github-actions, npm, pypi, rubygems, terraform, files | sì | 1 |
 | Lago | `lago` | servizio o API | docker, go, npm, pypi, rubygems, env | no | 0 |
 | LangChain Corporate | `langchain-corporate` | servizio o API | npm, pypi | sì | 1 |
+| Laravel Nightwatch | `laravel-nightwatch` | servizio o API | composer | no | 0 |
+| Last.fm | `lastfm` | servizio o API | hosts | no | 0 |
 | LaunchDarkly | `launchdarkly` | servizio o API | composer, crates, github-actions, go, npm, rubygems, terraform, env | no | 0 |
-| Lemon Squeezy | `lemonsqueezy` | gateway | composer, go, npm, rubygems, env | sì | 0 |
-| Let's Encrypt | `lets-encrypt` | servizio o API | pypi | sì | 0 |
+| Lemon Squeezy | `lemonsqueezy` | gateway | composer, go, npm, rubygems, env, hosts | sì | 0 |
+| Let's Encrypt | `lets-encrypt` | servizio o API | pypi, hosts | sì | 0 |
 | libSQL | `libsql` | database | composer, crates, go, npm, pypi, rubygems | no | 0 |
 | LINE | `line` | servizio o API | npm, pypi | sì | 0 |
 | Linear | `linear` | servizio o API | npm, pypi, env | sì | 0 |
 | Linkedin | `linkedin` | servizio o API | env | no | 0 |
+| ListenBrainz | `listenbrainz` | servizio o API | hosts | no | 0 |
+| LiteFS | `litefs` | database | docker, npm | no | 0 |
 | LiveChat | `livechat` | servizio o API | npm | sì | 0 |
 | LiveKit | `livekit` | servizio o API | go, npm, pypi | sì | 1 |
 | LM Studio | `lm-studio` | servizio o API | npm, pypi | sì | 0 |
@@ -901,40 +1087,55 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Lovable | `lovable` | servizio o API | npm | no | 0 |
 | Magento | `magento` | servizio o API | composer, npm | no | 0 |
 | Magic | `magic` | autenticazione | npm | sì | 0 |
+| MailChannels | `mailchannels` | servizio o API | env | no | 0 |
 | Mailchimp | `mailchimp` | servizio o API | composer, npm, rubygems, terraform-resource, env | sì | 0 |
-| Mailgun | `mailgun` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
+| MailDev | `maildev` | servizio o API | npm | no | 0 |
+| Mailgun | `mailgun` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource, env | sì | 0 |
 | Mailhog | `mailhog` | servizio o API | docker, go | no | 1 |
 | Mailjet | `mailjet` | servizio o API | composer, crates, npm, rubygems, env | no | 0 |
+| Mailpit | `mailpit` | servizio o API | docker | no | 0 |
 | Mailtrap | `mailtrap` | servizio o API | npm, pypi | sì | 0 |
+| MajorLeagueCyber | `majorleaguecyber` | servizio o API | hosts | no | 0 |
+| Mandrill | `mandrill` | servizio o API | env | no | 0 |
 | Mapbox | `mapbox` | servizio o API | composer, crates, npm, pypi, rubygems, env | sì | 0 |
 | MapTiler | `maptiler` | servizio o API | npm | sì | 0 |
 | MariaDB | `mariadb` | database | docker, npm, rubygems | sì | 6 |
 | Matomo | `matomo` | servizio o API | docker, env | sì | 0 |
 | Matrix | `matrix` | servizio o API | npm | sì | 0 |
 | Mattermost | `mattermost` | servizio o API | npm | sì | 0 |
+| MaxMind | `maxmind` | servizio o API | env | no | 0 |
 | Meilisearch | `meilisearch` | database | composer, crates, docker, go, npm, pypi, rubygems, env | sì | 1 |
 | Memcached | `memcached` | database | crates, docker, npm, rubygems, env | no | 0 |
 | Mercado Pago | `mercado-pago` | servizio o API | go, npm, pypi | sì | 0 |
 | Merge.dev | `mergedev` | servizio o API | composer, go, npm, pypi, rubygems | no | 0 |
 | Metabase | `metabase` | servizio o API | docker, npm | sì | 0 |
+| Microsoft Entra ID OAuth | `microsoft-entra-oauth` | autenticazione | composer | no | 0 |
+| Microsoft OAuth | `microsoft.oauth` | autenticazione | npm | no | 0 |
+| Microsoft Outlook | `microsoft.outlook` | servizio o API | env | no | 0 |
+| Microsoft SQL Server | `microsoft-sql-server` | database | go, nuget | no | 0 |
 | MicroStrategy | `microstrategy` | servizio o API | pypi | sì | 0 |
 | MilvusDB | `milvusdb` | database | docker, go, npm, pypi, terraform-resource, env | no | 0 |
+| MinIO | `minio` | database | docker, go, maven | sì | 0 |
 | Miro | `miro` | servizio o API | npm, env | sì | 0 |
 | Mistral AI | `mistralai` | servizio o API | go, npm, pypi, env | sì | 0 |
 | Mixpanel | `mixpanel` | servizio o API | composer, go, npm, pypi, rubygems, terraform-resource, env | sì | 0 |
+| mock-oauth2-server | `mock-oauth2-server` | autenticazione | docker | no | 0 |
 | Modal | `modal` | servizio o API | pypi | sì | 0 |
 | ModelScope | `modelscope` | servizio o API | pypi | sì | 0 |
 | Monday | `monday` | servizio o API | npm | no | 0 |
 | Mongo Express | `mongoexpress` | servizio o API | docker | no | 2 |
-| MongoDB | `mongodb` | database | composer, crates, docker, maven, npm, nuget, pypi, rubygems, terraform-resource, env | sì | 4 |
+| MongoDB | `mongodb` | database | composer, crates, docker, go, maven, npm, nuget, pypi, rubygems, terraform-resource, env | sì | 4 |
 | MongoDB Atlas | `mongodbatlas` | servizio o API | npm, pypi, terraform | no | 0 |
 | MS SQL | `mssql` | database | npm, rubygems | no | 0 |
-| Mysql | `mysql` | database | crates, docker, maven, npm, nuget, pypi, rubygems, terraform-resource, env | sì | 9 |
+| MusicBrainz | `musicbrainz` | servizio o API | env | no | 0 |
+| Mysql | `mysql` | database | crates, docker, go, maven, npm, nuget, pypi, rubygems, terraform-resource, env | sì | 9 |
 | n8n | `n8n` | servizio o API | docker, npm, env | sì | 0 |
 | Nango | `nango` | servizio o API | docker, npm, files, env | no | 0 |
 | Nats | `nats` | coda | composer, crates, docker, go, npm, pypi, rubygems | no | 0 |
 | Neo4j | `neo4j` | database | crates, docker, go, npm, pypi, rubygems | sì | 0 |
 | NeonDB | `neondb` | database | docker, npm, pypi | no | 0 |
+| NetBox Census | `netbox-census` | servizio o API | hosts | no | 0 |
+| NetBox Copilot | `netbox-copilot` | servizio o API | env, hosts | no | 0 |
 | Netlify | `netlify` | servizio o API | github-actions, npm, files | sì | 3 |
 | New Relic | `newrelic` | servizio o API | composer, go, npm, pypi, rubygems, terraform, env | sì | 0 |
 | Nextcloud | `nextcloud` | servizio o API | docker | sì | 0 |
@@ -946,18 +1147,26 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | NX Cloud | `nxcloud` | servizio o API | npm | no | 0 |
 | Oceanbase | `oceanbase` | database | docker | sì | 0 |
 | Okta | `okta` | autenticazione | composer, crates, npm, pypi, rubygems, terraform, env | sì | 1 |
-| Ollama | `ollama` | servizio o API | npm, pypi, env | sì | 0 |
+| Okta OAuth | `okta.oauth` | autenticazione | composer | no | 0 |
+| Ollama | `ollama` | servizio o API | npm, nuget, pypi, env | sì | 0 |
+| OMDb | `omdb` | servizio o API | hosts | no | 0 |
 | OneDrive | `microsoft.onedrive` | servizio o API | composer, crates, npm, terraform-resource | no | 0 |
 | OnlineOrNot | `onlineornot` | servizio o API | npm | no | 0 |
-| Openai | `openai` | servizio o API | composer, go, npm, pypi, env | no | 5 |
+| Open Food Facts | `open-food-facts` | servizio o API | pypi | no | 0 |
+| Openai | `openai` | servizio o API | composer, go, npm, pypi, env, hosts | no | 5 |
 | OpenCage | `opencage` | servizio o API | pypi | sì | 0 |
+| OpenLDAP | `openldap` | autenticazione | docker | no | 0 |
 | OpenRouter | `openrouter` | gateway | npm, pypi | sì | 0 |
 | OpenSea | `opensea` | servizio o API | npm | sì | 0 |
-| OpenSearch | `opensearch` | database | go, pypi | sì | 0 |
+| OpenSearch | `opensearch` | database | docker, go, pypi | sì | 0 |
+| OpenStack Swift | `openstack.swift` | filesystem | pypi | no | 0 |
+| OpenTelemetry Collector | `otel-collector` | servizio o API | docker | no | 0 |
+| OpenTelemetry eBPF Profiler | `otel-ebpf-profiler` | servizio o API | docker | no | 0 |
 | OpenZeppelin | `openzeppelin` | servizio o API | npm | sì | 0 |
+| Opsgenie | `opsgenie` | servizio o API | hosts | no | 0 |
 | Optimizely | `optimizely` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, env | no | 0 |
 | Oracle Cloud | `oraclecloud` | servizio o API | composer, npm, rubygems, terraform | no | 0 |
-| Oracle Database | `oracledatabase` | database | pypi | no | 0 |
+| Oracle Database | `oracledatabase` | database | go, pypi | no | 0 |
 | Orb | `withorb` | servizio o API | go, npm, pypi | no | 0 |
 | Ory | `orysh` | autenticazione | composer, go, npm | sì | 0 |
 | OVH | `ovh` | servizio o API | composer, npm, terraform, env | sì | 0 |
@@ -966,8 +1175,10 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | OVH Kubernetes | `ovh.kubernetes` | servizio o API | terraform-resource | no | 0 |
 | OVH Storage | `ovh.storage` | database | terraform-resource | no | 0 |
 | OVH VPS | `ovh.vps` | servizio o API | terraform-resource | no | 0 |
-| Paddle | `paddle` | gateway | composer, go, npm, pypi, env | sì | 0 |
-| Pagerduty | `pagerduty` | servizio o API | composer, crates, npm, pypi, rubygems, terraform, env | sì | 0 |
+| Paddle | `paddle` | gateway | composer, go, npm, pypi, env, hosts | sì | 0 |
+| Pagerduty | `pagerduty` | servizio o API | composer, crates, npm, pypi, rubygems, terraform, env, hosts | sì | 0 |
+| PagerTree | `pagertree` | servizio o API | env | no | 0 |
+| Papercut SMTP | `papercut-smtp` | servizio o API | docker | no | 0 |
 | Papertrail | `papertrail` | servizio o API | composer, go, npm, rubygems, env | no | 0 |
 | Paragon | `useparagon` | servizio o API | npm | no | 0 |
 | Patreon | `patreon` | servizio o API | npm, pypi | sì | 0 |
@@ -983,26 +1194,31 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Pingdom | `pingdom` | servizio o API | terraform, env | sì | 0 |
 | Pirsch Analytics | `pirschanalytics` | servizio o API | composer, go, npm, rubygems | no | 0 |
 | PlaceKit | `placekit` | servizio o API | npm | no | 0 |
+| Plain | `plain` | servizio o API | npm | no | 0 |
 | PlanetScale | `planetscale` | database | github-actions | sì | 0 |
 | Platform.sh | `platformsh` | servizio o API | files | sì | 0 |
 | Plausible | `plausible` | servizio o API | composer, docker, go, npm, rubygems, env | no | 0 |
+| Pluggy | `pluggy` | servizio o API | npm | no | 0 |
 | PocketBase | `pocketbase` | database | npm, pypi | sì | 0 |
 | Poe | `poe` | servizio o API | pypi | sì | 0 |
 | Polar | `polarsh` | gateway | composer, go, npm, pypi, env | no | 0 |
 | Polkadot | `polkadot` | servizio o API | npm | sì | 0 |
-| Postgres | `postgresql` | database | composer, crates, deno, docker, hex, maven, npm, nuget, rubygems, terraform-resource, env | sì | 32 |
+| Postgres | `postgresql` | database | composer, crates, deno, docker, go, hex, maven, npm, nuget, pypi, rubygems, terraform-resource, env | sì | 32 |
 | Postgrest | `postgrest` | servizio o API | docker | no | 0 |
 | PostHog | `posthog` | servizio o API | composer, crates, go, npm, pypi, rubygems, env | sì | 2 |
 | Postman | `postman` | servizio o API | npm | sì | 0 |
-| Postmark | `postmark` | servizio o API | composer, npm, rubygems | no | 0 |
+| Postmark | `postmark` | servizio o API | composer, hex, npm, rubygems | no | 0 |
+| PowerSync | `powersync` | servizio o API | env | no | 0 |
 | Prestashop | `prestashop` | servizio o API | composer | sì | 0 |
 | Prisma Cloud | `prismacloud` | servizio o API | terraform | no | 0 |
 | Prismic | `prismic` | servizio o API | npm | sì | 0 |
-| Prometheus | `prometheus` | servizio o API | composer, crates, docker, go, npm, rubygems | sì | 2 |
+| Prometheus | `prometheus` | servizio o API | composer, crates, docker, go, maven, npm, pypi, rubygems | sì | 2 |
 | PropelAuth | `propelauth` | autenticazione | crates, go, npm, pypi | no | 0 |
 | PubSub | `gcp.pubsub` | coda | composer, crates, go, npm, pypi, rubygems, terraform-resource | sì | 0 |
 | Puppeteer | `puppeteer` | servizio o API | docker, npm | sì | 1 |
+| Pushbullet | `pushbullet` | servizio o API | hosts | no | 0 |
 | Pusher | `pusher` | servizio o API | go, npm, pypi | sì | 1 |
+| Pushover | `pushover` | servizio o API | hosts | no | 0 |
 | Qase | `qase` | servizio o API | npm, pypi | sì | 0 |
 | Qdrant | `qdrant` | database | composer, crates, docker, go, npm, pypi, terraform-resource, env | sì | 0 |
 | Qlik | `qlik` | servizio o API | npm | sì | 0 |
@@ -1045,16 +1261,20 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Scaleway Redis | `scaleway.redis` | database | terraform-resource | no | 0 |
 | Scaleway Secret Manager | `scaleway.secretmanager` | database | terraform-resource | no | 0 |
 | Scaleway Storage | `scaleway.storage` | database | terraform-resource | no | 0 |
+| Schedules Direct | `schedules-direct` | servizio o API | hosts | no | 0 |
 | Scout APM | `scoutapm` | servizio o API | composer, npm, rubygems | no | 0 |
 | Segment | `segment` | servizio o API | composer, go, npm, pypi, rubygems, env | no | 0 |
 | Selenium | `selenium` | servizio o API | composer, crates, docker, github-actions, go, npm, pypi, rubygems | sì | 0 |
 | Sendgrid | `sendgrid` | servizio o API | composer, go, npm, pypi, rubygems | no | 0 |
-| Sentry | `sentry` | servizio o API | composer, crates, docker, github-actions, go, npm, pypi, rubygems, env | sì | 4 |
+| Sentry | `sentry` | servizio o API | composer, crates, docker, github-actions, go, hex, npm, pypi, rubygems, env | sì | 4 |
 | ServiceNow | `servicenow` | servizio o API | rubygems | no | 0 |
 | Shopify | `shopify` | servizio o API | composer, npm, pypi, rubygems | sì | 0 |
 | Shortcut | `shortcut` | servizio o API | npm | sì | 0 |
+| Sign in with Apple | `apple.signin` | autenticazione | npm | no | 0 |
 | Signoz | `signoz` | servizio o API | docker, env | no | 0 |
 | Simple Analytics | `simpleanalytics` | servizio o API | npm, env | sì | 0 |
+| SimpleFIN Bridge | `simplefin` | servizio o API | hosts | no | 0 |
+| SimpleSAMLphp | `simplesamlphp` | servizio o API | docker, env | no | 0 |
 | Sitecore | `sitecore` | servizio o API | npm | sì | 0 |
 | Sitecore XM cloud | `sitecore.xmlcloud` | servizio o API | npm | no | 0 |
 | Slack | `slack` | servizio o API | composer, crates, docker, github-actions, go, npm, pypi, rubygems, terraform, env | no | 0 |
@@ -1067,8 +1287,8 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | SparkPost | `sparkpost` | servizio o API | npm, pypi | sì | 0 |
 | Split | `splitio` | servizio o API | go, npm, rubygems | no | 0 |
 | Splunk | `splunk` | servizio o API | pypi, terraform, env | sì | 0 |
-| Spotify | `spotify` | servizio o API | npm, env | sì | 0 |
-| SQLite | `sqlite` | database | crates, deno, npm, rubygems, files | sì | 4 |
+| Spotify | `spotify` | servizio o API | composer, npm, env | sì | 0 |
+| SQLite | `sqlite` | database | composer, crates, deno, go, npm, nuget, rubygems, files | sì | 4 |
 | Sqreen | `sqreen` | servizio o API | npm, rubygems, env | no | 0 |
 | Square | `squareup` | gateway | composer, env | sì | 0 |
 | Squarespace | `squarespace` | servizio o API | npm | sì | 0 |
@@ -1091,14 +1311,19 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | TeamCity | `teamcity` | servizio o API | files | sì | 0 |
 | Teamspeak | `teamspeak` | servizio o API | docker | sì | 0 |
 | Telegraf | `telegraf` | servizio o API | docker | no | 0 |
-| Telegram | `telegram` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, env | sì | 0 |
+| Telegram | `telegram` | servizio o API | composer, crates, docker, github-actions, go, npm, rubygems, env, hosts | sì | 0 |
 | Tencent Cloud | `tencentcloud` | servizio o API | composer, pypi, terraform | no | 0 |
+| Tencent COS | `tencent-cos` | filesystem | go | no | 0 |
 | Teradata | `teradata` | database | pypi | sì | 0 |
+| The Space Devs API | `space-devs` | servizio o API | hosts | no | 0 |
 | thirdweb | `thirdweb` | servizio o API | npm | sì | 0 |
+| Ticketmaster | `ticketmaster` | servizio o API | hosts | no | 0 |
 | TiDB | `tidb` | database | docker | sì | 0 |
+| Tigris | `tigris` | filesystem | hosts | no | 0 |
 | Tika | `apachetika` | servizio o API | docker, pypi | no | 1 |
 | TimescaleDB | `timescaledb` | database | docker, terraform | no | 0 |
 | Tinybird | `tinybird` | servizio o API | npm, env | no | 0 |
+| TMDb | `tmdb` | servizio o API | nuget | no | 0 |
 | Todoist | `todoist` | servizio o API | npm, pypi | sì | 0 |
 | Traefik | `traefik` | servizio o API | docker, go, files | no | 1 |
 | Tray.ai | `trayio` | servizio o API | npm | no | 0 |
@@ -1106,8 +1331,9 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Truffle Security | `trufflesecurity` | servizio o API | docker, github-actions | no | 0 |
 | Turso | `tursodb` | database | npm, env | sì | 0 |
 | Twenty CRM | `twentycrm` | servizio o API | docker | sì | 0 |
-| Twilio | `twilio` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource, env | no | 0 |
+| Twilio | `twilio` | servizio o API | composer, github-actions, go, npm, pypi, rubygems, terraform-resource, env, hosts | no | 0 |
 | Twitch | `twitch` | servizio o API | npm, env | sì | 0 |
+| Twitch OAuth | `twitch.oauth` | autenticazione | composer | no | 0 |
 | Typesense | `typesense` | database | composer, crates, docker, go, npm, pypi, rubygems, terraform-resource | no | 0 |
 | Unsplash | `unsplash` | servizio o API | npm | sì | 0 |
 | Upstash | `upstash` | servizio o API | npm | sì | 1 |
@@ -1116,7 +1342,7 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Upstash Redis | `upstash.redis` | database | npm, pypi, env | no | 1 |
 | Uptime Kuma | `uptimekuma` | servizio o API | docker | sì | 0 |
 | Use Autumn | `useautumn` | gateway | npm, env | no | 0 |
-| Valkey | `valkey` | database | go, npm, pypi, env | no | 0 |
+| Valkey | `valkey` | database | docker, go, npm, pypi, env | no | 0 |
 | Vault | `hashicorp_vault` | database | composer, crates, docker, github-actions, npm, pypi, rubygems, terraform | sì | 0 |
 | Vercel | `vercel` | servizio o API | crates, github-actions, npm, terraform, terraform-resource, files | sì | 1 |
 | Vercel AI | `vercel.ai` | servizio o API | npm | no | 0 |
@@ -1139,6 +1365,7 @@ Le voci di servizio del catalogo: 749, 735 di `kind` `service` e 14 di `kind` `p
 | Weights & Biases | `wandb` | servizio o API | pypi | sì | 0 |
 | what3words | `what3words` | servizio o API | npm, pypi | sì | 0 |
 | WhatsApp | `whatsapp` | servizio o API | npm, env | sì | 0 |
+| Where the ISS At API | `where-the-iss-at` | servizio o API | hosts | no | 0 |
 | Wikipedia | `wikipedia` | servizio o API | npm, pypi, env | sì | 0 |
 | Wiz | `wiz` | servizio o API | terraform, env | no | 0 |
 | Wolfram Alpha | `wolframalpha` | servizio o API | pypi, env | no | 0 |
