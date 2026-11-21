@@ -116,6 +116,24 @@ def test_images_of_services_and_docker_stages_are_docker_declarations():
     assert gaps == []  # one image per file as in `step1_packages`; no `scratch`, no service without an image
 
 
+def test_the_rows_are_those_of_step1_packages(manifest):
+    """`_rows` repeats `step1_packages` to keep each fact's `sources`: the two must agree on what a fact is."""
+    facts = {"packages": [fact("pypi", "flask", "api/requirements.txt#L3", "requirements@2"),
+                          fact("npm", "left-pad", None, "npm@1"),
+                          fact("docker", "postgres", "docker-compose.yml", "compose@3")],
+             "services": [
+                 {"name": "db", "image": "postgres:16", "declared_in": "docker-compose.yml.services.db", "sources": ["c@3"]},
+                 {"name": "cache", "image": "redis:7", "declared_in": "docker-compose.yml.services.cache", "sources": ["c@3"]},
+                 {"name": "ci", "image": "redis:7", "declared_in": ".github/workflows/ci.yml#jobs.t.services.ci", "sources": ["r@41"]},
+                 {"name": "api", "build": ".", "declared_in": "docker-compose.yml.services.api", "sources": ["c@3"]}],
+             "docker_builds": [{"dockerfile": "api/Dockerfile", "sources": ["buildkit@v0.34"], "stages": [
+                 {"base": "node:20", "line": 1}, {"base": "scratch", "line": 5}, {"base": "node:20", "line": 9},
+                 {"base": "nginx:1", "line": 12}]}]}
+    ours = [(eco, name, path, line) for eco, name, _, path, line, _ in fork_stack._rows(facts)]
+    assert ours == [(eco, name, path, line) for eco, name, path, line, _ in service_registry.step1_packages(manifest, facts)]
+    assert len(ours) == 7  # the sample is not empty of what it tests
+
+
 def test_an_image_the_packages_already_state_is_not_sent_twice():
     facts = {"packages": [fact("docker", "postgres", "docker-compose.yml", "compose@3")],
              "services": [{"name": "db", "image": "postgres:16", "declared_in": "docker-compose.yml.services.db",
@@ -124,20 +142,58 @@ def test_an_image_the_packages_already_state_is_not_sent_twice():
     assert [(d["name"], d["source"]) for d in sent] == [("postgres", "compose@3")]
 
 
+def not_sent(value, path, ecosystem, detail):
+    return {"kind": "declaration_not_sent", "value": value, "path": path, "ecosystem": ecosystem, "detail": detail}
+
+
 def test_a_declaration_the_fork_cannot_take_is_a_gap_not_a_failure():
+    """The tool exits with an error for one such declaration, and so loses the whole answer for the project."""
+    outside = "its path is outside the project"
     facts = {"packages": [fact("conan", "zlib", "conanfile.txt#L2", "conan@1"),
                           fact("pypi", "flask", None, "requirements@2"),
-                          fact("npm", "left-pad", "vendor/web/package.json#L5", "npm@1")],
+                          fact("npm", "left-pad", "vendor/web/package.json#L5", "npm@1"),
+                          fact("npm", "up", "sub/../../x/package.json#L1", "npm@1"),
+                          fact("npm", "drive", "C:/abs/package.json", "npm@1"),
+                          fact("npm", "relative", "C:x/package.json", "npm@1"),  # on a drive, not in the project
+                          fact("npm", "back", "..\\x\\package.json", "npm@1")],
+             "docker_builds": [  # Compose's `build.dockerfile` normalised by the pre-map can leave the project
+                 {"dockerfile": "../x/Dockerfile", "sources": ["buildkit@v0.34"], "stages": [{"base": "python:3.12", "line": 1}]},
+                 {"dockerfile": "/abs/Dockerfile", "sources": ["buildkit@v0.34"], "stages": [{"base": "node:20", "line": 1}]}],
              "excluded": [{"path": "vendor/", "why": "submodule"}]}
     sent, gaps = fork_stack.declarations(facts)
     assert sent == []
     assert gaps == [
-        {"kind": "declaration_not_sent", "value": "zlib", "path": "conanfile.txt", "ecosystem": "conan",
-         "detail": "the release takes no declaration of type conan"},
-        {"kind": "declaration_not_sent", "value": "flask", "path": None, "ecosystem": "pypi",
-         "detail": "the pre-map names no file for it"},
-        {"kind": "declaration_not_sent", "value": "left-pad", "path": "vendor/web/package.json", "ecosystem": "npm",
-         "detail": "the pre-map leaves out its path"}]
+        not_sent("zlib", "conanfile.txt", "conan", "the release takes no declaration of type conan"),
+        not_sent("flask", None, "pypi", "the pre-map names no file for it"),
+        not_sent("left-pad", "vendor/web/package.json", "npm", "the pre-map leaves out its path"),
+        not_sent("up", "sub/../../x/package.json", "npm", outside),
+        not_sent("drive", "C:/abs/package.json", "npm", outside),
+        not_sent("relative", "C:x/package.json", "npm", outside),
+        not_sent("back", "..\\x\\package.json", "npm", outside),
+        not_sent("python", "../x/Dockerfile", "docker", outside),
+        not_sent("node", "/abs/Dockerfile", "docker", outside)]
+
+
+def test_a_path_the_tool_reads_as_inside_the_project_is_sent():
+    """`a/../b` stays in the project, and `a..b` is a name; a backslash is a separator."""
+    paths = ["a/../b/package.json", "a..b/package.json", "..b/package.json", "./c/package.json", "d\\e\\package.json"]
+    sent, gaps = fork_stack.declarations({"packages": [fact("npm", f"p{i}", path, "npm@1") for i, path in enumerate(paths)]})
+    assert [d["path"] for d in sent] == paths and gaps == []
+
+
+def test_a_fact_no_source_states_is_a_gap():
+    facts = {"packages": [{"ecosystem": "npm", "name": "x", "declared_in": "package.json"},
+                          {"ecosystem": "npm", "name": "y", "declared_in": "package.json#L2", "sources": []},
+                          fact("npm", "z", "package.json#L3", "npm@1")]}
+    sent, gaps = fork_stack.declarations(facts)
+    assert [d["name"] for d in sent] == ["z"]
+    assert gaps == [not_sent("x", "package.json", "npm", "no source states it"),
+                    not_sent("y", "package.json", "npm", "no source states it")]
+
+
+def test_a_fact_without_a_name_is_a_gap():
+    sent, gaps = fork_stack.declarations({"packages": [fact("npm", "", "package.json#L2", "npm@1")]})
+    assert sent == [] and gaps == [not_sent("", "package.json", "npm", "the pre-map names no package for it")]
 
 
 # ---------------------------------------------------------------------------------------------- perimeter
@@ -156,6 +212,17 @@ def test_the_perimeter_skips_by_name_what_never_holds_a_snapshot_file(tmp_path, 
     assert fork_stack.perimeter(tmp_path, files, ("third_party",)) == ((".git", "api", "node_modules"),
                                                                        ("gen", "third_party"))
     assert sorted(p.relative_to(tmp_path).as_posix() for p in listed) == [".", "web", "web/gen", "web/src"]
+
+
+def test_a_name_or_path_with_a_comma_is_left_out_of_both_lists(tmp_path):
+    """The tool splits its options at commas: `a,b` would become `a` and `b`, and skip the live folder `a`."""
+    for rel in ("a/x.py", "a/gen/k.py", "a,b/y.py", "c,d/keep.py", "c,d/gen/o.py", "node_modules/z.js"):
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).write_text("x", encoding="utf-8")
+    files = ["a/x.py", "a/gen/k.py", "c,d/keep.py"]
+    # `a,b` is skipped by name, `c,d/gen` goes by path (`gen` is live under `a`), `x,y` is left out by the pre-map:
+    # each has a comma. The tool enters them; what it finds outside the snapshot is dropped with the evidence.
+    assert fork_stack.perimeter(tmp_path, files, ("x,y",)) == (("node_modules",), ())
 
 
 def test_a_folder_that_cannot_be_listed_leaves_the_perimeter_to_the_fork(tmp_path):

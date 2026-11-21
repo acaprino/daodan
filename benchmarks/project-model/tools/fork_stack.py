@@ -8,8 +8,9 @@ in them), `found` reads its evidence, `recognize` runs it and adds the host ment
 from __future__ import annotations
 
 import os
+import posixpath
 import sys
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 SCRIPTS = Path(os.environ.get("PM_PLUGIN_SCRIPTS") or
                (next((p / "daodan/core" for p in Path(__file__).resolve().parents
@@ -43,8 +44,8 @@ def _rows(facts: dict):
     for item in facts.get("packages") or ():
         path, line = service_registry._split_declared_in(item.get("declared_in"))
         if item["ecosystem"] == "docker":
-            seen.add((declared_image(item["name"]), path))
-        yield item["ecosystem"], item["name"], item.get("version"), path, line, item.get("sources") or ()
+            seen.add((declared_image(item.get("name") or ""), path))
+        yield item["ecosystem"], item.get("name"), item.get("version"), path, line, item.get("sources") or ()
     for service in facts.get("services") or ():
         if service.get("image"):
             path, _ = service_registry.service_site(service)
@@ -63,14 +64,30 @@ def _rows(facts: dict):
                     yield "docker", image, None, dockerfile, stage.get("line"), build.get("sources") or ()
 
 
+def _inside(path: str) -> bool:
+    """Whether the tool reads `path` as a file of the analysed root: a backslash is a separator, the path is not
+    absolute in either sense and has no drive letter, and once normalised it does not leave the root."""
+    posix, windows = path.replace("\\", "/"), PureWindowsPath(path)
+    letter = windows.drive[:1]
+    if PurePosixPath(posix).is_absolute() or windows.is_absolute() or (
+            windows.drive[1:2] == ":" and letter.isascii() and letter.isalpha()):
+        return False
+    normal = posixpath.normpath(posix)
+    return normal not in (".", "..") and not normal.startswith("../")
+
+
 def declarations(facts: dict) -> tuple[list[dict], list[dict]]:
-    """What the tool takes, one declaration per source that states each fact, and the facts it cannot be given."""
+    """What the tool takes, one declaration per source that states each fact, and the facts it cannot be given: it
+    exits with an error for one that names no file inside the project, no package or no source."""
     left_out, sent, gaps = _left_out(facts), [], []
     for ecosystem, name, version, path, line, sources in _rows(facts):
-        kind = TYPE_OF.get(ecosystem, ecosystem)
+        kind, sources = TYPE_OF.get(ecosystem, ecosystem), [s for s in sources if isinstance(s, str) and s]
         why = ("the pre-map names no file for it" if not path
                else "the pre-map leaves out its path" if service_registry._is_excluded(path, left_out)
-               else f"the release takes no declaration of type {kind}" if kind not in TYPES else None)
+               else "its path is outside the project" if not _inside(path)
+               else f"the release takes no declaration of type {kind}" if kind not in TYPES
+               else "the pre-map names no package for it" if not isinstance(name, str) or not name
+               else "no source states it" if not sources else None)
         if why:
             gaps.append({"kind": "declaration_not_sent", "value": name, "path": path, "ecosystem": ecosystem,
                          "detail": why})
@@ -84,7 +101,8 @@ def perimeter(root: Path, files: list[str], excluded: tuple[str, ...]) -> tuple[
     """`(skip_dirs, ignore)`: a folder is live when a snapshot file is inside it, at any depth. Only what lies in a live
     folder is listed. A folder that is not live goes by its name to `skip_dirs` (the tool skips it at every depth), or,
     when a live folder has that name, by its path to `ignore`, as does a link, which is never followed, and each
-    path the pre-map leaves out."""
+    path the pre-map leaves out. The tool splits both options at commas, so a name or path with one is left out of
+    both: the tool enters that folder, and the evidence outside the snapshot is dropped afterwards."""
     live = {"."} | {parent.as_posix() for rel in files for parent in PurePosixPath(rel).parents}
     names = {PurePosixPath(folder).name for folder in live}
     skip, ignore, pending = set(), {path.rstrip("/") for path in excluded}, ["."]
@@ -104,7 +122,7 @@ def perimeter(root: Path, files: list[str], excluded: tuple[str, ...]) -> tuple[
                 ignore.add(rel)
             else:
                 skip.add(name)
-    return tuple(sorted(skip)), tuple(sorted(ignore))
+    return tuple(sorted(n for n in skip if "," not in n)), tuple(sorted(n for n in ignore if "," not in n))
 
 
 def _signs(payload: dict, files: set[str], excluded: tuple[str, ...]) -> tuple[dict[str, list[dict]], list[dict]]:
