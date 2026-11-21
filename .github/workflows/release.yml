@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      step:
+        description: Version increment
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      publish:
+        description: Publish the verified wheel
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: daodan-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Read the merged PR's version increment
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MANUAL_STEP: ${{ inputs.step }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            echo "step=$MANUAL_STEP" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          for attempt in 1 2 3 4; do
+            labels=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" |
+              jq -c --arg sha "$GITHUB_SHA" 'first(.[] | select(.merged_at and .base.ref == "main" and .merge_commit_sha == $sha) | [.labels[].name]) // null')
+            [[ "$labels" == null ]] || break
+            if [[ "$attempt" != 4 ]]; then sleep 5; fi
+          done
+          if [[ "$labels" == null ]]; then
+            echo "No merged pull request for $GITHUB_SHA. Skipping publication."
+            exit 0
+          fi
+          step=$(jq -r 'if index("release:major") then "major" elif index("release:minor") then "minor" else "patch" end' <<< "$labels")
+          echo "step=$step" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare package version
+        id: version
+        if: steps.plan.outputs.step != ''
+        env:
+          STEP: ${{ steps.plan.outputs.step }}
+        run: |
+          current=$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          # Publish an already prepared version first. Later merges bump the tagged version.
+          version=$current
+          if git show-ref --verify --quiet "refs/tags/v$current" &&
+             git merge-base --is-ancestor "v$current" HEAD &&
+             [[ "$(git rev-parse "v$current^{commit}")" != "$GITHUB_SHA" ]]; then
+            python3 -m venv "$RUNNER_TEMP/version-tools"
+            "$RUNNER_TEMP/version-tools/bin/pip" install tomlkit==0.13.3
+            version=$("$RUNNER_TEMP/version-tools/bin/python" - "$STEP" <<'PY'
+          from pathlib import Path
+          import sys
+          import tomlkit
+
+          path = Path("pyproject.toml")
+          project = tomlkit.parse(path.read_text())
+          parts = [int(n) for n in project["project"]["version"].split(".")]
+          index = ("major", "minor", "patch").index(sys.argv[1])
+          parts[index] += 1
+          version = ".".join(map(str, parts[:index + 1] + [0] * (2 - index)))
+          project["project"]["version"] = version
+          path.write_text(tomlkit.dumps(project))
+          print(version)
+          PY
+            )
+          fi
+          git add -- pyproject.toml
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Verify and build the distribution
+        if: steps.plan.outputs.step != ''
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          mkdir "$RUNNER_TEMP/dist"
+          git archive "$(git write-tree)" | docker run --rm -i \
+            -v "$RUNNER_TEMP/dist:/dist" python:3.13-slim sh -euc '
+              mkdir /src && cd /src && tar -xf -
+              python -m pip install -q uv==0.11.28 pytest
+              python -m pytest -q --noconftest tests/test_daodan_package.py
+              uv build --wheel --out-dir /dist
+            '
+          test -f "$RUNNER_TEMP/dist/daodan-${VERSION}-py3-none-any.whl"
+
+      - name: Publish and merge the release back into develop
+        if: steps.plan.outputs.step != '' && (github.event_name == 'push' || inputs.publish)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          tag="v$VERSION"
+          wheel="$RUNNER_TEMP/dist/daodan-${VERSION}-py3-none-any.whl"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          gh auth setup-git
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            # A rerun may follow a successful tag push and an interrupted release upload.
+            commit=$(git rev-parse "$tag^{commit}")
+            test "$(git rev-parse "$commit^{tree}")" = "$(git write-tree)"
+            if [[ "$commit" != "$GITHUB_SHA" ]]; then
+              test "$(git rev-parse "$commit^")" = "$GITHUB_SHA"
+            fi
+          else
+            if ! git diff --cached --quiet; then git commit -m "release $tag"; fi
+            commit=$(git rev-parse HEAD)
+            git tag -a "$tag" "$commit" -m "Daodan $VERSION"
+            git push --atomic origin "$commit:refs/heads/main" "refs/tags/$tag"
+          fi
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            notes=(--generate-notes)
+            if [[ -f "docs/releases/$VERSION.md" ]]; then notes=(--notes-file "docs/releases/$VERSION.md"); fi
+            gh release create "$tag" --verify-tag --draft --title "Daodan $VERSION" "${notes[@]}"
+          fi
+          if ! gh release view "$tag" --json assets --jq '.assets[].name' | grep -Fxq "$(basename "$wheel")"; then
+            gh release upload "$tag" "$wheel"
+          fi
+          if [[ "$(gh release view "$tag" --json isDraft --jq .isDraft)" == true ]]; then
+            gh release edit "$tag" --draft=false
+          fi
+          git fetch origin develop
+          git switch --detach FETCH_HEAD
+          git merge --no-edit "$commit"
+          git push origin HEAD:refs/heads/develop
