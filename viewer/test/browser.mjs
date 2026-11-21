@@ -48,6 +48,9 @@ try {
       engineRequests.push(JSON.parse(route.request().postData() ?? '{}'));
       return route.fulfill({ json: { engine: 'openai', engines: ['openai'], api_key: 'unset', base_url: 'https://api.test/v1', model: 'm' } });
     }
+    if (path === '/api/app/symbols') return route.fulfill({ json: { file: 'child', symbols: [{ id: 'child::save', name: 'save', lines: [1, 5] }], calls: [] } });
+    if (path === '/api/app/ask') return route.fulfill({ json: {} });
+    if (path === '/api/app/answer') return route.fulfill({ json: { events: [{ kind: 'tool', name: 'cerca', arguments: 'token' }], next: 1, state: 'done', text: 'Lo firma auth.ts', cause: null } });
     if (path === '/api/app/link') return route.fulfill(mode.linkStatus === 200 ? { json: {} } : { status: mode.linkStatus, json: { error: 'collegamento non riuscito' } });
     if (path === '/api/app/check') {
       await new Promise(resolve => setTimeout(resolve, mode.checkDelay));
@@ -58,7 +61,7 @@ try {
       if (mode.graphStatus !== 200) return route.fulfill({ status: mode.graphStatus, json: { error: 'grafo non letto' } });
       const open = JSON.parse(url.searchParams.get('open') || '[]');
       return route.fulfill({ json: open.length ? { ...graph, open: [{ ...groups[0], parent: null }],
-        nodes: [{ ...groups[0], id: 'child', name: 'main.ts', group: 'Client' }, groups[1]] } : graph });
+        nodes: [{ ...groups[0], id: 'child', name: 'main.ts', kind: 'file', files: [], group: 'Client' }, groups[1]] } : graph });
     }
     if (path === '/api/app/premap') {
       await new Promise(resolve => setTimeout(resolve, mode.premapDelay));
@@ -183,6 +186,10 @@ try {
   await failed.getByRole('button', { name: 'Riprova' }).click();
   await page.getByRole('region', { name: 'Grafo del codice' }).waitFor();
   assert.equal(await tabs.getByRole('tab', { name: /^Grafo/ }).locator('.im-count').innerText(), '2');
+  await page.getByLabel('Relazioni', { exact: true }).selectOption('imports');  // the kind filter: no relation of that kind
+  await page.locator('.im-graph-legend').getByText('0 relazioni visibili').waitFor();
+  await page.getByRole('button', { name: 'Azzera filtri' }).click();
+  await page.locator('.im-graph-legend').getByText('4 relazioni visibili').waitFor();
   const legend = await page.locator('.im-graph-legend').innerText();
   assert.ok(legend.includes('Osservata in esecuzione') && legend.includes('Incerta') && !legend.includes('■'));
   await tonesAreCanon();
@@ -270,6 +277,9 @@ try {
   assert.equal(await group.locator('h2').innerText(), 'Server');
   await diagram.getByRole('button', { name: 'Apri Client' }).click();
   await diagram.getByRole('button', { name: 'Chiudi Client' }).waitFor();
+  await diagram.locator('[data-im-node="child"] .im-graph-node').click();  // a file: its symbols are asked and drawn
+  await group.getByText('Simboli e chiamate').waitFor();
+  await group.locator('code', { hasText: 'save' }).waitFor();
   assert.equal(await diagram.locator('.im-graph-group').count(), 1);
   await diagram.getByRole('button', { name: 'Chiudi Client' }).click();
   await diagram.getByRole('button', { name: 'Apri Client' }).waitFor();
@@ -291,6 +301,10 @@ try {
   await page.locator('#question').waitFor({ state: 'visible' });
   await tonesAreCanon();
   assert.equal(await page.locator('textarea.im-textarea#question').count(), 1);
+  await page.locator('#question').fill('Dove si firma il token?');  // the question and its answer, with the tools used
+  await page.getByRole('button', { name: 'Chiedi' }).click();
+  await page.locator('#answer-box').getByText('Lo firma auth.ts').waitFor();
+  assert.match(await page.locator('#answer-box').innerText(), /cerca token/);
   assert.ok(await page.getByRole('button', { name: 'Chiedi' }).isEnabled());
   await page.evaluate(() => window.setServerState({ engine: { engine: 'openai', engines: ['claude', 'openai'], api_key: 'set', base_url: 'https://api.test/v1', model: 'm' } }));
   await page.getByRole('combobox', { name: 'Motore', exact: true }).waitFor();
@@ -416,15 +430,28 @@ try {
   await page.getByText('Nessun run: creane uno qui sotto, o avvia una mappa nella sessione.').waitFor();
   await page.getByLabel('Nome del run').waitFor();
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'demo', readable: true }] } }));
-  await context.route('**/api/events?*', route => route.fulfill({ json: { events: [], next_cursor: 0, has_more: false } }));
+  await context.route('**/api/events?*', route => route.fulfill({ json: { events: [{ cursor: 1, timestamp: '10:00', event: 'phase_completed', message: 'fatto', phase: 2 }], next_cursor: 1, has_more: false } }));
   await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));
-  await context.route('**/api/findings', route => route.fulfill({ json: { findings: [], gaps: [] } }));
+  await context.route('**/api/findings', route => route.fulfill({ json: { findings: [{ file: 'web/checkout.tsx', line: 12, severity: 'High', title: 'Premessa', request: 1 }], gaps: ['lacuna della sessione'] } }));
   await page.reload();
+  await page.locator('.im-status-end').getByText('10:00 · phase_completed · fase 2 · fatto').waitFor();
   const disclosure = page.locator('summary', { hasText: 'Sessione e review' });
   await disclosure.press('Enter');
   await page.getByRole('button', { name: 'Invia' }).waitFor();
   assert.ok(await page.getByLabel('Perimetro').isVisible());
   assert.ok(await page.locator('.im-btn--primary:visible').count() <= 1);  // "Entra in ..." is the page's only primary
+  await page.getByText('lacuna della sessione').waitFor();  // the session's gaps are a note
+  await page.getByRole('button', { name: /High/ }).click();  // a finding selects its file
+  assert.equal(await page.locator('.im-inspector h2').innerText(), 'checkout.tsx');
+  await page.getByRole('button', { name: 'Chiudi dettaglio' }).click();
+  await page.getByRole('button', { name: /^(web)/ }).first().click();  // the scope: into a component and back up
+  await page.getByRole('button', { name: /^Entra in web/ }).click();
+  assert.equal(await page.locator('nav[aria-label="Posizione"] [aria-current="page"]').innerText(), 'web');
+  await page.getByRole('button', { name: 'Su', exact: true }).click();
+  await page.locator('nav[aria-label="Posizione"] [aria-current="page"]').waitFor({ state: 'detached' });
+  await page.getByLabel('Tipo di entità').selectOption({ index: 1 });  // the type filter hides the other types
+  assert.ok(await page.getByRole('button', { name: /Azzera filtri \(\d+ nascosti\)/ }).isVisible());
+  await page.getByRole('button', { name: /Azzera filtri \(\d+ nascosti\)/ }).click();
   await disclosure.press('Enter');
   await page.getByRole('button', { name: 'Invia' }).waitFor({ state: 'detached' });
   assert.deepEqual(errors, []);
