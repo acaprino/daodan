@@ -71,7 +71,9 @@ KIND_ECOSYSTEM = {
 # Framework spellings that differ by more than case and punctuation. Ask the core owner to extend.
 FRAMEWORK_ALIASES = {"next": "nextjs", "nuxtjs": "nuxt", "vue": "vuejs", "nest": "nestjs", "spring": "springframework",
                      "postgres": "postgresql", "awss3": "amazons3", "telegram": "telegrambotapi",
-                     "tailwind": "tailwindcss"}
+                     "tailwind": "tailwindcss", "cypressci": "cypress", "honojs": "hono", "expojs": "expo",
+                     "netaspire": "aspire", "doctrine": "doctrineorm", "hibernate": "hibernateorm",
+                     "apachekafka": "kafka"}
 
 
 # ---------------------------------------------------------------- normalisation
@@ -154,7 +156,8 @@ def _version(value):
 
 
 def _framework(value):
-    s = re.sub(r"[^a-z0-9]", "", str(value).lower())
+    # Punctuation separates spellings such as Vue.js and VueJS; '+' identifies a distinct product in Vite+.
+    s = re.sub(r"[^a-z0-9+]", "", str(value).lower())
     return FRAMEWORK_ALIASES.get(s, s)
 
 

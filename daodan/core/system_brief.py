@@ -358,7 +358,8 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
     images = defaultdict(set)
     for build in facts.get("docker_builds", []):
         file = build["dockerfile"]
-        images[file].update((s["line"], service_registry._image(s["base"])) for s in build.get("stages", [])
+        images[file].update((s["line"], service_registry.declared_image(s["base"]) or s["base"])
+                            for s in build.get("stages", [])
                             if s.get("line") and s.get("base") and s.get("base_stage") is None)
     modelled = set(images)
     for item in facts.get("packages", []):

@@ -24,7 +24,7 @@ try:
     _yaml_version = metadata.version("PyYAML")
 except metadata.PackageNotFoundError:
     _yaml_version = "unavailable"
-NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.2", "reader"
+NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.3.image.2", "reader"
 PACKAGE_ECOSYSTEM = {
     "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
     "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
@@ -32,20 +32,17 @@ PACKAGE_ECOSYSTEM = {
     "pub": "pub", "melos": "pub", "swiftpm": "swiftpm", "mix": "hex", "terraform": "terraform",
 }
 _FROM = re.compile(r"^\s*FROM\s+(?:--\S+\s+)*([^\s#]+)(?:\s+AS\s+([^\s#]+))?", re.I)
-_FLUTTER_SDK = re.compile(r"^\s*sdk\s*:\s*flutter\b")
 
 
 def normalize_image(reference: str) -> str:
-    """An image reference without registry host, tag or digest: `docker.io/library/postgres:16` is `postgres`."""
-    name = reference.split("@", 1)[0]
+    """Repository identity, dropping the tag, digest and optional Docker Hub spelling."""
+    name = reference.split("@", 1)[0].lower()
     if ":" in name.rsplit("/", 1)[-1]:
         name = name.rsplit(":", 1)[0]
-    parts = name.split("/")
-    if len(parts) > 1 and ("." in parts[0] or ":" in parts[0] or parts[0] == "localhost"):
-        parts = parts[1:]
-    if parts[:1] == ["library"]:
-        parts = parts[1:]
-    return "/".join(parts).lower()
+    host, slash, path = name.partition("/")
+    if slash and host in {"docker.io", "index.docker.io", "registry-1.docker.io"}:
+        name = path
+    return name.removeprefix("library/") if name.count("/") == 1 else name
 
 
 def declared_image(reference: str) -> str:
@@ -247,17 +244,13 @@ def _declared_packages(graph: dict, inventory) -> tuple[list[dict], list[dict], 
     configured, gaps = [], []
     for rel in inventory.files:
         base = PurePosixPath(rel).name
-        if base == "pubspec.yaml":
-            for n, text in enumerate(lines_of(rel), 1):
-                if _FLUTTER_SDK.match(text):
-                    add("pub", "flutter", rel, n)
-        elif base == "Dockerfile" or base.endswith(".Dockerfile"):
+        if base == "Dockerfile" or base.endswith(".Dockerfile"):
             stages: set[str] = set()
             for n, text in enumerate(lines_of(rel), 1):
                 if match := _FROM.match(text):
                     raw, alias = match.group(1), match.group(2)
-                    if raw.lower() != "scratch" and raw.lower() not in stages and not raw.startswith("$"):
-                        add("docker", normalize_image(raw), rel, n)
+                    if raw.lower() != "scratch" and raw.lower() not in stages:
+                        add("docker", declared_image(raw), rel, n)
                     if alias:
                         stages.add(alias.lower())
         elif compose.is_compose_file(base):

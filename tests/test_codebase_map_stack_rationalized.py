@@ -316,7 +316,8 @@ def test_the_record_gives_each_checker_s_status_and_what_the_registry_lacks(tmp_
     record = _stack(tmp_path, {"pyproject.toml": '[project]\nname = "app"\ndependencies = ["fastapi", "minio"]\n',
                                "app.py": "import minio\n"})
     assert [(c["checker"], c["state"]) for c in record["checkers"]] == [("package", "ran"), ("file", "ran"),
-                                                                         ("env", "ran")]
+                                                                         ("env", "ran"), ("host", "ran"),
+                                                                         ("source", "ran")]
     gaps = [(g["kind"], g["checker"], g["entry"], g["ecosystem"], g["value"], g["path"]) for g in record["gaps"]]
     assert ("no_ecosystem_sign", "package", "minio", "pypi", "minio", "pyproject.toml") in gaps
     assert "fastapi" not in {g[2] for g in gaps}

@@ -68,7 +68,7 @@ def load_graph(path: Path) -> dict:
 
 
 def _inputs_digest(manifest: Path, store) -> str:
-    return _digest(["unit-resolution.2", logical_digest(store), store["root"], _digest(load_ledger(manifest))])
+    return _digest(["unit-resolution.3", logical_digest(store), store["root"], _digest(load_ledger(manifest))])
 
 
 def graph_state(manifest: Path) -> dict:

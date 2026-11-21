@@ -23,7 +23,7 @@ def test_stack_keeps_compose_declarations_local_even_without_a_catalog_entry(tmp
 services:
   db: {<<: *defaults}
   mailpit:
-    image: axllent/mailpit:v1
+    image: company/mailpit:v1
     profiles: [test]
     environment:
       EXAMPLE: private_for_test
@@ -54,7 +54,7 @@ x-example: {image: bitnami/kafka}
     by_name = {m["name"]: m for m in record["units"]}
     api = {s["name"]: s for s in by_name["api"]["configured_services"]}
     assert set(api) == {"db", "mailpit", "worker", "custom", "cache", "pending"}
-    assert api["mailpit"] == {"name": "mailpit", "image": "axllent/mailpit:v1", "profiles": ["test"],
+    assert api["mailpit"] == {"name": "mailpit", "image": "company/mailpit:v1", "profiles": ["test"],
                               "path": "api/compose.override.yml", "line": 5, "declared_in": "api/compose.override.yml#L5"}
     assert api["db"]["image"] == "postgres:16"
     assert "image" not in api["worker"]

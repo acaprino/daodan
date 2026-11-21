@@ -1,11 +1,10 @@
-"""Baseline, read only: Daodan's service registry, called the way `system_brief.py` calls it.
+"""Read-only benchmark of the shipped service registry.
 
 `snapshot.py write <dir> --out manifest.sqlite --no-engine --no-index`, then `service_registry.recognize(manifest)`
 (`daodan/core/service_registry.py` with `data/service-registry.json`). The registry
-knows names, a kind, a category and a type; `frameworks` is not given. Services are the recognised entries whose
-category is `service` (`recognize` gives them kind `service`, a `project` entry of that category too); the kind of the answer is the registry type (RANK_KINDS translates it); the
-evidence is the first sign's file. Every recognised entry, `project` ones included, is in `detail.ids`, for the
-comparison with the stack-analyser CLI.
+reports its services with a declared sign, following the stack's project-level rule. The evidence is the
+first declaration's file when available. The historical comparison leaves frameworks unscored and retains
+every registry match, including mentions, in `detail`.
 """
 from __future__ import annotations
 
@@ -34,15 +33,21 @@ def run(fixture_dir, work_dir) -> dict:
     if str(SCRIPTS) not in sys.path:
         sys.path.insert(0, str(SCRIPTS))
     import service_registry
-    found = service_registry.recognize(manifest)
+    return normalise(service_registry.recognize(manifest))
+
+
+def normalise(found: list[dict]) -> dict:
     services = []
     for entry in found:
         if entry["kind"] != "service":
             continue
-        paths = [s["path"] for s in entry["signs"] if s["path"]]
+        declared = [s for s in entry["signs"] if s["strength"] == "declared"]
+        if not declared:
+            continue
+        evidence = next((s["path"] for s in declared if s["path"]), None)
         kind = RANK_KINDS.get(entry["type"])
         services.append({"name": entry["name"], **({"kind": kind} if kind else {}),
-                         **({"evidence": paths[0]} if paths else {})})
+                         **({"evidence": evidence} if evidence else {})})
     return {"services": services,
             "detail": {"ids": sorted(e["id"] for e in found),
                        "entries": {e["id"]: {"kind": e["kind"], "type": e["type"],

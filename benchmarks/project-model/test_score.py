@@ -161,6 +161,20 @@ class NpmWorkspace(unittest.TestCase):
                         {"frameworks": [{"name": "Tailwind"}]})
         self.assertEqual(r["frameworks"]["found"], 1)
 
+    def test_a_builder_and_its_toolkit_are_distinct_products(self):
+        expected = {"frameworks": [{"name": "Vite"}, {"name": "Vite+"}]}
+        result = score.score(expected, {"frameworks": [{"name": "Vite"}]})["frameworks"]
+        self.assertEqual((result["expected"], result["found"], result["missed"]), (2, 1, ["vite+"]))
+
+    def test_catalogue_display_names_for_the_same_product(self):
+        for name, catalogue_name in (("Cypress", "CypressCI"), ("Hono", "HonoJS"), ("Expo", "ExpoJS"),
+                                     ("Aspire", ".NET Aspire"), ("Hibernate ORM", "Hibernate"),
+                                     ("Doctrine ORM", "Doctrine"), ("Apache Kafka", "Kafka")):
+            with self.subTest(name=name):
+                self.assertEqual(score._framework(name), score._framework(catalogue_name))
+        self.assertNotEqual(score._framework("Expo Router"), score._framework("Expo"))
+        self.assertNotEqual(score._framework("Hibernate Reactive"), score._framework("Hibernate ORM"))
+
     def test_needs(self):
         n = self.r["needs"]
         self.assertEqual((n["found"], len(n["wrong"])), (0, 1))

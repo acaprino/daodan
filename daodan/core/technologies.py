@@ -33,10 +33,11 @@ from module_derive import PREMAP_KIND_ECOSYSTEM  # noqa: E402
 import modules  # noqa: E402
 import premap  # noqa: E402
 import service_registry  # noqa: E402
+from languages._treesitter import get_parser  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
 SCHEMA, FILE = "daodan/technologies/v1", "technologies.json"
-MATCHER_VERSION = 2  # Cache identity for recognition and attribution changes within the v1 output format.
+MATCHER_VERSION = 3  # Cache identity for recognition and attribution changes within the v1 output format.
 
 
 def _versions_only(rel: str | None) -> bool:
@@ -231,6 +232,10 @@ def _read(manifest: Path, digest: str) -> dict | None:
         return None
     if (isinstance(record, dict) and record.get("schema") == SCHEMA and record.get("inputs_digest") == digest
             and "checkers" in record and "configured_services" in record):
+        # A grammar may have been placed since a previous run recorded its absence.
+        missing = {g["language"] for g in record.get("gaps", ()) if g.get("kind") == "source_grammar_unavailable"}
+        if any(get_parser(language) is not None for language in missing):
+            return None
         return record
     return None
 

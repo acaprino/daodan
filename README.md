@@ -25,6 +25,18 @@ source and survive independent verification. Sources remain the authority.
 Until step 3 is in place nothing runs the project, and runtime behavior needs
 the project's tests.
 
+## How Daodan identifies the stack
+
+The stack step matches each module's package declarations, available dependency evidence from its build tools,
+container images and distinctive filenames against the shipped technology registry. It also reads Swift imports and
+qualified ExUnit calls. Each match keeps its file and, when available, its line. A configured service is reported
+separately from an SDK or a URL mention. For example, a Spring Boot starter in a Maven module identifies Spring Boot
+in that module. A Telegram API URL in configuration is a mention.
+
+Daodan maintains its extra rules in [registry-additions.json](daodan/data/registry-additions.json).
+The [project-model benchmark](benchmarks/project-model/README.md) compares the shipped registry and upstream Specfy,
+and includes an adapter that loads compatible Daodan rules into Specfy.
+
 ## Plugins
 
 | Plugin | Responsibility | Entry |

@@ -11,6 +11,7 @@ tool and fixture; `fetch` scores them with `score.py` into `results/<tool>.json`
 
     modal deploy benchmarks/project-model/modal_frameworks.py
     python benchmarks/project-model/modal_frameworks.py smoke --tools alizer --fixtures js-nextjs   # answer on screen
+    python benchmarks/project-model/modal_frameworks.py smoke --tools specfy_stack_analyser,specfy_daodan --fixtures py-fastapi-compose
     python benchmarks/project-model/modal_frameworks.py spawn [--tools a,b] [--fixtures x,y] [--no-tududi]
     python benchmarks/project-model/modal_frameworks.py fetch [--tools a,b]
 """
@@ -95,11 +96,15 @@ app = modal.App(APP, image=_image())
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
 
-def code_sha256() -> str:
+def code_sha256(tool: str) -> str:
     """One hash over the adapters, compared with the local one before trusting a run."""
     digest = hashlib.sha256()
     for path in sorted((ROOT / "tools").glob("*.py")):
         if path.stem in TOOLS or path.stem == "_fw":
+            digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
+    if tool == "specfy_daodan":
+        for path in (ROOT / "tools/specfy_daodan.py", PLUGIN / "core/specfy_rules.mjs",
+                     PLUGIN / "data/service-registry.json"):
             digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
     return digest.hexdigest()
 
@@ -284,7 +289,8 @@ def run_tool(tool: str, fixtures: list[str], tududi: bool = True, store: bool = 
     Path("/tmp/pm_hook.js").write_text(HOOK, encoding="utf-8")
     sys.path.insert(0, "/pm/tools")
     adapter = __import__(tool)
-    print("code", code_sha256(), flush=True)
+    code = code_sha256(tool)
+    print("code", code, flush=True)
     started = time.time()
     for cache in (f"/tmp/pm-home-{tool}", "/tmp/railpack"):  # the first fixture runs cold: downloads show there
         shutil.rmtree(cache, ignore_errors=True)
@@ -301,7 +307,7 @@ def run_tool(tool: str, fixtures: list[str], tududi: bool = True, store: bool = 
         else:
             _fixture_source(name, prepared)
         record = _one(tool, name, prepared, root / "runs" / name, modes=("timed",) if timed_only else ("traced", "timed", "offline"), limit=limit)
-        record.update({"fixture": name, "tool": tool, "version": adapter.VERSION, "code": code_sha256()})
+        record.update({"fixture": name, "tool": tool, "version": adapter.VERSION, "code": code})
         record["first_run_of_container"] = not answers
         answers[name] = record
         if store:
@@ -323,6 +329,7 @@ def _expected_fixtures() -> list[str]:
 
 
 COMMANDS = {"specfy_stack_analyser": "stack-analyser <dir> --output=out.json",
+            "specfy_daodan": "node specfy_rules.mjs <pinned Specfy> <dir> out.json catalogue.json",
             "vercel_fs_detectors": "node vercel_detect.cjs <dir> (getWorkspaces, detectFrameworks, packageManagers, monorepoManagers)",
             "netlify_build_info": "build-info <dir> [--rootDir <root>] at the root and each workspace package",
             "alizer": "alizer analyze <dir>; alizer component <dir> --no-port-detection",
@@ -330,20 +337,11 @@ COMMANDS = {"specfy_stack_analyser": "stack-analyser <dir> --output=out.json",
             "daodan_registry": "snapshot.py write <dir> --no-engine --no-index; service_registry.recognize(manifest)"}
 
 
-def _local_hash():
-    digest = hashlib.sha256()
-    for path in sorted((HERE / "tools").glob("*.py")):
-        if path.stem in TOOLS or path.stem == "_fw":
-            digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
-    return digest
-
-
 def fetch(tools: list[str]) -> None:
     sys.path.insert(0, str(HERE))
     import score
     results = HERE / "results"
     results.mkdir(exist_ok=True)
-    local = _local_hash()
     for tool in tools:
         fixtures, tududi, version, codes = {}, None, "", {}
         for entry in volume.listdir(f"{STORE}/{tool}"):
@@ -377,7 +375,7 @@ def fetch(tools: list[str]) -> None:
         data = {"tool": tool, "version": version, "group": "frameworks", "command": COMMANDS[tool], "fixtures": fixtures}
         if tududi:
             data["tududi"] = tududi
-        data["code"] = {"container": sorted(c for c in codes if c), "local_adapters": local.hexdigest()}
+        data["code"] = {"container": sorted(c for c in codes if c), "local_adapters": code_sha256(tool)}
         stale = sorted(n for c, names in codes.items() for n in names if c != max(codes, key=lambda k: len(codes[k])))
         if stale:
             data["mixed_code"] = stale
@@ -405,7 +403,7 @@ if __name__ == "__main__":
     if args.command == "fetch":
         fetch(chosen)
     else:
-        print("local code", _local_hash().hexdigest())
+        print("local code", {tool: code_sha256(tool) for tool in chosen})
         function = modal.Function.from_name(APP, "run_tool")
         if args.command == "smoke":
             for tool in chosen:

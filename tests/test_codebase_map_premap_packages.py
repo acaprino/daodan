@@ -319,6 +319,7 @@ def test_readers_collect_declared_packages_across_jvm_dotnet_flutter_pip_and_doc
             '<Project><ItemGroup><PackageVersion Include="xunit" Version="2.9.0" /></ItemGroup></Project>\n'
         ),
         "mobile/pubspec.yaml": "name: mob\ndependencies:\n  flutter:\n    sdk: flutter\n  dio: ^5.0.0\n",
+        "mobile_test/pubspec.yaml": "name: mob_test\ndev_dependencies:\n  flutter_test:\n    sdk: flutter\n",
         "py/requirements.txt": "fastapi>=0.115\n# comment\n-r extra.txt\n",
         "py/extra.txt": "sqlmodel==0.0.22\n",
         "Dockerfile": "FROM node:22-alpine AS build\nFROM build AS final\nFROM postgres:16-alpine\n",
@@ -341,6 +342,8 @@ def test_readers_collect_declared_packages_across_jvm_dotnet_flutter_pip_and_doc
     assert ("nuget", "Microsoft.EntityFrameworkCore", "dotnet-app/App.csproj") in got
     assert ("nuget", "xunit", "dotnet-app/Directory.Packages.props") in got
     assert ("pub", "flutter", "mobile/pubspec.yaml") in got
+    assert ("pub", "flutter_test", "mobile_test/pubspec.yaml") in got
+    assert ("pub", "flutter", "mobile_test/pubspec.yaml") not in got
     assert ("pub", "dio", "mobile/pubspec.yaml") in got
     assert ("pypi", "fastapi", "py/requirements.txt") in got
     assert ("pypi", "sqlmodel", "py/extra.txt") in got
@@ -413,12 +416,15 @@ def test_renovate_carries_the_value_the_file_writes_and_maven_s_effective_pom_no
         "gradle": [{"packageFile": "gradle/libs.versions.toml", "deps": [
             {"depName": "io.coil-kt.coil3:coil-compose", "currentValue": "3.6.3", "sharedVariableName": "coil"}]}],
         "dockerfile": [{"packageFile": "Dockerfile", "deps": [
-            {"depName": "postgres", "currentValue": "16-alpine"}, {"depName": "redis", "currentDigest": "sha256:ab"}]}],
+            {"depName": "docker.io/library/postgres", "currentValue": "16-alpine"},
+            {"depName": "registry.internal:5000/library/postgres", "currentValue": "16"},
+            {"depName": "redis", "currentDigest": "sha256:ab"}]}],
     }}}})
     got = renovate.read(Ctx(), [{"tool": "renovate"}], [{"returncode": 0, "stdout": report, "stderr": ""}])
     assert {(p["name"], p.get("version")) for p in got["facts"]["packages"]} == {
         ("react", "^18.2.0"), ("@acme/lib", None), ("is-number", None), ("left", None), ("vitest", None),
-        ("io.coil-kt.coil3:coil-compose", None), ("postgres", "16-alpine"), ("redis", None)}
+        ("io.coil-kt.coil3:coil-compose", None), ("postgres", "16-alpine"),
+        ("registry.internal:5000/library/postgres", "16"), ("redis", None)}
 
     effective = ('<project xmlns="http://maven.apache.org/POM/4.0.0"><groupId>com.acme</groupId><artifactId>svc</artifactId>'
                  "<build><directory>/work/target</directory></build><dependencies><dependency><groupId>com.fasterxml"

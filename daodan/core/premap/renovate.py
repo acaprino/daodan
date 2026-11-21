@@ -43,6 +43,7 @@ import re
 import shlex
 
 from premap import compose, npm_tests
+from premap.module_graph import declared_image
 
 NAME, VERSION, RANK = "renovate", "44.239.1", "reader"  # it reads declared files and runs no project code
 NODE = "24.22.3"  # the Node release Renovate runs on (it needs `RegExp.escape`), installed with `--ignore-scripts`
@@ -712,14 +713,14 @@ def read(context, commands, results):
                 # a constraint the file states (Poetry's `python`, global.json's `dotnet-sdk`) is a toolchain
                 if eco and manager not in VERSION_MANAGERS and dep.get("depType") not in TOOL_DEPTYPES and (
                         name not in (package_file.get("extractedConstraints") or {})):
-                    pkg_name = name.split("@", 1)[0].split(":", 1)[0] if eco == "docker" else name
+                    pkg_name = declared_image(name) if eco == "docker" else name
                     written = isinstance(current, str) and current and not any(map(dep.get, WRITTEN_ELSEWHERE))
                     if pkg_name and (eco, pkg_name.casefold(), path) not in seen_pkgs:
                         seen_pkgs.add((eco, pkg_name.casefold(), path))
                         packages.append({"ecosystem": eco, "name": pkg_name, "declared_in": path,
                                          **({"version": current} if written else {})})
                 tool = _tool(name) if manager in VERSION_MANAGERS or dep.get("depType") in TOOL_DEPTYPES else (
-                    DOCKER_RUNTIMES.get(name, DEV_CONTAINERS.get(name)) if manager in IMAGE_MANAGERS
+                    DOCKER_RUNTIMES.get(declared_image(name), DEV_CONTAINERS.get(name)) if manager in IMAGE_MANAGERS
                     else _package_tool(manager, name, dep))
                 if tool:
                     item = {"tool": tool, "declared_in": path}

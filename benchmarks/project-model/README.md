@@ -24,6 +24,47 @@ Misura quanto di una **pre-mappa** danno gli strumenti esistenti, prima di ogni 
 - `catalog.py` scrive [ANAGRAFICA.md](ANAGRAFICA.md) dai dati: per ogni progetto origine, tecnologie, versioni dichiarate, framework, servizi e casi, poi la copertura dei casi.
 - `modal_catalog.py` fa girare su Modal il controllo, `catalog.py` e le tabelle di `score.py`, e sul PC scrive solo ANAGRAFICA.md.
 
+## Regole di riconoscimento di Specfy e Daodan
+
+La misura del 21 novembre 2026 conta ogni nome atteso una volta per progetto. La faccetta `frameworks` comprende anche librerie e strumenti. I 180 progetti hanno 590 nomi attesi in questa faccetta e 541 nei servizi. Le registrazioni della pre-mappa coprono 178 progetti. Mancano 21 nomi di framework e 23 di servizi nei due progetti senza registrazione, `real-stack-jellyfin` e `real-stack-kuvasz`.
+
+| Misura | Progetti | Framework, librerie e strumenti | Servizi |
+| --- | ---: | ---: | ---: |
+| Specfy 1.27.6, risultati originali archiviati | 122 | 55 / 198 | 28 / 123 |
+| Registro distribuito in `ca89d6387`, su dichiarazioni registrate | 178 | 341 / 569 | 142 / 518 |
+| Registro aggiornato, sulle stesse dichiarazioni | 178 | 475 / 569 | 232 / 518 |
+
+Il file `service-registry.json` misurato contiene 2.562 voci e ha SHA-256 `e93c2970c83d892ff5cf8922fcc63f2d6037c459a8158652b3625319cda83f87`.
+
+Il replay applica `service_registry.check_packages` e `check_files` a entrambi i registri. Usa i pacchetti estratti da Renovate, le immagini dichiarate nei workflow, le immagini base di BuildKit e i percorsi di go-enry ammessi dall’inventario. Legge gli attesi solo per assegnare il punteggio. Il rilevamento per modulo, i modelli di build che richiedono una checkout, il testo delle configurazioni e i riferimenti nel sorgente si misurano con `modal_stack.py`. Ad esempio il modello Gradle archiviato per `jvm-spring-boot-managed` riporta gli starter Web e Data JPA. Lo stack completo archiviato vi trova Spring MVC e Spring Data JPA.
+
+Il conteggio originale di Specfy usa tutti gli ID emessi, compresi quelli classificati come builder. L’identità del prodotto tiene conto di varianti come «CypressCI» e «Cypress» e, quando il nome omette il fornitore, dell’ID specifico come `gcp.gcs`. «Vite» e «Vite+» contano separatamente. Le correzioni di punteggio si applicano anche al registro di partenza. Spring Boot era già riconoscibile dai pacchetti nei sette progetti che lo attendono. I cinque con uscita Specfy originale disponibile lo omettono tutti.
+
+Sui 122 progetti in comune, Specfy aveva omesso 143 nomi di framework e 95 servizi. Il replay recuperava rispettivamente 90 e 19 di queste omissioni con il vecchio registro, 107 e 38 con quello aggiornato. Sulle 178 registrazioni il nuovo catalogo recupera 134 occorrenze di framework, librerie o strumenti e 90 di servizi, distribuite su 47 progetti. Conserva tutti i nomi attesi già rilevati. Trova inoltre 81 nuove occorrenze di framework, librerie o strumenti fuori dagli attesi, che in questa faccetta sono selettivi. Per i servizi le annotazioni mirano alla completezza. I due nuovi servizi fuori dagli attesi sono i driver MySQL e PostgreSQL di `tools/go.mod` in Owncast, da verificare rispetto allo stack dell’applicazione. I servizi fuori dagli attesi nel complesso passano da 58 a 57.
+
+| Perché un nome atteso resta senza riscontro nel replay | Framework, librerie e strumenti | Servizi |
+| --- | ---: | ---: |
+| La voce ha regole per pacchetti o file, ma nessuna dichiarazione registrata corrisponde | 84 | 149 |
+| La voce non ha regole per pacchetti o file. Altri segnali possibili includono un import Swift o un URL nel sorgente | 4 | 34 |
+| Il catalogo non presenta il nome nella faccetta attesa, dopo aver applicato le equivalenze documentate nel codice | 6 | 103 |
+
+Tra gli ultimi casi figurano Firebase, atteso anche come framework e catalogato come servizio, e SMTP, atteso come servizio in 23 progetti. Una libreria compatibile con un protocollo non identifica il fornitore che un progetto usa.
+
+Questo comando, dalla radice del repository, scrive per progetto il percorso che prova ciascun nuovo riconoscimento, i nomi mancanti e le segnalazioni aggiuntive.
+
+```sh
+python benchmarks/project-model/replay_registry_coverage.py --baseline ca89d63877f8e3f9f94d8387a4b9154c5cdf9f1f --out registry-coverage.json
+```
+
+Il comando `smoke` misura Specfy con le regole Daodan e l’eseguibile originale sullo stesso progetto e nella stessa immagine Modal.
+
+```sh
+modal deploy benchmarks/project-model/modal_frameworks.py
+python benchmarks/project-model/modal_frameworks.py smoke --tools specfy_stack_analyser,specfy_daodan --fixtures py-fastapi-compose
+```
+
+La tabella riporta l’archivio dell’eseguibile originale e il replay dei registri. La prova end-to-end dell’adattatore Specfy aggiornato resta da misurare su Modal.
+
 ## Dopo una modifica
 
 Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Su questo PC non gira niente: ogni passo va su Modal, dalla radice del repository.

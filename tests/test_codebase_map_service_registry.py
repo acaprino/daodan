@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "daodan/core"
@@ -106,6 +107,27 @@ class CheckTests(unittest.TestCase):
 
 
 class DeriveTests(unittest.TestCase):
+    def test_build_keeps_an_entry_after_its_last_sign_is_removed(self):
+        rule = {"tech": "widget", "name": "Widget", "type": "tool", "files": ["unrelated.json"]}
+        correction = {"id": "widget", "wrong_signs": {"files": ["unrelated.json"]}}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            additions = root / "additions.json"
+            additions.write_text(json.dumps({"entries": [correction]}), encoding="utf-8")
+            with (patch.object(registry_build, "stack_analyser_rules", return_value=[rule]),
+                  patch.object(registry_build, "cncf_items", return_value=[]),
+                  patch.object(registry_build, "_tarball", return_value=root),
+                  patch.object(registry_build, "simple_icons", return_value=[])):
+                (entry,) = registry_build.build(root, additions, root)["entries"]
+        self.assertEqual(entry["id"], "widget")
+        self.assertIsNone(entry["signs"])
+
+    def test_specfy_file_regexp_does_not_declare_a_file_named_regex(self):
+        rule = {"tech": "jest", "name": "Jest", "type": "test", "files": {"regex": r"^jest\.config\."}}
+        self.assertEqual(registry_build._from_rule(rule)["signs"]["files"], [])
+        rule["files"] = ["jest.config.js"]
+        self.assertEqual(registry_build._from_rule(rule)["signs"]["files"], ["jest.config.js"])
+
     def test_candidates_drop_a_scope_a_prefix_and_a_suffix(self):
         self.assertEqual(registry_build.candidates("stripe"), ["stripe"])
         self.assertEqual(registry_build.candidates("@google/genai"), ["google-genai", "google"])
@@ -172,7 +194,8 @@ class CheckerTests(unittest.TestCase):
 
     def test_the_checkers_are_one_per_kind_of_sign_each_with_its_strength(self):
         self.assertEqual([(name, strength) for name, strength, _ in service_registry.CHECKERS],
-                         [("package", "declared"), ("file", "declared"), ("env", "mentioned")])
+                         [("package", "declared"), ("file", "declared"), ("env", "mentioned"), ("host", "mentioned"),
+                          ("source", "declared")])
 
     def test_the_package_checker_reads_a_name_an_artifact_a_go_module_and_a_pattern(self):
         answer = service_registry.check_packages(self.ENTRIES, self.project([
@@ -332,7 +355,7 @@ class RecognizeTests(unittest.TestCase):
         finally:
             service_registry.CHECKERS = checkers
         self.assertEqual([(c["checker"], c["state"]) for c in answer["checkers"]],
-                         [("package", "ran"), ("file", "failed"), ("env", "ran")])
+                         [("package", "ran"), ("file", "failed"), ("env", "ran"), ("host", "ran"), ("source", "ran")])
         self.assertIn({"kind": "checker_failed", "checker": "file", "detail": "ValueError: no lines"}, answer["gaps"])
         found = {e["id"]: {(s["sign"], s["value"]) for s in e["signs"]} for e in answer["found"]}
         self.assertTrue({("package", "stripe"), ("env", "STRIPE_SECRET_KEY")} <= found["stripe"])
@@ -468,11 +491,8 @@ class DistributedMarkTests(unittest.TestCase):
         self.assertEqual(registry_build.check(self.value, DATA), [])
 
     def test_the_recognisable_services_that_have_a_mark_do_not_drop_below_432(self):
-        """500 was asked for and 432 reached, each with its file in the plugin: 332 marks of Simple Icons, 10 official
-        files, 90 pictograms Daodan drew for the services of AWS, Azure and Google Cloud. 173 recognisable services have
-        none: Simple Icons lacks them and their owner's terms were not found to allow shipping, or were not researched
-        (see REGISTRY-NOTICES.md)."""
-        with_mark = [e for e in self.entries if e["kind"] == "service" and e["signs"] and e["mark"]]
+        """Count marked services using the category the module stack actually reports."""
+        with_mark = [e for e in self.entries if service_registry.entry_category(e) == "service" and e["signs"] and e["mark"]]
         self.assertGreaterEqual(len(with_mark), 432)
 
     def test_a_shipped_mark_that_is_not_of_simple_icons_says_where_it_comes_from(self):

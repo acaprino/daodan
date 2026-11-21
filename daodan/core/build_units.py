@@ -514,8 +514,6 @@ def _pubspec(inv, rel, text):
         table = data.get(key)
         if isinstance(table, dict):
             for dep, spec in table.items():
-                if isinstance(spec, dict) and "sdk" in spec:
-                    continue  # `sdk: flutter` comes with the toolchain
                 deps.add(dep)
                 if isinstance(spec, dict) and isinstance(spec.get("path"), str):
                     unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
