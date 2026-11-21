@@ -139,9 +139,11 @@ def perimeter(root: Path, files: list[str], excluded: tuple[str, ...]) -> tuple[
 
 def _signs(payload: dict, files: set[str], excluded: tuple[str, ...]) -> tuple[dict[str, list[dict]], list[dict]]:
     """The signs of each technology from the evidence of every component, once each; none from an evidence of kind
-    `extension`, of a file the snapshot lacks or under a path the pre-map leaves out. Evidence that names no technology
-    cannot name an entry: a gap with its count."""
-    seen, signs, nameless, pending = set(), {}, 0, [payload]
+    `extension` or under a path the pre-map leaves out. The evidence of a declaration (its `source` is not the tool's)
+    stays whatever its file, as the registry keeps a declared package; what the tool read by itself stays only for a
+    file of the snapshot, the rest is a gap with its count and its first paths. Evidence that names no technology cannot
+    name an entry: a gap with its count."""
+    seen, signs, nameless, outside, pending = set(), {}, 0, [], [payload]
     while pending:
         component = pending.pop()
         pending.extend(component.get("childs") or ())
@@ -154,11 +156,16 @@ def _signs(payload: dict, files: set[str], excluded: tuple[str, ...]) -> tuple[d
             path = path.removeprefix("/")
             if not tech:
                 nameless += 1
-            elif kind != "extension" and path in files and not service_registry._is_excluded(path, excluded):
+            elif kind == "extension" or service_registry._is_excluded(path, excluded):
+                continue
+            elif path in files or source != "stack-analyser":
                 signs.setdefault(tech, []).append({"sign": kind, "value": value, "path": path, "line": line,
                                                    "strength": "mentioned" if kind == "env" else "declared",
                                                    "source": source})
-    return signs, [{"kind": "evidence_without_technology", "count": nameless}] if nameless else []
+            else:
+                outside.append(path)
+    return signs, ([{"kind": "evidence_without_technology", "count": nameless}] if nameless else []) + (
+        [{"kind": "evidence_outside_snapshot", "count": len(outside), "paths": sorted(set(outside))[:5]}] if outside else [])
 
 
 def found(payload: dict, registry: dict, files: set[str], excluded: tuple[str, ...],

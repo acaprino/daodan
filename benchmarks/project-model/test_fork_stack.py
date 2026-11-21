@@ -283,12 +283,32 @@ def test_the_same_evidence_from_two_sources_stays_two_signs():
     assert [s["source"] for s in out[0]["signs"]] == ["stack-analyser", "other"]
 
 
-def test_evidence_outside_the_snapshot_or_excluded_is_dropped():
-    payload = component(evidence("redis", "package", "redis", "/pyproject.toml"),
-                        evidence("redis", "package", "redis", "/missing.toml"),
-                        evidence("redis", "package", "redis", "/vendor/web/package.json"))
+def test_a_declaration_s_evidence_is_kept_whatever_its_file_and_the_tool_s_own_only_for_a_file_of_the_snapshot():
+    """The registry takes a declared package at the path the pre-map names, in the snapshot or not; the tool's own reading
+    is a file it was given only when the snapshot holds it. Either kind is dropped under a path the pre-map leaves out."""
+    payload = component(
+        evidence("redis", "package", "redis", "/pyproject.toml"),  # the tool's, in the snapshot: kept
+        evidence("redis", "package", "redis", "/missing.toml"),  # the tool's, outside the snapshot: dropped, and said
+        evidence("redis", "package", "aioredis", "/.github/workflows/x.yml", "renovate@41"),  # a declaration's: kept
+        evidence("redis", "package", "redis", "/vendor/web/package.json"),  # the tool's, excluded: dropped
+        evidence("redis", "package", "redis", "/vendor/web/Dockerfile", "buildkit@v0.34"))  # a declaration's, excluded
     out, gaps = fork_stack.found(payload, registry(REDIS), {"pyproject.toml", "vendor/web/package.json"}, ("vendor",))
-    assert [s["path"] for s in out[0]["signs"]] == ["pyproject.toml"] and gaps == []
+    assert [(s["path"], s["source"]) for s in out[0]["signs"]] == [
+        (".github/workflows/x.yml", "renovate@41"), ("pyproject.toml", "stack-analyser")]
+    assert gaps == [{"kind": "evidence_outside_snapshot", "count": 1, "paths": ["missing.toml"]}]  # not the excluded ones
+
+
+def test_the_evidence_the_snapshot_lacks_is_counted_with_its_first_five_distinct_paths_sorted():
+    items = [evidence("redis", "package", "redis", f"/{name}.toml", line=line)
+             for name, line in (("g", 1), ("b", 1), ("b", 2), ("e", 1), ("a", 1), ("f", 1), ("c", 1), ("d", 1))]
+    out, gaps = fork_stack.found(component(*items, evidence("python", "extension", ".py", "/x/y.py")), registry(REDIS), set(), ())
+    assert out == [] and gaps == [{"kind": "evidence_outside_snapshot", "count": 8,
+                                   "paths": ["a.toml", "b.toml", "c.toml", "d.toml", "e.toml"]}]  # extension proves nothing
+
+
+def test_evidence_without_a_technology_is_not_counted_as_outside_the_snapshot():
+    gaps = fork_stack.found(component(evidence(None, "package", "x", "/missing.toml")), registry(), set(), ())[1]
+    assert gaps == [{"kind": "evidence_without_technology", "count": 1}]
 
 
 def test_extension_evidence_alone_recognizes_nothing():
@@ -377,6 +397,8 @@ REGISTRY = registry(REDIS, PYTHON, STRIPE)
 FORK = component(evidence("redis", "package", "redis", "/api/requirements.txt", line=1),
                  evidence("python", "image", "python", "/Dockerfile"), evidence("python", "extension", ".py", "/api"),
                  evidence("redis", "package", "redis", "/api/node_modules/x.js"))
+# the tool read `node_modules/x.js` by itself, a file the snapshot lacks: said, not silent
+OUTSIDE = {"kind": "evidence_outside_snapshot", "count": 1, "paths": ["api/node_modules/x.js"]}
 
 
 @pytest.fixture(scope="module")
@@ -407,7 +429,7 @@ def test_recognize_sends_declarations_and_perimeter_and_answers_in_the_shape_of_
     assert kwargs == {"declarations": [{"type": "python", "name": "redis", "version": "==5.0", "path": "api/requirements.txt",
                                         "line": 1, "source": "requirements@2"}],
                       "skip_dirs": (".git", "gen", "node_modules"), "ignore": ("api/gen",)}
-    assert list(answer) == ["found", "checkers", "gaps"] and answer["gaps"] == []
+    assert list(answer) == ["found", "checkers", "gaps"] and answer["gaps"] == [OUTSIDE]
     assert answer["checkers"] == [{"checker": "stack-analyser", "state": "ran"}, {"checker": "host", "state": "ran"}]
     assert [e["id"] for e in answer["found"]] == ["python", "redis", "stripe"]
     by_id = {e["id"]: e for e in answer["found"]}
@@ -439,7 +461,7 @@ def test_a_host_checker_that_fails_is_a_gap_and_the_fork_s_evidence_stays(manife
     answer = fork_stack.recognize(manifest, REGISTRY, FACTS)
     assert answer["checkers"] == [{"checker": "stack-analyser", "state": "ran"},
                                   {"checker": "host", "state": "failed", "reason": "ValueError: no lines"}]
-    assert answer["gaps"] == [{"kind": "checker_failed", "checker": "host", "detail": "ValueError: no lines"}]
+    assert answer["gaps"] == [{"kind": "checker_failed", "checker": "host", "detail": "ValueError: no lines"}, OUTSIDE]
     assert [e["id"] for e in answer["found"]] == ["python", "redis"]
 
 
@@ -447,7 +469,36 @@ def test_recognize_reports_the_declarations_it_could_not_send(manifest, started)
     facts = {**FACTS, "packages": [fact("conan", "zlib", "conanfile.txt#L2", "conan@1")]}
     answer = fork_stack.recognize(manifest, REGISTRY, facts)
     assert started[0][1]["declarations"] == []
-    assert [g["kind"] for g in answer["gaps"]] == ["declaration_not_sent"]
+    assert [g["kind"] for g in answer["gaps"]] == ["declaration_not_sent", "evidence_outside_snapshot"]
+
+
+PAGES, GOTENBERG = "actions/deploy-pages", "gotenberg/gotenberg"
+
+
+def test_a_declared_package_or_image_of_a_file_the_snapshot_lacks_is_recognized_as_the_registry_does(manifest, monkeypatch):
+    """The corpus round's `github.pages` (real-app-kotlinconf) and `gotenberg` (real-stack-documenso): the pre-map names a
+    workflow in a dot folder and a Dockerfile with a suffix, the registry takes them, the snapshot holds neither."""
+    facts = {"packages": [fact("github-actions", PAGES, ".github/workflows/x.yml#L5", "githubactions@1"),
+                          fact("github-actions", "actions/upload-pages-artifact", ".github/workflows/x.yml#L9", "githubactions@1")],
+             "docker_builds": [{"dockerfile": "docker/Dockerfile.gotenberg", "sources": ["dockerfile@1"],
+                                "stages": [{"base": f"{GOTENBERG}:8", "line": 1}]}], "excluded": []}
+    technology = {PAGES: "github.pages", "actions/upload-pages-artifact": "github.pages", GOTENBERG: "gotenberg"}
+
+    def tool(project, declarations=(), **kwargs):  # it recognizes what it is sent, with the declaration's source and path
+        return component(*[evidence(technology[d["name"]], "package" if d["type"] == "githubAction" else "image", d["name"],
+                                    "/" + d["path"], d["source"], line=d.get("line")) for d in declarations])
+
+    monkeypatch.setattr(stack_analyser, "run", tool)
+    with open_snapshot(manifest) as store:
+        assert not {".github/workflows/x.yml", "docker/Dockerfile.gotenberg"} & set(dict(store.iter_file_headers_only()))
+    answer = fork_stack.recognize(manifest, service_registry.load(), facts)
+    by_id = {entry["id"]: entry for entry in answer["found"]}
+    assert [(s["sign"], s["path"], s["line"], s["strength"], s["source"]) for s in by_id["github.pages"]["signs"]] == [
+        ("package", ".github/workflows/x.yml", 5, "declared", "githubactions@1"),
+        ("package", ".github/workflows/x.yml", 9, "declared", "githubactions@1")]
+    assert [(s["sign"], s["path"], s["strength"]) for s in by_id["gotenberg"]["signs"]] == [
+        ("image", "docker/Dockerfile.gotenberg", "declared")]
+    assert [g for g in answer["gaps"] if g["kind"] in ("evidence_outside_snapshot", "not_in_registry")] == []
 
 
 # ---------------------------------------------------------------------------------------------- compare
@@ -660,7 +711,7 @@ def test_measure_derives_with_each_recogniser_and_scans_fast_with_each(manifest,
     assert list(answer) == ["before", "after", "fast", "fast_gaps", "seconds"]
     assert listed(answer["before"]) == ["docker", "python", "redis"]  # the registry's own checkers
     assert listed(answer["after"]) == ["python", "redis", "setuptools"]  # the fork's evidence, the registry's records
-    assert answer["after"]["gaps"] == [{"kind": "not_in_registry", "entry": "setuptools"}]
+    assert answer["after"]["gaps"] == [OUTSIDE, {"kind": "not_in_registry", "entry": "setuptools"}]
     assert modules_of(answer["after"]) == modules_of(answer["before"]) == [("app", ["."])]  # one graph under both
     # the registry reads the fast facts without the packages: docker (the Dockerfile) and python; the fork, those it was
     # sent: no declaration, and the evidence it returns whatever it was sent
@@ -668,7 +719,7 @@ def test_measure_derives_with_each_recogniser_and_scans_fast_with_each(manifest,
     # one run for the full scan, with the declarations of its facts (the package and the Dockerfile's base), one for the
     # fast scan, with those of its own: none
     assert [sorted(d["name"] for d in sent) for sent in calls] == [["python", "redis"], []]
-    assert answer["fast_gaps"] == [{"kind": "not_in_registry", "entry": "setuptools"}]  # the fork's gaps of the fast scan
+    assert answer["fast_gaps"] == [OUTSIDE, {"kind": "not_in_registry", "entry": "setuptools"}]  # the fast scan's
     assert list(answer["seconds"]) == ["registry_full", "fork_full", "registry_fast", "fork_fast"]
 
 
@@ -801,6 +852,14 @@ def test_a_fork_run_that_failed_in_the_fast_scan_only_is_flagged_too():
 def test_a_gap_that_is_not_the_tool_s_run_does_not_flag_the_fixture():
     host = {"kind": "checker_failed", "checker": "host", "detail": "ValueError: no lines"}
     assert result_of(stored_result(gaps=[host, NOT_SENT], fast_gaps=[host]))["fork_failed"] is False
+
+
+def test_evidence_the_snapshot_lacks_is_counted_among_the_fork_s_gaps_and_is_not_a_failed_run():
+    outside = {"kind": "evidence_outside_snapshot", "count": 3, "paths": ["node_modules/a.js"]}
+    answer = result_of(stored_result(gaps=[outside, NOT_SENT], fast_gaps=[outside]))
+    assert answer["fork_gaps"] == {"full": {"kinds": {"declaration_not_sent": 1, "evidence_outside_snapshot": 1}, "failed": []},
+                                   "fast": {"kinds": {"evidence_outside_snapshot": 1}, "failed": []}}
+    assert answer["fork_failed"] is False
 
 
 def test_a_stored_record_without_the_fast_gaps_is_not_read_as_a_run_that_did_not_fail():
