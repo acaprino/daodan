@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -86,8 +87,10 @@ class BriefTests(unittest.TestCase):
 
     def test_sections_have_fixed_labels_and_one_numbered_item_per_line(self):
         sections = {part.split("\n")[0]: part.split("\n")[1:] for part in self.text.split("\n## ")[1:]}
-        self.assertEqual(list(sections), ["Steps", "Counts", "Modules", "Directories", "Externals",
+        self.assertEqual(list(sections), ["Steps", "Counts", "Entry sources unavailable", "Modules", "Directories", "Symbol coverage", "Externals",
                                           "AST entry candidates", "Entry points", "Groups"])
+        self.assertTrue(sections["Entry sources unavailable"][0].startswith("U1 "))
+        self.assertNotIn("## Entry sources unavailable", text({**self.brief, "source_gaps": []}))
         self.assertEqual(sections["Counts"][0], "entry points 6")
         self.assertEqual(sections["Modules"], ["M1 app (source-tree, 23 files)",
                                                "M2 card payment provider (component, 0 files)",
@@ -194,6 +197,44 @@ class DeclaredTests(unittest.TestCase):
         self.assertIn("\n## Runtime files\nR1 Dockerfile\nR2 docker-compose.yml\n## Declared\n"
                       "S1 base image node in Dockerfile:1\nS2 service web in docker-compose.yml:2\n"
                       "S3 service db (postgres) in docker-compose.yml:4", text(value))
+
+    def test_global_brief_reopens_only_changed_unmodelled_yaml(self):
+        work = Path(tempfile.mkdtemp(prefix="brief-reuse-"))
+        self.addCleanup(shutil.rmtree, work, True)
+        project = work / "src"
+        project.mkdir()
+        subprocess.run(["git", "init", "-q", str(project)], check=True)
+        files = {"Dockerfile": "FROM node:22\n", "compose.yaml": "services:\n  db:\n    image: postgres:16\n",
+                 "catalog-info.yaml": "kind: Component\nmetadata: {name: shop}\n",
+                 "kube.yaml": "apiVersion: v1\nkind: ConfigMap\n",
+                 "package.json": '{"name":"shop","dependencies":{"react":"19.0.0"}}'}
+        for file, body in files.items():
+            (project / file).write_text(body, encoding="utf-8")
+        service = mcp_tests.mcp_service.MapService(project)
+        service.create_run(".", "brief", engine=False)
+        opened = []
+        native = Path.open
+        def count(path, *args, **kwargs):
+            if path.parent == project and path.name in files:
+                opened.append(path.name)
+            return native(path, *args, **kwargs)
+        with patch.object(Path, "open", count):
+            first = service.flows("brief", brief=True)["brief"]
+            self.assertIn("Component shop", first)
+            self.assertIn("base image node", first)
+            self.assertIn("service db", first)
+            self.assertIn("kube.yaml", first)
+            self.assertCountEqual(opened, ["catalog-info.yaml", "kube.yaml"])
+            opened.clear()
+            self.assertEqual(mcp_tests.mcp_service.MapService(project).flows("brief", brief=True)["brief"], first)
+            self.assertEqual(opened, [])
+            catalog = project / "catalog-info.yaml"
+            with native(catalog, "w", encoding="utf-8") as stream:
+                stream.write(files[catalog.name].replace("shop", "cart"))
+            changed = service.flows("brief", brief=True)["brief"]
+            self.assertEqual(opened, [catalog.name])
+            self.assertNotIn("Component shop", changed)
+            self.assertNotIn("Component cart", changed)
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ Comment doc-block detection (`///`, `//!`, `/*!`) is handled by
 from __future__ import annotations
 
 import re
+from pathlib import Path
 import threading
 from typing import Any
 
@@ -46,7 +47,7 @@ __all__ = ["adapter"]
 _LANGUAGE_NAME = "rust"
 
 
-def _tauri_bridge(root, src: bytes) -> dict | None:
+def _tauri_bridge(root, src: bytes, semantic, file_path: str) -> dict | None:
     """Read command attributes and the literal Rust paths fed to Tauri's invoke handler."""
     if b"command" not in src and b"generate_handler" not in src:
         return None
@@ -60,6 +61,120 @@ def _tauri_bridge(root, src: bytes) -> dict | None:
     def tauri(path, name):
         return path == f"tauri::{name}" or (path == name and f"tauri::{name}" in imports)
 
+    def attributes(item):
+        attr = item.prev_named_sibling
+        while attr is not None and attr.type in ("attribute_item", "line_comment", "block_comment"):
+            if attr.type == "attribute_item" and attr.named_children:
+                attribute = attr.named_children[0]
+                if attribute.named_children:
+                    yield text(attribute.named_children[0]), attribute.child_by_field_name("arguments")
+            attr = attr.prev_named_sibling
+
+    def conditional(item):
+        # Attributes belong to the next item in the Rust grammar, including outer modules.
+        while item is not None:
+            for head, args in attributes(item):
+                if head == "cfg" and args and len(args.named_children) == 2:
+                    condition, flags = args.named_children
+                    if text(condition) == "not" and [text(n) for n in flags.named_children] == ["test"]:
+                        continue
+                if (head in ("test", "cfg") or (head == "cfg_attr" and args
+                        and any(text(n) in ("test", "cfg", "cfg_attr") for n in args.named_children[1:]))):
+                    return True
+            item = item.parent
+        return False
+
+    def mobile_entry(item):
+        for head, args in attributes(item):
+            if tauri(head, "mobile_entry_point"):
+                return True
+            if head == "cfg_attr" and args is not None:
+                tokens = [text(n) for n in args.children[1:-1] if not n.is_extra]
+                if tokens == ["mobile", ",", "tauri", "::", "mobile_entry_point"]:
+                    return True
+        return False
+
+    def startup_functions():
+        # Use the language pass's existing declarations and calls. Across uncertain scopes there is no proof.
+        if not semantic:
+            return set()
+        declarations, unique = {}, {}
+        for decl in semantic["declarations"]:
+            name = decl["name"]
+            unique[name] = decl["id"] if name not in unique and decl["kind"] == "function" and decl["scope"] == "module" else None
+            if decl["kind"] == "function":
+                declarations[tuple(decl["span"][:2])] = decl["id"]
+        for imported in semantic["imports"]:
+            unique.pop(imported["local"], None)
+        reachable = set()
+        filename = Path(file_path).name
+        for fn in root.named_children:
+            if fn.type != "function_item" or conditional(fn):
+                continue
+            if ((filename == "main.rs" and text(fn.child_by_field_name("name")) == "main")
+                    or (filename == "lib.rs" and mobile_entry(fn))):
+                identity = declarations.get((fn.start_point[0] + 1, fn.start_point[1]))
+                if identity is not None:
+                    reachable.add(identity)
+        called = {}
+        for ref in semantic["references"]:
+            if ref["kind"] == "call" and not ref.get("reason") and len(ref["parts"]) == 1:
+                target = unique.get(ref["parts"][0])
+                if target:
+                    # A deferred closure or a conditional block is not evidence that startup calls the helper.
+                    line, col, end, col_end = ref["span"]
+                    node = root.descendant_for_point_range((line - 1, col), (end - 1, col_end))
+                    if runs_in(node) is not None and not conditional(node):
+                        called.setdefault(ref["caller"], set()).add(target)
+        todo = list(reachable)
+        while todo:
+            for target in called.get(todo.pop(), ()):
+                if target not in reachable:
+                    todo.append(target)
+                    reachable.add(target)
+        return {at for at, identity in declarations.items() if identity in reachable}
+
+    def runs_in(node):
+        while node is not None and node.type != "function_item":
+            if node.type in ("closure_expression", "async_block", "if_expression", "match_expression",
+                             "while_expression", "for_expression", "macro_definition"):
+                return None
+            node = node.parent
+        return node
+
+    builder_methods = {"setup", "manage", "plugin", "invoke_system", "on_window_event", "on_page_load",
+                       "on_webview_event", "on_menu_event", "menu"}
+
+    def builder(receiver):
+        # These Tauri builder methods return Self. A similarly named method on an unknown value is no proof.
+        while receiver is not None and receiver.type == "call_expression":
+            fn = receiver.child_by_field_name("function")
+            if fn is None:
+                return False
+            if fn.type == "scoped_identifier":
+                return (text(fn.child_by_field_name("name")) in ("default", "new")
+                        and tauri(text(fn.child_by_field_name("path")), "Builder"))
+            if fn.type != "field_expression" or text(fn.child_by_field_name("field")) not in builder_methods:
+                return False
+            receiver = fn.child_by_field_name("value")
+        return False
+
+    def launched(call):
+        # Follow the same receiver forwards. Dropping a configured builder never starts the app.
+        while (method := call.parent) is not None and method.type == "field_expression":
+            if method.child_by_field_name("value") != call:
+                break
+            call = method.parent
+            if call is None or call.type != "call_expression" or call.child_by_field_name("function") != method:
+                break
+            name = text(method.child_by_field_name("field"))
+            if name == "run":
+                args = call.child_by_field_name("arguments")
+                return args is not None and len([n for n in args.named_children if not n.is_extra]) == 1
+            if name not in builder_methods:
+                break
+        return False
+
     commands, handlers = [], []
     for attr in query_captures("rust", "(attribute_item (attribute) @attr)", root).get("attr", ()):
         if not attr.named_children or not tauri(text(attr.named_children[0]), "command"):
@@ -68,16 +183,22 @@ def _tauri_bridge(root, src: bytes) -> dict | None:
         while item is not None and item.type in ("attribute_item", "line_comment", "block_comment"):
             item = item.next_named_sibling
         # A root command has the identity the import resolver can prove for this Rust module.
-        if item is not None and item.type == "function_item" and item.parent.type == "source_file":
+        if item is not None and item.type == "function_item" and item.parent.type == "source_file" and not conditional(item):
             commands.append(text(item.child_by_field_name("name")))
+    starts = startup_functions() if b"generate_handler" in src else set()
     for macro in query_captures("rust", "(macro_invocation) @macro", root).get("macro", ()):
         if not tauri(text(macro.child_by_field_name("macro")), "generate_handler"):
             continue
         args = macro.parent
-        if args.type != "arguments" or args.parent.type != "call_expression":
+        if (args.type != "arguments" or args.parent.type != "call_expression"
+                or [n for n in args.named_children if not n.is_extra] != [macro]):
             continue
         method = args.parent.child_by_field_name("function")
-        if method.type != "field_expression" or text(method.child_by_field_name("field")) != "invoke_handler":
+        if (method.type != "field_expression" or text(method.child_by_field_name("field")) != "invoke_handler"
+                or not builder(method.child_by_field_name("value")) or conditional(macro) or not launched(args.parent)):
+            continue
+        fn = runs_in(macro)
+        if fn is None or (fn.start_point[0] + 1, fn.start_point[1]) not in starts:
             continue
         # Rust represents a macro's list as a token tree. Accept only comma-separated identifier paths.
         tree = next((n for n in macro.named_children if n.type == "token_tree"), None)
@@ -191,7 +312,7 @@ class _ThreadLocalErrorHolder:
 _TS_ERROR_HOLDER = _ThreadLocalErrorHolder()
 
 
-def _ts_parse(content: str) -> ParseResult | None:
+def _ts_parse(content: str, file_path: str) -> ParseResult | None:
     pair = get_parser("rust")
     if pair is None:
         return None
@@ -498,7 +619,7 @@ def _ts_parse(content: str) -> ParseResult | None:
         exported_symbols=list(dict.fromkeys(exported)),
         notes=notes,
         semantic=semantic,
-        tauri=_tauri_bridge(root, src),
+        tauri=_tauri_bridge(root, src, semantic, file_path),
     )
 
 
@@ -702,7 +823,7 @@ class _RustAdapter:
 
     def parse(self, content: str, file_path: str) -> ParseResult:
         _TS_ERROR_HOLDER.pop("last", None)
-        result = _ts_parse(content)
+        result = _ts_parse(content, file_path)
         if result is None:
             result = _regex_parse(content)
             err = _TS_ERROR_HOLDER.pop("last", None)

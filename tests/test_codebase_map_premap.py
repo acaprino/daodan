@@ -78,7 +78,7 @@ def test_premap_beside_the_manifest_every_fact_with_its_source(tmp_path):
     assert {s["source"].split("@")[0]: s["state"] for s in record["sources"]} == {
         "modules.py": "ran", "python-build": "not_needed", "requirements": "not_needed", "npm-files": "ran", "jvm-files": "not_needed",
         "gitmodules": "not_needed", "python-tests": "not_needed", "npm-tests": "not_needed", "autotools": "not_needed",
-        "go-enry": "not_run", "renovate": "not_run", "compose": "not_needed", "buildkit": "not_needed",
+        "go-enry": "not_run", "noir": "not_run", "renovate": "not_run", "compose": "not_needed", "buildkit": "not_needed",
         "go": "not_needed", "cargo": "not_needed",
         "uv": "not_needed",
         "tsc": "not_needed", "npm": "not_run", "cmake": "not_needed", "meson": "not_needed", "bazel": "not_needed",
@@ -517,6 +517,10 @@ def test_a_command_that_did_not_answer_never_states_a_fact_empty(tmp_path):
                 commands = source.commands(context)
                 if not commands:
                     continue
+                if case == "enry_files" and source is renovate:
+                    # This historical Linux capture contains the extraction only. Its on: push file now
+                    # selects a second YAML command, exercised separately by the workflow-entry replay.
+                    commands = [c for c in commands if c["argv"] != ["sh", "-c", renovate.EACH]]
                 results = runner(commands)
                 answered = _stated_empty(source.read(context, commands, results).get("facts"))
                 # One command failing, and one kind of command failing in every folder (a project without the

@@ -478,6 +478,8 @@ class _ImportResolver:
                 if header.get("tauri"):
                     records[file] = (crate, header)
             for file, (crate, header) in records.items():
+                if file not in (crate / "main.rs", crate / "lib.rs"):
+                    continue
                 for handler in header["tauri"]["handlers"]:
                     parts = handler.split("::")
                     command = parts.pop()

@@ -116,7 +116,8 @@ def _step(arrow: dict) -> dict:
 def _code_steps(flow: dict, nodes: dict, links: dict) -> tuple[list[dict], dict[str, list[str]]]:
     """Steps between files: the proof of the flow's arrows and the links inside each of its nodes."""
     items = {n: _item(nodes[n]) for n in flow["nodes"] if nodes[n]["position"] == "internal"}
-    edges = [(p, a["data"]) for a in flow["arrows"] if a["status"] != "refused" for p in a.get("proof", [])]
+    edges = [(p, a["data"]) for a in flow["arrows"] for p in a.get("proof", [])
+             if a["status"] != "refused" or system_map.uncertainty(p)]
     edges += [(e, "") for e in links["edges"]
               if any(system_map._owns(i, e["from"]) and system_map._owns(i, e["to"]) for i in items.values())]
     owners = defaultdict(set)
@@ -134,7 +135,9 @@ def _code_steps(flow: dict, nodes: dict, links: dict) -> tuple[list[dict], dict[
         first, second = place(edge["from"]), place(edge["to"])
         if first and second and first != second:
             via = [e[6:] for e in (edge["from"], edge["to"]) if e.startswith("store:")]
-            steps.append({"from": first, "to": second, "data": data, "status": "proved", "asserts": [edge["type"]],
+            weak = system_map.uncertainty(edge)
+            steps.append({"from": first, "to": second, "data": data, "status": "refused" if weak else "proved",
+                          "asserts": [] if weak else [edge["type"]],
                           "via": via, "proof": [system_map._proof(edge)], "through": []})
     touched = {s[end] for s in steps for end in ("from", "to") if not s[end].startswith(("store:", "module:"))}
     return steps, {path: sorted(owners[path]) for path in sorted(touched)}

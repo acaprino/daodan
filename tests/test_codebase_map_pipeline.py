@@ -284,8 +284,8 @@ def test_the_scan_runs_the_model_commands_in_daodans_container_with_the_engine_f
         result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
     assert "failed" not in result["scan"]
     assert found.call_count == 1
-    assert [tool for tool, _ in asked] == ["daodan-enry", "renovate", "go"]
-    assert [given for _, given in asked] == [engine, None, None]
+    assert [tool for tool, _ in asked] == ["daodan-enry", "renovate", "go", "noir"]
+    assert [given for _, given in asked] == [engine, None, None, None]
     record = premap.ensure(manifest)
     assert not [s for s in record["sources"] if s["state"] == "not_run"]
     sources = {e["data"]["phase"] for e in seen if e["kind"] == "progress" and e["step"] == "scan"}
@@ -306,11 +306,11 @@ def test_without_a_container_engine_the_model_sources_are_not_run_with_the_gap_a
     assert "failed" not in result["scan"] and found.call_count == 1
     record = premap.ensure(manifest)
     model = [s for s in record["sources"] if s["state"] not in ("ran", "not_needed")]
-    assert {s["source"].split("@")[0] for s in model} == {"go-enry", "renovate", "go"}
+    assert {s["source"].split("@")[0] for s in model} == {"go-enry", "renovate", "go", "noir"}
     assert {s["state"] for s in model} == {"not_run"}
     named = [g for g in record["gaps"] if g["kind"] == "model_not_run"]
-    assert len(named) == 3 and all(gap.cause in g["detail"] and g["remedy"] == gap.remedy for g in named)
-    assert sum(1 for e in seen if e["kind"] == "gap" and gap.cause in e["message"]) == 3
+    assert len(named) == 4 and all(gap.cause in g["detail"] and g["remedy"] == gap.remedy for g in named)
+    assert sum(1 for e in seen if e["kind"] == "gap" and gap.cause in e["message"]) == len(named)
     assert premap.state(manifest, runner=lambda commands: [])["state"] == "stale"  # retried once one answers
 
 

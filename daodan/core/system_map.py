@@ -29,6 +29,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import flows  # noqa: E402
+from edge_view import uncertainty  # noqa: E402
 import modules  # noqa: E402
 import snapshot  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
@@ -48,7 +49,7 @@ _SERVICE_FIELDS = ("family", "role", "mode")
 _MAP_FIELDS = {"schema", "nodes", "flows", "areas", "scope", "remove"}
 _NODE_FIELDS = {"id", "name", "type", "position", "members", "evidence", "on", "inside", "where", "registry",
                 *_SERVICE_FIELDS}
-_FLOW_FIELDS = {"id", "name", "area", "types", "nodes", "entries", "effects", "arrows", "paths"}
+_FLOW_FIELDS = {"id", "name", "area", "types", "nodes", "entries", "effects", "arrows", "paths", "intent", "outcome"}
 _ARROW_FIELDS = {"from", "to", "data", "kind", "cite"}
 _AREA_FIELDS = {"name", "present"}
 
@@ -194,6 +195,9 @@ def _flow(record, nodes: set[str], present: set[str] | None, scope: set[str] | N
         raise ValueError(f"{where}: area {out['area']} is outside the scope")
     if present is not None and key(out["area"]) not in present:
         raise ValueError(f"{where}: area {out['area']} is not declared present")
+    for field in ("intent", "outcome"):
+        if field in record:
+            out[field] = _text(record, field, where)
     out["types"] = _texts(record, "types", where)
     if not out["types"] or any(t not in FLOW_TYPES for t in out["types"]):
         raise ValueError(f"{where}: types are one or more of {', '.join(FLOW_TYPES)}")
@@ -393,7 +397,7 @@ def _between(a: str, b: str, owners: dict, leaving: dict, readers: dict) -> tupl
 
 
 def _proof(edge: dict) -> dict:
-    return {name: edge[name] for name in ("from", "to", "type", "site", "origin", "confidence", "resolver", "conflict")
+    return {name: edge[name] for name in ("from", "to", "type", "site", "origin", "confidence", "handler_confidence", "resolver", "conflict")
             if name in edge}
 
 
@@ -415,6 +419,14 @@ def _check_arrow(arrow: dict, first: dict, second: dict, index: dict, headers: d
         return {**out, **{k: arrow[k] for k in ("kind", "cite") if k in arrow}, "status": "refused",
                 "reason": f"no link from a member of {out['from']} to a member of {out['to']}, "
                           "nor a write and a read of the same store key"}
+    weak = [e for e in direct if uncertainty(e)]
+    weak += [e for pair in pairs for e in pair if uncertainty(e)]
+    if weak:
+        direct = [e for e in direct if not uncertainty(e)]
+        pairs = [(w, r) for w, r in pairs if not uncertainty(w) and not uncertainty(r)]
+        if not direct and not pairs:
+            return {**out, "status": "refused", "reason": "; ".join(dict.fromkeys(uncertainty(e) for e in weak)),
+                    "proof": [_proof(e) for e in weak]}
     types = {e["type"] for e in direct} | ({"trasferisce"} if pairs else set())
     via = {e["to"] for e in direct if e["type"] == "scrive"} | {e["from"] for e in direct if e["type"] == "legge"}
     via |= {w["to"] for w, _ in pairs}
@@ -487,6 +499,21 @@ def _flow_verdict(record: dict, arrows: list[dict], items: dict) -> dict:
     return {**out, "status": "accepted"}
 
 
+def _standing_proof(saved, candidates):
+    if uncertainty(saved):
+        return None
+    for edge in candidates:
+        if edge == saved:
+            return edge
+        # v3 omitted the callee's confidence on a derived store access. Only
+        # an exact observation can enrich this old pin without changing it.
+        if (saved["type"] in ("scrive", "legge") and saved["origin"] == "dedotto"
+                and edge.get("confidence") == "observed" and not uncertainty(edge)
+                and saved == {k: v for k, v in edge.items() if k not in ("confidence", "resolver")}):
+            return edge
+    return None
+
+
 def _verify(manifest: Path, links: dict, nodes: list[dict], flow_records: list[dict], headers: dict):
     """Reports of nodes and flows referenced by id, and the node items they were checked with."""
     items = _check_nodes(manifest, links, nodes, headers)
@@ -501,10 +528,34 @@ def _verify(manifest: Path, links: dict, nodes: list[dict], flow_records: list[d
             index["leaving_near"].setdefault(owner, []).append(edge)
         if edge["type"] == "legge":
             index["readers"].setdefault(edge["from"], []).append(edge)
+    pinned = {}
+    if any("trace" in row for row in flow_records):
+        for edge in links["edges"]:
+            pinned.setdefault((edge["from"], edge["to"], edge["site"]), []).append(edge)
     out = []
     for record in flow_records:
         arrows = [_check_arrow(a, items[a["from"]], items[a["to"]], index, headers) for a in record["arrows"]]
-        out.append(_flow_verdict(record, arrows, items))
+        trace = record.get("trace")
+        if trace:
+            # A card certifies these particular directed calls/sites. A similar
+            # link in the same file must never keep the path fresh after a change.
+            for arrow, proof, proposed in zip(arrows, trace["steps"], record["arrows"]):
+                path, _, line = proof["site"].rpartition(":")
+                matches = pinned.get((proof["from"], proof["to"], proof["site"]), ())
+                standing = _standing_proof(proof, matches)
+                if (standing and line.isdigit() and 1 <= int(line) <= (headers.get(path) or {}).get("lines", 0)
+                        and _owns(items[proposed["from"]], proof["from"]) and _owns(items[proposed["to"]], proof["to"])
+                        and arrow["status"] == "proved"):
+                    arrow.update(proof=[_proof(standing)], asserts=[standing["type"]])
+                else:
+                    arrow.update(status="refused", reason="the cited directed link no longer holds at this site",
+                                 proof=[], asserts=[], via=[])
+        result = _flow_verdict(record, arrows, items)
+        if "trace_review" in record and result["status"] != "refused":
+            result.update(status="incomplete", reachability="unproved", reason="the path decision changed; review its event card")
+        if trace and not any(b["entry"] in links["entries"] for b in trace_bindings(trace)):
+            result.update(status="refused", reachability="unproved", reason="the classified entry no longer holds")
+        out.append(result)
     return {"nodes": [items[n["id"]]["report"] for n in nodes], "flows": out}, items
 
 
@@ -680,6 +731,7 @@ def _evaluate(manifest: Path, links: dict, state: dict, headers: dict) -> dict:
         out_flows.append({"id": record["id"], "name": record["name"], "area": record["area"], "types": record["types"],
                           "nodes": [name[i] for i in record["nodes"]], "arrows": arrows, "paths": record.get("paths", []),
                           **{k: checked[k] for k in ("reachability", "entries", "effects") if k in checked},
+                          **{k: record[k] for k in ("trace", "trace_review", "intent", "outcome") if k in record},
                           "status": state_of, **({"reason": checked["reason"]} if "reason" in checked else {}),
                           "fresh": state_of in ok and all(a["fresh"] for a in arrows), "changed_files": changed})
     correspondences = []
@@ -727,15 +779,78 @@ def _dependencies(nodes: dict, roots) -> set[str]:
     return used
 
 
-def record(manifest: Path, rules: list[dict], value: object) -> dict:
+def _named_trace_nodes(value, existing):
+    """Reuse a map node that already names this exact endpoint, including its type and human name."""
+    by_member = {}
+    for node in existing.values():
+        if node["position"] == "internal" and len(node["members"]) == 1:
+            by_member.setdefault(node["members"][0], []).append(node["name"])
+    aliases, new = {}, []
+    for row in value["nodes"]:
+        names = by_member.get(row["members"][0], [])
+        if len(names) == 1:
+            aliases[row["name"]] = names[0]
+        elif len(names) > 1:
+            raise ValueError(f"several map nodes name {row['name']}; the endpoint is ambiguous")
+        else:
+            new.append(row)
+    flow = value["flows"][0]
+    arrows = [{**arrow, **{k: aliases.get(arrow[k], arrow[k]) for k in ("from", "to")}} for arrow in flow["arrows"]]
+    renamed = {k: [aliases.get(n, n) for n in flow[k]] for k in ("nodes", "entries", "effects")}
+    return {**value, "nodes": new, "flows": [{**flow, **renamed, "arrows": arrows}]}
+
+
+def trace_bindings(trace):
+    """All controls which independently established this same path, including pre-multiple-binding maps."""
+    return [{k: trace[k] for k in ("card_id", "entry")}, *trace.get("bindings", [])]
+
+
+def _bind_trace(flow, trace, previous):
+    if not previous:
+        return trace
+    from flow_paths import entry_id
+    old = previous.get("trace") or previous.get("trace_review")
+    if not old:
+        raise ValueError("the name already identifies a different flow; choose a distinct name")
+    event = entry_id(trace["entry"])
+    previous_bindings = trace_bindings(old)
+    if "trace" not in previous and any(entry_id(b["entry"]) == event for b in previous_bindings):
+        # Editing the meaning reopens every control. This decision recertifies just the one it cites.
+        return trace
+    remaining = [b for b in previous_bindings if entry_id(b["entry"]) != event]
+    if not remaining:
+        return trace
+    same = all(flow.get(k) == previous.get(k) for k in ("area", "types", "paths", "intent", "outcome"))
+    same_data = [a["data"] for a in flow["arrows"]] == [a["data"] for a in previous["arrows"]]
+    if not same or not same_data or old.get("steps") != trace["steps"]:
+        raise ValueError("the name already identifies a different flow; choose a distinct name")
+    # Preserve the original primary binding on retries and when another control cites the same exact chain.
+    new = {k: trace[k] for k in ("card_id", "entry")}
+    bindings = remaining + [new]
+    if entry_id(old["entry"]) == event:
+        bindings = [new, *remaining]
+    return {**trace, **bindings[0], "bindings": bindings[1:]}
+
+
+def record(manifest: Path, rules: list[dict], value: object, *, trace: dict | None = None, write_map=None) -> dict:
     """Validate and verify a proposal, merge it into the recorded map and write it beside the manifest."""
     manifest = Path(manifest).resolve()
     links = flows.cached_links(manifest, rules)
     headers = _headers(manifest)
     state = _state(manifest, headers)
     node_names = {key(n["name"]): i for i, n in state["nodes"].items()}
+    if trace is not None:
+        value = _named_trace_nodes(value, state["nodes"])
     proposal = validate(value, known=set(node_names) | set(state["nodes"]))
     flow_names = {key(f["name"]): i for i, f in state["flows"].items()}
+    if trace is not None:
+        flow = proposal["flows"][0]
+        previous = state["flows"].get(flow_names.get(key(flow["name"])))
+        flow["trace"] = _bind_trace(flow, trace, previous)
+        for item in proposal["nodes"]:
+            existing = state["nodes"].get(node_names.get(key(item["name"])))
+            if existing and (existing["members"] != item["members"] or existing["type"] != item["type"]):
+                raise ValueError(f"the name {item['name']} already identifies another map node")
     targets = set()
     for part, names in (("nodes", node_names), ("flows", flow_names)):
         for entry in proposal[part]:
@@ -763,7 +878,11 @@ def record(manifest: Path, rules: list[dict], value: object) -> dict:
     taken = set(state["nodes"]) | set(state["flows"])
     ident, node_reports, candidate, resolve = _record_nodes(state, proposal, node_names, taken, protected)
     settled = _record_flows(manifest, links, headers, state, proposal, candidate, resolve, taken, flow_names, outside)
-    return _write(manifest, links, headers, state, proposal, (ident, node_reports, candidate), settled)
+    if trace is not None:
+        result = settled[0][key(proposal["flows"][0]["name"])]
+        if result["status"] != "accepted":
+            return {"flows": [result]}
+    return _write(manifest, links, headers, state, proposal, (ident, node_reports, candidate), settled, write_map)
 
 
 def _record_nodes(state: dict, proposal: dict, node_names: dict, taken: set[str], protected: set[str]):
@@ -892,7 +1011,15 @@ def _record_flows(manifest: Path, links: dict, headers: dict, state: dict, propo
         # Older clients can revise an anchored flow without erasing its declared contract.
         endpoints = ({k: [resolve(n) for n in f[k]] for k in ("entries", "effects")} if "entries" in f else
                      {k: flow_records[target][k] for k in ("entries", "effects") if k in flow_records.get(target, {})})
-        twin = next((i for i, g in flow_records.items() if i != target and set(g["nodes"]) == set(refs)), None)
+        # Different, independently evidenced controls can share all the same implementation nodes.
+        if "trace" in f:
+            from flow_paths import entry_id
+            binding_ids = {entry_id(b["entry"]) for b in trace_bindings(f["trace"])}
+        else:
+            binding_ids = set()
+        twin = next((i for i, g in flow_records.items() if i != target and set(g["nodes"]) == set(refs)
+                     and (not binding_ids or not g.get("trace")
+                          or any(entry_id(b["entry"]) in binding_ids for b in trace_bindings(g["trace"])))), None)
         if "id" in f and f["id"] not in flow_records:
             refuse(f, None, f"no flow has id {f['id']}")
         elif target in declared:
@@ -912,8 +1039,23 @@ def _record_flows(manifest: Path, links: dict, headers: dict, state: dict, propo
             refuse(f, target, f"repeats flow {twin}: the same nodes")
         else:
             i = target or _assign(f["name"], taken)
-            flow_changes[i] = {**{k: f[k] for k in ("name", "area", "types", "paths")}, **endpoints, "id": i, "nodes": refs,
-                               "arrows": [{**a, "from": resolve(a["from"]), "to": resolve(a["to"])} for a in f["arrows"]]}
+            arrows = [{**a, "from": resolve(a["from"]), "to": resolve(a["to"])} for a in f["arrows"]]
+            updated = {**{k: f[k] for k in ("name", "area", "types", "paths", "trace", "intent", "outcome") if k in f},
+                       **endpoints, "id": i, "nodes": refs, "arrows": arrows}
+            old = flow_records.get(i, {})
+            pin = old.get("trace") or old.get("trace_review")
+            if pin and "trace" not in updated:
+                for field in ("intent", "outcome"):
+                    if field in old:
+                        updated.setdefault(field, old[field])
+                fields = ("nodes", "entries", "effects", "name", "area", "types", "paths", "intent", "outcome")
+                same = all(updated.get(k) == old.get(k) for k in fields)
+                same = same and arrows == [{k: v for k, v in a.items() if k != "digests"} for a in old["arrows"]]
+                if same and "trace" in old:
+                    updated["trace"] = pin
+                else:
+                    updated["trace_review"] = {k: pin[k] for k in ("card_id", "entry", "bindings") if k in pin}
+            flow_changes[i] = updated
     kept_flows = {i: f for i, f in flow_records.items() if i not in dropped}
     trial, _ = _verify(manifest, links, list(candidate.values()),
                        list({**kept_flows, **flow_changes}.values()), headers)
@@ -963,7 +1105,7 @@ def _refused_proposals(state, proposal, reports, final_flows, not_removed):
 
 
 def _write(manifest: Path, links: dict, headers: dict, state: dict, proposal: dict, node_part: tuple,
-           flow_part: tuple) -> dict:
+           flow_part: tuple, write_map=None) -> dict:
     """Keep the nodes the map still holds, write the map with its freshness and report what changed."""
     ident, node_reports, candidate = node_part
     flow_reports, final_flows, checked, not_removed = flow_part
@@ -991,6 +1133,8 @@ def _write(manifest: Path, links: dict, headers: dict, state: dict, proposal: di
         record_["digests"] = _digests(set(checked_["files"]) | {e.split("#")[0] for e in record_["evidence"]}, headers)
     for checked_ in system["flows"]:
         record_ = final_flows[checked_["id"]]
+        if "trace" in record_:
+            record_["trace_verified"] = checked_["fresh"] and checked_["reachability"] == "verified"
         for arrow, result in zip(record_["arrows"], checked_["arrows"]):
             if record_ is state["flows"].get(record_["id"]) and arrow.get("digests"):
                 continue
@@ -1030,10 +1174,14 @@ def _write(manifest: Path, links: dict, headers: dict, state: dict, proposal: di
               "created": sorted(set(after) - set(before)), "removed": sorted(set(before) - set(after)),
               "updated": sorted(i for i in set(after) & set(before) if plain(after[i]) != plain(before[i])),
               "kept": sorted(i for i in set(after) & set(before) if plain(after[i]) == plain(before[i]))}
-    snapshot._write_json_atomic(manifest.with_name(FILE), {
+    payload = {
         "schema": SCHEMA, "nodes": list(final_nodes.values()), "flows": list(final["flows"].values()),
         "refused_proposals": final["refused_proposals"],
-        "areas": sorted(areas.values(), key=lambda a: key(a["name"]))})
+        "areas": sorted(areas.values(), key=lambda a: key(a["name"]))}
+    if write_map is None:
+        snapshot._write_json_atomic(manifest.with_name(FILE), payload)
+    else:
+        write_map(payload)
     return answer
 
 
@@ -1044,7 +1192,13 @@ def load(manifest: Path, rules: list[dict]) -> dict | None:
     state = _state(manifest, headers)
     if not state["exists"] and not state["declared"]:
         return None
-    return _evaluate(manifest, flows.cached_links(manifest, rules), state, headers)
+    if not any("trace" in f or "trace_review" in f for f in state["flows"].values()):
+        return _evaluate(manifest, flows.cached_links(manifest, rules), state, headers)
+    import flow_paths
+    links, cards, _ = flow_paths._deck(manifest, rules)
+    system = _evaluate(manifest, links, state, headers)
+    flow_paths.rebind(links, cards, system["flows"])
+    return system
 
 
 def find(records: list[dict], name: str) -> dict | None:
@@ -1081,7 +1235,8 @@ def about(system: dict, name: str) -> dict:
             **({"refused_proposals": matching} if matching else {}),
             "flows": [{"id": f["id"], "name": f["name"], "area": f["area"], "status": f["status"],
                        "fresh": f["fresh"],
-                       **{k: f[k] for k in ("reachability", "entries", "effects") if k in f},
+                       **{k: f[k] for k in ("reachability", "entries", "effects", "intent", "outcome") if k in f},
+                       **({"trace_id": pin["card_id"]} if (pin := f.get("trace") or f.get("trace_review")) and pin["card_id"] else {}),
                        **({"reason": f["reason"]} if "reason" in f else {}),
                        **({"refused_arrows": arrows} if (arrows := [a for a in f["arrows"] if a["status"] == "refused"]) else {}),
                        **listed(files(by_name[n] for n in f["nodes"]))} for f in chosen],

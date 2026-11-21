@@ -90,6 +90,7 @@ def _runner(manifest: Path):
             raise asked["gap"]
         return container_runner.runner(manifest, engine=asked.pop("engine", None))(commands, toolchains)
 
+    run.uses_default_container = True
     return run
 
 

@@ -90,3 +90,21 @@ test('node types and location reach the projected node', () => {
   assert.deepEqual([provider?.nodeType, provider?.location], ['servizio o API', 'external']);
   assert.equal(projection.nodes.find(node => node.ref === 'store:db/orders')?.nodeType, 'database');
 });
+
+test('old exports with a shared handler still allow selecting either event', () => {
+  const first = env.flows[0];
+  const repeated = parseEnvelope({ ...env, flows: [first, { ...first, steps: [], complete: false }] });
+  assert.notEqual(repeated.flows[0].ref, repeated.flows[1].ref);
+  assert.equal(repeated.flows.find(f => f.ref === repeated.flows[1].ref)?.complete, false);
+});
+
+test('uncertain and proved steps between the same groups stay distinguishable on export', () => {
+  const first = env.flows[0];
+  const base = { source: 'component:web', target: 'component:server', type: 'scrive', origin: 'dedotto', site: 'a:1' };
+  const envelope = { ...env, flows: [{ ...first, steps: [base, { ...base, confidence: 'sampled', site: 'a:2' }] }] };
+  const projection = project(envelope, 'logical', null);
+  for (const edges of [flowFocus(envelope, first.ref, projection).edges, dataLinks(envelope, projection)]) {
+    assert.equal(edges.length, 2);
+    assert.equal(edges.filter(edge => edge.uncertain).length, 1);
+  }
+});

@@ -477,7 +477,12 @@ class _JavaScriptEvidence(_Evidence):
                 scope = self.scope_by_id[scope].get("parent")
             if scope is not None:
                 continue
-            local = f"__tauri_invoke_{command}"
+            ref["tauri_command"] = command
+            ref["tauri_registration_version"] = 2  # requires a production Tauri builder registration
+            if not command or not command.isidentifier():
+                continue
+            # A synthetic binding must never collide with a real JavaScript local.
+            local = f"__tauri_invoke_::{command}"
             if command not in bound:
                 self.data["imports"].append({"scope": "module", "local": local, "module": f"tauri::command::{command}",
                                              "imported": command, "mode": "named", "span": span})
@@ -904,10 +909,8 @@ class _JavaScriptEvidence(_Evidence):
                 if self.tauri_calls is not None and t == "call_expression" and 0 < len(parts) <= 2:
                     args = node.child_by_field_name("arguments")
                     first = args.named_children[0] if args and args.named_children else None
-                    if first is not None and first.type == "string":
-                        command = self.text(first)[1:-1]
-                        if command.isidentifier():
-                            self.tauri_calls.append((ref, command, self.span(first)))
+                    command = self.text(first)[1:-1] if first is not None and first.type == "string" else None
+                    self.tauri_calls.append((ref, command, self.span(first) if first is not None else ref["span"]))
                 if not parts:
                     self.walk(function.child_by_field_name("object") if call_parts else function)
                 if parts == ["eval"]:

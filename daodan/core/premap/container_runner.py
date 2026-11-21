@@ -27,7 +27,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import preparation  # noqa: E402
 import node_preparation  # noqa: E402
-from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, sbt  # noqa: E402
+from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, noir, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
@@ -63,6 +63,7 @@ DOCKERFILE = (f"mkdir -p {STATE}/dockerfile && cp {IN}/dockerfile_stages.go {STA
               f" && GOFLAGS=-mod=mod go get github.com/moby/buildkit@{dockerfile.VERSION}"
               f" && CGO_ENABLED=0 GOFLAGS=-mod=mod go build -o {T}/bin/daodan-dockerfile .")
 TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the registries, extra hosts, memory GB
+    "noir": {"files": [noir.DOWNLOAD], "setup": [f"install -m 755 {IN}/noir {T}/bin/noir"]},
     "go": {"files": [GO], "setup": [UNPACK["go"]], "runs_on": ("go",)},
     "daodan-enry": {"files": [GO, (None, None, "enry_facts.go")], "setup": [UNPACK["go"], ENRY], "registries": True},
     # `values`: the true values of the tracked .env files beside the copy (`container.run_commands`), which Daodan's
@@ -242,4 +243,5 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         return [{**answer, "root": roots[n + 1], **({"gaps": gaps} if n == 0 and gaps else {})}
                 for n, answer in enumerate(answers[1:])]
 
+    run.uses_default_container = engine is None
     return run

@@ -46,9 +46,20 @@ def call_ends(ref: dict):
     """Every evidenced project destination of a call, with the confidence of that particular edge."""
     observed = ref.get("observations", ())
     target = ref.get("target_id")
+    flag = {"conflict": True} if ref.get("conflict") else {}
     if target and not any(end["target_id"] == target and end["confidence"] == ref.get("confidence") for end in observed):
-        yield {"target_id": target, "confidence": ref.get("confidence") or "confirmed", "resolver": ref.get("resolver")}
-    yield from observed
+        yield {"target_id": target, "confidence": ref.get("confidence") or "confirmed", "resolver": ref.get("resolver"), **flag}
+    for end in observed:
+        yield {**end, **flag}
+
+
+def uncertainty(evidence: dict) -> str | None:
+    """Why a call, a binding, or an effect derived from it cannot establish a path."""
+    if evidence.get("conflict"):
+        return "conflicting destinations at the same call site"
+    if evidence.get("confidence") == "sampled" or evidence.get("handler_confidence") == "sampled":
+        return "sampled stack; the direct call was not observed"
+    return None
 
 _PROTOCOL_BASES = frozenset({"Protocol", "typing.Protocol", "typing_extensions.Protocol"})
 _ABC_BASES = frozenset({"ABC", "abc.ABC", "ABCMeta", "abc.ABCMeta"})
@@ -306,6 +317,11 @@ def load_edge_view(
                 target_id = overrides[ref_id]
                 res_state = "resolved" if target_id else "unresolved"
                 payload = {**payload, "target_id": target_id, "resolution": res_state}
+            # Older structural snapshots accepted a method with the same name on any Rust receiver.
+            if ("tauri_command" in payload and payload.get("tauri_registration_version") != 2
+                    and target_id and target_id.partition("::")[0].endswith(".rs")):
+                target_id, res_state = None, "unresolved"
+                payload = {**payload, "reason": "refresh the snapshot to verify the Tauri builder registration"}
             lex_resolver = payload.get("resolver") or resolution.LEXICAL_RESOLVER
 
             record = {
@@ -325,6 +341,10 @@ def load_edge_view(
             }
 
             found_rows = rows_by_ref.get(ref_id, ())
+            if any((row.get("payload") or {}).get("conflict") for row in found_rows):
+                # The recorder compares both ends. An observed external end may
+                # have no project declaration in the list of observations below.
+                record["conflict"] = True
             if kind == "call":
                 ends = {}
                 for row in found_rows:
@@ -355,6 +375,7 @@ def load_edge_view(
                 elif ref_id in overrides and res_state == "resolved":
                     # A lexical target the caller overrides stays; a different store target is a conflict.
                     if found is not None:
+                        record["conflict"] = True
                         conflicts.append({
                             "reference_id": ref_id,
                             "file": file_rel,

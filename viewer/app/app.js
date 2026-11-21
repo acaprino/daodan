@@ -34,6 +34,8 @@ let server = null, serverError = '';
 let checked = null, checkedUrl = '', branch = '', checking = false, checkError = '', selectError = '', selecting = false, generation = 0;
 let PREMAP = null, premapRun = '', premapError = '';
 let GRAPH = null, graphRun = '', graphError = '', graphLoading = false;
+let pathPage = null;  // current evidence page; previous pages belong to the same run and rules
+const orphanWrites = Symbol('orphan writes');  // separate view, never sent to the server as a card id
 let SYMBOLS = null;  // the inspector's file: its symbols and calls, asked when the file is selected
 let events = [], cursors = { after: 0, pipeline_after: 0, pulse_after: 0 }, eventsRun = '';
 let engineDraft = null, engineSaid = '', engineTone = '', question = '', asked = null, shown = '';
@@ -76,6 +78,8 @@ function observe() {
 
 function applyState(found) {
   const linked = server && server.links?.state !== 'done' && found.links?.state === 'done';  // new links: a new graph
+  const mappingChanged = server && found.mapped?.state !== 'running' &&
+    JSON.stringify(server.mapped) !== JSON.stringify(found.mapped);
   server = found;
   serverError = '';
   const c = ctx();
@@ -93,6 +97,7 @@ function applyState(found) {
       toast('Contesto pronto: ' + slug() + ' · ' + c.branch);
     }
   }
+  if (linked || mappingChanged || pathPage?.run !== c?.run_id) pathPage = null;
   if (linked && c) loadGraph();
   loadViews();
   show();
@@ -104,13 +109,17 @@ function applyEvents(found) {
   cursors = { after: run.next_cursor, pipeline_after: run.pipeline.next_cursor, pulse_after: found.pulse.next_cursor };
   events.push(...run.events.map(e => ({ ...e, run: true })), ...run.pipeline.events);
   const grown = run.pipeline.events.some(e => e.kind === 'step.finished' || e.kind === 'graph.ready');
+  if (grown && ctx()?.run_id === run.run_id) { pathPage = null; loadViews(); }
   if (grown && ctx()?.run_id === run.run_id && (state.analysisStage !== 'repository' || state.screen === 'graph')) loadGraph();
   show();
 }
 
+function viewingPaths() { return state.screen === 'analysis' && state.analysisStage === 'synthesis' && complete(); }
+
 function loadViews() {  // what the stage on screen draws, read once a run
   const c = ctx();
   if (c && graphRun !== graphKey() && (state.analysisStage !== 'repository' || state.screen === 'graph')) loadGraph();
+  if (viewingPaths() && !pathPage) loadPathPage();
   if (c && premapRun !== c.run_id && ['premap', 'synthesis'].includes(state.analysisStage)) loadPremap();
 }
 
@@ -600,19 +609,22 @@ function sceneNode(n, x, y, width, height, preview) {
     content: fragment(`<span class="im-accent">${nodeIcon(n)}</span><span class="im-row-text"><strong class="im-row-title">${esc(nodeName(n))}</strong>${preview ? '' : stackRow(n)}<small class="im-row-sub">${esc(nodeFacts(n))}</small></span>`),
   };
 }
-function proofLabel(status) {
-  return { observed: 'osservata in esecuzione', sampled: 'campionata dal profiler', uncertain: 'incerta' }[status] || '';
+function proofLabel(status, conflict = false) {
+  const label = { observed: 'osservata in esecuzione', sampled: 'campionata dal profiler', uncertain: 'incerta' }[status] || '';
+  return [label, conflict && 'destinazioni in conflitto'].filter(Boolean).join(' · ');
 }
 function runtimeSummary(edges) {
-  const observed = edges.filter(e => e.status === 'observed').length;
-  const sampled = edges.filter(e => e.status === 'sampled').length;
+  const observed = edges.filter(e => !e.conflict && e.status === 'observed').length;
+  const sampled = edges.filter(e => !e.conflict && e.status === 'sampled').length;
+  const conflicts = edges.filter(e => e.conflict).length;
   return [observed && plural(observed, 'osservata in esecuzione', 'osservate in esecuzione'),
-    sampled && plural(sampled, 'campionata dal profiler', 'campionate dal profiler')].filter(Boolean).join(' · ');
+    sampled && plural(sampled, 'campionata dal profiler', 'campionate dal profiler'),
+    conflicts && plural(conflicts, 'in conflitto', 'in conflitto')].filter(Boolean).join(' · ');
 }
 function sceneEdge(e) {
-  return { source: e.source, target: e.target, dashed: e.status === 'uncertain' || e.status === 'sampled',
-    tone: e.status === 'uncertain' ? 'warn' : ['observed', 'sampled'].includes(e.status) ? 'accent' : undefined,
-    label: [endName(e.source), '→', endName(e.target), Object.entries(e.counts ?? {}).map(([k,v]) => k + ': ' + v).join(', '), proofLabel(e.status)].filter(Boolean).join(' ') };
+  return { source: e.source, target: e.target, dashed: e.conflict || e.status === 'uncertain' || e.status === 'sampled',
+    tone: e.conflict || e.status === 'uncertain' ? 'warn' : ['observed', 'sampled'].includes(e.status) ? 'accent' : undefined,
+    label: [endName(e.source), '→', endName(e.target), Object.entries(e.counts ?? {}).map(([k,v]) => k + ': ' + v).join(', '), proofLabel(e.status, e.conflict)].filter(Boolean).join(' ') };
 }
 function previewScene() {
   return { nodes: GRAPH.nodes.map((n,i) => sceneNode(n, (i % 3) * 201, Math.floor(i / 3) * 92, 178, 62, true)),
@@ -682,8 +694,80 @@ function gapLines() {
   return [...new Set(lines)];
 }
 
+async function loadPathPage(id = null, offset = 0, previous = null, focus = false) {
+  const page = { run: ctx().run_id, id, offset, previous };
+  pathPage = page;
+  const query = new URLSearchParams({ offset });
+  if (id === orphanWrites) query.set('effects', '1');
+  else if (id) query.set('id', id);
+  drawPaths();
+  try {
+    const result = await get('/api/app/paths?' + query);
+    if (result.run_id && result.run_id !== page.run) throw new Error('Il run attivo è cambiato.');
+    const rows = id === orphanWrites ? result.effects : id ? result.steps : result.cards;
+    if (!Array.isArray(rows)) throw new Error(result.reason || 'La pagina dei percorsi non è disponibile.');
+    page.result = result;
+  } catch (error) { page.error = error.message; }
+  if (page === pathPage && viewingPaths()) drawPaths(focus);
+}
+
+function drawPaths(focus = false) {
+  const panel = document.getElementById('flow-paths');
+  if (!panel) return;
+  panel.innerHTML = pathContents();
+  if (focus) panel.focus({ preventScroll: true });
+}
+
+function pathContents() {
+  const page = pathPage;
+  const top = '<div class="im-panel-header im-split"><h2 id="flow-paths-title">Percorsi per ingresso</h2>' +
+    (page?.id ? '<button class="im-btn im-btn--ghost im-btn--sm" data-action="path-list">Torna agli ingressi</button>' :
+      '<button class="im-btn im-btn--ghost im-btn--sm" data-action="path-effects">Scritture senza ingresso</button>') + '</div>';
+  if (!page || (!page.result && !page.error)) return top + '<p class="im-inset im-muted" role="status">Lettura delle prove…</p>';
+  if (page.error) return top + `<div class="im-inset"><p role="alert">${esc(page.error)}</p><button class="im-btn" data-action="path-retry">Riprova</button></div>`;
+  const { card, cards, steps, effects, count, next_offset } = page.result;
+  const items = page.id === orphanWrites ? effects : page.id ? steps : cards;
+  const previous = page.previous && page.id === page.previous.id;
+  const noun = page.id === orphanWrites ? 'Scritture' : page.id ? 'Passaggi' : 'Ingressi';
+  const paging = `<div class="im-cluster"><span class="im-muted im-caption">${noun} ${number(page.offset + 1)}–${number(page.offset + items.length)} di ${number(count)}</span>
+    ${previous ? `<button class="im-btn im-btn--sm" data-action="path-prev">${noun} precedenti</button>` : ''}
+    ${Number.isInteger(next_offset) ? `<button class="im-btn im-btn--sm" data-action="path-next">${noun} ${effects ? 'successive' : 'successivi'}</button>` : ''}</div>`;
+  if (page.id === orphanWrites) {
+    const rows = effects.map(e => `<li><p><code>${esc(e.writer)}</code> → <code>${esc(e.effect)}</code></p>
+      <p class="im-caption">${esc(e.site)}</p><p>${esc(e.reason)}</p>
+      ${e.stopped_at ? `<p>Le prove si fermano in <code>${esc(e.stopped_at)}</code>.</p>` : ''}</li>`).join('');
+    return top + `<div class="im-inset im-stack"><h3>Scritture senza ingresso</h3>
+      <p>${number(page.result.without_entry)} di ${number(page.result.writes)} scritture senza un percorso provato da un ingresso.
+      Con un percorso provato: ${number(page.result.reached)}.</p>${rows ? `<ul class="im-detail-list">${rows}</ul>${paging}` : ''}</div>`;
+  }
+  if (!page.id) {
+    const rows = items.map(c => `<li><button class="im-btn im-btn--ghost" data-path-card="${esc(c.card_id)}">
+      <span><strong>${esc(c.label || c.event)}</strong><br><code>${esc(c.handler)}</code> · ${esc(c.site)}</span>${icon('arrow')}</button></li>`).join('');
+    const missing = server?.mapped?.discovery?.effect_coverage?.without_entry;
+    const coverage = missing ? `<p>${number(missing)} scritture senza un percorso provato da un ingresso.</p>` : '';
+    return top + '<div class="im-inset im-stack">' + coverage + (rows ? `<ul class="im-detail-list">${rows}</ul>${paging}` :
+      '<p>Nessun ingresso classificato per questo snapshot.</p>') + '</div>';
+  }
+  const rows = steps.map(step => {
+    const evidence = [proofLabel(step.confidence, step.conflict) || step.confidence, step.origin, step.resolver].filter(Boolean);
+    const end = step.end === 'lacuna' ? 'Lacuna' : step.end === 'effetto' ? 'Effetto' : '';
+    return `<li value="${Number(step.n)}"><p><strong>Passaggio ${number(step.n)}</strong>${step.parent ? ' · dal passo ' + number(step.parent) : ''}
+      ${end ? `<span class="im-chip" data-im-tone="${step.end === 'lacuna' ? 'warn' : 'accent'}">${end}</span>` : ''}</p>
+      <p><code>${esc(step.from)}</code>${step.to ? ` · ${esc(step.type)} → <code>${esc(step.to)}</code>` : ''}</p>
+      <p class="im-muted im-caption">${esc([step.site, ...evidence].filter(Boolean).join(' · '))}</p>
+      ${step.reason ? `<p>${esc(step.reason)}</p>` : ''}</li>`;
+  }).join('');
+  return top + `<div class="im-inset im-stack"><h3>${esc(card.label || card.event)}</h3>
+    <dl class="im-facts"><dt>Evento</dt><dd>${esc(card.event)} · ${esc(card.kind)}</dd>
+    <dt>Gestore</dt><dd><code>${esc(card.handler)}</code></dd>
+    ${card.handler_source || card.handler_confidence ? `<dt>Fonte del gestore</dt><dd>${esc(
+      [card.handler_source, proofLabel(card.handler_confidence) || card.handler_confidence].filter(Boolean).join(' · '))}</dd>` : ''}
+    <dt>Ingresso</dt><dd><code>${esc(card.site)}</code></dd></dl>
+    ${rows ? `<ol class="im-stack">${rows}</ol>${paging}` : '<p>Nessun passaggio provato dal gestore.</p>'}</div>`;
+}
+
 function synthesisScreen() {
-  const notice = mapNotice();
+  const notice = mapNotice() + `<section class="im-surface im-panel" data-im-surface="sheet" id="flow-paths" tabindex="-1" aria-labelledby="flow-paths-title">${pathContents()}</section>`;
   if (!GRAPH) return notice + (graphError ? `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Grafo non disponibile.</strong> ${esc(graphError)}</div>` : waiting('Lettura del grafo…', 'Gruppi, relazioni e lacune del run.'));
   const top = [...GRAPH.nodes].sort((a, b) => b.files.length - a.files.length).slice(0, 3), gaps = gapLines();
   const modules = GRAPH.grouping === 'modules';
@@ -790,8 +874,8 @@ function inspector() {
   const n = nodeById(state.graphRoot);
   if (!n) return '';
   const related = GRAPH.edges.filter(e => e.source === n.id || e.target === n.id);
-  const runtime = related.filter(e => ['observed', 'sampled'].includes(e.status));
-  return `<aside class="im-detail-panel" data-im-surface="sheet" aria-label="Dettaglio del gruppo"><p class="im-kicker">${n.location === 'external' ? 'Nodo esterno selezionato' : SELECTED[n.kind] || 'Modulo selezionato'}</p><h2>${esc(nodeName(n))}</h2><span class="im-chip" data-im-tone="${n.location === 'external' ? 'info' : 'accent'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="im-muted">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p>${opens(n) ? `<button class="im-btn im-btn--primary" data-open-node="${esc(n.id)}">${icon('layers')}Apri sul posto</button>` : ''}<div class="im-section"><h3>Perimetro</h3><dl class="im-facts">${n.kind === 'symbol' ? `<dt>Righe</dt><dd>${esc((n.lines || []).join('–'))}</dd>${n.members ? `<dt>Simboli dentro</dt><dd>${n.members.length}</dd>` : ''}` : `<dt>File assegnati</dt><dd>${n.files.length}</dd>`}<dt>Relazioni nel grafo</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || { directory: 'Directory del checkout', file: 'File del checkout', symbol: 'Outline del file' }[n.kind] || 'Non registrata')}</dd></dl>${runtime.length ? `<details><summary>Chiamate in esecuzione (${number(runtime.length)})</summary><ul class="im-detail-list">${runtime.map(e => `<li>${esc(endName(e.source))} → ${esc(endName(e.target))} · ${proofLabel(e.status)}</li>`).join('')}</ul></details>` : ''}</div>${n.projects ? stackBlock(n) : ''}${n.kind === 'file' ? symbolsBlock(n) : ''}<div class="im-section"><h3>Evidenze</h3><ul class="im-detail-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="im-muted">Nessuna evidenza dichiarata.</li>'}</ul></div>${n.kind === 'symbol' ? '' : `<div class="im-section"><h3>File del gruppo</h3><ul class="im-detail-list">${n.files.slice(0, 4).map(path => `<li><button class="im-btn" data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="im-muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="im-btn im-btn--ghost im-btn--sm" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div>`}</aside>`;
+  const runtime = related.filter(e => e.conflict || ['observed', 'sampled'].includes(e.status));
+  return `<aside class="im-detail-panel" data-im-surface="sheet" aria-label="Dettaglio del gruppo"><p class="im-kicker">${n.location === 'external' ? 'Nodo esterno selezionato' : SELECTED[n.kind] || 'Modulo selezionato'}</p><h2>${esc(nodeName(n))}</h2><span class="im-chip" data-im-tone="${n.location === 'external' ? 'info' : 'accent'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="im-muted">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p>${opens(n) ? `<button class="im-btn im-btn--primary" data-open-node="${esc(n.id)}">${icon('layers')}Apri sul posto</button>` : ''}<div class="im-section"><h3>Perimetro</h3><dl class="im-facts">${n.kind === 'symbol' ? `<dt>Righe</dt><dd>${esc((n.lines || []).join('–'))}</dd>${n.members ? `<dt>Simboli dentro</dt><dd>${n.members.length}</dd>` : ''}` : `<dt>File assegnati</dt><dd>${n.files.length}</dd>`}<dt>Relazioni nel grafo</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || { directory: 'Directory del checkout', file: 'File del checkout', symbol: 'Outline del file' }[n.kind] || 'Non registrata')}</dd></dl>${runtime.length ? `<details><summary>Prove delle chiamate (${number(runtime.length)})</summary><ul class="im-detail-list">${runtime.map(e => `<li>${esc(endName(e.source))} → ${esc(endName(e.target))} · ${proofLabel(e.status, e.conflict)}</li>`).join('')}</ul></details>` : ''}</div>${n.projects ? stackBlock(n) : ''}${n.kind === 'file' ? symbolsBlock(n) : ''}<div class="im-section"><h3>Evidenze</h3><ul class="im-detail-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="im-muted">Nessuna evidenza dichiarata.</li>'}</ul></div>${n.kind === 'symbol' ? '' : `<div class="im-section"><h3>File del gruppo</h3><ul class="im-detail-list">${n.files.slice(0, 4).map(path => `<li><button class="im-btn" data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="im-muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="im-btn im-btn--ghost im-btn--sm" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div>`}</aside>`;
 }
 
 // A file is the lowest node: its symbols and the calls among them, with their lines, are the inspector's, asked when
@@ -803,7 +887,7 @@ function symbolsBlock(n) {
   if (SYMBOLS.error) return block(`<p class="im-muted im-caption">${esc(SYMBOLS.error)}</p>`);
   const name = ref => SYMBOLS.symbols.find(s => s.id === ref)?.name || ref.replace(/^file:/, '');
   const sites = call => call.evidence.map(e => esc(e.path.split('/').pop() + ':' + e.line)).join(', ');
-  return block(`<ul class="im-detail-list">${SYMBOLS.symbols.map(s => `<li><code>${esc(s.name)}</code> <span class="im-muted im-caption">righe ${esc((s.lines || []).join('–'))}${s.freshness ? ' · ' + esc(s.freshness) : ''}</span></li>`).join('') || '<li class="im-muted">Nessun simbolo nell’outline.</li>'}</ul><ul class="im-detail-list">${SYMBOLS.calls.map(c => `<li><code>${esc(name(c.source))} → ${esc(name(c.target))}</code> <span class="im-muted im-caption">${[sites(c), proofLabel(c.status)].filter(Boolean).join(' · ')}</span></li>`).join('') || '<li class="im-muted">Nessuna chiamata risolta da o verso i suoi simboli.</li>'}</ul>`);
+  return block(`<ul class="im-detail-list">${SYMBOLS.symbols.map(s => `<li><code>${esc(s.name)}</code> <span class="im-muted im-caption">righe ${esc((s.lines || []).join('–'))}${s.freshness ? ' · ' + esc(s.freshness) : ''}</span></li>`).join('') || '<li class="im-muted">Nessun simbolo nell’outline.</li>'}</ul><ul class="im-detail-list">${SYMBOLS.calls.map(c => `<li><code>${esc(name(c.source))} → ${esc(name(c.target))}</code> <span class="im-muted im-caption">${[sites(c), proofLabel(c.status, c.conflict)].filter(Boolean).join(' · ')}</span></li>`).join('') || '<li class="im-muted">Nessuna chiamata risolta da o verso i suoi simboli.</li>'}</ul>`);
 }
 
 async function loadSymbols(file) {
@@ -951,7 +1035,7 @@ function premapProvenance() {
 
 function sourceModal(path) {
   const edges = GRAPH.edges.flatMap(e => e.evidence.filter(ev => ev.path === path || ev.target === path).map(ev => ({ ...ev, source: e.source, target: e.target, status: e.status })));
-  modal(path.split('/').pop(), 'File dello snapshot del run.', `<p><code>${esc(path)}</code></p><p class="im-muted">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</p><h3>Relazioni registrate</h3><ul class="im-detail-list">${edges.slice(0, 8).map(e => `<li>${icon('arrow')}<span>${esc(endName(e.source))} → ${esc(endName(e.target))}<br><code>${esc(e.kind)}${e.key ? ' · ' + esc(e.key) : ''}${proofLabel(e.status) ? ' · ' + proofLabel(e.status) : ''}${e.line ? ' · riga ' + e.line : ''}${e.target && e.path === path ? ' · ' + esc(e.target) : ''}</code></span></li>`).join('') || '<li>Nessuna relazione tra gruppi cita questo file.</li>'}</ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi dettaglio</button>`);
+  modal(path.split('/').pop(), 'File dello snapshot del run.', `<p><code>${esc(path)}</code></p><p class="im-muted">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</p><h3>Relazioni registrate</h3><ul class="im-detail-list">${edges.slice(0, 8).map(e => `<li>${icon('arrow')}<span>${esc(endName(e.source))} → ${esc(endName(e.target))}<br><code>${esc(e.kind)}${e.key ? ' · ' + esc(e.key) : ''}${proofLabel(e.status, e.conflict) ? ' · ' + proofLabel(e.status, e.conflict) : ''}${e.line ? ' · riga ' + e.line : ''}${e.target && e.path === path ? ' · ' + esc(e.target) : ''}</code></span></li>`).join('') || '<li>Nessuna relazione tra gruppi cita questo file.</li>'}</ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi dettaglio</button>`);
 }
 
 document.addEventListener('click', async event => {
@@ -963,12 +1047,24 @@ document.addEventListener('click', async event => {
 
 
 
+  if (b.dataset.pathCard) { loadPathPage(b.dataset.pathCard, 0, pathPage, true); return; }
   if (b.dataset.previewNode) { closeModal(); state.graphRoot = b.dataset.previewNode; state.graphOpen = []; state.graphDepth = '1'; state.graphSearch = ''; navigate('graph'); return; }
   if (b.dataset.openNode) { openGroup(b.dataset.openNode); return; }
 
   if (b.dataset.closeNode) { closeGroup(b.dataset.closeNode); state.graphRoot = b.dataset.closeNode; loadGraph(); render(); return; }  // the group closed is selected again
   if (b.dataset.sourcePath) { sourceModal(b.dataset.sourcePath); return; }
   switch (b.dataset.action) {
+    case 'path-effects': loadPathPage(orphanWrites, 0, pathPage, true); break;
+    case 'path-next': loadPathPage(pathPage.id, pathPage.result.next_offset, pathPage, true); break;
+    case 'path-prev': pathPage = pathPage.previous; drawPaths(true); break;
+    case 'path-list': {
+      const refresh = Boolean(pathPage?.error);
+      while (pathPage?.id) pathPage = pathPage.previous;
+      if (!pathPage || refresh) loadPathPage(null, 0, null, true);
+      else drawPaths(true);
+      break;
+    }
+    case 'path-retry': loadPathPage(pathPage.id, pathPage.offset, pathPage.previous, true); break;
     case 'use-repository': await selectRepository(); break;
     case 'retry-premap': premapRun = ''; loadPremap(); break;
     case 'retry-pass': try { applyState(await post('/api/app/retry', {})); } catch (error) { toast(error.message); } break;

@@ -39,7 +39,7 @@ import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
 from premap import (autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
-                    jvm_files, make, maven, meson, module_graph, npm, npm_lock, npm_tests, project_files, python_build,
+                    jvm_files, make, maven, meson, module_graph, noir, npm, npm_lock, npm_tests, project_files, python_build,
                     python_tests, renovate, requirements, sbt, suffix_table, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
@@ -48,8 +48,9 @@ RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run
 RANKS = ("model", "reader", "scanner")
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, jvm_files, project_files,
            gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
-           gradle, maven, sbt, dotnet)
+           gradle, maven, sbt, dotnet, noir)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
+    "noir_entries": (),  # individual observations from a single scanner
     "languages": (("language",),),
     "excluded": (("path",),),
     "units": (("root", "kind", "name", "manifest"), ("root", "kind", "name"), ("root", "kind")),
@@ -58,6 +59,7 @@ IDENTITY = {  # the fields that make two entries one fact, from the strictest to
     "tests": (("root", "runner"),),  # how the tests of a folder run: the dynamic step's command
     "services": (("declared_in",),),  # a service container a CI job starts beside its steps: the dynamic step's too
     "configured_services": (("declared_in", "name"),),  # Compose declarations; not instructions to start containers
+    "workflow_triggers": (("declared_in", "event"),),
     "compose": (("declared_in",),),  # a CI step that starts Docker Compose: what `compose` reads
     "ci_steps": (("declared_in", "tests"),),  # a step a CI job runs before the tests of an entry: the dynamic step's
     "docker_builds": (("dockerfile", "context"),),  # a Dockerfile's stages as BuildKit reads them (`dockerfile`)
@@ -328,10 +330,33 @@ def python_runs(record: dict) -> list[dict]:
 
 # --------------------------------------------------------------- lifecycle
 
-def _inputs(store, sources) -> str:
-    value = [logical_digest(store), store["root"], [label(s) for s in sources], SCHEMA]
+def _snapshot_stamp(manifest: Path) -> list:
+    from store_graph import source_stamp
+    wal = manifest.with_name(manifest.name + "-wal")
+    try:
+        wal_stamp = list(source_stamp(wal))
+    except FileNotFoundError:
+        wal_stamp = None
+    return [list(source_stamp(manifest)), wal_stamp]
+
+
+def binding_matches(manifest: Path, binding: dict) -> bool:
+    """A persisted digest need not be recomputed when the manifest and its WAL have the same change clocks."""
+    stamp = _snapshot_stamp(manifest)
+    if stamp == binding.get("snapshot_stamp") and all(s is None or s[-1] for s in stamp):
+        return True
+    with open_snapshot(manifest) as store:
+        return logical_digest(store) == binding["logical_digest"] and store["root"] == binding["root"]
+
+
+def _inputs(digest, root, sources) -> str:
+    value = [digest, root, [label(s) for s in sources], SCHEMA]
     if cargo in sources:
         value.append("cargo-package-graph-v1")
+    if renovate in sources:
+        value.append("workflow-triggers-v1")
+    if noir in sources:
+        value.append("noir-entry-paths-v2")
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()
 
 
@@ -372,7 +397,7 @@ def _run(source, context: Context, runner, toolchains=()) -> tuple[dict, dict | 
                         raise
                     status.update(state="not_run", commands=len(commands),
                                   seconds=round(time.monotonic() - started, 3))
-                    return status, None, [{"kind": "model_not_run", "source": status["source"],
+                    return status, None, [{"kind": "model_not_run", "source": status["source"], "cause": error.cause,
                                            "detail": f"{len(commands)} model commands not run: {error.cause}",
                                            "remedy": error.remedy}]
                 if len(results) != len(commands):
@@ -422,10 +447,11 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
         if part:
             parts.append(part)
         gaps.extend(found)
+    digest = logical_digest(store)
     record = {"schema": SCHEMA,
-              "binding": {"manifest": str(Path(manifest).resolve()), "logical_digest": logical_digest(store),
+              "binding": {"manifest": str(Path(manifest).resolve()), "logical_digest": digest,
                           "root": store["root"]},
-              "inputs_digest": _inputs(store, sources), "sources": statuses, **join(parts)}
+              "inputs_digest": _inputs(digest, store["root"], sources), "sources": statuses, **join(parts)}
     if any(p["ecosystem"] == "pypi" for p in record.get("packages", ())):
         record["packages"] = module_graph.external_packages(context.graph, record["packages"])
     gaps.extend(record.pop("superseded", []))
@@ -433,6 +459,8 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
     for unit in record["units"]:
         unit.setdefault("depends_on", [])
     record["units"].sort(key=lambda u: (u["root"], u["kind"], u.get("name") or ""))
+    from premap.flow_entries import declarations
+    record["declared_entries"] = declarations(record["units"], store)
     record["gaps"] = gaps + _run_facts(record, context) + _coverage(record, context) + _unlisted(record)
     return record
 
@@ -443,9 +471,11 @@ def write(manifest: Path, sources=None, runner=None, report=None) -> dict:
     target = path(manifest)
     confinement.reject_link_chain(target)
     with open_snapshot(manifest) as store:
+        stamp = _snapshot_stamp(manifest)
         record = derive(manifest, store, sources, runner, report)
-        if logical_digest(store) != record["binding"]["logical_digest"]:
+        if logical_digest(store) != record["binding"]["logical_digest"] or _snapshot_stamp(manifest) != stamp:
             raise ValueError("snapshot changed during the pre-map; retry")
+        record["binding"]["snapshot_stamp"] = stamp
     descriptor, name = tempfile.mkstemp(prefix=".premap-", dir=target.parent)
     with os.fdopen(descriptor, "wb") as stream:
         stream.write(json.dumps(record, indent=1, ensure_ascii=False, sort_keys=True).encode("utf-8"))
@@ -454,8 +484,8 @@ def write(manifest: Path, sources=None, runner=None, report=None) -> dict:
 
 
 def state(manifest: Path, sources=None, runner=None) -> dict:
-    """fresh, stale, missing or corrupt, without touching the pre-map; with a runner, a pre-map whose model
-    commands did not run is stale."""
+    """Freshness without executing a source. An official runner reuses an explicitly disabled container's
+    recorded gaps while it stays disabled. A different cause or runner can still make progress."""
     manifest = Path(manifest).resolve()
     target = path(manifest)
     report = {"premap": str(target), "manifest": str(manifest)}
@@ -467,13 +497,27 @@ def state(manifest: Path, sources=None, runner=None) -> dict:
             raise ValueError(f"schema {record.get('schema')!r}")
     except (OSError, ValueError) as error:
         return {**report, "state": "corrupt", "reason": str(error)}
-    with open_snapshot(manifest) as store:
-        current = _inputs(store, tuple(SOURCES if sources is None else sources))
-    if record.get("inputs_digest") != current:
+    binding = record.get("binding") or {}
+    sources = tuple(SOURCES if sources is None else sources)
+    current = _inputs(binding.get("logical_digest"), binding.get("root"), sources)
+    if record.get("inputs_digest") != current or not binding_matches(manifest, binding):
         return {**report, "state": "stale", "reason": "snapshot or sources changed since the pre-map"}
-    if runner is not None and any(s.get("state") == "not_run" for s in record.get("sources", [])):
-        return {**report, "state": "stale", "reason": "model commands not run yet"}
-    return {**report, "state": "fresh"}
+    unrun = [s for s in record.get("sources", []) if s.get("state") == "not_run"]
+    if runner is not None and unrun:
+        from container import OFF_CAUSE
+        gaps = {g["source"]: g for g in record["gaps"] if g["kind"] == "model_not_run"}
+        def disabled(source):
+            gap = gaps.get(source["source"], {})
+            # Older records keep the cause in the detail beside the exact number of commands.
+            return (gap["cause"] == OFF_CAUSE if "cause" in gap else
+                    gap.get("detail") == f"{source['commands']} model commands not run: {OFF_CAUSE}")
+        if (getattr(runner, "uses_default_container", False) is not True or os.environ.get("DAODAN_CONTAINER") != "off"
+                or not all(disabled(s) for s in unrun)):
+            return {**report, "state": "stale", "reason": "model commands not run yet"}
+    # A reader-only scan defers commands. When an actual attempt finds no container,
+    # its gap records the cause and remedy, and the resulting scan is current with gaps.
+    pending = sum(g.get("kind") == "model_not_run" and "remedy" not in g for g in record.get("gaps", ()))
+    return {**report, "state": "fresh", **({"pending_sources": pending} if pending else {})}
 
 
 def ensure(manifest: Path, sources=None, runner=None, report=None) -> dict:

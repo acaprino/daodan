@@ -253,6 +253,7 @@ class WrittenRuleTests(unittest.TestCase):
                          "  const save = () => {\n    post(SAVE_URL, { count });\n  };\n"
                          "  return (\n    <div>\n      <button onClick={() => add(1)}>+</button>\n"
                          "      <button onClick={save}>save</button>\n      <button onClick={props.onClose}>x</button>\n      <button onClick={onPick}>p</button>\n"
+                         "      <button onClick={(add) => add(1)}>shadow</button>\n"
                          "      {count}\n    </div>\n  );\n}\n"),
         "api/handlers.py": ("from lib import APIRouter, db\n\nrouter = APIRouter()\n\n\n@router.post(\"/save\")\n"
                             "async def save(body):\n    await db.counters.update_one(  # the user's counter\n"
@@ -346,12 +347,16 @@ class WrittenRuleTests(unittest.TestCase):
         self.assertIn(("web/store.ts::report", "web/store.ts::reset"), self.edges("chiama"))
 
     def test_a_held_store_function_is_called_where_its_variable_is(self):
-        self.assertIn(("web/view.tsx::View", "web/store.ts::add"), self.edges("attiva"))
+        handler = "web/view.tsx::function@14:23"
+        self.assertIn(("web/view.tsx::View", handler), self.edges("attiva"))
+        self.assertIn((handler, "web/store.ts::add"), self.edges("chiama"))
+        shadow = next(e["to"] for e in self.links["edges"] if e.get("label") == "shadow")
+        self.assertNotIn((shadow, "web/store.ts::add"), self.edges("chiama"))
         self.assertNotIn("state/add", self.links["stores"])
 
     def test_markup_handlers_are_entry_points_and_a_passed_parameter_is_not(self):
         actions = sorted(entry["symbol"] for entry in self.links["entries"] if entry["kind"] == "azione")
-        self.assertEqual(actions, ["web/store.ts::add", "web/view.tsx::View.save"])
+        self.assertEqual(actions, ["web/view.tsx::View.save", "web/view.tsx::function@14:23", "web/view.tsx::function@18:23"])
 
     def test_a_templated_constant_reaches_the_decorated_route_and_its_collection(self):
         self.assertIn(("web/view.tsx::View.save", "api/handlers.py::save"), self.edges("chiama"))

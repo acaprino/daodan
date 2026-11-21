@@ -365,6 +365,85 @@ class SingleFileComponentTests(unittest.TestCase):
 
 
 class TauriCrossLanguageBridgeTests(unittest.TestCase):
+    def test_reopened_button_card_stops_at_the_rust_command_without_an_effect(self):
+        import flow_paths
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "app"
+            (root / "src").mkdir(parents=True)
+            (root / "src-tauri/src").mkdir(parents=True)
+            (root / "src/view.tsx").write_text(
+                'import {invoke} from "@tauri-apps/api/core";\n'
+                'function save() { return invoke("persist"); }\n'
+                'export function View() { return <button onClick={save}>Salva profilo</button>; }\n')
+            (root / "src-tauri/src/main.rs").write_text(
+                '#[tauri::command]\nfn persist() {}\n'
+                'fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![persist]).run(tauri::generate_context!()); }\n')
+            manifest = Path(tmp) / "manifest.sqlite"
+            snapshot.write_snapshot(root, manifest)
+            button = next(c for c in flow_paths.page(manifest, [])["cards"] if c.get("label") == "Salva profilo")
+            self.assertEqual((button["event"], button["handler"], button["site"]),
+                             ("click", "src/view.tsx::save", "src/view.tsx:3"))
+            path = flow_paths.page(manifest, [], card_id=button["card_id"])
+            command, stop = path["steps"]
+            self.assertEqual((command["from"], command["to"], command["resolver"], command["site"]),
+                             (button["handler"], "src-tauri/src/main.rs::persist", "tauri-invoke", "src/view.tsx:2"))
+            self.assertEqual((stop["from"], stop["site"], stop["end"], stop["parent"]),
+                             (command["to"], "src-tauri/src/main.rs:2", "lacuna", command["n"]))
+            decision = {"card_id": button["card_id"], "disposition": "unresolved", "reason": stop["reason"]}
+            self.assertEqual(flow_paths.record(manifest, [], decision)["status"], "unresolved")
+            with mock.patch.object(flow_paths, "_steps", side_effect=AssertionError("path walked twice")):
+                reopened = flow_paths.page(manifest, [], card_id=button["card_id"])
+            self.assertEqual(reopened["steps"], path["steps"])
+            self.assertEqual(reopened["review"]["reason"], stop["reason"])
+
+    def test_flow_links_keep_the_registered_command_and_locate_each_missing_proof(self):
+        import edge_store
+        import flows
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "app"
+            (root / "src").mkdir(parents=True)
+            (root / "src-tauri/src").mkdir(parents=True)
+            (root / "src/view.ts").write_text(
+                'import {invoke as native} from "@tauri-apps/api/core";\n'
+                'export function save() { return native("persist"); }\n'
+                'export function expired() { return native("retired"); }\n'
+                'export function choose(name: string) { return native(name); }\n'
+                'export function other(native: any) { return native("persist"); }\n')
+            (root / "src-tauri/src/main.rs").write_text(
+                "#[tauri::command]\nfn persist() {}\n"
+                "#[tauri::command]\nfn retired() {}\n"
+                "fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![persist]).run(tauri::generate_context!()); }\n")
+            manifest = Path(tmp) / "manifest.sqlite"
+            snapshot.write_snapshot(root, manifest)
+            # SCIP identifies the TypeScript SDK function. The exact registration identifies the next hop.
+            with open_snapshot(manifest) as store:
+                row = store.connection.execute(
+                    "SELECT id,caller,c0 FROM sem_references WHERE file='src/view.ts' AND kind='call' AND l0=2"
+                ).fetchone()
+                binding = edge_store.store_binding(store, manifest, store.metadata["parser_fingerprint"], {}, {})
+            edge_store.write_edge_store(edge_store.default_edge_store(manifest), [
+                {"reference_id": row[0], "caller": row[1], "l0": 2, "c0": row[2], "file": "src/view.ts",
+                 "language": "typescript", "kind": "call", "verdict": "external", "confidence": "confirmed",
+                 "resolver": "scip-typescript", "symbol": "tauri-api-invoke",
+                 "external": {"manager": "npm", "package": "@tauri-apps/api", "version": "2"},
+                 "payload": {}}], binding)
+            with mock.patch.object(flows, "link_facts", wraps=flows.link_facts) as build:
+                links = flows.cached_links(manifest, [])
+                self.assertEqual(build.call_count, 1)
+                self.assertEqual(flows.cached_links(manifest, []), links)
+                self.assertEqual(build.call_count, 1)
+            command_edges = [e for e in links["edges"] if e["to"].startswith("src-tauri/")]
+            self.assertEqual([(e["from"], e["to"], e["site"]) for e in command_edges],
+                             [("src/view.ts::save", "src-tauri/src/main.rs::persist", "src/view.ts:2")])
+            self.assertEqual((command_edges[0]["origin"], command_edges[0]["resolver"]), ("dedotto", "tauri-invoke"))
+            self.assertEqual([(g["site"], g["symbol"]) for g in links["gaps"]], [
+                ("src/view.ts:3", "src/view.ts::expired"), ("src/view.ts:4", "src/view.ts::choose")])
+            self.assertIn("retired", links["gaps"][0]["reason"])
+            self.assertIn("literal", links["gaps"][1]["reason"])
+            self.assertFalse(flows.trace(links, "src/view.ts::choose", "from")["complete"])
+
     def test_ts_invoke_resolves_to_rust_tauri_command_across_languages(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "tauri-app"
@@ -388,7 +467,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
             )
             (root / "src-tauri/src/main.rs").write_text(
                 "mod commands; fn main() { tauri::Builder::default().invoke_handler("
-                "tauri::generate_handler![commands::load_user_profile]); }\n", encoding="utf-8")
+                "tauri::generate_handler![commands::load_user_profile]).run(tauri::generate_context!()); }\n", encoding="utf-8")
 
             manifest = snapshot.build_manifest(root)
             index = semantic_index.build_semantic_index(manifest)
@@ -417,7 +496,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 path = root / file
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(source, encoding="utf-8")
-            register = "fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![save]); }\n"
+            register = "fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![save]).run(tauri::generate_context!()); }\n"
             for app, rust in {"one": "#[tauri::command]\nfn save() {}\n",
                               "two": "#[tauri::command]\nfn save() {}\n" + register,
                               "three": "pub fn save() {}\n" + register}.items():

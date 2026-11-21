@@ -81,7 +81,7 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
         <li>{envelope.flows.length} flussi dai punti d'ingresso</li>
         <li>{envelope.gaps.length} lacune dichiarate</li>
       </ul>
-      <p className="im-muted">Collegamenti e flussi sono statici: dicono cosa il codice rende possibile, non cosa accade in esecuzione.</p>
+      <p className="im-muted">Nei flussi puoi leggere il sito e la provenienza della prova per ogni passaggio.</p>
       <Technologies envelope={envelope} />
     </DetailPanel>;
   }
@@ -105,7 +105,7 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
     {entity.technologies && <Technologies envelope={envelope} ids={entity.technologies} />}
     {flows.length > 0 && <div className="im-section"><h3>Flussi che lo attraversano</h3>{flows.map(flow =>
       <button type="button" key={flow.ref} className="im-btn im-btn--sm" aria-pressed={state.flow === flow.ref} onClick={() => dispatch({ type: 'flow', ref: flow.ref })}>
-        <Route size={12} />{entityName(envelope, flow.entry)}</button>)}</div>}
+        <Route size={12} />{flowTitle(envelope, flow)}</button>)}</div>}
     {related.length > 0 && <div className="im-section"><h3>Collegamenti visibili</h3><ul className="im-detail-list">{related.slice(0, 20).map(edge => {
       const outgoing = edge.source.startsWith(`${entity.ref}@`);
       const other = (outgoing ? edge.target : edge.source).split('@')[0];
@@ -117,6 +117,14 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
   </DetailPanel>;
 }
 
+function bindingSite(flow: Flow): string | undefined {
+  return flow.site && flow.column != null ? `${flow.site}:${flow.column}` : flow.site;
+}
+
+function flowTitle(envelope: Envelope, flow: Flow): string {
+  return flow.label || [flow.event || flow.shape || entityName(envelope, flow.entry), bindingSite(flow)].filter(Boolean).join(' · ');
+}
+
 function RunFlows({ state, dispatch }: { state: ExplorerState; dispatch: (action: Action) => void }) {
   const envelope = state.envelope;
   if (!envelope.flows.length) return <p className="im-muted">Nessun flusso: questo run non ha regole di collegamento (<code>codebase_map_flows</code>).</p>;
@@ -125,13 +133,19 @@ function RunFlows({ state, dispatch }: { state: ExplorerState; dispatch: (action
     <ul className="im-detail-list">{envelope.flows.map(flow =>
       <li key={flow.ref}><ListAction pressed={state.flow === flow.ref}
         onClick={() => dispatch({ type: 'flow', ref: state.flow === flow.ref ? null : flow.ref })}
-        title={entityName(envelope, flow.entry)}
-        detail={`${ENTRY_LABEL[flow.entry_kind] ?? flow.entry_kind} · ${flow.steps.length} passi${flow.complete ? '' : ' · incompleto'}`} /></li>)}</ul>
+        title={flowTitle(envelope, flow)}
+        detail={[`${ENTRY_LABEL[flow.entry_kind] ?? flow.entry_kind}`, flow.label ? bindingSite(flow) : null,
+          `${flow.steps.length} passi`, flow.complete ? null : 'incompleto'].filter(Boolean).join(' · ')} /></li>)}</ul>
     {current && <Timeline items={current.steps.slice(0, 40).map((step, index) => ({
       id: index,
       title: <>{entityName(envelope, step.source)} <strong>{LINK_LABEL[step.type] ?? step.type}</strong> {entityName(envelope, step.target)}</>,
-      detail: <code>{step.route ? `${step.route.slice(1).join(' ')} · ` : ''}{step.site}</code>,
+      detail: <code>{[step.route?.slice(1).join(' '), step.site, step.origin,
+        step.confidence === 'sampled' ? 'campionata dal profiler' : step.confidence === 'observed' ? 'osservata in esecuzione' : null,
+        step.conflict ? 'destinazioni in conflitto' : null].filter(Boolean).join(' · ')}</code>,
     }))} />}
+    {!!current?.gaps?.length && <div className="im-section"><h3>Dove si ferma la prova</h3>
+      <ul className="im-detail-list">{current.gaps.map((gap, index) =>
+        <li key={index}><code>{gap.site}</code> · {gap.reason}</li>)}</ul></div>}
   </>;
 }
 
@@ -199,8 +213,9 @@ function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { file: strin
     edges: busy ? [] : edges.map(edge => {
       const active = selectedIds.has(edge.source) || selectedIds.has(edge.target);
       return { source: edge.source, target: edge.target, points: layout!.value.edges[edge.id],
-        label: edge.kinds.map(kind => LINK_LABEL[kind] ?? kind).join(', '), showLabel: !!edge.flow || active,
-        dashed: edge.id.startsWith('data:'), tone: edge.flow ? 'warn' : active ? 'accent' : undefined,
+        label: [edge.kinds.map(kind => LINK_LABEL[kind] ?? kind).join(', '), edge.uncertain ? 'prova insufficiente' : null].filter(Boolean).join(' · '),
+        showLabel: !!edge.flow || active,
+        dashed: edge.uncertain || edge.id.startsWith('data:'), tone: edge.uncertain || edge.flow ? 'warn' : active ? 'accent' : undefined,
         dimmed: focus ? !edge.flow : selectedIds.size > 0 && !active };
     }),
   };

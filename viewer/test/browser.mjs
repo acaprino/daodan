@@ -4,15 +4,16 @@ import { chromium } from 'playwright';
 
 const assets = new URL('../../daodan/assets/', import.meta.url);
 const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta.url)));
+let pathsClassified = false;
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
   id: name, name, kind: 'directory', files: [name + '/main.ts'], location: 'internal', status: 'confirmed', group: null, evidence: [],
 }));
 const graph = { grouping: 'directories', nodes: groups, open: [], edges: ['confirmed', 'observed', 'sampled'].map(status => ({
     source: 'Client', target: 'Server', counts: { calls: 1 }, status, evidence: [],
-  })),
+  })).concat({source: 'Client', target: 'Server', counts: { calls: 1 }, status: 'observed', conflict: true, evidence: []}),
   gaps: [], files: 2, levels: ['codice'], meta: {}, unassigned: { count: 0 } };
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH });
 try {
   const context = await browser.newContext({ viewport: { width: 1280, height: 850 } });
   const page = await context.newPage();
@@ -22,6 +23,23 @@ try {
   // Deliver real packaged assets and the layout worker. Only the repository and run responses are fixtures.
   await context.route('http://daodan.test/**', async route => {
     const url = new URL(route.request().url()), path = url.pathname;
+    if (path === '/api/app/paths') {
+      const offset = Number(url.searchParams.get('offset'));
+      const card = { card_id: 'save', handler: 'ui.ts::save', kind: 'azione', site: 'ui.ts:4',
+        event: 'onClick', label: 'Salva ordine' };
+      if (url.searchParams.get('effects') === '1') return route.fulfill({ json: {
+        offset, count: 2, writes: 3, reached: 1, without_entry: 2, next_offset: offset ? null : 1,
+        effects: [{ n: offset + 1, writer: 'store.py::write', site: 'store.py:5',
+          effect: offset ? 'store:audit' : 'store:registro', reason: 'Nessun ingresso raggiunge il gestore',
+          stopped_at: 'ui.ts:8' }] } });
+      if (!pathsClassified) return route.fulfill({ json: { cards: [], count: 0, offset, next_offset: null } });
+      if (!url.searchParams.has('id')) return route.fulfill({ json: { offset, count: 2, next_offset: offset ? null : 1,
+        cards: [offset ? { ...card, card_id: 'cancel', label: 'Annulla ordine' } : card] } });
+      const steps = [{ n: 1, type: 'scrive', from: card.handler, to: 'store:ordini', site: 'ui.ts:6',
+        end: 'effetto', origin: 'dedotto' }, { n: 2, type: 'chiama', from: card.handler, to: 'ui.ts::notify',
+        site: 'ui.ts:8', end: 'lacuna', confidence: 'sampled', reason: 'Destinazione campionata' }];
+      return route.fulfill({ json: { card, steps: [steps[offset]], offset, count: 2, next_offset: offset ? null : 1 } });
+    }
     if (path === '/api/app/graph') {
       const open = JSON.parse(url.searchParams.get('open') || '[]');
       return route.fulfill({ json: open.length ? { ...graph, open: [{ ...groups[0], parent: null }],
@@ -80,8 +98,30 @@ try {
   assert.match(await notice.innerText(), /2 nodi, 1 flusso, 1 proposta rifiutata/);
   assert.match(await notice.innerText(), /revisione precedente/);
   await page.locator('#stage-synthesis').click();
+  const paths = page.getByRole('region', { name: 'Percorsi per ingresso' });
+  await paths.getByText('Nessun ingresso classificato per questo snapshot.').waitFor();
+  pathsClassified = true;
+  await page.evaluate(() => window.setMapState({ state: 'done', discovery: { count: 2 } }));
+  await paths.getByRole('button', { name: /Salva ordine/ }).click();
+  await paths.getByText('store:ordini', { exact: true }).waitFor();
+  await paths.getByText('Effetto', { exact: true }).waitFor();
+  await paths.getByRole('button', { name: 'Passaggi successivi' }).click();
+  await paths.getByText('Destinazione campionata', { exact: true }).waitFor();
+  assert.match(await paths.innerText(), /campionata dal profiler/);
+  await paths.getByRole('button', { name: 'Torna agli ingressi' }).click();
+  await paths.getByRole('button', { name: 'Ingressi successivi' }).click();
+  await paths.getByRole('button', { name: /Annulla ordine/ }).waitFor();
+  await paths.getByRole('button', { name: 'Ingressi precedenti' }).click();
+  await paths.getByRole('button', { name: 'Scritture senza ingresso' }).click();
+  await paths.getByText('store:registro', { exact: true }).waitFor();
+  assert.match(await paths.innerText(), /2 di 3 scritture/);
+  await paths.getByRole('button', { name: 'Scritture successive' }).click();
+  await paths.getByText('store:audit', { exact: true }).waitFor();
+  await paths.getByRole('button', { name: 'Torna agli ingressi' }).click();
+  await paths.getByRole('button', { name: /Salva ordine/ }).waitFor();
+  await page.evaluate(mapped => window.setMapState(mapped), partialMap);
   await page.getByText('Mappa del sistema parziale').waitFor();
-  await page.getByText('1 osservata in esecuzione · 1 campionata dal profiler').waitFor();
+  await page.getByText('1 osservata in esecuzione · 1 campionata dal profiler · 1 in conflitto').waitFor();
   await page.evaluate(() => window.setMapState({ state: 'done' }));
   await page.getByText('Mappa del sistema registrata').waitFor();
   assert.equal(await page.getByText('Mappa del sistema parziale').count(), 0);
@@ -98,9 +138,11 @@ try {
   const titles = await diagram.locator('.im-graph-edge title').allTextContents();
   assert.ok(titles.some(label => label.includes('osservata in esecuzione')));
   assert.ok(titles.some(label => label.includes('campionata dal profiler')));
-  await page.locator('.im-detail-panel summary', { hasText: 'Chiamate in esecuzione' }).click();
+  assert.ok(titles.some(label => label.includes('destinazioni in conflitto')));
+  await page.locator('.im-detail-panel summary', { hasText: 'Prove delle chiamate' }).click();
   await page.getByText('Client → Server · osservata in esecuzione', { exact: true }).waitFor();
   await page.getByText('Client → Server · campionata dal profiler', { exact: true }).waitFor();
+  await page.getByText('Client → Server · osservata in esecuzione · destinazioni in conflitto', { exact: true }).waitFor();
   await diagram.getByRole('button', { name: 'Apri Client' }).click();
   await diagram.getByRole('button', { name: 'Chiudi Client' }).waitFor();
   assert.equal(await diagram.locator('.im-graph-group').count(), 1);

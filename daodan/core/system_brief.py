@@ -13,7 +13,6 @@ threshold is needed; an entry point that shares nothing is listed alone.
 from __future__ import annotations
 
 import json
-import re
 import sys
 from collections import Counter, defaultdict, deque
 from pathlib import Path, PurePosixPath
@@ -22,14 +21,18 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import confinement  # noqa: E402
 import entries  # noqa: E402
 import flows  # noqa: E402
 import modules  # noqa: E402
+import premap
 import pipeline  # noqa: E402
 import service_registry  # noqa: E402
 import technologies  # noqa: E402
 import system_map  # noqa: E402
 from premap.compose import is_compose_file  # noqa: E402
+from run_store import _write_json_atomic
+from store_graph import source_stamp
 from snapshot_store import open_snapshot  # noqa: E402
 
 SCHEMA = "daodan/system-brief/v1"
@@ -41,39 +44,77 @@ HOSTING = {"vercel.json", "netlify.toml", "fly.toml", "render.yaml", "app.yaml",
 CI = {".gitlab-ci.yml", "azure-pipelines.yml", "azure-pipelines.yaml", "bitbucket-pipelines.yml", ".travis.yml",
       "cloudbuild.yaml", "cloudbuild.yml", "appveyor.yml", "buildspec.yml", "Jenkinsfile"}
 
-def _runtime(rel: str, lines: list[str]) -> bool:
+def _runtime_name(rel):
     name = PurePosixPath(rel).name
-    if name == "Dockerfile" or name.endswith(".Dockerfile") or is_compose_file(name) or name.endswith(".tf"):
-        return True
-    if name in HOSTING or name in CI or rel.startswith(".github/workflows/"):
-        return True
-    return name.endswith((".yml", ".yaml")) and any(line.startswith("apiVersion:") for line in lines) \
-        and any(line.startswith("kind:") for line in lines)
+    return (name == "Dockerfile" or name.endswith((".Dockerfile", ".tf")) or is_compose_file(name)
+            or name in HOSTING or name in CI or rel.startswith(".github/workflows/"))
 
 
-def _declared(rel: str, lines: list[str]) -> list[dict]:
-    """What a runtime file declares besides the service declarations already delivered by the stack."""
-    name, out = PurePosixPath(rel).name, []
-    if name == "Dockerfile" or name.endswith(".Dockerfile"):
-        stages = set()
-        for number, line in enumerate(lines, 1):
-            match = re.match(r"^\s*FROM\s+(?:--\S+\s+)*(\S+)(?:\s+AS\s+(\S+))?", line, re.I)
-            if match and match.group(1).lower() not in stages:
-                out.append({"kind": "base image", "name": service_registry._image(match.group(1)), "file": rel,
-                            "line": number})
-            if match and match.group(2):
-                stages.add(match.group(2).lower())
-    elif name == "catalog-info.yaml":
-        kind = None
-        for number, line in enumerate(lines, 1):
-            if line.startswith("---"):
-                kind = None
-            elif line.startswith("kind:"):
-                kind = line.split(":", 1)[1].strip()
-            elif kind and re.match(r"^\s{2}name:", line):
-                out.append({"kind": kind, "name": line.split(":", 1)[1].strip(), "file": rel, "line": number})
-                kind = None
-    return out
+def _yaml_runtime(rel, lines):
+    """Inspect mapping nodes only. PyYAML preserves source lines and never constructs application objects."""
+    import yaml
+
+    catalog = PurePosixPath(rel).name == "catalog-info.yaml"
+    runtime, declarations = catalog, []
+    try:
+        for document in yaml.compose_all("\n".join(lines), Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader)):
+            if not isinstance(document, yaml.MappingNode):
+                continue
+            fields = {key.value: value for key, value in document.value if isinstance(key, yaml.ScalarNode)}
+            kind, metadata = fields.get("kind"), fields.get("metadata")
+            if isinstance(kind, yaml.ScalarNode):
+                runtime |= "apiVersion" in fields
+                if catalog and isinstance(metadata, yaml.MappingNode):
+                    for key, name in metadata.value:
+                        if isinstance(key, yaml.ScalarNode) and key.value == "name" and isinstance(name, yaml.ScalarNode):
+                            declarations.append({"kind": kind.value, "name": name.value, "file": rel,
+                                                 "line": key.start_mark.line + 1})
+    except (yaml.YAMLError, RecursionError):
+        pass
+    return runtime, declarations
+
+
+def _runtime_files(manifest, store, headers):
+    """Cache only YAML facts lacking a pipeline source. Match the snapshot hash and the checkout change clock."""
+    source = flows.Source(store)
+    cache = manifest.with_name("brief-runtime-yaml.json")
+    confinement.reject_link_chain(cache)
+    try:
+        kept = json.loads(cache.read_text(encoding="utf-8"))
+        kept = kept["files"] if kept["version"] == 1 and isinstance(kept["files"], dict) else {}
+    except (OSError, KeyError, ValueError, TypeError):
+        kept = {}
+    current, runtime, declarations = {}, [], {}
+    for rel, header in sorted(headers.items()):
+        named = _runtime_name(rel)
+        if named:
+            runtime.append(rel)
+        if not rel.endswith((".yml", ".yaml")) or (named and PurePosixPath(rel).name != "catalog-info.yaml"):
+            continue
+        path = source.root / rel
+        try:
+            stamp = list(source_stamp(path))
+        except OSError:
+            continue
+        key = [header.get("hash"), stamp]
+        old = kept.get(rel)
+        if isinstance(old, dict) and old.get("key") == key and stamp[-1] and stamp[1]:
+            row = old
+        else:
+            lines = source.lines(rel)
+            if lines is None:
+                continue
+            detected, declared = _yaml_runtime(rel, lines)
+            row = {"key": key, "runtime": detected, "declared": declared}
+        if stamp[-1] and stamp[1]:
+            current[rel] = row
+        if row["runtime"] and not named:
+            runtime.append(rel)
+        if row["declared"]:
+            declarations[rel] = row["declared"]
+    if current != kept:
+        _write_json_atomic(cache, {"version": 1, "files": current})
+    return runtime, declarations
 
 
 def _groups(links: dict) -> tuple[list[dict], list[str]]:
@@ -132,13 +173,16 @@ def _externals(graph: dict, record: dict) -> list[dict]:
 HEADER = "\n".join((
     "# System brief",
     "What the machine found in this snapshot with its analysis steps, without a model.",
-    "Sections, in this order: Steps that ran; Counts; Modules (M) and top Directories (D) with their files; "
+    "Sections, in this order: Steps that ran; Counts; unavailable entry sources (U); Modules (M) and top "
+    "Directories (D) with their files; Symbol coverage (P) counts named functions, methods and classes "
+    "without an evidenced call/activation path from a classified entry, by parent directory; "
     "Externals (X), services of others, with `id` when the service registry has it; Other dependencies (O), per "
     "module the ones the registry does not know; Runtime files (R) for running and release, and what they Declare (S); "
     "names the project Confirmed (N); flow Cards (C); AST entry candidates (A); Entry points (E) with kind and "
     "`file:line`, alone when they reach no resource another reaches; Groups (G), a resource two or more entry points "
     "reach, with them. AST candidates are unclassified evidence, separate from entry points and coverage. "
     "Read all candidates with entry_offset=0 and continue at next_offset.",
+    "Read the classified events with trace_offset=0; trace_id opens a numbered path with effects and gaps.",
     "For each proposed flow, name its entry nodes in entries and its effect nodes in effects. "
     "The map checks directed paths between them across the named participants.",
     "One item per line, numbered in its section; a number stays the same for the same snapshot. "
@@ -151,13 +195,30 @@ def _sections(value: dict) -> list[tuple[str, list[str]]]:
     """The sections before the entry points, each a label and its lines."""
     routes = value["routes"]
     candidates = value.get("entry_candidates", [])
+    coverage = sorted(value.get("symbol_coverage", {}).items(), key=lambda item: (-item[1]["unreached"], item[0]))
+    evidence = value.get("observations") or {}
+    controls = evidence.get("ui_controls")
     return [
         ("Steps", [", ".join(f"{k} {'yes' if v else 'no'}" for k, v in value["steps"].items())]),
         ("Counts", [f"entry points {value['entries']}", f"AST candidates {len(candidates)}", f"store keys {value['stores']}",
                     f"routes {routes['offered']} offered, {routes['called']} called, {routes['linked']} linked",
-                    *(["links " + ", ".join(f"{k} {n}" for k, n in value["links"].items())] if value["links"] else [])]),
+                    *(["links " + ", ".join(f"{k} {n}" for k, n in value["links"].items())] if value["links"] else []),
+                    *(["runtime call edges " + ", ".join(f"{k} {n}" for k, n in evidence["calls"].items())
+                       + f" (conflicts {evidence['conflicts']})"] if evidence.get("calls") else []),
+                    *([f"browser control/event/state tuples {controls['observed']} observed, {controls['pending']} pending "
+                       f"in {controls['documents']} documents; runs "
+                       + ", ".join(f"{k} {n}" for k, n in controls["runs"].items())
+                       + "; these counts identify no handler"] if controls else [])]),
+        ("Entry sources unavailable", [f"U{i} {g.get('source', '')}: {g.get('detail', g.get('kind', 'unavailable'))}"
+                                       for i, g in enumerate(value.get("source_gaps", [])[:HOLDERS], 1)]),
         ("Modules", [f"M{i} {m['name']} ({m['kind']}, {m['files']} files)" for i, m in enumerate(value["modules"], 1)]),
         ("Directories", [f"D{i} {d} ({n} files)" for i, (d, n) in enumerate(value["directories"].items(), 1)]),
+        ("Symbol coverage", [f"P{i} {d}: {n['unreached']} of {n['total']} named symbols unreached"
+                             for i, (d, n) in enumerate(coverage[:HOLDERS], 1)]
+         + ([f"- {len(coverage) - HOLDERS} more directories: "
+             f"{sum(n['unreached'] for _, n in coverage[HOLDERS:])} of "
+             f"{sum(n['total'] for _, n in coverage[HOLDERS:])} named symbols unreached"]
+            if len(coverage) > HOLDERS else [])),
         ("Externals", [f"X{i} {e['name']}{' id ' + e['id'] if 'registry' in e['from'] else ''} [{e['type']}] "
                        f"from {', '.join(e['from'])}: {', '.join(e['paths'][:3])}"
                        for i, e in enumerate(value["externals"], 1)]),
@@ -242,7 +303,14 @@ def candidate_page(rows: list[dict], run_id: str, offset: int, limit: int) -> di
         size = len(json.dumps(row)) + 2
         if size > room:
             if not page:
-                page.append({**{k: v[:400] for k, v in row.items()}, "truncated": True})
+                width = 400
+                while True:
+                    preview = {**{k: v[:width] if isinstance(v, str) else v for k, v in row.items()},
+                               "truncated": True}
+                    if len(json.dumps(preview)) <= room or width == 0:
+                        break
+                    width //= 2
+                page.append(preview)
             break
         page.append(row)
         room -= size
@@ -251,18 +319,33 @@ def candidate_page(rows: list[dict], run_id: str, offset: int, limit: int) -> di
     return answer
 
 
+def _observations(manifest: Path, edges: list[dict]) -> tuple[bool, dict]:
+    """A placed call and a browser gesture prove different things. The journal's per-run control
+    counts have no call-site identity, so never join them to a handler or to another document."""
+    seen = [edge for edge in edges if edge.get("origin") == "osservato"]
+    evidence = {}
+    if seen:
+        evidence["calls"] = dict(sorted(Counter(e.get("confidence") or "unspecified" for e in seen).items()))
+        evidence["conflicts"] = sum(bool(e.get("conflict")) for e in seen)
+    report = pipeline.runtime(manifest) if manifest.with_name(pipeline.events.JOURNAL).is_file() else {}
+    controls = report.get("ui_controls") or []
+    if controls:
+        evidence["ui_controls"] = {key: sum(run.get(key, 0) for run in controls)
+                                   for key in ("documents", "observed", "pending")}
+        evidence["ui_controls"]["runs"] = dict(sorted(Counter(run["status"] for run in controls).items()))
+    return bool(seen or report.get("state") == "observed"), evidence
+
+
 def brief(manifest: Path, rules: list[dict]) -> dict:
     """The system brief of a snapshot under its link rules."""
     manifest = Path(manifest).resolve()
     links = flows.cached_links(manifest, rules)
     graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
     with open_snapshot(manifest) as store:
-        files = sorted(dict(store.iter_file_headers_only()))
-        source = flows.Source(store)
-        # Other paths cannot contain a runtime declaration interpreted by this reader.
-        texts = {rel: source.lines(rel) or [] for rel in files
-                 if _runtime(rel, []) or rel.endswith((".yml", ".yaml"))}
-    record = technologies.ensure(manifest)
+        files = dict(store.iter_file_headers_only())
+        runtime, yaml_declarations = _runtime_files(manifest, store, files)
+    facts = premap.ensure(manifest)
+    record = technologies.ensure(manifest, facts=facts)
     externals = _externals(graph, record)
     known = {s["value"] for e in record["technologies"] for s in e["signs"] if s["sign"] == "package"}
     other = {}
@@ -271,8 +354,21 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
             left = [d for d in module["dependencies"] if d not in known]
             if left:
                 other[module["name"]] = len(left)
-    runtime = [rel for rel, lines in texts.items() if _runtime(rel, lines)]
-    declarations = defaultdict(list)
+    declarations = defaultdict(list, yaml_declarations)
+    images = defaultdict(set)
+    for build in facts.get("docker_builds", []):
+        file = build["dockerfile"]
+        images[file].update((s["line"], service_registry._image(s["base"])) for s in build.get("stages", [])
+                            if s.get("line") and s.get("base") and s.get("base_stage") is None)
+    modelled = set(images)
+    for item in facts.get("packages", []):
+        if item["ecosystem"] == "docker":
+            file, line = service_registry._split_declared_in(item.get("declared_in"))
+            if file and line and file not in modelled and (PurePosixPath(file).name == "Dockerfile" or file.endswith(".Dockerfile")):
+                images[file].add((line, item["name"]))
+    for file, rows in images.items():
+        declarations[file] = [{"kind": "base image", "name": name, "file": file, "line": line}
+                              for line, name in sorted(rows)]
     for item in record["configured_services"]:
         if item.get("line") and is_compose_file(PurePosixPath(item["path"]).name):
             image = item.get("image") or ""
@@ -289,9 +385,7 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
     found = defaultdict(list)
     for entry in links["entries"]:
         found[entry["symbol"]].append(entry)
-    dynamic_evidence = any(edge.get("origin") == "osservato" for edge in links["edges"])
-    if not dynamic_evidence and manifest.with_name(pipeline.events.JOURNAL).is_file():
-        dynamic_evidence = pipeline.runtime(manifest)["state"] == "observed"
+    dynamic_evidence, observations = _observations(manifest, links["edges"])
     value = {"schema": SCHEMA,
              "steps": {"statico": True, "inferenza": bool(rules),
                        "dinamico": dynamic_evidence,
@@ -299,12 +393,14 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
              "modules": [{"name": m["name"], "kind": m["kind"], "provenance": m["provenance"], "files": len(m.get("files", []))}
                          for m in graph["modules"]],
              "directories": dict(sorted(Counter(f.split("/", 1)[0] if "/" in f else "." for f in files).items())),
+             "symbol_coverage": links["symbol_coverage"],
              "entries": len(found), "stores": len(links["stores"]), "entry_candidates": entries.cached_syntax(manifest),
              "entry_points": [{"symbol": s, "kinds": sorted({e["kind"] for e in found[s]}),
                                "site": min(e["site"] for e in found[s])} for s in sorted(found)],
              "routes": links["routes"], "links": dict(sorted(Counter(e["origin"] for e in links["edges"]).items())),
+             "observations": observations, "source_gaps": links.get("source_gaps", []),
              "externals": externals, "other_dependencies": other, "runtime_files": runtime,
-             "declared": [d for rel in runtime for d in (declarations.get(rel) or _declared(rel, texts[rel]))],
+             "declared": [d for rel in runtime for d in declarations.get(rel, ())],
              "groups": groups, "alone": alone,
              "confirmed": [n["name"] for n in (system or {}).get("nodes", []) if n["status"] == "confirmed"],
              "cards": cards}

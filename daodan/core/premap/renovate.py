@@ -15,8 +15,8 @@ its own. Each other package a file declares is a `packages` fact, with `version`
 at it (`WRITTEN_ELSEWHERE`), never resolved: each analyzer's build tool resolves it.
 
 Of a service container a GitHub Actions job declares, Renovate's github-actions manager keeps the image alone
-(`lib/modules/manager/github-actions/schema.ts`). Where a workflow of `.github/workflows` names `services` or runs
-Docker Compose, or a `.sh` script of the checkout runs it, a second command reads each workflow in the container's
+(`lib/modules/manager/github-actions/schema.ts`). When a regular YAML workflow exists in `.github/workflows`,
+a second command reads each workflow in the container's
 copy (Git tracks it; the snapshot leaves dot folders out) with Renovate's own YAML library (`YAML`, the `yaml`
 package Renovate pins, beside the Renovate that runs): `services`, each service a job declares (`jobs.<id>.services`)
 as the file writes it, with `host`, where the job's steps reach it (GitHub's rule: localhost on the runner, its name
@@ -72,7 +72,6 @@ WORKFLOWS = ".github/workflows"  # where GitHub reads a repository's workflows
 GITLAB = ".gitlab-ci.yml"  # where GitLab reads a project's pipeline, unless the project's settings name another
 SERVICES = re.compile(r"""["']?\bservices["']?\s*:""")  # a workflow that may declare a service container
 INCLUDE = re.compile(r"""(?m)^["']?include["']?\s*:""")  # a pipeline that includes files, which may declare one
-RUN = re.compile(r"""(?m)^[\s-]*["']?run["']?\s*:""")  # a step that runs a script: the tests, the steps before
 SCRIPT = re.compile(r"""(?m)^\s*["']?(?:before_)?script["']?\s*:""")  # a GitLab job's lines
 # Renovate's YAML library, beside the Renovate on the path: yaml 2.9.1, the version Renovate 44.239.1 pins
 YAML = '"$(dirname "$(readlink -f "$(command -v renovate)")")/../node_modules/yaml/bin.mjs"'
@@ -84,7 +83,8 @@ REFERENCE = ('export default { Seq(_, node) { if (node.tag !== "!reference") ret
 VISITOR = "/tmp/daodan-reference.mjs"
 # Each workflow of the copy, then its document as JSON, or `null` and the library's message on stderr.
 EACH = (f"cat > {VISITOR} <<'EOF'\n{REFERENCE}\nEOF\n"
-        f'for f in {WORKFLOWS}/*.yml {WORKFLOWS}/*.yaml {GITLAB}; do [ -f "$f" ] || continue; echo "$f"; '
+        f'for f in {WORKFLOWS}/*.yml {WORKFLOWS}/*.yaml {GITLAB}; do [ -f "$f" ] && [ ! -L "$f" ] || continue; '
+        f'case "$f" in {WORKFLOWS}/*) [ ! -L .github ] && [ ! -L {WORKFLOWS} ] || continue;; esac; echo "$f"; '
         f'node {YAML} --json --single --strict --merge --visit {VISITOR} < "$f" 2> /tmp/daodan-yaml.err'
         ' || { echo null; sed "s|^|$f: |" /tmp/daodan-yaml.err >&2; }; done')
 NESTING = 10  # the references GitLab resolves within one another
@@ -143,15 +143,16 @@ def _package_tool(manager: str, name: str, dep: dict) -> str | None:
 
 
 def commands(context):
-    if not context.inventory.files:
+    # Hidden directories are normally outside the code snapshot. Their direct workflow names suffice
+    # to select the prepared YAML reader; only that reader opens their content in the container.
+    workflow_dir = PurePosixPath(WORKFLOWS)
+    named = any(p.parent == workflow_dir and p.suffix in (".yml", ".yaml")
+                for p in (PurePosixPath(rel) for rel in context.inventory.files if rel.startswith(WORKFLOWS + "/")))
+    folder = context.root / WORKFLOWS
+    if not named and not folder.parent.is_symlink() and not folder.is_symlink() and folder.is_dir():
+        named = any(p.suffix in (".yml", ".yaml") and not p.is_symlink() and p.is_file() for p in folder.iterdir())
+    if not context.inventory.files and not named:
         return None
-    folder = context.root / WORKFLOWS  # outside the snapshot: read on disk, as `.gitmodules` is, links left out
-    read = compose.reader(context)
-    named = folder.is_dir() and not folder.is_symlink() and (any(
-        pattern.search(path.read_text(encoding="utf-8", errors="replace")) for pattern in (
-            SERVICES, compose.MENTION, RUN)
-        for path in sorted(folder.glob("*.y*ml")) if path.is_file() and not path.is_symlink()) or any(
-        rel.endswith(".sh") and compose.MENTION.search(read(rel) or "") for rel in context.inventory.files))
     pipeline = context.root / GITLAB
     named = named or pipeline.is_file() and not pipeline.is_symlink() and any(
         pattern.search(pipeline.read_text(encoding="utf-8", errors="replace")) for pattern in (
@@ -644,7 +645,7 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
     if answer["returncode"] != 0:
         return {}, [{"kind": "model_failed", "path": WORKFLOWS, "detail": f"yaml: {answer['stderr'].strip()[-400:]}"}]
     lines, errors = answer["stdout"].splitlines(), answer["stderr"].splitlines()
-    services, steps, gaps, before, claimed = [], [], [], [], set()
+    services, steps, triggers, gaps, before, claimed = [], [], [], [], [], set()
     for rel, text in zip(lines[::2], lines[1::2]):
         doc = json.loads(text)
         if doc is None:  # the library's message is the line that names the error, above Node's stack
@@ -658,10 +659,13 @@ def _workflows(answer: dict, read, tests: list[dict] = ()) -> tuple[dict, list[d
             services, gaps = services + found, gaps + said
             before += _gitlab_steps(rel, doc, list(tests), read, claimed)
         else:
+            from premap.flow_entries import workflow_triggers
+            triggers.extend(workflow_triggers(rel, doc))
             found, said = _steps(rel, doc, read)
             services, steps, gaps = services + _services(rel, doc), steps + found, gaps + said
             before += _ci_steps(rel, doc, list(tests), read, claimed)
-    return {name: facts for name, facts in (("services", services), ("compose", steps), ("ci_steps", before))
+    return {name: facts for name, facts in (("services", services), ("workflow_triggers", triggers),
+                                            ("compose", steps), ("ci_steps", before))
             if facts}, gaps
 
 

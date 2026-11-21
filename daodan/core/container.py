@@ -87,6 +87,7 @@ from source_files import FORBIDDEN_GLOBS  # noqa: E402
 from tree_scope import GIT_OPTIONS, Perimeter, git_executable, program  # noqa: E402
 
 RECORD_NAME = "container-runs.jsonl"
+OFF_CAUSE = "container engine off (DAODAN_CONTAINER=off)"
 WORKDIR = "/work"
 STATE = "/daodan/state"  # with WORKDIR, what a preparation hands to execution
 HOME = STATE + "/home"
@@ -425,7 +426,7 @@ def find_engine() -> Engine:
     Daodan brings none, the user's (`user_engine`). A Gap when none can run, and at once with `DAODAN_CONTAINER=off`
     (the test suites, which start no container)."""
     if os.environ.get("DAODAN_CONTAINER") == "off":
-        raise Gap("container engine off (DAODAN_CONTAINER=off)", "unset DAODAN_CONTAINER to run in a container")
+        raise Gap(OFF_CAUSE, "unset DAODAN_CONTAINER to run in a container")
     if os.name == "nt":
         import node_preparation
         return node_preparation.windows_engine(own_engine)

@@ -37,6 +37,23 @@ class MapServiceTests(unittest.TestCase):
         options.setdefault("engine", False)
         return self.service.create_run("src", "example", **options)
 
+    def test_first_rule_prompt_and_candidates_fit_even_with_one_oversized_item(self):
+        import entries
+        import system_brief
+        import technologies
+        self.create()
+        long = "🌐" * 5000
+        row = {"status": "candidate", "reader": "attributo", "shape": long, "site": long, "symbol": long,
+               "label": long, "event": long, "handler_source": long, "handler": long}
+        with mock.patch.object(entries, "cached_syntax", return_value=[row]), \
+             mock.patch.object(technologies, "ensure", return_value={"units": [{"technologies": [long]}]}):
+            candidate = self.service.flows("example", entry_offset=0)
+            self.assertTrue(candidate["candidates"][0]["truncated"])
+            rule_prompt = self.service.flows("example")
+            self.assertEqual(rule_prompt["technologies_remaining"], 1)
+            for answer in (candidate, rule_prompt):
+                self.assertLessEqual(len(json.dumps(answer)), system_brief.LIMIT)
+
     def test_run_creation_starts_the_engine_pass_and_status_reports_it(self):
         import engine_pass
         child = mock.Mock(pid=os.getpid())
@@ -1013,6 +1030,20 @@ class SystemMapServiceTests(unittest.TestCase):
         self.assertIsNone(second["next_offset"])
         self.assertTrue(all({"reader", "shape", "site", "symbol", "status"} <= row.keys() for row in rows))
         self.assertTrue(all(row["reader"] != "residuo" for row in rows))
+
+    def test_path_pages_and_shape_questions_are_bound_to_this_snapshot(self):
+        import flows
+        from unittest.mock import patch
+        page = self.service.flows("system", trace_offset=0, limit=1)
+        self.assertEqual(len(page["cards"]), 1)
+        with patch.object(flows, "link_facts", side_effect=AssertionError("rebuilt links")):
+            self.assertEqual(self.service.flows("system", trace_offset=0, limit=1), page)
+        with self.assertRaisesRegex(ValueError, "one of"):
+            self.service.flows("system", trace_offset=0, about="another request")
+        asked = self.service.flows("system", shape_offset=0, limit=1)
+        self.assertIn("allowed", asked)
+        with self.assertRaisesRegex(ValueError, "question"):
+            self.service.flows("system", shape_answers={"id": "old", "answers": {"1": "comando"}})
 
     def test_a_wrong_map_or_a_mix_of_questions_names_what_is_wrong(self):
         with self.assertRaisesRegex(ValueError, "type"):

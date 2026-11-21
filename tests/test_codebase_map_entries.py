@@ -166,7 +166,7 @@ class PassedTests(unittest.TestCase):
             ("*.on#arg1", "web/page.ts:11", "web/page.ts::onSave"),             # a `)` the text split on
             ("*.addEventListener#arg1", "web/page.ts:6", "web/page.ts::onSave"),
             ("on#arg1", "web/page.ts:7", "web/actions.ts::save"),               # a library's name stays
-            ("*.on#arg1", "web/page.ts:8", "web/actions.ts::save"),             # the one call of an arrow
+            ("*.on#arg1", "web/page.ts:8", "web/page.ts::function@8:17"),       # the inline event handler
             ("document.addEventListener#arg1", "web/page.ts:9", "web/page.ts::onSave")])  # a global stays
 
     def test_a_method_its_class_does_not_define_is_a_candidate_without_handler_that_says_why(self):
@@ -184,7 +184,7 @@ class PassedTests(unittest.TestCase):
             ("onClick", "web/cart.tsx:5", "web/cart.tsx::Cart.save", "Salva"),               # a dotted key, nested
             ("onClick", "web/cart.tsx:5", "web/cart.tsx::Cart.pay", "cart.pay"),             # only a .yml defines it
             ("onClick", "web/view.tsx:10", "web/view.tsx::View.save", "Salva il carrello"),  # aria-label first
-            ("onClick", "web/view.tsx:11", "web/view.tsx::View.close", "Chiudi"),             # the element's text
+            ("onClick", "web/view.tsx:11", "web/view.tsx::function@11:23", "Chiudi"),             # the element's text
             ("onChange", "web/view.tsx:14", "web/view.tsx::View.pick", "Cerca"),              # its placeholder
             ("onClick", "web/view.tsx:15", "web/view.tsx::View.open", "Apri il carrello"),    # one file defines the key
             ("onClick", "web/view.tsx:16", "web/view.tsx::View.clear", None),                 # computed: no label
@@ -238,6 +238,7 @@ class DesktopTests(unittest.TestCase):
                 for c in sorted(self.found, key=lambda c: int(c["site"].rpartition(":")[2])) if c["site"].startswith(file)]
 
     def test_a_signal_connected_on_an_attribute_takes_the_label_of_the_call_that_made_it(self):
+        self.assertTrue(all(row["event"] == "clicked" for row in self.found if "qt_app" in row["site"]))
         self.assertEqual(self.of("ui/qt_app.py"), [
             ("*.*.*.connect#arg0", "ui/qt_app.py:14", "ui/qt_app.py::Window.save", "Salva", None),  # its creator
             ("*.*.*.connect#arg0", "ui/qt_app.py:16", "ui/qt_app.py::Window.open", "Apri", None),   # a later setText
@@ -374,7 +375,8 @@ class ReactTests(unittest.TestCase):
     def setUpClass(cls):
         cls.work = Path(tempfile.mkdtemp(prefix="entries-react-")).resolve()
         manifest = snapshot_of(cls.work, cls.SOURCES)
-        found = entries.candidates(flows.link_facts(manifest, []), manifest)
+        cls.links = flows.link_facts(manifest, [])
+        found = entries.candidates(cls.links, manifest)
         cls.found = [c for c in found if c["reader"] == "attributo"]
 
     @classmethod
@@ -385,31 +387,31 @@ class ReactTests(unittest.TestCase):
         return sorted((int(c["site"].rpartition(":")[2]), c["symbol"], c["label"], c.get("gap"))
                       for c in self.found if c["site"].startswith(f"{file}:"))
 
-    def test_a_function_written_in_place_binds_each_function_of_the_project_it_calls(self):
-        act, save, a, b, valid, done, fail = (f"web/actions.ts::{name}"
-                                              for name in ("act", "save", "a", "b", "valid", "done", "fail"))
-        self.assertEqual(self.of("web/forms.tsx"), sorted([
-            (11, "web/forms.tsx::Forms.handleSave", "a name", None),
-            (12, "web/forms.tsx::Forms.handleSave", "its one call", None),
-            (13, act, "void", None),
-            (14, a, "a block", None), (14, b, "a block", None),               # the event calls both
-            (15, save, "await in a block", None),
-            (16, save, "await", None),
-            (17, save, "prevent, then call", None),                           # `e.preventDefault` is a library's
-            (18, save, "a chain", None),                                      # `done` is given, not called
-            (19, valid, "and", None), (19, save, "and", None),
-            (20, save, "try", None), (20, fail, "try", None),
-            (21, save, "function", None),
-            (22, save, "as", None),
-            (23, save, "over lines", None),
-            (26, "web/forms.tsx::below", "one branch", None),                 # declared below the component
-            (27, done, "both branches", None), (27, save, "both branches", None),
-            (28, "web/forms.tsx::Forms.handleSave", None, None)]))            # on a component: the parent's
+    def test_each_inline_handler_is_a_single_declaration_and_its_calls_are_separate_edges(self):
+        sites = {(line, label): symbol for line, symbol, label, gap in self.of("web/forms.tsx")
+                 if "::function@" in symbol and gap is None}
+        expected = {
+            (12, "its one call"): ["web/forms.tsx::Forms.handleSave"], (13, "void"): ["web/actions.ts::act"],
+            (14, "a block"): ["web/actions.ts::a", "web/actions.ts::b"], (15, "await in a block"): ["web/actions.ts::save"],
+            (16, "await"): ["web/actions.ts::save"], (17, "prevent, then call"): ["web/actions.ts::save"],
+            (18, "a chain"): ["web/actions.ts::save"], (19, "and"): ["web/actions.ts::save", "web/actions.ts::valid"],
+            (20, "try"): ["web/actions.ts::fail", "web/actions.ts::save"], (21, "function"): ["web/actions.ts::save"],
+            (22, "as"): ["web/actions.ts::save"], (23, "over lines"): ["web/actions.ts::save"],
+            (27, "both branches"): ["web/actions.ts::done"], (30, None): [], (31, "navigate"): [],
+        }
+        self.assertEqual({site: sorted(e["to"] for e in self.links["edges"]
+                                       if e["from"] == symbol and e["type"] == "chiama")
+                          for site, symbol in sites.items()}, expected)
+        direct = [(line, symbol) for line, symbol, _, _ in self.of("web/forms.tsx") if "::function@" not in symbol]
+        self.assertEqual(direct, [(11, "web/forms.tsx::Forms.handleSave"), (26, "web/forms.tsx::below"),
+                                  (27, "web/actions.ts::save"), (28, "web/forms.tsx::Forms.handleSave")])
 
-    def test_a_prop_a_state_setter_or_a_library_s_function_binds_nothing(self):
-        self.assertEqual(self.of("web/dialog.tsx"), [  # `onClose` is the prop, not the function of actions.ts
-            (4, "web/actions.ts::fail", "z", None)])
-        self.assertEqual([line for line, *_ in self.of("web/forms.tsx") if line > 28], [])
+    def test_an_inline_handler_calling_an_unknown_prop_has_no_edge_to_the_unrelated_local_function(self):
+        handlers = {label: symbol for _, symbol, label, _ in self.of("web/dialog.tsx")}
+        self.assertEqual(set(handlers), {"y", "z"})
+        self.assertEqual([(e["from"], e["to"]) for e in self.links["edges"]
+                          if e["type"] == "chiama" and e["from"] in handlers.values()],
+                         [(handlers["z"], "web/actions.ts::fail")])
 
 
 class DecoratorTests(unittest.TestCase):
@@ -473,7 +475,9 @@ class DecoratorTests(unittest.TestCase):
     def test_a_written_rule_with_decorates_reaches_a_python_decorator_and_not_a_java_annotation(self):
         rules = flows.validate_rules([{"written": "app.get", "link": "ingresso", "entry": "rotta", "decorates": True},
                                       {"written": "GetMapping", "link": "ingresso", "entry": "rotta", "decorates": True}])
-        self.assertEqual([e["symbol"] for e in flows.link_facts(self.manifest, rules)["entries"]], ["api/app.py::read"])
+        rows = flows.link_facts(self.manifest, rules)["entries"]
+        self.assertEqual([e["symbol"] for e in rows if e["kind"] == "rotta"], ["api/app.py::read"])
+        self.assertIn(("src/main.rs::greet", "comando"), [(e["symbol"], e["kind"]) for e in rows])
 
 
 class NoirTests(unittest.TestCase):
@@ -524,6 +528,141 @@ class NoirTests(unittest.TestCase):
     def test_a_report_of_another_root_is_refused(self):
         with self.assertRaises(ValueError):
             entries.noir(self.REPORT, "/elsewhere")
+
+
+class ClassifiedBindingsTests(unittest.TestCase):
+    SOURCES = {
+        "web/view.tsx": (
+            "import { post } from './actions';\n"
+            "export function Form() {\n"
+            "  function paint() { return <span>OK</span>; }\n"
+            "  function save() { post(); return 1; }\n"
+            "  return <div><span id=\"verb\">Invia</span><span id=\"what\">ordine</span>\n"
+            "    <button aria-labelledby=\"verb what\" aria-label=\"ignorato\"\n"
+            "       onClick={save}>x</button><button onClick={save}>Ripeti</button>\n"
+            "    <Widget onClick={save} render={paint} />\n"
+            "    <button customEvent={save}>A</button><button customEvent={save}>B</button>\n"
+            "  </div>;\n}\n"),
+        "web/actions.ts": "export function post() {}\n",
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.work = Path(tempfile.mkdtemp(prefix="entries-classified-")).resolve()
+        cls.manifest = snapshot_of(cls.work, cls.SOURCES)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.work, True)
+
+    def test_two_buttons_on_one_line_keep_distinct_evidence_and_composed_accessible_names(self):
+        links = flows.link_facts(self.manifest, [])
+        buttons = [e for e in links["entries"] if e.get("shape") == "onClick"]
+        self.assertEqual([e["label"] for e in buttons], ["Invia ordine", "Ripeti"])
+        self.assertEqual({e["event"] for e in buttons}, {"click"})
+        self.assertEqual(len({(e["site"], e["column"]) for e in buttons}), 2)
+        self.assertEqual({e["symbol"] for e in buttons}, {"web/view.tsx::Form.save"})
+        self.assertTrue(all(e["source"] == "registro" and e["handler_source"] for e in buttons))
+
+    def test_known_shapes_are_not_asked_and_a_numbered_decision_applies_to_all_matching_sites(self):
+        found = entries.cached_syntax(self.manifest)
+        questions = entries.shape_questions(found)
+        self.assertEqual([(q["count"], q["shape"]) for q in questions if q["reader"] == entries.ATTRIBUTE],
+                         [(2, "customEvent")])
+        row = next(q["row"] for q in questions if q["shape"] == "customEvent")
+        with self.assertRaises(ValueError):
+            entries.shape_rules(questions, {str(row): "forse"})
+        excluded = entries.shape_rules(questions, {str(row): entries.NO_ENTRY})
+        self.assertFalse(any(e.get("shape") == "customEvent" for e in flows.link_facts(self.manifest, excluded)["entries"]))
+        rules = entries.shape_rules(questions, {str(row): entries.ENTRY_KINDS[0]})
+        with self.assertRaisesRegex(ValueError, "source"):
+            flows.validate_rules([{**rules[0], "source": "registro"}])
+        links = flows.link_facts(self.manifest, flows.validate_rules(rules))
+        self.assertEqual([e["label"] for e in links["entries"] if e.get("shape") == "customEvent"], ["A", "B"])
+        self.assertNotIn("customEvent", {q["shape"] for q in entries.shape_questions(found, rules)})
+
+    def test_an_ast_attribute_rule_uses_the_same_multiline_binding_and_excludes_render_and_forwarded_props(self):
+        links = flows.link_facts(self.manifest, [{"attribute": "*", "link": "attiva"}])
+        bindings = [e for e in links["edges"] if e["type"] == "attiva"]
+        self.assertEqual({(e["to"], e["label"]) for e in bindings},
+                         {("web/view.tsx::Form.save", x) for x in ("Invia ordine", "Ripeti", "A", "B")})
+
+
+    def test_indexed_read_of_destructured_and_imported_handler_wins_at_its_own_column(self):
+        import resolve_edges
+        from snapshot_store import open_snapshot
+
+        sources = {
+            "actions.ts": "export function persist() {}\nexport function useSave(){ return { onPress: persist }; }\n",
+            "view.tsx": ("import { useSave, persist as direct } from './actions';\nexport function View(){\n"
+                         " const { onPress }=useSave();\n return <div><button onClick={onPress}>A</button>"
+                         "<button onClick={direct}>B</button></div>;\n}\n"),
+        }
+        with tempfile.TemporaryDirectory() as folder:
+            m = snapshot_of(Path(folder), sources)
+            self.assertEqual([c["label"] for c in entries.cached_syntax(m) if c["reader"] == entries.ATTRIBUTE], ["B"])
+            with open_snapshot(m) as store:
+                target = store.connection.execute("SELECT id FROM sem_declarations WHERE file='actions.ts' AND name='persist'").fetchone()[0]
+                binding = resolve_edges.store_binding(store, m, store.metadata.get("parser_fingerprint"),
+                                                      {"typescript": {"engine": "scip-typescript", "state": "fresh"}}, {})
+                edges = [{"reference_id": ref, "file": "view.tsx", "language": "typescript", "kind": "read",
+                          "caller": caller, "l0": 4, "c0": col, "verdict": "project-callable", "target_id": target,
+                          "symbol": "persist", "resolver": "scip-typescript", "confidence": "confirmed",
+                          "payload": {"chain": ["same-range"]}}
+                         for ref, caller, col in store.connection.execute(
+                             "SELECT id, caller, c0 FROM sem_references WHERE file='view.tsx' AND l0=4 AND kind='read'")]
+            resolve_edges.write_edge_store(resolve_edges.default_edge_store(m), edges, binding)
+            got = [(e["label"], e["symbol"], e["handler_source"]) for e in flows.link_facts(m, [])["entries"]]
+            self.assertEqual(got, [("A", "actions.ts::persist", "scip-typescript"), ("B", "actions.ts::persist", "scip-typescript")])
+
+
+    def test_python_command_reaches_a_write_only_after_the_two_shapes_are_classified(self):
+        sources = {"ui.py": ("import tkinter as tk\nfrom disk import store\nclass App:\n    def wire(self):\n"
+                             "        tk.Button(text='Salva', command=self.save)\n"
+                             "    def save(self):\n        store.put('orders')\n"),
+                   "disk.py": "store = None\n"}
+        with tempfile.TemporaryDirectory() as folder:
+            manifest = snapshot_of(Path(folder), sources)
+            candidates = entries.cached_syntax(manifest)
+            [button] = [c for c in candidates if c["shape"] == "tk.Button#command"]
+            self.assertEqual((button["event"], button["label"], button["symbol"]), ("command", "Salva", "ui.py::App.save"))
+            self.assertEqual(flows.link_facts(manifest, [])["entries"], [])
+            questions = entries.shape_questions(candidates)
+            q = next(q for q in questions if q["shape"] == button["shape"])
+            rules = entries.shape_rules(questions, {q["row"]: entries.ENTRY_KINDS[0]})
+            rules += [{"written": "store.put", "link": "scrive", "store": "disk", "key": "arg0"}]
+            links = flows.cached_links(manifest, rules)
+            [confirmed] = links["entries"]
+            self.assertEqual((confirmed["event"], confirmed["label"], confirmed["source"]), ("command", "Salva", "modello"))
+            flow = flows.trace(links, confirmed["symbol"], "from")
+            self.assertIn(("scrive", "store:disk/orders"), [(e["type"], e["to"]) for e in flow["edges"]])
+
+
+    def test_call_attribute_and_decorator_queries_share_the_file_tree(self):
+        from unittest.mock import patch
+        sources = {"ui.tsx": ("export function View(){ function save(){ log(); } "
+                              "listen('go', save); return <button onClick={save}>Go</button>; }\n")}
+        with tempfile.TemporaryDirectory() as folder:
+            manifest = snapshot_of(Path(folder), sources)
+            original = entries._treesitter.get_parser
+            parsed = []
+
+            class Counter:
+                def __init__(self, parser):
+                    self.parser = parser
+
+                def parse(self, source):
+                    parsed.append(source)
+                    return self.parser.parse(source)
+
+            def parser(grammar):
+                loaded = original(grammar)
+                return (Counter(loaded[0]), loaded[1]) if loaded else None
+
+            with patch.object(entries._treesitter, "get_parser", side_effect=parser):
+                first = entries.cached_syntax(manifest)
+                self.assertEqual(entries.cached_syntax(manifest), first)
+            self.assertEqual(parsed.count(sources["ui.tsx"].encode()), 1)
 
 
 if __name__ == "__main__":

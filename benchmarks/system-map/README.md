@@ -156,6 +156,27 @@ Prova a costo zero dei flussi costruiti dalla macchina: `python anchors.py LINKS
 - Ogni nodo mancante corrisponde a un buco del grafo già visto, e la prova lo localizza: l'interfaccia chiama le funzioni dell'abbonamento attraverso un contesto React (`startCheckout` da `useSubscription()`), e le regole non leggono `db[USAGE_EVENTS_COLLECTION]`. Nessuno dei due è dichiarato oggi.
 - Nei tre flussi non ci sono servizi esterni: senza il grafo dei moduli, i collegamenti `usa` verso Stripe e Google Play mancano da questi dati.
 
+### Candidati prima delle regole e osservazioni registrate, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/path_observations.py`. Prima delle regole, CLI, MCP e strumento dell’app trovano il candidato AST `@trigger("refresh")` con gestore `controls.py::dispatch`. Classificata la forma come comando, la scheda letta da CLI, MCP e HTTP espone l’osservazione esatta di `save` a riga 3, il campione di `also_save` a riga 4 e il conflitto tra la destinazione statica `refund` e quella osservata `cancel` a riga 5. Tre regole associano una scrittura al rispettivo chiamato. CLI, MCP e strumento dell’app accettano `store:db/payments` e rifiutano sia `store:db/orders` (campione) sia `store:db/refunds` (conflitto). Alla riapertura, l’area contiene il solo pagamento, ancora `verified`. Le righe dell’indice e le osservazioni sono sintetiche. La verifica usa il join e l’archivio SQLite di Daodan, con lo scanner simulato.
+
+### Scheda «Paga», riapertura e seconda corsa, 21 novembre 2026
+
+Dalla radice, eseguire `python benchmarks/system-map/path_reuse.py` con le dipendenze di Daodan. Il benchmark prepara uno snapshot SQLite della fixture `flow-model`, registra le sue undici regole e consulta prima l’elenco, poi la scheda del pulsante «Paga». La CLI verifica anche il rifiuto di una decisione discontinua (uscita 1) e la riapertura per nome. La lista e i conteggi delle scritture senza un ingresso provato coincidono su CLI, MCP e HTTP. La CLI, il client MCP con trasporto in memoria, la rotta HTTP dell’app e lo strumento dell’app restituiscono gli stessi passi. Il test usa uno scanner che restituisce zero segreti e tiene spento il container. Nessun sorgente della fixture viene eseguito.
+
+Il percorso registrato segue `onPayClick → submitPayment → store:web state/payment`. La sola scrittura, presentata come passo iniziale dal controllo, viene rifiutata per discontinuità. Il cambio del tema, pur usando lo stesso store, resta fuori dalla scheda. Un nuovo servizio riapre la mappa e ritrova gli estremi verificati, il sito e la provenienza di ogni passo.
+
+| Operazione sullo snapshot già scritto | Aperture sorgenti | Parse tree-sitter | Inventari AST / costruzioni link | Inventari schede / espansioni | Connessioni manifest / cache schede |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Registrare le regole | 23 | 23 | 1 / 1 | 0 / 0 | 8 / 0 |
+| Aprire elenco e scheda | 0 | 0 | 0 / 0 | 1 / 1 | 8 / 3 |
+| Ripetere elenco e scheda con un nuovo servizio | 0 | 0 | 0 / 0 | 0 / 0 | 10 / 5 |
+| Riaprire il flusso per nome | 0 | 0 | 0 / 0 | 0 / 0 | 6 / 1 |
+
+La prima consultazione prepara un unico indice del grafo. Il [test di costo](../../tests/test_flow_path_identity.py) conta 256 visite per indicizzare 256 percorsi indipendenti e 512 visite per 512 percorsi, ciascuno con un solo arco. Aprire i dettagli richiede poi i soli archi raggiunti. La seconda lettura di elenco e scheda apre due volte `flow-links.json` e una volta `system-map.json`. La lettura del flusso per nome li apre una volta ciascuno. Le quattro operazioni hanno richiesto zero elenchi di directory sorgenti, nuovi snapshot, avvii degli indicizzatori, comandi nel container, gestori di pacchetti o download di strumenti. I numeri valgono per questa fixture con grammatiche di Daodan già disponibili. La misura esclude la creazione iniziale dello snapshot e il costo di una vera analisi dinamica.
+
+La scheda globale ha una prova separata in `tests/test_codebase_map_system_brief.py::DeclaredTests::test_global_brief_reopens_only_changed_unmodelled_yaml`. La fixture contiene Dockerfile, Compose, package.json e due manifesti YAML. Prima della modifica, prima e seconda consultazione aprivano quattro sorgenti ciascuna. Ora la scheda riprende le immagini Docker, i servizi Compose e le dipendenze dalla pre-mappa. Apre i soli manifesti Kubernetes e Backstage alla prima consultazione (2 aperture) e nessun sorgente alla seconda, anche riaprendo il servizio. Cambiando il catalogo alla terza lettura, la verifica riapre un solo file e scarta la dichiarazione che diverge dallo snapshot.
+
 ## Confronto proposto per i flussi multilivello
 
 Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md). **Confronto proposto, ancora da eseguire su Modal.**
@@ -175,3 +196,29 @@ Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-ma
 **Criteri sulla fixture completa.** Il mapper deve scoprire tutti i processi e tutte le varianti attesi, conservare il modulo condiviso una sola volta e rendere conto di ogni estremo, inclusa l'origine irrisolta. Nessun arco causale senza evidenza. Aprire il processo deve mostrare i due rami e richiuderlo deve ripristinare la selezione, con zero chiamate LLM. Solo a questo punto chiedere una review della funzionalità e poi del solo ramo automatico. Nel primo caso sono attesi entrambi i percorsi, nel secondo il gestore del cron e il codice condiviso pertinente. In entrambi i casi verificare la motivazione dei file, i file di solo contesto e le lacune rispetto al riferimento.
 
 A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo non espone un ingresso o un effetto, attribuire l'omissione alla raccolta delle evidenze. Se il riferimento è visibile al modello e viene interpretato male, attribuirla alla scoperta semantica. **Risultati del nuovo protocollo e fixture completa: da produrre.**
+
+### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/pipeline_reuse.py`. Lo script crea una volta il manifest SQLite della fixture `js-npm-single`, poi avvia due processi distinti che chiamano `pipeline.run` senza saltare passi. La fixture dichiara pacchetti npm e il comando `node --test`. Ogni corsa imposta `DAODAN_CONTAINER=off`. Le grammatiche e l’ambiente uv di Daodan erano già disponibili.
+
+| Passo o misura | Prima analisi | Seconda analisi |
+| --- | ---: | ---: |
+| Scan eseguito / pre-mappe derivate | 1 / 1 | 1 / 0 |
+| Grafo dei moduli | ricostruito | riusato |
+| Sorgenti di pre-mappa con lacuna del container | 4 | 4 |
+| Stack eseguito / tecnologie restituite | 1 / 2 | 1 / 2 |
+| Analyze / tentativi dell’adattatore SCIP | 1 / 1 | 1 / 1 |
+| Dynamic / osservazioni runtime | 1 / 0 | 1 / 0 |
+| Union eseguito | 1 | 1 |
+| Aperture di file del progetto da Python | 14 | 4 |
+| Elenchi di directory del progetto da Python | 9 | 0 |
+| Processi Git / uv offline | 5 / 2 | 1 / 2 |
+| Verifiche della disponibilità del container | 2 | 1 |
+| Copie nel container / comandi npm / download di Daodan | 0 / 0 / 0 | 0 / 0 / 0 |
+| Nuovi snapshot / parse tree-sitter | 0 / 0 | 0 / 0 |
+
+La seconda analisi riapre una volta ciascuno `package.json`, `package-lock.json`, `src/index.js` e `test/index.test.js`. Nella prima le aperture sono rispettivamente 7, 3, 2 e 2. Gli hook di audit coprono i tre interpreti Python di ogni corsa. Contano anche gli avvii di Git e uv. Le letture interne ai binari nativi non sono misurate.
+
+La prima corsa tenta go-enry, Renovate, npm e Noir. La seconda riapre le quattro lacune con la loro causa. Prima di questa modifica la seconda corsa rigenerava una pre-mappa, apriva sei file del progetto, elencava tre directory e verificava due volte la disponibilità del container. Il riuso vale quando lo snapshot e le sorgenti sono gli stessi, il runner è quello del container predefinito e Daodan ha già registrato lo stesso spegnimento esplicito per tutte le sorgenti rimaste da eseguire. Una richiesta di rigenerazione, un runner diverso, una causa diversa e la riattivazione del container consentono il nuovo tentativo.
+
+SCIP si ferma prima della build con stato `unavailable`. Dynamic riporta `no-static-graph` e Union conserva lo stato `unavailable` per JavaScript. I due avvii di uv verificano e aprono l’ambiente offline dell’adattatore. Nessun processo ha installato i pacchetti del progetto o eseguito i suoi test. Resta da misurare una seconda analisi con container disponibile e un indice ufficiale prodotto realmente.

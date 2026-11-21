@@ -98,19 +98,21 @@ def context_of(tmp_path, files: dict):
 WORKFLOW = "jobs:\n  test:\n    services:\n      postgres:\n        image: postgres:16-alpine\n"
 
 
-def test_renovate_reads_the_workflows_with_its_own_yaml_library_where_one_names_services(tmp_path):
-    """The workflows sit in a dot folder, outside the snapshot and inside the container's copy (Git tracks them):
-    the command reads each one there; a project whose workflows name no service, start no Compose and run no step
-    runs Renovate's extraction alone."""
+def test_renovate_reads_declared_workflow_files_with_its_existing_yaml_library(tmp_path):
+    """The workflow path selects the container's YAML reader even for reusable workflows without shell steps."""
     with context_of(tmp_path / "a", {"package.json": "{}\n", ".github/workflows/ci.yml": WORKFLOW}) as context:
         extract, workflows = renovate.commands(context)
     assert extract["argv"][0] == "renovate" and workflows["network"] == "none" and workflows["cwd"] == "."
     assert workflows["tool"] == "renovate" and renovate.YAML in workflows["argv"][-1]
     assert "command -v renovate" in renovate.YAML and renovate.YAML.endswith('/node_modules/yaml/bin.mjs"')
-    for case, files in {"b": {"package.json": "{}\n"},
-                        "c": {"package.json": "{}\n", ".github/workflows/ci.yml": "on: push\n"}}.items():
-        with context_of(tmp_path / case, files) as context:
-            assert [command["argv"][0] for command in renovate.commands(context)] == ["renovate"]
+    with context_of(tmp_path / "b", {"package.json": "{}\n", ".github/workflows/ci.txt": "on: push\n"}) as context:
+        only_link = context.root / ".github/workflows/linked.yaml"
+        only_link.symlink_to(context.root / "package.json")
+        assert [command["argv"][0] for command in renovate.commands(context)] == ["renovate"]
+    reusable = "on: push\njobs:\n  build:\n    uses: org/repo/.github/workflows/build.yml@v1\n"
+    with context_of(tmp_path / "c", {"package.json": "{}\n", ".github/workflows/ci.yaml": reusable}) as context:
+        with mock.patch.object(Path, "read_text", side_effect=AssertionError("workflow bytes read on host")):
+            assert [command["argv"][0] for command in renovate.commands(context)] == ["renovate", "sh"]
     steps = "jobs:\n  t:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm test\n"  # its steps, its tests
     with context_of(tmp_path / "d", {"package.json": "{}\n", ".github/workflows/ci.yml": steps}) as context:
         assert [command["argv"][0] for command in renovate.commands(context)] == ["renovate", "sh"]

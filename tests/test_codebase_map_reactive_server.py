@@ -138,6 +138,7 @@ def test_manifest_only_run_drives_model_scan_and_keeps_the_cause_without_a_conta
             assert resolve_edges.main([str(manifest), "--pass"]) == 0
         assert any(gap.get("kind") == "model_not_run" and "engine offline" in gap["detail"]
                    for gap in premap.ensure(manifest)["gaps"])
+        assert service.status("config")["pipeline"]["scan"] == "fresh"  # current with the recorded container gaps
         assert pipeline.runtime(manifest)["state"] == "none"
         assert service.index("config")["engine"]["action"] == "started"
         assert spawn.call_count == 2
@@ -202,12 +203,18 @@ def test_mcp_server_exposes_stack_tool_and_live_resource(tmp_path, monkeypatch):
         service.create_run(".", "r1", engine=False)
 
         async def check():
-            tools = await srv.list_tools()
-            names = {t.name for t in tools}
-            assert "codebase_map_stack" in names
-            res = await srv.call_tool("codebase_map_stack", {"run_id": "r1", "module": "api"})
-            text = res[0].text if isinstance(res, list) else json.dumps(res)
-            assert "spring-boot" in text
+            args = {"run_id": "r1", "module": "api"}
+            if importlib.util.find_spec("mcp") is not None:
+                from mcp import Client
+                async with Client(srv) as client:
+                    assert "codebase_map_stack" in {t.name for t in (await client.list_tools()).tools}
+                    result = await client.call_tool("codebase_map_stack", args)
+                    assert not result.is_error and "spring-boot" in result.content[0].text
+                    pulse = await client.read_resource("daodan://project/live")
+                    assert "events" in json.loads(pulse.contents[0].text)
+            else:
+                assert "codebase_map_stack" in {t.name for t in await srv.list_tools()}
+                assert "spring-boot" in json.dumps(await srv.call_tool("codebase_map_stack", args))
 
         _run_mcp_check(check())
 

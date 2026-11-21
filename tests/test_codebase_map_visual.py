@@ -429,3 +429,46 @@ def visual_app_graph(envelope):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_export_reopens_two_controls_with_their_own_binding_sites(tmp_path):
+    project = tmp_path / "shop"
+    project.mkdir()
+    (project / "buttons.tsx").write_text(
+        'function save() {}\nexport function View() { return <main>\n'
+        '<button onClick={save}>Save order</button>\n'
+        '<button onClick={save}>Save again</button></main> }\n', encoding="utf-8")
+    git_project(project)
+    service = mcp_service.MapService(project)
+    service.create_run(".", "buttons", engine=False)
+    service.flows("buttons", rules=[])
+    exported = visual.export(service.root / "runs/buttons", service.root)
+    envelope = json.loads((exported / "visual.json").read_text(encoding="utf-8"))
+    rows = [e for e in envelope["flows"] if e["entry"] == "symbol:buttons.tsx::save"]
+    assert len({e["ref"] for e in rows}) == 2
+    assert {(e["site"], e["label"]) for e in rows} == {
+        ("buttons.tsx:3", "Save order"), ("buttons.tsx:4", "Save again")}
+
+
+def test_exported_store_relation_inherits_weak_evidence_on_either_side():
+    read = {"type": "legge", "from": "store:db/orders", "site": "read.py:3"}
+    write = {"type": "scrive", "to": "store:db/orders", "site": "save.py:8"}
+    for status, access in [({"conflict": True}, read), ({"confidence": "sampled"}, write)]:
+        [relation] = visual._link_relations({"gaps": [], "edges": [
+            {**edge, **(status if edge is access else {})} for edge in (read, write)]})
+        assert relation["status"] == "uncertain"
+
+
+def test_exported_event_stops_at_a_sampled_binding_even_if_the_handler_can_write(tmp_path, monkeypatch):
+    import flows
+    manifest = tmp_path / "manifest.sqlite"
+    manifest.with_name("flow-rules.json").write_text(json.dumps({"schema": flows.RULES_SCHEMA, "rules": []}))
+    links = {"stores": [], "gaps": [], "entries": [
+        {"symbol": "ui.py::save", "kind": "azione", "site": "ui.py:3", "handler_confidence": "sampled"}],
+        "edges": [{"from": "ui.py::save", "to": "store:db/order", "type": "scrive", "site": "ui.py:5", "origin": "dedotto"}]}
+    monkeypatch.setattr(flows, "cached_links", lambda *_: links)
+    entities = {}
+    entity, _ = visual._collector(entities, {})
+    [flow], _ = visual._flows(manifest, entities, {}, {}, [], entity)
+    assert not flow["complete"] and not flow["steps"] and flow["nodes"] == ["symbol:ui.py::save"]
+    assert flow["gaps"][0]["site"] == "ui.py:3" and "sampled" in flow["gaps"][0]["reason"]

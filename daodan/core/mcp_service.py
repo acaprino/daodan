@@ -268,6 +268,9 @@ class MapService:
         snapshots.enter_context(manifest)
         self._manifest_binding(run, state, manifest, target)
         self._validate_artifact_paths(run, state)
+        if manifest.path.with_name("flow-decision-pending.json").is_file():
+            import flow_paths
+            flow_paths.recover(manifest.path)
         if state.get("delivery") is not None:
             snapshot._validate_delivery(run, self.root, state)
         return run, state, manifest, target
@@ -280,6 +283,10 @@ class MapService:
                  "snapshot/engine-report.json", "snapshot/engine-pass.log",
                  "snapshot/modules.json", "snapshot/modules.md", "snapshot/proposals.json",
                  "snapshot/premap.json", "snapshot/technologies.json", "snapshot/context",
+                 "snapshot/flow-rules.json", "snapshot/flow-links.json", "snapshot/entry-candidates.json",
+                 "snapshot/system-map.json", "snapshot/flow-cards.json", "snapshot/discovery-budget.json",
+                 "snapshot/brief-runtime-yaml.json",
+                 "snapshot/trace-cards.sqlite", "snapshot/entry-reviews.sqlite", "snapshot/flow-decision-pending.json",
                  f"snapshot/{pipeline_events.JOURNAL}",
                  "cards.sqlite"}
         for path in run.glob("[0-9][0-9]-*.md"):
@@ -300,7 +307,10 @@ class MapService:
         import premap
         import technologies
         m_state = module_graph.graph_state(manifest_path)["state"]
-        p_state = premap.state(manifest_path, runner=True if engine_info.get("state") != "off" else None)["state"]
+        inspected = premap.state(manifest_path)
+        p_state = inspected["state"]
+        if inspected.get("pending_sources") and engine_info.get("state") == "running":
+            p_state = "stale"  # the background pass still has to attempt the deferred model commands
         scan_state = "fresh" if m_state == "fresh" and p_state == "fresh" else (
             "stale" if "stale" in (m_state, p_state) else "missing"
         )
@@ -665,7 +675,8 @@ class MapService:
             return dict(source_reader.outline_manifest(manifest, path, pattern, limit), run_id=run_id)
 
     def flows(self, run_id, rules=None, start=None, direction="from", level="fisico", limit=100, card=None,
-              brief=False, map=None, about=None, levels=None, entry_offset=None):
+              brief=False, map=None, about=None, levels=None, entry_offset=None, shape_offset=None, shape_answers=None,
+              trace_offset=None, trace_id=None, trace_decision=None, next_question=False, effect_offset=None):
         """Flows of the bound run from its link rules: the summary, or one flow at a level.
 
         `rules` records the project's link rules beside the snapshot. Without recorded
@@ -677,12 +688,19 @@ class MapService:
         """
         import flows as flow_model
         import system_levels
+        ask_paths = trace_offset is not None or trace_id is not None
         asked = [name for name, value in (("brief", brief), ("map", map is not None), ("about", about is not None),
-                                          ("start", start is not None), ("entry_offset", entry_offset is not None)) if value]
+                                          ("start", start is not None), ("entry_offset", entry_offset is not None),
+                                          ("shapes", shape_offset is not None), ("paths", ask_paths), ("effects", effect_offset is not None),
+                                          ("trace_decision", trace_decision is not None), ("next_question", next_question)) if value]
         if len(asked) > 1:
-            raise ValueError("ask one of brief, map, about, start or entry_offset")
-        if entry_offset is not None and (type(entry_offset) is not int or entry_offset < 0):
-            raise ValueError("entry_offset must be a nonnegative integer")
+            raise ValueError("ask one of brief, map, about, start, candidates, shapes, paths or effects")
+        for name, offset in (("entry_offset", entry_offset), ("shape_offset", shape_offset), ("trace_offset", trace_offset),
+                             ("effect_offset", effect_offset)):
+            if offset is not None and (type(offset) is not int or offset < 0):
+                raise ValueError(f"{name} must be a nonnegative integer")
+        if trace_id is not None and (not isinstance(trace_id, str) or not 1 <= len(trace_id) <= 200):
+            raise ValueError("trace_id must be a path card id")
         if levels is not None and (about is None or not isinstance(levels, list)
                                    or not levels or any(lv not in system_levels.LEVELS for lv in levels)):
             raise ValueError("levels go with about and are one or more of " + ", ".join(system_levels.LEVELS))
@@ -694,49 +712,97 @@ class MapService:
             raise ValueError("start must be a node of at most 1000 characters")
         _limit(limit)
         if rules is not None:
-            if not isinstance(rules, list) or not rules:
-                raise ValueError("rules must be a nonempty list")
+            if not isinstance(rules, list):
+                raise ValueError("rules must be a list")
             flow_model.validate_rules(rules)
         if card is not None and (start is None or direction == "through"):
             raise ValueError("a card belongs to one flow: give start and direction from or to")
-        with self._operation(write=rules is not None or card is not None or map is not None):
+        with self._operation(write=any(item is not None for item in (rules, card, map, shape_answers, trace_decision))):
             _, _, manifest, _ = self._bound_run(run_id)
             if gate := snapshot.query_gate(manifest.path):
                 return gate
             recorded = manifest.path.with_name("flow-rules.json")
-            if rules is not None:
-                _write(recorded, {"schema": flow_model.RULES_SCHEMA, "rules": rules})
-            if entry_offset is not None:
-                import entries
-                import system_brief
+            import entries
+            import flow_questions
+            import system_brief
+            if entry_offset is not None and rules is None and shape_answers is None:
                 return system_brief.candidate_page(entries.cached_syntax(manifest.path), run_id, entry_offset, limit)
-            if not recorded.is_file():
+            stored = _json(recorded) if recorded.is_file() else {}
+            if stored and (stored.get("schema") != flow_model.RULES_SCHEMA or not isinstance(stored.get("rules"), list)):
+                raise ValueError("unrecognized flow rules schema")
+            saved_rules = flow_model.validate_rules(stored["rules"], recorded=True) if stored else []
+            classified = flow_questions.answered(manifest.path, saved_rules, shape_answers) if shape_answers is not None else []
+            ready = rules is not None or bool(stored and stored.get("project_rules", True))
+            if rules is not None:
+                # Updating the route/store rules preserves previously classified shapes.
+                replaced = {(r.get("reader"), r.get("shape")) for r in rules}
+                saved_rules = [r for r in saved_rules if "shape" in r and (r["reader"], r["shape"]) not in replaced] + rules
+            rule_update = None
+            if rules is not None or classified:
+                saved_rules = flow_model.validate_rules([*saved_rules, *classified], recorded=True)
+                proposed = {"schema": flow_model.RULES_SCHEMA, "rules": saved_rules, "project_rules": ready}
+                if proposed != stored:
+                    if trace_decision is not None:
+                        rule_update = proposed
+                    else:
+                        _write(recorded, proposed)
+            if entry_offset is not None:
+                return system_brief.candidate_page(entries.cached_syntax(manifest.path), run_id, entry_offset, limit)
+            if shape_offset is not None:
+                question, _ = flow_questions.page(manifest.path, saved_rules, shape_offset, limit)
+                return {"status": "ok", "run_id": run_id, **question}
+            if ask_paths or trace_decision is not None or next_question or effect_offset is not None:
+                import flow_paths
+                if effect_offset is not None:
+                    return {"run_id": run_id, **flow_paths.orphan_effects(manifest.path, saved_rules, effect_offset, limit)}
+                if next_question:
+                    return {"run_id": run_id, **flow_paths.next_question(manifest.path, saved_rules)}
+                result = (flow_paths.record(manifest.path, saved_rules, trace_decision, rule_update=rule_update)
+                          if trace_decision is not None
+                          else flow_paths.page(manifest.path, saved_rules, trace_offset or 0, limit, card_id=trace_id))
+                return {"status": "ok", "run_id": run_id, **result}
+            if not ready and (about is not None or map is not None) and manifest.path.with_name("system-map.json").is_file():
+                return self._system_map(run_id, manifest.path, saved_rules, brief, map, about, levels)
+            if not ready:
                 import technologies
-                answer = {"status": "needs_rules", "run_id": run_id,
+                questions, _ = flow_questions.page(manifest.path, saved_rules, 0, min(3, limit), budget=8000)
+                answer = {"status": "needs_rules", "run_id": run_id, "shapes": questions,
                           "format": flow_model.__doc__.split("    python flows.py")[0].strip()}
                 try:
-                    answer["technologies"] = [unit for unit in technologies.ensure(manifest.path)["units"]
-                                              if unit["technologies"]]
+                    units = [unit for unit in technologies.ensure(manifest.path)["units"] if unit["technologies"]]
+                    preview = []
+                    room = system_brief.LIMIT - len(json.dumps(answer)) - 3000
+                    for unit in units:
+                        size = len(json.dumps(unit)) + 2
+                        if size > room:
+                            break
+                        preview.append(unit)
+                        room -= size
+                    answer["technologies"] = preview
+                    if len(preview) < len(units):
+                        answer["technologies_remaining"] = len(units) - len(preview)
+                        answer["technologies_lookup"] = "Read codebase_map_stack by module for the remaining evidence."
                 except Exception as error:  # noqa: BLE001 - the rule format is the answer; the technologies help
-                    answer["technologies_unavailable"] = f"{type(error).__name__}: {error}"
+                    answer["technologies_unavailable"] = f"{type(error).__name__}: {error}"[:400]
                 if brief:
                     import system_brief
-                    value = system_brief.brief(manifest.path, [])
+                    value = system_brief.brief(manifest.path, saved_rules)
                     rule_format = answer.pop("format")
                     return system_brief.fit(value, {**answer, "brief": "", "truncated": 0,
                                                     "steps": value["steps"], "format": rule_format})
                 return answer
             if brief or map is not None or about is not None:
-                return self._system_map(run_id, manifest.path, flow_model.load_rules(recorded), brief, map, about,
+                return self._system_map(run_id, manifest.path, saved_rules, brief, map, about,
                                         levels)
-            links = flow_model.cached_links(manifest.path, flow_model.load_rules(recorded))
+            links = flow_model.cached_links(manifest.path, saved_rules)
             if start is None:
                 return {"status": "ok", "run_id": run_id, "entries": links["entries"][:limit],
                         "entry_count": len(links["entries"]), "routes": links["routes"],
                         "stores": {name: {key: len(value) for key, value in store.items()}
                                    for name, store in list(links["stores"].items())[:limit]},
                         "store_count": len(links["stores"]), "gaps": links["gaps"][:limit],
-                        "gap_count": len(links["gaps"]), "external": links["external"]}
+                        "gap_count": len(links["gaps"]), "external": links["external"],
+                        "source_gaps": links.get("source_gaps", [])[:limit]}
             flow = flow_model.trace(links, start, direction)
             if direction == "through":
                 for records in ("entries", "incomplete_entries"):
@@ -768,6 +834,21 @@ class MapService:
                 flow["edge_count"] = len(flow["edges"])
                 flow["edges"] = flow["edges"][:limit]
             return {"status": "ok", "run_id": run_id, **flow}
+
+    def reserve_question(self, run_id, card_id, budget=None):
+        """Count model requests before dispatch, including interrupted attempts. The limit is cumulative per run."""
+        if budget is not None and (type(budget) is not int or budget < 0):
+            raise ValueError("question budget must be a nonnegative integer")
+        with self._operation(write=True):
+            _, _, manifest, _ = self._bound_run(run_id)
+            path = manifest.path.with_name("discovery-budget.json")
+            before = _json(path) if path.is_file() else {"asked": 0, "limit": None}
+            limit = before["limit"] if budget is None else budget
+            if limit is not None and before["asked"] >= limit:
+                _write(path, {**before, "limit": limit})
+                raise ValueError(f"discovery budget exhausted ({before['asked']} of {limit} questions); "
+                                 "resume with a larger question_budget")
+            _write(path, {"asked": before["asked"] + 1, "limit": limit, "last_card": card_id})
 
     def system_map(self, run_id):
         """The recorded system map in counts: its nodes and flows by status and what its coverage leaves out, as a
@@ -811,9 +892,15 @@ class MapService:
             if refused := system["refused_proposals"]:
                 needs_review["refused_proposals"] = {"count": len(refused),
                                                      "names": [r["name"] for r in refused[:system_map.LEFT_LISTED]]}
+            # A saved event supplies its own symbol nodes. The whole-system
+            # pass still owns the product and the parts that contain them.
+            needs_structure = (any(flow.get("trace") for flow in system["flows"])
+                               and not any(node["type"] == "altro" and "." in node["members"]
+                                           and not node.get("inside") for node in system["nodes"]))
             return {**{part: dict(Counter(item["status"] for item in system[part])) for part in ("nodes", "flows")},
                     "reachability": dict(Counter(item["reachability"] for item in system["flows"])),
                     "coverage": system_map._reported(system["coverage"]),
+                    **({"needs_structure": True} if needs_structure else {}),
                     **({"needs_review": needs_review} if needs_review else {})}
         if levels:
             import flows as flow_model

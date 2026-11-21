@@ -228,7 +228,7 @@ def test_every_model_source_of_the_premap_has_a_setup():
              "renovate": premap.renovate, "compose": premap.compose, "daodan-enry": premap.enry,
              "daodan-dockerfile": premap.dockerfile, "cmake": premap.cmake, "meson": premap.meson,
              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
-             "sbt": premap.sbt, "dotnet": premap.dotnet}
+             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir}
     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
     assert set(tools) <= set(container_runner.TOOLS)
 
@@ -238,6 +238,7 @@ def test_every_model_source_of_the_premap_has_a_setup():
 SMOKE = os.environ.get("DAODAN_PREMAP_SMOKE") == "1"
 CORPUS = ROOT / "benchmarks/project-model/fixtures"
 CASES = {  # tool -> (corpus fixture, the source), one project each
+    "noir": ("js-nextjs", premap.noir),
     "go": ("sys-go-buildtags", premap.go), "cargo": ("sys-rust-features", premap.cargo),
     "uv": ("py-uv-workspace", premap.uv), "tsc": ("js-vite-react-ts", premap.tsc),
     "npm": ("js-npm-workspaces", premap.npm), "renovate": ("js-npm-single", premap.renovate),
@@ -266,6 +267,8 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
                       "gaps": record["gaps"][:5]}, indent=1)[:3000])
     assert [s["state"] for s in record["sources"]] == ["ran"] * len(sources), record["sources"]
     assert not [g for g in record["gaps"] if g["kind"] in ("source_failed", "model_failed")]
+    if tool == "noir":
+        assert any(r["method"] == "GET" and r["path"] == "/api/health" for r in premap.noir.recorded(manifest))
     assert held() == before
 
 

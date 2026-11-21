@@ -3,16 +3,14 @@ rows, counted apart in the coverage and read by the edge view; then the step its
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_dynamic.py
 
-The observation is a real one: the plugin's recorder runs the small project's own pytest suite in a child process
-of this interpreter (Python 3.12+), as the container runs it. The static rows are written by hand: a store as an
-analyzer leaves it, with holes where no index answers. No container starts: the step's tests give it a fake
-`container.run_in_container` that plays that observation into the output folder.
+The tests needing a real recording run on Modal with DAODAN_CONTAINER_SMOKE=1. Daodan's Python observer
+collects the fixture's pytest run inside its normal container. The step tests replay the resulting files beside
+handwritten static rows. Tests of synthetic records need no container.
 """
 from __future__ import annotations
 
 import os
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -105,18 +103,26 @@ def write_project(folder: Path, files: dict = FILES) -> tuple[Path, Path]:
     return project, manifest
 
 
-def recorded(project: Path, folder: Path, *command: str) -> Path:
-    """The folder of the observation files of `command` (default: pytest on `tests`) run under the recorder."""
-    subprocess.run([sys.executable, "-I", str(observer.RECORDER), "site", str(folder / "site")], check=True)
-    out = folder / "observed"
-    out.mkdir(parents=True, exist_ok=True)
-    env = {key: value for key, value in os.environ.items() if not key.startswith(("PYTHON", "DYN_"))}
-    env.update(PYTHONPATH=str(folder / "site"), DYN_ROOT=str(project), DYN_OUT=str(out / "observed-0-%p.json"),
-               PYTHONDONTWRITEBYTECODE="1")
-    done = subprocess.run([sys.executable, *(command or ("-m", "pytest", "-q", "-p", "no:cacheprovider", "tests"))],
-                          cwd=project, env=env, capture_output=True, text=True)
-    (out / "tests-0.log").write_text(done.stdout + done.stderr, encoding="utf-8")
-    assert done.returncode == 0, done.stdout + done.stderr
+def recorded(project: Path, folder: Path, tests: str = "tests") -> Path:
+    """Collect the fixture once via the production observer, including its in-container preparation."""
+    if os.environ.get("DAODAN_CONTAINER") == "off":
+        pytest.skip("Daodan's container engine is disabled; this test requires a real recording")
+    if not os.environ.get("MODAL_TASK_ID") or os.environ.get("DAODAN_CONTAINER_SMOKE") != "1":
+        pytest.skip("a real recording requires DAODAN_CONTAINER_SMOKE=1 on Modal")
+    try:
+        engine = container.find_engine()
+    except container.Gap as gap:
+        pytest.skip(gap.cause)
+    files = sorted(p.relative_to(project).as_posix() for p in project.rglob("*") if p.is_file())
+    suite = {"root": ".", "runner": "pytest", "declared_in": (Path(tests) / "conftest.py").as_posix(), "args": [tests]}
+    planned = observer.plan({"tests": [suite]}, files, lambda rel: (project / rel).read_text(encoding="utf-8"))
+    recording = folder / "recording"
+    result = observer.observe(project, planned, recording, engine=engine)
+    assert result["state"] == "ran", result
+    [receipt] = result["runs"]
+    assert receipt["state"] == "ran" and receipt["exit_code"] == 0, result
+    out = recording / Path(observer.OUT).name
+    assert any(out.glob("observed-0-*.json")), result
     return out
 
 
@@ -283,7 +289,7 @@ def test_a_mock_is_not_a_destination(tmp_path):
                             "    assert fake.called\n",
              "conftest.py": ""}
     project, manifest = write_project(tmp_path, files)
-    sites = observer.sites(recorded(project, tmp_path, "-m", "pytest", "-q", "-p", "no:cacheprovider"))
+    sites = observer.sites(recorded(project, tmp_path, "."))
     static_store(manifest)
     rows, facts = observed_rows(manifest, sites)
     assert ("lib.py", 6, "real") not in ends(rows, manifest) and facts["mocked"] == 1

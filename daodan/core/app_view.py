@@ -230,10 +230,10 @@ def _calls(read: dict) -> list:
         if source != target and (source.startswith("symbol:") or target.startswith("symbol:")):
             status = call.get("confidence") or "confirmed"
             evidence = {"path": call["file"], "line": call["line"]}
-            if status in ("observed", "sampled"):
+            if call.get("conflict") or status in ("observed", "sampled"):
                 evidence.update({key: call[key] for key in ("resolver", "conflict") if key in call})
             out.append({"kind": "calls", "source": source, "target": target, "status": status,
-                        "counts": {"calls": 1}, "evidence": [evidence]})
+                        "counts": {"calls": 1}, "evidence": [evidence], **({"conflict": True} if call.get("conflict") else {})})
     return out
 
 
@@ -356,15 +356,19 @@ def _edges(relations: list, nodes: dict, owner: dict) -> list:
             continue
         key = {"key": relation["key"]} if "key" in relation else {}  # a deduced link keeps its count, sites and key
         status = relation["status"]
-        pair = (not key and status not in ("observed", "sampled") and
+        # Older envelopes kept the marker only on individual sites.
+        conflict = relation.get("conflict") or any(site.get("conflict") for site in relation.get("evidence", []))
+        pair = (not key and not conflict and status not in ("observed", "sampled") and
                 relation["source"].startswith("file:") and relation["target"].startswith("file:"))
         counts = {relation["kind"]: 1} if pair else relation.get("counts") or {relation["kind"]: 1}
         site = {"path": relation["source"].removeprefix("file:"), "line": None,
                 "target": relation["target"].removeprefix("file:")} if pair else None
         separate = status if status in ("uncertain", "observed", "sampled") else ""
+        if conflict:
+            separate = status + " conflict"
         edge = edges.setdefault((source, target, separate), {
             "id": f"{source}->{target}" + (f" {separate}" if separate else ""), "source": source, "target": target,
-            "counts": {}, "status": relation["status"], "evidence": []})
+            "counts": {}, "status": relation["status"], "evidence": [], **({"conflict": True} if conflict else {})})
         for kind, count in counts.items():
             edge["counts"][kind] = edge["counts"].get(kind, 0) + count
         sites = relation.get("evidence", []) if site is None else [site]

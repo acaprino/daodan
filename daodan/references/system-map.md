@@ -69,14 +69,13 @@ The answer lists each node and flow with `status` (`accepted`, `incomplete`, `re
 
 ## Reading the map
 
-The brief lists examples of AST entry candidates from callback arguments, markup bindings and decorators. Each has its reader, shape, symbol and source site. Use `entry_offset=0` with an optional `limit` and continue at `next_offset` to inspect every candidate, even before link rules exist. These rows have status `candidate`; only verified flows contribute to map coverage.
+The brief shows candidates from the syntax tree and the recorded pre-map. The AST readers find candidates in callback arguments, markup bindings and decorators. Each has its reader, shape, symbol and source site. Use `entry_offset=0` with an optional `limit` and continue at `next_offset` to inspect every candidate, even before link rules exist. These rows have status `candidate`; only verified flows contribute to map coverage.
 
 `about="name"` answers for an area, a flow or a node by id or current name: its flows, nodes, member files, external and unseen nodes. A report or an answer names up to 40 files of a node; past that it counts them by directory (`files_by_directory`). With `levels=[...]` (persone, funzioni, dati, codice, infrastruttura) and a flow, it shows the flow at those levels: arrows contracted through hidden nodes keep their state and proof, and a path that changes representation or crosses a refused step is a gap.
 
 ## Sequence
 
-1. A skeleton, without `scope`: the node of the whole system, its parts and their devices, every area present or absent. External nodes come in step 2, with the flows that reach them.
-2. One proposal per present area, with `scope` naming it: its flows, the nodes they pass through, the external nodes they reach.
-3. After each answer, correct refused or incomplete records once. When revising a flow, send its nodes and all its arrows so the map keeps unresolved steps and their reasons.
-4. Then the remainder, at most 3 rounds: propose flows for what `coverage` leaves out; when an arrow is refused for want of a link the code makes, correct the link rules if you wrote them, record them all again (`rules` replaces them) and propose the arrow again.
-5. Answer with counts of accepted, incomplete and refused flows, accepted and refused nodes, proved, declared and refused arrows, and what `coverage` leaves out.
+1. Read `shape_offset=0` for forms still to classify. Answer the numbered rows with `shape_answers={"id": "...", "answers":{"1":"..."}}` using a value from `allowed`. Read the first page again after saving. The registry and previously classified forms are already applied. Record any route/store rules separately. An empty `rules=[]` records that no project rule is needed.
+2. For a whole-system run, ask `next_question=true`. Read the returned `card_id` with `trace_id`; paginate numbered steps with `trace_offset=next_offset`. Submit `trace_decision` with that card_id, name, area, types, step numbers in order, and one data label per step. If the evidence stops or the entry is out of scope, record `disposition` (`unresolved` or `excluded`) and a short `reason`. Repeat until the queue is empty. For an area-only review use `trace_offset=0` to select relevant cards; leave other areas' decisions alone.
+3. Map the system's parts and devices and declare present or absent areas. For additional contextual proposals use the existing map format with the appropriate scope. Keep an unresolved event's stopping point visible; a line mentioning a destination cannot certify a missing link.
+4. Read `about` for saved names and `next_question` for remaining entries. Read `effect_offset=0` for write sites without a proved entry and continue with `next_offset`. Report accepted paths, reviewed exclusions, unresolved entries, entries still to examine and writes without an entry. Preserve the provenance of observed and sampled calls.
