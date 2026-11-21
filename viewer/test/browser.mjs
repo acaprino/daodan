@@ -413,6 +413,11 @@ try {
   await inspectorBox.getByRole('button', { name: 'Chiudi dettaglio' }).click();
   assert.ok(await inspectorBox.isHidden());
   await page.setViewportSize({ width: 390, height: 820 });
+  await page.locator('.im-sidebar-toggle').click();  // under 620 the sidebar is an overlay the toggle opens
+  await page.waitForFunction(() => document.querySelector('.im-shell').hasAttribute('data-im-sidebar-open'));
+  assert.ok(await page.locator('.im-sidebar .im-row').first().isVisible());
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('.im-shell').hasAttribute('data-im-sidebar-open'));
   await page.getByRole('button', { name: 'Viste', exact: true }).click();
   await page.getByRole('menuitemradio', { name: 'Logica' }).click();
   await page.waitForFunction(() => document.getElementById('logical-tab').getAttribute('aria-selected') === 'true');
