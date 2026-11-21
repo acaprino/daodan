@@ -882,3 +882,47 @@ def test_the_driver_measures_on_the_node_the_product_starts_fetched_as_the_launc
     assert ours["NODE_BIN"] == f"/opt/node-{version}-linux-x64/bin/node"  # where the tarball unpacks
     assert ours["FETCH_NODE"] == theirs["FETCH_NODE"].replace(theirs["NODE"][0], ours["NODE"][0]).replace(
         theirs["NODE"][1], ours["NODE"][1])  # the launcher's command with this pin
+
+
+# ---------------------------------------------------------------------------------------------- the last round
+
+ROUND, ACCEPTED = HERE / "results/daodan_stack_fork.json", HERE / "accepted-losses.json"
+REGISTRY_DATA = ROOT / "daodan/data/service-registry.json"
+
+
+def last_round() -> dict[str, dict]:
+    return json.loads(ROUND.read_text(encoding="utf-8"))["fixtures"]
+
+
+def test_every_lost_name_of_the_last_round_is_accounted_for():
+    """The spec's «Verifica», "nessuna perdita": each `(fixture, name)` in `lost` has exactly one line of
+    `accepted-losses.json` and no line is left over; each line has the id the registry lost, a verdict, and a reason
+    that names that id or a package or file the registry holds for it."""
+    fixtures, lines = last_round(), json.loads(ACCEPTED.read_text(encoding="utf-8"))
+    lost = sorted((name, lost) for name, entry in fixtures.items() for lost in entry.get("compare", {}).get("lost", ()))
+    assert [(line["fixture"], line["name"]) for line in lines] == lost  # one each, none over, sorted
+    entries = {entry["id"]: entry for entry in json.loads(REGISTRY_DATA.read_text(encoding="utf-8"))["entries"]}
+    for line in lines:
+        assert set(line) == {"fixture", "name", "id", "reason", "verdict"}, line
+        assert line["verdict"] in ("accepted", "to_fix"), line
+        assert line["id"] in fixtures[line["fixture"]]["compare"]["gone"], line  # what the registry lost
+        signs = entries[line["id"]].get("signs") or {}
+        named = {line["id"], *(value for values in (signs.get("packages") or {}).values() for value in values),
+                 *(signs.get("files") or ())}
+        assert len(line["reason"]) > 40 and any(value in line["reason"] for value in named), line
+
+
+def test_no_fixture_of_the_last_round_executed_project_code():
+    answered = {name: entry for name, entry in last_round().items() if "error" not in entry}
+    assert answered and [name for name, entry in answered.items() if entry["executed_project_code"] != "no"] == []
+
+
+def test_a_workflow_in_a_dot_folder_and_a_dockerfile_with_a_suffix_are_not_files_of_the_snapshot(tmp_path):
+    """The cause of the `to_fix` lines of `accepted-losses.json`: the registry takes a package at the path the pre-map
+    names, and the translation keeps the evidence of a file the snapshot holds (above); the snapshot holds neither."""
+    paths = (".github/workflows/web-deploy.yml", "docker/development/Dockerfile.gotenberg")
+    manifest = snapshot_of(tmp_path, {paths[0]: "name: web\n", paths[1]: "FROM gotenberg/gotenberg:8\n",
+                                      "docker/Dockerfile": "FROM alpine\n"})
+    with open_snapshot(manifest) as store:
+        files = set(dict(store.iter_file_headers_only()))
+    assert "docker/Dockerfile" in files and not files & set(paths)

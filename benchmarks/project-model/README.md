@@ -357,3 +357,77 @@ Prima della mappa dei moduli, 17 novembre 2026. 178 fixture su 180 con record; `
 - Fuori da JVM e .NET, js e py non perdono nessun framework per nome; le `real-stack-*` perdono 217 framework su 352, 181 di una voce che il registro non ha.
 - 62 fixture su 178 hanno `technologies` vuote e 18 non hanno nessuna unità di build.
 - Le cause sono le schede D-294 (Maven, NuGet, Pub, Hex e Swift non letti: JVM 0 su 42), D-295 (il `kind` `service` fa servizi dei framework e delle librerie: Playwright, Firebase, OpenTelemetry, Cypress, Celery, Puppeteer), D-296 (prefissi di variabile, di identificatore e di pacchetto: Zoom, Ghost, Segment, GCP, Postman), D-297 (CI, strumenti ed esempi sotto `docs/` come servizi: Renovate, Crowdin, Codecov, Railway), D-298 (servizi senza voce o senza segno), D-299 (framework senza voce o senza segno nel manifest), D-300 (un segno nomina solo il pacchetto della voce, non i suoi componenti), D-301 (un file di requisiti con un altro nome) e D-302 (la snapshot di jellyfin e kuvasz non finisce). «Tailwind» e «Tailwind CSS» si contano come lo stesso framework dal commit `b2f431eb4`.
+
+## Lo step `stack` dal fork
+
+Misura che cosa cambia sul corpus se lo step `stack` riconosce le tecnologie con stack-analyser (il rilascio `1.27.6-daodan.1` del fork `acaprino/stack-analyser`) al posto del registro (`service_registry.run`): i nomi attesi persi e guadagnati, e il tempo della scansione veloce. Il prodotto non cambia: `technologies.derive` chiama ancora il registro, e il confronto vive qui ([spec](../../docs/specs/2026-11-21-stack-dal-fork.md), «Verifica»).
+
+### Parametri
+
+- Corpus: le 180 fixture con `expected.json`, come nel giro sopra.
+- Giro, su Modal e mai su questo PC: `modal deploy benchmarks/project-model/modal_stack_fork.py`, poi `python benchmarks/project-model/modal_stack_fork.py spawn [--fixtures a,b | --families js,py,jvm,sys,mix,real]` e `fetch`, che scrive `results/daodan_stack_fork.json` e confronta l'impronta del codice dei due lati. Container Linux di 1 CPU e 4 GB; ogni fixture ha 1.800 secondi in un processo a parte, scaduti i quali il record dice `no answer in 1800 s`.
+- Strumento: stack-analyser `1.27.6-daodan.1`, sha256 `ee889f52b054ecf6c900847a8d492f17065a28fe25ddde0d146d8d9915b79baf`, sul Node v22.23.4 che il prodotto avvia (`indexers.runtime.NODE_VERSION`), scaricati e verificati come fa `tests/modal_pytest.py`. Prima di ogni gruppo gira una volta su una cartella vuota, fuori da ogni tempo, per l'avvio a freddo di Node.
+- «Prima» e «dopo»: per fixture, la snapshot e la pre-mappa con le risposte registrate dei comandi di modello (`results/premap-runs`, come nel giro sopra: lo stesso ingresso ai due lati). Un primo `technologies.derive` con il registro, non misurato, fa il grafo dei moduli; poi `derive` con `service_registry.run` («prima») e con `fork_stack.recognize` («dopo»), ognuno misurato. Nel «dopo» i fatti della pre-mappa vanno al rilascio come dichiarazioni, con le cartelle che la pre-mappa esclude, e le sue prove tornano come voci del registro; gli host negli URL restano di `registry_hosts`.
+- Perso e guadagnato: un nome di `expected.json`, contato come fa `score.score_technologies` per nome e non per unità, che c'è solo prima o solo dopo. `new` e `gone`: gli id di `technologies` che ci sono solo dopo o solo prima. `not_in_registry`: gli id del fork che il registro non ha.
+- Scansione veloce: la pre-mappa senza comandi di modello (`premap.derive(runner=None)`); ogni riconoscitore gira da solo su di essa e si confrontano gli id con un segno `declared` (`fast.lost`: quelli del registro che il fork non dichiara). Ogni tempo è di una chiamata (`time.monotonic()`), una misura per fixture; `fork_fast` comprende l'avvio del processo Node.
+- La traduzione e le misure sono in `tools/fork_stack.py`, provate da `test_fork_stack.py` senza Node. `accepted-losses.json` ha per ogni nome perso il segno del registro, ciò che il fork ha o non ha e un verdetto: `accepted` (il registro sbagliava, oppure lo hanno deciso la spec o la porta del registro nel fork: `benchmarks/registry-port.json` del fork, con ciò che è passato, i rinomini e le differenze volute col loro motivo) o `to_fix` (da cambiare, con dove). Due test tengono il file uguale a `lost` e dicono che nessuna fixture ha eseguito il codice del progetto.
+
+### Risultati
+
+21 novembre 2026, codice `b3719332398056ec` uguale ai due lati, 180 fixture: 178 con record e 2 senza risposta; `executed_project_code: no` in 178, `fork_failed` in 0. `model: partial` in 178: alle registrazioni mancano da 1 a 41 comandi per fixture, ai due lati allo stesso modo.
+
+| Faccia | Attesi | Prima | Dopo |
+| --- | --- | --- | --- |
+| Framework per nome | 569 | 531 | 530 |
+| Servizi | 518 | 227 | 226 |
+
+I «prima» non sono quelli della sezione sopra (362 / 568 e 141 / 518): il codice è un altro (`c6be10745cedb94d` allora) e questo giro non lo spiega.
+
+Nomi persi: 5, in 5 fixture (`fixtures_with_lost`).
+
+- `accepted`, Spring MVC (`spring-mvc`) in `jvm-spring-boot-managed`, `real-stack-mall` e `real-svc-robot-shop`: il registro lo dava per `org.springframework.boot:spring-boot-starter-web` (`build.gradle.kts` riga 21; `mall-common/pom.xml` riga 28 e `mall-security/pom.xml` riga 26; `shipping/pom.xml` riga 28). Il fork riceve la dichiarazione e la dà solo a `spring-boot`; la sua regola `spring-mvc` elenca `…-starter-webmvc`, `org.springframework:spring-webmvc` e il webmvc di springdoc. È una differenza registrata della porta (`registry-port.json`, `spring-mvc`; il test `packageIdentities.test.ts` del fork la fissa). `expected.json` elenca Spring MVC in tutte e tre e in `real-stack-mall` lo attende da quello starter (`mall-common/pom.xml#L28`): `accepted` per la regola della porta, da confermare dal proprietario.
+- `to_fix`, GitHub Pages (`github.pages`) in `real-app-kotlinconf` e Gotenberg (`gotenberg`) in `real-stack-documenso`: il registro li dava per le azioni `actions/deploy-pages` e `actions/upload-pages-artifact` in `.github/workflows/web-deploy.yml` e per l'immagine `gotenberg/gotenberg` in `docker/development/Dockerfile.gotenberg`. Il fork ha le due regole e le dichiarazioni partono (nessun gap `declaration_not_sent`); ma la snapshot lascia fuori le cartelle col punto e non registra `Dockerfile.gotenberg` (estensione `.gotenberg`), e `fork_stack._signs` scarta le prove di un file che la snapshot non ha. Il rimedio sta nella traduzione e non nel rilascio: in `_signs`, tenere la prova di una dichiarazione della pre-mappa anche se il suo file non è nella snapshot, come fa `service_registry.check_packages`. `test_a_workflow_in_a_dot_folder_and_a_dockerfile_with_a_suffix_are_not_files_of_the_snapshot` prova che la snapshot non ha i due file; la prova che il fork dà e `_signs` scarta non è nel record, e la causa viene dalle regole del fork, dalle dichiarazioni partite e dalla regola di scarto.
+- Id spariti (`gone`): 33 coppie id/fixture in 24 fixture, 19 id. Il confronto conta solo i nomi attesi, quindi 28 coppie non sono perdite: `react-email` (3) e `kafka` (1) sono i rinomini della porta; le altre 24 non sono state lette una per una. Nei record letti, quelli delle 14 fixture con un nome perso o guadagnato o un id perso nella veloce, `github.pages` in `real-stack-peopleinspace` ha la causa di kotlinconf (`JamesIves/github-pages-deploy-action` in `.github/workflows/build-and-publish-web.yml`), e `okta` in `real-stack-bookstack` (`socialiteproviders/okta`, `okta.oauth` resta) e `gcp` in `real-stack-nestjs-boilerplate` (`google-auth-library`, che il fork dà a `google`) sono differenze registrate della porta.
+
+Nomi guadagnati: 3.
+
+- Meilisearch in `real-stack-koel`: `meilisearch/meilisearch-php` in `composer.json` riga 30. La regola del fork lo elenca; la voce `meilisearch` del registro ha lo stesso pacchetto scritto con uno spazio in fondo (`"meilisearch/meilisearch-php "`), che non combacia mai.
+- Maestro in `real-stack-mattermost-mobile`: i file di flusso in `detox/maestro/flows` e `detox/maestro/subflows`, che il fork riconosce con un lettore (`src/rules/spec/maestro` del fork). L'id non è nel registro.
+- WinUI in `real-stack-peopleinspace`: `UseWinUI` in `windows/WinUiApp/PeopleInSpace.Windows.WinUiApp.csproj`, che il fork legge (`src/rules/spec/nuget` del fork). L'id non è nel registro.
+
+Id nuovi (`new`, con i tre nomi guadagnati): 138 coppie in 103 fixture, 27 id: `gradle` 26, `maven` 23, `cargo` 17, `nuget` 9, `setuptools` 9, `phpcomposer` 7, `bundler` 6, `azure` 5, `elixir` 4, `rich` 4, `aws` 4, `google` 3, `gcp` 3, `firebase` 2, `dart` 2, `swift` 2, `shadcn` 2, e uno ciascuno `docker`, `microsoft`, `cloudflare`, `vercel`, `reactemail`, `meilisearch`, `maestro`, `apple`, `typescript`, `winui`. Fuori dal registro (`not_in_registry`), nel numero di fixture in cui compaiono: `gradle` 26, `setuptools` 9, `rich` 4, `maestro` 1, `winui` 1; escono col proprio id per nome e con categoria `framework`, che `entry_category` dà a chi non è un servizio.
+
+Scansione veloce, `fast.lost`: 10 id in 10 fixture, di sei tipi.
+
+- `spring-mvc` (3): la stessa perdita della scansione completa, nelle stesse tre fixture.
+- `react-email` (3: `real-app-full-stack-fastapi`, `real-stack-documenso`, `real-stack-epic-stack`): rinomino della porta in `reactemail`, che il fork dichiara in tutte e tre.
+- `github.pages` (1: `mix-real-tinyxml2`, solo nella veloce; nella completa nessuno dei due lati lo ha): per esclusione `docs/_config.yml`, l'unico segno di quella voce che il progetto ha (nessuna azione di Pages nei workflow registrati); la porta ha tolto `_config.yml` e `_config.yaml` da `github.pages` (configurazione di Jekyll, non prova di hosting).
+- `okta` (1: `real-stack-bookstack`): `socialiteproviders/okta` (`composer.json` riga 39), che il fork dà a `okta.oauth` soltanto; differenza registrata della porta.
+- `gcp` (1: `real-stack-nestjs-boilerplate`): `google-auth-library` (`package.json` riga 77), che il fork dà a `google`; differenza registrata della porta.
+- `kafka` (1: `real-svc-otel-demo`): rinomino della porta in `apache_kafka`, a cui il fork dà `Confluent.Kafka` e `org.apache.kafka:kafka-clients`, i segni di `kafka`.
+
+Tempi in secondi, sulle 178 fixture con record:
+
+| Misura | Mediana | Massimo | Più lente |
+| --- | --- | --- | --- |
+| Veloce, registro (`registry_fast`) | 0,013 | 4,544 | `real-stack-netbox` 4,544, `real-stack-owncast` 4,288, `real-stack-plausible` 3,631 |
+| Veloce, fork (`fork_fast`) | 0,456 | 4,982 | `mix-real-tududi` 4,982, `real-stack-actual` 4,849, `real-stack-documenso` 4,661 |
+| Completa, registro (`registry_full`) | 0,031 | 4,878 | `real-stack-netbox` 4,878, `real-stack-owncast` 4,790, `real-stack-mattermost-mobile` 4,469 |
+| Completa, fork (`fork_full`) | 0,473 | 15,196 | `real-stack-owncast` 15,196, `real-stack-actual` 11,446, `real-stack-mattermost-mobile` 10,387 |
+
+- `fork_fast`: minimo 0,370 (il registro 0,009); 151 fixture su 178 sotto 1 s, 27 da 1 s in su, 15 da 2 s, 7 da 3 s, 4 da 4 s; `py-fastapi-compose`, il progetto di prova della spec, 0,393 (il registro 0,010); la mediana di `fork_fast` meno `registry_fast`, per fixture, è 0,428. In `mix-real-tududi`, la più lenta, il registro impiega 3,171. `registry_fast`: 19 fixture da 1 s in su.
+- Dichiarazioni non inviate al fork (`declaration_not_sent`): 213, tutte nella scansione completa e in 9 fixture (`real-stack-ardalis-cleanarchitecture` 141, `real-stack-atuin` 41, `real-stack-openbudgeteer` 9, `real-stack-quarkus-super-heroes` 7, `real-stack-opengist` 5, `mix-real-python-semver`, `mix-real-tududi` e `real-stack-elk` 3 ciascuna, `real-stack-wallabag` 1); nessuna è in una delle 5 fixture con perdite. Il file dei risultati le conta per tipo di gap; l'ecosistema e il motivo di ognuna stanno nei record sul volume (`project-model/stack-fork/<fixture>.json`) e, secondo quelli, il motivo è sempre che la pre-mappa lascia fuori il percorso della dichiarazione (nuget 141, crates 23, pypi 12, docker 12, github-actions 9, npm 8, maven 7, go 1).
+- Senza risposta: `real-stack-jellyfin` e `real-stack-kuvasz`, `no answer in 1800 s`; il record dice dove stavano (`snapshot_store._unpack`, da `import_resolution.declaring`). Sono le stesse due senza record nel giro sopra e in `modal_premap.py` (D-302).
+
+### Non misurato
+
+- Windows: il giro è su container Linux; l'avvio di Node e la scansione veloce sulla macchina dell'utente non sono misurati.
+- Le due fixture senza risposta: 178 su 180.
+- Una misura per fixture, senza ripetizioni: la variazione fra due giri non è nota.
+- Il tempo sotto `project_lock` e con il resto del server in funzione.
+
+### Verdetto
+
+- «Nessuna perdita»: non passa, perché passa solo senza righe `to_fix` e ce ne sono 2 (GitHub Pages in `real-app-kotlinconf`, Gotenberg in `real-stack-documenso`), entrambe della traduzione in `tools/fork_stack.py` e non del rilascio. Le 3 `accepted` sono Spring MVC, per una differenza della porta che `expected.json` non condivide: il proprietario le conferma o le porta a `to_fix` (rimedio: la regola `spring-mvc` del fork).
+- Scansione veloce, contro l'obiettivo della spec (meno di un secondo dall'avvio al risultato su `py-fastapi-compose`; circa un secondo a ogni modifica sotto `project_lock`): `py-fastapi-compose` 0,393 s, mediana 0,456 s, 27 fixture su 178 da 1 s in su, massimo 4,982 s. La soglia è del proprietario; se l'obiettivo non è raggiunto, la spec ferma il lavoro al passo 3.
+- Tornano al proprietario le due `to_fix`, le tre Spring MVC e i tempi.
