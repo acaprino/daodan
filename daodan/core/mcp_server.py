@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["mcp>=2.0.0,<3", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"]
+# dependencies = ["mcp>=2.0.0,<3", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6"]
 # ///
 """Local stdio access to the project-bound Codebase Map service.
 
@@ -266,7 +266,7 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
 
     @server.tool(annotations=read_only)
     async def codebase_map_stack(ctx: Context, run_id: str, module: str | None = None) -> dict:
-        """Step 2 stack of the bound run: for every module (concrete, logical, virtual) or one named module, its nature, languages, toolchains, frameworks, declared libraries (cataloged or not), external services and tools."""
+        """Get the stack for every module or a named module. Includes languages, toolchains, frameworks, declared libraries, cataloged services and tools. configured_services lists Compose and CI declarations with their source, including services outside the catalog."""
         return await _invoke(ctx, service.stack, run_id, module=module)
 
     @server.resource("daodan://project/live")

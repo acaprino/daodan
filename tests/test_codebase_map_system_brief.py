@@ -174,7 +174,7 @@ class DeclaredTests(unittest.TestCase):
         (project / "docker-compose.yml").write_text(
             "services:\n  web:\n    build: .\n  db:\n    image: postgres:16\n", encoding="utf-8")
         (project / "Dockerfile").write_text("FROM node:22-alpine AS build\n", encoding="utf-8")
-        (project / "app.py").write_text("print('hi')\n", encoding="utf-8")
+        (project / "app.py").write_text("# POSTGRES_DB is mentioned here.\nprint('hi')\n", encoding="utf-8")
         for command in (["git", "init", "-q"], ["git", "add", "-A"],
                         ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "x"]):
             subprocess.run(command, cwd=project, check=True, capture_output=True)
@@ -189,7 +189,7 @@ class DeclaredTests(unittest.TestCase):
         self.assertEqual(value["runtime_files"], ["Dockerfile", "docker-compose.yml"])
         postgres = next(e for e in value["externals"] if e["id"] == "postgresql")
         self.assertEqual(postgres["from"], ["registry"])
-        self.assertIn("docker-compose.yml", postgres["paths"])
+        self.assertEqual(postgres["paths"], ["docker-compose.yml"])
         self.assertIn(f"{postgres['name']} id postgresql [", text(value))  # the mapper copies it as `registry`
         self.assertIn("\n## Runtime files\nR1 Dockerfile\nR2 docker-compose.yml\n## Declared\n"
                       "S1 base image node in Dockerfile:1\nS2 service web in docker-compose.yml:2\n"

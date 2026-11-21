@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25"]
+# dependencies = ["tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25", "PyYAML>=6"]
 # ///
 """The standalone app: one local server, from the address of a public repository to its graph.
 

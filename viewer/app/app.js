@@ -307,7 +307,15 @@ function waiting(title, text) {
 
 function premapSourceLine() {
   const c = ctx();
-  return `<div class="im-toolbar im-split"><span>${icon('branch')}<strong>Checkout ${esc(slug(c))} · ${esc(c.branch)}</strong><code>${esc(c.commit.slice(0, 12))}</code></span><span>Snapshot del run ${esc(c.run_id)} · dichiarazioni dei manifest</span><button class="im-btn im-btn--ghost im-btn--sm" data-action="premap-provenance">Provenienza ${icon('info')}</button></div>`;
+  return `<div class="im-toolbar im-split"><span>${icon('branch')}<strong>Checkout ${esc(slug(c))} · ${esc(c.branch)}</strong><code>${esc(c.commit.slice(0, 12))}</code></span><span>Snapshot del run ${esc(c.run_id)}</span><button class="im-btn im-btn--ghost im-btn--sm" data-action="premap-provenance">Provenienza ${icon('info')}</button></div>`;
+}
+
+function dependencyRow(dependency) {
+  const { name, scope, state, unit, source, resolution_source, version, resolved_version, direct } = dependency;
+  const declared = state === 'resolved' ? '—' : `<code>${esc(version || 'Non specificato')}</code><br><small>${esc(source)}</small>`;
+  const resolved = resolved_version ? `<code>${esc(resolved_version)}</code><br><small>${esc(resolution_source || source)}</small>` : '—';
+  const relation = direct === true ? 'Diretta' : direct === false ? 'Transitiva' : '—';
+  return `<tr><td><strong>${esc(name)}</strong><br><small>${esc(scope)}</small></td><td>${esc(unit)}</td><td>${declared}</td><td>${resolved}</td><td>${relation}</td></tr>`;
 }
 
 function premapScreen() {
@@ -318,7 +326,7 @@ function premapScreen() {
     ${metric(document, String(number(PREMAP.files.length)), 'File nello snapshot', 'Inventario del checkout').outerHTML}
     ${metric(document, String(languages.length), 'Linguaggi rilevati', 'File sorgente riconosciuti').outerHTML}
     ${metric(document, String(PREMAP.units.length), 'Unità tecniche', 'Da manifest e strumenti di build').outerHTML}
-    ${metric(document, String(number(PREMAP.dependencies.length)), 'Dichiarazioni di dipendenza', 'Manifest, non risoluzione').outerHTML}
+    ${metric(document, String(number(PREMAP.dependencies.length)), 'Dipendenze per unità', 'Da manifest e modelli di build').outerHTML}
   </div>
   <div class="im-master-detail">
     <section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="tree-title">
@@ -328,12 +336,16 @@ function premapScreen() {
       <div id="repository-tree" class="im-scroll im-scroll--bounded im-inset" aria-label="${state.treeMode === 'directories' ? 'Albero delle directory' : 'Albero delle unità tecniche'}"></div>
       <div class="im-inset" id="tree-selection">${premapSelection()}</div>
     </section>
-    <aside class="im-stack" aria-label="Tecnologie e dipendenze dichiarate">
+    <aside class="im-stack" aria-label="Tecnologie e linguaggi">
       <section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Linguaggi</h2><span class="im-chip">Inventario</span></div><div>${languages.map(l => `<div class="im-split im-cluster"><span>${esc(l.name)}</span><strong>${number(l.files)}<small> file</small></strong></div>`).join('') || '<p class="im-muted im-caption">Nessun file sorgente riconosciuto.</p>'}</div><p class="im-caption im-inset">File sorgente dello snapshot, per linguaggio riconosciuto da Daodan.</p></section>
       <section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Tecnologie e framework</h2><span class="im-chip">Riconosciuti</span></div><div>${PREMAP.technologies.map(t => `<div class="im-inset"><div><strong>${esc(t.name)}</strong><span class="im-chip">${esc(t.category)}</span></div><p>${esc(t.version || (t.state === 'declared' ? 'Versione non dichiarata' : 'Versione non registrata'))}</p><code>${esc(t.source)}</code></div>`).join('') || '<p class="im-muted im-caption">Nessuna tecnologia riconosciuta nei manifest.</p>'}</div></section>
     </aside>
   </div>
-  <section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="dependency-title"><div class="im-panel-header im-split"><div><h2 id="dependency-title">Librerie prima dell’analisi</h2><p class="im-muted im-caption">Dichiarazioni dei manifest, lette dallo step stack.</p></div><span class="im-chip">Dipendenze dichiarate</span></div><div class="im-scroll im-scroll--bounded"><table class="im-table"><thead><tr><th>Dipendenza</th><th>Versione dichiarata</th><th>Ecosistema</th><th>Fonte</th></tr></thead><tbody>${PREMAP.dependencies.map(d => `<tr><td><strong>${esc(d.name)}</strong></td><td><code>${esc(d.version || 'Non scritta nel manifest')}</code></td><td><span class="im-chip">${esc(d.scope)}</span></td><td><code>${esc(d.source)}</code></td></tr>`).join('') || '<tr><td colspan="4" class="im-muted">Nessuna libreria dichiarata nei manifest.</td></tr>'}</tbody></table></div><p class="im-caption im-inset">Una dichiarazione non dimostra che una libreria sia installata, risolta o chiamata. La versione è quella scritta nel manifest, non quella installata.</p></section>`;
+  <section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="dependency-title">
+    <div class="im-panel-header"><h2 id="dependency-title">Dipendenze per unità</h2></div>
+    <div class="im-scroll im-scroll--bounded"><table class="im-table"><thead><tr><th>Dipendenza</th><th>Unità</th><th>Vincolo dichiarato</th><th>Versione risolta</th><th>Relazione</th></tr></thead>
+    <tbody>${PREMAP.dependencies.map(dependencyRow).join('') || '<tr><td colspan="5" class="im-muted">Nessuna dipendenza registrata.</td></tr>'}</tbody></table></div>
+  </section>`;
 }
 
 const UNIT_STATUS = { confirmed: 'Confermata', inferred: 'Inferita', incomplete: 'Incompleta' };
@@ -428,7 +440,7 @@ function premapSelection() {
   if (!selected) return `<span class="im-muted">${icon('info')}Seleziona un file o apri un’unità per leggerne la provenienza.</span>`;
   if (selected.startsWith('unit:')) {
     const unit = PREMAP.units.find(u => 'unit:' + u.id === selected);
-    if (unit) return `<p class="im-kicker">Unità tecnica · ${esc(UNIT_STATUS[unit.status] || unit.status || 'dichiarata')}</p><h3>${esc(unit.name)}</h3><p>${esc(unit.kind)} · <code>${esc(unit.root || '.')}</code></p>${unit.manifest ? `<code>${esc(unit.manifest)}</code>` : ''}${unit.description ? `<p>${esc(unit.description)}</p>` : ''}<p class="im-muted">${unit.dependencies.length} librerie dichiarate. Il manifest ne indica il confine tecnico; non è una responsabilità semantica inferita.</p>`;
+    if (unit) return `<p class="im-kicker">Unità tecnica · ${esc(UNIT_STATUS[unit.status] || unit.status || 'dichiarata')}</p><h3>${esc(unit.name)}</h3><p>${esc(unit.kind)} · <code>${esc(unit.root || '.')}</code></p>${unit.manifest ? `<code>${esc(unit.manifest)}</code>` : ''}${unit.description ? `<p>${esc(unit.description)}</p>` : ''}<p class="im-muted">${unit.dependencies.length} dipendenze registrate.</p>`;
   }
   const extension = selected.split('/').pop().includes('.') ? selected.split('.').pop() : 'senza estensione';
   return `<p class="im-kicker">File dell’inventario</p><h3>${esc(selected.split('/').pop())}</h3><code>${esc(selected)}</code><p class="im-muted">Tipo: ${esc(extension)} · fonte: snapshot del commit ${esc(ctx().commit.slice(0, 12))}. Il contenuto non viene eseguito.</p>`;
@@ -676,7 +688,7 @@ function synthesisScreen() {
   const top = [...GRAPH.nodes].sort((a, b) => b.files.length - a.files.length).slice(0, 3), gaps = gapLines();
   const modules = GRAPH.grouping === 'modules';
   return `${notice}<div class="im-note">${icon('info')}<div><strong>Sintesi testuale in attesa.</strong><p>Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run <code>${esc(ctx().run_id)}</code>. Le domande al motore sono in «Motore e domande».</p></div></div><div class="im-metric-grid">${metric(document, String(GRAPH.nodes.length), modules ? 'Moduli' : 'Directory con file', 'Gruppi del grafo').outerHTML}${metric(document, String(GRAPH.edges.length), 'Relazioni nel grafo', runtimeSummary(GRAPH.edges) || 'Tra i gruppi visualizzati').outerHTML}${metric(document, String(number(GRAPH.files)), 'File nel grafo', `Snapshot del commit ${ctx().commit.slice(0, 7)}`).outerHTML}${metric(document, String(number(modules ? GRAPH.unassigned.count : GRAPH.nodes.filter(n => n.location === 'external').length)), modules ? 'File senza modulo' : 'Nodi esterni', modules ? 'Lacuna esplicita del grafo' : 'Servizi riconosciuti dallo stack').outerHTML}</div>
-  <div class="im-master-detail"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Responsabilità da esplorare</h2><span class="im-chip">${esc(levelsName())}</span></div><div class="im-stack">${top.map(n => `<button class="im-btn" data-preview-node="${esc(n.id)}"><span>${icon('layers')}</span><span><strong>${esc(nodeName(n))}</strong><p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><small>${esc(nodeFacts(n))}</small></span>${icon('arrow')}</button>`).join('') || '<p class="im-muted im-caption">Nessun gruppo nel grafo.</p>'}</div></section><aside class="im-stack"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Dipendenze dopo l’analisi</h2></div><div class="im-inset im-stack"><span class="im-chip" data-im-tone="warn">Risoluzione non disponibile</span><p>${PREMAP ? number(PREMAP.dependencies.length) + ' librerie dichiarate nei manifest. ' : ''}Daodan non risolve le versioni installate: un riferimento statico non prova quale versione di una libreria sia usata.</p></div></section><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Cosa manca al quadro</h2></div><div class="im-inset im-stack"><ul>${gaps.slice(0, 8).map(g => `<li>${esc(g)}</li>`).join('') || '<li>Nessuna lacuna registrata dal run.</li>'}</ul>${gaps.length > 8 ? `<p class="im-muted im-caption">Altre ${gaps.length - 8} lacune in «Provenienza e lacune».</p>` : ''}<button class="im-btn im-btn--ghost" data-action="snapshot">${icon('file')}Provenienza e lacune</button></div></section></aside></div>`;
+  <div class="im-master-detail"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Responsabilità da esplorare</h2><span class="im-chip">${esc(levelsName())}</span></div><div class="im-stack">${top.map(n => `<button class="im-btn" data-preview-node="${esc(n.id)}"><span>${icon('layers')}</span><span><strong>${esc(nodeName(n))}</strong><p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><small>${esc(nodeFacts(n))}</small></span>${icon('arrow')}</button>`).join('') || '<p class="im-muted im-caption">Nessun gruppo nel grafo.</p>'}</div></section><aside class="im-stack"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Dipendenze dopo l’analisi</h2></div><div class="im-inset im-stack"><p>${PREMAP ? `${number(PREMAP.dependencies.filter(d => d.resolved_version).length)} voci con versione risolta nel modello di build.` : 'Inventario delle dipendenze non disponibile.'}</p></div></section><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Cosa manca al quadro</h2></div><div class="im-inset im-stack"><ul>${gaps.slice(0, 8).map(g => `<li>${esc(g)}</li>`).join('') || '<li>Nessuna lacuna registrata dal run.</li>'}</ul>${gaps.length > 8 ? `<p class="im-muted im-caption">Altre ${gaps.length - 8} lacune in «Provenienza e lacune».</p>` : ''}<button class="im-btn im-btn--ghost" data-action="snapshot">${icon('file')}Provenienza e lacune</button></div></section></aside></div>`;
 }
 
 // -- the graph -----------------------------------------------------------------------------------------------------
@@ -934,7 +946,7 @@ function snapshotModal() {
 
 function premapProvenance() {
   const c = ctx();
-  modal('Provenienza della pre-mappa', 'Snapshot del checkout e dichiarazioni dei manifest, senza eseguire nulla del progetto.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug(c))}</code></dd><dt>Branch</dt><dd><code>${esc(c.branch)}</code></dd><dt>Commit</dt><dd><code>${esc(c.commit)}</code></dd><dt>Run</dt><dd><code>${esc(c.run_id)}</code></dd><dt>File nello snapshot</dt><dd>${number(PREMAP?.files.length)}</dd><dt>Unità tecniche</dt><dd>${PREMAP?.units.length ?? '—'}</dd><dt>Dichiarazioni di dipendenza</dt><dd>${number(PREMAP?.dependencies.length)}</dd></dl><ul class="im-detail-list"><li>${icon('info')}<span>Linguaggi dai file sorgente dello snapshot; tecnologie e librerie dallo step stack, che legge i manifest.</span></li><li>${icon('info')}<span>Una dipendenza dichiarata non è una versione installata o risolta; le versioni delle librerie non sono ancora nel record.</span></li><li>${icon('info')}<span>Uno strumento usato dagli analyzer non prova che il progetto usi quel framework.</span></li></ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi provenienza</button>`);
+  modal('Provenienza della pre-mappa', 'Snapshot del checkout, manifest e risultati degli strumenti di build.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug(c))}</code></dd><dt>Branch</dt><dd><code>${esc(c.branch)}</code></dd><dt>Commit</dt><dd><code>${esc(c.commit)}</code></dd><dt>Run</dt><dd><code>${esc(c.run_id)}</code></dd><dt>File nello snapshot</dt><dd>${number(PREMAP?.files.length)}</dd><dt>Unità tecniche</dt><dd>${PREMAP?.units.length ?? '—'}</dd><dt>Dipendenze per unità</dt><dd>${number(PREMAP?.dependencies.length)}</dd></dl><ul class="im-detail-list"><li>${icon('info')}<span>I linguaggi provengono dai sorgenti dello snapshot. Le tecnologie e le dipendenze provengono dalla mappa dello stack.</span></li><li>${icon('info')}<span>Il manifest fornisce il vincolo dichiarato. Il modello di build fornisce la versione risolta e la relazione diretta o transitiva, quando disponibili.</span></li><li>${icon('info')}<span>Uno strumento usato dagli analyzer non prova che il progetto usi quel framework.</span></li></ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi provenienza</button>`);
 }
 
 function sourceModal(path) {

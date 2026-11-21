@@ -12,13 +12,19 @@ also gives the names of each unit's external dependencies; the pre-map takes onl
 from __future__ import annotations
 
 from collections import Counter
+from importlib import metadata
 from pathlib import Path, PurePosixPath
 import re
 
 import modules
 from build_units import normalize_pypi_name
+from premap import compose
 
-NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}.unit-resolution.2", "reader"
+try:
+    _yaml_version = metadata.version("PyYAML")
+except metadata.PackageNotFoundError:
+    _yaml_version = "unavailable"
+NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.2", "reader"
 PACKAGE_ECOSYSTEM = {
     "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
     "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
@@ -26,7 +32,6 @@ PACKAGE_ECOSYSTEM = {
     "pub": "pub", "melos": "pub", "swiftpm": "swiftpm", "mix": "hex", "terraform": "terraform",
 }
 _FROM = re.compile(r"^\s*FROM\s+(?:--\S+\s+)*([^\s#]+)(?:\s+AS\s+([^\s#]+))?", re.I)
-_IMAGE = re.compile(r"^\s*image:\s*['\"]?([^\s'\"#]+)")
 _FLUTTER_SDK = re.compile(r"^\s*sdk\s*:\s*flutter\b")
 
 
@@ -41,6 +46,19 @@ def normalize_image(reference: str) -> str:
     if parts[:1] == ["library"]:
         parts = parts[1:]
     return "/".join(parts).lower()
+
+
+def declared_image(reference: str) -> str:
+    """The image repository when literal; a variable in only its tag/digest leaves the repository known."""
+    prefix, variable, remainder = reference.partition("$")
+    if not variable:
+        return normalize_image(reference)
+    leaf = prefix.rsplit("/", 1)[-1]
+    if "/" in remainder or (":" not in leaf and "@" not in leaf):
+        return ""
+    return normalize_image(prefix)
+
+
 KIND = {"npm-package": "npm-package", "python-package": "python-project", "cargo-crate": "cargo-crate",
         "go-module": "go-module", "maven-module": "maven-module", "maven-aggregator": "maven-module",
         "gradle-project": "gradle-project", "gradle-build": "gradle-project", "dotnet-project": "dotnet-project",
@@ -184,7 +202,7 @@ def external_packages(graph: dict, packages: list[dict]) -> list[dict]:
             ((p.get("declared_in") or "").partition("#")[0], normalize_pypi_name(p["name"])) not in local]
 
 
-def _declared_packages(graph: dict, inventory) -> list[dict]:
+def _declared_packages(graph: dict, inventory) -> tuple[list[dict], list[dict], list[dict]]:
     """Declared package and container image signs from manifests, pubspec SDKs, Dockerfiles and Compose files; a
     manifest's package has the `version` its reader read there (`build_units`), none where it gives none."""
     units = [m for m in graph["modules"] if m["provenance"] == "build"]
@@ -226,6 +244,7 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
                 )
                 add(ecosystem, name, path, line, ((unit.get("versions") or {}).get(path) or {}).get(name))
 
+    configured, gaps = [], []
     for rel in inventory.files:
         base = PurePosixPath(rel).name
         if base == "pubspec.yaml":
@@ -241,11 +260,19 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
                         add("docker", normalize_image(raw), rel, n)
                     if alias:
                         stages.add(alias.lower())
-        elif base.startswith(("docker-compose", "compose")) and base.endswith((".yml", ".yaml")):
-            for n, text in enumerate(lines_of(rel), 1):
-                if (match := _IMAGE.match(text)) and not match.group(1).startswith("$"):
-                    add("docker", normalize_image(match.group(1)), rel, n)
-    return packages
+        elif compose.is_compose_file(base):
+            try:
+                declared, unread = compose.file_services(rel, inventory.text(rel))
+            except (KeyError, OSError, ValueError) as error:
+                gaps.append({"kind": "compose_not_read", "path": rel, "detail": str(error)})
+                continue
+            configured.extend(declared)
+            gaps.extend(unread)
+            for service in declared:
+                image = declared_image(service.get("image", ""))
+                if image:
+                    add("docker", image, rel, service["image_line"])
+    return packages, configured, gaps
 
 
 def package_facts(manifest: Path) -> list[dict]:
@@ -271,7 +298,8 @@ def run(context) -> dict:
     gaps += [{**gap, "unit": ref[module["id"]]} for module in graph["modules"] if module["provenance"] == "build"
              for gap in module.get("gaps") or []]
     found = facts(graph)
-    packages = _declared_packages(graph, context.inventory)
+    packages, configured, unread = _declared_packages(graph, context.inventory)
     out = {"units": found["units"], "workspace": found["workspace"],
-           **({"packages": packages} if packages else {})}
-    return {"facts": out, "gaps": gaps}
+           **({"packages": packages} if packages else {}),
+           **({"configured_services": configured} if configured else {})}
+    return {"facts": out, "gaps": gaps + unread}

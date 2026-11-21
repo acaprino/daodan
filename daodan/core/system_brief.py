@@ -29,6 +29,7 @@ import pipeline  # noqa: E402
 import service_registry  # noqa: E402
 import technologies  # noqa: E402
 import system_map  # noqa: E402
+from premap.compose import is_compose_file  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
 SCHEMA = "daodan/system-brief/v1"
@@ -39,16 +40,10 @@ HOSTING = {"vercel.json", "netlify.toml", "fly.toml", "render.yaml", "app.yaml",
            "railway.json", "railway.toml", "serverless.yml", "serverless.yaml", "wrangler.toml", "catalog-info.yaml"}
 CI = {".gitlab-ci.yml", "azure-pipelines.yml", "azure-pipelines.yaml", "bitbucket-pipelines.yml", ".travis.yml",
       "cloudbuild.yaml", "cloudbuild.yml", "appveyor.yml", "buildspec.yml", "Jenkinsfile"}
-_KEY = re.compile(r"^(\s*)([\w.-]+):\s*(.*?)\s*$")
-
-
-def _compose(name: str) -> bool:
-    return name.startswith(("docker-compose", "compose")) and name.endswith((".yml", ".yaml"))
-
 
 def _runtime(rel: str, lines: list[str]) -> bool:
     name = PurePosixPath(rel).name
-    if name == "Dockerfile" or name.endswith(".Dockerfile") or _compose(name) or name.endswith(".tf"):
+    if name == "Dockerfile" or name.endswith(".Dockerfile") or is_compose_file(name) or name.endswith(".tf"):
         return True
     if name in HOSTING or name in CI or rel.startswith(".github/workflows/"):
         return True
@@ -57,7 +52,7 @@ def _runtime(rel: str, lines: list[str]) -> bool:
 
 
 def _declared(rel: str, lines: list[str]) -> list[dict]:
-    """What a runtime file declares, read without tools: compose services, base images, Backstage entities."""
+    """What a runtime file declares besides the service declarations already delivered by the stack."""
     name, out = PurePosixPath(rel).name, []
     if name == "Dockerfile" or name.endswith(".Dockerfile"):
         stages = set()
@@ -68,22 +63,6 @@ def _declared(rel: str, lines: list[str]) -> list[dict]:
                             "line": number})
             if match and match.group(2):
                 stages.add(match.group(2).lower())
-    elif _compose(name):
-        inside, indent, current = False, None, None
-        for number, line in enumerate(lines, 1):
-            match = _KEY.match(line)
-            if not match or line.lstrip().startswith("#"):
-                continue
-            depth, key, value = len(match.group(1)), match.group(2), match.group(3)
-            if depth == 0:
-                inside = key == "services"
-                continue
-            if inside and (indent is None or depth == indent):
-                indent = depth
-                current = {"kind": "service", "name": key, "image": None, "file": rel, "line": number}
-                out.append(current)
-            elif inside and current and key == "image":
-                current["image"] = service_registry._image(value.strip("'\""))
     elif name == "catalog-info.yaml":
         kind = None
         for number, line in enumerate(lines, 1):
@@ -137,7 +116,7 @@ def _externals(graph: dict, record: dict) -> list[dict]:
     """The stack step's technologies and the external modules of the graph, by id."""
     out = {found["id"]: {"id": found["id"], "name": found["name"], "kind": found["kind"],
                          "type": found["type"] or "altro", "from": ["registry"],
-                         "paths": sorted({s["path"] for s in found["signs"] if s["path"]})}
+                         "paths": sorted({s["path"] for s in found["signs"] if s["strength"] == "declared" and s["path"]})}
            for found in record["technologies"]}
     for module in graph["modules"]:
         if module.get("location") == "external":
@@ -293,6 +272,13 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
             if left:
                 other[module["name"]] = len(left)
     runtime = [rel for rel, lines in texts.items() if _runtime(rel, lines)]
+    declarations = defaultdict(list)
+    for item in record["configured_services"]:
+        if item.get("line") and is_compose_file(PurePosixPath(item["path"]).name):
+            image = item.get("image") or ""
+            declarations[item["path"]].append({"kind": "service", "name": item["name"],
+                                               "image": service_registry.declared_image(image) or image or None,
+                                               "file": item["path"], "line": item["line"]})
     system = system_map.load(manifest, rules)
     groups, alone = _groups(links)
     cards_file = manifest.with_name("flow-cards.json")
@@ -318,7 +304,7 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
                                "site": min(e["site"] for e in found[s])} for s in sorted(found)],
              "routes": links["routes"], "links": dict(sorted(Counter(e["origin"] for e in links["edges"]).items())),
              "externals": externals, "other_dependencies": other, "runtime_files": runtime,
-             "declared": [d for rel in runtime for d in _declared(rel, texts[rel])],
+             "declared": [d for rel in runtime for d in (declarations.get(rel) or _declared(rel, texts[rel]))],
              "groups": groups, "alone": alone,
              "confirmed": [n["name"] for n in (system or {}).get("nodes", []) if n["status"] == "confirmed"],
              "cards": cards}

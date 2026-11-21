@@ -29,7 +29,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import flows  # noqa: E402
 import premap  # noqa: E402
-from premap.module_graph import normalize_image as _image, package_facts  # noqa: E402
+from premap.module_graph import declared_image, normalize_image as _image, package_facts  # noqa: E402
 from mark_svg import MAX_MARK, clean_svg, safe_member  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
@@ -91,6 +91,12 @@ def _split_declared_in(declared_in: str | None) -> tuple[str | None, int | None]
     return file, None
 
 
+def service_site(service: dict) -> tuple[str | None, int | None]:
+    """The source file even for a Compose invocation identified by its numbered step inside a shell script."""
+    location = service["declared_in"].removesuffix(f".services.{service.get('name')}")
+    return _split_declared_in(service.get("source_path") or location)
+
+
 def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | None, int | None, str | None]]:
     """(ecosystem, name, path, line, version) from Step 1's `packages`, `services` and `docker_builds`; `version`,
     the package fact's (as its manifest writes it), None for none and for an image."""
@@ -104,9 +110,9 @@ def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | No
     seen = {sign[:3] for sign in out}
     for service in facts.get("services") or ():
         if service.get("image"):
-            path = str(service["declared_in"]).split("#", 1)[0]
-            img = _image(service["image"])
-            if ("docker", img, path) not in seen:
+            path, _ = service_site(service)
+            img = declared_image(service["image"])
+            if img and ("docker", img, path) not in seen:
                 seen.add(("docker", img, path))
                 out.append(("docker", img, path, None, None))
     for build in facts.get("docker_builds") or ():

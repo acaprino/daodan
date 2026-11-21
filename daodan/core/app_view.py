@@ -16,8 +16,10 @@ from collections import Counter
 from pathlib import PurePosixPath
 
 from premap.suffix_table import NAMES
+from service_registry import package_key
 from snapshot_store import open_snapshot, resolve_run_snapshot
 from system_levels import LEVELS
+from technologies import module_declaration
 
 STRUCTURE = ("file", "directory", "symbol")
 EVIDENCE = 20  # sites kept per relation, as the envelope keeps
@@ -35,37 +37,74 @@ def _inside(path: str, root: str) -> bool:
     return root in ("", ".") or path == root or path.startswith(root.rstrip("/") + "/")
 
 
+def _dependencies(module: dict) -> list[dict]:
+    """Keep a declaration beside its resolved direct version when the package identity gives a unique pairing."""
+    rows = [{"name": item["name"], "scope": item["ecosystem"], "state": "declared",
+             "source": item["path"] + (f":{item['line']}" if item.get("line") else ""),
+             **({"version": item["version"]} if item.get("version") else {})}
+            for item in module.get("libraries", [])]
+    resolved = module.get("resolved_libraries") or []
+    if not resolved:
+        return rows
+
+    def key(ecosystem, name):
+        return ecosystem, package_key(ecosystem, name)
+
+    declarations = {key(row["scope"], row["name"]): row for row in rows}
+    direct = Counter(key(item["ecosystem"], item["name"]) for item in resolved if item["direct"])
+    for item in resolved:
+        identity = key(item["ecosystem"], item["name"])
+        declared = declarations.get(identity)
+        if declared is not None and item["direct"] and direct[identity] == 1:
+            row = declared
+            row.update(state="declared_resolved", resolution_source=item["path"])
+        else:
+            row = {"name": item["name"], "scope": item["ecosystem"], "source": item["path"], "state": "resolved"}
+            rows.append(row)
+        row.update(resolved_version=item["version"], direct=item["direct"])
+    return rows
+
+
 def premap(stack: dict, modules: dict, files: dict) -> dict:
-    """Files, languages, technologies and the units of the stack with their declared libraries."""
+    """Files, languages, technologies and the units of the stack with their declared and resolved libraries."""
     if "modules" not in stack:  # the snapshot's gate answered in place of the stack
         raise ValueError(stack.get("reason") or "the stack of the run is not available")
     described = {module["id"]: module for module in modules.get("modules", [])}
     known = {item["id"]: item for item in stack["technologies"]}
     units, technologies = [], []
+    service_roots = {}
     for module in stack["modules"]:
-        root = (module.get("paths") or ["."])[0]
+        paths = module.get("paths") or ["."]
+        root = paths[0]
+        for service in module.get("configured_services", []):
+            service_roots.setdefault((service["name"], service["declared_in"]), set()).add(root)
         declared = [tool["declared_in"] for tool in module.get("toolchains", [])]
         units.append({
             "id": module["id"], "name": module["name"], "root": root, "kind": module.get("kind"),
             "status": described.get(module["id"], {}).get("status"),
             "description": described.get(module["id"], {}).get("description") or "",
             "manifest": next(iter(declared + [item["path"] for item in module.get("libraries", [])]), None),
-            "dependencies": [{"name": item["name"], "scope": item["ecosystem"], "state": "declared",
-                              "source": item["path"] + (f":{item['line']}" if item.get("line") else ""),
-                              **({"version": item["version"]} if item.get("version") else {})}
-                             for item in module.get("libraries", [])]})
+            "dependencies": _dependencies(module)})
+        library_sources = {item["id"]: item for item in module.get("libraries", []) if item.get("id")}
         for ident in module.get("technologies", []):
             found = known.get(ident)
             if found is None:
                 continue
-            signs = found.get("signs") or [{}]
-            sign = next((s for s in signs if _inside(s.get("path") or "", root)), signs[0])
+            sign = module.get("technology_evidence", {}).get(ident)
+            if sign is None:  # older records did not retain the module's declaring site
+                signs = (s for s in found.get("signs", []) if module_declaration(s))
+                sign = library_sources.get(ident) or next((s for s in signs if any(_inside(s["path"], path) for path in paths)), {})
             technologies.append({"name": found["name"], "category": found.get("category") or "tecnologia",
                                  "source": (sign.get("path") or "") + (f":{sign['line']}" if sign.get("line") else ""),
                                  "unit": root, "state": "recognized"})
         technologies.extend({"name": tool["tool"], "category": "toolchain", "version": tool.get("version") or "",
                              "source": tool["declared_in"], "unit": root, "state": "declared"}
                             for tool in module.get("toolchains", []))
+    for service in stack.get("configured_services", []):
+        for root in sorted(service_roots.get((service["name"], service["declared_in"]), {""})):
+            technologies.append({"name": service["name"], "category": "servizio configurato",
+                                 "source": service["declared_in"], "unit": root, "state": "configured",
+                                 **({"image": service["image"]} if service.get("image") else {})})
     for unit in units:
         parents = [other for other in units if other is not unit and other["root"] != unit["root"]
                    and _inside(unit["root"], other["root"])]

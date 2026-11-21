@@ -284,11 +284,11 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
         "flows": envelope_flows,
         "technologies": [{"id": item["id"], "name": item["name"], "type": item["type"] or "altro",
                           "category": item["category"],
-                          "paths": sorted({sign["path"] for sign in item["signs"] if sign["path"]}),
+                          "paths": sorted({sign["path"] for sign in item["signs"]
+                                           if sign["strength"] == "declared" and sign["path"]}),
                           # the declared sites by which a module's stack holds it, as `technologies.ensure` matches them
                           "evidence": [{"path": sign["path"], "line": sign["line"]} for sign in item["signs"]
-                                       if sign["strength"] == "declared" and sign["path"] and not (
-                                           sign["sign"] == "package" and technologies._versions_only(sign["path"]))]}
+                                       if technologies.module_declaration(sign)]}
                          for item in stack["technologies"]],
     }
 

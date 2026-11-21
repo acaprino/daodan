@@ -81,7 +81,7 @@ UPLOADED = ((_scripts, SCRIPTS), (_scripts.parent / "data", DATA),
 
 image = (modal.Image.debian_slim(python_version="3.13")
          .apt_install("git", "ca-certificates", "xz-utils")
-         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"))
+         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6"))
 if LOCAL:
     image = (image.add_local_dir(UPLOADED[0][0], REMOTE_SCRIPTS, ignore=["**/__pycache__/**"])
              .add_local_dir(UPLOADED[1][0], REMOTE_DATA)

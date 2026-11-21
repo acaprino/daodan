@@ -34,3 +34,6 @@ tree-sitter-language-pack==1.13.5
 # references. Measured: `WITH RECURSIVE tree(...)` and `"Quoted Cte"` stop
 # appearing as tables.
 sqlglot>=30
+
+# Compose service declarations in the fast scan (no Compose engine or interpolation).
+PyYAML>=6

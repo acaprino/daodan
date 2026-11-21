@@ -1,9 +1,8 @@
 """The pre-map of a snapshot: what the project holds and how each unit is analysed, before any indexer.
 
 `premap.json` (`daodan/premap/v1`) beside the manifest, in Daodan's store, never in the project; the shape is
-in `references/premap.md`: the project's structure and the toolchains it declares, never the libraries its
-units use (each analyzer's build tool resolves those in the container while it indexes; a source stating them
-fails). A source is a thin adapter in this package (`NAME`, `VERSION`, `RANK`) that states
+in `references/premap.md`. It records project structure, declared toolchains and packages, and the package graphs
+a build tool returns during this step. A source is a thin adapter in this package (`NAME`, `VERSION`, `RANK`) that states
 facts in that shape: Daodan detects nothing on its own. A reader reads files and runs nothing (`run(context)`).
 A model source is a build system's own command: `commands(context)` describes it as data, a runner the caller
 supplies executes it in Daodan's container, and `read(context, commands, results)` reads its output; without a
@@ -58,10 +57,12 @@ IDENTITY = {  # the fields that make two entries one fact, from the strictest to
     "toolchains": (("tool", "declared_in", "version"), ("tool", "declared_in")),
     "tests": (("root", "runner"),),  # how the tests of a folder run: the dynamic step's command
     "services": (("declared_in",),),  # a service container a CI job starts beside its steps: the dynamic step's too
+    "configured_services": (("declared_in", "name"),),  # Compose declarations; not instructions to start containers
     "compose": (("declared_in",),),  # a CI step that starts Docker Compose: what `compose` reads
     "ci_steps": (("declared_in", "tests"),),  # a step a CI job runs before the tests of an entry: the dynamic step's
     "docker_builds": (("dockerfile", "context"),),  # a Dockerfile's stages as BuildKit reads them (`dockerfile`)
     "packages": (("ecosystem", "name", "declared_in"),),  # declared package/image signs for the stack step
+    "package_graphs": (("ecosystem", "path"),),  # one native resolution per workspace manifest
 }
 EXECUTES = {  # unit kinds whose model or index exists only when the build runs project code
     "gradle-project": "Gradle runs the build scripts for the model and the compile tasks the index needs",
@@ -329,6 +330,8 @@ def python_runs(record: dict) -> list[dict]:
 
 def _inputs(store, sources) -> str:
     value = [logical_digest(store), store["root"], [label(s) for s in sources], SCHEMA]
+    if cargo in sources:
+        value.append("cargo-package-graph-v1")
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()
 
 

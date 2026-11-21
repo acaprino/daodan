@@ -384,6 +384,8 @@ class ServiceNodeTests(unittest.TestCase):
                          {"type": "external", "name": "Stripe", "location": "external", "node_type": "gateway",
                           "mark": "stripe", "provenance": "registry"})
         self.assertEqual(stripe["evidence"], [{"path": "package.json", "line": self.line}])
+        stack_entry = next(item for item in self.envelope["technologies"] if item["id"] == "stripe")
+        self.assertEqual(stack_entry["paths"], ["package.json"])
         uses = {item["ref"]: item for item in self.envelope["relations"] if item["kind"] == "uses"}
         declared = uses["uses:file:package.json->external:stripe"]
         self.assertEqual((declared["status"], declared["counts"], declared["evidence"]),

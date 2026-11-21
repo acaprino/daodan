@@ -83,6 +83,64 @@ def test_a_root_unit_holds_the_signs_of_every_path():
         {"name": "X", "unit": "root", "evidence": "deep/er/package.json"}]
 
 
+def test_compaction_keeps_local_declarations_past_the_sample_and_score_ignores_mentions():
+    import modal_stack
+
+    signs = [{"sign": "env", "value": "X_TOKEN", "path": f"web/{i}.js", "line": 1, "strength": "mentioned"}
+             for i in range(10)]
+    signs.extend({"sign": "package", "value": "x", "path": path, "line": 2, "strength": "declared"}
+                 for path in ("api/package.json", "web/package.json"))
+    record = {"technologies": [{"id": "x", "name": "X", "category": "framework", "kind": "project", "signs": signs}],
+              "units": [{"id": name, "name": name, "paths": [name], "technologies": ["x"]} for name in ("web", "api")]}
+    expected = [{"name": "X", "unit": name, "evidence": f"{name}/package.json"} for name in ("web", "api")]
+    assert score.technologies_faces(modal_stack._trim(record))["frameworks"] == expected
+    # Previously stored records did not carry strength and may have already lost the local declaration.
+    legacy = {**record["technologies"][0], "signs": [
+        {"sign": "env", "path": "web/app.js"}, {"sign": "package", "path": "api/package.json"}]}
+    assert score.technologies_faces({**record, "technologies": [legacy]})["frameworks"] == [
+        {"name": "X", "unit": "web"}, expected[1]]
+
+
+def test_configured_services_survive_compaction_without_counting_them_as_catalogue_matches():
+    import modal_stack
+
+    configured = [{"name": "mailpit", "path": "compose.override.yml", "declared_in": "compose.override.yml#L3"}]
+    trimmed = modal_stack._trim({"technologies": [], "units": [], "configured_services": configured})
+    assert trimmed["configured_services"] == configured
+    assert score.technologies_faces(trimmed)["services"] == []
+
+
+def test_modules_with_overlapping_paths_keep_their_own_declaration_in_scored_and_stored_results():
+    import modal_stack
+
+    child, parent = "apps/web/next.config.js", "next.config.js"
+    record = {"technologies": [{"id": "nextjs", "name": "Next.js", "kind": "project",
+                                "signs": [{"sign": "file", "path": path} for path in (child, parent)]}],
+              "units": [{"id": name, "name": name, "paths": [directory], "technologies": ["nextjs"],
+                         "technology_evidence": {"nextjs": {"path": file}}}
+                        for name, directory, file in (("root", ".", parent), ("web", "apps/web", child))]}
+    expected = [{"name": "Next.js", "unit": "root", "evidence": parent},
+                {"name": "Next.js", "unit": "web", "evidence": child}]
+    for result in (record, modal_stack._trim(record)):
+        assert score.technologies_faces(result)["frameworks"] == expected
+
+
+def test_compose_files_in_the_corpus_keep_each_service_name_even_if_built_without_an_image():
+    sys.path.insert(0, str(HERE.parents[1] / "daodan/core"))
+    from premap.compose import file_services
+
+    cases = {
+        "jvm-spring-boot-managed/compose.yaml": {"postgres"},
+        "py-fastapi-compose/docker-compose.yml": {"api", "db", "cache"},
+        "mix-infra-compose/docker-compose.yml": {"api", "worker", "db", "cache", "queue"},
+    }
+    for path, names in cases.items():
+        rows, gaps = file_services(path, (HERE / "fixtures" / path).read_text(encoding="utf-8"))
+        assert not gaps
+        assert {row["name"] for row in rows} == names
+        assert all(row["declared_in"].startswith(path + "#L") for row in rows)
+
+
 def test_the_score_counts_apart_what_expected_does_not_list_as_a_framework():
     result = score.score_technologies(EXPECTED, RECORD)
     frameworks = result["frameworks"]

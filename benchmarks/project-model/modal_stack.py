@@ -58,7 +58,7 @@ TIMEOUT = 1500  # seconds a container may spend over its batch
 FIXTURE_TIMEOUT = 900  # seconds one fixture may take (the largest answer in 360)
 
 image = (modal.Image.debian_slim(python_version="3.12").apt_install("git", "ca-certificates")
-         .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"))
+         .pip_install("tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6"))
 if LOCAL:
     for _local, _repo in UPLOADED:
         image = (image.add_local_dir(_local, f"/repo/{_repo}", ignore=["**/__pycache__/**"]) if _local.is_dir()
@@ -123,14 +123,23 @@ def _project(name: str) -> Path:
 
 def _trim(record: dict) -> dict:
     """The record without the repeated signs: what the adapter and the cards read."""
+    import score
+
+    units = [{k: u[k] for k in ("id", "name", "kind", "paths", "technologies", "technology_evidence") if k in u}
+             for u in record["units"]]
     entries = []
     for entry in record["technologies"]:
-        signs = {(s["sign"], s["value"], s["path"], s["line"]) for s in entry["signs"]}
-        entries.append({**{k: entry.get(k) for k in ("id", "name", "kind", "type")},
-                        "signs": [dict(zip(("sign", "value", "path", "line"), s)) for s in sorted(signs, key=str)[:8]],
-                        "signs_total": len(signs)})
-    return {"technologies": entries, "units": [{k: u.get(k) for k in ("id", "name", "kind", "paths", "technologies")}
-                                               for u in record["units"]]}
+        signs = entry["signs"]  # the registry deduplicates and sorts by checker, path, line and value
+        sample = signs[:8]
+        sampled_paths = {s["path"] for s in sample if score.declared_stack_sign(s)}
+        for sign in signs[8:]:
+            if score.declared_stack_sign(sign) and sign["path"] not in sampled_paths:
+                sample.append(sign)
+                sampled_paths.add(sign["path"])
+        entries.append({**{k: entry[k] for k in ("id", "name", "kind", "type", "category") if k in entry},
+                        "signs": sample, "signs_total": len(signs)})
+    return {"technologies": entries, "units": units,
+            **({"configured_services": record["configured_services"]} if "configured_services" in record else {})}
 
 
 def _recording(name: str) -> dict | None:
@@ -254,6 +263,7 @@ def fetch(names: list[str]) -> None:
         expected = json.loads((FIXTURES / name / "expected.json").read_text(encoding="utf-8"))
         out[name] = {"output": score.technologies_faces(stored), "score": score.score_technologies(expected, stored),
                      "technologies": len(stored["technologies"]), "ids": [t["id"] for t in stored["technologies"]],
+                     **({"configured_services": stored["configured_services"]} if "configured_services" in stored else {}),
                      "units": len(stored["units"]), "premap_sources": stored["premap_sources"],
                      "model": stored["model"], "model_missing": stored["model_missing"],
                      "seconds": round(sum(stored["seconds"].values()), 2), "seconds_detail": stored["seconds"],

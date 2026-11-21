@@ -442,9 +442,25 @@ def test_a_further_folder_is_served_under_its_name(tmp_path):
         server.server_close()
 
 
+def test_the_pre_map_shows_uncatalogued_services_with_their_actual_owner():
+    mail = {"name": "mailpit", "path": "api/compose.yml", "declared_in": "api/compose.yml#L3",
+            "image": "axllent/mailpit"}
+    worker = {"name": "worker", "path": "ci/compose.yml", "declared_in": "ci/compose.yml#L5"}
+    stack = {"technologies": [], "configured_services": [mail, worker],
+             "modules": [{"id": "api", "name": "api", "paths": ["api"], "configured_services": [mail]}]}
+    assert app_view.premap(stack, {}, {})["technologies"] == [
+        {"name": "mailpit", "category": "servizio configurato", "source": mail["declared_in"], "unit": "api",
+         "state": "configured", "image": "axllent/mailpit"},
+        {"name": "worker", "category": "servizio configurato", "source": worker["declared_in"], "unit": "",
+         "state": "configured"},
+    ]
+
+
 def test_the_pre_map_lists_the_units_with_their_declared_libraries_and_the_unit_that_holds_each():
     stack = {"technologies": [{"id": "pytest", "name": "pytest", "category": "framework",
-                               "signs": [{"path": "other/pyproject.toml", "line": 3}, {"path": "pkg/pyproject.toml", "line": 9}]}],
+                               "signs": [{"path": "other/pyproject.toml", "line": 3, "sign": "package", "strength": "declared"},
+                                         {"path": "pkg/a.py", "line": 1, "sign": "env", "strength": "mentioned"},
+                                         {"path": "pkg/pyproject.toml", "line": 9, "sign": "package", "strength": "declared"}]}],
              "modules": [{"id": "root", "name": "root", "kind": "python-package", "paths": ["."], "technologies": [],
                           "toolchains": [], "libraries": []},
                          {"id": "pkg", "name": "pkg", "kind": "python-package", "paths": ["pkg"], "technologies": ["pytest"],

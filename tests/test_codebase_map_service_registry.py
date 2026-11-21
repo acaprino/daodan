@@ -228,6 +228,8 @@ class RecognizeTests(unittest.TestCase):
         "api/requirements.txt": "stripe==7.0\nfastapi>=0.110  # the API\n",
         "api/pay.py": "import os\n\nKEY = os.environ['STRIPE_SECRET_KEY']\n",
         "api/Dockerfile": "FROM python:3.12-slim\n",
+        "telemetry/pyproject.toml": '[project]\nname = "telemetry"\ndependencies = ["sentry-sdk"]\n'
+                                   '[project.optional-dependencies]\ntracing = ["sentry_sdk>=2"]\n',
         "api/known.json": '{"schema": "daodan/service-registry/v1", "entries": [{"env": ["STRIPE_KEY"]}]}',
         "web/dist.js": "var a=1;" * 2000 + "STRIPE_KEY\n",
     }
@@ -273,6 +275,12 @@ class RecognizeTests(unittest.TestCase):
 
     def test_a_package_of_the_project_is_not_external(self):
         self.assertNotIn("resend", self.found)
+
+    def test_sentry_has_one_library_and_retains_the_declaration_with_its_version(self):
+        unit = self.units["telemetry"]
+        self.assertIn("sentry", unit["services"])
+        self.assertEqual([(lib["id"], lib["name"], lib["version"], lib["path"], lib["line"]) for lib in unit["libraries"]],
+                         [("sentry", "sentry_sdk", ">=2", "telemetry/pyproject.toml", 5)])
 
     def test_a_unit_holds_the_technologies_its_files_show(self):
         self.assertEqual(self.units["web"]["paths"], ["web"])

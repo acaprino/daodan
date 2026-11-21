@@ -33,6 +33,67 @@ import shlex
 import confinement
 from source_files import is_forbidden
 
+
+def is_compose_file(name: str) -> bool:
+    stem, _, ext = name.rpartition(".")
+    return ext in ("yml", "yaml") and (
+        stem in ("compose", "docker-compose")
+        or stem.startswith(("compose.", "compose-", "compose_", "docker-compose.", "docker-compose-", "docker-compose_")))
+
+
+def file_services(path: str, text: str) -> tuple[list[dict], list[dict]]:
+    """Names and literal options in this Compose file. Compose itself resolves the runtime model in the container."""
+    try:
+        import yaml
+    except ImportError:
+        return [], [{"kind": "source_unavailable", "path": path,
+                     "detail": "Compose declarations require PyYAML", "remedy": "install PyYAML>=6"}]
+    try:
+        # Compose YAML is data. Inspect nodes (also for declaration lines) without constructing user-tagged values.
+        document = yaml.compose(text, Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader))
+    except (yaml.YAMLError, RecursionError) as error:
+        mark = getattr(error, "problem_mark", None)
+        where = f" on line {mark.line + 1}" if mark else ""
+        return [], [{"kind": "compose_not_read", "path": path, "detail": f"invalid Compose YAML{where}"}]
+
+    def fields(node):
+        # PyYAML resolves aliases to their original nodes. Walk merged mappings once each: flatten_mapping
+        # copies all nested pairs and can expand exponentially on repeated merges. Local keys win over merged
+        # keys; the first mapping in a merge sequence wins over later ones (YAML 1.1 merge key).
+        answer, pending, visited = {}, [node], set()
+        while pending:
+            current = pending.pop()
+            if not isinstance(current, yaml.MappingNode) or current.tag == "!reset" or id(current) in visited:
+                continue
+            visited.add(id(current))
+            held, inherited = {}, []
+            for key, value in current.value:
+                if key.tag == "tag:yaml.org,2002:merge":
+                    inherited.extend(value.value if isinstance(value, yaml.SequenceNode) else [value])
+                elif isinstance(key, yaml.ScalarNode):
+                    held[key.value] = (key, value)
+            for key, pair in held.items():
+                answer.setdefault(key, pair)
+            pending.extend(reversed(inherited))
+        return answer
+
+    services = fields(document).get("services")
+    found = []
+    for name, service in (fields(services[1]).values() if services else ()):
+        if not isinstance(service, yaml.MappingNode) or service.tag == "!reset":
+            continue
+        item = {"name": name.value, "declared_in": f"{path}#L{name.start_mark.line + 1}"}
+        for key, value in fields(service).values():
+            if (key.value == "image" and isinstance(value, yaml.ScalarNode)
+                    and value.tag in ("tag:yaml.org,2002:str", "!override") and value.value):
+                item["image"] = value.value
+                item["image_line"] = value.start_mark.line + 1
+            if key.value == "profiles" and isinstance(value, yaml.SequenceNode) and value.tag != "!reset":
+                item["profiles"] = [profile.value for profile in value.value if isinstance(profile, yaml.ScalarNode)]
+        found.append(item)
+    return found, []
+
+
 NAME, VERSION, RANK = "compose", "5.6.1", "model"  # Compose's own command reads its files
 # Docker Compose's static binary (Apache-2.0), checked by the sha256 its release publishes
 DOWNLOAD = ("https://github.com/docker/compose/releases/download/v5.6.1/docker-compose-linux-x86_64",
@@ -318,6 +379,7 @@ def facts(found: list[tuple[str, list[str]]], cwd: str, **more) -> list[dict]:
     for path, argv in found:
         number = counted[path] = counted.get(path, -1) + 1
         entries.append({"declared_in": path if number == 0 else f"{path}.{number}", "cwd": cwd, "argv": argv,
+                        **({"source_path": path} if number and "#" not in path else {}),
                         **{key: value for key, value in more.items() if value}})
     return entries
 
@@ -427,5 +489,6 @@ def read(context, commands, results):
         _, named, no_deps, _ = options(step["argv"])
         for name, service in sorted(((json.loads(result["stdout"]) or {}).get("services") or {}).items()):
             if not (no_deps and named and name not in named):
-                facts.append(_service(path, name, service, result.get("root") or "", step.get("job_env")))
+                fact = _service(path, name, service, result.get("root") or "", step.get("job_env"))
+                facts.append({**fact, "source_path": step["source_path"]} if step.get("source_path") else fact)
     return {"facts": {"services": facts} if facts else {}, **({"gaps": gaps} if gaps else {})}

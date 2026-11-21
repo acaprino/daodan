@@ -239,6 +239,21 @@ Misura lo step `stack` della pipeline (`scripts/technologies.py`, `daodan/techno
 - Punteggio: `score.technologies_faces` porta il record nelle facce `frameworks` (ogni voce la cui `category` non è `service`, per ogni unità che la tiene, con il primo segno dentro l'unità come prova) e `services` (ogni voce di `category` `service`) di `expected.json`; `score.score_technologies` le confronta. Dal 19 novembre 2026 ogni voce `project` riconoscibile ha la sua `category` (`framework`, `library`, `tool` o `service`), ma `expected.json` elenca fra i framework anche librerie e strumenti (Zod, Vite, Vitest, Jest) e non tutti: la faccia tiene le tre classi come prima, e ciò che offre in più di `expected.json` fra i framework non è un falso: è `counted_apart`. I servizi di `expected.json` sono completi, e un servizio in più resta `extra`. `frameworks_by_name` toglie le unità, che ogni lettore nomina a modo suo, e conta un nome una volta per fixture.
 - Due fatti per fixture: `executed_project_code`, dai processi che `ensure` avvia (`spawned`: `no` solo se tutti sono il `git` del perimetro, con gli hook e il monitor spenti; la snapshot e la pre-mappa riprodotta non sono osservate), e `seconds` (snapshot con pre-mappa, e lo step). Il costo del giro viene dal rapporto di Modal.
 
+### Replay del riconoscimento dei pacchetti PyPI
+
+`replay_stack_packages.py` rilegge le risposte di Renovate conservate in `results/premap-runs`. Per ogni progetto applica il lettore della pre-mappa e misura `service_registry.check_packages` sulle coppie pacchetto PyPI/file. Il JSON di uscita contiene le triple tecnologia, pacchetto e file per fixture. I parametri sono la revisione Git, le fixture da escludere, il numero di ripetizioni del matcher e il file di uscita. Il replay legge dati archiviati senza avviare strumenti esterni di analisi o codice delle fixture.
+
+Dal repository, con due percorsi di uscita a scelta:
+
+```sh
+python benchmarks/project-model/replay_stack_packages.py --revision 98f360b --exclude real-app-full-stack-fastapi --repeat 11 --out baseline.json
+python benchmarks/project-model/replay_stack_packages.py --exclude real-app-full-stack-fastapi --repeat 11 --out candidate.json
+```
+
+Il 20 novembre 2026, escluso il template FastAPI usato per la correzione, 35 delle 177 registrazioni rimaste contenevano pacchetti PyPI rilevati da Renovate. Su 1.185 coppie pacchetto/file, la normalizzazione PyPI ha portato le triple da 177 a 178. È comparso solo `sentry / sentry-sdk / pyproject.toml` in `real-stack-netbox`, dove il riferimento atteso elenca Sentry. Tutte le triple precedenti sono rimaste. La mediana per analizzare i 35 casi in 11 ripetizioni è stata 210 ms per la base e 214 ms per la modifica. Il replay misura esclusivamente il matcher su questa fonte. L'attribuzione ai moduli, le configurazioni Compose e i tempi dell'intera pipeline richiedono prove distinte.
+
+Per i servizi configurati, il rapporto del benchmark conserva `configured_services` accanto al punteggio dei servizi riconosciuti dal catalogo. Il controllo `test_compose_files_in_the_corpus_keep_each_service_name_even_if_built_without_an_image` in `test_stack.py` verifica i tre file Compose presenti direttamente nelle fixture. Il lettore recupera nove dichiarazioni su nove, comprese le tre che contengono una build senza immagine esplicita. Ogni dichiarazione conserva il punto nel file.
+
 ### Risultati
 
 Dopo le categorie scritte delle 245 voci `project` che non ne avevano (19 novembre 2026, codice `c6be10745cedb94d` uguale ai due lati, registro di 2.345 voci), 178 fixture su 180 con record (jellyfin e kuvasz ancora `no answer in 900 s`, D-302), `executed_project_code: no` in 178:

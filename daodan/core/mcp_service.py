@@ -627,7 +627,8 @@ class MapService:
             record = technologies.ensure(manifest.path)
             if module is None:
                 return {"run_id": run_id, "schema": record["schema"], "technologies": record["technologies"],
-                        "modules": record["modules"], "units": record["units"]}
+                        "modules": record["modules"], "units": record["units"],
+                        "configured_services": record["configured_services"]}
             key = module_graph.slug(module)
             found = next(
                 (m for m in record["modules"]
