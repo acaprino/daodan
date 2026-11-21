@@ -7,7 +7,7 @@ const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta
 let pathsClassified = false;
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
-  id: name, name, kind: 'directory', files: [name + '/main.ts'], location: 'internal', status: 'confirmed', group: null, evidence: [],
+  id: name, name, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
 }));
 const graph = { grouping: 'directories', nodes: groups, open: [], edges: ['confirmed', 'observed', 'sampled'].map(status => ({
     source: 'Client', target: 'Server', counts: { calls: 1 }, status, evidence: [],
@@ -125,10 +125,13 @@ try {
   const tree = page.getByRole('tree');
   await tree.getByRole('treeitem', { name: 'main.ts' }).press('Enter');
   assert.match(await page.locator('#tree-selection').innerText(), /src\/main.ts/);
-  await page.getByRole('button', { name: 'Provenienza', exact: true }).click();
-  assert.ok(await page.getByRole('dialog').isVisible());
+  const provenance = page.getByRole('button', { name: 'Provenienza', exact: true });
+  await provenance.click();
+  const detail = page.getByRole('region', { name: 'Provenienza della pre-mappa' });
+  assert.ok(await detail.isVisible());
   await page.keyboard.press('Escape');
-  assert.equal(await page.getByRole('dialog').count(), 0);
+  assert.ok(await detail.isHidden());
+  assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), 'Provenienza');
   await page.locator('#stage-analysis').click();
   await page.locator('#preview-diagram .im-graph-node').first().waitFor();
   assert.equal(await page.locator('#pipeline-steps li').count(), 5);
@@ -170,8 +173,10 @@ try {
   assert.equal(await page.getByText('Mappa del sistema parziale').count(), 0);
   await page.locator('#stage-analysis').click();
   await page.locator('#preview-diagram .im-graph-node').first().click();
-  assert.ok(await page.getByRole('dialog').isVisible());
+  const preview = page.getByRole('region', { name: 'Client' });
+  await preview.getByRole('button', { name: 'Apri nel grafo' }).waitFor();
   await page.keyboard.press('Escape');
+  assert.ok(await preview.isHidden());
   await tabs.getByRole('tab', { name: /^Grafo/ }).click();
   const diagram = page.getByRole('region', { name: 'Grafo del codice' });
   await page.keyboard.press('Control+f');
@@ -192,11 +197,25 @@ try {
   await page.getByText('Client → Server · osservata in esecuzione', { exact: true }).waitFor();
   await page.getByText('Client → Server · campionata dal profiler', { exact: true }).waitFor();
   await page.getByText('Client → Server · osservata in esecuzione · destinazioni in conflitto', { exact: true }).waitFor();
+  await group.getByRole('button', { name: /Tutti i 6 file/ }).click();
+  assert.match(await page.locator('.im-inspector .im-panel-title:visible').innerText(), /File di Server/);
+  await page.keyboard.press('Escape');
+  assert.equal(await group.locator('h2').innerText(), 'Server');
   await diagram.getByRole('button', { name: 'Apri Client' }).click();
   await diagram.getByRole('button', { name: 'Chiudi Client' }).waitFor();
   assert.equal(await diagram.locator('.im-graph-group').count(), 1);
   await diagram.getByRole('button', { name: 'Chiudi Client' }).click();
   await diagram.getByRole('button', { name: 'Apri Client' }).waitFor();
+  await tabs.getByRole('tab', { name: 'Analisi' }).click();
+  assert.ok(await page.locator('.im-inspector').isHidden());
+  await tabs.getByRole('tab', { name: /^Grafo/ }).click();
+  await page.setViewportSize({ width: 900, height: 820 });
+  await group.waitFor();
+  const [content, inspector] = await Promise.all([page.locator('.im-content').boundingBox(), page.locator('.im-inspector').boundingBox()]);
+  assert.ok(inspector.x < content.x + content.width - 100);
+  await group.getByRole('button', { name: 'Chiudi dettaglio' }).click();
+  assert.ok(await page.locator('.im-inspector').isHidden());
+  assert.equal(await page.getByRole('dialog').count(), 0);
   await page.setViewportSize({ width: 390, height: 820 });
   assert.equal(await tabs.isVisible(), false);
   await page.getByRole('button', { name: 'Schermate', exact: true }).click();

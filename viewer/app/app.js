@@ -1,5 +1,5 @@
 import '@acaprino/imago/css/imago.css';
-import { createRegistry, fileTree, footerKeys, formatKeys, iconMarkup as icon, metric, notify, openFormDialog, openMenu, PALETTE_COMMAND, renderShellFrame, roving, SEARCH_COMMAND, segmentedControl, setProgress, shellFrameHtml, stepList, tabNavigationHtml, titlebarHtml } from '@acaprino/imago/ui';
+import { createRegistry, fileTree, footerKeys, formatKeys, iconButtonHtml, iconMarkup as icon, inspector, metric, notify, openMenu, PALETTE_COMMAND, renderShellFrame, roving, SEARCH_COMMAND, segmentedControl, setProgress, shellFrameHtml, stepList, tabNavigationHtml, titlebarHtml } from '@acaprino/imago/ui';
 import { graphView } from '@acaprino/imago/graph';
 import { applyStored, graphControls, mountPage, storageOrNull } from '../src/page';
 
@@ -8,7 +8,7 @@ const shell = document.querySelector('.im-shell');
 const page = () => document.querySelector('#main > .im-panel-body');
 applyStored(document.documentElement, storageOrNull());
 const registry = createRegistry();
-let activeDialog, diagram, diagramHost, diagramKey, previewVersion;
+let diagram, diagramHost, diagramKey, previewVersion;
 
 // The app's page: the journey of the mockup (repository, pre-map, analysis, synthesis and graph) over the local server.
 // The server's state is the truth; the browser keeps only where the person was looking.
@@ -845,15 +845,15 @@ function mapScene(g) {
   };
 }
 
-function previewNode(id) {
+function previewNode(id, opener) {
   const n = nodeById(id);
-  modal(nodeName(n), `${GRAPH.grouping === 'modules' ? 'Modulo' : 'Directory'} del grafo di questo run.`,
+  detail(nodeName(n), `${GRAPH.grouping === 'modules' ? 'Modulo' : 'Directory'} del grafo di questo run.`,
     `<p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><p class="im-muted im-caption">${esc(nodeFacts(n))} · commit ${esc(ctx().commit.slice(0, 12))}</p>`,
-    `<button class="im-btn" data-preview-node="${esc(n.id)}">${icon('graph')}Apri nel grafo</button><button class="im-btn im-btn--primary" data-action="close-modal">Chiudi dettaglio</button>`);
+    `<button class="im-btn" data-preview-node="${esc(n.id)}">${icon('graph')}Apri nel grafo</button>`, opener);
 }
 function openGroup(id) {
   state.graphOpen = [...new Set([...state.graphOpen, id])];
-  state.graphRoot = id; loadGraph(); render();
+  state.graphRoot = id; wantGroup = true; loadGraph(); render();
 }
 function mountDiagram() {
   const host = document.querySelector('#preview-diagram, #map-diagram');
@@ -870,20 +870,19 @@ function mountDiagram() {
     diagramKey = key; diagramHost = host;
     diagram = graphView(host, { label: preview ? 'Costruzione del grafo' : 'Grafo del codice', controls: graphControls,
       onSelect(id) {
-        if (preview) previewNode(id);
-        else { state.graphRoot = id; render(); toast('Selezionato: ' + nodeName(nodeById(id))); }
+        if (preview) previewNode(id, document.activeElement);
+        else { state.graphRoot = id; wantGroup = true; render(); toast('Selezionato: ' + nodeName(nodeById(id))); }
       }, onOpen: openGroup,
     });
   }
   diagram.draw(preview ? previewScene() : mapScene(visibleGraph()));
 }
 
-function inspector() {
+function groupDetails() {
   const n = nodeById(state.graphRoot);
-  if (!n) return '';
   const related = GRAPH.edges.filter(e => e.source === n.id || e.target === n.id);
   const runtime = related.filter(e => e.conflict || ['observed', 'sampled'].includes(e.status));
-  return `<section class="im-panel im-inset" aria-label="Dettaglio del gruppo"><p class="im-kicker">${n.location === 'external' ? 'Nodo esterno selezionato' : SELECTED[n.kind] || 'Modulo selezionato'}</p><h2>${esc(nodeName(n))}</h2><span class="im-chip" data-im-tone="${n.location === 'external' ? 'info' : 'accent'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="im-muted">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p>${opens(n) ? `<button class="im-btn im-btn--primary" data-open-node="${esc(n.id)}">${icon('layers')}Apri sul posto</button>` : ''}<div class="im-section"><h3>Perimetro</h3><dl class="im-facts">${n.kind === 'symbol' ? `<dt>Righe</dt><dd>${esc((n.lines || []).join('–'))}</dd>${n.members ? `<dt>Simboli dentro</dt><dd>${n.members.length}</dd>` : ''}` : `<dt>File assegnati</dt><dd>${n.files.length}</dd>`}<dt>Relazioni nel grafo</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || { directory: 'Directory del checkout', file: 'File del checkout', symbol: 'Outline del file' }[n.kind] || 'Non registrata')}</dd></dl>${runtime.length ? `<details><summary>Prove delle chiamate (${number(runtime.length)})</summary><ul class="im-detail-list">${runtime.map(e => `<li>${esc(endName(e.source))} → ${esc(endName(e.target))} · ${proofLabel(e.status, e.conflict)}</li>`).join('')}</ul></details>` : ''}</div>${n.projects ? stackBlock(n) : ''}${n.kind === 'file' ? symbolsBlock(n) : ''}<div class="im-section"><h3>Evidenze</h3><ul class="im-detail-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="im-muted">Nessuna evidenza dichiarata.</li>'}</ul></div>${n.kind === 'symbol' ? '' : `<div class="im-section"><h3>File del gruppo</h3><ul class="im-detail-list">${n.files.slice(0, 4).map(path => `<li><button class="im-btn" data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="im-muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="im-btn im-btn--ghost im-btn--sm" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div>`}</section>`;
+  return fragment(detailHtml(GROUP_LABEL, `<p class="im-kicker">${n.location === 'external' ? 'Nodo esterno selezionato' : SELECTED[n.kind] || 'Modulo selezionato'}</p><h2>${esc(nodeName(n))}</h2><span class="im-chip" data-im-tone="${n.location === 'external' ? 'info' : 'accent'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="im-muted">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p>${opens(n) ? `<button class="im-btn im-btn--primary" data-open-node="${esc(n.id)}">${icon('layers')}Apri sul posto</button>` : ''}<div class="im-section"><h3>Perimetro</h3><dl class="im-facts">${n.kind === 'symbol' ? `<dt>Righe</dt><dd>${esc((n.lines || []).join('–'))}</dd>${n.members ? `<dt>Simboli dentro</dt><dd>${n.members.length}</dd>` : ''}` : `<dt>File assegnati</dt><dd>${n.files.length}</dd>`}<dt>Relazioni nel grafo</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || { directory: 'Directory del checkout', file: 'File del checkout', symbol: 'Outline del file' }[n.kind] || 'Non registrata')}</dd></dl>${runtime.length ? `<details><summary>Prove delle chiamate (${number(runtime.length)})</summary><ul class="im-detail-list">${runtime.map(e => `<li>${esc(endName(e.source))} → ${esc(endName(e.target))} · ${proofLabel(e.status, e.conflict)}</li>`).join('')}</ul></details>` : ''}</div>${n.projects ? stackBlock(n) : ''}${n.kind === 'file' ? symbolsBlock(n) : ''}<div class="im-section"><h3>Evidenze</h3><ul class="im-detail-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="im-muted">Nessuna evidenza dichiarata.</li>'}</ul></div>${n.kind === 'symbol' ? '' : `<div class="im-section"><h3>File del gruppo</h3><ul class="im-detail-list">${n.files.slice(0, 4).map(path => `<li><button class="im-btn" data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="im-muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="im-btn im-btn--ghost im-btn--sm" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div>`}`));
 }
 
 // A file is the lowest node: its symbols and the calls among them, with their lines, are the inspector's, asked when
@@ -917,7 +916,7 @@ function graph() {
   if (graphError) return head + `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Grafo non disponibile.</strong> ${esc(graphError)}</div>`;
   if (!GRAPH) return head + waiting('Lettura del grafo…', 'Gruppi, relazioni e lacune del run.');
   const g = visibleGraph();
-  return head + `<div class="im-content-toolbar"><label class="im-input">${icon('search')}<span class="im-visually-hidden">Cerca un gruppo o un file</span><input id="graph-search" type="search" placeholder="Cerca gruppo o file…" value="${esc(state.graphSearch)}"></label><div class="im-cluster"><label class="im-field">Direzione<select class="im-select" id="graph-direction">${selectOptions([['out', 'Dipendenze →'], ['in', '← Chiamanti'], ['both', 'Entrambe ↔']], state.graphDirection)}</select></label><label class="im-field">Profondità<select class="im-select" id="graph-depth">${selectOptions([['1', '1 livello'], ['2', '2 livelli'], ['all', 'Tutto il grafo']], state.graphDepth)}</select></label><label class="im-field">Relazioni<select class="im-select" id="graph-kind">${selectOptions([['all', 'Tutte'], ['calls', 'Chiamate'], ['imports', 'Import'], ['uses', 'Utilizzi']], state.graphKind)}</select></label><button class="im-btn im-btn--ghost im-btn--sm" data-action="clear-graph">Azzera filtri</button><span class="im-chip" data-im-tone="accent" data-im-align="end" title="Livelli della mappa del sistema mostrati">${esc(levelsName())}</span><span class="im-muted im-caption">${g.nodes.length} / ${GRAPH.nodes.length} nodi</span></div></div><div class="im-auto-grid"><section aria-label="Grafo interattivo"><div class="im-canvas-frame" id="graph-viewport">${graphCanvas(g)}</div><div class="im-content-toolbar im-cluster"><span><span class="im-text-accent">■</span> ${levelLabel()} &nbsp; <span class="im-muted">□</span> Esterno</span><span>${g.edges.length} relazioni visibili · seleziona un nodo, apri ${icon('chevron')} sul posto</span></div></section>${inspector()}</div>`;
+  return head + `<div class="im-content-toolbar"><label class="im-input">${icon('search')}<span class="im-visually-hidden">Cerca un gruppo o un file</span><input id="graph-search" type="search" placeholder="Cerca gruppo o file…" value="${esc(state.graphSearch)}"></label><div class="im-cluster"><label class="im-field">Direzione<select class="im-select" id="graph-direction">${selectOptions([['out', 'Dipendenze →'], ['in', '← Chiamanti'], ['both', 'Entrambe ↔']], state.graphDirection)}</select></label><label class="im-field">Profondità<select class="im-select" id="graph-depth">${selectOptions([['1', '1 livello'], ['2', '2 livelli'], ['all', 'Tutto il grafo']], state.graphDepth)}</select></label><label class="im-field">Relazioni<select class="im-select" id="graph-kind">${selectOptions([['all', 'Tutte'], ['calls', 'Chiamate'], ['imports', 'Import'], ['uses', 'Utilizzi']], state.graphKind)}</select></label><button class="im-btn im-btn--ghost im-btn--sm" data-action="clear-graph">Azzera filtri</button><span class="im-chip" data-im-tone="accent" data-im-align="end" title="Livelli della mappa del sistema mostrati">${esc(levelsName())}</span><span class="im-muted im-caption">${g.nodes.length} / ${GRAPH.nodes.length} nodi</span></div></div><section aria-label="Grafo interattivo"><div class="im-canvas-frame" id="graph-viewport">${graphCanvas(g)}</div><div class="im-content-toolbar im-cluster"><span><span class="im-text-accent">■</span> ${levelLabel()} &nbsp; <span class="im-muted">□</span> Esterno</span><span>${g.edges.length} relazioni visibili · seleziona un nodo, apri ${icon('chevron')} sul posto</span></div></section>`;
 }
 
 // -- the engine ----------------------------------------------------------------------------------------------------
@@ -1051,11 +1050,14 @@ function render() {
     card?.querySelector(focused.classList.contains('im-graph-open') ? '.im-graph-open' : '.im-graph-node')?.focus({ preventScroll: true });
   }
   updateChrome();
+  drawInspector();
   if (activeId) { const el = document.getElementById(activeId); if (el) { el.focus({ preventScroll: true }); if (start != null && typeof el.setSelectionRange === 'function') try { el.setSelectionRange(start, end); } catch { } } }
   save();
 }
 
 function navigate(screen, keepFocus = false) {  // a tab keeps its focus, a menu or a command takes it to the page
+  closeInspector();
+  wantGroup = screen === 'graph';
   state.screen = screen;
   loadViews();  // the graph screen draws its level, the analysis the first one
   render();
@@ -1063,28 +1065,51 @@ function navigate(screen, keepFocus = false) {  // a tab keeps its focus, a menu
   if (!keepFocus) document.getElementById('main').focus({ preventScroll: true });
 }
 
-function modal(title, description, body, footer) {
-  closeModal();
-  activeDialog = openFormDialog(shell, { title, subtitle: description, closeLabel: 'Chiudi', wide: true,
-    onClose() { activeDialog = null; } });
-  activeDialog.body.innerHTML = body;
-  activeDialog.foot.innerHTML = footer;
+// The details are the inspector's, which is not modal: the rest of the window keeps working. A view has a header with
+// its title and its close button, a body that scrolls and, with actions, a foot. `opener` gets the focus back when the
+// view closes, and takes it into the inspector now; a view with no opener leaves the focus where it is.
+const GROUP_LABEL = 'Dettaglio del gruppo';
+let drawn = null, wantGroup = false;  // what the inspector shows of the graph, and whether the person just asked for it
+const inspectorRegion = () => shell.querySelector('.im-inspector');
+function detailHtml(title, body, foot = '') {
+  return `<header class="im-panel-header"><h4 class="im-panel-title">${esc(title)}</h4><span class="im-spacer"></span>${iconButtonHtml('Chiudi dettaglio', 'close-detail', 'close')}</header><div class="im-panel-body im-content-text">${body}</div>${foot ? `<footer class="im-panel-foot im-cluster">${foot}</footer>` : ''}`;
 }
-function closeModal() { activeDialog?.close(); }
+function detail(title, description, body, foot, opener, push = false) {
+  const view = fragment(detailHtml(title, `<p class="im-muted">${esc(description)}</p>${body}`, foot));
+  if (push && inspector(shell).isOpen()) { inspector(shell).push(view, opener); return; }
+  inspectorRegion().setAttribute('aria-label', title);
+  inspector(shell).open(view, opener);
+}
+function closeInspector() { while (inspector(shell).isOpen()) inspector(shell).close(); }
 
-function snapshotModal() {
+// After each drawing: the group of the graph screen is in the inspector when it just was chosen, or when its node, its
+// symbols or the graph changed under it; never over another detail, and never from under a view pushed on it.
+function drawInspector() {
+  const region = inspectorRegion(), open = inspector(shell).isOpen();
+  const n = state.screen === 'graph' && GRAPH && nodeById(state.graphRoot);
+  if (!n || region.querySelector('[data-im-covered]') || (open && region.getAttribute('aria-label') !== GROUP_LABEL)) return;
+  const changed = !drawn || drawn.root !== n.id || drawn.graph !== GRAPH || drawn.symbols !== SYMBOLS;
+  if (!wantGroup && !changed) return;
+  wantGroup = false;
+  const content = groupDetails();  // asks the symbols of a file: SYMBOLS is what it asked
+  drawn = { root: n.id, graph: GRAPH, symbols: SYMBOLS };
+  region.setAttribute('aria-label', GROUP_LABEL);
+  inspector(shell).open(content);
+}
+
+function snapshotDetail(opener) {
   const m = GRAPH?.meta || {}, gaps = gapLines();
-  modal('Provenienza e lacune del grafo', 'Dati registrati nel run selezionato.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug())}</code></dd><dt>Branch e commit</dt><dd><code>${esc(ctx()?.branch)}</code> · <code>${esc(ctx()?.commit.slice(0, 12))}</code></dd><dt>Run</dt><dd><code>${esc(ctx()?.run_id)}</code></dd><dt>Grafo costruito</dt><dd>${esc(m.created_at || '—')}</dd><dt>File</dt><dd>${number(GRAPH?.files)}</dd><dt>${levelLabel()} / relazioni</dt><dd>${GRAPH?.nodes.length ?? '—'} / ${GRAPH?.edges.length ?? '—'}</dd><dt>Passaggio del grafo</dt><dd>${esc(pass().state || '—')}</dd></dl><p class="im-kicker">Limiti dichiarati</p><div class="im-note">Le relazioni osservate provengono da chiamate registrate durante l’esecuzione. Le relazioni campionate provengono dal profiler. Possono esserci altre chiamate.</div><ul class="im-detail-list">${gaps.map(g => `<li>${icon('info')}<span>${esc(g)}</span></li>`).join('') || `<li>${icon('check')}<span>Nessuna lacuna registrata dal run.</span></li>`}</ul><p class="im-caption im-muted">Digest dello snapshot: <code>${esc(m.snapshot_digest || '—')}</code></p>`, `<button class="im-btn im-btn--primary" data-action="close-modal">${icon('check')}Chiudi</button>`);
+  detail('Provenienza e lacune del grafo', 'Dati registrati nel run selezionato.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug())}</code></dd><dt>Branch e commit</dt><dd><code>${esc(ctx()?.branch)}</code> · <code>${esc(ctx()?.commit.slice(0, 12))}</code></dd><dt>Run</dt><dd><code>${esc(ctx()?.run_id)}</code></dd><dt>Grafo costruito</dt><dd>${esc(m.created_at || '—')}</dd><dt>File</dt><dd>${number(GRAPH?.files)}</dd><dt>${levelLabel()} / relazioni</dt><dd>${GRAPH?.nodes.length ?? '—'} / ${GRAPH?.edges.length ?? '—'}</dd><dt>Passaggio del grafo</dt><dd>${esc(pass().state || '—')}</dd></dl><p class="im-kicker">Limiti dichiarati</p><div class="im-note">Le relazioni osservate provengono da chiamate registrate durante l’esecuzione. Le relazioni campionate provengono dal profiler. Possono esserci altre chiamate.</div><ul class="im-detail-list">${gaps.map(g => `<li>${icon('info')}<span>${esc(g)}</span></li>`).join('') || `<li>${icon('check')}<span>Nessuna lacuna registrata dal run.</span></li>`}</ul><p class="im-caption im-muted">Digest dello snapshot: <code>${esc(m.snapshot_digest || '—')}</code></p>`, '', opener);
 }
 
-function premapProvenance() {
+function premapProvenance(opener) {
   const c = ctx();
-  modal('Provenienza della pre-mappa', 'Snapshot del checkout, manifest e risultati degli strumenti di build.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug(c))}</code></dd><dt>Branch</dt><dd><code>${esc(c.branch)}</code></dd><dt>Commit</dt><dd><code>${esc(c.commit)}</code></dd><dt>Run</dt><dd><code>${esc(c.run_id)}</code></dd><dt>File nello snapshot</dt><dd>${number(PREMAP?.files.length)}</dd><dt>Unità tecniche</dt><dd>${PREMAP?.units.length ?? '—'}</dd><dt>Dipendenze per unità</dt><dd>${number(PREMAP?.dependencies.length)}</dd></dl><ul class="im-detail-list"><li>${icon('info')}<span>I linguaggi provengono dai sorgenti dello snapshot. Le tecnologie e le dipendenze provengono dalla mappa dello stack.</span></li><li>${icon('info')}<span>Il manifest fornisce il vincolo dichiarato. Il modello di build fornisce la versione risolta e la relazione diretta o transitiva, quando disponibili.</span></li><li>${icon('info')}<span>Uno strumento usato dagli analyzer non prova che il progetto usi quel framework.</span></li></ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi provenienza</button>`);
+  detail('Provenienza della pre-mappa', 'Snapshot del checkout, manifest e risultati degli strumenti di build.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug(c))}</code></dd><dt>Branch</dt><dd><code>${esc(c.branch)}</code></dd><dt>Commit</dt><dd><code>${esc(c.commit)}</code></dd><dt>Run</dt><dd><code>${esc(c.run_id)}</code></dd><dt>File nello snapshot</dt><dd>${number(PREMAP?.files.length)}</dd><dt>Unità tecniche</dt><dd>${PREMAP?.units.length ?? '—'}</dd><dt>Dipendenze per unità</dt><dd>${number(PREMAP?.dependencies.length)}</dd></dl><ul class="im-detail-list"><li>${icon('info')}<span>I linguaggi provengono dai sorgenti dello snapshot. Le tecnologie e le dipendenze provengono dalla mappa dello stack.</span></li><li>${icon('info')}<span>Il manifest fornisce il vincolo dichiarato. Il modello di build fornisce la versione risolta e la relazione diretta o transitiva, quando disponibili.</span></li><li>${icon('info')}<span>Uno strumento usato dagli analyzer non prova che il progetto usi quel framework.</span></li></ul>`, '', opener);
 }
 
-function sourceModal(path) {
+function sourceDetail(path, opener) {
   const edges = GRAPH.edges.flatMap(e => e.evidence.filter(ev => ev.path === path || ev.target === path).map(ev => ({ ...ev, source: e.source, target: e.target, status: e.status })));
-  modal(path.split('/').pop(), 'File dello snapshot del run.', `<p><code>${esc(path)}</code></p><p class="im-muted">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</p><h3>Relazioni registrate</h3><ul class="im-detail-list">${edges.slice(0, 8).map(e => `<li>${icon('arrow')}<span>${esc(endName(e.source))} → ${esc(endName(e.target))}<br><code>${esc(e.kind)}${e.key ? ' · ' + esc(e.key) : ''}${proofLabel(e.status, e.conflict) ? ' · ' + proofLabel(e.status, e.conflict) : ''}${e.line ? ' · riga ' + e.line : ''}${e.target && e.path === path ? ' · ' + esc(e.target) : ''}</code></span></li>`).join('') || '<li>Nessuna relazione tra gruppi cita questo file.</li>'}</ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi dettaglio</button>`);
+  detail(path.split('/').pop(), 'File dello snapshot del run.', `<p><code>${esc(path)}</code></p><p class="im-muted">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</p><h3>Relazioni registrate</h3><ul class="im-detail-list">${edges.slice(0, 8).map(e => `<li>${icon('arrow')}<span>${esc(endName(e.source))} → ${esc(endName(e.target))}<br><code>${esc(e.kind)}${e.key ? ' · ' + esc(e.key) : ''}${proofLabel(e.status, e.conflict) ? ' · ' + proofLabel(e.status, e.conflict) : ''}${e.line ? ' · riga ' + e.line : ''}${e.target && e.path === path ? ' · ' + esc(e.target) : ''}</code></span></li>`).join('') || '<li>Nessuna relazione tra gruppi cita questo file.</li>'}</ul>`, '', opener, true);
 }
 
 document.addEventListener('click', async event => {
@@ -1100,11 +1125,11 @@ document.addEventListener('click', async event => {
 
 
   if (b.dataset.pathCard) { loadPathPage(b.dataset.pathCard, 0, pathPage, true); return; }
-  if (b.dataset.previewNode) { closeModal(); state.graphRoot = b.dataset.previewNode; state.graphOpen = []; state.graphDepth = '1'; state.graphSearch = ''; navigate('graph'); return; }
+  if (b.dataset.previewNode) { state.graphRoot = b.dataset.previewNode; state.graphOpen = []; state.graphDepth = '1'; state.graphSearch = ''; navigate('graph'); return; }
   if (b.dataset.openNode) { openGroup(b.dataset.openNode); return; }
 
-  if (b.dataset.closeNode) { closeGroup(b.dataset.closeNode); state.graphRoot = b.dataset.closeNode; loadGraph(); render(); return; }  // the group closed is selected again
-  if (b.dataset.sourcePath) { sourceModal(b.dataset.sourcePath); return; }
+  if (b.dataset.closeNode) { closeGroup(b.dataset.closeNode); state.graphRoot = b.dataset.closeNode; wantGroup = true; loadGraph(); render(); return; }  // the group closed is selected again
+  if (b.dataset.sourcePath) { sourceDetail(b.dataset.sourcePath, b); return; }
   switch (b.dataset.action) {
     case 'path-effects': loadPathPage(orphanWrites, 0, pathPage, true); break;
     case 'path-next': loadPathPage(pathPage.id, pathPage.result.next_offset, pathPage, true); break;
@@ -1121,14 +1146,14 @@ document.addEventListener('click', async event => {
     case 'retry-premap': premapRun = ''; loadPremap(); break;
     case 'retry-pass': try { applyState(await post('/api/app/retry', {})); } catch (error) { toast(error.message); } break;
     case 'find-links': try { applyState(await post('/api/app/link', {})); } catch (error) { toast(error.message); } break;
-    case 'close-modal': closeModal(); break;
-    case 'snapshot': snapshotModal(); break;
+    case 'close-detail': inspector(shell).close(); break;
+    case 'snapshot': snapshotDetail(b); break;
     case 'open-explorer': window.open(explorerUrl(), '_blank', 'noopener'); break;
-    case 'premap-provenance': premapProvenance(); break;
+    case 'premap-provenance': premapProvenance(b); break;
     case 'open-full-graph': state.graphDepth = 'all'; state.graphSearch = ''; state.graphOpen = []; navigate('graph'); break;
     case 'clear-tree-search': state.treeSearch = ''; render(); break;
     case 'clear-graph': state.graphSearch = ''; state.graphDepth = 'all'; state.graphDirection = 'both'; state.graphKind = 'all'; render(); toast('Filtri azzerati: tutti i gruppi del grafo sono visibili.'); break;
-    case 'component-files': { const n = nodeById(state.graphRoot); modal('File di ' + nodeName(n), 'File assegnati al gruppo nel grafo del run.', `<ul class="im-detail-list">${n.files.map(p => `<li><code>${esc(p)}</code></li>`).join('')}</ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi elenco</button>`); break; }
+    case 'component-files': { const n = nodeById(state.graphRoot); detail('File di ' + nodeName(n), 'File assegnati al gruppo nel grafo del run.', `<ul class="im-detail-list">${n.files.map(p => `<li><code>${esc(p)}</code></li>`).join('')}</ul>`, '', b, true); break; }
     case 'forget-key':
       try { server.engine = await post('/api/app/engine', { api_key: '' }); engineSaid = server.engine.api_key === 'set' ? 'Chiave rimossa: resta quella dell’ambiente.' : 'Chiave rimossa.'; engineTone = 'good'; } catch (error) { engineSaid = error.message; engineTone = 'bad'; }
       render();
