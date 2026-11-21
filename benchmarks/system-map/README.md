@@ -23,6 +23,7 @@ Nel comando `score.py system`, `flows_by_nodes` misura la sovrapposizione dei no
 | punti d'ingresso mostrati per gruppo (`HOLDERS`) | 5, 8, 12 |
 | modello dell'agente | economico (Haiku 5.5), intermedio (Sonnet 5.5) |
 | perimetro | un'area, l'intero sistema |
+| generatori dei collegamenti possibili (`possible.py`) | nessuno, `ritorno`, `incerto`, tutti e due |
 
 ## Riferimenti attesi
 
@@ -36,6 +37,7 @@ Nel comando `score.py system`, `flows_by_nodes` misura la sovrapposizione dei no
 | 1, 2, 4, 5 | `modal deploy benchmarks/system-map/modal_map.py`, poi `python benchmarks/system-map/modal_map.py spawn --phazly-tar PATH --phazly-links PATH --tududi-links PATH --tag TAG`: una run per caso, perimetro, modello e ripetizione, ognuna una sessione nuova di `claude -p --agent codebase-map:system-mapper` su un run di Codebase Map preparato prima con le regole del caso e i collegamenti calcolati con il motore; sul volume `daodan-flow-results` restano `stream.jsonl`, `map.json` e `summary.json`. Poi `python score.py map map.json expected/phazly-payments.json` |
 | 3 | `map.json` di ogni run riporta in `levels` i nodi fuori dal loro livello e i punti citati che non esistono, per ogni flusso registrato e ogni livello |
 | 6, dimensione della scheda | `modal run benchmarks/system-map/modal_map.py::brief --phazly-tar PATH --phazly-links PATH` scrive `results/brief-<caso>.json`; poi `python score.py externals results/brief-<caso>.json expected/externals-<caso>.json registry` (oppure `stack-analyser`, `both`) |
+| Collegamenti possibili | sullo snapshot di un caso con il motore: `python daodan/core/flows.py links MANIFEST --rules RULES > LINKS.json`, poi `python benchmarks/system-map/possible.py MANIFEST LINKS.json EXPECTED-system.json`; un caso privato si misura su Modal o sullo snapshot del proprietario |
 
 ## Risultati
 
@@ -205,6 +207,12 @@ Eseguire `python benchmarks/system-map/real_paths.py [web] [tk] [tauri] [--work 
 | tauri | scip-typescript 0.6.2, rust-analyzer 2026-11-09 | 322 | «Salva profilo» `src/view.tsx:18` → `save` → `src-tauri/src/main.rs::persist` (`tauri-invoke`, `src/view.tsx:4`); `only_in_tests` e `on_idle_builder` restano lacune |
 
 Il caso Tauri prima falliva: con il ripristino Node condiviso `tsc` e scip-typescript non trovavano `node.tar.gz` (spec della pipeline, sezione 7.1). Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la causa. Le stesse tre fixture su Modal (`modal_pipeline.py --folder-out`): indici `fresh` in 132, 100 e 242 secondi; lì i test Rust non partono per le librerie di sistema che mancano. Le fixture non dichiarano test: nessun arco osservato.
+
+### Collegamenti possibili, senza modello
+
+Domanda: delle frecce e degli ingressi che mancano ai flussi di un riferimento, quanti darebbe un collegamento possibile, che la macchina propone senza affermarlo e un modello conferma o scarta. `possible.py` verifica le frecce fra nodi con codice con `system_map.verify`, prima con i soli collegamenti certi e poi aggiungendo i possibili; le frecce e gli ingressi su un servizio di altri li controlla nella loro direzione (il ritorno di un webhook va dal modulo esterno al gestore, non il contrario). Generatori: `ritorno` (una rotta che nessuno nel progetto chiama, in un file che usa un modulo esterno, è chiamata da quel modulo) e `incerto` (una chiamata con più rotte candidate va a ognuna). Il contesto React e la chiave in una variabile non hanno un generatore: cadono in `mancante con lacuna` o `mancante`. Un collegamento possibile che non serve il riferimento è contato `fuori dal riferimento`, non sbagliato: il 13 novembre i soli collegamenti hanno trovato una freccia vera che il riferimento non aveva. Prova del metodo: `test_possible.py`, sulla fixture `flow-model` con un webhook. Va misurato su tutti i casi con riferimento: la prova piccola dei 35 flussi ha già portato a una scelta sbagliata.
+
+**Risultati: da produrre.**
 
 ## Confronto proposto per i flussi multilivello
 
