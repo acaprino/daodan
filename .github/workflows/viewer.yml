@@ -1,0 +1,52 @@
+name: Viewer
+
+on:
+  push:
+    branches: [develop]
+    paths: ['viewer/**', 'daodan/assets/**', 'AGENTS.md', 'CLAUDE.md', '.github/workflows/viewer.yml']
+  pull_request:
+    branches: [develop, main]
+    paths: ['viewer/**', 'daodan/assets/**', 'AGENTS.md', 'CLAUDE.md', '.github/workflows/viewer.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: viewer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  viewer:
+    name: Viewer
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+        working-directory: viewer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: viewer/package-lock.json
+
+      - run: npm ci
+
+      # The design rules of Imago, which the viewer's agents are told to run before they say UI work is done.
+      - run: npx imago-check
+
+      - run: npm test
+
+      - run: npm run build
+
+      # The committed pages are what the source builds.
+      - run: git diff --exit-code -- ../daodan/assets
+
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run test:ui

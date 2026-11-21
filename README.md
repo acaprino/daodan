@@ -92,7 +92,8 @@ that server.
 Both packaged interfaces use Imago for controls, layouts and styles. Their sources are in `viewer/app/`
 and `viewer/src/`. To rebuild the offline pages packaged with Python, run `npm ci`
 and `npm run build` in `viewer/`. Run `npm test` for the explorer model and
-`npm run test:ui` for the packaged pages after installing Playwright Chromium.
+`npm run test:ui` for the packaged pages after installing Playwright Chromium. `npx imago-check`
+checks the viewer against Imago's design rules; the Viewer workflow runs it with the tests and the build.
 
 ## Requirements
 
