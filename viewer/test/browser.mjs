@@ -4,6 +4,7 @@ import { chromium } from 'playwright';
 
 const assets = new URL('../../daodan/assets/', import.meta.url);
 const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta.url)));
+envelope.technologies = [{ id: 'react', name: 'React', type: 'framework', paths: ['web/checkout.tsx'] }];
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
 const engineRequests = [];
@@ -316,10 +317,29 @@ try {
   const node = canvas.locator('.im-graph-node').first();
   await node.waitFor({ timeout: 15000 });
   const name = await node.getAttribute('title');
+  const inspectorBox = page.locator('.im-inspector');
+  assert.ok(await inspectorBox.isHidden());
   await node.click();
   await page.waitForFunction(label => document.querySelector('.im-inspector h2')?.textContent === label, name, { timeout: 5000 });
   assert.equal(await page.locator('.im-inspector h2').innerText(), name);
   assert.equal(await page.locator('body > #app.im-root > .im-shell').count(), 1);
+  assert.match(await page.locator('.im-footer').innerText(), /entità[\s\S]*nodi/);
+  assert.match(await page.locator('.im-status').innerText(), /shop · run fixture/);
+  await page.keyboard.press('Control+k');
+  await palette.waitFor();
+  await page.keyboard.press('Escape');
+  await palette.waitFor({ state: 'detached' });
+  assert.ok(await inspectorBox.isVisible());  // the palette took that Escape
+  await node.focus();
+  await page.keyboard.press('Escape');
+  await inspectorBox.waitFor({ state: 'hidden' });
+  await page.getByRole('button', { name: 'Informazioni sul progetto' }).click();
+  assert.equal(await inspectorBox.locator('.im-panel-title').innerText(), 'Informazioni sul progetto');
+  assert.match(await inspectorBox.innerText(), /Tecnologie[\s\S]*React/);
+  await inspectorBox.getByRole('button', { name: 'Chiudi dettaglio' }).click();
+  assert.ok(await inspectorBox.isHidden());
+  await node.click();
+  await inspectorBox.waitFor();
   const flow = page.locator('.im-sidebar .im-row').first();
   await flow.click();
   assert.equal(await flow.getAttribute('aria-pressed'), 'true');
@@ -346,6 +366,27 @@ try {
   await canvas.locator('.im-graph-node').first().waitFor();
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.waitForFunction(() => document.documentElement.dataset.imTheme === 'dark');
+  await tonesAreCanon();
+  await page.setViewportSize({ width: 700, height: 820 });  // the sidebar is the rail: a row is its rail item
+  const rows = await page.locator('.im-sidebar .im-row').count();
+  assert.ok(rows > 0);
+  assert.equal(await page.locator('.im-sidebar .im-row > .im-rail-item:visible').count(), rows);
+  await page.setViewportSize({ width: 900, height: 820 });  // the inspector covers the content's edge
+  await node.click();
+  await inspectorBox.waitFor();
+  await inspectorBox.getByRole('button', { name: 'Chiudi dettaglio' }).click();
+  assert.ok(await inspectorBox.isHidden());
+  await page.setViewportSize({ width: 390, height: 820 });
+  await page.getByRole('button', { name: 'Viste', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'Logica' }).click();
+  await page.waitForFunction(() => document.getElementById('logical-tab').getAttribute('aria-selected') === 'true');
+  await page.getByRole('button', { name: 'Viste', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'Fisica' }).click();
+  await page.waitForFunction(() => document.getElementById('physical-tab').getAttribute('aria-selected') === 'true');
+  await canvas.locator('.im-graph-node').first().waitFor();
+  assert.ok((await canvas.boundingBox()).height >= 200);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  await page.setViewportSize({ width: 1280, height: 850 });
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'demo', readable: true }] } }));
   await context.route('**/api/events?*', route => route.fulfill({ json: { events: [], next_cursor: 0, has_more: false } }));
   await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));

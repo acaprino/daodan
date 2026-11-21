@@ -3,13 +3,14 @@ import { createRoot } from 'react-dom/client';
 import { graphView } from '@acaprino/imago/graph';
 import type { GraphScene } from '@acaprino/imago/graph';
 import '@acaprino/imago/css/imago.css';
-import { createRegistry, notify } from '@acaprino/imago/ui';
+import { createRegistry, footerKeys, formatKeys, iconMarkup, notify, openMenu, PALETTE_COMMAND, SEARCH_COMMAND } from '@acaprino/imago/ui';
+import type { IconName, Registry } from '@acaprino/imago/ui';
 import { applyStored, graphControls, mountPage, storageOrNull } from './page.ts';
 import { ArrowLeft, ChevronRight, FolderOpen, Route, Search, X } from 'lucide-react';
 import { Disclosure, ListAction, Shell, TabList, Timeline, Workbench } from '@acaprino/imago/react';
 import { getJson, POLL_MS, Session } from './session';
 import { parseEnvelope, SCHEMA } from './envelope.ts';
-import type { Entity, Envelope, Flow } from './envelope.ts';
+import type { Entity, Envelope, Flow, View } from './envelope.ts';
 import { childrenOf, dataLinks, flowFocus, flowsThrough, indexOf, project } from './projection.ts';
 import type { ProjectedEdge, ProjectedNode } from './projection.ts';
 import { initialState, reduce } from './state.ts';
@@ -19,7 +20,7 @@ import type { Layout } from './layoutClient.ts';
 import { ENTRY_LABEL, FRESHNESS_LABEL, iconFor, LINK_LABEL, STATUS_LABEL, TYPE_LABEL } from './icons.ts';
 
 const SIZE = { width: 224, height: 64 };
-const views = [
+const viewTabs = [
   { value: 'logical', label: 'Logica', id: 'logical-tab', panel: 'graph-view' },
   { value: 'physical', label: 'Fisica', id: 'physical-tab', panel: 'graph-view' },
 ] as const;
@@ -57,6 +58,9 @@ function Diagram({ scene, layoutKey, onSelect, onOpen, onClear }: {
   return <div ref={host} className="im-fill" />;
 }
 
+// A control's icon is Imago's drawing of it.
+const Icon = ({ name }: { name: IconName }) => <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: iconMarkup(name) }} />;
+
 function entityName(envelope: Envelope, ref: string): string {
   return indexOf(envelope).byRef.get(ref)?.name ?? ref;
 }
@@ -69,12 +73,14 @@ function Technologies({ envelope, ids }: { envelope: Envelope; ids?: string[] })
     <li key={item.id} title={item.paths.join('\n')}>{item.name} <span className="im-muted">{item.type}</span></li>)}</ul></div>;
 }
 
-function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispatch: (action: Action) => void; edges: ProjectedEdge[] }) {
+function Details({ state, dispatch, edges, close }: { state: ExplorerState; dispatch: (action: Action) => void; edges: ProjectedEdge[]; close: () => void }) {
   const envelope = state.envelope;
+  const header = (title: string) => <header className="im-panel-header"><h4 className="im-panel-title">{title}</h4><span className="im-spacer" />
+    <button type="button" className="im-icon-btn" aria-label="Chiudi dettaglio" title="Chiudi dettaglio" onClick={close}><Icon name="close" /></button></header>;
   const entity: Entity | undefined = state.selected ? indexOf(envelope).byRef.get(state.selected) : undefined;
   if (!entity) {
     const meta = envelope.meta as Record<string, unknown>;
-    return <div className="im-panel-body im-content-text" aria-live="polite">
+    return <>{header('Informazioni sul progetto')}<div className="im-panel-body im-content-text" aria-live="polite">
       <p className="im-kicker">Come leggere la mappa</p>
       <h2>{String(meta.project_root ?? 'Progetto').split(/[\\/]/).filter(Boolean).pop()}</h2>
       <p>Seleziona un nodo per vederne il ruolo, i collegamenti e i flussi che lo attraversano. Doppio clic su un nodo con un numero per entrarci.</p>
@@ -85,16 +91,16 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
       </ul>
       <p className="im-muted">Nei flussi puoi leggere il sito e la provenienza della prova per ogni passaggio.</p>
       <Technologies envelope={envelope} />
-    </div>;
+    </div></>;
   }
-  const Icon = iconFor({ nodeType: entity.node_type, type: entity.type });
+  const EntityIcon = iconFor({ nodeType: entity.node_type, type: entity.type });
   const flows = flowsThrough(envelope, entity.ref, state.view);
   const canOpen = entity.type !== 'feature' && childrenOf(envelope, entity.ref, state.view).length > 0;
   const gaps = envelope.gaps.filter(gap => gap.refs.includes(entity.ref));
   const lines = Array.isArray(entity.lines) ? entity.lines.filter(Boolean).join('–') : entity.lines;
   const related = edges.filter(edge => edge.source.startsWith(`${entity.ref}@`) || edge.target.startsWith(`${entity.ref}@`));
-  return <div className="im-panel-body im-content-text" aria-live="polite">
-    <p className="im-kicker"><Icon size={14} aria-hidden="true" /> {entity.node_type ?? TYPE_LABEL[entity.type] ?? entity.type} · {entity.location === 'external' ? 'esterno' : 'interno'}</p>
+  return <>{header('Dettaglio')}<div className="im-panel-body im-content-text" aria-live="polite">
+    <p className="im-kicker"><EntityIcon className="im-icon" aria-hidden="true" /> {entity.node_type ?? TYPE_LABEL[entity.type] ?? entity.type} · {entity.location === 'external' ? 'esterno' : 'interno'}</p>
     <h2>{entity.name}</h2>
     {entity.path && <code className="im-caption">{entity.path}{lines ? `:${lines}` : ''}</code>}
     {entity.description && <p>{entity.description}</p>}
@@ -116,7 +122,7 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
     {entity.evidence.length > 0 && <div className="im-section"><h3>Evidenze</h3><ul className="im-detail-list">{entity.evidence.slice(0, 8).map((item, index) =>
       <li key={index}><code>{item.path}{item.line ? `:${item.line}` : ''}</code></li>)}</ul></div>}
     {gaps.length > 0 && <div className="im-section im-text-warn"><h3>Lacune</h3>{gaps.map((gap, index) => <p key={index}>{gap.reason}</p>)}</div>}
-  </div>;
+  </div></>;
 }
 
 function bindingSite(flow: Flow): string | undefined {
@@ -129,23 +135,24 @@ function flowTitle(envelope: Envelope, flow: Flow): string {
 
 function RunFlows({ state, dispatch }: { state: ExplorerState; dispatch: (action: Action) => void }) {
   const envelope = state.envelope;
-  if (!envelope.flows.length) return <p className="im-muted">Nessun flusso: questo run non ha regole di collegamento (<code>codebase_map_flows</code>).</p>;
+  if (!envelope.flows.length) return <p className="im-muted" data-im-rail-detail>Nessun flusso: questo run non ha regole di collegamento (<code>codebase_map_flows</code>).</p>;
   const current: Flow | undefined = envelope.flows.find(flow => flow.ref === state.flow);
   return <>
     <ul className="im-detail-list">{envelope.flows.map(flow =>
-      <li key={flow.ref}><ListAction pressed={state.flow === flow.ref}
+      <li key={flow.ref}><ListAction pressed={state.flow === flow.ref} icon={<Icon name="branch" />} rail={<Icon name="branch" />}
+        tooltip={flowTitle(envelope, flow)}
         onClick={() => dispatch({ type: 'flow', ref: state.flow === flow.ref ? null : flow.ref })}
         title={flowTitle(envelope, flow)}
         detail={[`${ENTRY_LABEL[flow.entry_kind] ?? flow.entry_kind}`, flow.label ? bindingSite(flow) : null,
           `${flow.steps.length} passi`, flow.complete ? null : 'incompleto'].filter(Boolean).join(' · ')} /></li>)}</ul>
-    {current && <div className="im-content-text"><Timeline items={current.steps.slice(0, 40).map((step, index) => ({
+    {current && <div className="im-content-text" data-im-rail-detail><Timeline items={current.steps.slice(0, 40).map((step, index) => ({
       id: index,
       title: <>{entityName(envelope, step.source)} <strong>{LINK_LABEL[step.type] ?? step.type}</strong> {entityName(envelope, step.target)}</>,
       detail: <code>{[step.route?.slice(1).join(' '), step.site, step.origin,
         step.confidence === 'sampled' ? 'campionata dal profiler' : step.confidence === 'observed' ? 'osservata in esecuzione' : null,
         step.conflict ? 'destinazioni in conflitto' : null].filter(Boolean).join(' · ')}</code>,
     }))} /></div>}
-    {!!current?.gaps?.length && <div className="im-section"><h3>Dove si ferma la prova</h3>
+    {!!current?.gaps?.length && <div className="im-section" data-im-rail-detail><h3>Dove si ferma la prova</h3>
       <ul className="im-detail-list">{current.gaps.map((gap, index) =>
         <li key={index}><code>{gap.site}</code> · {gap.reason}</li>)}</ul></div>}
   </>;
@@ -181,15 +188,15 @@ function useExplorer(envelope: Envelope | null) {
 
 function Navigation({ model, ready }: { model: Model; ready: boolean }) {
   const { state, dispatch, projection, selectedIds } = model;
-  if (!ready) return <p className="im-muted im-caption">In attesa dell'export.</p>;
+  if (!ready) return <p className="im-muted im-caption" data-im-rail-detail>In attesa dell'export.</p>;
   return <>
-    <h3>Flussi</h3>
+    <h3 data-im-rail-detail>Flussi</h3>
     <RunFlows state={state} dispatch={dispatch} />
-    <h3>Elementi visibili</h3>
+    <h3 data-im-rail-detail>Elementi visibili</h3>
     <ul className="im-detail-list">{projection.nodes.map(node => {
-      const Icon = iconFor(node);
-      return <li key={node.id}><ListAction title={node.label} detail={nodeMeta(node)}
-        icon={<Icon size={14} aria-hidden="true" />} pressed={selectedIds.has(node.id)} onClick={() => dispatch({ type: 'select', ref: node.ref })}
+      const NodeIcon = iconFor(node);
+      return <li key={node.id}><ListAction title={node.label} detail={nodeMeta(node)} tooltip={node.label}
+        icon={<NodeIcon className="im-icon" aria-hidden="true" />} rail={<NodeIcon className="im-icon" aria-hidden="true" />} pressed={selectedIds.has(node.id)} onClick={() => dispatch({ type: 'select', ref: node.ref })}
         onDoubleClick={() => node.collapsed && dispatch({ type: 'open', ref: node.ref })} /></li>;
     })}</ul>
   </>;
@@ -199,17 +206,18 @@ function Explorer({ model }: { model: Model }) {
   const { state, dispatch, projection, focus, data, edges, selectedIds } = model;
   const [layout, setLayout] = useState<{ key: string; value: Layout } | null>(null);
   const [error, setError] = useState('');
-  const [vertical, setVertical] = useState(() => window.matchMedia('(max-width: 899px)').matches);
+  const [vertical, setVertical] = useState(() => (document.querySelector('.im-shell')?.clientWidth ?? window.innerWidth) < 850);
   const client = useRef<ReturnType<typeof createLayoutClient> | null>(null);
   const direction = vertical ? 'DOWN' : 'RIGHT';
   const key = `${direction}|${projection.nodes.map(node => node.id).join(',')}|${edges.map(edge => edge.id).join(',')}`;
 
   useEffect(() => {
-    const media = window.matchMedia('(max-width: 899px)');
-    const changed = (event: MediaQueryListEvent) => setVertical(event.matches);
-    media.addEventListener('change', changed);
+    // A container query cannot reach the layout in the worker: the shell's own width does, as the breakpoints do.
+    const shell = document.querySelector('.im-shell');
+    const watch = shell && new ResizeObserver(([entry]) => setVertical(entry.contentRect.width < 850));
+    if (shell) watch?.observe(shell);
     client.current = createLayoutClient(() => new Worker(new URL('./layout.worker.ts', import.meta.url), { type: 'module' }) as never);
-    return () => { media.removeEventListener('change', changed); client.current?.dispose(); };
+    return () => { watch?.disconnect(); client.current?.dispose(); };
   }, []);
 
   useEffect(() => {
@@ -249,23 +257,9 @@ function Explorer({ model }: { model: Model }) {
   const scopeName = state.scope ? index.byRef.get(state.scope)?.name ?? state.scope : null;
   const types = [...new Set(projection.nodes.map(node => node.type))].sort();
   const filtered = projection.counts.filtered;
-  const meta = state.envelope.meta as Record<string, unknown>;
-  const project_name = String(meta.project_root ?? '').split(/[\\/]/).filter(Boolean).pop() ?? '';
-  const openFile = async (file: File | undefined) => {
-    if (!file) return;
-    try { dispatch({ type: 'replaceEnvelope', json: JSON.parse(await file.text()) }); }
-    catch (reason) { dispatch({ type: 'replaceEnvelope', json: { error: String(reason) } }); }
-  };
-
   return <>
-    <header className="im-content-toolbar">
-      <strong>Codebase Map</strong>
-      <span className="im-muted">{project_name}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}</span>
-      <label className="im-end im-cluster">Apri altro export<input className="im-file-selector" type="file" accept=".json,application/json" onChange={event => openFile(event.target.files?.[0])} /></label>
-    </header>
     {(state.error || state.warning) && <p className="im-note" data-im-tone={state.error ? 'err' : 'warn'} role="status">{state.error ?? state.warning}</p>}
     <div className="im-content-toolbar">
-      <TabList label="Vista" tabs={views} value={state.view} onSelect={view => dispatch({ type: 'view', view })} />
       <nav className="im-cluster" aria-label="Posizione">
         <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'root' })}>Sistema</button>
         {scopeName && <><ChevronRight size={13} aria-hidden="true" /><span aria-current="page">{scopeName}</span>
@@ -286,9 +280,17 @@ function Explorer({ model }: { model: Model }) {
         {busy && !error && projection.nodes.length > 0 && <div className="im-canvas-message im-note" role="status"><span className="im-spinner" aria-hidden="true" /> Dispongo il grafo…</div>}
         {!projection.nodes.length && <div className="im-canvas-message im-note" role="status">Nessun elemento visibile.{filtered > 0 && <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'resetFilters' })}>Azzera filtri</button>}</div>}
         {error && <div className="im-canvas-message im-note" data-im-tone="err" role="alert">Impossibile disporre il grafo: {error}</div>}
-        <p className="im-caption im-content-toolbar" data-graph-counts>{projection.nodes.length} nodi · {projection.edges.length} relazioni · {data.length} collegamenti di dati (tratteggiati) · {projection.counts.aggregated} dentro i gruppi{focus ? ` · flusso su ${focus.nodes.length} nodi` : ''}</p>
       </section>
   </>;
+}
+
+// The keys that work now, from the registry: the footer's key list is written, not watched.
+function FooterKeys({ registry, mounted }: { registry: Registry; mounted: boolean }) {
+  const host = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (mounted) host.current!.replaceChildren(...footerKeys(document, registry, [PALETTE_COMMAND, SEARCH_COMMAND, { keys: 'F6', title: 'Area successiva' }]).childNodes);
+  }, [mounted]);
+  return <span className="im-footer-keys" ref={host} />;
 }
 
 type LiveEvent = { cursor: number; timestamp: string; event: string; message: string; phase?: number };
@@ -303,11 +305,33 @@ function App() {
   const model = useExplorer(envelope);
   const shell = useRef<HTMLDivElement>(null);
   const registry = useMemo(() => createRegistry(), []);
+  const [overview, setOverview] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { state, dispatch } = model;
+  const ready = !(runs && !runs.length) && !failure && model.ready;
+  const detailsOpen = ready && (state.selected !== null || overview);
+  // What the commands, which live as long as the page, ask of its latest state.
+  const now = useRef({ view: (view: View) => dispatch({ type: 'view', view }), info: () => {}, close: () => {}, open: false, ready: false });
+  now.current = {
+    view: view => dispatch({ type: 'view', view }), open: detailsOpen, ready,
+    info: () => { dispatch({ type: 'select', ref: null }); setOverview(true); },
+    close: () => { dispatch({ type: 'select', ref: null }); setOverview(false); },
+  };
   // Ctrl+F: the search of the map in view; a page that shows no map has none.
-  useEffect(() => mountPage(shell.current!, registry, { search: () => {
-    const field = shell.current!.querySelector<HTMLInputElement>('input[type="search"]');
-    if (field) field.focus(); else notify(shell.current!, 'Questa vista non ha una ricerca.');
-  } }), []);
+  useEffect(() => {
+    const unmount = mountPage(shell.current!, registry, { search: () => {
+      const field = shell.current!.querySelector<HTMLInputElement>('input[type="search"]');
+      if (field) field.focus(); else notify(shell.current!, 'Questa vista non ha una ricerca.');
+    } });
+    const off = [
+      registry.register({ id: 'daodan.view.logical', title: 'Vista logica', group: 'Vista', run: () => now.current.view('logical') }),
+      registry.register({ id: 'daodan.view.physical', title: 'Vista fisica', group: 'Vista', run: () => now.current.view('physical') }),
+      registry.register({ id: 'daodan.project.info', title: 'Informazioni sul progetto', group: 'Vista', when: () => now.current.ready, run: () => now.current.info() }),
+      registry.register({ id: 'daodan.details.close', title: 'Chiudi dettaglio', group: 'Vista', keys: 'Escape', when: () => now.current.open, run: () => now.current.close() }),
+    ];
+    setMounted(true);
+    return () => { setMounted(false); off.forEach(unregister => unregister()); unmount(); };
+  }, []);
   useEffect(() => {
     const ref = pick && envelope && fileRef(envelope, pick.file);
     if (ref) model.dispatch({ type: 'select', ref });
@@ -350,28 +374,56 @@ function App() {
     return () => { stopped = true; window.clearInterval(timer); };
   }, [runs, run]);
   const last = events[events.length - 1];
-  const live = runs && <><div className="im-content-toolbar">
-    <label>Run <select className="im-select" value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></label>
-    <span className="im-muted" role="status">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
-  </div><Disclosure label="Sessione e review">
-    <Session onPick={file => setPick({ file })} onRun={id => { listRuns(id).catch(() => undefined); }} />
-  </Disclosure></>;
-  const empty = (title: string, text: string, status?: boolean) => <div className="im-empty" role={status ? 'status' : undefined}><strong>{title}</strong><p>{text}</p></div>;
+  const meta = state.envelope.meta as Record<string, unknown>;
+  const projectName = String(meta.project_root ?? '').split(/[\\/]/).filter(Boolean).pop() ?? '';
+  const openFile = async (file: File | undefined) => {
+    if (!file) return;
+    try { dispatch({ type: 'replaceEnvelope', json: JSON.parse(await file.text()) }); }
+    catch (reason) { dispatch({ type: 'replaceEnvelope', json: { error: String(reason) } }); }
+  };
   const noRuns = runs && !runs.length;
-  const ready = !noRuns && !failure && model.ready;
+  const empty = (title: string, text: string, status?: boolean) => <div className="im-empty" role={status ? 'status' : undefined}><strong>{title}</strong><p>{text}</p></div>;
+  const views = [{ value: 'logical', label: 'Logica' }, { value: 'physical', label: 'Fisica' }] as const;
+  const viewsMenu = (anchor: HTMLElement) => {
+    const close = openMenu(anchor, views.map(view => ({ label: view.label, checked: () => state.view === view.value, run: () => { close(); dispatch({ type: 'view', view: view.value }); } })));
+  };
+  const titlebar = <header className="im-titlebar">
+    <div className="im-brand"><span className="im-mark" aria-hidden="true">D</span><span className="im-wordmark">Daodan</span></div>
+    <button type="button" className="im-icon-btn im-sidebar-toggle" aria-label="Mappa" title="Mappa" aria-expanded="false" aria-controls="sidebar"><Icon name="sidebar" /></button>
+    <TabList label="Vista" tabs={viewTabs} value={state.view} onSelect={view => dispatch({ type: 'view', view })} />
+    <button type="button" className="im-btn im-btn--ghost im-btn--sm im-views-menu" aria-haspopup="menu" aria-expanded="false" onClick={event => viewsMenu(event.currentTarget)}>Viste<Icon name="chevron" /></button>
+    <span className="im-spacer" />
+    <button type="button" className="im-titlebar-command" aria-label="Comandi" onClick={() => registry.get(PALETTE_COMMAND)?.run()}><Icon name="search" /><b>Comandi</b><kbd className="im-key">{formatKeys('Ctrl+K').join(' ')}</kbd></button>
+  </header>;
+  const status = ready ? <>
+    <span className="im-status-text im-content-text">{projectName}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}</span>
+    <span className="im-spacer" />
+    <span className="im-status-end im-content-text" role="status">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
+  </> : <span className="im-status-text">{noRuns ? 'Nessun run' : failure ? 'Export non leggibile' : 'Carico l\'export…'}</span>;
+  const footer = <>
+    <span className="im-footer-text" data-graph-counts>{ready
+      ? `${state.envelope.entities.length} entità · ${state.envelope.relations.length} relazioni · ${state.envelope.flows.length} flussi · ${state.envelope.gaps.length} lacune · ${model.projection.nodes.length} nodi · ${model.projection.edges.length} relazioni visibili · ${model.data.length} collegamenti di dati (tratteggiati) · ${model.projection.counts.aggregated} dentro i gruppi${model.focus ? ` · flusso su ${model.focus.nodes.length} nodi` : ''}`
+      : 'Nessuna mappa'}</span>
+    <span className="im-spacer" /><FooterKeys registry={registry} mounted={mounted} />
+  </>;
+  const toolbar = <div className="im-content-toolbar">
+    {runs && <label>Run <select className="im-select" value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></label>}
+    {ready && <>
+      <button type="button" className="im-btn im-btn--sm" onClick={() => now.current.info()}><Icon name="info" />Informazioni sul progetto</button>
+      <label className="im-end im-cluster">Apri altro export<input className="im-file-selector" type="file" accept=".json,application/json" onChange={event => openFile(event.target.files?.[0])} /></label></>}
+  </div>;
   const content = noRuns ? <>{empty('Nessun run', 'Crea un run qui sotto, o avvia una mappa nella sessione.')}
       <Session onPick={() => undefined} onRun={id => { listRuns(id).catch(() => undefined); }} /></>
-    : <>{live}{failure ? empty('Export non leggibile', failure) : !envelope ? empty("Carico l'export…", '', true)
+    : <>{toolbar}{runs && <Disclosure label="Sessione e review">
+      <Session onPick={file => setPick({ file })} onRun={id => { listRuns(id).catch(() => undefined); }} />
+    </Disclosure>}{failure ? empty('Export non leggibile', failure) : !envelope ? empty("Carico l'export…", '', true)
       : ready && <Explorer key={run} model={model} />}</>;
   return <Shell ref={shell} sidebar skipLabel="Vai al contenuto" titlebar={titlebar}>
-    <Workbench aria-label="Codebase Map" detailsLabel="Dettaglio" navigationLabel="Mappa"
+    <Workbench aria-label="Codebase Map" detailsLabel="Dettaglio" navigationLabel="Mappa" status={status} footer={footer}
       navigation={<Navigation model={model} ready={ready} />}
-      details={ready ? <EntityDetails state={model.state} dispatch={model.dispatch} edges={model.projection.edges} /> : null}>{content}</Workbench>
+      details={detailsOpen ? <Details state={state} dispatch={dispatch} edges={model.projection.edges} close={() => now.current.close()} /> : null}>{content}</Workbench>
   </Shell>;
 }
-
-const titlebar = <header className="im-titlebar"><div className="im-brand">
-  <span className="im-mark" aria-hidden="true">D</span><span className="im-wordmark">Daodan</span></div></header>;
 
 applyStored(document.documentElement, storageOrNull());
 createRoot(document.getElementById('app')!).render(<React.StrictMode><App /></React.StrictMode>);
