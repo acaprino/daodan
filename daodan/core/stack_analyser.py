@@ -94,7 +94,15 @@ def run(project: Path, *, declarations: list[dict] = (), skip_dirs: tuple[str, .
         folder, output = Path(folder), Path(folder) / "output.json"
         declared = folder / "declarations.json" if declarations else None
         if declared:
-            declared.write_bytes(json.dumps(declarations, ensure_ascii=False).encode("utf-8"))
+            try:
+                declared.write_bytes(json.dumps(declarations, ensure_ascii=False).encode("utf-8"))
+            except UnicodeError as error:  # a lone surrogate: a manifest's `\ud800`, a file name that is not UTF-8
+                raise Gap("stack-analyser's declarations could not be written: one holds text that is not valid "
+                          "Unicode", "rename the file or folder whose name is not valid UTF-8, or fix the manifest "
+                          "string that holds a lone surrogate, then analyze again") from error
+            except OSError as error:
+                raise Gap(f"stack-analyser's declarations could not be written: {error}",
+                          f"free space on the drive of {tempfile.gettempdir()}, then analyze again") from error
         try:
             ended = subprocess.run(command(program, script, project, output, declared, skip_dirs, ignore), cwd=folder,
                                    env=_environment(), stdin=subprocess.DEVNULL, capture_output=True, timeout=TIMEOUT)

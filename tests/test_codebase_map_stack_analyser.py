@@ -77,6 +77,28 @@ def test_without_declarations_the_option_is_not_passed(started):
     assert call["argv"][2:] == ["--output", call["argv"][3]] and not (program.parent / "declarations.json").exists()
 
 
+def test_declarations_that_are_not_valid_unicode_are_a_gap_and_nothing_starts(started):
+    """A lone surrogate comes from a manifest's `\\ud800` escape or a directory name that is not UTF-8 on POSIX."""
+    project, program, _cli = started
+    with pytest.raises(container.Gap) as gap:
+        stack_analyser.run(project, declarations=[{**DECLARATION, "name": "\ud800"}])
+    assert "declarations could not be written" in gap.value.cause and "not valid Unicode" in gap.value.cause
+    assert gap.value.remedy and fake_stack_analyser.calls(program) == []
+
+
+def test_declarations_that_cannot_be_written_are_a_gap_and_nothing_starts(started, monkeypatch):
+    project, program, _cli = started
+
+    def full(_path, _data):
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(Path, "write_bytes", full)
+    with pytest.raises(container.Gap) as gap:
+        stack_analyser.run(project, declarations=[DECLARATION])
+    assert "declarations could not be written" in gap.value.cause and "No space left" in gap.value.cause
+    assert gap.value.remedy and fake_stack_analyser.calls(program) == []
+
+
 def test_nothing_is_left_in_the_temporary_folder(started, monkeypatch):
     project, program, _cli = started
     stack_analyser.run(project, declarations=[DECLARATION])
