@@ -986,6 +986,7 @@ async function saveEngine() {
 }
 
 async function ask() {
+  if (asked?.state === 'running' || server?.asked?.state === 'running') return;  // a busy button's submit, from the keyboard, does nothing
   question = document.getElementById('question').value;
   asked = { state: 'running', text: '', tools: [], cause: null };
   render();
