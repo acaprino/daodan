@@ -416,36 +416,44 @@ def stack_trapped(tmp_path, monkeypatch):
     return project, mark, node
 
 
-def test_every_stack_trap_is_a_file_its_program_reads_and_names_the_mark(tmp_path):
+STACK_WRITES = {  # per vector, written apart from the vectors: the files it leaves, the variables it sets
+    "node-options": ({"trap.js"}, {"NODE_OPTIONS"}),
+    "node-path": ({"node_modules/commander/index.js", "node_modules/@cdktf/hcl2json/index.js"}, {"NODE_PATH"}),
+    "planted-node": ({"node.bat" if os.name == "nt" else "node"}, {"PATH"}),
+    "package-scripts": ({"package.json"}, set()),
+    "config-code": ({"next.config.js", "vite.config.ts", "webpack.config.js", ".eslintrc.js", "babel.config.js",
+                     "setup.py", "conftest.py", "Gemfile", "build.gradle", "Makefile"}, set()),
+    "terraform": ({"main.tf"}, set())}
+
+
+def _files(project: Path) -> set[str]:
+    return {path.relative_to(project).as_posix() for path in project.rglob("*") if path.is_file()}
+
+
+@pytest.mark.parametrize("name", STACK_VECTORS)
+def test_every_stack_trap_is_a_file_its_program_reads_and_names_the_mark(name, tmp_path):
     """The real proof passes when the mark is absent, so a misspelled vector would pass it for the wrong reason: a
     file no program reads, a variable nothing reads, code that never names the mark. Written and read here, never
     started: the two Python files are compiled, not run."""
-    written, variables = {}, {}
-    for name, vector in STACK_VECTORS.items():
-        project, mark = tmp_path / name, tmp_path / f"{name}.mark"
-        project.mkdir()
-        variables[name] = vector(project, mark)
-        written[name] = {path.relative_to(project).as_posix() for path in project.rglob("*") if path.is_file()}
-        for relative in written[name]:
-            text = (project / relative).read_text(encoding="utf-8")
-            assert any(form in text for form in (mark.as_posix(), str(mark), repr(str(mark))[1:-1])), (name, relative)
-            if relative.endswith(".py"):
-                compile(text, relative, "exec")
-    assert written == {"node-options": {"trap.js"}, "planted-node": {"node.bat" if os.name == "nt" else "node"},
-                       "node-path": {"node_modules/commander/index.js", "node_modules/@cdktf/hcl2json/index.js"},
-                       "package-scripts": {"package.json"}, "terraform": {"main.tf"},
-                       "config-code": {"next.config.js", "vite.config.ts", "webpack.config.js", ".eslintrc.js",
-                                       "babel.config.js", "setup.py", "conftest.py", "Gemfile", "build.gradle",
-                                       "Makefile"}}
-    assert {name: set(each) for name, each in variables.items() if each} == {
-        "node-options": {"NODE_OPTIONS"}, "node-path": {"NODE_PATH"}, "planted-node": {"PATH"}}
-    assert variables["node-options"]["NODE_OPTIONS"] == f"--require={tmp_path / 'node-options' / 'trap.js'}"
-    assert variables["node-path"]["NODE_PATH"] == str(tmp_path / "node-path" / "node_modules")
-    assert variables["planted-node"]["PATH"].split(os.pathsep)[0] == "."
-    assert os.name == "nt" or os.access(tmp_path / "planted-node" / "node", os.X_OK)
-    manifest = json.loads((tmp_path / "package-scripts" / "package.json").read_text(encoding="utf-8"))
-    assert manifest["dependencies"] == {"react": "18.0.0"}
-    assert set(manifest["scripts"]) == {"preinstall", "install", "postinstall", "prepare"}
+    project, mark = tmp_path / "project", tmp_path / "loaded"
+    project.mkdir()
+    variables = STACK_VECTORS[name](project, mark)
+    for relative in _files(project):
+        text = (project / relative).read_text(encoding="utf-8")
+        assert any(form in text for form in (mark.as_posix(), str(mark), repr(str(mark))[1:-1])), relative
+        if relative.endswith(".py"):
+            compile(text, relative, "exec")
+    assert (_files(project), set(variables)) == STACK_WRITES[name]
+    assert {key: value for key, value in variables.items() if key != "PATH"} == {
+        "node-options": {"NODE_OPTIONS": f"--require={project / 'trap.js'}"},
+        "node-path": {"NODE_PATH": str(project / "node_modules")}}.get(name, {})
+    if name == "planted-node":
+        assert variables["PATH"].split(os.pathsep)[0] == "."
+        assert os.name == "nt" or os.access(project / "node", os.X_OK)
+    if name == "package-scripts":
+        manifest = json.loads((project / "package.json").read_text(encoding="utf-8"))
+        assert manifest["dependencies"] == {"react": "18.0.0"}
+        assert set(manifest["scripts"]) == {"preinstall", "install", "postinstall", "prepare"}
 
 
 def test_the_stack_traps_surround_the_run_as_in_an_analysis(stack_trapped):
@@ -454,12 +462,16 @@ def test_the_stack_traps_surround_the_run_as_in_an_analysis(stack_trapped):
     assert os.environ["NODE_OPTIONS"] == f"--require={project / 'trap.js'}"
     assert os.environ["NODE_PATH"] == str(project / "node_modules")
     assert os.environ["PATH"].split(os.pathsep)[0] == "."
+    # the vectors do not overwrite each other: the project holds every file of every vector, none twice
+    files = _files(project)
+    assert files == set().union(*(each for each, _variables in STACK_WRITES.values()))
+    assert len(files) == sum(len(each) for each, _variables in STACK_WRITES.values())
 
 
-def _stack_naive(cli: Path, tmp_path: Path, name: str, vector) -> str:
+def _stack_naive(cli: Path, tmp_path: Path, name: str, vector) -> tuple[bool, str]:
     """The vector alone in a project of its own, and the release started the naive way: `node cli.mjs .` in the
-    project's folder, `node` by its bare name, with only the vector's variables added. What happened, as a line of the
-    report."""
+    project's folder, `node` by its bare name, with only the vector's variables added. `(whether the vector's mark was
+    left, what happened as a line of the report)`."""
     import subprocess
     project, mark = tmp_path / "naive" / name, tmp_path / "naive" / f"{name}.mark"
     project.mkdir(parents=True)
@@ -474,7 +486,7 @@ def _stack_naive(cli: Path, tmp_path: Path, name: str, vector) -> str:
     except (OSError, subprocess.TimeoutExpired) as error:
         ended = f"did not end: {error}"
     verdict = "fires when started the naive way" if mark.exists() else "this release does not run it"
-    return f"{name}: {verdict} ({ended})"
+    return mark.exists(), f"{name}: {verdict} ({ended})"
 
 
 def _all_evidence(component: dict):
@@ -490,7 +502,8 @@ def _all_evidence(component: dict):
 def test_the_real_stack_analyser_runs_nothing_of_the_project(stack_trapped, tmp_path, monkeypatch):
     """The pinned release (DAODAN_STACK_ANALYSER, next to the archive it came from, checked against its sha256), run by
     the Node of the image. The report, in the warnings summary, says for each vector alone whether a naive start runs
-    it: that is a fact about this release, not the claim. The claim, which passes or fails the test: started by Daodan
+    it: that is a fact about this release, not the claim, but for one control: the `node-options` trap must fire there,
+    or a green would prove nothing. The claim, which passes or fails the test: started by Daodan
     in the project holding every vector, with their variables set, it runs none of them, and it did read the project."""
     import warnings
     import stack_analyser
@@ -498,8 +511,11 @@ def test_the_real_stack_analyser_runs_nothing_of_the_project(stack_trapped, tmp_
     cli = Path(os.environ["DAODAN_STACK_ANALYSER"]).resolve()
     assert hashlib.sha256((cli.parents[2] / "release.tgz").read_bytes()).hexdigest() == stack_analyser.SHA256
     assert node, "no `node` on the image's PATH"
-    report = [_stack_naive(cli, tmp_path, name, vector) for name, vector in STACK_VECTORS.items()]
-    warnings.warn("stack-analyser naive starts:\n" + "\n".join(report), stacklevel=1)
+    naive = {name: _stack_naive(cli, tmp_path, name, vector) for name, vector in STACK_VECTORS.items()}
+    warnings.warn("stack-analyser naive starts:\n" + "\n".join(line for _fired, line in naive.values()), stacklevel=1)
+    # the control: Node honours NODE_OPTIONS before any script, whatever the release, so here the trap must fire
+    fired, line = naive["node-options"]
+    assert fired, f"the node-options trap did not fire when started the naive way: the proof would be vacuous ({line})"
     monkeypatch.setattr(stack_analyser, "cli", lambda: cli)
     monkeypatch.setattr(stack_analyser, "node", lambda _project: Path(node).resolve())
     result = stack_analyser.run(project)
