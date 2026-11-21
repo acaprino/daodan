@@ -1,4 +1,5 @@
-"""Run the complete pipeline twice on one JavaScript snapshot with Daodan's container switched off."""
+"""Run the complete pipeline twice on one JavaScript snapshot: with Daodan's container switched off, or, with
+`--container`, with the engine this machine has (the restore, the indexer and the tests then really run)."""
 from __future__ import annotations
 
 import atexit
@@ -6,10 +7,10 @@ from collections import Counter
 import json
 import os
 from pathlib import Path
-import shlex
 import subprocess
 import sys
 import tempfile
+import time
 
 CORE = Path(__file__).resolve().parents[2] / "daodan/core"
 FIXTURE = Path(__file__).resolve().parents[1] / "project-model/fixtures/js-npm-single"
@@ -20,6 +21,15 @@ CALLS = {("premap", "derive"): "premaps_derived", ("entries", "_syntax"): "entry
          ("engine_tools", "download"): "download_calls", ("snapshot", "write_snapshot"): "snapshots_written"}
 
 
+def started(args) -> str:
+    """The name of the program a `subprocess.Popen` audit event starts. Windows gives no executable and one
+    command line: its first word, quoted or not (an audit hook must not raise on a line it cannot split)."""
+    line = args[0] or (args[1] if isinstance(args[1], str) else args[1][0])
+    if not args[0]:
+        line = line[1:].partition('"')[0] if line.startswith('"') else (line.split(None, 1) or [""])[0]
+    return Path(line).stem
+
+
 def observe():
     """Install in every benchmark Python process, including the real out-of-process index stage."""
     root = os.environ["DAODAN_MEASURE_TARGET"] + os.sep
@@ -28,8 +38,7 @@ def observe():
 
     def audit(event, args):
         if event == "subprocess.Popen":
-            # Windows gives no executable and one command line: the program is its first word.
-            name = Path(args[0] or shlex.split(args[1], posix=False)[0].strip('"')).stem
+            name = started(args)
             if name == "uv" and "--offline" in args[1]:
                 name = "uv --offline"
             processes[name] += 1
@@ -75,7 +84,7 @@ def measure(manifest, output):
     output.write_text(json.dumps(summary))
 
 
-def main():
+def main(container: bool = False):
     import shutil
     import snapshot
     with tempfile.TemporaryDirectory() as work:
@@ -94,9 +103,13 @@ def main():
             env = {**os.environ, "DAODAN_CONTAINER": "off", "DAODAN_MEASURE_TARGET": str(target),
                    "DAODAN_MEASURE_OUTPUT": str(folder),
                    "PYTHONPATH": os.pathsep.join([str(tmp), os.environ.get("PYTHONPATH", "")])}
+            if container:
+                del env["DAODAN_CONTAINER"]
             summary = tmp / f"pipeline-{n}.json"
+            started = time.monotonic()
             subprocess.run([sys.executable, __file__, str(manifest), str(summary)], env=env,
                            stdout=sys.stderr, check=True)
+            seconds = round(time.monotonic() - started, 1)
             counters, processes, sources = Counter(), Counter(), Counter()
             samples = list(folder.glob("*.json"))
             for sample in samples:
@@ -104,7 +117,7 @@ def main():
                 counters.update(data["counts"])
                 processes.update(data["processes"])
                 sources.update(data["source_files"])
-            reports.append({**json.loads(summary.read_text()), "counts": counters,
+            reports.append({**json.loads(summary.read_text()), "seconds": seconds, "counts": counters,
                             "source_files_opened": sources, "subprocesses": processes,
                             "instrumented_python_processes": len(samples)})
         print(json.dumps({"fixture": FIXTURE.name, "runs": reports}, indent=2))
@@ -115,4 +128,4 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         measure(Path(sys.argv[1]), Path(sys.argv[2]))
     else:
-        main()
+        main("--container" in sys.argv)

@@ -9,7 +9,6 @@ import http.client
 import json
 import os
 from pathlib import Path
-import shlex
 import shutil
 import subprocess
 import sys
@@ -39,6 +38,15 @@ COLUMNS = ["source_opens", "source_directory_listings", "snapshot_connections", 
            "flow_links_reads", "system_map_reads", "tree_parses", "package_manager_processes", *CALLS.values()]
 
 
+def started(args) -> str:
+    """The name of the program a `subprocess.Popen` audit event starts. Windows gives no executable and one
+    command line: its first word, quoted or not (an audit hook must not raise on a line it cannot split)."""
+    line = args[0] or (args[1] if isinstance(args[1], str) else args[1][0])
+    if not args[0]:
+        line = line[1:].partition('"')[0] if line.startswith('"') else (line.split(None, 1) or [""])[0]
+    return Path(line).stem
+
+
 class Measure:
     """The audit hook sees real file opens/listings. SQLite has its own event, outside Python's file-open API."""
 
@@ -54,9 +62,7 @@ class Measure:
     def audit(self, event, args):
         if self.counts is None:
             return
-        # Windows gives no executable and one command line: the program is its first word.
-        if event == "subprocess.Popen" and Path(args[0] or shlex.split(args[1], posix=False)[0].strip('"')).stem in {
-                "npm", "pnpm", "yarn", "pip", "uv", "cargo"}:
+        if event == "subprocess.Popen" and started(args) in {"npm", "pnpm", "yarn", "pip", "uv", "cargo"}:
             self.counts["package_manager_processes"] += 1
         # A store opened read-only is named by its URI, whose separators are not Windows's.
         if event == "sqlite3.connect" and (self.manifest in str(args[0]) or Path(self.manifest).as_uri() in str(args[0])):

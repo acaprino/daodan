@@ -177,6 +177,23 @@ La prima consultazione prepara un unico indice del grafo. Il [test di costo](../
 
 La scheda globale ha una prova separata in `tests/test_codebase_map_system_brief.py::DeclaredTests::test_global_brief_reopens_only_changed_unmodelled_yaml`. La fixture contiene Dockerfile, Compose, package.json e due manifesti YAML. Prima della modifica, prima e seconda consultazione aprivano quattro sorgenti ciascuna. Ora la scheda riprende le immagini Docker, i servizi Compose e le dipendenze dalla pre-mappa. Apre i soli manifesti Kubernetes e Backstage alla prima consultazione (2 aperture) e nessun sorgente alla seconda, anche riaprendo il servizio. Cambiando il catalogo alla terza lettura, la verifica riapre un solo file e scarta la dichiarazione che diverge dallo snapshot.
 
+### Due analisi complete con il container acceso, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/pipeline_reuse.py --container`: la stessa fixture `js-npm-single` e lo stesso manifest, due processi, con il motore di container della macchina (qui quello di Daodan su Windows). Ripristino, scip-typescript e `node --test` girano davvero.
+
+| Misura | Prima analisi | Seconda analisi |
+| --- | ---: | ---: |
+| Secondi | 131,5 | 1,2 |
+| Indice / archi osservati dai test | `fresh` / 6 | `fresh` / 6, riusati |
+| Richieste di container / copie del progetto | 6 / 6 | 0 / 0 |
+| Avvii dell'indicizzatore / sonde del motore | 1 / 7 | 0 / 0 |
+| Download di strumenti (già in cache) | 0 | 0 |
+| Aperture di sorgenti / elenchi di cartelle da Python | 52 / 39 | 4 / 0 |
+| Parse tree-sitter | 2 | 0 |
+| Processi `wsl` / `git` / `uv --offline` | 118 / 12 / 2 | 0 / 1 / 0 |
+
+Nella seconda analisi resta una lettura per ognuno dei quattro file, per confrontare lo snapshot con il disco, e un comando git. Le letture interne dei programmi nel container non sono contate. La misura non separa i ripristini: il registro dei container dell'indicizzatore sta in una cartella temporanea.
+
 ### Tre percorsi con gli indicizzatori veri, 21 novembre 2026
 
 Eseguire `python benchmarks/system-map/real_paths.py [web] [tk] [tauri] [--work DIR]` con le dipendenze di Daodan e un motore di container (su Windows quello di Daodan). Parametri: il caso (`benchmarks/flow-model/app`, `real-paths/tk-desk`, `real-paths/tauri-desk`), le regole e le risposte sulle forme del caso, la disposizione (analisi accanto al checkout). Lo script crea il run dal servizio con il passaggio del motore, legge i candidati prima delle regole, registra regole e risposte, apre ogni scheda e controlla ciò che deve reggere; esce con 1 se un controllo cade.
