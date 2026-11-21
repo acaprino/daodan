@@ -73,16 +73,19 @@ reason the hypothesis states, with the observed symptom (message, exception,
 timeout bound) at the data volume that decides it. A different failure on smaller or cached data is
 a second defect, not the reproduction. It sits where the fix will keep it,
 uncommitted and recorded in the run. With a suspect commit, it must pass on its parent,
-checked in a disposable worktree under the run. Without one the cause stays a
-hypothesis.
+checked in a disposable worktree under the run. Run the test only in Daodan's
+container, never on the host: without a container the reproduction is a gap with
+its cause. Without a reproduction the cause stays a hypothesis.
 
 ## 5. Bisection and runtime evidence
 
 With a last known good and no confirmed suspect, run `git bisect run` with
 the reproduction test in a disposable worktree under the run, never in the
-user's checkout. Execute only there or through the project's own runner: most
-verbose logging, temporary tracing, a test repeated a hundred times for a
-suspected race. No interactive debugger. Record every command with its output.
+user's checkout. Execute only there, in Daodan's container, never on the host,
+the project's own runner included: most verbose logging, temporary tracing, a
+test repeated a hundred times for a suspected race. Without a container the
+bisection is a gap with its cause. No interactive debugger. Record every command
+with its output.
 
 ## 6. Verdict
 

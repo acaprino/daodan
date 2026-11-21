@@ -68,11 +68,13 @@ Label each finding's decisive evidence, strongest first:
    a finding. Establish **what the user or operator sees, and when**.
    "None (silent)" escalates consequential harm; it never mitigates it.
 3. Lens 2 checks rates/costs against actual deduplication, caps and phase transitions.
-4. Lens 1 may reproduce only when its brief grants a run-owned disposable workspace
-   and names the runner and scratch path. Write a minimal test there, run base and
-   candidate, record both outcomes; remove it unless adopted as regression protection.
-   Failure to reproduce is counterevidence. Without the grant, read and reason;
-   retain the reviewer's evidence class.
+4. The reviewed project's code (a test, a harness, a build) runs only in Daodan's
+   container, never on the host. Lens 1 may reproduce only when its brief grants a
+   run-owned disposable workspace and names the container runner and scratch path.
+   Write a minimal test there, run base and candidate, record both outcomes; remove
+   it unless adopted as regression protection. Failure to reproduce is
+   counterevidence. Without a container the reproduction is a gap with its cause.
+   Without the grant, read and reason; retain the reviewer's evidence class.
 
 ## Delivery Gate
 

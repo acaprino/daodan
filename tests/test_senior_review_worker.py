@@ -34,6 +34,27 @@ def frontmatter(path: Path) -> dict:
     return fields
 
 
+def section(skill: str, start: str, end: str) -> str:
+    """The text of a skill from the line opening with `start` to the next `end`."""
+    text = (PLUGIN / "skills" / skill / "SKILL.md").read_text(encoding="utf-8")
+    return " ".join((start + text.split("\n" + start, 1)[1].split(end, 1)[0]).split())
+
+
+class HostExecutionTest(unittest.TestCase):
+    """AGENTS.md: the reviewed project's code runs only in Daodan's container. Where a review or an
+    investigation may run it, the text asks for the container and makes its absence a gap with the cause."""
+
+    def test_no_review_or_investigation_step_runs_project_code_on_the_host(self):
+        for skill, start, end in (("review-quality-gates", "4. The reviewed project's code", "\n## "),
+                                  ("investigation-method", "## 4. Reproduction", "\n## "),
+                                  ("investigation-method", "## 5. Bisection", "\n## ")):
+            with self.subTest(skill=skill, start=start):
+                text = section(skill, start, end)
+                self.assertIn("Daodan's container", text)
+                self.assertIn("never on the host", text)
+                self.assertIn("gap with its cause", text)
+
+
 class IsolatedWorkerTest(unittest.TestCase):
     def test_registered_agents_exist(self):
         manifest = json.loads((PLUGIN / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
