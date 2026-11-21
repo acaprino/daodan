@@ -1,0 +1,251 @@
+{
+  "id": "rADDZLYtgOGL",
+  "name": "main",
+  "path": [
+    "/",
+    "/docker-compose.yml",
+    "/Dockerfile",
+    ""
+  ],
+  "tech": null,
+  "edges": [],
+  "inComponent": null,
+  "childs": [
+    {
+      "id": "vAmcK1QrqUZp",
+      "name": "Dockerfile",
+      "path": [
+        "/Dockerfile"
+      ],
+      "tech": null,
+      "edges": [],
+      "inComponent": null,
+      "childs": [],
+      "techs": [
+        "docker",
+        "python"
+      ],
+      "languages": {},
+      "licenses": [],
+      "dependencies": [
+        [
+          "docker",
+          "python",
+          "3.12-slim"
+        ]
+      ],
+      "reason": [
+        "FROM in Dockerfile",
+        "python matched: /^python$/"
+      ],
+      "evidence": [
+        {
+          "tech": "docker",
+          "kind": "file",
+          "value": "Dockerfile",
+          "path": "/Dockerfile",
+          "source": "stack-analyser"
+        },
+        {
+          "tech": "python",
+          "kind": "image",
+          "value": "python",
+          "path": "/Dockerfile",
+          "source": "stack-analyser"
+        }
+      ]
+    },
+    {
+      "id": "DGuV6OzBjvOV",
+      "name": "cache",
+      "path": [
+        "/docker-compose.yml",
+        ""
+      ],
+      "tech": "redis",
+      "edges": [],
+      "inComponent": null,
+      "childs": [],
+      "techs": [],
+      "languages": {},
+      "licenses": [],
+      "dependencies": [
+        [
+          "docker",
+          "redis",
+          "7"
+        ]
+      ],
+      "reason": [
+        "redis matched: /^redis(?:\\/|$)/",
+        "redis matched: /^redis$/i"
+      ],
+      "evidence": [
+        {
+          "tech": "redis",
+          "kind": "image",
+          "value": "redis",
+          "path": "/docker-compose.yml",
+          "source": "stack-analyser"
+        },
+        {
+          "tech": "redis",
+          "kind": "package",
+          "value": "redis",
+          "path": "/pyproject.toml",
+          "source": "stack-analyser"
+        }
+      ]
+    },
+    {
+      "id": "VZtd79TEy5Cb",
+      "name": "db",
+      "path": [
+        "/docker-compose.yml",
+        ""
+      ],
+      "tech": "postgresql",
+      "edges": [],
+      "inComponent": null,
+      "childs": [],
+      "techs": [],
+      "languages": {},
+      "licenses": [],
+      "dependencies": [
+        [
+          "docker",
+          "postgres",
+          "16"
+        ]
+      ],
+      "reason": [
+        "postgresql matched: /^postgres$/",
+        "postgresql matched: /^psycopg$/i"
+      ],
+      "evidence": [
+        {
+          "tech": "postgresql",
+          "kind": "image",
+          "value": "postgres",
+          "path": "/docker-compose.yml",
+          "source": "stack-analyser"
+        },
+        {
+          "tech": "postgresql",
+          "kind": "package",
+          "value": "psycopg",
+          "path": "/pyproject.toml",
+          "source": "stack-analyser"
+        }
+      ]
+    }
+  ],
+  "techs": [
+    "docker",
+    "fastapi",
+    "postgresql",
+    "python",
+    "redis",
+    "setuptools",
+    "sqlalchemy"
+  ],
+  "languages": {
+    "Python": 2,
+    "YAML": 1,
+    "JSON": 1,
+    "TOML": 1
+  },
+  "licenses": [],
+  "dependencies": [
+    [
+      "python",
+      "fastapi",
+      "0.115"
+    ],
+    [
+      "python",
+      "uvicorn",
+      "0.30"
+    ],
+    [
+      "python",
+      "sqlalchemy",
+      "2.0"
+    ],
+    [
+      "python",
+      "psycopg",
+      "3.2"
+    ],
+    [
+      "python",
+      "redis",
+      "5.0"
+    ],
+    [
+      "python",
+      "setuptools",
+      "64"
+    ]
+  ],
+  "reason": [
+    "Compose services in docker-compose.yml",
+    "fastapi matched: /^fastapi$/i",
+    "sqlalchemy matched: /^SQLAlchemy$/i",
+    "postgresql matched: /^psycopg$/i",
+    "redis matched: /^redis$/i",
+    "setuptools matched: /^setuptools$/i",
+    "matched extension: .py"
+  ],
+  "evidence": [
+    {
+      "tech": "docker",
+      "kind": "file",
+      "value": "docker-compose.yml",
+      "path": "/docker-compose.yml",
+      "source": "stack-analyser"
+    },
+    {
+      "tech": "fastapi",
+      "kind": "package",
+      "value": "fastapi",
+      "path": "/pyproject.toml",
+      "source": "stack-analyser"
+    },
+    {
+      "tech": "postgresql",
+      "kind": "package",
+      "value": "psycopg",
+      "path": "/pyproject.toml",
+      "source": "stack-analyser"
+    },
+    {
+      "tech": "python",
+      "kind": "extension",
+      "value": ".py",
+      "path": "/app",
+      "source": "stack-analyser"
+    },
+    {
+      "tech": "redis",
+      "kind": "package",
+      "value": "redis",
+      "path": "/pyproject.toml",
+      "source": "stack-analyser"
+    },
+    {
+      "tech": "setuptools",
+      "kind": "package",
+      "value": "setuptools",
+      "path": "/pyproject.toml",
+      "source": "stack-analyser"
+    },
+    {
+      "tech": "sqlalchemy",
+      "kind": "package",
+      "value": "sqlalchemy",
+      "path": "/pyproject.toml",
+      "source": "stack-analyser"
+    }
+  ]
+}
