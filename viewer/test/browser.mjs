@@ -8,7 +8,7 @@ envelope.technologies = [{ id: 'react', name: 'React', type: 'framework', paths:
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
 const engineRequests = [];
-const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0 };
+const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, exportBroken: false, exportDelay: 0 };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
   id: name, name, mark: name === 'Client' ? 'react' : undefined, kind: 'directory', files: Array.from({ length: name === 'Server' ? 6 : 1 }, (_, n) => `${name}/file${n}.ts`), location: 'internal', status: 'confirmed', group: null, evidence: [],
@@ -68,7 +68,10 @@ try {
         dependencies: [{ name: 'left-pad', scope: 'runtime', state: 'declared', source: 'package.json', version: '^1.3.0', direct: true }] }],
       } });
     }
-    if (path === '/data/visual.json') return route.fulfill({ json: envelope });
+    if (path === '/data/visual.json') {
+      await new Promise(resolve => setTimeout(resolve, mode.exportDelay));
+      return route.fulfill(mode.exportBroken ? { body: 'not json', contentType: 'text/plain' } : { json: envelope });
+    }
     if (path.startsWith('/api/')) return route.fulfill({ status: 404, json: {} });
     const app = path.startsWith('/app/');
     const part = path.slice(app ? 5 : 1) || 'index.html';
@@ -310,7 +313,16 @@ try {
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 
   await page.setViewportSize({ width: 1280, height: 850 });
+  mode.exportBroken = true;  // an export that cannot be read: a panel that waits, then fails, with Riprova
+  mode.exportDelay = 1000;
   await page.goto('http://daodan.test/');
+  await page.locator('[data-im-state-layer="loading"]').waitFor();
+  const unreadable = page.locator('.im-failure');
+  await unreadable.waitFor();
+  assert.match(await unreadable.innerText(), /Errore[\s\S]*Riprova/);
+  mode.exportBroken = false;
+  mode.exportDelay = 0;
+  await unreadable.getByRole('button', { name: 'Riprova' }).click();
   const viewerCss = await page.locator('link[rel="stylesheet"]').getAttribute('href');
   assert.deepEqual(await readFile(new URL('app/' + appCss, assets)), await readFile(new URL('viewer/' + viewerCss, assets)));
   const canvas = page.getByRole('region', { name: 'Naviga il grafo' });
@@ -351,7 +363,17 @@ try {
   assert.ok((await canvas.boundingBox()).height >= 320);
   assert.equal(await theme(), 'dark');
   await page.keyboard.press('Control+f');
-  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'Cerca per nome');
+  assert.equal(await page.evaluate(() => document.activeElement?.id), 'map-search');
+  assert.ok(await page.getByLabel('Cerca per nome').isVisible());
+  if (await inspectorBox.isVisible()) await inspectorBox.getByRole('button', { name: 'Chiudi dettaglio' }).click();  // a selected node stays visible
+  await page.getByLabel('Cerca per nome').fill('zzzz');  // nothing is left to draw: the empty state says so and offers the way back
+  const emptyMap = page.locator('[data-im-state-layer="empty"]');
+  await emptyMap.getByRole('button', { name: 'Azzera filtri' }).click();
+  await canvas.locator('.im-graph-node').first().waitFor();
+  assert.equal(await emptyMap.count(), 0);
+  assert.equal(await page.getByLabel('Cerca per nome').inputValue(), '');
+  assert.ok(await page.evaluate(() => [...document.querySelectorAll('button svg')]
+    .filter(svg => !svg.closest('[data-im-node], .im-graph-host')).every(svg => svg.classList.contains('im-icon'))));
   await page.locator('.im-sidebar .im-row').first().focus();
   await page.keyboard.press('F6');
   assert.ok(await inContent());
@@ -387,6 +409,12 @@ try {
   assert.ok((await canvas.boundingBox()).height >= 200);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await page.setViewportSize({ width: 1280, height: 850 });
+  await context.route('**/api/runs', route => route.fulfill({ json: { runs: [] } }));
+  await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));
+  await context.route('**/api/findings', route => route.fulfill({ json: { findings: [], gaps: [] } }));
+  await page.reload();
+  await page.getByText('Nessun run: creane uno qui sotto, o avvia una mappa nella sessione.').waitFor();
+  await page.getByLabel('Nome del run').waitFor();
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'demo', readable: true }] } }));
   await context.route('**/api/events?*', route => route.fulfill({ json: { events: [], next_cursor: 0, has_more: false } }));
   await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));
@@ -395,6 +423,8 @@ try {
   const disclosure = page.locator('summary', { hasText: 'Sessione e review' });
   await disclosure.press('Enter');
   await page.getByRole('button', { name: 'Invia' }).waitFor();
+  assert.ok(await page.getByLabel('Perimetro').isVisible());
+  assert.ok(await page.locator('.im-btn--primary:visible').count() <= 1);  // "Entra in ..." is the page's only primary
   await disclosure.press('Enter');
   await page.getByRole('button', { name: 'Invia' }).waitFor({ state: 'detached' });
   assert.deepEqual(errors, []);

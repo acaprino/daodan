@@ -2,6 +2,7 @@
 // The server starts no model: a request waits until the session takes it (`codebase_map_ui_requests`).
 import { ListAction } from '@acaprino/imago/react';
 import React, { useEffect, useState } from 'react';
+import { Note } from './parts.tsx';
 
 export const POLL_MS = 2000;
 type Request = { id: number; kind: string; scope: string; text: string; state: string; message?: string };
@@ -44,19 +45,23 @@ export function Session({ onPick, onRun }: { onPick: (file: string) => void; onR
     <div className="im-section">
       <h3>Chiedi alla sessione</h3>
       <form onSubmit={send} className="im-cluster">
-        <select className="im-select" aria-label="Cosa" value={form.kind} onChange={event => setForm({ ...form, kind: event.target.value })}>{KINDS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-        <select className="im-select" aria-label="Perimetro" value={form.scope} onChange={event => setForm({ ...form, scope: event.target.value })}>{SCOPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-        <input className="im-input" aria-label={form.scope === 'feature' ? 'Funzionalità' : 'Indicazioni'} placeholder={form.scope === 'feature' ? 'Nome della funzionalità' : 'Indicazioni per la sessione'}
-          value={form.text} required={needsText} maxLength={2000} onChange={event => setForm({ ...form, text: event.target.value })} />
-        <button type="submit" className="im-btn im-btn--primary">Invia</button>
+        <div className="im-field"><label className="im-field-label" htmlFor="request-kind">Cosa</label>
+          <select id="request-kind" className="im-select" value={form.kind} onChange={event => setForm({ ...form, kind: event.target.value })}>{KINDS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+        <div className="im-field"><label className="im-field-label" htmlFor="request-scope">Perimetro</label>
+          <select id="request-scope" className="im-select" value={form.scope} onChange={event => setForm({ ...form, scope: event.target.value })}>{SCOPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+        <div className="im-field"><label className="im-field-label" htmlFor="request-text">{form.scope === 'feature' ? 'Funzionalità' : 'Indicazioni'}</label>
+          <span className="im-input"><input id="request-text" placeholder={form.scope === 'feature' ? 'Nome della funzionalità' : 'Indicazioni per la sessione'}
+            value={form.text} required={needsText} maxLength={2000} onChange={event => setForm({ ...form, text: event.target.value })} /></span></div>
+        <button type="submit" className="im-btn">Invia</button>
       </form>
       <p className="im-muted">La richiesta resta in attesa finché la sessione non la prende: chiedile «esegui le richieste della UI».</p>
       <h3>Analisi statica, senza modello</h3>
       <form onSubmit={analyze} className="im-cluster">
-        <input className="im-input" aria-label="Nome del run" placeholder="nome-del-run" value={runId} required pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={event => setRunId(event.target.value)} />
-        <button type="submit" className="im-btn im-btn--primary">Crea il run</button>
+        <div className="im-field"><label className="im-field-label" htmlFor="run-name">Nome del run</label>
+          <span className="im-input"><input id="run-name" placeholder="nome-del-run" value={runId} required pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={event => setRunId(event.target.value)} /></span></div>
+        <button type="submit" className="im-btn">Crea il run</button>
       </form>
-      {error && <p className="im-text-err" role="alert">{error}</p>}
+      {error && <Note tone="err" title="Richiesta non riuscita" message={error} />}
     </div>
     <div className="im-section">
       <h3>Richieste · {requests.length}</h3>
@@ -75,7 +80,7 @@ export function Session({ onPick, onRun }: { onPick: (file: string) => void; onR
           detail={<>{item.title ?? item.premise ?? 'unknown'}{item.example && <> · {item.example}</>}</>} />
       </li>)}</ul>
       {!findings.length && <p className="im-muted">Nessun finding: compaiono quando la sessione chiude una review.</p>}
-      {gaps.length > 0 && <><h3>Lacune · {gaps.length}</h3><ul className="im-text-warn">{gaps.map((gap, index) => <li key={index}>{typeof gap === 'string' ? gap : JSON.stringify(gap)}</li>)}</ul></>}
+      {gaps.length > 0 && <Note tone="warn" title={`Lacune · ${gaps.length}`} items={gaps.map((gap, index) => ({ label: String(index + 1), message: typeof gap === 'string' ? gap : JSON.stringify(gap) }))} />}
     </div>
   </section>;
 }

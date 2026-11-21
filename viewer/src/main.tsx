@@ -3,10 +3,10 @@ import { createRoot } from 'react-dom/client';
 import { graphView } from '@acaprino/imago/graph';
 import type { GraphScene } from '@acaprino/imago/graph';
 import '@acaprino/imago/css/imago.css';
-import { createRegistry, footerKeys, formatKeys, iconMarkup, notify, openMenu, PALETTE_COMMAND, SEARCH_COMMAND } from '@acaprino/imago/ui';
-import type { IconName, Registry } from '@acaprino/imago/ui';
+import { createRegistry, footerKeys, formatKeys, notify, openMenu, PALETTE_COMMAND, SEARCH_COMMAND } from '@acaprino/imago/ui';
+import type { Registry } from '@acaprino/imago/ui';
+import { Icon, Note, PanelState, resetHtml, retryHtml, useSlow } from './parts.tsx';
 import { applyStored, graphControls, mountPage, storageOrNull } from './page.ts';
-import { ArrowLeft, ChevronRight, FolderOpen, Route, Search, X } from 'lucide-react';
 import { Disclosure, ListAction, Shell, TabList, Timeline, Workbench } from '@acaprino/imago/react';
 import { getJson, POLL_MS, Session } from './session';
 import { parseEnvelope, SCHEMA } from './envelope.ts';
@@ -58,9 +58,6 @@ function Diagram({ scene, layoutKey, onSelect, onOpen, onClear }: {
   return <div ref={host} className="im-fill" />;
 }
 
-// A control's icon is Imago's drawing of it.
-const Icon = ({ name }: { name: IconName }) => <span aria-hidden="true" dangerouslySetInnerHTML={{ __html: iconMarkup(name) }} />;
-
 function entityName(envelope: Envelope, ref: string): string {
   return indexOf(envelope).byRef.get(ref)?.name ?? ref;
 }
@@ -109,11 +106,11 @@ function Details({ state, dispatch, edges, close }: { state: ExplorerState; disp
       {entity.status && <li>Stato: {STATUS_LABEL[entity.status] ?? entity.status}</li>}
       {entity.freshness && <li>{FRESHNESS_LABEL[entity.freshness] ?? entity.freshness}</li>}
     </ul>
-    {canOpen && <button type="button" className="im-btn im-btn--primary" onClick={() => dispatch({ type: 'open', ref: entity.ref })}><FolderOpen size={15} />Entra in {entity.name}</button>}
+    {canOpen && <button type="button" className="im-btn im-btn--primary" onClick={() => dispatch({ type: 'open', ref: entity.ref })}><Icon name="folder" />Entra in {entity.name}</button>}
     {entity.technologies && <Technologies envelope={envelope} ids={entity.technologies} />}
     {flows.length > 0 && <div className="im-section"><h3>Flussi che lo attraversano</h3>{flows.map(flow =>
       <button type="button" key={flow.ref} className="im-btn im-btn--sm" aria-pressed={state.flow === flow.ref} onClick={() => dispatch({ type: 'flow', ref: flow.ref })}>
-        <Route size={12} />{flowTitle(envelope, flow)}</button>)}</div>}
+        <Icon name="branch" />{flowTitle(envelope, flow)}</button>)}</div>}
     {related.length > 0 && <div className="im-section"><h3>Collegamenti visibili</h3><ul className="im-detail-list">{related.slice(0, 20).map(edge => {
       const outgoing = edge.source.startsWith(`${entity.ref}@`);
       const other = (outgoing ? edge.target : edge.source).split('@')[0];
@@ -121,7 +118,7 @@ function Details({ state, dispatch, edges, close }: { state: ExplorerState; disp
     })}</ul></div>}
     {entity.evidence.length > 0 && <div className="im-section"><h3>Evidenze</h3><ul className="im-detail-list">{entity.evidence.slice(0, 8).map((item, index) =>
       <li key={index}><code>{item.path}{item.line ? `:${item.line}` : ''}</code></li>)}</ul></div>}
-    {gaps.length > 0 && <div className="im-section im-text-warn"><h3>Lacune</h3>{gaps.map((gap, index) => <p key={index}>{gap.reason}</p>)}</div>}
+    {gaps.length > 0 && <Note tone="warn" title="Lacune" message={gaps.map(gap => gap.reason).join(' · ')} />}
   </div></>;
 }
 
@@ -206,6 +203,7 @@ function Explorer({ model }: { model: Model }) {
   const { state, dispatch, projection, focus, data, edges, selectedIds } = model;
   const [layout, setLayout] = useState<{ key: string; value: Layout } | null>(null);
   const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0);
   const [vertical, setVertical] = useState(() => (document.querySelector('.im-shell')?.clientWidth ?? window.innerWidth) < 850);
   const client = useRef<ReturnType<typeof createLayoutClient> | null>(null);
   const direction = vertical ? 'DOWN' : 'RIGHT';
@@ -227,7 +225,7 @@ function Explorer({ model }: { model: Model }) {
     client.current.request(graph, direction).then(value => setLayout({ key, value })).catch(reason => {
       if (!(reason instanceof LayoutError && reason.reason === 'superseded')) setError(String(reason?.message ?? reason));
     });
-  }, [key]);
+  }, [key, attempt]);
 
 
   const neighbours = new Set(projection.edges.filter(edge => selectedIds.has(edge.source) || selectedIds.has(edge.target)).flatMap(edge => [edge.source, edge.target]));
@@ -257,30 +255,33 @@ function Explorer({ model }: { model: Model }) {
   const scopeName = state.scope ? index.byRef.get(state.scope)?.name ?? state.scope : null;
   const types = [...new Set(projection.nodes.map(node => node.type))].sort();
   const filtered = projection.counts.filtered;
+  const reset = () => dispatch({ type: 'resetFilters' });
   return <>
-    {(state.error || state.warning) && <p className="im-note" data-im-tone={state.error ? 'err' : 'warn'} role="status">{state.error ?? state.warning}</p>}
+    {(state.error || state.warning) && <Note tone={state.error ? 'err' : 'warn'} message={state.error ?? state.warning ?? ''} />}
     <div className="im-content-toolbar">
       <nav className="im-cluster" aria-label="Posizione">
         <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'root' })}>Sistema</button>
-        {scopeName && <><ChevronRight size={13} aria-hidden="true" /><span aria-current="page">{scopeName}</span>
-          <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'up' })}><ArrowLeft size={13} />Su</button></>}
+        {scopeName && <><Icon name="chevron" /><span aria-current="page">{scopeName}</span>
+          <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'up' })}><Icon name="back" />Su</button></>}
       </nav>
-      <label className="im-input"><Search size={14} aria-hidden="true" /><input type="search" placeholder="Cerca per nome" value={state.filters.text ?? ''}
-        onChange={event => dispatch({ type: 'filter', filters: { text: event.target.value } })} aria-label="Cerca per nome" /></label>
-      <select className="im-select" aria-label="Tipo di entità" value={state.filters.types?.[0] ?? ''} onChange={event => dispatch({ type: 'filter', filters: { types: event.target.value ? [event.target.value] : [] } })}>
-        <option value="">Tutti i tipi</option>{types.map(type => <option key={type} value={type}>{TYPE_LABEL[type] ?? type}</option>)}
-      </select>
-      {filtered > 0 && <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'resetFilters' })}><X size={13} />Azzera filtri ({filtered} nascosti)</button>}
+      <div className="im-field"><label className="im-field-label" htmlFor="map-search">Cerca per nome</label>
+        <span className="im-input"><Icon name="search" /><input id="map-search" type="search" placeholder="Nome di un elemento" value={state.filters.text ?? ''}
+          onChange={event => dispatch({ type: 'filter', filters: { text: event.target.value } })} /></span></div>
+      <div className="im-field"><label className="im-field-label" htmlFor="map-type">Tipo di entità</label>
+        <select id="map-type" className="im-select" value={state.filters.types?.[0] ?? ''} onChange={event => dispatch({ type: 'filter', filters: { types: event.target.value ? [event.target.value] : [] } })}>
+          <option value="">Tutti i tipi</option>{types.map(type => <option key={type} value={type}>{TYPE_LABEL[type] ?? type}</option>)}
+        </select></div>
+      {filtered > 0 && <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={reset}><Icon name="close" />Azzera filtri ({filtered} nascosti)</button>}
     </div>
-      <section className="im-canvas-panel" id="graph-view" role="tabpanel" aria-labelledby={state.view + '-tab'}>
-        <div className="im-canvas-frame"><Diagram scene={scene} layoutKey={busy ? '' : key}
-          onSelect={id => { const n = byId.get(id); if (n) select(n.ref); }}
-          onOpen={id => { const n = byId.get(id); if (n?.collapsed) open(n.ref); }}
-          onClear={() => dispatch({ type: 'select', ref: null })} /></div>
-        {busy && !error && projection.nodes.length > 0 && <div className="im-canvas-message im-note" role="status"><span className="im-spinner" aria-hidden="true" /> Dispongo il grafo…</div>}
-        {!projection.nodes.length && <div className="im-canvas-message im-note" role="status">Nessun elemento visibile.{filtered > 0 && <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'resetFilters' })}>Azzera filtri</button>}</div>}
-        {error && <div className="im-canvas-message im-note" data-im-tone="err" role="alert">Impossibile disporre il grafo: {error}</div>}
-      </section>
+    <section className="im-canvas-panel" id="graph-view" role="tabpanel" aria-labelledby={state.view + '-tab'}>
+      <div className="im-canvas-frame"><Diagram scene={scene} layoutKey={busy ? '' : key}
+        onSelect={id => { const n = byId.get(id); if (n) select(n.ref); }}
+        onOpen={id => { const n = byId.get(id); if (n?.collapsed) open(n.ref); }}
+        onClear={() => dispatch({ type: 'select', ref: null })} /></div>
+      {busy && !error && projection.nodes.length > 0 && <span className="im-loader im-canvas-message" role="status"><span className="im-spinner" aria-hidden="true" />Dispongo il grafo…</span>}
+      {!projection.nodes.length && <PanelState state={{ kind: 'empty', text: 'Nessun elemento visibile.', actionHtml: filtered > 0 ? resetHtml : '' }} onAction={reset} />}
+      {error && <PanelState state={{ kind: 'error', text: 'Impossibile disporre il grafo: ' + error, retryHtml, errorWord: 'Errore' }} onAction={() => setAttempt(count => count + 1)} />}
+    </section>
   </>;
 }
 
@@ -336,6 +337,7 @@ function App() {
     const ref = pick && envelope && fileRef(envelope, pick.file);
     if (ref) model.dispatch({ type: 'select', ref });
   }, [pick]);
+  const addressOf = (id: string) => `./data/visual.json?run=${encodeURIComponent(id)}`;
   const load = (url: string, stale = () => false) => getJson(url).then(json => {
     if (!stale()) { setEnvelope(parseEnvelope(json)); setFailure(''); }
   }).catch(reason => { if (!stale()) setFailure(String(reason?.message ?? reason)); });
@@ -347,7 +349,7 @@ function App() {
   useEffect(() => { listRuns().catch(() => load('./data/visual.json')); }, []);
   useEffect(() => {
     if (!runs || !run) return;
-    const address = `./data/visual.json?run=${encodeURIComponent(run)}`;
+    const address = addressOf(run);
     let cursor = 0, first = true, stopped = false, busy = false;
     const stale = () => stopped;
     setEnvelope(null); setEvents([]); load(address, stale);
@@ -382,7 +384,7 @@ function App() {
     catch (reason) { dispatch({ type: 'replaceEnvelope', json: { error: String(reason) } }); }
   };
   const noRuns = runs && !runs.length;
-  const empty = (title: string, text: string, status?: boolean) => <div className="im-empty" role={status ? 'status' : undefined}><strong>{title}</strong><p>{text}</p></div>;
+  const slow = useSlow(!noRuns && !failure && !envelope);
   const views = [{ value: 'logical', label: 'Logica' }, { value: 'physical', label: 'Fisica' }] as const;
   const viewsMenu = (anchor: HTMLElement) => {
     const close = openMenu(anchor, views.map(view => ({ label: view.label, checked: () => state.view === view.value, run: () => { close(); dispatch({ type: 'view', view: view.value }); } })));
@@ -407,19 +409,21 @@ function App() {
     <span className="im-spacer" /><FooterKeys registry={registry} mounted={mounted} />
   </>;
   const toolbar = <div className="im-content-toolbar">
-    {runs && <label>Run <select className="im-select" value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></label>}
+    {runs && <div className="im-field"><label className="im-field-label" htmlFor="run-select">Run</label>
+      <select id="run-select" className="im-select" value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></div>}
     {ready && <>
       <button type="button" className="im-btn im-btn--sm" onClick={() => now.current.info()}><Icon name="info" />Informazioni sul progetto</button>
       <label className="im-end im-cluster">Apri altro export<input className="im-file-selector" type="file" accept=".json,application/json" onChange={event => openFile(event.target.files?.[0])} /></label></>}
   </div>;
-  const content = noRuns ? <>{empty('Nessun run', 'Crea un run qui sotto, o avvia una mappa nella sessione.')}
+  const content = noRuns ? <><PanelState state={{ kind: 'empty', text: 'Nessun run: creane uno qui sotto, o avvia una mappa nella sessione.' }} />
       <Session onPick={() => undefined} onRun={id => { listRuns(id).catch(() => undefined); }} /></>
     : <>{toolbar}{runs && <Disclosure label="Sessione e review">
       <Session onPick={file => setPick({ file })} onRun={id => { listRuns(id).catch(() => undefined); }} />
-    </Disclosure>}{failure ? empty('Export non leggibile', failure) : !envelope ? empty("Carico l'export…", '', true)
+    </Disclosure>}{failure ? <PanelState state={{ kind: 'error', text: failure, retryHtml, errorWord: 'Errore' }} onAction={() => { setFailure(''); load(runs && run ? addressOf(run) : './data/visual.json'); }} />
+      : !envelope ? slow && <PanelState state={{ kind: 'loading', rows: 3 }} />
       : ready && <Explorer key={run} model={model} />}</>;
   return <Shell ref={shell} sidebar skipLabel="Vai al contenuto" titlebar={titlebar}>
-    <Workbench aria-label="Codebase Map" detailsLabel="Dettaglio" navigationLabel="Mappa" status={status} footer={footer}
+    <Workbench aria-label="Codebase Map" aria-busy={!noRuns && !failure && !envelope} detailsLabel="Dettaglio" navigationLabel="Mappa" status={status} footer={footer}
       navigation={<Navigation model={model} ready={ready} />}
       details={detailsOpen ? <Details state={state} dispatch={dispatch} edges={model.projection.edges} close={() => now.current.close()} /> : null}>{content}</Workbench>
   </Shell>;
