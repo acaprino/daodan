@@ -59,10 +59,19 @@ REFERENCE = {
 }
 
 
+def run(command: list[str], cwd: Path | None = None) -> str:
+    """The command's output; on failure its own message, and never a wait past the timeout."""
+    done = subprocess.run(command, cwd=cwd, capture_output=True, text=True, timeout=300)
+    if done.returncode:
+        raise RuntimeError(f"{command[:3]} exited {done.returncode}: {done.stderr.strip()[-2000:]}")
+    return done.stdout
+
+
 class PossibleLinks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.work = Path(tempfile.mkdtemp(prefix="possible-")).resolve()
+        cls.addClassCleanup(shutil.rmtree, cls.work, True)  # tearDownClass does not run when setUpClass fails
         project = cls.work / "app"
         shutil.copytree(ROOT / "benchmarks/flow-model/app", project)
         (project / "server/events.py").write_text(WEBHOOK, encoding="utf-8")
@@ -72,21 +81,16 @@ class PossibleLinks(unittest.TestCase):
         (project / "codebase-modules.json").write_text(json.dumps(declared), encoding="utf-8")
         for command in (["git", "init", "-q"], ["git", "add", "-A"],
                         ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
-            subprocess.run(command, cwd=project, check=True, capture_output=True)
+            run(command, cwd=project)
         cls.manifest = cls.work / "snapshot/manifest.sqlite"
         # Each in a process of its own, as the README runs them: this folder's entries.py hides the core's.
         core = ROOT / "daodan" / "core"
-        subprocess.run([sys.executable, str(core / "snapshot.py"), "write", str(project), "--out", str(cls.manifest),
-                        "--no-engine", "--no-index"], check=True, capture_output=True)
-        cls.links = json.loads(subprocess.run(
-            [sys.executable, str(core / "flows.py"), "links", str(cls.manifest), "--rules",
-             str(ROOT / "benchmarks/flow-model/rules.json")], check=True, capture_output=True, text=True).stdout)
+        run([sys.executable, str(core / "snapshot.py"), "write", str(project), "--out", str(cls.manifest),
+             "--no-engine", "--no-index"])
+        cls.links = json.loads(run([sys.executable, str(core / "flows.py"), "links", str(cls.manifest), "--rules",
+                                    str(ROOT / "benchmarks/flow-model/rules.json")]))
         cls.result = possible.measure(cls.manifest, cls.links, REFERENCE)
         cls.flow = cls.result["flows"][0]
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.work, True)
 
     def test_an_uncalled_route_in_a_file_of_the_provider_is_called_by_it(self):
         self.assertIn({"from": f"module:{PROVIDER}", "to": "server/events.py::card_event", "type": "chiama",
@@ -98,7 +102,7 @@ class PossibleLinks(unittest.TestCase):
         targets = {e["to"] for e in possible.possible(self.links)}
         self.assertNotIn("server/payments.py::create_payment", targets)        # called by the web client
         self.assertNotIn("admin/orders.py::list_all_orders", targets)          # nobody calls it, no provider there
-        self.assertEqual(self.result["possible"]["ritorno"], {"links": 1, "outside_reference": 0})
+        self.assertEqual(self.result["possible"]["ritorno"], {"links": 1, "inside_node": 0, "outside_reference": 0})
 
     def test_each_arrow_lands_in_its_bucket_in_its_direction(self):
         self.assertEqual(self.flow["arrows"], {"dichiarata": 1, "certo": 3, "possibile:ritorno": 1, "mancante": 1,
