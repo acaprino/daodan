@@ -16,7 +16,9 @@ possible ones added. An arrow from or to a service of others, and an entry of a 
 in their direction: a link from the module to a symbol of a node of the flow, or from a symbol of the node to the
 module. Each arrow and entry lands in one bucket: `certo`, `possibile:<generator>`, `mancante con lacuna` (a gap
 of the links sits in a file of the arrow's first node), `mancante`, `non misurabile` (an end refused by verify),
-`dichiarata` (an end that is a person or a device). A possible link that serves no arrow or entry of the reference
+`dichiarata` (an end that is a person or a device), `non visto` (an end outside the snapshot), `senza modulo` (a
+service of others that no external module of the links stands for: no generator can reach it). `services` says
+which modules stand for each service of others. A possible link that serves no arrow or entry of the reference
 is counted `fuori dal riferimento`: it may be a link the reference lacks, not a wrong one.
 """
 from __future__ import annotations
@@ -57,7 +59,7 @@ def possible(links: dict, generators=GENERATORS) -> list[dict]:
                         for module in sorted(used[_file(entry["symbol"])])]
     if "incerto" in generators:
         out += [_edge(gap["symbol"], target, gap["site"], "incerto")
-                for gap in links["gaps"] for target in gap.get("candidates", ())]
+                for gap in links["gaps"] if gap.get("symbol") for target in gap.get("candidates", ())]
     return out
 
 
@@ -75,14 +77,15 @@ def _as_map(expected: dict) -> dict:
 
 
 def _modules(node: dict, links: dict) -> set[str]:
-    """The external modules of the links that stand for a node of others: same name or registry id, or a file the
-    module cites as evidence (the sites of its `usa` links) among the node's evidence."""
+    """The external modules of the links that stand for a node of others: same name or registry id; when none has
+    it, those that cite as evidence (the sites of their `usa` links) a file of the node's evidence."""
     names = {modules.slug(n) for n in (node.get("name"), node.get("registry")) if n}
     sites = defaultdict(set)
     for edge in links["edges"]:
         if edge["type"] == "usa":
             sites[edge["to"]].add(edge["site"])
-    return {m for m in sites if modules.slug(m[7:]) in names or sites[m] & set(node.get("evidence") or [])}
+    named = {m for m in sites if modules.slug(m[7:]) in names}
+    return named or {m for m in sites if sites[m] & set(node.get("evidence") or [])}
 
 
 def measure(manifest: Path, links: dict, expected: dict, generators=GENERATORS) -> dict:
@@ -94,7 +97,9 @@ def measure(manifest: Path, links: dict, expected: dict, generators=GENERATORS) 
     widened = system_map.verify(manifest, {**links, "edges": links["edges"] + extra}, value)
     files = {system_map.key(n["name"]): set(n["files"]) for n in certain["nodes"] if n["status"] == "accepted"}
     nodes = {system_map.key(n["name"]): n for n in expected["nodes"]}
-    gap_files = {_file(gap["symbol"]) for gap in links["gaps"]}
+    gap_files = {gap["site"].rpartition(":")[0] for gap in links["gaps"]}  # a gap's symbol can be null, its site not
+    services = {n["name"]: sorted(_modules(n, links)) for n in expected["nodes"]
+                if n.get("position") == "external" and n.get("type") not in system_map.NOT_SERVICES}
     served, totals, out = set(), {"arrows": Counter(), "entries": Counter()}, []
 
     def missing(first: str) -> str:
@@ -102,6 +107,8 @@ def measure(manifest: Path, links: dict, expected: dict, generators=GENERATORS) 
 
     def across(source: str | None, target: str | None, holders: set[str]) -> str:
         """An arrow or entry on a service of others: a link from the module into the holders' files, or back."""
+        if not (source or target):
+            return "senza modulo"
         for edges, bucket in ((links["edges"], "certo"), (extra, None)):
             found = [e for e in edges if (source and e["from"] in source and _file(e["to"]) in holders)
                      or (target and e["to"] in target and _file(e["from"]) in holders)]
@@ -117,7 +124,9 @@ def measure(manifest: Path, links: dict, expected: dict, generators=GENERATORS) 
         arrows, entries, lost = Counter(), Counter(), []
         for arrow, first, second in zip(flow.get("arrows", []), before["arrows"], after["arrows"]):
             a, b = nodes[system_map.key(arrow["from"])], nodes[system_map.key(arrow["to"])]
-            if any(outside(n) and n.get("type") in system_map.NOT_SERVICES for n in (a, b)):
+            if any(n.get("position") == "unseen" for n in (a, b)):
+                bucket = "non visto"
+            elif any(outside(n) and n.get("type") in system_map.NOT_SERVICES for n in (a, b)):
                 bucket = "dichiarata"
             elif outside(a) or outside(b):
                 inner = files.get(system_map.key((b if outside(a) else a)["name"]), set())
@@ -138,7 +147,9 @@ def measure(manifest: Path, links: dict, expected: dict, generators=GENERATORS) 
         inner = set().union(*(files.get(system_map.key(n), set()) for n in flow["nodes"]))
         for item in flow.get("entries") or []:
             node = nodes[system_map.key(item["node"])]
-            if outside(node) and node.get("type") not in system_map.NOT_SERVICES:
+            if node.get("position") == "unseen":
+                entries["non visto"] += 1
+            elif outside(node) and node.get("type") not in system_map.NOT_SERVICES:
                 bucket = across(_modules(node, links), None, inner)
                 entries[bucket] += 1
                 if bucket == "mancante":
@@ -150,7 +161,7 @@ def measure(manifest: Path, links: dict, expected: dict, generators=GENERATORS) 
     by_generator = {g: {"links": sum(e["origin"] == f"possibile:{g}" for e in extra),
                         "outside_reference": sum(e["origin"] == f"possibile:{g}" and (e["from"], e["to"], e["site"]) not in served
                                                  for e in extra)} for g in generators}
-    return {"possible": by_generator, "arrows": dict(totals["arrows"]), "entries_from_others": dict(totals["entries"]),
+    return {"possible": by_generator, "services": services, "arrows": dict(totals["arrows"]), "entries_from_others": dict(totals["entries"]),
             "flows": out}
 
 

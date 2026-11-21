@@ -33,13 +33,16 @@ REFERENCE = {
         {"name": "Eventi della carta", "type": "servizio o API", "members": ["server/events.py"]},
         {"name": "Pagamento", "type": "entità", "members": ["store:db/payments", "store:web state/payment"]},
         {"name": "Fornitore delle carte", "type": "gateway", "position": "external", "evidence": ["server/gateway.py"]},
+        {"name": "Posta", "type": "gateway", "position": "external", "evidence": ["web/badge.ts"]},  # no module
+        {"name": "Landing", "type": "schermata", "position": "unseen", "where": "un altro repository"},
     ],
     "flows": [{
         "name": "Pagare un ordine", "types": ["funzionale", "operativo"],
         "nodes": ["Cliente", "Checkout", "Badge pagamento", "API pagamenti", "Eventi della carta", "Pagamento",
-                  "Fornitore delle carte"],
+                  "Fornitore delle carte", "Posta", "Landing"],
         "entries": [{"node": "Cliente", "kind": "controllo dell'interfaccia", "what": "Paga"},
-                    {"node": "Fornitore delle carte", "kind": "rotta", "what": "il webhook"}],
+                    {"node": "Fornitore delle carte", "kind": "rotta", "what": "il webhook"},
+                    {"node": "Landing", "kind": "controllo dell'interfaccia", "what": "Abbonati"}],
         "effects": [{"node": "Pagamento", "what": "il pagamento registrato"}],
         "arrows": [
             {"from": "Cliente", "to": "Checkout", "data": "clic su Paga", "kind": "attiva", "cite": "web/checkout.ts:22"},
@@ -50,6 +53,8 @@ REFERENCE = {
              "cite": "server/events.py:5"},
             {"from": "Eventi della carta", "to": "Pagamento", "data": "esito registrato"},
             {"from": "Badge pagamento", "to": "API pagamenti", "data": "richiesta di stato"},  # nothing links it
+            {"from": "Landing", "to": "Checkout", "data": "piano scelto", "kind": "attiva", "cite": "web/checkout.ts:22"},
+            {"from": "API pagamenti", "to": "Posta", "data": "ricevuta", "kind": "usa", "cite": "server/payments.py:1"},
         ]}],
 }
 
@@ -86,7 +91,8 @@ class PossibleLinks(unittest.TestCase):
     def test_an_uncalled_route_in_a_file_of_the_provider_is_called_by_it(self):
         self.assertIn({"from": f"module:{PROVIDER}", "to": "server/events.py::card_event", "type": "chiama",
                        "site": "server/events.py:5", "origin": "possibile:ritorno"}, possible.possible(self.links))
-        self.assertEqual(self.flow["entries_from_others"], {"possibile:ritorno": 1})
+        self.assertEqual(self.flow["entries_from_others"], {"possibile:ritorno": 1, "non visto": 1})
+        self.assertEqual(self.result["services"], {"Fornitore delle carte": [f"module:{PROVIDER}"], "Posta": []})
 
     def test_a_route_its_client_calls_or_one_in_a_file_of_no_provider_gets_no_return(self):
         targets = {e["to"] for e in possible.possible(self.links)}
@@ -95,7 +101,8 @@ class PossibleLinks(unittest.TestCase):
         self.assertEqual(self.result["possible"]["ritorno"], {"links": 1, "outside_reference": 0})
 
     def test_each_arrow_lands_in_its_bucket_in_its_direction(self):
-        self.assertEqual(self.flow["arrows"], {"dichiarata": 1, "certo": 3, "possibile:ritorno": 1, "mancante": 1})
+        self.assertEqual(self.flow["arrows"], {"dichiarata": 1, "certo": 3, "possibile:ritorno": 1, "mancante": 1,
+                                               "non visto": 1, "senza modulo": 1})
         self.assertEqual(self.flow["missing"], ["Badge pagamento -> API pagamenti"])
 
     def test_a_call_that_meets_several_routes_goes_to_each_of_them(self):
@@ -103,6 +110,12 @@ class PossibleLinks(unittest.TestCase):
                "candidates": ["server/x.py::one", "server/y.py::two"]}
         self.assertEqual([(e["to"], e["origin"]) for e in possible.possible({"edges": [], "entries": [], "gaps": [gap]})],
                          [("server/x.py::one", "possibile:incerto"), ("server/y.py::two", "possibile:incerto")])
+
+    def test_a_reference_written_for_the_checker_is_taken_as_it_is(self):
+        import system_map
+        import test_reference
+        value = system_map.validate(possible._as_map(test_reference.GOOD))
+        self.assertEqual(value["flows"][0]["entries"], ["API ordini"])
 
     def test_links_of_another_schema_are_refused(self):
         with self.assertRaisesRegex(ValueError, "links schema"):
