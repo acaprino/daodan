@@ -56,7 +56,7 @@ export function Session({ onPick, onRun }: { onPick: (file: string) => void; onR
         <input className="im-input" aria-label="Nome del run" placeholder="nome-del-run" value={runId} required pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={event => setRunId(event.target.value)} />
         <button type="submit" className="im-btn im-btn--primary">Crea il run</button>
       </form>
-      {error && <p className="im-error" role="alert">{error}</p>}
+      {error && <p className="im-text-err" role="alert">{error}</p>}
     </div>
     <div className="im-section">
       <h3>Richieste · {requests.length}</h3>
@@ -71,11 +71,11 @@ export function Session({ onPick, onRun }: { onPick: (file: string) => void; onR
       <h3>Finding · {findings.length}</h3>
       <ul className="im-detail-list">{findings.map((item, index) => <li key={index}>
         <ListAction onClick={() => item.file && onPick(item.file)}
-          title={<><b className={['Critical', 'High'].includes(item.severity ?? '') ? 'im-error' : 'im-warning'}>{item.severity ?? 'unknown'}</b> <code>{item.file ?? 'unknown'}:{item.line ?? '?'}</code></>}
+          title={<><b className={['Critical', 'High'].includes(item.severity ?? '') ? 'im-text-err' : 'im-text-warn'}>{item.severity ?? 'unknown'}</b> <code>{item.file ?? 'unknown'}:{item.line ?? '?'}</code></>}
           detail={<>{item.title ?? item.premise ?? 'unknown'}{item.example && <> · {item.example}</>}</>} />
       </li>)}</ul>
       {!findings.length && <p className="im-muted">Nessun finding: compaiono quando la sessione chiude una review.</p>}
-      {gaps.length > 0 && <><h3>Lacune · {gaps.length}</h3><ul className="im-warning">{gaps.map((gap, index) => <li key={index}>{typeof gap === 'string' ? gap : JSON.stringify(gap)}</li>)}</ul></>}
+      {gaps.length > 0 && <><h3>Lacune · {gaps.length}</h3><ul className="im-text-warn">{gaps.map((gap, index) => <li key={index}>{typeof gap === 'string' ? gap : JSON.stringify(gap)}</li>)}</ul></>}
     </div>
   </section>;
 }

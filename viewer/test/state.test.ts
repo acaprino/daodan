@@ -56,3 +56,9 @@ test('filters, groups and flows change only their own field', () => {
   assert.deepEqual([state.filters, state.open], [{}, []]);
   assert.equal(reduce(state, { type: 'flow', ref: 'flow:nowhere' }).flow, 'flow:symbol:web/checkout.tsx::pay');
 });
+
+test('load starts a run clean: nothing of the last one is kept', () => {
+  const state = reduce(reduce(initialState(env), { type: 'select', ref: 'file:shared/money.ts' }), { type: 'view', view: 'physical' });
+  const loaded = reduce(state, { type: 'load', envelope: env });
+  assert.deepEqual(loaded, initialState(env));
+});

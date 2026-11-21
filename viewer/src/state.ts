@@ -11,7 +11,8 @@ export type ExplorerState = {
 export type Action =
   | { type: 'select'; ref: string | null } | { type: 'open'; ref: string } | { type: 'up' } | { type: 'root' }
   | { type: 'view'; view: View } | { type: 'filter'; filters: Filters } | { type: 'resetFilters' }
-  | { type: 'toggleGroup'; ref: string } | { type: 'flow'; ref: string | null } | { type: 'replaceEnvelope'; json: unknown };
+  | { type: 'toggleGroup'; ref: string } | { type: 'flow'; ref: string | null } | { type: 'replaceEnvelope'; json: unknown }
+  | { type: 'load'; envelope: Envelope };
 
 export function initialState(envelope: Envelope): ExplorerState {
   return { envelope, view: 'logical', scope: null, selected: null, filters: {}, open: [], flow: null, error: null, warning: null };
@@ -25,6 +26,7 @@ function parentOf(state: ExplorerState, ref: string): string | null {
 }
 
 export function reduce(state: ExplorerState, action: Action): ExplorerState {
+  if (action.type === 'load') return initialState(action.envelope);  // another run: nothing of the last one is kept
   const known = (ref: string | null) => ref === null || indexOf(state.envelope).byRef.has(ref);
   switch (action.type) {
     case 'select':

@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="48x48">
   <title>Daodan · Analisi</title>
 </head>
-<body class="im-page im-page-frame">
+<body>
 <div class="im-shell" data-im-sidebar="on">
-  <a class="im-skip-link" href="#main">Vai al contenuto</a>
+  <a class="im-shell-skip-link" href="#main">Vai al contenuto</a>
   <header class="im-titlebar">
     <button type="button" class="im-icon-btn im-sidebar-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Navigazione" title="Navigazione">☰</button>
-    <div class="im-brand"><span class="im-mark" aria-hidden="true">d.</span><strong class="im-wordmark">Daodan</strong></div>
+    <div class="im-brand"><span class="im-mark" aria-hidden="true">D</span><span class="im-wordmark">Daodan</span></div>
     <span class="im-spacer"></span><span class="im-chip" id="context-source"></span>
   </header>
   <div class="im-body">
@@ -24,10 +25,13 @@
       </nav>
       <footer class="im-panel-foot" data-im-rail-detail><div class="im-stack"><strong>App locale</strong><span>Il codice resta sul tuo disco.</span><small id="engine-foot">Motore non scelto.</small></div></footer>
     </aside>
-    <section class="im-work-column">
+    <div class="im-work">
       <div class="im-status"><span>Progetti / <strong id="crumb-project">–</strong> / <span id="crumb-screen">Analisi</span></span></div>
-      <main id="main" class="im-panel-body im-content-text im-document" tabindex="-1"></main>
-    </section>
+      <div class="im-columns">
+        <main id="main" class="im-panel im-content" tabindex="-1" aria-label="Analisi" aria-busy="false"><div class="im-panel-body"></div></main>
+        <section class="im-panel im-inspector" aria-label="Dettaglio" hidden></section>
+      </div>
+    </div>
   </div>
 </div>
 <script type="module" src="./app.js"></script>

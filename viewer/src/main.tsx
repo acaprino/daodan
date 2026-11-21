@@ -4,9 +4,9 @@ import { graphView } from '@acaprino/imago/graph';
 import type { GraphScene } from '@acaprino/imago/graph';
 import { graphControls } from './appearance';
 import { ArrowLeft, ChevronRight, FolderOpen, Route, Search, X } from 'lucide-react';
-import { Workbench, DetailPanel, Disclosure, ListAction, TabList, Timeline } from '@acaprino/imago/react';
+import { Disclosure, ListAction, Shell, TabList, Timeline, Workbench } from '@acaprino/imago/react';
 import { getJson, POLL_MS, Session } from './session';
-import { parseEnvelope } from './envelope.ts';
+import { parseEnvelope, SCHEMA } from './envelope.ts';
 import type { Entity, Envelope, Flow } from './envelope.ts';
 import { childrenOf, dataLinks, flowFocus, flowsThrough, indexOf, project } from './projection.ts';
 import type { ProjectedEdge, ProjectedNode } from './projection.ts';
@@ -72,7 +72,7 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
   const entity: Entity | undefined = state.selected ? indexOf(envelope).byRef.get(state.selected) : undefined;
   if (!entity) {
     const meta = envelope.meta as Record<string, unknown>;
-    return <DetailPanel aria-live="polite">
+    return <div className="im-panel-body im-content-text" aria-live="polite">
       <p className="im-kicker">Come leggere la mappa</p>
       <h2>{String(meta.project_root ?? 'Progetto').split(/[\\/]/).filter(Boolean).pop()}</h2>
       <p>Seleziona un nodo per vederne il ruolo, i collegamenti e i flussi che lo attraversano. Doppio clic su un nodo con un numero per entrarci.</p>
@@ -83,7 +83,7 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
       </ul>
       <p className="im-muted">Nei flussi puoi leggere il sito e la provenienza della prova per ogni passaggio.</p>
       <Technologies envelope={envelope} />
-    </DetailPanel>;
+    </div>;
   }
   const Icon = iconFor({ nodeType: entity.node_type, type: entity.type });
   const flows = flowsThrough(envelope, entity.ref, state.view);
@@ -91,7 +91,7 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
   const gaps = envelope.gaps.filter(gap => gap.refs.includes(entity.ref));
   const lines = Array.isArray(entity.lines) ? entity.lines.filter(Boolean).join('–') : entity.lines;
   const related = edges.filter(edge => edge.source.startsWith(`${entity.ref}@`) || edge.target.startsWith(`${entity.ref}@`));
-  return <DetailPanel aria-live="polite">
+  return <div className="im-panel-body im-content-text" aria-live="polite">
     <p className="im-kicker"><Icon size={14} aria-hidden="true" /> {entity.node_type ?? TYPE_LABEL[entity.type] ?? entity.type} · {entity.location === 'external' ? 'esterno' : 'interno'}</p>
     <h2>{entity.name}</h2>
     {entity.path && <code className="im-caption">{entity.path}{lines ? `:${lines}` : ''}</code>}
@@ -113,8 +113,8 @@ function EntityDetails({ state, dispatch, edges }: { state: ExplorerState; dispa
     })}</ul></div>}
     {entity.evidence.length > 0 && <div className="im-section"><h3>Evidenze</h3><ul className="im-detail-list">{entity.evidence.slice(0, 8).map((item, index) =>
       <li key={index}><code>{item.path}{item.line ? `:${item.line}` : ''}</code></li>)}</ul></div>}
-    {gaps.length > 0 && <div className="im-section im-warning"><h3>Lacune</h3>{gaps.map((gap, index) => <p key={index}>{gap.reason}</p>)}</div>}
-  </DetailPanel>;
+    {gaps.length > 0 && <div className="im-section im-text-warn"><h3>Lacune</h3>{gaps.map((gap, index) => <p key={index}>{gap.reason}</p>)}</div>}
+  </div>;
 }
 
 function bindingSite(flow: Flow): string | undefined {
@@ -136,13 +136,13 @@ function RunFlows({ state, dispatch }: { state: ExplorerState; dispatch: (action
         title={flowTitle(envelope, flow)}
         detail={[`${ENTRY_LABEL[flow.entry_kind] ?? flow.entry_kind}`, flow.label ? bindingSite(flow) : null,
           `${flow.steps.length} passi`, flow.complete ? null : 'incompleto'].filter(Boolean).join(' · ')} /></li>)}</ul>
-    {current && <Timeline items={current.steps.slice(0, 40).map((step, index) => ({
+    {current && <div className="im-content-text"><Timeline items={current.steps.slice(0, 40).map((step, index) => ({
       id: index,
       title: <>{entityName(envelope, step.source)} <strong>{LINK_LABEL[step.type] ?? step.type}</strong> {entityName(envelope, step.target)}</>,
       detail: <code>{[step.route?.slice(1).join(' '), step.site, step.origin,
         step.confidence === 'sampled' ? 'campionata dal profiler' : step.confidence === 'observed' ? 'osservata in esecuzione' : null,
         step.conflict ? 'destinazioni in conflitto' : null].filter(Boolean).join(' · ')}</code>,
-    }))} />}
+    }))} /></div>}
     {!!current?.gaps?.length && <div className="im-section"><h3>Dove si ferma la prova</h3>
       <ul className="im-detail-list">{current.gaps.map((gap, index) =>
         <li key={index}><code>{gap.site}</code> · {gap.reason}</li>)}</ul></div>}
@@ -156,25 +156,48 @@ function fileRef(envelope: Envelope, file: string): string | null {
   return file.startsWith(`${target}/`) ? `file:${file.slice(target.length + 1)}` : null;
 }
 
-function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { file: string } | null }) {
-  const [state, dispatch] = useReducer(reduce, envelope, initialState);
-  const shown = useRef(envelope);
-  useEffect(() => {
-    if (envelope !== shown.current) { shown.current = envelope; dispatch({ type: 'replaceEnvelope', json: envelope }); }
+const EMPTY = parseEnvelope({ schema: SCHEMA, entities: [], relations: [], memberships: [] });
+type Model = ReturnType<typeof useExplorer>;
+
+// The explorer's state and what is projected from it, for the whole page: the sidebar, the details and the canvas read it.
+function useExplorer(envelope: Envelope | null) {
+  const [state, dispatch] = useReducer(reduce, EMPTY, initialState);
+  const shown = useRef<Envelope | null>(null);
+  useEffect(() => {  // the first export of a run starts clean, a later one keeps the person's place
+    if (!envelope) { shown.current = null; return; }
+    dispatch(shown.current ? { type: 'replaceEnvelope', json: envelope } : { type: 'load', envelope });
+    shown.current = envelope;
   }, [envelope]);
-  useEffect(() => {
-    const ref = pick && fileRef(envelope, pick.file);
-    if (ref) dispatch({ type: 'select', ref });
-  }, [pick]);
-  const [layout, setLayout] = useState<{ key: string; value: Layout } | null>(null);
-  const [error, setError] = useState('');
-  const [vertical, setVertical] = useState(() => window.matchMedia('(max-width: 899px)').matches);
-  const client = useRef<ReturnType<typeof createLayoutClient> | null>(null);
   const projection = useMemo(() => project(state.envelope, state.view, state.scope, state.filters, state.open, state.selected),
     [state.envelope, state.view, state.scope, state.filters, state.open, state.selected]);
   const focus = useMemo(() => (state.flow ? flowFocus(state.envelope, state.flow, projection) : null), [state.flow, projection]);
   const data = useMemo(() => (focus ? [] : dataLinks(state.envelope, projection)), [focus, projection]);
   const edges = useMemo(() => [...projection.edges, ...data, ...(focus?.edges ?? [])], [projection, data, focus]);
+  const selectedIds = new Set(state.selected ? projection.owners[state.selected] ?? [] : []);
+  return { state, dispatch, projection, focus, data, edges, selectedIds, ready: envelope !== null && shown.current !== null && state.envelope !== EMPTY };
+}
+
+function Navigation({ model }: { model: Model }) {
+  const { state, dispatch, projection, selectedIds } = model;
+  return <>
+    <h3>Flussi</h3>
+    <RunFlows state={state} dispatch={dispatch} />
+    <h3>Elementi visibili</h3>
+    <ul className="im-detail-list">{projection.nodes.map(node => {
+      const Icon = iconFor(node);
+      return <li key={node.id}><ListAction title={node.label} detail={nodeMeta(node)}
+        icon={<Icon size={14} aria-hidden="true" />} pressed={selectedIds.has(node.id)} onClick={() => dispatch({ type: 'select', ref: node.ref })}
+        onDoubleClick={() => node.collapsed && dispatch({ type: 'open', ref: node.ref })} /></li>;
+    })}</ul>
+  </>;
+}
+
+function Explorer({ model }: { model: Model }) {
+  const { state, dispatch, projection, focus, data, edges, selectedIds } = model;
+  const [layout, setLayout] = useState<{ key: string; value: Layout } | null>(null);
+  const [error, setError] = useState('');
+  const [vertical, setVertical] = useState(() => window.matchMedia('(max-width: 899px)').matches);
+  const client = useRef<ReturnType<typeof createLayoutClient> | null>(null);
   const direction = vertical ? 'DOWN' : 'RIGHT';
   const key = `${direction}|${projection.nodes.map(node => node.id).join(',')}|${edges.map(edge => edge.id).join(',')}`;
 
@@ -196,7 +219,6 @@ function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { file: strin
   }, [key]);
 
 
-  const selectedIds = new Set(state.selected ? projection.owners[state.selected] ?? [] : []);
   const neighbours = new Set(projection.edges.filter(edge => selectedIds.has(edge.source) || selectedIds.has(edge.target)).flatMap(edge => [edge.source, edge.target]));
   const flowNodes = new Set(focus?.nodes ?? []);
   const busy = !layout || layout.key !== key;
@@ -232,14 +254,14 @@ function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { file: strin
     catch (reason) { dispatch({ type: 'replaceEnvelope', json: { error: String(reason) } }); }
   };
 
-  return <div className="im-page-view">
-    <header className="im-toolbar">
+  return <>
+    <header className="im-content-toolbar">
       <strong>Codebase Map</strong>
       <span className="im-muted">{project_name}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}</span>
       <label className="im-end im-cluster">Apri altro export<input className="im-file-selector" type="file" accept=".json,application/json" onChange={event => openFile(event.target.files?.[0])} /></label>
     </header>
     {(state.error || state.warning) && <p className="im-note" data-im-tone={state.error ? 'err' : 'warn'} role="status">{state.error ?? state.warning}</p>}
-    <div className="im-toolbar">
+    <div className="im-content-toolbar">
       <TabList label="Vista" tabs={views} value={state.view} onSelect={view => dispatch({ type: 'view', view })} />
       <nav className="im-cluster" aria-label="Posizione">
         <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'root' })}>Sistema</button>
@@ -253,29 +275,17 @@ function Explorer({ envelope, pick }: { envelope: Envelope; pick?: { file: strin
       </select>
       {filtered > 0 && <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'resetFilters' })}><X size={13} />Azzera filtri ({filtered} nascosti)</button>}
     </div>
-    <Workbench navigation={<>
-        <h3>Flussi</h3>
-        <RunFlows state={state} dispatch={dispatch} />
-        <h3>Elementi visibili</h3>
-        <ul className="im-detail-list">{projection.nodes.map(node => {
-          const Icon = iconFor(node);
-          return <li key={node.id}><ListAction title={node.label} detail={nodeMeta(node)}
-            icon={<Icon size={14} aria-hidden="true" />} pressed={selectedIds.has(node.id)} onClick={() => select(node.ref)}
-            onDoubleClick={() => node.collapsed && dispatch({ type: 'open', ref: node.ref })} /></li>;
-        })}</ul>
-      </>} details={<EntityDetails state={state} dispatch={dispatch} edges={projection.edges} />}>
       <section className="im-canvas-panel" id="graph-view" role="tabpanel" aria-labelledby={state.view + '-tab'}>
-        <Diagram scene={scene} layoutKey={busy ? '' : key}
+        <div className="im-canvas-frame"><Diagram scene={scene} layoutKey={busy ? '' : key}
           onSelect={id => { const n = byId.get(id); if (n) select(n.ref); }}
           onOpen={id => { const n = byId.get(id); if (n?.collapsed) open(n.ref); }}
-          onClear={() => dispatch({ type: 'select', ref: null })} />
+          onClear={() => dispatch({ type: 'select', ref: null })} /></div>
         {busy && !error && projection.nodes.length > 0 && <div className="im-canvas-message im-note" role="status"><span className="im-spinner" aria-hidden="true" /> Dispongo il grafo…</div>}
         {!projection.nodes.length && <div className="im-canvas-message im-note" role="status">Nessun elemento visibile.{filtered > 0 && <button type="button" className="im-btn im-btn--ghost im-btn--sm" onClick={() => dispatch({ type: 'resetFilters' })}>Azzera filtri</button>}</div>}
         {error && <div className="im-canvas-message im-note" data-im-tone="err" role="alert">Impossibile disporre il grafo: {error}</div>}
-        <p className="im-caption im-panel-strip" data-graph-counts>{projection.nodes.length} nodi · {projection.edges.length} relazioni · {data.length} collegamenti di dati (tratteggiati) · {projection.counts.aggregated} dentro i gruppi{focus ? ` · flusso su ${focus.nodes.length} nodi` : ''}</p>
+        <p className="im-caption im-content-toolbar" data-graph-counts>{projection.nodes.length} nodi · {projection.edges.length} relazioni · {data.length} collegamenti di dati (tratteggiati) · {projection.counts.aggregated} dentro i gruppi{focus ? ` · flusso su ${focus.nodes.length} nodi` : ''}</p>
       </section>
-    </Workbench>
-  </div>;
+  </>;
 }
 
 type LiveEvent = { cursor: number; timestamp: string; event: string; message: string; phase?: number };
@@ -287,6 +297,11 @@ function App() {
   const [run, setRun] = useState(() => new URLSearchParams(window.location.search).get('run') ?? '');
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [pick, setPick] = useState<{ file: string } | null>(null);
+  const model = useExplorer(envelope);
+  useEffect(() => {
+    const ref = pick && envelope && fileRef(envelope, pick.file);
+    if (ref) model.dispatch({ type: 'select', ref });
+  }, [pick]);
   const load = (url: string, stale = () => false) => getJson(url).then(json => {
     if (!stale()) { setEnvelope(parseEnvelope(json)); setFailure(''); }
   }).catch(reason => { if (!stale()) setFailure(String(reason?.message ?? reason)); });
@@ -325,16 +340,27 @@ function App() {
     return () => { stopped = true; window.clearInterval(timer); };
   }, [runs, run]);
   const last = events[events.length - 1];
-  const live = runs && <><div className="im-toolbar">
+  const live = runs && <><div className="im-content-toolbar">
     <label>Run <select className="im-select" value={run} onChange={event => setRun(event.target.value)}>{runs.map(id => <option key={id}>{id}</option>)}</select></label>
     <span className="im-muted" role="status">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
   </div><Disclosure label="Sessione e review">
     <Session onPick={file => setPick({ file })} onRun={id => { listRuns(id).catch(() => undefined); }} />
   </Disclosure></>;
-  if (runs && !runs.length) return <><main className="im-zero-state"><h1>Nessun run</h1><p>Crea un run qui sotto, o avvia una mappa nella sessione.</p></main><Session onPick={() => undefined} onRun={id => { listRuns(id).catch(() => undefined); }} /></>;
-  if (failure) return <>{live}<main className="im-zero-state"><h1>Export non leggibile</h1><p>{failure}</p></main></>;
-  if (!envelope) return <>{live}<main className="im-zero-state" role="status"><span className="im-spinner" aria-hidden="true" /> Carico l'export…</main></>;
-  return <>{live}<Explorer key={run} envelope={envelope} pick={pick} /></>;
+  const empty = (title: string, text: string, status?: boolean) => <div className="im-empty" role={status ? 'status' : undefined}><strong>{title}</strong><p>{text}</p></div>;
+  const noRuns = runs && !runs.length;
+  const ready = !noRuns && !failure && model.ready;
+  const content = noRuns ? <>{empty('Nessun run', 'Crea un run qui sotto, o avvia una mappa nella sessione.')}
+      <Session onPick={() => undefined} onRun={id => { listRuns(id).catch(() => undefined); }} /></>
+    : <>{live}{failure ? empty('Export non leggibile', failure) : !envelope ? empty("Carico l'export…", '', true)
+      : ready && <Explorer key={run} model={model} />}</>;
+  return <Shell sidebar={ready} skipLabel="Vai al contenuto" titlebar={titlebar}>
+    <Workbench aria-label="Codebase Map" detailsLabel="Dettaglio" navigationLabel="Mappa"
+      navigation={ready ? <Navigation model={model} /> : null}
+      details={ready ? <EntityDetails state={model.state} dispatch={model.dispatch} edges={model.projection.edges} /> : null}>{content}</Workbench>
+  </Shell>;
 }
+
+const titlebar = <header className="im-titlebar"><div className="im-brand">
+  <span className="im-mark" aria-hidden="true">D</span><span className="im-wordmark">Daodan</span></div></header>;
 
 createRoot(document.getElementById('app')!).render(<React.StrictMode><App /></React.StrictMode>);
