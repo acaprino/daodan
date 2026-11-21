@@ -18,7 +18,7 @@ import snapshot
 
 @pytest.fixture
 def engine(tmp_path, monkeypatch):
-    states, phases = {}, []
+    states, phases, written, arrived = {}, [], set(), {}
     fake = container.Engine("fake", ("fake",))
     monkeypatch.setattr(container, "find_engine", lambda: fake)
     monkeypatch.setattr(container, "free_memory", lambda: 16 * 2**30)
@@ -39,6 +39,12 @@ def engine(tmp_path, monkeypatch):
         Path(row["log"]).write_text("", encoding="utf-8")
         work = states[volumes[0].split(":")[0]]
         phases.append((name, list(volumes), command))
+        # As Docker does: what is copied in before the start reaches a volume only while that volume is empty.
+        state = volumes[1].split(":")[0]
+        if copy is not None and state not in written:
+            with tarfile.open(copy) as bundle:
+                arrived[state] = {path for path in bundle.getnames() if path.startswith("daodan/state/")}
+        written.update(volume.split(":")[0] for volume in volumes[:2])
         if name == "node-restore":
             assert network.startswith("daodan-net-")
             with tarfile.open(copy) as bundle:
@@ -47,12 +53,13 @@ def engine(tmp_path, monkeypatch):
             work.add("node_modules/restored")
         elif name == "clone-node":
             assert network == "none" and all(v.endswith(":ro") for v in volumes[2:])
+            with tarfile.open(copy) as bundle:
+                assert not any(path.startswith("work/") for path in bundle.getnames())
             work.update(states[volumes[2].split(":")[0]])
         elif name == "prepare":
             assert work == {"node_modules/restored"}  # no earlier consumer's writes
             assert "npm ci " not in " ".join(command)
-            with tarfile.open(copy) as bundle:
-                assert not any(name.startswith("work/") for name in bundle.getnames())
+            assert "daodan/state/in/node.tar.gz" in arrived.get(state, ())  # its own tools install from it
             work.add("consumer-write")
         elif name == "execute":
             assert network == "none" and work == {"node_modules/restored", "consumer-write"}

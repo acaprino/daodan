@@ -177,6 +177,18 @@ La prima consultazione prepara un unico indice del grafo. Il [test di costo](../
 
 La scheda globale ha una prova separata in `tests/test_codebase_map_system_brief.py::DeclaredTests::test_global_brief_reopens_only_changed_unmodelled_yaml`. La fixture contiene Dockerfile, Compose, package.json e due manifesti YAML. Prima della modifica, prima e seconda consultazione aprivano quattro sorgenti ciascuna. Ora la scheda riprende le immagini Docker, i servizi Compose e le dipendenze dalla pre-mappa. Apre i soli manifesti Kubernetes e Backstage alla prima consultazione (2 aperture) e nessun sorgente alla seconda, anche riaprendo il servizio. Cambiando il catalogo alla terza lettura, la verifica riapre un solo file e scarta la dichiarazione che diverge dallo snapshot.
 
+### Tre percorsi con gli indicizzatori veri, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/real_paths.py [web] [tk] [tauri] [--work DIR]` con le dipendenze di Daodan e un motore di container (su Windows quello di Daodan). Parametri: il caso (`benchmarks/flow-model/app`, `real-paths/tk-desk`, `real-paths/tauri-desk`), le regole e le risposte sulle forme del caso, la disposizione (analisi accanto al checkout). Lo script crea il run dal servizio con il passaggio del motore, legge i candidati prima delle regole, registra regole e risposte, apre ogni scheda e controlla ciò che deve reggere; esce con 1 se un controllo cade.
+
+| Caso | Indicizzatori nel container | Secondi | Controllo, gestore, ultimo punto provato |
+| --- | --- | ---: | --- |
+| web | scip-python 0.6.8, scip-typescript 0.6.2 | 129 | «Paga» `web/checkout.ts:22` → `onPayClick` → `submitPayment` → `store:web state/payment` (`web/checkout.ts:14`) |
+| tk | scip-python 0.6.8 | 106 | «Salva» `ui.py:8` → `App.save` (gestore dato dall'indice) → `store:disk/orders` (`ui.py:11`) |
+| tauri | scip-typescript 0.6.2, rust-analyzer 2026-11-09 | 322 | «Salva profilo» `src/view.tsx:18` → `save` → `src-tauri/src/main.rs::persist` (`tauri-invoke`, `src/view.tsx:4`); `only_in_tests` e `on_idle_builder` restano lacune |
+
+Il caso Tauri prima falliva: con il ripristino Node condiviso `tsc` e scip-typescript non trovavano `node.tar.gz` (spec della pipeline, sezione 7.1). Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la causa. Le stesse tre fixture su Modal (`modal_pipeline.py --folder-out`): indici `fresh` in 132, 100 e 242 secondi; lì i test Rust non partono per le librerie di sistema che mancano. Le fixture non dichiarano test: nessun arco osservato.
+
 ## Confronto proposto per i flussi multilivello
 
 Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md). **Confronto proposto, ancora da eseguire su Modal.**

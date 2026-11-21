@@ -134,7 +134,8 @@ def _split(copy, shared, extra, inputs):
 
 
 def clone(engine, image, project, copy, request, visibility, mounts, limits, timeout, out_dir, hide):
-    """Restore into separate engine-managed volumes, then copy them read-only into this consumer's volumes."""
+    """Restore into separate engine-managed volumes, then copy them read-only into this consumer's volumes, with
+    its helper files: the copy its own preparation still has to take in, none."""
     import container
     folder = _session()
     shared, extra = copy.with_name("node.tar"), copy.with_name("inputs.tar")
@@ -149,17 +150,19 @@ def clone(engine, image, project, copy, request, visibility, mounts, limits, tim
     with confinement.project_lock(lock, timeout=timeout):
         names, gaps = _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, shared, lock, owner)
     # Copy work and package caches. Each consumer bootstraps its own adapter and tools at their pinned versions.
+    # Its helper files go in with this phase: an engine fills a volume from what is copied in before the start
+    # only while the volume is empty, so after the clone they would stay under the mount, unseen.
     copied = container.phase(engine, "clone-node", image=image, network="none",
                              command=["sh", "-ec", "cp -a /seed/work/. /work/; "
                                       "find /seed/state -mindepth 1 -maxdepth 1 ! -name tools ! -name in "
                                       "-exec cp -a -t /daodan/state -- {} +"],
-                             env={}, limits=limits, timeout=timeout, copy=None, outputs=[], out_dir=out_dir,
+                             env={}, limits=limits, timeout=timeout, copy=extra, outputs=[], out_dir=out_dir,
                              volumes=[*mounts, f"{names[0]}:/seed/work:ro", f"{names[1]}:/seed/state:ro"])
     container.mask_file(copied.get("log"), hide)
     container.append_record(out_dir / container.RECORD_NAME, {**container.mask_row(copied, hide), "preparation": key})
     if copied.get("outcome") != "exited" or copied.get("exit_code") != 0:
         raise container.Gap(copied.get("cause") or "cannot clone prepared Node volumes", "see clone-node.log")
-    return extra, gaps
+    return None, gaps  # nothing is left for the consumer's preparation to copy in
 
 
 def _seed(engine, image, request, visibility, limits, timeout, out_dir, hide, shared, lock, owner):

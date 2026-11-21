@@ -9,6 +9,7 @@ import http.client
 import json
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import sys
@@ -53,11 +54,15 @@ class Measure:
     def audit(self, event, args):
         if self.counts is None:
             return
-        if event == "subprocess.Popen" and Path(args[0]).stem in {"npm", "pnpm", "yarn", "pip", "uv", "cargo"}:
+        # Windows gives no executable and one command line: the program is its first word.
+        if event == "subprocess.Popen" and Path(args[0] or shlex.split(args[1], posix=False)[0].strip('"')).stem in {
+                "npm", "pnpm", "yarn", "pip", "uv", "cargo"}:
             self.counts["package_manager_processes"] += 1
-        if event == "sqlite3.connect" and self.manifest in str(args[0]):
+        # A store opened read-only is named by its URI, whose separators are not Windows's.
+        if event == "sqlite3.connect" and (self.manifest in str(args[0]) or Path(self.manifest).as_uri() in str(args[0])):
             self.counts["snapshot_connections"] += 1
-        if event == "sqlite3.connect" and self.card_cache in str(args[0]):
+        if event == "sqlite3.connect" and (self.card_cache in str(args[0])
+                                           or Path(self.card_cache).as_uri() in str(args[0])):
             self.counts["card_cache_connections"] += 1
         if event == "open" and isinstance(args[0], str) and args[1] and "r" in args[1] and args[0] in self.json_files:
             self.counts[self.json_files[args[0]]] += 1

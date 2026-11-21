@@ -6,6 +6,7 @@ from collections import Counter
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -27,7 +28,8 @@ def observe():
 
     def audit(event, args):
         if event == "subprocess.Popen":
-            name = Path(args[0]).stem
+            # Windows gives no executable and one command line: the program is its first word.
+            name = Path(args[0] or shlex.split(args[1], posix=False)[0].strip('"')).stem
             if name == "uv" and "--offline" in args[1]:
                 name = "uv --offline"
             processes[name] += 1
