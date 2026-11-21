@@ -226,6 +226,24 @@ Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-ma
 
 A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo non espone un ingresso o un effetto, attribuire l'omissione alla raccolta delle evidenze. Se il riferimento è visibile al modello e viene interpretato male, attribuirla alla scoperta semantica. **Risultati del nuovo protocollo e fixture completa: da produrre.**
 
+### Scoperta cieca con il modello debole, variante A, 21 novembre 2026
+
+`python modal_map.py spawn --tag collaudo-cieco-haiku --cases CASO --tar CASO=ARCHIVIO --rules session --scopes system --models haiku --reps 2 --budget 1`, poi `python score.py system` su ogni `map.json` (`results/system/collaudo-cieco-haiku/`). Caso: il più piccolo con riferimento dell'intero sistema (49 nodi confrontabili, 19 flussi, 22 ingressi, 24 effetti); archivio di solo codice sul commit del riferimento (178 file, nessun segreto trovato). Il riferimento resta fuori dall'ambiente dell'agente ed è confrontato dopo il salvataggio.
+
+| Misura | Ripetizione 1 | Ripetizione 2 |
+| --- | ---: | ---: |
+| Flussi ritrovati / proposti | 0 su 19 / 2 | 0 su 19 / 3 |
+| Ingressi / effetti ritrovati | 0 su 22 / 0 su 24 | 0 su 22 / 0 su 24 |
+| Nodi ritrovati (profondità 0 e 1) | 3 su 49 (3 su 12) | 7 su 49 (7 su 12) |
+| Precisione dei nodi | 4 su 7 | 9 su 10 |
+| Flussi alla profondità 1 | 26% | 38% |
+| Frecce rifiutate | 0 su 7 | 1 su 8 |
+| Schede in coda / aperte / decisioni di percorso | 50 / 0 / 0 | 49 / 0 / 0 |
+| Mapper: secondi, turni | 60, 9 | 67, 10 |
+| Costo (USD) | 0,048, con le 88 regole | 0,019 |
+
+Preparazione 320 secondi; nessuna run fermata dal tetto. Il mapper elenca le schede dei percorsi e passa alla proposta libera senza aprirne una. Le otto run precedenti di Haiku sullo stesso caso (`sysmap-a7-haiku`, `sysmap-gate-b-haiku`, `sysmap-gate-b2-haiku`, `sysmap-c1-haiku`), rivalutate con lo `score.py` di oggi: 0 flussi su 19, 0 ingressi e 0 effetti in tutte; nodi da 3 a 9 su 49. Con `--models qwen` la sessione delle regole si è fermata dopo 1.574 secondi: il gateway rifiutava la connessione. Limiti: un solo caso; il passaggio del motore di queste run gira senza il container di Daodan; varianti B e C e fixture completa non eseguite.
+
 ### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
 
 Eseguire `python benchmarks/system-map/pipeline_reuse.py`. Lo script crea una volta il manifest SQLite della fixture `js-npm-single`, poi avvia due processi distinti che chiamano `pipeline.run` senza saltare passi. La fixture dichiara pacchetti npm e il comando `node --test`. Ogni corsa imposta `DAODAN_CONTAINER=off`. Le grammatiche e l’ambiente uv di Daodan erano già disponibili.
