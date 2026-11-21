@@ -23,6 +23,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
 from mcp_service import launch_project, MapService
+import secret_mask
 
 
 async def _invoke(ctx: Context, operation, *args, **kwargs) -> dict:
@@ -31,11 +32,12 @@ async def _invoke(ctx: Context, operation, *args, **kwargs) -> dict:
     try:
         result = await anyio.to_thread.run_sync(partial(operation, *args, **kwargs))
     except (ValueError, OSError, TypeError, KeyError) as error:
-        raise ToolError(str(error)) from error
+        safe = await anyio.to_thread.run_sync(partial(secret_mask.tool_result, {"error": str(error)}))
+        raise ToolError(safe["error"]) from None
     except Exception as error:
         # Any other failure is still a tool result the client can read, never
         # a protocol fault that ends the session.
-        raise ToolError(f"internal error in {operation.__name__}: {type(error).__name__}: {error}") from error
+        raise ToolError(f"internal error in {operation.__name__}: {type(error).__name__}") from None
     await ctx.report_progress(1, message=f"Finished {operation.__name__}")
     session = getattr(ctx, "session", None)
     notify = getattr(session, "send_resource_updated", None)
@@ -45,7 +47,7 @@ async def _invoke(ctx: Context, operation, *args, **kwargs) -> dict:
             await notify("daodan://project/live")
         except Exception:  # noqa: BLE001 - optional notification must never fail the tool call
             pass
-    return result
+    return await anyio.to_thread.run_sync(partial(secret_mask.tool_result, result))
 
 
 def create_server(project: str | Path, store: str | None = None) -> MCPServer:
@@ -130,10 +132,12 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
     async def codebase_map_flows(ctx: Context, run_id: str, rules: list[dict] | None = None, start: str | None = None,
                                  direction: str = "from", level: str = "fisico", limit: int = 100,
                                  card: dict | None = None, brief: bool = False, map: dict | None = None,
-                                 about: str | None = None, levels: list[str] | None = None) -> dict:
-        """Flows of the bound run, from the project's link rules. Without recorded rules it returns the rule format (status needs_rules) and the technologies the registry recognizes in each build unit: read the few files that decide how the project reads and writes its state, calls and declares its routes, reaches its stores and binds user actions, then pass rules to record them. Without start: entry points (routes, user actions, scheduled work), stores with their writers and readers, routes linked and declared gaps. With start, a node as file::symbol, store:name/key or module:name: direction from follows what it causes, to follows where its data comes from, through lists the entry points whose flow holds it. level is fisico (symbols), logico (modules), dati (store accesses) or ux (user actions and who shows the data). Links are direct (in the code), deduced (a rule pairs both ends) or declared (an external module); a value a rule cannot read is a gap, never a guess. card {name, type (dati, ux, servizio, dispositivo, misto), text} records your card of the flow at start: read the steps, open the source only where the data is written, read or changed, and write what happens to the data at each step; every line cites a file:line that is a step of this flow, or the card is refused. A flow answer carries its card, with fresh false when a file of the flow changed since. The system map (named nodes, flows, areas): brief=true returns the system brief, the map format and the areas to go through; map={...} records a proposal and reports each node, arrow and flow as accepted or refused with the reason, and the coverage; about="name" answers for an area, a flow or a node by id or current name, and with levels (persone, funzioni, dati, codice, infrastruttura) shows that flow at those levels. level is for a flow from start, levels for the system map."""
+                                 about: str | None = None, levels: list[str] | None = None,
+                                 entry_offset: int | None = None) -> dict:
+        """Flows of the bound run, from the project's link rules. Without recorded rules it returns the rule format (status needs_rules) and the technologies the registry recognizes in each build unit: read the few files that decide how the project reads and writes its state, calls and declares its routes, reaches its stores and binds user actions, then pass rules to record them. Without start: entry points (routes, user actions, scheduled work), stores with their writers and readers, routes linked and declared gaps. With start, a node as file::symbol, store:name/key or module:name: direction from follows what it causes, to follows where its data comes from, through lists the entry points whose flow holds it. level is fisico (symbols), logico (modules), dati (store accesses) or ux (user actions and who shows the data). Links are direct (in the code), deduced (a rule pairs both ends) or declared (an external module); a value a rule cannot read is a gap, never a guess. card {name, type (dati, ux, servizio, dispositivo, misto), text} records your card of the flow at start: read the steps, open the source only where the data is written, read or changed, and write what happens to the data at each step; every line cites a file:line that is a step of this flow, or the card is refused. A flow answer carries its card, with fresh false when its files or supporting flow evidence changed. The system map (named nodes, flows, areas): brief=true returns the system brief, the map format and the areas to go through; map={...} records a proposal and reports accepted and refused evidence and flags incomplete flows with the missing steps, and the coverage; about="name" answers for an area, a flow or a node by id or current name, and with levels (persone, funzioni, dati, codice, infrastruttura) shows that flow at those levels. level is for a flow from start, levels for the system map. entry_offset=0 pages through unclassified AST entry candidates, even before rules; continue at next_offset. The brief shows examples, separate from coverage."""
         return await _invoke(ctx, service.flows, run_id, rules=rules, start=start, direction=direction,
-                             level=level, limit=limit, card=card, brief=brief, map=map, about=about, levels=levels)
+                             level=level, limit=limit, card=card, brief=brief, map=map, about=about, levels=levels,
+                             entry_offset=entry_offset)
 
     @server.tool(annotations=read_only)
     async def codebase_map_read(ctx: Context, run_id: str, requests: list[dict]) -> dict:
@@ -268,7 +272,11 @@ def create_server(project: str | Path, store: str | None = None) -> MCPServer:
     @server.resource("daodan://project/live")
     def codebase_map_live_resource() -> str:
         """Latest reactive store pulse (hook refreshes, run milestones, UI transitions)."""
-        return json.dumps(service.live_pulse(after=0, limit=50), ensure_ascii=False)
+        try:
+            pulse = service.live_pulse(after=0, limit=50)
+        except Exception as error:
+            pulse = {"error": str(error)}
+        return json.dumps(secret_mask.tool_result(pulse), ensure_ascii=False)
 
     return server
 

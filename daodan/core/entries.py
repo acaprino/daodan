@@ -518,13 +518,46 @@ def noir(report: dict, root: str) -> list[dict]:
     return out
 
 
-def candidates(links: dict, manifest: Path) -> list[dict]:
-    """The candidates of every reader: the residual net on the links, the others on the snapshot they come from."""
+def _syntax(manifest: Path, *, labels: bool) -> list[dict]:
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
         view = edge_view.load_edge_view(store)
         facts = flows.Facts(store, db, view)
-        found = passed(facts, view, _project_names(db)) + translated(facts, markup(facts, view)) + decorated(facts)
-    return residual(links) + found
+        attributes = markup(facts, view)
+        if labels:
+            attributes = translated(facts, attributes)
+        return passed(facts, view, _project_names(db)) + attributes + decorated(facts)
+
+
+def candidates(links: dict, manifest: Path) -> list[dict]:
+    """The candidates of every reader: the residual net on the links, the others on the snapshot they come from."""
+    return residual(links) + _syntax(manifest, labels=True)
+
+
+def cached_syntax(manifest: Path) -> list[dict]:
+    """Rule-independent AST evidence for the public mapper, built only when asked for.
+
+    Use the snapshot, engine store and reader versions of the link cache. Raw labels
+    and decorator arguments stay out of this artifact and the model's brief.
+    """
+    import snapshot
+    manifest = Path(manifest)
+    path = manifest.with_name("entry-candidates.json")
+    stamp = flows._links_stamp(manifest)
+    key = flows._links_key([], stamp, [])
+    try:
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        if saved["key"] == key:
+            return saved["candidates"]
+    except (FileNotFoundError, ValueError, KeyError, TypeError):
+        pass
+    found = _syntax(manifest, labels=False)
+    rows = [{"status": "candidate", **{k: item[k] for k in ("reader", "shape", "site", "symbol", "gap") if k in item}}
+            for item in found]
+    rows.sort(key=lambda row: (row["site"], row["reader"], row["shape"], row["symbol"]))
+    grammars = set(QUERIES["grammars"].values()) | QUERIES["queries"].keys() | QUERIES["decorators"].keys()
+    if flows._links_stamp(manifest) == stamp and not any(_treesitter.load_failure(g) for g in grammars):
+        snapshot._write_json_atomic(path, {"key": key, "candidates": rows})
+    return rows
 
 
 def shapes(found: list[dict]) -> list[dict]:

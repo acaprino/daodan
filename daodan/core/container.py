@@ -95,7 +95,7 @@ IMAGE_NAME = re.compile(r"daodan-prepared-[0-9a-f]{12}")  # a preparation kept f
 RESULTS = "/daodan/out/results"  # each command's code and streams, brought back by `run_commands`
 NETWORKS = ("none", "registries")
 OUTPUT_CAP = 2**30  # what the declared outputs of a run may hold together
-RUN_FILES = (RECORD_NAME, "prepare.log", "execute.log")  # the run's own files, never an output's name
+RUN_FILES = (RECORD_NAME, "prepare.log", "execute.log", "node-restore.log", "clone-node.log")
 STREAM_SLACK = 2**26  # what tar headers and padding may add to the files' bytes, and far more
 HEADER_CAP = 2**13  # a pax or GNU long-name header: a 4096-byte path and the times fit
 # A member name no system may receive as written: a Windows device, a character Windows refuses or a control.
@@ -426,7 +426,10 @@ def find_engine() -> Engine:
     (the test suites, which start no container)."""
     if os.environ.get("DAODAN_CONTAINER") == "off":
         raise Gap("container engine off (DAODAN_CONTAINER=off)", "unset DAODAN_CONTAINER to run in a container")
-    return own_engine() if os.name == "nt" else user_engine()
+    if os.name == "nt":
+        import node_preparation
+        return node_preparation.windows_engine(own_engine)
+    return user_engine()
 
 
 def user_engine() -> Engine:
@@ -1585,7 +1588,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                      cpus: float | None = None, registries: tuple[str, ...] = REGISTRIES,
                      engine: Engine | str | None = None,
                      inputs: dict[str, Path] | Callable[[], dict[str, Path]] | None = None,
-                     keep_root: bool = False, dotenv_env: list[tuple[str, str]] = (), blind: bool = False) -> dict:
+                     keep_root: bool = False, dotenv_env: list[tuple[str, str]] = (), blind: bool = False,
+                     node_restore: dict | None = None) -> dict:
     """Run `command` in a container over a copy of `project`; `prepare` first, with the registries open.
 
     `inputs` maps a container path to a host file the copy carries there, or is a function returning that map,
@@ -1608,6 +1612,8 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
     does not commit it is a gap with its answer. `blind`: the command never sees a value of the tracked .env files
     (`run_commands`, over their placeholders): without services or `dotenv_env`, which take the values, none is
     read, and what the run keeps is neither masked nor withheld.
+    With `node_restore`, the analysis prepares the checkout in separate volumes and clones them read-only into
+    this run's private work and state volumes before its own preparation. Each run still installs its adapter.
     """
     project, out_dir = Path(project).resolve(), Path(out_dir).resolve()
     if out_dir == project or project in out_dir.parents:
@@ -1709,6 +1715,14 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 for name in names:
                     checked(cli(found, "volume", "create", name), "volume create")
                 mounts = [f"{names[0]}:{WORKDIR}", f"{names[1]}:{STATE}"]
+                prepare_copy = copy
+                if node_restore:
+                    import node_preparation
+                    visibility = ("blind" if blind else "values") if digest.get("dotenv") else "plain"
+                    prepare_copy, restore_gaps = node_preparation.clone(
+                        found, image, project, copy, node_restore, visibility, mounts, limits, prepare_timeout, out_dir, hide)
+                    if restore_gaps:
+                        result["gaps"] = [*(result.get("gaps") or ()), *restore_gaps]
                 network, proxy = f"daodan-net-{token}", f"daodan-proxy-{token}"
                 checked(cli(found, "network", "create", "--internal", network), "network create")
                 cleanup += [("rm", "-f", proxy), ("network", "rm", network)]
@@ -1728,7 +1742,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                 row = phase(found, "prepare", image=image, network=joined or network,
                             command=["sh", "-c", steps_script(steps, timeout, token), "sh", *prepare] if steps
                             else prepare, env={**env, **exported, **proxy_environment(f"http://proxy:{PROXY_PORT}")},
-                            limits=limits, timeout=prepare_timeout + (timeout if steps else 0), copy=copy, outputs=[],
+                            limits=limits, timeout=prepare_timeout + (timeout if steps else 0), copy=prepare_copy, outputs=[],
                             out_dir=out_dir, volumes=mounts, commit=kept_image)
                 append_record(record, {**hidden(row), "copy": digest})
                 if steps:

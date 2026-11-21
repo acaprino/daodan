@@ -212,6 +212,8 @@ def _anchor_records(store, records, anchor):
         if "line" in anchor and selected:
             width = min(r["anchor"]["end_line"] - r["anchor"]["start_line"] for r in selected)
             selected = [r for r in selected if r["anchor"]["end_line"] - r["anchor"]["start_line"] == width]
+            symbols = [r for r in selected if not r["entity_id"].endswith("::@file")]
+            selected = symbols or selected
     ambiguous = path is None and identity is None and len(selected) > 1
     return sorted(selected, key=lambda r: r["entity_id"]), ambiguous
 

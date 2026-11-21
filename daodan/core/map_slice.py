@@ -45,10 +45,16 @@ def project_slice(plan, request, *, authority, indexes=None):
         view = edge_view.load_edge_view(stores['candidate'], engine_store=paths['engine'])
         calls = []
         for ref in view['references']:
-            target = (ref.get('target_id') or '').split('::', 1)[0]
             source = ref['file']
-            if ref.get('resolution') == 'resolved' and source in by_file and target in by_file:
-                calls.append((source, target, ref))
+            if ref.get('kind') != 'call' or source not in by_file:
+                continue
+            for end in edge_view.call_ends(ref):
+                target = end['target_id'].split('::', 1)[0]
+                if target in by_file:
+                    evidence = {**ref, **end}
+                    if end['confidence'] in ('observed', 'sampled'):
+                        evidence['provenance'] = [end['resolver']]
+                    calls.append((source, target, evidence))
         # Each distinct file pair is cited once before any pair is cited twice, so repeated
         # calls on one pair cannot use the cap that other relations need.
         first, seen = [], set()
@@ -62,7 +68,8 @@ def project_slice(plan, request, *, authority, indexes=None):
         edges = [{'from': 'file:' + source, 'to': 'file:' + target, 'kind': 'call', 'evidence': {
                     'reference_id': ref['id'], 'file': source, 'span': ref.get('span'),
                     'caller': ref.get('caller'), 'target_id': ref['target_id'],
-                    'resolver': ref['resolver'], 'provenance': ref['provenance']}}
+                    'resolver': ref['resolver'], 'provenance': ref['provenance'], 'confidence': ref['confidence'],
+                    **({'conflict': True} if ref.get('conflict') else {})}}
                  for index, (source, target, ref) in enumerate(calls) if index in chosen]
         gaps = copy.deepcopy(plan['unresolved'])
         if len(selected) > len(projected) or omitted:

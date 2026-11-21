@@ -16,8 +16,9 @@ from pathlib import Path, PurePosixPath
 import re
 
 import modules
+from build_units import normalize_pypi_name
 
-NAME, VERSION, RANK = "modules.py", modules.SCHEMA, "reader"
+NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}.unit-resolution.2", "reader"
 PACKAGE_ECOSYSTEM = {
     "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
     "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
@@ -161,12 +162,32 @@ def facts(graph: dict) -> dict:
     return {"units": units, "workspace": list(workspaces.values()), "dependencies": dependencies}
 
 
+def external_packages(graph: dict, packages: list[dict]) -> list[dict]:
+    """Discard PyPI signs at the pyproject that explicitly resolves them to a local workspace member or directory."""
+    python = {m["id"]: m for m in graph["modules"] if "python" in m.get("ecosystems", ())}
+    local = set()
+    for edge in graph["edges"]:
+        if edge["kind"] != "declares" or edge["source"] not in python or edge["target"] not in python:
+            continue
+        source, target = python[edge["source"]], python[edge["target"]]
+        target_name = normalize_pypi_name(target["name"])
+        external = {normalize_pypi_name(name) for name in source["external"]}
+        workspace = {_root(source), *source["registered_by"]} & {_root(target), *target["registered_by"]}
+        for dep in source["path_dependencies"]:
+            name = normalize_pypi_name(dep["name"])
+            if name not in external and (dep["path"] == _root(target) or
+                                         (dep.get("workspace") and workspace and name == target_name)):
+                local.update((rel, name) for rel in source["manifests"] if PurePosixPath(rel).name == "pyproject.toml")
+    if not local:
+        return packages
+    return [p for p in packages if p["ecosystem"] != "pypi" or
+            ((p.get("declared_in") or "").partition("#")[0], normalize_pypi_name(p["name"])) not in local]
+
+
 def _declared_packages(graph: dict, inventory) -> list[dict]:
     """Declared package and container image signs from manifests, pubspec SDKs, Dockerfiles and Compose files; a
     manifest's package has the `version` its reader read there (`build_units`), none where it gives none."""
     units = [m for m in graph["modules"] if m["provenance"] == "build"]
-    own = {(PACKAGE_ECOSYSTEM.get(e), name.casefold()) for m in units for e in m.get("ecosystems", [])
-           for name in [m["name"], *m["aliases"]] if name}
     lines_cache: dict[str, list[str]] = {}
 
     def lines_of(rel: str) -> list[str]:
@@ -181,7 +202,7 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
     seen: set[tuple[str, str, str]] = set()
 
     def add(ecosystem: str, name: str, path: str, line: int | None, version: str | None = None) -> None:
-        if not name or not path or (ecosystem, name.casefold()) in own:
+        if not name or not path:
             return
         declared_in = f"{path}#L{line}" if line else path
         key = (ecosystem, name.casefold(), path)
@@ -193,9 +214,9 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
     for unit in units:
         ecosystems = sorted({PACKAGE_ECOSYSTEM[e] for e in unit.get("ecosystems", []) if e in PACKAGE_ECOSYSTEM})
         for ecosystem in ecosystems:
-            for name in unit.get("dependencies") or ():
-                if (ecosystem, name.casefold()) in own:
-                    continue
+            # Python signs are resolved per declaring manifest by external_packages after joining all readers.
+            dependencies = unit["dependencies"] if ecosystem == "pypi" else unit["external"]
+            for name in dependencies:
                 needle = name.split(":", 1)[-1] if ecosystem == "maven" and ":" in name else name
                 path, line = next(
                     ((p, n) for p in unit["manifests"] for n, text in enumerate(lines_of(p), 1)
@@ -240,7 +261,7 @@ def package_facts(manifest: Path) -> list[dict]:
             if result and (result.get("facts") or {}).get("packages"):
                 parts.append({"source": premap.label(source), "rank": source.RANK,
                               "facts": {"packages": result["facts"]["packages"]}})
-    return premap.join(parts).get("packages", []) if parts else []
+        return external_packages(context.graph, premap.join(parts).get("packages", [])) if parts else []
 
 
 def run(context) -> dict:

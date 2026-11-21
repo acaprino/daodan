@@ -25,7 +25,6 @@ import inspect
 import json
 import os
 from pathlib import Path, PurePosixPath
-import re
 import sys
 import tempfile
 import time
@@ -35,6 +34,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import confinement  # noqa: E402
+from build_units import normalize_pypi_name  # noqa: E402
 import module_derive  # noqa: E402
 import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
@@ -111,10 +111,6 @@ def label(source) -> str:
 
 # ---------------------------------------------------------------------- join
 
-def _package(name) -> str:
-    return re.sub(r"[-_.]+", "-", str(name)).casefold()
-
-
 def _canonical(value) -> str:
     if isinstance(value, list):
         return json.dumps(sorted(_canonical(v) for v in value))
@@ -125,7 +121,7 @@ def _same(facet: str, field: str, a, b) -> bool:
     # Names fold as PEP 503 does: uv prints `acme-cli` for `acme_cli`; a unit's name is compared only between
     # entries of the same root and kind.
     if (facet, field) == ("units", "name") and a and b:
-        return _package(a) == _package(b)
+        return normalize_pypi_name(a) == normalize_pypi_name(b)
     if (facet, field) in (("toolchains", "declared_in"), ("packages", "declared_in")) and a and b:
         return str(a).split("#", 1)[0] == str(b).split("#", 1)[0]
     if (facet, field) == ("packages", "name") and a and b:
@@ -427,6 +423,8 @@ def derive(manifest: Path, store, sources=None, runner=None, report=None) -> dic
               "binding": {"manifest": str(Path(manifest).resolve()), "logical_digest": logical_digest(store),
                           "root": store["root"]},
               "inputs_digest": _inputs(store, sources), "sources": statuses, **join(parts)}
+    if any(p["ecosystem"] == "pypi" for p in record.get("packages", ())):
+        record["packages"] = module_graph.external_packages(context.graph, record["packages"])
     gaps.extend(record.pop("superseded", []))
     record.setdefault("units", [])
     for unit in record["units"]:

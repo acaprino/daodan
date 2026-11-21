@@ -197,6 +197,18 @@ class CheckerTests(unittest.TestCase):
             {"kind": "no_ecosystem_sign", "entry": "minio", "ecosystem": "maven", "value": "io.minio:minio",
              "path": "pom.xml", "line": 9}])
 
+    def test_pypi_name_variants_match_without_changing_the_sign_or_collapsing_npm_names(self):
+        sentry = next(entry for entry in service_registry.load()["entries"] if entry["id"] == "sentry")
+        npm = {"id": "example", "signs": {"packages": {"npm": ["some_sdk"]}}}
+        for spelling in ("sentry-sdk", "sentry_sdk", "Sentry.SDK", "SENTRY._-Sdk"):
+            with self.subTest(spelling=spelling):
+                project = self.project([("pypi", spelling, "backend/pyproject.toml", 7),
+                                        ("npm", "some-sdk", "web/package.json", 3),
+                                        ("npm", "some_sdk", "web/package.json", 4)])
+                answer = service_registry.check_packages([sentry, npm], project)
+                self.assertEqual(answer["signs"], [("sentry", spelling, "backend/pyproject.toml", 7),
+                                                   ("example", "some_sdk", "web/package.json", 4)])
+
     def test_the_file_checker_reads_a_name_and_the_env_checker_a_token_outside_the_registry_s_files(self):
         self.assertEqual(service_registry.check_files(self.ENTRIES, self.project())["signs"],
                          [("acme", "acme.yml", "ci/acme.yml", None)])

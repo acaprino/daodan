@@ -8,7 +8,7 @@ import hashlib
 import json
 import os
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from snapshot_store import file_headers, header_metadata
 from source_files import MAX_PARSE_BYTES, is_forbidden
@@ -414,6 +414,7 @@ class _ImportResolver:
         self.root, self.target = root, target
         self.config = ts_path_config(target) if config is None else config
         self.files = file_headers(manifest)
+        self.header = getattr(manifest, "get_file_header", self.files.get)
         self.include_self = include_self
         perimeter = Perimeter(target) if perimeter is None else perimeter
         self.by_absolute: dict[Path, str] = {}
@@ -431,6 +432,7 @@ class _ImportResolver:
                 if os.path.normcase(str(resolved_rel)) == norm_rel:
                     self.by_norm[norm_rel] = rel
         self.known = _by_basename(self.by_absolute.values())
+        self.tauri_apps = None
 
     def keeps(self, hit: str | None, importer: str) -> bool:
         return bool(hit) and (self.include_self or hit != importer)
@@ -459,6 +461,56 @@ class _ImportResolver:
                 if rel.lower().endswith(suffixes) and (self.include_self or rel != importer)
                 and (name in ((self.files.get(rel) or {}).get("exports") or ())
                      or name in ((self.files.get(rel) or {}).get("symbols") or {}))]
+
+    def tauri_command(self, importer: str, name: str) -> list[str]:
+        """An attributed Rust function registered at a literal handler path in this frontend's src-tauri crate."""
+        if self.tauri_apps is None:
+            apps, records = {}, {}
+            for rel in self.allowed:
+                file = PurePosixPath(rel)
+                if file.suffix != ".rs":
+                    continue
+                crate = next((p for p in file.parents if p.name == "src" and p.parent.name == "src-tauri"), None)
+                if crate is None:
+                    continue
+                apps.setdefault(crate.parent.parent, {})
+                header = self.header(rel) or {}
+                if header.get("tauri"):
+                    records[file] = (crate, header)
+            for file, (crate, header) in records.items():
+                for handler in header["tauri"]["handlers"]:
+                    parts = handler.split("::")
+                    command = parts.pop()
+                    if not parts:
+                        imports = {entry["module"] if not entry.get("from") else f"{entry['module']}::{command}"
+                                   for entry in header.get("import_bindings", ()) if command in entry["names"]}
+                        if len(imports) == 1:
+                            parts = imports.pop().split("::")[:-1]
+                        elif imports:
+                            continue
+                    paths = [file]
+                    if parts:
+                        base = file.parent if file.name in ("main.rs", "lib.rs", "mod.rs") else file.with_suffix("")
+                        if parts[0] == "crate":
+                            parts.pop(0)
+                            base = crate
+                        while parts and parts[0] in ("self", "super"):
+                            if parts.pop(0) == "super":
+                                base = base.parent
+                        base = base.joinpath(*parts)
+                        if base != crate:
+                            paths = [base.with_suffix(".rs"), base / "mod.rs"]
+                        else:
+                            paths = [file] if file in (crate / "main.rs", crate / "lib.rs") else [crate / "main.rs", crate / "lib.rs"]
+                    for candidate in paths:
+                        if (candidate in records and records[candidate][0] == crate
+                                and command in records[candidate][1]["tauri"]["commands"]):
+                            apps[crate.parent.parent].setdefault(command, set()).add(str(candidate))
+            self.tauri_apps = apps
+        for parent in PurePosixPath(importer).parents:
+            if parent in self.tauri_apps:
+                return sorted(self.tauri_apps[parent].get(name, ()))
+        return []
 
     def script_candidates(self, module: str, home: Path, settings: dict) -> list[str]:
         if module.startswith("."):
@@ -520,7 +572,7 @@ class _ImportResolver:
             candidates = []
             if module.startswith("tauri::command::"):
                 command = module.removeprefix("tauri::command::")
-                modules[module] = sorted(self.declaring(command, importer, (".rs",)))
+                modules[module] = self.tauri_command(importer, command)
                 continue
             if suffix == ".py":
                 candidates = _python_module_candidates(module, home, self.target)

@@ -86,7 +86,7 @@ one upstream observer.
 - Silence in the context is not evidence of absence. A concern the map does not
   mention may still be real; look anyway.
 
-Your perimeter is the whole scope or, for a job with paths, `Assigned files: {job.paths}`: conclude on those files under your mandate and read whatever else they need. Report findings, completed checks and gaps.
+Your perimeter is the whole scope or, for a job with paths, `Assigned files: {job.paths}`: conclude on those files under your mandate and read whatever else they need. When present, `job.context_paths` lists shared files to consult for those checks. Record coverage against the assigned files. Report findings, completed checks and gaps.
 
 ## Instructions
 Follow your agent definition's analysis phases, knowledge-base loading, output format, and severity classification. Cite file:line for every finding.

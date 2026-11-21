@@ -572,4 +572,9 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
                      "their line with another call of the same name, so the reference each answers is unknown and "
                      f"they are not placed: {', '.join(facts['ambiguous']['examples'][:3])}"})
     facts["unplaced"] = dict(sorted(facts["unplaced"].items()))
-    return {"state": "ran", "sites": sites, "runs": entries, "gaps": gaps, "facts": facts}
+    completed = {entry["root"]: entry["tool"] for entry in entries
+                 if entry["state"] == "ran" and entry.get("exit_code") == 0}
+    equivalent = [index for index, run in enumerate(runs) if run["root"] in completed
+                  and run["tool"] != completed[run["root"]]]
+    return {"state": "ran", "sites": sites, "runs": entries, "gaps": gaps, "facts": facts,
+            **({"equivalent_completed": equivalent} if equivalent else {})}

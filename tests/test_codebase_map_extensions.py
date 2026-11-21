@@ -373,6 +373,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
 
             (root / "src/App.tsx").write_text(
                 'import { invoke } from "@tauri-apps/api/core";\n\n'
+                'function other(invoke: (x: string) => unknown) { return invoke("load_user_profile"); }\n'
                 'export async function refreshUser(id: number) {\n'
                 '  return await invoke("load_user_profile", { id });\n'
                 '}\n',
@@ -385,6 +386,9 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 '}\n',
                 encoding="utf-8",
             )
+            (root / "src-tauri/src/main.rs").write_text(
+                "mod commands; fn main() { tauri::Builder::default().invoke_handler("
+                "tauri::generate_handler![commands::load_user_profile]); }\n", encoding="utf-8")
 
             manifest = snapshot.build_manifest(root)
             index = semantic_index.build_semantic_index(manifest)
@@ -397,6 +401,7 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 app_calls[0]["target_id"].startswith("src-tauri/src/commands.rs::function@"),
                 app_calls[0],
             )
+            self.assertEqual(app_calls[0]["span"][0], 5)
 
             db_path = root / "manifest.sqlite"
             snapshot.write_snapshot(root, db_path)
@@ -404,6 +409,36 @@ class TauriCrossLanguageBridgeTests(unittest.TestCase):
                 impact = semantic_store.build_edit_impact(store, ["src-tauri/src/commands.rs::load_user_profile"])
                 callers = impact["targets"][0]["callers"]["listed"]
                 self.assertEqual([c["file"] for c in callers], ["src/App.tsx"])
+
+    def test_invoke_requires_an_attributed_registered_command_in_the_calling_app(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "checkout"
+            def write(file, source):
+                path = root / file
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(source, encoding="utf-8")
+            register = "fn main() { tauri::Builder::default().invoke_handler(tauri::generate_handler![save]); }\n"
+            for app, rust in {"one": "#[tauri::command]\nfn save() {}\n",
+                              "two": "#[tauri::command]\nfn save() {}\n" + register,
+                              "three": "pub fn save() {}\n" + register}.items():
+                write(f"{app}/src/ui.ts", 'import {invoke} from "@tauri-apps/api/core";\n'
+                                        'export function ui() { return invoke("save"); }\n')
+                write(f"{app}/src-tauri/src/main.rs", rust)
+            write("tools/helper.rs", "pub fn save() {}\n")
+            old, new = Path(tmp) / "before.sqlite", Path(tmp) / "after.sqlite"
+            snapshot.write_snapshot(root, old)
+            def targets(path):
+                with open_snapshot(path) as store:
+                    return {file: target for file, target in store.connection.execute(
+                        "SELECT file,target_id FROM sem_references WHERE kind='call' AND file LIKE '%.ts'")}
+            self.assertEqual(targets(old), {"one/src/ui.ts": None, "two/src/ui.ts": "two/src-tauri/src/main.rs::function@2:0",
+                                            "three/src/ui.ts": None})
+            write("one/src-tauri/src/main.rs", "#[tauri::command]\nfn save() {}\n" + register)
+            write("two/src-tauri/src/main.rs", "#[tauri::command]\nfn save() {}\n")
+            with open_snapshot(old) as previous:
+                snapshot.write_snapshot(root, new, previous=previous)
+            self.assertEqual(targets(new), {"one/src/ui.ts": "one/src-tauri/src/main.rs::function@2:0",
+                                            "two/src/ui.ts": None, "three/src/ui.ts": None})
 
 
 class SqlAstAndScipEngineTests(unittest.TestCase):

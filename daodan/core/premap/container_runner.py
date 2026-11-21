@@ -26,6 +26,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import preparation  # noqa: E402
+import node_preparation  # noqa: E402
 from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
@@ -169,7 +170,8 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
             raise ValueError(f"no container setup for the tool {tool}")
         spec = TOOLS[tool]
         restored = _node(project) if spec.get("restores") == "node" else {"lines": [], "hosts": (), "gaps": []}
-        first, files, hosts, gaps = plan(tool, commands, toolchains, restored["lines"])
+        restore_lines, shared = node_preparation.options(restored, toolchains)
+        first, files, hosts, gaps = plan(tool, commands, toolchains, restore_lines)
         gaps += restored["gaps"]  # a package folder no restore installs
         hosts = (*hosts, *restored["hosts"])
         ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
@@ -181,7 +183,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                 project, given, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / out,
                 values=spec.get("values", False), engine=engine, inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
                 registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
-                memory=int(spec.get("memory", 2) * 2**30), timeout=1800)
+                memory=int(spec.get("memory", 2) * 2**30), timeout=1800, **shared)
 
         result = contained(ran, hosts, tool)
         if result["state"] == "gap":

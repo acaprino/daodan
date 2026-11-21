@@ -76,8 +76,15 @@ import preparation
 from indexers import typescript  # the image, the unit kinds and the restores of the analyzer of the same languages
 
 # The observer this module is (`dynamic.observers`): its entry, its recorder's version, the languages it observes.
-ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "1", ("javascript", "typescript")
+ENTRY, VERSION, LANGUAGES = "dynamic-record-javascript", "2", ("javascript", "typescript")
 RECORDER = Path(__file__).with_name("javascript_record.js").resolve()
+PLAYWRIGHT_CONTROLS = Path(__file__).with_name("playwright_controls.cjs")
+CONTROL_READER = Path(__file__).with_name("control_coverage.js")
+PLAYWRIGHT_PREPARE = Path(__file__).with_name("playwright_prepare.cjs")
+# Playwright's browser archives and the distro archives its install-deps uses, preparation only.
+BROWSER_HOSTS = ("cdn.playwright.dev", "playwright.download.prss.microsoft.com", "storage.googleapis.com",
+                 "playwright.azureedge.net", "playwright-akamai.azureedge.net", "playwright-verizon.azureedge.net",
+                 "archive.ubuntu.com", "security.ubuntu.com", "ports.ubuntu.com")
 RUNNERS = ("jest", "mocha", "node:test", "npm", "vitest", "turbo", "playwright")  # the pre-map's, run as their script
 NOT_OBSERVED = {"bun": "Bun runs the tests on its own engine, JavaScriptCore, where a Node preload and V8's "
                        "inspector do not exist"}
@@ -183,8 +190,12 @@ def plan(record: dict, files: list[str], read) -> dict:
     served = [gap for test in tests if test["runner"] == "playwright" for gap in [web_server(test, files, read)] if gap]
     gaps += served
     hosted = {gap["path"] for gap in served if gap["kind"] == "tests_need_container_engine"}
-    return {"runs": [{"root": test["root"], "runner": test["runner"], "declared_in": test.get("declared_in")}
-                     for test in tests if test["runner"] in RUNNERS and test.get("declared_in") not in hosted],
+    runs = [{"root": test["root"], "runner": test["runner"], "declared_in": test.get("declared_in")}
+            for test in tests if test["runner"] in RUNNERS and test.get("declared_in") not in hosted]
+    for run in runs:
+        if run["runner"] == "playwright" and (args := _browser_args(run, read)):
+            run["browser_args"] = args
+    return {"runs": runs,
             "gaps": gaps, "unrun": unrun,
             "roots": sorted(premap.roots(record, typescript.UNIT_KINDS, typescript.WORKSPACES)),
             "toolchains": [item for item in record.get("toolchains", []) if item.get("tool") in ("node", "bun")]}
@@ -199,6 +210,35 @@ def _command(run: dict) -> str:
     return "npm test" if _script(run) == "test" else f"npm run {_script(run)}"
 
 
+def _browser_args(run: dict, read) -> list[str]:
+    """Only literal browser/config selections of the package's Playwright invocation, as CLI arguments."""
+    if not read:
+        return []
+    try:
+        manifest = json.loads(read(posixpath.normpath(posixpath.join(run["root"], "package.json"))) or "{}")
+        words = iter(shlex.split(manifest.get("scripts", {}).get(_script(run), "")))
+    except (ValueError, OSError, AttributeError, TypeError):
+        return []
+    for word in words:
+        if posixpath.basename(word) == "playwright" and next(words, None) == "test":
+            break
+    else:
+        return []
+    args = []
+    for word in words:
+        if word in ("&&", ";", "||", "|"):
+            break
+        flag, equals, value = word.partition("=")
+        if flag == "--headed":
+            args.append(flag)
+            continue
+        if flag in ("--browser", "--project", "--config", "-c"):
+            value = value if equals else next(words, "")
+            if value and not value.startswith("-") and not any(c in value for c in "$`;&|"):
+                args.extend((flag, value))
+    return args
+
+
 def scripts(planned: dict, restores: list[str], cpus: int = CPUS) -> tuple[str, str, dict]:
     """The preparation's script, the execution's, and the stated Node's install (`preparation.toolchains`):
     `restores` are the lines of the project's own restore, `cpus` the CPUs each run is pinned to."""
@@ -210,16 +250,31 @@ def scripts(planned: dict, restores: list[str], cpus: int = CPUS) -> tuple[str, 
                f" @babel/core@{BABEL} ; }} >&2",
                f"[ -e {CORE}/package.json ] || {{ echo 'DAODAN-MISSING @babel/core@{BABEL}' >&2; exit 70; }}",
                *chains["lines"], "cd /work || exit 70", *restores]
+    # Only a Playwright run gets the fourth argument (its DOM preload). Other scripts keep the Node recorder.
+    preload = f"--require {IN}/{RECORDER.name}"
+    browser_env = ""
+    browser_runs = [{"index": i, "root": run["root"], "args": run.get("browser_args", []),
+                     "projects": [value for flag, value in zip(run.get("browser_args", []),
+                                                              run.get("browser_args", [])[1:]) if flag == "--project"]}
+                    for i, run in enumerate(planned["runs"]) if run["runner"] == "playwright"]
+    if browser_runs:
+        # apt must use HTTPS: the preparation proxy grants CONNECT only to the declared archive hosts.
+        prepare.extend(['for f in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do',
+                        '  if [ -f "$f" ]; then sed -i "s|http://|https://|g" "$f"; fi', 'done',
+                        f"node {IN}/{PLAYWRIGHT_PREPARE.name} {shlex.quote(json.dumps(browser_runs))} >&2"])
+        preload += '${4:+ --require $4}'
+        browser_env = f'DYN_CONTROLS_OUT="${{4:+{OUT}/controls-$1}}" '
     # TURBO_ENV_MODE: Turborepo's strict env mode passes its tasks NODE_OPTIONS but not the DYN_ variables
     execute = ["set -u", f"mkdir -p {OUT}", f"export DYN_ROOT=/work DYN_BABEL={CORE} TURBO_ENV_MODE=loose",
                pinned(cpus),
                "run() {",  # $1 the run, $2 its folder
                "  start=$(date +%s)",
-               f'  ( cd "/work/$2" && NODE_OPTIONS="--require {IN}/{RECORDER.name}" DYN_OUT={OUT}/observed-$1-%p.json'
+               f'  ( cd "/work/$2" && {browser_env}NODE_OPTIONS="{preload}" DYN_OUT={OUT}/observed-$1-%p.json'
                f' exec ${{cpus:+taskset -c "$cpus"}} timeout -k 30 {LIMIT} npm run "$3" )'
                f" > {OUT}/tests-$1.log 2>&1",
                '  echo "DAODAN-DYNAMIC $1 exit $? $(( $(date +%s) - start ))"', "}",
-               *(f"run {number} {shlex.quote(run['root'])} {shlex.quote(_script(run))}"
+               *(f"run {number} {shlex.quote(run['root'])} {shlex.quote(_script(run))}" +
+                 (f" {IN}/{PLAYWRIGHT_CONTROLS.name}" if run["runner"] == "playwright" else "")
                  for number, run in enumerate(planned["runs"]))]
     return "\n".join([*prepare, "exit 0"]) + "\n", "\n".join([*execute, "exit 0"]) + "\n", chains
 
@@ -261,6 +316,55 @@ def sites(folder: Path, run: int | None = None) -> list[dict]:
 
 def _text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+
+
+def controls(folder: Path, number: int) -> tuple[dict, list[dict]]:
+    """Read only the DOM recorder's opaque, document-local observations. Pages and project processes are
+    untrusted: no project-provided string other than two event types and an opaque identifier is returned."""
+    documents, problems = {}, set()
+    known = {"invalid_report", "page_unreadable", "context_unavailable", "reader_unavailable",
+             "unfinished_document", "report_limit", "teardown_timeout"}
+    for path in sorted(folder.glob(f"controls-{number}-*-*.json")):
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, ValueError):
+            problems.add("invalid_report")
+            continue
+        if not isinstance(value, dict) or not isinstance(value.get("documents"), list):
+            problems.add("invalid_report")
+            continue
+        reported = value.get("gaps", [])
+        if isinstance(reported, list):
+            problems.update(code if isinstance(code, str) and code in known else "invalid_report" for code in reported)
+        else:
+            problems.add("invalid_report")
+        for item in value["documents"]:
+            identity = item.get("document") if isinstance(item, dict) else None
+            if not isinstance(identity, str) or not re.fullmatch(r"[0-9a-f]{32}", identity) or identity in documents:
+                problems.add("invalid_report")
+                continue
+            if not all(isinstance(item.get(key), list) for key in ("observed", "pending")):
+                problems.add("invalid_report")
+                continue
+            doc = {"document": identity}
+            for key in ("observed", "pending"):
+                rows = []
+                for row in item[key]:
+                    if (isinstance(row, dict) and row.get("event") in ("click", "change") and
+                            all(type(row.get(field)) is int and 0 < row[field] < 2**53 for field in ("control", "state"))):
+                        rows.append({field: row[field] for field in ("control", "event", "state")})
+                    else:
+                        problems.add("invalid_report")
+                doc[key] = rows
+            documents[identity] = doc
+    gaps = []
+    if not documents:
+        gaps.append({"kind": "ui_controls_unobserved", "detail": "the Playwright run yielded no observed browser document"})
+    if problems:
+        gaps.append({"kind": "ui_controls_partial", "detail": "incomplete browser control observations: " +
+                     ", ".join(sorted(problems))})
+    status = "unobserved" if not documents else "partial" if problems else "observed"
+    return {"status": status, "documents": [documents[key] for key in sorted(documents)]}, gaps
 
 
 def _outcome(run: dict, mark: str, log: str, observations: list[dict], processes: int, ended: str) \
@@ -350,20 +454,28 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
                                          f"recorder needs {WORKER / 2**30:.1f} GB", "remedy": "close programs to "
                                          "free memory", "sites": [], "runs": [], "gaps": unrun}
     cpus, memory = fits
+    import node_preparation
     restored = typescript._prepared(project, planned.get("roots") or ())
-    prepare, execute, chains = scripts(planned, restored["lines"], cpus)
+    restore_lines, shared = node_preparation.options(restored, planned.get("toolchains") or (),
+                                                  (planned.get("declared") or {}).get("hosts", ()))
+    prepare, execute, chains = scripts(planned, restore_lines, cpus)
     runs = planned["runs"]
 
     def inputs() -> dict:
         return {f"{IN}/{RECORDER.name}": RECORDER,
+                **({f"{IN}/{path.name}": path for path in (PLAYWRIGHT_CONTROLS, CONTROL_READER, PLAYWRIGHT_PREPARE)}
+                   if any(run["runner"] == "playwright" for run in runs) else {}),
                 **{f"{IN}/{name}": preparation.fetched(url, digest, name)
                    for url, digest, name in (preparation.NODE, *chains["files"])}}
 
+    browser_needed = any(run["runner"] == "playwright" for run in runs)
     result = container.run_in_container(
         project, ["sh", "-c", execute], image=typescript.IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare],
         outputs=[OUT], env={**preparation.ENV, "TERM": "dumb", "CI": "true"}, timeout=len(runs) * (LIMIT + 120),
-        prepare_timeout=3600, memory=memory, engine=engine, inputs=inputs,
-        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"],
+        prepare_timeout=3600, memory=memory, engine=engine, inputs=inputs, **shared,
+        keep_root=browser_needed,
+        registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *(BROWSER_HOSTS if browser_needed else ()),
+                                        *restored["hosts"], *chains["hosts"],
                                         *(planned.get("declared") or {}).get("hosts", ())])))  # `dynamic.run`'s
     if result["state"] == "gap":
         return {"state": "gap", "cause": result["cause"], "remedy": result["remedy"], "sites": [], "runs": [],
@@ -386,6 +498,18 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         entry, own = _outcome(run, marks.get(number, ""), _text(back / f"tests-{number}.log"),
                               _observations(back, number), len(list(back.glob(f"observed-{number}-*.json"))),
                               result["state"])
+        if run["runner"] == "playwright":
+            report, ui_gaps = controls(back, number)
+            if f"DAODAN-BROWSER-UNAVAILABLE {number}" in prepared.splitlines():
+                ui_gaps.append({"kind": "browser_unavailable", "detail": "Playwright could not prepare the "
+                                "configured browsers in the container; see prepare.log"})
+            # The tuples stay in the observer's output directory. Only counts go into the edge store,
+            # which keeps the tests for each observed language, and into the runtime report.
+            documents = report["documents"]
+            entry["controls"] = {"status": report["status"], "documents": len(documents),
+                                 "observed": sum(len(doc["observed"]) for doc in documents),
+                                 "pending": sum(len(doc["pending"]) for doc in documents)}
+            own.extend({**gap, "path": run.get("declared_in") or run["root"]} for gap in ui_gaps)
         entries.append({**entry, "cpus": cpus, "memory": memory})  # the shape it ran with (`shape`)
         gaps += own
     found = sites(back)

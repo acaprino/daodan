@@ -724,6 +724,7 @@ class ObserveTest(FakeEngineTest):
         self.assertEqual(seen, ["gradle", "maven"])
         self.assertIsNone(dynamic.malformed(result))
         self.assertEqual([(item["runner"], item["state"]) for item in result["runs"]], [("maven", "ran")])
+        self.assertEqual(result["equivalent_completed"], [0])
         self.assertNotIn("tests_not_started", self.gaps(result))  # the folder's tests ran
         seen.clear()
         with mock.patch.object(jvm.jvm, "run", side_effect=lambda *args, **kwargs: (seen.append(1),

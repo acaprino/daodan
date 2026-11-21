@@ -115,7 +115,7 @@ function loadViews() {  // what the stage on screen draws, read once a run
 }
 
 function show() {  // draws again what a frame changed
-  const signature = JSON.stringify([server?.job, ctx()?.run_id, pass(), server?.run?.progress, events.length, server?.engine, server?.mcp_ready, server?.asked, server?.links]);
+  const signature = JSON.stringify([server?.job, ctx()?.run_id, pass(), server?.run?.progress, events.length, server?.engine, server?.mcp_ready, server?.asked, server?.links, server?.mapped]);
   if (signature === shown) return;
   shown = signature;
   if (state.screen === 'analysis' && state.analysisStage === 'analysis' && document.getElementById('run-title')) updateAnalysisRun();
@@ -517,6 +517,26 @@ function renderLogs() {
 // The links between modules: the engine writes the project's link rules, the machine applies them and decides every
 // link. What the block says is the server's state, from the stream.
 function plural(n, one, many) { return `${number(n)} ${Number(n) === 1 ? one : many}`; }
+function mapNotice() {
+  const map = server?.mapped;
+  if (!map) return '';
+  const review = map.needs_review || {};
+  const counts = [
+    review.nodes?.count && plural(review.nodes.count, 'nodo', 'nodi'),
+    review.flows?.count && plural(review.flows.count, 'flusso', 'flussi'),
+    review.refused_proposals?.count && plural(review.refused_proposals.count, 'proposta rifiutata', 'proposte rifiutate'),
+  ].filter(Boolean);
+  const partial = counts.length > 0 || map.state === 'incomplete';
+  const title = partial ? 'Mappa del sistema parziale' : {
+    running: 'Mappatura del sistema in corso', failed: 'Mappatura del sistema interrotta',
+    no_engine: 'Mappatura in attesa di un motore', done: 'Mappa del sistema registrata',
+  }[map.state];
+  if (!title) return '';
+  const cause = map.cause === 'the recorded map still has stale or incomplete records'
+    ? 'Alcune prove sono incomplete o si riferiscono a una revisione precedente.' : map.cause;
+  const tone = partial || map.state === 'no_engine' ? 'warn' : map.state === 'failed' ? 'err' : 'info';
+  return `<div class="im-note im-note--block" data-im-tone="${tone}" role="status"><strong>${title}</strong>${counts.length ? `<p>Da verificare: ${counts.join(', ')}.</p>` : ''}${cause ? `<p>${esc(cause)}</p>` : ''}</div>`;
+}
 function linksBlock() {
   const l = server?.links || { state: 'idle' }, chosen = Boolean(server?.engine?.engine), running = l.state === 'running';
   const said = { idle: 'Non ancora cercati: il motore scrive le regole del progetto, la macchina le applica e decide ogni legame.', running: 'In corso: il motore scrive le regole, la macchina le applica e gli rimanda quello che resta scollegato.', done: 'Trovati dalla macchina con le regole del progetto.', failed: 'Non trovati.', no_engine: 'Nessun motore scelto.' }[l.state] || l.state;
@@ -568,9 +588,19 @@ function sceneNode(n, x, y, width, height, preview) {
     content: fragment(`<span class="im-accent">${nodeIcon(n)}</span><span class="im-row-text"><strong class="im-row-title">${esc(nodeName(n))}</strong>${preview ? '' : stackRow(n)}<small class="im-row-sub">${esc(nodeFacts(n))}</small></span>`),
   };
 }
+function proofLabel(status) {
+  return { observed: 'osservata in esecuzione', sampled: 'campionata dal profiler', uncertain: 'incerta' }[status] || '';
+}
+function runtimeSummary(edges) {
+  const observed = edges.filter(e => e.status === 'observed').length;
+  const sampled = edges.filter(e => e.status === 'sampled').length;
+  return [observed && plural(observed, 'osservata in esecuzione', 'osservate in esecuzione'),
+    sampled && plural(sampled, 'campionata dal profiler', 'campionate dal profiler')].filter(Boolean).join(' · ');
+}
 function sceneEdge(e) {
-  return { source: e.source, target: e.target, dashed: e.status === 'uncertain',
-    label: [endName(e.source), '→', endName(e.target), Object.entries(e.counts ?? {}).map(([k,v]) => k + ': ' + v).join(', '), e.status === 'uncertain' ? 'incerto' : ''].filter(Boolean).join(' ') };
+  return { source: e.source, target: e.target, dashed: e.status === 'uncertain' || e.status === 'sampled',
+    tone: e.status === 'uncertain' ? 'warn' : ['observed', 'sampled'].includes(e.status) ? 'accent' : undefined,
+    label: [endName(e.source), '→', endName(e.target), Object.entries(e.counts ?? {}).map(([k,v]) => k + ': ' + v).join(', '), proofLabel(e.status)].filter(Boolean).join(' ') };
 }
 function previewScene() {
   return { nodes: GRAPH.nodes.map((n,i) => sceneNode(n, (i % 3) * 201, Math.floor(i / 3) * 92, 178, 62, true)),
@@ -580,14 +610,14 @@ function previewScene() {
 function buildCounts() { return GRAPH ? `${GRAPH.nodes.length} ${GRAPH.grouping === 'modules' ? 'moduli' : 'directory'} · ${GRAPH.edges.length} relazioni · ${number(GRAPH.files)} file` : '—'; }
 function buildStatus() {
   if (graphLoading) return 'Lettura del grafo…';
-  if (pipelineEvents().some(e => e.kind === 'graph.ready')) return 'Grafo completo scritto';
+  if (pipelineEvents().some(e => e.kind === 'graph.ready')) return 'Grafo del codice scritto';
   return complete() ? 'Costruzione conclusa' : 'Costruzione in corso';
 }
 
 function analysisRunScreen() {
   const c = ctx(), percent = runPercent(), alert = passAlert();
   return `<div class="im-note">${icon('info')}<div><strong>Analisi del commit ${esc(c.commit.slice(0, 12))}.</strong><p>Avanzamento ed eventi sono quelli del run <code>${esc(c.run_id)}</code>. Il grafo cresce solo quando la pipeline scrive un artefatto.</p></div></div>
-  <div class="im-master-detail"><section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="run-title"><div class="im-inset im-stack"><div class="im-split im-cluster"><div><p class="im-kicker">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="im-cluster"><span class="im-chip" data-im-tone="${pass().state === 'failed' ? 'err' : 'accent'}" id="run-badge"><span class="im-dot"></span>${statusLabel()}</span><span id="run-button-wrap">${runButton()}</span></div></div><div class="im-metric-value"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="im-progress" role="progressbar" aria-label="Passi completati della pipeline" id="run-progress"></div><p id="run-help">${esc(runHelp())}</p><div id="pipeline-steps"></div><div id="run-error" class="im-note im-note--block" data-im-tone="${pass().state === 'failed' ? 'err' : 'warn'}" role="status" ${alert ? '' : 'hidden'}>${alert}</div><div id="links-block" class="im-note">${linksBlock()}</div></div><div class="im-panel-strip im-cluster"><span class="im-muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span></div></section>
+  <div class="im-master-detail"><section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="run-title"><div class="im-inset im-stack"><div class="im-split im-cluster"><div><p class="im-kicker">Esecuzione</p><h2 id="run-title">${esc(runPhaseLabel())}</h2><div class="im-cluster"><span class="im-chip" data-im-tone="${pass().state === 'failed' ? 'err' : 'accent'}" id="run-badge"><span class="im-dot"></span>${statusLabel()}</span><span id="run-button-wrap">${runButton()}</span></div></div><div class="im-metric-value"><span id="progress-value">${percent}</span><small>%</small></div></div><div class="im-progress" role="progressbar" aria-label="Passi completati della pipeline" id="run-progress"></div><p id="run-help">${esc(runHelp())}</p><div id="pipeline-steps"></div><div id="run-error" class="im-note im-note--block" data-im-tone="${pass().state === 'failed' ? 'err' : 'warn'}" role="status" ${alert ? '' : 'hidden'}>${alert}</div><div id="map-status">${mapNotice()}</div><div id="links-block" class="im-note">${linksBlock()}</div></div><div class="im-panel-strip im-cluster"><span class="im-muted">Repository: <code>${esc(slug(c))}</code> · <code>${esc(c.branch)}</code> · intero progetto</span></div></section>
   <section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="building-title"><div class="im-panel-header im-split"><div><h2 id="building-title">Costruzione del grafo</h2><p class="im-muted im-caption">Gruppi di file e relazioni dal grafo del run.</p></div><span class="im-chip" id="build-level">${esc(levelsName() || levelLabel())}</span></div><div class="im-canvas-frame im-canvas-frame--preview" id="build-viewport">${buildPreview()}</div><div class="im-panel-strip im-cluster"><span id="build-counts">${buildCounts()}</span><span id="build-status">${buildStatus()}</span></div></section></div>
   <section data-im-surface="sheet" class="im-surface im-panel" aria-labelledby="activity-title"><div class="im-panel-header im-split"><h2 id="activity-title">Eventi e feedback</h2><span class="im-chip">${logItems().length} eventi</span></div><div class="im-scroll im-scroll--bounded" id="logs" aria-live="polite" aria-relevant="additions">${renderLogs()}</div></section>`;
 }
@@ -611,6 +641,7 @@ function updateAnalysisRun() {
   error.dataset.imTone = pass().state === 'failed' ? 'err' : 'warn';
   error.innerHTML = alert;
   document.getElementById('links-block').innerHTML = linksBlock();
+  document.getElementById('map-status').innerHTML = mapNotice();
   const hadFocus = document.activeElement?.id === 'run-toggle';
   document.getElementById('run-button-wrap').innerHTML = runButton();
   if (hadFocus) document.getElementById('run-toggle')?.focus({ preventScroll: true });
@@ -640,10 +671,11 @@ function gapLines() {
 }
 
 function synthesisScreen() {
-  if (!GRAPH) return graphError ? `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Grafo non disponibile.</strong> ${esc(graphError)}</div>` : waiting('Lettura del grafo…', 'Gruppi, relazioni e lacune del run.');
+  const notice = mapNotice();
+  if (!GRAPH) return notice + (graphError ? `<div class="im-note im-note--block" data-im-tone="err" role="alert"><strong>Grafo non disponibile.</strong> ${esc(graphError)}</div>` : waiting('Lettura del grafo…', 'Gruppi, relazioni e lacune del run.'));
   const top = [...GRAPH.nodes].sort((a, b) => b.files.length - a.files.length).slice(0, 3), gaps = gapLines();
   const modules = GRAPH.grouping === 'modules';
-  return `<div class="im-note">${icon('info')}<div><strong>Sintesi testuale in attesa.</strong><p>Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run <code>${esc(ctx().run_id)}</code>. Le domande al motore sono in «Motore e domande».</p></div></div><div class="im-metric-grid">${metric(document, String(GRAPH.nodes.length), modules ? 'Moduli' : 'Directory con file', 'Gruppi del grafo').outerHTML}${metric(document, String(GRAPH.edges.length), 'Relazioni statiche', 'Non tracce runtime').outerHTML}${metric(document, String(number(GRAPH.files)), 'File nel grafo', `Snapshot del commit ${ctx().commit.slice(0, 7)}`).outerHTML}${metric(document, String(number(modules ? GRAPH.unassigned.count : GRAPH.nodes.filter(n => n.location === 'external').length)), modules ? 'File senza modulo' : 'Nodi esterni', modules ? 'Lacuna esplicita del grafo' : 'Servizi riconosciuti dallo stack').outerHTML}</div>
+  return `${notice}<div class="im-note">${icon('info')}<div><strong>Sintesi testuale in attesa.</strong><p>Questa versione non fa scrivere una sintesi al motore: qui ci sono i conteggi, le responsabilità dichiarate e le lacune del run <code>${esc(ctx().run_id)}</code>. Le domande al motore sono in «Motore e domande».</p></div></div><div class="im-metric-grid">${metric(document, String(GRAPH.nodes.length), modules ? 'Moduli' : 'Directory con file', 'Gruppi del grafo').outerHTML}${metric(document, String(GRAPH.edges.length), 'Relazioni nel grafo', runtimeSummary(GRAPH.edges) || 'Tra i gruppi visualizzati').outerHTML}${metric(document, String(number(GRAPH.files)), 'File nel grafo', `Snapshot del commit ${ctx().commit.slice(0, 7)}`).outerHTML}${metric(document, String(number(modules ? GRAPH.unassigned.count : GRAPH.nodes.filter(n => n.location === 'external').length)), modules ? 'File senza modulo' : 'Nodi esterni', modules ? 'Lacuna esplicita del grafo' : 'Servizi riconosciuti dallo stack').outerHTML}</div>
   <div class="im-master-detail"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Responsabilità da esplorare</h2><span class="im-chip">${esc(levelsName())}</span></div><div class="im-stack">${top.map(n => `<button class="im-btn" data-preview-node="${esc(n.id)}"><span>${icon('layers')}</span><span><strong>${esc(nodeName(n))}</strong><p>${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p><small>${esc(nodeFacts(n))}</small></span>${icon('arrow')}</button>`).join('') || '<p class="im-muted im-caption">Nessun gruppo nel grafo.</p>'}</div></section><aside class="im-stack"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Dipendenze dopo l’analisi</h2></div><div class="im-inset im-stack"><span class="im-chip" data-im-tone="warn">Risoluzione non disponibile</span><p>${PREMAP ? number(PREMAP.dependencies.length) + ' librerie dichiarate nei manifest. ' : ''}Daodan non risolve le versioni installate: un riferimento statico non prova quale versione di una libreria sia usata.</p></div></section><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Cosa manca al quadro</h2></div><div class="im-inset im-stack"><ul>${gaps.slice(0, 8).map(g => `<li>${esc(g)}</li>`).join('') || '<li>Nessuna lacuna registrata dal run.</li>'}</ul>${gaps.length > 8 ? `<p class="im-muted im-caption">Altre ${gaps.length - 8} lacune in «Provenienza e lacune».</p>` : ''}<button class="im-btn im-btn--ghost" data-action="snapshot">${icon('file')}Provenienza e lacune</button></div></section></aside></div>`;
 }
 
@@ -746,7 +778,8 @@ function inspector() {
   const n = nodeById(state.graphRoot);
   if (!n) return '';
   const related = GRAPH.edges.filter(e => e.source === n.id || e.target === n.id);
-  return `<aside class="im-detail-panel" data-im-surface="sheet" aria-label="Dettaglio del gruppo"><p class="im-kicker">${n.location === 'external' ? 'Nodo esterno selezionato' : SELECTED[n.kind] || 'Modulo selezionato'}</p><h2>${esc(nodeName(n))}</h2><span class="im-chip" data-im-tone="${n.location === 'external' ? 'info' : 'accent'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="im-muted">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p>${opens(n) ? `<button class="im-btn im-btn--primary" data-open-node="${esc(n.id)}">${icon('layers')}Apri sul posto</button>` : ''}<div class="im-section"><h3>Perimetro</h3><dl class="im-facts">${n.kind === 'symbol' ? `<dt>Righe</dt><dd>${esc((n.lines || []).join('–'))}</dd>${n.members ? `<dt>Simboli dentro</dt><dd>${n.members.length}</dd>` : ''}` : `<dt>File assegnati</dt><dd>${n.files.length}</dd>`}<dt>Relazioni statiche</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || { directory: 'Directory del checkout', file: 'File del checkout', symbol: 'Outline del file' }[n.kind] || 'Non registrata')}</dd></dl></div>${n.projects ? stackBlock(n) : ''}${n.kind === 'file' ? symbolsBlock(n) : ''}<div class="im-section"><h3>Evidenze</h3><ul class="im-detail-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="im-muted">Nessuna evidenza dichiarata.</li>'}</ul></div>${n.kind === 'symbol' ? '' : `<div class="im-section"><h3>File del gruppo</h3><ul class="im-detail-list">${n.files.slice(0, 4).map(path => `<li><button class="im-btn" data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="im-muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="im-btn im-btn--ghost im-btn--sm" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div>`}</aside>`;
+  const runtime = related.filter(e => ['observed', 'sampled'].includes(e.status));
+  return `<aside class="im-detail-panel" data-im-surface="sheet" aria-label="Dettaglio del gruppo"><p class="im-kicker">${n.location === 'external' ? 'Nodo esterno selezionato' : SELECTED[n.kind] || 'Modulo selezionato'}</p><h2>${esc(nodeName(n))}</h2><span class="im-chip" data-im-tone="${n.location === 'external' ? 'info' : 'accent'}">${n.location === 'external' ? esc(['Dipendenza esterna', n.node_type].filter(Boolean).join(' · ')) : esc(nodeState(n))}</span><p class="im-muted">${esc(n.responsibility || 'Responsabilità non descritta nel grafo.')}</p>${opens(n) ? `<button class="im-btn im-btn--primary" data-open-node="${esc(n.id)}">${icon('layers')}Apri sul posto</button>` : ''}<div class="im-section"><h3>Perimetro</h3><dl class="im-facts">${n.kind === 'symbol' ? `<dt>Righe</dt><dd>${esc((n.lines || []).join('–'))}</dd>${n.members ? `<dt>Simboli dentro</dt><dd>${n.members.length}</dd>` : ''}` : `<dt>File assegnati</dt><dd>${n.files.length}</dd>`}<dt>Relazioni nel grafo</dt><dd>${related.length}</dd><dt>Provenienza</dt><dd>${esc(n.provenance || { directory: 'Directory del checkout', file: 'File del checkout', symbol: 'Outline del file' }[n.kind] || 'Non registrata')}</dd></dl>${runtime.length ? `<details><summary>Chiamate in esecuzione (${number(runtime.length)})</summary><ul class="im-detail-list">${runtime.map(e => `<li>${esc(endName(e.source))} → ${esc(endName(e.target))} · ${proofLabel(e.status)}</li>`).join('')}</ul></details>` : ''}</div>${n.projects ? stackBlock(n) : ''}${n.kind === 'file' ? symbolsBlock(n) : ''}<div class="im-section"><h3>Evidenze</h3><ul class="im-detail-list">${(n.evidence || []).map(e => `<li><code>${esc(e.path)}${e.line ? ':' + e.line : ''}</code></li>`).join('') || '<li class="im-muted">Nessuna evidenza dichiarata.</li>'}</ul></div>${n.kind === 'symbol' ? '' : `<div class="im-section"><h3>File del gruppo</h3><ul class="im-detail-list">${n.files.slice(0, 4).map(path => `<li><button class="im-btn" data-source-path="${esc(path)}">${icon('file')}<span>${esc(path.split('/').slice(-2).join('/'))}</span></button></li>`).join('') || '<li class="im-muted">Gruppo esterno: nessun file locale.</li>'}</ul>${n.files.length > 4 ? `<button class="im-btn im-btn--ghost im-btn--sm" data-action="component-files">Tutti i ${n.files.length} file ${icon('arrow')}</button>` : ''}</div>`}</aside>`;
 }
 
 // A file is the lowest node: its symbols and the calls among them, with their lines, are the inspector's, asked when
@@ -758,7 +791,7 @@ function symbolsBlock(n) {
   if (SYMBOLS.error) return block(`<p class="im-muted im-caption">${esc(SYMBOLS.error)}</p>`);
   const name = ref => SYMBOLS.symbols.find(s => s.id === ref)?.name || ref.replace(/^file:/, '');
   const sites = call => call.evidence.map(e => esc(e.path.split('/').pop() + ':' + e.line)).join(', ');
-  return block(`<ul class="im-detail-list">${SYMBOLS.symbols.map(s => `<li><code>${esc(s.name)}</code> <span class="im-muted im-caption">righe ${esc((s.lines || []).join('–'))}${s.freshness ? ' · ' + esc(s.freshness) : ''}</span></li>`).join('') || '<li class="im-muted">Nessun simbolo nell’outline.</li>'}</ul><ul class="im-detail-list">${SYMBOLS.calls.map(c => `<li><code>${esc(name(c.source))} → ${esc(name(c.target))}</code> <span class="im-muted im-caption">${sites(c)}${c.status === 'uncertain' ? ' · incerta' : ''}</span></li>`).join('') || '<li class="im-muted">Nessuna chiamata risolta da o verso i suoi simboli.</li>'}</ul>`);
+  return block(`<ul class="im-detail-list">${SYMBOLS.symbols.map(s => `<li><code>${esc(s.name)}</code> <span class="im-muted im-caption">righe ${esc((s.lines || []).join('–'))}${s.freshness ? ' · ' + esc(s.freshness) : ''}</span></li>`).join('') || '<li class="im-muted">Nessun simbolo nell’outline.</li>'}</ul><ul class="im-detail-list">${SYMBOLS.calls.map(c => `<li><code>${esc(name(c.source))} → ${esc(name(c.target))}</code> <span class="im-muted im-caption">${[sites(c), proofLabel(c.status)].filter(Boolean).join(' · ')}</span></li>`).join('') || '<li class="im-muted">Nessuna chiamata risolta da o verso i suoi simboli.</li>'}</ul>`);
 }
 
 async function loadSymbols(file) {
@@ -896,7 +929,7 @@ function closeModal() { activeDialog?.close(); }
 
 function snapshotModal() {
   const m = GRAPH?.meta || {}, gaps = gapLines();
-  modal('Provenienza e lacune del grafo', 'Dati del run selezionato; nessun file del progetto è stato eseguito.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug())}</code></dd><dt>Branch e commit</dt><dd><code>${esc(ctx()?.branch)}</code> · <code>${esc(ctx()?.commit.slice(0, 12))}</code></dd><dt>Run</dt><dd><code>${esc(ctx()?.run_id)}</code></dd><dt>Grafo costruito</dt><dd>${esc(m.created_at || '—')}</dd><dt>File</dt><dd>${number(GRAPH?.files)}</dd><dt>${levelLabel()} / relazioni</dt><dd>${GRAPH?.nodes.length ?? '—'} / ${GRAPH?.edges.length ?? '—'}</dd><dt>Passaggio del grafo</dt><dd>${esc(pass().state || '—')}</dd></dl><p class="im-kicker">Limiti dichiarati</p><div class="im-note">Le relazioni statiche non dimostrano un comportamento runtime. L’assenza di un arco di chiamata non dimostra indipendenza.</div><ul class="im-detail-list">${gaps.map(g => `<li>${icon('info')}<span>${esc(g)}</span></li>`).join('') || `<li>${icon('check')}<span>Nessuna lacuna registrata dal run.</span></li>`}</ul><p class="im-caption im-muted">Digest dello snapshot: <code>${esc(m.snapshot_digest || '—')}</code></p>`, `<button class="im-btn im-btn--primary" data-action="close-modal">${icon('check')}Chiudi</button>`);
+  modal('Provenienza e lacune del grafo', 'Dati registrati nel run selezionato.', `<dl class="im-facts"><dt>Repository</dt><dd><code>${esc(slug())}</code></dd><dt>Branch e commit</dt><dd><code>${esc(ctx()?.branch)}</code> · <code>${esc(ctx()?.commit.slice(0, 12))}</code></dd><dt>Run</dt><dd><code>${esc(ctx()?.run_id)}</code></dd><dt>Grafo costruito</dt><dd>${esc(m.created_at || '—')}</dd><dt>File</dt><dd>${number(GRAPH?.files)}</dd><dt>${levelLabel()} / relazioni</dt><dd>${GRAPH?.nodes.length ?? '—'} / ${GRAPH?.edges.length ?? '—'}</dd><dt>Passaggio del grafo</dt><dd>${esc(pass().state || '—')}</dd></dl><p class="im-kicker">Limiti dichiarati</p><div class="im-note">Le relazioni osservate provengono da chiamate registrate durante l’esecuzione. Le relazioni campionate provengono dal profiler. Possono esserci altre chiamate.</div><ul class="im-detail-list">${gaps.map(g => `<li>${icon('info')}<span>${esc(g)}</span></li>`).join('') || `<li>${icon('check')}<span>Nessuna lacuna registrata dal run.</span></li>`}</ul><p class="im-caption im-muted">Digest dello snapshot: <code>${esc(m.snapshot_digest || '—')}</code></p>`, `<button class="im-btn im-btn--primary" data-action="close-modal">${icon('check')}Chiudi</button>`);
 }
 
 function premapProvenance() {
@@ -906,7 +939,7 @@ function premapProvenance() {
 
 function sourceModal(path) {
   const edges = GRAPH.edges.flatMap(e => e.evidence.filter(ev => ev.path === path || ev.target === path).map(ev => ({ ...ev, source: e.source, target: e.target, status: e.status })));
-  modal(path.split('/').pop(), 'File dello snapshot del run.', `<p><code>${esc(path)}</code></p><p class="im-muted">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</p><h3>Riferimenti statici</h3><ul class="im-detail-list">${edges.slice(0, 8).map(e => `<li>${icon('arrow')}<span>${esc(endName(e.source))} → ${esc(endName(e.target))}<br><code>${esc(e.kind)}${e.key ? ' · ' + esc(e.key) + (e.status === 'uncertain' ? ' · incerto' : '') : ''}${e.line ? ' · riga ' + e.line : ''}${e.target && e.path === path ? ' · ' + esc(e.target) : ''}</code></span></li>`).join('') || '<li>Nessuna relazione tra gruppi cita questo file.</li>'}</ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi dettaglio</button>`);
+  modal(path.split('/').pop(), 'File dello snapshot del run.', `<p><code>${esc(path)}</code></p><p class="im-muted">La pagina mostra la provenienza registrata, senza aprire o eseguire il sorgente.</p><h3>Relazioni registrate</h3><ul class="im-detail-list">${edges.slice(0, 8).map(e => `<li>${icon('arrow')}<span>${esc(endName(e.source))} → ${esc(endName(e.target))}<br><code>${esc(e.kind)}${e.key ? ' · ' + esc(e.key) : ''}${proofLabel(e.status) ? ' · ' + proofLabel(e.status) : ''}${e.line ? ' · riga ' + e.line : ''}${e.target && e.path === path ? ' · ' + esc(e.target) : ''}</code></span></li>`).join('') || '<li>Nessuna relazione tra gruppi cita questo file.</li>'}</ul>`, `<button class="im-btn im-btn--primary" data-action="close-modal">Chiudi dettaglio</button>`);
 }
 
 document.addEventListener('click', async event => {

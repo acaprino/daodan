@@ -484,18 +484,22 @@ def _names_by_package(units: list[dict], build_by_key: dict) -> dict[tuple[str, 
 
 def _path_dependency_edges(module: dict, text: str, family: str, build_by_key: dict, by_name: dict,
                            edges: _Edges) -> tuple[set[str], set[str]]:
-    """Dependencies declared with a path or a repository; returns the names they settle and the remote ones."""
+    """Dependencies with a source: the names resolved locally and those that must not be matched by name."""
     path_names = set()  # settled by path; a path that holds no unit leaves its name a declared dependency
-    remote = set()  # taken from another repository: never the unit that has the same name here
+    outside = set()
     for item in module["path_dependencies"]:
-        if item.get("git"):
-            remote.add(_dependency_name(item["name"], family))
+        if item.get("git") or item.get("remote"):
+            outside.add(_dependency_name(item["name"], family))
             continue
         if item["path"]:
             target = build_by_key.get((item["path"], family, item.get("slot")))
             targets = {target} if target else set()
         else:
             targets = by_name.get((family, _dependency_name(item["name"], family)), set())
+            if item.get("workspace"):
+                workspace = {module["members"][0]["path"], *module["registered_by"]}
+                targets = {t for t in targets if workspace.intersection(
+                    {edges.by_id[t]["members"][0]["path"], *edges.by_id[t]["registered_by"]})}
         targets = targets - {module["id"]}
         site = {"path": module["manifests"][0] if module["manifests"] else module["members"][0]["path"],
                 "line": _line_of(text, item["name"])}
@@ -506,9 +510,10 @@ def _path_dependency_edges(module: dict, text: str, family: str, build_by_key: d
         elif build_by_key.get((item["path"], family, item.get("slot"))) != module["id"]:
             module["gaps"].append({"kind": "dependency_unresolved",
                                    "detail": f"{item['name']} -> {item['path'] or 'no path'}: no build unit there"})
+            outside.add(_dependency_name(item["name"], family))  # no substitute by name at another location
             continue
         path_names.add(_dependency_name(item["name"], family))
-    return path_names, remote
+    return path_names, outside
 
 
 def _build_edges(inventory: _Inventory, modules: list[dict], units: list[dict], build_by_key: dict,
@@ -521,12 +526,15 @@ def _build_edges(inventory: _Inventory, modules: list[dict], units: list[dict], 
         text = inventory.text(module["manifests"][0]) if module["manifests"] else ""
         family = _family(module["ecosystems"][0])
         external = []
-        path_names, remote = _path_dependency_edges(module, text, family, build_by_key, by_name, edges)
+        path_names, outside = _path_dependency_edges(module, text, family, build_by_key, by_name, edges)
         for name in module["dependencies"]:
-            if _dependency_name(name, family) in path_names:
+            normalized = _dependency_name(name, family)
+            if normalized in outside:  # conditional sources can include both a local path and a registry
+                external.append(name)
                 continue
-            targets = (set() if _dependency_name(name, family) in remote
-                       else by_name.get((family, _dependency_name(name, family)), set()) - {module["id"]})
+            if normalized in path_names:
+                continue
+            targets = by_name.get((family, normalized), set()) - {module["id"]}
             if family == "go":
                 targets = {t for t in targets if set(module["registered_by"]) & set(edges.by_id[t]["registered_by"])}
             if len(targets) == 1:
@@ -681,7 +689,7 @@ def enrich_with_premap(store, graph: dict, premap_record: dict) -> dict:
             for eco in module.get("ecosystems") or ():
                 by_root_family.setdefault((root, _family(eco)), module)
 
-    unit_to_id: dict[str, str] = {}
+    resolved_units: list[tuple[dict, str]] = []
     added_dirs: set[str] = set()
     taken_ids = {m["id"] for m in modules}
     for unit in premap_record.get("units") or []:
@@ -695,9 +703,7 @@ def enrich_with_premap(store, graph: dict, premap_record: dict) -> dict:
                 matched["aliases"] = sorted(dict.fromkeys([*matched["aliases"], uname]))
             if matched["nature"] == "virtual" and eco:
                 matched["nature"] = "concrete"
-            if uname:
-                unit_to_id[uname] = matched["id"]
-            unit_to_id.setdefault(root, matched["id"])
+            resolved_units.append((unit, matched["id"]))
             continue
         if not eco or root not in inventory.directories:
             continue
@@ -727,9 +733,7 @@ def enrich_with_premap(store, graph: dict, premap_record: dict) -> dict:
         by_root_family[(root, fam)] = created
         by_root_any.setdefault(root, created)
         added_dirs.add(root)
-        if uname:
-            unit_to_id[uname] = ident
-        unit_to_id.setdefault(root, ident)
+        resolved_units.append((unit, ident))
 
     if added_dirs:
         build_dirs = sorted({m["members"][0]["path"] for m in modules if m["provenance"] == "build" and m.get("members")})
@@ -747,16 +751,25 @@ def enrich_with_premap(store, graph: dict, premap_record: dict) -> dict:
 
     by_id = {m["id"]: m for m in modules}
     edge_map = {e["id"]: dict(e) for e in graph["edges"] if e["source"] in by_id and e["target"] in by_id}
-    for unit in premap_record.get("units") or []:
-        src_id = unit_to_id.get(unit.get("name") or "") or unit_to_id.get(unit.get("root") or ".")
-        if not src_id or src_id not in by_id:
-            continue
+    targets: dict[str, set[str]] = {}
+    for unit, ident in resolved_units:
+        for reference in (unit.get("name"), unit.get("root") or "."):
+            if reference:
+                targets.setdefault(reference, set()).add(ident)
+    for unit, src_id in resolved_units:
         src_mod = by_id[src_id]
         ev_path = (src_mod["manifests"][0] if src_mod["manifests"]
                    else (src_mod["files"][0] if src_mod["files"] else None))
         for dep_ref in unit.get("depends_on") or ():
-            dst_id = unit_to_id.get(dep_ref)
-            if not dst_id or dst_id == src_id or dst_id not in by_id or not ev_path:
+            candidates = targets.get(dep_ref, set())
+            if len(candidates) > 1:
+                family = _family(PREMAP_KIND_ECOSYSTEM.get(unit["kind"], ""))
+                candidates = {ident for ident in candidates if any(
+                    _family(eco) == family for eco in by_id[ident]["ecosystems"])}
+            if len(candidates) != 1 or not ev_path:
+                continue
+            dst_id = next(iter(candidates))
+            if dst_id == src_id:
                 continue
             key = f"declares:{src_id}->{dst_id}"
             if key not in edge_map:

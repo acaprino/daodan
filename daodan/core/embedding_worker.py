@@ -94,13 +94,17 @@ def _publish_json(path, value, *, reuse_identical=False):
         try:
             # Same-directory hard-link publication is atomic and cannot clobber
             # a destination created after the initial ownership check.
-            os.link(temporary, path)
+            if os.name == "nt":
+                # A same-volume Windows rename fails if the destination already exists.
+                os.rename(temporary, path)
+            else:
+                os.link(temporary, path)
         except FileExistsError:
             confinement.reject_link_chain(path)
             if not reuse_identical or path.read_bytes() != payload:
                 raise ValueError('embedding output collision; existing evidence preserved')
     finally:
-        temporary.unlink()
+        temporary.unlink(missing_ok=True)
 
 
 def _profile(provider):

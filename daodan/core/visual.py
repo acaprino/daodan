@@ -47,6 +47,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import card_store  # noqa: E402
 import confinement  # noqa: E402
+import edge_view  # noqa: E402
 import modules  # noqa: E402
 import snapshot  # noqa: E402
 import semantic_store  # noqa: E402
@@ -103,11 +104,15 @@ def _collector(entities: dict, relations: dict):
 
 def _call(relations: dict, source: str, target: str, call: dict) -> None:
     """A resolved call from `source` to `target`, counted, with its site among the 20 a relation keeps."""
-    ref = f"calls:{source}->{target}"
+    status = call.get("confidence") or "confirmed"
+    ref = f"calls:{source}->{target}" + (f" {status}" if status in edge_view.SEEN else "")
     found = relations.setdefault(ref, {"ref": ref, "kind": "calls", "source": source, "target": target,
-                                       "status": "confirmed", "evidence": []})
+                                       "status": status, "evidence": []})
     found["counts"] = {"calls": found.get("counts", {}).get("calls", 0) + 1}
-    found["evidence"] = [*found["evidence"], {"path": call["file"], "line": call["span"][0]}][:20]
+    evidence = {"path": call["file"], "line": call["span"][0]}
+    if status in edge_view.SEEN:
+        evidence.update({key: call[key] for key in ("resolver", "conflict") if key in call})
+    found["evidence"] = [*found["evidence"], evidence][:20]
 
 
 def _symbols(store, paths: list[str], cards_path: Path, entity, relation, gaps: list) -> None:
@@ -211,6 +216,7 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
         if symbols:
             _symbols(store, paths, cards_path, entity, relation, gaps)
         # Imports and resolved calls between files, read in blocks the reader accepts.
+        shown_calls = set()
         for chunk in _chunks(paths):
             packet = source_reader.graph_packet(store, chunk, 1, LIMIT)
             if len(packet.get("imports", [])) >= LIMIT:
@@ -221,9 +227,13 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
             if "calls" in packet.get("truncated", []):
                 gaps.append({"refs": [], "reason": f"calls of a block reached the reader limit of {LIMIT}"})
             for call in packet.get("calls", []):  # a call resolved to a callable of another file
-                source, target = f"file:{call['file']}", f"file:{(call.get('target_id') or '').split('::')[0]}"
-                if source != target and source in entities and target in entities:
-                    _call(relations, source, target, call)
+                source = f"file:{call['file']}"
+                for end in edge_view.call_ends(call):
+                    target = f"file:{end['target_id'].split('::')[0]}"
+                    key = (call["id"], end["target_id"], end["confidence"], end["resolver"])
+                    if source != target and source in entities and target in entities and key not in shown_calls:
+                        _call(relations, source, target, {**call, **end})
+                        shown_calls.add(key)
 
     # Services the stack recognises (one it only saw mentioned is no module's, nor a node): external modules the
     # registry proposes, with type, site and mark, used by each file that shows them; a mention is an uncertain use.
@@ -299,8 +309,8 @@ def file_symbols(run_dir: Path, path: str) -> dict:
     if "calls" in packet.get("truncated", []):
         gaps.append({"refs": [f"file:{path}"], "reason": f"calls of the file reached the reader limit of {LIMIT}"})
     return {"entities": list(entities.values()), "gaps": gaps,
-            "calls": [{"id": call["id"], "file": call["file"], "line": call["span"][0], "target_id": call["target_id"]}
-                      for call in packet.get("calls", []) if call.get("target_id")],
+            "calls": [{"id": call["id"], "file": call["file"], "line": call["span"][0], **end}
+                      for call in packet.get("calls", []) for end in edge_view.call_ends(call)],
             "declarations": {item["id"]: item["span"][0] for item in packet.get("declarations", [])}}
 
 
@@ -416,7 +426,8 @@ def _flows(manifest: Path, entities: dict, by_id: dict, graph: dict, gaps: list,
     for entry in links["entries"]:
         flow = flows.trace(links, entry["symbol"], "from")
         steps = [{"source": ref(edge["from"]), "target": ref(edge["to"]), "type": edge["type"],
-                  "origin": edge["origin"], "site": edge["site"], **({"route": edge["route"]} if edge.get("route") else {})}
+                  "origin": edge["origin"], "site": edge["site"],
+                  **{key: edge[key] for key in ("route", "confidence", "resolver", "conflict") if key in edge}}
                  for edge in flow["edges"]]
         out.append({"ref": f"flow:{ref(entry['symbol'])}", "entry": ref(entry["symbol"]), "entry_kind": entry["kind"],
                     "complete": flow["complete"], "nodes": sorted({ref(node) for node in flow["nodes"]}), "steps": steps})

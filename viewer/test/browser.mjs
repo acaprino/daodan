@@ -8,7 +8,9 @@ const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commi
 const groups = ['Client', 'Server'].map(name => ({
   id: name, name, kind: 'directory', files: [name + '/main.ts'], location: 'internal', status: 'confirmed', group: null, evidence: [],
 }));
-const graph = { grouping: 'directories', nodes: groups, open: [], edges: [{ source: 'Client', target: 'Server', counts: { imports: 1 }, evidence: [] }],
+const graph = { grouping: 'directories', nodes: groups, open: [], edges: ['confirmed', 'observed', 'sampled'].map(status => ({
+    source: 'Client', target: 'Server', counts: { calls: 1 }, status, evidence: [],
+  })),
   gaps: [], files: 2, levels: ['codice'], meta: {}, unassigned: { count: 0 } };
 const browser = await chromium.launch();
 try {
@@ -37,7 +39,12 @@ try {
   });
   await page.addInitScript(state => {
     window.EventSource = class extends EventTarget {
-      constructor() { super(); setTimeout(() => this.dispatchEvent(new MessageEvent('app', { data: JSON.stringify(state) })), 0); }
+      constructor() {
+        super();
+        const publish = frame => this.dispatchEvent(new MessageEvent('app', { data: JSON.stringify(frame) }));
+        window.setMapState = mapped => publish({ ...state, mapped });
+        setTimeout(() => publish(state), 0);
+      }
       close() {}
     };
   }, { context: run, job: { state: 'ready' }, run: { pass: { state: 'fresh' } }, engine: {}, links: { state: 'idle' } });
@@ -64,6 +71,21 @@ try {
   await page.locator('#stage-analysis').click();
   await page.locator('#preview-diagram .im-graph-node').first().waitFor();
   assert.equal(await page.locator('#pipeline-steps li').count(), 5);
+  const partialMap = { state: 'incomplete', cause: 'the recorded map still has stale or incomplete records',
+    needs_review: { nodes: { count: 2, ids: ['a', 'b'] }, flows: { count: 1, ids: ['c'] },
+      refused_proposals: { count: 1, ids: ['request:d'] } } };
+  await page.evaluate(mapped => window.setMapState(mapped), partialMap);
+  const notice = page.locator('#map-status [role="status"]');
+  await notice.getByText('Mappa del sistema parziale').waitFor();
+  assert.match(await notice.innerText(), /2 nodi, 1 flusso, 1 proposta rifiutata/);
+  assert.match(await notice.innerText(), /revisione precedente/);
+  await page.locator('#stage-synthesis').click();
+  await page.getByText('Mappa del sistema parziale').waitFor();
+  await page.getByText('1 osservata in esecuzione · 1 campionata dal profiler').waitFor();
+  await page.evaluate(() => window.setMapState({ state: 'done' }));
+  await page.getByText('Mappa del sistema registrata').waitFor();
+  assert.equal(await page.getByText('Mappa del sistema parziale').count(), 0);
+  await page.locator('#stage-analysis').click();
   await page.locator('#preview-diagram .im-graph-node').first().click();
   assert.ok(await page.getByRole('dialog').isVisible());
   await page.keyboard.press('Escape');
@@ -73,6 +95,12 @@ try {
   assert.equal(await page.evaluate(() => document.activeElement.closest('[data-im-node]').dataset.imNode), 'Server');
   await page.keyboard.press('Enter');
   assert.equal(await page.locator('.im-detail-panel h2').innerText(), 'Server');
+  const titles = await diagram.locator('.im-graph-edge title').allTextContents();
+  assert.ok(titles.some(label => label.includes('osservata in esecuzione')));
+  assert.ok(titles.some(label => label.includes('campionata dal profiler')));
+  await page.locator('.im-detail-panel summary', { hasText: 'Chiamate in esecuzione' }).click();
+  await page.getByText('Client → Server · osservata in esecuzione', { exact: true }).waitFor();
+  await page.getByText('Client → Server · campionata dal profiler', { exact: true }).waitFor();
   await diagram.getByRole('button', { name: 'Apri Client' }).click();
   await diagram.getByRole('button', { name: 'Chiudi Client' }).waitFor();
   assert.equal(await diagram.locator('.im-graph-group').count(), 1);

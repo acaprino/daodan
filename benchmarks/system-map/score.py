@@ -191,10 +191,35 @@ def _single_folder(found: set[str], folders: dict) -> bool:
     return found == folders.get("/".join(common))
 
 
+def _flow_paths(flow, entries, effects):
+    """Nodes on a standing directed route from a matched entry to a matched effect, and its two ends."""
+    members = {_key(name) for name in flow["nodes"]}
+    forward, backward = defaultdict(set), defaultdict(set)
+    for arrow in flow.get("arrows", ()):
+        source, target = _key(arrow.get("from")), _key(arrow.get("to"))
+        if (arrow.get("status") in ("proved", "declared") and arrow.get("fresh") is not False
+                and source in members and target in members):
+            forward[source].add(target)
+            backward[target].add(source)
+
+    def reachable(starts, graph):
+        # Follow at least one arrow. Listing the same isolated node at both ends proves no path.
+        pending = [node for start in starts for node in graph[start]]
+        seen = set()
+        while pending:
+            node = pending.pop()
+            if node not in seen:
+                seen.add(node)
+                pending.extend(graph[node] - seen)
+        return seen
+
+    downstream, upstream = reachable(entries, forward), reachable(effects, backward)
+    starts, finishes = entries & upstream, effects & downstream
+    return downstream & upstream | starts | finishes, starts, finishes
+
+
 def _flow_scores(proposed: dict, expected: dict, match: dict[int, int], lifts: list[int]) -> dict:
-    """A reference flow is found by one proposed flow, one to one, that holds two thirds of its nodes as matched,
-    and half of whose nodes are those: one flow holding every node finds none. A part, with no threshold: the best
-    Jaccard index of the nodes raised to their ancestor of depth 1."""
+    """Match once by shape alone, then separately by directed entry-to-effect paths on proved or declared arrows."""
     index = {_key(n["name"]): i for i, n in enumerate(expected["nodes"])}
     names = {i: _key(proposed["nodes"][j]["name"]) for i, j in match.items()}
     back = {_key(proposed["nodes"][j]["name"]): i for i, j in match.items()}
@@ -203,23 +228,39 @@ def _flow_scores(proposed: dict, expected: dict, match: dict[int, int], lifts: l
     pairs = [(len(h & mine) / len(flow["nodes"]), i, j) for i, (flow, h) in enumerate(zip(expected["flows"], held))
              for j, mine in enumerate(holds)
              if len(h & mine) * 3 >= len(flow["nodes"]) * 2 and len(h & mine) * 2 >= len(mine) > 0]
-    found = _assign(pairs)
+    shape = _assign(pairs)
+    paths, candidates = {}, []
+    for _, i, j in pairs:
+        flow = expected["flows"][i]
+        endpoints = [{names[index[_key(item["node"])]] for item in flow.get(field, ())
+                      if index.get(_key(item["node"])) in names} for field in ("entries", "effects")]
+        connected, starts, finishes = _flow_paths(proposed["flows"][j], *endpoints)
+        matched = len(held[i] & connected)
+        if starts and finishes and matched * 3 >= len(flow["nodes"]) * 2:
+            candidates.append((matched / len(flow["nodes"]), i, j))
+            paths[i, j] = {"entries": starts, "effects": finishes}
+    found = _assign(candidates)
     by_type, ends = defaultdict(lambda: [0, 0]), {"entries": [0, 0], "effects": [0, 0]}
     for i, flow in enumerate(expected["flows"]):
         for kind in flow.get("types") or []:
-            by_type[kind][0] += i in found
+            by_type[kind][0] += i in found and kind in proposed["flows"][found[i]].get("types", ())
             by_type[kind][1] += 1
         for end, count in ends.items():
             for item in flow.get(end) or []:
                 at = names.get(index.get(_key(item.get("node"))))
-                count[0] += i in found and at in holds[found[i]]
+                count[0] += i in found and at in paths[i, found[i]][end]
                 count[1] += 1
     raised = [{lifts[back[n]] for n in mine if n in back} for mine in holds]
     best = [max((_jaccard({lifts[index[_key(n)]] for n in f["nodes"] if _key(n) in index}, r) for r in raised),
                 default=0.0) for f in expected["flows"]]
+    correct_types = sum(len(set(expected["flows"][i].get("types", ())) & set(proposed["flows"][j].get("types", ())))
+                        for i, j in found.items())
+    proposed_types = sum(len(set(flow.get("types", ()))) for flow in proposed["flows"])
     return {"flows": {"found": len(found), "of": len(expected["flows"]),
                       "missing": [f["name"] for i, f in enumerate(expected["flows"]) if i not in found],
                       "by_type": {k: _count(*v) for k, v in sorted(by_type.items())}},
+            "flows_by_nodes": _count(len(shape), len(expected["flows"])),
+            "flow_type_precision": {**_count(correct_types, proposed_types), "share": _share(correct_types, proposed_types)},
             "flows_depth_1": {"share": _share(sum(best), len(best)) if best else 0.0, "of": len(best)},
             **{end: _count(*count) for end, count in ends.items()}}
 

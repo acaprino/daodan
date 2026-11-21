@@ -179,6 +179,17 @@ class ProjectPacketTests(unittest.TestCase):
         b = self.packet(cursor=json.loads(json.dumps(first['cursor'])))
         self.assertEqual(a, b)
 
+    def test_public_context_retry_preserves_all_three_published_receipts(self):
+        def create(cursor=None):
+            return packets.create_context(self.manifest, self.request, self.recipient, authority=self.authority,
+                                          out=self.manifest.parent / 'context', cursor=cursor)
+        first = create()
+        second = create(first['cursor_path'])
+        paths = [Path(second[k]) for k in ('path', 'cursor_path', 'map_slice_path')]
+        stamps = [p.stat().st_mtime_ns for p in paths]
+        self.assertEqual(create(first['cursor_path']), second)
+        self.assertEqual([p.stat().st_mtime_ns for p in paths], stamps)
+
     def test_cursor_rejects_recipient_request_index_and_source_changes(self):
         first = self.packet()
         self.recipient['prefix'] += ' Changed.'

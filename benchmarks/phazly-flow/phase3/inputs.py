@@ -78,7 +78,7 @@ def main(argv=None) -> int:
     perimeter = perimeter_of(links)
     units = flows.units(links, {f: links["sizes"][f] for f in perimeter}, perimeter, LIMIT, share=SHARE)
     (args.out / "perimeter.txt").write_text("\n".join(perimeter) + "\n", encoding="utf-8", newline="\n")
-    (args.out / "units.json").write_text(json.dumps([unit["files"] for unit in units["units"]], indent=1) + "\n",
+    (args.out / "units.json").write_text(json.dumps(units["units"], indent=1) + "\n",
                                          encoding="utf-8", newline="\n")
     (args.out / "flows.md").write_text(flows_text(links, perimeter), encoding="utf-8", newline="\n")
     print(f"perimeter {len(perimeter)} files, {len(units['units'])} units, assigned {units['assigned']}/{units['files']}")

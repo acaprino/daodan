@@ -163,11 +163,13 @@ def main(argv: list[str] | None = None) -> int:
         results = pipeline.run(manifest, start=start,
                                report_path=(args.report_out or manifest.with_name(REPORT_NAME)).resolve())
         report = results.get("analyze") or {}
-        if "failed" in report:
-            print(f"the analysis failed: {report['failed']}", file=sys.stderr)
+        if "union" not in results:
+            cause = next((value["failed"] for value in results.values() if "failed" in value),
+                         "the pipeline ended before union")
+            print(f"the analysis failed: {cause}", file=sys.stderr)
             return 1
         print(json.dumps({key: report[key] for key in ("available", "languages")}, indent=2, sort_keys=True))
-        return 0 if report.get("available") else 1
+        return 0 if report.get("available") or not report["languages"] else 1
     report = _stage(args, manifest)
     report_out = None
     if args.report_out is not None:

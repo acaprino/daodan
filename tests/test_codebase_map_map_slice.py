@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'daodan/core'))
@@ -57,6 +58,19 @@ class MapSliceTests(unittest.TestCase):
         self.assertTrue(result['gaps'])
         self.assertNotIn('precedences', result)
         self.assertEqual({o['id'] for o in result['validation_obligations']}, {'R1', 'tests'})
+
+    def test_slice_preserves_each_observed_target_when_the_call_has_no_single_destination(self):
+        def observed(*args, **kwargs):
+            return {'references': [{'id': 'dispatch', 'file': 'client.py', 'kind': 'call', 'span': [4, 4],
+                'caller': 'client.py::run', 'target_id': None, 'resolution': 'unresolved', 'provenance': [],
+                'observations': [
+                    {'target_id': 'service.py::calculate', 'confidence': 'observed', 'resolver': 'recorder'},
+                    {'target_id': 'client.py::run', 'confidence': 'sampled', 'resolver': 'profiler'}]}]}
+
+        with mock.patch.object(map_slice.edge_view, 'load_edge_view', observed):
+            evidence = [edge['evidence'] for edge in self.project()['edges']]
+        self.assertEqual([(item['target_id'], item['confidence'], item['provenance']) for item in evidence],
+                         [('service.py::calculate', 'observed', ['recorder']), ('client.py::run', 'sampled', ['profiler'])])
 
     def test_public_I1_envelope_is_bound_to_its_request(self):
         result = self.project()

@@ -300,7 +300,7 @@ class MapService:
         import premap
         import technologies
         m_state = module_graph.graph_state(manifest_path)["state"]
-        p_state = premap.state(manifest_path)["state"]
+        p_state = premap.state(manifest_path, runner=True if engine_info.get("state") != "off" else None)["state"]
         scan_state = "fresh" if m_state == "fresh" and p_state == "fresh" else (
             "stale" if "stale" in (m_state, p_state) else "missing"
         )
@@ -664,7 +664,7 @@ class MapService:
             return dict(source_reader.outline_manifest(manifest, path, pattern, limit), run_id=run_id)
 
     def flows(self, run_id, rules=None, start=None, direction="from", level="fisico", limit=100, card=None,
-              brief=False, map=None, about=None, levels=None):
+              brief=False, map=None, about=None, levels=None, entry_offset=None):
         """Flows of the bound run from its link rules: the summary, or one flow at a level.
 
         `rules` records the project's link rules beside the snapshot. Without recorded
@@ -677,9 +677,11 @@ class MapService:
         import flows as flow_model
         import system_levels
         asked = [name for name, value in (("brief", brief), ("map", map is not None), ("about", about is not None),
-                                          ("start", start is not None)) if value]
+                                          ("start", start is not None), ("entry_offset", entry_offset is not None)) if value]
         if len(asked) > 1:
-            raise ValueError("ask one of brief, map, about or start")
+            raise ValueError("ask one of brief, map, about, start or entry_offset")
+        if entry_offset is not None and (type(entry_offset) is not int or entry_offset < 0):
+            raise ValueError("entry_offset must be a nonnegative integer")
         if levels is not None and (about is None or not isinstance(levels, list)
                                    or not levels or any(lv not in system_levels.LEVELS for lv in levels)):
             raise ValueError("levels go with about and are one or more of " + ", ".join(system_levels.LEVELS))
@@ -703,6 +705,10 @@ class MapService:
             recorded = manifest.path.with_name("flow-rules.json")
             if rules is not None:
                 _write(recorded, {"schema": flow_model.RULES_SCHEMA, "rules": rules})
+            if entry_offset is not None:
+                import entries
+                import system_brief
+                return system_brief.candidate_page(entries.cached_syntax(manifest.path), run_id, entry_offset, limit)
             if not recorded.is_file():
                 import technologies
                 answer = {"status": "needs_rules", "run_id": run_id,
@@ -712,6 +718,12 @@ class MapService:
                                               if unit["technologies"]]
                 except Exception as error:  # noqa: BLE001 - the rule format is the answer; the technologies help
                     answer["technologies_unavailable"] = f"{type(error).__name__}: {error}"
+                if brief:
+                    import system_brief
+                    value = system_brief.brief(manifest.path, [])
+                    rule_format = answer.pop("format")
+                    return system_brief.fit(value, {**answer, "brief": "", "truncated": 0,
+                                                    "steps": value["steps"], "format": rule_format})
                 return answer
             if brief or map is not None or about is not None:
                 return self._system_map(run_id, manifest.path, flow_model.load_rules(recorded), brief, map, about,
@@ -725,21 +737,31 @@ class MapService:
                         "store_count": len(links["stores"]), "gaps": links["gaps"][:limit],
                         "gap_count": len(links["gaps"]), "external": links["external"]}
             flow = flow_model.trace(links, start, direction)
-            if direction != "through":
+            if direction == "through":
+                for records in ("entries", "incomplete_entries"):
+                    flow[records + "_count"] = len(flow[records])
+                    flow[records] = flow[records][:limit]
+            else:
                 cards_path = manifest.path.with_name("flow-cards.json")
                 cards = _json(cards_path) if cards_path.is_file() else {"schema": "daodan/flow-cards/v1", "cards": {}}
                 key = f"{direction}:{start}"
-                with snapshot.open_snapshot(manifest.path) as store:
-                    hashes = {rel: entry.get("hash") for rel, entry in snapshot.file_headers(store).items()}
+                if card is not None or key in cards["cards"]:
+                    # The same files can give different proofs after rules or analyzer results change.
+                    evidence = hashlib.sha256(json.dumps(flow, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+                    with snapshot.open_snapshot(manifest.path) as store:
+                        hashes = {rel: entry.get("hash") for rel, entry in snapshot.file_headers(store).items()}
                 if card is not None:
                     flow_model.check_card(card, flow)
-                    cards["cards"][key] = {**card, "files": {rel: hashes.get(rel) for rel in flow_model.card_files(flow)}}
+                    cards["cards"][key] = {**card, "evidence": evidence,
+                                           "files": {rel: hashes.get(rel) for rel in flow_model.card_files(flow)}}
                     _write(cards_path, cards)
                 kept = cards["cards"].get(key)
                 if kept is not None:
                     changed = sorted(rel for rel, digest in kept["files"].items() if hashes.get(rel) != digest)
+                    changed_evidence = kept.get("evidence") != evidence
                     flow["card"] = {**{name: kept[name] for name in ("name", "type", "text")},
-                                    "fresh": not changed, "changed_files": changed[:limit]}
+                                    "fresh": not changed and not changed_evidence, "changed_files": changed[:limit],
+                                    "evidence_changed": changed_evidence}
                 flow = flow_model.at_level(
                     flow, level, flow_model.file_modules(manifest.path) if level == "logico" else {})
                 flow["edge_count"] = len(flow["edges"])
@@ -780,8 +802,18 @@ class MapService:
         if system is None:
             return {"status": "no_map", "reason": "no system map is recorded: propose one with map"}
         if about is None:  # the whole map, in counts: `system_map`
+            needs_review = {}
+            for part in ("nodes", "flows"):
+                ids = sorted(item["id"] for item in system[part] if not item["fresh"])
+                if ids:
+                    needs_review[part] = {"count": len(ids), "ids": ids[:system_map.LEFT_LISTED]}
+            if refused := system["refused_proposals"]:
+                needs_review["refused_proposals"] = {"count": len(refused),
+                                                     "names": [r["name"] for r in refused[:system_map.LEFT_LISTED]]}
             return {**{part: dict(Counter(item["status"] for item in system[part])) for part in ("nodes", "flows")},
-                    "coverage": system_map._reported(system["coverage"])}
+                    "reachability": dict(Counter(item["reachability"] for item in system["flows"])),
+                    "coverage": system_map._reported(system["coverage"]),
+                    **({"needs_review": needs_review} if needs_review else {})}
         if levels:
             import flows as flow_model
             links = flow_model.cached_links(manifest, rules) if "codice" in levels else None

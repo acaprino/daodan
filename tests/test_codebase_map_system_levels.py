@@ -53,14 +53,14 @@ class LevelTests(unittest.TestCase):
 
     def test_infrastructure_puts_a_node_on_what_it_runs_on(self):
         infra = self.view(["infrastruttura"])
-        self.assertIn(("Server shop", "card payment provider", "declared"), arrow_states(infra))
+        self.assertIn(("Server shop", "Stripe", "declared"), arrow_states(infra))
         self.assertIn("API pagamenti", next(a for a in infra["arrows"] if a["from"] == "Server shop")["through"])
 
     def test_a_refused_step_is_a_gap_never_an_arrow(self):
         broken = copy.deepcopy(self.m)
         flow = next(f for f in broken["flows"] if f["name"] == PAY)
         for arrow in flow["arrows"]:
-            if (arrow["from"], arrow["to"]) in {("API pagamenti", "card payment provider"), ("Cliente", "Checkout")}:
+            if (arrow["from"], arrow["to"]) in {("API pagamenti", "Stripe"), ("Cliente", "Checkout")}:
                 arrow["status"] = "refused"
         infra = system_levels.view(broken, PAY, ["infrastruttura"])
         self.assertEqual(infra["arrows"], [])
@@ -95,6 +95,8 @@ class LevelTests(unittest.TestCase):
     def test_a_flow_exists_at_the_levels_where_it_has_nodes(self):
         self.assertEqual(self.view(["persone"], "Riprova dei pagamenti")["absent"], ["persone"])
         everything = self.view(list(system_levels.LEVELS), links=self.links)
+        self.assertEqual((everything["flow_status"], everything["fresh"]), ("incomplete", False))
+        self.assertTrue(everything["reason"])
         self.assertTrue(everything["nodes"][0]["also"])
         badge = next(n for n in everything["nodes"] if n["name"] == "Badge pagamento")
         self.assertEqual(badge["also"], {"codice": ["web/badge.ts"]})
@@ -114,7 +116,7 @@ class LevelTests(unittest.TestCase):
         self.assertIn("db/payments", opened["gaps"][0]["reason"])
         written = next(r for r in opened["members"] if r["id"] == "store:db/payments")
         self.assertEqual(written["writes"], ["server/payments.py::charge_order"])
-        self.assertEqual(system_levels.inside(self.m, "card payment provider")["detail"], "none")
+        self.assertEqual(system_levels.inside(self.m, "Stripe")["detail"], "none")
         checkout = system_levels.inside(self.m, "checkout", self.links)
         self.assertEqual((checkout["detail"], [r["id"] for r in checkout["members"]]), ("available", ["web/checkout.ts"]))
         self.assertTrue(checkout["relations"])

@@ -15,6 +15,8 @@ Prova la [spec della mappa del sistema](../../docs/specs/2026-11-18-flussi-e-map
 
 ## Parametri da provare
 
+Nel comando `score.py system`, `flows_by_nodes` misura la sovrapposizione dei nodi e `flows_depth_1` la somiglianza al primo livello. `flows` conta una corrispondenza uno a uno quando almeno due terzi dei nodi attesi appartengono a percorsi diretti da un ingresso atteso a un effetto atteso. I percorsi seguono frecce provate o dichiarate e scartano quelle scadute. `entries` e `effects` contano gli estremi collegati. `flows.by_type` richiede anche il tipo corretto e `flow_type_precision` indica la quota di etichette di tipo corrette su tutte quelle proposte. Le misure storiche dell'intero sistema basate sui soli nodi sono confrontabili con `flows_by_nodes`.
+
 | Parametro | Valori |
 | --- | --- |
 | tetto della scheda (`system_brief.CAP`) | 12.000, 24.000, 48.000 caratteri |

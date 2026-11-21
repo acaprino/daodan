@@ -5,14 +5,57 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
+
 SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import premap  # noqa: E402
+import modules  # noqa: E402
+from pipeline import Context, Scan, Stack, events  # noqa: E402
 from premap import dotnet, gradle, jvm_files, maven, module_graph, project_files, renovate, requirements  # noqa: E402
 import snapshot  # noqa: E402
+import technologies  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
+
+
+def test_scan_and_stack_resolve_a_dependency_at_its_declaring_package(tmp_path):
+    files = {
+        "package.json": '{"name":"root","workspaces":["packages/**/client"]}',
+        "packages/client/package.json": '{"name":"direct"}',
+        "packages/team/client/package.json": '{"name":"nested"}',
+        "a/package.json": '{"name":"worker","dependencies":{"left":"file:../l"}}',
+        "b/package.json": '{"name":"worker","dependencies":{"right":"file:../r"}}',
+        "l/package.json": '{"name":"left"}',
+        "r/package.json": '{"name":"right"}',
+        "samples/react/package.json": '{"name":"@sample/widget"}',
+        "web/package.json": '{"name":"web","dependencies":{"react":"^18"}}',
+        "packages/sdk/pyproject.toml": '[project]\nname="sentry_sdk"\n',
+        "separate/pyproject.toml": '[project]\nname="separate"\ndependencies=["sentry-sdk"]\n'
+                                  '[tool.uv.sources]\nsentry-sdk={workspace=true}\n',
+        "app/pyproject.toml": '[project]\nname="remote"\ndependencies=["sentry-sdk>=2"]\n'
+                              '[tool.uv.sources]\nsentry-sdk={index="public"}\n'
+                              '[[tool.uv.index]]\nname="public"\nurl="https://pypi.org/simple"\n',
+    }
+    project = tmp_path / "project"
+    for rel, text in files.items():
+        path = project / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    context = Context(manifest, events.Bus(), fast_scan=True)
+    graph = modules.load_graph(Path(Scan.run(context)["graph"]))
+    record = json.loads(Path(Stack.run(context)["path"]).read_text(encoding="utf-8"))
+    edges = [(e["kind"], e["source"], e["target"]) for e in graph["edges"]]
+    assert {(src, dst) for kind, src, dst in edges if kind == "declares"} == {
+        ("worker@a", "left"), ("worker@b", "right")}
+    assert {dst for kind, src, dst in edges if src == "root" and kind == "contains"} == {"direct", "nested"}
+    libs = {unit["id"]: {lib["name"] for lib in unit["libraries"]} for unit in record["units"]}
+    assert libs["web"] == {"react"}
+    assert libs["remote"] == {"sentry-sdk"}
+    assert not libs["worker@a"] and not libs["worker@b"]
 
 
 def _versions(tmp_path, files, source) -> dict:
@@ -28,6 +71,43 @@ def _versions(tmp_path, files, source) -> dict:
         result = source.run(premap.Context(manifest, store)) or {}
     return {(p["ecosystem"], p["name"], p["declared_in"].split("#", 1)[0]): p.get("version")
             for p in (result.get("facts") or {}).get("packages") or []}
+
+
+@pytest.mark.parametrize("source", ['workspace = true', 'path = "../sdk"'])
+def test_local_python_distribution_is_internal_only_for_its_declaring_consumer(tmp_path, source):
+    project = tmp_path / "project"
+    local_manifest = "packages/app/pyproject.toml"
+    external_manifest = "remote/requirements.txt"
+    files = {
+        "pyproject.toml": '[tool.uv.workspace]\nmembers = ["packages/*"]\n',
+        local_manifest: '[project]\nname = "app"\ndependencies = ["sentry-sdk"]\n'
+                        f'[tool.uv.sources]\nsentry-sdk = {{ {source} }}\n',
+        "packages/sdk/pyproject.toml": '[project]\nname = "sentry_sdk"\n',
+        "remote/pyproject.toml": '[project]\nname = "remote"\ndependencies = ["sentry-sdk"]\n'
+                                 '[tool.uv.sources]\nsentry-sdk = { index = "public" }\n',
+        external_manifest: 'sentry-sdk>=2\n',
+        "web/package.json": '{"name": "web", "dependencies": {"sentry_sdk": "1"}}',
+    }
+    for rel, body in files.items():
+        path = project / rel
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.write_text(body, encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    report = {"repositories": {"local": {"packageFiles": {"pep621": [
+        {"packageFile": local_manifest, "deps": [{"depName": "sentry-sdk", "currentValue": "*"}]}]}}}}
+    facts = premap.write(manifest, sources=(module_graph, requirements, renovate),
+                         runner=lambda commands: [{"returncode": 0, "stdout": json.dumps(report), "stderr": ""}])
+    assert not any(item["state"] == "failed" for item in facts["sources"])
+    assert any(unit["name"] == "app" and "sentry_sdk" in unit["depends_on"] for unit in facts["units"])
+    assert {p["declared_in"].split("#")[0] for p in facts["packages"] if p["ecosystem"] == "pypi"} == {
+        external_manifest, "remote/pyproject.toml"}
+    assert not any(p["declared_in"].split("#")[0] == local_manifest for p in module_graph.package_facts(manifest))
+    stack = technologies.ensure(manifest, facts=facts)
+    units = {m["name"]: m for m in stack["units"]}
+    assert "sentry" not in units["app"]["services"] and not units["app"]["libraries"]
+    assert "sentry" in units["remote"]["services"]
+    assert [lib["name"] for lib in units["web"]["libraries"]] == ["sentry_sdk"]
 
 
 def test_module_graph_packages_carry_the_version_each_manifest_writes(tmp_path):

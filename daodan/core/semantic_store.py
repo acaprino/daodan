@@ -844,12 +844,18 @@ def build_semantic_store(
                               ((rel, item["exported"], _pack(item)) for item in payload["exports"]))
             del entry, payload
 
+        bridge_importers = set()
+        if sem_reused_set and any(path.endswith(".rs") for path in changed_or_removed):
+            # A registration can live in a third file, outside the caller's existing import edges.
+            bridge_importers = {rel for (rel,) in db.execute(
+                "SELECT DISTINCT file FROM sem_bindings WHERE kind='import' AND name GLOB '__tauri_invoke_*'")}
         if sem_reused_set and not set_of_paths_changed and not config_changed:
             db.execute("INSERT INTO main.sem_modules SELECT * FROM prev_snap.sem_modules WHERE file IN (SELECT file FROM _sem_reused)")
             if changed_files:
+                db.executemany("DELETE FROM main.sem_modules WHERE file=?", ((rel,) for rel in bridge_importers))
                 config = snapshot.ts_path_config(target, source_observations=ConfigObservations(store, perimeter=perimeter))
                 for rel, modules in snapshot.iter_resolved_imports(
-                    store, config, include_self=True, only_importers=set(changed_files), perimeter=perimeter
+                    store, config, include_self=True, only_importers=set(changed_files) | bridge_importers, perimeter=perimeter
                 ):
                     for module, targets in modules.items():
                         db.executemany("INSERT INTO sem_modules VALUES(?,?,?)", ((rel, module, target) for target in targets))
@@ -901,6 +907,7 @@ def build_semantic_store(
                 }
                 ref_reused_set = sem_reused_set - dirty_importers
 
+        ref_reused_set -= bridge_importers
         if ref_reused_set and any(path.lower().endswith(snapshot._C_FAMILY_SUFFIXES) for path in changed_or_removed):
             # The include rule reads the functions of every C and C++ file: their references are answered again.
             ref_reused_set = {path for path in ref_reused_set if not path.lower().endswith(snapshot._C_FAMILY_SUFFIXES)}
@@ -1023,12 +1030,18 @@ def install_edge_view(db, store, *, engine_store=None, limit=100):
         "SELECT 1 FROM sqlite_temp_master WHERE name='q_cover'").fetchone() else "sem_coverage"
     allowed = {r[0] for r in db.execute(f"SELECT file FROM {coverage} WHERE verified=1")}
     targets = {r[0] for r in db.execute("SELECT id,file FROM sem_declarations") if r[1] in allowed}
+    db.execute("CREATE TEMP TABLE effective_observations(id TEXT,target_id TEXT,PRIMARY KEY(id,target_id))")
+    db.executemany("INSERT OR IGNORE INTO effective_observations VALUES(?,?)",
+                   ((ref["id"], end["target_id"]) for ref in view["references"] if ref["file"] in allowed
+                    for end in ref.get("observations", ()) if end["target_id"] in targets))
     # A read is rewritten only where the store changed its answer; a call carries the view's record, as before.
     changed = [ref for ref in view["reads"]
                if (ref["target_id"], ref["resolution"]) != (ref["lexical_target_id"], ref["lexical_resolution"])]
     for ref in view["references"] + changed:
         if ref["file"] not in allowed or (ref["target_id"] and ref["target_id"] not in targets):
             continue
+        if "observations" in ref:
+            ref = {**ref, "observations": [end for end in ref["observations"] if end["target_id"] in targets]}
         db.execute("UPDATE effective_references SET target_id=?,resolution=?,payload=? WHERE id=?",
                    (ref["target_id"], ref["resolution"], _pack(ref), ref["id"]))
     summary = {key: view[key] for key in ("schema", "version", "profile", "coverage", "gaps")}

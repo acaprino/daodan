@@ -27,6 +27,7 @@ from ._treesitter import (
     get_parser,
     load_failure,
     node_text,
+    query_captures,
     scan_ast_external_calls,
 )
 from .base import (
@@ -43,6 +44,58 @@ from .semantic import rust_semantics
 __all__ = ["adapter"]
 
 _LANGUAGE_NAME = "rust"
+
+
+def _tauri_bridge(root, src: bytes) -> dict | None:
+    """Read command attributes and the literal Rust paths fed to Tauri's invoke handler."""
+    if b"command" not in src and b"generate_handler" not in src:
+        return None
+
+    def text(node):
+        return node_text(node, src) if node is not None else ""
+
+    imports = {text(node) for node in query_captures("rust", "(source_file (use_declaration argument: (_) @use))",
+                                                      root).get("use", ())}
+
+    def tauri(path, name):
+        return path == f"tauri::{name}" or (path == name and f"tauri::{name}" in imports)
+
+    commands, handlers = [], []
+    for attr in query_captures("rust", "(attribute_item (attribute) @attr)", root).get("attr", ()):
+        if not attr.named_children or not tauri(text(attr.named_children[0]), "command"):
+            continue
+        item = attr.parent.next_named_sibling
+        while item is not None and item.type in ("attribute_item", "line_comment", "block_comment"):
+            item = item.next_named_sibling
+        # A root command has the identity the import resolver can prove for this Rust module.
+        if item is not None and item.type == "function_item" and item.parent.type == "source_file":
+            commands.append(text(item.child_by_field_name("name")))
+    for macro in query_captures("rust", "(macro_invocation) @macro", root).get("macro", ()):
+        if not tauri(text(macro.child_by_field_name("macro")), "generate_handler"):
+            continue
+        args = macro.parent
+        if args.type != "arguments" or args.parent.type != "call_expression":
+            continue
+        method = args.parent.child_by_field_name("function")
+        if method.type != "field_expression" or text(method.child_by_field_name("field")) != "invoke_handler":
+            continue
+        # Rust represents a macro's list as a token tree. Accept only comma-separated identifier paths.
+        tree = next((n for n in macro.named_children if n.type == "token_tree"), None)
+        if tree is None:
+            continue
+        nodes = []
+        for token in tree.children[1:]:
+            if token.type in ("line_comment", "block_comment"):
+                continue
+            if token.type not in (",", "]", ")", "}"):
+                nodes.append(token)
+                continue
+            names = nodes[::2]
+            if (len(nodes) % 2 and all(n.type in ("identifier", "crate", "self", "super") for n in names)
+                    and all(n.type == "::" for n in nodes[1::2])):
+                handlers.append("::".join(text(n) for n in names))
+            nodes.clear()
+    return {"commands": sorted(set(commands)), "handlers": sorted(set(handlers))} if commands or handlers else None
 
 
 # Rust internal-vs-external import rule:
@@ -445,6 +498,7 @@ def _ts_parse(content: str) -> ParseResult | None:
         exported_symbols=list(dict.fromkeys(exported)),
         notes=notes,
         semantic=semantic,
+        tauri=_tauri_bridge(root, src),
     )
 
 

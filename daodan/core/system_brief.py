@@ -22,8 +22,10 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import entries  # noqa: E402
 import flows  # noqa: E402
 import modules  # noqa: E402
+import pipeline  # noqa: E402
 import service_registry  # noqa: E402
 import technologies  # noqa: E402
 import system_map  # noqa: E402
@@ -154,8 +156,12 @@ HEADER = "\n".join((
     "Sections, in this order: Steps that ran; Counts; Modules (M) and top Directories (D) with their files; "
     "Externals (X), services of others, with `id` when the service registry has it; Other dependencies (O), per "
     "module the ones the registry does not know; Runtime files (R) for running and release, and what they Declare (S); "
-    "names the project Confirmed (N); flow Cards (C); Entry points (E) with kind and `file:line`, alone when they reach "
-    "no resource another reaches; Groups (G), a resource two or more entry points reach, with them.",
+    "names the project Confirmed (N); flow Cards (C); AST entry candidates (A); Entry points (E) with kind and "
+    "`file:line`, alone when they reach no resource another reaches; Groups (G), a resource two or more entry points "
+    "reach, with them. AST candidates are unclassified evidence, separate from entry points and coverage. "
+    "Read all candidates with entry_offset=0 and continue at next_offset.",
+    "For each proposed flow, name its entry nodes in entries and its effect nodes in effects. "
+    "The map checks directed paths between them across the named participants.",
     "One item per line, numbered in its section; a number stays the same for the same snapshot. "
     "A line `- N more` sums up the rest of a section.",
     "What is not here the machine did not find: `entry points 0` means the machine found none, not that the system "
@@ -165,9 +171,10 @@ HEADER = "\n".join((
 def _sections(value: dict) -> list[tuple[str, list[str]]]:
     """The sections before the entry points, each a label and its lines."""
     routes = value["routes"]
+    candidates = value.get("entry_candidates", [])
     return [
         ("Steps", [", ".join(f"{k} {'yes' if v else 'no'}" for k, v in value["steps"].items())]),
-        ("Counts", [f"entry points {value['entries']}", f"store keys {value['stores']}",
+        ("Counts", [f"entry points {value['entries']}", f"AST candidates {len(candidates)}", f"store keys {value['stores']}",
                     f"routes {routes['offered']} offered, {routes['called']} called, {routes['linked']} linked",
                     *(["links " + ", ".join(f"{k} {n}" for k, n in value["links"].items())] if value["links"] else [])]),
         ("Modules", [f"M{i} {m['name']} ({m['kind']}, {m['files']} files)" for i, m in enumerate(value["modules"], 1)]),
@@ -180,7 +187,11 @@ def _sections(value: dict) -> list[tuple[str, list[str]]]:
         ("Declared", [f"S{i} {d['kind']} {d['name']}" + (f" ({d['image']})" if d.get("image") else "")
                       + f" in {d['file']}:{d['line']}" for i, d in enumerate(value["declared"], 1)]),
         ("Confirmed", [f"N{i} {name}" for i, name in enumerate(value["confirmed"], 1)]),
-        ("Cards", [f"C{i} {name}" for i, name in enumerate(value["cards"], 1)])]
+        ("Cards", [f"C{i} {name}" for i, name in enumerate(value["cards"], 1)]),
+        ("AST entry candidates", [f"A{i} [candidate] {row['reader']} {row['shape']} at {row['site']}: {row['symbol']}"
+                                  for i, row in enumerate(candidates[:HOLDERS], 1)]
+         + ([f"- {len(candidates) - HOLDERS} more; read entry_offset={HOLDERS}"]
+            if len(candidates) > HOLDERS else []))]
 
 
 def _join(sections: list[tuple[str, list[str]]]) -> str:
@@ -242,6 +253,25 @@ def fit(value: dict, answer: dict, limit: int = LIMIT, holders: int = HOLDERS) -
     return out
 
 
+def candidate_page(rows: list[dict], run_id: str, offset: int, limit: int) -> dict:
+    """A stable page of syntax evidence, within the same response budget as the brief."""
+    page = []
+    answer = {"status": "ok", "run_id": run_id, "offset": offset, "count": len(rows), "candidates": page,
+              "next_offset": None}
+    room = LIMIT - len(json.dumps(answer)) - 32
+    for row in rows[offset:offset + limit]:
+        size = len(json.dumps(row)) + 2
+        if size > room:
+            if not page:
+                page.append({**{k: v[:400] for k, v in row.items()}, "truncated": True})
+            break
+        page.append(row)
+        room -= size
+    if offset + len(page) < len(rows):
+        answer["next_offset"] = offset + len(page)
+    return answer
+
+
 def brief(manifest: Path, rules: list[dict]) -> dict:
     """The system brief of a snapshot under its link rules."""
     manifest = Path(manifest).resolve()
@@ -250,7 +280,9 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
     with open_snapshot(manifest) as store:
         files = sorted(dict(store.iter_file_headers_only()))
         source = flows.Source(store)
-        texts = {rel: source.lines(rel) or [] for rel in files}
+        # Other paths cannot contain a runtime declaration interpreted by this reader.
+        texts = {rel: source.lines(rel) or [] for rel in files
+                 if _runtime(rel, []) or rel.endswith((".yml", ".yaml"))}
     record = technologies.ensure(manifest)
     externals = _externals(graph, record)
     known = {s["value"] for e in record["technologies"] for s in e["signs"] if s["sign"] == "package"}
@@ -260,7 +292,7 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
             left = [d for d in module["dependencies"] if d not in known]
             if left:
                 other[module["name"]] = len(left)
-    runtime = [rel for rel in files if _runtime(rel, texts[rel])]
+    runtime = [rel for rel, lines in texts.items() if _runtime(rel, lines)]
     system = system_map.load(manifest, rules)
     groups, alone = _groups(links)
     cards_file = manifest.with_name("flow-cards.json")
@@ -271,12 +303,17 @@ def brief(manifest: Path, rules: list[dict]) -> dict:
     found = defaultdict(list)
     for entry in links["entries"]:
         found[entry["symbol"]].append(entry)
+    dynamic_evidence = any(edge.get("origin") == "osservato" for edge in links["edges"])
+    if not dynamic_evidence and manifest.with_name(pipeline.events.JOURNAL).is_file():
+        dynamic_evidence = pipeline.runtime(manifest)["state"] == "observed"
     value = {"schema": SCHEMA,
-             "steps": {"statico": True, "inferenza": bool(rules), "dinamico": False, "semantico": system is not None},
+             "steps": {"statico": True, "inferenza": bool(rules),
+                       "dinamico": dynamic_evidence,
+                       "semantico": system is not None},
              "modules": [{"name": m["name"], "kind": m["kind"], "provenance": m["provenance"], "files": len(m.get("files", []))}
                          for m in graph["modules"]],
              "directories": dict(sorted(Counter(f.split("/", 1)[0] if "/" in f else "." for f in files).items())),
-             "entries": len(found), "stores": len(links["stores"]),
+             "entries": len(found), "stores": len(links["stores"]), "entry_candidates": entries.cached_syntax(manifest),
              "entry_points": [{"symbol": s, "kinds": sorted({e["kind"] for e in found[s]}),
                                "site": min(e["site"] for e in found[s])} for s in sorted(found)],
              "routes": links["routes"], "links": dict(sorted(Counter(e["origin"] for e in links["edges"]).items())),

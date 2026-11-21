@@ -184,11 +184,17 @@ def _calls(read: dict) -> list:
         return min(held)[1] if held else f"file:{path}"
 
     out = []
-    for call in {call["id"]: call for found in read.values() for call in found["calls"]}.values():
+    calls = {(call["id"], call["target_id"], call.get("confidence"), call.get("resolver")): call
+             for found in read.values() for call in found["calls"]}
+    for call in calls.values():
         source, target = end(call["file"], call["line"]), end(call["target_id"].split("::")[0], starts.get(call["target_id"]))
         if source != target and (source.startswith("symbol:") or target.startswith("symbol:")):
-            out.append({"kind": "calls", "source": source, "target": target, "status": "confirmed",
-                        "counts": {"calls": 1}, "evidence": [{"path": call["file"], "line": call["line"]}]})
+            status = call.get("confidence") or "confirmed"
+            evidence = {"path": call["file"], "line": call["line"]}
+            if status in ("observed", "sampled"):
+                evidence.update({key: call[key] for key in ("resolver", "conflict") if key in call})
+            out.append({"kind": "calls", "source": source, "target": target, "status": status,
+                        "counts": {"calls": 1}, "evidence": [evidence]})
     return out
 
 
@@ -310,13 +316,15 @@ def _edges(relations: list, nodes: dict, owner: dict) -> list:
         if source not in nodes or target not in nodes or source == target:
             continue
         key = {"key": relation["key"]} if "key" in relation else {}  # a deduced link keeps its count, sites and key
-        pair = not key and relation["source"].startswith("file:") and relation["target"].startswith("file:")
+        status = relation["status"]
+        pair = (not key and status not in ("observed", "sampled") and
+                relation["source"].startswith("file:") and relation["target"].startswith("file:"))
         counts = {relation["kind"]: 1} if pair else relation.get("counts") or {relation["kind"]: 1}
         site = {"path": relation["source"].removeprefix("file:"), "line": None,
                 "target": relation["target"].removeprefix("file:")} if pair else None
-        uncertain = relation["status"] == "uncertain"  # an uncertain link is its own edge, never counted as certain
-        edge = edges.setdefault((source, target, uncertain), {
-            "id": f"{source}->{target}" + (" uncertain" if uncertain else ""), "source": source, "target": target,
+        separate = status if status in ("uncertain", "observed", "sampled") else ""
+        edge = edges.setdefault((source, target, separate), {
+            "id": f"{source}->{target}" + (f" {separate}" if separate else ""), "source": source, "target": target,
             "counts": {}, "status": relation["status"], "evidence": []})
         for kind, count in counts.items():
             edge["counts"][kind] = edge["counts"].get(kind, 0) + count

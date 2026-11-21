@@ -79,7 +79,7 @@ def _contract(visible: set[str], steps: list[dict], entities: set[str]) -> tuple
     for arrow in arrows.values():
         out.append({**arrow, "data": "; ".join(dict.fromkeys(d for d in arrow["data"] if d)),
                     "asserts": [k for k in system_map.ARROW_KINDS if k in arrow["asserts"]],
-                    "via": sorted(arrow["via"]), "proof": list({tuple(p.values()): p for p in arrow["proof"]}.values()),
+                    "via": sorted(arrow["via"]), "proof": list({tuple(p.items()): p for p in arrow["proof"]}.values()),
                     "through": list(dict.fromkeys(arrow["through"]))})
     order = lambda r: (r["from"], r["to"], r.get("status", ""), r.get("reason", ""))  # noqa: E731
     return sorted(out, key=order), sorted(gaps.values(), key=order)
@@ -135,7 +135,7 @@ def _code_steps(flow: dict, nodes: dict, links: dict) -> tuple[list[dict], dict[
         if first and second and first != second:
             via = [e[6:] for e in (edge["from"], edge["to"]) if e.startswith("store:")]
             steps.append({"from": first, "to": second, "data": data, "status": "proved", "asserts": [edge["type"]],
-                          "via": via, "proof": [{k: edge[k] for k in ("from", "to", "type", "site")}], "through": []})
+                          "via": via, "proof": [system_map._proof(edge)], "through": []})
     touched = {s[end] for s in steps for end in ("from", "to") if not s[end].startswith(("store:", "module:"))}
     return steps, {path: sorted(owners[path]) for path in sorted(touched)}
 
@@ -180,7 +180,10 @@ def view(system: dict, flow: str, levels: list[str], links: dict | None = None) 
         out_nodes += [{"name": path, "type": "file", "level": "codice", "position": "internal",
                        "also": _grouped(nodes[o] for o in owners)} for path, owners in files.items()]
     out_nodes.sort(key=lambda n: (LEVELS.index(n["level"]), system_map.key(n["name"])))
-    return {"flow": record["name"], "levels": chosen, "nodes": out_nodes, "arrows": arrows, "gaps": gaps,
+    return {"flow": record["name"], "flow_status": record["status"], "fresh": record["fresh"],
+            **{k: record[k] for k in ("reachability", "entries", "effects") if k in record},
+            **({"reason": record["reason"]} if "reason" in record else {}),
+            "levels": chosen, "nodes": out_nodes, "arrows": arrows, "gaps": gaps,
             "absent": [level for level in chosen if not any(n["level"] == level for n in out_nodes)]}
 
 

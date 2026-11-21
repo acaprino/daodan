@@ -72,7 +72,9 @@ class Deposit(keyring.backend.KeyringBackend):
 
 
 @pytest.fixture(autouse=True)
-def deposit():
+def deposit(monkeypatch):
+    import secret_mask
+    monkeypatch.setattr(secret_mask, "masked", lambda text, name: {"text": text, "found": 0, "kinds": []})
     previous, held = keyring.get_keyring(), Deposit()
     keyring.set_keyring(held)
     yield held
@@ -201,6 +203,43 @@ def test_an_endpoint_that_is_not_reached_fails_with_its_cause():
         engines.configured({"engine": None})
     with pytest.raises(ValueError):
         engines.configured({"engine": "openai", "base_url": "ftp://x", "model": "m"})
+
+
+def test_mapping_tool_checks_source_and_errors_before_the_api_turn(monkeypatch):
+    import io
+    import secret_mask
+    from unittest.mock import Mock
+
+    secret = "DEMO_ONLY_PRIVATE"
+    def scan(text, _name):
+        return {"text": text.replace(secret, "*" * len(secret)), "found": text.count(secret), "kinds": []}
+
+    monkeypatch.setattr(secret_mask, "masked", scan)
+    app = object.__new__(launcher.App)
+    app.service, app.context = Mock(), {"run_id": "demo"}
+    app.service.read.return_value = {"excerpt": ["😀\n" + secret + "\nend", {"field": "kept"}]}
+    tools = app._tools()
+    read = next(tool["call"] for tool in tools if tool["name"] == "codebase_map_read")
+    checked = read({"requests": []})
+    assert checked["excerpt"] == ["😀\n" + "*" * len(secret) + "\nend", {"field": "kept"}]
+    assert checked["masked_secrets"] == 1
+    app.service.read.side_effect = ValueError("refused " + secret)
+    requests = []
+    def transport(request, timeout):
+        requests.append(json.loads(request.data))
+        delta = {"tool_calls": [{"id": "read", "function": {"name": "codebase_map_read", "arguments": '{"requests":[]}'}}]} \
+            if len(requests) == 1 else {"content": "done"}
+        return io.BytesIO(("data: " + json.dumps({"choices": [{"delta": delta}]}) + "\n").encode("utf-8"))
+    monkeypatch.setattr(engines.urllib.request, "urlopen", transport)
+    client = engines.OpenAICompatible("https://demo.invalid/v1", "demo")
+    result = client.run({"prompt": "read", "tools": tools})
+    assert result["state"] == "done"
+    message = json.loads(requests[-1]["messages"][-1]["content"])
+    assert message["error"] == "refused " + "*" * len(secret)
+    def broken(*args):
+        raise ValueError(secret)
+    monkeypatch.setattr(secret_mask, "masked", broken)
+    assert read({"requests": []}) == {"status": "withheld", "error": secret_mask.UNAVAILABLE}
 
 
 def test_a_saved_engine_comes_back_at_the_next_start_and_its_key_is_only_in_the_deposit(tmp_path, deposit):
@@ -1080,7 +1119,7 @@ def test_the_engine_records_a_map_through_the_flows_tool_and_the_service_says_it
     assert app.service.asked == ["system_map", ("map", PROPOSAL), "system_map"]  # none recorded, the proposal, the map
     first = Endpoint.seen[0][2]
     tool = next(tool["function"] for tool in first["tools"] if tool["function"]["name"] == "codebase_map_flows")
-    assert set(tool["parameters"]["properties"]) == {"rules", "brief", "map", "about"}
+    assert set(tool["parameters"]["properties"]) == {"rules", "brief", "map", "about", "entry_offset", "limit"}
     task = first["messages"][-1]["content"]
     assert "app-r" in task and "`brief` true" in task and "needs_rules" in task and "«Sequence»" in task
     assert app.state({})["mapped"]["state"] == "done" and "sk-secret" not in json.dumps(app.state({}))
@@ -1101,7 +1140,19 @@ def test_the_service_says_the_recorded_map_in_counts_with_its_remainder_or_that_
     try:
         found = levels.system_map("levels")
         assert (found["status"], found["nodes"], found["flows"]) == ("ok", {"accepted": 2}, {"accepted": 1})
+        assert found["reachability"] == {"not_declared": 1}
         assert found["coverage"] == report["coverage"] and found["coverage"]["entries"]["left"]  # what is left out
+        assert "needs_review" not in found
+        # A refused second step survives the write and the service reports the flow that needs another look.
+        flow = proposal["flows"][0]
+        flow["arrows"].append({**flow["arrows"][0], "cite": "web/api.ts:99999"})
+        levels.flows("levels", map=proposal)
+        assert levels.system_map("levels")["needs_review"] == {"flows": {"count": 1, "ids": ["ricerca-di-un-cane"]}}
+        # A changed citation can also make an otherwise accepted node stale.
+        stored = json.loads(written.read_text(encoding="utf-8"))
+        next(n for n in stored["nodes"] if n["id"] == "cliente")["digests"]["web/api.ts"] = "previous-digest"
+        written.write_text(json.dumps(stored), encoding="utf-8")
+        assert levels.system_map("levels")["needs_review"]["nodes"] == {"count": 1, "ids": ["cliente"]}
     finally:
         written.unlink()  # the run is the module's: it goes on without a map
 
@@ -1222,6 +1273,46 @@ def test_with_the_rules_and_a_map_recorded_for_the_snapshot_no_engine_is_asked_a
     assert ended(app, "mapped") == {"state": "done", "cause": None, "nodes": {"accepted": 1}, "flows": {}, "left": LEFT}
     assert app.linked["state"] == "done" and engine.started == []
     assert service.asked == [None, "system_map"]  # what is recorded is read, nothing is written
+
+
+@pytest.mark.parametrize("unresolved", [False, True])
+def test_a_stale_record_gets_one_automatic_recheck_and_the_result_is_visible(tmp_path, monkeypatch, unresolved):
+    service = Passing(("fresh",))
+    service.rules, service.map = [RULE], PROPOSAL
+    app = selecting(tmp_path, monkeypatch, service)
+    engine = Doing(app)
+    monkeypatch.setattr(engines, "configured", lambda chosen: engine)
+    original = service.system_map
+    pending = {"flows": {"count": 1, "ids": ["payment"]}}
+
+    def recorded(run_id):
+        answer = original(run_id)
+        if not engine.started or unresolved:
+            answer["needs_review"] = pending
+        return answer
+
+    monkeypatch.setattr(service, "system_map", recorded)
+    app._prepare("https://github.com/o/n", "main")
+    result = ended(app, "mapped")
+    if unresolved:
+        assert result["state"] == "incomplete" and result["needs_review"] == pending and result["cause"]
+    else:
+        assert result["state"] == "done" and "needs_review" not in result
+    app._follow()
+    assert engine.started == [("Review", "done")]
+
+
+def test_an_existing_partial_map_keeps_its_review_counts_without_an_engine(tmp_path, monkeypatch):
+    service = Passing(("fresh",))
+    service.rules, service.map = [RULE], PROPOSAL
+    app = selecting(tmp_path, monkeypatch, service)
+    original = service.system_map
+    pending = {"flows": {"count": 1, "ids": ["payment"]}}
+    monkeypatch.setattr(service, "system_map", lambda run: {**original(run), "needs_review": pending})
+    app._prepare("https://github.com/o/n", "main")
+    result = ended(app, "mapped")
+    assert result["state"] == "no_engine" and result["needs_review"] == pending
+    assert "set the engine" in result["cause"]
 
 
 def test_without_an_engine_the_state_says_the_part_left_uncovered_its_cause_and_the_remedy(tmp_path, monkeypatch):

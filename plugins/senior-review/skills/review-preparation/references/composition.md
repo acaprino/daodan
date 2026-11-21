@@ -64,8 +64,12 @@ Build one `BINDINGS.json` from verified values:
 - `coverage`, bound by every branch review on content basis and by no other:
   `{"files": "FILES.json", "root": ".", "budget": 120000}`. `budget` defaults
   to `GROUP_BYTES`; a budget the caller states replaces it. `units`, optional,
-  is a list of path lists the caller gives (the units of a flow map): each becomes
-  one group, and the files no unit holds are packed by path. Without a usable map
+  accepts the map's unit records (`files` and optional `context`) or path lists.
+  Each unit splits at the byte budget. An individually larger file has its own
+  job with `over_budget_bytes`. Files outside the units are packed by path.
+  Each reviewer owns a shared file once. Related jobs receive its path in
+  `context_paths` for on-demand consultation. Job `bytes` counts the full reads of assigned `paths`.
+  Without a usable map
   run, bind without `coverage` and declare the gap. `FILES.json` is
   `snapshot.py files` on the bound run after the map-freshness gate of
   `references/candidate-grounding.md`; give `compute` only the perimeter's

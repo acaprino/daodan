@@ -16,6 +16,7 @@ import sys
 import tempfile
 import threading
 from datetime import datetime, timezone
+from functools import cache
 from importlib import metadata
 from pathlib import Path
 from typing import NamedTuple
@@ -132,9 +133,12 @@ def pass_state(manifest: Path) -> dict | None:
     manifest = Path(manifest)
     running = running_record(manifest)
     report = manifest.with_name(REPORT_NAME)
+    marker = {}
     if running.is_file():
         try:
             marker = json.loads(running.read_text(encoding="utf-8"))
+            if not isinstance(marker, dict):
+                marker = {}
         except (OSError, ValueError):
             marker = {}
         if _process_alive(marker.get("pid")):
@@ -143,9 +147,23 @@ def pass_state(manifest: Path) -> dict | None:
         try:
             last = json.loads(report.read_text(encoding="utf-8"))
         except (OSError, ValueError):
-            last = {}
+            last = None
+        if not isinstance(last, dict) or last.get("pass") is not True or not isinstance(last.get("languages", {}), dict):
+            return {"state": "failed", "reason": "the engine pass report is unreadable; retry the analysis"}
         if last.get("stopped"):
             return {"state": "stopped", "reason": last.get("reason")}
+        outcomes = last.get("languages", {})
+        if not all(isinstance(outcome, dict) and isinstance(outcome.get("state"), str)
+                   for outcome in outcomes.values()):
+            return {"state": "failed", "reason": "the engine pass report has invalid language outcomes; retry the analysis"}
+        complete = last.get("pipeline_complete")
+        code = marker.get("exit_code")
+        # Older detached reports end at Analyze. Replay once to establish completion through Union.
+        legacy_partial = complete is None and (running.is_file() or ("started_at" in last and "finished_at" not in last))
+        unavailable_exit = code == 1 and complete is True and not last.get("available")
+        if complete is False or legacy_partial or (type(code) is int and code != 0 and not unavailable_exit):
+            return {"state": "failed", "languages": outcomes, "reason": "the engine pass did not finish the pipeline"
+                    + (f" (exit code {code})" if type(code) is int else "") + "; see " + LOG_NAME}
         return {"state": "finished", "languages": last.get("languages") or {}}
     if running.is_file():
         code = marker.get("exit_code")
@@ -211,11 +229,13 @@ def edge_state(manifest: Path) -> dict:
             result = {**base, "state": "running", "pid": last.get("pid"), "started_at": last.get("started_at")}
         elif last.get("state") == "stopped":
             result = {**base, "state": "stopped", "reason": last.get("reason")}
+        elif last.get("state") == "failed":
+            result = {**base, "state": "failed", "reason": last["reason"]}
         elif stale is not None:
             result = {**base, "state": "stale", "reason": stale}
         else:
             states = {value["state"] for value in languages.values()}
-            state = next((name for name in STATE_ORDER if name in states), "fresh")
+            state = next((name for name in STATE_ORDER if name in states), "fresh" if last else "missing")
             result = {**base, "state": state}
             first = next((value for value in languages.values() if value["state"] == state), {})
             for key in ("reason", "install"):
@@ -226,8 +246,9 @@ def edge_state(manifest: Path) -> dict:
         if binding is not None:
             result.update(engine=binding.get("engine"), created_at=binding.get("created_at"))
         result["languages"] = languages
+        obsolete = superseded_languages(entries)
         result["coverage"] = {language: entry["coverage"] for language, entry in entries.items()
-                              if entry.get("coverage")}
+                              if entry.get("coverage") and language not in obsolete}
         unserved = no_analyzer(store.connection)
         if unserved:
             result["no_analyzer"] = unserved
@@ -235,6 +256,11 @@ def edge_state(manifest: Path) -> dict:
 
 
 INDEXER_INSTALL = "check the network: Daodan downloads its uv, which runs the pass with the snapshot's parser"
+
+
+def superseded_languages(entries: dict) -> set[str]:
+    """Native indexes produced by a different adapter; independent position-resolver results remain readable."""
+    return {language for language, entry in entries.items() if "indexer" in entry and not from_source(language, entry)}
 
 
 class EngineSpec(NamedTuple):
@@ -261,11 +287,53 @@ class EngineSpec(NamedTuple):
         return importlib.import_module(f"indexers.{self.indexer}").MIN_FREE
 
 
+@cache
+def adapter_fingerprint(indexer: str) -> str:
+    """Identify the installed code and pins that produce this adapter's rows. Project files never enter this hash."""
+    adapters = SCRIPT_DIR / "indexers"
+    files = {SCRIPT_DIR / "code_graph.py", SCRIPT_DIR / "preparation.py", SCRIPT_DIR / "engine_tools.py",
+             adapters / "runtime.py", adapters / f"{indexer}.py", *adapters.glob(f"{indexer}_*.*")}
+    # The adapters also ship helpers outside their own filename prefix.
+    if indexer in ("java", "kotlin", "csharp"):
+        files.add(adapters / "jvm.py")
+    if indexer == "csharp":
+        files.update((adapters / "clang.py", adapters / "scip-dotnet.patch"))
+    if indexer in ("typescript", "css"):
+        files.update((adapters / "typescript.py", adapters / "components.py", adapters / "components.cjs"))
+    if indexer == "css":
+        files.update((SCRIPT_DIR / "languages" / "stylesheet.py", *adapters.joinpath("css_engines").glob("*.json")))
+    digest = hashlib.sha256()
+    for path in sorted(files):
+        digest.update(path.relative_to(SCRIPT_DIR).as_posix().encode() + b"\0")
+        digest.update(hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).digest())
+    return digest.hexdigest()
+
+
 def from_source(language: str, entry: dict) -> bool:
-    """Whether a store entry came from the entry that serves `language` now: a stage names its entry
-    (`scip-go@v0.2.9`). An entry from a former source is not fresh, so the next pass replaces it."""
+    """An older index stays readable, but is reused only with the exact engine pin and the adapter that wrote it."""
     spec = ENGINE_LANGUAGES.get(language)
-    return spec is not None and str(entry.get("engine") or "").split("@", 1)[0] == spec.name
+    if spec is None or entry.get("adapter_digest") != adapter_fingerprint(spec.indexer):
+        return False
+    module = importlib.import_module(f"indexers.{spec.indexer}")
+    indexer = entry.get("indexer")
+    if not isinstance(indexer, dict):
+        return False
+    if spec.indexer in ("java", "kotlin"):
+        from indexers import jvm
+        version = jvm.VERSION
+    elif spec.indexer == "rust":
+        version = engine_tools.RUST_ANALYZER_RELEASE
+    elif spec.indexer == "csharp":
+        version = module.BUILD
+    elif spec.indexer == "css":
+        # Only the parsers used by this snapshot enter the stylesheet stage's composite release.
+        versions = indexer.get("versions")
+        if not isinstance(versions, str) or not versions:
+            return False
+        version = hashlib.sha256(versions.encode()).hexdigest()[:12]
+    else:
+        version = module.VERSION
+    return indexer.get("version") == version and entry.get("engine") == f"{spec.name}@{version}"
 
 
 def stage_command(spec: EngineSpec, manifest: Path, report_path: Path, *, offline: bool = False) -> list[str] | None:
@@ -358,10 +426,13 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     """
     from pipeline import events
     manifest = Path(manifest).resolve()
+    pipeline_run = bus is not None
     bus = bus or events.Bus(manifest.with_name(events.JOURNAL))
     plan, fresh, digest = pass_plan(manifest)
     report = {"pass": True, "manifest_digest": digest, "languages": {}, "engines": {},
               "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    if pipeline_run:
+        report["pipeline_complete"] = False
     outcomes = report["languages"]
     with open_snapshot(manifest) as store:
         skipped = unparsed(store.connection)
@@ -421,8 +492,15 @@ def _launch(spec: EngineSpec, wanted: list[str], manifest: Path) -> tuple[str | 
     if command is None:
         return "unavailable", f"neither uv nor {spec.module} is available to {sys.executable}", spec.install, None
     print(f"engine pass: {spec.name} for {', '.join(wanted)}", flush=True)
+    import node_preparation
+    if spec.needs_container and os.name == "nt" and node_preparation.child_environment():
+        import container
+        try:
+            container.find_engine()  # acquire the run's Kiri daemon before the indexer enters its own process
+        except container.Gap:
+            pass  # the index stage reports its normal unavailability and remedy
     completed = subprocess.run(command, stdin=subprocess.DEVNULL, cwd=str(SCRIPT_DIR),
-                               env={**os.environ, **node_environment()})
+                               env={**os.environ, **node_environment(), **node_preparation.child_environment()})
     try:
         stage = json.loads(stage_report.read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -625,7 +703,8 @@ def _terminate_tree(pid: int) -> None:
 
 
 def _write_report(path: Path, report: dict) -> None:
-    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    from run_store import _write_json_atomic
+    _write_json_atomic(path, report)
 
 
 def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
@@ -640,6 +719,11 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
     """
     manifest = Path(manifest).resolve()
     before = edge_state(manifest)
+    if before["state"] == "fresh" and not before["languages"]:
+        # A configuration-only workspace can have model commands remaining after the fast scan.
+        import premap
+        if premap.state(manifest, runner=True)["state"] == "stale":
+            before = {**before, "state": "stale", "reason": "the pre-map has model commands to retry"}
     if before["state"] in ("fresh", "running", "stopped", "unavailable") or before.get("format") == "json":
         return {**before, "action": "none"}
     if check:
@@ -650,8 +734,8 @@ def ensure_edges(manifest: Path, *, check: bool = False) -> dict:
         leftover.unlink(missing_ok=True)
     plan, fresh, digest = pass_plan(manifest)
     pending = [(spec, wanted) for spec, wanted in plan if not all(language in fresh for language in wanted)]
-    if pending and all(stage_command(spec, manifest, report_path) is None for spec, _ in pending):
-        outcomes = {language: {"state": "fresh", "engine": entry["engine"]} for language, entry in fresh.items()}
+    if pending and not fresh and all(stage_command(spec, manifest, report_path) is None for spec, _ in pending):
+        outcomes = {}
         for spec, wanted in pending:
             outcomes.update({language: {"state": "unavailable", "engine": spec.name, "install": spec.install,
                                         "reason": f"neither uv nor {spec.module} is available to {sys.executable}"}

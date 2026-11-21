@@ -58,10 +58,12 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import hashlib
 import json
 import re
 import sys
 from collections import defaultdict, deque
+from functools import cache
 from pathlib import Path
 from typing import Callable, NamedTuple
 
@@ -75,7 +77,7 @@ import snapshot  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
 
 RULES_SCHEMA = "daodan/flow-rules/v1"
-LINKS_SCHEMA = "daodan/flow-links/v2"  # v2: a route link and an uncertain one name the offering sites
+LINKS_SCHEMA = "daodan/flow-links/v3"  # observed destinations carry their own recorder and confidence
 FLOW_SCHEMA = "daodan/flow/v1"
 LINKS = ("scrive", "legge", "rotta", "offre", "attiva", "ingresso")
 MAX_EDGES = 5000
@@ -763,7 +765,7 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     facts._nodes.clear()
 
 
-def link_facts(manifest: Path, rules: list[dict]) -> dict:
+def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
     """Accesses, deduced links, entry points and gaps of a snapshot under the given rules."""
     by_callee, written, attributes = defaultdict(list), [], []
     for rule in rules:
@@ -787,9 +789,12 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             span = ref.get("span") or [None, None, None, None]
             site = f"{ref['file']}:{span[0]}"
             parts = [str(part) for part in ref.get("parts") or []]
-            callee = facts.node(ref["target_id"]) if target else None
-            if callee:
-                calls.append({"from": caller, "to": callee, "site": site})
+            for end in edge_view.call_ends(ref):
+                callee = facts.node(end["target_id"])
+                if callee:
+                    evidence = {"origin": "osservato", **{key: end[key] for key in ("resolver", "confidence", "conflict")
+                                                          if key in end}} if end["confidence"] in edge_view.SEEN else {}
+                    calls.append({"from": caller, "to": callee, "site": site, **evidence})
             if target is None and len(parts) == 1 and parts[0] in wanted:
                 # A callable value: the call names the binding the rule names.
                 holders = facts.targets(parts[0], ref["file"], -1, -1, ("binding",))
@@ -798,13 +803,13 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             if not matched:
                 if ref["resolution"] != "resolved":
                     if ref.get("last_name") in wanted:
-                        gaps.append({"site": site, "reason": f"call to {ref.get('last_name')} is unresolved"})
+                        gaps.append({"site": site, "symbol": caller, "reason": f"call to {ref.get('last_name')} is unresolved"})
                     if len(parts) == 1 and caller:
                         plain.append((ref["file"], parts[0], caller, site))
                 continue
             text, args = _call_args(facts, ref)
             if args is None:
-                gaps.append({"site": site, "reason": "call arguments not readable"})
+                gaps.append({"site": site, "symbol": caller, "reason": "call arguments not readable"})
                 continue
             scope = facts.declarations.get(ref.get("caller") or "") or {}
             call = {"file": ref["file"], "line": span[0], "scope_end": scope.get("end"), "parts": parts,
@@ -814,12 +819,12 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                 if rule["link"] == "offre" and rule.get("handler"):
                     owner = _route_handler(facts, rule["handler"], args, ref["file"])
                     if owner is None:
-                        gaps.append({"site": site, "reason": "offre: handler not a function"})
+                        gaps.append({"site": site, "symbol": caller, "reason": "offre: handler not a function"})
                         continue
                 else:
                     owner = facts.decorated(ref["file"], span[0]) if rule.get("decorates") else                         named if rule["link"] in ("offre", "ingresso") else caller
                     if owner is None:
-                        gaps.append({"site": site, "reason": f"{rule['link']} call outside a named symbol"})
+                        gaps.append({"site": site, "symbol": caller, "reason": f"{rule['link']} call outside a named symbol"})
                         continue
                 link = rule["link"]
                 if link in ("scrive", "legge"):
@@ -881,7 +886,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             for action in _attribute_actions(facts, rule, held):
                 actions.append(action)
                 entries.append({"symbol": action["handler"], "kind": "azione", "site": action["site"]})
-        external = _external_nodes(store, manifest)
+        external = _external_nodes(manifest, module_graph)
         symbols_by_file = defaultdict(set)
         for declaration in facts.declarations.values():
             if declaration["kind"] in ("function", "method", "class"):
@@ -889,7 +894,7 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
                 if node:
                     symbols_by_file[declaration["file"]].add(node)
 
-    edges = [{"from": c["from"], "to": c["to"], "type": "chiama", "origin": c.get("origin", "diretto"), "site": c["site"]}
+    edges = [{"type": "chiama", "origin": "diretto", **c}
              for c in calls]
     for access in accesses:
         store_node = f"store:{access['store']}/{access['key']}"
@@ -919,7 +924,8 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
         stores[f"{access['store']}/{access['key']}"]["writes" if access["link"] == "scrive" else "reads"].add(access["symbol"])
     unique = {}
     for edge in edges:
-        unique.setdefault((edge["from"], edge["to"], edge["type"], edge["site"]), edge)
+        unique.setdefault((edge["from"], edge["to"], edge["type"], edge["site"], edge["origin"],
+                           edge.get("confidence"), edge.get("resolver")), edge)
     return {"schema": LINKS_SCHEMA, "manifest": str(manifest),
             "stores": {name: {"writes": sorted(v["writes"]), "reads": sorted(v["reads"])} for name, v in sorted(stores.items())},
             "entries": sorted({(e["symbol"], e["kind"]): e for e in entries}.values(), key=lambda e: (e["kind"], e["symbol"])),
@@ -931,24 +937,73 @@ def link_facts(manifest: Path, rules: list[dict]) -> dict:
             "gaps": sorted(gaps, key=lambda g: (g["site"], g["reason"]))}
 
 
+@cache
+def _links_reader_digest() -> str:
+    """Installed link readers and rules; one bounded read of Daodan's own code per process."""
+    digest = hashlib.sha256()
+    for path in (Path(__file__), SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
+                 SCRIPT_DIR / "engine_pass.py", SCRIPT_DIR.parent / "data" / "entry-queries.json"):
+        digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
+    return digest.hexdigest()
+
+
+def _links_stamp(manifest: Path) -> list:
+    import modules
+    from store_graph import source_stamp
+    edges = manifest.with_name("engine-edges.sqlite")
+    files = (manifest, manifest.with_name(manifest.name + "-wal"), edges, edges.with_name(edges.name + "-wal"),
+             modules.graph_name(manifest), manifest.with_name(modules.LEDGER_FILE))
+    stamp = []
+    for path in files:
+        try:
+            item = source_stamp(path)
+        except FileNotFoundError:
+            stamp.append(None)
+        else:
+            stamp.append(item)
+    return stamp
+
+
+def _links_key(rules, stamp, languages):
+    import engine_pass
+    engines = sorted({(spec.name, engine_pass.adapter_fingerprint(spec.indexer))
+                      for language in languages if (spec := engine_pass.ENGINE_LANGUAGES.get(language))})
+    payload = [LINKS_SCHEMA, _links_reader_digest(), rules, stamp, engines]
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+
+
 def cached_links(manifest: Path, rules: list[dict]) -> dict:
-    """`link_facts`, kept beside the snapshot until the rules, the snapshot or the engine store change."""
-    import hashlib
+    """Reuse links only for the same inputs, reader implementation and relevant native analyzers."""
+    import engine_pass
+    import modules
     manifest = Path(manifest)
-    stamp = [LINKS_SCHEMA, json.dumps(rules, sort_keys=True)]
-    for path in (manifest, manifest.with_name("engine-edges.sqlite")):
-        stamp.append(str(path.stat().st_mtime_ns) if path.is_file() else "-")
-    key = hashlib.sha256("\0".join(stamp).encode("utf-8")).hexdigest()
-    cache = manifest.with_name("flow-links.json")
+    destination = manifest.with_name("flow-links.json")
     try:
-        kept = json.loads(cache.read_text(encoding="utf-8"))
-        if kept.get("key") == key:
+        kept = json.loads(destination.read_text(encoding="utf-8"))
+        languages = kept.get("languages") if isinstance(kept, dict) else None
+        stamp = _links_stamp(manifest)
+        if (isinstance(languages, list) and all(s is None or s[-1] for s in stamp)
+                and kept.get("key") == _links_key(rules, stamp, languages)):
             return kept["links"]
-    except (OSError, ValueError):
+    except (OSError, KeyError, TypeError, ValueError):
         pass
-    links = link_facts(manifest, rules)
-    snapshot._write_json_atomic(cache, {"key": key, "links": links})
-    return links
+    # link_facts also reads the module graph. Materialize it before stamping a cache miss so its first publication
+    # or a refreshed ledger does not trigger a second full pass over the references.
+    for _ in range(2):
+        module_graph = modules.ensure_graph(manifest)
+        before = _links_stamp(manifest)
+        languages = []
+        if manifest.with_name("engine-edges.sqlite").is_file():
+            with open_snapshot(manifest) as store:
+                if store.connection is not None:
+                    languages = engine_pass.pass_languages(store.connection)
+        links = link_facts(manifest, rules, module_graph=module_graph)
+        if _links_stamp(manifest) == before:
+            if all(s is None or s[-1] for s in before):
+                snapshot._write_json_atomic(destination, {"key": _links_key(rules, before, languages),
+                                                          "languages": languages, "links": links})
+            return links
+    raise ValueError("the mapping inputs changed while computing flow links; retry")
 
 
 def _attribute_actions(facts: Facts, rule: dict, held: dict) -> list[dict]:
@@ -974,11 +1029,11 @@ def _attribute_actions(facts: Facts, rule: dict, held: dict) -> list[dict]:
     return out
 
 
-def _external_nodes(store, manifest: Path) -> list[dict]:
+def _external_nodes(manifest: Path, graph=None) -> list[dict]:
     """External modules of the module graph, with the files they cite as evidence."""
     import modules
     try:
-        graph = modules.ensure_graph(manifest)
+        graph = graph if graph is not None else modules.ensure_graph(manifest)
         payload = json.loads(Path(graph["graph"]).read_text(encoding="utf-8"))
     except (OSError, ValueError, KeyError):
         return []
@@ -1003,25 +1058,30 @@ def trace(links: dict, start: str, direction: str, boundary: list[str] | None = 
     reads, their writers and what those call. `through` lists the entry points whose
     `from` flow contains the node.
     """
-    if direction == "through":
-        flows = [trace(links, entry["symbol"], "from", boundary, max_edges) for entry in links["entries"]]
-        hits = [flow for flow in flows if start in flow["nodes"]]
-        return {"schema": FLOW_SCHEMA, "start": start, "direction": "through",
-                "entries": [flow["start"] for flow in hits], "complete": all(flow["complete"] for flow in hits)}
     outgoing, incoming = defaultdict(list), defaultdict(list)
     for edge in links["edges"]:
         outgoing[edge["from"]].append(edge)
         incoming[edge["to"]].append(edge)
+    if direction == "through":
+        hits, incomplete = [], []
+        for symbol in dict.fromkeys(entry["symbol"] for entry in links["entries"]):
+            flow = _trace_path(links, symbol, "from", boundary, max_edges, outgoing, incoming)
+            if start in flow["nodes"]:
+                hits.append(symbol)
+            if not flow["complete"]:
+                incomplete.append({"entry": symbol, "reason": flow["stopped"] or (
+                    "boundary" if flow["outside_boundary"] else "gap")})
+        return {"schema": FLOW_SCHEMA, "start": start, "direction": "through",
+                "entries": hits, "incomplete_entries": incomplete,
+                "stopped": None if links["entries"] else "no_entries",
+                "complete": bool(links["entries"]) and not incomplete}
+    return _trace_path(links, start, direction, boundary, max_edges, outgoing, incoming)
 
+
+def _trace_path(links, start, direction, boundary, max_edges, outgoing, incoming):
     def steps(node):
         if direction == "from":
-            # A reader reacts to what was written; what it does on its own is another flow.
-            if node in readers:
-                return []
             return [(edge, edge["to"]) for edge in outgoing[node] if edge["type"] in ("chiama", "attiva", "scrive", "legge", "usa")]
-        # A store a writer also updates is a side effect: its other writers are not this fact's origin.
-        if node in effects:
-            return []
         out = [(edge, edge["to"]) for edge in outgoing[node] if edge["type"] in ("chiama", "scrive", "usa")]
         out += [(edge, edge["from"]) for edge in incoming[node] if edge["type"] in ("legge", "scrive")]
         return out
@@ -1033,32 +1093,37 @@ def trace(links: dict, start: str, direction: str, boundary: list[str] | None = 
         return any(b == "." or file == b or file.startswith(b.rstrip("/") + "/") for b in boundary)
 
     seen, followed, outside, queue = {start}, [], [], deque([start])
-    readers, effects = set(), set()
+    scheduled, emitted = {start}, set()
     stopped = None
     while queue:
         node = queue.popleft()
         for edge, nxt in steps(node):
-            if len(followed) >= max_edges:
-                stopped = "budget"
-                break
             if not inside(nxt):
                 outside.append(edge)
                 continue
-            followed.append(edge)
-            if nxt not in seen:
-                seen.add(nxt)
+            if id(edge) not in emitted:
+                if len(followed) >= max_edges:
+                    stopped = "budget"
+                    break
+                emitted.add(id(edge))
+                followed.append(edge)
+            seen.add(nxt)
+            # A store reader or a side-effect store ends this path. A later call to the same
+            # node can still expand it, independent of the order in which the paths arrived.
+            terminal = (edge["type"] == "legge" if direction == "from" else
+                        edge["type"] == "scrive" and nxt == edge["to"])
+            if not terminal and nxt not in scheduled:
+                scheduled.add(nxt)
                 queue.append(nxt)
-                if direction == "from" and edge["type"] == "legge":
-                    readers.add(nxt)
-                elif direction == "to" and edge["type"] == "scrive" and nxt == edge["to"]:
-                    effects.add(nxt)
         if stopped:
             break
-    gaps = [gap for gap in links["gaps"] if gap.get("symbol") in seen]
+    files = {node.split("::", 1)[0] for node in seen if "::" in node}
+    gaps = [gap for gap in links["gaps"] if gap.get("symbol") in seen or (
+        not gap.get("symbol") and gap.get("site", "").rsplit(":", 1)[0] in files)]
     return {"schema": FLOW_SCHEMA, "start": start, "direction": direction,
             "nodes": sorted(seen), "edges": followed, "outside_boundary": outside, "gaps": gaps,
             "stopped": stopped, "complete": not (stopped or outside or gaps),
-            "files": sorted({node.split("::", 1)[0] for node in seen if "::" in node})}
+            "files": sorted(files)}
 
 
 # ---------------------------------------------------------------- levels
@@ -1111,7 +1176,8 @@ def at_level(flow: dict, level: str, modules_of: dict[str, str]) -> dict:
         source, target = seen_as(edge["from"]), seen_as(edge["to"])
         if source == target:
             continue
-        kept = merged.setdefault((source, target, edge["type"]), {**edge, "from": source, "to": target, "links": 0})
+        key = (source, target, edge["type"], edge.get("origin"), edge.get("confidence"), edge.get("resolver"))
+        kept = merged.setdefault(key, {**edge, "from": source, "to": target, "links": 0})
         kept["links"] += 1
     nodes = sorted({flow["start"] if level != "logico" else seen_as(flow["start"])}
                    | {node for edge in merged.values() for node in (edge["from"], edge["to"])})
@@ -1213,16 +1279,29 @@ def units(links: dict, sizes: dict[str, int], perimeter: list[str], limit: int, 
     for group in _pack_blocks([[f] for f in rest], sizes, limit):
         out.append({"files": group, "entries": []})
     # A link is cut only when no unit holds both its ends, as members or as context.
-    together = {frozenset(pair) for pair in {frozenset(cut["files"]) for cut in cuts}
-                if any(pair <= set(unit["files"]) | set(unit.get("context", ())) for unit in out)}
+    membership = defaultdict(set)
+    for index, unit in enumerate(out):
+        for file in (*unit["files"], *unit.get("context", ())):
+            membership[file].add(index)
     cuts = [{key: value for key, value in cut.items() if key != "files"} for cut in cuts
-            if frozenset(cut["files"]) not in together]
+            if all(file in membership for file in cut["files"])
+            and membership[cut["files"][0]].isdisjoint(membership[cut["files"][1]])]
+    # A store has no file of its own. Count the split between its writers and readers
+    # against the final units, including stores for which no entry point was found.
+    for key, store in sorted(links["stores"].items()):
+        writers = set(files_of(store["writes"])) & membership.keys()
+        readers = set(files_of(store["reads"])) & membership.keys()
+        for writer in sorted(writers):
+            separate = sorted(reader for reader in readers if membership[writer].isdisjoint(membership[reader]))
+            if separate:
+                cuts.append({"type": "store", "store": key, "writer_file": writer, "reader_files": separate})
     counts = defaultdict(int)
     for unit in out:
         for file in unit["files"]:
             counts[file] += 1
     distinct = sorted(f for f in sizes if inside(f))
-    return {"units": out, "cuts": cuts, "files": len(distinct),
+    oversized = [{"file": file, "bytes": sizes[file], "limit": limit} for file in distinct if sizes[file] > limit]
+    return {"units": out, "cuts": cuts, "oversized": oversized, "files": len(distinct),
             "assigned": sum(1 for f in distinct if counts[f]), "in_several_units": sum(1 for f in distinct if counts[f] > 1)}
 
 

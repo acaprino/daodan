@@ -34,8 +34,9 @@ a call no test executed stays as the static steps left it. A sampled one says th
 `ENTRY@VERSION:sampled` and confidence `sampled`; it is never set against a proven edge and says nothing of the
 calls and files no sample named. A language with no observer, a project with no declared test command, a run
 with no container engine are gaps, never silence; so are a result that breaks this contract (`observer-malformed`,
-`failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`): of
-those nothing is kept, and the next analysis tries again. `DAODAN_DYNAMIC=off` skips the step.
+`failed`), a run where no test ran (`not-run`) and one that placed no row of a language (`not-observed`).
+Completed test commands can be reused even when they placed no row. Interrupted commands are retried on the next
+analysis, together with the evidence they already produced. `DAODAN_DYNAMIC=off` skips the step.
 
 Every plan also gets `declared` (`preparation.declared`): the hosts the project declares for its dependencies,
 which the observer's preparation reaches beside the registries, as a CI does; a failed restore whose words name one
@@ -518,6 +519,11 @@ def _step_gaps(stepped: list[dict]) -> list[dict]:
     return list(found.values())
 
 
+def _control_counts(tests: list[dict]) -> list[dict]:
+    return [{**{key: test[key] for key in ("root", "declared_in") if key in test}, **test["controls"]}
+            for test in tests if test.get("runner") == "playwright" and "controls" in test]
+
+
 def run(manifest: Path, bus) -> dict:
     """The step on the snapshot `manifest`, said on `bus` (`pipeline.events`): `{"languages": {language: outcome}}`.
 
@@ -527,16 +533,17 @@ def run(manifest: Path, bus) -> dict:
     coverage, and `sampled` apart), or why nothing was: `no-observer`, `no-static-graph`, `not-run` (nothing to
     run, the plan's gaps, or no test ran, the run's), `unavailable` (no container), `failed` (the run, or a result
     that breaks the contract), `not-observed` (the tests ran and placed no row of the language); those carry the
-    `reason`. A language already observed with
-    the same recorder is not observed again: the observation holds for its snapshot's store.
+    `reason`. Completed commands are reused on the same snapshot, static analyzers, recorder and plan.
     """
     import code_graph
     import container
     import premap
     import preparation
     import resolve_edges as rx
+    from . import execution_cache
     manifest = Path(manifest).resolve()
     outcomes: dict = {}
+    ui_controls, ui_gaps = [], []
 
     def say(detail: str, gap: dict, analyzer: str | None = None, language: str | None = None) -> None:
         bus.emit("gap", detail, step=STEP, analyzer=analyzer, gap=gap, **({"language": language} if language else {}))
@@ -555,8 +562,11 @@ def run(manifest: Path, bus) -> dict:
     with code_graph.Snapshot(manifest) as snapshot:
         store = rx.default_edge_store(manifest)
         edges, binding, reason = rx.read_edge_store(store, snapshot.store)
-        graphs = {language: entry for language, entry in ((binding or {}).get("languages") or {}).items()
-                  if reason is None and entry.get("state") == "fresh"}
+        import engine_pass
+        entries = (binding or {}).get("languages") or {}
+        obsolete = engine_pass.superseded_languages(entries)
+        graphs = {language: entry for language, entry in entries.items()
+                  if reason is None and language not in obsolete and entry.get("state") == "fresh"}
         for language in sorted(set(graphs) - served):
             detail = f"{language}: no observer runs its tests, so its graph holds no observed edge"
             say(detail, {"kind": "no-observer", "language": language, "detail": detail}, language=language)
@@ -576,14 +586,6 @@ def run(manifest: Path, bus) -> dict:
                 continue
             bus.progress(STEP, number, len(waiting), analyzer=entry, phase="plan", message=f"{entry}: the plan")
             seen = {language: graphs[language].get("coverage") or {} for language in wanted}
-            if all((item.get("observed") or {}).get("resolver") == name for item in seen.values()):
-                outcomes.update({language: _outcome(item) for language, item in seen.items()})
-                bus.emit("analyzer.finished", f"{entry}: already observed", step=STEP, analyzer=entry,
-                         languages=wanted, fresh=True)
-                continue
-            bus.emit("analyzer.started", f"{entry} for {', '.join(wanted)}", step=STEP, analyzer=entry,
-                     languages=wanted)
-
             def read(rel: str) -> str:
                 try:
                     return (snapshot.root / rel).read_text(encoding="utf-8", errors="replace")
@@ -593,6 +595,22 @@ def run(manifest: Path, bus) -> dict:
             record = premap.ensure(manifest)
             planned = module.plan(record, sorted(snapshot.checkout.values()), read)
             planned["declared"] = preparation.declared(record)  # the hosts its preparation reaches, as a CI does
+            folder = manifest.parent / RUNS / entry
+            cache_file = folder / "execution.json"
+            expected = execution_cache.key(binding, graphs, wanted, module, planned)
+            cached = execution_cache.read(cache_file, expected, seen, len(planned["runs"]))
+            tests = cached.get("tests", [None] * len(planned["runs"]))
+            retry = [i for i, test in enumerate(tests) if not execution_cache.finished(test)]
+            if cached and not retry:
+                outcomes.update(cached["outcomes"])
+                ui_controls.extend(_control_counts(tests))
+                ui_gaps.extend(cached.get("ui_gaps", []))
+                bus.emit("analyzer.finished", f"{entry}: test execution reused", step=STEP, analyzer=entry,
+                         languages=wanted, fresh=True)
+                continue
+            bus.emit("analyzer.started", f"{entry} for {', '.join(wanted)}", step=STEP, analyzer=entry,
+                     languages=wanted)
+            planned = {**planned, "runs": [planned["runs"][i] for i in retry]}
             for gap in planned["gaps"]:
                 say(gap["detail"], gap, entry)
             if not planned["runs"]:
@@ -622,7 +640,9 @@ def run(manifest: Path, bus) -> dict:
                              message=f"{entry}: {len(planned['runs'])} runs of the tests in the container")
                 with container.beside(declared["services"], {**declared["env"], **stepped["env"]},
                                       stepped["steps"]) as said:
-                    result = module.observe(snapshot.root, planned, manifest.parent / RUNS / entry,
+                    # Preserve the first attempt's raw per-process files and logs for audit.
+                    output = folder / f"retry-{cached['attempt'] + 1}" if cached else folder
+                    result = module.observe(snapshot.root, planned, output,
                                             asked.pop("engine", None))
             broken = malformed(result)
             if broken:
@@ -632,6 +652,11 @@ def run(manifest: Path, bus) -> dict:
                          cause=detail, remedy="fix the observer's result (the contract is dynamic/__init__.py's)",
                          languages=wanted)
                 left(wanted, "failed", detail)
+                if cached:
+                    ui_controls.extend(_control_counts([test for test in tests if test]))
+                    ui_gaps.extend(cached.get("ui_gaps", []))
+                    outcomes.update({language: outcome for language, outcome in cached["outcomes"].items()
+                                     if outcome["state"] == "observed"})
                 continue
             # a declared host a failed restore of the run could not reach: one gap naming it, whichever observer ran
             result["gaps"] = [*(result.get("gaps") or ()),
@@ -648,7 +673,24 @@ def run(manifest: Path, bus) -> dict:
                          level="error" if result["state"] == "failed" else "warning", cause=cause,
                          remedy=result["remedy"], languages=wanted)
                 left(wanted, "failed" if result["state"] == "failed" else "unavailable", cause)
+                if cached:
+                    ui_controls.extend(_control_counts([test for test in tests if test]))
+                    ui_gaps.extend(cached.get("ui_gaps", []))
+                    # An unavailable retry cannot invalidate calls already observed on this snapshot.
+                    outcomes.update({language: outcome for language, outcome in cached["outcomes"].items()
+                                     if outcome["state"] == "observed"})
                 continue
+            attempt_tests = result["runs"]
+            execution_cache.update_tests(tests, retry, planned["runs"], result)
+            combined_tests = [test for test in tests if test and "state" in test]
+            ui_controls.extend(_control_counts(combined_tests or attempt_tests))
+            refreshed = {test.get("declared_in") or test["root"] for test in combined_tests
+                         if (test.get("controls") or {}).get("status") == "observed"}
+            control_gaps = [gap for gap in cached.get("ui_gaps", []) if gap.get("path") not in refreshed]
+            control_gaps.extend(gap for gap in result["gaps"] if gap["kind"].startswith("ui_controls_")
+                                or gap["kind"] == "browser_unavailable")
+            control_gaps = list({(gap["kind"], gap.get("path"), gap["detail"]): gap for gap in control_gaps}.values())
+            ui_gaps.extend(control_gaps)
             if declared["services"]:
                 for gap in _service_gaps(said.services, declared["services"], paths, entry):
                     say(gap["detail"], gap, entry)
@@ -659,29 +701,41 @@ def run(manifest: Path, bus) -> dict:
             why = "; ".join(gap["detail"] for gap in result["gaps"])
             if not any(test["state"] in TESTS[:3] for test in result["runs"]):
                 left(wanted, "not-run", f"no test ran: {why or 'the observer ran none'}")
+                if cached:
+                    outcomes.update({language: outcome for language, outcome in cached["outcomes"].items()
+                                     if outcome["state"] == "observed"})
                 bus.emit("analyzer.finished", f"{entry}: no test ran", step=STEP, analyzer=entry, level="warning",
-                         cause=outcomes[wanted[0]]["reason"], remedy="see the gaps of the run", languages=wanted)
+                         cause=f"no test ran: {why or 'the observer ran none'}",
+                         remedy="see the gaps of the run", languages=wanted)
                 continue
-            sites, pairs = result.get("sites") or [], result.get("sampled") or []
+            sites = execution_cache.merge_sites(cached.get("sites", []), result.get("sites") or [])
+            pairs = result.get("sampled") or []
+            if cached.get("sampled"):
+                pairs = list({json.dumps(pair, sort_keys=True): pair for pair in [*cached["sampled"], *pairs]}.values())
             bus.progress(STEP, number, len(waiting), analyzer=entry, phase="join",
                          message=f"{entry}: {len(sites)} observed sites and {len(pairs)} sampled pairs to place")
-            at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            at = datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
             for language in wanted:
                 # With no exact site, nothing is said of what the run did not execute: a sample misses calls.
                 rows, facts = join(snapshot, language, sites, edges, module) if sites or not pairs else ([], {})
-                facts = {"resolver": name, "at": at, "tests": result["runs"], **facts}
+                facts = {"resolver": name, "at": at, "tests": combined_tests or attempt_tests, **facts}
                 if pairs:
                     more, said = join_sampled(snapshot, language, pairs, module)
                     rows, facts["sampled"] = rows + more, {"resolver": resolver(module, sampled=True), **said}
-                if not rows:  # nothing is kept: the next analysis observes again
+                if not rows:
+                    if seen[language].get("observed"):
+                        code_graph.write_observed(snapshot, store, language, [], facts)
                     placed = _unplaced(snapshot, language, sites, facts)
                     outcomes[language] = {"state": "not-observed", "reason": placed + (f"; {why}" if why else "")}
                     continue
                 outcomes[language] = _outcome(code_graph.write_observed(snapshot, store, language, rows, facts))
+            execution_cache.save(cache_file, expected, tests, {language: outcomes[language] for language in wanted},
+                                 at, sites, pairs, cached.get("attempt", 0) + 1, control_gaps)
             told = ", ".join(f"{language}: {_told(outcomes[language])}" for language in wanted)
             bus.emit("analyzer.finished", f"{entry}: {told}", step=STEP, analyzer=entry, languages=wanted)
         bus.progress(STEP, len(waiting), len(waiting))
-    return {"languages": outcomes}
+    return {"languages": outcomes, **({"ui_controls": ui_controls} if ui_controls else {}),
+            **({"ui_gaps": ui_gaps} if ui_gaps else {})}
 
 
 def _unplaced(snapshot, language: str, sites: list[dict], facts: dict) -> str:

@@ -134,6 +134,11 @@ class Project(NamedTuple):
     lines: Callable[[str], list[str]]
 
 
+def package_key(ecosystem: str, name: str) -> str:
+    """PyPI distribution names follow PEP 503; punctuation stays significant in other ecosystems."""
+    return premap.normalize_pypi_name(name) if ecosystem == "pypi" else name.lower()
+
+
 def check_packages(entries: list[dict], project: Project) -> dict:
     """A declared package or image, by its name in its ecosystem, a Maven artifact without its group, a Go package
     under a module or an entry's pattern. One no entry knows, named like an entry with no sign in its ecosystem, is a
@@ -143,7 +148,7 @@ def check_packages(entries: list[dict], project: Project) -> dict:
         signs = entry.get("signs") or {}
         for ecosystem, values in (signs.get("packages") or {}).items():
             for value in values:
-                by_package.setdefault((ecosystem, value.lower()), []).append(entry["id"])
+                by_package.setdefault((ecosystem, package_key(ecosystem, value)), []).append(entry["id"])
         for ecosystem, values in (signs.get("patterns") or {}).items():
             for value in values:
                 try:
@@ -154,7 +159,7 @@ def check_packages(entries: list[dict], project: Project) -> dict:
             named.setdefault(key.casefold(), entry)
     found, gaps, seen = [], [], set()
     for ecosystem, name, path, line, *_ in project.packages:  # a version is no sign
-        low = name.lower()
+        low = package_key(ecosystem, name)
         ids = list(by_package.get((ecosystem, low), []))
         if ecosystem == "maven" and ":" in low:
             ids += by_package.get((ecosystem, low.split(":", 1)[1]), [])

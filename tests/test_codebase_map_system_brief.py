@@ -87,7 +87,7 @@ class BriefTests(unittest.TestCase):
     def test_sections_have_fixed_labels_and_one_numbered_item_per_line(self):
         sections = {part.split("\n")[0]: part.split("\n")[1:] for part in self.text.split("\n## ")[1:]}
         self.assertEqual(list(sections), ["Steps", "Counts", "Modules", "Directories", "Externals",
-                                          "Entry points", "Groups"])  # an empty section is left out
+                                          "AST entry candidates", "Entry points", "Groups"])
         self.assertEqual(sections["Counts"][0], "entry points 6")
         self.assertEqual(sections["Modules"], ["M1 app (source-tree, 23 files)",
                                                "M2 card payment provider (component, 0 files)",
@@ -138,6 +138,15 @@ class AnswerSizeTests(unittest.TestCase):
         for name, answer in answers.items():
             with self.subTest(answer=name):
                 self.assertLessEqual(len(json.dumps(answer)), system_brief.LIMIT)
+
+    def test_an_oversized_candidate_does_not_block_paging(self):
+        row = {"reader": "decoratore", "shape": "route", "site": "a.py:1", "status": "candidate", "symbol": "a.py::f"}
+        rows = [{**row, "shape": "🚲" * 4000}, row]
+        first = system_brief.candidate_page(rows, "run", 0, 2)
+        self.assertLessEqual(len(json.dumps(first)), system_brief.LIMIT)
+        self.assertTrue(first["candidates"][0]["truncated"])
+        self.assertEqual(first["next_offset"], 1)
+        self.assertEqual(system_brief.candidate_page(rows, "run", 1, 2)["candidates"], [row])
 
 
 

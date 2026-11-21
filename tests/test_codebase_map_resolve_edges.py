@@ -599,6 +599,25 @@ POSITION_ENGINES = (engine_pass.EngineSpec("stub", ("python",), (), "tree_sitter
 POSITION_LANGUAGES = {language: spec for spec in reversed(POSITION_ENGINES) for language in spec.languages}
 
 
+def install_position_fixture(test):
+    """The position stub plays the installed Python analyzer in these pass lifecycle tests."""
+    from indexers import python
+    test.enterContext(mock.patch.object(engine_pass, "ENGINES", POSITION_ENGINES))
+    test.enterContext(mock.patch.object(engine_pass, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
+    test.enterContext(mock.patch.object(python, "VERSION", "1.0"))
+    original = position_stage.PositionStage._entries
+
+    def entries(stage, *args):
+        out = original(stage, *args)
+        if "python" in out:
+            row = out["python"]
+            row.update(indexer={"version": row["engine"].partition("@")[2]},
+                       adapter_digest=engine_pass.adapter_fingerprint("python"))
+        return out
+
+    test.enterContext(mock.patch.object(position_stage.PositionStage, "_entries", entries))
+
+
 class PassLifecycleTests(unittest.TestCase):
     """The engine asked first about project names, its coverage, and the store's lifecycle."""
 
@@ -612,9 +631,7 @@ class PassLifecycleTests(unittest.TestCase):
     }
 
     def setUp(self):
-        # Python reads from scip-python; these tests run the position pass on it.
-        self.enterContext(mock.patch.object(engine_pass, "ENGINES", POSITION_ENGINES))
-        self.enterContext(mock.patch.object(engine_pass, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
+        install_position_fixture(self)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve() / "proj"
@@ -777,6 +794,30 @@ class PassLifecycleTests(unittest.TestCase):
         self.assertEqual(state["state"], "failed")
         self.assertIn("exit code 3", state["reason"])
         self.assertIn(resolve_edges.LOG_NAME, state["reason"])
+
+    def test_interruption_after_analysis_is_repairable_despite_fresh_edges(self):
+        self.run_pass()
+        self.record(pid=0, exit_code=17)
+        report = self.manifest.with_name(resolve_edges.REPORT_NAME)
+        for value in ('{"pass":', "[]", "{}", json.dumps({"pass": True, "pipeline_complete": False,
+                                                    "languages": {"python": {"state": "fresh"}}})):
+            with self.subTest(value=value):
+                report.write_text(value, encoding="utf-8")
+                self.assertEqual(resolve_edges.pass_state(self.manifest)["state"], "failed")
+                state = resolve_edges.ensure_edges(self.manifest, check=True)
+                self.assertEqual((state["state"], state["action"]), ("failed", "reported"))
+                self.assertEqual(state["languages"]["python"]["state"], "fresh")
+        import pipeline
+        child = mock.Mock(pid=0)
+        child.wait.return_value = 0
+        with mock.patch.object(engine_pass, "_spawn_detached", return_value=child):
+            self.assertEqual(resolve_edges.ensure_edges(self.manifest)["action"], "started")
+        with mock.patch.object(engine_pass, "_launch", side_effect=AssertionError("the static index is fresh")), \
+                mock.patch.object(pipeline.Dynamic, "run", return_value={"languages": {}}) as dynamic:
+            result = pipeline.run(self.manifest, start="analyze")
+        dynamic.assert_called_once()
+        self.assertTrue(result["analyze"]["pipeline_complete"])
+        self.assertEqual(resolve_edges.ensure_edges(self.manifest)["action"], "none")
 
     def test_the_edge_view_carries_coverage_and_names_a_running_pass(self):
         import edge_view
@@ -1375,9 +1416,7 @@ class DistributionTests(unittest.TestCase):
     }
 
     def setUp(self):
-        # Python reads from scip-python; these tests run the position pass on it.
-        self.enterContext(mock.patch.object(engine_pass, "ENGINES", POSITION_ENGINES))
-        self.enterContext(mock.patch.object(engine_pass, "ENGINE_LANGUAGES", POSITION_LANGUAGES))
+        install_position_fixture(self)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve() / "proj"
@@ -2101,7 +2140,25 @@ class IndexerStageTests(unittest.TestCase):
         self.assertEqual({edge["resolver"] for edge in edges}, {"scip-go@v0.2.9"})
         self.assertEqual(binding["languages"]["go"]["engine"], "scip-go@v0.2.9")
         self.assertEqual(binding["languages"]["go"]["indexer"]["name"], "scip-go")
+        self.assertEqual(binding["languages"]["go"]["adapter_digest"], engine_pass.adapter_fingerprint("go"))
         self.assertEqual(resolve_edges.edge_state(manifest)["languages"]["go"]["state"], "fresh")
+        import edge_view
+        from indexers import go
+        with mock.patch.object(go, "VERSION", "v99"):
+            self.assertNotIn("go", resolve_edges.edge_state(manifest)["coverage"])
+            self.assertEqual(edge_view.load_edge_view(manifest)["coverage"]["status"], "rejected_store")
+            replay = edge_view.load_edge_view(manifest, engine_store=resolve_edges.default_edge_store(manifest))
+            self.assertIn("go", replay["coverage"]["languages"])
+
+    def test_reuse_requires_the_installed_pin_and_the_adapter_that_built_the_entry(self):
+        from indexers import go
+        entry = {"engine": f"scip-go@{go.VERSION}", "indexer": {"version": go.VERSION}}
+        self.assertFalse(engine_pass.from_source("go", entry))  # older stores have no adapter fingerprint
+        entry["adapter_digest"] = engine_pass.adapter_fingerprint("go")
+        self.assertTrue(engine_pass.from_source("go", entry))
+        self.assertFalse(engine_pass.from_source("go", {**entry, "adapter_digest": "former adapter"}))
+        with mock.patch.object(go, "VERSION", "v99"):
+            self.assertFalse(engine_pass.from_source("go", entry))
 
     def test_the_stage_builds_its_traversal_from_every_hook_the_adapter_defines(self):
         import code_graph

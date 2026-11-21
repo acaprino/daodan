@@ -273,7 +273,7 @@ def language_coverage(sites, edges, holes, files: dict | None = None) -> dict:
                 examples[name].append(site["site"])
         else:
             violations[site["kind"]].append(site["site"])
-    complete = not counted and not values and not (files or {}).get("missing")
+    complete = not counted and not values and not (files or {}).get("missing") and not (files or {}).get("unread")
     out = {"sites": len(sites), "answered": dict(sorted(answered.items())),
            "holes": {name: {"count": counted[name], "examples": examples[name]} for name in sorted(counted)},
            "uncertain": uncertain, "externals": dict(externals.most_common()), "files": files,

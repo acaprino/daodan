@@ -120,6 +120,8 @@ class ValidateTests(unittest.TestCase):
         # A model writes the field it does not use as null or as an empty list: it means what leaving it out means.
         for empty in (None, []):
             self.assertNotIn("scope", system_map.validate(changed(lambda v: v.update(scope=empty))))
+        for invalid in ("", {}, False):
+            self.refused(lambda v: v.update(scope=invalid), "scope")
 
     def test_with_scope_a_flow_stays_inside_it(self):
         def scoped(v):
@@ -237,9 +239,23 @@ class VerifyTests(Fixture):
         self.assertEqual((passed["asserts"], passed["via"]), (["trasferisce"], ["web state/payment"]))
         self.assertEqual(passed["proof"], [
             {"from": "web/checkout.ts::submitPayment", "to": "store:web state/payment", "type": "scrive",
-             "site": "web/checkout.ts:14"},
+             "site": "web/checkout.ts:14", "origin": "dedotto"},
             {"from": "store:web state/payment", "to": "web/badge.ts::renderBadge", "type": "legge",
-             "site": "web/badge.ts:4"}])
+             "site": "web/badge.ts:4", "origin": "dedotto"}])
+
+    def test_a_sampled_call_keeps_its_confidence_and_conflict_in_the_map_and_its_code_view(self):
+        import system_levels
+        links = copy.deepcopy(self.links)
+        call = next(e for e in links["edges"] if e.get("route") and e["from"] == "web/checkout.ts::submitPayment")
+        source = {"origin": "osservato", "confidence": "sampled", "resolver": "test-recorder", "conflict": True}
+        call.update(source)
+        value = system_map.validate(TEST_MAP)
+        flow = system_map.verify(self.manifest, links, value)["flows"][0]
+        step = next(a for a in flow["arrows"] if (a["from"], a["to"]) == ("Checkout", "API pagamenti"))
+        self.assertTrue(any(source.items() <= proof.items() for proof in step["proof"]))
+        nodes = {n["name"]: {**n, "files": n["members"]} for n in value["nodes"]}
+        steps, _ = system_levels._code_steps(dict(flow, nodes=value["flows"][0]["nodes"]), nodes, links)
+        self.assertTrue(any(source.items() <= proof.items() for step in steps for proof in step["proof"]))
 
     def test_a_function_member_is_proved_through_its_file_and_says_so(self):
         # The route enters at create_payment; the node names charge_order, the function beside it that does the work.
@@ -286,13 +302,25 @@ class VerifyTests(Fixture):
         self.assertEqual(self.node("API pagamenti")["files"], ["server/gateway.py", "server/payments.py"])
         self.assertEqual(self.node("Cliente")["status"], "accepted")
 
-    def test_a_flow_needs_accepted_nodes_and_one_standing_arrow(self):
-        self.assertEqual([f["status"] for f in self.report["flows"]], ["accepted", "accepted"])
+    def test_a_flow_with_a_refused_arrow_is_incomplete_and_without_a_standing_arrow_is_refused(self):
+        self.assertEqual([f["status"] for f in self.report["flows"]], ["incomplete", "accepted"])
         broken = self.check(changed(lambda v: v["flows"][1]["nodes"].append("Fantasma")))
         self.assertEqual(self.flow("Riprova dei pagamenti", broken)["status"], "refused")
         self.assertIn("Fantasma", self.flow("Riprova dei pagamenti", broken)["reason"])
         lone = self.check(changed(lambda v: v["flows"][1]["arrows"][0].update({"from": "Riprova", "to": "Pagamento"})))
         self.assertEqual(self.flow("Riprova dei pagamenti", lone)["status"], "refused")
+
+    def test_disjoint_standing_arrows_or_an_isolated_node_leave_a_flow_incomplete(self):
+        for keep in ((0, 5), (0,)):
+            with self.subTest(keep=keep):
+                proposal = copy.deepcopy(TEST_MAP)
+                flow = proposal["flows"][0]
+                flow["arrows"] = [flow["arrows"][index] for index in keep]
+                flow["nodes"] = ["Cliente", "Checkout", "API pagamenti"] + (["Stripe"] if len(keep) == 2 else [])
+                result = self.flow(flow["name"], self.check(proposal))
+                self.assertEqual([a["status"] for a in result["arrows"]], ["declared"] * len(keep))
+                self.assertEqual(result["status"], "incomplete")
+                self.assertTrue(result["reason"])
 
     def test_on_names_accepted_nodes_only(self):
         report = self.check(changed(lambda v: node(v, "API pagamenti").update(on=["Fantasma"])))
@@ -372,7 +400,7 @@ class RecordTests(unittest.TestCase):
     def test_a_long_remainder_is_reported_by_directory_and_kept_by_name_in_the_map(self):
         from unittest import mock
         with mock.patch.object(system_map, "LEFT_LISTED", 2):
-            report = self.record(TEST_MAP)
+            report = self.record(changed(lambda v: v["flows"][0]["arrows"].pop()))
         entries = report["coverage"]["entries"]
         self.assertNotIn("left", entries)
         self.assertEqual(entries["left_by_directory"], {"admin": 1, "server": 1, "web": 1})
@@ -397,7 +425,7 @@ class RecordTests(unittest.TestCase):
             self.assertEqual(system_map.listed(many), {"files_by_directory": {"app/x": 6, "app/y": 6}})
 
     def test_coverage_counts_what_the_accepted_flows_hold(self):
-        report = self.record(TEST_MAP)
+        report = self.record(changed(lambda v: v["flows"][0]["arrows"].pop()))
         coverage = report["coverage"]
         self.assertEqual((coverage["entries"]["in"], coverage["entries"]["of"]), (3, 6))
         self.assertEqual(coverage["entries"]["left"],
@@ -407,8 +435,16 @@ class RecordTests(unittest.TestCase):
         recorded = (self.manifest.parent / system_map.FILE).read_text(encoding="utf-8")
         self.assertNotIn("Fantasma", recorded)
         self.assertNotIn("Refuso", recorded)
-        flow = by_id(self.load(), "flows", "pagare-un-ordine")
-        self.assertNotIn(("Badge pagamento", "API pagamenti"), {(a["from"], a["to"]) for a in flow["arrows"]})
+
+    def test_a_refused_arrow_and_its_reason_survive_reload(self):
+        written = self.record(TEST_MAP)["flows"][0]
+        loaded = by_id(self.load(), "flows", written["id"])
+        self.assertEqual((written["status"], loaded["status"], loaded["fresh"]), ("incomplete", "incomplete", False))
+        for flow in (written, loaded):
+            refused = [a for a in flow["arrows"] if a["status"] == "refused"]
+            self.assertEqual([(a["from"], a["to"]) for a in refused], [("Badge pagamento", "API pagamenti")])
+            self.assertTrue(refused[0]["reason"])
+        self.assertEqual(system_map.about(self.load(), written["id"])["flows"][0]["status"], "incomplete")
 
     def test_about_answers_for_a_node_and_an_area(self):
         self.record(TEST_MAP)
@@ -450,7 +486,7 @@ class RecordTests(unittest.TestCase):
 
     def test_a_rename_does_not_take_the_name_of_another_node(self):
         self.record(TEST_MAP)
-        report = self.record({"scope": ["comunicazioni"], "areas": [{"name": "comunicazioni", "present": False}],
+        report = self.record({"scope": ["pagamenti e abbonamenti", "esercizio"],
                               "nodes": [{"id": "checkout", "name": "Riprova", "type": "schermata",
                                          "members": ["web/checkout.ts"]}]})
         self.assertIn("riprova", self.node_report(report, "Riprova")["reason"])
@@ -490,7 +526,7 @@ class RecordTests(unittest.TestCase):
 
     def test_a_flow_leaves_the_map_when_the_proposal_removes_it_by_id_or_name(self):
         self.record(TEST_MAP)
-        report = self.record({"scope": ["esercizio"], "remove": ["Pagare un ordine", "nessuno", "Riprova"]})
+        report = self.record({"scope": ["pagamenti e abbonamenti"], "remove": ["Pagare un ordine", "nessuno", "Riprova"]})
         self.assertIn("pagare-un-ordine", report["removed"])
         self.assertIn("checkout", report["removed"])        # a node no flow uses any more
         self.assertNotIn("pagamento", report["removed"])    # still used by the other flow
@@ -500,6 +536,51 @@ class RecordTests(unittest.TestCase):
         self.assertEqual([f["id"] for f in self.load()["flows"]], ["riprova-dei-pagamenti"])
         with self.assertRaisesRegex(ValueError, "both proposed and removed"):
             self.record(changed(lambda v: v.update(remove=["Pagare un ordine"])))
+
+    def test_scope_cannot_remove_or_reassign_another_areas_flow(self):
+        self.record(TEST_MAP)
+        before = self.load()
+        flow = dict(TEST_MAP["flows"][0], id="pagare-un-ordine", name="Paga", area="esercizio")
+        moved = self.record({"scope": ["esercizio"], "flows": [flow]})
+        self.assertEqual(moved["flows"][0]["status"], "refused")
+        for ref in ("pagare-un-ordine", "Pagare un ordine"):
+            result = self.record({"scope": ["esercizio"], "remove": [ref]})
+            self.assertEqual([r["name"] for r in result["not_removed"]], [ref])
+        self.assertEqual(self.load(), before)
+        with self.assertRaises(ValueError):
+            self.record({"scope": ["esercizio"], "areas": [{"name": "pagamenti e abbonamenti", "present": False}]})
+        self.assertEqual(self.load(), before)
+
+    def test_a_shared_node_can_be_referenced_but_not_changed_by_one_area(self):
+        self.record(TEST_MAP)
+        before = self.load()
+        shared = node(TEST_MAP, "Pagamento")
+        self.record({"scope": ["esercizio"], "nodes": [shared], "flows": [TEST_MAP["flows"][1]]})
+        self.assertEqual(self.load(), before)
+        result = self.record({"scope": ["esercizio"], "nodes": [dict(shared, id="pagamento", name="Addebito")]})
+        self.assertEqual(result["nodes"][0]["status"], "refused")
+        self.assertEqual(self.load(), before)
+
+    def test_scope_protects_a_part_of_another_areas_node(self):
+        button = {"name": "Pulsante paga", "type": "schermata", "members": ["web/checkout.ts"], "inside": "Checkout"}
+        self.record(changed(lambda v: v["nodes"].append(button)))
+        before = self.load()
+        result = self.record({"scope": ["esercizio"],
+                              "nodes": [dict(button, id="pulsante-paga", name="Pulsante generico")]})
+        self.assertEqual(result["nodes"][0]["status"], "refused")
+        self.assertEqual(self.load(), before)
+
+    def test_duplicate_ids_are_rejected_before_writing(self):
+        self.record(TEST_MAP)
+        path = self.manifest.with_name(system_map.FILE)
+        before = path.read_bytes()
+        for collection, record, ident in (("nodes", node(TEST_MAP, "Riprova"), "riprova"),
+                                          ("flows", TEST_MAP["flows"][1], "riprova-dei-pagamenti")):
+            renamed = dict(record, id=ident, name="Riprova aggiornata")
+            for first in (record, dict(record, id=ident)):
+                with self.subTest(collection=collection, first=first.get("id")), self.assertRaises(ValueError):
+                    self.record({"scope": ["esercizio"], collection: [first, renamed]})
+                self.assertEqual(path.read_bytes(), before)
 
     def test_a_proposal_for_one_area_leaves_the_others(self):
         self.record(TEST_MAP)
@@ -558,7 +639,7 @@ class RecordTests(unittest.TestCase):
         self.assertIn("Gestione", flow["reason"])
         self.assertEqual(self.node_report(report, "Pagamenti")["status"], "refused")
         self.assertIn("Stripe", self.node_report(report, "Pagamenti")["reason"])
-        self.assertEqual([f["status"] for f in report["flows"] if f is not flow], ["accepted"])
+        self.assertEqual([f["status"] for f in report["flows"] if f is not flow], ["incomplete"])
         self.assertEqual([f["id"] for f in self.load()["flows"]], ["pagare-un-ordine"])
 
     def test_a_changed_file_is_proved_again_or_sent_back(self):
@@ -583,6 +664,22 @@ class RecordTests(unittest.TestCase):
         self.assertEqual((declared["status"], declared["fresh"], declared["changed_files"]),
                          ("declared", False, ["web/checkout.ts"]))
         self.assertFalse(flow["fresh"])
+        # Recording an unrelated area must not attest to another area's changed evidence.
+        self.record({"scope": ["esercizio"], "flows": [TEST_MAP["flows"][1]]})
+        after = self.load()
+        self.assertEqual(by_id(after, "flows", "pagare-un-ordine"), flow)
+        self.assertEqual(by_id(after, "nodes", "server-shop"), shop)
+
+    def test_citation_freshness_follows_flow_id_when_submission_order_changes(self):
+        self.record(changed(lambda v: v["flows"].reverse()))
+        saved = json.loads(self.manifest.with_name(system_map.FILE).read_text(encoding="utf-8"))
+        first = by_id(saved, "flows", "pagare-un-ordine")["arrows"][0]
+        self.assertEqual(set(first["digests"]), {"web/checkout.ts"})
+        with (self.project / "web/checkout.ts").open("a", encoding="utf-8") as stream:
+            stream.write("// edited\n")
+        refresh(self)
+        cited = by_id(self.load(), "flows", "pagare-un-ordine")["arrows"][0]
+        self.assertEqual((cited["fresh"], cited["changed_files"]), (False, ["web/checkout.ts"]))
 
 
 if __name__ == "__main__":

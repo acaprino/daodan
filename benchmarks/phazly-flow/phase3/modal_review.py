@@ -26,7 +26,7 @@ REQUEST = ("Fai una review con senior-review, branch review sul contenuto, con i
 ARMS = {
     "A": REQUEST,
     "B": REQUEST + (" Nei binding di composition.py bind aggiungi a coverage il campo units con il contenuto di "
-                    "/home/runner/inputs/units.json (lista di gruppi di file): ogni unità è un incarico."),
+                    "/home/runner/inputs/units.json (unità di flusso con file assegnati e contesto)."),
     "C": REQUEST + (" Prima di preparare gli incarichi aggiungi a 01-context.md una sezione «Flussi» con il contenuto di "
                     "/home/runner/inputs/flows.md, senza modificarlo."),
 }
