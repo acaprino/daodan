@@ -7,7 +7,7 @@ const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta
 envelope.technologies = [{ id: 'react', name: 'React', type: 'framework', paths: ['web/checkout.tsx'] }];
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
-const engineRequests = [];
+const engineRequests = [], askRequests = [];
 const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0, exportBroken: false, exportDelay: 0 };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
@@ -49,7 +49,10 @@ try {
       return route.fulfill({ json: { engine: 'openai', engines: ['openai'], api_key: 'unset', base_url: 'https://api.test/v1', model: 'm' } });
     }
     if (path === '/api/app/symbols') return route.fulfill({ json: { file: 'child', symbols: [{ id: 'child::save', name: 'save', lines: [1, 5] }], calls: [] } });
-    if (path === '/api/app/ask') return route.fulfill({ json: {} });
+    if (path === '/api/app/ask') {
+      askRequests.push(1);
+      return route.fulfill({ json: {} });
+    }
     if (path === '/api/app/answer') return route.fulfill({ json: { events: [{ kind: 'tool', name: 'cerca', arguments: 'token' }], next: 1, state: 'done', text: 'Lo firma auth.ts', cause: null } });
     if (path === '/api/app/link') return route.fulfill(mode.linkStatus === 200 ? { json: {} } : { status: mode.linkStatus, json: { error: 'collegamento non riuscito' } });
     if (path === '/api/app/check') {
@@ -275,6 +278,13 @@ try {
   assert.match(await page.locator('.im-inspector .im-panel-title:visible').innerText(), /File di Server/);
   await page.keyboard.press('Escape');
   assert.equal(await group.locator('h2').innerText(), 'Server');
+  // A node chosen while a file list is pushed on another group: the new group replaces both, and nothing stale comes back.
+  await group.getByRole('button', { name: /Tutti i 6 file/ }).click();
+  await diagram.locator('[data-im-node="Client"] .im-graph-node').click();
+  assert.equal(await group.locator('h2:visible').innerText(), 'Client');
+  assert.equal(await page.locator('.im-inspector .im-panel-title:visible').innerText(), 'Dettaglio del gruppo');
+  await group.getByRole('button', { name: 'Chiudi dettaglio' }).click();
+  assert.ok(await page.locator('.im-inspector').isHidden());
   await diagram.getByRole('button', { name: 'Apri Client' }).click();
   await diagram.getByRole('button', { name: 'Chiudi Client' }).waitFor();
   await diagram.locator('[data-im-node="child"] .im-graph-node').click();  // a file: its symbols are asked and drawn
@@ -305,7 +315,16 @@ try {
   await page.getByRole('button', { name: 'Chiedi' }).click();
   await page.locator('#answer-box').getByText('Lo firma auth.ts').waitFor();
   assert.match(await page.locator('#answer-box').innerText(), /cerca token/);
-  assert.ok(await page.getByRole('button', { name: 'Chiedi' }).isEnabled());
+  assert.notEqual(await page.getByRole('button', { name: 'Chiedi' }).getAttribute('aria-busy'), 'true');
+  // A busy button ignores the pointer, not the keyboard: Enter on it must not send the question a second time.
+  assert.equal(askRequests.length, 1);
+  await page.evaluate(() => window.setServerState({ asked: { state: 'running', question: 'Dove si firma il token?' } }));
+  await page.locator('#ask-button[aria-busy="true"]').waitFor();
+  await page.locator('#ask-button').focus();
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(300);
+  assert.equal(askRequests.length, 1);
+  await page.evaluate(() => window.setServerState({ asked: { state: 'done', question: 'Dove si firma il token?' } }));
   await page.evaluate(() => window.setServerState({ engine: { engine: 'openai', engines: ['claude', 'openai'], api_key: 'set', base_url: 'https://api.test/v1', model: 'm' } }));
   await page.getByRole('combobox', { name: 'Motore', exact: true }).waitFor();
   await page.getByRole('combobox', { name: 'Motore', exact: true }).selectOption('openai');
@@ -437,6 +456,11 @@ try {
   await context.route('**/api/runs', route => route.fulfill({ json: { runs: [{ run_id: 'demo', readable: true }] } }));
   await context.route('**/api/events?*', route => route.fulfill({ json: { events: [{ cursor: 1, timestamp: '10:00', event: 'phase_completed', message: 'fatto', phase: 2 }], next_cursor: 1, has_more: false } }));
   await context.route('**/api/requests', route => route.fulfill({ json: { requests: [] } }));
+  mode.exportBroken = true;  // a run in progress has no readable export yet: its live event line shows all the same
+  await page.reload();
+  await page.locator('.im-failure').waitFor();
+  await page.locator('.im-status-end').getByText('10:00 · phase_completed · fase 2 · fatto').waitFor();
+  mode.exportBroken = false;
   await context.route('**/api/findings', route => route.fulfill({ json: { findings: [{ file: 'web/checkout.tsx', line: 12, severity: 'High', title: 'Premessa', request: 1 }], gaps: ['lacuna della sessione'] } }));
   await page.reload();
   await page.locator('.im-status-end').getByText('10:00 · phase_completed · fase 2 · fatto').waitFor();
@@ -445,6 +469,7 @@ try {
   await page.getByRole('button', { name: 'Invia' }).waitFor();
   assert.ok(await page.getByLabel('Perimetro').isVisible());
   assert.ok(await page.locator('.im-btn--primary:visible').count() <= 1);  // "Entra in ..." is the page's only primary
+  for (const name of ['Invia', 'Crea il run']) assert.ok(!(await page.getByRole('button', { name }).getAttribute('class')).includes('im-btn--primary'));
   await page.getByText('lacuna della sessione').waitFor();  // the session's gaps are a note
   await page.getByRole('button', { name: /High/ }).click();  // a finding selects its file
   assert.equal(await page.locator('.im-inspector h2').innerText(), 'checkout.tsx');
@@ -459,6 +484,14 @@ try {
   await page.getByRole('button', { name: /Azzera filtri \(\d+ nascosti\)/ }).click();
   await disclosure.press('Enter');
   await page.getByRole('button', { name: 'Invia' }).waitFor({ state: 'detached' });
+  // The look and theme the user picks on one page are followed live by the other one (the storage event).
+  await choose('Tema chiaro');
+  const other = await context.newPage();
+  await other.goto('http://daodan.test/');
+  await other.waitForFunction(() => document.documentElement.dataset.imTheme === 'light');
+  await choose('Tema scuro');
+  await other.waitForFunction(() => document.documentElement.dataset.imTheme === 'dark');
+  await other.close();
   assert.deepEqual(errors, []);
   console.log('Passed app navigation, tree, dialog, pipeline, graph groups, mobile drawer, ELK worker, JSON import and theme.');
 } finally { await browser.close(); }

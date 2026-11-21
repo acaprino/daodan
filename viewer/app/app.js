@@ -1,5 +1,5 @@
 import '@acaprino/imago/css/imago.css';
-import { buttonHtml, confirm, createRegistry, fileTree, footerKeys, formatKeys, graphLegendHtml, iconButtonHtml, iconMarkup as icon, inspector, LOADING_DELAY_MS, metric, notify, noteHtml, openMenu, PALETTE_COMMAND, panelStateHtml, renderShellFrame, roving, SEARCH_COMMAND, segmentedControl, setProgress, shellFrameHtml, showAfter, stepList, tabNavigationHtml, textFieldHtml, titlebarHtml } from '@acaprino/imago/ui';
+import { buttonHtml, confirm, createRegistry, fileTree, footerKeys, formatKeys, graphLegendHtml, iconButtonHtml, iconMarkup as icon, inspector, LOADING_DELAY_MS, metric, notify, noteHtml, openMenu, PALETTE_COMMAND, panelStateHtml, renderShellFrame, roving, SEARCH_COMMAND, segmentedControl, setProgress, shellFrameHtml, showAfter, stepList, tabNavigationHtml, textFieldHtml } from '@acaprino/imago/ui';
 import { graphView } from '@acaprino/imago/graph';
 import { applyStored, graphControls, mountPage, storageOrNull } from '../src/page';
 
@@ -72,6 +72,7 @@ const retryButton = (action, label = 'Riprova') => buttonHtml(label, action, { i
 const failedPanel = (text, action) => panelHtml(panelStateHtml({ kind: 'error', text, retryHtml: retryButton(action), errorWord: 'Errore' }));
 const busyIcon = (busy, name) => busy ? '<span class="im-spinner" aria-hidden="true"></span>' : icon(name);
 
+// pageHeadingHtml is the ready renderer; it has no slot for the kicker over the title, so the same markup is written here.
 function heading(eyebrow, title, description, action = '') { return `<div class="im-split im-cluster"><div><p class="im-kicker">${eyebrow}</p><h1>${title}</h1><p>${description}</p></div>${action}</div>`; }
 function selectOptions(items, value) { return items.map(([v, label]) => `<option value="${esc(v)}" ${String(v) === String(value) ? 'selected' : ''}>${esc(label)}</option>`).join(''); }
 function number(n) { return Number(n || 0).toLocaleString('it-IT'); }
@@ -293,6 +294,7 @@ function repositoryScreen() {
     empty: 'La repository non ha branch: non c’è nulla da analizzare.',
   }[checked.state] + (checked.detail ? ' (' + checked.detail + ')' : '') : '';
   const c = ctx();
+  // The URL field is written by hand: textFieldHtml writes an empty error slot, and this field carries the app's own error and feedback text.
   return noteHtml({ icon: 'info', title: 'Repository GitHub pubblica', message: 'Daodan legge i branch e scarica quello scelto in sola lettura; nulla del progetto viene eseguito su questa macchina. Il login GitHub non è disponibile in questa versione.' }) + `<div class="im-auto-grid"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Repository GitHub</h2><span class="im-chip">Selezione del progetto</span></div><div class="im-inset im-stack"><form id="repository-form" novalidate><div class="im-field"><label class="im-field-label" for="repository-url">URL GitHub</label><span class="im-input"><input id="repository-url" type="url" value="${esc(state.repositoryUrl)}" placeholder="https://github.com/proprietario/repository" aria-describedby="repository-url-help repository-error repository-access-feedback" ${checkError ? 'aria-invalid="true"' : ''}></span><p id="repository-url-help" class="im-muted im-caption">Inserisci l’URL e verifica l’accesso. Senza login si aprono solo repository pubbliche.</p><p id="repository-error" class="im-field-error" role="alert">${checkError ? 'Errore: ' + esc(checkError) : ''}</p><p id="repository-access-feedback" class="im-muted" role="status">${esc(feedback)}</p></div><button class="im-btn" type="submit" id="verify-repository" ${checking ? 'aria-busy="true"' : ''}>${busyIcon(checking, 'check')}Verifica accesso</button></form>
   <div><div class="im-field"><label class="im-field-label" for="repository-branch">Branch da analizzare</label><select class="im-select" id="repository-branch" ${!repo || checking || preparing ? `disabled title="${esc(repoWhy(repo, checking, preparing))}"` : ''}>${repo ? selectOptions(repo.branches.map(b => [b.name, b.name + ' · ' + b.commit.slice(0, 12)]), branch) : '<option>Verifica prima l’accesso</option>'}</select></div><p class="im-muted im-caption">Preferenza automatica: <code>main</code>, poi <code>master</code>, altrimenti il branch predefinito della repository.</p>${repo ? `<p>${repo.branches.length} branch letti ora da GitHub; predefinito <code>${esc(repo.default || '—')}</code>.</p>` : ''}</div><div class="im-section">${preparation()}${selectError ? noteHtml({ tone: 'err', title: 'Selezione non riuscita.', message: selectError }) : ''}</div><div class="im-split im-cluster"><p class="im-muted im-caption">Un altro repository o branch prepara un nuovo checkout; lo stesso commit riusa l’analisi già fatta.</p><button class="im-btn im-btn--primary" data-action="use-repository" id="use-repository" ${preparing ? 'aria-busy="true"' : !repo || checking ? `disabled title="${esc(repoWhy(repo, checking, preparing))}"` : ''}>${preparing ? '<span class="im-spinner" aria-hidden="true"></span>Apri pre-mappa' : 'Apri pre-mappa ' + icon('arrow')}</button></div></div></section>
   <aside class="im-stack"><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Accesso GitHub</h2>${icon('code')}</div><div class="im-inset im-stack"><span class="im-chip">Non connesso</span><h3>Login non disponibile</h3><p class="im-muted">In questa versione Daodan legge solo repository pubbliche, senza account. Un accesso negato non dimostra che la repository sia privata: può non esistere o mancare un permesso.</p></div></section><section data-im-surface="sheet" class="im-surface im-panel"><div class="im-panel-header im-split"><h2>Contesto attivo</h2></div><div class="im-inset im-stack">${c ? `<ul class="im-detail-list"><li><strong>Repository</strong><span><code>${esc(slug(c))}</code></span></li><li><strong>Branch e commit</strong><span><code>${esc(c.branch)}</code> · <code>${esc(c.commit.slice(0, 12))}</code></span></li><li><strong>Run</strong><span><code>${esc(c.run_id)}</code></span></li></ul><button class="im-btn im-btn--ghost im-btn--sm" data-analysis-stage="premap">Torna alla pre-mappa ${icon('arrow')}</button>` : `<p class="im-muted">${preparing ? 'Preparazione in corso: il contesto sarà pronto alla fine del checkout e dello snapshot.' : 'Nessuna repository selezionata sul server.'}</p>`}</div></section></aside></div>`;
@@ -1021,8 +1023,9 @@ const screenTabs = () => SCREENS.map(([id, label]) => ({ id, label, controls: 'm
 
 function writeFrame() {
   renderShellFrame(shell, shellFrameHtml({
-    titlebarHtml: titlebarHtml({ brand: { name: 'Daodan' }, navigationHtml: tabNavigationHtml(screenTabs(), state.screen, { label: 'Schermate', action: 'screen' }),
-      views: { label: 'Schermate', action: 'views' }, commands: { label: 'Comandi', action: 'palette', shortcut: formatKeys('Ctrl+K').join(' ') } }),
+    // Written as using-imago.md section 4 shows it, not with titlebarHtml: that renderer's command button keeps its word under
+    // 620 and its Views button is an empty box under 340, and the Codebase Map's title bar has both steps.
+    titlebarHtml: `<header class="im-titlebar"><div class="im-brand"><span class="im-mark" aria-hidden="true">D</span><span class="im-wordmark">Daodan</span></div>${tabNavigationHtml(screenTabs(), state.screen, { label: 'Schermate', action: 'screen' })}<button type="button" class="im-btn im-btn--ghost im-btn--sm im-views-menu" aria-haspopup="menu" aria-expanded="false" data-action="views">Schermate${icon('chevron')}</button><span class="im-spacer"></span><button type="button" class="im-titlebar-command" aria-label="Comandi" data-action="palette">${icon('search')}<b>Comandi</b><kbd class="im-key">${formatKeys('Ctrl+K').join(' ')}</kbd></button></header>`,
     statusHtml: '<span class="im-chip" id="context-state"></span><span class="im-status-text" id="context-text"></span><span class="im-spacer"></span><span class="im-status-end" id="context-run"></span>',
     contentHtml: '', contentLabel: 'Analisi', skipLabel: 'Vai al contenuto', inspectorLabel: 'Dettaglio',
     footerHtml: '<span class="im-dot" id="service-dot"></span><span class="im-footer-text" id="service-text"></span><span class="im-spacer"></span>',
@@ -1107,6 +1110,7 @@ function detailHtml(title, body, foot = '') {
 function detail(title, description, body, foot, opener, push = false) {
   const view = fragment(detailHtml(title, `<p class="im-muted">${esc(description)}</p>${body}`, foot));
   if (push && inspector(shell).isOpen()) { inspector(shell).push(view, opener); return; }
+  closeInspector();  // open() would leave a covered view in the stack, and the next Escape would bring it back
   inspectorRegion().setAttribute('aria-label', title);
   inspector(shell).open(view, opener);
 }
@@ -1117,10 +1121,18 @@ function closeInspector() { while (inspector(shell).isOpen()) inspector(shell).c
 function drawInspector() {
   const region = inspectorRegion(), open = inspector(shell).isOpen();
   const n = state.screen === 'graph' && GRAPH && nodeById(state.graphRoot);
-  if (!n || region.querySelector('[data-im-covered]') || (open && region.getAttribute('aria-label') !== GROUP_LABEL)) return;
+  if (!n) {  // on the graph screen the choice waits for the graph; anywhere else it is void
+    if (state.screen !== 'graph') wantGroup = false;
+    return;
+  }
+  const mine = open && region.getAttribute('aria-label') === GROUP_LABEL;
   const changed = !drawn || drawn.root !== n.id || drawn.graph !== GRAPH || drawn.symbols !== SYMBOLS;
-  if (!wantGroup && !changed) return;
+  const chosen = wantGroup;
   wantGroup = false;
+  if (!chosen) {
+    if (!changed || region.querySelector('[data-im-covered]') || (open && !mine)) return;  // a refresh never replaces another view
+    if (!open && drawn && drawn.root === n.id) return;  // closed by the person: only a new choice opens it again
+  } else if (open) closeInspector();  // a node chosen wins over any view, a pushed one included
   const content = groupDetails();  // asks the symbols of a file: SYMBOLS is what it asked
   drawn = { root: n.id, graph: GRAPH, symbols: SYMBOLS };
   region.setAttribute('aria-label', GROUP_LABEL);
@@ -1173,8 +1185,8 @@ document.addEventListener('click', async event => {
     }
     case 'path-retry': loadPathPage(pathPage.id, pathPage.offset, pathPage.previous, true); break;
     case 'use-repository': await selectRepository(); break;
-    case 'retry-premap': premapRun = ''; loadPremap(); break;
-    case 'retry-graph': graphError = ''; graphRun = ''; loadGraph(); break;
+    case 'retry-premap': premapRun = ''; loadPremap(); document.getElementById('main').focus({ preventScroll: true }); break;
+    case 'retry-graph': graphError = ''; graphRun = ''; loadGraph(); document.getElementById('main').focus({ preventScroll: true }); break;
     case 'retry-symbols': SYMBOLS = null; drawn = null; wantGroup = true; render(); break;
     case 'retry-pass': try { applyState(await post('/api/app/retry', {})); } catch (error) { failure(error.message); } break;
     case 'find-links': try { applyState(await post('/api/app/link', {})); } catch (error) { failure(error.message); } break;

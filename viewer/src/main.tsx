@@ -279,8 +279,8 @@ function Explorer({ model }: { model: Model }) {
         onOpen={id => { const n = byId.get(id); if (n?.collapsed) open(n.ref); }}
         onClear={() => dispatch({ type: 'select', ref: null })} /></div>
       {busy && !error && projection.nodes.length > 0 && <span className="im-loader im-canvas-message" role="status"><span className="im-spinner" aria-hidden="true" />Dispongo il grafo…</span>}
-      {!projection.nodes.length && <PanelState state={{ kind: 'empty', text: 'Nessun elemento visibile.', actionHtml: filtered > 0 ? resetHtml : '' }} onAction={reset} />}
-      {error && <PanelState state={{ kind: 'error', text: 'Impossibile disporre il grafo: ' + error, retryHtml, errorWord: 'Errore' }} onAction={() => setAttempt(count => count + 1)} />}
+      {!projection.nodes.length && <div className="im-canvas-message"><PanelState state={{ kind: 'empty', text: 'Nessun elemento visibile.', actionHtml: filtered > 0 ? resetHtml : '' }} onAction={reset} /></div>}
+      {error && <div className="im-canvas-message"><PanelState state={{ kind: 'error', text: 'Impossibile disporre il grafo: ' + error, retryHtml, errorWord: 'Errore' }} onAction={() => setAttempt(count => count + 1)} /></div>}
     </section>
   </>;
 }
@@ -389,6 +389,7 @@ function App() {
   const viewsMenu = (anchor: HTMLElement) => {
     const close = openMenu(anchor, views.map(view => ({ label: view.label, checked: () => state.view === view.value, run: () => { close(); dispatch({ type: 'view', view: view.value }); } })));
   };
+  // Written in JSX as using-imago.md section 4 shows it: titlebarHtml is a string frame and cannot be written from React.
   const titlebar = <header className="im-titlebar">
     <div className="im-brand"><span className="im-mark" aria-hidden="true">D</span><span className="im-wordmark">Daodan</span></div>
     <button type="button" className="im-icon-btn im-sidebar-toggle" aria-label="Mappa" title="Mappa" aria-expanded="false" aria-controls="sidebar"><Icon name="sidebar" /></button>
@@ -397,11 +398,13 @@ function App() {
     <span className="im-spacer" />
     <button type="button" className="im-titlebar-command" aria-label="Comandi" onClick={() => registry.get(PALETTE_COMMAND)?.run()}><Icon name="search" /><b>Comandi</b><kbd className="im-key">{formatKeys('Ctrl+K').join(' ')}</kbd></button>
   </header>;
-  const status = ready ? <>
-    <span className="im-status-text im-content-text">{projectName}{meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run {String(meta.run_id ?? '')}</span>
+  // The live event line is the run's, so it shows while its export is loading or unreadable too.
+  const status = <>
+    <span className="im-status-text im-content-text">{ready ? `${projectName}${meta.target && meta.target !== '.' ? ` / ${String(meta.target)}` : ''} · run ${String(meta.run_id ?? '')}`
+      : noRuns ? 'Nessun run' : failure ? 'Export non leggibile' : "Carico l'export…"}</span>
     <span className="im-spacer" />
-    <span className="im-status-end im-content-text" role="status">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>
-  </> : <span className="im-status-text">{noRuns ? 'Nessun run' : failure ? 'Export non leggibile' : 'Carico l\'export…'}</span>;
+    {(ready || (runs && !noRuns)) && <span className="im-status-end im-content-text" role="status">{last ? `${last.timestamp} · ${last.event}${last.phase == null ? '' : ` · fase ${last.phase}`}${last.message ? ` · ${last.message}` : ''}` : 'Nessun evento'}</span>}
+  </>;
   const footer = <>
     <span className="im-footer-text" data-graph-counts>{ready
       ? `${state.envelope.entities.length} entità · ${state.envelope.relations.length} relazioni · ${state.envelope.flows.length} flussi · ${state.envelope.gaps.length} lacune · ${model.projection.nodes.length} nodi · ${model.projection.edges.length} relazioni visibili · ${model.data.length} collegamenti di dati (tratteggiati) · ${model.projection.counts.aggregated} dentro i gruppi${model.focus ? ` · flusso su ${model.focus.nodes.length} nodi` : ''}`
