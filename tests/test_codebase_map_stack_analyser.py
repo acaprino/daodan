@@ -8,6 +8,7 @@ real release runs nothing of a project is proved on the real tool, not here.
 """
 from __future__ import annotations
 
+import ast
 import hashlib
 import io
 import json
@@ -185,6 +186,17 @@ def test_a_release_without_the_program_is_a_gap(tmp_path, monkeypatch, installed
     with pytest.raises(container.Gap) as gap:
         stack_analyser.cli()
     assert "package/dist/cli.mjs" in gap.value.cause and str(installed_under) in gap.value.remedy
+
+
+def test_the_test_image_pins_the_same_release():
+    """The launcher of the Modal tests cannot import `daodan/core`, so it repeats the release's URL and sha256, and the
+    path of the program the real proof (test_codebase_map_host_programs.py) is given. They are read from its source:
+    it imports `modal`."""
+    source = (ROOT / "tests" / "modal_pytest.py").read_text(encoding="utf-8")
+    [pinned] = [ast.literal_eval(node.value) for node in ast.parse(source).body
+                if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", None) == "STACK_ANALYSER"]
+    assert pinned[:2] == (stack_analyser.URL, stack_analyser.SHA256)
+    assert f'"DAODAN_STACK_ANALYSER": "{pinned[2]}/{stack_analyser.PROGRAM}"' in source
 
 
 # ------------------------------------------------------------------ Node
