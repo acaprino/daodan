@@ -60,7 +60,7 @@ Nel giro senza analizzatore: plsql (1 caso, 1 file), sql (7 casi, 51 file).
 
 ## Build tool e toolchain
 
-La pre-mappa ha 27 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
+La pre-mappa ha 28 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
 
 ### Fonti della pre-mappa
 
@@ -68,8 +68,8 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 
 | Fonte | Versione | Modo | Modulo | Casi per stato |
 | --- | --- | --- | --- | --- |
-| `modules.py` | daodan/module-graph/v1 | lettore: legge i file | `premap/module_graph.py` | ran 122 |
-| `python-build` | daodan/premap/v1 | lettore: legge i file | `premap/python_build.py` | not_needed 110, ran 12 |
+| `modules.py` | daodan/module-graph/v1+compose.1.pyyaml.6.0.4.unit-resolution.2 | lettore: legge i file | `premap/module_graph.py` | ran 122 |
+| `python-build` | daodan/premap/v3 | lettore: legge i file | `premap/python_build.py` | not_needed 110, ran 12 |
 | `requirements` | daodan/premap/v2 | lettore: legge i file | `premap/requirements.py` | not_needed 114, ran 8 |
 | `python-tests` | daodan/premap/v1 | lettore: legge i file | `premap/python_tests.py` | not_needed 115, ran 7 |
 | `npm-files` | daodan/premap/v1 | lettore: legge i file | `premap/npm_lock.py` | not_needed 86, ran 36 |
@@ -95,6 +95,7 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 | `maven` | 3.10.0 | modello: il comando del build tool, nel container | `premap/maven.py` | not_needed 113, ran 9 |
 | `sbt` | 1.13.1 | modello: il comando del build tool, nel container | `premap/sbt.py` | not_needed 121, ran 1 |
 | `dotnet` | 10.0.404 | modello: il comando del build tool, nel container | `premap/dotnet.py` | not_needed 117, ran 5 |
+| `noir` | 1.5.0 | scanner: legge ogni file | `premap/noir.py` | non misurato: non era nel giro |
 
 ### Pre-mappa per faccia
 

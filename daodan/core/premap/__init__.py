@@ -341,7 +341,13 @@ def _snapshot_stamp(manifest: Path) -> list:
 
 
 def binding_matches(manifest: Path, binding: dict) -> bool:
-    """A persisted digest need not be recomputed when the manifest and its WAL have the same change clocks."""
+    """A persisted digest need not be recomputed when the manifest and its WAL have the same change clocks. A store
+    that came with the project is refused first, as opening its snapshot refuses it (`open_snapshot`): the pre-map
+    carries the commands the container runs."""
+    from run_store import own_store, store_of
+    held = store_of(manifest)
+    if held is not None:
+        own_store(held)
     stamp = _snapshot_stamp(manifest)
     if stamp == binding.get("snapshot_stamp") and all(s is None or s[-1] for s in stamp):
         return True

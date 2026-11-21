@@ -17,3 +17,6 @@ daodan = "daodan.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["daodan"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]  # the benchmarks keep their own suites: some of their modules share a name with the core's

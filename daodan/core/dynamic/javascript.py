@@ -340,7 +340,8 @@ def controls(folder: Path, number: int) -> tuple[dict, list[dict]]:
             problems.add("invalid_report")
         for item in value["documents"]:
             identity = item.get("document") if isinstance(item, dict) else None
-            if not isinstance(identity, str) or not re.fullmatch(r"[0-9a-f]{32}", identity) or identity in documents:
+            if (not isinstance(identity, str) or len(identity) != 32 or set(identity) - set("0123456789abcdef")
+                    or identity in documents):
                 problems.add("invalid_report")
                 continue
             if not all(isinstance(item.get(key), list) for key in ("observed", "pending")):
