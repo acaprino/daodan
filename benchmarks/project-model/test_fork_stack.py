@@ -1,4 +1,5 @@
-"""The translation between the pre-map's facts and stack-analyser: declarations in, evidence out.
+"""The translation between the pre-map's facts and stack-analyser (declarations in, evidence out) and the measures the
+benchmark `modal_stack_fork.py` takes with it: the comparison, the fast scan, the totals.
 
 No test starts Node, reaches the network or runs Modal: `stack_analyser.run` is replaced in every one.
 
@@ -6,25 +7,29 @@ No test starts Node, reaches the network or runs Modal: `stack_analyser.run` is 
 """
 from __future__ import annotations
 
+import ast
 import contextlib
 import json
 import os
 import subprocess
 import sys
-from pathlib import Path
+import time
+from pathlib import Path, PurePosixPath
 
 import pytest
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-sys.path[:0] = [str(HERE / "tools"), str(ROOT / "daodan/core")]
+sys.path[:0] = [str(HERE / "tools"), str(HERE), str(ROOT / "daodan/core")]
 
 import container  # noqa: E402
 import fork_stack  # noqa: E402
+import premap  # noqa: E402
 import service_registry  # noqa: E402
 import snapshot  # noqa: E402
 import stack_analyser  # noqa: E402
 import technologies  # noqa: E402
+from snapshot_store import open_snapshot  # noqa: E402
 
 PAYLOAD = HERE / "fixtures-fork/py-fastapi-compose.payload.json"
 
@@ -443,3 +448,301 @@ def test_recognize_reports_the_declarations_it_could_not_send(manifest, started)
     answer = fork_stack.recognize(manifest, REGISTRY, facts)
     assert started[0][1]["declarations"] == []
     assert [g["kind"] for g in answer["gaps"]] == ["declaration_not_sent"]
+
+
+# ---------------------------------------------------------------------------------------------- compare
+
+def tech(ident, name, category="framework"):
+    return {"id": ident, "name": name, "kind": "service" if category == "service" else "project", "category": category,
+            "signs": [{"sign": "package", "value": ident, "path": "pyproject.toml", "line": 1, "strength": "declared"}]}
+
+
+def stored(*entries, units=(), gaps=()):
+    """A record as the benchmark stores it (`modal_stack._trim`'s form); the one of the fork keeps its gaps."""
+    return {"technologies": list(entries), "units": list(units), "gaps": list(gaps)}
+
+
+EXPECTED = {"frameworks": [{"name": "FastAPI"}], "services": [{"name": "Redis"}, {"name": "Sentry"}]}
+FASTAPI, REDIS_TECH, SENTRY = tech("fastapi", "FastAPI"), tech("redis", "Redis", "service"), tech("sentry", "Sentry", "service")
+NONE_LOST = {"lost": [], "gained": [], "new": [], "gone": [], "not_in_registry": []}
+
+
+def test_compare_names_what_is_lost_gained_and_new():
+    before = stored(FASTAPI, REDIS_TECH, SENTRY)
+    after = stored(FASTAPI, REDIS_TECH, tech("setuptools", "setuptools"),
+                   gaps=[{"kind": "declaration_not_sent", "value": "zlib", "path": "conanfile.txt", "ecosystem": "conan",
+                          "detail": "the release takes no declaration of type conan"},
+                         {"kind": "not_in_registry", "entry": "setuptools"}])
+    assert fork_stack.compare(EXPECTED, before, after) == {
+        "lost": ["Sentry"], "gained": [], "new": ["setuptools"], "gone": ["sentry"], "not_in_registry": ["setuptools"]}
+
+
+def test_compare_of_equal_records_is_empty():
+    record = stored(FASTAPI, REDIS_TECH, SENTRY)
+    assert fork_stack.compare(EXPECTED, record, stored(FASTAPI, REDIS_TECH, SENTRY, gaps=[])) == NONE_LOST
+
+
+def test_compare_names_what_the_fork_gains():
+    before, after = stored(FASTAPI, REDIS_TECH), stored(SENTRY, FASTAPI, REDIS_TECH)
+    assert fork_stack.compare(EXPECTED, before, after) == {**NONE_LOST, "gained": ["Sentry"], "new": ["sentry"]}
+
+
+def test_compare_lists_the_expected_names_as_the_expected_file_spells_them_frameworks_first():
+    after = stored()
+    assert fork_stack.compare(EXPECTED, stored(REDIS_TECH, SENTRY, FASTAPI), after)["lost"] == ["FastAPI", "Redis", "Sentry"]
+
+
+def test_compare_counts_a_name_as_the_score_does_by_alias_and_without_the_unit():
+    """`Postgres` is PostgreSQL's alias; a framework is found by its name, whatever unit holds it (or none)."""
+    expected = {"frameworks": [{"name": "FastAPI", "unit": "orders-api"}], "services": [{"name": "PostgreSQL"}]}
+    unit = {"id": "orders", "name": "orders-api", "kind": "python", "paths": ["app"], "technologies": ["fastapi"],
+            "technology_evidence": {"fastapi": {"path": "app/main.py"}}}
+    before = stored(FASTAPI, tech("postgresql", "Postgres", "service"), units=[unit])
+    after = stored(FASTAPI, tech("postgresql", "PostgreSQL", "service"))
+    assert fork_stack.compare(expected, before, after) == NONE_LOST
+
+
+def test_compare_leaves_out_what_the_expected_file_declares_unknown():
+    expected = {**EXPECTED, "unknown": ["services"]}
+    # no expected name is lost; `gone` is of the records' ids, whatever the expected file says
+    assert fork_stack.compare(expected, stored(FASTAPI, REDIS_TECH), stored(FASTAPI)) == {**NONE_LOST, "gone": ["redis"]}
+
+
+def test_compare_reads_the_gaps_of_the_record_after_only_and_once_each():
+    gaps = [{"kind": "not_in_registry", "entry": "zeta"}, {"kind": "not_in_registry", "entry": "alpha"},
+            {"kind": "not_in_registry", "entry": "zeta"}]
+    before = {**stored(FASTAPI), "gaps": [{"kind": "not_in_registry", "entry": "before-only"}]}
+    assert fork_stack.compare(EXPECTED, before, stored(FASTAPI, gaps=gaps))["not_in_registry"] == ["alpha", "zeta"]
+    assert fork_stack.compare(EXPECTED, before, {"technologies": [FASTAPI], "units": []})["not_in_registry"] == []
+
+
+# ---------------------------------------------------------------------------------------------- executed
+
+GIT = "/usr/bin/git -c core.fsmonitor=false -c core.hooksPath=/dev/null "
+NODE_BIN, CLI = "/opt/node-v24.22.3-linux-x64/bin/node", "/opt/stack-analyser/package/dist/cli.mjs"
+
+
+def executed(*spawned):
+    return fork_stack.executed(list(spawned), NODE_BIN, CLI, GIT)
+
+
+def test_a_project_is_not_executed_when_each_process_is_the_perimeter_s_git_or_node_on_the_release():
+    assert executed(GIT + "ls-files -z", f"{NODE_BIN} {CLI} /work/app --output /tmp/o.json", GIT + "rev-parse HEAD") == "no"
+    assert executed(f"{NODE_BIN} {CLI}") == "no"  # no argument after the program
+    assert executed() == "no"  # no process started
+
+
+def test_a_process_that_is_neither_is_unknown():
+    for other in ("/usr/bin/python3 setup.py build", "/usr/bin/git status", "/usr/bin/git -c core.fsmonitor=false log",
+                  "/usr/bin/git -c core.hooksPath=/dev/null -c core.fsmonitor=false log", "git ls-files",
+                  f"{NODE_BIN} /work/app/cli.mjs", f"{NODE_BIN} /work/app/x.js {CLI}", NODE_BIN,
+                  f"{NODE_BIN} {CLI}x /work/app", f"/usr/local/bin/node {CLI} /work/app",
+                  f"{NODE_BIN}-x {CLI} /work/app", f"sh -c {NODE_BIN} {CLI}"):
+        assert executed(GIT + "ls-files", other) == "unknown", other
+
+
+def test_the_command_of_a_real_run_is_judged_as_modal_stack_records_it():
+    """`modal_stack` keeps each process as one string of at most 200 characters: a long command is cut after the cli."""
+    argv = stack_analyser.command(PurePosixPath(NODE_BIN), PurePosixPath(CLI), PurePosixPath("/work/" + "d" * 150),
+                                  PurePosixPath("/tmp/daodan-stack-x/output.json"), PurePosixPath("/tmp/x/declarations.json"),
+                                  tuple(f"folder{i}" for i in range(40)), ("api/gen",))
+    line = " ".join(map(str, argv))[:200]
+    assert len(line) == 200 and line.startswith(f"{NODE_BIN} {CLI} /work/")
+    assert executed(line) == "no"
+
+
+# ---------------------------------------------------------------------------------------------- summary
+
+def scored(frameworks, services, expected=(3, 2)):
+    return {"frameworks_by_name": {"given": True, "expected": expected[0], "found": frameworks, "missed": [], "extra": [],
+                                   "wrong": []},
+            "services": {"given": True, "expected": expected[1], "found": services, "missed": [], "extra": [], "wrong": []}}
+
+
+def done(registry_fast, fork_fast, lost=(), before=(3, 2), after=(3, 2)):
+    return {"compare": {**NONE_LOST, "lost": list(lost)}, "fast": {"registry": [], "fork": [], "lost": []},
+            "seconds": {"registry_full": 1.0, "fork_full": 2.0, "registry_fast": registry_fast, "fork_fast": fork_fast},
+            "executed_project_code": "no", "score": {"before": scored(*before), "after": scored(*after)}}
+
+
+def test_the_totals_count_the_names_found_before_and_after_the_lost_and_the_errors():
+    fixtures = {"a": done(0.4, 0.5, before=(3, 2), after=(2, 2), lost=["Django"]),
+                "b": done(0.1, 2.0, before=(1, 1), after=(1, 0), lost=["Redis"]),
+                "c": done(0.3, 1.0, before=(2, 1), after=(3, 1)),
+                "d": {"error": "no answer in 900 s; stood at: ..."}}
+    assert fork_stack.summary(fixtures) == {
+        "fixtures": 4, "errors": 1, "fixtures_with_lost": 2,
+        "found": {"frameworks": {"expected": 9, "before": 6, "after": 6}, "services": {"expected": 6, "before": 4, "after": 3}},
+        "fork_fast": {"median": 1.0, "max": 2.0, "slowest": "b"},
+        "registry_fast": {"median": 0.3, "max": 0.4, "slowest": "a"}}
+
+
+def test_the_median_of_an_even_number_of_fixtures_is_the_mean_of_the_two_in_the_middle():
+    fixtures = {"a": done(0.1, 0.25), "b": done(0.2, 0.75)}
+    assert fork_stack.summary(fixtures)["fork_fast"] == {"median": 0.5, "max": 0.75, "slowest": "b"}
+
+
+def test_the_totals_of_fixtures_without_a_result_have_no_seconds_and_no_score():
+    assert fork_stack.summary({"a": {"error": "no stored record: KeyError"}}) == {
+        "fixtures": 1, "errors": 1, "fixtures_with_lost": 0,
+        "found": {"frameworks": {"expected": 0, "before": 0, "after": 0}, "services": {"expected": 0, "before": 0, "after": 0}},
+        "fork_fast": {"median": None, "max": None, "slowest": None},
+        "registry_fast": {"median": None, "max": None, "slowest": None}}
+
+
+def test_a_facet_the_score_leaves_out_is_not_counted():
+    """The expected file's `unknown` takes a facet out of the score: nothing is expected of it."""
+    only = {"frameworks_by_name": scored(2, 0)["frameworks_by_name"]}
+    entry = {**done(0.1, 0.1), "score": {"before": only, "after": only}}
+    assert fork_stack.summary({"a": entry})["found"] == {
+        "frameworks": {"expected": 3, "before": 2, "after": 2}, "services": {"expected": 0, "before": 0, "after": 0}}
+
+
+# ---------------------------------------------------------------------------------------------- measure
+
+@pytest.fixture(scope="module")
+def scans(manifest):
+    """The pre-map's full facts of FILES, and its fast ones with the packages left out."""
+    full = premap.ensure(manifest)
+    with open_snapshot(manifest) as store:
+        fast = premap.derive(manifest, store, runner=None)
+    return full, {**fast, "packages": []}
+
+
+def listed(record):
+    return [t["id"] for t in record["technologies"]]
+
+
+def modules_of(record):
+    return [(m["id"], m["paths"]) for m in record["modules"]]
+
+
+def test_measure_derives_with_each_recogniser_and_scans_fast_with_each(manifest, scans, monkeypatch):
+    full, fast = scans
+    calls = []
+
+    def run(project, **kwargs):
+        calls.append(kwargs["declarations"])
+        return component(*FORK["evidence"], evidence("setuptools", "package", "setuptools", "/api/requirements.txt"))
+
+    monkeypatch.setattr(stack_analyser, "run", run)
+    answer = fork_stack.measure(manifest, service_registry.load(), full, fast)
+    assert list(answer) == ["before", "after", "fast", "seconds"]
+    assert listed(answer["before"]) == ["docker", "python", "redis"]  # the registry's own checkers
+    assert listed(answer["after"]) == ["python", "redis", "setuptools"]  # the fork's evidence, the registry's records
+    assert answer["after"]["gaps"] == [{"kind": "not_in_registry", "entry": "setuptools"}]
+    assert modules_of(answer["after"]) == modules_of(answer["before"]) == [("app", ["."])]  # one graph under both
+    # the registry reads the fast facts without the packages: docker (the Dockerfile) and python; the fork, those it was
+    # sent: no declaration, and the evidence it returns whatever it was sent
+    assert answer["fast"] == {"registry": ["docker", "python"], "fork": ["python", "redis", "setuptools"], "lost": ["docker"]}
+    # one run for the full scan, with the declarations of its facts (the package and the Dockerfile's base), one for the
+    # fast scan, with those of its own: none
+    assert [sorted(d["name"] for d in sent) for sent in calls] == [["python", "redis"], []]
+    assert list(answer["seconds"]) == ["registry_full", "fork_full", "registry_fast", "fork_fast"]
+
+
+def test_a_mention_alone_is_not_a_technology_of_the_fast_scan(manifest, scans, monkeypatch):
+    """The comparison is by the ids a module could hold: an entry with a declared sign (`technologies.derive`'s rule)."""
+    full, fast = scans
+    monkeypatch.setattr(stack_analyser, "run", lambda project, **kwargs: component(
+        evidence("redis", "env", "REDIS_URL", "/api/pay.py", line=2), evidence("python", "image", "python", "/Dockerfile")))
+    answer = fork_stack.measure(manifest, service_registry.load(), full, fast)
+    assert answer["fast"]["fork"] == ["python"] and listed(answer["after"]) == ["python"]
+
+
+def test_measure_puts_service_registry_run_back(manifest, scans, monkeypatch):
+    full, fast = scans
+    original, started = service_registry.run, []
+    monkeypatch.setattr(stack_analyser, "run", lambda project, **kwargs: started.append(1) or FORK)
+    fork_stack.measure(manifest, service_registry.load(), full, fast)
+    assert service_registry.run is original and len(started) == 2
+
+    def broken(project, **kwargs):
+        raise RuntimeError("the fork broke")
+
+    monkeypatch.setattr(stack_analyser, "run", broken)
+    with pytest.raises(RuntimeError):  # not a Gap: `recognize` leaves it to the caller
+        fork_stack.measure(manifest, service_registry.load(), full, fast)
+    assert service_registry.run is original
+
+
+def test_a_fork_that_fails_with_a_gap_is_a_result_and_loses_what_only_it_could_have_found(manifest, scans, monkeypatch):
+    full, fast = scans
+
+    def broken(project, **kwargs):
+        raise container.Gap("stack-analyser failed (exit 1): boom", "analyze again")
+
+    monkeypatch.setattr(stack_analyser, "run", broken)
+    answer = fork_stack.measure(manifest, service_registry.load(), full, fast)
+    assert listed(answer["after"]) == [] and answer["fast"]["fork"] == [] and answer["fast"]["lost"] == ["docker", "python"]
+    assert [g["kind"] for g in answer["after"]["gaps"]] == ["checker_failed"]
+
+
+def test_the_first_derive_is_a_warm_up_and_neither_timed_derive_builds_the_module_graph(manifest, scans, monkeypatch):
+    """`derive` syncs the module graph the first time and finds it the second: timed first, the registry would pay for
+    both. So the registry derives once before the timed calls: three runs of the registry in all (that one, the timed
+    one, the fast one), and the fork's two."""
+    full, fast = scans
+    ran = []
+    real = service_registry.run
+    monkeypatch.setattr(service_registry, "run", lambda *args: ran.append(1) or real(*args))
+    monkeypatch.setattr(stack_analyser, "run", lambda project, **kwargs: FORK)
+    fork_stack.measure(manifest, service_registry.load(), full, fast)
+    assert len(ran) == 3
+
+
+def test_each_time_is_the_one_of_its_own_call(manifest, scans, monkeypatch):
+    full, fast = scans
+    real = service_registry.run
+
+    def slow_registry(*args):
+        time.sleep(0.2)
+        return real(*args)
+
+    def slow_fork(project, **kwargs):
+        time.sleep(0.02)
+        return FORK
+
+    monkeypatch.setattr(service_registry, "run", slow_registry)
+    monkeypatch.setattr(stack_analyser, "run", slow_fork)
+    seconds = fork_stack.measure(manifest, service_registry.load(), full, fast)["seconds"]
+    assert seconds["registry_full"] >= 0.2 and seconds["registry_fast"] >= 0.2
+    assert seconds["fork_full"] >= 0.02 and seconds["fork_fast"] >= 0.02
+    assert all(isinstance(value, float) for value in seconds.values())
+
+
+# ---------------------------------------------------------------------------------------------- the driver's image
+
+def constants(path, names):
+    """The values of the module-level `names` of a file, read from its syntax tree: a literal, or a literal `%` a name."""
+    out = {}
+    for node in ast.parse(path.read_text(encoding="utf-8")).body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 and getattr(node.targets[0], "id", None) in names:
+            value = node.value
+            out[node.targets[0].id] = (ast.literal_eval(value.left) % out[value.right.id]
+                                       if isinstance(value, ast.BinOp) and isinstance(value.op, ast.Mod)
+                                       else ast.literal_eval(value))
+    return out
+
+
+def image_commands(path):
+    """What each `run_commands` call of a file is given, as source text."""
+    return {ast.unparse(argument) for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "run_commands"
+            for argument in node.args}
+
+
+PINS = ("NODE", "FETCH_NODE", "STACK_ANALYSER", "FETCH_STACK_ANALYSER")
+
+
+def test_the_driver_image_holds_the_node_and_the_release_of_the_test_launcher_and_those_of_daodan():
+    """`tests/modal_pytest.py` cannot be imported here (it imports `modal`, and the launcher is not a module for the
+    container): its pins and its commands are read from its syntax tree and must be the driver's."""
+    driver, launcher = HERE / "modal_stack_fork.py", ROOT / "tests/modal_pytest.py"
+    theirs, ours = constants(launcher, PINS), constants(driver, (*PINS, "NODE_BIN", "CLI"))
+    assert {name: ours[name] for name in PINS} == theirs
+    assert theirs["STACK_ANALYSER"][:2] == (stack_analyser.URL, stack_analyser.SHA256)
+    assert ours["NODE_BIN"] == "/opt/" + Path(theirs["NODE"][0]).name.removesuffix(".tar.gz") + "/bin/node"
+    assert ours["CLI"] == f"{theirs['STACK_ANALYSER'][2]}/{stack_analyser.PROGRAM}"
+    assert image_commands(driver) <= image_commands(launcher)
+    assert {"FETCH_NODE", "FETCH_STACK_ANALYSER"} <= image_commands(driver)

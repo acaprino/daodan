@@ -4,26 +4,37 @@ registry entries `service_registry.run` returns, so the benchmark can put `recog
 `declarations` turns the pre-map's packages, service images and Dockerfile bases into what the tool takes, `perimeter`
 names the folders it must not enter (only folders are listed on the disk, never entered when the snapshot holds nothing
 in them), `found` reads its evidence, `recognize` runs it and adds the host mentions `service_registry.run` adds.
+
+The benchmark's measures are here too, as functions the container only calls: `measure` takes one project's two records
+and its fast scan, `compare` sets the two records side by side against `expected.json`, `executed` judges the processes
+started, `summary` gives the totals. `benchmarks/project-model/test_fork_stack.py` tests them on this PC.
 """
 from __future__ import annotations
 
 import os
 import posixpath
+import statistics
 import sys
+import time
 from pathlib import Path, PurePosixPath, PureWindowsPath
+from unittest import mock
 
 SCRIPTS = Path(os.environ.get("PM_PLUGIN_SCRIPTS") or
                (next((p / "daodan/core" for p in Path(__file__).resolve().parents
                       if (p / "daodan/core").is_dir()), "/daodan/map/core")))
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
+PROJECT_MODEL = Path(__file__).resolve().parents[1]  # `score.py`
+for _path in (SCRIPTS, PROJECT_MODEL):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
 
 import container  # noqa: E402
 import flows  # noqa: E402
 import premap  # noqa: E402
 import registry_build  # noqa: E402
+import score  # noqa: E402
 import service_registry  # noqa: E402
 import stack_analyser  # noqa: E402
+import technologies  # noqa: E402
 from premap.module_graph import declared_image  # noqa: E402
 from registry_hosts import check_hosts  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
@@ -206,3 +217,98 @@ def recognize(manifest: Path, registry: dict | None = None, facts: dict | None =
             _failed("host", f"{type(error).__name__}: {error}", checkers, gaps)
     entries, more = found(payload, registry, set(files), left_out, mentions)
     return {"found": entries, "checkers": checkers, "gaps": gaps + more}
+
+
+# ---------------------------------------------------------------------------------------------- the measures
+
+def _found_names(expected: dict, record: dict) -> list[str]:
+    """The names `expected` lists (frameworks, then services) that `score.score_technologies` finds in `record`: the
+    frameworks by name alone, as its `frameworks_by_name` counts them, with the score's own spellings and aliases."""
+    scored = score.score_technologies(expected, record)
+    names = []
+    for facet, key in (("frameworks", "frameworks_by_name"), ("services", "services")):
+        if key in scored:  # the expected file's `unknown` takes a facet out
+            missed = set(scored[key]["missed"])  # spelt as the score spells them
+            names += [item["name"] for item in expected.get(facet) or ()
+                      if score._framework(item["name"]) not in missed and item["name"] not in names]
+    return names
+
+
+def compare(expected: dict, before: dict, after: dict) -> dict:
+    """The record `before` (the registry's) and `after` (the fork's, with its `gaps`), in the form
+    `score.score_technologies` takes, against each other: the expected names found only before (`lost`) or only after
+    (`gained`), the ids of `technologies` only after (`new`) or only before (`gone`), and the ids the fork named that
+    the registry lacks (`not_in_registry`)."""
+    names_before, names_after = _found_names(expected, before), _found_names(expected, after)
+    ids_before, ids_after = ({t["id"] for t in record["technologies"]} for record in (before, after))
+    gaps = after.get("gaps") or ()
+    return {"lost": [n for n in names_before if n not in names_after],
+            "gained": [n for n in names_after if n not in names_before],
+            "new": sorted(ids_after - ids_before), "gone": sorted(ids_before - ids_after),
+            "not_in_registry": sorted({gap["entry"] for gap in gaps if gap.get("kind") == "not_in_registry"})}
+
+
+def executed(spawned: list[str], node: str, cli: str, git: str) -> str:
+    """`"no"` when each process started is the perimeter's `git` (the start of its command line) or `node` with `cli` as
+    its first argument, else `"unknown"`. A process comes as one string, cut at 200 characters: the program and its
+    first argument are at the start."""
+    program = f"{node} {cli}"
+    return "no" if all(line.startswith(git) or line == program or line.startswith(program + " ") for line in spawned) \
+        else "unknown"
+
+
+def _timed(function, *args) -> tuple[dict, float]:
+    started = time.monotonic()
+    answer = function(*args)
+    return answer, round(time.monotonic() - started, 3)
+
+
+def _declared(answer: dict) -> set[str]:
+    """The ids of the entries with a declared sign: the ones `technologies.derive` keeps, the others it leaves mentioned."""
+    return {entry["id"] for entry in answer["found"] if any(s["strength"] == "declared" for s in entry["signs"])}
+
+
+def measure(manifest: Path, registry: dict, full: dict, fast: dict) -> dict:
+    """One project, two ways. `technologies.derive` on the pre-map's facts `full` with the registry's recogniser and with
+    the fork's (`service_registry.run` replaced by `recognize`), and each recogniser alone on the facts `fast` (the
+    pre-map without its model commands), compared by the ids each declares; the seconds are each call's. `derive` makes
+    the module graph the first time and finds it the second, so one derive, not timed, comes first: the graph is
+    already there under both."""
+    manifest = Path(manifest)
+    technologies.derive(manifest, registry, full)
+    before, registry_full = _timed(technologies.derive, manifest, registry, full)
+    with mock.patch.object(service_registry, "run", recognize):
+        after, fork_full = _timed(technologies.derive, manifest, registry, full)
+    by_registry, registry_fast = _timed(service_registry.run, manifest, registry, fast)
+    by_fork, fork_fast = _timed(recognize, manifest, registry, fast)
+    ours, theirs = _declared(by_registry), _declared(by_fork)
+    return {"before": before, "after": after,
+            "fast": {"registry": sorted(ours), "fork": sorted(theirs), "lost": sorted(ours - theirs)},
+            "seconds": {"registry_full": registry_full, "fork_full": fork_full, "registry_fast": registry_fast,
+                        "fork_fast": fork_fast}}
+
+
+def _spread(fixtures: dict, key: str) -> dict:
+    times = {name: entry["seconds"][key] for name, entry in fixtures.items() if "seconds" in entry}
+    slowest = max(times, key=times.get, default=None)
+    return {"median": round(statistics.median(times.values()), 3) if times else None,
+            "max": times.get(slowest), "slowest": slowest}
+
+
+def summary(fixtures: dict) -> dict:
+    """The totals over the fixtures `fetch` writes (name -> `{"error": ...}`, or the result with its `compare`, its
+    `seconds` and the `score` of each record): the expected names found before and after, the fixtures that lose some,
+    the spread of the fast scans."""
+    found = {}
+    for facet, key in (("frameworks", "frameworks_by_name"), ("services", "services")):
+        row = {"expected": 0, "before": 0, "after": 0}
+        for entry in fixtures.values():
+            scores = entry.get("score")
+            if scores and key in scores["before"]:
+                row["expected"] += scores["before"][key]["expected"]
+                row["before"] += scores["before"][key].get("found", 0)
+                row["after"] += scores["after"][key].get("found", 0)
+        found[facet] = row
+    return {"fixtures": len(fixtures), "errors": sum("error" in entry for entry in fixtures.values()),
+            "fixtures_with_lost": sum(bool(entry.get("compare", {}).get("lost")) for entry in fixtures.values()),
+            "found": found, "fork_fast": _spread(fixtures, "fork_fast"), "registry_fast": _spread(fixtures, "registry_fast")}
