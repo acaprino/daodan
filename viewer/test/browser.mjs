@@ -6,6 +6,7 @@ const assets = new URL('../../daodan/assets/', import.meta.url);
 const envelope = JSON.parse(await readFile(new URL('./fixture.json', import.meta.url)));
 let pathsClassified = false;
 // What the fixture server does next, so that a test can make a route fail or wait.
+const engineRequests = [];
 const mode = { graphStatus: 200, premapDelay: 0, linkStatus: 200, checkDelay: 0 };
 const run = { repository: { owner: 'demo', name: 'shop' }, branch: 'main', commit: '1'.repeat(40), run_id: 'demo' };
 const groups = ['Client', 'Server'].map(name => ({
@@ -42,6 +43,10 @@ try {
         site: 'ui.ts:8', end: 'lacuna', confidence: 'sampled', reason: 'Destinazione campionata' }];
       return route.fulfill({ json: { card, steps: [steps[offset]], offset, count: 2, next_offset: offset ? null : 1 } });
     }
+    if (path === '/api/app/engine') {
+      engineRequests.push(JSON.parse(route.request().postData() ?? '{}'));
+      return route.fulfill({ json: { engine: 'openai', engines: ['openai'], api_key: 'unset', base_url: 'https://api.test/v1', model: 'm' } });
+    }
     if (path === '/api/app/link') return route.fulfill(mode.linkStatus === 200 ? { json: {} } : { status: mode.linkStatus, json: { error: 'collegamento non riuscito' } });
     if (path === '/api/app/check') {
       await new Promise(resolve => setTimeout(resolve, mode.checkDelay));
@@ -75,6 +80,7 @@ try {
         super();
         const publish = frame => this.dispatchEvent(new MessageEvent('app', { data: JSON.stringify(frame) }));
         window.setMapState = mapped => publish({ ...state, mapped });
+        window.setServerState = patch => publish({ ...state, ...patch });
         setTimeout(() => publish(state), 0);
       }
       close() {}
@@ -85,9 +91,9 @@ try {
   assert.equal(await page.locator('body > .im-shell').count(), 1);
   const selectable = locator => locator.evaluate(el => getComputedStyle(el).userSelect !== 'none');
   const palette = page.getByRole('dialog', { name: 'Cerca un comando' });
-  // A tone is one of the four statuses; the accent stays on a chip or a dot, as data. The graph's edges have their own.
+  // A tone is one of the four statuses; the accent stays on a chip or a dot, as data. The graph's edges, and the samples of its key, have their own.
   const tonesAreCanon = async () => {
-    const found = await page.evaluate(() => [...document.querySelectorAll('[data-im-tone]')].filter(el => !el.closest('svg'))
+    const found = await page.evaluate(() => [...document.querySelectorAll('[data-im-tone]')].filter(el => !el.closest('svg, .im-graph-legend'))
       .map(el => [el.dataset.imTone, el.className]));
     for (const [tone, name] of found) assert.ok(['ok', 'warn', 'err', 'info'].includes(tone) || (tone === 'accent' && /(^| )im-(chip|dot)( |$)/.test(name)), `${tone} on ${name}`);
   };
@@ -111,6 +117,9 @@ try {
   const screens = await tabs.getByRole('tab').allInnerTexts();
   assert.deepEqual(screens, ['Analisi', 'Grafo', 'Motore e domande']);
   assert.equal(await page.locator('.im-sidebar').count(), 0);
+  assert.ok(await page.locator('#use-repository').getAttribute('title'));
+  assert.ok(await page.getByLabel('Branch da analizzare').isDisabled());
+  await page.getByLabel('URL GitHub').waitFor();
   await page.locator('#verify-repository').click();
   assert.match(await page.locator('#repository-error').innerText(), /^Errore: /);
   await page.locator('#repository-url').fill('https://github.com/demo/shop');
@@ -170,6 +179,8 @@ try {
   await failed.getByRole('button', { name: 'Riprova' }).click();
   await page.getByRole('region', { name: 'Grafo del codice' }).waitFor();
   assert.equal(await tabs.getByRole('tab', { name: /^Grafo/ }).locator('.im-count').innerText(), '2');
+  const legend = await page.locator('.im-graph-legend').innerText();
+  assert.ok(legend.includes('Osservata in esecuzione') && legend.includes('Incerta') && !legend.includes('■'));
   await tonesAreCanon();
   await tabs.getByRole('tab', { name: /^Analisi/ }).click();
   await page.locator('#stage-analysis').click();
@@ -275,6 +286,26 @@ try {
   await page.getByRole('menu').waitFor({ state: 'detached' });
   await page.locator('#question').waitFor({ state: 'visible' });
   await tonesAreCanon();
+  assert.equal(await page.locator('textarea.im-textarea#question').count(), 1);
+  assert.ok(await page.getByRole('button', { name: 'Chiedi' }).isEnabled());
+  await page.evaluate(() => window.setServerState({ engine: { engine: 'openai', engines: ['claude', 'openai'], api_key: 'set', base_url: 'https://api.test/v1', model: 'm' } }));
+  await page.getByRole('combobox', { name: 'Motore', exact: true }).waitFor();
+  await page.getByRole('combobox', { name: 'Motore', exact: true }).selectOption('openai');
+  for (const label of [/^Indirizzo dell’endpoint/, /^Modello/, /^Chiave/, 'Domanda']) await page.getByLabel(label, { exact: typeof label === 'string' }).waitFor();
+  assert.ok(await page.locator('.im-field-hint', { hasText: 'Chiave impostata' }).isVisible());
+  const forget = page.getByRole('button', { name: 'Rimuovi la chiave' });
+  await forget.click();
+  const sure = page.getByRole('alertdialog', { name: 'Rimuovere la chiave?' });
+  await sure.waitFor();
+  assert.equal(await page.evaluate(() => document.activeElement.textContent.trim()), 'Annulla');
+  assert.match(await sure.innerText(), /deposito delle credenziali[\s\S]*non si può recuperare/);
+  await page.keyboard.press('Escape');
+  await sure.waitFor({ state: 'detached' });
+  assert.equal(engineRequests.length, 0);
+  await forget.click();
+  await sure.getByRole('button', { name: 'Rimuovi la chiave' }).click();
+  await page.waitForFunction(() => document.querySelector('#engine-said')?.textContent.includes('Chiave rimossa'));
+  assert.deepEqual(engineRequests, [{ api_key: '' }]);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 
   await page.setViewportSize({ width: 1280, height: 850 });
