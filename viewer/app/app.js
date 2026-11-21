@@ -1,12 +1,17 @@
-import { iconMarkup as icon, metric, segmentedControl, setProgress, stepList, attachLayers, fileTree, notify, openFormDialog, sidebarDrawer } from '@acaprino/imago/ui';
+import '@acaprino/imago/css/imago.css';
+import { iconMarkup as icon, metric, segmentedControl, setProgress, stepList, createRegistry, fileTree, keyCaps, notify, openFormDialog, PALETTE_COMMAND } from '@acaprino/imago/ui';
 import { graphView } from '@acaprino/imago/graph';
-import { graphControls } from '../src/appearance';
+import { applyStored, graphControls, mountPage, storageOrNull } from '../src/page';
 
 
 const shell = document.querySelector('.im-shell');
 const page = () => document.querySelector('#main > .im-panel-body');
-attachLayers(shell);
-sidebarDrawer(shell);
+applyStored(document.documentElement, storageOrNull());
+const registry = createRegistry();
+mountPage(shell, registry, { search: searchView });
+const commands = document.getElementById('command-button');
+commands.append(' ', keyCaps(document, 'Ctrl+K'));
+commands.addEventListener('click', () => registry.get(PALETTE_COMMAND)?.run());
 let activeDialog, diagram, diagramHost, diagramKey, previewVersion;
 
 // The app's page: the journey of the mockup (repository, pre-map, analysis, synthesis and graph) over the local server.
@@ -46,6 +51,12 @@ const STEP = Object.fromEntries(STEPS.map(([id, label]) => [id, label.split(' ·
 
 function save() { try { localStorage.setItem(STORAGE, JSON.stringify(state)); } catch { storageAvailable = false; } }
 function esc(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+// Ctrl+F: the search of the screen in view; a screen without one says so.
+function searchView() {
+  const field = document.querySelector('#graph-search, #premap-search');
+  if (field) field.focus(); else toast('Questa schermata non ha una ricerca.');
+}
 
 function toast(message) { notify(shell, message, { timeoutMs: 4500, dismissLabel: 'Chiudi' }); }
 

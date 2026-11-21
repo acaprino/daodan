@@ -2,7 +2,9 @@ import React, { useLayoutEffect, useEffect, useMemo, useReducer, useRef, useStat
 import { createRoot } from 'react-dom/client';
 import { graphView } from '@acaprino/imago/graph';
 import type { GraphScene } from '@acaprino/imago/graph';
-import { graphControls } from './appearance';
+import '@acaprino/imago/css/imago.css';
+import { createRegistry, notify } from '@acaprino/imago/ui';
+import { applyStored, graphControls, mountPage, storageOrNull } from './page.ts';
 import { ArrowLeft, ChevronRight, FolderOpen, Route, Search, X } from 'lucide-react';
 import { Disclosure, ListAction, Shell, TabList, Timeline, Workbench } from '@acaprino/imago/react';
 import { getJson, POLL_MS, Session } from './session';
@@ -177,8 +179,9 @@ function useExplorer(envelope: Envelope | null) {
   return { state, dispatch, projection, focus, data, edges, selectedIds, ready: envelope !== null && shown.current !== null && state.envelope !== EMPTY };
 }
 
-function Navigation({ model }: { model: Model }) {
+function Navigation({ model, ready }: { model: Model; ready: boolean }) {
   const { state, dispatch, projection, selectedIds } = model;
+  if (!ready) return <p className="im-muted im-caption">In attesa dell'export.</p>;
   return <>
     <h3>Flussi</h3>
     <RunFlows state={state} dispatch={dispatch} />
@@ -298,6 +301,13 @@ function App() {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [pick, setPick] = useState<{ file: string } | null>(null);
   const model = useExplorer(envelope);
+  const shell = useRef<HTMLDivElement>(null);
+  const registry = useMemo(() => createRegistry(), []);
+  // Ctrl+F: the search of the map in view; a page that shows no map has none.
+  useEffect(() => mountPage(shell.current!, registry, { search: () => {
+    const field = shell.current!.querySelector<HTMLInputElement>('input[type="search"]');
+    if (field) field.focus(); else notify(shell.current!, 'Questa vista non ha una ricerca.');
+  } }), []);
   useEffect(() => {
     const ref = pick && envelope && fileRef(envelope, pick.file);
     if (ref) model.dispatch({ type: 'select', ref });
@@ -353,9 +363,9 @@ function App() {
       <Session onPick={() => undefined} onRun={id => { listRuns(id).catch(() => undefined); }} /></>
     : <>{live}{failure ? empty('Export non leggibile', failure) : !envelope ? empty("Carico l'export…", '', true)
       : ready && <Explorer key={run} model={model} />}</>;
-  return <Shell sidebar={ready} skipLabel="Vai al contenuto" titlebar={titlebar}>
+  return <Shell ref={shell} sidebar skipLabel="Vai al contenuto" titlebar={titlebar}>
     <Workbench aria-label="Codebase Map" detailsLabel="Dettaglio" navigationLabel="Mappa"
-      navigation={ready ? <Navigation model={model} /> : null}
+      navigation={<Navigation model={model} ready={ready} />}
       details={ready ? <EntityDetails state={model.state} dispatch={model.dispatch} edges={model.projection.edges} /> : null}>{content}</Workbench>
   </Shell>;
 }
@@ -363,4 +373,5 @@ function App() {
 const titlebar = <header className="im-titlebar"><div className="im-brand">
   <span className="im-mark" aria-hidden="true">D</span><span className="im-wordmark">Daodan</span></div></header>;
 
+applyStored(document.documentElement, storageOrNull());
 createRoot(document.getElementById('app')!).render(<React.StrictMode><App /></React.StrictMode>);
