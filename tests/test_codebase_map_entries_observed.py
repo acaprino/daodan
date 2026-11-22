@@ -121,3 +121,11 @@ def test_a_handler_outside_the_project_leaves_the_row_without_one():
                   handler={"name": "dispatch", "url": "/lib/vendor.js", "source": None, "line": 80})
     [row] = observed_entries.candidates(pages(odd), [], FILES)
     assert "handler" not in row and "not isolated" in row["gap"]
+
+
+def test_a_control_a_press_revealed_is_an_entry_that_says_what_opened_it():
+    opener = control("Menu", requests=[], calls=[], revealed=[
+        control("Settings", calls=[call("settings", "src/lib/actions.ts", 5)], opened_by=["Menu"])])
+    [row] = observed_entries.candidates(pages(opener), [], FILES)
+    assert (row["label"], row["opened_by"]) == ("Settings", ["Menu"]) and row["observed_calls"] == ["src/lib/actions.ts:5 settings"]
+    assert "opened_by" not in observed_entries.candidates(pages(SAVE), [], FILES)[0]

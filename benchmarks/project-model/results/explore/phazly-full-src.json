@@ -77,7 +77,7 @@
    "state": "ready",
    "address": "http://localhost:5174/",
    "port": 5174,
-   "seconds": 10,
+   "seconds": 9,
    "stopped": "term",
    "explored": {
     "pages": 1,
@@ -94,14 +94,14 @@
    "state": "ready",
    "address": "http://localhost:5173/",
    "port": 5173,
-   "seconds": 230,
+   "seconds": 600,
    "stopped": "term",
    "explored": {
     "pages": 8,
-    "controls": 72,
-    "pressed": 54,
-    "skipped": 16,
-    "failed": 2
+    "controls": 140,
+    "pressed": 118,
+    "skipped": 19,
+    "failed": 3
    }
   },
   {
@@ -111,13 +111,13 @@
    "state": "ready",
    "address": "http://localhost:5173/",
    "port": 5173,
-   "seconds": 25,
+   "seconds": 59,
    "stopped": "term",
    "explored": {
     "pages": 1,
-    "controls": 6,
-    "pressed": 4,
-    "skipped": 2,
+    "controls": 14,
+    "pressed": 10,
+    "skipped": 4,
     "failed": 0
    }
   }
@@ -131,8 +131,8 @@
     "http://localhost:5173/",
     "http://localhost:5173/privacy",
     "http://localhost:5173/src/index.css",
-    "http://localhost:5173/src/i18n/locales/it.json?import",
-    "http://localhost:5173/src/i18n/lp/it.json?import"
+    "http://localhost:5173/src/i18n/lp/it.json?import",
+    "http://localhost:5173/src/i18n/locales/it.json?import"
    ],
    "detail": "11 scripts of the app ran with no source map: their functions are named by script, not by file"
   }
@@ -142,16 +142,17 @@
  },
  "explored": {
   "pages": 10,
-  "controls": 81,
-  "pressed": 59,
-  "with_effect": 57,
-  "with_handler": 35,
+  "controls": 157,
+  "revealed": 76,
+  "pressed": 129,
+  "with_effect": 126,
+  "with_handler": 97,
   "skipped": {
-   "needs_value": 6,
-   "leaves_the_app": 13,
+   "needs_value": 8,
+   "leaves_the_app": 16,
    "not_operable": 1
   },
-  "failed": 2,
+  "failed": 3,
   "urls": [
    "http://localhost:5174/",
    "http://localhost:5173/",
@@ -176,8 +177,8 @@
   "authoring": 38,
   "shared": 27,
   "Legal": 21,
-  "CLAUDE.md": 1,
-  "README.md": 1
+  "README.md": 1,
+  "build-android.bat": 1
  },
  "pressed_sample": [
   {
@@ -380,39 +381,143 @@
   },
   {
    "page": "http://localhost:5173/",
-   "name": "English",
-   "role": "button",
-   "calls": 70,
+   "name": "Phazly, torna all\u2019inizio",
+   "role": "link",
+   "calls": 0,
    "requests": 0,
-   "handler": {
-    "name": "onClick",
-    "url": "/src/components/landing/Nav.tsx",
-    "source": "/src/components/landing/Nav.tsx",
-    "line": 125
-   },
+   "handler": null,
+   "first_calls": []
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "La settimana",
+   "role": "link",
+   "calls": 19,
+   "requests": 0,
+   "handler": null,
    "first_calls": [
     [
-     null,
-     null,
-     "window.$RefreshSig$"
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
     ],
     [
-     null,
-     null,
-     "(anonymous)"
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
     ],
     [
-     "/src/i18n/index.ts",
-     118,
-     "(anonymous)"
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
     ]
    ]
   },
   {
    "page": "http://localhost:5173/",
-   "name": "Toggle theme",
+   "name": "Come funziona",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Funzioni",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Metodo",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Prezzi",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Cambia tema",
    "role": "button",
-   "calls": 71,
+   "calls": 70,
    "requests": 0,
    "handler": {
     "name": "onClick",
@@ -440,11 +545,16 @@
   },
   {
    "page": "http://localhost:5173/",
-   "name": "Phazly, back to top",
-   "role": "link",
-   "calls": 40,
+   "name": "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle",
+   "role": "button",
+   "calls": 46,
    "requests": 0,
-   "handler": null,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Week.tsx",
+    "source": "/src/components/landing/Week.tsx",
+    "line": 86
+   },
    "first_calls": [
     [
      "/src/hooks/useTheme.ts",
@@ -465,11 +575,71 @@
   },
   {
    "page": "http://localhost:5173/",
-   "name": "The week",
-   "role": "link",
-   "calls": 40,
+   "name": "A occhio",
+   "role": "button",
+   "calls": 2,
    "requests": 0,
-   "handler": null,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Week.tsx",
+    "source": "/src/components/landing/Week.tsx",
+    "line": 136
+   },
+   "first_calls": [
+    [
+     "/src/components/landing/Nav.tsx",
+     57,
+     "onScroll"
+    ],
+    [
+     "/src/components/landing/Week.tsx",
+     136,
+     "onClick"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Grammi",
+   "role": "button",
+   "calls": 32,
+   "requests": 0,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Week.tsx",
+    "source": "/src/components/landing/Week.tsx",
+    "line": 139
+   },
+   "first_calls": [
+    [
+     "/src/components/landing/Nav.tsx",
+     57,
+     "onScroll"
+    ],
+    [
+     "/src/components/landing/Week.tsx",
+     24,
+     "Week"
+    ],
+    [
+     "/src/components/landing/Week.tsx",
+     62,
+     "(anonymous)"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Marted\u00ec, Colazione: Gallette di riso con formaggio spalmabile light e salmone affumicato",
+   "role": "button",
+   "calls": 46,
+   "requests": 0,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Week.tsx",
+    "source": "/src/components/landing/Week.tsx",
+    "line": 86
+   },
    "first_calls": [
     [
      "/src/hooks/useTheme.ts",
@@ -485,181 +655,6 @@
      "/src/components/landing/Nav.tsx",
      36,
      "Nav"
-    ]
-   ]
-  },
-  {
-   "page": "http://localhost:5173/",
-   "name": "How it works",
-   "role": "link",
-   "calls": 40,
-   "requests": 0,
-   "handler": null,
-   "first_calls": [
-    [
-     "/src/hooks/useTheme.ts",
-     35,
-     "getSnapshot"
-    ],
-    [
-     "/src/hooks/useTheme.ts",
-     45,
-     "useTheme"
-    ],
-    [
-     "/src/components/landing/Nav.tsx",
-     36,
-     "Nav"
-    ]
-   ]
-  },
-  {
-   "page": "http://localhost:5173/",
-   "name": "Features",
-   "role": "link",
-   "calls": 40,
-   "requests": 0,
-   "handler": null,
-   "first_calls": [
-    [
-     "/src/hooks/useTheme.ts",
-     35,
-     "getSnapshot"
-    ],
-    [
-     "/src/hooks/useTheme.ts",
-     45,
-     "useTheme"
-    ],
-    [
-     "/src/components/landing/Nav.tsx",
-     36,
-     "Nav"
-    ]
-   ]
-  },
-  {
-   "page": "http://localhost:5173/",
-   "name": "Pricing",
-   "role": "link",
-   "calls": 40,
-   "requests": 0,
-   "handler": null,
-   "first_calls": [
-    [
-     "/src/hooks/useTheme.ts",
-     35,
-     "getSnapshot"
-    ],
-    [
-     "/src/hooks/useTheme.ts",
-     45,
-     "useTheme"
-    ],
-    [
-     "/src/components/landing/Nav.tsx",
-     36,
-     "Nav"
-    ]
-   ]
-  },
-  {
-   "page": "http://localhost:5173/",
-   "name": "FAQ",
-   "role": "link",
-   "calls": 40,
-   "requests": 0,
-   "handler": null,
-   "first_calls": [
-    [
-     "/src/hooks/useTheme.ts",
-     35,
-     "getSnapshot"
-    ],
-    [
-     "/src/hooks/useTheme.ts",
-     45,
-     "useTheme"
-    ],
-    [
-     "/src/components/landing/Nav.tsx",
-     36,
-     "Nav"
-    ]
-   ]
-  },
-  {
-   "page": "http://localhost:5173/",
-   "name": "Privacy Policy",
-   "role": "link",
-   "calls": 106,
-   "requests": 0,
-   "handler": null,
-   "first_calls": [
-    [
-     null,
-     null,
-     "(anonymous)"
-    ],
-    [
-     null,
-     null,
-     "(anonymous)"
-    ],
-    [
-     "/src/main.tsx",
-     12,
-     "(anonymous)"
-    ]
-   ]
-  },
-  {
-   "page": "http://localhost:5173/",
-   "name": "Terms of Service",
-   "role": "link",
-   "calls": 106,
-   "requests": 0,
-   "handler": null,
-   "first_calls": [
-    [
-     null,
-     null,
-     "(anonymous)"
-    ],
-    [
-     null,
-     null,
-     "(anonymous)"
-    ],
-    [
-     "/src/main.tsx",
-     12,
-     "(anonymous)"
-    ]
-   ]
-  },
-  {
-   "page": "http://localhost:5173/",
-   "name": "Delete account",
-   "role": "link",
-   "calls": 106,
-   "requests": 0,
-   "handler": null,
-   "first_calls": [
-    [
-     null,
-     null,
-     "(anonymous)"
-    ],
-    [
-     null,
-     null,
-     "(anonymous)"
-    ],
-    [
-     "/src/main.tsx",
-     12,
-     "(anonymous)"
     ]
    ]
   }
@@ -668,6 +663,13 @@
   {
    "page": "http://localhost:5173/",
    "name": "Skip to main content",
+   "role": "link",
+   "state": "failed",
+   "reason": "locator.click: Timeout 3000ms exceeded. \u2014 - element is outside of the viewport"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Vai al contenuto principale",
    "role": "link",
    "state": "failed",
    "reason": "locator.click: Timeout 3000ms exceeded. \u2014 - element is outside of the viewport"
@@ -692,6 +694,27 @@
    "role": "textbox",
    "state": "skipped",
    "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Prova gratis",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Prova gratis",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Disponibile su Google Play",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
   },
   {
    "page": "http://localhost:5173/",
@@ -776,42 +799,14 @@
    "role": "button",
    "state": "skipped",
    "reason": "not_operable"
-  },
-  {
-   "page": "http://localhost:5173/privacy?lang=en",
-   "name": "Go to App",
-   "role": "link",
-   "state": "skipped",
-   "reason": "leaves_the_app"
-  },
-  {
-   "page": "http://localhost:5173/privacy?lang=it",
-   "name": "Vai all'App",
-   "role": "link",
-   "state": "skipped",
-   "reason": "leaves_the_app"
-  },
-  {
-   "page": "http://localhost:5173/terms?lang=en",
-   "name": "Go to App",
-   "role": "link",
-   "state": "skipped",
-   "reason": "leaves_the_app"
-  },
-  {
-   "page": "http://localhost:5173/terms?lang=it",
-   "name": "Vai all'App",
-   "role": "link",
-   "state": "skipped",
-   "reason": "leaves_the_app"
   }
  ],
  "page_errors": [],
  "against_static": {
   "static_candidates": 194,
   "static_labelled_click": 0,
-  "recovered": 57,
-  "recovered_with_handler": 35,
+  "recovered": 126,
+  "recovered_with_handler": 97,
   "matched": 0,
   "discarded_on_a_component": 0,
   "discarded_with_a_label": 0,
@@ -952,26 +947,102 @@
    },
    {
     "site": "/",
-    "label": "English",
-    "role": "button",
-    "handler": "landing-app/src/components/landing/Nav.tsx:125 onClick",
+    "label": "La settimana",
+    "role": "link",
+    "handler": null,
     "observed_calls": [
-     "landing-app/src/components/landing/EmberGlow.tsx:71 EmberGlow",
-     "landing-app/src/components/landing/Faq.tsx:6 Faq",
-     "landing-app/src/components/landing/Faq.tsx:15 (anonymous)",
-     "landing-app/src/components/landing/Features.tsx:23 PhotoScan",
-     "landing-app/src/components/landing/Features.tsx:39 (anonymous)",
-     "landing-app/src/components/landing/Features.tsx:74 Features",
-     "landing-app/src/components/landing/FinalCta.tsx:11 FinalCta",
-     "landing-app/src/components/landing/FinalCta.tsx:18 (anonymous)",
-     "landing-app/src/components/landing/Footer.tsx:4 Footer",
-     "landing-app/src/components/landing/Hero.tsx:35 linePath"
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate",
+     "landing-app/src/components/landing/motion.ts:136 onUpdate",
+     "landing-app/src/components/landing/motion.ts:159 scale"
     ],
     "requests": []
    },
    {
     "site": "/",
-    "label": "Toggle theme",
+    "label": "Come funziona",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Funzioni",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Metodo",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Prezzi",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Cambia tema",
     "role": "button",
     "handler": "landing-app/src/components/landing/Nav.tsx:135 onClick",
     "observed_calls": [
@@ -990,202 +1061,122 @@
    },
    {
     "site": "/",
-    "label": "Phazly, back to top",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
-     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
-     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:36 Nav",
-     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
-     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
-     "landing-app/src/components/landing/motion.ts:49 boxIn"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "The week",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
-     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
-     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:36 Nav",
-     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
-     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
-     "landing-app/src/components/landing/motion.ts:49 boxIn"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "How it works",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
-     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
-     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:36 Nav",
-     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
-     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
-     "landing-app/src/components/landing/motion.ts:49 boxIn"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "Features",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
-     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
-     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:36 Nav",
-     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
-     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
-     "landing-app/src/components/landing/motion.ts:49 boxIn"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "Pricing",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
-     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
-     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:36 Nav",
-     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
-     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
-     "landing-app/src/components/landing/motion.ts:49 boxIn"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "FAQ",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
-     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
-     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:36 Nav",
-     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
-     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
-     "landing-app/src/components/landing/motion.ts:49 boxIn"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "Privacy Policy",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/App.tsx:12 (anonymous)",
-     "landing-app/src/components/CookieConsentBanner.tsx:51 (anonymous)",
-     "landing-app/src/components/landing/EmberGlow.tsx:140 (anonymous)",
-     "landing-app/src/components/landing/Faq.tsx:12 (anonymous)",
-     "landing-app/src/components/landing/Features.tsx:19 _c",
-     "landing-app/src/components/landing/Features.tsx:30 (anonymous)",
-     "landing-app/src/components/landing/FinalCta.tsx:15 (anonymous)",
-     "landing-app/src/components/landing/Footer.tsx:14 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:20 _c",
-     "landing-app/src/components/landing/Hero.tsx:50 pickLift"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "Terms of Service",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/App.tsx:12 (anonymous)",
-     "landing-app/src/components/CookieConsentBanner.tsx:51 (anonymous)",
-     "landing-app/src/components/landing/EmberGlow.tsx:140 (anonymous)",
-     "landing-app/src/components/landing/Faq.tsx:12 (anonymous)",
-     "landing-app/src/components/landing/Features.tsx:19 _c",
-     "landing-app/src/components/landing/Features.tsx:30 (anonymous)",
-     "landing-app/src/components/landing/FinalCta.tsx:15 (anonymous)",
-     "landing-app/src/components/landing/Footer.tsx:14 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:20 _c",
-     "landing-app/src/components/landing/Hero.tsx:50 pickLift"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "Delete account",
-    "role": "link",
-    "handler": null,
-    "observed_calls": [
-     "landing-app/src/App.tsx:12 (anonymous)",
-     "landing-app/src/components/CookieConsentBanner.tsx:51 (anonymous)",
-     "landing-app/src/components/landing/EmberGlow.tsx:140 (anonymous)",
-     "landing-app/src/components/landing/Faq.tsx:12 (anonymous)",
-     "landing-app/src/components/landing/Features.tsx:19 _c",
-     "landing-app/src/components/landing/Features.tsx:30 (anonymous)",
-     "landing-app/src/components/landing/FinalCta.tsx:15 (anonymous)",
-     "landing-app/src/components/landing/Footer.tsx:14 (anonymous)",
-     "landing-app/src/components/landing/Hero.tsx:20 _c",
-     "landing-app/src/components/landing/Hero.tsx:50 pickLift"
-    ],
-    "requests": []
-   },
-   {
-    "site": "/",
-    "label": "Rifiuta",
+    "label": "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle",
     "role": "button",
-    "handler": "landing-app/src/components/CookieConsentBanner.tsx:57 onClick",
+    "handler": "landing-app/src/components/landing/Week.tsx:86 onClick",
     "observed_calls": [
-     "landing-app/src/components/CookieConsentBanner.tsx:12 CookieConsentBanner",
-     "landing-app/src/components/CookieConsentBanner.tsx:36 handleChoice",
-     "landing-app/src/components/CookieConsentBanner.tsx:57 onClick",
-     "landing-app/src/lib/analytics.ts:54 updateConsent"
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week"
     ],
     "requests": []
    },
    {
     "site": "/",
-    "label": "Accetta",
+    "label": "A occhio",
     "role": "button",
-    "handler": "landing-app/src/components/CookieConsentBanner.tsx:63 onClick",
+    "handler": "landing-app/src/components/landing/Week.tsx:136 onClick",
     "observed_calls": [
-     "landing-app/src/components/CookieConsentBanner.tsx:12 CookieConsentBanner",
-     "landing-app/src/components/CookieConsentBanner.tsx:36 handleChoice",
-     "landing-app/src/components/CookieConsentBanner.tsx:63 onClick",
-     "landing-app/src/lib/analytics.ts:54 updateConsent"
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Week.tsx:136 onClick"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Grammi",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:139 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week",
+     "landing-app/src/components/landing/Week.tsx:62 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:67 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:98 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:139 onClick",
+     "landing-app/src/components/landing/Week.tsx:145 (anonymous)"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Marted\u00ec, Colazione: Gallette di riso con formaggio spalmabile light e salmone affumicato",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:86 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "A occhio",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:136 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Week.tsx:136 onClick"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Grammi",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:139 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week",
+     "landing-app/src/components/landing/Week.tsx:62 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:67 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:98 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:139 onClick",
+     "landing-app/src/components/landing/Week.tsx:145 (anonymous)"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Mercoled\u00ec, Colazione: Chia pudding con yogurt greco e mirtilli",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:86 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week"
     ],
     "requests": []
    }
   ]
  },
- "seconds": 494.6
+ "seconds": 877.7
 }

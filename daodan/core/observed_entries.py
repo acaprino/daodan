@@ -7,7 +7,8 @@ as it is, and so does a static candidate nobody pressed. The handler is the firs
 exploration isolated it (Chrome's breakpoint on `click` with the dependencies blackboxed, `explore.cjs`) and it is a file
 of the snapshot: `handler`, with `handler_confidence` `observed`. Otherwise the row lists the project functions that
 ran (`observed_calls`) and says in `gap` that its handler is not isolated: coverage alone does not say which one the
-click called. The file is written beside the manifest by whoever ran the exploration.
+click called. A control a press revealed (a menu's item) is an entry too, with `opened_by`: the names of the presses that show it.
+The file is written beside the manifest by whoever ran the exploration.
 """
 from __future__ import annotations
 
@@ -54,13 +55,20 @@ def _path(url: str) -> str:
     return parts.path + (f"?{parts.query}" if parts.query else "")
 
 
+def _walk(controls: list[dict]):
+    """The controls of a page and, under each, those its press revealed (a menu's items, a dialog's buttons)."""
+    for control in controls:
+        yield control
+        yield from _walk(control.get("revealed") or [])
+
+
 def candidates(apps: list[dict], static: list[dict], files: set[str]) -> list[dict]:
     known = {((row.get("label") or "").strip().lower(), row.get("event")) for row in static if row.get("label")}
     found = []
     for app in apps:
         folder = posixpath.dirname(str(app.get("declared_in") or "").partition("#")[0])
         for page in app.get("pages", []):
-            for control in page.get("controls", []):
+            for control in _walk(page.get("controls", [])):
                 if control.get("state") != "pressed":
                     continue
                 ran = sorted({(rel, call["line"], call["name"]) for call in control.get("calls", [])
@@ -76,6 +84,7 @@ def candidates(apps: list[dict], static: list[dict], files: set[str]) -> list[di
                     "status": "candidate", "reader": "observed", "shape": "control", "kind": KIND,
                     "site": _path(page["url"]), "label": control["name"], "event": "click", "role": control["role"],
                     "occurrence": control.get("occurrence", 0), "declared_in": app.get("declared_in"),
+                    **({"opened_by": control["opened_by"]} if control.get("opened_by") else {}),
                     "observed_calls": [f"{rel}:{line} {name}" for rel, line, name in ran[:CALLS]], "requests": requests,
                     **({"handler": f"{place}:{caught['line']} {caught['name']}", "handler_confidence": "observed"} if place else
                        {"gap": f"the handler is not isolated: the press ran {len(ran)} project functions and sent "

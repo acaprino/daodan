@@ -62,14 +62,15 @@ def explore_folder(source: str, analysis: str, seeds: list | None = None) -> dic
                   **{key: seen[key] for key in ("cause", "remedy") if key in seen})
     pages = [page for number in range(len(planned["apps"]))
              for page in _explored(out, number).get("pages", [])]
-    pressed = [c for page in pages for c in page["controls"] if c.get("state") == "pressed"]
-    result["explored"] = {"pages": len(pages), "controls": sum(len(page["controls"]) for page in pages),
+    pressed = [c for page in pages for c in _flat(page["controls"]) if c.get("state") == "pressed"]
+    result["explored"] = {"pages": len(pages), "controls": sum(len(_flat(page["controls"])) for page in pages),
+                          "revealed": sum(1 for page in pages for c in _flat(page["controls"]) if c.get("opened_by")),
                           "pressed": len(pressed),
                           "with_effect": sum(1 for c in pressed if c.get("calls") or c.get("requests")),
                           "with_handler": sum(1 for c in pressed if c.get("handler")),
-                          "skipped": dict(collections.Counter(c.get("reason") for page in pages for c in page["controls"]
+                          "skipped": dict(collections.Counter(c.get("reason") for page in pages for c in _flat(page["controls"])
                                                               if c.get("state") == "skipped")),
-                          "failed": sum(1 for page in pages for c in page["controls"] if c.get("state") == "failed"),
+                          "failed": sum(1 for page in pages for c in _flat(page["controls"]) if c.get("state") == "failed"),
                           "urls": [page["url"] for page in pages][:SAMPLE]}
     base = Path("/runs/analysis")
     shutil.rmtree(base, ignore_errors=True)
@@ -88,10 +89,10 @@ def explore_folder(source: str, analysis: str, seeds: list | None = None) -> dic
     result["pressed_sample"] = [{"page": page["url"], "name": c["name"], "role": c["role"], "calls": len(c.get("calls", [])),
                                  "requests": len(c.get("requests", [])), "handler": c.get("handler"),
                                  "first_calls": [[call["source"], call["line"], call["name"]] for call in c.get("calls", [])[:3]]}
-                                for page in pages for c in page["controls"] if c.get("state") == "pressed"][:SAMPLE]
+                                for page in pages for c in _flat(page["controls"]) if c.get("state") == "pressed"][:SAMPLE]
     result["not_pressed_sample"] = [{"page": page["url"], "name": c["name"], "role": c["role"], "state": c["state"],
                                      "reason": c.get("reason")}
-                                    for page in pages for c in page["controls"] if c.get("state") in ("failed", "skipped")]
+                                    for page in pages for c in _flat(page["controls"]) if c.get("state") in ("failed", "skipped")]
     result["not_pressed_sample"].sort(key=lambda row: row["state"] != "failed")  # the failures first: they are the ones to read
     result["not_pressed_sample"] = result["not_pressed_sample"][:SAMPLE]
     result["page_errors"] = [{"page": page["url"], "errors": page.get("errors", [])} for page in pages if page.get("errors")][:SAMPLE]
@@ -107,6 +108,11 @@ def explore_folder(source: str, analysis: str, seeds: list | None = None) -> dic
                              for row in recovered[:SAMPLE]]}
     result["seconds"] = round(time.monotonic() - started, 1)
     return result
+
+
+def _flat(controls: list) -> list:
+    """The controls of a page and, under each, those its press revealed."""
+    return [item for control in controls for item in (control, *_flat(control.get("revealed") or []))]
 
 
 def _explored(out: Path, number: int) -> dict:

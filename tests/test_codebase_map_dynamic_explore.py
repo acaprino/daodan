@@ -255,3 +255,70 @@ def test_a_react_handler_is_the_function_written_in_the_component_not_reacts_own
     for name, line in wanted.items():
         handler = next(c for c in page["controls"] if c["name"] == name)["handler"]
         assert handler["source"].endswith("src/App.tsx") and handler["line"] == line, (name, handler)
+
+
+# --- the controls a press reveals --------------------------------------------------------------------------------
+
+def test_controls_a_press_reveals_are_read_and_pressed_from_the_state_that_shows_them(tmp_path, browser):
+    """A menu that draws its items once opened: read again after the press, each item pressed after the press that
+    opens it (a page loaded again would not show them)."""
+    menu = SERVER.replace("'/details':", "'/menu': `<!doctype html><title>menu</title><body><button id=m>Menu</button><script>"
+                          "document.getElementById('m').addEventListener('click', () => {"
+                          "const box = document.createElement('div'); box.setAttribute('role', 'menu');"
+                          "for (const name of ['Settings', 'Logout']) { const b = document.createElement('button');"
+                          " b.textContent = name; box.append(b);"
+                          " if (name === 'Settings') b.addEventListener('click', function settings() { fetch('/api/save'); }); }"
+                          "document.body.append(box); }, { once: true });</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": menu}, seeds=["/menu"])
+    shown = controls(found, "/menu")
+    opener = shown[("button", "Menu")]
+    assert [(c["name"], c["state"]) for c in opener["revealed"]] == [("Settings", "pressed"), ("Logout", "pressed")]
+    settings = opener["revealed"][0]
+    assert settings["opened_by"] == ["Menu"] and settings["handler"]["name"] == "settings" and settings["requests"]
+    assert ("button", "Settings") not in shown  # not in the first state of the page: only under the control that opens it
+    assert "revealed" not in opener["revealed"][1]
+
+
+def test_a_page_that_draws_itself_in_steps_does_not_make_its_own_controls_revealed(tmp_path, browser):
+    """Controls drawn 600 ms and 1200 ms after the load belong to the page's state, not to the press that came after."""
+    slow = SERVER.replace("'/details':", "'/slow': `<!doctype html><title>slow</title><body><button>First</button><script>"
+                          "for (const [name, ms] of [['Second', 600], ['Third', 1200]]) setTimeout(() => {"
+                          "const b = document.createElement('button'); b.textContent = name; document.body.append(b); }, ms);"
+                          "document.querySelector('button').addEventListener('click', () => fetch('/api/save'));</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": slow}, seeds=["/slow"])
+    shown = controls(found, "/slow")
+    assert sorted(name for _, name in shown) == ["First", "Second", "Third"]
+    assert not any(c.get("revealed") for c in shown.values())
+
+
+def test_a_link_does_not_open_anything_it_navigates_or_scrolls(tmp_path, browser):
+    """What a link's press adds to a page (a section drawn as it scrolls into view) is the page's, not a menu's."""
+    link = SERVER.replace("'/details':", "'/link': `<!doctype html><title>link</title><body><a href=\"#x\">Go</a><script>"
+                          "document.querySelector('a').addEventListener('click', () => {"
+                          "const b = document.createElement('button'); b.textContent = 'Added'; document.body.append(b); });"
+                          "</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": link}, seeds=["/link"])
+    assert not controls(found, "/link")[("link", "Go")].get("revealed")
+
+
+def test_the_controls_a_press_reveals_have_a_budget_of_their_own(tmp_path, browser):
+    """Past it they are skipped with their cause, and the page's own controls are not starved for it."""
+    many = SERVER.replace("'/details':", "'/many': `<!doctype html><title>many</title><body><button id=m>Open</button><script>"
+                          "document.getElementById('m').addEventListener('click', () => {"
+                          "for (const name of ['One', 'Two', 'Three']) { const b = document.createElement('button');"
+                          " b.textContent = name; document.body.append(b); } }, { once: true });</script>`,\n  '/details':")
+    spoiled = Path(SCRIPTS / "dynamic/explore.cjs").read_text(encoding="utf-8").replace("revealedPresses: 100", "revealedPresses: 1")
+    probe = tmp_path / "explore-budget.cjs"
+    probe.write_text(spoiled.replace("require('./app.cjs')", f"require({json.dumps(str(SCRIPTS / 'dynamic/app.cjs'))})"),
+                     encoding="utf-8")
+    port = free_port()
+    project = write(tmp_path / "proj", {**APP_FILES, "server.js": many.replace("PORT", str(port))})
+    out = tmp_path / "out"
+    out.mkdir()
+    done = subprocess.run(["node", str(probe), str(out), "0", str(project), str(port), "30", "node server.js", '["/many"]'],
+                          capture_output=True, text=True, timeout=300, env={**os.environ, "DAODAN_PLAYWRIGHT": str(browser)})
+    assert done.returncode == 0, done.stderr[-1500:]
+    found = json.loads((out / "explore-0.json").read_text(encoding="utf-8"))
+    revealed = controls(found, "/many")[("button", "Open")]["revealed"]
+    assert [c["state"] for c in revealed] == ["pressed", "skipped", "skipped"] and revealed[1]["reason"] == "cap"
+    assert any(gap["kind"] == "explore_cap" and "revealed" in gap["caps"] for gap in found["gaps"])

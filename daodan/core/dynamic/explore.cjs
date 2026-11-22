@@ -16,11 +16,12 @@ const { SourceMap } = require('node:module');
 const { chromium, request: apiRequest } = require(process.env.DAODAN_PLAYWRIGHT || 'playwright-core');
 const app = require('./app.cjs');
 
-const LIMITS = { pages: 25, presses: 300, seconds: 600, settle: 400, click: 3000, render: 3000 };
+const LIMITS = { pages: 25, presses: 300, seconds: 900, settle: 400, click: 3000, render: 3000, depth: 3, revealed: 30, revealedPresses: 100 };
 const PRESS = new Set(['button', 'link', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'switch', 'checkbox', 'radio']);
 const VALUE = new Set(['textbox', 'combobox', 'searchbox', 'spinbutton', 'slider']); // they ask for a value: not pressed
 const LIBRARY = /\/node_modules\/|\/@vite\/|\/@react-refresh|\/@id\//; // a dependency's or the dev server's own script
-const DECLARED = ['pages behind a login are not reached without a test credential',
+const DECLARED = ['a control a press reveals is read after the press and pressed after the presses that show it, up to `depth` deep',
+  'pages behind a login are not reached without a test credential',
   'controls that ask for a value are not filled', 'each control is pressed once, from a freshly loaded page',
   'a function that also runs by itself while the page is still is not attributed to a press'];
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -48,17 +49,21 @@ function controlsOf(tree) {
 
 // The controls once the app has drawn them: an app answers its auth state or its data a while after the load, so the tree
 // is read again until `done(found)`, up to `render` ms, and what is there then is what is pressed.
+// `done(found, before, calm)`: `before` the count of the read before, `calm` how many reads in a row left it as it was.
 async function controlsAfter(page, done) {
   const until = Date.now() + LIMITS.render;
-  let found = [];
+  let found = [], calm = 0;
   for (;;) {
     const before = found.length;
     found = controlsOf(await page.ariaSnapshotJSON({ mode: 'ai' }));
-    if (done(found, before) || Date.now() > until) return found;
+    calm = found.length === before ? calm + 1 : 0;
+    if (done(found, before, calm) || Date.now() > until) return found;
     await sleep(250);
   }
 }
-const settled = (found, before) => found.length > 0 && found.length === before; // the same count twice running
+// Still for a second (4 reads in a row): what a page draws in steps is drawn. The reading a press is compared with must be this one, or the
+// controls drawn after it would look like the press revealed them.
+const still = (found, before, calm) => found.length > 0 && calm >= 3;
 
 // The function a pause is in, as `{name, url, source, line}`: through the script's source map where it has one.
 async function handlerOf(read, frame, url) {
@@ -160,7 +165,7 @@ async function explore(ready, out, name, seeds) {
   };
   const queue = [where('/', origin), ...seeds.map(seed => where(seed, origin))].filter(Boolean);
   const visited = new Set(), pages = [], gaps = [];
-  let presses = 0;
+  let presses = 0, revealedUsed = 0;
   while (queue.length) {
     const url = queue.shift();
     if (visited.has(url)) continue;
@@ -173,7 +178,7 @@ async function explore(ready, out, name, seeds) {
       state.errors = []; await load(url);
       await cdp.send('Profiler.takePreciseCoverage'); await sleep(LIMITS.settle); // a still page's own runs
       const idle = await ran(cdp, read, origin, unmapped);
-      const controls = await controlsAfter(page, settled);
+      const controls = await controlsAfter(page, still);
       record.errors = state.errors.slice(0, 5);
       if (!controls.length) { // nothing to press: say why (its error, what it shows), not a silence
         const shown = (await page.ariaSnapshot().catch(() => '')).replace(/\s+/g, ' ').trim().slice(0, 300);
@@ -181,22 +186,37 @@ async function explore(ready, out, name, seeds) {
           `(title "${await page.title().catch(() => '')}"): ${record.errors.length ? `its first error: ${record.errors[0]}` : 'no page error'}; ` +
           `it shows: ${shown || 'nothing'}` });
       }
-      for (const control of controls) {
-        const entry = { role: control.role, name: control.name, url: control.url, occurrence: control.occurrence };
-        record.controls.push(entry);
+      // A worklist: the page's own controls, then the ones a press reveals (a menu, a dialog), each pressed after the
+      // presses that show it, from a page loaded again.
+      const sameAs = wanted => c => c.role === wanted.role && c.name === wanted.name && c.occurrence === wanted.occurrence;
+      const keyOf = c => `${c.role}\0${c.name}\0${c.occurrence}`;
+      const work = controls.map(control => ({ control, path: [], owner: record.controls }));
+      while (work.length) {
+        const { control, path, owner } = work.shift();
+        const entry = { role: control.role, name: control.name, url: control.url, occurrence: control.occurrence,
+          ...(path.length ? { opened_by: path.map(step => step.name) } : {}) };
+        owner.push(entry);
         if (VALUE.has(control.role)) { Object.assign(entry, { state: 'skipped', reason: 'needs_value' }); continue; }
         const target = control.url && where(control.url, origin);
         if (control.url && !target && !control.url.startsWith('#') && !control.url.startsWith('javascript:')) {
           Object.assign(entry, { state: 'skipped', reason: 'leaves_the_app' }); continue;
         }
-        if (presses >= LIMITS.presses || (Date.now() - started) / 1000 > LIMITS.seconds) {
-          hit.add(presses >= LIMITS.presses ? 'presses' : 'seconds'); Object.assign(entry, { state: 'skipped', reason: 'cap' }); continue;
+        const spent = path.length ? revealedUsed >= LIMITS.revealedPresses : presses >= LIMITS.presses; // a budget of its own for the revealed
+        if (spent || (Date.now() - started) / 1000 > LIMITS.seconds) {
+          hit.add(spent ? (path.length ? 'revealed' : 'presses') : 'seconds'); Object.assign(entry, { state: 'skipped', reason: 'cap' }); continue;
         }
-        presses += 1;
+        if (path.length) revealedUsed += 1; else presses += 1;
         try {
           await load(url);
-          const same = c => c.role === control.role && c.name === control.name && c.occurrence === control.occurrence;
-          const now = (await controlsAfter(page, found => found.some(same))).find(same);
+          for (const step of path) { // the presses that show this control
+            const shown = (await controlsAfter(page, found => found.some(sameAs(step)))).find(sameAs(step));
+            if (!shown) throw new Error('not_found_again');
+            await page.getByRef(shown.ref).click({ timeout: LIMITS.click });
+            await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
+            await sleep(LIMITS.settle);
+          }
+          const before = await controlsAfter(page, (found, prev, calm) => found.some(sameAs(control)) && still(found, prev, calm));
+          const now = before.find(sameAs(control));
           if (!now) { Object.assign(entry, { state: 'failed', reason: 'not_found_again' }); continue; }
           const locator = page.getByRef(now.ref);
           if (!await locator.isVisible() || !await locator.isEnabled()) { Object.assign(entry, { state: 'skipped', reason: 'not_operable' }); continue; }
@@ -216,6 +236,15 @@ async function explore(ready, out, name, seeds) {
             ...(state.dialogs.length ? { dialogs: state.dialogs } : {}), ...(state.popups.length ? { popups: state.popups } : {}) });
           if (landed && landed !== url) queue.push(landed);
           if (target && target !== url) queue.push(target);
+          // what the press drew that the page did not show before; a link navigates or scrolls, it opens nothing
+          if (landed === url && control.role !== 'link' && path.length + 1 < LIMITS.depth) {
+            const known = new Set(before.map(keyOf));
+            const fresh = (await controlsAfter(page, still)).filter(c => !known.has(keyOf(c))).slice(0, LIMITS.revealed);
+            if (fresh.length) {
+              entry.revealed = [];
+              for (const c of fresh) work.push({ control: c, path: [...path, control], owner: entry.revealed });
+            }
+          }
         } catch (error) {
           // Playwright's call log says why a click waited (`<div id=banner> intercepts pointer events`): keep that line too
           const lines = String(error.message).split('\n').map(line => line.trim()).filter(Boolean);
@@ -232,7 +261,8 @@ async function explore(ready, out, name, seeds) {
     detail: `${unmapped.size} scripts of the app ran with no source map: their functions are named by script, not by file` });
   if (hit.size) gaps.push({ kind: 'explore_cap', caps: [...hit], detail: `the exploration stopped at its cap (${[...hit].join(', ')}): ` +
     `${LIMITS.pages} pages, ${LIMITS.presses} presses, ${LIMITS.seconds} s` });
-  const all = pages.flatMap(item => item.controls);
+  const flat = list => list.flatMap(c => [c, ...flat(c.revealed || [])]);
+  const all = flat(pages.flatMap(item => item.controls));
   const totals = { pages: pages.length, controls: all.length, pressed: all.filter(c => c.state === 'pressed').length,
     skipped: all.filter(c => c.state === 'skipped').length, failed: all.filter(c => c.state === 'failed').length };
   fs.writeFileSync(`${out}/explore-${name}.json`, JSON.stringify({ origin, pages, totals, limits: { ...LIMITS, declared: DECLARED }, gaps }));
