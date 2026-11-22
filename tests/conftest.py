@@ -13,6 +13,10 @@ import pytest
 if not any(name.startswith("DAODAN_") and name.endswith("_SMOKE") and value == "1"
            for name, value in os.environ.items()):
     os.environ.setdefault("DAODAN_CONTAINER", "off")
+    # The owner's own setting must not move what the suites isolate through LOCALAPPDATA or XDG_CACHE_HOME into the
+    # real shared folder; `tests/test_shared_dir.py` sets it where it tests it. A smoke run keeps it: it uses the
+    # real engine, which is where the setting put it.
+    os.environ.pop("DAODAN_SHARED_DIR", None)
 
 
 @pytest.fixture(scope="session", autouse=True)

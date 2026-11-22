@@ -414,7 +414,7 @@ def registered_distros() -> tuple[str | None, dict[str, str]]:
 
 
 def same_folder(one: str | Path, other: str | Path) -> bool:
-    """Two Windows folders in one form: WSL's `BasePath` and Daodan's own (from LOCALAPPDATA) may each carry the
+    """Two Windows folders in one form: WSL's `BasePath` and Daodan's own (in the shared folder) may each carry the
     `\\\\?\\` prefix of long paths or not."""
     def form(path: str | Path) -> str:
         return os.path.normcase(os.path.abspath(str(path).removeprefix("\\\\?\\")))
@@ -502,7 +502,8 @@ def rpm_extract(package: Path, wanted: dict[str, Path]) -> None:
 
 def ensure_distro(home: Path) -> tuple[bool, str]:
     """Daodan's distribution imported from Alpine plus Kiri, with pasta installed by apk: whether it must go after
-    use, and the version of pasta."""
+    use, and the version of pasta. One registered in another folder (the shared folder moved since, `DAODAN_SHARED_DIR`)
+    is unregistered and imported again in `home`; nothing is moved."""
     arch = architecture()
     default, folders = registered_distros()
     # Named by what decides the result: one an older Daodan made another way is imported again.
