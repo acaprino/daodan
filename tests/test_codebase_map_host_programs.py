@@ -5,7 +5,10 @@ no module imported from it.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import os
+import shutil
 import stat
 import sys
 from pathlib import Path
@@ -323,3 +326,205 @@ def test_the_real_secretlint_loads_nothing_of_the_project(trapped, tmp_path, mon
     _masked_exactly(TWO_KINDS, two["text"], KEY_BODY)
     assert two["text"].startswith("# café \U0001F600 — two secrets\nTOKEN = \"\U0001F600 *")
     assert two["text"].endswith("print('è fine')\n")
+
+
+# ------------------------------------------------------------------ stack-analyser, on a project that sets traps for it
+
+STACK_WATCHED = ("NODE_OPTIONS", "NODE_PATH")  # set by the vectors, unset for each naive run alone (PATH: `_path`)
+HOOKS = ("preinstall", "install", "postinstall", "prepare")
+
+
+def _path(first: str = "") -> str:
+    """This process's PATH without its `.` entries, after `first` when given."""
+    rest = [entry for entry in os.environ["PATH"].split(os.pathsep) if entry != "."]
+    return os.pathsep.join([first, *rest] if first else rest)
+
+
+def _stack_node_options(project, mark):
+    (project / "trap.js").write_text(_leave(mark, "node-options"), encoding="utf-8")
+    return {"NODE_OPTIONS": f"--require={project / 'trap.js'}"}
+
+
+def _stack_node_path(project, mark):
+    """The two modules a Node tool of this kind loads by name, found in the project's `node_modules` by the variable."""
+    for module in ("commander", "@cdktf/hcl2json"):
+        folder = project / "node_modules" / module
+        folder.mkdir(parents=True)
+        (folder / "index.js").write_text(_leave(mark, f"node-path {module}") + "module.exports = {};\n",
+                                         encoding="utf-8")
+    return {"NODE_PATH": str(project / "node_modules")}
+
+
+def _stack_planted_node(project, mark):
+    """A `node` at the project's root and a PATH that begins with `.`: started by its name, that `node` is the project's."""
+    if os.name == "nt":
+        (project / "node.bat").write_text(f'@echo planted-node >> "{mark}"\n', encoding="utf-8")
+    else:
+        _marked(project, "node", mark)
+    return {"PATH": _path(".")}
+
+
+def _stack_package_scripts(project, mark):
+    manifest = {"name": "trap", "version": "1.0.0", "dependencies": {"react": "18.0.0"},
+                "scripts": {hook: f'echo {hook} >> "{mark.as_posix()}"' for hook in HOOKS}}
+    (project / "package.json").write_text(json.dumps(manifest), encoding="utf-8")
+    return {}
+
+
+def _stack_config_code(project, mark):
+    """Configuration that is code of its own language, each file leaving its name in the mark when its tool runs it."""
+    where = mark.as_posix()
+    files = {name: _leave(mark, name) + "module.exports = {};\n"
+             for name in ("next.config.js", "webpack.config.js", ".eslintrc.js", "babel.config.js")}
+    files |= {name: f"open({str(mark)!r}, 'a').write({name + chr(10)!r})\n" for name in ("setup.py", "conftest.py")}
+    files |= {"vite.config.ts": ("import { appendFileSync } from 'node:fs';\n"
+                                 f"appendFileSync({str(mark)!r}, 'vite.config.ts\\n');\nexport default {{}};\n"),
+              "Gemfile": f"File.open({where!r}, 'a') {{ |file| file.puts 'Gemfile' }}\nsource 'https://rubygems.org'\n",
+              "build.gradle": f"new File({where!r}).append('build.gradle\\n')\n",
+              "Makefile": f'IGNORED := $(shell echo Makefile >> "{where}")\n'}
+    for name, code in files.items():
+        (project / name).write_text(code, encoding="utf-8")
+    return {}
+
+
+def _stack_terraform(project, mark):
+    """`local-exec` runs when Terraform applies; the release only reads the file (hcl2json's WebAssembly)."""
+    (project / "main.tf").write_text('resource "null_resource" "trap" {\n  provisioner "local-exec" {\n'
+                                     '    command = "echo terraform >> %s"\n  }\n}\n' % mark.as_posix(),
+                                     encoding="utf-8")
+    return {}
+
+
+# How a project's code could reach the release started on the host: each vector writes its files into a project and
+# gives the variables a start adds.
+STACK_VECTORS = {"node-options": _stack_node_options, "node-path": _stack_node_path,
+                 "planted-node": _stack_planted_node, "package-scripts": _stack_package_scripts,
+                 "config-code": _stack_config_code, "terraform": _stack_terraform}
+
+
+@pytest.fixture
+def stack_trapped(tmp_path, monkeypatch):
+    """`(project, mark, node)`: a project holding every vector, writing to one mark, that is the working directory, as
+    in an analysis, with every vector's variables set; and the `node` the PATH gave before any of that."""
+    node = shutil.which("node")
+    project, mark = tmp_path / "project", tmp_path / "loaded"
+    project.mkdir()
+    for vector in STACK_VECTORS.values():
+        for name, value in vector(project, mark).items():
+            monkeypatch.setenv(name, value)
+    monkeypatch.chdir(project)
+    return project, mark, node
+
+
+STACK_WRITES = {  # per vector, written apart from the vectors: the files it leaves, the variables it sets
+    "node-options": ({"trap.js"}, {"NODE_OPTIONS"}),
+    "node-path": ({"node_modules/commander/index.js", "node_modules/@cdktf/hcl2json/index.js"}, {"NODE_PATH"}),
+    "planted-node": ({"node.bat" if os.name == "nt" else "node"}, {"PATH"}),
+    "package-scripts": ({"package.json"}, set()),
+    "config-code": ({"next.config.js", "vite.config.ts", "webpack.config.js", ".eslintrc.js", "babel.config.js",
+                     "setup.py", "conftest.py", "Gemfile", "build.gradle", "Makefile"}, set()),
+    "terraform": ({"main.tf"}, set())}
+
+
+def _files(project: Path) -> set[str]:
+    return {path.relative_to(project).as_posix() for path in project.rglob("*") if path.is_file()}
+
+
+@pytest.mark.parametrize("name", STACK_VECTORS)
+def test_every_stack_trap_is_a_file_its_program_reads_and_names_the_mark(name, tmp_path):
+    """The real proof passes when the mark is absent, so a misspelled vector would pass it for the wrong reason: a
+    file no program reads, a variable nothing reads, code that never names the mark. Written and read here, never
+    started: the two Python files are compiled, not run."""
+    project, mark = tmp_path / "project", tmp_path / "loaded"
+    project.mkdir()
+    variables = STACK_VECTORS[name](project, mark)
+    for relative in _files(project):
+        text = (project / relative).read_text(encoding="utf-8")
+        assert any(form in text for form in (mark.as_posix(), str(mark), repr(str(mark))[1:-1])), relative
+        if relative.endswith(".py"):
+            compile(text, relative, "exec")
+    assert (_files(project), set(variables)) == STACK_WRITES[name]
+    assert {key: value for key, value in variables.items() if key != "PATH"} == {
+        "node-options": {"NODE_OPTIONS": f"--require={project / 'trap.js'}"},
+        "node-path": {"NODE_PATH": str(project / "node_modules")}}.get(name, {})
+    if name == "planted-node":
+        assert variables["PATH"].split(os.pathsep)[0] == "."
+        assert os.name == "nt" or os.access(project / "node", os.X_OK)
+    if name == "package-scripts":
+        manifest = json.loads((project / "package.json").read_text(encoding="utf-8"))
+        assert manifest["dependencies"] == {"react": "18.0.0"}
+        assert set(manifest["scripts"]) == {"preinstall", "install", "postinstall", "prepare"}
+
+
+def test_the_stack_traps_surround_the_run_as_in_an_analysis(stack_trapped):
+    project, mark, _node = stack_trapped
+    assert Path.cwd().resolve() == project.resolve() and not mark.exists()
+    assert os.environ["NODE_OPTIONS"] == f"--require={project / 'trap.js'}"
+    assert os.environ["NODE_PATH"] == str(project / "node_modules")
+    assert os.environ["PATH"].split(os.pathsep)[0] == "."
+    # the vectors do not overwrite each other: the project holds every file of every vector, none twice
+    files = _files(project)
+    assert files == set().union(*(each for each, _variables in STACK_WRITES.values()))
+    assert len(files) == sum(len(each) for each, _variables in STACK_WRITES.values())
+
+
+def _stack_naive(cli: Path, tmp_path: Path, name: str, vector) -> tuple[bool, str]:
+    """The vector alone in a project of its own, and the release started the naive way: `node cli.mjs .` in the
+    project's folder, `node` by its bare name, with only the vector's variables added. `(whether the vector's mark was
+    left, what happened as a line of the report)`."""
+    import subprocess
+    project, mark = tmp_path / "naive" / name, tmp_path / "naive" / f"{name}.mark"
+    project.mkdir(parents=True)
+    variables = vector(project, mark)
+    environment = {key: value for key, value in os.environ.items() if key not in STACK_WATCHED} \
+        | {"PATH": _path()} | variables
+    try:
+        run = subprocess.run(["node", str(cli), ".", "--output", str(project.parent / f"{name}.json")], cwd=project,
+                             env=environment, stdin=subprocess.DEVNULL, capture_output=True, timeout=120)
+        said = (run.stdout + run.stderr).decode("utf-8", "replace").strip().splitlines()[-3:]
+        ended = f"exit {run.returncode}; {' | '.join(said)[:300]}"
+    except (OSError, subprocess.TimeoutExpired) as error:
+        ended = f"did not end: {error}"
+    verdict = "fires when started the naive way" if mark.exists() else "this release does not run it"
+    return mark.exists(), f"{name}: {verdict} ({ended})"
+
+
+def _all_evidence(component: dict):
+    """The evidence of a component and of every component under it."""
+    yield from component.get("evidence", [])
+    for child in component.get("childs", []):
+        yield from _all_evidence(child)
+
+
+@pytest.mark.skipif(not (os.environ.get("DAODAN_STACK_ANALYSER") and os.environ.get("MODAL_TASK_ID")),
+                    reason="a real proof on Modal (tests/modal_pytest.py): its report starts Node the naive way in "
+                           "the trap project")
+def test_the_real_stack_analyser_runs_nothing_of_the_project(stack_trapped, tmp_path, monkeypatch):
+    """The pinned release (DAODAN_STACK_ANALYSER, next to the archive it came from, checked against its sha256), run by
+    the Node of the image. The report, in the warnings summary, says for each vector alone whether a naive start runs
+    it: that is a fact about this release, not the claim, but for one control: the `node-options` trap must fire there,
+    or a green would prove nothing. The claim, which passes or fails the test: started by Daodan
+    in the project holding every vector, with their variables set, it runs none of them, and it did read the project.
+    What it does not prove: it replaces `stack_analyser.cli` (the install: `engine_tools.download`, `unpack`, `publish`
+    on the real archive) and `stack_analyser.node` (`indexers.runtime.node`) by the image's own paths, so neither has run
+    with the real artefacts; it runs on the test image's Node, not the product's `NODE_VERSION`, and on Linux only."""
+    import warnings
+    import stack_analyser
+    project, mark, node = stack_trapped
+    cli = Path(os.environ["DAODAN_STACK_ANALYSER"]).resolve()
+    assert hashlib.sha256((cli.parents[2] / "release.tgz").read_bytes()).hexdigest() == stack_analyser.SHA256
+    assert node, "no `node` on the image's PATH"
+    naive = {name: _stack_naive(cli, tmp_path, name, vector) for name, vector in STACK_VECTORS.items()}
+    warnings.warn("stack-analyser naive starts:\n" + "\n".join(line for _fired, line in naive.values()), stacklevel=1)
+    # the control: Node honours NODE_OPTIONS before any script, whatever the release, so here the trap must fire
+    fired, line = naive["node-options"]
+    assert fired, f"the node-options trap did not fire when started the naive way: the proof would be vacuous ({line})"
+    monkeypatch.setattr(stack_analyser, "cli", lambda: cli)
+    monkeypatch.setattr(stack_analyser, "node", lambda _project: Path(node).resolve())
+    result = stack_analyser.run(project)
+    evidence = list(_all_evidence(result))
+    warnings.warn(f"stack-analyser through stack_analyser.run: {len(evidence)} evidence rows, "
+                  f"techs {result.get('techs')}", stacklevel=1)
+    assert not mark.exists(), mark.read_text(encoding="utf-8")
+    assert "react" in {item["tech"] for item in evidence}  # it did read the project
+    assert all(item["path"].startswith("/") for item in evidence)
