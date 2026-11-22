@@ -72,7 +72,9 @@ class Deposit(keyring.backend.KeyringBackend):
 
 
 @pytest.fixture(autouse=True)
-def deposit():
+def deposit(monkeypatch):
+    import secret_mask
+    monkeypatch.setattr(secret_mask, "masked", lambda text, name: {"text": text, "found": 0, "kinds": []})
     previous, held = keyring.get_keyring(), Deposit()
     keyring.set_keyring(held)
     yield held
@@ -201,6 +203,43 @@ def test_an_endpoint_that_is_not_reached_fails_with_its_cause():
         engines.configured({"engine": None})
     with pytest.raises(ValueError):
         engines.configured({"engine": "openai", "base_url": "ftp://x", "model": "m"})
+
+
+def test_mapping_tool_checks_source_and_errors_before_the_api_turn(monkeypatch):
+    import io
+    import secret_mask
+    from unittest.mock import Mock
+
+    secret = "DEMO_ONLY_PRIVATE"
+    def scan(text, _name):
+        return {"text": text.replace(secret, "*" * len(secret)), "found": text.count(secret), "kinds": []}
+
+    monkeypatch.setattr(secret_mask, "masked", scan)
+    app = object.__new__(launcher.App)
+    app.service, app.context = Mock(), {"run_id": "demo"}
+    app.service.read.return_value = {"excerpt": ["😀\n" + secret + "\nend", {"field": "kept"}]}
+    tools = app._tools()
+    read = next(tool["call"] for tool in tools if tool["name"] == "codebase_map_read")
+    checked = read({"requests": []})
+    assert checked["excerpt"] == ["😀\n" + "*" * len(secret) + "\nend", {"field": "kept"}]
+    assert checked["masked_secrets"] == 1
+    app.service.read.side_effect = ValueError("refused " + secret)
+    requests = []
+    def transport(request, timeout):
+        requests.append(json.loads(request.data))
+        delta = {"tool_calls": [{"id": "read", "function": {"name": "codebase_map_read", "arguments": '{"requests":[]}'}}]} \
+            if len(requests) == 1 else {"content": "done"}
+        return io.BytesIO(("data: " + json.dumps({"choices": [{"delta": delta}]}) + "\n").encode("utf-8"))
+    monkeypatch.setattr(engines.urllib.request, "urlopen", transport)
+    client = engines.OpenAICompatible("https://demo.invalid/v1", "demo")
+    result = client.run({"prompt": "read", "tools": tools})
+    assert result["state"] == "done"
+    message = json.loads(requests[-1]["messages"][-1]["content"])
+    assert message["error"] == "refused " + "*" * len(secret)
+    def broken(*args):
+        raise ValueError(secret)
+    monkeypatch.setattr(secret_mask, "masked", broken)
+    assert read({"requests": []}) == {"status": "withheld", "error": secret_mask.UNAVAILABLE}
 
 
 def test_a_saved_engine_comes_back_at_the_next_start_and_its_key_is_only_in_the_deposit(tmp_path, deposit):
@@ -403,9 +442,25 @@ def test_a_further_folder_is_served_under_its_name(tmp_path):
         server.server_close()
 
 
+def test_the_pre_map_shows_uncatalogued_services_with_their_actual_owner():
+    mail = {"name": "mailpit", "path": "api/compose.yml", "declared_in": "api/compose.yml#L3",
+            "image": "axllent/mailpit"}
+    worker = {"name": "worker", "path": "ci/compose.yml", "declared_in": "ci/compose.yml#L5"}
+    stack = {"technologies": [], "configured_services": [mail, worker],
+             "modules": [{"id": "api", "name": "api", "paths": ["api"], "configured_services": [mail]}]}
+    assert app_view.premap(stack, {}, {})["technologies"] == [
+        {"name": "mailpit", "category": "servizio configurato", "source": mail["declared_in"], "unit": "api",
+         "state": "configured", "image": "axllent/mailpit"},
+        {"name": "worker", "category": "servizio configurato", "source": worker["declared_in"], "unit": "",
+         "state": "configured"},
+    ]
+
+
 def test_the_pre_map_lists_the_units_with_their_declared_libraries_and_the_unit_that_holds_each():
     stack = {"technologies": [{"id": "pytest", "name": "pytest", "category": "framework",
-                               "signs": [{"path": "other/pyproject.toml", "line": 3}, {"path": "pkg/pyproject.toml", "line": 9}]}],
+                               "signs": [{"path": "other/pyproject.toml", "line": 3, "sign": "package", "strength": "declared"},
+                                         {"path": "pkg/a.py", "line": 1, "sign": "env", "strength": "mentioned"},
+                                         {"path": "pkg/pyproject.toml", "line": 9, "sign": "package", "strength": "declared"}]}],
              "modules": [{"id": "root", "name": "root", "kind": "python-package", "paths": ["."], "technologies": [],
                           "toolchains": [], "libraries": []},
                          {"id": "pkg", "name": "pkg", "kind": "python-package", "paths": ["pkg"], "technologies": ["pytest"],
@@ -849,7 +904,10 @@ def test_the_app_goes_from_an_address_to_a_run_and_says_its_state(tmp_path, monk
         status, state = request(port, "/api/app/select", {"url": found["url"], "branch": "main"})
         assert status == 200 and state["job"]["state"] in ("preparing", "ready")
         deadline = time.monotonic() + 120
-        while state["job"]["state"] == "preparing" and time.monotonic() < deadline:
+        # Selection prepares the run; the detached pass then attempts the scan's container commands.
+        while time.monotonic() < deadline and (state["job"]["state"] == "preparing" or
+                (state["job"]["state"] == "ready" and state["run"]["pipeline"]["scan"] == "stale"
+                 and state["run"]["pass"]["state"] == "running")):
             time.sleep(0.2)
             state = request(port, "/api/app/state")[1]
         assert state["job"] == {"state": "ready", "step": None, "detail": ""}
@@ -943,11 +1001,19 @@ class Flows:
 
     def __init__(self):
         self.rules, self.map, self.asked = None, None, []
+        self.model_requests = []
+
+    def reserve_question(self, run_id, question, budget=None):
+        self.model_requests.append(question)
 
     def status(self, run_id):
         return {}
 
-    def flows(self, run_id, rules=None, brief=False, map=None):
+    def flows(self, run_id, rules=None, brief=False, map=None, next_question=False, shape_offset=None, limit=100):
+        if shape_offset is not None:
+            return {"questions": [], "count": 0}
+        if next_question:
+            return {"status": "complete", "count": 0, "remaining": 0, "reviewed": {}, "question": None}
         self.asked.append(("map", map) if map is not None else "brief" if brief else rules)
         if rules is not None:
             if any("link" not in rule for rule in rules):
@@ -1080,7 +1146,9 @@ def test_the_engine_records_a_map_through_the_flows_tool_and_the_service_says_it
     assert app.service.asked == ["system_map", ("map", PROPOSAL), "system_map"]  # none recorded, the proposal, the map
     first = Endpoint.seen[0][2]
     tool = next(tool["function"] for tool in first["tools"] if tool["function"]["name"] == "codebase_map_flows")
-    assert set(tool["parameters"]["properties"]) == {"rules", "brief", "map", "about"}
+    assert set(tool["parameters"]["properties"]) == {"rules", "brief", "map", "about", "entry_offset", "limit",
+                                                  "trace_id", "trace_offset", "trace_decision",
+                                                  "shape_offset", "shape_answers", "next_question", "effect_offset"}
     task = first["messages"][-1]["content"]
     assert "app-r" in task and "`brief` true" in task and "needs_rules" in task and "«Sequence»" in task
     assert app.state({})["mapped"]["state"] == "done" and "sk-secret" not in json.dumps(app.state({}))
@@ -1101,7 +1169,19 @@ def test_the_service_says_the_recorded_map_in_counts_with_its_remainder_or_that_
     try:
         found = levels.system_map("levels")
         assert (found["status"], found["nodes"], found["flows"]) == ("ok", {"accepted": 2}, {"accepted": 1})
+        assert found["reachability"] == {"not_declared": 1}
         assert found["coverage"] == report["coverage"] and found["coverage"]["entries"]["left"]  # what is left out
+        assert "needs_review" not in found
+        # A refused second step survives the write and the service reports the flow that needs another look.
+        flow = proposal["flows"][0]
+        flow["arrows"].append({**flow["arrows"][0], "cite": "web/api.ts:99999"})
+        levels.flows("levels", map=proposal)
+        assert levels.system_map("levels")["needs_review"] == {"flows": {"count": 1, "ids": ["ricerca-di-un-cane"]}}
+        # A changed citation can also make an otherwise accepted node stale.
+        stored = json.loads(written.read_text(encoding="utf-8"))
+        next(n for n in stored["nodes"] if n["id"] == "cliente")["digests"]["web/api.ts"] = "previous-digest"
+        written.write_text(json.dumps(stored), encoding="utf-8")
+        assert levels.system_map("levels")["needs_review"]["nodes"] == {"count": 1, "ids": ["cliente"]}
     finally:
         written.unlink()  # the run is the module's: it goes on without a map
 
@@ -1224,6 +1304,46 @@ def test_with_the_rules_and_a_map_recorded_for_the_snapshot_no_engine_is_asked_a
     assert service.asked == [None, "system_map"]  # what is recorded is read, nothing is written
 
 
+@pytest.mark.parametrize("unresolved", [False, True])
+def test_a_stale_record_gets_one_automatic_recheck_and_the_result_is_visible(tmp_path, monkeypatch, unresolved):
+    service = Passing(("fresh",))
+    service.rules, service.map = [RULE], PROPOSAL
+    app = selecting(tmp_path, monkeypatch, service)
+    engine = Doing(app)
+    monkeypatch.setattr(engines, "configured", lambda chosen: engine)
+    original = service.system_map
+    pending = {"flows": {"count": 1, "ids": ["payment"]}}
+
+    def recorded(run_id):
+        answer = original(run_id)
+        if not engine.started or unresolved:
+            answer["needs_review"] = pending
+        return answer
+
+    monkeypatch.setattr(service, "system_map", recorded)
+    app._prepare("https://github.com/o/n", "main")
+    result = ended(app, "mapped")
+    if unresolved:
+        assert result["state"] == "incomplete" and result["needs_review"] == pending and result["cause"]
+    else:
+        assert result["state"] == "done" and "needs_review" not in result
+    app._follow()
+    assert engine.started == [("Review", "done")]
+
+
+def test_an_existing_partial_map_keeps_its_review_counts_without_an_engine(tmp_path, monkeypatch):
+    service = Passing(("fresh",))
+    service.rules, service.map = [RULE], PROPOSAL
+    app = selecting(tmp_path, monkeypatch, service)
+    original = service.system_map
+    pending = {"flows": {"count": 1, "ids": ["payment"]}}
+    monkeypatch.setattr(service, "system_map", lambda run: {**original(run), "needs_review": pending})
+    app._prepare("https://github.com/o/n", "main")
+    result = ended(app, "mapped")
+    assert result["state"] == "no_engine" and result["needs_review"] == pending
+    assert "set the engine" in result["cause"]
+
+
 def test_without_an_engine_the_state_says_the_part_left_uncovered_its_cause_and_the_remedy(tmp_path, monkeypatch):
     app = selecting(tmp_path, monkeypatch, Passing(("running", "fresh")))
     app._prepare("https://github.com/o/n", "main")
@@ -1334,3 +1454,218 @@ def test_a_busy_project_is_no_failure_the_stream_skips_a_turn_and_a_read_answers
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_entry_questions_resume_after_the_run_budget_with_one_context_per_event(tmp_path, monkeypatch):
+    import mcp_service
+    import secret_mask
+    project = tmp_path / "shop"
+    project.mkdir()
+    (project / "View.tsx").write_text(
+        'function save() {}\nfunction close() {}\n'
+        'export function View() { return <main>\n'
+        '<button onClick={save}>SecretFixture Salva</button>\n'
+        '<button onClick={close}>SecretFixture Chiudi</button>\n</main> }\n', encoding="utf-8")
+    git(project, "init", "-q")
+    service = mcp_service.MapService(project)
+    service.create_run(".", "events", engine=False)
+    service.flows("events", rules=[])
+    app = launcher.App(tmp_path / "work", environment={})
+    app.service, app.context = service, {"run_id": "events", "path": str(project)}
+    prompts = []
+
+    class Engine:
+        def run(self, task, say, cancelled):
+            prompts.append(task["prompt"])
+            return {"state": "done", "cause": None,
+                    "text": json.dumps({"disposition": "unresolved", "reason": "no evidence after the handler"})}
+
+    monkeypatch.setattr(engines, "configured", lambda _: Engine())
+    monkeypatch.setattr(secret_mask, "masked", lambda text, name: {
+        "text": text.replace("SecretFixture", "*************"), "found": text.count("SecretFixture"), "kinds": []})
+    try:
+        app.map({"question_budget": 1})
+        first = settled(app, "mapped")
+        assert first["state"] == "incomplete" and "budget" in first["cause"]
+        assert first["discovery"]["remaining"] == 1 and first["discovery"]["reviewed"]["unresolved"] == 1
+        app.service = mcp_service.MapService(project)
+        app.map({})
+        assert "budget" in settled(app, "mapped")["cause"] and len(prompts) == 1
+        app.map({"question_budget": 2})
+        last = settled(app, "mapped")["discovery"]
+        assert last["remaining"] == 0 and last["reviewed"]["unresolved"] == 2
+        assert len(prompts) == 2 and prompts[0] != prompts[1]
+        assert all("SecretFixture" not in prompt and "*************" in prompt for prompt in prompts)
+    finally:
+        app.close()
+
+
+def test_last_accepted_event_still_requests_the_system_structure_once(tmp_path, monkeypatch):
+    app = linking(tmp_path)
+    tasks = []
+
+    class Service(Flows):
+        answered = structured = False
+
+        def system_map(self, run_id):
+            return {"status": "ok", "nodes": {}, "flows": {"accepted": 1}, "coverage": LEFT,
+                    "needs_structure": self.answered and not self.structured}
+
+        def flows(self, run_id, **options):
+            if "shape_offset" in options:
+                return {"count": 0, "questions": []}
+            if "trace_id" in options:
+                return {"steps": []}
+            if "trace_decision" in options:
+                self.answered = True
+                return {"status": "accepted"}
+            assert options == {"next_question": True}
+            return {"status": "complete" if self.answered else "pending", "count": 1,
+                    "remaining": int(not self.answered), "reviewed": {"unresolved": 0},
+                    "question": None if self.answered else {"card_id": "button"}}
+
+        def reserve_question(self, run, question, budget):
+            assert question == ("system-map" if self.answered else "button")
+
+    class Engine:
+        def run(self, task, say, cancelled):
+            tasks.append(task["prompt"])
+            if len(tasks) == 2:
+                assert "whole-system structure" in task["prompt"]
+                app.service.structured = True
+            return {"state": "done", "text": "{}", "cause": None}
+
+    app.service = Service()
+    monkeypatch.setattr(engines, "configured", lambda _: Engine())
+    try:
+        app.map({})
+        assert settled(app, "mapped")["state"] == "done"
+        app.map({})
+        assert settled(app, "mapped")["state"] == "done" and len(tasks) == 2
+    finally:
+        app.close()
+
+
+def test_the_app_classifies_one_form_once_for_two_callbacks_and_keeps_the_rule(tmp_path, monkeypatch):
+    import mcp_service
+    project = tmp_path / "panel"
+    project.mkdir()
+    (project / "panel.py").write_text(
+        "def subscribe(callback): pass\ndef save(): pass\ndef cancel(): pass\nsubscribe(save)\nsubscribe(cancel)\n",
+        encoding="utf-8")
+    git(project, "init", "-q")
+    service = mcp_service.MapService(project)
+    service.create_run(".", "panel", engine=False)
+    service.flows("panel", rules=[])
+    form = service.flows("panel", shape_offset=0)
+    assert len(form["questions"]) == 1 and form["questions"][0]["count"] == 2
+    app = launcher.App(tmp_path / "work", environment={})
+    app.service, app.context = service, {"run_id": "panel", "path": str(project)}
+    decisions = []
+
+    class Engine:
+        def run(self, task, say, cancelled):
+            if "Classify this code shape" in task["prompt"]:
+                decision = {"kind": "controllo dell'interfaccia"}
+            else:
+                decision = {"disposition": "unresolved", "reason": "handler has no outgoing evidence"}
+            decisions.append(decision)
+            return {"state": "done", "cause": None, "text": json.dumps(decision)}
+
+    monkeypatch.setattr(engines, "configured", lambda _: Engine())
+    try:
+        app.map({})
+        state = settled(app, "mapped")
+        assert state["discovery"]["reviewed"]["unresolved"] == 2
+        assert [list(item)[0] for item in decisions] == ["kind", "disposition", "disposition"]
+        service.flows("panel", rules=[])
+        restored = mcp_service.MapService(project)
+        assert restored.flows("panel", shape_offset=0)["count"] == 0
+        assert restored.flows("panel", next_question=True)["remaining"] == 0
+    finally:
+        app.close()
+
+
+def test_zero_budget_also_stops_the_first_structural_question_after_reopening(tmp_path, monkeypatch):
+    import mcp_service
+    project = tmp_path / "repo"
+    project.mkdir()
+    (project / "lib.py").write_text("def utility(): pass\n", encoding="utf-8")
+    git(project, "init", "-q")
+    app = launcher.App(tmp_path / "work", environment={})
+    app.service, app.context = mcp_service.MapService(project), {"run_id": "empty", "path": str(project)}
+    app.service.create_run(".", "empty", engine=False)
+    app.service.flows("empty", rules=[])
+    asked = []
+
+    class Engine:
+        def run(self, task, say, cancelled):
+            asked.append(task["prompt"])
+            return {"state": "done", "cause": None, "text": ""}
+
+    monkeypatch.setattr(engines, "configured", lambda _: Engine())
+    try:
+        for options in ({"question_budget": 0}, {}):
+            app.service = mcp_service.MapService(project)
+            app.map(options)
+            assert "budget exhausted" in settled(app, "mapped")["cause"]
+        assert asked == []
+    finally:
+        app.close()
+
+
+def test_existing_map_reports_an_orphan_write_without_any_classified_entry(tmp_path):
+    import mcp_service
+    project = tmp_path / "repo"
+    project.mkdir()
+    (project / "lib.py").write_text("def write(key): pass\ndef worker(): write('orders')\n", encoding="utf-8")
+    git(project, "init", "-q")
+    service = mcp_service.MapService(project)
+    service.create_run(".", "orphan", engine=False)
+    service.flows("orphan", rules=[{"callee": "lib.py::write", "link": "scrive", "store": "db", "key": "arg0"}])
+    service.flows("orphan", map={**PROPOSAL, "scope": ["funzioni principali"]})
+    app = launcher.App(tmp_path / "work", environment={})
+    app.service, app.context = mcp_service.MapService(project), {"run_id": "orphan", "path": str(project)}
+    try:
+        state = app.map({})["mapped"]
+        assert state["state"] == "incomplete", state
+        assert state["discovery"]["count"] == 0
+        assert state["discovery"]["effect_coverage"] == {"without_entry": 1, "writes": 1, "reached": 0}
+    finally:
+        app.close()
+
+
+def test_review_accepts_tool_then_text_once_per_question(tmp_path):
+    import flow_questions
+    import mcp_service
+    project = tmp_path / "repo"
+    project.mkdir()
+    (project / "panel.py").write_text("def subscribe(callback): pass\ndef save(): pass\nsubscribe(save)\n")
+    git(project, "init", "-q")
+    service = mcp_service.MapService(project)
+    service.create_run(".", "queue", engine=False)
+    service.flows("queue", rules=[])
+    review = flow_questions.Review(service, "queue")
+    assert "Classify" in review.prompt()
+    question_id, row = review.shape
+    service.flows("queue", shape_offset=0, limit=1,
+                  shape_answers={"id": question_id, "answers": {row: "controllo dell'interfaccia"}})
+    assert "numbered step" in review.advance({"text": '{"kind":"controllo dell\'interfaccia"}'})
+    decision = {"card_id": review.current, "disposition": "unresolved", "reason": "no write proved"}
+    assert service.flows("queue", trace_decision=decision)["status"] == "unresolved"
+    assert review.advance({"text": '{"disposition":"excluded","reason":"late text"}'}) is None
+    assert review.counts["reviewed"] == {"accepted": 0, "excluded": 0, "unresolved": 1}
+
+
+def test_graph_keeps_a_conflicting_call_at_the_twenty_first_site():
+    relations = {}
+    for line in range(1, 22):
+        call = {"confidence": "observed", "file": "a.py", "span": [line],
+                **({"conflict": True} if line == 21 else {})}
+        visual._call(relations, "file:a.py", "file:b.py", call)
+    owners = {"file:a.py": "source", "file:b.py": "target"}
+    grouped = app_view._edges(list(relations.values()), set(owners.values()), owners)
+    certain, disputed = sorted(grouped, key=lambda e: bool(e.get("conflict")))
+    assert certain["counts"]["calls"] == len(certain["evidence"]) == 20
+    assert disputed["status"] == "observed" and disputed["counts"]["calls"] == 1
+    assert disputed["conflict"] and disputed["evidence"][0]["line"] == 21

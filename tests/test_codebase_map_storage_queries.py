@@ -38,6 +38,10 @@ class StorageQueryTests(unittest.TestCase):
             actual = copy.deepcopy(actual)
         expected = copy.deepcopy(reference)
         sqlite = format == "sqlite"
+        # The store's graph also follows recorded runtime destinations, which the lexical reader has none of: the
+        # notes say what each traverses, so they are the store's own.
+        import store_graph
+        expected["notes"] = list(store_graph.NOTES)
         expected["edge_view"] = {
             "schema": "daodan/edge-view/v1", "version": 1,
             "profile": {"lexical_resolver": LEXICAL_RESOLVER, "engine": None,

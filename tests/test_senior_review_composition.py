@@ -305,15 +305,31 @@ class CoverageBindTest(CoverageCase):
         self.assertEqual([job["bytes"] for job in prepared["jobs"]], [50000, 51000, 30000])
         prepared = self.bind([CODE], budget=40000)
         self.assertEqual((prepared["jobs"][0]["paths"], prepared["jobs"][0]["bytes"]), (["app/a.py"], 50000))
+        self.assertEqual(prepared["jobs"][0]["over_budget_bytes"], 10000)
         for job in prepared["jobs"]:
             self.assertTrue(job["bytes"] <= 40000 or len(job["paths"]) == 1, job)
 
     def test_given_units_replace_the_groups_by_path(self):
         prepared = self.bind([CODE], budget=60000, units=[["web/c.ts", "app/a.py"], ["app/a.py", "docs/d.md"]])
-        # The first unit keeps its files; a file already grouped stays there; the rest is packed by path.
-        self.assertEqual(self.groups(prepared, CODE), [["web/c.ts", "app/a.py"], ["docs/d.md"], ["app/b.py"]])
+        self.assertEqual(self.groups(prepared, CODE), [["web/c.ts"], ["app/a.py"], ["docs/d.md"], ["app/b.py"]])
+        self.assertTrue(all(job["bytes"] <= 60000 for job in prepared["jobs"]))
+        self.assertEqual([job.get("context_paths", []) for job in prepared["jobs"]],
+                         [["app/a.py"], [], ["app/a.py"], []])
         with self.assertRaisesRegex(ValueError, "coverage.units"):
             self.bind([CODE], units=["app/a.py"])
+
+    def test_map_context_stays_a_reference_and_only_inside_the_perimeter(self):
+        units = [{"files": ["web/c.ts", "web/c.ts"], "context": ["app/a.py", "outside.py", "app/b.py"],
+                  "entries": ["web/c.ts::start"]}, {"files": ["app/a.py"]}]
+        prepared = self.bind([CODE], paths=["web/c.ts", "app/a.py"], budget=60000, units=units)
+        self.assertEqual(self.groups(prepared, CODE), [["web/c.ts"], ["app/a.py"]])
+        self.assertEqual(prepared["jobs"][0]["context_paths"], ["app/a.py"])
+        self.assertEqual(prepared["jobs"][0]["bytes"], 30000)
+        first, second = prepared["jobs"]
+        read_first = {first["job_id"]: result(first, read=first["paths"] + first["context_paths"])}
+        accounted = composition.account(prepared, read_first, self.root)
+        self.assertEqual({c["path"]: c["status"] for c in accounted["cells"]},
+                         {first["paths"][0]: "covered", second["paths"][0]: "open"})
 
     def test_typescript_reviewer_skips_known_other_languages(self):
         cells = self.cells(self.bind([TYPESCRIPT]), TYPESCRIPT)

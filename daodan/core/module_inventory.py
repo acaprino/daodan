@@ -12,7 +12,7 @@ import re
 import confinement
 import snapshot
 import source_files
-from tree_scope import DEPENDENCY_DIRS, Perimeter
+from tree_scope import DEPENDENCY_DIRS, Perimeter, workspace_glob
 
 EMPTY_DIRECTORY = "directory holds no inventoried file"
 
@@ -102,9 +102,8 @@ class _Inventory:
     def glob_directories(self, base: str, pattern: str) -> list[str]:
         """Directories matching a workspace pattern: `*` stays inside one segment, `**` crosses segments."""
         relative = _join(base, pattern.rstrip("/"))
-        regex = "".join("[^/]*" if part == "*" else ".*" if part == "**" else "[^/]" if part == "?" else re.escape(part)
-                        for part in re.split(r"(\*\*|\*|\?)", relative) if part)
-        return sorted(d for d in self.directories if d != "." and re.fullmatch(regex, d))
+        matcher = workspace_glob(relative)
+        return sorted(d for d in self.directories if d != "." and matcher.fullmatch(d))
 
     def absence(self, rel: str) -> str:
         """Why a cited path is not in the snapshot."""

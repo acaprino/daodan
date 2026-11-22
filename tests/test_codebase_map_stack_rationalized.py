@@ -1,10 +1,14 @@
 """Task 3: Rationalized Step 2 (`stack`) — per-module frameworks, libraries, services, tools across concrete, logical, and virtual modules."""
 from __future__ import annotations
 
+import gzip
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
+
+import pytest
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "daodan/core"
 if str(SCRIPTS) not in sys.path:
@@ -158,6 +162,72 @@ def _stack(tmp_path, files: dict[str, str]) -> dict:
     return technologies.ensure(manifest)
 
 
+def test_stack_uses_recorded_cargo_resolution_only_for_its_own_crates(tmp_path):
+    bench = HERE / "benchmarks/project-model"
+    fixture = tmp_path / "workspace"
+    shutil.copytree(bench / "fixtures/sys-rust-workspace", fixture)
+    manifest = tmp_path / "out/manifest.sqlite"
+    snapshot.write_snapshot(fixture, manifest)
+    with gzip.open(bench / "results/premap-runs/sys-rust-workspace.json.gz", "rt", encoding="utf-8") as stream:
+        recorded = {json.dumps(r["command"], sort_keys=True): r["result"] for r in json.load(stream)["runs"]}
+
+    def replay(commands):
+        return [recorded[json.dumps(command, sort_keys=True)] for command in commands]
+
+    facts = premap.write(manifest, sources=[premap.cargo], runner=replay)
+    assert facts.get("package_graphs"), facts["gaps"]
+    [model] = facts["package_graphs"]
+    assert model["sources"] == [premap.label(premap.cargo)]
+    record = technologies.ensure(manifest, facts=facts)
+    modules_by_name = {u["name"]: u for u in record["units"]}
+    for member, direct in (("ledger-cli", False), ("ledger-core", True)):
+        assert [(r["name"], r["version"], r["direct"]) for r in modules_by_name[member]["resolved_libraries"]] == [
+            ("cfg-if", "1.0.0", direct), ("itoa", "1.0.19", direct)]
+    assert modules_by_name["ledger-macros"]["resolved_libraries"] == []
+    assert all(not m.get("resolved_libraries") for m in record["modules"] if m["provenance"] != "build")
+    facts.pop("package_graphs")
+    assert technologies.state(manifest, facts=facts) == "stale"
+    assert all("resolved_libraries" not in m for m in technologies.ensure(manifest, facts=facts)["modules"])
+
+
+def test_resolution_keeps_multiple_versions_and_follows_dev_dependencies_only_for_the_member():
+    model = {"ecosystem": "crates", "path": "Cargo.toml", "nodes": [
+        {"name": "app", "manifest": "app/Cargo.toml", "dependencies": [{"to": 1}, {"to": 2, "kind": "dev"}]},
+        {"name": "core", "local": True, "dependencies": [{"to": 3}, {"to": 4, "kind": "dev"}]},
+        {"name": "helper", "version": "2", "dependencies": [{"to": 0}]},
+        {"name": "helper", "version": "1", "dependencies": []},
+        {"name": "core-tests", "version": "1", "dependencies": []},
+    ]}
+    assert [(p["name"], p["version"], p["direct"]) for p in technologies._resolved_libraries(model, 0)] == [
+        ("helper", "2", True), ("helper", "1", False)]
+
+
+def test_local_registry_edit_invalidates_stack_and_matches_clean_rebuild(tmp_path, monkeypatch):
+    project = _git_project(tmp_path / "proj", {
+        "package.json": '{"name":"web","dependencies":{"widget-client":"^1"}}',
+    })
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    snapshot.write_snapshot(project, manifest)
+    facts = premap.write(manifest)
+    entry = {"id": "widget", "name": "Widget", "category": "library", "signs": {}}
+    registry = {"versions": {"upstream": "1"}, "entries": [entry]}
+    monkeypatch.setattr(service_registry, "load", lambda: registry)
+
+    before = technologies.ensure(manifest, facts=facts)
+    assert before["technologies"] == []
+    entry["signs"] = {"packages": {"npm": ["widget-client"]}}
+    assert technologies.state(manifest, facts=facts) == "stale"
+    updated = technologies.ensure(manifest, facts=facts)
+    assert updated["inputs_digest"] != before["inputs_digest"]
+    assert updated["units"][0]["libraries"][0]["id"] == "widget"
+    assert technologies.state(manifest, facts=facts) == "fresh"
+
+    technologies.path(manifest).unlink()
+    assert technologies.ensure(manifest, facts=facts) == updated
+    technologies.path(manifest).write_text("[]", encoding="utf-8")
+    assert technologies.ensure(manifest, facts=facts) == updated
+
+
 def test_a_unit_of_the_stack_is_named_as_the_pre_map_refers_to_it_and_keeps_its_module_name_as_an_alias(tmp_path):
     """D-303: Maven's `groupId:artifactId`, Gradle's `:` for the root of a build, the root when two units share a
     name; the name of modules.json stays among the aliases."""
@@ -246,9 +316,67 @@ def test_the_record_gives_each_checker_s_status_and_what_the_registry_lacks(tmp_
     record = _stack(tmp_path, {"pyproject.toml": '[project]\nname = "app"\ndependencies = ["fastapi", "minio"]\n',
                                "app.py": "import minio\n"})
     assert [(c["checker"], c["state"]) for c in record["checkers"]] == [("package", "ran"), ("file", "ran"),
-                                                                         ("env", "ran")]
+                                                                         ("env", "ran"), ("host", "ran"),
+                                                                         ("source", "ran")]
     gaps = [(g["kind"], g["checker"], g["entry"], g["ecosystem"], g["value"], g["path"]) for g in record["gaps"]]
     assert ("no_ecosystem_sign", "package", "minio", "pypi", "minio", "pyproject.toml") in gaps
     assert "fastapi" not in {g[2] for g in gaps}
     assert "minio" not in {e["id"] for e in record["technologies"] + record["mentioned"]}
     assert any(lib["name"] == "minio" and "id" not in lib for m in record["modules"] for lib in m["libraries"])
+
+
+@pytest.mark.parametrize(("declaring", "mentioning"), [
+    ("backend", None), ("backend", "frontend"), ("frontend", "backend"),
+])
+def test_stripe_belongs_only_to_the_module_that_declares_it(tmp_path, declaring, mentioning):
+    python_dependencies = '["stripe"]' if declaring == "backend" else "[]"
+    npm_dependencies = {"stripe": "^17"} if declaring == "frontend" else {}
+    files = {
+        "backend/pyproject.toml": f'[project]\nname = "backend"\ndependencies = {python_dependencies}\n',
+        "backend/app.py": "def start(): pass\n",
+        "frontend/package.json": json.dumps({"name": "frontend", "dependencies": npm_dependencies}),
+        "frontend/app.js": "export function start() {}\n",
+    }
+    comments = {
+        "backend": ("backend/app.py", "# STRIPE_SECRET_KEY is managed elsewhere.\n"),
+        "frontend": ("frontend/app.js", "// STRIPE_SECRET_KEY is managed elsewhere.\n"),
+    }
+    if mentioning:
+        path, comment = comments[mentioning]
+        files[path] += comment
+
+    record = _stack(tmp_path, files)
+
+    for field in ("services", "technologies"):
+        assert {u["name"] for u in record["units"] if "stripe" in u[field]} == {declaring}
+    stripe = next(entry for entry in record["technologies"] if entry["id"] == "stripe")
+    mentions = {sign["path"] for sign in stripe["signs"] if sign["strength"] == "mentioned"}
+    assert mentions == ({comments[mentioning][0]} if mentioning else set())
+    owner = next(unit for unit in record["units"] if unit["name"] == declaring)
+    manifest = "backend/pyproject.toml" if declaring == "backend" else "frontend/package.json"
+    assert owner["technology_evidence"]["stripe"] == {"path": manifest, "line": 3 if declaring == "backend" else 1}
+
+
+def test_stack_and_app_cite_the_owning_module_even_when_both_next_configs_have_the_same_name(tmp_path):
+    import app_view
+
+    record = _stack(tmp_path, {
+        "package.json": '{"name": "root", "workspaces": ["apps/*"]}',
+        "next.config.js": "export default {};",
+        "apps/web/package.json": '{"name": "web"}',
+        "apps/web/next.config.js": "export default {};",
+        "apps/web/src/client.js": "export const title = 'Web';",
+        "codebase-modules.json": json.dumps({"schema": "daodan/declared-modules/v1", "modules": [{
+            "name": "Web UI", "kind": "component", "location": "internal",
+            "responsibility": "Renders the web UI", "members": ["apps/web/src/client.js"],
+            "evidence": ["apps/web/next.config.js"],
+        }]}),
+    })
+    expected = {"root": "next.config.js", "web": "apps/web/next.config.js", "web-ui": "apps/web/next.config.js"}
+    by_id = {module["id"]: module for module in record["modules"]}
+    for ident, path in expected.items():
+        assert by_id[ident]["technology_evidence"]["nextjs"] == {"path": path}
+
+    view = app_view.premap(record, {}, {})
+    sites = {(row["unit"], row["source"]) for row in view["technologies"] if row["name"] == "Next.js"}
+    assert sites == {(by_id[ident]["paths"][0], path) for ident, path in expected.items()}

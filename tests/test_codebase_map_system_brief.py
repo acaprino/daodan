@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -86,8 +87,10 @@ class BriefTests(unittest.TestCase):
 
     def test_sections_have_fixed_labels_and_one_numbered_item_per_line(self):
         sections = {part.split("\n")[0]: part.split("\n")[1:] for part in self.text.split("\n## ")[1:]}
-        self.assertEqual(list(sections), ["Steps", "Counts", "Modules", "Directories", "Externals",
-                                          "Entry points", "Groups"])  # an empty section is left out
+        self.assertEqual(list(sections), ["Steps", "Counts", "Entry sources unavailable", "Modules", "Directories", "Symbol coverage", "Externals",
+                                          "AST entry candidates", "Entry points", "Groups"])
+        self.assertTrue(sections["Entry sources unavailable"][0].startswith("U1 "))
+        self.assertNotIn("## Entry sources unavailable", text({**self.brief, "source_gaps": []}))
         self.assertEqual(sections["Counts"][0], "entry points 6")
         self.assertEqual(sections["Modules"], ["M1 app (source-tree, 23 files)",
                                                "M2 card payment provider (component, 0 files)",
@@ -139,6 +142,15 @@ class AnswerSizeTests(unittest.TestCase):
             with self.subTest(answer=name):
                 self.assertLessEqual(len(json.dumps(answer)), system_brief.LIMIT)
 
+    def test_an_oversized_candidate_does_not_block_paging(self):
+        row = {"reader": "decoratore", "shape": "route", "site": "a.py:1", "status": "candidate", "symbol": "a.py::f"}
+        rows = [{**row, "shape": "🚲" * 4000}, row]
+        first = system_brief.candidate_page(rows, "run", 0, 2)
+        self.assertLessEqual(len(json.dumps(first)), system_brief.LIMIT)
+        self.assertTrue(first["candidates"][0]["truncated"])
+        self.assertEqual(first["next_offset"], 1)
+        self.assertEqual(system_brief.candidate_page(rows, "run", 1, 2)["candidates"], [row])
+
 
 
 class DeclaredTests(unittest.TestCase):
@@ -165,7 +177,7 @@ class DeclaredTests(unittest.TestCase):
         (project / "docker-compose.yml").write_text(
             "services:\n  web:\n    build: .\n  db:\n    image: postgres:16\n", encoding="utf-8")
         (project / "Dockerfile").write_text("FROM node:22-alpine AS build\n", encoding="utf-8")
-        (project / "app.py").write_text("print('hi')\n", encoding="utf-8")
+        (project / "app.py").write_text("# POSTGRES_DB is mentioned here.\nprint('hi')\n", encoding="utf-8")
         for command in (["git", "init", "-q"], ["git", "add", "-A"],
                         ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "x"]):
             subprocess.run(command, cwd=project, check=True, capture_output=True)
@@ -180,11 +192,49 @@ class DeclaredTests(unittest.TestCase):
         self.assertEqual(value["runtime_files"], ["Dockerfile", "docker-compose.yml"])
         postgres = next(e for e in value["externals"] if e["id"] == "postgresql")
         self.assertEqual(postgres["from"], ["registry"])
-        self.assertIn("docker-compose.yml", postgres["paths"])
+        self.assertEqual(postgres["paths"], ["docker-compose.yml"])
         self.assertIn(f"{postgres['name']} id postgresql [", text(value))  # the mapper copies it as `registry`
         self.assertIn("\n## Runtime files\nR1 Dockerfile\nR2 docker-compose.yml\n## Declared\n"
                       "S1 base image node in Dockerfile:1\nS2 service web in docker-compose.yml:2\n"
                       "S3 service db (postgres) in docker-compose.yml:4", text(value))
+
+    def test_global_brief_reopens_only_changed_unmodelled_yaml(self):
+        work = Path(tempfile.mkdtemp(prefix="brief-reuse-"))
+        self.addCleanup(shutil.rmtree, work, True)
+        project = work / "src"
+        project.mkdir()
+        subprocess.run(["git", "init", "-q", str(project)], check=True)
+        files = {"Dockerfile": "FROM node:22\n", "compose.yaml": "services:\n  db:\n    image: postgres:16\n",
+                 "catalog-info.yaml": "kind: Component\nmetadata: {name: shop}\n",
+                 "kube.yaml": "apiVersion: v1\nkind: ConfigMap\n",
+                 "package.json": '{"name":"shop","dependencies":{"react":"19.0.0"}}'}
+        for file, body in files.items():
+            (project / file).write_text(body, encoding="utf-8")
+        service = mcp_tests.mcp_service.MapService(project)
+        service.create_run(".", "brief", engine=False)
+        opened = []
+        native = Path.open
+        def count(path, *args, **kwargs):
+            if path.parent == project and path.name in files:
+                opened.append(path.name)
+            return native(path, *args, **kwargs)
+        with patch.object(Path, "open", count):
+            first = service.flows("brief", brief=True)["brief"]
+            self.assertIn("Component shop", first)
+            self.assertIn("base image node", first)
+            self.assertIn("service db", first)
+            self.assertIn("kube.yaml", first)
+            self.assertCountEqual(opened, ["catalog-info.yaml", "kube.yaml"])
+            opened.clear()
+            self.assertEqual(mcp_tests.mcp_service.MapService(project).flows("brief", brief=True)["brief"], first)
+            self.assertEqual(opened, [])
+            catalog = project / "catalog-info.yaml"
+            with native(catalog, "w", encoding="utf-8") as stream:
+                stream.write(files[catalog.name].replace("shop", "cart"))
+            changed = service.flows("brief", brief=True)["brief"]
+            self.assertEqual(opened, [catalog.name])
+            self.assertNotIn("Component shop", changed)
+            self.assertNotIn("Component cart", changed)
 
 
 if __name__ == "__main__":

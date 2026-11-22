@@ -15,12 +15,15 @@ Prova la [spec della mappa del sistema](../../docs/specs/2026-11-18-flussi-e-map
 
 ## Parametri da provare
 
+Nel comando `score.py system`, `flows_by_nodes` misura la sovrapposizione dei nodi e `flows_depth_1` la somiglianza al primo livello. `flows` conta una corrispondenza uno a uno quando almeno due terzi dei nodi attesi appartengono a percorsi diretti da un ingresso atteso a un effetto atteso. I percorsi seguono frecce provate o dichiarate e scartano quelle scadute. `entries` e `effects` contano gli estremi collegati. `flows.by_type` richiede anche il tipo corretto e `flow_type_precision` indica la quota di etichette di tipo corrette su tutte quelle proposte. Le misure storiche dell'intero sistema basate sui soli nodi sono confrontabili con `flows_by_nodes`.
+
 | Parametro | Valori |
 | --- | --- |
 | tetto della scheda (`system_brief.CAP`) | 12.000, 24.000, 48.000 caratteri |
 | punti d'ingresso mostrati per gruppo (`HOLDERS`) | 5, 8, 12 |
 | modello dell'agente | economico (Haiku 5.5), intermedio (Sonnet 5.5) |
 | perimetro | un'area, l'intero sistema |
+| generatori dei collegamenti possibili (`possible.py`) | nessuno, `ritorno`, `incerto`, tutti e due |
 
 ## Riferimenti attesi
 
@@ -34,6 +37,7 @@ Prova la [spec della mappa del sistema](../../docs/specs/2026-11-18-flussi-e-map
 | 1, 2, 4, 5 | `modal deploy benchmarks/system-map/modal_map.py`, poi `python benchmarks/system-map/modal_map.py spawn --phazly-tar PATH --phazly-links PATH --tududi-links PATH --tag TAG`: una run per caso, perimetro, modello e ripetizione, ognuna una sessione nuova di `claude -p --agent codebase-map:system-mapper` su un run di Codebase Map preparato prima con le regole del caso e i collegamenti calcolati con il motore; sul volume `daodan-flow-results` restano `stream.jsonl`, `map.json` e `summary.json`. Poi `python score.py map map.json expected/phazly-payments.json` |
 | 3 | `map.json` di ogni run riporta in `levels` i nodi fuori dal loro livello e i punti citati che non esistono, per ogni flusso registrato e ogni livello |
 | 6, dimensione della scheda | `modal run benchmarks/system-map/modal_map.py::brief --phazly-tar PATH --phazly-links PATH` scrive `results/brief-<caso>.json`; poi `python score.py externals results/brief-<caso>.json expected/externals-<caso>.json registry` (oppure `stack-analyser`, `both`) |
+| Collegamenti possibili | sullo snapshot di un caso con il motore: `python daodan/core/flows.py links MANIFEST --rules RULES > LINKS.json`, poi `python benchmarks/system-map/possible.py MANIFEST LINKS.json EXPECTED-system.json --generators ritorno,incerto` (`--generators ""` per i soli collegamenti certi); un caso privato si misura su Modal o sullo snapshot del proprietario |
 
 ## Risultati
 
@@ -154,6 +158,62 @@ Prova a costo zero dei flussi costruiti dalla macchina: `python anchors.py LINKS
 - Ogni nodo mancante corrisponde a un buco del grafo già visto, e la prova lo localizza: l'interfaccia chiama le funzioni dell'abbonamento attraverso un contesto React (`startCheckout` da `useSubscription()`), e le regole non leggono `db[USAGE_EVENTS_COLLECTION]`. Nessuno dei due è dichiarato oggi.
 - Nei tre flussi non ci sono servizi esterni: senza il grafo dei moduli, i collegamenti `usa` verso Stripe e Google Play mancano da questi dati.
 
+### Candidati prima delle regole e osservazioni registrate, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/path_observations.py`. Prima delle regole, CLI, MCP e strumento dell’app trovano il candidato AST `@trigger("refresh")` con gestore `controls.py::dispatch`. Classificata la forma come comando, la scheda letta da CLI, MCP e HTTP espone l’osservazione esatta di `save` a riga 3, il campione di `also_save` a riga 4 e il conflitto tra la destinazione statica `refund` e quella osservata `cancel` a riga 5. Tre regole associano una scrittura al rispettivo chiamato. CLI, MCP e strumento dell’app accettano `store:db/payments` e rifiutano sia `store:db/orders` (campione) sia `store:db/refunds` (conflitto). Alla riapertura, l’area contiene il solo pagamento, ancora `verified`. Le righe dell’indice e le osservazioni sono sintetiche. La verifica usa il join e l’archivio SQLite di Daodan, con lo scanner simulato.
+
+### Scheda «Paga», riapertura e seconda corsa, 21 novembre 2026
+
+Dalla radice, eseguire `python benchmarks/system-map/path_reuse.py` con le dipendenze di Daodan. Il benchmark prepara uno snapshot SQLite della fixture `flow-model`, registra le sue undici regole e consulta prima l’elenco, poi la scheda del pulsante «Paga». La CLI verifica anche il rifiuto di una decisione discontinua (uscita 1) e la riapertura per nome. La lista e i conteggi delle scritture senza un ingresso provato coincidono su CLI, MCP e HTTP. La CLI, il client MCP con trasporto in memoria, la rotta HTTP dell’app e lo strumento dell’app restituiscono gli stessi passi. Il test usa uno scanner che restituisce zero segreti e tiene spento il container. Nessun sorgente della fixture viene eseguito.
+
+Il percorso registrato segue `onPayClick → submitPayment → store:web state/payment`. La sola scrittura, presentata come passo iniziale dal controllo, viene rifiutata per discontinuità. Il cambio del tema, pur usando lo stesso store, resta fuori dalla scheda. Un nuovo servizio riapre la mappa e ritrova gli estremi verificati, il sito e la provenienza di ogni passo.
+
+| Operazione sullo snapshot già scritto | Aperture sorgenti | Parse tree-sitter | Inventari AST / costruzioni link | Inventari schede / espansioni | Connessioni manifest / cache schede |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Registrare le regole | 23 | 23 | 1 / 1 | 0 / 0 | 8 / 0 |
+| Aprire elenco e scheda | 0 | 0 | 0 / 0 | 1 / 1 | 8 / 3 |
+| Ripetere elenco e scheda con un nuovo servizio | 0 | 0 | 0 / 0 | 0 / 0 | 10 / 5 |
+| Riaprire il flusso per nome | 0 | 0 | 0 / 0 | 0 / 0 | 6 / 1 |
+
+La prima consultazione prepara un unico indice del grafo. Il [test di costo](../../tests/test_flow_path_identity.py) conta 256 visite per indicizzare 256 percorsi indipendenti e 512 visite per 512 percorsi, ciascuno con un solo arco. Aprire i dettagli richiede poi i soli archi raggiunti. La seconda lettura di elenco e scheda apre due volte `flow-links.json` e una volta `system-map.json`. La lettura del flusso per nome li apre una volta ciascuno. Le quattro operazioni hanno richiesto zero elenchi di directory sorgenti, nuovi snapshot, avvii degli indicizzatori, comandi nel container, gestori di pacchetti o download di strumenti. I numeri valgono per questa fixture con grammatiche di Daodan già disponibili. La misura esclude la creazione iniziale dello snapshot e il costo di una vera analisi dinamica.
+
+La scheda globale ha una prova separata in `tests/test_codebase_map_system_brief.py::DeclaredTests::test_global_brief_reopens_only_changed_unmodelled_yaml`. La fixture contiene Dockerfile, Compose, package.json e due manifesti YAML. Prima della modifica, prima e seconda consultazione aprivano quattro sorgenti ciascuna. Ora la scheda riprende le immagini Docker, i servizi Compose e le dipendenze dalla pre-mappa. Apre i soli manifesti Kubernetes e Backstage alla prima consultazione (2 aperture) e nessun sorgente alla seconda, anche riaprendo il servizio. Cambiando il catalogo alla terza lettura, la verifica riapre un solo file e scarta la dichiarazione che diverge dallo snapshot.
+
+### Due analisi complete con il container acceso, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/pipeline_reuse.py --container`: la stessa fixture `js-npm-single` e lo stesso manifest, due processi, con il motore di container della macchina (qui quello di Daodan su Windows). Ripristino, scip-typescript e `node --test` girano davvero.
+
+| Misura | Prima analisi | Seconda analisi |
+| --- | ---: | ---: |
+| Secondi | 131,5 | 1,2 |
+| Indice / archi osservati dai test | `fresh` / 6 | `fresh` / 6, riusati |
+| Richieste di container / copie del progetto | 6 / 6 | 0 / 0 |
+| Avvii dell'indicizzatore / sonde del motore | 1 / 7 | 0 / 0 |
+| Download di strumenti (già in cache) | 0 | 0 |
+| Aperture di sorgenti / elenchi di cartelle da Python | 52 / 39 | 4 / 0 |
+| Parse tree-sitter | 2 | 0 |
+| Processi `wsl` / `git` / `uv --offline` | 118 / 12 / 2 | 0 / 1 / 0 |
+
+Nella seconda analisi resta una lettura per ognuno dei quattro file, per confrontare lo snapshot con il disco, e un comando git. Le letture interne dei programmi nel container non sono contate. La misura non separa i ripristini: il registro dei container dell'indicizzatore sta in una cartella temporanea.
+
+### Tre percorsi con gli indicizzatori veri, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/real_paths.py [web] [tk] [tauri] [--work DIR]` con le dipendenze di Daodan e un motore di container (su Windows quello di Daodan). Parametri: il caso (`benchmarks/flow-model/app`, `real-paths/tk-desk`, `real-paths/tauri-desk`), le regole e le risposte sulle forme del caso, la disposizione (analisi accanto al checkout). Lo script crea il run dal servizio con il passaggio del motore, legge i candidati prima delle regole, registra regole e risposte, apre ogni scheda e controlla ciò che deve reggere; esce con 1 se un controllo cade.
+
+| Caso | Indicizzatori nel container | Secondi | Controllo, gestore, ultimo punto provato |
+| --- | --- | ---: | --- |
+| web | scip-python 0.6.8, scip-typescript 0.6.2 | 129 | «Paga» `web/checkout.ts:22` → `onPayClick` → `submitPayment` → `store:web state/payment` (`web/checkout.ts:14`) |
+| tk | scip-python 0.6.8 | 106 | «Salva» `ui.py:8` → `App.save` (gestore dato dall'indice) → `store:disk/orders` (`ui.py:11`) |
+| tauri | scip-typescript 0.6.2, rust-analyzer 2026-11-09 | 322 | «Salva profilo» `src/view.tsx:18` → `save` → `src-tauri/src/main.rs::persist` (`tauri-invoke`, `src/view.tsx:4`); `only_in_tests` e `on_idle_builder` restano lacune |
+
+Il caso Tauri prima falliva: con il ripristino Node condiviso `tsc` e scip-typescript non trovavano `node.tar.gz` (spec della pipeline, sezione 7.1). Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la causa. Le stesse tre fixture su Modal (`modal_pipeline.py --folder-out`): indici `fresh` in 132, 100 e 242 secondi; lì i test Rust non partono per le librerie di sistema che mancano. Le fixture non dichiarano test: nessun arco osservato.
+
+### Collegamenti possibili, senza modello
+
+Domanda: delle frecce e degli ingressi che mancano ai flussi di un riferimento, quanti darebbe un collegamento possibile, che la macchina propone senza affermarlo e un modello conferma o scarta. `possible.py` verifica le frecce fra nodi con codice con `system_map.verify`, prima con i soli collegamenti certi e poi aggiungendo i possibili; le frecce e gli ingressi su un servizio di altri li controlla nella loro direzione e sui simboli di ogni nodo (il ritorno di un webhook va dal modulo esterno al gestore, non il contrario). Generatori: `ritorno` (una rotta di una regola `offre` che nessuna chiamata del progetto raggiunge, nemmeno come candidata, in un file che usa un modulo esterno, è chiamata da quel modulo; le rotte trovate da un lettore come Noir non hanno un'offerta a cui unire le chiamate e sono contate a parte) e `incerto` (una chiamata con più rotte candidate va a ognuna). I conteggi per freccia e per ingresso sono elencati nel docstring di `possible.py`. Il contesto React e la chiave in una variabile non hanno un generatore: cadono in `mancante con lacuna` o `mancante`. Un collegamento possibile che non sta su nessuna freccia o ingresso del riferimento è contato in `outside_reference`, non come sbagliato: il 13 novembre i soli collegamenti hanno trovato una freccia vera che il riferimento non aveva. Prova del metodo: `test_possible.py`, sulla fixture `flow-model` con un webhook. Va misurato su tutti i casi con riferimento: la prova piccola dei 35 flussi ha già portato a una scelta sbagliata.
+
+**Risultati: da produrre.**
+
 ## Confronto proposto per i flussi multilivello
 
 Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-mappa-del-sistema.md). **Confronto proposto, ancora da eseguire su Modal.**
@@ -173,3 +233,47 @@ Protocollo per la [spec del 18 novembre](../../docs/specs/2026-11-18-flussi-e-ma
 **Criteri sulla fixture completa.** Il mapper deve scoprire tutti i processi e tutte le varianti attesi, conservare il modulo condiviso una sola volta e rendere conto di ogni estremo, inclusa l'origine irrisolta. Nessun arco causale senza evidenza. Aprire il processo deve mostrare i due rami e richiuderlo deve ripristinare la selezione, con zero chiamate LLM. Solo a questo punto chiedere una review della funzionalità e poi del solo ramo automatico. Nel primo caso sono attesi entrambi i percorsi, nel secondo il gestore del cron e il codice condiviso pertinente. In entrambi i casi verificare la motivazione dei file, i file di solo contesto e le lacune rispetto al riferimento.
 
 A qualità uguale si preferisce il minor consumo totale osservato. Se il grafo non espone un ingresso o un effetto, attribuire l'omissione alla raccolta delle evidenze. Se il riferimento è visibile al modello e viene interpretato male, attribuirla alla scoperta semantica. **Risultati del nuovo protocollo e fixture completa: da produrre.**
+
+### Scoperta cieca con il modello debole, variante A, 21 novembre 2026
+
+`python modal_map.py spawn --tag collaudo-cieco-haiku --cases CASO --tar CASO=ARCHIVIO --rules session --scopes system --models haiku --reps 2 --budget 1`, poi `python score.py system` su ogni `map.json` (`results/system/collaudo-cieco-haiku/`). Caso: il più piccolo con riferimento dell'intero sistema (49 nodi confrontabili, 19 flussi, 22 ingressi, 24 effetti); archivio di solo codice sul commit del riferimento (178 file, nessun segreto trovato). Il riferimento resta fuori dall'ambiente dell'agente ed è confrontato dopo il salvataggio.
+
+| Misura | Ripetizione 1 | Ripetizione 2 |
+| --- | ---: | ---: |
+| Flussi ritrovati / proposti | 0 su 19 / 2 | 0 su 19 / 3 |
+| Ingressi / effetti ritrovati | 0 su 22 / 0 su 24 | 0 su 22 / 0 su 24 |
+| Nodi ritrovati (profondità 0 e 1) | 3 su 49 (3 su 12) | 7 su 49 (7 su 12) |
+| Precisione dei nodi | 4 su 7 | 9 su 10 |
+| Flussi alla profondità 1 | 26% | 38% |
+| Frecce rifiutate | 0 su 7 | 1 su 8 |
+| Schede in coda / aperte / decisioni di percorso | 50 / 0 / 0 | 49 / 0 / 0 |
+| Mapper: secondi, turni | 60, 9 | 67, 10 |
+| Costo (USD) | 0,048, con le 88 regole | 0,019 |
+
+Preparazione 320 secondi; nessuna run fermata dal tetto. Il mapper elenca le schede dei percorsi e passa alla proposta libera senza aprirne una. Le otto run precedenti di Haiku sullo stesso caso (`sysmap-a7-haiku`, `sysmap-gate-b-haiku`, `sysmap-gate-b2-haiku`, `sysmap-c1-haiku`), rivalutate con lo `score.py` di oggi: 0 flussi su 19, 0 ingressi e 0 effetti in tutte; nodi da 3 a 9 su 49. Con `--models qwen` la sessione delle regole si è fermata dopo 1.574 secondi: il gateway rifiutava la connessione. Limiti: un solo caso; il passaggio del motore di queste run gira senza il container di Daodan; varianti B e C e fixture completa non eseguite.
+
+### Due analisi complete sullo stesso snapshot JavaScript, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/pipeline_reuse.py`. Lo script crea una volta il manifest SQLite della fixture `js-npm-single`, poi avvia due processi distinti che chiamano `pipeline.run` senza saltare passi. La fixture dichiara pacchetti npm e il comando `node --test`. Ogni corsa imposta `DAODAN_CONTAINER=off`. Le grammatiche e l’ambiente uv di Daodan erano già disponibili.
+
+| Passo o misura | Prima analisi | Seconda analisi |
+| --- | ---: | ---: |
+| Scan eseguito / pre-mappe derivate | 1 / 1 | 1 / 0 |
+| Grafo dei moduli | ricostruito | riusato |
+| Sorgenti di pre-mappa con lacuna del container | 4 | 4 |
+| Stack eseguito / tecnologie restituite | 1 / 2 | 1 / 2 |
+| Analyze / tentativi dell’adattatore SCIP | 1 / 1 | 1 / 1 |
+| Dynamic / osservazioni runtime | 1 / 0 | 1 / 0 |
+| Union eseguito | 1 | 1 |
+| Aperture di file del progetto da Python | 14 | 4 |
+| Elenchi di directory del progetto da Python | 9 | 0 |
+| Processi Git / uv offline | 5 / 2 | 1 / 2 |
+| Verifiche della disponibilità del container | 2 | 1 |
+| Copie nel container / comandi npm / download di Daodan | 0 / 0 / 0 | 0 / 0 / 0 |
+| Nuovi snapshot / parse tree-sitter | 0 / 0 | 0 / 0 |
+
+La seconda analisi riapre una volta ciascuno `package.json`, `package-lock.json`, `src/index.js` e `test/index.test.js`. Nella prima le aperture sono rispettivamente 7, 3, 2 e 2. Gli hook di audit coprono i tre interpreti Python di ogni corsa. Contano anche gli avvii di Git e uv. Le letture interne ai binari nativi non sono misurate.
+
+La prima corsa tenta go-enry, Renovate, npm e Noir. La seconda riapre le quattro lacune con la loro causa. Prima di questa modifica la seconda corsa rigenerava una pre-mappa, apriva sei file del progetto, elencava tre directory e verificava due volte la disponibilità del container. Il riuso vale quando lo snapshot e le sorgenti sono gli stessi, il runner è quello del container predefinito e Daodan ha già registrato lo stesso spegnimento esplicito per tutte le sorgenti rimaste da eseguire. Una richiesta di rigenerazione, un runner diverso, una causa diversa e la riattivazione del container consentono il nuovo tentativo.
+
+SCIP si ferma prima della build con stato `unavailable`. Dynamic riporta `no-static-graph` e Union conserva lo stato `unavailable` per JavaScript. I due avvii di uv verificano e aprono l’ambiente offline dell’adattatore. Nessun processo ha installato i pacchetti del progetto o eseguito i suoi test. Resta da misurare una seconda analisi con container disponibile e un indice ufficiale prodotto realmente.

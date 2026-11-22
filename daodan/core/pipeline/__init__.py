@@ -90,6 +90,7 @@ def _runner(manifest: Path):
             raise asked["gap"]
         return container_runner.runner(manifest, engine=asked.pop("engine", None))(commands, toolchains)
 
+    run.uses_default_container = True
     return run
 
 
@@ -171,7 +172,11 @@ class Union:
             detail = (f"calls between {one} and {other} are not resolved: each analyzer reads its own index, so a "
                       "project symbol of the other language can read as external")
             say(detail, {"kind": "not-joined", "languages": [one, other], "detail": detail})
+        ui_controls = (context.results.get("dynamic") or {}).get("ui_controls", [])
+        ui_gaps = (context.results.get("dynamic") or {}).get("ui_gaps", [])
         context.bus.emit("graph.ready", "the complete graph is ready", step=Union.NAME,
+                         **({"ui_controls": ui_controls} if ui_controls else {}),
+                         **({"ui_gaps": ui_gaps} if ui_gaps else {}),
                          languages={language: {"state": entry.get("state"), "engine": entry.get("engine")}
                                     for language, entry in languages.items()})
         return {"languages": languages, **({"no_analyzer": unserved} if unserved else {}),
@@ -230,6 +235,12 @@ class StepFailed(Exception):
 
 def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | None = None,
         report_path: Path | None = None, fast_scan: bool = False) -> dict:
+    import node_preparation
+    with node_preparation.analysis():
+        return _run(manifest, listeners, start=start, stop=stop, report_path=report_path, fast_scan=fast_scan)
+
+
+def _run(manifest: Path, listeners, *, start, stop, report_path, fast_scan: bool) -> dict:
     """The steps in order on the snapshot `manifest`, from `start` through `stop` (default: all), with
     `listeners` on the bus and the journal beside it; each step's result by its name. A step that fails says
     why and stops the ones after it: its result is `{"failed": cause, "remedy": ...}`. One the others can do
@@ -262,6 +273,11 @@ def run(manifest: Path, listeners=(), *, start: str | None = None, stop: str | N
                      remedy=step.WITHOUT)
             results[step.NAME] = {"failed": cause}
         bus.emit("step.finished", step.NAME, step=step.NAME, outputs=list(step.OUTPUTS))
+    report = results.get(Analyze.NAME, {})
+    if report.get("pass") and Union.NAME in results and "failed" not in results[Union.NAME]:
+        import engine_pass
+        report["pipeline_complete"] = True
+        engine_pass._write_report(report_path or manifest.with_name(engine_pass.REPORT_NAME), report)
     return results
 
 
@@ -279,7 +295,8 @@ def runtime(manifest: Path) -> dict:
     the analysis may still observe, `not-run` before any union, else `observed` or `none`), per observed
     language its recorder (`resolver`), `sites`, `edges` and holes `closed`, the `files` with calls its tests
     `executed` and those `not_executed` (counts), how each test run ended (`tests`), and the union's `gaps` of
-    what stayed unobserved, each with its `language`."""
+    what stayed unobserved, each with its `language`. `ui_controls`, when present, counts Playwright's
+    control/event/state observations independently of placed call edges."""
     import resolve_edges
     manifest = Path(manifest).resolve()
     state = resolve_edges.edge_state(manifest)
@@ -295,13 +312,23 @@ def runtime(manifest: Path) -> dict:
             and event["data"].get("gap", {}).get("kind") in RUNTIME_GAPS]
     languages = {}
     for language, entry in sorted((state.get("languages") or {}).items()):
-        seen = (entry.get("coverage") or {}).get("observed") or {}
-        if seen.get("edges"):
+        coverage = entry.get("coverage") or {}
+        seen, sampled = coverage.get("observed") or {}, coverage.get("sampled") or {}
+        if seen.get("edges") or sampled.get("edges"):
             files = seen.get("files") or {}
             languages[language] = {
-                "resolver": seen.get("resolver"), "sites": seen.get("sites", 0), "edges": seen["edges"],
+                "resolver": seen.get("resolver"), "sites": seen.get("sites", 0), "edges": seen.get("edges", 0),
                 "closed": sum((seen.get("closed") or {}).values()),
                 "files": {"executed": files.get("executed", 0), "not_executed": len(files.get("not_executed") or ())},
                 "tests": [{key: test.get(key) for key in ("root", "runner", "state")}
                           for test in seen.get("tests") or ()]}
-    return {"state": "observed" if languages else "none", "languages": languages, "gaps": gaps}
+            if sampled.get("edges"):
+                languages[language]["sampled"] = {"resolver": sampled.get("resolver"), "sites": sampled["sites"],
+                                                  "edges": sampled["edges"],
+                                                  "closed": sum((sampled.get("closed") or {}).values())}
+    last_union = recorded[ready[-1]]["data"]
+    ui_controls = last_union.get("ui_controls", [])
+    gaps.extend(last_union.get("ui_gaps", []))
+    observed = bool(languages) or any(run.get("observed", 0) for run in ui_controls)
+    return {"state": "observed" if observed else "none", "languages": languages, "gaps": gaps,
+            **({"ui_controls": ui_controls} if ui_controls else {})}

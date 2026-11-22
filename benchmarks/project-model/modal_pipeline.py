@@ -81,7 +81,7 @@ UPLOADED = ((_scripts, SCRIPTS), (_scripts.parent / "data", DATA),
 
 image = (modal.Image.debian_slim(python_version="3.13")
          .apt_install("git", "ca-certificates", "xz-utils")
-         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30"))
+         .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6"))
 if LOCAL:
     image = (image.add_local_dir(UPLOADED[0][0], REMOTE_SCRIPTS, ignore=["**/__pycache__/**"])
              .add_local_dir(UPLOADED[1][0], REMOTE_DATA)
@@ -224,11 +224,14 @@ def vm(command, services) -> bool:
 
 
 def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), env=None, timeout=600,
-                prepare_timeout=1800, memory=2 * 2**30, inputs=None, dotenv_env=(), blind=False, **_):
+                prepare_timeout=1800, memory=2 * 2**30, inputs=None, dotenv_env=(), blind=False, node_restore=None,
+                **_):
     """`container.run_in_container` on Modal Sandboxes: the same arguments and result (the module's docstring),
     `container.beside`'s services, variables and steps included. With steps and services, the services start in
     the preparation's sandbox, the steps beside them, and start again from what they kept (the snapshot holds
-    Docker's own folders) beside the tests."""
+    Docker's own folders) beside the tests. `node_restore`, the restore an analysis shares between its runs
+    (`node_preparation`), runs here in each run's own preparation sandbox, before `prepare`: no volume passes from
+    one sandbox to the next, so a round on Modal does not measure the sharing."""
     import container
     out_dir = Path(out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -288,8 +291,24 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         services = [container.filled(item, values) for item in services]  # the values only here, never on record
         exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
         base = modal.Image.from_registry(image)
-        if prepare or bundle:
+        if prepare or bundle or node_restore:
             boxes.append(modal.Sandbox.create(image=base, **options))
+            if node_restore:  # as `node_preparation._seed` and `clone`: the tools stay the restore's own
+                import preparation
+                hidden = container.named() if blind and digest.get("dotenv") else ""
+                row = _phase(boxes[-1], "node-restore", f"{unpack} && sh -ec {shlex.quote(hidden + node_restore['script'])}"
+                             f" && rm -rf {preparation.T}", preparation.ENV, prepare_timeout, out_dir)
+                container.mask_file(row["log"], hide)
+                container.append_record(record, {**container.mask_row(row, hide), "image": image})
+                if row["outcome"] != "exited" or row["exit_code"] != 0:
+                    result["cause"] = row.get("cause") or "Node dependency preparation failed (node-restore.log)"
+                    return result
+                log = Path(row["log"]).read_text(encoding="utf-8", errors="replace")
+                restore_gaps = [*preparation.missing(log), *preparation.restore_gaps(log),
+                                *preparation.generation_gaps(log)]
+                if restore_gaps:
+                    result["gaps"] = [*(result.get("gaps") or ()), *restore_gaps]
+                unpack = f"cd {container.WORKDIR}"  # the copy is there, with what the restore added
             if bundle:  # pulled with the network, before anything of the project runs
                 try:
                     _daemon(boxes[-1], bundle)

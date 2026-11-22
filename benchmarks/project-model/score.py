@@ -71,7 +71,9 @@ KIND_ECOSYSTEM = {
 # Framework spellings that differ by more than case and punctuation. Ask the core owner to extend.
 FRAMEWORK_ALIASES = {"next": "nextjs", "nuxtjs": "nuxt", "vue": "vuejs", "nest": "nestjs", "spring": "springframework",
                      "postgres": "postgresql", "awss3": "amazons3", "telegram": "telegrambotapi",
-                     "tailwind": "tailwindcss"}
+                     "tailwind": "tailwindcss", "cypressci": "cypress", "honojs": "hono", "expojs": "expo",
+                     "netaspire": "aspire", "doctrine": "doctrineorm", "hibernate": "hibernateorm",
+                     "apachekafka": "kafka"}
 
 
 # ---------------------------------------------------------------- normalisation
@@ -154,7 +156,8 @@ def _version(value):
 
 
 def _framework(value):
-    s = re.sub(r"[^a-z0-9]", "", str(value).lower())
+    # Punctuation separates spellings such as Vue.js and VueJS; '+' identifies a distinct product in Vite+.
+    s = re.sub(r"[^a-z0-9+]", "", str(value).lower())
     return FRAMEWORK_ALIASES.get(s, s)
 
 
@@ -509,20 +512,28 @@ def _within(path, roots):
     return any(r in (".", "") or path == r or path.startswith(r.rstrip("/") + "/") for r in roots)
 
 
+def declared_stack_sign(sign):
+    """Older benchmark records omit strength. Their package and file checkers produced declarations."""
+    if "strength" in sign:
+        return sign["strength"] == "declared"
+    return sign.get("sign") in ("package", "file")
+
+
 def technologies_faces(record):
     """The `frameworks` and `services` of the `stack` step's record (`technologies.json`, daodan/technologies/v1).
 
     Every entry whose `category` is not `service` (a framework, a library or a tool: `expected.json` lists all three
     among its frameworks) is offered as a framework of each build unit that holds it (the entry's `evidence` is its
-    first sign inside that unit), unitless when no unit holds it; every `service` entry is a service, with its first
-    sign as evidence. What `expected.json` does not list is for `score_technologies`, which counts it apart."""
+    first declaration inside that unit), unitless when no unit holds it; every `service` entry is a service, with its
+    first declaration as evidence. What `expected.json` does not list is for `score_technologies`, which counts it apart."""
     held = {}
     for unit in record.get("units") or []:
         for ident in unit.get("technologies") or []:
             held.setdefault(ident, []).append(unit)
     frameworks, services, seen = [], [], set()
     for entry in record.get("technologies") or []:
-        paths = [s["path"] for s in entry.get("signs") or [] if s.get("path")]
+        signs = entry.get("signs") or []
+        paths = [s["path"] for s in signs if s.get("path") and declared_stack_sign(s)]
         is_service = entry["category"] == "service" if "category" in entry else entry.get("kind") == "service"
         if is_service:
             if entry["name"] not in seen:
@@ -530,9 +541,12 @@ def technologies_faces(record):
                 services.append({"name": entry["name"], **({"evidence": paths[0]} if paths else {})})
             continue
         for unit in held.get(entry["id"]) or [None]:
-            inside = [p for p in paths if unit is None or _within(p, unit.get("paths") or [])] or paths
+            if unit and "technology_evidence" in unit:
+                evidence = unit["technology_evidence"].get(entry["id"], {}).get("path")
+            else:  # older stored records kept module roots and declarations but not the ownership of each sign
+                evidence = next((p for p in paths if unit is None or _within(p, unit.get("paths") or [])), None)
             item = {"name": entry["name"], **({"unit": unit["name"]} if unit else {}),
-                    **({"evidence": inside[0]} if inside else {})}
+                    **({"evidence": evidence} if evidence else {})}
             if (item["name"], item.get("unit")) not in seen:
                 seen.add((item["name"], item.get("unit")))
                 frameworks.append(item)

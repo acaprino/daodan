@@ -26,7 +26,8 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import preparation  # noqa: E402
-from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, sbt  # noqa: E402
+import node_preparation  # noqa: E402
+from premap import bazel, cmake, compose, dockerfile, gradle, maven, meson, noir, sbt  # noqa: E402
 
 IMAGE = "buildpack-deps:noble@sha256:890e8b5c0040e1deff5cc7dc7b4414e67069f79e3301afc4ec5bd49d64ef13e5"  # gcc, make,
 # python3, git, xz: what the tools and their setup use (`indexers/clang.py` IMAGE)
@@ -62,6 +63,7 @@ DOCKERFILE = (f"mkdir -p {STATE}/dockerfile && cp {IN}/dockerfile_stages.go {STA
               f" && GOFLAGS=-mod=mod go get github.com/moby/buildkit@{dockerfile.VERSION}"
               f" && CGO_ENABLED=0 GOFLAGS=-mod=mod go build -o {T}/bin/daodan-dockerfile .")
 TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the registries, extra hosts, memory GB
+    "noir": {"files": [noir.DOWNLOAD], "setup": [f"install -m 755 {IN}/noir {T}/bin/noir"]},
     "go": {"files": [GO], "setup": [UNPACK["go"]], "runs_on": ("go",)},
     "daodan-enry": {"files": [GO, (None, None, "enry_facts.go")], "setup": [UNPACK["go"], ENRY], "registries": True},
     # `values`: the true values of the tracked .env files beside the copy (`container.run_commands`), which Daodan's
@@ -169,7 +171,8 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
             raise ValueError(f"no container setup for the tool {tool}")
         spec = TOOLS[tool]
         restored = _node(project) if spec.get("restores") == "node" else {"lines": [], "hosts": (), "gaps": []}
-        first, files, hosts, gaps = plan(tool, commands, toolchains, restored["lines"])
+        restore_lines, shared = node_preparation.options(restored, toolchains)
+        first, files, hosts, gaps = plan(tool, commands, toolchains, restore_lines)
         gaps += restored["gaps"]  # a package folder no restore installs
         hosts = (*hosts, *restored["hosts"])
         ran = [first, *({**c, "env": {**ENV, **spec.get("env", {}), **(c.get("env") or {})},
@@ -181,7 +184,7 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
                 project, given, image=spec.get("image", IMAGE), out_dir=manifest.parent / "premap-runs" / out,
                 values=spec.get("values", False), engine=engine, inputs=lambda: {f"{IN}/{name}": fetched(url, sha, name) for url, sha, name in files},
                 registries=container.REGISTRIES + tuple(dict.fromkeys(allowed)),
-                memory=int(spec.get("memory", 2) * 2**30), timeout=1800)
+                memory=int(spec.get("memory", 2) * 2**30), timeout=1800, **shared)
 
         result = contained(ran, hosts, tool)
         if result["state"] == "gap":
@@ -240,4 +243,5 @@ def runner(manifest: Path, engine=None, toolchains: list[dict] = ()):
         return [{**answer, "root": roots[n + 1], **({"gaps": gaps} if n == 0 and gaps else {})}
                 for n, answer in enumerate(answers[1:])]
 
+    run.uses_default_container = engine is None
     return run

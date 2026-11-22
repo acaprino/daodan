@@ -10,7 +10,7 @@
     "test:ui": "node test/browser.mjs"
   },
   "dependencies": {
-    "@acaprino/imago": "github:acaprino/imago#1e1a48ce090cf59f09cb2fc94f5ddc0c6aa84bce",
+    "@acaprino/imago": "github:acaprino/imago#v0.2.0",
     "elkjs": "0.12.1",
     "lucide-react": "1.70.0",
     "react": "19.3.1",
@@ -19,5 +19,25 @@
   "devDependencies": {
     "playwright": "1.63.0",
     "vite": "8.3.6"
+  },
+  "imago": {
+    "src": [
+      "src",
+      "app",
+      "index.html"
+    ],
+    "tests": [
+      "test"
+    ],
+    "agents": [
+      "../AGENTS.md",
+      "../CLAUDE.md"
+    ],
+    "entry": "src/main.tsx",
+    "app": "daodan",
+    "icons": {
+      "public/favicon.svg": "favicon.svg",
+      "public/favicon.ico": "favicon.ico"
+    }
   }
 }

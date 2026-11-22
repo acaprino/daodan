@@ -110,6 +110,37 @@ class WorkingRunTests(unittest.TestCase):
         self.assertEqual(self.refresh()["status"], "fresh")
         self.assertEqual(run_bytes(self.published), before)
 
+    def test_search_refuses_equal_size_edit_with_restored_mtime_after_cache_warmup(self):
+        import os
+        self.assertEqual(self.refresh()["status"], "fresh")
+        self.assertIsNone(self.gate())
+        source = self.src / "app.py"
+        before = source.stat()
+        source.write_bytes(source.read_bytes().replace(b"greet", b"other"))
+        os.utime(source, ns=(before.st_atime_ns, before.st_mtime_ns))
+        result = self.service.search("working", "greet")
+        self.assertEqual(result["state"], "needs_refresh")
+        self.assertIn("src/app.py", result["reason"])
+
+    def test_new_published_run_without_proposals_clears_the_working_ledger(self):
+        previous_manifest = self.published / "snapshot/manifest.sqlite"
+        modules.write_ledger(previous_manifest, [{"name": "previous module", "kind": "component",
+                                                  "members": ["src/app.py"]}])
+        self.assertEqual(self.refresh()["status"], "fresh")
+        working = self.working / "snapshot/manifest.sqlite"
+        self.assertEqual(modules.load_ledger(working)[0]["name"], "previous module")
+        self.service.create_run("src", "second", engine=False)
+        second = self.root / "runs/second/state.json"
+        state = json.loads(second.read_text(encoding="utf-8"))
+        state["status"] = "complete"
+        second.write_text(json.dumps(state), encoding="utf-8")
+        (self.root / "runs.json").write_text(json.dumps(
+            {"schema": 2, "active": [], "latest_completed": "second"}), encoding="utf-8")
+        self.assertEqual(self.refresh()["status"], "fresh")
+        self.assertEqual(modules.load_ledger(working), [])
+        self.assertNotIn("previous module", {item["name"] for item in modules.load_graph(
+            modules.graph_name(working))["modules"]})
+
     def test_3_one_refresh_runs_one_waits_the_rest_are_dropped(self):
         self.assertEqual(self.refresh()["status"], "fresh")
         self.edit("app.py", "def greet():\n    return 'queued'\n")

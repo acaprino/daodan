@@ -10,9 +10,9 @@ passes a partial `facts` stub in tests. Every sign respects `excluded`.
 
 A checker reads one kind of the registry's signs and names no technology: `checker(entries, project)` answers
 `{"signs": [(entry id, value, path, line)], "gaps": [...]}`. `run` runs `CHECKERS` in order; each sign found carries
-its checker (`sign`) and the checker's strength: `declared`, a package, image or file the project declares, or
+its checker (`sign`) and the checker's strength: `declared`, a package, image, file or explicit source reference, or
 `mentioned`, a token in a line of text. A checker that fails is a gap with its cause, and the others still run.
-The registry's `hosts` sign has no checker: no catalog and no addition gives one.
+An exact host in a source literal or configuration value is a mention.
 """
 from __future__ import annotations
 
@@ -29,7 +29,9 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import flows  # noqa: E402
 import premap  # noqa: E402
-from premap.module_graph import normalize_image as _image, package_facts  # noqa: E402
+from registry_hosts import check_hosts  # noqa: E402
+from stack_source import check_sources  # noqa: E402
+from premap.module_graph import declared_image, package_facts  # noqa: E402
 from mark_svg import MAX_MARK, clean_svg, safe_member  # noqa: E402
 from snapshot_store import open_snapshot  # noqa: E402
 
@@ -91,6 +93,12 @@ def _split_declared_in(declared_in: str | None) -> tuple[str | None, int | None]
     return file, None
 
 
+def service_site(service: dict) -> tuple[str | None, int | None]:
+    """The source file even for a Compose invocation identified by its numbered step inside a shell script."""
+    location = service["declared_in"].removesuffix(f".services.{service.get('name')}")
+    return _split_declared_in(service.get("source_path") or location)
+
+
 def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | None, int | None, str | None]]:
     """(ecosystem, name, path, line, version) from Step 1's `packages`, `services` and `docker_builds`; `version`,
     the package fact's (as its manifest writes it), None for none and for an image."""
@@ -101,12 +109,12 @@ def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | No
     for item in raw or ():
         path, line = _split_declared_in(item.get("declared_in"))
         out.append((item["ecosystem"], item["name"], path, line, item.get("version")))
-    seen = {sign[:3] for sign in out}
+    seen = {("docker", declared_image(name), path) for eco, name, path, *_ in out if eco == "docker"}
     for service in facts.get("services") or ():
         if service.get("image"):
-            path = str(service["declared_in"]).split("#", 1)[0]
-            img = _image(service["image"])
-            if ("docker", img, path) not in seen:
+            path, _ = service_site(service)
+            img = declared_image(service["image"])
+            if img and ("docker", img, path) not in seen:
                 seen.add(("docker", img, path))
                 out.append(("docker", img, path, None, None))
     for build in facts.get("docker_builds") or ():
@@ -114,8 +122,8 @@ def step1_packages(manifest: Path, facts: dict) -> list[tuple[str, str, str | No
         for stage in build.get("stages") or ():
             base = stage.get("base")
             if dockerfile and base and base != "scratch":
-                img = _image(base)
-                if ("docker", img, dockerfile) not in seen:
+                img = declared_image(base)
+                if img and ("docker", img, dockerfile) not in seen:
                     seen.add(("docker", img, dockerfile))
                     out.append(("docker", img, dockerfile, stage.get("line"), None))
     return out
@@ -134,6 +142,13 @@ class Project(NamedTuple):
     lines: Callable[[str], list[str]]
 
 
+def package_key(ecosystem: str, name: str) -> str:
+    """Compare PyPI distribution names by PEP 503 and Docker images by repository identity."""
+    if ecosystem == "docker":
+        return declared_image(name)
+    return premap.normalize_pypi_name(name) if ecosystem == "pypi" else name.lower()
+
+
 def check_packages(entries: list[dict], project: Project) -> dict:
     """A declared package or image, by its name in its ecosystem, a Maven artifact without its group, a Go package
     under a module or an entry's pattern. One no entry knows, named like an entry with no sign in its ecosystem, is a
@@ -143,10 +158,14 @@ def check_packages(entries: list[dict], project: Project) -> dict:
         signs = entry.get("signs") or {}
         for ecosystem, values in (signs.get("packages") or {}).items():
             for value in values:
-                by_package.setdefault((ecosystem, value.lower()), []).append(entry["id"])
+                by_package.setdefault((ecosystem, package_key(ecosystem, value)), []).append(entry["id"])
         for ecosystem, values in (signs.get("patterns") or {}).items():
             for value in values:
                 try:
+                    # A bare Docker selector names a Hub repository or publisher; explicit prefix rules stay anchored.
+                    if ecosystem == "docker" and not value.startswith("^"):
+                        end = "$" if "/" in value else "(?:/|$)"
+                        value = f"^(?:{value}){end}"
                     patterns.append((ecosystem, re.compile(value, re.I), entry["id"]))
                 except re.error:
                     continue
@@ -154,14 +173,14 @@ def check_packages(entries: list[dict], project: Project) -> dict:
             named.setdefault(key.casefold(), entry)
     found, gaps, seen = [], [], set()
     for ecosystem, name, path, line, *_ in project.packages:  # a version is no sign
-        low = name.lower()
+        low = package_key(ecosystem, name)
         ids = list(by_package.get((ecosystem, low), []))
         if ecosystem == "maven" and ":" in low:
             ids += by_package.get((ecosystem, low.split(":", 1)[1]), [])
         if ecosystem == "go":
             ids += [i for (e, value), owners in by_package.items() if e == "go" and low.startswith(value + "/")
                     for i in owners]
-        ids += [i for e, pattern, i in patterns if e == ecosystem and pattern.search(name)]
+        ids += [i for e, pattern, i in patterns if e == ecosystem and pattern.search(low if e == "docker" else name)]
         found += [(ident, name, path, line) for ident in dict.fromkeys(ids)]
         entry = None if ids else named.get(name.casefold()) or named.get(re.split(r"[:/]", name.casefold())[-1])
         signs = (entry or {}).get("signs") or {}
@@ -209,7 +228,7 @@ def check_env(entries: list[dict], project: Project) -> dict:
 
 
 CHECKERS = (("package", "declared", check_packages), ("file", "declared", check_files),
-            ("env", "mentioned", check_env))
+            ("env", "mentioned", check_env), ("host", "mentioned", check_hosts), ("source", "declared", check_sources))
 
 
 def run(manifest: Path, registry: dict | None = None, facts: dict | None = None) -> dict:

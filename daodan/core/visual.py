@@ -37,6 +37,7 @@ import tempfile
 import time
 from collections import defaultdict
 from datetime import datetime, timezone
+from functools import lru_cache
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path, PurePosixPath
 from urllib.parse import parse_qsl, urlsplit, urlunsplit
@@ -47,6 +48,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import card_store  # noqa: E402
 import confinement  # noqa: E402
+import edge_view  # noqa: E402
 import modules  # noqa: E402
 import snapshot  # noqa: E402
 import semantic_store  # noqa: E402
@@ -103,11 +105,18 @@ def _collector(entities: dict, relations: dict):
 
 def _call(relations: dict, source: str, target: str, call: dict) -> None:
     """A resolved call from `source` to `target`, counted, with its site among the 20 a relation keeps."""
-    ref = f"calls:{source}->{target}"
+    status = call.get("confidence") or "confirmed"
+    ref = f"calls:{source}->{target}" + (f" {status}" if status in edge_view.SEEN else "")
+    conflict = bool(call.get("conflict"))
+    if conflict:
+        ref += " conflict"
     found = relations.setdefault(ref, {"ref": ref, "kind": "calls", "source": source, "target": target,
-                                       "status": "confirmed", "evidence": []})
+                                       "status": status, "evidence": [], **({"conflict": True} if conflict else {})})
     found["counts"] = {"calls": found.get("counts", {}).get("calls", 0) + 1}
-    found["evidence"] = [*found["evidence"], {"path": call["file"], "line": call["span"][0]}][:20]
+    evidence = {"path": call["file"], "line": call["span"][0]}
+    if conflict or status in edge_view.SEEN:
+        evidence.update({key: call[key] for key in ("resolver", "conflict") if key in call})
+    found["evidence"] = [*found["evidence"], evidence][:20]
 
 
 def _symbols(store, paths: list[str], cards_path: Path, entity, relation, gaps: list) -> None:
@@ -211,6 +220,7 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
         if symbols:
             _symbols(store, paths, cards_path, entity, relation, gaps)
         # Imports and resolved calls between files, read in blocks the reader accepts.
+        shown_calls = set()
         for chunk in _chunks(paths):
             packet = source_reader.graph_packet(store, chunk, 1, LIMIT)
             if len(packet.get("imports", [])) >= LIMIT:
@@ -221,9 +231,13 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
             if "calls" in packet.get("truncated", []):
                 gaps.append({"refs": [], "reason": f"calls of a block reached the reader limit of {LIMIT}"})
             for call in packet.get("calls", []):  # a call resolved to a callable of another file
-                source, target = f"file:{call['file']}", f"file:{(call.get('target_id') or '').split('::')[0]}"
-                if source != target and source in entities and target in entities:
-                    _call(relations, source, target, call)
+                source = f"file:{call['file']}"
+                for end in edge_view.call_ends(call):
+                    target = f"file:{end['target_id'].split('::')[0]}"
+                    key = (call["id"], end["target_id"], end["confidence"], end["resolver"])
+                    if source != target and source in entities and target in entities and key not in shown_calls:
+                        _call(relations, source, target, {**call, **end})
+                        shown_calls.add(key)
 
     # Services the stack recognises (one it only saw mentioned is no module's, nor a node): external modules the
     # registry proposes, with type, site and mark, used by each file that shows them; a mention is an uncertain use.
@@ -274,11 +288,11 @@ def build_envelope(run_dir: Path, *, symbols: bool = True) -> dict:
         "flows": envelope_flows,
         "technologies": [{"id": item["id"], "name": item["name"], "type": item["type"] or "altro",
                           "category": item["category"],
-                          "paths": sorted({sign["path"] for sign in item["signs"] if sign["path"]}),
+                          "paths": sorted({sign["path"] for sign in item["signs"]
+                                           if sign["strength"] == "declared" and sign["path"]}),
                           # the declared sites by which a module's stack holds it, as `technologies.ensure` matches them
                           "evidence": [{"path": sign["path"], "line": sign["line"]} for sign in item["signs"]
-                                       if sign["strength"] == "declared" and sign["path"] and not (
-                                           sign["sign"] == "package" and technologies._versions_only(sign["path"]))]}
+                                       if technologies.module_declaration(sign)]}
                          for item in stack["technologies"]],
     }
 
@@ -299,30 +313,43 @@ def file_symbols(run_dir: Path, path: str) -> dict:
     if "calls" in packet.get("truncated", []):
         gaps.append({"refs": [f"file:{path}"], "reason": f"calls of the file reached the reader limit of {LIMIT}"})
     return {"entities": list(entities.values()), "gaps": gaps,
-            "calls": [{"id": call["id"], "file": call["file"], "line": call["span"][0], "target_id": call["target_id"]}
-                      for call in packet.get("calls", []) if call.get("target_id")],
+            "calls": [{"id": call["id"], "file": call["file"], "line": call["span"][0], **end}
+                      for call in packet.get("calls", []) for end in edge_view.call_ends(call)],
             "declarations": {item["id"]: item["span"][0] for item in packet.get("declarations", [])}}
 
 
+@lru_cache(maxsize=32)
+def _index_languages(manifest, snapshot_stamp):
+    import flows
+    return tuple(flows._links_languages(manifest))
+
+
 def inputs_stamp(run_dir: Path) -> tuple:
-    """What `build_envelope` and `file_symbols` read that the run's work writes, by size and modification time: the
-    run's state and snapshot, the module graph and its ledger, the stack, the link rules, the engine store and the
-    cards. The same stamp is the same envelope; taking it opens nothing (as `flows.cached_links` keys its links)."""
+    """The live graph depends on the same evidence and reader versions as its persisted links."""
+    import flows
+    from store_graph import source_stamp
     import technologies
     run_dir = Path(run_dir)
     manifest = run_dir / "snapshot" / "manifest.sqlite"
-    read = [run_dir / "state.json", manifest, manifest.with_suffix(".json"), modules.graph_name(manifest),
-            manifest.with_name(modules.LEDGER_FILE), technologies.path(manifest), manifest.with_name("flow-rules.json"),
-            manifest.with_name("engine-edges.sqlite"), card_store.default_cards_path(manifest)]
-    stamp = []
+    inputs = flows._links_stamp(manifest)
+    stable = all(s is None or s[-1] for s in inputs)
+    languages = ()
+    if inputs[0] and inputs[2]:
+        languages = _index_languages(manifest, tuple(inputs[:3])) if stable else flows._links_languages(manifest)
+    stamp = [flows._links_key([], inputs, languages)]
+    read = [run_dir / "state.json", manifest.with_suffix(".json"), technologies.path(manifest),
+            manifest.with_name("flow-rules.json"), card_store.default_cards_path(manifest)]
     for path in read:
         for item in (path, path.with_name(path.name + "-wal")):  # a SQLite store writes its log first
             try:
-                found = item.stat()
+                identity = source_stamp(item)
             except FileNotFoundError:
                 stamp.append((str(item), None))
             else:
-                stamp.append((str(item), found.st_mtime_ns, found.st_size))
+                stamp.append((str(item), identity))
+                stable = stable and bool(identity[-1])
+    if not stable:
+        stamp.append(object())  # no filesystem change clock: the next query must recheck its inputs
     return tuple(stamp)
 
 
@@ -359,7 +386,8 @@ def _link_relations(links: dict) -> list[dict]:
 
     for edge in links["edges"]:
         if edge.get("route") and edge.get("offered"):
-            add("calls", "rest", " ".join(edge["route"]), "confirmed", edge["site"], [edge["offered"]])
+            status = "uncertain" if edge_view.uncertainty(edge) else "confirmed"
+            add("calls", "rest", " ".join(edge["route"]), status, edge["site"], [edge["offered"]])
     for gap in links["gaps"]:
         by_file = defaultdict(list)
         for site in gap.get("offered", []):
@@ -369,14 +397,15 @@ def _link_relations(links: dict) -> list[dict]:
     writers = defaultdict(list)
     for edge in links["edges"]:
         if edge["type"] == "scrive":
-            writers[edge["to"]].append(edge["site"])
+            writers[edge["to"]].append(edge)
     for edge in links["edges"]:
         if edge["type"] == "legge":
             by_file = defaultdict(list)
-            for site in writers.get(edge["from"], []):
-                by_file[_site(site)["path"]].append(site)
-            for sites in by_file.values():
-                add("reads", "store", edge["from"][len("store:"):], "confirmed", edge["site"], sites)
+            for write in writers.get(edge["from"], []):
+                status = "uncertain" if edge_view.uncertainty(edge) or edge_view.uncertainty(write) else "confirmed"
+                by_file[_site(write["site"])["path"], status].append(write["site"])
+            for (_, status), sites in by_file.items():
+                add("reads", "store", edge["from"][len("store:"):], status, edge["site"], sites)
     out = []
     for item in found.values():  # both sides in the 20 sites a relation keeps
         sites = item.pop("asking")[:10] + item.pop("offering")[:10]
@@ -390,6 +419,7 @@ def _flows(manifest: Path, entities: dict, by_id: dict, graph: dict, gaps: list,
     rules_path = Path(manifest).with_name("flow-rules.json")
     if not rules_path.is_file():
         return [], []
+    import flow_paths
     import flows
     links = flows.cached_links(Path(manifest), flows.load_rules(rules_path))
     names = {module["name"]: by_id[module["id"]] for module in graph.get("modules", []) if module["id"] in by_id}
@@ -414,12 +444,20 @@ def _flows(manifest: Path, entities: dict, by_id: dict, graph: dict, gaps: list,
     typed.update({edge["from"]: "schermata" for edge in links["edges"] if edge["type"] == "attiva"})
     out = []
     for entry in links["entries"]:
-        flow = flows.trace(links, entry["symbol"], "from")
+        # A known handler can write on other paths even when the binding of this control is unproved.
+        if reason := edge_view.uncertainty(entry):
+            flow = {"nodes": [entry["symbol"]], "edges": [], "complete": False,
+                    "gaps": [{"site": entry["site"], "reason": reason}]}
+        else:
+            flow = flows.trace(links, entry["symbol"], "from")
         steps = [{"source": ref(edge["from"]), "target": ref(edge["to"]), "type": edge["type"],
-                  "origin": edge["origin"], "site": edge["site"], **({"route": edge["route"]} if edge.get("route") else {})}
+                  "origin": edge["origin"], "site": edge["site"],
+                  **{key: edge[key] for key in ("route", "confidence", "resolver", "conflict") if key in edge}}
                  for edge in flow["edges"]]
-        out.append({"ref": f"flow:{ref(entry['symbol'])}", "entry": ref(entry["symbol"]), "entry_kind": entry["kind"],
-                    "complete": flow["complete"], "nodes": sorted({ref(node) for node in flow["nodes"]}), "steps": steps})
+        out.append({"ref": f"flow:{flow_paths.entry_id(entry)}", "entry": ref(entry["symbol"]), "entry_kind": entry["kind"],
+                    **{k: entry[k] for k in ("site", "column", "label", "event", "shape") if k in entry},
+                    "complete": flow["complete"], "nodes": sorted({ref(node) for node in flow["nodes"]}), "steps": steps,
+                    "gaps": [{k: gap[k] for k in ("site", "reason")} for gap in flow["gaps"]]})
     for node, kind in typed.items():
         target = ref(node)
         if not entities[target].get("node_type"):
@@ -485,7 +523,7 @@ def export(run_dir: Path, store_root: Path) -> Path:
 
 _TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
           ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json",
-          ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8"}
+          ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon", ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8"}
 _POLICY = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:"
 
 

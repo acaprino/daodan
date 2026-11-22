@@ -46,6 +46,7 @@ import json
 import os
 import sys
 import tomllib
+from collections import Counter
 from pathlib import Path
 
 import review_roster
@@ -129,11 +130,13 @@ def apply_selection(roster: dict, selection) -> dict:
                           "superseded": [r for r in roster.get("roster", []) if r not in selection]}}
 
 
-def pack(rows: list[dict], budget: int) -> list[list[dict]]:
-    """Files in path order; a new group when the next file would pass the budget. A larger file stands alone."""
+def pack(rows: list[dict], budget: int, *, preserve_order: bool = False) -> list[list[dict]]:
+    """Pack in path order, or in the order supplied by the flow. A larger file stands alone."""
     groups: list[list[dict]] = []
     size = 0
-    for row in sorted(rows, key=lambda item: item["path"]):
+    if not preserve_order:
+        rows = sorted(rows, key=lambda item: item["path"])
+    for row in rows:
         if groups and size + row["size"] <= budget:
             groups[-1].append(row)
             size += row["size"]
@@ -183,10 +186,17 @@ def coverage_scope(roster: dict, coverage: dict, entries: dict) -> dict:
                 if evidence.get("source") == "configurations":
                     configured.append(evidence["path"])
     stacks = {**review_roster.LANGUAGE_ROLE, **review_roster.TECHNOLOGY_ROLE}
-    units = coverage.get("units", [])
-    if not isinstance(units, list) or not all(isinstance(unit, list) and all(isinstance(path, str) for path in unit)
-                                              for unit in units):
-        raise ValueError("coverage.units must be a list of path lists")
+    supplied_units = coverage.get("units", [])
+    if not isinstance(supplied_units, list):
+        raise ValueError("coverage.units must be a list")
+    units = []
+    for unit in supplied_units:
+        files_in_unit = unit.get("files") if isinstance(unit, dict) else unit
+        context = unit.get("context", []) if isinstance(unit, dict) else []
+        if not all(isinstance(items, list) and all(isinstance(path, str) for path in items)
+                   for items in (files_in_unit, context)):
+            raise ValueError("coverage.units entries need a path list or files and optional context lists")
+        units.append((list(dict.fromkeys(files_in_unit)), context))
     return {"files": files.resolve().as_posix(), "root": root, "budget": budget, "inventory": inventory, "units": units,
             "paths": sorted(paths), "configured": configured, "obliged": obliged, "texts": {},
             "stack_of": {leaf: stack for stack, role in stacks.items() for leaf in leaf_roles(role, entries)}}
@@ -227,6 +237,30 @@ def reviewer_cells(cover: dict, role: str, members: list[str]) -> list[dict]:
             cell.update(status="not-applicable", note=reason)
         cells.append(cell)
     return cells
+
+
+def coverage_groups(cover: dict, pending: dict):
+    """Assign each open file once. Shared flow members remain readable from the other jobs."""
+    inventory, budget = cover["inventory"], cover["budget"]
+    units = cover["units"]
+    assigned = set()
+    groups = []
+    for members, _ in units:
+        owned = [inventory[path] for path in members if path in pending and path not in assigned]
+        groups.extend(pack(owned, budget, preserve_order=True))
+        assigned.update(row["path"] for row in owned)
+    groups.extend(pack([inventory[path] for path in pending if path not in assigned], budget))
+
+    owner = {row["path"]: index for index, group in enumerate(groups) for row in group}
+    occurrences = Counter(path for members, _ in units for path in members)
+    allowed = set(cover["paths"]) & inventory.keys()
+    contexts = [set() for _ in groups]
+    for members, context in units:
+        references = (set(context) | {p for p in members if occurrences[p] > 1}) & allowed
+        for index in {owner[p] for p in members if p in owner}:
+            contexts[index].update(references)
+    for group, context in zip(groups, contexts):
+        yield group, sorted(context.difference(row["path"] for row in group))
 
 
 def bind(roster: dict, bindings: dict, plugin_root: Path) -> dict:
@@ -277,7 +311,8 @@ def bind(roster: dict, bindings: dict, plugin_root: Path) -> dict:
         digest.update(f"common\n{common['sha256']}\n".encode())
         return source_bindings, unbound, digest.hexdigest()
 
-    def add_job(role: str, scope_id: str, members: list[str], group: list[dict] | None = None) -> str:
+    def add_job(role: str, scope_id: str, members: list[str], group: list[dict] | None = None,
+                context_paths: list[str] | None = None) -> str:
         scope = scope_of(scope_id)
         source_bindings, unbound, body = sources(members)
         for member in unbound:
@@ -295,6 +330,10 @@ def bind(roster: dict, bindings: dict, plugin_root: Path) -> dict:
             # A group job concludes on its paths and delivers one JSON reviewer-result.
             job.update(paths=[row["path"] for row in group], bytes=sum(row["size"] for row in group),
                        output_path=f"{output}.json")
+            if context_paths:
+                job["context_paths"] = context_paths
+            if job["bytes"] > cover["budget"]:
+                job["over_budget_bytes"] = job["bytes"] - cover["budget"]
         jobs.append(job)
         return job_id
 
@@ -332,17 +371,8 @@ def bind(roster: dict, bindings: dict, plugin_root: Path) -> dict:
         cells += own
         reviewers[job["role"]] = sources(job["members"])[2]
         pending = {cell["path"]: cell for cell in own if cell["status"] == "open" and cell["sha256"] is not None}
-        groups = []
-        for unit in cover["units"]:
-            # A given unit keeps its files together; a file already in a group stays in the first one.
-            group = [cover["inventory"][path] for path in unit
-                     if path in pending and all(path not in [row["path"] for row in g] for g in groups)]
-            if group:
-                groups.append(group)
-        grouped = {row["path"] for group in groups for row in group}
-        groups += pack([cover["inventory"][path] for path in pending if path not in grouped], cover["budget"])
-        for group in groups:
-            job_id = add_job(job["role"], job["scope_id"], job["members"], group)
+        for group, context_paths in coverage_groups(cover, pending):
+            job_id = add_job(job["role"], job["scope_id"], job["members"], group, context_paths)
             for row in group:
                 pending[row["path"]]["job_id"] = job_id
     result = {**roster, "schema": SCHEMA, "roster_schema": ROSTER_SCHEMA, "common": common,

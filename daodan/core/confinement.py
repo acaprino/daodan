@@ -27,12 +27,13 @@ class ProjectBusy(ConfinementError):
 
 
 @contextmanager
-def project_lock(project: Path):
+def project_lock(project: Path, *, timeout: float | None = None):
     """Serialize local helpers without creating or relocating a lock file.
 
     Windows mutexes and POSIX directory locks are released by the OS when a
     process exits, including an abrupt exit. No stale lock record needs deleting.
     """
+    timeout = LOCK_TIMEOUT_SECONDS if timeout is None else timeout
     if os.name == "nt":
         import ctypes
         from ctypes import wintypes
@@ -52,7 +53,7 @@ def project_lock(project: Path):
             raise ConfinementError(f"cannot acquire project lock: {ctypes.WinError(ctypes.get_last_error())}")
         acquired = False
         try:
-            outcome = kernel.WaitForSingleObject(handle, max(0, int(LOCK_TIMEOUT_SECONDS * 1000)))
+            outcome = kernel.WaitForSingleObject(handle, max(0, int(timeout * 1000)))
             if outcome == 0x102:
                 raise ProjectBusy("project lock is held by another helper; retry after that invocation finishes")
             if outcome not in {0, 0x80}:  # WAIT_OBJECT_0 or WAIT_ABANDONED
@@ -68,7 +69,7 @@ def project_lock(project: Path):
 
         descriptor = os.open(project, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
         acquired = False
-        deadline = time.monotonic() + LOCK_TIMEOUT_SECONDS
+        deadline = time.monotonic() + timeout
         try:
             while not acquired:
                 try:

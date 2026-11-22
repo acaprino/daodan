@@ -6,10 +6,14 @@ what each unit's analysis needs, before any indexer. The indexer stage and the
 container read it and decide nothing on their own. It holds the project's
 structure (units, workspaces and their members, the edges between units,
 source roots and configuration, languages, excluded files), the toolchain
-versions the project declares and the command it declares for its tests, with
-the gaps. It never holds the libraries a
-unit uses: each analyzer's build tool resolves them in the container while it
-indexes, and a source that states them fails.
+versions and packages the project declares and the command it declares for its tests.
+A successful Cargo resolution also supplies `package_graphs`, one graph per workspace manifest.
+Its member nodes identify their manifests and its edges identify package nodes by index,
+with the dependency kind and target condition when Cargo supplies them. The stack lists
+reachable external crates and their exact versions under each build module's `resolved_libraries`.
+A member's development dependencies count when that member is the root of the query.
+An empty inventory records a successful resolution with no external crates. A missing
+resolution leaves the field absent and the pre-map records the reason when the command did not run or failed.
 `premap.ensure(manifest, runner=None)` returns it, derived again when the
 snapshot or a source version changed, or when a runner is given and the model
 commands have not run; `premap.state(manifest, runner=None)` says `fresh`,

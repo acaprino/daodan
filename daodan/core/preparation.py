@@ -19,6 +19,8 @@ from pathlib import Path
 import posixpath
 import re
 
+from tree_scope import workspace_glob
+
 STATE = "/daodan/state"
 IN, T = f"{STATE}/in", f"{STATE}/tools"
 # The base every container run starts from (Debian's slim image, glibc 2.41): what a language needs beside it,
@@ -414,8 +416,7 @@ def _names(patterns: list[str], rel: str) -> bool:
     """Whether workspace `patterns` name the folder `rel`, relative to their root: `*` within a folder name,
     `**` across folders, a `!` pattern excludes."""
     def match(pattern: str) -> bool:
-        regex = re.escape(pattern.strip().strip("/").removeprefix("./"))
-        return re.fullmatch(regex.replace(r"\*\*", ".*").replace(r"\*", "[^/]*"), rel) is not None
+        return workspace_glob(pattern.strip().strip("/").removeprefix("./")).fullmatch(rel) is not None
     return any(match(p) for p in patterns if not p.startswith("!")) and not any(
         match(p[1:]) for p in patterns if p.startswith("!"))
 

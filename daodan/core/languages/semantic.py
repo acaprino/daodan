@@ -77,6 +77,7 @@ class _Evidence:
         if reason:
             ref["reason"] = reason
         self.data["references"].append(ref)
+        return ref
 
     def finish(self):
         for key in ("declarations", "imports", "references"):
@@ -438,7 +439,7 @@ class _JavaScriptEvidence(_Evidence):
         self.writes = []
         self.tauri_invoke_locals = set()
         self.tauri_namespaces = set()
-        self.tauri_commands_bound = set()
+        self.tauri_calls = [] if b"@tauri-apps/api" in src else None
         # Overload signatures by (scope, name), waiting for the declaration that implements them.
         self.signatures: dict[tuple[str, str], list] = {}
 
@@ -458,7 +459,35 @@ class _JavaScriptEvidence(_Evidence):
                 scope = self.scope_by_id[scope]["parent"]
             declaration["scope"] = scope
             declaration["qualified_name"] = self.qualified(declaration["name"], scope)
+        if self.tauri_calls:
+            self.bind_tauri_calls()
         return self.finish()
+
+    def bind_tauri_calls(self):
+        """Resolve the imported invoke binding after declarations and hoisted local shadows are known."""
+        declared = {(d["scope"], d["name"]) for d in self.data["declarations"] if d.get("lexical") is not False}
+        bound = set()
+        for ref, command, span in self.tauri_calls:
+            parts = ref["parts"]
+            if not ((len(parts) == 1 and parts[0] in self.tauri_invoke_locals) or
+                    (len(parts) == 2 and parts[0] in self.tauri_namespaces and parts[1] == "invoke")):
+                continue
+            scope = ref["scope"]
+            while scope and (scope, parts[0]) not in declared and not self.scope_by_id[scope].get("unresolved"):
+                scope = self.scope_by_id[scope].get("parent")
+            if scope is not None:
+                continue
+            ref["tauri_command"] = command
+            ref["tauri_registration_version"] = 2  # requires a production Tauri builder registration
+            if not command or not command.isidentifier():
+                continue
+            # A synthetic binding must never collide with a real JavaScript local.
+            local = f"__tauri_invoke_::{command}"
+            if command not in bound:
+                self.data["imports"].append({"scope": "module", "local": local, "module": f"tauri::command::{command}",
+                                             "imported": command, "mode": "named", "span": span})
+                bound.add(command)
+            ref["parts"] = [local]
 
     def text(self, node):
         return self.src[node.start_byte:node.end_byte].decode("utf-8") if node is not None else ""
@@ -870,54 +899,18 @@ class _JavaScriptEvidence(_Evidence):
             if function is not None:
                 parts = self.parts(function)
                 call_parts = parts
-                if (
-                    t == "call_expression"
-                    and parts
-                    and (
-                        (len(parts) == 1 and parts[0] in self.tauri_invoke_locals)
-                        or (len(parts) == 2 and parts[0] in self.tauri_namespaces and parts[1] == "invoke")
-                    )
-                ):
-                    shadowed = any(
-                        d["name"] == parts[0] and d.get("lexical") is not False
-                        for d in self.data["declarations"]
-                    )
-                    args_node = node.child_by_field_name("arguments")
-                    first_arg = (
-                        args_node.named_children[0]
-                        if args_node is not None and args_node.named_children
-                        else None
-                    )
-                    if (
-                        not shadowed
-                        and first_arg is not None
-                        and first_arg.type == "string"
-                        and not any(
-                            c.type in ("template_substitution", "escape_sequence")
-                            for c in first_arg.named_children
-                        )
-                    ):
-                        raw_cmd = self.text(first_arg).strip("\"'`")
-                        if raw_cmd.isidentifier():
-                            synth_local = f"__tauri_invoke_{raw_cmd}"
-                            if raw_cmd not in self.tauri_commands_bound:
-                                self.tauri_commands_bound.add(raw_cmd)
-                                self.data["imports"].append({
-                                    "scope": "module",
-                                    "local": synth_local,
-                                    "module": f"tauri::command::{raw_cmd}",
-                                    "imported": raw_cmd,
-                                    "mode": "named",
-                                    "span": self.span(first_arg),
-                                })
-                            call_parts = [synth_local]
                 if not call_parts and function.type == "member_expression":
                     # A member of a computed value keeps its name, so the call can be classified and asked.
                     prop = function.child_by_field_name("property")
                     if prop is not None and prop.type in ("property_identifier", "private_property_identifier"):
                         call_parts = ["(expr)", self.text(prop)]
-                self.reference(call_parts, "call", self.span(function),
-                               "dynamic-callee" if not call_parts or call_parts[0] == "(expr)" else None)
+                ref = self.reference(call_parts, "call", self.span(function),
+                                     "dynamic-callee" if not call_parts or call_parts[0] == "(expr)" else None)
+                if self.tauri_calls is not None and t == "call_expression" and 0 < len(parts) <= 2:
+                    args = node.child_by_field_name("arguments")
+                    first = args.named_children[0] if args and args.named_children else None
+                    command = self.text(first)[1:-1] if first is not None and first.type == "string" else None
+                    self.tauri_calls.append((ref, command, self.span(first) if first is not None else ref["span"]))
                 if not parts:
                     self.walk(function.child_by_field_name("object") if call_parts else function)
                 if parts == ["eval"]:

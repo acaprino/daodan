@@ -166,6 +166,8 @@ def _record_parse(entry: dict, result, text: str, lines: list[str], profile: dic
     ]
     if getattr(result, "default_export", None):
         entry["default_export"] = result.default_export
+    if getattr(result, "tauri", None) and entry["status"] == "parsed":
+        entry["tauri"] = result.tauri
     # Semantic facts belong to these exact bytes and the same parser
     # identity. A damaged parse cannot certify complete reference coverage:
     # its facts are kept only read around the error, with the lines it could
@@ -658,7 +660,7 @@ def write_snapshot(target: Path, out: Path, *, format: str = "sqlite", previous=
 
 
 def compare_files(manifest: dict, target: Path, verify: bool = False,
-                  raw_hashes: dict | None = None) -> dict:
+                  raw_hashes: dict | None = None, *, source_identity=None) -> dict:
     """
     Classify every path as added, removed, modified or unchanged.
 
@@ -700,6 +702,15 @@ def compare_files(manifest: dict, target: Path, verify: bool = False,
             continue
         if structural_refresh or entry.get("parser_profile") != parser_profile(path, entry.get("language")):
             modified.append(rel)
+            continue
+        if source_identity is not None and entry.get("raw_hash"):
+            try:
+                identity = source_identity(path)
+            except (OSError, ValueError):
+                identity = None
+            if identity is not None and raw_hashes is not None:
+                raw_hashes[rel] = identity[0]
+            (unchanged if identity and identity[0] == entry["raw_hash"] else modified).append(rel)
             continue
         if not verify and stat.st_size == entry.get("size") and round(stat.st_mtime, 3) == entry.get("mtime"):
             unchanged.append(rel)
@@ -1421,8 +1432,8 @@ def query_gate(manifest: Path) -> dict | None:
 
     Only the working run and the published run are gated: the working run when
     its last refresh did not end fresh or left another manifest, both when the
-    source differs from the snapshot by `compare_files` (size and mtime first:
-    an edit keeping both is not seen).
+    current source bytes differ from the snapshot. Verified byte identities are reused only
+    while the filesystem identity and change clock still match.
     """
     manifest = Path(manifest).resolve()
     run = manifest.parent.parent
@@ -1444,8 +1455,10 @@ def query_gate(manifest: Path) -> dict | None:
         st = manifest.stat()
         if refresh.get("manifest_stat") != [st.st_ino, st.st_size, st.st_mtime_ns]:
             return needs("the working snapshot is not the one its last refresh published")
+    from store_graph import source_identity
     with open_snapshot(manifest) as store:
-        comparison = compare_files(store, Path(store["root"]) / store["target"])
+        comparison = compare_files(store, Path(store["root"]) / store["target"], verify=True,
+                                   source_identity=source_identity)
     changed = comparison["added"] + comparison["removed"] + comparison["modified"]
     if changed:
         return needs(f"{len(changed)} files changed since the snapshot: " + ", ".join(changed[:5]))
@@ -1526,6 +1539,8 @@ def _refresh_locked(root: Path, published: Path, working: Path) -> dict:
             stale.unlink()
         if (published / "snapshot/proposals.json").is_file():
             shutil.copy2(published / "snapshot/proposals.json", working / "snapshot/proposals.json")
+        else:
+            (working / "snapshot/proposals.json").unlink(missing_ok=True)
         _write_json_atomic(working / "state.json", state)
     manifest = working / state["snapshot"]["path"]
     target = _project_target(root, state["target"])

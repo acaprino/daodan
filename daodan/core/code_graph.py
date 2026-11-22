@@ -984,6 +984,10 @@ def write_store(snapshot: Snapshot, out: Path, built: dict, resolver: str, rows:
         holes += [{**row, "file": snapshot.rel.get(row["file"], row["file"])} for row in own_holes]
         entries[language] = {"engine": resolver, "state": "fresh", "indexer": indexer, "coverage": coverage,
                              "edges_removed": {}}
+    from engine_pass import ENGINE_LANGUAGES, adapter_fingerprint
+    for language, entry in entries.items():
+        if language in ENGINE_LANGUAGES:
+            entry["adapter_digest"] = adapter_fingerprint(ENGINE_LANGUAGES[language].indexer)
     kept_entries, kept_edges, kept_holes, kept_reports = rx.kept_languages(out, snapshot.store, entries)
     binding = rx.store_binding(snapshot.store, snapshot.manifest, snapshot.store.metadata.get("parser_fingerprint"),
                                {**kept_entries, **entries}, kept_reports)

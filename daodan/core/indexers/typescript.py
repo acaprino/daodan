@@ -580,6 +580,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
     Node it states, all as the pre-map names them (`structure`); `engine` and `memory` are the container's. See
     the module's docstring."""
     import container
+    import node_preparation
     from indexers import runtime
     project_dir, work_dir = Path(project_dir).resolve(), Path(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
@@ -607,8 +608,9 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
     extends = _tsconfig(project_dir, config, [*(rel for rel in files if rel.endswith(SUFFIXES)),
                                               *components.include(parts)], tsconfig, aliases)
     generators = sorted({(folder, command) for _here, folder, _file, command in _extending(project_dir) if command})
+    restore_lines, shared = node_preparation.options(restored, stated, (declared or {}).get("hosts", ()))
     prepare = PREPARE.format(node="\n".join(preparation.setup(["node"])["lines"]), chains="\n".join(chains["lines"]),
-                             restores="\n".join(restored["lines"]), types=types,
+                             restores="\n".join(restore_lines), types=types,
                              generators="\n".join(generator(folder, command) for folder, command in generators),
                              frameworks="\n".join(components.install(parts)))
     out_dir = work_dir / "container"
@@ -618,7 +620,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, tsc
     result = container.run_in_container(
         project_dir, ["bash", "-c", execute], image=IMAGE, out_dir=out_dir,
         prepare=["bash", "-c", prepare], outputs=[OUT], env={**preparation.ENV, "TERM": "dumb"}, timeout=3 * 3600,
-        prepare_timeout=3600, memory=memory, engine=engine,
+        prepare_timeout=3600, memory=memory, engine=engine, **shared,
         registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *restored["hosts"], *chains["hosts"],
                                         *(declared or {}).get("hosts", ())])),
         inputs=lambda: {CONFIG: config, TYPES: Path(__file__).with_name("typescript_types.py"),

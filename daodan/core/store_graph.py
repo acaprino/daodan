@@ -2,6 +2,10 @@
 from __future__ import annotations
 
 import hashlib
+import functools
+import os
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 
 import snapshot
@@ -10,12 +14,74 @@ from semantic_store import semantic_reader, install_edge_view
 from store_graph_metrics import build_metrics, metric_metadata
 
 NOTES = [
-    "Static resolved bindings expand in both directions; unresolved calls never establish an edge.",
+    "The graph traverses resolved bindings and each recorded project destination in either direction. A runtime destination is specific to its observation.",
     "Module configuration uses only verified inventoried observations; newly added files require a refreshed inventory.",
     "Imports, transitive reachability and PageRank guide reading; they do not establish runtime propagation or change update invalidation.",
     "Coverage gaps and truncation prevent completeness claims; an empty incoming list does not prove a symbol unused.",
-    "Read the selected requests through source_reader read before making source-supported claims. Application runtime coverage: none.",
+    "Read the selected source and check each edge's recorded provenance before making claims about runtime behavior.",
 ]
+
+
+def source_stamp(path):
+    """File identity and last content/metadata change. An unavailable change clock disables reuse."""
+    stat = path.stat()
+    change = stat.st_ctime_ns
+    if os.name == "nt":
+        # Windows stat's ctime is the creation time. Get the filesystem change time so that
+        # replacing bytes and restoring their mtime still invalidates the verified identity.
+        import ctypes
+        import msvcrt
+        with path.open("rb") as handle:
+            info = (ctypes.c_int64 * 5)()  # FILE_BASIC_INFO: four timestamps and file attributes
+            ok = ctypes.windll.kernel32.GetFileInformationByHandleEx(
+                ctypes.c_void_p(msvcrt.get_osfhandle(handle.fileno())), 0, ctypes.byref(info), ctypes.sizeof(info))
+            change = info[3] if ok else 0
+    return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, change)
+
+
+def _identity(data):
+    return hashlib.sha256(data).hexdigest(), 1 + data.count(b"\n") + data.count(b"\r") - data.count(b"\r\n")
+
+
+@functools.lru_cache(maxsize=32768)
+def _file_identity(path, stamp):
+    identity = _identity(path.read_bytes())
+    if source_stamp(path) != stamp:
+        raise ValueError("source changed while verifying graph evidence; refresh the manifest")
+    return identity
+
+
+_verified_sources = ContextVar("verified_graph_sources", default=None)
+
+
+@contextmanager
+def capture_verified_sources():
+    """Capture the filesystem identities actually verified while building one cached graph."""
+    found = {}
+    token = _verified_sources.set(found)
+    try:
+        yield found
+    finally:
+        _verified_sources.reset(token)
+
+
+def sources_unchanged(found: dict) -> bool:
+    try:
+        return all(stamp[1] and stamp[4] and source_stamp(path) == stamp for path, stamp in found.items())
+    except OSError:
+        return False
+
+
+def source_identity(path: Path) -> tuple[str, int] | None:
+    """Return the digest and line count for these bytes, or None when the source exceeds the snapshot limit."""
+    stamp = source_stamp(path)
+    found = _verified_sources.get()
+    if found is not None:
+        found[path] = stamp
+    if stamp[2] > snapshot.MAX_FILE_BYTES:
+        return None
+    read = _file_identity if stamp[1] and stamp[4] else _file_identity.__wrapped__
+    return read(path, stamp)
 
 
 def _preflight(store, db, selected, explicit, observations=None):
@@ -61,22 +127,22 @@ def _preflight(store, db, selected, explicit, observations=None):
         path = root / rel
         try:
             data = observations.get(rel) if observations is not None else None
-            if data is None:
-                data = path.read_bytes() if path.stat().st_size <= snapshot.MAX_FILE_BYTES else None
+            if data is not None:
+                identity = _identity(data)
+            else:
+                identity = source_identity(path)
         except OSError as error:
             raise ValueError(f"cannot verify graph source {rel}; refresh the manifest") from error
-        if data is None:
+        if identity is None:
             oversized = {"status": "oversized", "reason": "source-size-limit", "verified_source": False,
                          "reference_count": 0, "resolved_count": 0}
             db.execute("UPDATE q_cover SET status='oversized',verified=0,payload=? WHERE file=?", (_pack(oversized), rel))
             rebuild = True
         else:
-            if hashlib.sha256(data).hexdigest() != entry.get("raw_hash"):
+            if identity[0] != entry.get("raw_hash"):
                 raise ValueError(f"source identity changed or is missing for {rel}; refresh the manifest")
-            lines = data.decode("utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n").split("\n")
-            if type(entry.get("lines")) is not int or entry["lines"] != len(lines):
+            if type(entry.get("lines")) is not int or entry["lines"] != identity[1]:
                 raise ValueError(f"line metadata is inconsistent for {rel}; refresh the manifest")
-            del data, lines
     invalid = db.execute("SELECT file,status FROM q_cover WHERE status IN ('stale','fingerprint-mismatch','unbound-source','malformed') LIMIT 1").fetchone()
     if invalid:
         raise ValueError(f"graph evidence is {invalid[1]} for {invalid[0]}; refresh the manifest")
@@ -98,22 +164,24 @@ def _packet(store, db, selected, hops, limit, digest):
     db.execute("""INSERT OR IGNORE INTO q_dist SELECT s.file||'::@module',0 FROM q_seed s
                   JOIN q_cover c ON c.file=s.file AND c.verified=1""")
     caller = "coalesce(r.caller,r.file||'::@module')"
+    db.execute(f"""CREATE TEMP TABLE q_links AS
+        SELECT r.id,{caller} caller,r.target_id FROM effective_references r
+        JOIN q_cover c ON c.file=r.file AND c.verified=1 WHERE r.kind='call' AND r.resolution='resolved'
+        UNION SELECT o.id,{caller},o.target_id FROM effective_observations o JOIN effective_references r ON r.id=o.id""")
+    db.execute("CREATE INDEX temp.q_links_target ON q_links(target_id)")
+    db.execute("CREATE INDEX temp.q_links_caller ON q_links(caller)")
+    db.execute("CREATE INDEX temp.q_links_id ON q_links(id)")
     for depth in range(hops):
-        db.execute(f"""INSERT OR IGNORE INTO q_dist SELECT r.target_id,? FROM effective_references r
-            JOIN q_cover c ON c.file=r.file AND c.verified=1
-            JOIN q_dist d ON d.node={caller} AND d.depth=?
-            WHERE r.kind='call' AND r.resolution='resolved' ORDER BY r.target_id""", (depth + 1, depth))
-        db.execute(f"""INSERT OR IGNORE INTO q_dist SELECT {caller},? FROM effective_references r
-            JOIN q_cover c ON c.file=r.file AND c.verified=1
-            JOIN q_dist d ON d.node=r.target_id AND d.depth=?
-            WHERE r.kind='call' AND r.resolution='resolved' ORDER BY 1""", (depth + 1, depth))
+        db.execute("""INSERT OR IGNORE INTO q_dist SELECT r.target_id,? FROM q_links r
+            JOIN q_dist d ON d.node=r.caller AND d.depth=? ORDER BY r.target_id""", (depth + 1, depth))
+        db.execute("""INSERT OR IGNORE INTO q_dist SELECT r.caller,? FROM q_links r
+            JOIN q_dist d ON d.node=r.target_id AND d.depth=? ORDER BY r.caller""", (depth + 1, depth))
     db.execute("CREATE TEMP TABLE q_calls(id TEXT PRIMARY KEY,file TEXT,depth INTEGER)")
     db.execute(f"""INSERT INTO q_calls SELECT id,file,distance+1 FROM (
-        SELECT r.id,r.file,min(coalesce(a.depth,?),
-            CASE WHEN r.resolution='resolved' THEN coalesce(b.depth,?) ELSE ? END) AS distance
+        SELECT r.id,r.file,min(coalesce(a.depth,?),coalesce(min(b.depth),?)) AS distance
         FROM effective_references r JOIN q_cover c ON c.file=r.file AND c.verified=1
-        LEFT JOIN q_dist a ON a.node={caller} LEFT JOIN q_dist b ON b.node=r.target_id
-        WHERE r.kind='call') WHERE distance<?""", (hops, hops, hops, hops))
+        LEFT JOIN q_dist a ON a.node={caller} LEFT JOIN q_links l ON l.id=r.id LEFT JOIN q_dist b ON b.node=l.target_id
+        WHERE r.kind='call' GROUP BY r.id) WHERE distance<?""", (hops, hops, hops))
     db.execute("CREATE TEMP TABLE q_declarations(id TEXT PRIMARY KEY,file TEXT,depth INTEGER)")
     db.execute("""INSERT INTO q_declarations SELECT d.id,d.file,q.depth FROM sem_declarations d
                   JOIN q_dist q ON q.node=d.id JOIN q_cover c ON c.file=d.file AND c.verified=1""")

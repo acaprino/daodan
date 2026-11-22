@@ -28,9 +28,11 @@ from languages import _treesitter, get_adapter  # noqa: E402
 from languages.sfc import mask_non_script  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
 
-RESIDUAL, ARGUMENT, ATTRIBUTE, DECORATOR, NOIR = "residuo", "argomento", "attributo", "decoratore", "noir"
+RESIDUAL, ARGUMENT, ATTRIBUTE, DECORATOR, NOIR, MANIFEST = "residuo", "argomento", "attributo", "decoratore", "noir", "manifesto"
 CALLS = ("chiama", "attiva")  # the links by which a symbol is called
 QUERIES = json.loads((SCRIPT_DIR.parent / "data" / "entry-queries.json").read_text(encoding="utf-8"))
+ENTRY_KINDS = tuple(QUERIES["entry_kinds"])
+NO_ENTRY = "nessun ingresso"
 RECEIVERS = ("self", "this")  # the object a method is called on: D5 resolves its methods
 LOCALES = {".json": json.loads, ".toml": tomllib.loads}  # the locale formats read, each by its standard reader
 
@@ -88,14 +90,20 @@ def _query(grammar: str, section: str = "queries"):
     return _treesitter.get_query(grammar, "\n".join(lines))
 
 
-def _matches(source: bytes, grammar: str, section: str = "queries") -> list[dict]:
-    """Each match of the grammar's query on the tree of `source`, its captures by name; none without the grammar."""
+def _parse(source, grammar):
+    loaded = _treesitter.get_parser(grammar) if grammar else None
+    return loaded[0].parse(source).root_node if loaded else None
+
+
+def _matches(source: bytes, grammar: str, section: str = "queries", root=None) -> list[dict]:
+    """Apply the query to the supplied file tree, or parse an isolated expression."""
     from tree_sitter import QueryCursor
 
-    loaded, query = _treesitter.get_parser(grammar), _query(grammar, section)
-    if loaded is None or query is None:
+    query = _query(grammar, section)
+    root = _parse(source, grammar) if root is None else root
+    if root is None or query is None:
         return []
-    return [captures for _, captures in QueryCursor(query).matches(loaded[0].parse(source).root_node)]
+    return [captures for _, captures in QueryCursor(query).matches(root)]
 
 
 def _file(facts: flows.Facts, file: str, template: bool, section: str | None = None) -> tuple[bytes, str | None]:
@@ -163,7 +171,7 @@ def _method(facts: flows.Facts, classes: dict, file: str, line: int, name: str) 
     return (facts.node(found[0]["id"]), "") if found else (None, f"{owner['name']} does not define {name}")
 
 
-def _assignments(assigned: dict, file: str, source: bytes, root) -> list[tuple[str, int, object]]:
+def _assignments(assigned: dict, file: str, source: bytes, root) -> list[tuple[str, tuple[int, int], object]]:
     """Every target the file assigns, with its line and value, in the order of the text: `left = value` or
     `name = value` in the tree; once per file."""
     if file not in assigned:
@@ -174,7 +182,7 @@ def _assignments(assigned: dict, file: str, source: bytes, root) -> list[tuple[s
             for target, value in (("left", "right"), ("name", "value")):
                 left, right = node.child_by_field_name(target), node.child_by_field_name(value)
                 if left is not None and right is not None:
-                    out.append((_text(source, left), left.start_point[0] + 1, right))
+                    out.append((_text(source, left), _at(left), right))
         assigned[file] = sorted(out, key=lambda item: item[1])
     return assigned[file]
 
@@ -185,8 +193,23 @@ def _held(node, source: bytes, grammar: str) -> bool:
         (grammar in QUERIES["calls"] and _literal(node, source, grammar) is not None)
 
 
+def _resolved(facts, file, places):
+    """Respect the exact indexed read, including an ambiguous or external answer that forbids guessing."""
+    for at in places:
+        reads = facts.reads.get((file, *at), ())
+        if any(edge_view.uncertainty(read) for read in reads):
+            return None, "unresolved"
+        for read in reads:
+            target = read.get("target_id")
+            if target and facts.declarations.get(target, {}).get("kind") in ("function", "method"):
+                return facts.node(target), (read.get("provenance") or [read["resolver"]])[-1]
+            if read.get("engine_candidate") or read.get("external") or read.get("reason") == "project-value":
+                return None, "unresolved"
+    return None, None
+
+
 def _function(facts: flows.Facts, classes: dict, anonymous: set, parsed: tuple, assigned: dict, ref: dict,
-              node) -> tuple[str | None, str | None]:
+              node) -> tuple[str | None, str | None, str | None]:
     """The function an argument gives, and the gap when it is a method that does not resolve. `self.name` is the
     method of its class (`_method`); an attribute the class assigns from a call or a text is a value, none; one it
     assigns otherwise is a function given at run time, a gap. A name counts only as the snapshot resolved its read,
@@ -196,23 +219,48 @@ def _function(facts: flows.Facts, classes: dict, anonymous: set, parsed: tuple, 
     text, line, column = _text(source, node), node.start_point[0] + 1, node.start_point[1]
     receiver = node.child_by_field_name("object")
     member = node.child_by_field_name("property") or node.child_by_field_name("attribute")
+    places = [member, node] if member is not None else [node] if node.named_child_count == 0 else []
     if receiver is not None and member is not None and _text(source, receiver) in RECEIVERS:
         name = _text(source, member)
-        symbol, why = _method(facts, classes, file, line, name)
-        owner = _holder(classes, file, line) if symbol is None else None
+        owner = _holder(classes, file, line)
         values = [value for target, at, value in _assignments(assigned, file, source, root) if owner
-                  and target == text and owner["line"] <= at <= (owner["end"] or owner["line"])]
-        if values and all(_held(value, source, grammar) for value in values):
-            return None, None
-        why = f"{owner['name']} assigns {name} at run time" if values else why
-        return (symbol, None) if symbol else (facts.node(ref.get("caller")) or f"{file}::{flows.MODULE}",
-                                              f"handler {text} not resolved: {why}")
-    places = [node, member] if member is not None else [node] if node.named_child_count == 0 else []
-    read = [t for at in places for t in facts.reads.get((file, at.start_point[0] + 1, at.start_point[1]), [])]
-    found = [t for t in read if facts.declarations.get(t or "", {}).get("kind") in ("function", "method")]
-    if found:
-        return facts.node(found[0]), None
-    return (facts.handler(text, file, line, column) if (file, line, column) in anonymous else None), None
+                  and target == text and owner["line"] <= at[0] <= (owner["end"] or owner["line"])]
+        if values:
+            # A type index may identify the declared method even when an instance field shadows it.
+            if grammar == "python":
+                # A direct assignment immediately before registration has no intervening branch or call.
+                statement = node
+                while statement.parent and statement.parent.type != "block":
+                    statement = statement.parent
+                previous = statement.prev_named_sibling
+                if previous is not None and previous.type == "expression_statement" and len(previous.named_children) == 1:
+                    previous = previous.named_children[0]
+                if previous is not None and previous.type == "assignment":
+                    value = previous.child_by_field_name("right")
+                    if value is not None and value.type == "identifier" and value in values:
+                        target, origin = _resolved(facts, file, [_at(value)])
+                        if target:
+                            return target, None, origin
+            parameter = node.parent.child_by_field_name("name") if node.parent else None
+            if (all(_held(value, source, grammar) for value in values)
+                    and not (parameter is not None and _text(source, parameter) == "command")):
+                return None, None, None
+            return (facts.node(ref.get("caller")) or f"{file}::{flows.MODULE}",
+                    f"handler {text} not resolved: {owner['name']} assigns {name} at run time", None)
+    symbol, origin = _resolved(facts, file, map(_at, places))
+    if origin:
+        return symbol, None, origin
+    if receiver is not None and member is not None and _text(source, receiver) in RECEIVERS:
+        symbol, why = _method(facts, classes, file, line, _text(source, member))
+        return (symbol, None, "classe") if symbol else (facts.node(ref.get("caller")) or f"{file}::{flows.MODULE}",
+                                                         f"handler {text} not resolved: {why}", None)
+    if (file, line, column) in anonymous:
+        written = facts.written_function(file, line, column)
+        if written["id"] in facts.native_dispatch_callers:
+            return written["id"], None, "inline"
+        handler = facts.handler(text, file, line, column)
+        return handler, None, "chiamata" if handler else None
+    return None, None, None
 
 
 def _literal(node, source: bytes, grammar: str) -> str | None:
@@ -250,45 +298,72 @@ def _control_label(facts, classes, parsed, ref, on: dict, assigned: dict) -> str
     label = _call_label(_arguments(_call(root, ref["span"]), source), source, grammar, False)
     holder = _holder(classes, file, ref["span"][0]) if parts[0] in RECEIVERS else facts.enclosing(file, ref["span"][0])
     lines = (holder["line"], holder["end"] or holder["line"]) if holder else (1, float("inf"))
+    at = tuple(ref["span"][:2])
+    scope = facts.enclosing(file, at[0], column=at[1])
     for size in range(len(parts) - 1, 0, -1):
+        if label is not None:
+            break
         target = ".".join(parts[:size])
-        for name, line, call in _assignments(assigned, file, source, root) if label is None else ():
-            if name == target and lines[0] <= line <= lines[1] and call.child_by_field_name("arguments") is not None:
-                label = label or _call_label(_arguments(call, source), source, grammar, True)
-        for setter in on.get((file, tuple(parts[:size])), ()) if label is None else ():
-            if str(setter["parts"][-1]) in QUERIES["calls"][grammar]["setters"] \
-                    and lines[0] <= setter["span"][0] <= lines[1]:
-                label = _call_label(_arguments(_call(root, setter["span"]), source), source, grammar, True)
+        placements = [(pos, value) for name, pos, value in _assignments(assigned, file, source, root)
+                      if name == target and lines[0] <= pos[0] <= lines[1]]
+        local, initial = [], []
+        for pos, value in placements:
+            assigned_in = facts.enclosing(file, pos[0], column=pos[1])
+            if assigned_in == scope and pos < at:
+                local.append((pos, value))
+            elif assigned_in is not None and assigned_in["name"] == "__init__" and assigned_in != scope:
+                initial.append((pos, value))
+        last, call = local[-1] if local else ((lines[0], -1), initial[0][1] if len(initial) == len(placements) == 1 else None)
+        if call is not None and call.child_by_field_name("arguments") is not None:
+            label = _call_label(_arguments(call, source), source, grammar, True)
+        setters = [s for s in on.get((file, tuple(parts[:size])), ())
+                   if str(s["parts"][-1]) in QUERIES["calls"][grammar]["setters"]
+                   and last < tuple(s["span"][:2]) < at
+                   and facts.enclosing(file, s["span"][0], column=s["span"][1]) == scope]
+        if setters:
+            setter = max(setters, key=lambda s: s["span"][:2])
+            label = _call_label(_arguments(_call(root, setter["span"]), source), source, grammar, True)
     return label
 
 
-def passed(facts: flows.Facts, view: dict, names: dict[str, set[str]]) -> list[dict]:
+def _passed(facts, references, names, classes, anonymous, parsed):
     """A function of the project given as an argument of a call, read from the call's node in the file's tree
     (`_function`), with the label of its control (`_control_label`). Its shape is the callee as written
     (`_written`) and the argument's position, `argN` or the keyword."""
-    anonymous = {(d["file"], d["line"], d["column"]) for d in facts.declarations.values()
-                 if d["kind"] in ("function", "method") and d["name"] == "(anonymous)"}
-    classes, on, trees, assigned, out = _classes(facts), defaultdict(list), {}, {}, []
-    for ref in view["references"]:
+    on, assigned, out = defaultdict(list), {}, []
+    for ref in references:
         if ref.get("parts"):
             on[(ref["file"], tuple(str(part) for part in ref["parts"][:-1]))].append(ref)
-    for ref in view["references"]:
+    source, root, grammar = parsed
+    for ref in references:
         file, parts, span = ref["file"], [str(part) for part in ref.get("parts") or []], ref.get("span") or [None] * 4
         if not parts or None in span[:4]:
             continue
-        if file not in trees:
-            source, grammar = _file(facts, file, template=False)
-            loaded = _treesitter.get_parser(grammar) if grammar else None
-            trees[file] = (source, loaded[0].parse(source).root_node if loaded else None, grammar)
-        source, root, _ = trees[file]
+        arguments = _arguments(_call(root, span), source) if root else []
         found = []
-        for index, (keyword, node) in enumerate(_arguments(_call(root, span), source) if root else ()):
-            symbol, gap = _function(facts, classes, anonymous, trees[file], assigned, ref, node)
+        form = QUERIES["event_methods"].get(parts[-1])
+        for index, (keyword, node) in enumerate(arguments):
+            event_arg = keyword == "command" or (form == "signal" and index == 0) or (form == "first_literal" and index == 1)
+            inline = facts.written_function(file, *_at(node)) if event_arg and (file, *_at(node)) in anonymous else None
+            symbol, gap, origin = (inline["id"], None, "inline") if inline else _function(
+                facts, classes, anonymous, parsed, assigned, ref, node)
             shape = f"{_written(parts, names.get(file, set()))}#{keyword or f'arg{index}'}"
             if symbol:
-                found.append({"reader": ARGUMENT, "shape": shape, "site": f"{file}:{span[0]}", "symbol": symbol,
-                              **({"gap": gap} if gap else {})})
-        label = _control_label(facts, classes, trees[file], ref, on, assigned) if found else None
+                event = "command" if keyword == "command" else None
+                if form == "signal" and index == 0 and len(parts) > 1:
+                    event = parts[-2]
+                elif form == "first_literal" and index == 1:
+                    argument = arguments[0][1]
+                    if grammar == "python":
+                        event = _literal(argument, source, grammar)
+                    elif argument.type == "string" and len(argument.named_children) == 1:
+                        fragment = argument.named_children[0]
+                        if fragment.type == "string_fragment":
+                            event = _text(source, fragment)
+                found.append({**({"event": event} if event else {}), "reader": ARGUMENT, "shape": shape, "site": f"{file}:{span[0]}", "symbol": symbol,
+                              **({"owner": facts.node(ref.get("caller")) or f"{file}::{flows.MODULE}"} if origin == "inline" else {}),
+                              **({"gap": gap} if gap else {"handler_source": origin, "column": span[1]})})
+        label = _control_label(facts, classes, parsed, ref, on, assigned) if found else None
         out += [{**candidate, "label": label} if label else candidate for candidate in found]
     return out
 
@@ -302,8 +377,8 @@ def _code(text: str, grammar: str | None) -> dict[str, list[str]]:
     return found
 
 
-def _label(source: bytes, tag, element, parts: list, code: str | None) -> tuple[str | None, str | None]:
-    """The label a person reads on the control, and the key when it is one: the @name of its tag (`aria-label`),
+def _label(source: bytes, tag, element, parts: list, code: str | None, names=None) -> tuple[str | None, str | None]:
+    """The ordered literal aria-labelledby references first, then the @name of its tag (`aria-label`),
     else its text, else the @hint of its tag (`title`, `placeholder`), else the @key of a translation call inside
     the element (`t('salva')`, made text by `translated`). A computed text is no label."""
     found, words, computed = defaultdict(list), [], False
@@ -311,7 +386,7 @@ def _label(source: bytes, tag, element, parts: list, code: str | None) -> tuple[
         if not element.start_byte <= node.start_byte < node.end_byte <= element.end_byte:
             continue
         own, text = tag.start_byte <= node.start_byte < tag.end_byte, _text(source, node)
-        if kind in ("name", "hint") and own and text.strip():
+        if kind in ("name", "hint", "labelledby") and own and text.strip():
             found[kind].append(text.strip())
         elif kind == "text" and not own:
             words += text.split()
@@ -320,6 +395,10 @@ def _label(source: bytes, tag, element, parts: list, code: str | None) -> tuple[
             found["key"] += _code(text, code)["key"] if kind == "code" else []
         elif kind == "key":
             found["key"].append(text[1:-1] if len(text) > 1 and text[0] == text[-1] and text[0] in "'\"`" else text)
+    for refs in found["labelledby"] if names else ():
+        resolved = [names[ref] for ref in refs.split() if names.get(ref)]
+        if resolved:
+            return " ".join(resolved), None
     for value in (*found["name"][:1], None if computed else " ".join(words), *found["hint"][:1]):
         if value:
             return value, None
@@ -331,22 +410,50 @@ def _at(node) -> tuple[int, int]:
     return node.start_point[0] + 1, node.start_point[1]
 
 
-def bindings(source: bytes, grammar: str) -> list[dict]:
+def bindings(source: bytes, grammar: str, renders=None, root=None) -> list[dict]:
     """The events bound in a file of markup, from its tree and its grammar's query (`QUERIES`), one per name an
     attribute binds (each branch of a conditional): the attribute as written (`shape`), its line, the name it binds
     (`handler` and where it is written, `at`, or `called` when the syntax says the event calls it) or where a
     function written in place as the handler starts (`inline`), and the label of its element with the key when it
     is one (`_label`)."""
-    matches, code = _matches(source, grammar), QUERIES["queries"][grammar].get("code")
+    matches, code = _matches(source, grammar, root=root), QUERIES["queries"][grammar].get("code")
+    if renders is not None:
+        for m in matches:
+            for definition in m.get("render", ()):
+                # Only literal markup is proven pure. Expressions inside the JSX might themselves call a writer.
+                stack = [definition.child_by_field_name("body")]
+                while stack:
+                    item = stack.pop()
+                    if item.type == "jsx_expression":
+                        break
+                    stack.extend(item.named_children)
+                else:
+                    renders.add(_at(definition))
     elements = sorted(((m["tag"][0], m["element"][0]) for m in matches if "tag" in m),
                       key=lambda pair: pair[1].end_byte - pair[1].start_byte)
     parts = sorted(((kind, node) for m in matches if not {"tag", "event"} & set(m)
                     for kind, nodes in m.items() for node in nodes), key=lambda part: part[1].start_byte)
+    def scope(tag):
+        # Distinct JSX functions in the same file render different control trees.
+        while tag is not None and tag.type not in ("function_declaration", "method_definition",
+                                                    "arrow_function", "function_expression"):
+            tag = tag.parent
+        return tag.start_byte if tag is not None else 0
+
+    by_id = defaultdict(dict)
+    labelled = any(kind == "labelledby" for kind, _ in parts)
+    for kind, node in parts if labelled else ():
+        if kind == "id":
+            owner = next(((t, e) for t, e in elements if t.start_byte <= node.start_byte < t.end_byte), None)
+            if owner:
+                by_id[scope(owner[0])].setdefault(_text(source, node), _label(source, *owner, parts, code)[0])
     out, seen = [], set()
     for m in matches:
         events = sorted(m.get("event", []), key=lambda node: node.start_byte)
         bound = {kind: _text(source, m[kind][0]) for kind in ("handler", "called", "method") if kind in m}
-        bound.update({key: _at(m[kind][0]) for key, kind in (("at", "handler"), ("inline", "inline")) if kind in m})
+        for kind in ("called", "handler", "method", "inline"):
+            if kind in m:
+                bound["inline" if kind == "inline" else "at"] = _at(m[kind][0])
         for node in m.get("code", [])[:1] if events and not bound else ():
             bound = {kind: names[0] for kind, names in _code(_text(source, node), code).items()
                      if kind in ("handler", "called")}
@@ -356,68 +463,61 @@ def bindings(source: bytes, grammar: str) -> list[dict]:
         seen.add(once)
         at = events[0].start_byte
         tag, element = next(((t, e) for t, e in elements if t.start_byte <= at < t.end_byte), (None, None))
-        label, key = _label(source, tag, element, parts, code) if element is not None else (None, None)
+        label, key = _label(source, tag, element, parts, code, by_id.get(scope(tag)) if labelled else None) if element is not None else (None, None)
+        tag_name = tag.child_by_field_name("name") if tag else None
+        if tag_name is None and tag:
+            tag_name = next((child for child in tag.named_children if child.type == "tag_name"), None)
+        tag_text = _text(source, tag_name) if tag_name else ""
+        forwarded = bool(tag_text) and (tag_text[:1].isupper() or (
+            grammar in ("tsx", "javascript") and tag_name.type != "identifier"
+        ) or (grammar == "vue" and (tag_text == "component" or "-" in tag_text)))
         out.append({"shape": source[at:events[-1].end_byte].decode("utf-8", errors="replace"),
-                    "line": events[0].start_point[0] + 1, **bound, "label": label, "key": key})
+                    "line": events[0].start_point[0] + 1, **bound, "column": events[0].start_point[1],
+                    **({"forwarded": True} if forwarded else {}), "label": label, "key": key})
     return out
 
 
-def _inline(facts: flows.Facts, made: dict, file: str, at: tuple[int, int]) -> list[str]:
-    """The functions of the project a function written in place as the handler calls, in the order of the text and
-    each once: the one the snapshot resolved the call to, else, for a plain name the snapshot does not know as a
-    value of the scope (a prop, a state setter: `known_unrelated`), the one `local_function` finds. A call inside a
-    function written within it is that function's."""
-    written, out = facts.written_function(file, *at), []
-    for ref in sorted(made.get(written["id"], ()) if written else (), key=lambda ref: ref.get("span") or []):
-        target, parts = ref.get("target_id"), [str(part) for part in ref.get("parts") or []]
-        kind = facts.declarations.get(target or "", {}).get("kind")
-        if ref.get("resolution") == "resolved" and kind in ("function", "method"):
-            symbol = facts.node(target)
-        elif len(parts) == 1 and not ref.get("known_unrelated"):
-            symbol = facts.local_function(parts[0], file, (ref.get("span") or at)[0])
-        else:
-            symbol = None
-        if symbol and symbol not in out:
-            out.append(symbol)
-    return out
-
-
-def _handlers(facts: flows.Facts, classes: dict, made: dict, values: set, file: str, found: dict) -> list[dict]:
-    """What one binding of the markup binds, each `{symbol}` or `{symbol, gap}`: the functions a function written in
-    place calls (`_inline`); the method of the enclosing class `this.name` names (`_method`); the function a name
-    names (`local_function`), none when the snapshot reads the name there as a value of the scope (`values`, a
-    prop). A name that the syntax says the event calls and that does not resolve (a method the class does not
-    define, one of a component) is a candidate of the symbol that writes it, without handler, and says so."""
+def _handlers(facts: flows.Facts, classes: dict, values: set, file: str, found: dict) -> list[dict]:
+    """Keep an inline callback's own declaration. Its calls are separate, evidenced edges of that declaration."""
     line, name = found["line"], found.get("handler") or found.get("called")
     if "inline" in found:
-        return [{"symbol": symbol} for symbol in _inline(facts, made, file, found["inline"])]
+        written = facts.written_function(file, *found["inline"])
+        if written:
+            return [{"symbol": written["id"], "handler_source": "inline"}]
+        return [{"symbol": f"{file}::{flows.MODULE}", "gap": "inline handler has no declaration in the snapshot"}]
+    if "at" in found:
+        symbol, origin = _resolved(facts, file, [found["at"]])
+        if origin:
+            return [{"symbol": symbol, "handler_source": origin}] if symbol else []
     if (file, *found.get("at", ())) in values:
         return []
     handler, why = _method(facts, classes, file, line, found["method"]) if "method" in found \
-        else (facts.local_function(name, file, line), "")
+        else (facts.local_function(name, file, line, column=found["column"]), "")
     if handler:
-        return [{"symbol": handler}]
+        return [{"symbol": handler, "handler_source": "classe" if "method" in found else "locale"}]
     if "called" not in found:
-        return []
-    holder = facts.enclosing(file, line)
+        return [{"binding": name, "unbound": True}]
+    holder = facts.enclosing(file, line, column=found["column"])
     return [{"symbol": facts.node(holder["id"]) if holder else f"{file}::{flows.MODULE}",
              "gap": f"handler {name} not resolved" + (f": {why}" if why else "")}]
 
 
-def markup(facts: flows.Facts, view: dict) -> list[dict]:
-    """A function of the project bound to an event by the markup (`bindings`), with no rule: its shape is the
-    attribute as written, its label that of the element, what it binds `_handlers`'s."""
-    out, classes, made = [], _classes(facts), defaultdict(list)
-    for ref in view["references"]:
-        made[ref.get("caller")].append(ref)
-    values = {(read["file"], *read["span"][:2]) for read in view["reads"]
-              if read.get("known_unrelated") and read.get("span")}
-    for file in facts.store.iter_paths():
-        source, grammar = _file(facts, file, template=True)
-        for found in bindings(source, grammar) if grammar else ():
-            candidate = {"reader": ATTRIBUTE, "shape": found["shape"], "site": f"{file}:{found['line']}"}
-            label = {"label": found["label"], **({"key": found["key"]} if found["key"] else {})}
-            out += [{**candidate, **bound, **label} for bound in _handlers(facts, classes, made, values, file, found)]
+def _markup(facts, file, source, grammar, root, classes, values, render_symbols):
+    """Bindings from this file, and render-only definitions to exclude after all files are read."""
+    out = []
+    renders = set()
+    for found in bindings(source, grammar, renders, root) if root is not None else ():
+        owner = facts.enclosing(file, found["line"], column=found["column"])
+        candidate = {"reader": ATTRIBUTE, "shape": found["shape"], "site": f"{file}:{found['line']}",
+                     "event": QUERIES["events"].get(found["shape"], found["shape"]),
+                     "column": found["column"], "owner": facts.node(owner["id"]) if owner else f"{file}::{flows.MODULE}",
+                     **({"forwarded": True} if found.get("forwarded") else {})}
+        label = {"label": found["label"], **({"key": found["key"]} if found["key"] else {})}
+        out += [{**candidate, **bound, **label} for bound in _handlers(facts, classes, values, file, found)]
+    for at in renders:
+        declaration = facts.written_function(file, *at)
+        if declaration and declaration["name"] != "(anonymous)":
+            render_symbols.add(facts.node(declaration["id"]))
     return out
 
 
@@ -459,11 +559,11 @@ def translated(facts: flows.Facts, found: list[dict]) -> list[dict]:
     return out
 
 
-def decorators(source: bytes, grammar: str) -> list[dict]:
+def decorators(source: bytes, grammar: str, root=None) -> list[dict]:
     """The decorators and annotations of the functions and methods of a file, from its tree and its grammar's query
     (`QUERIES["decorators"]`): the name as written without arguments (`shape`), the line of the decorator, where
     the function it decorates starts (`at`, line and column), and its first argument when that is a text literal."""
-    matches = _matches(source, grammar, "decorators")
+    matches = _matches(source, grammar, "decorators", root)
     names = sorted((m["name"][0] for m in matches if "name" in m), key=lambda node: node.start_byte)
     arguments = {m["name"][0].start_byte: _text(source, m["argument"][0]) for m in matches if "argument" in m}
     out = []
@@ -477,26 +577,21 @@ def decorators(source: bytes, grammar: str) -> list[dict]:
     return out
 
 
-def decorated(facts: flows.Facts) -> list[dict]:
-    """A function or method of the project that carries a decorator or an annotation (`decorators`), with no rule:
-    its shape is the decorator's name as written, and beside it the first argument when that is a text. The symbol
-    is the snapshot's function that starts where the tree's does; where the snapshot declares none, the candidate
-    is of the file's code and says so."""
+def _decorated(facts, file, source, grammar, root):
+    """Join decorators and annotations in the syntax tree to declarations at that position."""
     out = []
-    for file in facts.store.iter_paths():
-        source, grammar = _file(facts, file, template=False, section="decorators")
-        starts = {(d["line"], d["column"]): d for d in facts.functions.get(file, ())}
-        for found in decorators(source, grammar) if grammar else ():
-            declaration = starts.get(found["at"])
-            candidate = {"reader": DECORATOR, "shape": found["shape"], "site": f"{file}:{found['line']}",
-                         "symbol": facts.node(declaration["id"]) if declaration else f"{file}::{flows.MODULE}"}
-            if declaration is None:
-                candidate["gap"] = f"the snapshot declares no function at line {found['at'][0]}"
-            out.append({**candidate, **({"argument": found["argument"]} if "argument" in found else {})})
+    starts = {(d["line"], d["column"]): d for d in facts.functions.get(file, ())}
+    for found in decorators(source, grammar, root):
+        declaration = starts.get(found["at"])
+        candidate = {"reader": DECORATOR, "shape": found["shape"], "site": f"{file}:{found['line']}",
+                     "symbol": facts.node(declaration["id"]) if declaration else f"{file}::{flows.MODULE}"}
+        if declaration is None:
+            candidate["gap"] = f"the snapshot declares no function at line {found['at'][0]}"
+        out.append({**candidate, **({"argument": found["argument"]} if "argument" in found else {})})
     return out
 
 
-def noir(report: dict, root: str) -> list[dict]:
+def noir(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dict]:
     """The endpoints OWASP Noir reports (`noir scan -f json`, run in Daodan's container over `root`) as candidates,
     with no rule: the protocol is the shape and decides the kind (`QUERIES["noir"]`; another protocol is a shape to
     classify), method and path as Noir writes them, and the handler when Noir names it. The site is the handler's,
@@ -509,7 +604,13 @@ def noir(report: dict, root: str) -> list[dict]:
         where = handler if handler.get("path") else paths[0]
         if not where.get("path"):
             continue
-        file = PurePosixPath(where["path"]).relative_to(root).as_posix()
+        path = PurePosixPath(where["path"])
+        if not path.is_relative_to(root) or ".." in path.parts:
+            if gaps is None:
+                raise ValueError(f"Noir cites a path outside {root}: {path}")
+            gaps.append({"kind": "outside_snapshot", "path": str(path), "detail": "Noir cites a file outside the scanned root"})
+            continue
+        file = path.relative_to(root).as_posix()
         name, kind = handler.get("name") if where is handler else None, QUERIES["noir"].get(endpoint["protocol"])
         out.append({"reader": NOIR, "shape": endpoint["protocol"],
                     "site": f"{file}:{where['line']}" if where.get("line") else file,
@@ -518,13 +619,84 @@ def noir(report: dict, root: str) -> list[dict]:
     return out
 
 
-def candidates(links: dict, manifest: Path) -> list[dict]:
-    """The candidates of every reader: the residual net on the links, the others on the snapshot they come from."""
+def _read_syntax(facts, db, view):
+    """Use one tree for all readers of a grammar and release it before the next file."""
+    classes, names = _classes(facts), _project_names(db)
+    anonymous = {(d["file"], d["line"], d["column"]) for d in facts.declarations.values()
+                 if d["kind"] in ("function", "method") and d["name"] == "(anonymous)"}
+    references = defaultdict(list)
+    for ref in view["references"]:
+        references[ref["file"]].append(ref)
+    values = {(read["file"], *read["span"][:2]) for read in view["reads"]
+              if read.get("known_unrelated") and read.get("span")}
+    out, attributes, renders = [], [], set()
+    for file in facts.store.iter_paths():
+        refs = references.get(file, ())
+        source, grammar = _file(facts, file, template=False, section=None if refs else "decorators")
+        root = _parse(source, grammar)
+        if root is not None:
+            if refs:
+                out.extend(_passed(facts, refs, names, classes, anonymous, (source, root, grammar)))
+            if grammar in QUERIES["decorators"]:
+                out.extend(_decorated(facts, file, source, grammar, root))
+        template, markup_grammar = _file(facts, file, template=True)
+        if markup_grammar:
+            tree = root if markup_grammar == grammar and template == source else _parse(template, markup_grammar)
+            if tree is not None:
+                attributes.extend(_markup(facts, file, template, markup_grammar, tree, classes, values, renders))
+    return out + translated(facts, [row for row in attributes if row.get("symbol") not in renders])
+
+
+def _syntax(manifest: Path, *, inputs=None) -> list[dict]:
+    if inputs is not None:
+        return _read_syntax(*inputs)
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
         view = edge_view.load_edge_view(store)
-        facts = flows.Facts(store, db, view)
-        found = passed(facts, view, _project_names(db)) + translated(facts, markup(facts, view)) + decorated(facts)
-    return residual(links) + found
+        return _read_syntax(flows.Facts(store, db, view), db, view)
+
+
+def _cached_rows(manifest: Path, inputs=None) -> list[dict]:
+    """Persist verified AST bindings once, including unbound names that a store rule may resolve later."""
+    import snapshot
+    manifest = Path(manifest)
+    path = manifest.with_name("entry-candidates.json")
+    stamp = flows._links_stamp(manifest, premap=False)
+    try:
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        languages = saved["languages"]
+        if (isinstance(languages, list) and all(isinstance(lang, str) for lang in languages)
+                and all(item is None or item[-1] for item in stamp)
+                and saved["key"] == flows._links_key([], stamp, languages)):
+            return saved["candidates"]
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    languages = flows._links_languages(manifest, inputs[0].store if inputs is not None else None)
+    key = flows._links_key([], stamp, languages)
+    found = _syntax(manifest, inputs=inputs)
+    found.sort(key=lambda row: (row["site"], row.get("column", 0), row["reader"], row["shape"], row.get("symbol", "")))
+    grammars = set(QUERIES["grammars"].values()) | QUERIES["queries"].keys() | QUERIES["decorators"].keys()
+    if (all(item is None or item[-1] for item in stamp) and flows._links_stamp(manifest, premap=False) == stamp
+            and not any(_treesitter.load_failure(g) for g in grammars)):
+        snapshot._write_json_atomic(path, {"key": key, "languages": languages, "candidates": found})
+    return found
+
+
+def candidates(links: dict, manifest: Path) -> list[dict]:
+    """The candidates of every reader; a residual symbol is never a confirmed entry by itself."""
+    return residual(links) + [row for row in _cached_rows(manifest) if not row.get("unbound")] + _declared_rows(manifest)
+
+
+def _declared_rows(manifest):
+    from premap.flow_entries import evidence
+    return evidence(manifest)[0]
+
+
+def cached_syntax(manifest: Path) -> list[dict]:
+    """Public candidates with verified handler, event and label; the model transport masks text before delivery."""
+    fields = ("reader", "shape", "site", "symbol", "gap", "label", "event", "label_gap", "handler_source", "column",
+              "kind", "method", "path", "handler", "handler_confidence", "declared_in", "forwarded")
+    return [{"status": "candidate", **{key: row[key] for key in fields if row.get(key) is not None}}
+            for row in _cached_rows(manifest) + _declared_rows(manifest) if not row.get("unbound")]
 
 
 def shapes(found: list[dict]) -> list[dict]:
@@ -537,3 +709,42 @@ def shapes(found: list[dict]) -> list[dict]:
             "example": {key: candidate[key] for key in ("site", "symbol", "label") if key in candidate}})
         row["count"] += 1
     return sorted(rows.values(), key=lambda row: (-row["count"], row["reader"], row["shape"]))
+
+
+def registry_rules(found):
+    kinds = QUERIES["known_shapes"]
+    known = {}
+    for row in found:
+        if row.get("forwarded") or row.get("unbound"):
+            continue
+        reader, shape = row["reader"], row["shape"]
+        kind = row.get("kind") or kinds.get(reader, {}).get(shape)
+        if reader == ATTRIBUTE and shape in QUERIES["events"]:
+            kind = ENTRY_KINDS[0]
+        if kind:
+            known[reader, shape] = kind
+    return [{"reader": reader, "shape": shape, "link": "ingresso", "entry": kind, "source": "registro"}
+            for (reader, shape), kind in sorted(known.items()) if kind]
+
+
+def shape_questions(found, rules=()):
+    """Only undecided shapes get a number; numbering stays stable as answers are recorded for this snapshot."""
+    rows = [row for row in found if not row.get("forwarded") and not row.get("unbound") and row["reader"] != RESIDUAL]
+    known = {(r.get("reader"), r.get("shape")) for r in [*rules, *registry_rules(rows)]}
+    return [{"row": index, **shape} for index, shape in enumerate(shapes(rows), 1)
+            if (shape["reader"], shape["shape"]) not in known]
+
+
+def shape_rules(questions, answers):
+    """Convert a closed row-to-kind answer into reusable decisions about code shapes."""
+    if not isinstance(answers, dict):
+        raise ValueError("classifications must be a row-to-entry-kind object")
+    numbered = {str(question["row"]): question for question in questions}
+    rules = []
+    for number, kind in answers.items():
+        if str(number) not in numbered or kind not in (*ENTRY_KINDS, NO_ENTRY):
+            raise ValueError(f"invalid shape row or entry kind: {number!r}, {kind!r}")
+        shape = numbered[str(number)]
+        rules.append({"reader": shape["reader"], "shape": shape["shape"], "link": "ingresso",
+                      "entry": kind, "source": "modello"})
+    return rules

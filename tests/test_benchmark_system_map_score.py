@@ -128,7 +128,8 @@ def as_proposal(reference: dict) -> dict:
     fields = ("name", "type", "position", "inside", "members", "registry", "family", "role", "mode")
     return {"nodes": [{k: n[k] for k in fields if k in n} for n in reference["nodes"]],
             "flows": [{"name": f["name"], "types": f["types"], "nodes": f["nodes"],
-                       "arrows": [{"status": "proved"}] * (len(f["nodes"]) - 1)} for f in reference["flows"]]}
+                       "arrows": [{"from": a, "to": b, "status": "proved"} for a, b in zip(f["nodes"], f["nodes"][1:])]}
+                      for f in reference["flows"]]}
 
 
 def _depth(node: dict, by: dict) -> int:
@@ -154,7 +155,9 @@ def fuse_level_2(proposal: dict) -> dict:
     flows = []
     for flow in proposal["flows"]:
         names = list(dict.fromkeys(fused.get(n, n) for n in flow["nodes"]))
-        flows.append({**flow, "nodes": names, "arrows": [{"status": "proved"}] * (len(names) - 1)})
+        arrows = [{**a, "from": fused.get(a["from"], a["from"]), "to": fused.get(a["to"], a["to"])}
+                  for a in flow["arrows"]]
+        flows.append({**flow, "nodes": names, "arrows": [a for a in arrows if a["from"] != a["to"]]})
     return {**proposal, "nodes": nodes, "flows": flows}
 
 
@@ -162,7 +165,9 @@ def rename(proposal: dict) -> dict:
     new = {n["name"]: f"node {i}" for i, n in enumerate(proposal["nodes"])}
     nodes = [{**n, "name": new[n["name"]], **({"inside": new[n["inside"]]} if n.get("inside") in new else {})}
              for n in proposal["nodes"]]
-    flows = [{**f, "name": f"flow {i}", "nodes": [new[n] for n in f["nodes"]]} for i, f in enumerate(proposal["flows"])]
+    flows = [{**f, "name": f"flow {i}", "nodes": [new[n] for n in f["nodes"]],
+              "arrows": [{**a, "from": new[a["from"]], "to": new[a["to"]]} for a in f["arrows"]]}
+             for i, f in enumerate(proposal["flows"])]
     return {**proposal, "nodes": nodes, "flows": flows}
 
 
@@ -233,7 +238,7 @@ class SystemScoreTests(unittest.TestCase):
         self.assertEqual(result["type"], {"same": 0, "of": 14, "share": 0.0})
         self.assertEqual((result["nodes"]["found"], result["apart"]["found"]), (14, 0))
         self.assertEqual(result["precision"]["share"], 0.933)
-        self.assertEqual((result["flows"]["found"], result["entries"]["found"]), (3, 2))
+        self.assertEqual((result["flows"]["found"], result["entries"]["found"]), (2, 2))
 
     def test_a_folder_mirror_has_low_precision(self):
         result = score.score_system(folder_mirror(FILES), REFERENCE, FILES)
@@ -269,6 +274,32 @@ class SystemScoreTests(unittest.TestCase):
         everything = {"name": "All", "types": ["funzionale"], "nodes": [n["name"] for n in proposal["nodes"]],
                       "arrows": []}
         self.assertEqual(score.score_system({**proposal, "flows": [everything]}, REFERENCE, FILES)["flows"]["found"], 0)
+
+    def test_node_overlap_does_not_credit_missing_reversed_refused_or_stale_arrows(self):
+        for defect in ("missing", "reversed", "refused", "stale"):
+            with self.subTest(defect=defect):
+                proposal = as_proposal(REFERENCE)
+                for flow in proposal["flows"]:
+                    if defect == "missing":
+                        flow["arrows"] = []
+                    elif defect == "reversed":
+                        flow["arrows"] = [{**a, "from": a["to"], "to": a["from"]} for a in flow["arrows"]]
+                    else:
+                        for arrow in flow["arrows"]:
+                            arrow.update({"status": "refused"} if defect == "refused" else {"fresh": False})
+                result = score.score_system(proposal, REFERENCE, FILES)
+                self.assertEqual(result["flows_by_nodes"], {"found": 3, "of": 3})
+                self.assertEqual([result[k]["found"] for k in ("flows", "entries", "effects")], [0, 0, 0])
+
+    def test_only_reached_effects_and_correct_flow_types_get_credit(self):
+        proposal = as_proposal(REFERENCE)
+        checkout = proposal["flows"][1]
+        checkout["arrows"].pop()  # Cart still reaches Stripe, but Order is isolated.
+        checkout["types"] = ["operativo"]
+        result = score.score_system(proposal, REFERENCE, FILES)
+        self.assertEqual((result["flows"]["found"], result["entries"]["found"], result["effects"]["found"]), (3, 3, 3))
+        self.assertEqual(result["flows"]["by_type"]["funzionale"], {"found": 1, "of": 2})
+        self.assertEqual(result["flow_type_precision"], {"found": 2, "of": 3, "share": 0.667})
 
     def test_a_found_service_counts_the_same_family_and_whether_role_and_mode_are_there(self):
         expected = {"nodes": [_node("Stripe", "gateway", position="external", registry="stripe", family="provider",

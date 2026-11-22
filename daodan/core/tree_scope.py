@@ -36,12 +36,13 @@ Standard library only.
 from __future__ import annotations
 
 import os
+import re
 import stat
 import subprocess
 from pathlib import Path
 from typing import Iterator
 
-__all__ = ["DEPENDENCY_DIRS", "GIT_OPTIONS", "Perimeter", "git_executable", "work_tree"]
+__all__ = ["DEPENDENCY_DIRS", "GIT_OPTIONS", "Perimeter", "git_executable", "work_tree", "workspace_glob"]
 
 # First on every command line of Git on the host: a work tree's own configuration, and what it includes, can name
 # programs Git runs, and the analyzed project's code runs only in Daodan's container: core.fsmonitor wherever Git
@@ -50,6 +51,12 @@ __all__ = ["DEPENDENCY_DIRS", "GIT_OPTIONS", "Perimeter", "git_executable", "wor
 # commands it starts, a submodule's among them. A filter is a program the checkout names too: `source_files.git_info`
 # asks Git which ones it declares before any command that reads a file's content.
 GIT_OPTIONS = ("-c", "core.fsmonitor=false", "-c", "core.hooksPath=/dev/null")
+
+
+def workspace_glob(pattern: str) -> re.Pattern:
+    """Match a workspace path; **/ includes zero directories. Python 3.12 lacks glob.translate."""
+    tokens = {"**/": "(?:[^/]+/)*", "**": ".*", "*": "[^/]*", "?": "[^/]"}
+    return re.compile("".join(tokens.get(part, re.escape(part)) for part in re.split(r"(\*\*/|\*\*|\*|\?)", pattern)))
 
 
 def git_executable() -> str | None:

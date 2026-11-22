@@ -15,12 +15,19 @@ export type Entity = {
 export type Technology = { id: string; name: string; type: string; paths: string[] };
 export type Relation = {
   ref: string; kind: string; source: string; target: string; status: string;
-  counts?: Record<string, number>; evidence: Evidence[];
+  counts?: Record<string, number>; evidence: Evidence[]; conflict?: boolean;
 };
 export type View = 'logical' | 'physical';
 export type Membership = { member: string; group: string; view: View };
-export type FlowStep = { source: string; target: string; type: string; origin: string; site: string; route?: string[] };
-export type Flow = { ref: string; entry: string; entry_kind: string; complete: boolean; nodes: string[]; steps: FlowStep[] };
+export type FlowStep = {
+  source: string; target: string; type: string; origin: string; site: string;
+  route?: string[]; confidence?: string; conflict?: boolean;
+};
+export type Flow = {
+  ref: string; entry: string; entry_kind: string; complete: boolean; nodes: string[]; steps: FlowStep[];
+  site?: string; column?: number; label?: string; event?: string; shape?: string;
+  gaps?: { site: string; reason: string }[];
+};
 export type Gap = { refs: string[]; reason: string };
 export type Envelope = {
   schema: typeof SCHEMA; meta: Record<string, unknown>; entities: Entity[]; relations: Relation[];
@@ -50,7 +57,17 @@ export function parseEnvelope(json: unknown): Envelope {
   }
   const relations = list(json.relations, 'relations') as Relation[];
   const memberships = list(json.memberships, 'memberships') as Membership[];
-  const flows = list(json.flows ?? [], 'flows') as Flow[];
+  // Older exports assigned the handler's ref to every event bound to it.
+  const rawFlows = list(json.flows ?? [], 'flows') as Flow[];
+  const used = new Set(rawFlows.map(flow => flow.ref));
+  const seen = new Set<string>();
+  const flows = rawFlows.map((flow, index) => {
+    if (!seen.has(flow.ref)) { seen.add(flow.ref); return flow; }
+    let ref = `${flow.ref}#${index + 1}`;
+    while (used.has(ref)) ref += '#';
+    used.add(ref);
+    return { ...flow, ref };
+  });
   const check = (ref: unknown, owner: string) => {
     if (typeof ref !== 'string' || !known.has(ref)) throw new EnvelopeError(`${owner} names an unknown entity: ${String(ref)}`);
   };

@@ -6,7 +6,7 @@ export type ProjectedNode = {
   id: string; ref: string; type: string; label: string; parent: string | null; collapsed: boolean; count: number;
   nodeType?: string; location?: string; status?: string; freshness?: string; provenance?: string;
 };
-export type ProjectedEdge = { id: string; source: string; target: string; relations: string[]; kinds: string[]; flow?: boolean; label?: string };
+export type ProjectedEdge = { id: string; source: string; target: string; relations: string[]; kinds: string[]; flow?: boolean; label?: string; uncertain?: boolean };
 export type Projection = {
   nodes: ProjectedNode[]; edges: ProjectedEdge[];
   counts: { filtered: number; aggregated: number; unloaded: number; files: number };
@@ -129,8 +129,9 @@ export function project(env: Envelope, view: View, scope: string | null, filters
     if (!sources.length || !targets.length) { unloaded += 1; continue; }
     for (const source of sources) for (const target of targets) {
       if (source === target) { aggregated += 1; continue; }
-      const id = `${source}->${target}`;
-      const edge = edges.get(id) ?? { id, source, target, relations: [], kinds: [] };
+      const uncertain = relation.conflict || relation.status === 'sampled' || relation.status === 'uncertain';
+      const id = `${source}->${target}${uncertain ? ' uncertain' : ''}`;
+      const edge = edges.get(id) ?? { id, source, target, relations: [], kinds: [], uncertain };
       edge.relations.push(relation.ref);
       if (!edge.kinds.includes(relation.kind)) edge.kinds.push(relation.kind);
       edges.set(id, edge);
@@ -149,8 +150,9 @@ export function flowFocus(env: Envelope, flowRef: string, projection: Projection
   const edges = new Map<string, ProjectedEdge>();
   for (const step of flow.steps) for (const source of lift(step.source)) for (const target of lift(step.target)) {
     if (source === target) continue;
-    const id = `flow:${source}->${target}`;
-    const edge = edges.get(id) ?? { id, source, target, relations: [], kinds: [], flow: true, label: step.type };
+    const uncertain = step.conflict || step.confidence === 'sampled';
+    const id = `flow:${source}->${target}${uncertain ? ' uncertain' : ''}`;
+    const edge = edges.get(id) ?? { id, source, target, relations: [], kinds: [], flow: true, label: step.type, uncertain };
     if (!edge.kinds.includes(step.type)) edge.kinds.push(step.type);
     edges.set(id, edge);
   }
@@ -164,8 +166,9 @@ export function dataLinks(env: Envelope, projection: Projection): ProjectedEdge[
     if (!DATA.has(step.type)) continue;
     for (const source of projection.owners[step.source] ?? []) for (const target of projection.owners[step.target] ?? []) {
       if (source === target) continue;
-      const id = `data:${source}->${target}`;
-      const edge = edges.get(id) ?? { id, source, target, relations: [], kinds: [] };
+      const uncertain = step.conflict || step.confidence === 'sampled';
+      const id = `data:${source}->${target}${uncertain ? ' uncertain' : ''}`;
+      const edge = edges.get(id) ?? { id, source, target, relations: [], kinds: [], uncertain };
       if (!edge.kinds.includes(step.type)) edge.kinds.push(step.type);
       edges.set(id, edge);
     }

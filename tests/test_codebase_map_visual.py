@@ -1,6 +1,7 @@
 """The explorer's envelope `daodan/visual@1`: structure, memberships, states, flows and node types."""
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -33,6 +34,66 @@ def git_project(project: Path) -> None:
     for command in (["git", "init", "-q"], ["git", "add", "-A"],
                     ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
         subprocess.run(command, cwd=project, check=True, capture_output=True)
+
+
+def test_payload_bytes_for_ten_distinct_inspectors_and_one_source_edit(tmp_path, monkeypatch):
+    import app as launcher
+    import pytest
+    import store_graph
+    from collections import Counter
+
+    project = tmp_path / "project"
+    project.mkdir()
+    files = {project / f"file{i}.py": f"def item{i}():\n    return {i}\n".encode() for i in range(10)}
+    for path, data in files.items():
+        path.write_bytes(data)
+    git_project(project)
+    service = mcp_service.MapService(project)
+    service.create_run(".", "ten", engine=False)
+    app = launcher.App(tmp_path / "app", environment={})
+    app.service, app.context = service, {"run_id": "ten", "path": str(project)}
+    store_graph._file_identity.cache_clear()
+    original = Path.open
+    reads = Counter()
+
+    def counted(path, *args, **kwargs):
+        handle = original(path, *args, **kwargs)
+        if path in files and "r" in handle.mode:
+            read = handle.read
+
+            def read_payload(*size):
+                data = read(*size)
+                reads[path.name] += len(data)
+                return data
+            handle.read = read_payload
+        return handle
+
+    monkeypatch.setattr(Path, "open", counted)
+    cacheable = all(store_graph.source_stamp(path)[1] and store_graph.source_stamp(path)[4] for path in files)
+    try:
+        first, *other = files
+        app.symbols({"file": "file:" + first.name})
+        expected = {path.name: len(data) for path, data in files.items()}
+        if cacheable:
+            assert reads == expected
+        reads.clear()
+        for path in other:
+            app.symbols({"file": "file:" + path.name})
+        if cacheable:
+            assert not reads
+        reads.clear()
+        app.symbols({"file": "file:" + first.name})
+        if cacheable:
+            assert not reads
+        # The edited file can supply incoming calls to a different inspector that is already kept.
+        changed = other[-1]
+        changed.write_bytes(files[changed].replace(b"return 9", b"return 0"))
+        with pytest.raises(ValueError, match="identity changed"):
+            app.symbols({"file": "file:" + first.name})
+        if cacheable:
+            assert reads == {changed.name: len(files[changed])}
+    finally:
+        app.close()
 
 
 class EnvelopeTests(unittest.TestCase):
@@ -104,6 +165,30 @@ class EnvelopeTests(unittest.TestCase):
         helper = {item["ref"]: item for item in visual.build_envelope(self.project / ".daodan/map/runs/r2")["entities"]}[
             "symbol:src/app/b.py::helper"]
         self.assertEqual(helper["freshness"], "stale_body")
+
+    def test_inspecting_another_file_reuses_hashes_and_detects_a_changed_source(self):
+        import store_graph
+        run = self.project / ".daodan/map/runs/r1"
+        unrelated = self.project / "codebase-modules.json"
+        visual.file_symbols(run, "src/app/a.py")
+        reads = []
+        original = Path.read_bytes
+
+        def counted(path):
+            reads.append(path)
+            return original(path)
+
+        with mock.patch.object(Path, "read_bytes", counted):
+            visual.file_symbols(run, "src/app/b.py")
+        if store_graph.source_stamp(unrelated)[4]:
+            self.assertNotIn(unrelated, reads)
+        stamp = unrelated.stat()
+        data = original(unrelated).replace(b"Runs the job", b"Runs the app")
+        self.assertNotEqual(data, original(unrelated))
+        unrelated.write_bytes(data)
+        os.utime(unrelated, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
+        with self.assertRaisesRegex(ValueError, "identity changed"):
+            visual.file_symbols(run, "src/app/a.py")
 
     def test_an_export_is_published_once_per_digest_and_never_rewritten(self):
         run, store_root = self.project / ".daodan/map/runs/r1", self.project / ".daodan/map"
@@ -299,6 +384,8 @@ class ServiceNodeTests(unittest.TestCase):
                          {"type": "external", "name": "Stripe", "location": "external", "node_type": "gateway",
                           "mark": "stripe", "provenance": "registry"})
         self.assertEqual(stripe["evidence"], [{"path": "package.json", "line": self.line}])
+        stack_entry = next(item for item in self.envelope["technologies"] if item["id"] == "stripe")
+        self.assertEqual(stack_entry["paths"], ["package.json"])
         uses = {item["ref"]: item for item in self.envelope["relations"] if item["kind"] == "uses"}
         declared = uses["uses:file:package.json->external:stripe"]
         self.assertEqual((declared["status"], declared["counts"], declared["evidence"]),
@@ -342,3 +429,46 @@ def visual_app_graph(envelope):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_export_reopens_two_controls_with_their_own_binding_sites(tmp_path):
+    project = tmp_path / "shop"
+    project.mkdir()
+    (project / "buttons.tsx").write_text(
+        'function save() {}\nexport function View() { return <main>\n'
+        '<button onClick={save}>Save order</button>\n'
+        '<button onClick={save}>Save again</button></main> }\n', encoding="utf-8")
+    git_project(project)
+    service = mcp_service.MapService(project)
+    service.create_run(".", "buttons", engine=False)
+    service.flows("buttons", rules=[])
+    exported = visual.export(service.root / "runs/buttons", service.root)
+    envelope = json.loads((exported / "visual.json").read_text(encoding="utf-8"))
+    rows = [e for e in envelope["flows"] if e["entry"] == "symbol:buttons.tsx::save"]
+    assert len({e["ref"] for e in rows}) == 2
+    assert {(e["site"], e["label"]) for e in rows} == {
+        ("buttons.tsx:3", "Save order"), ("buttons.tsx:4", "Save again")}
+
+
+def test_exported_store_relation_inherits_weak_evidence_on_either_side():
+    read = {"type": "legge", "from": "store:db/orders", "site": "read.py:3"}
+    write = {"type": "scrive", "to": "store:db/orders", "site": "save.py:8"}
+    for status, access in [({"conflict": True}, read), ({"confidence": "sampled"}, write)]:
+        [relation] = visual._link_relations({"gaps": [], "edges": [
+            {**edge, **(status if edge is access else {})} for edge in (read, write)]})
+        assert relation["status"] == "uncertain"
+
+
+def test_exported_event_stops_at_a_sampled_binding_even_if_the_handler_can_write(tmp_path, monkeypatch):
+    import flows
+    manifest = tmp_path / "manifest.sqlite"
+    manifest.with_name("flow-rules.json").write_text(json.dumps({"schema": flows.RULES_SCHEMA, "rules": []}))
+    links = {"stores": [], "gaps": [], "entries": [
+        {"symbol": "ui.py::save", "kind": "azione", "site": "ui.py:3", "handler_confidence": "sampled"}],
+        "edges": [{"from": "ui.py::save", "to": "store:db/order", "type": "scrive", "site": "ui.py:5", "origin": "dedotto"}]}
+    monkeypatch.setattr(flows, "cached_links", lambda *_: links)
+    entities = {}
+    entity, _ = visual._collector(entities, {})
+    [flow], _ = visual._flows(manifest, entities, {}, {}, [], entity)
+    assert not flow["complete"] and not flow["steps"] and flow["nodes"] == ["symbol:ui.py::save"]
+    assert flow["gaps"][0]["site"] == "ui.py:3" and "sampled" in flow["gaps"][0]["reason"]

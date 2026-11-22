@@ -24,6 +24,47 @@ Misura quanto di una **pre-mappa** danno gli strumenti esistenti, prima di ogni 
 - `catalog.py` scrive [ANAGRAFICA.md](ANAGRAFICA.md) dai dati: per ogni progetto origine, tecnologie, versioni dichiarate, framework, servizi e casi, poi la copertura dei casi.
 - `modal_catalog.py` fa girare su Modal il controllo, `catalog.py` e le tabelle di `score.py`, e sul PC scrive solo ANAGRAFICA.md.
 
+## Regole di riconoscimento di Specfy e Daodan
+
+La misura del 21 novembre 2026 conta ogni nome atteso una volta per progetto. La faccetta `frameworks` comprende anche librerie e strumenti. I 180 progetti hanno 590 nomi attesi in questa faccetta e 541 nei servizi. Le registrazioni della pre-mappa coprono 178 progetti. Mancano 21 nomi di framework e 23 di servizi nei due progetti senza registrazione, `real-stack-jellyfin` e `real-stack-kuvasz`.
+
+| Misura | Progetti | Framework, librerie e strumenti | Servizi |
+| --- | ---: | ---: | ---: |
+| Specfy 1.27.6, risultati originali archiviati | 122 | 55 / 198 | 28 / 123 |
+| Registro distribuito in `ca89d6387`, su dichiarazioni registrate | 178 | 341 / 569 | 142 / 518 |
+| Registro aggiornato, sulle stesse dichiarazioni | 178 | 475 / 569 | 232 / 518 |
+
+Il file `service-registry.json` misurato contiene 2.562 voci e ha SHA-256 `e93c2970c83d892ff5cf8922fcc63f2d6037c459a8158652b3625319cda83f87`.
+
+Il replay applica `service_registry.check_packages` e `check_files` a entrambi i registri. Usa i pacchetti estratti da Renovate, le immagini dichiarate nei workflow, le immagini base di BuildKit e i percorsi di go-enry ammessi dall’inventario. Legge gli attesi solo per assegnare il punteggio. Il rilevamento per modulo, i modelli di build che richiedono una checkout, il testo delle configurazioni e i riferimenti nel sorgente si misurano con `modal_stack.py`. Ad esempio il modello Gradle archiviato per `jvm-spring-boot-managed` riporta gli starter Web e Data JPA. Lo stack completo archiviato vi trova Spring MVC e Spring Data JPA.
+
+Il conteggio originale di Specfy usa tutti gli ID emessi, compresi quelli classificati come builder. L’identità del prodotto tiene conto di varianti come «CypressCI» e «Cypress» e, quando il nome omette il fornitore, dell’ID specifico come `gcp.gcs`. «Vite» e «Vite+» contano separatamente. Le correzioni di punteggio si applicano anche al registro di partenza. Spring Boot era già riconoscibile dai pacchetti nei sette progetti che lo attendono. I cinque con uscita Specfy originale disponibile lo omettono tutti.
+
+Sui 122 progetti in comune, Specfy aveva omesso 143 nomi di framework e 95 servizi. Il replay recuperava rispettivamente 90 e 19 di queste omissioni con il vecchio registro, 107 e 38 con quello aggiornato. Sulle 178 registrazioni il nuovo catalogo recupera 134 occorrenze di framework, librerie o strumenti e 90 di servizi, distribuite su 47 progetti. Conserva tutti i nomi attesi già rilevati. Trova inoltre 81 nuove occorrenze di framework, librerie o strumenti fuori dagli attesi, che in questa faccetta sono selettivi. Per i servizi le annotazioni mirano alla completezza. I due nuovi servizi fuori dagli attesi sono i driver MySQL e PostgreSQL di `tools/go.mod` in Owncast, da verificare rispetto allo stack dell’applicazione. I servizi fuori dagli attesi nel complesso passano da 58 a 57.
+
+| Perché un nome atteso resta senza riscontro nel replay | Framework, librerie e strumenti | Servizi |
+| --- | ---: | ---: |
+| La voce ha regole per pacchetti o file, ma nessuna dichiarazione registrata corrisponde | 84 | 149 |
+| La voce non ha regole per pacchetti o file. Altri segnali possibili includono un import Swift o un URL nel sorgente | 4 | 34 |
+| Il catalogo non presenta il nome nella faccetta attesa, dopo aver applicato le equivalenze documentate nel codice | 6 | 103 |
+
+Tra gli ultimi casi figurano Firebase, atteso anche come framework e catalogato come servizio, e SMTP, atteso come servizio in 23 progetti. Una libreria compatibile con un protocollo non identifica il fornitore che un progetto usa.
+
+Questo comando, dalla radice del repository, scrive per progetto il percorso che prova ciascun nuovo riconoscimento, i nomi mancanti e le segnalazioni aggiuntive.
+
+```sh
+python benchmarks/project-model/replay_registry_coverage.py --baseline ca89d63877f8e3f9f94d8387a4b9154c5cdf9f1f --out registry-coverage.json
+```
+
+Il comando `smoke` misura Specfy con le regole Daodan e l’eseguibile originale sullo stesso progetto e nella stessa immagine Modal.
+
+```sh
+modal deploy benchmarks/project-model/modal_frameworks.py
+python benchmarks/project-model/modal_frameworks.py smoke --tools specfy_stack_analyser,specfy_daodan --fixtures py-fastapi-compose
+```
+
+La tabella riporta l’archivio dell’eseguibile originale e il replay dei registri. La prova end-to-end dell’adattatore Specfy aggiornato resta da misurare su Modal.
+
 ## Dopo una modifica
 
 Il corpus si riprova dopo ogni modifica a Daodan, a un adattatore, a un `expected.json` o a `cases.json`. Su questo PC non gira niente: ogni passo va su Modal, dalla radice del repository.
@@ -227,6 +268,8 @@ Giro del `.env` tracciato, 16 novembre 2026, su fastapi e tududi (`results/pipel
 
 Prova della regola invalicabile per Rust, 16 novembre 2026 (`modal run modal_rust_container.py::rust_container`, `c714e6298`): un crate il cui build script imposta un cfg e una macro procedurale che genera una funzione, ognuno con un segno dove gira, e cargo, rustc, rust-analyzer e rustup sul PATH della macchina sostituiti da finti che lasciano un segno. Sulla macchina nessun segno e nessun finto chiamato; nell'indice del container la funzione sotto il cfg si risolve e quella generata ha il suo nome, definita in nessun file (`undefined-project-symbol`).
 
+Ripristino Node su Modal, 21 novembre 2026 (`modal run modal_pipeline.py --cases js-npm-single,py-uv-src-layout`, sul commit `a664e869d` con l'albero di lavoro del giorno). Dopo la condivisione del ripristino Node (`node_preparation`) le righe del ripristino arrivano al motore in `node_restore`, che `sandbox_run` ignorava: su `js-npm-single` scip-typescript girava senza i pacchetti del progetto (tipi: solo `@types/node`) e `npm test` usciva con 1, «Cannot find module 'ms'», passo dinamico `not-run`. Ora `sandbox_run` esegue il ripristino nella sandbox di preparazione di ogni run. Rilanciato sullo stesso caso: tipi di `lodash` e `ms`, test uscito con 0, 6 siti osservati e 6 archi, copertura `complete`, 95,5 secondi. `py-uv-src-layout`: scip-python 0.6.8 e Pyright 1.1.414, `fresh`, 8 siti su 8, nessun test dichiarato, 126,3 secondi. Su Modal ogni run ripristina per sé: la condivisione fra i run di un'analisi qui non si misura.
+
 ## Lo step `stack` sul corpus
 
 Misura lo step `stack` della pipeline (`scripts/technologies.py`, `daodan/technologies/v1`): le tecnologie del progetto per unità di build, dal solo registro (`data/service-registry.json`, 2.172 voci), senza eseguire nulla del progetto. Il 14 novembre il registro era stato misurato solo sui servizi (`daodan_registry`, 45 su 123); questo è il primo giro dello step nuovo.
@@ -238,6 +281,21 @@ Misura lo step `stack` della pipeline (`scripts/technologies.py`, `daodan/techno
 - Pre-mappa: i comandi di modello non girano. Le loro risposte sono quelle registrate da `modal_premap.py --runs` (`results/premap-runs`), riprodotte come fa `tools/premap_replay.py`; una fixture senza registrazione ha i comandi `not_run` (`model: none`), una registrazione a cui manca una risposta è `partial`. Le registrazioni sono 178 su 180: mancano `real-stack-jellyfin` e `real-stack-kuvasz`, che hanno superato i 2.400 secondi della funzione di `modal_premap.py` (D-302). Le 18 `jvm-ver-*` e le 40 `real-stack-*` sono state registrate il 17 novembre 2026, sul codice `5bcc6674211c593c`.
 - Punteggio: `score.technologies_faces` porta il record nelle facce `frameworks` (ogni voce la cui `category` non è `service`, per ogni unità che la tiene, con il primo segno dentro l'unità come prova) e `services` (ogni voce di `category` `service`) di `expected.json`; `score.score_technologies` le confronta. Dal 19 novembre 2026 ogni voce `project` riconoscibile ha la sua `category` (`framework`, `library`, `tool` o `service`), ma `expected.json` elenca fra i framework anche librerie e strumenti (Zod, Vite, Vitest, Jest) e non tutti: la faccia tiene le tre classi come prima, e ciò che offre in più di `expected.json` fra i framework non è un falso: è `counted_apart`. I servizi di `expected.json` sono completi, e un servizio in più resta `extra`. `frameworks_by_name` toglie le unità, che ogni lettore nomina a modo suo, e conta un nome una volta per fixture.
 - Due fatti per fixture: `executed_project_code`, dai processi che `ensure` avvia (`spawned`: `no` solo se tutti sono il `git` del perimetro, con gli hook e il monitor spenti; la snapshot e la pre-mappa riprodotta non sono osservate), e `seconds` (snapshot con pre-mappa, e lo step). Il costo del giro viene dal rapporto di Modal.
+
+### Replay del riconoscimento dei pacchetti PyPI
+
+`replay_stack_packages.py` rilegge le risposte di Renovate conservate in `results/premap-runs`. Per ogni progetto applica il lettore della pre-mappa e misura `service_registry.check_packages` sulle coppie pacchetto PyPI/file. Il JSON di uscita contiene le triple tecnologia, pacchetto e file per fixture. I parametri sono la revisione Git, le fixture da escludere, il numero di ripetizioni del matcher e il file di uscita. Il replay legge dati archiviati senza avviare strumenti esterni di analisi o codice delle fixture.
+
+Dal repository, con due percorsi di uscita a scelta:
+
+```sh
+python benchmarks/project-model/replay_stack_packages.py --revision 98f360b --exclude real-app-full-stack-fastapi --repeat 11 --out baseline.json
+python benchmarks/project-model/replay_stack_packages.py --exclude real-app-full-stack-fastapi --repeat 11 --out candidate.json
+```
+
+Il 20 novembre 2026, escluso il template FastAPI usato per la correzione, 35 delle 177 registrazioni rimaste contenevano pacchetti PyPI rilevati da Renovate. Su 1.185 coppie pacchetto/file, la normalizzazione PyPI ha portato le triple da 177 a 178. È comparso solo `sentry / sentry-sdk / pyproject.toml` in `real-stack-netbox`, dove il riferimento atteso elenca Sentry. Tutte le triple precedenti sono rimaste. La mediana per analizzare i 35 casi in 11 ripetizioni è stata 210 ms per la base e 214 ms per la modifica. Il replay misura esclusivamente il matcher su questa fonte. L'attribuzione ai moduli, le configurazioni Compose e i tempi dell'intera pipeline richiedono prove distinte.
+
+Per i servizi configurati, il rapporto del benchmark conserva `configured_services` accanto al punteggio dei servizi riconosciuti dal catalogo. Il controllo `test_compose_files_in_the_corpus_keep_each_service_name_even_if_built_without_an_image` in `test_stack.py` verifica i tre file Compose presenti direttamente nelle fixture. Il lettore recupera nove dichiarazioni su nove, comprese le tre che contengono una build senza immagine esplicita. Ogni dichiarazione conserva il punto nel file.
 
 ### Risultati
 

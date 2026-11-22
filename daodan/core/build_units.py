@@ -130,10 +130,13 @@ def _family(ecosystem: str) -> str:
             "melos": "pub", "stack": "cabal"}.get(ecosystem, ecosystem)
 
 
+def normalize_pypi_name(name: str) -> str:
+    """PEP 503 normalizes distribution identifiers. The standalone readers require only the stdlib."""
+    return re.sub(r"[-_.]+", "-", str(name)).casefold()
+
+
 def _dependency_name(name: str, family: str) -> str:
-    if family == "python":
-        return re.sub(r"[-_.]+", "-", name).casefold()
-    return name
+    return normalize_pypi_name(name) if family == "python" else name
 
 
 def _unit(rel: str, kind: str, name: str | None = None, **fields) -> dict:
@@ -256,9 +259,19 @@ def _pyproject(inv, rel, text):
         unit["kind"] = "uv-workspace"
         unit["members"] = [m for m in workspace["members"] if isinstance(m, str)]
         unit["members"].extend("!" + m for m in workspace.get("exclude", []) if isinstance(m, str))
+    declared = {_dependency_name(dep, "python") for dep in deps}
     for dep, spec in (uv.get("sources") or {}).items() if isinstance(uv.get("sources"), dict) else []:
-        if isinstance(spec, dict) and isinstance(spec.get("path"), str):
-            unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
+        if _dependency_name(dep, "python") not in declared:
+            continue
+        for source in spec if isinstance(spec, list) else [spec]:
+            if not isinstance(source, dict):
+                continue
+            if isinstance(source.get("path"), str):
+                unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], source["path"])})
+            elif source.get("workspace") is True:
+                unit["path_dependencies"].append({"name": dep, "path": None, "workspace": True})
+            elif any(source.get(key) for key in ("index", "git", "url")):
+                unit["path_dependencies"].append({"name": dep, "path": None, "remote": True})
     for dep, spec in poetry.get("dependencies", {}).items() if isinstance(poetry.get("dependencies"), dict) else []:
         if isinstance(spec, dict) and isinstance(spec.get("path"), str):
             unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})
@@ -501,8 +514,6 @@ def _pubspec(inv, rel, text):
         table = data.get(key)
         if isinstance(table, dict):
             for dep, spec in table.items():
-                if isinstance(spec, dict) and "sdk" in spec:
-                    continue  # `sdk: flutter` comes with the toolchain
                 deps.add(dep)
                 if isinstance(spec, dict) and isinstance(spec.get("path"), str):
                     unit["path_dependencies"].append({"name": dep, "path": _join(unit["directory"], spec["path"])})

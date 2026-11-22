@@ -89,6 +89,29 @@ class FlowFixtureTests(unittest.TestCase):
         self.assertFalse(flows.trace(self.links, start, "from", boundary=["web"])["complete"])
         self.assertFalse(flows.trace(self.links, "web/debug.ts::probe", "from")["complete"])
 
+    def test_reaching_a_reader_by_call_expands_its_effects_in_both_orders(self):
+        start, via, reader, effect = ("app.py::" + n for n in ("start", "via", "reader", "effect"))
+        edges = [{"from": a, "to": b, "type": t} for a, b, t in [
+            (start, "store:state", "scrive"), (start, via, "chiama"),
+            ("store:state", reader, "legge"), (via, reader, "chiama"), (reader, effect, "chiama")]]
+        for order in (edges, list(reversed(edges))):
+            flow = flows.trace({"gaps": [], "edges": order}, start, "from")
+            self.assertIn(effect, flow["nodes"])
+            self.assertEqual(len(flow["edges"]), len(edges))
+
+    def test_an_unowned_gap_and_a_truncated_entry_prevent_completeness(self):
+        start = "app.py::entry"
+        links = {"entries": [{"symbol": start}], "gaps": [{"site": "app.py:9", "reason": "unknown callee"}],
+                 "edges": [{"from": start, "to": "app.py::helper", "type": "chiama"},
+                           {"from": "app.py::helper", "to": "app.py::charge", "type": "chiama"}]}
+        self.assertFalse(flows.trace(links, start, "from")["complete"])
+        links["gaps"] = []
+        through = flows.trace(links, "app.py::charge", "through", max_edges=1)
+        self.assertEqual((through["entries"], through["complete"]), ([], False))
+        self.assertEqual(through["incomplete_entries"], [{"entry": start, "reason": "budget"}])
+        self.assertTrue(flows.trace(links, "app.py::unrelated", "through")["complete"])
+        self.assertEqual(flows.trace({**links, "entries": []}, start, "through")["stopped"], "no_entries")
+
     def test_one_flow_is_seen_at_each_level_without_changing(self):
         flow = flows.trace(self.links, "web/checkout.ts::onPayClick", "from")
         modules_of = flows.file_modules(self.manifest)
@@ -149,6 +172,11 @@ class FlowFixtureTests(unittest.TestCase):
         recorded = service.flows("flows", start=badge, direction="to", card=card)
         self.assertEqual((recorded["card"]["name"], recorded["card"]["fresh"]), ("Stato del pagamento", True))
         self.assertNotIn("card", service.flows("flows", start=badge, direction="from"))
+        service.flows("flows", rules=[rule for rule in rules if rule["link"] != "legge"])
+        changed = service.flows("flows", start=badge, direction="to")["card"]
+        self.assertEqual((changed["fresh"], changed["changed_files"], changed["evidence_changed"]), (False, [], True))
+        service.flows("flows", rules=rules)
+        self.assertTrue(service.flows("flows", start=badge, direction="to")["card"]["fresh"])
         cards = json.loads((project / ".daodan/map/runs/flows/snapshot/flow-cards.json").read_text(encoding="utf-8"))
         files = cards["cards"]["to:" + badge]["files"]
         files["app/web/checkout.ts"] = "edited"
@@ -180,6 +208,27 @@ class FlowFixtureTests(unittest.TestCase):
 
 
 
+class StoreUnitTests(unittest.TestCase):
+    def test_cuts_name_only_readers_separated_from_the_writer(self):
+        writer, reader = "a.py::write", "b.py::read"
+        links = {"stores": {"orders/status": {"writes": [writer], "reads": [writer, reader]}},
+                 "entries": [], "edges": [], "gaps": []}
+        sizes = {"a.py": 8, "b.py": 8, "large.py": 13}
+        small = flows.units(links, sizes, ["."], 10)
+        self.assertEqual(small["cuts"], [{"type": "store", "store": "orders/status",
+                                         "writer_file": "a.py", "reader_files": ["b.py"]}])
+        self.assertEqual(small["oversized"], [{"file": "large.py", "bytes": 13, "limit": 10}])
+        self.assertIn(["large.py"], [unit["files"] for unit in small["units"]])
+        together = flows.units(links, sizes, ["a.py", "b.py"], 16)
+        self.assertEqual((together["cuts"], together["oversized"]), ([], []))
+        self.assertEqual(flows.units(links, sizes, ["a.py"], 10)["cuts"], [])
+        store = "store:orders/status"
+        links["entries"] = [{"symbol": writer}]
+        links["edges"] = [{"from": writer, "to": store, "type": "scrive", "site": "a.py:2"},
+                          {"from": store, "to": reader, "type": "legge", "site": "b.py:2"}]
+        self.assertEqual(flows.units(links, sizes, ["."], 10)["cuts"], small["cuts"])
+
+
 class WrittenRuleTests(unittest.TestCase):
     """Constructs that pass through library objects: a store created by a library, markup
     handlers, a decorated route on a router object, a collection reached by attribute."""
@@ -204,6 +253,7 @@ class WrittenRuleTests(unittest.TestCase):
                          "  const save = () => {\n    post(SAVE_URL, { count });\n  };\n"
                          "  return (\n    <div>\n      <button onClick={() => add(1)}>+</button>\n"
                          "      <button onClick={save}>save</button>\n      <button onClick={props.onClose}>x</button>\n      <button onClick={onPick}>p</button>\n"
+                         "      <button onClick={(add) => add(1)}>shadow</button>\n"
                          "      {count}\n    </div>\n  );\n}\n"),
         "api/handlers.py": ("from lib import APIRouter, db\n\nrouter = APIRouter()\n\n\n@router.post(\"/save\")\n"
                             "async def save(body):\n    await db.counters.update_one(  # the user's counter\n"
@@ -297,12 +347,16 @@ class WrittenRuleTests(unittest.TestCase):
         self.assertIn(("web/store.ts::report", "web/store.ts::reset"), self.edges("chiama"))
 
     def test_a_held_store_function_is_called_where_its_variable_is(self):
-        self.assertIn(("web/view.tsx::View", "web/store.ts::add"), self.edges("attiva"))
+        handler = "web/view.tsx::function@14:23"
+        self.assertIn(("web/view.tsx::View", handler), self.edges("attiva"))
+        self.assertIn((handler, "web/store.ts::add"), self.edges("chiama"))
+        shadow = next(e["to"] for e in self.links["edges"] if e.get("label") == "shadow")
+        self.assertNotIn((shadow, "web/store.ts::add"), self.edges("chiama"))
         self.assertNotIn("state/add", self.links["stores"])
 
     def test_markup_handlers_are_entry_points_and_a_passed_parameter_is_not(self):
         actions = sorted(entry["symbol"] for entry in self.links["entries"] if entry["kind"] == "azione")
-        self.assertEqual(actions, ["web/store.ts::add", "web/view.tsx::View.save"])
+        self.assertEqual(actions, ["web/view.tsx::View.save", "web/view.tsx::function@14:23", "web/view.tsx::function@18:23"])
 
     def test_a_templated_constant_reaches_the_decorated_route_and_its_collection(self):
         self.assertIn(("web/view.tsx::View.save", "api/handlers.py::save"), self.edges("chiama"))

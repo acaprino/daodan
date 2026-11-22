@@ -12,12 +12,19 @@ also gives the names of each unit's external dependencies; the pre-map takes onl
 from __future__ import annotations
 
 from collections import Counter
+from importlib import metadata
 from pathlib import Path, PurePosixPath
 import re
 
 import modules
+from build_units import normalize_pypi_name
+from premap import compose
 
-NAME, VERSION, RANK = "modules.py", modules.SCHEMA, "reader"
+try:
+    _yaml_version = metadata.version("PyYAML")
+except metadata.PackageNotFoundError:
+    _yaml_version = "unavailable"
+NAME, VERSION, RANK = "modules.py", f"{modules.SCHEMA}+compose.1.pyyaml.{_yaml_version}.unit-resolution.3.image.2", "reader"
 PACKAGE_ECOSYSTEM = {
     "npm": "npm", "pnpm": "npm", "lerna": "npm", "nx": "npm", "angular": "npm", "deno": "npm",
     "python": "pypi", "cargo": "crates", "go": "go", "maven": "maven", "gradle": "maven", "sbt": "maven",
@@ -25,21 +32,30 @@ PACKAGE_ECOSYSTEM = {
     "pub": "pub", "melos": "pub", "swiftpm": "swiftpm", "mix": "hex", "terraform": "terraform",
 }
 _FROM = re.compile(r"^\s*FROM\s+(?:--\S+\s+)*([^\s#]+)(?:\s+AS\s+([^\s#]+))?", re.I)
-_IMAGE = re.compile(r"^\s*image:\s*['\"]?([^\s'\"#]+)")
-_FLUTTER_SDK = re.compile(r"^\s*sdk\s*:\s*flutter\b")
 
 
 def normalize_image(reference: str) -> str:
-    """An image reference without registry host, tag or digest: `docker.io/library/postgres:16` is `postgres`."""
-    name = reference.split("@", 1)[0]
+    """Repository identity, dropping the tag, digest and optional Docker Hub spelling."""
+    name = reference.split("@", 1)[0].lower()
     if ":" in name.rsplit("/", 1)[-1]:
         name = name.rsplit(":", 1)[0]
-    parts = name.split("/")
-    if len(parts) > 1 and ("." in parts[0] or ":" in parts[0] or parts[0] == "localhost"):
-        parts = parts[1:]
-    if parts[:1] == ["library"]:
-        parts = parts[1:]
-    return "/".join(parts).lower()
+    host, slash, path = name.partition("/")
+    if slash and host in {"docker.io", "index.docker.io", "registry-1.docker.io"}:
+        name = path
+    return name.removeprefix("library/") if name.count("/") == 1 else name
+
+
+def declared_image(reference: str) -> str:
+    """The image repository when literal; a variable in only its tag/digest leaves the repository known."""
+    prefix, variable, remainder = reference.partition("$")
+    if not variable:
+        return normalize_image(reference)
+    leaf = prefix.rsplit("/", 1)[-1]
+    if "/" in remainder or (":" not in leaf and "@" not in leaf):
+        return ""
+    return normalize_image(prefix)
+
+
 KIND = {"npm-package": "npm-package", "python-package": "python-project", "cargo-crate": "cargo-crate",
         "go-module": "go-module", "maven-module": "maven-module", "maven-aggregator": "maven-module",
         "gradle-project": "gradle-project", "gradle-build": "gradle-project", "dotnet-project": "dotnet-project",
@@ -161,12 +177,32 @@ def facts(graph: dict) -> dict:
     return {"units": units, "workspace": list(workspaces.values()), "dependencies": dependencies}
 
 
-def _declared_packages(graph: dict, inventory) -> list[dict]:
+def external_packages(graph: dict, packages: list[dict]) -> list[dict]:
+    """Discard PyPI signs at the pyproject that explicitly resolves them to a local workspace member or directory."""
+    python = {m["id"]: m for m in graph["modules"] if "python" in m.get("ecosystems", ())}
+    local = set()
+    for edge in graph["edges"]:
+        if edge["kind"] != "declares" or edge["source"] not in python or edge["target"] not in python:
+            continue
+        source, target = python[edge["source"]], python[edge["target"]]
+        target_name = normalize_pypi_name(target["name"])
+        external = {normalize_pypi_name(name) for name in source["external"]}
+        workspace = {_root(source), *source["registered_by"]} & {_root(target), *target["registered_by"]}
+        for dep in source["path_dependencies"]:
+            name = normalize_pypi_name(dep["name"])
+            if name not in external and (dep["path"] == _root(target) or
+                                         (dep.get("workspace") and workspace and name == target_name)):
+                local.update((rel, name) for rel in source["manifests"] if PurePosixPath(rel).name == "pyproject.toml")
+    if not local:
+        return packages
+    return [p for p in packages if p["ecosystem"] != "pypi" or
+            ((p.get("declared_in") or "").partition("#")[0], normalize_pypi_name(p["name"])) not in local]
+
+
+def _declared_packages(graph: dict, inventory) -> tuple[list[dict], list[dict], list[dict]]:
     """Declared package and container image signs from manifests, pubspec SDKs, Dockerfiles and Compose files; a
     manifest's package has the `version` its reader read there (`build_units`), none where it gives none."""
     units = [m for m in graph["modules"] if m["provenance"] == "build"]
-    own = {(PACKAGE_ECOSYSTEM.get(e), name.casefold()) for m in units for e in m.get("ecosystems", [])
-           for name in [m["name"], *m["aliases"]] if name}
     lines_cache: dict[str, list[str]] = {}
 
     def lines_of(rel: str) -> list[str]:
@@ -181,7 +217,7 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
     seen: set[tuple[str, str, str]] = set()
 
     def add(ecosystem: str, name: str, path: str, line: int | None, version: str | None = None) -> None:
-        if not name or not path or (ecosystem, name.casefold()) in own:
+        if not name or not path:
             return
         declared_in = f"{path}#L{line}" if line else path
         key = (ecosystem, name.casefold(), path)
@@ -193,9 +229,9 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
     for unit in units:
         ecosystems = sorted({PACKAGE_ECOSYSTEM[e] for e in unit.get("ecosystems", []) if e in PACKAGE_ECOSYSTEM})
         for ecosystem in ecosystems:
-            for name in unit.get("dependencies") or ():
-                if (ecosystem, name.casefold()) in own:
-                    continue
+            # Python signs are resolved per declaring manifest by external_packages after joining all readers.
+            dependencies = unit["dependencies"] if ecosystem == "pypi" else unit["external"]
+            for name in dependencies:
                 needle = name.split(":", 1)[-1] if ecosystem == "maven" and ":" in name else name
                 path, line = next(
                     ((p, n) for p in unit["manifests"] for n, text in enumerate(lines_of(p), 1)
@@ -205,26 +241,31 @@ def _declared_packages(graph: dict, inventory) -> list[dict]:
                 )
                 add(ecosystem, name, path, line, ((unit.get("versions") or {}).get(path) or {}).get(name))
 
+    configured, gaps = [], []
     for rel in inventory.files:
         base = PurePosixPath(rel).name
-        if base == "pubspec.yaml":
-            for n, text in enumerate(lines_of(rel), 1):
-                if _FLUTTER_SDK.match(text):
-                    add("pub", "flutter", rel, n)
-        elif base == "Dockerfile" or base.endswith(".Dockerfile"):
+        if base == "Dockerfile" or base.endswith(".Dockerfile"):
             stages: set[str] = set()
             for n, text in enumerate(lines_of(rel), 1):
                 if match := _FROM.match(text):
                     raw, alias = match.group(1), match.group(2)
-                    if raw.lower() != "scratch" and raw.lower() not in stages and not raw.startswith("$"):
-                        add("docker", normalize_image(raw), rel, n)
+                    if raw.lower() != "scratch" and raw.lower() not in stages:
+                        add("docker", declared_image(raw), rel, n)
                     if alias:
                         stages.add(alias.lower())
-        elif base.startswith(("docker-compose", "compose")) and base.endswith((".yml", ".yaml")):
-            for n, text in enumerate(lines_of(rel), 1):
-                if (match := _IMAGE.match(text)) and not match.group(1).startswith("$"):
-                    add("docker", normalize_image(match.group(1)), rel, n)
-    return packages
+        elif compose.is_compose_file(base):
+            try:
+                declared, unread = compose.file_services(rel, inventory.text(rel))
+            except (KeyError, OSError, ValueError) as error:
+                gaps.append({"kind": "compose_not_read", "path": rel, "detail": str(error)})
+                continue
+            configured.extend(declared)
+            gaps.extend(unread)
+            for service in declared:
+                image = declared_image(service.get("image", ""))
+                if image:
+                    add("docker", image, rel, service["image_line"])
+    return packages, configured, gaps
 
 
 def package_facts(manifest: Path) -> list[dict]:
@@ -240,7 +281,7 @@ def package_facts(manifest: Path) -> list[dict]:
             if result and (result.get("facts") or {}).get("packages"):
                 parts.append({"source": premap.label(source), "rank": source.RANK,
                               "facts": {"packages": result["facts"]["packages"]}})
-    return premap.join(parts).get("packages", []) if parts else []
+        return external_packages(context.graph, premap.join(parts).get("packages", [])) if parts else []
 
 
 def run(context) -> dict:
@@ -250,7 +291,8 @@ def run(context) -> dict:
     gaps += [{**gap, "unit": ref[module["id"]]} for module in graph["modules"] if module["provenance"] == "build"
              for gap in module.get("gaps") or []]
     found = facts(graph)
-    packages = _declared_packages(graph, context.inventory)
+    packages, configured, unread = _declared_packages(graph, context.inventory)
     out = {"units": found["units"], "workspace": found["workspace"],
-           **({"packages": packages} if packages else {})}
-    return {"facts": out, "gaps": gaps}
+           **({"packages": packages} if packages else {}),
+           **({"configured_services": configured} if configured else {})}
+    return {"facts": out, "gaps": gaps + unread}

@@ -4,9 +4,12 @@
 # ///
 """Step 2 (`stack`): per-module frameworks, libraries, services and tools from Step 1's map and facts.
 
-Reads only Step 1's module graph and pre-map facts (`packages`, `services`, `docker_builds`, `excluded`, `toolchains`),
+Reads only Step 1's module graph and pre-map facts (`packages`, `configured_services`, `services`, `docker_builds`, `excluded`, `toolchains`),
 with zero tool execution and zero duplicate manifest parsing. Every concrete, logical and virtual module receives its
 languages, toolchains, frameworks, declared libraries (cataloged or not), external services and tools.
+`configured_services` preserves Compose and CI declarations, including names and images outside the registry.
+For build modules with a native package graph, `resolved_libraries` records the reachable external packages
+and their exact versions. A resolved package can be conditional on a target or feature.
 An entry with no `declared` sign, only lines of text that mention it, is no module's: it stays in `mentioned` with its
 signs. `checkers` gives each checker's status (`service_registry.CHECKERS`) and `gaps` what they could not establish.
 """
@@ -30,9 +33,11 @@ from module_derive import PREMAP_KIND_ECOSYSTEM  # noqa: E402
 import modules  # noqa: E402
 import premap  # noqa: E402
 import service_registry  # noqa: E402
+from languages._treesitter import get_parser  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
 SCHEMA, FILE = "daodan/technologies/v1", "technologies.json"
+MATCHER_VERSION = 3  # Cache identity for recognition and attribution changes within the v1 output format.
 
 
 def _versions_only(rel: str | None) -> bool:
@@ -40,6 +45,12 @@ def _versions_only(rel: str | None) -> bool:
     that uses it declares it in its own build file (`premap.jvm_files` reads `libs.*`), not the one holding the file."""
     name = Path(rel or "").name
     return name.endswith(".versions.toml") or name == "Directory.Packages.props"
+
+
+def module_declaration(sign: dict) -> bool:
+    """A sign whose owning module declares the technology."""
+    return (sign.get("strength") == "declared" and bool(sign.get("path"))
+            and not (sign.get("sign") == "package" and _versions_only(sign["path"])))
 
 
 def path(manifest: Path) -> Path:
@@ -51,9 +62,9 @@ def _inputs(manifest: Path, registry: dict, facts: dict) -> tuple[str, str, str]
     graph_digest = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"])).get("inputs_digest")
     with open_snapshot(manifest) as store:
         root, target = store["root"], store.get("target") or "."
-        value = [logical_digest(store), graph_digest, root, registry.get("versions"), SCHEMA,
-                 facts.get("packages"), facts.get("services"), facts.get("docker_builds"),
-                 facts.get("excluded"), facts.get("toolchains"), facts.get("units")]
+        value = [logical_digest(store), graph_digest, root, registry, SCHEMA, MATCHER_VERSION,
+                 facts.get("packages"), facts.get("package_graphs"), facts.get("services"), facts.get("configured_services"),
+                 facts.get("docker_builds"), facts.get("excluded"), facts.get("toolchains"), facts.get("units")]
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest(), root, target
 
 
@@ -88,6 +99,40 @@ def _module_files(module: dict, physical: list[dict]) -> set[str]:
     return files
 
 
+def _configured_services(facts: dict, excluded: tuple[str, ...]) -> list[dict]:
+    """Service instances as declared, independent of registry membership and of any observed execution."""
+    result = []
+    for service in [*(facts.get("configured_services") or ()), *(facts.get("services") or ())]:
+        site, name = service["declared_in"], service["name"]
+        path, line = service_registry.service_site(service)
+        if path and not service_registry._is_excluded(path, excluded):
+            result.append({"name": name, "path": path, "declared_in": site,
+                           **({"line": line} if line else {}),
+                           **{key: service[key] for key in ("image", "profiles") if service.get(key)}})
+    return sorted(result, key=lambda item: (item["path"], item.get("line", 0), item["declared_in"], item["name"]))
+
+
+def _resolved_libraries(graph: dict, member: int) -> list[dict]:
+    """The external packages reachable from a workspace member, including that member's own dev dependencies."""
+    nodes = graph["nodes"]
+    direct = {edge["to"] for edge in nodes[member]["dependencies"]}
+    pending = list(direct)
+    seen = {member}
+    result = []
+    while pending:
+        index = pending.pop()
+        if index in seen:
+            continue
+        seen.add(index)
+        node = nodes[index]
+        if "manifest" not in node and not node.get("local"):
+            result.append({"ecosystem": graph["ecosystem"], "name": node["name"], "version": node["version"],
+                           "direct": index in direct, "path": graph["path"]})
+        # Cargo builds a dependency without that dependency's own development requirements.
+        pending.extend(edge["to"] for edge in node["dependencies"] if edge.get("kind") != "dev")
+    return sorted(result, key=lambda row: (not row["direct"], row["name"], row["version"]))
+
+
 def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     """The stack record of `manifest` from the registry and Step 1's `facts`."""
     recognized = service_registry.run(manifest, registry, facts)
@@ -100,13 +145,19 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
     else:
         graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
     left_out = tuple(item["path"] for item in facts.get("excluded") or () if item.get("path"))
+    configured = _configured_services(facts, left_out)
+    resolved_members = {node["manifest"]: (model, i) for model in facts.get("package_graphs", ())
+                        for i, node in enumerate(model["nodes"]) if "manifest" in node}
     raw_packages = [s for s in service_registry.step1_packages(manifest, facts)
                     if s[0] != "docker" and not service_registry._is_excluded(s[2], left_out)]
     known_pkg: dict[tuple[str, str | None], dict] = {}
+    declarations_by_path: dict[str, list[tuple[str, dict]]] = {}
     for entry in entries:
         for sign in entry["signs"]:
             if sign["sign"] == "package":
                 known_pkg.setdefault((sign["value"].casefold(), sign["path"]), entry)
+            if module_declaration(sign):
+                declarations_by_path.setdefault(sign["path"], []).append((entry["id"], sign))
 
     physical = [m for m in graph["modules"] if m["provenance"] in modules.PHYSICAL]
     refs = _references(graph, facts.get("units") or [])
@@ -120,43 +171,58 @@ def derive(manifest: Path, registry: dict, facts: dict) -> dict:
                 **named, "kind": unit["kind"],
                 "nature": unit.get("nature", "logical"), "provenance": unit["provenance"],
                 "paths": unit["paths"], "languages": {}, "toolchains": [],
-                "frameworks": [], "libraries": [], "services": [], "tools": [], "technologies": [],
+                "configured_services": [],
+                "frameworks": [], "libraries": [], "services": [], "tools": [], "technologies": [], "technology_evidence": {},
             }
             all_modules.append(item)
             continue
         owned = _module_files(unit, physical)
-        matched = [e for e in entries if any(s["path"] in owned and not (s["sign"] == "package" and _versions_only(
-            s["path"])) for s in e["signs"])]
+        evidence = {}
+        for rel in sorted(owned & declarations_by_path.keys()):
+            for ident, sign in declarations_by_path[rel]:
+                if ident not in evidence:
+                    evidence[ident] = {"path": rel, **({"line": sign["line"]} if sign.get("line") else {})}
+        matched = [e for e in entries if e["id"] in evidence]
         frameworks = [e["id"] for e in matched if e.get("category") == "framework"]
         services = [e["id"] for e in matched if e.get("category") == "service"]
         tools = [e["id"] for e in matched if e.get("category") == "tool"]
-        libs = []
-        seen_libs = set()
+        libraries = {}
         for eco, pkg_name, pkg_path, pkg_line, version in raw_packages:
-            if pkg_path in owned and not _versions_only(pkg_path) and (eco, pkg_name.casefold()) not in seen_libs:
-                seen_libs.add((eco, pkg_name.casefold()))
-                reg_entry = known_pkg.get((pkg_name.casefold(), pkg_path))
-                libs.append({
-                    "ecosystem": eco, "name": pkg_name, "path": pkg_path, "line": pkg_line,
-                    **({"version": version} if version else {}),
-                    **({"id": reg_entry["id"], "title": reg_entry["name"]} if reg_entry else {}),
-                })
-        libs.sort(key=lambda x: (x["ecosystem"], x["name"].casefold()))
+            if pkg_path not in owned or _versions_only(pkg_path):
+                continue
+            key = (eco, service_registry.package_key(eco, pkg_name))
+            previous = libraries.get(key)
+            if previous and (eco != "pypi" or previous.get("version") or not version):
+                continue
+            reg_entry = known_pkg.get((pkg_name.casefold(), pkg_path))
+            libraries[key] = {
+                "ecosystem": eco, "name": pkg_name, "path": pkg_path, "line": pkg_line,
+                **({"version": version} if version else {}),
+                **({"id": reg_entry["id"], "title": reg_entry["name"]} if reg_entry else {}),
+            }
+        libs = sorted(libraries.values(), key=lambda x: (x["ecosystem"], x["name"].casefold()))
         item = {
             **named, "kind": unit["kind"],
             "nature": unit.get("nature", "concrete"), "provenance": unit["provenance"],
             "paths": unit["paths"], "languages": unit.get("languages", {}),
             "toolchains": unit.get("toolchains", []),
+            "configured_services": [service for service in configured if service["path"] in owned],
             "frameworks": frameworks, "libraries": libs, "services": services, "tools": tools,
-            "technologies": [e["id"] for e in matched],
+            "technologies": [e["id"] for e in matched], "technology_evidence": evidence,
         }
+        if unit["provenance"] == "build":
+            resolutions = [resolved_members[p] for p in unit.get("manifests", ()) if p in resolved_members
+                           and not service_registry._is_excluded(p, left_out)]
+            if resolutions:
+                item["resolved_libraries"] = [row for model, i in resolutions for row in _resolved_libraries(model, i)]
         all_modules.append(item)
         if unit["provenance"] in modules.PHYSICAL:
             units.append(item)
     digest, root, target = _inputs(manifest, registry, facts)
     return {"schema": SCHEMA, "manifest": manifest.as_posix(), "root": root, "target": target,
             "inputs_digest": digest, "technologies": entries, "mentioned": mentioned, "units": units,
-            "modules": all_modules, "checkers": recognized["checkers"], "gaps": recognized["gaps"]}
+            "configured_services": configured, "modules": all_modules,
+            "checkers": recognized["checkers"], "gaps": recognized["gaps"]}
 
 
 def _read(manifest: Path, digest: str) -> dict | None:
@@ -164,7 +230,14 @@ def _read(manifest: Path, digest: str) -> dict | None:
         record = json.loads(path(manifest).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
-    return record if record.get("schema") == SCHEMA and record.get("inputs_digest") == digest and "checkers" in record else None
+    if (isinstance(record, dict) and record.get("schema") == SCHEMA and record.get("inputs_digest") == digest
+            and "checkers" in record and "configured_services" in record):
+        # A grammar may have been placed since a previous run recorded its absence.
+        missing = {g["language"] for g in record.get("gaps", ()) if g.get("kind") == "source_grammar_unavailable"}
+        if any(get_parser(language) is not None for language in missing):
+            return None
+        return record
+    return None
 
 
 def state(manifest: Path, *, facts: dict | None = None) -> str:

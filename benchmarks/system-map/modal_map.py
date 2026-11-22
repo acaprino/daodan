@@ -44,7 +44,7 @@ image = (
     modal.Image.debian_slim(python_version="3.13")
     .apt_install("git", "curl", "ca-certificates", "nodejs", "npm")
     .run_commands("npm install -g @anthropic-ai/claude-code", "useradd -m runner")
-    .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30")
+    .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6")
     .add_local_dir(PLUGIN, "/daodan/plugins/codebase-map",
                    ignore=["**/__pycache__/**", "**/node_modules/**", "**/tests/**", "**/viewer/**"])
 )

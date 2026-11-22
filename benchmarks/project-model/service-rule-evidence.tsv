@@ -1,0 +1,217 @@
+id	selector	signal	fixture	expected_service	path	line
+akahu	npm	akahu	real-stack-actual	Akahu	packages/sync-server/package.json	93
+alipay	maven	com.alipay.sdk:alipay-sdk-java	real-stack-mall	Alipay	mall-portal/pom.xml	47
+aliyun-oss	go	github.com/aliyun/aliyun-oss-go-sdk	real-stack-gin-vue-admin	Aliyun OSS	server/go.mod	6
+aliyun-oss	maven	com.aliyun.oss:aliyun-sdk-oss	real-stack-mall	Aliyun OSS	pom.xml	174
+apache_kafka	docker	apache/kafka	real-svc-otel-demo	Kafka	src/kafka/Dockerfile	5
+apache_kafka	docker	apache/kafka-native	real-stack-quarkus-super-heroes	Apache Kafka	rest-fights/src/main/docker-compose/infra.yml	24
+apachetika	docker	docker.io/apache/tika	real-stack-paperless-ngx	Apache Tika	docker/compose/docker-compose.ci-test.yml	21
+apachetika	pypi	tika-client	real-stack-paperless-ngx	Apache Tika	pyproject.toml	76
+apicurio-registry	docker	quay.io/apicurio/apicurio-registry	real-stack-quarkus-super-heroes	Apicurio Registry	rest-fights/src/main/docker-compose/infra.yml	15
+apple.signin	npm	apple-signin-auth	real-stack-nestjs-boilerplate	Sign in with Apple	package.json	72
+atlassian.trello	hosts	api.trello.com	real-stack-healthchecks	Trello	hc/integrations/trello/transport.py	10
+atuin-hub	hosts	hub.atuin.sh	real-stack-atuin	Atuin Hub	crates/atuin-client/src/settings.rs	68
+atuin-sync	hosts	api.atuin.sh	real-stack-atuin	Atuin Sync	crates/atuin-client/src/settings.rs	64
+aws.cloudfront	npm	@aws-sdk/cloudfront-signer	real-stack-documenso	Amazon CloudFront	packages/lib/package.json	21
+aws.s3	go	github.com/aws/aws-sdk-go-v2/feature/s3/manager	real-stack-gin-vue-admin	Amazon S3	server/go.mod	10
+aws.s3	hex	ex_aws_s3	real-stack-hexpm	Amazon S3	mix.exs	48
+aws.ses	npm	@aws-sdk/client-sesv2	real-stack-documenso	Amazon SES	packages/lib/package.json	20
+aws.sqs	hex	broadway_sqs	real-stack-hexpm	Amazon SQS	mix.exs	40
+aws.sqs	hex	ex_aws_sqs	real-stack-hexpm	Amazon SQS	mix.exs	49
+azure.applicationinsights	nuget	Serilog.Sinks.ApplicationInsights	real-stack-ardalis-cleanarchitecture	Azure Application Insights	sample/src/NimblePros.SampleToDo.Web/NimblePros.SampleToDo.Web.csproj	26
+azure.blobstorage	npm	@azure/storage-blob	real-stack-documenso	Azure Blob Storage	packages/lib/package.json	23
+azure.blobstorage	rubygems	azure-blob	real-stack-docuseal	Azure Blob Storage	Gemfile	11
+azure.containerapps	nuget	Aspire.Hosting.Azure.AppContainers	real-svc-eshop	Azure Container Apps	Directory.Packages.props	9
+azure.documentintelligence	pypi	azure-ai-documentintelligence	real-stack-paperless-ngx	Azure AI Document Intelligence	pyproject.toml	20
+azure.keyvault	env	AZURE_KEY_VAULT_ENDPOINT	real-stack-jasontaylor-cleanarchitecture	Azure Key Vault	src/Web/DependencyInjection.cs	41
+azure.keyvault	nuget	Azure.Extensions.AspNetCore.Configuration.Secrets	real-stack-jasontaylor-cleanarchitecture	Azure Key Vault	src/Web/Web.csproj	20
+azure.openai	nuget	Aspire.Azure.AI.OpenAI	real-svc-eshop	Azure OpenAI	Directory.Packages.props	19
+browserless	docker	ghcr.io/browserless/chromium	real-stack-plausible	Browserless	Makefile	57
+browserless	env	NEXT_PRIVATE_BROWSERLESS_URL	real-stack-documenso	Browserless	packages/lib/server-only/htmltopdf/get-audit-logs-pdf.ts	32
+cloudflare.turnstile	env	TURNSTILE_SECRET_KEY	real-stack-wger	Cloudflare Turnstile	settings/main.py	138
+cloudflare.turnstile	env	TURNSTILE_SITE_KEY	real-stack-wger	Cloudflare Turnstile	settings/main.py	137
+cloudflare.turnstile	npm	@marsidev/react-turnstile	real-stack-documenso	Cloudflare Turnstile	package.json	148
+coredns	docker	coredns/coredns	real-stack-plausible	CoreDNS	Makefile	109
+diagrams-net	hosts	embed.diagrams.net	real-stack-bookstack	diagrams.net	app/Util/CspService.php	231
+discord.oauth	composer	socialiteproviders/discord	real-stack-bookstack	Discord OAuth	composer.json	36
+dropbox	composer	spatie/flysystem-dropbox	real-stack-koel	Dropbox	composer.json	33
+duckduckgo-icons	hosts	icons.duckduckgo.com	real-stack-umami	DuckDuckGo Icons	src/lib/constants.ts	25
+eideasy	hosts	id.eideasy.com	real-stack-docuseal	eID Easy	app/javascript/submission_form/verification_step.vue	187
+eideasy	npm	@eid-easy/eideasy-widget	real-stack-docuseal	eID Easy	package.json	11
+enable-banking	hosts	api.enablebanking.com	real-stack-actual	Enable Banking	packages/sync-server/src/app-enablebanking/services/enablebanking-service.ts	18
+envoy	docker	envoyproxy/envoy	real-svc-otel-demo	Envoy	src/frontend-proxy/Dockerfile	4
+fastapi-cloud	env	FASTAPI_CLOUD_TOKEN	real-app-full-stack-fastapi	FastAPI Cloud	.github/workflows/deploy.yml	53
+fastly	env	HEXPM_FASTLY_KEY	real-stack-hexpm	Fastly	config/runtime.exs	89
+firebase.analytics	maven	com.google.firebase:firebase-analytics	jvm-android-app-lib	Firebase Analytics	app/build.gradle.kts	46
+firebase.functions	npm	firebase-functions	mix-poly-firebase	Cloud Functions for Firebase	functions/package.json	13
+firebase.functions	pypi	firebase-functions	mix-poly-firebase	Cloud Functions for Firebase	functions-python/pyproject.toml	6
+firebase.messaging	maven	com.google.firebase:firebase-messaging	real-stack-mattermost-mobile	Firebase Cloud Messaging	android/app/build.gradle	216
+firebase.messaging	maven	io.github.mirzemehdi:kmpnotifier-push-firebase	real-app-kotlinconf	Firebase Cloud Messaging	gradle/libs.versions.toml	69
+firepit	docker	ghcr.io/florianl/firepit	real-svc-otel-demo	Firepit	.env	14
+flagd	crates	open-feature-flagd	real-svc-otel-demo	flagd	src/shipping/Cargo.toml	21
+flagd	docker	ghcr.io/open-feature/flagd	real-svc-otel-demo	flagd	.env	15
+flagd	go	github.com/open-feature/go-sdk-contrib/providers/flagd	real-svc-otel-demo	flagd	src/checkout/go.mod	10
+flagd	maven	dev.openfeature.contrib.providers:flagd	real-svc-otel-demo	flagd	src/ad/build.gradle	58
+fluentd	docker	fluentd	real-svc-robot-shop	Fluentd	fluentd/Dockerfile	1
+friendly-captcha	env	FRIENDLY_CAPTCHA_API_KEY	real-stack-plausible	Friendly Captcha	config/runtime.exs	329
+friendly-captcha	env	FRIENDLY_CAPTCHA_SITEKEY	real-stack-plausible	Friendly Captcha	config/runtime.exs	328
+friendly-captcha	npm	@friendlycaptcha/sdk	real-stack-plausible	Friendly Captcha	assets/package.json	16
+gcp.vertex	env	GOOGLE_VERTEX_PROJECT_ID	real-stack-documenso	Google Vertex AI	.env.example	213
+geminiai	hosts	generativelanguage.googleapis.com	real-app-memos	Google Gemini	provider/ai/audiollm/gemini/gemini.go	22
+github	hosts	api.github.com	real-stack-lobsters	GitHub	extras/github.rb	24
+github.oauth	npm	passport-github2	real-app-hoppscotch	GitHub OAuth	packages/hoppscotch-backend/package.json	69
+github.oauth	npm	remix-auth-github	real-stack-epic-stack	GitHub OAuth	package.json	99
+gitlab.oauth	composer	socialiteproviders/gitlab	real-stack-bookstack	GitLab OAuth	composer.json	37
+gocardless-bank-account-data	hosts	bankaccountdata.gocardless.com	real-stack-actual	GoCardless Bank Account Data	packages/sync-server/src/app-gocardless/services/gocardless-api.ts	21
+google.analytics	hosts	analyticsadmin.googleapis.com	real-stack-plausible	Google Analytics	lib/plausible/google/ga4/http.ex	304
+google.analytics	hosts	analyticsdata.googleapis.com	real-stack-plausible	Google Analytics	lib/plausible/google/ga4/http.ex	303
+google.gmail	env	GMAIL_OAUTH_CLIENT_ID	real-stack-paperless-ngx	Gmail	src/paperless/settings/__init__.py	1176
+google.gmail	env	PAPERLESS_GMAIL_OAUTH_CLIENT_ID	real-stack-paperless-ngx	Gmail	src/paperless/settings/__init__.py	1176
+google.oauth	npm	passport-google-oauth20	real-app-hoppscotch	Google OAuth	packages/hoppscotch-backend/package.json	70
+google.recaptcha	env	RECAPTCHA_PRIVATE_KEY	real-stack-wger	Google reCAPTCHA	settings/main.py	133
+google.recaptcha	env	RECAPTCHA_PUBLIC_KEY	real-stack-wger	Google reCAPTCHA	settings/main.py	132
+google.recaptcha	pypi	django-recaptcha	real-stack-wger	Google reCAPTCHA	pyproject.toml	43
+gotenberg	docker	docker.io/gotenberg/gotenberg	real-stack-paperless-ngx	Gotenberg	docker/compose/docker-compose.ci-test.yml	7
+gotenberg	docker	gotenberg/gotenberg	real-stack-paperless-ngx	Gotenberg	docker/compose/docker-compose.ci-test.yml	7
+gotenberg	pypi	gotenberg-client	real-stack-paperless-ngx	Gotenberg	pyproject.toml	47
+grafana.lgtm	docker	docker.io/grafana/otel-lgtm	real-stack-quarkus-super-heroes	Grafana LGTM	monitoring/docker-compose/monitoring.yml	4
+grafana.lgtm	docker	grafana/otel-lgtm	real-stack-quarkus-super-heroes	Grafana LGTM	monitoring/docker-compose/monitoring.yml	4
+gravatar	env	GRAVATAR_URL	real-stack-koel	Gravatar	config/services.php	55
+graylog	nuget	Serilog.Sinks.Graylog	real-stack-jellyfin	Graylog	Jellyfin.Server/Jellyfin.Server.csproj	58
+greenmail	docker	docker.io/greenmail/standalone	real-stack-paperless-ngx	GreenMail	docker/compose/docker-compose.ci-test.yml	27
+greenmail	docker	greenmail/standalone	real-stack-paperless-ngx	GreenMail	docker/compose/docker-compose.ci-test.yml	27
+hcaptcha	env	HEXPM_HCAPTCHA_SECRET	real-stack-hexpm	hCaptcha	config/runtime.exs	117
+help-scout	env	HELP_SCOUT_APP_ID	real-stack-plausible	Help Scout	config/runtime.exs	273
+help-scout	env	HELP_SCOUT_SIGNATURE_KEY	real-stack-plausible	Help Scout	config/runtime.exs	275
+huawei-obs	go	github.com/huaweicloud/huaweicloud-sdk-go-obs	real-stack-gin-vue-admin	Huawei Cloud OBS	server/go.mod	24
+inbucket	docker	inbucket/inbucket	real-stack-documenso	Inbucket	docker/development/compose.yml	22
+instana	composer	instana/instana-php-sdk	real-svc-robot-shop	Instana	ratings/html/composer.json	17
+instana	docker	instana/agent	real-svc-robot-shop	Instana	Swarm/instana-agent.sh	29
+instana	maven	com.instana:instana-java-sdk	real-svc-robot-shop	Instana	shipping/pom.xml	41
+instana	npm	@instana/collector	real-svc-robot-shop	Instana	cart/package.json	19
+instana	pypi	instana	real-svc-robot-shop	Instana	payment/requirements.txt	7
+ipinfo	hosts	api.ipinfo.io	real-stack-koel	IPinfo	config/koel.php	176
+jaeger	docker	quay.io/jaegertracing/jaeger	real-svc-otel-demo	Jaeger	.env	17
+jhipster-control-center	docker	jhipster/jhipster-control-center	real-app-jhipster-sample	JHipster Control Center	src/main/docker/jhipster-control-center.yml	34
+keycloak	docker	quay.io/keycloak/keycloak	real-stack-kuvasz	Keycloak	localdev/docker-compose.yml	34
+laravel-nightwatch	composer	laravel/nightwatch	real-stack-koel	Laravel Nightwatch	composer.json	46
+lastfm	hosts	ws.audioscrobbler.com	real-stack-koel	Last.fm	config/koel.php	155
+lemonsqueezy	hosts	api.lemonsqueezy.com	mix-real-tududi	Lemon Squeezy	backend/modules/billing/providers/lemonsqueezy.js	16
+lets-encrypt	hosts	acme-v02.api.letsencrypt.org	real-stack-plausible	Let's Encrypt	config/runtime.exs	482
+listenbrainz	hosts	api.listenbrainz.org	real-stack-koel	ListenBrainz	config/koel.php	158
+listenbrainz	hosts	labs.api.listenbrainz.org	real-stack-jellyfin	ListenBrainz	MediaBrowser.Providers/Plugins/ListenBrainz/Configuration/PluginConfiguration.cs	13
+litefs	docker	flyio/litefs	real-stack-epic-stack	LiteFS	other/Dockerfile	90
+litefs	npm	litefs-js	real-stack-epic-stack	LiteFS	package.json	88
+livekit	npm	@livekit/react-native	real-stack-mattermost-mobile	LiveKit	package.json	25
+mailchannels	env	NEXT_PRIVATE_MAILCHANNELS_API_KEY	real-stack-documenso	MailChannels	.env.example	135
+maildev	npm	maildev	real-stack-nestjs-boilerplate	MailDev	maildev.Dockerfile	3
+mailgun	env	MAILGUN_API_KEY	real-stack-ctfd	Mailgun	CTFd/config.ini	206
+mailpit	docker	axllent/mailpit	real-app-full-stack-fastapi	Mailpit	compose.override.yml	72
+majorleaguecyber	hosts	api.majorleaguecyber.org	real-stack-ctfd	MajorLeagueCyber	CTFd/auth.py	580
+majorleaguecyber	hosts	auth.majorleaguecyber.org	real-stack-ctfd	MajorLeagueCyber	CTFd/auth.py	521
+mandrill	env	MANDRILL_API_KEY	real-stack-plausible	Mandrill	config/runtime.exs	769
+maxmind	env	MAXMIND_LICENSE_KEY	real-stack-plausible	MaxMind	config/runtime.exs	290
+microsoft-entra-oauth	composer	socialiteproviders/microsoft-azure	real-stack-bookstack	Microsoft Entra ID OAuth	composer.json	38
+microsoft-sql-server	go	github.com/microsoft/go-mssqldb	real-stack-gin-vue-admin	Microsoft SQL Server	server/go.mod	140
+microsoft-sql-server	go	gorm.io/driver/sqlserver	real-stack-gin-vue-admin	Microsoft SQL Server	server/go.mod	57
+microsoft-sql-server	nuget	Aspire.Hosting.SqlServer	real-stack-ardalis-cleanarchitecture	Microsoft SQL Server	Directory.Packages.props	47
+microsoft-sql-server	nuget	Microsoft.EntityFrameworkCore.SqlServer	real-stack-ardalis-cleanarchitecture	Microsoft SQL Server	Directory.Packages.props	27
+microsoft.oauth	npm	passport-microsoft	real-app-hoppscotch	Microsoft OAuth	packages/hoppscotch-backend/package.json	73
+microsoft.outlook	env	OUTLOOK_OAUTH_CLIENT_ID	real-stack-paperless-ngx	Microsoft Outlook	src/paperless/settings/__init__.py	1183
+microsoft.outlook	env	PAPERLESS_OUTLOOK_OAUTH_CLIENT_ID	real-stack-paperless-ngx	Microsoft Outlook	src/paperless/settings/__init__.py	1183
+minio	docker	minio/minio	real-stack-mall	MinIO	document/docker/docker-compose-env.yml	89
+minio	docker	pgsty/minio	real-stack-plausible	MinIO	Makefile	60
+minio	go	github.com/minio/minio-go/v7	real-stack-gin-vue-admin	MinIO	server/go.mod	28
+minio	maven	io.minio:minio	real-stack-mall	MinIO	pom.xml	51
+mock-oauth2-server	docker	ghcr.io/navikt/mock-oauth2-server	real-stack-mealie	mock-oauth2-server	tests/e2e/docker/docker-compose.yml	4
+mongodb	go	go.mongodb.org/mongo-driver	real-stack-gin-vue-admin	MongoDB	server/go.mod	46
+musicbrainz	env	MUSICBRAINZ_USER_AGENT	real-stack-koel	MusicBrainz	config/koel.php	146
+mysql	go	github.com/go-sql-driver/mysql	real-app-memos	MySQL	go.mod	14
+mysql	go	gorm.io/driver/mysql	real-stack-opengist	MySQL	go.mod	39
+mysql	nuget	Microting.EntityFrameworkCore.MySql	real-stack-openbudgeteer	MySQL	OpenBudgeteer.Core/OpenBudgeteer.Core.csproj	14
+netbox-census	hosts	census.netbox.oss.netboxlabs.com	real-stack-netbox	NetBox Census	netbox/netbox/settings.py	724
+netbox-copilot	env	NETBOX_COPILOT_URL	real-stack-netbox	NetBox Copilot	netbox/netbox/settings.py	731
+netbox-copilot	hosts	static.copilot.netboxlabs.ai	real-stack-netbox	NetBox Copilot	netbox/netbox/settings.py	731
+netlify	npm	@netlify/plugin-nextjs	real-stack-umami	Netlify	package.json	145
+okta.oauth	composer	socialiteproviders/okta	real-stack-bookstack	Okta OAuth	composer.json	39
+ollama	nuget	CommunityToolkit.Aspire.Hosting.Ollama	real-svc-eshop	Ollama	Directory.Packages.props	58
+ollama	nuget	CommunityToolkit.Aspire.OllamaSharp	real-svc-eshop	Ollama	Directory.Packages.props	59
+ollama	pypi	llama-index-embeddings-ollama	real-stack-paperless-ngx	Ollama	pyproject.toml	55
+ollama	pypi	llama-index-llms-ollama	real-stack-paperless-ngx	Ollama	pyproject.toml	57
+omdb	hosts	www.omdbapi.com	real-stack-jellyfin	OMDb	MediaBrowser.Providers/Plugins/Omdb/OmdbProvider.cs	269
+open-food-facts	pypi	openfoodfacts	real-stack-wger	Open Food Facts	pyproject.toml	61
+openai	go	github.com/openai/openai-go/v3	real-app-memos	OpenAI	go.mod	25
+openai	hosts	api.openai.com	real-app-memos	OpenAI	provider/ai/stt/openai/openai.go	20
+openldap	docker	rroemhild/test-openldap	real-stack-mealie	OpenLDAP	tests/e2e/docker/docker-compose.yml	11
+opensearch	docker	docker.io/opensearchproject/opensearch	real-svc-otel-demo	OpenSearch	src/opensearch/Dockerfile	5
+opensearch	docker	opensearchproject/opensearch	real-svc-otel-demo	OpenSearch	src/opensearch/Dockerfile	5
+openstack.swift	pypi	django-storage-swift	real-stack-netbox	OpenStack Swift	pyproject.toml	32
+opsgenie	hosts	api.eu.opsgenie.com	real-stack-healthchecks	Opsgenie	hc/integrations/opsgenie/transport.py	70
+opsgenie	hosts	api.opsgenie.com	real-stack-healthchecks	Opsgenie	hc/integrations/opsgenie/transport.py	68
+oracledatabase	go	github.com/dzwvip/gorm-oracle	real-stack-gin-vue-admin	Oracle Database	server/go.mod	14
+otel-collector	docker	ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib	real-svc-otel-demo	OpenTelemetry Collector	.env	12
+otel-ebpf-profiler	docker	ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-ebpf-profiler	real-svc-otel-demo	OpenTelemetry eBPF Profiler	.env	13
+paddle	hosts	api.paddle.com	mix-real-tududi	Paddle	backend/modules/billing/providers/paddle.js	19
+paddle	hosts	sandbox-api.paddle.com	mix-real-tududi	Paddle	backend/modules/billing/providers/paddle.js	20
+pagerduty	hosts	events.pagerduty.com	real-stack-healthchecks	PagerDuty	hc/integrations/pd/transport.py	12
+pagertree	env	PAGERTREE_ENABLED	real-stack-healthchecks	PagerTree	hc/integrations/pagertree/transport.py	11
+papercut-smtp	docker	jijiechen/papercut	real-stack-ardalis-cleanarchitecture	Papercut SMTP	src/Clean.Architecture.AspireHost/AppHost.cs	13
+plain	npm	@team-plain/typescript-sdk	real-stack-documenso	Plain	packages/lib/package.json	42
+plausible	npm	next-plausible	real-stack-documenso	Plausible	apps/docs/package.json	19
+pluggy	npm	pluggy-sdk	real-stack-actual	Pluggy	packages/sync-server/package.json	108
+postgresql	go	github.com/jackc/pgx/v4	real-stack-fiber-go-template	PostgreSQL	go.mod	15
+postgresql	go	github.com/jackc/pgx/v5	real-stack-opengist	PostgreSQL	go.mod	90
+postgresql	go	gorm.io/driver/postgres	real-stack-opengist	PostgreSQL	go.mod	40
+postgresql	nuget	Aspire.Hosting.PostgreSQL	real-svc-eshop	PostgreSQL	Directory.Packages.props	11
+postgresql	nuget	Aspire.Npgsql	real-svc-eshop	PostgreSQL	Directory.Packages.props	15
+postgresql	nuget	Aspire.Npgsql.EntityFrameworkCore.PostgreSQL	real-stack-jasontaylor-cleanarchitecture	PostgreSQL	Directory.Packages.props	41
+postgresql	pypi	psycopg	py-fastapi-compose	PostgreSQL	pyproject.toml	13
+postgresql	pypi	psycopg-c	real-stack-paperless-ngx	PostgreSQL	pyproject.toml	91
+postgresql	pypi	psycopg-pool	real-stack-paperless-ngx	PostgreSQL	pyproject.toml	92
+postgresql	pypi	psycopg2-binary	real-stack-ctfd	PostgreSQL	pyproject.toml	56
+postmark	hex	bamboo_postmark	real-stack-plausible	Postmark	mix.exs	77
+powersync	env	POWERSYNC_TOKEN_LIFETIME	real-stack-wger	PowerSync	settings/main.py	105
+powersync	env	POWERSYNC_URL	real-stack-wger	PowerSync	settings/main.py	103
+prometheus	crates	metrics-exporter-prometheus	real-stack-atuin	Prometheus	crates/atuin-server/Cargo.toml	48
+prometheus	docker	quay.io/prometheus/prometheus	real-svc-otel-demo	Prometheus	.env	20
+prometheus	maven	io.prometheus:prometheus-metrics-core	real-svc-otel-demo	Prometheus	src/ad/build.gradle	60
+prometheus	maven	io.prometheus:prometheus-metrics-exporter-httpserver	real-svc-otel-demo	Prometheus	src/ad/build.gradle	61
+prometheus	pypi	django-prometheus	real-stack-wger	Prometheus	pyproject.toml	42
+pushbullet	hosts	api.pushbullet.com	real-stack-healthchecks	Pushbullet	hc/integrations/pushbullet/transport.py	11
+pushover	hosts	api.pushover.net	real-stack-lobsters	Pushover	extras/pushover.rb	19
+rabbitmq	composer	php-amqplib/rabbitmq-bundle	real-stack-wallabag	RabbitMQ	composer.json	106
+rabbitmq	nuget	Aspire.Hosting.RabbitMQ	real-svc-eshop	RabbitMQ	Directory.Packages.props	12
+rabbitmq	nuget	Aspire.RabbitMQ.Client	real-svc-eshop	RabbitMQ	Directory.Packages.props	17
+redis	nuget	Aspire.Hosting.Redis	real-svc-eshop	Redis	Directory.Packages.props	13
+redis	nuget	Aspire.StackExchange.Redis	real-svc-eshop	Redis	Directory.Packages.props	18
+redis	pypi	channels-redis	real-stack-paperless-ngx	Redis	pyproject.toml	24
+redis	pypi	django-redis	real-stack-wger	Redis	pyproject.toml	44
+schedules-direct	hosts	json.schedulesdirect.org	real-stack-jellyfin	Schedules Direct	src/Jellyfin.LiveTv/Listings/SchedulesDirect.cs	38
+sentry	hex	sentry	real-stack-hexpm	Sentry	mix.exs	149
+sentry	npm	@sentry/profiling-node	real-stack-epic-stack	Sentry	package.json	64
+sentry	npm	@sentry/react-router	real-stack-epic-stack	Sentry	package.json	65
+simplefin	hosts	bridge.simplefin.org	real-stack-actual	SimpleFIN Bridge	packages/desktop-client/src/components/modals/SimpleFinInitialiseModal.tsx	117
+simplesamlphp	docker	kenchan0130/simplesamlphp	real-stack-plausible	SimpleSAMLphp	Makefile	78
+simplesamlphp	env	SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE	real-stack-plausible	SimpleSAMLphp	Makefile	77
+space-devs	hosts	ll.thespacedevs.com	real-stack-peopleinspace	The Space Devs API	backend/src/jvmMain/kotlin/SpaceDevsPeopleRepository.kt	47
+spotify	composer	jwilsson/spotify-web-api-php	real-stack-koel	Spotify	composer.json	29
+sqlite	composer	ext-pdo_sqlite	real-stack-symfony-demo	SQLite	composer.json	12
+sqlite	go	github.com/glebarez/go-sqlite	real-stack-opengist	SQLite	go.mod	75
+sqlite	go	github.com/glebarez/sqlite	real-stack-opengist	SQLite	go.mod	11
+sqlite	go	github.com/mattn/go-sqlite3	real-stack-owncast	SQLite	go.mod	24
+sqlite	go	github.com/ncruces/go-sqlite3	real-stack-owncast	SQLite	tools/go.mod	186
+sqlite	go	modernc.org/sqlite	real-app-memos	SQLite	go.mod	48
+sqlite	npm	@sqlite.org/sqlite-wasm	real-stack-actual	SQLite	packages/loot-core/package.json	202
+sqlite	nuget	CommunityToolkit.Aspire.Hosting.SQLite	real-stack-jasontaylor-cleanarchitecture	SQLite	Directory.Packages.props	51
+sqlite	nuget	Microsoft.EntityFrameworkCore.Sqlite	real-stack-ardalis-cleanarchitecture	SQLite	Directory.Packages.props	26
+telegram	hosts	api.telegram.org	real-stack-healthchecks	Telegram	hc/integrations/telegram/transport.py	20
+tencent-cos	go	github.com/tencentyun/cos-go-sdk-v5	real-stack-gin-vue-admin	Tencent COS	server/go.mod	43
+ticketmaster	hosts	app.ticketmaster.com	real-stack-koel	Ticketmaster	config/koel.php	171
+tigris	hosts	fly.storage.tigris.dev	real-stack-epic-stack	Tigris	.env.example	33
+tmdb	nuget	TMDbLib	real-stack-jellyfin	TMDb	MediaBrowser.Providers/MediaBrowser.Providers.csproj	28
+twilio	hosts	api.twilio.com	real-stack-healthchecks	Twilio	hc/integrations/call/transport.py	18
+twitch.oauth	composer	socialiteproviders/twitch	real-stack-bookstack	Twitch OAuth	composer.json	40
+valkey	docker	docker.io/valkey/valkey	real-stack-paperless-ngx	Valkey	docker/compose/docker-compose.mariadb.yml	29
+valkey	docker	ghcr.io/valkey-io/valkey	real-svc-otel-demo	Valkey	.env	21
+valkey	docker	valkey/valkey	real-stack-paperless-ngx	Valkey	docker/compose/docker-compose.mariadb.yml	29
+where-the-iss-at	hosts	api.wheretheiss.at	real-stack-peopleinspace	Where the ISS At API	common/src/commonMain/kotlin/dev/johnoreilly/common/remote/PeopleInSpaceApi.kt	28

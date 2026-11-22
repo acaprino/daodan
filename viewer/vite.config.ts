@@ -51,6 +51,7 @@ function licenseNotices(viewer: boolean): Plugin {
 
 export default defineConfig(({ mode }) => ({
   root: mode === 'app' ? 'app' : '.',
+  publicDir: resolve('public'),
   base: './',
   plugins: [imagoStyles(), licenseNotices(mode !== 'app')],
   build: {

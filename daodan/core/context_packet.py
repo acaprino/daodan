@@ -604,7 +604,7 @@ def build_packet(plan, request, *, authority, recipient, indexes=None, cursor=No
         return output
 
 
-def persist_packet(packet, output, *, authority):
+def persist_packet(packet, output, *, authority, reuse_identical=False):
     """Publish one immutable JSON receipt beside its bound candidate manifest."""
     root = Path(authority['root'])
     path = scope._path(output, root)
@@ -612,7 +612,7 @@ def persist_packet(packet, output, *, authority):
     if not path.is_relative_to(manifest.parent) or path.suffix != '.json':
         raise ValueError('context output must be a new JSON under the manifest directory')
     import embedding_worker
-    embedding_worker._publish_json(path, packet)
+    embedding_worker._publish_json(path, packet, reuse_identical=reuse_identical)
     from snapshot_store import artifact_digest
     return dict(path=str(path), sha256=artifact_digest(path), status=packet['status'],
                 counts=packet['counts'], budget=packet['budget'], input_digest=packet['input_digest'])
@@ -655,11 +655,11 @@ def create_context(manifest, request, recipient, *, authority, out, cursor=None,
     slice_path = output / ('map-slice-' + identity + '.json')
     output.mkdir(parents=True, exist_ok=True)
     scope._path(output, Path(authority['root']))
-    saved = persist_packet(packet, packet_path, authority=authority)
+    saved = persist_packet(packet, packet_path, authority=authority, reuse_identical=True)
     checkpoint = dict(schema='daodan/context-checkpoint/v1', plan=plan, cursor=packet['cursor'])
     checkpoint['sha256'] = retrieval._digest(checkpoint)
-    embedding_worker._publish_json(cursor_path, checkpoint)
-    embedding_worker._publish_json(slice_path, slice_)
+    embedding_worker._publish_json(cursor_path, checkpoint, reuse_identical=True)
+    embedding_worker._publish_json(slice_path, slice_, reuse_identical=True)
     return dict(saved, cursor_path=str(cursor_path), cursor_sha256=artifact_digest(cursor_path),
                 map_slice_path=str(slice_path), map_slice_sha256=artifact_digest(slice_path),
                 gaps=len(packet['gaps']), dispatch_gap=packet['dispatch_gap'])

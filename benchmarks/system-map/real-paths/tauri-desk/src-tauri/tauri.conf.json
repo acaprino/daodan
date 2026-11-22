@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "tauri-desk",
+  "version": "0.1.0",
+  "identifier": "com.example.tauridesk",
+  "build": {
+    "frontendDist": "../src"
+  },
+  "app": {
+    "windows": [
+      { "title": "Tauri Desk", "width": 800, "height": 600 }
+    ],
+    "security": { "csp": null }
+  },
+  "bundle": {
+    "active": false
+  }
+}

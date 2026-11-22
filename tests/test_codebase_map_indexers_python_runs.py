@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -175,6 +176,7 @@ def _wheel(path: Path, files: dict) -> None:
             archive.writestr(rel, text)
 
 
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
 def test_the_analyzer_on_the_host_reads_the_project_and_its_environment_and_runs_none_of_them(tmp_path, monkeypatch):
     """AGENTS.md: the project's code runs only in the container. On the host uv builds the environment from wheels
     and starts its interpreter at each install, scip-python's and the checker's Pyright start it to ask its paths,
@@ -239,6 +241,7 @@ def test_the_analyzer_on_the_host_reads_the_project_and_its_environment_and_runs
     assert sorted(path.name for path in marks.iterdir()) == ["pth", "sdist-setup.py", "setup.py"]
 
 
+@pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a real proof on Modal (tests/modal_pytest.py)")
 @pytest.mark.parametrize(("config", "site"), [("pyrightconfig.json", True), ("pyrightconfig.json", False),
                                               ("pyproject.toml", True)])
 def test_a_venv_the_project_s_pyright_configuration_names_is_read_and_never_started(tmp_path, config, site):

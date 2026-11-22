@@ -111,9 +111,18 @@ def check(value: object, data: Path | None = None) -> list[str]:
         if entry.get("type") not in flows.NODE_TYPES:
             problems.append(f"{ident}: type is one of {', '.join(flows.NODE_TYPES)}")
         signs = entry.get("signs")
-        if signs is not None and (not isinstance(signs, dict) or set(signs) != set(SIGNS)
+        if signs is not None and (not isinstance(signs, dict) or set(signs).difference({"source"}) != set(SIGNS)
                                   or not any(signs.values())):
             problems.append(f"{ident}: signs are null or have at least one of {', '.join(SIGNS)}")
+        if isinstance(signs, dict) and "source" in signs:
+            from stack_source import QUERIES
+            source = signs["source"]
+            if not isinstance(source, dict) or not source or any(
+                kind not in QUERIES or not isinstance(names, list) or not names
+                or any(not isinstance(name, str) or not name.strip() for name in names)
+                for kind, names in source.items()
+            ):
+                problems.append(f"{ident}: source signs require a known syntax query and its names")
         if not entry.get("from") or not set(entry["from"]) <= set(SOURCES):
             problems.append(f"{ident}: from names one or more of {', '.join(SOURCES)}")
         mark, package = entry.get("mark"), entry.get("mark_source")
@@ -378,22 +387,26 @@ def _empty_signs() -> dict:
 
 def _add_signs(signs: dict, more: dict) -> None:
     for name, value in more.items():
-        if name in ("packages", "patterns"):
+        if name in ("packages", "patterns", "source"):
+            group = signs.setdefault(name, {})
             for ecosystem, names in value.items():
-                signs[name][ecosystem] = sorted(set(signs[name].get(ecosystem, [])) | set(names))
+                group[ecosystem] = sorted(set(group.get(ecosystem, [])) | set(names))
         else:
             signs[name] = sorted(set(signs[name]) | set(value))
 
 
 def _drop_signs(signs: dict, wrong: dict) -> None:
     for name, value in wrong.items():
-        if name in ("packages", "patterns"):
+        if name in ("packages", "patterns", "source"):
             for ecosystem, names in value.items():
-                kept = [n for n in signs[name].get(ecosystem, []) if n not in names]
+                group = signs.get(name, {})
+                kept = [n for n in group.get(ecosystem, []) if n not in names]
                 if kept:
-                    signs[name][ecosystem] = kept
+                    group[ecosystem] = kept
                 else:
-                    signs[name].pop(ecosystem, None)
+                    group.pop(ecosystem, None)
+            if name == "source" and not signs.get(name):
+                signs.pop(name, None)
         else:
             signs[name] = [n for n in signs[name] if n not in value]
 
@@ -408,7 +421,9 @@ def _from_rule(rule: dict) -> dict:
         else:
             signs["packages"].setdefault(ecosystem, []).append(name)
     signs["env"] = list(rule.get("dotenv", []))
-    signs["files"] = [f for f in rule.get("files", []) if isinstance(f, str)]
+    files = rule.get("files")
+    if isinstance(files, list):
+        signs["files"] = [f for f in files if isinstance(f, str)]
     _add_signs(signs, {})
     kind = "service" if rule["type"] in SERVICES or rule["type"] in SERVICE_TYPES else "project"
     node_type = SERVICE_TYPES.get(rule["type"], "servizio o API" if kind == "service" else "altro")
@@ -472,7 +487,7 @@ def build(cache: Path, additions: Path, data: Path) -> dict:
     if refused:
         print("\n".join(refused), file=sys.stderr)
     for entry in entries.values():
-        if not any(entry["signs"].values()):
+        if not any((entry["signs"] or {}).values()):
             entry["signs"] = None
     return {"schema": SCHEMA, "versions": {"stack-analyser": STACK_ANALYSER[1], "simple-icons": SIMPLE_ICONS[1],
                                            "cncf-landscape": CNCF_COMMIT},

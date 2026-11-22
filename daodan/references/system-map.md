@@ -11,11 +11,12 @@ A system map names the things a system is made of (nodes), the processes it runs
            {"name": "Cliente", "type": "attore", "position": "external", "evidence": ["web/checkout.ts"]}],
  "flows": [{"name": "Pagamento dell'ordine", "area": "pagamenti e abbonamenti", "types": ["funzionale"],
             "nodes": ["Cliente", "Checkout"],
+            "entries": ["Cliente"], "effects": ["Checkout"],
             "arrows": [{"from": "Cliente", "to": "Checkout", "data": "click on Pay", "kind": "attiva",
                         "cite": "web/checkout.ts:22"}]}]}
 ```
 
-- Without `scope` the proposal covers the whole system and declares every area of the list present or absent. With `scope` it covers those areas only; their flows must stay inside them.
+- Without `scope` the proposal covers the whole system and declares every area present or absent. With `scope`, declare, change or remove flows only in the named areas. Reference a node shared with another area by its current name or id. Include every owning area when changing the shared node.
 - A proposal adds or changes what it names; what it does not name stays as it is. `remove` lists the flows to drop, by id or current name; a node leaves the map when no flow uses it, it is inside no node and no `on` or `inside` names it.
 - References between nodes (`nodes`, `from`, `to`, `on`, `inside`) are by current name. A flow may name nodes already in the map.
 - The brief numbers its items (`M1`, `E3`, `G1`) to read them; the machine accepts no number, so a proposal copies what the item names: its path, `path::Symbol`, `store:` or `module:` resource, `id` or `file:line`.
@@ -50,7 +51,8 @@ In the language of the product. The machine refuses a flow whose first word is e
 - `data` says what passes. The machine proves an arrow between two nodes with code from the links: a link from a member of the first to a member of the second, or a write and a read of the same store key. It asserts only what those links say (`asserts`) and names the store keys it goes through (`via`).
 - When the links reach another function of the file of a function member, the arrow is proved with `precise: false`: it holds, less precisely. It does not hold when another node has the function reached as its member.
 - An arrow is declared when an end has no code, or when it says `stessa informazione` (one piece of data kept in several places): then `kind` is one of chiama, attiva, scrive, legge, usa, trasferisce, stessa informazione, and `cite` is a `path:line` that exists, in a file of the end with code. The machine checks that the point exists, not that it says it.
-- Any other arrow is refused. A flow stands when its nodes are accepted and one arrow stands.
+- Declare `entries` and `effects` together as nonempty lists of the flow's participating nodes. Every participant must be reachable from an entry and lead to an effect along the direction of standing arrows. Branches, multiple entries and cycles can satisfy this check. `reachability` is `verified` when those paths exist and `unproved` when they do not. Older flows without endpoints have `not_declared`; coverage for them records membership only. Revising an anchored flow retains its endpoints unless both lists are supplied.
+- Any other arrow is refused. A separate component, an isolated node or a refused arrow makes a flow with standing arrows incomplete. If all proposed arrows are refused and the nodes are valid, the map keeps the latest refusal for review separately from any admitted version. Read it with `about` using the flow name or its area. A corrected proposal replaces the diagnostic. Invalid node or flow identities are reported at write time.
 - An entity reached through one representation and left through another is not a path: write the arrow between the two with its own evidence.
 
 ## Areas
@@ -63,16 +65,17 @@ funzionale (the product does it for its user), operativo (runs without a person)
 
 ## Report
 
-The answer lists each node and flow with `status` (`accepted`, `refused`, `confirmed`), the `reason` of a refusal, each arrow as `proved`, `declared` or `refused`, the coverage of entry points, store keys and routes (what it leaves out by name, or by directory when the list is long), the ids `created`, `updated`, `removed`, `kept`, and `not_removed` with the reason. Names the project confirmed in `codebase-system-map.json` do not change.
+The answer lists each node and flow with `status` (`accepted`, `incomplete`, `refused`, `confirmed`), explains incomplete and refused records, lists each arrow as `proved`, `declared` or `refused`, and reports the coverage of complete flows over entry points, store keys and routes. It gives the ids `created`, `updated`, `removed`, `kept`, and `not_removed` with the reason. Names the project confirmed in `codebase-system-map.json` do not change.
 
 ## Reading the map
+
+The brief shows candidates from the syntax tree and the recorded pre-map. The AST readers find candidates in callback arguments, markup bindings and decorators. Each has its reader, shape, symbol and source site. Use `entry_offset=0` with an optional `limit` and continue at `next_offset` to inspect every candidate, even before link rules exist. These rows have status `candidate`; only verified flows contribute to map coverage.
 
 `about="name"` answers for an area, a flow or a node by id or current name: its flows, nodes, member files, external and unseen nodes. A report or an answer names up to 40 files of a node; past that it counts them by directory (`files_by_directory`). With `levels=[...]` (persone, funzioni, dati, codice, infrastruttura) and a flow, it shows the flow at those levels: arrows contracted through hidden nodes keep their state and proof, and a path that changes representation or crosses a refused step is a gap.
 
 ## Sequence
 
-1. A skeleton, without `scope`: the node of the whole system, its parts and their devices, every area present or absent. External nodes come in step 2, with the flows that reach them.
-2. One proposal per present area, with `scope` naming it: its flows, the nodes they pass through, the external nodes they reach.
-3. After each answer, correct once what it refused, sending only the corrected parts; what stays refused stays out.
-4. Then the remainder, at most 3 rounds: propose flows for what `coverage` leaves out; when an arrow is refused for want of a link the code makes, correct the link rules if you wrote them, record them all again (`rules` replaces them) and propose the arrow again.
-5. Answer with counts: nodes and flows accepted and refused; arrows proved, declared and refused; what `coverage` still leaves out and the links the rules miss.
+1. Read `shape_offset=0` for forms still to classify. Answer the numbered rows with `shape_answers={"id": "...", "answers":{"1":"..."}}` using a value from `allowed`. Read the first page again after saving. The registry and previously classified forms are already applied. Record any route/store rules separately. An empty `rules=[]` records that no project rule is needed.
+2. For a whole-system run, ask `next_question=true`. Read the returned `card_id` with `trace_id`; paginate numbered steps with `trace_offset=next_offset`. Submit `trace_decision` with that card_id, name, area, types, step numbers in order, and one data label per step. If the evidence stops or the entry is out of scope, record `disposition` (`unresolved` or `excluded`) and a short `reason`. Repeat until the queue is empty. For an area-only review use `trace_offset=0` to select relevant cards; leave other areas' decisions alone.
+3. Map the system's parts and devices and declare present or absent areas. For additional contextual proposals use the existing map format with the appropriate scope. Keep an unresolved event's stopping point visible; a line mentioning a destination cannot certify a missing link.
+4. Read `about` for saved names and `next_question` for remaining entries. Read `effect_offset=0` for write sites without a proved entry and continue with `next_offset`. Report accepted paths, reviewed exclusions, unresolved entries, entries still to examine and writes without an entry. Preserve the provenance of observed and sampled calls.

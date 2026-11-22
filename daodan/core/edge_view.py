@@ -41,6 +41,26 @@ __all__ = [
 EDGE_VIEW_SCHEMA = "daodan/edge-view/v1"
 EDGE_VIEW_VERSION = 1
 
+
+def call_ends(ref: dict):
+    """Every evidenced project destination of a call, with the confidence of that particular edge."""
+    observed = ref.get("observations", ())
+    target = ref.get("target_id")
+    flag = {"conflict": True} if ref.get("conflict") else {}
+    if target and not any(end["target_id"] == target and end["confidence"] == ref.get("confidence") for end in observed):
+        yield {"target_id": target, "confidence": ref.get("confidence") or "confirmed", "resolver": ref.get("resolver"), **flag}
+    for end in observed:
+        yield {**end, **flag}
+
+
+def uncertainty(evidence: dict) -> str | None:
+    """Why a call, a binding, or an effect derived from it cannot establish a path."""
+    if evidence.get("conflict"):
+        return "conflicting destinations at the same call site"
+    if evidence.get("confidence") == "sampled" or evidence.get("handler_confidence") == "sampled":
+        return "sampled stack; the direct call was not observed"
+    return None
+
 _PROTOCOL_BASES = frozenset({"Protocol", "typing.Protocol", "typing_extensions.Protocol"})
 _ABC_BASES = frozenset({"ABC", "abc.ABC", "ABCMeta", "abc.ABCMeta"})
 _ABSTRACT_DECORATORS = frozenset({
@@ -189,7 +209,8 @@ def _store_answer(rows, target_kinds: dict) -> dict | None:
         row = next((row for row in doubtful if row.get("target_id")), doubtful[0])
         return {"target": None, "row": row, "candidate": row["payload"].get("uncertain", {}).get("reason")}
     if len(set(direct + implemented)) > 1:
-        return {"target": None, "row": reached[0], "candidate": "several-targets"}
+        return {"target": None, "row": reached[0], "candidate": "several-targets",
+                "target_ids": sorted(set(direct + implemented))}
     if external:
         return {"target": None, "row": external[0], "external": external[0].get("external"),
                 "reason": external[0]["payload"].get("reason") or "external"}
@@ -249,14 +270,30 @@ def load_edge_view(
                 coverage_status = "rejected_store"
                 gaps.append(reason or "engine edge store rejected")
             else:
-                engine_edges = loaded_edges
+                import engine_pass as stages
+                entries = binding.get("languages") or {}
+                obsolete = stages.superseded_languages(entries) if engine_store is None else set()
+                if obsolete:
+                    gaps.append("the native index changed for " + ", ".join(sorted(obsolete)) + "; run analysis again")
+                    entries = {language: entry for language, entry in entries.items() if language not in obsolete}
+                    binding = {**binding, "engine": " + ".join(sorted({entry["engine"] for entry in entries.values()})) or None}
+                engine_edges = [edge for edge in loaded_edges if edge["language"] not in obsolete] if obsolete else loaded_edges
                 holes = {hole["reference_id"]: hole["class"] for hole in resolve_edges.read_edge_holes(edge_path)
-                         if hole["reference_id"] is not None}
-                # Each language's coverage, as its stage wrote it beside its rows (`resolve_edges.language_coverage`).
-                languages_covered = {language: entry["coverage"] for language, entry in
-                                     sorted((binding.get("languages") or {}).items()) if entry.get("coverage")}
-                coverage_status = "complete" if languages_covered and all(
+                         if hole["reference_id"] is not None and hole["language"] not in obsolete}
+                for language, entry in sorted(entries.items()):
+                    coverage = entry.get("coverage")
+                    if coverage:
+                        # Stores from before unread intervals lowered the coverage remain readable.
+                        if (coverage.get("files") or {}).get("unread"):
+                            coverage = {**coverage, "state": "lower-bound"}
+                        languages_covered[language] = coverage
+                expected = (set(stages.pass_languages(sem_db)) & stages.ENGINE_LANGUAGES.keys()) | set(stages.no_analyzer(sem_db))
+                missing = expected - languages_covered.keys()
+                gaps.extend(f"no engine coverage for {language}" for language in sorted(missing))
+                coverage_status = "complete" if languages_covered and not missing and all(
                     entry["state"] == "complete" for entry in languages_covered.values()) else "lower-bound"
+                if obsolete and not entries:
+                    coverage_status = "rejected_store"
 
         rows_by_ref: dict[str, list[dict]] = {}
         for edge in engine_edges:
@@ -280,6 +317,11 @@ def load_edge_view(
                 target_id = overrides[ref_id]
                 res_state = "resolved" if target_id else "unresolved"
                 payload = {**payload, "target_id": target_id, "resolution": res_state}
+            # Older structural snapshots accepted a method with the same name on any Rust receiver.
+            if ("tauri_command" in payload and payload.get("tauri_registration_version") != 2
+                    and target_id and target_id.partition("::")[0].endswith(".rs")):
+                target_id, res_state = None, "unresolved"
+                payload = {**payload, "reason": "refresh the snapshot to verify the Tauri builder registration"}
             lex_resolver = payload.get("resolver") or resolution.LEXICAL_RESOLVER
 
             record = {
@@ -299,6 +341,20 @@ def load_edge_view(
             }
 
             found_rows = rows_by_ref.get(ref_id, ())
+            if any((row.get("payload") or {}).get("conflict") for row in found_rows):
+                # The recorder compares both ends. An observed external end may
+                # have no project declaration in the list of observations below.
+                record["conflict"] = True
+            if kind == "call":
+                ends = {}
+                for row in found_rows:
+                    if row["confidence"] in SEEN and row["verdict"] == "project-callable" and row.get("target_id") in target_kinds:
+                        end = {key: row[key] for key in ("target_id", "confidence", "resolver")}
+                        if (row.get("payload") or {}).get("conflict"):
+                            end["conflict"] = True
+                        ends[(row["target_id"], row["confidence"], row["resolver"])] = end
+                if ends:
+                    record["observations"] = [ends[key] for key in sorted(ends)]
             answer = _store_answer([row for row in found_rows if row["confidence"] not in SEEN], target_kinds)
             if answer is None:
                 # No proven answer from the store: the lexical one stands, and a hole says why the store has
@@ -319,6 +375,7 @@ def load_edge_view(
                 elif ref_id in overrides and res_state == "resolved":
                     # A lexical target the caller overrides stays; a different store target is a conflict.
                     if found is not None:
+                        record["conflict"] = True
                         conflicts.append({
                             "reference_id": ref_id,
                             "file": file_rel,
@@ -349,7 +406,8 @@ def load_edge_view(
                         "span": payload.get("span"),
                         "verdict": answer["candidate"],
                         "resolver": eng_resolver,
-                        "target_id": row.get("target_id"),
+                        "target_id": None if "target_ids" in answer else row.get("target_id"),
+                        **({"target_ids": answer["target_ids"]} if "target_ids" in answer else {}),
                     }
                     record["engine_candidate"] = candidate_entry
                     candidates.append(candidate_entry)

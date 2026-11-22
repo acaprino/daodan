@@ -37,6 +37,7 @@ class ServerTests(unittest.TestCase):
         (self.assets / "assets").mkdir(parents=True)
         (self.assets / "index.html").write_text("<!doctype html><title>Explorer</title>", encoding="utf-8")
         (self.assets / "assets/app.js").write_text("console.log(1)", encoding="utf-8")
+        (self.assets / "favicon.ico").write_bytes(b"icon")
         (self.temp / "secret.txt").write_text("secret", encoding="utf-8")
         try:
             os.symlink(self.temp / "secret.txt", self.assets / "assets/link.js")
@@ -69,6 +70,8 @@ class ServerTests(unittest.TestCase):
         response, _ = self.get("/assets/app.js")
         self.assertEqual(response.getheader("Content-Type"), "text/javascript; charset=utf-8")
         self.assertIn("default-src 'self'", response.getheader("Content-Security-Policy"))
+        response, _ = self.get("/favicon.ico")
+        self.assertEqual(response.getheader("Content-Type"), "image/x-icon")
         self.assertIsNone(response.getheader("Access-Control-Allow-Origin"))
 
     def test_listings_traversals_links_and_other_hosts_are_refused(self):

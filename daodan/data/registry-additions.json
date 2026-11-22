@@ -140,6 +140,21 @@
    "by": "model"
   },
   {
+   "id": "akahu",
+   "name": "Akahu",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "akahu"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "alby",
    "name": "Alby",
    "kind": "service",
@@ -220,6 +235,17 @@
   },
   {
    "id": "alipay",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.alipay.sdk:alipay-sdk-java"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "alipay",
    "name": "Alipay",
    "kind": "service",
    "type": "servizio o API",
@@ -232,6 +258,24 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "aliyun-oss",
+   "name": "Aliyun OSS",
+   "kind": "service",
+   "type": "filesystem",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.aliyun.oss:aliyun-sdk-oss"
+     ],
+     "go": [
+      "github.com/aliyun/aliyun-oss-go-sdk"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "alpinejs",
@@ -268,9 +312,43 @@
    "by": "catalog"
   },
   {
+   "id": "android",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.android.application:com.android.application.gradle.plugin",
+      "com.android.library:com.android.library.gradle.plugin",
+      "com.android.tools.build:gradle"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^com\\.android\\.application$",
+      "^com\\.android\\.library$"
+     ]
+    }
+   },
+   "wrong_signs": {
+    "packages": {
+     "maven": [
+      "com.android.application",
+      "com.android.library"
+     ]
+    }
+   }
+  },
+  {
    "id": "angular",
    "category": "framework",
-   "by": "catalog"
+   "by": "catalog",
+   "wrong_signs": {
+    "packages": {
+     "npm": [
+      "angular"
+     ]
+    }
+   }
   },
   {
    "id": "angularjs",
@@ -390,6 +468,18 @@
   },
   {
    "id": "apache_kafka",
+   "signs": {
+    "packages": {
+     "docker": [
+      "apache/kafka-native",
+      "apache/kafka"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "apache_kafka",
    "site": "https://kafka.apache.org",
    "signs": {
     "packages": {}
@@ -410,6 +500,32 @@
   {
    "id": "apache_thrift",
    "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "apachetika",
+   "signs": {
+    "packages": {
+     "docker": [
+      "docker.io/apache/tika"
+     ],
+     "pypi": [
+      "tika-client"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "apicurio-registry",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "quay.io/apicurio/apicurio-registry"
+     ]
+    }
+   },
    "by": "catalog"
   },
   {
@@ -464,6 +580,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "apple.signin",
+   "name": "Sign in with Apple",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "apple-signin-auth"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "appwrite",
@@ -533,6 +664,22 @@
    "by": "catalog"
   },
   {
+   "id": "artillery",
+   "by": "catalog",
+   "name": "Artillery",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://www.artillery.io/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "artillery"
+     ]
+    }
+   }
+  },
+  {
    "id": "asana",
    "site": "https://asana.com",
    "signs": {
@@ -577,6 +724,22 @@
    "by": "catalog"
   },
   {
+   "id": "astro-compiler",
+   "by": "catalog",
+   "name": "Astro compiler",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://github.com/withastro/compiler",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@astrojs/compiler"
+     ]
+    }
+   }
+  },
+  {
    "id": "atlasgo",
    "category": "tool",
    "by": "catalog"
@@ -606,6 +769,41 @@
    "owner": "github.com/opsgenie"
   },
   {
+   "id": "atlassian.trello",
+   "signs": {
+    "hosts": [
+     "api.trello.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "atuin-hub",
+   "name": "Atuin Hub",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "hub.atuin.sh"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "atuin-sync",
+   "name": "Atuin Sync",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "api.atuin.sh"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "auth0",
    "signs": {
     "packages": {
@@ -628,6 +826,20 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "avro",
+   "by": "corpus",
+   "name": "Apache Avro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.apache.avro:avro",
+      "io.quarkus:quarkus-apicurio-registry-avro"
+     ]
+    }
+   }
   },
   {
    "id": "aws",
@@ -722,6 +934,17 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.cloudfront",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@aws-sdk/cloudfront-signer"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "aws.cloudfront",
@@ -1253,6 +1476,20 @@
   },
   {
    "id": "aws.s3",
+   "signs": {
+    "packages": {
+     "hex": [
+      "ex_aws_s3"
+     ],
+     "go": [
+      "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "aws.s3",
    "mark": "marks/aws.s3.svg",
    "mark_origin": {
     "drawn_by": "Daodan",
@@ -1304,6 +1541,17 @@
   },
   {
    "id": "aws.ses",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@aws-sdk/client-sesv2"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "aws.ses",
    "mark": "marks/aws.ses.svg",
    "mark_origin": {
     "drawn_by": "Daodan",
@@ -1352,6 +1600,18 @@
    },
    "by": "derive",
    "owner": "github.com/aws"
+  },
+  {
+   "id": "aws.sqs",
+   "signs": {
+    "packages": {
+     "hex": [
+      "broadway_sqs",
+      "ex_aws_sqs"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "aws.sqs",
@@ -1486,6 +1746,66 @@
    "by": "daodan"
   },
   {
+   "id": "azure.applicationinsights",
+   "name": "Azure Application Insights",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Serilog.Sinks.ApplicationInsights"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "azure.blobstorage",
+   "name": "Azure Blob Storage",
+   "kind": "service",
+   "type": "filesystem",
+   "category": "service",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@azure/storage-blob"
+     ],
+     "rubygems": [
+      "azure-blob",
+      "azure-storage-blob",
+      "logstash-input-azureblob"
+     ],
+     "composer": [
+      "microsoft/azure-storage-blob",
+      "league/flysystem-azure-blob-storage"
+     ],
+     "crates": [
+      "azure_storage_blobs"
+     ],
+     "terraform-resource": [
+      "airbyte_destination_azure_blob_storage"
+     ]
+    }
+   }
+  },
+  {
+   "id": "azure.blobstorage",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "azure-storage-blob"
+     ],
+     "go": [
+      "github.com/azure/azure-storage-blob-go"
+     ]
+    }
+   },
+   "by": "derive",
+   "owner": "github.com/azure"
+  },
+  {
    "id": "azure.ci",
    "mark": "marks/azure.ci.svg",
    "mark_origin": {
@@ -1493,6 +1813,21 @@
     "date": "2026-11-18"
    },
    "by": "daodan"
+  },
+  {
+   "id": "azure.containerapps",
+   "name": "Azure Container Apps",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Aspire.Hosting.Azure.AppContainers"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "azure.cosmosdb",
@@ -1504,6 +1839,21 @@
    "by": "daodan"
   },
   {
+   "id": "azure.documentintelligence",
+   "name": "Azure AI Document Intelligence",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "azure-ai-documentintelligence"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "azure.functions",
    "mark": "marks/azure.functions.svg",
    "mark_origin": {
@@ -1511,6 +1861,24 @@
     "date": "2026-11-18"
    },
    "by": "daodan"
+  },
+  {
+   "id": "azure.keyvault",
+   "name": "Azure Key Vault",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Azure.Extensions.AspNetCore.Configuration.Secrets"
+     ]
+    },
+    "env": [
+     "AZURE_KEY_VAULT_ENDPOINT"
+    ]
+   },
+   "by": "catalog"
   },
   {
    "id": "azure.maps",
@@ -1538,6 +1906,17 @@
     "date": "2026-11-18"
    },
    "by": "daodan"
+  },
+  {
+   "id": "azure.openai",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Aspire.Azure.AI.OpenAI"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "azure.openai",
@@ -1598,17 +1977,26 @@
   },
   {
    "id": "azure.storage",
-   "mark": "marks/azure.storage.svg",
-   "mark_origin": {
-    "drawn_by": "Daodan",
-    "date": "2026-11-18"
-   },
-   "by": "daodan"
-  },
-  {
-   "id": "azure.storage",
-   "signs": {
+   "wrong_signs": {
     "packages": {
+     "npm": [
+      "@azure/storage-blob"
+     ],
+     "rubygems": [
+      "azure-blob",
+      "azure-storage-blob",
+      "logstash-input-azureblob"
+     ],
+     "composer": [
+      "microsoft/azure-storage-blob",
+      "league/flysystem-azure-blob-storage"
+     ],
+     "crates": [
+      "azure_storage_blobs"
+     ],
+     "terraform-resource": [
+      "airbyte_destination_azure_blob_storage"
+     ],
      "pypi": [
       "azure-storage-blob"
      ],
@@ -1617,8 +2005,16 @@
      ]
     }
    },
-   "by": "derive",
-   "owner": "github.com/azure"
+   "by": "catalog"
+  },
+  {
+   "id": "azure.storage",
+   "mark": "marks/azure.storage.svg",
+   "mark_origin": {
+    "drawn_by": "Daodan",
+    "date": "2026-11-18"
+   },
+   "by": "daodan"
   },
   {
    "id": "babel",
@@ -1654,6 +2050,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "basecoat",
+   "by": "catalog",
+   "name": "Basecoat",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://basecoatui.com/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "basecoat-css"
+     ]
+    }
+   }
   },
   {
    "id": "baseui",
@@ -1743,6 +2155,17 @@
    "by": "catalog"
   },
   {
+   "id": "blazor",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "MudBlazor"
+     ]
+    }
+   }
+  },
+  {
    "id": "blitzjs",
    "category": "framework",
    "by": "catalog"
@@ -1765,7 +2188,18 @@
   {
    "id": "bootstrap",
    "category": "library",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "composer": [
+      "twbs/bootstrap"
+     ],
+     "maven": [
+      "org.webjars.npm:bootstrap",
+      "org.webjars:bootstrap"
+     ]
+    }
+   }
   },
   {
    "id": "bootstrapicons",
@@ -1834,6 +2268,40 @@
    "by": "model"
   },
   {
+   "id": "broadway",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "hex": [
+      "broadway"
+     ]
+    }
+   },
+   "name": "Broadway",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://hex.pm/packages/broadway"
+  },
+  {
+   "id": "browserless",
+   "name": "Browserless",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "ghcr.io/browserless/chromium"
+     ]
+    },
+    "env": [
+     "NEXT_PRIVATE_BROWSERLESS_URL"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "bugsnag",
    "site": "https://www.bugsnag.com",
    "signs": {
@@ -1845,6 +2313,22 @@
    "id": "builtwithfern",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "bullmq",
+   "by": "catalog",
+   "name": "BullMQ",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://bullmq.io/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "bullmq"
+     ]
+    }
+   }
   },
   {
    "id": "bundler",
@@ -1923,6 +2407,38 @@
    "by": "catalog"
   },
   {
+   "id": "capybara",
+   "by": "catalog",
+   "name": "Capybara",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://github.com/teamcapybara/capybara",
+   "signs": {
+    "packages": {
+     "rubygems": [
+      "capybara"
+     ]
+    }
+   }
+  },
+  {
+   "id": "casbin",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/casbin/casbin"
+     ]
+    }
+   },
+   "name": "Casbin",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/casbin/casbin"
+  },
+  {
    "id": "cats",
    "name": "Cats",
    "kind": "project",
@@ -1937,6 +2453,13 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "celery",
+   "by": "corpus",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework"
   },
   {
    "id": "celery",
@@ -2039,6 +2562,54 @@
    "by": "model"
   },
   {
+   "id": "clap",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "clap"
+     ]
+    }
+   },
+   "name": "clap",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/clap"
+  },
+  {
+   "id": "class-transformer",
+   "by": "catalog",
+   "name": "class-transformer",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://github.com/typestack/class-transformer",
+   "signs": {
+    "packages": {
+     "npm": [
+      "class-transformer"
+     ]
+    }
+   }
+  },
+  {
+   "id": "class-validator",
+   "by": "catalog",
+   "name": "class-validator",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://github.com/typestack/class-validator",
+   "signs": {
+    "packages": {
+     "npm": [
+      "class-validator"
+     ]
+    }
+   }
+  },
+  {
    "id": "click",
    "category": "library",
    "by": "catalog"
@@ -2069,6 +2640,25 @@
    },
    "by": "derive",
    "owner": "github.com/pulumi"
+  },
+  {
+   "id": "cloudflare.turnstile",
+   "name": "Cloudflare Turnstile",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@marsidev/react-turnstile"
+     ]
+    },
+    "env": [
+     "TURNSTILE_SITE_KEY",
+     "TURNSTILE_SECRET_KEY"
+    ]
+   },
+   "by": "catalog"
   },
   {
    "id": "cloudflare.workers",
@@ -2154,6 +2744,22 @@
    "by": "model"
   },
   {
+   "id": "coil",
+   "by": "corpus",
+   "name": "Coil",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.coil-kt.coil3:coil-compose",
+      "io.coil-kt.coil3:coil-network-ktor3"
+     ]
+    }
+   }
+  },
+  {
    "id": "coinbase",
    "name": "Coinbase",
    "kind": "service",
@@ -2167,6 +2773,24 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "compose-for-wear-os",
+   "by": "corpus",
+   "name": "Compose for Wear OS",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "androidx.wear.compose:compose-foundation",
+      "androidx.wear.compose:compose-material",
+      "androidx.wear.compose:compose-material3",
+      "androidx.wear.compose:compose-navigation"
+     ]
+    }
+   }
   },
   {
    "id": "compose-multiplatform",
@@ -2185,6 +2809,29 @@
    "by": "catalog"
   },
   {
+   "id": "compose-multiplatform",
+   "by": "corpus",
+   "wrong_signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.compose"
+     ]
+    }
+   },
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^org\\.jetbrains\\.compose$"
+     ]
+    }
+   }
+  },
+  {
    "id": "conekta",
    "name": "Conekta",
    "kind": "service",
@@ -2201,6 +2848,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "connectrpc",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "connectrpc.com/connect"
+     ]
+    }
+   },
+   "name": "Connect",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://pkg.go.dev/connectrpc.com/connect"
   },
   {
    "id": "consul",
@@ -2257,6 +2920,18 @@
    "by": "model"
   },
   {
+   "id": "coredns",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "coredns/coredns"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "couchbase",
    "signs": {
     "packages": {
@@ -2287,9 +2962,26 @@
    "by": "model"
   },
   {
+   "id": "create-react-app",
+   "by": "catalog",
+   "name": "Create React App",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://create-react-app.dev/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "react-scripts"
+     ]
+    }
+   }
+  },
+  {
    "id": "cypressci",
    "category": "tool",
-   "by": "catalog"
+   "by": "catalog",
+   "name": "Cypress"
   },
   {
    "id": "d-wave-systems",
@@ -2309,12 +3001,53 @@
   {
    "id": "d3js",
    "category": "library",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "npm": [
+      "d3-selection",
+      "d3-zoom"
+     ]
+    }
+   }
   },
   {
    "id": "daisyui",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "dart-mappable",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "pub": [
+      "dart_mappable",
+      "dart_mappable_builder"
+     ]
+    }
+   },
+   "name": "dart_mappable",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pub.dev/packages/dart_mappable"
+  },
+  {
+   "id": "dart-test",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "pub": [
+      "test"
+     ]
+    }
+   },
+   "name": "test",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://pub.dev/packages/test"
   },
   {
    "id": "dask",
@@ -2425,6 +3158,35 @@
    "by": "catalog"
   },
   {
+   "id": "detox",
+   "by": "catalog",
+   "name": "Detox",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://wix.github.io/Detox/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "detox"
+     ]
+    }
+   }
+  },
+  {
+   "id": "diagrams-net",
+   "name": "diagrams.net",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "embed.diagrams.net"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "dieselrs",
    "category": "library",
    "by": "catalog"
@@ -2462,6 +3224,21 @@
    "by": "model"
   },
   {
+   "id": "discord.oauth",
+   "name": "Discord OAuth",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "composer": [
+      "socialiteproviders/discord"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "django",
    "category": "framework",
    "by": "catalog"
@@ -2473,6 +3250,36 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "django-channels",
+   "by": "corpus",
+   "name": "Django Channels",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "channels"
+     ]
+    }
+   }
+  },
+  {
+   "id": "django-rest-framework",
+   "by": "corpus",
+   "name": "Django REST framework",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "djangorestframework"
+     ]
+    }
+   }
   },
   {
    "id": "docker",
@@ -2510,7 +3317,24 @@
   {
    "id": "doctrinephp",
    "category": "library",
-   "by": "catalog"
+   "by": "catalog",
+   "name": "Doctrine ORM"
+  },
+  {
+   "id": "docus",
+   "by": "catalog",
+   "name": "Docus",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "site": "https://docus.dev/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "docus"
+     ]
+    }
+   }
   },
   {
    "id": "docusaurus",
@@ -2552,6 +3376,25 @@
     "date": "2026-11-18"
    },
    "by": "official"
+  },
+  {
+   "id": "dompurify",
+   "name": "DOMPurify",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://github.com/cure53/DOMPurify",
+   "signs": {
+    "packages": {
+     "npm": [
+      "dompurify"
+     ],
+     "maven": [
+      "org.webjars.npm:dompurify"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "dotnet-aspire",
@@ -2597,6 +3440,17 @@
   },
   {
    "id": "dropbox",
+   "signs": {
+    "packages": {
+     "composer": [
+      "spatie/flysystem-dropbox"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "dropbox",
    "site": "https://www.dropbox.com",
    "signs": {
     "packages": {
@@ -2621,6 +3475,19 @@
    },
    "by": "derive",
    "owner": "github.com/duckdb"
+  },
+  {
+   "id": "duckduckgo-icons",
+   "name": "DuckDuckGo Icons",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "icons.duckduckgo.com"
+    ]
+   },
+   "by": "catalog"
   },
   {
    "id": "duende-identityserver",
@@ -2659,8 +3526,43 @@
    "by": "model"
   },
   {
+   "id": "ecto",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "hex": [
+      "ecto",
+      "ecto_sql"
+     ]
+    }
+   },
+   "name": "Ecto",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://hex.pm/packages/ecto"
+  },
+  {
    "id": "effectjs",
    "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "eideasy",
+   "name": "eID Easy",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@eid-easy/eideasy-widget"
+     ]
+    },
+    "hosts": [
+     "id.eideasy.com"
+    ]
+   },
    "by": "catalog"
   },
   {
@@ -2677,6 +3579,22 @@
    "by": "catalog"
   },
   {
+   "id": "element-plus",
+   "by": "catalog",
+   "name": "Element Plus",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://element-plus.org/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "element-plus"
+     ]
+    }
+   }
+  },
+  {
    "id": "elevenlabs",
    "site": "https://elevenlabs.io",
    "signs": {
@@ -2690,6 +3608,22 @@
    "by": "catalog"
   },
   {
+   "id": "elkjs",
+   "by": "catalog",
+   "name": "ELK.js",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://github.com/kieler/elkjs",
+   "signs": {
+    "packages": {
+     "npm": [
+      "elkjs"
+     ]
+    }
+   }
+  },
+  {
    "id": "elysiajs",
    "category": "framework",
    "by": "catalog"
@@ -2697,6 +3631,19 @@
   {
    "id": "emberjs",
    "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "enable-banking",
+   "name": "Enable Banking",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "api.enablebanking.com"
+    ]
+   },
    "by": "catalog"
   },
   {
@@ -2721,10 +3668,28 @@
    "by": "catalog"
   },
   {
+   "id": "entity-framework-core",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Npgsql.EntityFrameworkCore.PostgreSQL"
+     ]
+    }
+   }
+  },
+  {
    "id": "envoy",
    "category": "service",
    "by": "catalog",
-   "type": "gateway"
+   "type": "gateway",
+   "signs": {
+    "packages": {
+     "docker": [
+      "envoyproxy/envoy"
+     ]
+    }
+   }
   },
   {
    "id": "envoy",
@@ -2740,7 +3705,14 @@
   {
    "id": "esbuild",
    "category": "tool",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "hex": [
+      "esbuild"
+     ]
+    }
+   }
   },
   {
    "id": "esbuild",
@@ -2810,6 +3782,22 @@
    "by": "model"
   },
   {
+   "id": "expo-router",
+   "by": "catalog",
+   "name": "Expo Router",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://docs.expo.dev/router/introduction/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "expo-router"
+     ]
+    }
+   }
+  },
+  {
    "id": "expodev",
    "mark": "marks/expodev.svg",
    "mark_origin": {
@@ -2822,7 +3810,8 @@
   {
    "id": "expojs",
    "category": "framework",
-   "by": "catalog"
+   "by": "catalog",
+   "name": "Expo"
   },
   {
    "id": "exposed",
@@ -2846,6 +3835,23 @@
    "by": "catalog"
   },
   {
+   "id": "exunit",
+   "name": "ExUnit",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://hexdocs.pm/ex_unit/ExUnit.html",
+   "category": "framework",
+   "signs": {
+    "source": {
+     "elixir.call": [
+      "ExUnit.configuration",
+      "ExUnit.start"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "fastapi",
    "category": "framework",
    "by": "catalog"
@@ -2866,8 +3872,48 @@
    "by": "model"
   },
   {
+   "id": "fastapi-cloud",
+   "name": "FastAPI Cloud",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "FASTAPI_CLOUD_TOKEN"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "fastendpoints",
+   "by": "corpus",
+   "name": "FastEndpoints",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "FastEndpoints",
+      "FastEndpoints.Swagger",
+      "FastEndpoints.ApiExplorer",
+      "FastEndpoints.Swagger.Swashbuckle"
+     ]
+    }
+   }
+  },
+  {
    "id": "fastify",
    "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "fastly",
+   "signs": {
+    "env": [
+     "HEXPM_FASTLY_KEY"
+    ]
+   },
    "by": "catalog"
   },
   {
@@ -2907,6 +3953,34 @@
    "by": "catalog"
   },
   {
+   "id": "fiber",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/gofiber/fiber"
+     ]
+    }
+   },
+   "name": "Fiber",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/gofiber/fiber"
+  },
+  {
+   "id": "firebase",
+   "signs": {
+    "source": {
+     "swift.import": [
+      "FirebaseCore",
+      "FirebaseMessaging"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "firebase",
    "site": "https://firebase.google.com",
    "signs": {
@@ -2917,6 +3991,94 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "firebase.analytics",
+   "name": "Firebase Analytics",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.google.firebase:firebase-analytics"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "firebase.functions",
+   "name": "Cloud Functions for Firebase",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "firebase-functions"
+     ],
+     "npm": [
+      "firebase-functions"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "firebase.messaging",
+   "name": "Firebase Cloud Messaging",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.google.firebase:firebase-messaging",
+      "io.github.mirzemehdi:kmpnotifier-push-firebase"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "firepit",
+   "name": "Firepit",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "ghcr.io/florianl/firepit"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "flagd",
+   "name": "flagd",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/open-feature/go-sdk-contrib/providers/flagd"
+     ],
+     "crates": [
+      "open-feature-flagd"
+     ],
+     "maven": [
+      "dev.openfeature.contrib.providers:flagd"
+     ],
+     "docker": [
+      "ghcr.io/open-feature/flagd"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "flask",
@@ -2942,7 +4104,14 @@
    "id": "fluentd",
    "category": "service",
    "by": "catalog",
-   "type": "servizio o API"
+   "type": "servizio o API",
+   "signs": {
+    "packages": {
+     "docker": [
+      "fluentd"
+     ]
+    }
+   }
   },
   {
    "id": "fluentd",
@@ -2972,9 +4141,49 @@
      "pub": [
       "flutter"
      ]
+    },
+    "source": {
+     "swift.import": [
+      "Flutter"
+     ]
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "flutter-rust-bridge",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "flutter_rust_bridge"
+     ],
+     "pub": [
+      "flutter_rust_bridge"
+     ]
+    }
+   },
+   "name": "flutter_rust_bridge",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/flutter_rust_bridge"
+  },
+  {
+   "id": "flutter-test",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "pub": [
+      "flutter_test"
+     ]
+    }
+   },
+   "name": "flutter_test",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://pub.dev/packages/flutter_test"
   },
   {
    "id": "flyway",
@@ -2984,7 +4193,14 @@
   {
    "id": "fontawesome",
    "category": "library",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.webjars.npm:font-awesome"
+     ]
+    }
+   }
   },
   {
    "id": "formbricks",
@@ -3016,6 +4232,40 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "friendly-captcha",
+   "name": "Friendly Captcha",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@friendlycaptcha/sdk"
+     ]
+    },
+    "env": [
+     "FRIENDLY_CAPTCHA_SITEKEY",
+     "FRIENDLY_CAPTCHA_API_KEY"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "fscheck",
+   "by": "corpus",
+   "name": "FsCheck",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "FsCheck.Xunit.v3"
+     ]
+    }
+   }
   },
   {
    "id": "fumadocs",
@@ -3529,6 +4779,15 @@
   },
   {
    "id": "gcp.vertex",
+   "signs": {
+    "env": [
+     "GOOGLE_VERTEX_PROJECT_ID"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "gcp.vertex",
    "mark": "marks/gcp.vertex.svg",
    "mark_origin": {
     "drawn_by": "Daodan",
@@ -3544,6 +4803,15 @@
     "date": "2026-11-18"
    },
    "by": "daodan"
+  },
+  {
+   "id": "geminiai",
+   "signs": {
+    "hosts": [
+     "generativelanguage.googleapis.com"
+    ]
+   },
+   "by": "catalog"
   },
   {
    "id": "gin",
@@ -3597,11 +4865,52 @@
   },
   {
    "id": "github",
+   "signs": {
+    "hosts": [
+     "api.github.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "github",
    "site": "https://github.com",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "github-catalyst",
+   "by": "catalog",
+   "name": "Catalyst",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://github.github.io/catalyst/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@github/catalyst"
+     ]
+    }
+   }
+  },
+  {
+   "id": "github.oauth",
+   "name": "GitHub OAuth",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "passport-github2",
+      "remix-auth-github"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "gitlab",
@@ -3610,8 +4919,36 @@
    "type": "servizio o API"
   },
   {
+   "id": "gitlab.oauth",
+   "name": "GitLab OAuth",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "composer": [
+      "socialiteproviders/gitlab"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "goacmelego",
    "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "gocardless-bank-account-data",
+   "name": "GoCardless Bank Account Data",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "bankaccountdata.gocardless.com"
+    ]
+   },
    "by": "catalog"
   },
   {
@@ -3665,6 +5002,26 @@
    "by": "model"
   },
   {
+   "id": "google.analytics",
+   "signs": {
+    "hosts": [
+     "analyticsdata.googleapis.com",
+     "analyticsadmin.googleapis.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "google.gmail",
+   "signs": {
+    "env": [
+     "GMAIL_OAUTH_CLIENT_ID",
+     "PAPERLESS_GMAIL_OAUTH_CLIENT_ID"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "google.meet",
    "signs": {
     "packages": {
@@ -3677,13 +5034,155 @@
    "owner": "github.com/googleapis"
   },
   {
+   "id": "google.oauth",
+   "name": "Google OAuth",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "passport-google-oauth20"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "google.recaptcha",
+   "name": "Google reCAPTCHA",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "django-recaptcha"
+     ]
+    },
+    "env": [
+     "RECAPTCHA_PRIVATE_KEY",
+     "RECAPTCHA_PUBLIC_KEY"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "gorm",
    "category": "library",
    "by": "catalog"
   },
   {
+   "id": "gotenberg",
+   "name": "Gotenberg",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "gotenberg/gotenberg",
+      "docker.io/gotenberg/gotenberg"
+     ],
+     "pypi": [
+      "gotenberg-client"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "gradio",
    "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "grafana.lgtm",
+   "name": "Grafana LGTM",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "grafana/otel-lgtm",
+      "docker.io/grafana/otel-lgtm"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "graphiql",
+   "by": "catalog",
+   "name": "GraphiQL",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://github.com/graphql/graphiql",
+   "signs": {
+    "packages": {
+     "npm": [
+      "graphiql"
+     ]
+    }
+   }
+  },
+  {
+   "id": "graphql-client-rust",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "graphql_client"
+     ]
+    }
+   },
+   "name": "graphql_client",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/graphql_client"
+  },
+  {
+   "id": "gravatar",
+   "name": "Gravatar",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "GRAVATAR_URL"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "graylog",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Serilog.Sinks.Graylog"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "greenmail",
+   "name": "GreenMail",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "greenmail/standalone",
+      "docker.io/greenmail/standalone"
+     ]
+    }
+   },
    "by": "catalog"
   },
   {
@@ -3725,6 +5224,9 @@
      ],
      "npm": [
       "@grpc/grpc-js"
+     ],
+     "crates": [
+      "tonic"
      ]
     }
    },
@@ -3746,6 +5248,22 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "grpc-gateway",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/grpc-ecosystem/grpc-gateway"
+     ]
+    }
+   },
+   "name": "gRPC-Gateway",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/grpc-ecosystem/grpc-gateway"
   },
   {
    "id": "gunicorn",
@@ -3796,6 +5314,34 @@
    "owner": "github.com/pulumi"
   },
   {
+   "id": "hatchling",
+   "by": "corpus",
+   "name": "Hatchling",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "hatchling"
+     ]
+    }
+   }
+  },
+  {
+   "id": "hcaptcha",
+   "name": "hCaptcha",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "HEXPM_HCAPTCHA_SECRET"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "headlessui",
    "category": "library",
    "by": "catalog"
@@ -3815,6 +5361,20 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "help-scout",
+   "name": "Help Scout",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "HELP_SCOUT_APP_ID",
+     "HELP_SCOUT_SIGNATURE_KEY"
+    ]
+   },
+   "by": "catalog"
   },
   {
    "id": "heroicons",
@@ -3857,6 +5417,33 @@
    "by": "catalog"
   },
   {
+   "id": "hibernate",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkus:quarkus-hibernate-orm-panache",
+      "io.quarkus:quarkus-hibernate-orm-panache-kotlin"
+     ]
+    }
+   }
+  },
+  {
+   "id": "hibernate-reactive",
+   "by": "corpus",
+   "name": "Hibernate Reactive",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkus:quarkus-hibernate-reactive-panache"
+     ]
+    }
+   }
+  },
+  {
    "id": "honeycomb",
    "category": "service",
    "by": "catalog",
@@ -3879,7 +5466,44 @@
   {
    "id": "honojs",
    "category": "framework",
-   "by": "catalog"
+   "by": "catalog",
+   "name": "Hono"
+  },
+  {
+   "id": "horologist",
+   "by": "corpus",
+   "name": "Horologist",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.google.android.horologist:horologist-compose-layout",
+      "com.google.android.horologist:horologist-tiles"
+     ]
+    }
+   }
+  },
+  {
+   "id": "hotwire-turbo",
+   "by": "catalog",
+   "name": "Turbo",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://turbo.hotwired.dev/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@hotwired/turbo",
+      "@hotwired/turbo-rails"
+     ],
+     "rubygems": [
+      "turbo-rails"
+     ]
+    }
+   }
   },
   {
    "id": "hsqldb",
@@ -3923,6 +5547,21 @@
    "by": "model"
   },
   {
+   "id": "huawei-obs",
+   "name": "Huawei Cloud OBS",
+   "kind": "service",
+   "type": "filesystem",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/huaweicloud/huaweicloud-sdk-go-obs"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "hubspot",
    "site": "https://www.hubspot.com",
    "signs": {
@@ -3946,6 +5585,69 @@
   {
    "id": "hugo",
    "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "hyper-rust",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "hyper"
+     ]
+    }
+   },
+   "name": "Hyper",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/hyper"
+  },
+  {
+   "id": "hyperscript",
+   "by": "catalog",
+   "name": "_hyperscript",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://hyperscript.org/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "hyperscript.org"
+     ]
+    }
+   }
+  },
+  {
+   "id": "imago",
+   "by": "catalog",
+   "name": "Imago",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://github.com/acaprino/imago",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@acaprino/imago"
+     ]
+    }
+   }
+  },
+  {
+   "id": "inbucket",
+   "name": "Inbucket",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "inbucket/inbucket"
+     ]
+    }
+   },
    "by": "catalog"
   },
   {
@@ -3978,6 +5680,30 @@
    },
    "by": "derive",
    "owner": "github.com/inngest"
+  },
+  {
+   "id": "instana",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.instana:instana-java-sdk"
+     ],
+     "composer": [
+      "instana/instana-php-sdk"
+     ],
+     "pypi": [
+      "instana"
+     ],
+     "npm": [
+      "@instana/collector"
+     ],
+     "docker": [
+      "instana/agent"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "internet-archive",
@@ -4056,6 +5782,19 @@
    "by": "model"
   },
   {
+   "id": "ipinfo",
+   "name": "IPinfo",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "api.ipinfo.io"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "jackson",
    "name": "Jackson",
    "kind": "project",
@@ -4074,10 +5813,28 @@
    "by": "catalog"
   },
   {
+   "id": "jackson",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
+     ]
+    }
+   }
+  },
+  {
    "id": "jaeger",
    "category": "service",
    "by": "catalog",
-   "type": "servizio o API"
+   "type": "servizio o API",
+   "signs": {
+    "packages": {
+     "docker": [
+      "quay.io/jaegertracing/jaeger"
+     ]
+    }
+   }
   },
   {
    "id": "jaeger",
@@ -4114,7 +5871,40 @@
   {
    "id": "jest",
    "category": "tool",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "files": [
+     "jest.config.cjs",
+     "jest.config.cts",
+     "jest.config.js",
+     "jest.config.json",
+     "jest.config.mjs",
+     "jest.config.ts"
+    ]
+   },
+   "wrong_signs": {
+    "files": [
+     "regex"
+    ]
+   }
+  },
+  {
+   "id": "jetpack-compose",
+   "by": "corpus",
+   "name": "Jetpack Compose",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "androidx.compose:compose-bom",
+      "androidx.compose.ui:ui-tooling",
+      "androidx.compose.ui:ui-tooling-preview",
+      "androidx.compose.material3:material3-adaptive-navigation-suite"
+     ]
+    }
+   }
   },
   {
    "id": "jfrog",
@@ -4130,6 +5920,52 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "jhipster",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "npm": [
+      "generator-jhipster"
+     ],
+     "maven": [
+      "tech.jhipster:jhipster-framework"
+     ]
+    }
+   },
+   "kind": "project",
+   "type": "altro",
+   "category": "tool"
+  },
+  {
+   "id": "jhipster",
+   "by": "corpus",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "tech.jhipster:jhipster-framework"
+     ]
+    }
+   }
+  },
+  {
+   "id": "jhipster-control-center",
+   "name": "JHipster Control Center",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "jhipster/jhipster-control-center"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "jinja",
@@ -4182,14 +6018,93 @@
    "by": "model"
   },
   {
+   "id": "jmeter",
+   "by": "corpus",
+   "name": "Apache JMeter",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.lazerycode.jmeter:jmeter-maven-plugin"
+     ]
+    }
+   }
+  },
+  {
+   "id": "jms-serializer",
+   "by": "catalog",
+   "name": "JMS Serializer",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://jmsyst.com/libs/serializer",
+   "signs": {
+    "packages": {
+     "composer": [
+      "jms/serializer",
+      "jms/serializer-bundle"
+     ]
+    }
+   }
+  },
+  {
    "id": "joijs",
    "category": "library",
    "by": "catalog"
   },
   {
+   "id": "jooq",
+   "by": "corpus",
+   "name": "jOOQ",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jooq:jooq-kotlin",
+      "org.jooq:jooq-postgres-extensions"
+     ]
+    }
+   }
+  },
+  {
+   "id": "json-net",
+   "by": "corpus",
+   "name": "Json.NET",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Newtonsoft.Json"
+     ]
+    }
+   }
+  },
+  {
    "id": "jsonschema",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "juniper",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "juniper"
+     ]
+    }
+   },
+   "name": "Juniper",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/juniper"
   },
   {
    "id": "junit",
@@ -4323,7 +6238,14 @@
    "id": "keycloak",
    "category": "service",
    "by": "catalog",
-   "type": "autenticazione"
+   "type": "autenticazione",
+   "signs": {
+    "packages": {
+     "docker": [
+      "quay.io/keycloak/keycloak"
+     ]
+    }
+   }
   },
   {
    "id": "keycloak",
@@ -4338,6 +6260,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "keyring",
+   "by": "corpus",
+   "name": "keyring",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "keyring"
+     ]
+    }
+   }
   },
   {
    "id": "knex",
@@ -4366,6 +6303,21 @@
    "by": "catalog"
   },
   {
+   "id": "kotest",
+   "by": "corpus",
+   "name": "Kotest",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.kotest:kotest-assertions-table"
+     ]
+    }
+   }
+  },
+  {
    "id": "kotlin",
    "category": "tool",
    "by": "catalog"
@@ -4387,6 +6339,61 @@
    "by": "catalog"
   },
   {
+   "id": "kotlin-multiplatform",
+   "by": "corpus",
+   "wrong_signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin.multiplatform"
+     ]
+    }
+   },
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin.multiplatform:org.jetbrains.kotlin.multiplatform.gradle.plugin"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^org\\.jetbrains\\.kotlin\\.multiplatform$"
+     ]
+    }
+   }
+  },
+  {
+   "id": "kotlin-test",
+   "by": "corpus",
+   "name": "kotlin.test",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin:kotlin-test",
+      "org.jetbrains.kotlin:kotlin-test-common",
+      "org.jetbrains.kotlin:kotlin-test-annotations-common"
+     ]
+    }
+   }
+  },
+  {
+   "id": "kotlinx-html",
+   "by": "corpus",
+   "name": "kotlinx.html",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlinx:kotlinx-html-jvm"
+     ]
+    }
+   }
+  },
+  {
    "id": "kotlinx-serialization",
    "name": "kotlinx.serialization",
    "kind": "project",
@@ -4406,6 +6413,29 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "kotlinx-serialization",
+   "by": "corpus",
+   "wrong_signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin.plugin.serialization"
+     ]
+    }
+   },
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.jetbrains.kotlin.plugin.serialization:org.jetbrains.kotlin.plugin.serialization.gradle.plugin"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^org\\.jetbrains\\.kotlin\\.plugin\\.serialization$"
+     ]
+    }
+   }
   },
   {
    "id": "ktor",
@@ -4466,8 +6496,85 @@
    "by": "model"
   },
   {
+   "id": "langchain4j",
+   "by": "corpus",
+   "name": "LangChain4j",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkiverse.langchain4j:quarkus-langchain4j-openai"
+     ]
+    }
+   }
+  },
+  {
    "id": "laravel",
    "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "laravel-nightwatch",
+   "name": "Laravel Nightwatch",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "composer": [
+      "laravel/nightwatch"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "lastfm",
+   "name": "Last.fm",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "ws.audioscrobbler.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "lemonsqueezy",
+   "signs": {
+    "hosts": [
+     "api.lemonsqueezy.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "less",
+   "by": "catalog",
+   "name": "Less",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://lesscss.org/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "less"
+     ]
+    }
+   }
+  },
+  {
+   "id": "lets-encrypt",
+   "signs": {
+    "hosts": [
+     "acme-v02.api.letsencrypt.org"
+    ]
+   },
    "by": "catalog"
   },
   {
@@ -4494,6 +6601,22 @@
    "id": "lighthouse",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "likec4",
+   "by": "catalog",
+   "name": "LikeC4",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://likec4.dev/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@likec4/core"
+     ]
+    }
+   }
   },
   {
    "id": "line",
@@ -4530,6 +6653,38 @@
    "by": "catalog"
   },
   {
+   "id": "listenbrainz",
+   "name": "ListenBrainz",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "api.listenbrainz.org",
+     "labs.api.listenbrainz.org"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "litefs",
+   "name": "LiteFS",
+   "kind": "service",
+   "type": "database",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "flyio/litefs"
+     ],
+     "npm": [
+      "litefs-js"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "litjs",
    "category": "framework",
    "by": "catalog"
@@ -4548,6 +6703,17 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "livekit",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@livekit/react-native"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "livekit",
@@ -4702,12 +6868,49 @@
    "by": "model"
   },
   {
+   "id": "mailchannels",
+   "name": "MailChannels",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "NEXT_PRIVATE_MAILCHANNELS_API_KEY"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "mailchimp",
    "site": "https://mailchimp.com",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "maildev",
+   "name": "MailDev",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "maildev"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "mailgun",
+   "signs": {
+    "env": [
+     "MAILGUN_API_KEY"
+    ]
+   },
+   "by": "catalog"
   },
   {
    "id": "mailgun",
@@ -4728,6 +6931,21 @@
    "type": "servizio o API"
   },
   {
+   "id": "mailpit",
+   "name": "Mailpit",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "axllent/mailpit"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "mailtrap",
    "name": "Mailtrap",
    "kind": "service",
@@ -4746,8 +6964,51 @@
    "by": "model"
   },
   {
+   "id": "majorleaguecyber",
+   "name": "MajorLeagueCyber",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "auth.majorleaguecyber.org",
+     "api.majorleaguecyber.org"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "mandrill",
+   "name": "Mandrill",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "MANDRILL_API_KEY"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "mantineui",
    "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "mapkit",
+   "name": "MapKit",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://developer.apple.com/documentation/mapkit",
+   "category": "framework",
+   "signs": {
+    "source": {
+     "swift.import": [
+      "MapKit"
+     ]
+    }
+   },
    "by": "catalog"
   },
   {
@@ -4782,9 +7043,59 @@
    "by": "model"
   },
   {
+   "id": "marked",
+   "name": "Marked",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://marked.js.org/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "marked"
+     ],
+     "maven": [
+      "org.webjars.npm:marked"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "marshmallow",
+   "by": "corpus",
+   "name": "marshmallow",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "marshmallow"
+     ]
+    }
+   }
+  },
+  {
    "id": "materialdesignicons",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "materialize-css",
+   "by": "catalog",
+   "name": "Materialize",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "site": "https://materializeweb.com/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@materializecss/materialize"
+     ]
+    }
+   }
   },
   {
    "id": "materialui",
@@ -4832,9 +7143,31 @@
    "by": "catalog"
   },
   {
+   "id": "maxmind",
+   "name": "MaxMind",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "MAXMIND_LICENSE_KEY"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "mcp",
    "category": "library",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@modelcontextprotocol/client",
+      "@modelcontextprotocol/server"
+     ]
+    }
+   },
+   "name": "Model Context Protocol SDK"
   },
   {
    "id": "meilisearch",
@@ -4875,9 +7208,54 @@
    "by": "model"
   },
   {
+   "id": "messagepack-dotnet",
+   "by": "corpus",
+   "name": "MessagePack",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "MessagePack"
+     ]
+    }
+   }
+  },
+  {
    "id": "meteorjs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "metro-kotlin",
+   "by": "corpus",
+   "name": "Metro",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "dev.zacsweers.metro",
+      "dev.zacsweers.metro:dev.zacsweers.metro.gradle.plugin",
+      "dev.zacsweers.metro:metrox-android",
+      "dev.zacsweers.metro:metrox-viewmodel-compose"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^dev\\.zacsweers\\.metro$"
+     ]
+    }
+   },
+   "wrong_signs": {
+    "packages": {
+     "maven": [
+      "dev.zacsweers.metro"
+     ]
+    }
+   }
   },
   {
    "id": "micronaut",
@@ -4896,6 +7274,67 @@
    "by": "catalog"
   },
   {
+   "id": "microsoft-entra-oauth",
+   "name": "Microsoft Entra ID OAuth",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "composer": [
+      "socialiteproviders/microsoft-azure"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "microsoft-sql-server",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/microsoft/go-mssqldb",
+      "gorm.io/driver/sqlserver"
+     ],
+     "nuget": [
+      "Aspire.Hosting.SqlServer",
+      "Microsoft.EntityFrameworkCore.SqlServer"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "microsoft.oauth",
+   "name": "Microsoft OAuth",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "passport-microsoft"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "microsoft.outlook",
+   "name": "Microsoft Outlook",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "OUTLOOK_OAUTH_CLIENT_ID",
+     "PAPERLESS_OUTLOOK_OAUTH_CLIENT_ID"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "microstrategy",
    "name": "MicroStrategy",
    "kind": "service",
@@ -4909,6 +7348,41 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "minijinja",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "minijinja"
+     ]
+    }
+   },
+   "name": "MiniJinja",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/minijinja"
+  },
+  {
+   "id": "minio",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "minio/minio",
+      "pgsty/minio"
+     ],
+     "go": [
+      "github.com/minio/minio-go/v7"
+     ],
+     "maven": [
+      "io.minio:minio"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "mintlify",
@@ -4942,6 +7416,21 @@
    "by": "catalog"
   },
   {
+   "id": "mkdocs-material",
+   "by": "corpus",
+   "name": "Material for MkDocs",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "mkdocs-material"
+     ]
+    }
+   }
+  },
+  {
    "id": "mlflow",
    "category": "library",
    "by": "catalog"
@@ -4963,6 +7452,37 @@
    "by": "catalog"
   },
   {
+   "id": "mock-oauth2-server",
+   "name": "mock-oauth2-server",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "ghcr.io/navikt/mock-oauth2-server"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "mockall",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "mockall"
+     ]
+    }
+   },
+   "name": "Mockall",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/mockall"
+  },
+  {
    "id": "mockito",
    "name": "Mockito",
    "kind": "project",
@@ -4978,6 +7498,45 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "mockito",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkus:quarkus-junit-mockito"
+     ]
+    }
+   }
+  },
+  {
+   "id": "mockk",
+   "by": "corpus",
+   "name": "MockK",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.mockk:mockk",
+      "io.quarkiverse.mockk:quarkus-junit5-mockk"
+     ]
+    }
+   }
+  },
+  {
+   "id": "mockserver",
+   "by": "corpus",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.mock-server:mockserver-netty-no-dependencies"
+     ]
+    }
+   }
   },
   {
    "id": "modal",
@@ -5024,6 +7583,9 @@
      ],
      "nuget": [
       "MongoDB.Driver"
+     ],
+     "go": [
+      "go.mongodb.org/mongo-driver"
      ]
     }
    },
@@ -5040,6 +7602,37 @@
    },
    "by": "derive",
    "owner": "github.com/pulumi"
+  },
+  {
+   "id": "mongoose",
+   "by": "catalog",
+   "name": "Mongoose",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://mongoosejs.com/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "mongoose"
+     ]
+    }
+   }
+  },
+  {
+   "id": "mono-cecil",
+   "by": "corpus",
+   "name": "Mono.Cecil",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Mono.Cecil"
+     ]
+    }
+   }
   },
   {
    "id": "mstest",
@@ -5059,9 +7652,53 @@
    "by": "catalog"
   },
   {
+   "id": "mudblazor",
+   "by": "corpus",
+   "name": "MudBlazor",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "MudBlazor"
+     ]
+    }
+   }
+  },
+  {
    "id": "muiicons",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "musicbrainz",
+   "name": "MusicBrainz",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "MUSICBRAINZ_USER_AGENT"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "mybatis",
+   "by": "corpus",
+   "name": "MyBatis",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.mybatis:mybatis",
+      "org.mybatis.spring.boot:mybatis-spring-boot-starter"
+     ]
+    }
+   }
   },
   {
    "id": "mysql",
@@ -5072,8 +7709,13 @@
       "mysql:mysql-connector-java"
      ],
      "nuget": [
+      "Microting.EntityFrameworkCore.MySql",
       "MySql.Data",
       "Pomelo.EntityFrameworkCore.MySql"
+     ],
+     "go": [
+      "github.com/go-sql-driver/mysql",
+      "gorm.io/driver/mysql"
      ]
     }
    },
@@ -5116,6 +7758,46 @@
   {
    "id": "nestjs",
    "category": "framework",
+   "by": "catalog"
+  },
+  {
+   "id": "netbox-census",
+   "name": "NetBox Census",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "census.netbox.oss.netboxlabs.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "netbox-copilot",
+   "name": "NetBox Copilot",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "static.copilot.netboxlabs.ai"
+    ],
+    "env": [
+     "NETBOX_COPILOT_URL"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "netlify",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@netlify/plugin-nextjs"
+     ]
+    }
+   },
    "by": "catalog"
   },
   {
@@ -5165,6 +7847,17 @@
    "id": "nodejs",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "nodejs",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "docker": [
+      "gcr.io/distroless/nodejs24-debian13"
+     ]
+    }
+   }
   },
   {
    "id": "nodejs",
@@ -5240,7 +7933,13 @@
   {
    "id": "nuxtjs",
    "category": "framework",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "files": [
+     "nuxt.config.mjs",
+     "nuxt.config.ts"
+    ]
+   }
   },
   {
    "id": "nvm",
@@ -5251,6 +7950,38 @@
    "id": "nxjs",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "oapi-codegen",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/oapi-codegen/oapi-codegen"
+     ]
+    }
+   },
+   "name": "oapi-codegen",
+   "kind": "project",
+   "category": "tool",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/oapi-codegen/oapi-codegen"
+  },
+  {
+   "id": "oban",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "hex": [
+      "oban"
+     ]
+    }
+   },
+   "name": "Oban",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://hex.pm/packages/oban"
   },
   {
    "id": "okta",
@@ -5273,12 +8004,85 @@
    "by": "model"
   },
   {
+   "id": "okta.oauth",
+   "name": "Okta OAuth",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "composer": [
+      "socialiteproviders/okta"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "ollama",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "CommunityToolkit.Aspire.Hosting.Ollama",
+      "CommunityToolkit.Aspire.OllamaSharp"
+     ],
+     "pypi": [
+      "llama-index-embeddings-ollama",
+      "llama-index-llms-ollama"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "ollama",
    "site": "https://ollama.com",
    "signs": {
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "omdb",
+   "name": "OMDb",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "www.omdbapi.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "open-food-facts",
+   "name": "Open Food Facts",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "openfoodfacts"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "openai",
+   "signs": {
+    "hosts": [
+     "api.openai.com"
+    ],
+    "packages": {
+     "go": [
+      "github.com/openai/openai-go/v3"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "openai",
@@ -5343,6 +8147,21 @@
    "by": "model"
   },
   {
+   "id": "openldap",
+   "name": "OpenLDAP",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "rroemhild/test-openldap"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "openrouter",
    "name": "OpenRouter",
    "kind": "service",
@@ -5379,7 +8198,15 @@
    "id": "opensearch",
    "category": "service",
    "by": "catalog",
-   "type": "database"
+   "type": "database",
+   "signs": {
+    "packages": {
+     "docker": [
+      "opensearchproject/opensearch",
+      "docker.io/opensearchproject/opensearch"
+     ]
+    }
+   }
   },
   {
    "id": "opensearch",
@@ -5396,9 +8223,42 @@
    "by": "model"
   },
   {
+   "id": "openstack.swift",
+   "name": "OpenStack Swift",
+   "kind": "service",
+   "type": "filesystem",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "django-storage-swift"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "opentelemetry",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "opentelemetry",
+   "by": "corpus",
+   "kind": "project",
+   "type": "altro",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "OpenTelemetry.Exporter.OpenTelemetryProtocol",
+      "OpenTelemetry.Extensions.Hosting",
+      "OpenTelemetry.Instrumentation.AspNetCore",
+      "OpenTelemetry.Instrumentation.GrpcNetClient",
+      "OpenTelemetry.Instrumentation.Http",
+      "OpenTelemetry.Instrumentation.Runtime"
+     ]
+    }
+   }
   },
   {
    "id": "openzeppelin",
@@ -5416,6 +8276,20 @@
    "by": "model"
   },
   {
+   "id": "opsgenie",
+   "name": "Opsgenie",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "api.opsgenie.com",
+     "api.eu.opsgenie.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "optimizely",
    "signs": {
     "packages": {
@@ -5426,6 +8300,17 @@
    },
    "by": "derive",
    "owner": "github.com/optimizely"
+  },
+  {
+   "id": "oracledatabase",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/dzwvip/gorm-oracle"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "oracledatabase",
@@ -5441,6 +8326,36 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "otel-collector",
+   "name": "OpenTelemetry Collector",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "otel-ebpf-profiler",
+   "name": "OpenTelemetry eBPF Profiler",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-ebpf-profiler"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "ovh",
@@ -5468,6 +8383,41 @@
    "owner": "github.com/oxc-project"
   },
   {
+   "id": "pact",
+   "by": "corpus",
+   "name": "Pact",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkiverse.pact:quarkus-pact-consumer",
+      "io.quarkiverse.pact:quarkus-pact-provider"
+     ]
+    }
+   }
+  },
+  {
+   "id": "paddle",
+   "signs": {
+    "hosts": [
+     "api.paddle.com",
+     "sandbox-api.paddle.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "pagerduty",
+   "signs": {
+    "hosts": [
+     "events.pagerduty.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "pagerduty",
    "site": "https://www.pagerduty.com",
    "signs": {
@@ -5478,6 +8428,37 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "pagertree",
+   "name": "PagerTree",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "PAGERTREE_ENABLED"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "panache",
+   "by": "corpus",
+   "name": "Panache",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkus:quarkus-hibernate-orm-panache",
+      "io.quarkus:quarkus-hibernate-orm-panache-kotlin",
+      "io.quarkus:quarkus-hibernate-reactive-panache",
+      "io.quarkus:quarkus-mongodb-panache"
+     ]
+    }
+   }
   },
   {
    "id": "pandas",
@@ -5498,6 +8479,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "papercut-smtp",
+   "name": "Papercut SMTP",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "jijiechen/papercut"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "parceljs",
@@ -5549,6 +8545,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "pebble",
+   "by": "corpus",
+   "name": "Pebble",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.pebbletemplates:pebble"
+     ]
+    }
+   }
   },
   {
    "id": "percy",
@@ -5674,6 +8685,22 @@
    "by": "catalog"
   },
   {
+   "id": "pico-css",
+   "by": "catalog",
+   "name": "Pico CSS",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "site": "https://picocss.com/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@picocss/pico"
+     ]
+    }
+   }
+  },
+  {
    "id": "picocli",
    "name": "picocli",
    "kind": "project",
@@ -5728,6 +8755,22 @@
    "by": "official"
   },
   {
+   "id": "pinia",
+   "by": "catalog",
+   "name": "Pinia",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://pinia.vuejs.org/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "pinia"
+     ]
+    }
+   }
+  },
+  {
    "id": "pip",
    "category": "tool",
    "by": "catalog"
@@ -5753,6 +8796,32 @@
    "by": "catalog"
   },
   {
+   "id": "plain",
+   "name": "Plain",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@team-plain/typescript-sdk"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "plausible",
+   "signs": {
+    "packages": {
+     "npm": [
+      "next-plausible"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "playwright",
    "kind": "project",
    "category": "tool",
@@ -5771,9 +8840,27 @@
      "maven": [
       "com.microsoft.playwright:playwright"
      ]
-    }
+    },
+    "files": [
+     "playwright.config.cjs",
+     "playwright.config.cts",
+     "playwright.config.js",
+     "playwright.config.mjs",
+     "playwright.config.mts"
+    ]
    },
    "by": "catalog"
+  },
+  {
+   "id": "playwright",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkiverse.playwright:quarkus-playwright"
+     ]
+    }
+   }
   },
   {
    "id": "playwright",
@@ -5802,6 +8889,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "pluggy",
+   "name": "Pluggy",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "npm": [
+      "pluggy-sdk"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "pnpm",
@@ -5905,11 +9007,25 @@
       "org.postgresql:postgresql"
      ],
      "nuget": [
+      "Aspire.Hosting.PostgreSQL",
+      "Aspire.Npgsql",
+      "Aspire.Npgsql.EntityFrameworkCore.PostgreSQL",
       "Npgsql",
       "Npgsql.EntityFrameworkCore.PostgreSQL"
      ],
      "hex": [
       "postgrex"
+     ],
+     "go": [
+      "github.com/jackc/pgx/v4",
+      "github.com/jackc/pgx/v5",
+      "gorm.io/driver/postgres"
+     ],
+     "pypi": [
+      "psycopg",
+      "psycopg-c",
+      "psycopg-pool",
+      "psycopg2-binary"
      ]
     }
    },
@@ -5939,6 +9055,31 @@
       "postman-collection"
      ]
     }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "postmark",
+   "signs": {
+    "packages": {
+     "hex": [
+      "bamboo_postmark"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "powersync",
+   "name": "PowerSync",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "env": [
+     "POWERSYNC_URL",
+     "POWERSYNC_TOKEN_LIFETIME"
+    ]
    },
    "by": "catalog"
   },
@@ -5973,9 +9114,83 @@
    "by": "model"
   },
   {
+   "id": "prometheus",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "django-prometheus"
+     ],
+     "crates": [
+      "metrics-exporter-prometheus"
+     ],
+     "maven": [
+      "io.prometheus:prometheus-metrics-core",
+      "io.prometheus:prometheus-metrics-exporter-httpserver"
+     ],
+     "docker": [
+      "quay.io/prometheus/prometheus"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "proptest",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "proptest"
+     ]
+    }
+   },
+   "name": "proptest",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://crates.io/crates/proptest"
+  },
+  {
    "id": "protobuf",
    "category": "library",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@bufbuild/protobuf"
+     ],
+     "crates": [
+      "prost",
+      "prost-types"
+     ]
+    }
+   }
+  },
+  {
+   "id": "protobuf",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "com.google.protobuf",
+      "com.google.protobuf:com.google.protobuf.gradle.plugin",
+      "com.google.protobuf:protobuf-java",
+      "com.google.protobuf:protoc"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^com\\.google\\.protobuf$"
+     ]
+    }
+   },
+   "wrong_signs": {
+    "packages": {
+     "maven": [
+      "com.google.protobuf"
+     ]
+    }
+   }
   },
   {
    "id": "protobuf",
@@ -6004,6 +9219,19 @@
    "by": "catalog"
   },
   {
+   "id": "pushbullet",
+   "name": "Pushbullet",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "api.pushbullet.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "pusher",
    "name": "Pusher",
    "kind": "service",
@@ -6024,6 +9252,19 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "pushover",
+   "name": "Pushover",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "api.pushover.net"
+    ]
+   },
+   "by": "catalog"
   },
   {
    "id": "pydantic",
@@ -6084,6 +9325,21 @@
    "by": "catalog"
   },
   {
+   "id": "pyyaml",
+   "by": "corpus",
+   "name": "PyYAML",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "PyYAML"
+     ]
+    }
+   }
+  },
+  {
    "id": "qase",
    "name": "Qase",
    "kind": "service",
@@ -6117,6 +9373,22 @@
    "by": "model"
   },
   {
+   "id": "qmgo",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/qiniu/qmgo"
+     ]
+    }
+   },
+   "name": "Qmgo",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/qiniu/qmgo"
+  },
+  {
    "id": "quarkus",
    "name": "Quarkus",
    "kind": "project",
@@ -6133,6 +9405,38 @@
    "by": "catalog"
   },
   {
+   "id": "quarkus-rest",
+   "by": "corpus",
+   "name": "Quarkus REST",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkus:quarkus-rest",
+      "io.quarkus:quarkus-rest-jackson",
+      "io.quarkus:quarkus-rest-qute"
+     ]
+    }
+   }
+  },
+  {
+   "id": "quarkus-websockets-next",
+   "by": "corpus",
+   "name": "Quarkus WebSockets Next",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkus:quarkus-websockets-next"
+     ]
+    }
+   }
+  },
+  {
    "id": "questdb",
    "signs": {
     "packages": {
@@ -6143,6 +9447,37 @@
    },
    "by": "derive",
    "owner": "github.com/questdb"
+  },
+  {
+   "id": "quinoa",
+   "by": "corpus",
+   "name": "Quinoa",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkiverse.quinoa:quarkus-quinoa",
+      "io.quarkiverse.quinoa:quarkus-quinoa-testing"
+     ]
+    }
+   }
+  },
+  {
+   "id": "qute",
+   "by": "corpus",
+   "name": "Qute",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkus:quarkus-rest-qute"
+     ]
+    }
+   }
   },
   {
    "id": "qwikjs",
@@ -6158,7 +9493,12 @@
       "org.springframework.boot:spring-boot-starter-amqp"
      ],
      "nuget": [
+      "Aspire.Hosting.RabbitMQ",
+      "Aspire.RabbitMQ.Client",
       "RabbitMQ.Client"
+     ],
+     "composer": [
+      "php-amqplib/rabbitmq-bundle"
      ]
     }
    },
@@ -6218,6 +9558,23 @@
    "by": "model"
   },
   {
+   "id": "ratatui",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "ratatui",
+      "ratatui-core"
+     ]
+    }
+   },
+   "name": "Ratatui",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/ratatui"
+  },
+  {
    "id": "ray",
    "category": "library",
    "by": "catalog"
@@ -6261,6 +9618,22 @@
    "by": "catalog"
   },
   {
+   "id": "react-dom",
+   "by": "catalog",
+   "name": "React DOM",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://react.dev/reference/react-dom",
+   "signs": {
+    "packages": {
+     "npm": [
+      "react-dom"
+     ]
+    }
+   }
+  },
+  {
    "id": "react-email",
    "name": "React Email",
    "kind": "project",
@@ -6278,6 +9651,22 @@
    "by": "catalog"
   },
   {
+   "id": "react-flow",
+   "by": "catalog",
+   "name": "React Flow",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://reactflow.dev/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@xyflow/react"
+     ]
+    }
+   }
+  },
+  {
    "id": "react-native",
    "name": "React Native",
    "kind": "project",
@@ -6292,6 +9681,42 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "react-native-elements",
+   "by": "catalog",
+   "name": "React Native Elements",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://reactnativeelements.com/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@rneui/base",
+      "react-native-elements"
+     ]
+    }
+   }
+  },
+  {
+   "id": "react-navigation",
+   "by": "catalog",
+   "name": "React Navigation",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://reactnavigation.org/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@react-navigation/bottom-tabs",
+      "@react-navigation/native",
+      "@react-navigation/native-stack",
+      "@react-navigation/stack"
+     ]
+    }
+   }
   },
   {
    "id": "reactemail",
@@ -6341,7 +9766,13 @@
       "io.lettuce:lettuce-core"
      ],
      "nuget": [
+      "Aspire.Hosting.Redis",
+      "Aspire.StackExchange.Redis",
       "StackExchange.Redis"
+     ],
+     "pypi": [
+      "channels-redis",
+      "django-redis"
      ]
     }
    },
@@ -6374,6 +9805,22 @@
    "id": "redwoodjs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "refena",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "pub": [
+      "refena_flutter"
+     ]
+    }
+   },
+   "name": "Refena",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pub.dev/packages/refena_flutter"
   },
   {
    "id": "refinedev",
@@ -6458,6 +9905,21 @@
    "owner": "github.com/replit"
   },
   {
+   "id": "reqnroll",
+   "by": "corpus",
+   "name": "Reqnroll",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Reqnroll.NUnit"
+     ]
+    }
+   }
+  },
+  {
    "id": "requests",
    "category": "library",
    "by": "catalog"
@@ -6494,6 +9956,21 @@
    "by": "catalog"
   },
   {
+   "id": "rest-assured",
+   "by": "corpus",
+   "name": "REST Assured",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.rest-assured:rest-assured"
+     ]
+    }
+   }
+  },
+  {
    "id": "rethinkdb",
    "signs": {
     "packages": {
@@ -6519,6 +9996,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "robolectric",
+   "by": "corpus",
+   "name": "Robolectric",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.robolectric:robolectric"
+     ]
+    }
+   }
   },
   {
    "id": "rocket-chat",
@@ -6578,9 +10070,89 @@
    "by": "catalog"
   },
   {
+   "id": "roq",
+   "by": "corpus",
+   "name": "Roq",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkiverse.roq:quarkus-roq"
+     ]
+    }
+   }
+  },
+  {
+   "id": "routerino",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "pub": [
+      "routerino"
+     ]
+    }
+   },
+   "name": "Routerino",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pub.dev/packages/routerino"
+  },
+  {
+   "id": "rq",
+   "by": "corpus",
+   "name": "RQ",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "rq"
+     ]
+    }
+   }
+  },
+  {
    "id": "rspack",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "rspec",
+   "by": "catalog",
+   "name": "RSpec",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://rspec.info/",
+   "signs": {
+    "packages": {
+     "rubygems": [
+      "rspec",
+      "rspec-core",
+      "rspec-rails"
+     ]
+    }
+   }
+  },
+  {
+   "id": "rstest",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "rstest"
+     ]
+    }
+   },
+   "name": "rstest",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://crates.io/crates/rstest"
   },
   {
    "id": "rubocop",
@@ -6636,6 +10208,22 @@
    "by": "catalog"
   },
   {
+   "id": "sass-parser",
+   "by": "catalog",
+   "name": "Sass parser",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://github.com/sass/dart-sass/tree/main/pkg/sass-parser",
+   "signs": {
+    "packages": {
+     "npm": [
+      "sass-parser"
+     ]
+    }
+   }
+  },
+  {
    "id": "sauce-labs",
    "name": "Sauce Labs",
    "kind": "service",
@@ -6680,6 +10268,19 @@
    },
    "by": "derive",
    "owner": "github.com/scaleway"
+  },
+  {
+   "id": "schedules-direct",
+   "name": "Schedules Direct",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "json.schedulesdirect.org"
+    ]
+   },
+   "by": "catalog"
   },
   {
    "id": "scikitlearn",
@@ -6742,6 +10343,22 @@
    "by": "model"
   },
   {
+   "id": "sea-orm",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "sea-orm"
+     ]
+    }
+   },
+   "name": "SeaORM",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/sea-orm"
+  },
+  {
    "id": "segment",
    "site": "https://segment.com",
    "signs": {
@@ -6768,6 +10385,21 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "sentry",
+   "signs": {
+    "packages": {
+     "hex": [
+      "sentry"
+     ],
+     "npm": [
+      "@sentry/profiling-node",
+      "@sentry/react-router"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "sequelize",
@@ -6800,9 +10432,40 @@
    "by": "model"
   },
   {
+   "id": "serde-json",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "serde_json"
+     ]
+    }
+   },
+   "name": "serde_json",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/serde_json"
+  },
+  {
    "id": "shadcn",
    "category": "library",
    "by": "catalog"
+  },
+  {
+   "id": "sharpfuzz",
+   "by": "corpus",
+   "name": "SharpFuzz",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "SharpFuzz"
+     ]
+    }
+   }
   },
   {
    "id": "shopify",
@@ -6852,8 +10515,39 @@
    "by": "catalog"
   },
   {
+   "id": "simplefin",
+   "name": "SimpleFIN Bridge",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "bridge.simplefin.org"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "simpleicons",
    "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "simplesamlphp",
+   "name": "SimpleSAMLphp",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "docker": [
+      "kenchan0130/simplesamlphp"
+     ]
+    },
+    "env": [
+     "SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE"
+    ]
+   },
    "by": "catalog"
   },
   {
@@ -6906,6 +10600,22 @@
    "by": "catalog"
   },
   {
+   "id": "smallrye-reactive-messaging",
+   "by": "corpus",
+   "name": "SmallRye Reactive Messaging",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.smallrye.reactive:smallrye-reactive-messaging-in-memory",
+      "io.quarkus:quarkus-messaging-kafka"
+     ]
+    }
+   }
+  },
+  {
    "id": "smartthings",
    "name": "SmartThings",
    "kind": "service",
@@ -6953,6 +10663,22 @@
    "by": "model"
   },
   {
+   "id": "solid-queue",
+   "by": "catalog",
+   "name": "Solid Queue",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://github.com/rails/solid_queue",
+   "signs": {
+    "packages": {
+     "rubygems": [
+      "solid_queue"
+     ]
+    }
+   }
+  },
+  {
    "id": "solidjs",
    "category": "framework",
    "by": "catalog"
@@ -6960,6 +10686,19 @@
   {
    "id": "sonarlint",
    "category": "tool",
+   "by": "catalog"
+  },
+  {
+   "id": "space-devs",
+   "name": "The Space Devs API",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "ll.thespacedevs.com"
+    ]
+   },
    "by": "catalog"
   },
   {
@@ -7032,6 +10771,17 @@
    "by": "model"
   },
   {
+   "id": "spotify",
+   "signs": {
+    "packages": {
+     "composer": [
+      "jwilsson/spotify-web-api-php"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "spring-ai",
    "name": "Spring AI",
    "kind": "project",
@@ -7047,6 +10797,33 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "spring-ai",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.ai:spring-ai-starter-model-openai",
+      "org.springframework.ai:spring-ai-vector-store"
+     ]
+    }
+   }
+  },
+  {
+   "id": "spring-amqp",
+   "by": "corpus",
+   "name": "Spring AMQP",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-amqp"
+     ]
+    }
+   }
   },
   {
    "id": "spring-boot",
@@ -7068,6 +10845,30 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "spring-boot",
+   "by": "corpus",
+   "signs": {
+    "patterns": {
+     "maven": [
+      "^org\\.springframework\\.boot$",
+      "^org\\.springframework\\.boot:spring-boot(?:-[a-z0-9]+)*$"
+     ]
+    },
+    "packages": {
+     "maven": [
+      "org.springframework.boot:org.springframework.boot.gradle.plugin"
+     ]
+    }
+   },
+   "wrong_signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot"
+     ]
+    }
+   }
   },
   {
    "id": "spring-boot-admin",
@@ -7121,6 +10922,17 @@
    "by": "catalog"
   },
   {
+   "id": "spring-cloud-gateway",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.cloud:spring-cloud-starter-gateway-server-webflux"
+     ]
+    }
+   }
+  },
+  {
    "id": "spring-cloud-netflix",
    "name": "Spring Cloud Netflix",
    "kind": "project",
@@ -7138,6 +10950,21 @@
    "by": "catalog"
   },
   {
+   "id": "spring-data-elasticsearch",
+   "by": "corpus",
+   "name": "Spring Data Elasticsearch",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-data-elasticsearch"
+     ]
+    }
+   }
+  },
+  {
    "id": "spring-data-jpa",
    "name": "Spring Data JPA",
    "kind": "project",
@@ -7153,6 +10980,36 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "spring-data-mongodb",
+   "by": "corpus",
+   "name": "Spring Data MongoDB",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-data-mongodb"
+     ]
+    }
+   }
+  },
+  {
+   "id": "spring-data-redis",
+   "by": "corpus",
+   "name": "Spring Data Redis",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.springframework.boot:spring-boot-starter-data-redis"
+     ]
+    }
+   }
   },
   {
    "id": "spring-mvc",
@@ -7221,6 +11078,95 @@
    "by": "model"
   },
   {
+   "id": "sqlc",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/sqlc-dev/sqlc"
+     ]
+    }
+   },
+   "name": "sqlc",
+   "kind": "project",
+   "category": "tool",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/sqlc-dev/sqlc"
+  },
+  {
+   "id": "sqldelight",
+   "by": "corpus",
+   "name": "SQLDelight",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "app.cash.sqldelight",
+      "app.cash.sqldelight:android-driver",
+      "app.cash.sqldelight:app.cash.sqldelight.gradle.plugin",
+      "app.cash.sqldelight:native-driver",
+      "app.cash.sqldelight:runtime",
+      "app.cash.sqldelight:sqlite-driver",
+      "app.cash.sqldelight:web-worker-driver"
+     ]
+    },
+    "patterns": {
+     "maven": [
+      "^app\\.cash\\.sqldelight$"
+     ]
+    }
+   },
+   "wrong_signs": {
+    "packages": {
+     "maven": [
+      "app.cash.sqldelight"
+     ]
+    }
+   }
+  },
+  {
+   "id": "sqlglot",
+   "by": "corpus",
+   "name": "SQLGlot",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "sqlglot"
+     ]
+    }
+   }
+  },
+  {
+   "id": "sqlite",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/glebarez/go-sqlite",
+      "github.com/glebarez/sqlite",
+      "github.com/mattn/go-sqlite3",
+      "github.com/ncruces/go-sqlite3",
+      "modernc.org/sqlite"
+     ],
+     "npm": [
+      "@sqlite.org/sqlite-wasm"
+     ],
+     "nuget": [
+      "CommunityToolkit.Aspire.Hosting.SQLite",
+      "Microsoft.EntityFrameworkCore.Sqlite"
+     ],
+     "composer": [
+      "ext-pdo_sqlite"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "sqlite",
    "site": "https://sqlite.org",
    "signs": {
@@ -7245,14 +11191,81 @@
    "by": "catalog"
   },
   {
+   "id": "sqlx-go",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/jmoiron/sqlx"
+     ]
+    }
+   },
+   "name": "sqlx",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/jmoiron/sqlx"
+  },
+  {
+   "id": "sqlx-rust",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "sqlx"
+     ]
+    }
+   },
+   "name": "SQLx",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/sqlx"
+  },
+  {
    "id": "stenciljs",
    "category": "framework",
    "by": "catalog"
   },
   {
+   "id": "stimulus",
+   "by": "catalog",
+   "name": "Stimulus",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "site": "https://stimulus.hotwired.dev/",
+   "signs": {
+    "packages": {
+     "composer": [
+      "symfony/stimulus-bundle"
+     ],
+     "npm": [
+      "@hotwired/stimulus"
+     ]
+    }
+   }
+  },
+  {
    "id": "storybook",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "strawberry-graphql",
+   "by": "corpus",
+   "name": "Strawberry GraphQL",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "strawberry-graphql",
+      "strawberry-graphql-django"
+     ]
+    }
+   }
   },
   {
    "id": "streamlit",
@@ -7298,6 +11311,22 @@
    "id": "stylelint",
    "category": "tool",
    "by": "catalog"
+  },
+  {
+   "id": "stylus",
+   "by": "catalog",
+   "name": "Stylus",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://stylus-lang.com/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "stylus"
+     ]
+    }
+   }
   },
   {
    "id": "stytch",
@@ -7417,14 +11446,54 @@
    "owner": "github.com/swc-project"
   },
   {
+   "id": "swiftui",
+   "name": "SwiftUI",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://developer.apple.com/xcode/swiftui/",
+   "category": "framework",
+   "signs": {
+    "source": {
+     "swift.import": [
+      "SwiftUI"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "symfony",
    "category": "framework",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "composer": [
+      "symfony/framework-bundle"
+     ]
+    }
+   }
+  },
+  {
+   "id": "tabler",
+   "by": "catalog",
+   "name": "Tabler",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://tabler.io/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@tabler/core"
+     ]
+    }
+   }
   },
   {
    "id": "tablericons",
    "category": "library",
-   "by": "catalog"
+   "by": "catalog",
+   "name": "Tabler Icons"
   },
   {
    "id": "tailscale",
@@ -7441,7 +11510,22 @@
   {
    "id": "tailwind",
    "category": "library",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "files": [
+     "tailwind.config.cjs",
+     "tailwind.config.mjs",
+     "tailwind.config.ts"
+    ],
+    "packages": {
+     "npm": [
+      "@tailwindcss/vite"
+     ],
+     "hex": [
+      "tailwind"
+     ]
+    }
+   }
   },
   {
    "id": "tanstackrouter",
@@ -7456,6 +11540,58 @@
   {
    "id": "tauri",
    "category": "framework",
+   "by": "catalog",
+   "signs": {
+    "files": [
+     "Tauri.toml",
+     "tauri.conf.json",
+     "tauri.conf.json5"
+    ],
+    "packages": {
+     "crates": [
+      "tauri-build"
+     ]
+    }
+   }
+  },
+  {
+   "id": "telegram",
+   "signs": {
+    "hosts": [
+     "api.telegram.org"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "tempfile-rust",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "tempfile"
+     ]
+    }
+   },
+   "name": "tempfile",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/tempfile"
+  },
+  {
+   "id": "tencent-cos",
+   "name": "Tencent COS",
+   "kind": "service",
+   "type": "filesystem",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/tencentyun/cos-go-sdk-v5"
+     ]
+    }
+   },
    "by": "catalog"
   },
   {
@@ -7530,10 +11666,41 @@
      ],
      "nuget": [
       "Testcontainers"
+     ],
+     "go": [
+      "github.com/testcontainers/testcontainers-go"
      ]
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "testcontainers",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.testcontainers:testcontainers-junit-jupiter",
+      "org.testcontainers:testcontainers-postgresql"
+     ]
+    }
+   }
+  },
+  {
+   "id": "testify",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/stretchr/testify"
+     ]
+    }
+   },
+   "name": "testify",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/stretchr/testify"
   },
   {
    "id": "testinglibrary",
@@ -7589,8 +11756,49 @@
    "by": "catalog"
   },
   {
+   "id": "ticketmaster",
+   "name": "Ticketmaster",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "app.ticketmaster.com"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "tigris",
+   "name": "Tigris",
+   "kind": "service",
+   "type": "filesystem",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "fly.storage.tigris.dev"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
    "id": "tiptap",
    "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "tmdb",
+   "name": "TMDb",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "TMDbLib"
+     ]
+    }
+   },
    "by": "catalog"
   },
   {
@@ -7648,6 +11856,36 @@
    "by": "catalog"
   },
   {
+   "id": "tree-sitter",
+   "by": "corpus",
+   "name": "Tree-sitter",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "tree-sitter"
+     ]
+    }
+   }
+  },
+  {
+   "id": "tree-sitter-language-pack",
+   "by": "corpus",
+   "name": "Tree-sitter Language Pack",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "tree-sitter-language-pack"
+     ]
+    }
+   }
+  },
+  {
    "id": "trino",
    "category": "service",
    "by": "catalog",
@@ -7670,6 +11908,24 @@
    "by": "catalog"
   },
   {
+   "id": "ts-rest",
+   "by": "catalog",
+   "name": "ts-rest",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://ts-rest.com/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@ts-rest/core",
+      "@ts-rest/open-api",
+      "@ts-rest/serverless"
+     ]
+    }
+   }
+  },
+  {
    "id": "turborepo",
    "category": "tool",
    "by": "catalog"
@@ -7687,6 +11943,22 @@
   {
    "id": "twigphp",
    "category": "library",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "composer": [
+      "symfony/twig-bundle"
+     ]
+    }
+   }
+  },
+  {
+   "id": "twilio",
+   "signs": {
+    "hosts": [
+     "api.twilio.com"
+    ]
+   },
    "by": "catalog"
   },
   {
@@ -7708,6 +11980,21 @@
     "packages": {}
    },
    "by": "model"
+  },
+  {
+   "id": "twitch.oauth",
+   "name": "Twitch OAuth",
+   "kind": "service",
+   "type": "autenticazione",
+   "category": "service",
+   "signs": {
+    "packages": {
+     "composer": [
+      "socialiteproviders/twitch"
+     ]
+    }
+   },
+   "by": "catalog"
   },
   {
    "id": "typebox",
@@ -7785,6 +12072,22 @@
    "by": "model"
   },
   {
+   "id": "uikit",
+   "name": "UIKit",
+   "kind": "project",
+   "type": "altro",
+   "site": "https://developer.apple.com/documentation/uikit",
+   "category": "framework",
+   "signs": {
+    "source": {
+     "swift.import": [
+      "UIKit"
+     ]
+    }
+   },
+   "by": "catalog"
+  },
+  {
    "id": "ultracite",
    "category": "tool",
    "by": "catalog"
@@ -7793,6 +12096,24 @@
    "id": "umijs",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "unocss",
+   "by": "catalog",
+   "name": "UnoCSS",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://unocss.dev/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@unocss/nuxt",
+      "@unocss/vite",
+      "unocss"
+     ]
+    }
+   }
   },
   {
    "id": "unsplash",
@@ -7822,6 +12143,22 @@
    "owner": "github.com/upstash"
   },
   {
+   "id": "urfave-cli",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "go": [
+      "github.com/urfave/cli"
+     ]
+    }
+   },
+   "name": "urfave/cli",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://pkg.go.dev/github.com/urfave/cli"
+  },
+  {
    "id": "urql",
    "name": "urql",
    "kind": "project",
@@ -7831,8 +12168,9 @@
    "signs": {
     "packages": {
      "npm": [
-      "urql",
-      "@urql/core"
+      "@urql/core",
+      "@urql/vue",
+      "urql"
      ]
     }
    },
@@ -7866,6 +12204,19 @@
   {
    "id": "valibot",
    "category": "library",
+   "by": "catalog"
+  },
+  {
+   "id": "valkey",
+   "signs": {
+    "packages": {
+     "docker": [
+      "valkey/valkey",
+      "docker.io/valkey/valkey",
+      "ghcr.io/valkey-io/valkey"
+     ]
+    }
+   },
    "by": "catalog"
   },
   {
@@ -7948,7 +12299,33 @@
   {
    "id": "vite",
    "category": "tool",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "files": [
+     "vite.config.cjs",
+     "vite.config.cts",
+     "vite.config.js",
+     "vite.config.mjs",
+     "vite.config.mts",
+     "vite.config.ts"
+    ]
+   }
+  },
+  {
+   "id": "vite-plus",
+   "by": "catalog",
+   "name": "Vite+",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://viteplus.dev/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "vite-plus"
+     ]
+    }
+   }
   },
   {
    "id": "vitepress",
@@ -7958,7 +12335,15 @@
   {
    "id": "vitest",
    "category": "tool",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "files": [
+     "vitest.config.cjs",
+     "vitest.config.cts",
+     "vitest.config.mjs",
+     "vitest.config.mts"
+    ]
+   }
   },
   {
    "id": "vonage",
@@ -7981,7 +12366,14 @@
   {
    "id": "vue",
    "category": "framework",
-   "by": "catalog"
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "maven": [
+      "org.webjars.npm:vue"
+     ]
+    }
+   }
   },
   {
    "id": "vue-router",
@@ -7994,15 +12386,65 @@
     "packages": {
      "npm": [
       "vue-router"
+     ],
+     "maven": [
+      "org.webjars.npm:vue-router"
      ]
     }
    },
    "by": "catalog"
   },
   {
+   "id": "vue-sfc-compiler",
+   "by": "catalog",
+   "name": "Vue SFC compiler",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://github.com/vuejs/core/tree/main/packages/compiler-sfc",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@vue/compiler-sfc"
+     ]
+    }
+   }
+  },
+  {
    "id": "vuepress",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "vuetify",
+   "by": "catalog",
+   "name": "Vuetify",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "site": "https://vuetifyjs.com/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "vuetify"
+     ]
+    }
+   }
+  },
+  {
+   "id": "wagtail",
+   "by": "corpus",
+   "name": "Wagtail",
+   "kind": "project",
+   "type": "altro",
+   "category": "framework",
+   "signs": {
+    "packages": {
+     "pypi": [
+      "wagtail"
+     ]
+    }
+   }
   },
   {
    "id": "wakatime",
@@ -8038,6 +12480,22 @@
    "id": "wasp",
    "category": "framework",
    "by": "catalog"
+  },
+  {
+   "id": "watermelondb",
+   "by": "catalog",
+   "name": "WatermelonDB",
+   "kind": "project",
+   "type": "altro",
+   "category": "library",
+   "site": "https://watermelondb.dev/",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@nozbe/watermelondb"
+     ]
+    }
+   }
   },
   {
    "id": "weaviate",
@@ -8091,6 +12549,38 @@
    "by": "catalog"
   },
   {
+   "id": "webpack-encore",
+   "by": "catalog",
+   "name": "Webpack Encore",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "site": "https://symfony.com/doc/current/frontend/encore/index.html",
+   "signs": {
+    "packages": {
+     "npm": [
+      "@symfony/webpack-encore"
+     ]
+    }
+   }
+  },
+  {
+   "id": "webview2-com",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "webview2-com"
+     ]
+    }
+   },
+   "name": "webview2-com",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/webview2-com"
+  },
+  {
    "id": "what3words",
    "name": "what3words",
    "kind": "service",
@@ -8107,6 +12597,68 @@
     }
    },
    "by": "model"
+  },
+  {
+   "id": "where-the-iss-at",
+   "name": "Where the ISS At API",
+   "kind": "service",
+   "type": "servizio o API",
+   "category": "service",
+   "signs": {
+    "hosts": [
+     "api.wheretheiss.at"
+    ]
+   },
+   "by": "catalog"
+  },
+  {
+   "id": "windows-rs",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "windows-sys",
+      "windows-core"
+     ]
+    }
+   },
+   "name": "Windows for Rust",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/windows-sys"
+  },
+  {
+   "id": "wiremock-java",
+   "by": "corpus",
+   "name": "WireMock",
+   "kind": "project",
+   "type": "altro",
+   "category": "tool",
+   "signs": {
+    "packages": {
+     "maven": [
+      "io.quarkiverse.wiremock:quarkus-wiremock",
+      "org.wiremock:wiremock"
+     ]
+    }
+   }
+  },
+  {
+   "id": "wiremock-rs",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "wiremock"
+     ]
+    }
+   },
+   "name": "wiremock",
+   "kind": "project",
+   "category": "library",
+   "type": "altro",
+   "site": "https://crates.io/crates/wiremock"
   },
   {
    "id": "xendit",
@@ -8140,6 +12692,18 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "xunit",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "xunit.v3.mtp-off",
+      "xunit.v3.mtp-v2"
+     ]
+    }
+   }
   },
   {
    "id": "yandex-cloud",
@@ -8176,6 +12740,34 @@
     }
    },
    "by": "catalog"
+  },
+  {
+   "id": "yarp",
+   "by": "corpus",
+   "signs": {
+    "packages": {
+     "nuget": [
+      "Microsoft.Extensions.ServiceDiscovery.Yarp",
+      "Aspire.Hosting.Yarp"
+     ]
+    }
+   }
+  },
+  {
+   "id": "yew",
+   "by": "catalog",
+   "signs": {
+    "packages": {
+     "crates": [
+      "yew"
+     ]
+    }
+   },
+   "name": "Yew",
+   "kind": "project",
+   "category": "framework",
+   "type": "altro",
+   "site": "https://crates.io/crates/yew"
   },
   {
    "id": "yii2",

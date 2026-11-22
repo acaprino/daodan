@@ -88,14 +88,17 @@ def _environment() -> dict:
 
 def _mask(text: str, ranges: list) -> str:
     """`text` with every unit of each range a `*`, line breaks kept."""
-    units = bytearray(text.encode("utf-16-le", "surrogatepass"))
+    original = text.encode("utf-16-le")
+    units = bytearray(original)
     for start, end in ranges:
-        if not (isinstance(start, int) and isinstance(end, int) and 0 <= start <= end <= len(units) // 2):
+        if not (type(start) is int and type(end) is int and 0 <= start < end <= len(units) // 2):
             raise ValueError(f"range {start}..{end} is outside the text")
+        if any(0xdc <= original[2 * edge + 1] <= 0xdf for edge in (start, end) if 2 * edge < len(units)):
+            raise ValueError("range splits a UTF-16 surrogate pair")
         for unit in range(start, end):
             if units[2 * unit:2 * unit + 2] not in (b"\n\x00", b"\r\x00"):
                 units[2 * unit:2 * unit + 2] = b"*\x00"
-    return units.decode("utf-16-le", "replace")
+    return units.decode("utf-16-le")
 
 
 def masked(text: str, name: str) -> dict:
@@ -106,10 +109,12 @@ def masked(text: str, name: str) -> dict:
     program = executable()
     bom = "﻿" if text.startswith("﻿") else ""  # the executable decodes its input without it
     try:
-        run = subprocess.run(command(program, name), input=text[len(bom):].encode("utf-8", "replace"),
+        run = subprocess.run(command(program, name), input=text[len(bom):].encode("utf-8"),
                              capture_output=True, cwd=program.parent, env=_environment(), timeout=TIMEOUT)
     except subprocess.TimeoutExpired as error:
         raise Gap(f"Secretlint did not answer within {TIMEOUT} s on {name}", "check a smaller text") from error
+    except UnicodeError as error:
+        raise Gap("The text contains invalid Unicode", "check the source encoding") from error
     except OSError as error:
         raise Gap(f"Secretlint could not start: {error}", "check the executable in Daodan's tool folder") \
             from error
@@ -117,10 +122,120 @@ def masked(text: str, name: str) -> dict:
     try:
         if run.returncode not in (0, 1):
             raise ValueError(f"exit status {run.returncode}")
-        messages = [message for result in json.loads(run.stdout) for message in result["messages"]]
+        results = json.loads(run.stdout)
+        if not isinstance(results, list) or len(results) != 1 or not isinstance(results[0]["messages"], list):
+            raise ValueError("expected one scan result for standard input")
+        messages = results[0]["messages"]
+        if run.returncode == 1 and not messages:
+            raise ValueError("scanner reported a finding without a range")
         ranges = [tuple(message["range"]) for message in messages]
         text = bom + _mask(text[len(bom):], ranges)
     except (ValueError, KeyError, TypeError) as error:
         raise Gap(f"Secretlint failed on {name}: {error}; {said or 'no message'}",
                         "check the executable in Daodan's tool folder") from error
     return {"text": text, "found": len(messages), "kinds": sorted({str(message.get("ruleId")) for message in messages})}
+
+
+UNAVAILABLE = "Project content withheld: Secretlint could not verify the response."
+
+
+def _source_field(block):
+    """Strip only source_reader's verified display prefixes. Restore them after scanning the actual lines."""
+    start, end = block["start"], block["end"]
+    lines = block["source"].split("\n")
+    if (type(start) is not int or type(end) is not int or start < 1 or end < start
+            or len(lines) != end - start + 2 or lines[-1] != ""):
+        raise ValueError("invalid numbered source block")
+    raw = []
+    for number, line in enumerate(lines[:-1], start):
+        prefix = f"{number}: "
+        if not line.startswith(prefix):
+            raise ValueError("invalid source line number")
+        raw.append(line[len(prefix):])
+
+    def serialize(text):
+        return json.dumps("".join(f"{number}: {line}\n" for number, line in enumerate(text.split("\n")[:-1], start)))
+
+    return "\n".join(raw) + "\n", serialize
+
+
+def _tool_parts(item):
+    """Pairs of scanner text and its JSON output. Only string contents have an editable serializer.
+
+    json.dumps alone escapes newlines and quotes inside source. Give the text scanner decoded values,
+    keeping key/value punctuation and consecutive lines, and let json.dumps quote the result for output.
+    """
+    if isinstance(item, dict):
+        yield "{", "{"
+        for index, (key, child) in enumerate(item.items()):
+            name = key
+            if not isinstance(key, str):
+                if key is not None and not isinstance(key, (int, float)):
+                    raise ValueError("invalid JSON key")
+                name = json.dumps(key, allow_nan=False)
+                if name in item:
+                    raise ValueError("ambiguous JSON key")
+            if index:
+                yield ",\n", ","
+            yield '"', '"'
+            yield name, json.dumps(name)[1:-1]
+            yield '": ', '": '
+            if key == "source" and "start" in item and "end" in item and isinstance(child, str):
+                yield '"\n', ""
+                yield _source_field(item)
+                yield '"', ""
+            else:
+                yield from _tool_parts(child)
+        yield "}", "}"
+    elif isinstance(item, (list, tuple)):
+        yield "[\n", "["
+        for index, child in enumerate(item):
+            if index:
+                yield "\n", ","
+            if isinstance(child, str):
+                yield child, json.dumps
+            else:
+                yield from _tool_parts(child)
+        yield "\n]", "]"
+    elif isinstance(item, str):
+        yield '"\n' if "\n" in item else '"', ""
+        yield item, json.dumps
+        yield '\n"' if "\n" in item else '"', ""
+    else:
+        literal = json.dumps(item, allow_nan=False)
+        yield literal, literal
+
+
+def tool_result(value: dict) -> dict:
+    """Check the whole local response once. Keep its JSON shape, or withhold it if redaction would change it."""
+    try:
+        parts = list(_tool_parts(value))
+        source = "".join(raw for raw, _output in parts)
+        checked = masked(source, "tool-output.txt")
+        if not checked["found"]:
+            if checked["text"] != source:
+                raise ValueError("unexpected clean scan")
+            return value
+        encoded = checked["text"].encode("utf-16-le")
+        offset, redactions = 0, {}
+        for raw, output in parts:
+            end = offset + len(raw.encode("utf-16-le"))
+            replacement = encoded[offset:end].decode("utf-16-le")
+            if replacement != raw:
+                if not callable(output) or replacement != redactions.setdefault(raw, replacement):
+                    raise ValueError("ambiguous redaction")
+            offset = end
+        if offset != len(encoded) or "masked_secrets" in value:
+            raise ValueError("invalid masked response")
+        wire = []
+        for raw, output in parts:
+            if callable(output):
+                wire.append(output(redactions.get(raw, raw)))
+            elif raw in redactions:
+                raise ValueError("a protected JSON token also contains a redacted value")
+            else:
+                wire.append(output)
+        return {**json.loads("".join(wire)), "masked_secrets": checked["found"]}
+    except Exception:
+        # A diagnostic from the scanner can quote its input.
+        return {"status": "withheld", "error": UNAVAILABLE}

@@ -282,7 +282,8 @@ def test_fastapi_s_playwright_tests_run_as_before(tmp_path):
     played = Played({}, {"execute.log": "DAODAN-DYNAMIC 0 exit 1 3\nDAODAN-DYNAMIC 1 exit 1 2\n"})
     observe(tmp_path, played, runs=planned["runs"], files=files)
     execute = played.given["command"][-1]
-    assert "\nrun 0 . test\n" in execute and "\nrun 1 frontend test\n" in execute
+    assert "\nrun 0 . test\n" in execute
+    assert f"\nrun 1 frontend test {observer.IN}/{observer.PLAYWRIGHT_CONTROLS.name}\n" in execute
 
 
 def test_a_script_that_runs_bun_has_the_bun_the_project_declares(tmp_path):
@@ -377,6 +378,58 @@ def test_the_preparation_reaches_the_hosts_the_project_declares(tmp_path):
     played = Played({"tests-0.log": "ok\n"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 3\n"})
     observe(tmp_path, played, declared={"hosts": ("npm.corp.example",), "where": {}})  # as dynamic.run adds it
     assert "npm.corp.example" in played.given["registries"]
+
+
+def test_playwright_control_observations_stay_with_their_document_and_test_run(tmp_path):
+    run = {"root": ".", "runner": "playwright", "declared_in": "package.json#scripts.e2e"}
+    first = {"control": 1, "event": "click", "state": 1}
+    second = {"control": 2, "event": "click", "state": 1}
+    documents = [
+        {"document": "a" * 32, "observed": [first], "pending": [second]},
+        {"document": "b" * 32, "observed": [], "pending": [first]},
+    ]
+    played = Played({"controls-0-51-0.json": json.dumps({"documents": documents, "gaps": []})},
+                    {"execute.log": "DAODAN-DYNAMIC 0 exit 0 1\nDAODAN-DYNAMIC 1 exit 0 1\n"})
+    result = observe(tmp_path, played, runs=[run, {**run, "root": "another"}])
+    with_browser, without_browser = result["runs"]
+    assert with_browser["controls"] == {"status": "observed", "documents": 2, "observed": 1, "pending": 2}
+    saved, gaps = observer.controls(tmp_path / "runs/out", 0)
+    assert saved["documents"] == documents and not gaps
+    assert without_browser["controls"]["status"] == "unobserved"
+    assert any(gap["kind"] == "ui_controls_unobserved" for gap in result["gaps"])
+    assert all(f"/daodan/state/in/{name}" in played.inputs
+               for name in ("control_coverage.js", "playwright_controls.cjs"))
+    assert played.given["keep_root"] is True
+    assert "playwright_prepare.cjs" in played.given["prepare"][-1]
+    assert "playwright_prepare.cjs" not in played.given["command"][-1]
+    assert "cdn.playwright.dev" in played.given["registries"]
+
+
+def test_browser_options_follow_the_project_script_and_missing_binaries_leave_a_gap(tmp_path):
+    run = {"root": "ui", "runner": "playwright", "declared_in": "ui/package.json#scripts.e2e"}
+    assert observer._browser_args(run, lambda _: json.dumps({"scripts": {
+        "e2e": "playwright test -c pw.config.ts --headed --project='Web UI' --grep secret"}})) == [
+            "-c", "pw.config.ts", "--headed", "--project", "Web UI"]
+    planned = Played({}, {"prepare.log": "DAODAN-BROWSER-UNAVAILABLE 0\n",
+                          "execute.log": "DAODAN-DYNAMIC 0 exit 1 1\n"})
+    result = observe(tmp_path, planned, runs=[run])
+    assert any(item["kind"] == "browser_unavailable" and item["path"] == run["declared_in"]
+               for item in result["gaps"])
+
+
+def test_incomplete_control_evidence_cannot_mark_a_control_observed(tmp_path):
+    run = {"root": ".", "runner": "playwright", "declared_in": "package.json#scripts.e2e"}
+    candidate = {"control": 1, "event": "click", "state": 1}
+    document = {"document": "a" * 32, "pending": [candidate],
+                "observed": [{"control": 1, "event": "click"},
+                             {"control": True, "event": "click", "state": 1},
+                             {"control": 1, "event": "private page text", "state": 1}]}
+    played = Played({"controls-0-51-0.json": json.dumps({"documents": [document], "gaps": []}),
+                     "controls-0-52-0.json": "{"}, {"execute.log": "DAODAN-DYNAMIC 0 exit 0 1\n"})
+    result = observe(tmp_path, played, runs=[run])
+    assert result["runs"][0]["controls"] == {"status": "partial", "documents": 1, "observed": 0, "pending": 1}
+    assert any(gap["kind"] == "ui_controls_partial" for gap in result["gaps"])
+    assert "private page text" not in json.dumps(result)
 
 
 def test_what_the_copy_of_the_project_left_out_is_a_gap_of_the_run(tmp_path):

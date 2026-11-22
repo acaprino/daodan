@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25"]
+# dependencies = ["tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "keyring>=25", "PyYAML>=6"]
 # ///
 """The standalone app: one local server, from the address of a public repository to its graph.
 
@@ -65,6 +65,8 @@ LINKS = ("Write the link rules of the project of run `{run}`: the machine applie
          "`routes` counts the calls of a route, the routes offered and the calls linked to one; `stores`; `gaps`, "
          "each call or value no rule links, with its reason. A rule it refuses comes back with why. Correct your "
          "rules on those leftovers and record them again, at most {rounds} times, then stop.\n\n"
+         "Known entry forms are already classified. Classify remaining forms with shape_offset and shape_answers; "
+         "keep project route and store rules with rules. First numbered shapes: {shapes}\n\n"
          "The technologies of each build unit:\n{technologies}\n\nThe rule format:\n{format}")
 MAP = ("Map the system of run `{run}`: the machine checks every proposal against the code's links and records what "
        "holds, and your final words are not a result. Read the code only with the tools given. Begin with "
@@ -321,6 +323,14 @@ class App:
             raise ValueError("no repository is selected")
         return service, context["run_id"]
 
+    def paths(self, query: dict) -> dict:
+        """A page of entries or the directed evidence for the selected entry in this run."""
+        service, run = self._active()
+        if query.get("effects") == "1":
+            return service.flows(run, effect_offset=int(query.get("offset", 0)), limit=int(query.get("limit", 20)))
+        return service.flows(run, trace_id=query.get("id"), trace_offset=int(query.get("offset", 0)),
+                             limit=int(query.get("limit", 20)))
+
     def premap(self, query: dict) -> dict:
         """The pre-map as the page draws it: the stack's units and libraries beside the snapshot's files."""
         service, run = self._active()
@@ -363,11 +373,13 @@ class App:
         waits, and finds it kept."""
         service, run = self._active()
         run_dir = service.root / "runs" / run
+        import store_graph
         with self._graphing:
             stamp = (run_dir, visual.inputs_stamp(run_dir))
-            if self._levels.get("stamp") != stamp:
-                self._levels = {"stamp": stamp, "envelope": visual.build_envelope(run_dir, symbols=False),
-                                "answers": OrderedDict()}
+            if self._levels.get("stamp") != stamp or not store_graph.sources_unchanged(self._levels["sources"]):
+                with store_graph.capture_verified_sources() as sources:
+                    envelope = visual.build_envelope(run_dir, symbols=False)
+                self._levels = {"stamp": stamp, "envelope": envelope, "sources": sources, "answers": OrderedDict()}
             answers = self._levels["answers"]
             if key not in answers:
                 answers[key] = compute(self._levels["envelope"], run_dir)
@@ -429,7 +441,15 @@ class App:
         text, names = {"type": "string"}, {"type": "array", "items": {"type": "string"}}
 
         def tool(name, description, properties, required, call):
-            return {"name": name, "description": description, "call": call,
+            def checked(arguments):
+                import secret_mask
+                try:
+                    result = call(arguments)
+                except Exception as error:
+                    result = {"error": str(error)}
+                return secret_mask.tool_result(result)
+
+            return {"name": name, "description": description, "call": checked,
                     "parameters": {"type": "object", "properties": properties, "required": required}}
 
         return [
@@ -449,13 +469,25 @@ class App:
                                        "answer is what they link (routes, stores, gaps) or why a rule is refused; with "
                                        "nothing, what the recorded rules link or the rule format. `brief` gives the "
                                        "system brief and the map format; `map` records a proposal and reports it; "
-                                       "`about` answers for an area, a flow or a node.",
+                                       "`about` answers for an area, a flow or a node. shape_offset pages unknown "
+                                       "forms and shape_answers classifies them. trace_offset lists cards; trace_id "
+                                       "reads numbered steps. effect_offset pages writes without a proven entry. "
+                                       "next_question gives one card to review. trace_decision "
+                                       "records a proved path by its step numbers or an unresolved/excluded reason.",
                  {"rules": {"type": "array", "items": {"type": "object"}}, "brief": {"type": "boolean"},
-                  "map": {"type": "object"}, "about": text}, [],
-                 lambda a: service.flows(run, **{key: a[key] for key in ("rules", "brief", "map", "about") if key in a})),
+                  "map": {"type": "object"}, "about": text, "entry_offset": {"type": "integer", "minimum": 0},
+                  "shape_offset": {"type": "integer", "minimum": 0}, "shape_answers": {"type": "object"},
+                  "trace_offset": {"type": "integer", "minimum": 0}, "trace_id": text,
+                  "trace_decision": {"type": "object"}, "next_question": {"type": "boolean"},
+                  "effect_offset": {"type": "integer", "minimum": 0},
+                  "limit": {"type": "integer", "minimum": 1}}, [],
+                 lambda a: service.flows(run, **{key: a[key] for key in
+                                                  ("rules", "brief", "map", "about", "entry_offset", "limit", "shape_answers",
+                                                   "shape_offset", "trace_id", "trace_offset", "trace_decision",
+                                                   "next_question", "effect_offset") if key in a})),
         ]
 
-    def _engage(self, held: str, busy: str, running: dict, start, beside: tuple = ()) -> None:
+    def _engage(self, held: str, busy: str, running: dict, start, beside: tuple = (), next_prompt=None, before_engine=None) -> None:
         """The engine's work kept in `held` (asked, linked, mapped), one at a time: it is `running` until it ends, and
         another asked meanwhile, or while a work `beside` names runs, is refused with `busy`. `start()` gives its end at
         once, or its task, what is said while the engine runs and what the engine's outcome ends as; the engine runs in
@@ -481,6 +513,12 @@ class App:
                                      "cause": f"{error}; set the engine on its screen, then ask again"})
                 return
             task, said, ended = begun
+            import secret_mask
+            prompt = secret_mask.tool_result({"prompt": task["prompt"]})
+            if "prompt" not in prompt:
+                setattr(self, held, {**running, "state": "failed", "cause": secret_mask.UNAVAILABLE})
+                return
+            task = {**task, "prompt": prompt["prompt"]}
             folder = self.work / "engine"
             folder.mkdir(exist_ok=True)
             task = {**task, "tools": self._tools(), "mcp": self.mcp(), "cwd": str(folder)}
@@ -490,7 +528,20 @@ class App:
 
         def work():
             try:
-                outcome = engine.run(task, said, self._stop.is_set)
+                current = task
+                while True:
+                    if before_engine:
+                        before_engine()
+                    outcome = engine.run(current, said, self._stop.is_set)
+                    if outcome["state"] != "done" or not next_prompt or self._stop.is_set():
+                        break
+                    following = next_prompt(outcome)
+                    if not following:
+                        break
+                    scanned = secret_mask.tool_result({"prompt": following})
+                    if "prompt" not in scanned:
+                        raise ValueError(secret_mask.UNAVAILABLE)
+                    current = {**task, "prompt": scanned["prompt"]}
             except Exception as error:  # noqa: BLE001 - the page reads why the engine failed
                 outcome = {"state": "failed", "text": "", "session": None, "cause": f"{type(error).__name__}: {error}"}
             try:
@@ -539,8 +590,12 @@ class App:
             if needs.get("status") != "needs_rules":
                 return self._counted(needs)
             technologies = needs.get("technologies") or needs.get("technologies_unavailable")
+            if "technologies_remaining" in needs:
+                technologies = {"units": needs["technologies"], "remaining": needs["technologies_remaining"],
+                                "lookup": needs["technologies_lookup"]}
             task = {"prompt": LINKS.format(run=run, rounds=ROUNDS, format=needs["format"],
-                                           technologies=json.dumps(technologies, ensure_ascii=False))}
+                                           technologies=json.dumps(technologies, ensure_ascii=False),
+                                           shapes=json.dumps(needs.get("shapes", {}), ensure_ascii=False))}
             return task, _refusals(refused), lambda outcome: self._counted(
                 service.flows(run), _why(outcome, refused, "rules"))
 
@@ -550,18 +605,97 @@ class App:
     def map(self, body: dict) -> dict:
         """Map the active run's system: the engine follows the sequence of the map format the service gives, writing
         the link rules first when the run has none; at its end the service says the recorded map's nodes and flows
-        and what its coverage leaves out. A map recorded before is the service's already: no engine is asked again."""
+        and what its coverage leaves out. Reuse fresh maps and revisit stale or incomplete records once per call."""
         service, run = self._active()
         refused = []
+        running = {"state": "running", "cause": None}
+
+        from flow_questions import Review
+        review = Review(service, run)
+        budget = body.get("question_budget")
+        if budget is not None and (type(budget) is not int or budget < 0):
+            raise ValueError("question_budget must be a nonnegative number of model questions per run")
+
+        def needs_structure(recorded):
+            if recorded.get("needs_structure"):
+                return True
+            return (recorded.get("status") == "no_map" and review.counts.get("count", 0) > 0
+                    and not review.counts["remaining"] and not review.counts["reviewed"]["unresolved"])
 
         def start():
             recorded = service.system_map(run)
-            if recorded.get("status") == "ok":
-                return self._counted(recorded, kept=DRAWN)
-            return {"prompt": MAP.format(run=run)}, _refusals(refused), lambda outcome: self._counted(
-                service.system_map(run), _why(outcome, refused, "map"), DRAWN)
+            needs_review = recorded.get("needs_review")
+            prompt = review.prompt()
+            if review.counts.get("count") or "effect_coverage" in review.counts or review.counts.get("remaining_shapes"):
+                running["discovery"] = review.counts
+            if prompt:
+                return {"prompt": prompt}, _refusals(refused), finish
+            if (not needs_review and not needs_structure(recorded)
+                    and (review.counts.get("count") or recorded.get("status") == "ok")):
+                return finish({"state": "done", "cause": None}, recorded)
+            return {"prompt": structural_prompt(recorded)}, _refusals(refused), finish
 
-        self._engage("mapped", WRITING, {"state": "running", "cause": None}, start, beside=("linked",))
+        def structural_prompt(recorded):
+            needs_review = recorded.get("needs_review")
+            prompt = MAP.format(run=run)
+            if needs_review:
+                running["needs_review"] = needs_review
+                prompt = (f"Review the stale or incomplete records in the recorded map of run `{run}`. "
+                          "Read their current evidence through codebase_map_flows, then submit corrected records. "
+                          "Keep unresolved steps and report what still needs project confirmation. "
+                          f"Counts and record ids: {json.dumps(needs_review, ensure_ascii=False)}")
+            if needs_structure(recorded):
+                prompt += (" Complete the whole-system structure: record the product node and its parts. "
+                           "Reuse the event paths and decisions already recorded for this snapshot.")
+            return prompt
+
+        def advance(outcome):
+            if review.current is None:
+                return None
+            following = review.advance(outcome)
+            if following:
+                return following
+            recorded = service.system_map(run)
+            if needs_structure(recorded) or recorded.get("needs_review"):
+                return structural_prompt(recorded)
+            return None
+
+        def finish(outcome, recorded=None):
+            if recorded is None:
+                recorded = service.system_map(run)
+            result = self._counted(recorded, _why(outcome, refused, "map"), DRAWN)
+            if outcome["state"] != "done" and result["state"] == "done":
+                result.update(state="incomplete", cause=outcome.get("cause") or "mapping interrupted")
+            if review.counts.get("remaining_shapes"):
+                result.update(state="incomplete", cause=outcome.get("cause") or "entry forms still pending",
+                              discovery=review.counts)
+            if review.counts.get("count") or "effect_coverage" in review.counts:
+                counts = review.counts
+                result["discovery"] = counts
+                orphans = counts.get("effect_coverage", {}).get("without_entry", 0)
+                if orphans:
+                    result.update(state="incomplete", cause=outcome.get("cause") or
+                                  f"{orphans} writes without an evidenced entry")
+                if counts["remaining"] or counts["reviewed"].get("unresolved"):
+                    result.update(state="incomplete", cause=outcome.get("cause") or
+                                  f'{counts["remaining"]} entries pending; {counts["reviewed"]["unresolved"]} unresolved')
+            if pending := recorded.get("needs_review"):
+                result.update(state="incomplete", needs_review=pending,
+                              cause=outcome.get("cause") or "the recorded map still has stale or incomplete records")
+            if needs_structure(recorded):
+                result.update(state="incomplete", needs_structure=True,
+                              cause=outcome.get("cause") or "the product node still needs to be recorded")
+            return result
+
+        def reserve():
+            if review.current is not None:
+                service.reserve_question(run, review.current, budget)
+                running["discovery"] = review.counts
+            else:
+                service.reserve_question(run, "system-map", budget)
+
+        self._engage("mapped", WRITING, running, start, beside=("linked",), next_prompt=advance,
+                     before_engine=reserve)
         return self.state({})
 
     @staticmethod
@@ -586,7 +720,7 @@ class App:
 
         active = Active()
         routes = {**visual.live_routes(active), "/api/app/state": self.state, "/api/app/answer": self.answer,
-                  "/api/app/premap": self.premap, "/api/app/graph": self.graph, "/api/app/symbols": self.symbols}
+                  "/api/app/paths": self.paths, "/api/app/premap": self.premap, "/api/app/graph": self.graph, "/api/app/symbols": self.symbols}
         actions = {**visual.live_actions(active), "/api/app/check": self.check, "/api/app/select": self.select,
                    "/api/app/retry": self.retry,
                    "/api/app/engine": self.configure, "/api/app/probe": self.probe, "/api/app/ask": self.ask,

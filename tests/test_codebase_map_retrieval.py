@@ -47,6 +47,14 @@ class RetrievalTests(unittest.TestCase):
         self.assertIn("traceback", trace["results"][0]["provenance"])
         self.assertEqual(self.manifest.read_bytes(), before)
 
+    def test_traceback_prefers_the_function_when_the_whole_file_has_its_span(self):
+        self.write("billing.py", "def invoiceTotal(items):\n    return sum(items)")
+        snapshot.write_snapshot(self.root, self.manifest)
+        self.refresh()
+        hits = self.search('File "billing.py", line 2, in invoiceTotal')["results"]
+        self.assertEqual(hits[0]["entity_id"], "billing.py::invoiceTotal")
+        self.assertIn("traceback", hits[0]["provenance"])
+
     def test_refresh_batches_source_reads(self):
         original = source_reader.read_packet
         calls = []

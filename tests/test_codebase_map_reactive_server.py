@@ -102,6 +102,48 @@ def _make_project(root: Path) -> Path:
     return root
 
 
+def _run_mcp_check(check):
+    if importlib.util.find_spec("mcp") is not None:
+        return asyncio.run(check)
+    # The in-process MCP stub runs all awaitables inline, including its worker.
+    try:
+        check.send(None)
+    except StopIteration as completed:
+        return completed.value
+    finally:
+        check.close()
+    raise AssertionError("the in-process MCP stub unexpectedly suspended")
+
+
+def test_manifest_only_run_drives_model_scan_and_keeps_the_cause_without_a_container(tmp_path):
+    import engine_pass
+    import pipeline
+    import premap
+    import resolve_edges
+    from unittest.mock import Mock, patch
+
+    project = tmp_path / "workspace"
+    project.mkdir()
+    (project / "package.json").write_text('{"name":"umbrella","workspaces":["packages/*"]}', encoding="utf-8")
+    service = mcp_service.MapService(project)
+    child = Mock(pid=os.getpid())
+    with patch("engine_tools.shared_cache_dir", return_value=tmp_path / "cache"), \
+            patch.object(engine_pass, "_spawn_detached", return_value=child) as spawn:
+        created = service.create_run(".", "config", engine=True)
+        assert created["engine"]["state"] == "running" and created["pipeline"]["scan"] == "stale"
+        spawn.assert_called_once()
+        manifest = project / ".daodan/map/runs/config/snapshot/manifest.sqlite"
+        engine_pass.running_record(manifest).unlink()
+        with patch.object(container, "find_engine", side_effect=container.Gap("engine offline", "start engine")):
+            assert resolve_edges.main([str(manifest), "--pass"]) == 0
+        assert any(gap.get("kind") == "model_not_run" and "engine offline" in gap["detail"]
+                   for gap in premap.ensure(manifest)["gaps"])
+        assert service.status("config")["pipeline"]["scan"] == "fresh"  # current with the recorded container gaps
+        assert pipeline.runtime(manifest)["state"] == "none"
+        assert service.index("config")["engine"]["action"] == "started"
+        assert spawn.call_count == 2
+
+
 def test_create_run_and_hook_refresh_never_probe_containers_under_lock_and_expose_stack(tmp_path):
     project = _make_project(tmp_path / "proj")
     with mock.patch.dict(os.environ, {"XDG_CACHE_HOME": str(tmp_path / ".shared"),
@@ -149,7 +191,9 @@ def test_create_run_and_hook_refresh_never_probe_containers_under_lock_and_expos
         assert any(item["kind"] == "working.refreshed" for item in pulse["events"])
 
 
-def test_mcp_server_exposes_stack_tool_and_live_resource(tmp_path):
+def test_mcp_server_exposes_stack_tool_and_live_resource(tmp_path, monkeypatch):
+    import secret_mask
+    monkeypatch.setattr(secret_mask, "masked", lambda text, name: {"text": text, "found": 0, "kinds": []})
     project = _make_project(tmp_path / "proj")
     mcp_srv_mod = _load_mcp_server()
     with mock.patch.dict(os.environ, {"XDG_CACHE_HOME": str(tmp_path / ".shared"),
@@ -159,14 +203,43 @@ def test_mcp_server_exposes_stack_tool_and_live_resource(tmp_path):
         service.create_run(".", "r1", engine=False)
 
         async def check():
-            tools = await srv.list_tools()
-            names = {t.name for t in tools}
-            assert "codebase_map_stack" in names
-            res = await srv.call_tool("codebase_map_stack", {"run_id": "r1", "module": "api"})
-            text = res[0].text if isinstance(res, list) else json.dumps(res)
-            assert "spring-boot" in text
+            args = {"run_id": "r1", "module": "api"}
+            if importlib.util.find_spec("mcp") is not None:
+                from mcp import Client
+                async with Client(srv) as client:
+                    assert "codebase_map_stack" in {t.name for t in (await client.list_tools()).tools}
+                    result = await client.call_tool("codebase_map_stack", args)
+                    assert not result.is_error and "spring-boot" in result.content[0].text
+                    pulse = await client.read_resource("daodan://project/live")
+                    assert "events" in json.loads(pulse.contents[0].text)
+            else:
+                assert "codebase_map_stack" in {t.name for t in await srv.list_tools()}
+                assert "spring-boot" in json.dumps(await srv.call_tool("codebase_map_stack", args))
 
-        asyncio.run(check())
+        _run_mcp_check(check())
+
+
+def test_mcp_redacts_errors_and_nested_results(monkeypatch):
+    import secret_mask
+    server = _load_mcp_server()
+    needle = "FAKE_PRIVATE"
+    monkeypatch.setattr(secret_mask, "masked", lambda text, name: {
+        "text": text.replace(needle, "*" * len(needle)), "found": text.count(needle)})
+    class Context:
+        async def report_progress(self, *args, **kwargs):
+            pass
+    def failed():
+        raise ValueError("failed " + needle)
+    async def check():
+        answer = await server._invoke(Context(), lambda: {"rows": [needle]})
+        assert answer["rows"] == ["*" * len(needle)] and answer["masked_secrets"] == 1
+        try:
+            await server._invoke(Context(), failed)
+        except server.ToolError as error:
+            assert "*" * len(needle) in str(error) and needle not in str(error)
+        else:
+            raise AssertionError("the tool should have failed")
+    _run_mcp_check(check())
 
 
 def test_ui_http_routes_pipeline_events_stack_envelope_and_sse_stream_with_clean_shutdown(tmp_path):

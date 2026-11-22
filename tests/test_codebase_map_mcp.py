@@ -37,6 +37,23 @@ class MapServiceTests(unittest.TestCase):
         options.setdefault("engine", False)
         return self.service.create_run("src", "example", **options)
 
+    def test_first_rule_prompt_and_candidates_fit_even_with_one_oversized_item(self):
+        import entries
+        import system_brief
+        import technologies
+        self.create()
+        long = "🌐" * 5000
+        row = {"status": "candidate", "reader": "attributo", "shape": long, "site": long, "symbol": long,
+               "label": long, "event": long, "handler_source": long, "handler": long}
+        with mock.patch.object(entries, "cached_syntax", return_value=[row]), \
+             mock.patch.object(technologies, "ensure", return_value={"units": [{"technologies": [long]}]}):
+            candidate = self.service.flows("example", entry_offset=0)
+            self.assertTrue(candidate["candidates"][0]["truncated"])
+            rule_prompt = self.service.flows("example")
+            self.assertEqual(rule_prompt["technologies_remaining"], 1)
+            for answer in (candidate, rule_prompt):
+                self.assertLessEqual(len(json.dumps(answer)), system_brief.LIMIT)
+
     def test_run_creation_starts_the_engine_pass_and_status_reports_it(self):
         import engine_pass
         child = mock.Mock(pid=os.getpid())
@@ -956,7 +973,8 @@ class SystemMapServiceTests(unittest.TestCase):
         subprocess.run(["git", "init", "-q", str(project)], check=True, capture_output=True)
         cls.service = mcp_service.MapService(project)
         cls.service.create_run("app", "system", engine=False)
-        cls.needs_rules = cls.service.flows("system", brief=True)["status"]
+        cls.before_rules = cls.service.flows("system", brief=True)
+        cls.candidate_page = cls.service.flows("system", entry_offset=0, limit=1)
         rules = json.loads((bench / "rules.json").read_text(encoding="utf-8"))["rules"]
         cls.service.flows("system", rules=[{**rule, "callee": "app/" + rule["callee"]} for rule in rules])
 
@@ -977,19 +995,55 @@ class SystemMapServiceTests(unittest.TestCase):
 
     def test_brief_map_about_and_levels(self):
         import system_map
-        self.assertEqual(self.needs_rules, "needs_rules")
+        self.assertEqual(self.before_rules["status"], "needs_rules")
         brief = self.service.flows("system", brief=True)
         self.assertEqual((brief["status"], brief["areas"]), ("ok", list(system_map.AREAS)))
         self.assertIn("store:db/payments", brief["brief"])
         self.assertIn("proved", brief["format"])
         report = self.service.flows("system", map=self.map)
-        self.assertEqual((report["coverage"]["entries"]["in"], report["coverage"]["entries"]["of"]), (3, 6))
+        self.assertEqual([f["status"] for f in report["flows"]], ["incomplete", "accepted"])
+        self.assertEqual((report["coverage"]["entries"]["in"], report["coverage"]["entries"]["of"]), (1, 6))
         about = self.service.flows("system", about="Pagare un ordine")
         self.assertIn("app/web/checkout.ts", about["files"])
+        self.assertEqual([(a["from"], a["to"]) for a in about["flows"][0]["refused_arrows"]],
+                         [("Badge pagamento", "API pagamenti")])
         people = self.service.flows("system", about="Pagare un ordine", levels=["persone"])
         self.assertEqual({n["name"] for n in people["nodes"]}, {"Cliente", "Checkout", "Badge pagamento"})
         self.assertEqual(self.service.flows("system", start="app/web/badge.ts::renderBadge", direction="to",
                                             level="dati")["status"], "ok")
+
+    def test_ast_candidates_are_inspectable_before_rules_and_do_not_count_as_covered_entries(self):
+        import entries
+        from unittest.mock import patch
+        brief = self.before_rules["brief"]
+        self.assertIn("entry points 0", brief)
+        self.assertIn("## AST entry candidates", brief)
+        self.assertIn("button#arg1", brief)
+        self.assertIn("app/server/payments.py:16", brief)
+        first = self.candidate_page
+        self.assertEqual((first["next_offset"], first["candidates"][0]["status"]), (1, "candidate"))
+        with patch.object(entries, "_syntax", side_effect=AssertionError("unnecessary AST rescan")):
+            second = self.service.flows("system", entry_offset=1)
+            self.assertEqual(self.service.flows("system", entry_offset=0, limit=1), first)
+        rows = first["candidates"] + second["candidates"]
+        self.assertEqual(len(rows), first["count"])
+        self.assertIsNone(second["next_offset"])
+        self.assertTrue(all({"reader", "shape", "site", "symbol", "status"} <= row.keys() for row in rows))
+        self.assertTrue(all(row["reader"] != "residuo" for row in rows))
+
+    def test_path_pages_and_shape_questions_are_bound_to_this_snapshot(self):
+        import flows
+        from unittest.mock import patch
+        page = self.service.flows("system", trace_offset=0, limit=1)
+        self.assertEqual(len(page["cards"]), 1)
+        with patch.object(flows, "link_facts", side_effect=AssertionError("rebuilt links")):
+            self.assertEqual(self.service.flows("system", trace_offset=0, limit=1), page)
+        with self.assertRaisesRegex(ValueError, "one of"):
+            self.service.flows("system", trace_offset=0, about="another request")
+        asked = self.service.flows("system", shape_offset=0, limit=1)
+        self.assertIn("allowed", asked)
+        with self.assertRaisesRegex(ValueError, "question"):
+            self.service.flows("system", shape_answers={"id": "old", "answers": {"1": "comando"}})
 
     def test_a_wrong_map_or_a_mix_of_questions_names_what_is_wrong(self):
         with self.assertRaisesRegex(ValueError, "type"):
@@ -998,3 +1052,66 @@ class SystemMapServiceTests(unittest.TestCase):
             self.service.flows("system", brief=True, about="Pagare un ordine")
         with self.assertRaisesRegex(ValueError, "levels"):
             self.service.flows("system", levels=["persone"])
+
+    def test_flow_direction_and_wholly_refused_proposals_through_the_public_service(self):
+        path = self.service.root / "runs/system/snapshot/system-map.json"
+        if path.exists():
+            self.addCleanup(path.write_bytes, path.read_bytes())
+        else:
+            self.addCleanup(path.unlink, missing_ok=True)
+        name, area = "Recapito dei messaggi", "comunicazioni"
+        a, b, c = "Mittente", "Bacheca", "Destinatario"
+        nodes = [{"name": n, "type": "attore", "position": "unseen", "where": "external app"} for n in (a, b, c)]
+        base = {"name": name, "nodes": [b, c, a], "area": area, "types": ["funzionale"]}
+
+        def write(pairs, *, participants=None, site="app/web/checkout.ts:1", **contract):
+            flow = {**base, **contract, "nodes": participants or base["nodes"],
+                    "arrows": [{"from": start, "to": end, "kind": "attiva", "data": "messaggio", "cite": site}
+                               for start, end in pairs]}
+            return self.service.flows("system", map={"scope": [area], "areas": [{"name": area, "present": True}],
+                                                      "nodes": nodes, "flows": [flow]})["flows"][0]
+
+        def about():
+            return self.service.flows("system", about=name)
+
+        converge = [(a, b), (c, b)]
+        with self.assertRaisesRegex(ValueError, "declare entries and effects together"):
+            write(converge, entries=[a])
+        with self.assertRaisesRegex(ValueError, "nodes of the flow"):
+            write(converge, entries=[a], effects=["Altrove"])
+        # No standing arrow: diagnostics survive a new service read, without admitting the nodes or flow.
+        fail = write(converge, entries=[a, c], effects=[b], site="missing.ts:99")
+        self.assertEqual(fail["status"], "refused")
+        detail = about()
+        self.assertEqual((detail["kind"], detail["flows"]), ("refused_flow", []))
+        self.assertEqual(detail["refused_proposals"][0]["arrows"], fail["arrows"])
+        self.assertEqual(self.service.system_map("system")["needs_review"]["refused_proposals"]["count"], 1)
+        outside = self.service.flows("system", map={"scope": ["esercizio"], "remove": [name]})
+        self.assertTrue(outside["not_removed"])
+        self.assertEqual(about()["refused_proposals"], detail["refused_proposals"])
+        self.assertFalse(self.service.flows("system", map={"scope": [area], "remove": [name]})["not_removed"])
+        with self.assertRaisesRegex(ValueError, "no area, flow or node"):
+            about()
+        write(converge, entries=[a, c], effects=[b], site="missing.ts:99")
+
+        partial = write(converge, entries=[a], effects=[c])
+        self.assertEqual((partial["status"], partial["reachability"]), ("incomplete", "unproved"))
+        self.assertIn("directed path", partial["reason"])
+        self.assertNotIn("refused_proposals", about())
+        direction = self.service.flows("system", about=name, levels=["persone"])
+        self.assertEqual((direction["flow_status"], direction["reachability"], direction["entries"], direction["effects"]),
+                         ("incomplete", "unproved", [a], [c]))
+        for pairs, starts, ends in ((converge, [a, c], [b]), ([(a, b), (a, c)], [a], [b, c]),
+                                   ([(a, b), (b, c), (c, b)], [a], [c])):
+            with self.subTest(pairs=pairs):
+                current = write(pairs, entries=starts, effects=ends)
+                self.assertEqual((current["status"], about()["flows"][0]["reachability"]), ("accepted", "verified"))
+        # Older clients retain explicit anchors on update, even when they omit the new fields.
+        self.assertEqual(write(converge)["status"], "incomplete")
+        self.assertEqual(write([(a, b)], participants=[a, b])["status"], "refused")
+        self.assertEqual(write(converge, entries=[a, c], effects=[b])["status"], "accepted")
+        failed_update = write(converge, site="missing.ts:98")
+        retained = about()
+        self.assertEqual(retained["flows"][0]["status"], "accepted")
+        self.assertEqual(retained["refused_proposals"][0]["arrows"], failed_update["arrows"])
+        self.assertEqual(self.service.flows("system", about=area)["refused_proposals"], retained["refused_proposals"])

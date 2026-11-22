@@ -15,7 +15,7 @@ You name what a system is made of and what it does. The machine checks every par
 
 Tools: `codebase_map_flows`, `codebase_map_search`, `codebase_map_read`, `codebase_map_modules`. Nothing else.
 
-Begin with `codebase_map_flows(run_id, brief=true)`. While it answers `needs_rules`, write the link rules in the format it gives, record them with `rules=[...]` and ask again. Then follow «Sequence» in the map format it returns, for the whole system or for the one area you were asked for.
+Begin with `codebase_map_flows(run_id, brief=true)`. While it answers `needs_rules`, classify the unknown forms from `shape_offset=0` and record the route/store rules in the format it gives. Pass `rules=[]` when the snapshot needs none. Then follow «Sequence» in the map format it returns, for the whole system or for the one area you were asked for.
 
 ## Rules
 

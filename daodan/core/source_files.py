@@ -9,7 +9,7 @@ import hashlib
 import math
 import re
 import subprocess
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Iterator
 
 from languages import SUPPORTED_EXTENSIONS
@@ -67,6 +67,9 @@ def is_build_file(name: str) -> bool:
 # every rule as a symbol.
 PRESENTATION_EXTENSIONS = frozenset({".jade", ".pug", ".styl", ".stylus"})  # `.jade`: Pug's name before 2016
 
+# File-level sources whose explicit module references are read by the stack checker.
+STACK_SOURCE_LANGUAGES = {".swift": "swift", ".ex": "elixir", ".exs": "elixir", ".php": "php"}
+
 
 # What the Codebase Map never reads; such a file never enters the manifest, not even as a hash.
 # The obvious credential files, by name alone.
@@ -119,6 +122,14 @@ def is_forbidden(name: str, path: Path | None = None) -> bool:
     return _holds_generated_value(str(path), stat.st_mtime_ns, stat.st_size)
 
 
+def is_inventory_path(path: PurePath) -> bool:
+    """Whether the snapshot records this kind of file, independent of its contents and perimeter."""
+    suffix = path.suffix.lower()
+    return (suffix in SUPPORTED_EXTENSIONS or suffix in DOC_EXTENSIONS or suffix in PRESENTATION_EXTENSIONS
+            or suffix in STACK_SOURCE_LANGUAGES or is_build_file(path.name)
+            or not suffix and path.parent.name in BUILD_FOLDERS)
+
+
 def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Path]:
     """
     Every file in the target the snapshot records, in a stable order.
@@ -136,16 +147,8 @@ def iter_files(target: Path, perimeter: Perimeter | None = None) -> Iterator[Pat
                 continue
             if target.is_file() and path != target:
                 continue
-            suffix = path.suffix.lower()
-            if (
-                suffix not in SUPPORTED_EXTENSIONS
-                and suffix not in DOC_EXTENSIONS
-                and suffix not in PRESENTATION_EXTENSIONS
-                and not is_build_file(name)
-                and not (not suffix and directory.name in BUILD_FOLDERS)
-            ):
-                continue
-            yield path
+            if is_inventory_path(path):
+                yield path
 
 
 def read_text(path: Path) -> str:

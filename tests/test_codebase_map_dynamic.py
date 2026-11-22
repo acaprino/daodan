@@ -3,16 +3,14 @@ rows, counted apart in the coverage and read by the edge view; then the step its
 
     python -B -m pytest -q -p no:cacheprovider tests/test_codebase_map_dynamic.py
 
-The observation is a real one: the plugin's recorder runs the small project's own pytest suite in a child process
-of this interpreter (Python 3.12+), as the container runs it. The static rows are written by hand: a store as an
-analyzer leaves it, with holes where no index answers. No container starts: the step's tests give it a fake
-`container.run_in_container` that plays that observation into the output folder.
+The tests needing a real recording run on Modal with DAODAN_CONTAINER_SMOKE=1. Daodan's Python observer
+collects the fixture's pytest run inside its normal container. The step tests replay the resulting files beside
+handwritten static rows. Tests of synthetic records need no container.
 """
 from __future__ import annotations
 
 import os
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -31,6 +29,7 @@ import pipeline  # noqa: E402
 import resolve_edges as rx  # noqa: E402
 import snapshot  # noqa: E402
 from dynamic import python as observer  # noqa: E402
+from indexers import python as python_indexer  # noqa: E402
 
 LIB = '''import functools
 
@@ -90,7 +89,7 @@ FILES = {"scripts/lib.py": LIB, "scripts/idle.py": "def idle():\n    return len(
 ADD, BOX, GET, TWICE, BUILD, APPLY = (f"scripts/lib.py::{name}" for name in (
     "function@12:0", "class@16:0", "function@24:4", "function@21:4", "function@28:0", "function@32:0"))
 LAMBDA = "tests/test_lib.py::function@12:21"
-STATIC = "scip-python@test"
+STATIC = f"scip-python@{python_indexer.VERSION}"
 RESOLVER = dynamic.resolver(observer)
 
 
@@ -104,18 +103,26 @@ def write_project(folder: Path, files: dict = FILES) -> tuple[Path, Path]:
     return project, manifest
 
 
-def recorded(project: Path, folder: Path, *command: str) -> Path:
-    """The folder of the observation files of `command` (default: pytest on `tests`) run under the recorder."""
-    subprocess.run([sys.executable, "-I", str(observer.RECORDER), "site", str(folder / "site")], check=True)
-    out = folder / "observed"
-    out.mkdir(parents=True, exist_ok=True)
-    env = {key: value for key, value in os.environ.items() if not key.startswith(("PYTHON", "DYN_"))}
-    env.update(PYTHONPATH=str(folder / "site"), DYN_ROOT=str(project), DYN_OUT=str(out / "observed-0-%p.json"),
-               PYTHONDONTWRITEBYTECODE="1")
-    done = subprocess.run([sys.executable, *(command or ("-m", "pytest", "-q", "-p", "no:cacheprovider", "tests"))],
-                          cwd=project, env=env, capture_output=True, text=True)
-    (out / "tests-0.log").write_text(done.stdout + done.stderr, encoding="utf-8")
-    assert done.returncode == 0, done.stdout + done.stderr
+def recorded(project: Path, folder: Path, tests: str = "tests") -> Path:
+    """Collect the fixture once via the production observer, including its in-container preparation."""
+    if os.environ.get("DAODAN_CONTAINER") == "off":
+        pytest.skip("Daodan's container engine is disabled; this test requires a real recording")
+    if not os.environ.get("MODAL_TASK_ID") or os.environ.get("DAODAN_CONTAINER_SMOKE") != "1":
+        pytest.skip("a real recording requires DAODAN_CONTAINER_SMOKE=1 on Modal")
+    try:
+        engine = container.find_engine()
+    except container.Gap as gap:
+        pytest.skip(gap.cause)
+    files = sorted(p.relative_to(project).as_posix() for p in project.rglob("*") if p.is_file())
+    suite = {"root": ".", "runner": "pytest", "declared_in": (Path(tests) / "conftest.py").as_posix(), "args": [tests]}
+    planned = observer.plan({"tests": [suite]}, files, lambda rel: (project / rel).read_text(encoding="utf-8"))
+    recording = folder / "recording"
+    result = observer.observe(project, planned, recording, engine=engine)
+    assert result["state"] == "ran", result
+    [receipt] = result["runs"]
+    assert receipt["state"] == "ran" and receipt["exit_code"] == 0, result
+    out = recording / Path(observer.OUT).name
+    assert any(out.glob("observed-0-*.json")), result
     return out
 
 
@@ -144,7 +151,7 @@ def static_store(manifest: Path, proven: dict | None = None) -> Path:
                               "external": {"manager": "python", "package": end, "version": "3.13"}})
         files = {"snapshot": len(snap.checkout), "indexed": len(snap.checkout), "missing": []}
         coverage = rx.language_coverage(sites, edges, holes, files)
-        indexer = {"name": "scip-python", "version": "test", "seconds": 0, "peak_mb": None}
+        indexer = {"name": "scip-python", "version": python_indexer.VERSION, "seconds": 0, "peak_mb": None}
         code_graph.write_store(snap, out, {}, STATIC, rows={"python": (edges, holes, coverage, indexer)})
     return out
 
@@ -282,7 +289,7 @@ def test_a_mock_is_not_a_destination(tmp_path):
                             "    assert fake.called\n",
              "conftest.py": ""}
     project, manifest = write_project(tmp_path, files)
-    sites = observer.sites(recorded(project, tmp_path, "-m", "pytest", "-q", "-p", "no:cacheprovider"))
+    sites = observer.sites(recorded(project, tmp_path, "."))
     static_store(manifest)
     rows, facts = observed_rows(manifest, sites)
     assert ("lib.py", 6, "real") not in ends(rows, manifest) and facts["mocked"] == 1
@@ -565,6 +572,47 @@ def fake(observed: dict, entry: str = "dynamic-fake-python") -> SimpleNamespace:
                            observe=lambda project, given, out_dir, engine: observed)
 
 
+@pytest.mark.parametrize("interrupted", ["timeout", "killed"])
+def test_retry_only_the_interrupted_suite_and_keep_its_earlier_edges(tmp_path, interrupted):
+    _, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    store = static_store(manifest)
+    suites = [{"root": "first", "runner": "pytest"}, {"root": "second", "runner": "playwright"}]
+    stub = fake({})
+    stub.plan = lambda record, files, read: {"runs": suites, "gaps": []}
+    calls = []
+    def observe(project, planned, out_dir, engine):
+        calls.append([run["root"] for run in planned["runs"]])
+        states = ["ran", interrupted] if len(calls) == 1 else ["ran"]
+        browser = {"status": "observed", "documents": 1, "observed": 2, "pending": 1}
+        entries = [{**test, "state": state, **({"controls": browser} if test["runner"] == "playwright" else {})}
+                   for test, state in zip(planned["runs"], states)]
+        return {"state": "ran", "sites": [], "sampled": [PAIRS[0] if len(calls) == 1 else PAIRS[2]],
+                "runs": entries[::-1], "gaps": []}
+    stub.observe = observe
+    with mock.patch.object(dynamic, "observers", return_value=[stub]):
+        first, _, _ = step(manifest)
+        completed, _, _ = step(manifest)
+        hot, _, asked = step(manifest)
+    assert calls == [["first", "second"], ["second"]]
+    assert first["languages"]["python"]["sampled"]["edges"] == 1
+    assert hot == completed and not asked.called
+    assert hot["languages"]["python"]["sampled"]["edges"] == 2
+    assert hot["ui_controls"] == [{"root": "second", "status": "observed", "documents": 2, "observed": 4, "pending": 2}]
+    with code_graph.Snapshot(manifest) as snap:
+        _, binding, _ = rx.read_edge_store(store, snap.store)
+    assert all(test["state"] == "ran" for test in binding["languages"]["python"]["coverage"]["observed"]["tests"])
+
+
+def test_skipped_alternative_build_tool_is_reused_without_counting_another_test_run():
+    from dynamic import execution_cache
+    planned = [{"root": "jvm", "tool": tool} for tool in ("gradle", "maven")]
+    tests = [None, None]
+    receipt = {"root": "jvm", "runner": "maven", "tool": "maven", "state": "ran", "exit_code": 0}
+    execution_cache.update_tests(tests, [0, 1], planned, {"runs": [receipt], "equivalent_completed": [0]})
+    assert tests == [{"equivalent_completed": True}, receipt]
+    assert all(execution_cache.finished(test) for test in tests)
+
+
 def union(manifest: Path, result: dict) -> list[dict]:
     seen = []
     bus = pipeline.events.Bus()
@@ -573,6 +621,87 @@ def union(manifest: Path, result: dict) -> list[dict]:
     context.results["dynamic"] = result
     pipeline.Union.run(context)
     return seen
+
+
+@pytest.mark.parametrize("status", ["observed", "partial"])
+def test_runtime_reports_browser_actions_even_when_no_call_edge_was_placed(tmp_path, status):
+    _, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    static_store(manifest)
+    controls = {"status": status, "documents": 1, "observed": 1, "pending": 0}
+    run = {"root": ".", "runner": "playwright", "state": "ran", "controls": controls}
+    ui_gaps = [{"kind": "ui_controls_partial", "path": ".", "detail": "document interrupted"}] if status == "partial" else []
+    stub = fake({"state": "ran", "sites": [], "runs": [run], "gaps": ui_gaps})
+    stub.observe = mock.Mock(wraps=stub.observe)
+    with mock.patch.object(dynamic, "observers", return_value=[stub]):
+        result, _, _ = step(manifest)
+        warm, _, asked = step(manifest)
+    assert warm == result and not asked.called and stub.observe.call_count == 1
+    assert result["languages"]["python"]["state"] == "not-observed"
+    context = pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL)))
+    for analyzed in (result, warm):
+        context.results["dynamic"] = analyzed
+        pipeline.Union.run(context)
+        report = pipeline.runtime(manifest)
+        assert report["state"] == "observed"
+        assert report["ui_controls"] == [{"root": ".", **controls}]
+        assert [gap for gap in report["gaps"] if gap["kind"].startswith("ui_controls_")] == ui_gaps
+
+
+@pytest.mark.parametrize("changed", ["static_adapter", "browser_recorder"])
+def test_a_completed_zero_edge_suite_runs_again_if_its_producer_changes(tmp_path, monkeypatch, changed):
+    import engine_pass
+    from dynamic import execution_cache
+    _, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB})
+    static_store(manifest)
+    run = {"root": ".", "runner": "playwright", "state": "ran", "exit_code": 0}
+    stub = fake({"state": "ran", "sites": [], "runs": [run], "gaps": []})
+    stub.__name__ = "dynamic.javascript"
+    stub.observe = mock.Mock(wraps=stub.observe)
+    with mock.patch.object(dynamic, "observers", return_value=[stub]):
+        first, _, _ = step(manifest)
+        assert first["languages"]["python"]["state"] == "not-observed"
+        _, _, warm = step(manifest)
+        assert not warm.called and stub.observe.call_count == 1
+        if changed == "static_adapter":
+            monkeypatch.setattr(engine_pass, "adapter_fingerprint", lambda name: f"new-{name}")
+            static_store(manifest)
+        else:
+            read = Path.read_bytes
+            monkeypatch.setattr(Path, "read_bytes", lambda path: read(path) + (
+                b"// updated DOM reader" if path.name == "control_coverage.js" else b""))
+            execution_cache.recorder_fingerprint.cache_clear()
+        try:
+            again, _, cold = step(manifest)
+            _, _, warm = step(manifest)
+            assert again == first and cold.called and not warm.called and stub.observe.call_count == 2
+        finally:
+            execution_cache.recorder_fingerprint.cache_clear()
+
+
+def test_one_successful_suite_is_reused_with_evidence_in_only_one_of_its_languages(tmp_path):
+    _, manifest = write_project(tmp_path, {"lib.py": SAMPLED_LIB, "ui.js": "export const label = 1;\n"})
+    store = static_store(manifest)
+    with code_graph.Snapshot(manifest) as snap:
+        edges, binding, _ = rx.read_edge_store(store, snap.store)
+        binding["languages"]["javascript"] = {"engine": "fixture@1", "state": "fresh", "coverage": {}}
+        rx.write_edge_store(store, edges, binding, rx.read_edge_holes(store))
+    run = {"root": ".", "runner": "pytest", "state": "ran", "exit_code": 0}
+    stub = fake({"state": "ran", "sites": [], "sampled": [PAIRS[0]], "runs": [run], "gaps": []})
+    stub.LANGUAGES = ("python", "javascript")
+    stub.observe = mock.Mock(wraps=stub.observe)
+    with mock.patch.object(dynamic, "observers", return_value=[stub]):
+        cold, _, _ = step(manifest)
+        hot, _, asked = step(manifest)
+    assert cold == hot and stub.observe.call_count == 1 and not asked.called
+    assert hot["languages"]["javascript"]["state"] == "not-observed"
+    assert hot["languages"]["python"]["sampled"]["edges"] == 1
+    for analyzed in (cold, hot):
+        context = pipeline.Context(manifest, pipeline.events.Bus(manifest.with_name(pipeline.events.JOURNAL)))
+        context.results["dynamic"] = analyzed
+        pipeline.Union.run(context)
+        report = pipeline.runtime(manifest)
+        assert report["state"] == "observed" and report["languages"]["python"]["edges"] == 0
+        assert report["languages"]["python"]["sampled"]["edges"] == 1
 
 
 @pytest.mark.parametrize("runs, broken", [

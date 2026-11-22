@@ -253,6 +253,7 @@ class ParseResult:
     # Additive syntax evidence from the existing native tree. Regex or invalid
     # syntax cannot supply authoritative lexical bindings or reference spans.
     semantic: dict | None = None
+    tauri: dict | None = None  # command declarations and invoke-handler registrations read from a Rust tree
 
 
 @runtime_checkable

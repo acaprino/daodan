@@ -77,7 +77,7 @@ Un `.sql` con marcatori Oracle è PL/SQL. Python richiesto `>= 3.12`: gli script
 Scritto lo snapshot, `snapshot.py write` e `codebase_map_create_run` eseguono gli step della pipeline (`scripts/pipeline/`), ognuno con i suoi eventi nel giornale accanto al manifest:
 
 1. `scan`: il grafo dei moduli e la pre-mappa (`references/premap.md`): unità, toolchain, registri, comandi di test, servizi e passi della CI e build dei Dockerfile che il progetto dichiara. I comandi di modello dei build system girano nel container.
-2. `stack`: le tecnologie di ogni unità di build dai segni del registro, senza eseguire strumenti sul progetto (`technologies.py`, `technologies.json` accanto al manifest); un suo errore è un evento e l'analisi prosegue. Da qui gli step girano in background (`resolve_edges.py --pass`).
+2. `stack` scrive `technologies.json` accanto al manifest. Assegna a ogni modulo le tecnologie dichiarate nei file di sua competenza. Le menzioni testuali restano disponibili come indizi. Il campo `configured_services` conserva nome e provenienza delle dichiarazioni Compose e CI, anche per servizi fuori catalogo. L'avvio effettivo si verifica nel passo dinamico. Un errore dello stack viene registrato e l'analisi prosegue in background (`resolve_edges.py --pass`).
 3. `analyze`: un analyzer per tecnologia della pre-mappa (`indexers/`), uno alla volta.
 4. `dynamic`: i test del progetto sotto un registratore (sezione Passo dinamico).
 5. `union`: i grafi delle tecnologie come grafo completo, con ciò che la corsa ha osservato e ciò che il grafo non contiene: file che un indice ha lasciato fuori, linguaggi senza analyzer, chiamate fra i linguaggi di due analyzer.

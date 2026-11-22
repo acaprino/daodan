@@ -23,6 +23,13 @@ Il codice del progetto analizzato gira solo nel container di Daodan, mai sull'ho
 - Le spec si mettono alla prova in `benchmarks/`: ogni benchmark dichiara nel suo README i parametri da provare e i risultati misurati.
 - Una prova che sostiene un risultato o una scheda del registro resta nel repository, come test o benchmark che si riesegue; quella che chiede gli strumenti veri gira solo su Modal. Un test temporaneo poi cancellato non è una verifica.
 
+## Interfaccia (viewer/)
+
+- Prima di lavorare sull'interfaccia leggi `viewer/node_modules/@acaprino/imago/docs/design-file.md` (da `viewer/`: `node_modules/@acaprino/imago/docs/design-file.md`, dopo `npm ci`) e i file che richiama.
+- Applica i suoi token e le scelte confermate entro la richiesta; usa le classi `im-` e i token `--im-` del pacchetto e costruisci un controllo tuo dai token, mai da colori o misure scritti a mano.
+- Segnala i conflitti e lascia esplicite le scelte aperte.
+- Prima di dire che il lavoro sull'interfaccia è finito esegui `npx imago-check` in `viewer/`.
+
 ## Come rispondere
 
 - Prima riga: l'azione da fare, con percorso o comando.

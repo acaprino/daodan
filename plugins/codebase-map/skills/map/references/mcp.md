@@ -224,3 +224,5 @@ project. Other agent tools stay subject to their host's permissions.
 The host owns its UI, worker lifetime, models, routing and permissions. It may
 bind a custom store inside the project; that changes only where the run store
 lives, never the analysis, gates or commands.
+
+For numbered entry forms, event cards, decisions and the review queue, use the [system map sequence](../../../../../daodan/references/system-map.md#sequence).

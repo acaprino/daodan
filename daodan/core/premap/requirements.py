@@ -17,7 +17,7 @@ import posixpath
 from pathlib import PurePosixPath
 import re
 
-from build_units import requirement_version
+from build_units import normalize_pypi_name, requirement_version
 from premap.origins import origin, requirement
 
 NAME, VERSION, RANK = "requirements", "daodan/premap/v2", "reader"
@@ -179,7 +179,7 @@ def run(context):
             if not stripped or stripped.startswith("-"):
                 continue
             if match := PKG_NAME.match(stripped):
-                norm = re.sub(r"[-_.]+", "-", match.group(1)).lower()
+                norm = normalize_pypi_name(match.group(1))
                 # the PEP 508 requirement before pip's own options (` --hash=...`) and a line continuation
                 version = requirement_version(re.split(r"\s+(?:--|\\$)", stripped, maxsplit=1)[0])
                 if (norm, rel) not in seen_pkgs:
