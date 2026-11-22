@@ -11,20 +11,34 @@ character literals can contain comment-like sequences (`"// not a comment"`).
 For Python we delegate to the stdlib `tokenize` module which already handles
 this correctly; for the other languages we implement a small lexer that tracks
 string state and skips comment markers inside strings.
+
+Where a grammar loads, `tree_comments` reads the comment nodes of the parsed file instead: the tree knows a regular
+expression, a template literal and a lifetime where the scanners below guess (the comment rewriter uses it). The
+scanners stay for the adapters' `extract_comments` and for the files no grammar reads.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
+
+from ._treesitter import _COMMENT_NODE_TYPES
 
 __all__ = [
+    "COMMENT_NODES",
     "CommentToken",
     "CommentSyntax",
     "extract_python_comments",
     "extract_c_style_comments",
     "extract_sql_comments",
     "extract_rust_comments",
+    "tree_comments",
 ]
+
+# The nodes a grammar calls a comment: SQL calls its block comment `marginalia`.
+COMMENT_NODES = _COMMENT_NODE_TYPES | {"marginalia"}
+# Rust marks a doc comment with a child node: `///` and `/**` outer, `//!` and `/*!` inner.
+_RUST_DOC_MARKERS = frozenset({"outer_doc_comment_marker", "inner_doc_comment_marker"})
 
 
 @dataclass
@@ -53,6 +67,53 @@ class CommentSyntax:
     string_delimiters: tuple[tuple[str, str], ...] = (('"', '"'), ("'", "'"))
     # Optional escape character that lets a quote be embedded in a string.
     string_escape: str | None = "\\"
+
+
+# ---------------------------------------------------------------------------
+# The comment nodes of a parsed file.
+# ---------------------------------------------------------------------------
+
+
+def tree_comments(root: Any, source: bytes) -> list[CommentToken]:
+    """
+    The comments of a parsed file, in source order, from the comment nodes of its syntax tree.
+
+    The tree says where a comment starts: a `//` in a string, a regular
+    expression or a template literal, and a `#` in a string, are no comment
+    node, which no scan of the text can promise. Columns are characters, as
+    the lines of the file are, not the bytes the tree counts.
+    """
+    out: list[CommentToken] = []
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node.type not in COMMENT_NODES:
+            stack.extend(reversed(node.children))
+            continue
+        raw = source[node.start_byte : node.end_byte].decode("utf-8", errors="replace").rstrip("\n")
+        before = source[node.start_byte - node.start_point[1] : node.start_byte].decode("utf-8", errors="replace")
+        is_block = raw.startswith("/*")
+        is_doc = any(child.type in _RUST_DOC_MARKERS for child in node.children) or (
+            is_block and raw.startswith("/**") and raw != "/**/"
+        )
+        if is_block:
+            text = raw[3 if is_doc else 2 :].removesuffix("*/")
+        elif raw.startswith("#"):
+            text = raw.lstrip("#")
+        else:
+            text = raw[3 if is_doc else 2 :]
+        out.append(
+            CommentToken(
+                line_number=node.start_point[0] + 1,
+                column=len(before),
+                text=text.strip(),
+                raw_text=raw,
+                is_inline=bool(before.strip()),
+                is_block=is_block,
+                is_doc_block=is_doc,
+            )
+        )
+    return out
 
 
 # ---------------------------------------------------------------------------

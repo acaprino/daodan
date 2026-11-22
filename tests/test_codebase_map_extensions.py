@@ -119,7 +119,7 @@ class KotlinLanguageTests(unittest.TestCase):
         self.assertNotIn("helper", result.exported_symbols)
         self.assertIsNotNone(result.semantic)
 
-    def test_kotlin_cross_file_semantic_resolution_and_regex_fallback(self):
+    def test_kotlin_cross_file_semantic_resolution_and_no_grammar(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "ktproj"
             (root / "src").mkdir(parents=True)
@@ -140,10 +140,9 @@ class KotlinLanguageTests(unittest.TestCase):
             self.assertTrue(calls[0]["target_id"].startswith("src/Ledger.kt::function@"))
 
         with mock.patch.object(_treesitter, "get_parser", return_value=None):
-            fallback = get_adapter("kotlin").parse(self.SOURCE, "src/Invoice.kt")
-            self.assertTrue(any("regex-fallback" in n for n in fallback.notes))
-            self.assertIn("Invoice", [c.name for c in fallback.classes])
-            self.assertTrue(all(c.end_line is None for c in fallback.classes))
+            unread = get_adapter("kotlin").parse(self.SOURCE, "src/Invoice.kt")
+            self.assertEqual(unread.notes[0], "parser=none")
+            self.assertEqual((unread.classes, unread.functions, unread.imports), ([], [], []))
 
 
 class CSharpLanguageTests(unittest.TestCase):
@@ -194,7 +193,7 @@ class CSharpLanguageTests(unittest.TestCase):
         self.assertEqual(methods["Helper"].visibility, "private")
         self.assertIsNotNone(result.semantic)
 
-    def test_csharp_semantics_resolve_internal_methods_and_regex_fallback(self):
+    def test_csharp_semantics_resolve_internal_methods_and_no_grammar(self):
         code = (
             "namespace Demo {\n"
             "  public class Service {\n"
@@ -215,10 +214,9 @@ class CSharpLanguageTests(unittest.TestCase):
             self.assertEqual(calls[0]["resolution"], "resolved")
 
         with mock.patch.object(_treesitter, "get_parser", return_value=None):
-            fallback = get_adapter("csharp").parse(self.SOURCE, "src/Invoice.cs")
-            self.assertTrue(any("regex-fallback" in n for n in fallback.notes))
-            self.assertIn("Invoice", [c.name for c in fallback.classes])
-            self.assertTrue(all(c.end_line is None for c in fallback.classes))
+            unread = get_adapter("csharp").parse(self.SOURCE, "src/Invoice.cs")
+            self.assertEqual(unread.notes[0], "parser=none")
+            self.assertEqual((unread.classes, unread.functions, unread.imports), ([], [], []))
 
 
 class SingleFileComponentTests(unittest.TestCase):
@@ -361,7 +359,6 @@ class SingleFileComponentTests(unittest.TestCase):
         source = '<div>first</div>\n---\nimport Header from "./Header.astro";\n---\n'
         result = get_adapter("astro").parse(source, "Late.astro")
         self.assertEqual(result.imports, [])
-        self.assertEqual(get_adapter("astro").count_imports(source), 0)
 
 
 class TauriCrossLanguageBridgeTests(unittest.TestCase):

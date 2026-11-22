@@ -279,7 +279,6 @@ class StylesheetAdapterTests(unittest.TestCase):
         ])
         self.assertEqual(result.constants, ["$gap", "--brand"])
         self.assertEqual(result.exported_symbols, ["btn-primary", "app", "x"])
-        self.assertEqual(get_adapter("css").count_imports(source), 4)
         # A top-level variable is a symbol, so editing its value is a change.
         self.assertIn(("$gap", "variable", 5, 5), symbols(result))
 

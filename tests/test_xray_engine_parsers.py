@@ -5,7 +5,6 @@ import sys
 import threading
 import tomllib
 import unittest
-from contextlib import nullcontext
 from pathlib import Path
 from unittest import mock
 
@@ -89,11 +88,14 @@ class AstParserTests(unittest.TestCase):
         self.assertEqual(result.exported_symbols, ["PublicEngine", "Renamed"])
         self.assertIsNone(result.default_export)
 
-    def test_reexport_bindings_are_preserved_without_a_native_grammar(self):
+    def test_a_reexport_is_not_read_without_a_native_grammar(self):
         for module, suffix in ((javascript, "js"), (typescript, "ts")):
             with self.subTest(language=module.adapter.language):
                 with mock.patch.object(module, "_ts_parse", return_value=None):
-                    self.assert_reexport_binding(module, suffix, "parser=regex-fallback")
+                    result = module.adapter.parse(
+                        "export { default as PublicEngine, Other as Renamed } from './core.js';\n", f"barrel.{suffix}")
+                self.assertEqual(result.notes[0], "parser=none")
+                self.assertEqual((result.imports, result.exported_symbols, result.default_export), ([], [], None))
 
     def test_reexport_bindings_match_the_native_parser(self):
         for module, suffix in ((javascript, "js"), (typescript, "ts")):
@@ -256,7 +258,7 @@ class AstParserTests(unittest.TestCase):
         js_result = javascript.adapter.parse("class Internal {}\nfunction helper() {}", "legacy.js")
         self.assertEqual(js_result.exported_symbols, ["Internal", "helper"])
 
-    def test_default_import_and_export_identity_survives_native_and_regex_parsers(self):
+    def test_default_import_and_export_identity_survives_the_native_parser(self):
         cases = [
             ("export default class Engine {}\nexport class Other {}", "Engine"),
             ("export default function build() {}\nexport function Other() {}", "build"),
@@ -267,25 +269,21 @@ class AstParserTests(unittest.TestCase):
         ]
         for module, suffix in ((javascript, "js"), (typescript, "ts")):
             self.require(module.adapter.language)
-            for fallback in (False, True):
-                with self.subTest(language=module.adapter.language, fallback=fallback):
-                    context = mock.patch.object(module, "_ts_parse", return_value=None) if fallback else nullcontext()
-                    with context:
-                        imported = module.adapter.parse(
-                            "import Renamed, { Other as Local } from './core.js';\n"
-                            "import { default as Alias, Helper } from './more.js';\n"
-                            "import Primary, { default as Second } from './same.js';\n"
-                            "import { default as Other, Other as Named } from './collision.js';", f"main.{suffix}")
-                        expected_parser = "parser=regex-fallback" if fallback else "parser=tree-sitter"
-                        self.assertTrue(imported.notes[0].startswith(expected_parser), imported.notes)
-                        self.assertEqual([(i.module, i.default_import, i.names) for i in imported.imports],
-                                         [("./core.js", "Renamed", ["Renamed", "Other"]),
-                                          ("./more.js", None, ["default", "Helper"]),
-                                          ("./same.js", "Primary", ["Primary", "default"]),
-                                          ("./collision.js", None, ["default", "Other"])])
-                        for source, expected in cases:
-                            with self.subTest(source=source):
-                                self.assertEqual(module.adapter.parse(source, f"core.{suffix}").default_export, expected)
+            with self.subTest(language=module.adapter.language):
+                imported = module.adapter.parse(
+                    "import Renamed, { Other as Local } from './core.js';\n"
+                    "import { default as Alias, Helper } from './more.js';\n"
+                    "import Primary, { default as Second } from './same.js';\n"
+                    "import { default as Other, Other as Named } from './collision.js';", f"main.{suffix}")
+                self.assertTrue(imported.notes[0].startswith("parser=tree-sitter"), imported.notes)
+                self.assertEqual([(i.module, i.default_import, i.names) for i in imported.imports],
+                                 [("./core.js", "Renamed", ["Renamed", "Other"]),
+                                  ("./more.js", None, ["default", "Helper"]),
+                                  ("./same.js", "Primary", ["Primary", "default"]),
+                                  ("./collision.js", None, ["default", "Other"])])
+                for source, expected in cases:
+                    with self.subTest(source=source):
+                        self.assertEqual(module.adapter.parse(source, f"core.{suffix}").default_export, expected)
 
     def test_rust_chained_call_order_skips_macro_and_closure_bodies(self):
         self.require("rust")
@@ -353,11 +351,11 @@ class AstParserTests(unittest.TestCase):
                          [("name", "String", None), ("rest", "int...", "var_positional")])
         self.assertEqual(method.decorators, ["@Override", "@Deprecated"])
 
-    def test_missing_grammar_still_returns_explicit_regex_provenance(self):
+    def test_missing_grammar_returns_explicit_unread_provenance(self):
         with mock.patch.object(javascript, "get_parser", return_value=None):
-            result = javascript.adapter.parse("function run() { fetch('/ok'); }", "fallback.js")
-        self.assertIn("parser=regex-fallback", result.notes)
-        self.assertEqual([f.name for f in result.functions], ["run"])
+            result = javascript.adapter.parse("function run() { fetch('/ok'); }", "unread.js")
+        self.assertEqual(result.notes[0], "parser=none")
+        self.assertEqual((result.functions, result.external_calls), ([], []))
 
 
 class PythonExtractionTests(unittest.TestCase):

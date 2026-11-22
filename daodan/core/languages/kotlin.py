@@ -1,5 +1,5 @@
 """
-Kotlin language adapter. Tree-sitter when available, regex fallback otherwise.
+Kotlin language adapter, read from the Tree-sitter tree; a file whose grammar does not load is reported unread.
 """
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ from . import _treesitter
 from ._treesitter import (
     check_syntax_errors,
     extract_ast_calls,
-    load_failure,
     node_text,
     scan_ast_external_calls,
 )
@@ -25,6 +24,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_c_style_comments
+from .reading import code_lines, unread
 from .semantic import kotlin_semantics
 
 __all__ = ["adapter"]
@@ -317,77 +317,6 @@ def _ts_parse(content: str) -> ParseResult | None:
     )
 
 
-_KT_IMPORT_RE = re.compile(r"^\s*import\s+([\w.]+(?:\.\*)?)", re.MULTILINE)
-_KT_CLASS_RE = re.compile(
-    r"^\s*(?:(?P<vis>public|private|protected|internal)\s+)?(?:data\s+|sealed\s+|open\s+|abstract\s+|value\s+)?"
-    r"(?P<kind>class|interface|object|enum\s+class|annotation\s+class)\s+(?P<name>\w+)"
-    r"(?:\s*\([^)]*\))?(?:\s*:\s*(?P<bases>[^{]+))?",
-    re.MULTILINE,
-)
-_KT_FUN_RE = re.compile(
-    r"^\s*(?:(?P<vis>public|private|protected|internal)\s+)?(?:override\s+)?(?P<suspend>suspend\s+)?"
-    r"fun\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)(?:\s*:\s*(?P<ret>[^\s{=]+))?",
-    re.MULTILINE,
-)
-
-
-def _regex_parse(content: str) -> ParseResult:
-    imports: list[ImportInfo] = []
-    for m in _KT_IMPORT_RE.finditer(content):
-        mod = m.group(1)
-        imports.append(ImportInfo(
-            module=mod.removesuffix(".*"),
-            names=["*"] if mod.endswith(".*") else [mod.rsplit(".", 1)[-1]],
-            is_from_import=True,
-            is_internal=_is_internal_import(mod),
-        ))
-
-    classes: list[ClassInfo] = []
-    exported: list[str] = []
-    for m in _KT_CLASS_RE.finditer(content):
-        vis_raw = m.group("vis") or "public"
-        vis = "protected" if vis_raw == "internal" else vis_raw
-        raw_kind = " ".join(m.group("kind").split())
-        kind = "interface" if raw_kind == "interface" else ("enum" if "enum" in raw_kind else ("annotation" if "annotation" in raw_kind else "class"))
-        bases = [b.split("(", 1)[0].strip() for b in (m.group("bases") or "").split(",") if b.strip()]
-        name = m.group("name")
-        classes.append(ClassInfo(
-            name=name,
-            bases=bases,
-            kind=kind,  # type: ignore[arg-type]
-            visibility=vis,  # type: ignore[arg-type]
-            line_number=content[:m.start()].count("\n") + 1,
-        ))
-        if vis == "public":
-            exported.append(name)
-
-    functions: list[FunctionInfo] = []
-    for m in _KT_FUN_RE.finditer(content):
-        vis_raw = m.group("vis") or "public"
-        vis = "protected" if vis_raw == "internal" else vis_raw
-        name = m.group("name")
-        functions.append(FunctionInfo(
-            name=name,
-            return_annotation=m.group("ret"),
-            is_async=bool(m.group("suspend")),
-            visibility=vis,  # type: ignore[arg-type]
-            line_number=content[:m.start()].count("\n") + 1,
-        ))
-        if vis == "public":
-            exported.append(name)
-
-    return ParseResult(
-        file_path="",
-        language=_LANGUAGE_NAME,
-        classes=classes,
-        functions=functions,
-        imports=imports,
-        exported_symbols=exported,
-        external_calls=_scan_external_calls(content),
-        notes=["parser=regex-fallback (tree-sitter unavailable)"],
-    )
-
-
 class _KotlinAdapter:
     language = _LANGUAGE_NAME
 
@@ -395,18 +324,12 @@ class _KotlinAdapter:
         _TS_ERROR_HOLDER.pop("last", None)
         result = _ts_parse(content)
         if result is None:
-            result = _regex_parse(content)
-            err = _TS_ERROR_HOLDER.pop("last", None)
-            if err is not None:
-                result.notes.append(f"tree-sitter raised: {err}")
-            reason = load_failure(_LANGUAGE_NAME)
-            if reason is not None:
-                result.notes.append(f"tree-sitter unavailable: {reason}")
+            result = unread(_LANGUAGE_NAME, _LANGUAGE_NAME, _TS_ERROR_HOLDER.pop("last", None))
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        return len(_KT_IMPORT_RE.findall(content))
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, _LANGUAGE_NAME)
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_c_style_comments(content)

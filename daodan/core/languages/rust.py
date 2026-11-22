@@ -1,5 +1,5 @@
 """
-Rust adapter. Tree-sitter when available, regex fallback otherwise.
+Rust adapter, read from the Tree-sitter tree; a file whose grammar does not load is reported unread.
 
 Covers: top-level `fn` declarations, `struct`/`enum`/`trait`/`impl`/`mod`/
 `union`/`type` items, `use` declarations (with crate/super/self -> internal
@@ -26,7 +26,6 @@ from ._treesitter import (
     check_syntax_errors,
     extract_ast_calls,
     get_parser,
-    load_failure,
     node_text,
     query_captures,
     scan_ast_external_calls,
@@ -40,6 +39,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_rust_comments
+from .reading import code_lines, unread
 from .semantic import rust_semantics
 
 __all__ = ["adapter"]
@@ -624,198 +624,6 @@ def _ts_parse(content: str, file_path: str) -> ParseResult | None:
 
 
 # ---------------------------------------------------------------------------
-# Regex fallback.
-# ---------------------------------------------------------------------------
-
-
-_FN_RE = re.compile(
-    r"^\s*(?P<vis>pub(?:\([^)]*\))?\s+)?"
-    r"(?P<mods>(?:async\s+|const\s+|unsafe\s+|extern\s+(?:\"[^\"]*\"\s+)?)*)"
-    r"fn\s+(?P<name>\w+)\s*(?:<[^>]*>)?\s*\((?P<params>[^)]*)\)"
-    r"(?:\s*->\s*(?P<ret>[^\{;]+))?",
-    re.MULTILINE,
-)
-_STRUCT_LIKE_RE = re.compile(
-    r"^\s*(?P<vis>pub(?:\([^)]*\))?\s+)?(?P<kind>struct|enum|trait|union|mod)\s+(?P<name>\w+)",
-    re.MULTILINE,
-)
-_IMPL_RE = re.compile(
-    r"^\s*impl(?:<[^>]*>)?\s+(?P<lhs>[\w:<>, ]+?)(?:\s+for\s+(?P<rhs>[\w:<>, ]+?))?\s*\{",
-    re.MULTILINE,
-)
-_TYPE_ALIAS_RE = re.compile(
-    r"^\s*(?P<vis>pub(?:\([^)]*\))?\s+)?type\s+(?P<name>\w+)(?:<[^>]*>)?\s*=",
-    re.MULTILINE,
-)
-_USE_RE = re.compile(
-    r"^\s*(?:pub(?:\([^)]*\))?\s+)?use\s+(?P<path>[\w:\*{},\s]+?)\s*;",
-    re.MULTILINE,
-)
-_CONST_RE = re.compile(
-    r"^\s*(?P<vis>pub(?:\([^)]*\))?\s+)?(?:const|static)\s+(?P<name>[A-Z_][A-Z0-9_]*)\s*:",
-    re.MULTILINE,
-)
-
-
-def _regex_parse(content: str) -> ParseResult:
-    classes: list[ClassInfo] = []
-    functions: list[FunctionInfo] = []
-    imports: list[ImportInfo] = []
-    constants: list[str] = []
-    exported: list[str] = []
-
-    def line_no(idx: int) -> int:
-        return content[:idx].count("\n") + 1
-
-    def parse_params(raw: str) -> list[ParameterInfo]:
-        params: list[ParameterInfo] = []
-        if not raw or not raw.strip():
-            return params
-        depth = 0
-        buf = []
-        pieces: list[str] = []
-        for ch in raw:
-            if ch in "(<":
-                depth += 1
-                buf.append(ch)
-            elif ch in ")>":
-                depth -= 1
-                buf.append(ch)
-            elif ch == "," and depth == 0:
-                pieces.append("".join(buf).strip())
-                buf = []
-            else:
-                buf.append(ch)
-        if buf:
-            pieces.append("".join(buf).strip())
-        for piece in pieces:
-            piece = piece.strip()
-            if not piece:
-                continue
-            if piece in ("self", "&self", "&mut self", "mut self"):
-                params.append(ParameterInfo(name=piece))
-                continue
-            if ":" in piece:
-                name, _, ann = piece.partition(":")
-                params.append(ParameterInfo(name=name.strip(), annotation=ann.strip()))
-            else:
-                params.append(ParameterInfo(name=piece))
-        return params
-
-    # Functions (top-level only -- impl-block methods are caught by _IMPL_RE).
-    seen_fn_positions: set[int] = set()
-    for m in _FN_RE.finditer(content):
-        # Track positions so we can later skip these when checking impl-block methods.
-        seen_fn_positions.add(m.start())
-        vis = _vis_from_modifier((m.group("vis") or "").strip())
-        mods = m.group("mods") or ""
-        is_async_fn = "async" in mods
-        params = parse_params(m.group("params") or "")
-        ret = (m.group("ret") or "").strip() or None
-        fn = FunctionInfo(
-            name=m.group("name"),
-            parameters=params,
-            return_annotation=ret,
-            is_async=is_async_fn,
-            visibility=vis,
-            line_number=line_no(m.start()),
-        )
-        functions.append(fn)
-        if vis == "public":
-            exported.append(fn.name)
-
-    # Struct/enum/trait/union/mod.
-    for m in _STRUCT_LIKE_RE.finditer(content):
-        vis = _vis_from_modifier((m.group("vis") or "").strip())
-        kind_raw = m.group("kind")
-        kind = "type-alias" if kind_raw == "type" else kind_raw
-        ci = ClassInfo(
-            name=m.group("name"),
-            kind=kind,
-            visibility=vis,
-            line_number=line_no(m.start()),
-        )
-        classes.append(ci)
-        if vis == "public":
-            exported.append(ci.name)
-
-    # impl blocks.
-    for m in _IMPL_RE.finditer(content):
-        lhs = m.group("lhs").strip()
-        rhs = m.group("rhs")
-        if rhs is not None:
-            name = f"{lhs} for {rhs.strip()}"
-        else:
-            name = lhs
-        classes.append(
-            ClassInfo(
-                name=name,
-                kind="impl",
-                line_number=line_no(m.start()),
-            )
-        )
-
-    # type aliases.
-    for m in _TYPE_ALIAS_RE.finditer(content):
-        vis = _vis_from_modifier((m.group("vis") or "").strip())
-        ci = ClassInfo(
-            name=m.group("name"),
-            kind="type-alias",
-            visibility=vis,
-            line_number=line_no(m.start()),
-        )
-        classes.append(ci)
-        if vis == "public":
-            exported.append(ci.name)
-
-    # use declarations.
-    for m in _USE_RE.finditer(content):
-        path = m.group("path").strip()
-        is_internal = _is_internal_use(path)
-        names: list[str] = []
-        sub = re.match(r"^(?P<base>[\w:]+)::\{(?P<list>[^}]+)\}$", path)
-        if sub:
-            base = sub.group("base")
-            names = [n.strip() for n in sub.group("list").split(",") if n.strip()]
-            imports.append(
-                ImportInfo(
-                    module=base,
-                    names=names,
-                    is_from_import=True,
-                    is_internal=_is_internal_use(base),
-                )
-            )
-        else:
-            imports.append(
-                ImportInfo(
-                    module=path,
-                    names=[path.rsplit("::", 1)[-1]] if "::" in path else [path],
-                    is_from_import=False,
-                    is_internal=is_internal,
-                )
-            )
-
-    # Constants and statics (UPPER_CASE only).
-    for m in _CONST_RE.finditer(content):
-        name = m.group("name")
-        constants.append(name)
-        if _vis_from_modifier((m.group("vis") or "").strip()) == "public":
-            exported.append(name)
-
-    return ParseResult(
-        file_path="",
-        language=_LANGUAGE_NAME,
-        classes=classes,
-        functions=functions,
-        imports=imports,
-        constants=list(dict.fromkeys(constants)),
-        external_calls=_scan_external_calls(content),
-        exported_symbols=list(dict.fromkeys(exported)),
-        notes=["parser=regex-fallback"],
-    )
-
-
-# ---------------------------------------------------------------------------
 
 
 class _RustAdapter:
@@ -825,31 +633,12 @@ class _RustAdapter:
         _TS_ERROR_HOLDER.pop("last", None)
         result = _ts_parse(content, file_path)
         if result is None:
-            result = _regex_parse(content)
-            err = _TS_ERROR_HOLDER.pop("last", None)
-            if err is not None:
-                result.notes.append(f"tree-sitter raised: {err}")
-            reason = load_failure(_LANGUAGE_NAME)
-            if reason is not None:
-                result.notes.append(f"tree-sitter unavailable: {reason}")
+            result = unread(_LANGUAGE_NAME, _LANGUAGE_NAME, _TS_ERROR_HOLDER.pop("last", None))
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        return len(_USE_RE.findall(content))
-
-    def strip_comments_and_blanks(self, content: str) -> int:
-        # Strip /* ... */ blocks, then count non-empty, non-// lines.
-        no_blocks = re.sub(r"/\*[\s\S]*?\*/", "", content)
-        code = 0
-        for line in no_blocks.split("\n"):
-            s = line.strip()
-            if not s:
-                continue
-            if s.startswith("//"):
-                continue
-            code += 1
-        return code
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, _LANGUAGE_NAME)
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_rust_comments(content)

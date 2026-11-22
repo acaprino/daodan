@@ -1153,12 +1153,9 @@ class _StylesheetAdapter:
         result.exported_symbols = list(exported)
         return result
 
-    # The three methods below serve callers that count lines and comments. With
+    # The two methods below serve callers that count lines and comments. With
     # no path they read plain CSS, where `//` is never a comment; a caller that
     # knows the file passes it, so SCSS and LESS comments are read as comments.
-
-    def count_imports(self, content: str, file_path: str | None = None) -> int:
-        return len(parse_sheet(content, dialect_for(file_path) if file_path else "css").imports)
 
     def strip_comments_and_blanks(self, content: str, file_path: str | None = None) -> int:
         return len(parse_sheet(content, dialect_for(file_path) if file_path else "css").code_lines)

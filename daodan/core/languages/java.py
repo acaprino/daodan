@@ -1,6 +1,6 @@
 """
-Java language adapter. Tree-sitter is used when available; otherwise a regex
-fallback extracts classes, methods, imports, and common external calls.
+Java language adapter, read from the Tree-sitter tree; a file whose grammar does
+not load is reported unread (`languages/reading.py`).
 """
 
 from __future__ import annotations
@@ -13,7 +13,6 @@ from ._treesitter import (
     check_syntax_errors,
     extract_ast_calls,
     get_parser,
-    load_failure,
     node_text,
     scan_ast_external_calls,
 )
@@ -26,6 +25,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_c_style_comments
+from .reading import code_lines, unread
 from .semantic import java_semantics
 
 __all__ = ["adapter"]
@@ -40,7 +40,7 @@ def _is_internal_import(module: str) -> bool:
     return not module.startswith(_JAVA_STDLIB_PREFIXES) and not module.startswith("org.")
 
 
-# Heuristics for external calls (work both for tree-sitter and regex paths).
+# Heuristics for external calls, applied to the callee name of a call node of the tree.
 _DB_HINTS = re.compile(
     r"\b(?:Connection|PreparedStatement|Statement|ResultSet|EntityManager|JdbcTemplate|MongoClient|Repository|Session|"
     r"executeQuery|executeUpdate|prepareStatement|createStatement|persist|merge|find|findAll|save|delete)\b"
@@ -114,9 +114,9 @@ def _ts_parse(content: str) -> ParseResult | None:
         tree = parser.parse(src)
     except Exception as e:
         # Tree-sitter MAY raise on extreme input (deep recursion, encoding).
-        # parse() is contractually non-raising; signal caller to fall back to
-        # regex parsing by returning None, and record the error so _JavaAdapter
-        # can annotate the result's `notes`.
+        # parse() is contractually non-raising; return None to say no tree was
+        # read, and record the error so _JavaAdapter can annotate the result's
+        # `notes`.
         _TS_ERROR_HOLDER["last"] = f"{type(e).__name__}: {e}"
         return None
 
@@ -364,135 +364,6 @@ def _ts_parse(content: str) -> ParseResult | None:
 
 
 # ---------------------------------------------------------------------------
-# Regex fallback.
-# ---------------------------------------------------------------------------
-
-
-_IMPORT_RE = re.compile(r"^\s*import\s+(?:static\s+)?([\w.]+(?:\.\*)?)\s*;", re.MULTILINE)
-_CLASS_RE = re.compile(
-    r"^\s*(?P<vis>public\s+|protected\s+|private\s+)?"
-    r"(?:abstract\s+|final\s+|static\s+|sealed\s+|non-sealed\s+)*"
-    r"(?P<kind>class|interface|enum|record|@interface)\s+(?P<name>\w+)"
-    # A generic parameter list sits between the name and the clauses:
-    # `class Svc<T extends Comparable<T>>`. Without this the fallback
-    # skipped every generic class and reported only its nested types.
-    r"(?:\s*<[^{;]*>)?"
-    r"(?:\s+extends\s+(?P<ext>[\w<>,\s.]+?))?"
-    r"(?:\s+implements\s+(?P<impl>[\w<>,\s.]+?))?"
-    r"\s*[\{(]",
-    re.MULTILINE,
-)
-_METHOD_RE = re.compile(
-    r"^\s*(?P<vis>public\s+|protected\s+|private\s+)?"
-    r"(?P<mods>(?:static\s+|final\s+|abstract\s+|synchronized\s+|default\s+|native\s+)*)"
-    r"(?P<ret>[\w<>\[\],?\s.]+?)\s+(?P<name>\w+)\s*\((?P<params>[^)]*)\)"
-    r"(?:\s+throws\s+[\w,\s.]+)?\s*[\{;]",
-    re.MULTILINE,
-)
-_CONSTANT_RE = re.compile(
-    r"^\s*(?:public\s+|protected\s+|private\s+)?static\s+final\s+[\w<>\[\],?\s.]+\s+(?P<name>[A-Z_][A-Z0-9_]*)\s*[=;]",
-    re.MULTILINE,
-)
-
-
-def _regex_parse(content: str) -> ParseResult:
-    imports: list[ImportInfo] = []
-    for m in _IMPORT_RE.finditer(content):
-        full = m.group(1)
-        module = full.rsplit(".", 1)[0] if "." in full else full
-        name = full.rsplit(".", 1)[-1]
-        imports.append(
-            ImportInfo(
-                module=module,
-                names=[name],
-                is_from_import=True,
-                is_internal=_is_internal_import(module),
-            )
-        )
-
-    classes: list[ClassInfo] = []
-    exported: list[str] = []
-    for m in _CLASS_RE.finditer(content):
-        visibility = (m.group("vis") or "").strip() or None
-        kind_raw = m.group("kind")
-        kind = {"@interface": "annotation"}.get(kind_raw, kind_raw)
-        name = m.group("name")
-        bases: list[str] = []
-        if m.group("ext"):
-            bases.extend(b.strip() for b in m.group("ext").split(",") if b.strip())
-        if m.group("impl"):
-            bases.extend(b.strip() for b in m.group("impl").split(",") if b.strip())
-        cls = ClassInfo(
-            name=name,
-            bases=bases,
-            methods=[],
-            class_variables=[],
-            kind=kind,
-            visibility=visibility,
-            line_number=content[: m.start()].count("\n") + 1,
-        )
-        classes.append(cls)
-        if visibility in (None, "public"):
-            exported.append(name)
-
-    # Methods (associated to the nearest preceding class - rough but useful).
-    if classes:
-        for m in _METHOD_RE.finditer(content):
-            name = m.group("name")
-            # Skip control keywords mis-matched as return-type/name pairs.
-            if name in {"if", "for", "while", "switch", "catch", "return", "synchronized"}:
-                continue
-            visibility = (m.group("vis") or "").strip() or None
-            mods = m.group("mods") or ""
-            params_raw = (m.group("params") or "").strip()
-            params: list[ParameterInfo] = []
-            if params_raw:
-                for piece in params_raw.split(","):
-                    piece = piece.strip()
-                    if not piece:
-                        continue
-                    tokens = piece.split()
-                    if len(tokens) >= 2:
-                        ann = " ".join(tokens[:-1])
-                        pname = tokens[-1].lstrip("...")
-                        params.append(ParameterInfo(name=pname, annotation=ann))
-                    else:
-                        params.append(ParameterInfo(name=piece))
-            line_no = content[: m.start()].count("\n") + 1
-            method = FunctionInfo(
-                name=name,
-                parameters=params,
-                return_annotation=(m.group("ret") or "").strip() or None,
-                is_async=False,
-                is_classmethod=False,
-                is_staticmethod="static" in mods,
-                visibility=visibility,
-                line_number=line_no,
-            )
-            # Attach to last class whose line_number is <= method line.
-            owner = None
-            for cls in classes:
-                if cls.line_number <= line_no:
-                    owner = cls
-            if owner is not None:
-                owner.methods.append(method)
-
-    constants = list({m.group("name") for m in _CONSTANT_RE.finditer(content)})
-
-    return ParseResult(
-        file_path="",
-        language="java",
-        classes=classes,
-        functions=[],
-        imports=imports,
-        constants=constants,
-        external_calls=_scan_external_calls(content),
-        exported_symbols=exported,
-        notes=["parser=regex-fallback"],
-    )
-
-
-# ---------------------------------------------------------------------------
 
 
 class _JavaAdapter:
@@ -502,31 +373,12 @@ class _JavaAdapter:
         _TS_ERROR_HOLDER.pop("last", None)
         result = _ts_parse(content)
         if result is None:
-            result = _regex_parse(content)
-            err = _TS_ERROR_HOLDER.pop("last", None)
-            if err is not None:
-                result.notes.append(f"tree-sitter raised: {err}")
-            reason = load_failure("java")
-            if reason is not None:
-                result.notes.append(f"tree-sitter unavailable: {reason}")
+            result = unread("java", "java", _TS_ERROR_HOLDER.pop("last", None))
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        return len(_IMPORT_RE.findall(content))
-
-    def strip_comments_and_blanks(self, content: str) -> int:
-        # Strip /* ... */ blocks, then count non-empty, non-// lines.
-        no_blocks = re.sub(r"/\*[\s\S]*?\*/", "", content)
-        code = 0
-        for line in no_blocks.split("\n"):
-            s = line.strip()
-            if not s:
-                continue
-            if s.startswith("//"):
-                continue
-            code += 1
-        return code
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, "java")
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_c_style_comments(content)

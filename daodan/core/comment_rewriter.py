@@ -22,21 +22,30 @@ BAD (to remove/rewrite):
 
 Multi-language: Python, Java, JavaScript, TypeScript, SQL, PL/SQL, Rust. Stylesheets
 (CSS, SCSS, LESS) are analyzed and never rewritten.
-Per-language comment extraction is delegated to
-languages.<lang>.adapter.extract_comments(). Classification uses regex patterns
-that are largely language-agnostic.
+
+Source is read from the syntax tree, never with expressions (AGENTS.md): the tree gives the comments, says whether a
+comment body is code (it parses clean as a statement that does something) and which code a trailing comment
+restates (the nodes starting on its line). Where the grammar does not load nothing is guessed: the file is left
+alone and the analysis says so. A comment's own prose (debt, checklist, why words) has no grammar and is read
+with words. The other languages are read through languages.<lang>.adapter.extract_comments() and
+classified by their prose alone.
 """
 
 from __future__ import annotations
 
 import logging
 import re
+import textwrap
+from bisect import bisect_left
 from dataclasses import dataclass, field
 from enum import Enum
+from itertools import takewhile
 from pathlib import Path
+from typing import Any
 
-from languages import detect_language, get_adapter
-from languages.comments import CommentToken
+from languages import _treesitter, detect_language, get_adapter
+from languages.comments import COMMENT_NODES, CommentToken, tree_comments
+from source_files import MAX_PARSE_BYTES
 
 __all__ = [
     "CommentType",
@@ -75,6 +84,7 @@ class CommentType(Enum):
     TRIVIAL = "trivial"
     DEBT = "debt"
     BACKUP = "backup"
+    DIRECTIVE = "directive"
     UNKNOWN = "unknown"
 
 
@@ -112,6 +122,8 @@ class CommentAnalysis:
     by_type: dict[str, int] = field(default_factory=dict)
     by_classification: dict[str, int] = field(default_factory=dict)
     issues: list[str] = field(default_factory=list)
+    # Why the file's grammar could not read it: commented-out code and restated lines were then not looked for.
+    gap: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -171,103 +183,93 @@ _GUIDE_PATTERNS = [
     re.compile(r"^[\s]*[/*]+ "),
 ]
 
-# Per-language commented-out code patterns.
-# The CommentToken.raw_text contains the original markers, so we match on the
-# raw_text. Each pattern detects "this comment body looks like real code".
-_CODE_PATTERNS_BY_LANG: dict[str, list[re.Pattern[str]]] = {
-    "python": [
-        re.compile(r"^\s*#\s*(?:def|class|import|from|if|for|while|try|except|with|return|yield|raise|async\s+def)\b", re.IGNORECASE),
-        re.compile(r"^\s*#\s*\w+\s*[=(]"),
-        re.compile(r"^\s*#\s*\w+(?:\.\w+)+\("),
-        re.compile(r"^\s*#\s*@\w+"),
-    ],
-    "java": [
-        re.compile(r"^\s*//\s*(?:public|private|protected|class|interface|enum|return|if|for|while|try|catch|throw|new)\b"),
-        re.compile(r"^\s*//\s*\w+\s*[=(]"),
-        re.compile(r"^\s*//\s*\w+(?:\.\w+)+\("),
-        re.compile(r"^\s*//\s*@\w+"),
-    ],
-    "javascript": [
-        re.compile(r"^\s*//\s*(?:const|let|var|function|class|return|if|for|while|try|catch|throw|new|async\s+function|export|import)\b"),
-        re.compile(r"^\s*//\s*\w+\s*[=(]"),
-        re.compile(r"^\s*//\s*\w+(?:\.\w+)+\("),
-        re.compile(r"^\s*//\s*@\w+"),
-    ],
-    "typescript": [
-        re.compile(r"^\s*//\s*(?:const|let|var|function|class|interface|enum|type|return|if|for|while|try|catch|throw|new|async\s+function|export|import)\b"),
-        re.compile(r"^\s*//\s*\w+\s*[=(]"),
-        re.compile(r"^\s*//\s*\w+(?:\.\w+)+\("),
-        re.compile(r"^\s*//\s*@\w+"),
-    ],
-    "sql": [
-        re.compile(r"^\s*--\s*(?:SELECT|INSERT|UPDATE|DELETE|MERGE|CREATE|ALTER|DROP|GRANT|REVOKE|COMMIT|ROLLBACK|CALL)\b", re.IGNORECASE),
-    ],
-    "plsql": [
-        re.compile(r"^\s*--\s*(?:DECLARE|BEGIN|END|EXCEPTION|PROCEDURE|FUNCTION|PACKAGE|TYPE|CURSOR|RETURN|RAISE|IF|FOR|WHILE|LOOP|CALL|EXEC|SELECT|INSERT|UPDATE|DELETE|MERGE|CREATE|ALTER|DROP|GRANT|REVOKE|COMMIT|ROLLBACK)\b", re.IGNORECASE),
-    ],
-    "rust": [
-        re.compile(r"^\s*//\s*(?:pub|fn|struct|enum|trait|impl|mod|use|let|const|static|return|if|for|while|match|loop|unsafe|async|await|extern)\b"),
-        re.compile(r"^\s*//\s*\w+\s*[=(]"),
-        re.compile(r"^\s*//\s*\w+(?:::\w+)+\s*[\(<]"),
-        re.compile(r"^\s*//\s*#\["),  # attribute
-    ],
-}
+# The languages whose comments are read against the syntax tree of the file: whether a comment is commented-out code,
+# and which code a trailing comment restates, are questions for the grammar. The other languages (Go, Kotlin, C#, C,
+# C++, the single-file components, markup, stylesheets) were never read as code and are not now.
+_READ_AS_CODE = frozenset({"python", "java", "javascript", "typescript", "sql", "plsql", "rust"})
 
-# Per-language trivial comment indicators: (comment_pattern, code_pattern).
-# Matches when the inline comment paraphrases what the same line of code says.
-_TRIVIAL_INDICATORS_BY_LANG: dict[str, list[tuple[re.Pattern[str], re.Pattern[str]]]] = {
-    "python": [
-        (re.compile(r"#\s*increment\b", re.IGNORECASE), re.compile(r"\+\+|\+=\s*1")),
-        (re.compile(r"#\s*decrement\b", re.IGNORECASE), re.compile(r"--|-=\s*1")),
-        (re.compile(r"#\s*return\b", re.IGNORECASE), re.compile(r"\breturn\b")),
-        (re.compile(r"#\s*loop\b", re.IGNORECASE), re.compile(r"\bfor\b|\bwhile\b")),
-        (re.compile(r"#\s*import\b", re.IGNORECASE), re.compile(r"\bimport\b")),
-        (re.compile(r"#\s*set\s+\w+", re.IGNORECASE), re.compile(r"=")),
-        (re.compile(r"#\s*call\s+\w+", re.IGNORECASE), re.compile(r"\(")),
-        (re.compile(r"#\s*if\s+\w+", re.IGNORECASE), re.compile(r"\bif\b")),
-    ],
-    "java": [
-        (re.compile(r"//\s*increment\b", re.IGNORECASE), re.compile(r"\+\+|\+=\s*1")),
-        (re.compile(r"//\s*decrement\b", re.IGNORECASE), re.compile(r"--|-=\s*1")),
-        (re.compile(r"//\s*return\b", re.IGNORECASE), re.compile(r"\breturn\b")),
-        (re.compile(r"//\s*loop\b", re.IGNORECASE), re.compile(r"\bfor\b|\bwhile\b")),
-        (re.compile(r"//\s*set\s+\w+", re.IGNORECASE), re.compile(r"=")),
-        (re.compile(r"//\s*new\b", re.IGNORECASE), re.compile(r"\bnew\b")),
-    ],
-    "javascript": [
-        (re.compile(r"//\s*increment\b", re.IGNORECASE), re.compile(r"\+\+|\+=\s*1")),
-        (re.compile(r"//\s*decrement\b", re.IGNORECASE), re.compile(r"--|-=\s*1")),
-        (re.compile(r"//\s*return\b", re.IGNORECASE), re.compile(r"\breturn\b")),
-        (re.compile(r"//\s*loop\b", re.IGNORECASE), re.compile(r"\bfor\b|\bwhile\b")),
-        (re.compile(r"//\s*import\b", re.IGNORECASE), re.compile(r"\bimport\b|\brequire\(")),
-    ],
-    "typescript": [
-        (re.compile(r"//\s*increment\b", re.IGNORECASE), re.compile(r"\+\+|\+=\s*1")),
-        (re.compile(r"//\s*decrement\b", re.IGNORECASE), re.compile(r"--|-=\s*1")),
-        (re.compile(r"//\s*return\b", re.IGNORECASE), re.compile(r"\breturn\b")),
-        (re.compile(r"//\s*loop\b", re.IGNORECASE), re.compile(r"\bfor\b|\bwhile\b")),
-        (re.compile(r"//\s*import\b", re.IGNORECASE), re.compile(r"\bimport\b|\brequire\(")),
-    ],
-    "sql": [
-        (re.compile(r"--\s*select\b", re.IGNORECASE), re.compile(r"\bSELECT\b", re.IGNORECASE)),
-        (re.compile(r"--\s*insert\b", re.IGNORECASE), re.compile(r"\bINSERT\b", re.IGNORECASE)),
-        (re.compile(r"--\s*update\b", re.IGNORECASE), re.compile(r"\bUPDATE\b", re.IGNORECASE)),
-        (re.compile(r"--\s*delete\b", re.IGNORECASE), re.compile(r"\bDELETE\b", re.IGNORECASE)),
-    ],
-    "plsql": [
-        (re.compile(r"--\s*begin\b", re.IGNORECASE), re.compile(r"\bBEGIN\b", re.IGNORECASE)),
-        (re.compile(r"--\s*end\b", re.IGNORECASE), re.compile(r"\bEND\b", re.IGNORECASE)),
-        (re.compile(r"--\s*raise\b", re.IGNORECASE), re.compile(r"\bRAISE\b", re.IGNORECASE)),
-    ],
-    "rust": [
-        (re.compile(r"//\s*increment\b", re.IGNORECASE), re.compile(r"\+\+|\+=\s*1")),
-        (re.compile(r"//\s*decrement\b", re.IGNORECASE), re.compile(r"--|-=\s*1")),
-        (re.compile(r"//\s*return\b", re.IGNORECASE), re.compile(r"\breturn\b")),
-        (re.compile(r"//\s*loop\b", re.IGNORECASE), re.compile(r"\bfor\b|\bwhile\b|\bloop\b")),
-        (re.compile(r"//\s*use\b", re.IGNORECASE), re.compile(r"\buse\b")),
-        (re.compile(r"//\s*match\b", re.IGNORECASE), re.compile(r"\bmatch\b")),
-    ],
+# The nodes of a clean parse that do something: a comment body with one at its top level is code. What parses clean as
+# prose (a lone name, `a.b`, `yes or no`, a labeled statement, `Note: retry`, `--- reads ---`) has none of them.
+# `_NEEDS_FIELD`: a node counts only with the field it names (`x: int` is an annotation, `new thing` a name).
+# `_LITERALS`: a call whose callee is one is no call (a name and a quotation in backticks parse as a tagged template).
+_DOES_SOMETHING = frozenset({
+    # python
+    "assignment", "augmented_assignment", "call", "await", "yield", "import_statement", "import_from_statement",
+    "future_import_statement", "if_statement", "for_statement", "while_statement", "try_statement", "with_statement",
+    "match_statement", "function_definition", "class_definition", "decorated_definition", "return_statement",
+    "raise_statement", "assert_statement", "delete_statement", "global_statement", "nonlocal_statement",
+    # javascript and typescript
+    "lexical_declaration", "variable_declaration", "assignment_expression", "augmented_assignment_expression",
+    "call_expression", "new_expression", "await_expression", "yield_expression",
+    "export_statement", "for_in_statement", "do_statement", "switch_statement", "throw_statement",
+    "function_declaration", "generator_function_declaration", "class_declaration", "abstract_class_declaration",
+    "interface_declaration", "type_alias_declaration", "enum_declaration",
+    # java
+    "local_variable_declaration", "method_invocation", "object_creation_expression", "import_declaration",
+    "package_declaration", "enhanced_for_statement", "try_with_resources_statement", "method_declaration",
+    "constructor_declaration", "field_declaration", "record_declaration",
+    # rust
+    "let_declaration", "macro_invocation", "compound_assignment_expr", "use_declaration", "function_item",
+    "struct_item", "enum_item", "impl_item", "trait_item", "mod_item", "const_item", "static_item", "type_item",
+    "return_expression", "if_expression", "for_expression", "while_expression", "loop_expression",
+    "match_expression", "unsafe_block", "attribute_item",
+    # sql
+    "statement",
+})
+_NEEDS_FIELD = {"assignment": "right", "new_expression": "arguments"}
+# `cython: language_level=3`, `vim: ts=4` and `TODO: retries = 3` parse as an annotated assignment, which a tool or a
+# note writes far more often than a program does: an assignment with a type annotation is not commented-out code.
+_NOT_WITH_FIELD = {"assignment": "type"}
+_LITERALS = frozenset({"template_string", "string", "number", "regex", "true", "false", "null"})
+
+# What a trailing comment says in its first word, and the nodes (or operator tokens) of its line that say it too.
+_STEPS = {"increment": frozenset({"++", "+="}), "decrement": frozenset({"--", "-="})}
+_RESTATES: dict[str, dict[str, frozenset[str]]] = {
+    "python": {
+        **_STEPS,
+        "return": frozenset({"return_statement"}),
+        "loop": frozenset({"for_statement", "while_statement", "for_in_clause"}),
+        "import": frozenset({"import_statement", "import_from_statement", "future_import_statement"}),
+        "set": frozenset({"="}),
+        "call": frozenset({"call"}),
+        "if": frozenset({"if_statement"}),
+    },
+    "java": {
+        **_STEPS,
+        "return": frozenset({"return_statement"}),
+        "loop": frozenset({"for_statement", "enhanced_for_statement", "while_statement"}),
+        "set": frozenset({"="}),
+        "new": frozenset({"object_creation_expression"}),
+    },
+    "javascript": {
+        **_STEPS,
+        "return": frozenset({"return_statement"}),
+        "loop": frozenset({"for_statement", "for_in_statement", "while_statement"}),
+        "import": frozenset({"import_statement"}),
+    },
+    "rust": {
+        "increment": frozenset({"+="}),
+        "decrement": frozenset({"-="}),
+        "return": frozenset({"return_expression"}),
+        "loop": frozenset({"for_expression", "while_expression", "loop_expression"}),
+        "use": frozenset({"use_declaration"}),
+        "match": frozenset({"match_expression"}),
+    },
+    "sql": {name: frozenset({name}) for name in ("select", "insert", "update", "delete")},
 }
+_RESTATES["typescript"] = _RESTATES["javascript"]
+
+# A comment is an extra to every parser, so no grammar tells a tool directive from prose: the names the tools read are
+# data. They are looked for anywhere in the lowercased body: a comment kept by mistake costs one line, a directive
+# deleted changes what the compiler or linter does. A body that opens with `+` is a SQL hint, with `!` a shebang.
+_DIRECTIVES = (
+    "@ts-", "eslint", "tslint", "biome-ignore", "prettier-ignore", "istanbul", "c8 ignore", "v8 ignore", "@vite-ignore",
+    "webpackchunkname", "@flow", "@jsx", "@license", "@preserve", "sourcemappingurl", "<reference", "#__pure__",
+    "@__pure__", "noqa", "type: ignore", "pylint:", "mypy:", "pyright:", "flake8:", "ruff:", "isort:", "fmt: ",
+    "nosec", "pragma", "coding:", "coding=", "nopmd", "checkstyle", "noinspection", "@formatter", "rustfmt",
+    "clippy", "sqlfluff", "nolint", "#region", "#endregion", "editor-fold", "language=", "vim:", "-*-", "cython:", "pytype:", "pyre-",
+)
+_DIRECTIVE_OPENERS = ("+", "!")
 
 _DEBT_REMOVAL_PATTERN = re.compile(
     r"\b(?:TODO|FIXME|XXX|HACK|BUG|WORKAROUND|TEMP|TEMPORARY)\b:?\s*",
@@ -360,6 +362,156 @@ FORMAT_UNDONE = ("Formatting left undone: a formatter runs the project's configu
 
 
 # ---------------------------------------------------------------------------
+# Reading the syntax tree.
+# ---------------------------------------------------------------------------
+
+
+def _is_directive(text_lower: str) -> bool:
+    return text_lower.startswith(_DIRECTIVE_OPENERS) or any(name in text_lower for name in _DIRECTIVES)
+
+
+def _first_word(text: str) -> str:
+    return "".join(takewhile(lambda ch: ch.isalnum() or ch == "_", text.lower()))
+
+
+def _is_statement(node: Any) -> bool:
+    """Whether `node` is a statement that does something (see `_DOES_SOMETHING`)."""
+    if node.type not in _DOES_SOMETHING:
+        return False
+    field = _NEEDS_FIELD.get(node.type)
+    if field is not None and node.child_by_field_name(field) is None:
+        return False
+    barred = _NOT_WITH_FIELD.get(node.type)
+    if barred is not None and node.child_by_field_name(barred) is not None:
+        return False
+    if node.type == "call_expression":  # a template literal is no callee, and ``Swift `repos[0]` `` is a tag, not a call
+        callee, arguments = node.child_by_field_name("function"), node.child_by_field_name("arguments")
+        return callee is not None and callee.type not in _LITERALS and (
+            arguments is None or arguments.type != "template_string"
+        )
+    return True
+
+
+def _statement_rows(root: Any) -> set[int]:
+    """The rows of the parsed body that hold a statement that does something, at the top level, where JavaScript,
+    Java and Rust wrap an expression in its `expression_statement`. A call inside a sum is no statement."""
+    rows: set[int] = set()
+    for top in root.children:
+        node = next(iter(top.named_children), top) if top.type == "expression_statement" else top
+        if _is_statement(node):
+            rows.update(range(top.start_point[0], top.end_point[0] + 1))
+    return rows
+
+
+def _nodes_by_row(root: Any, rows: set[int]) -> dict[int, list[Any]]:
+    """The nodes that start on each of `rows`, comments left out. A region the grammar could not read (an ERROR
+    node) gives none: what the code on its lines is cannot be said from it."""
+    wanted = sorted(rows)
+    found: dict[int, list[Any]] = {row: [] for row in wanted}
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node.type in COMMENT_NODES or node.type == "ERROR":
+            continue
+        first, last = node.start_point[0], node.end_point[0]
+        at = bisect_left(wanted, first)
+        if at == len(wanted) or wanted[at] > last:
+            continue
+        if first in found:
+            found[first].append(node)
+        stack.extend(node.children)
+    return found
+
+
+def _units(tokens: list[CommentToken]) -> list[list[CommentToken]]:
+    """The comments a commented-out block is read in: a run of stand-alone line comments on consecutive lines of
+    one column, or one trailing comment. Block comments and doc comments are never code."""
+    units: list[list[CommentToken]] = []
+    run: list[CommentToken] = []
+    for token in tokens:
+        if token.is_block or token.is_doc_block:
+            run = []
+        elif token.is_inline:
+            units.append([token])
+            run = []
+        elif run and run[-1].line_number + 1 == token.line_number and run[-1].column == token.column:
+            run.append(token)
+        else:
+            run = [token]
+            units.append(run)
+    return units
+
+
+class _Reading:
+    """A file's syntax tree and what it says of the comments in it."""
+
+    def __init__(self, parser: Any, source: bytes, language: str) -> None:
+        self._parser = parser
+        self._language = language
+        root = parser.parse(source).root_node
+        self.tokens = tree_comments(root, source)
+        self.code = self._commented_out_code()
+        self._rows = _nodes_by_row(
+            root, {t.line_number - 1 for t in self.tokens if t.is_inline and not t.is_block}
+        )
+
+    @classmethod
+    def open(cls, content: str, language: str, file_path: str) -> _Reading | str:
+        """The reading of `content`, or why its grammar could not read it."""
+        # A `.tsx` file is the TypeScript the `typescript` grammar does not read: JSX has a grammar of its own.
+        grammar = "tsx" if language == "typescript" and file_path.lower().endswith(".tsx") else language
+        pair = _treesitter.get_parser(grammar)
+        if pair is None:
+            reason = _treesitter.load_failure(grammar)
+            return f"the {language} grammar is not available" + (f" ({reason})" if reason else "")
+        source = content.encode("utf-8")
+        if len(source) > MAX_PARSE_BYTES:  # the snapshot parses no source above this size either
+            return f"the file exceeds the parsing size limit ({MAX_PARSE_BYTES:,} bytes)"
+        return cls(pair[0], source, language)
+
+    def _commented_out_code(self) -> set[tuple[int, int]]:
+        """The (line, column) of the comments that are code: the rows of a unit that parses clean that hold a
+        statement doing something, or else each comment that does alone. A line of a clean unit that no such
+        statement holds (`TODO: re-enable` above `check(x)`) is prose and stays."""
+        code: set[tuple[int, int]] = set()
+        for unit in _units(self.tokens):
+            rows = self._code_rows(unit)
+            if rows is None and len(unit) > 1:
+                rows = {at for at, token in enumerate(unit) if self._code_rows([token])}
+            code.update((unit[at].line_number, unit[at].column) for at in rows or ())
+        return code
+
+    def _code_rows(self, unit: list[CommentToken]) -> set[int] | None:
+        """The rows of `unit` that are code, its body parsed with the grammar of the file; None if it parses with an
+        error."""
+        marker = _line_marker_for(self._language)
+        lines = textwrap.dedent("\n".join(t.raw_text.removeprefix(marker) for t in unit)).split("\n")
+        root = self._parser.parse("\n".join(lines).encode("utf-8")).root_node
+        if root.has_error:
+            return None
+        rows = _statement_rows(root)
+        if rows:  # a bare `#` between two statements goes with them
+            rows |= {at for at in range(min(rows), max(rows)) if not lines[at].strip()}
+        return rows
+
+    def restates(self, token: CommentToken) -> bool:
+        """Whether a trailing comment opens with the word of a node that starts on its line: the code says it."""
+        if not token.is_inline or token.is_block:
+            return False
+        word = _first_word(token.text)
+        types = _RESTATES.get(self._language, {}).get(word)
+        if not types:
+            return False
+        nodes = self._rows.get(token.line_number - 1, [])
+        return any(node.type in types for node in nodes) or (word == "import" and any(self._requires(n) for n in nodes))
+
+    def _requires(self, node: Any) -> bool:
+        """A call of `require`: CommonJS's spelling of an import."""
+        callee = node.child_by_field_name("function") if node.type == "call_expression" else None
+        return callee is not None and callee.type == "identifier" and callee.text == b"require"
+
+
+# ---------------------------------------------------------------------------
 # Classification.
 # ---------------------------------------------------------------------------
 
@@ -367,17 +519,18 @@ FORMAT_UNDONE = ("Formatting left undone: a formatter runs the project's configu
 def classify_comment(
     token: CommentToken,
     language: str,
-    line_content: str | None = None,
+    reading: _Reading | None = None,
 ) -> tuple[CommentType, CommentClassification, str]:
     """
     Classify a comment according to antirez taxonomy.
 
     Doc blocks (JSDoc / Javadoc) and Python docstrings are treated as
     "function" comments. SQL header blocks (/* ... */ at file start, or
-    long top-level block comments) are treated as "design".
+    long top-level block comments) are treated as "design". `reading` is the
+    file's syntax tree: without it no comment is judged to be code or to
+    restate its line.
     """
     text = token.text
-    raw = token.raw_text
     text_lower = text.lower()
 
     # Doc blocks (Javadoc /**, JSDoc /**) - treat as function docs.
@@ -394,15 +547,23 @@ def classify_comment(
             "Doc block provides API documentation",
         )
 
+    # A tool reads it: never code, never trivial, never touched.
+    if _is_directive(text_lower):
+        return (
+            CommentType.DIRECTIVE,
+            CommentClassification.KEEP,
+            "Tool directive - a compiler or linter reads it",
+        )
+
     # Backup (commented-out code).
-    code_patterns = _CODE_PATTERNS_BY_LANG.get(language, [])
-    for pattern in code_patterns:
-        if pattern.match(raw):
-            return (
-                CommentType.BACKUP,
-                CommentClassification.DELETE,
-                "Commented-out code should be removed (use git history)",
-            )
+    if reading is not None and (token.line_number, token.column) in reading.code and not any(
+        pattern.match(text) for pattern in _DEBT_PATTERNS
+    ):  # a comment that opens with a debt marker is debt, whatever it parses as
+        return (
+            CommentType.BACKUP,
+            CommentClassification.DELETE,
+            "Commented-out code should be removed (use git history)",
+        )
 
     # Debt (TODO/FIXME).
     for pattern in _DEBT_PATTERNS:
@@ -413,17 +574,13 @@ def classify_comment(
                 "Debt marker found - resolve or document in design comments",
             )
 
-    # Trivial (inline, restates code).
-    if line_content and token.is_inline:
-        trivial = _TRIVIAL_INDICATORS_BY_LANG.get(language, [])
-        for comment_pat, code_pat in trivial:
-            if comment_pat.search(raw):
-                if code_pat.search(line_content):
-                    return (
-                        CommentType.TRIVIAL,
-                        CommentClassification.DELETE,
-                        "Comment restates what code already says",
-                    )
+    # Trivial (trailing, restates the code before it).
+    if reading is not None and reading.restates(token):
+        return (
+            CommentType.TRIVIAL,
+            CommentClassification.DELETE,
+            "Comment restates what code already says",
+        )
 
     # Checklist.
     for pattern in _CHECKLIST_PATTERNS:
@@ -523,7 +680,6 @@ class CommentRewriter:
         language: str,
         include_suggestions: bool,
     ) -> CommentAnalysis:
-        adapter = get_adapter(language)
         lines = content.splitlines()
 
         analysis = CommentAnalysis(
@@ -534,22 +690,23 @@ class CommentRewriter:
             comment_ratio=0.0,
         )
 
-        # The stylesheet adapter reads `//` by dialect, which only the path gives.
-        for token in adapter.extract_comments(content, *((file_path,) if language == "css" else ())):
-            # Python docstrings are NOT emitted by extract_python_comments
-            # (tokenize only yields `#` tokens). They are pulled separately
-            # via the AST helper `_add_python_docstrings` later in this
-            # method, so the per-token loop never sees docstrings.
+        reading = _Reading.open(content, language, file_path) if language in _READ_AS_CODE else None
+        if isinstance(reading, str):
+            analysis.gap, reading = reading, None
+        if reading is not None:
+            tokens = reading.tokens
+        else:
+            # The stylesheet adapter reads `//` by dialect, which only the path gives.
+            tokens = get_adapter(language).extract_comments(content, *((file_path,) if language == "css" else ()))
+        for token in tokens:
+            # Python docstrings are strings, not comment nodes: they are pulled
+            # separately via the AST helper `_add_python_docstrings` later in
+            # this method, so the per-token loop never sees docstrings.
             is_docstring = False
-            line_content = (
-                lines[token.line_number - 1]
-                if 0 < token.line_number <= len(lines)
-                else ""
-            )
             comment_type, classification, reason = classify_comment(
                 token=token,
                 language=language,
-                line_content=line_content,
+                reading=reading,
             )
             info = CommentInfo(
                 line_number=token.line_number,
@@ -692,6 +849,11 @@ class CommentRewriter:
 
         lines = content.splitlines()
         analysis = self._analyze_impl(content, str(file_path), language, include_suggestions=True)
+        if analysis.gap:
+            return content, [
+                f"Left unchanged: {analysis.gap}; commented-out code and restated lines "
+                "are read from the syntax tree, never guessed"
+            ]
         changes: list[str] = []
 
         lines_to_delete: set[int] = set()
@@ -787,6 +949,8 @@ class CommentRewriter:
             f"**Total Lines:** {analysis.total_lines}",
             f"**Total Comments:** {analysis.total_comments}",
             f"**Comment Ratio:** {analysis.comment_ratio:.1f} per 100 lines",
+            *([f"**Gap:** {analysis.gap}; commented-out code and restated lines were not looked for"]
+              if analysis.gap else []),
             "",
             "---",
             "",

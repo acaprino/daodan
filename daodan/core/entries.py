@@ -261,21 +261,33 @@ def _function(facts: flows.Facts, classes: dict, anonymous: set, parsed: tuple, 
         written = facts.written_function(file, line, column)
         if written["id"] in facts.native_dispatch_callers:
             return written["id"], None, "inline"
-        handler = facts.handler(text, file, line, column)
+        handler = facts.handler(node, source, file)
         return handler, None, "chiamata" if handler else None
     return None, None, None
 
 
-def _literal(node, source: bytes, grammar: str) -> str | None:
-    """The text of a literal argument, by the grammar's `text` query; a computed text is none."""
+def _string(node, source: bytes, grammar: str, exact: bool = False) -> str | None:
+    """The text of a string literal node, by the grammar's `strings` query: its `@text`, or, for a template, the text
+    between its backticks (`@template`), with the `${...}` it holds for the caller to accept or refuse. A computed text
+    and a node of a grammar the data has no query for are none; with `exact`, so is a text with an escape, which is
+    not the value it is written as (a flow rule's value: `flows.py`)."""
     from tree_sitter import QueryCursor
 
-    query = _treesitter.get_query(grammar, QUERIES["calls"][grammar]["text"])
+    query = _query(grammar, "strings") if grammar in QUERIES["strings"] else None
     for _, captures in QueryCursor(query).matches(node) if query is not None else ():
-        texts = [found for found in captures.get("text", []) if found.parent == node]
-        if texts and _text(source, texts[0]).strip():
-            return _text(source, texts[0]).strip()
+        for found in captures.get("text", []):
+            if found.parent == node and not (exact and found.named_children):  # an escape in the text (Python) is a child
+                return _text(source, found)
+        for found in captures.get("template", []):
+            if found == node:
+                return _text(source, found)[1:-1]
     return None
+
+
+def _literal(node, source: bytes, grammar: str) -> str | None:
+    """The text of a literal argument, by the grammar's `strings` query; a computed or an empty text is none."""
+    text = _string(node, source, grammar)
+    return text.strip() or None if text is not None else None
 
 
 def _call_label(arguments: list, source: bytes, grammar: str, positional: bool) -> str | None:
@@ -418,6 +430,7 @@ def _at(node) -> tuple[int, int]:
 FUNCTIONS = ("function_declaration", "function_expression", "arrow_function", "method_definition",
              "generator_function", "generator_function_declaration")  # the nodes a JSX binding is written in
 JSX = ("jsx_element", "jsx_self_closing_element", "jsx_fragment")
+JSX_TAGS = ("jsx_opening_element", "jsx_self_closing_element")  # the nodes that hold an element's tag name
 JSX_GRAMMARS = ("tsx", "javascript")  # the grammars whose files write components as markup of their own
 JSX_LANGUAGES = ("typescript", "javascript")  # the languages of the index's answers for those files
 

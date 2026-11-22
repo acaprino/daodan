@@ -81,8 +81,9 @@ class _MarkupAdapter:
         style_symbols(content, result)
         return result
 
-    def count_imports(self, content: str, file_path: str | None = None) -> int:
-        return 0
+    def strip_comments_and_blanks(self, content: str, file_path: str | None = None) -> None:
+        """Unknown: the product reads the style blocks and no tree of the whole file (no HTML grammar is wired)."""
+        return None
 
     def extract_comments(self, content: str, file_path: str | None = None) -> list[CommentToken]:
         from .stylesheet import adapter as sheets

@@ -23,7 +23,9 @@ What (`link`):
   `selector` (`s => s.field`), `object` (`{field: ...}`, also returned by a function
   argument), `member` (the property read on the call's result) or `holder` (the
   call is made on a handle assigned in the same file as `handle = store.key` or
-  `handle = store[KEY]`; a receiver with no such assignment is not this store). With `actions_in`
+  `handle = store[KEY]`: a variable the snapshot's scopes bind to that assignment, or an
+  attribute of `self` or `this` that the class assigns so; a receiver with no such
+  assignment is not this store, one the snapshot does not resolve is a gap). With `actions_in`
   a key naming a function declared as a property under those prefixes is a call to
   it, also through the variable that holds it.
 - `rotta` / `offre`: a route reached or declared; `route` gives `service`, `method`,
@@ -42,6 +44,10 @@ What (`link`):
 A store rule may name the store's `node_type`, from the closed list of the flow model
 (`database`, `coda`, ...): the explorer draws the store with that type's icon.
 
+A call is read from its file's syntax tree (`Tree`), its arguments, the keys of an object
+and the assignment of a name from the nodes and the snapshot's own resolution of names, never
+from the lines of the file; where the tree cannot be read (the file changed since the snapshot,
+a grammar that does not load) the rule yields a gap for that call, with the cause.
 A value counts only when it is a literal or a constant bound to one; a computed
 one is a gap, never a guess. A store link needs the same store and key, a route
 link the same service and method and a path schema that meets: the most literal
@@ -67,9 +73,10 @@ import json
 import re
 import sys
 from collections import defaultdict, deque
-from functools import cache
+from functools import cache, cached_property
 from pathlib import Path, PurePosixPath
 from typing import Callable, NamedTuple
+from urllib.parse import urlsplit
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -94,17 +101,35 @@ _FIELDS = {"callee", "written", "attribute", "in", "link", "store", "key", "acti
            "decorates", "handler", "entry", "node_type"}
 NODE_TYPES = ("attore", "schermata", "funzionalità", "servizio o API", "gateway", "database", "coda",
               "autenticazione", "dispositivo", "filesystem", "altro")
+# A rule's own fields (`arg0`, `part1`, `arg1.method|GET`), not source text.
 _ARG = re.compile(r"(arg|part)(\d+)$")
 _NESTED = re.compile(r"arg(\d+)\.(arg\d+|[A-Za-z_$][\w$]*)(?:\|(.*))?$")
-_IDENT = re.compile(r"[A-Za-z_$][\w$]*$")
-_STRING = re.compile(r"""(['"`])((?:\\.|(?!\1).)*)\1$""", re.S)
-_SELECTOR = re.compile(r"""^\(?\s*([A-Za-z_$][\w$]*)\s*(?::[^)=]*)?\)?\s*=>\s*\1\s*\.\s*([A-Za-z_$][\w$]*)""")
-_LAMBDA = re.compile(r"^lambda\s+([A-Za-z_]\w*)\s*:\s*\1\s*\.\s*([A-Za-z_]\w*)")
-_KEY = re.compile(r"""^\s*(['"]?)([A-Za-z_$][\w$]*)\1\s*(?::|,|$)""")
-_PROPERTY = re.compile(r"""(['"]?)([A-Za-z_$][\w$]*)\1\s*:\s*(?:async\s+)?$""")
-_HOLDER = re.compile(r"(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:await\s+)?$")
-_UNPACKED = re.compile(r"(?:const|let|var)\s*\{([^}]*)\}\s*=\s*(?:await\s+)?$")
-_ARROW = re.compile(r"^(?:async\s+)?(?:\([^()]*\)|[A-Za-z_$][\w$]*)\s*=>\s*")
+TREES = 64  # the syntax trees `Facts` keeps at once, the oldest dropped first: a file is read in runs
+DYNAMIC = "(expr)"  # the part the snapshot writes for a receiver that is no name: `items().find()`
+# The nodes of the grammars the rules read (JavaScript, TypeScript, Python), as `entries.py` names the ones it reads.
+NAMES = ("identifier", "shorthand_property_identifier")  # a variable, `{ method }`
+OBJECTS = ("object", "dictionary")
+SPREADS = ("spread_element", "dictionary_splat")
+MEMBERS = ("member_expression", "attribute")
+SUBSCRIPTS = ("subscript_expression", "subscript")
+LAMBDAS = ("arrow_function", "lambda")  # what a selector is written as
+ASSIGNMENTS = ("variable_declarator", "assignment_expression", "assignment")  # where a name is given a value
+WRAPPERS = ("parenthesized_expression", "as_expression", "satisfies_expression", "non_null_expression",
+            "await_expression", "await")  # what only wraps an expression: its value is the inner one's
+
+
+def _dotted(node) -> bool:
+    """Whether a node is a name, or a dotted name all the way down: `handler`, `module.handler`, `self.rows`."""
+    while node is not None and node.type in MEMBERS:
+        node = node.child_by_field_name("object")
+    return node is not None and node.type in ("identifier", "this")
+
+
+def _unwrapped(node):
+    """The expression inside what only wraps it: parentheses, a type assertion, `await`."""
+    while node is not None and node.type in WRAPPERS:
+        node = next((child for child in node.named_children if not child.is_extra), None)
+    return node
 
 
 
@@ -158,6 +183,7 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
         if rule["link"] in ("rotta", "offre") and set(rule["route"]) != {"service", "method", "path"}:
             raise ValueError(f"{where}: route has exactly service, method and path")
         if "handler" in rule:
+            # `handler` is a field of the rule (`arg1`, `last`), not source text.
             if rule["link"] not in ("offre", "attiva") or not re.fullmatch(r"arg\d+|last", str(rule["handler"])):
                 raise ValueError(f"{where}: handler is argN or last, on an offre or attiva rule")
             if rule.get("decorates"):
@@ -201,150 +227,26 @@ class Source:
             self.cache[rel] = text.split("\n") if text is not None and snapshot.hash_text(text) == entry.get("hash") else None
         return self.cache[rel]
 
-    def after(self, rel: str, line: int, column: int) -> str | None:
-        """Text from a 1-based line and a byte column to the end of the file."""
-        lines = self.lines(rel)
-        if lines is None or not 1 <= line <= len(lines):
-            return None
-        head = lines[line - 1].encode("utf-8")[column:].decode("utf-8", errors="replace")
-        return "\n".join([head, *lines[line:]])
 
-    def before(self, rel: str, line: int, column: int) -> str:
-        """Text of a line up to a byte column."""
-        lines = self.lines(rel)
-        if lines is None or not 1 <= line <= len(lines):
-            return ""
-        return lines[line - 1].encode("utf-8")[:column].decode("utf-8", errors="replace")
+class Tree:
+    """A file's verified text with its syntax tree and its grammar: what a rule reads a call, a value or a handle from."""
 
+    def __init__(self, file: str, source: bytes, root, grammar: str):
+        self.file, self.source, self.root, self.grammar = file, source, root, grammar
 
-def _enclosed(text: str, start: int) -> int | None:
-    """Index after the bracket that closes the one at `start`, quotes respected."""
-    depth, quote, escaped = 0, None, False
-    for index in range(max(start, 0), len(text)):
-        char = text[index]
-        if quote:
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == quote:
-                quote = None
-        elif char in "'\"`":
-            quote = char
-        elif char in "([{":
-            depth += 1
-        elif char in ")]}":
-            depth -= 1
-            if depth == 0:
-                return index + 1
-    return None
+    @cached_property
+    def assigned(self) -> list[tuple[str, tuple[int, int], object]]:
+        """Where the file gives a name a value, `(name, (line, column), value node)`: `name = value`,
+        `const name = value`; not a keyword argument, a default or an operand."""
+        import entries
+        return [item for item in entries._assignments({}, self.file, self.source, self.root)
+                if item[2].parent.type in ASSIGNMENTS]
 
+    @cached_property
+    def placed(self) -> dict[tuple[int, int], object]:
+        """The value given at each place `assigned` lists."""
+        return {at: value for _, at, value in self.assigned}
 
-def mask_comments(text: str, python: bool) -> str:
-    """The text with its comments blanked, same length and same line breaks.
-
-    A comment can hold an odd quote (`// the user's`) that would otherwise open a
-    string and hide the rest of a call. Strings are kept: `//` in a URL is no comment,
-    and in Python `//` is a division, so only `#` starts a comment there.
-    """
-    out, index, size, quote = list(text), 0, len(text), None
-
-    def blank(start: int, end: int) -> None:
-        for position in range(start, end):
-            if out[position] != "\n":
-                out[position] = " "
-
-    while index < size:
-        char = text[index]
-        if quote:
-            if char == "\\":
-                index += 2
-                continue
-            if text.startswith(quote, index):
-                index += len(quote)
-                quote = None
-                continue
-            if char == "\n" and len(quote) == 1 and quote != "`":
-                quote = None
-            index += 1
-            continue
-        if python and text.startswith(('"""', "'''"), index):
-            quote = text[index:index + 3]
-            index += 3
-        elif char in "'\"" or (char == "`" and not python):
-            quote = char
-            index += 1
-        elif (python and char == "#") or (not python and text.startswith("//", index)):
-            end = text.find("\n", index)
-            end = size if end < 0 else end
-            blank(index, end)
-            index = end
-        elif not python and text.startswith("/*", index):
-            end = text.find("*/", index + 2)
-            end = size if end < 0 else end + 2
-            blank(index, end)
-            index = end
-        else:
-            index += 1
-    return "".join(out)
-
-
-def call_arguments(text: str) -> list[str] | None:
-    """Top-level arguments of the call whose callee ends where `text` starts."""
-    start = text.find("(")
-    if start < 0 or text[:start].strip():
-        return None
-    depth, quote, escaped, current, args = 0, None, False, [], []
-    for char in text[start + 1:]:
-        if quote:
-            current.append(char)
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == quote:
-                quote = None
-            continue
-        if char in "'\"`":
-            quote = char
-        elif char in "([{":
-            depth += 1
-        elif char in ")]}":
-            if depth == 0:
-                args.append("".join(current).strip())
-                return [arg for arg in args if arg] if args != [""] else []
-            depth -= 1
-        elif char == "," and depth == 0:
-            args.append("".join(current).strip())
-            current = []
-            continue
-        current.append(char)
-    return None
-
-
-def object_keys(text: str) -> list[str] | None:
-    """Keys an object literal names, or those of every object a function argument returns.
-
-    A spread or a computed key adds nothing; with no named key at all the answer is None.
-    """
-    text = text.strip()
-    arrow = _ARROW.match(text)
-    if arrow:
-        body = text[arrow.end():].strip()
-        if body.startswith("("):
-            end = _enclosed(body, 0)
-            return object_keys(body[1:end - 1]) if end else None
-        keys = []
-        for found in re.finditer(r"\breturn\s*\(?\s*(?=\{)", body):
-            end = _enclosed(body, found.end())
-            if end:
-                keys += object_keys(body[found.end():end]) or []
-        return list(dict.fromkeys(keys)) or None
-    if not (text.startswith("{") and text.endswith("}")):
-        return None
-    keys = [match.group(2) for part in call_arguments("(" + text[1:-1] + ")") or []
-            if (match := _KEY.match(part))]
-    return keys or None
 
 
 # ---------------------------------------------------------------- snapshot facts
@@ -365,16 +267,22 @@ class Facts:
                 self.functions[declaration["file"]].append(declaration)
             if declaration.get("scope") == "module":
                 self.by_name[declaration["name"]].append(declaration)
+        self.resolver = semantic_store._Resolver(db)
+        self._trees: dict[str, Tree | str] = {}  # a file's tree, else why it has none
+        self._grammars: dict[str, str | None] = {}
         self.reads = defaultdict(list)
+        self.uses = defaultdict(list)  # the reads and the calls of a file
         for ref in view["reads"]:
             span = ref.get("span") or [None, None]
             self.reads[(ref["file"], span[0], span[1])].append(ref)
+            self.uses[ref["file"]].append(ref)
         self.called = defaultdict(list)
         self.calls_at = defaultdict(list)  # the calls the snapshot records, by where their callee starts
         self.native_dispatch_callers = {r["caller"] for r in view["references"] if "tauri_command" in r}
         for ref in view["references"]:
             span = ref.get("span") or [None, None]
             self.calls_at[(ref["file"], span[0], span[1])].append(ref)
+            self.uses[ref["file"]].append(ref)
             # Even an unknown second call prevents an inline callback from
             # being identified with its one supposedly unique destination.
             self.called[ref["caller"]].append(
@@ -424,10 +332,75 @@ class Facts:
                  and not d.get("contract")]
         return self.node(found[0]["id"]) if len(found) == 1 else None
 
+    def tree(self, file: str) -> Tree | str:
+        """A file's tree, read once and kept while its neighbours are read; else why it has none: `""` when the file
+        is not the snapshot's text any more, else that no grammar is known for it or that its grammar did not load."""
+        if file not in self._trees:
+            import entries
+            if len(self._trees) >= TREES:
+                del self._trees[next(iter(self._trees))]
+            source, grammar = entries._file(self, file, template=False)
+            if grammar is None:
+                self._trees[file] = "" if self.source.lines(file) is None else f"no grammar is known for {file}"
+            elif (root := entries._parse(source, grammar)) is None:
+                failure = entries._treesitter.load_failure(grammar)
+                self._trees[file] = f"grammar {grammar} not loaded" + (f": {failure}" if failure else "")
+            else:
+                self._trees[file] = Tree(file, source, root, grammar)
+        return self._trees[file]
+
+    def grammar(self, file: str) -> str | None:
+        """The grammar the snapshot read a file with."""
+        if file not in self._grammars:
+            profile = (self.store.get_file_header(file) or {}).get("parser_profile") or {}
+            self._grammars[file] = profile.get("grammar")
+        return self._grammars[file]
+
+    @cached_property
+    def classes(self) -> dict[str, list[dict]]:
+        import entries
+        return entries._classes(self)
+
+    def bindings(self, file: str, scope: str | None, name: str) -> tuple[list[tuple] | None, str | None]:
+        """Every binding of a name in the nearest scope of the snapshot that binds it, seen from `scope`: `(kind, id)` of
+        a declaration or `(kind, payload)` of an import; more than one where the scope binds the name again. None and
+        why where no scope does, or the snapshot did not resolve a scope (`_Resolver.lexical`, which gives up there)."""
+        while scope:
+            record = self.resolver.scope_record(file, scope)
+            if record is None or record.get("unresolved"):
+                return None, "scope-missing" if record is None else "scope-unresolved"
+            if found := self.resolver.bindings_named(file, scope, name):
+                return found, None
+            scope = record.get("parent")
+        return None, "unbound-name"
+
+    def bound(self, file: str, scope: str | None, name: str) -> tuple | None:
+        """What the snapshot's scopes bind a name to when they bind it once: `("declaration", id)` or `("import", ...)`."""
+        found, _ = self.bindings(file, scope, name)
+        return found[0] if found and len(found) == 1 else None
+
+    def element(self, file: str, span: list) -> bool:
+        """Whether the read at `span` is the name of an element's tag (`<Paywall />`), in a file of JSX."""
+        import entries
+        tree = self.tree(file) if self.grammar(file) in entries.JSX_GRAMMARS else None
+        if not isinstance(tree, Tree):
+            return False
+        node = tree.root.named_descendant_for_point_range((span[0] - 1, span[1]), (span[2] - 1, span[3]))
+        return node.parent is not None and node.parent.type in entries.JSX_TAGS \
+            and node.parent.child_by_field_name("name") == node
+
     def property_label(self, declaration: dict) -> str | None:
         """The property an anonymous function is the value of: `name: (...) => ...`."""
-        match = _PROPERTY.search(self.source.before(declaration["file"], declaration["line"], declaration["column"]))
-        return match.group(2) if match else None
+        import entries
+        tree = self.tree(declaration["file"])
+        if not isinstance(tree, Tree) or not declaration.get("span"):
+            return None
+        span = declaration["span"]
+        node = tree.root.descendant_for_point_range((span[0] - 1, span[1]), (span[2] - 1, span[3]))
+        pair = node.parent if node.type in (*entries.FUNCTIONS, "lambda") else None
+        if pair is None or pair.type != "pair" or pair.child_by_field_name("value") != node:
+            return None
+        return _key_name(pair.child_by_field_name("key"), tree)
 
     def node(self, declaration_id: str | None) -> str | None:
         """The named symbol a declaration belongs to. An anonymous function counts as the
@@ -472,28 +445,43 @@ class Facts:
                        key=lambda d: d["line"])
         return self.node(below[0]["id"]) if below else None
 
-    def literal(self, text: str, file: str, line: int, column: int) -> str | None:
-        """The text of a literal, or of a constant bound to one; None when computed.
-        A template keeps its `${...}` parts for the caller to accept or refuse."""
-        text = text.strip()
-        match = _STRING.match(text)
-        if match:
-            return match.group(2)
-        if not _IDENT.match(text):
+    def constants(self, name: str, file: str, line: int, column: int) -> list[dict]:
+        """The declarations of the variable a name written at a place stands for: the one the snapshot's read of
+        it names (`binding_id`: a parameter that shares the name of a constant is no constant); where the read is
+        an import, or the snapshot records none, the module-level one of that name (`targets`)."""
+        reads = self.reads.get((file, line, column), ())
+        named = [self.declarations.get(ref["binding_id"]) for ref in reads if ref.get("binding_id")]
+        if named:
+            return [d for d in named if d and d["kind"] == "binding"]
+        if reads and not any(ref.get("imported_name") for ref in reads):
+            return []
+        return [self.declarations[target] for target in self.targets(name, file, line, column, ("binding",))]
+
+    def literal(self, node, tree: Tree) -> str | None:
+        """The text of a string literal, or of a constant bound to one; None when computed: a concatenation, a
+        parameter, a name the snapshot does not resolve. A template keeps its `${...}` parts for the caller to
+        accept or refuse."""
+        import entries
+        node = _unwrapped(node)
+        if node is None:
             return None
-        for target in self.targets(text, file, line, column, ("binding",)):
-            binding = self.declarations[target]
-            rest = self.source.after(binding["file"], binding["line"], 0)
-            found = re.match(r"[^=\n]*\b" + re.escape(binding["name"]) + r"\b[^=\n]*=\s*(['\"`])([^'\"`\n]*)\1", rest or "")
-            if found:
-                return found.group(2)
+        found = entries._string(node, tree.source, tree.grammar, exact=True)
+        if found is not None or node.type not in NAMES:
+            return found
+        for declaration in self.constants(entries._text(tree.source, node), tree.file, *entries._at(node)):
+            home = self.tree(declaration["file"])
+            value = _unwrapped(home.placed.get((declaration["line"], declaration["column"]))) if isinstance(home, Tree) else None
+            found = entries._string(value, home.source, home.grammar, exact=True) if value is not None else None
+            if found is not None:
+                return found
         return None
 
-    def handler(self, text: str, file: str, line: int, column: int) -> str | None:
+    def handler(self, node, source: bytes, file: str) -> str | None:
         """The function an action argument names, directly or as the one call of an arrow."""
-        text = text.strip()
-        if _IDENT.match(text):
-            found = self.targets(text, file, line, column, ("function", "method"))
+        import entries
+        line, column = entries._at(node)
+        if node.type == "identifier":
+            found = self.targets(entries._text(source, node), file, line, column, ("function", "method"))
             return self.node(found[0]) if found else None
         arrow = next((d for d in self.functions.get(file, ()) if d["line"] == line
                       and d["column"] == column and d["name"] == "(anonymous)"), None)
@@ -508,16 +496,17 @@ class Facts:
         """The function written at this place of an argument, named or not."""
         return next((d for d in self.functions.get(file, ()) if d["line"] == line and d["column"] == column), None)
 
-    def passed_function(self, text: str, file: str, line: int, column: int) -> str | None:
+    def passed_function(self, node, source: bytes, file: str) -> str | None:
         """The function an argument passes by name: `handler`, or `module.handler` from a file this one imports."""
-        text = text.strip()
-        if _IDENT.match(text):
-            found = self.targets(text, file, line, column, ("function", "method"))
+        import entries
+        if node.type == "identifier":
+            found = self.targets(entries._text(source, node), file, *entries._at(node), ("function", "method"))
             return self.node(found[0]) if found else None
-        if not re.fullmatch(r"[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+", text):
+        last = node.child_by_field_name("property") or node.child_by_field_name("attribute")
+        if node.type not in MEMBERS or last is None or not _dotted(node):
             return None
-        last = text.rsplit(".", 1)[1]
-        read = self.reads.get((file, line, column + text.rfind(".") + 1), ())
+        read = self.reads.get((file, *entries._at(last)), ())
+        last = entries._text(source, last)
         if any(edge_view.uncertainty(ref) for ref in read):
             return None
         found = [ref["target_id"] for ref in read if self.declarations.get(ref.get("target_id"), {}).get("kind")
@@ -554,25 +543,69 @@ class Facts:
         return out
 
 
-def _position(base_line: int, base_column: int, text_before: str, arg_text: str) -> tuple[int, int]:
-    """Line and byte column where an argument starts, from the text between the callee end and it."""
-    lead = text_before + arg_text[:len(arg_text) - len(arg_text.lstrip())]
-    rows = lead.split("\n")
-    if len(rows) == 1:
-        return base_line, base_column + len(rows[0].encode("utf-8"))
-    return base_line + len(rows) - 1, len(rows[-1].encode("utf-8"))
-
-
-def _arguments_with_positions(text: str, line: int, column: int):
-    args = call_arguments(text)
-    if args is None:
+def _key_name(node, tree: Tree) -> str | None:
+    """The name an object key writes: an identifier, or a text; None for a computed key or a variable."""
+    import entries
+    if node is None:
         return None
-    out, cursor = [], text.find("(") + 1
-    for arg in args:
-        at = text.find(arg, cursor)
-        out.append((arg, *_position(line, column, text[:at], "")))
-        cursor = at + len(arg)
-    return out
+    if node.type in ("property_identifier", "private_property_identifier"):
+        return entries._text(tree.source, node)
+    return entries._string(node, tree.source, tree.grammar, exact=True) if node.type == "string" else None
+
+
+def _members(node, tree: Tree) -> tuple[dict[str, object], bool] | None:
+    """The named entries of an object literal, `{name: value node}` (None for a method), and whether a spread may add
+    others; None when the node is no object literal. A computed key adds nothing."""
+    import entries
+    node = _unwrapped(node)
+    if node is None or node.type not in OBJECTS:
+        return None
+    found, spread = {}, False
+    for child in node.named_children:
+        if child.type in SPREADS:
+            spread = True
+        elif child.type == "pair":
+            if (name := _key_name(child.child_by_field_name("key"), tree)) is not None:
+                found[name] = child.child_by_field_name("value")
+        elif child.type == "shorthand_property_identifier":
+            found[entries._text(tree.source, child)] = child
+        elif child.type == "method_definition":
+            if (name := _key_name(child.child_by_field_name("name"), tree)) is not None:
+                found[name] = None
+    return found, spread
+
+
+def _positional(node, tree: Tree) -> list | None:
+    """The arguments of a call node as `_read_call` lists them: a node each, None where the argument has a keyword
+    (`f(a, key=b)`: its place is not the one a rule counts); None when the node is no call."""
+    import entries
+    listed = node.child_by_field_name("arguments")
+    if listed is None or not listed.children or listed.children[0].type != "(":
+        return None
+    return [None if keyword else value for keyword, value in entries._arguments(node, tree.source)]
+
+
+def _read_call(facts: Facts, ref: dict, parts: list[str]) -> dict | str:
+    """The call a reference records, read from its file's tree, or why it cannot be read: the node of the call, its
+    arguments (`_positional`) and the file's tree."""
+    import entries
+    span = ref.get("span") or [None] * 4
+    tree = facts.tree(ref["file"])
+    if isinstance(tree, str):
+        return "call arguments not readable" + (f": {tree}" if tree else "")
+    node = entries._call(tree.root, span) if None not in span else None
+    args = _positional(node, tree) if node is not None else None
+    if args is None:
+        return "call arguments not readable"
+    return {"file": ref["file"], "line": span[0], "parts": parts, "tree": tree, "node": node, "args": args,
+            "scope": ref.get("scope")}
+
+
+def _not_literal(call: dict) -> str:
+    """Why a value is a gap: it is computed, or its grammar has no reader of strings (`QUERIES["strings"]`)."""
+    import entries
+    grammar = call["tree"].grammar
+    return "not a literal" if grammar in entries.QUERIES["strings"] else f"not a literal ({grammar} strings are not read)"
 
 
 def _nested(spec: str, call: dict, facts, strip: str, template: bool = False):
@@ -582,24 +615,18 @@ def _nested(spec: str, call: dict, facts, strip: str, template: bool = False):
     index, inner, default = int(match.group(1)), match.group(2), match.group(3)
     if index >= len(call["args"]):
         return default
-    text, line, column = call["args"][index]
+    node, tree = call["args"][index], call["tree"]
+    if node is None:
+        return None
     if inner.startswith("arg") and inner[3:].isdigit():
-        called = re.match(r"[A-Za-z_$][\w$.]*\s*(?=\()", text)
-        args = _arguments_with_positions(text[called.end():], *_position(line, column, text[:called.end()], "")) \
-            if called else None
+        args = _positional(node, tree)
         if args is None:
             return None
         return _value(inner, {**call, "args": args}, facts, strip, template) if int(inner[3:]) < len(args) else default
-    if not (text.startswith("{") and text.endswith("}")):
+    members = _members(node, tree)
+    if members is None or members[1]:  # no object literal, or a spread that may hold the key
         return None
-    parts = call_arguments("(" + text[1:-1] + ")") or []
-    if any(part.strip().startswith("...") for part in parts):
-        return None  # a spread may hold the key
-    for part in parts:
-        found = re.match(r"""\s*(['"]?)([A-Za-z_$][\w$]*)\1\s*:\s*(.+)$""", part, re.S)
-        if found and found.group(2) == inner:
-            return facts.literal(found.group(3), call["file"], -1, -1)
-    return default
+    return facts.literal(members[0][inner], tree) if inner in members[0] else default
 
 
 def _value(spec, call, facts, strip: str = "", template: bool = False):
@@ -615,8 +642,7 @@ def _value(spec, call, facts, strip: str = "", template: bool = False):
         return call["parts"][index] if index < len(call["parts"]) else None
     if index >= len(call["args"]):
         return None
-    text, line, column = call["args"][index]
-    value = facts.literal(text, call["file"], line, column)
+    value = facts.literal(call["args"][index], call["tree"])
     if value is not None and strip and value.startswith(strip):
         value = value[len(strip):]
     return None if value is None or ("${" in value and not template) else value
@@ -644,8 +670,8 @@ def join(kind: LinkType, asking: list[dict], offering: list[dict]) -> list[tuple
     return out
 
 
-_PATH_BASE = re.compile(r"^[A-Za-z][\w+.-]*://[^/]*")  # scheme and host
-_PATH_PARAMETER = re.compile(r"<[^<>/]*>|\{[^{}/]*\}")  # a parameter declared inside a segment
+# A route's segment is text with no grammar: the parameter spellings of the frameworks (`<id>`, `{id}`).
+_PATH_PARAMETER = re.compile(r"<[^<>/]*>|\{[^{}/]*\}")
 
 
 def _holes(text: str) -> str | None:
@@ -676,9 +702,15 @@ def _rest_key(service, method, path) -> tuple | None:
     text = None if None in (service, method, path) else _holes(path)
     if text is None:
         return None
-    text = re.split(r"[?#]", text, maxsplit=1)[0]
-    rest = _PATH_BASE.sub("", text.lstrip("\0"), count=1)
-    if not rest or rest != text and not rest.startswith("/"):
+    head = text.lstrip("\0")
+    try:
+        split = urlsplit(head)  # the query and the fragment end the path; `//host` or `scheme://host` is the base URL
+    except ValueError:  # a host in brackets that never closes
+        return None
+    # A scheme with no `//` after it (`items:batch`) is no base URL: it stays a segment.
+    based = bool(split.netloc) or bool(split.scheme) and head[len(split.scheme) + 1:].startswith("//")
+    rest = split.path if based else (head[:len(split.scheme) + 1] if split.scheme else "") + split.path
+    if not rest or (based or head != text) and not rest.startswith("/"):
         return None  # an interpolation glued to what follows it, or nothing after the base
     segments = [s for s in rest.split("/") if s]
     if segments and "\0" in segments[0]:
@@ -694,6 +726,7 @@ def _segment_grade(asked: str, offered: str) -> int | None:
     if offered == "{}":
         return 1
     if "{}" in asked and "{" not in offered:
+        # Both texts are Daodan's own, made by `_rest_key`: segments with `{}` for a hole, no grammar.
         pattern = "".join("[^/]*" if part == "{}" else re.escape(part) for part in re.split(r"(\{\})", asked))
         return 0 if re.fullmatch(pattern, offered) else None
     return None
@@ -714,113 +747,205 @@ def _rest_meet(asked: tuple, offered: tuple) -> tuple | None:
 REST = LinkType("rest", ("rotta", "offre"), _rest_key, _rest_meet)  # the guide's "metodo e schema del percorso"
 
 
-_HANDLE = re.compile(r"=\s*(?:await\s+)?[A-Za-z_$][\w$.]*?(?:\.([A-Za-z_$][\w$]*)|\[\s*([^\]]+?)\s*\])\s*(?:#.*|//.*|;)?$")
-
-
-def _handle_key(call, facts) -> str | None:
-    """The key of the store handle a call is made on: `handle = store.key` or `handle = store[KEY]`,
-    assigned in the same file."""
-    receiver = ".".join(call["parts"][:-1])
-    if not receiver:
+def _store_key(value, tree: Tree, facts) -> str | None:
+    """The key a handle's value names: `store.key`, or `store[KEY]` where KEY is a constant text; None when it is
+    neither."""
+    import entries
+    node = _unwrapped(value)
+    if node is None:
         return None
-    assigned = re.compile(r"(?<![\w$.])" + re.escape(receiver) + r"\s*(?::[^=]*)?(?==[^=])")
-    for number, line in enumerate(facts.source.lines(call["file"]) or [], 1):
-        found = assigned.search(line)
-        handle = _HANDLE.search(line[found.end():]) if found else None
-        if handle and handle.group(1):
-            return handle.group(1)
-        if handle:
-            column = len(line[:found.end() + handle.start(2)].encode("utf-8"))
-            value = facts.literal(handle.group(2), call["file"], number, column)
-            if value is not None and "${" not in value:
-                return value
+    if node.type in MEMBERS and _dotted(node):
+        name = node.child_by_field_name("property") or node.child_by_field_name("attribute")
+        return entries._text(tree.source, name) if name is not None else None
+    if node.type in SUBSCRIPTS and _dotted(node.child_by_field_name("object") or node.child_by_field_name("value")):
+        text = facts.literal(node.child_by_field_name("index") or node.child_by_field_name("subscript"), tree)
+        return text if text is not None and "${" not in text else None
     return None
 
 
+def _handle(call: dict, facts) -> tuple[str | None, str | None]:
+    """`(key, why)` of the store handle a call is made on: `handle = store.key` or `handle = store[KEY]`, assigned where
+    the snapshot's scopes bind the receiver (a variable), or in the class that holds it (`self.handle`, `this.handle`).
+    No key and no `why`: the receiver is no handle of the store (a parameter, an import, a value of another shape);
+    `why`: the snapshot does not tell what the receiver is, or it is assigned from several keys."""
+    import entries
+    tree, receiver = call["tree"], call["parts"][:-1]
+    name = ".".join(receiver)
+    if not receiver or receiver[0] == DYNAMIC or (len(receiver) == 1 and receiver[0] in entries.RECEIVERS):
+        return None, None
+    if len(receiver) == 1:
+        found, why = facts.bindings(tree.file, call["scope"], name)
+        if found is None:
+            return None, f"receiver {name} is not resolved ({why})"
+        declarations = [facts.declarations.get(identity) for kind, identity in found if kind == "declaration"]
+        values = [tree.placed[at] for declaration in declarations if declaration and declaration["kind"] == "binding"
+                  and (at := (declaration["line"], declaration["column"])) in tree.placed]
+        shaped = [_store_key(value, tree, facts) is not None for value in values]
+        if len(found) > 1 and any(shaped) and not all(shaped):  # bound again: `let rows; rows = db.late` has one value
+            return None, f"receiver {name} is bound again in its scope, not always to a handle"
+    elif len(receiver) == 2 and receiver[0] in entries.RECEIVERS:
+        owner = entries._holder(facts.classes, tree.file, call["line"])
+        values = [value for target, at, value in tree.assigned if owner and target == name
+                  and owner["line"] <= at[0] <= (owner["end"] or owner["line"])]
+    else:
+        return None, f"receiver {name} is neither a variable nor an attribute of {' or '.join(entries.RECEIVERS)}"
+    keys = sorted({key for value in values if (key := _store_key(value, tree, facts))})
+    if len(keys) > 1:
+        return None, f"receiver {name} is assigned from several keys: {', '.join(keys)}"
+    return (keys[0], None) if keys else (None, None)
+
+
+def _bound(call, tree: Tree):
+    """What the value of a call node is bound to, awaited or not: `("name", name node)` for `const name = call()`, or
+    `("pattern", [(key, variable)])` for `const { key, other: variable } = call()` (the variable None where the entry
+    names none); None when the call is not the whole value of a declaration."""
+    import entries
+    node = call
+    while node.parent is not None and node.parent.type in WRAPPERS:
+        node = node.parent
+    declarator = node.parent
+    if declarator is None or declarator.type != "variable_declarator" or declarator.child_by_field_name("value") != node:
+        return None
+    target = declarator.child_by_field_name("name")
+    if target.type == "identifier":
+        return "name", target
+    if target.type != "object_pattern":
+        return None
+    pairs = []
+    for entry in target.named_children:
+        if entry.type == "object_assignment_pattern":  # `items = []`: the default is not the key
+            entry = entry.child_by_field_name("left")
+        if entry.type == "shorthand_property_identifier_pattern":
+            pairs.append((entries._text(tree.source, entry),) * 2)
+        elif entry.type == "pair_pattern" and (key := _key_name(entry.child_by_field_name("key"), tree)) is not None:
+            variable = entry.child_by_field_name("value")
+            variable = variable.child_by_field_name("left") if variable is not None and variable.type == "assignment_pattern" else variable
+            pairs.append((key, entries._text(tree.source, variable) if variable is not None and variable.type == "identifier" else None))
+    return "pattern", pairs
+
+
+def _read_on(call: dict, facts, name_node) -> list[str] | None:
+    """The properties read on the variable a call's value is held in, in the order written: the reads and the calls of
+    the snapshot below its declaration whose first part the snapshot's scopes bind to that variable (a closure counts,
+    a variable of the same name in a function inside does not)."""
+    import entries
+    tree = call["tree"]
+    name, at = entries._text(tree.source, name_node), entries._at(name_node)
+    declared = facts.bound(tree.file, call["scope"], name)
+    declaration = facts.declarations.get(declared[1]) if declared and declared[0] == "declaration" else None
+    if declaration is None or (declaration["line"], declaration["column"]) != at:
+        return None
+    found = sorted((tuple(ref["span"][:2]), ref["parts"][1]) for ref in facts.uses[tree.file]
+                   if ref.get("span") and ref["parts"][:1] == [name] and len(ref["parts"]) > 1 and tuple(ref["span"][:2]) > at
+                   and facts.bound(tree.file, ref.get("scope"), name) == declared)
+    return list(dict.fromkeys(key for _, key in found)) or None
+
+
+def _selector(node, tree: Tree) -> list[str] | None:
+    """The fields a selector reads of its parameter, in the order written: `s => s.field`, `lambda s: s.field`,
+    through a wrapper that passes it on (`shallow(s => ...)`); a field read on another variable of the same name inside
+    a function in it is not its own. None where the argument is no function of a single named parameter."""
+    import entries
+    while node is not None and node.type not in LAMBDAS and node.child_by_field_name("arguments") is not None:
+        node = next((value for _, value in entries._arguments(node, tree.source)[:1]), None)
+    if node is None or node.type not in LAMBDAS or (name := entries._props(node, tree.source)[1]) is None:
+        return None
+    found, stack = [], [node.child_by_field_name("body")]
+    while stack:
+        item = stack.pop()
+        if item is None or (item.type in (*entries.FUNCTIONS, "lambda") and entries._props(item, tree.source)[1] == name):
+            continue
+        field = item.child_by_field_name("property") or item.child_by_field_name("attribute")
+        owner = item.child_by_field_name("object")
+        if item.type in MEMBERS and field is not None and owner is not None and owner.type == "identifier" \
+                and entries._text(tree.source, owner) == name:
+            found.append((item.start_byte, entries._text(tree.source, field)))
+        stack.extend(item.children)
+    return list(dict.fromkeys(field for _, field in sorted(found))) or None
+
+
+def _object_keys(node, tree: Tree) -> list[str] | None:
+    """Keys an object literal names, or those of every object a function argument returns (a value in parentheses, or
+    the `return` of its own body, not of a function inside it). A spread or a computed key adds nothing; with no named
+    key at all the answer is None."""
+    import entries
+    node = _unwrapped(node)
+    if node is None:
+        return None
+    values = [node]
+    if node.type == "arrow_function":
+        body = node.child_by_field_name("body")
+        values, stack = [body], [body]
+        if body is not None and body.type == "statement_block":
+            values = []
+            while stack:
+                item = stack.pop()
+                if item.type == "return_statement":
+                    values += item.named_children[:1]
+                stack.extend(child for child in item.children if child.type not in entries.FUNCTIONS)
+        values.sort(key=lambda value: value.start_byte)
+    keys = [key for value in values if (members := _members(value, tree)) for key in members[0]]
+    return list(dict.fromkeys(keys)) or None
+
+
 def _keys(spec: str, call, facts) -> list[str] | None:
+    import entries
+    tree, call["unread"] = call["tree"], None  # `unread`: why the answer is a gap, where the key is not what is missing
     if spec == "holder":
-        key = _handle_key(call, facts)
-        return [key] if key else []
+        key, call["unread"] = _handle(call, facts)
+        return None if call["unread"] else [key] if key else []
     if spec == "member":
-        end = _enclosed(call["text"], call["text"].find("("))
-        member = re.match(r"\s*\??\.\s*([A-Za-z_$][\w$]*)", call["text"][end:]) if end else None
-        if member:
-            return [member.group(1)]
-        unpacked = _UNPACKED.search(call["before"])
-        if unpacked:
-            return [name.split(":")[0].strip() for name in unpacked.group(1).split(",")
-                    if name.strip() and not name.strip().startswith("...")]
-        # The whole value held in a variable: its keys are the properties read on that variable
-        # inside the function that declares it, anonymous or not, and no further.
-        holder = _HOLDER.search(call["before"])
-        if holder is None or not call.get("scope_end"):
+        node = call["node"]
+        parent = node.parent
+        if parent is not None and parent.type in MEMBERS and parent.child_by_field_name("object") == node:
+            field = parent.child_by_field_name("property") or parent.child_by_field_name("attribute")
+            return [entries._text(tree.source, field)] if field is not None else None
+        bound = _bound(node, tree)
+        if bound is None:
             return None
-        lines = (facts.source.lines(call["file"]) or [])[call["line"] - 1:call["scope_end"]]
-        read = re.compile(r"(?<![\w$.])" + re.escape(holder.group(1)) + r"\s*\??\.\s*([A-Za-z_$][\w$]*)")
-        return list(dict.fromkeys(name for line in lines for name in read.findall(line))) or None
+        if bound[0] == "name":  # the whole value held in a variable
+            return _read_on(call, facts, bound[1])
+        return [key for key, _ in bound[1]] or None
     if _ARG.match(spec):
         value = _value(spec, call, facts)
         return [value] if value is not None else None
-    if not call["args"]:
+    if not call["args"] or call["args"][0] is None:
         return None
-    text = call["args"][0][0]
     if spec == "selector":
-        text = text.strip()
-        wrapped = re.match(r"[A-Za-z_$][\w$.]*\s*(?=\()", text)
-        if wrapped and not _ARROW.match(text):
-            # A selector passed through a wrapper: the wrapper's first argument selects.
-            inner = call_arguments(text[wrapped.end():])
-            text = inner[0].strip() if inner else text
-        match = _SELECTOR.match(text) or _LAMBDA.match(text)
-        if match:
-            return [match.group(2)]
-        # A selector that builds a value from several fields reads each field it names.
-        parameter = re.match(r"\(?\s*([A-Za-z_$][\w$]*)\s*(?::[^)=]*)?\)?\s*=>", text)
-        fields = re.findall(r"(?<![\w$.])" + re.escape(parameter.group(1)) + r"\s*\??\.\s*([A-Za-z_$][\w$]*)",
-                            text[parameter.end():]) if parameter else []
-        return list(dict.fromkeys(fields)) or None
-    return object_keys(text) if spec == "object" else None
+        return _selector(call["args"][0], tree)
+    return _object_keys(call["args"][0], tree) if spec == "object" else None
 
 
 # ---------------------------------------------------------------- links
-
-def _call_args(facts: Facts, ref: dict):
-    """The call's text from its callee on, comments masked, and its arguments with their positions."""
-    span = ref.get("span") or [None, None, None, None]
-    text = facts.source.after(ref["file"], span[2], span[3])
-    if text is not None:
-        text = mask_comments(text, ref["file"].endswith((".py", ".pyi")))
-    return text, (_arguments_with_positions(text, span[2], span[3]) if text is not None else None)
-
 
 def _handler_index(spec: str, args: list) -> int:
     return len(args) - 1 if spec == "last" else int(spec[3:])
 
 
-def _route_handler(facts: Facts, spec: str, args: list, file: str) -> str | None:
+def _route_handler(facts: Facts, spec: str, call: dict) -> str | None:
     """The symbol a route registered with a handler argument belongs to."""
+    import entries
+    args = call["args"]
     index = _handler_index(spec, args)
-    if not 0 <= index < len(args):
+    if not 0 <= index < len(args) or args[index] is None:
         return None
-    text, line, column = args[index]
-    written = facts.written_function(file, line, column)
-    return facts.node(written["id"]) if written else facts.passed_function(text, file, line, column)
+    written = facts.written_function(call["file"], *entries._at(args[index]))
+    return facts.node(written["id"]) if written else facts.passed_function(args[index], call["tree"].source, call["file"])
 
 
 def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     """A function written in place as a route handler is named by its route, before any link reads names."""
+    import entries
     if not rules:
         return
     for ref in view["references"]:
         parts = [str(part) for part in ref.get("parts") or []]
         for rule in (r for r in rules if _written(r, parts, ref["file"])):
-            text, args = _call_args(facts, ref)
-            index = _handler_index(rule["handler"], args or [])
-            if not args or not 0 <= index < len(args):
+            call = _read_call(facts, ref, parts)
+            index = _handler_index(rule["handler"], call["args"]) if isinstance(call, dict) else -1
+            if index < 0 or index >= len(call["args"]) or call["args"][index] is None:
                 continue
-            written = facts.written_function(ref["file"], args[index][1], args[index][2])
-            span = ref.get("span") or [None, None, None, None]
-            call = {"file": ref["file"], "line": span[0], "parts": parts, "args": args, "text": text}
+            written = facts.written_function(ref["file"], *entries._at(call["args"][index]))
             method, path = (_value(rule["route"][k], call, facts, rule.get("strip", "") if k == "path" else "")
                             for k in ("method", "path"))
             if written and written["name"] == "(anonymous)" and method and path is not None:
@@ -978,14 +1103,11 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                     if len(parts) == 1 and caller:
                         plain.append((ref["file"], parts[0], caller, site, ref.get("scope")))
                 continue
-            text, args = _call_args(facts, ref)
-            if args is None:
-                gaps.append({"site": site, "symbol": caller, "reason": "call arguments not readable"})
+            call = _read_call(facts, ref, parts)
+            if isinstance(call, str):
+                gaps.append({"site": site, "symbol": caller, "reason": call})
                 continue
-            scope = facts.declarations.get(ref.get("caller") or "") or {}
-            call = {"file": ref["file"], "line": span[0], "scope_end": scope.get("end"), "parts": parts,
-                    "args": args, "text": text,
-                    "before": facts.source.before(ref["file"], span[0], span[1])}
+            args = call["args"]
             for rule in matched:
                 basis = {}
                 if "callee" in rule:
@@ -996,7 +1118,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                         gaps.append({"site": site, "symbol": caller, "reason": f"{rule['link']} {target}: {reason}", **basis})
                         continue
                 if rule["link"] == "offre" and rule.get("handler"):
-                    owner = _route_handler(facts, rule["handler"], args, ref["file"])
+                    owner = _route_handler(facts, rule["handler"], call)
                     if owner is None:
                         gaps.append({"site": site, "symbol": caller, "reason": "offre: handler not a function"})
                         continue
@@ -1011,7 +1133,9 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                     if keys == []:
                         continue  # the receiver is no handle of this store
                     if not keys:
-                        gaps.append({"site": site, "symbol": owner, "reason": f"{link} {rule['store']}: key not a literal"})
+                        gaps.append({"site": site, "symbol": owner, "reason": f"{link} {rule['store']}: " + (
+                            call.get("unread") or f"key {_not_literal(call)}")})
+                    bound = _bound(call["node"], call["tree"])
                     for key in keys or []:
                         found = members.get(id(rule), {}).get(key)
                         if not found:
@@ -1019,10 +1143,11 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                                              "site": site, **basis})
                         elif len(found) > 1:
                             gaps.append({"site": site, "symbol": owner, "reason": f"{rule['store']}/{key}: several functions"})
-                        elif (holder := _HOLDER.search(call["before"])) and len(keys) == 1 and rule["key"] == "selector":
-                            held[(ref["file"], owner, holder.group(1))] = found[0]
-                        elif _UNPACKED.search(call["before"]):
-                            held[(ref["file"], owner, key)] = found[0]
+                        elif bound and bound[0] == "name" and len(keys) == 1 and rule["key"] == "selector":
+                            held[(ref["file"], owner, entry_reader._text(call["tree"].source, bound[1]))] = found[0]
+                        elif bound and bound[0] == "pattern":
+                            if variable := dict(bound[1]).get(key):
+                                held[(ref["file"], owner, variable)] = found[0]
                         else:
                             calls.append({"from": owner, "to": found[0], "site": site, "origin": "dedotto"})
                 elif link in REST.pair:
@@ -1030,7 +1155,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                     key = REST.key(_value(route["service"], call, facts), _value(route["method"], call, facts),
                                    _value(route["path"], call, facts, rule.get("strip", ""), template=True))
                     if key is None:
-                        gaps.append({"site": site, "symbol": owner, "reason": f"{link}: route not a literal"})
+                        gaps.append({"site": site, "symbol": owner, "reason": f"{link}: route {_not_literal(call)}"})
                         continue
                     record = {"symbol": owner, "key": key, "site": site}
                     (routes_offered if link == "offre" else route_calls).append(record)
@@ -1038,8 +1163,8 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                         entries.append({"symbol": owner, "kind": "rotta", "site": site})
                 elif link == "attiva":
                     index = _handler_index(rule["handler"], args)
-                    handler = (facts.handler(args[index][0], ref["file"], args[index][1], args[index][2])
-                               if 0 <= index < len(args) else None)
+                    handler = (facts.handler(args[index], call["tree"].source, ref["file"])
+                               if 0 <= index < len(args) and args[index] is not None else None)
                     if handler is None:
                         gaps.append({"site": site, "symbol": owner, "reason": "attiva: handler not a named function"})
                         continue
@@ -1049,9 +1174,10 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                     entries.append({"symbol": owner, "kind": rule["entry"], "site": site})
         # A component written as an element is rendered: React calls it, so its parent reaches it.
         for read in view["reads"]:
-            file, holder, (line, column) = read["file"], read.get("caller"), (read.get("span") or [None, None])[:2]
+            file, holder, span = read["file"], read.get("caller"), read.get("span") or [None] * 4
+            line, column = span[:2]
             parts = read.get("parts") or []
-            if len(parts) != 1 or not line or not facts.source.before(file, line, column).rstrip().endswith("<"):
+            if len(parts) != 1 or not line or not facts.element(file, span):
                 continue
             found = facts.targets(str(parts[0]), file, line, column, ("function", "class"))
             component = facts.node(found[0]) if len(found) == 1 else None
@@ -1495,6 +1621,7 @@ def at_level(flow: dict, level: str, modules_of: dict[str, str]) -> dict:
 # ---------------------------------------------------------------- flow cards
 
 CARD_TYPES = ("dati", "ux", "servizio", "dispositivo", "misto")
+# A card is prose a model writes; its `file:line` citations have no grammar.
 _CITATION = re.compile(r"([\w.@-][\w./@\[\]+-]*\.[A-Za-z0-9]+):(\d+)")
 
 

@@ -26,8 +26,9 @@ from typing import Any
 scripts_dir = Path(__file__).parent
 sys.path.insert(0, str(scripts_dir))
 
-from classifier import classify_from_content, compute_fan_in
+from classifier import classify_from_content, compute_fan_in, shown
 from ast_parser import parse_content
+from languages.reading import is_unread
 from usage_finder import (
     find_all_usages_batch, validate_symbol, SOURCE_EXTENSIONS, _resolve_project_root_and_paths,
 )
@@ -101,6 +102,7 @@ def _analyze_single_file(file_path, find_usages, project_root, symbol, snapshot_
         return {
             "error": f"Parse error in file: {e}",
             "classification": classification.classification.value,
+            "reasoning": classification.reasoning,
         }
 
     from store_consumers import temporary_snapshot, consumer_reader, file_analysis, find_usages as store_usages
@@ -123,8 +125,9 @@ def _analyze_single_file(file_path, find_usages, project_root, symbol, snapshot_
         "SELECT count(DISTINCT source) FROM sem_edges WHERE target=? AND source<>?",
         (relative_path, relative_path)).fetchone()[0]
     semantic_analysis, graph_metrics, resolved_modules = file_analysis(manifest, semantic_db, relative_path)
-    classification = classify_from_content(
-        content, str(file_path), imported_by_count=imported_by_count, parse_result=structure,
+    classification = classify_from_content(  # a file no tree was read from has no imports to count
+        content, str(file_path), imported_by_count=imported_by_count,
+        parse_result=None if is_unread(structure) else structure,
     )
 
     # Step 3: Find usages (if requested)
@@ -290,8 +293,8 @@ def format_as_markdown(analysis: dict[str, Any]) -> str:
     lines.append("## Classification")
     lines.append("")
     lines.append(f"- **Level:** {cls['level'].upper()}")
-    lines.append(f"- **Lines of Code:** {cls['lines_of_code']}")
-    lines.append(f"- **Dependencies:** {cls['num_dependencies']}")
+    lines.append(f"- **Lines of Code:** {shown(cls['lines_of_code'])}")
+    lines.append(f"- **Dependencies:** {shown(cls['num_dependencies'])}")
     lines.append(f"- **Importing files:** {cls.get('imported_by_count', 0)}")
     lines.append(f"- **Verification Required:** {'Yes' if cls['verification_required'] else 'No'}")
     lines.append(f"- **Reasoning:** {cls['reasoning']}")
@@ -430,7 +433,7 @@ def format_as_summary(analysis: dict[str, Any]) -> str:
         f"File: {analysis['file']}",
         f"Language: {lang}{note_text}",
         f"Classification: {cls['level'].upper()} ({cls['reasoning']})",
-        f"LOC: {cls['lines_of_code']} | Dependencies: {cls['num_dependencies']}",
+        f"LOC: {shown(cls['lines_of_code'])} | Dependencies: {shown(cls['num_dependencies'])}",
         f"Importing files: {cls.get('imported_by_count', 0)}",
         f"Classes/Types: {len(struct['classes'])} | Callables: {callable_total} (top-level: {top_level_funcs}, methods: {method_count})",
         f"Exported: {', '.join(struct['exported_symbols'][:5])}{'...' if len(struct['exported_symbols']) > 5 else ''}",

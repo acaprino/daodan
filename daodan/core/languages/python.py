@@ -696,10 +696,6 @@ class _PythonAdapter:
             return ParseResult(file_path=file_path, language="python", notes=notes)
         return result
 
-    def count_imports(self, content: str) -> int:
-        import re
-        return len(re.findall(r"^(?:from\s+\S+\s+)?import\s+", content, re.MULTILINE))
-
     def strip_comments_and_blanks(self, content: str) -> int:
         # Mirror the original count_lines: count non-empty, non-comment lines,
         # skipping docstrings.

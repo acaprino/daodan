@@ -9,8 +9,9 @@ nested types, duplicate import modules in the CLI output, and a documentation
 scan that shouted "ALL DOCUMENTATION SHOULD BE CONSIDERED UNVERIFIED" at any
 project not born with this toolkit's marker convention.
 
-Tree-sitter is optional for the scripts and absent on CI, so the cases that
-need it are skipped there and the regex fallback is what CI exercises.
+The scripts read source from the Tree-sitter tree and from nothing else: where
+the grammar is not installed the cases that need it are skipped, and the ones
+that force its absence pin that a file is then reported unread.
 """
 
 import json
@@ -31,6 +32,7 @@ if str(SCRIPTS) not in sys.path:
 
 import classifier  # noqa: E402
 from ast_parser import parse_file  # noqa: E402
+from languages import get_adapter  # noqa: E402
 from languages._treesitter import get_parser  # noqa: E402
 from usage_finder import find_all_usages  # noqa: E402
 
@@ -242,20 +244,29 @@ class ClassifierTests(unittest.TestCase):
     def test_an_ordinary_import_count_is_not_high_complexity(self):
         imports = "\n".join(f"import mod{i}" for i in range(6))
         body = "\n".join(f"value_{i} = {i}" for i in range(150))
-        result = classifier.classify_from_content(f"{imports}\n{body}\n", "plain.py")
+        source = f"{imports}\n{body}\n"
+        result = classifier.classify_from_content(
+            source, "plain.py", parse_result=get_adapter("python").parse(source, "plain.py"))
+        self.assertEqual(result.num_dependencies, 6)
         self.assertEqual(result.classification, classifier.Classification.STANDARD)
         self.assertFalse(result.verification_required)
 
+    def test_a_file_with_no_parse_is_never_a_small_file(self):
+        result = classifier.classify_from_content("def id_of(x):\n    return x\n", "hub.py")
+        self.assertEqual(result.classification, classifier.Classification.STANDARD)
+        self.assertIsNone(result.num_dependencies)
+
     def test_high_fan_in_promotes_small_hub_file(self):
         small_src = "def id_of(x):\n    return x\n"
-        low = classifier.classify_from_content(small_src, "hub.py", fan_in=0)
+        parse = get_adapter("python").parse(small_src, "hub.py")
+        low = classifier.classify_from_content(small_src, "hub.py", fan_in=0, parse_result=parse)
         self.assertEqual(low.classification, classifier.Classification.UTILITY)
 
-        mid = classifier.classify_from_content(small_src, "hub.py", fan_in=8)
+        mid = classifier.classify_from_content(small_src, "hub.py", fan_in=8, parse_result=parse)
         self.assertEqual(mid.classification, classifier.Classification.HIGH_COMPLEXITY)
         self.assertTrue(mid.verification_required)
 
-        high = classifier.classify_from_content(small_src, "hub.py", fan_in=16)
+        high = classifier.classify_from_content(small_src, "hub.py", fan_in=16, parse_result=parse)
         self.assertEqual(high.classification, classifier.Classification.CRITICAL)
         self.assertTrue(high.verification_required)
 
@@ -272,15 +283,16 @@ class ParserTests(unittest.TestCase):
         self.assertEqual([m.name for m in result.classes[0].methods], ["read"])
         self.assertIn("helper", [f.name for f in result.functions])
 
-    def test_typescript_finds_the_class_on_either_parser(self):
+    @unittest.skipUnless(HAVE_TREE_SITTER, "tree-sitter not installed")
+    def test_typescript_finds_the_class_and_its_members(self):
         result = parse_file(_write(self.temp, "svc.ts", TYPESCRIPT))
         self.assertIn("UserService", [c.name for c in result.classes])
         self.assertIn("UserService", result.exported_symbols)
-        # Members too, on either parser. Asserting only the class name was the
-        # gap that let the regex fallback ship with no member extraction at
-        # all: snapshot.py then recorded one span for the whole class, so an
-        # edit to one method was indistinguishable from an edit to any other,
-        # and every overload collapsed into nothing to key a span on.
+        # Members too. Asserting only the class name was the gap that let a
+        # reader ship with no member extraction at all: snapshot.py then
+        # recorded one span for the whole class, so an edit to one method was
+        # indistinguishable from an edit to any other, and every overload
+        # collapsed into nothing to key a span on.
         service = next(c for c in result.classes if c.name == "UserService")
         self.assertEqual(
             {m.name for m in service.methods}, {"constructor", "get", "onUser"}
@@ -298,7 +310,8 @@ class ParserTests(unittest.TestCase):
             {c.kind for c in result.classes}, {"class", "interface", "enum", "type-alias"}
         )
 
-    def test_java_finds_the_class_on_either_parser(self):
+    @unittest.skipUnless(HAVE_TREE_SITTER, "tree-sitter not installed")
+    def test_java_finds_the_class(self):
         result = parse_file(_write(self.temp, "Svc.java", JAVA))
         self.assertIn("Svc", [c.name for c in result.classes])
 
@@ -313,6 +326,7 @@ class ParserTests(unittest.TestCase):
         listener = next(c for c in result.classes if c.name == "Svc.Listener")
         self.assertEqual(listener.kind, "interface")
 
+    @unittest.skipUnless(HAVE_TREE_SITTER, "tree-sitter not installed")
     def test_rust_finds_struct_and_trait(self):
         result = parse_file(_write(self.temp, "lib.rs", RUST))
         names = [c.name for c in result.classes]
@@ -320,6 +334,7 @@ class ParserTests(unittest.TestCase):
         self.assertIn("Repo", names)
         self.assertIn("MAX", result.constants)
 
+    @unittest.skipUnless(HAVE_TREE_SITTER, "tree-sitter not installed")
     def test_cli_output_lists_each_import_module_once(self):
         source = _write(self.temp, "Svc.java", JAVA)
         completed = subprocess.run(
@@ -423,20 +438,15 @@ class GrammarPackFailureTests(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-    def test_a_pack_that_cannot_fetch_a_grammar_falls_back_and_says_why(self):
+    def test_a_pack_that_cannot_fetch_a_grammar_reads_nothing_and_says_why(self):
         pack, _calls = _unreachable_grammar_pack()
         self._install(pack)
-        cases = [
-            ("svc.js", JS_SPANS, "Store", "parser=regex-fallback"),
-            ("svc.ts", TS_SPANS, "Cache", "parser=regex-fallback (ts)"),
-            ("Svc.java", JAVA_SPANS, "Svc", "parser=regex-fallback"),
-            ("lib.rs", RUST_SPANS, "Store", "parser=regex-fallback"),
-        ]
-        for name, source, symbol, provenance in cases:
+        for name, source in (("svc.js", JS_SPANS), ("svc.ts", TS_SPANS), ("Svc.java", JAVA_SPANS),
+                             ("lib.rs", RUST_SPANS)):
             with self.subTest(name):
                 result = parse_file(_write(self.temp, name, source))
-                self.assertIn(provenance, result.notes)
-                self.assertIn(symbol, [c.name for c in result.classes])
+                self.assertEqual(result.notes[0], "parser=none")
+                self.assertEqual((result.classes, result.functions, result.imports), ([], [], []))
                 self.assertTrue(
                     any(n.startswith("tree-sitter unavailable: DownloadError") for n in result.notes),
                     result.notes,
@@ -449,13 +459,12 @@ class GrammarPackFailureTests(unittest.TestCase):
         parse_file(_write(self.temp, "b.js", JS_SPANS))
         self.assertEqual(calls, ["javascript"])
 
-    def test_a_pack_that_is_not_installed_falls_back_without_a_failure_note(self):
+    def test_a_pack_that_is_not_installed_reads_nothing_and_says_no_grammar(self):
         self._install(None)
         result = parse_file(_write(self.temp, "svc.js", JS_SPANS))
-        self.assertIn("parser=regex-fallback", result.notes)
-        self.assertFalse(
-            any(n.startswith("tree-sitter unavailable") for n in result.notes), result.notes
-        )
+        self.assertEqual(result.notes[0], "parser=none")
+        self.assertEqual(result.classes, [])
+        self.assertIn("tree-sitter unavailable: no tree-sitter grammar installed", result.notes)
 
 
 class UsageFinderTests(unittest.TestCase):

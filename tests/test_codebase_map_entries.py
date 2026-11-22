@@ -276,10 +276,52 @@ class LabelTests(unittest.TestCase):
                 self.assertEqual(self.label(text), want)
 
     def test_every_grammar_s_query_compiles(self):
-        for section in ("queries", "decorators"):
+        for section in ("queries", "decorators", "strings"):
             for grammar in entries.QUERIES[section]:
                 with self.subTest(section=section, grammar=grammar):
                     self.assertIsNotNone(entries._query(grammar, section))
+
+    @staticmethod
+    def first(grammar: str, node_type: str, source: str):
+        """The first node of that type in `source`, with the bytes it is read from."""
+        data = source.encode()
+        stack = [entries._parse(data, grammar)]
+        while stack:
+            node = stack.pop()
+            if node.type == node_type:
+                return node, data
+            stack.extend(reversed(node.named_children))
+        raise AssertionError(f"no {node_type} in {source}")
+
+    def test_a_label_or_a_text_an_object_holds_keeps_an_escape_as_written(self):
+        """`_literal` serves the entry readers (a label, `self.title = "A\\nB"` held by an object), which read no value:
+        the text as it is written. A flow rule's value is `_string(..., exact=True)`, which has none with an escape."""
+        node, data = self.first("python", "string", 'g("a\\nb")')
+        self.assertEqual(entries._literal(node, data, "python"), "a\\nb")
+
+    def test_a_string_literal_is_its_text_where_it_has_no_interpolation_and_no_escape(self):
+        """The text of the first string of `source`, found by its node type, as the grammar's `strings` query reads it,
+        for the value of a flow rule (`exact`)."""
+        def read(grammar: str, node_type: str, source: str):
+            node, data = self.first(grammar, node_type, source)
+            return entries._string(node, data, grammar, exact=True)
+        cases = [("python", "string", 'g("/orders")', "/orders"), ("python", "string", 'g(f"/o/{x}")', None),
+                 ("python", "string", 'g("")', None), ("python", "string", 'g("a\\nb")', None),
+                 ("python", "string", 'g(r"a\\d")', "a\\d"),
+                 *[(grammar, "string", 'g("/orders")', "/orders") for grammar in ("javascript", "typescript", "tsx")],
+                 *[(grammar, "string", 'g("a\\nb")', None) for grammar in ("javascript", "typescript", "tsx")],
+                 *[(grammar, "template_string", "g(`/o/${x}`)", "/o/${x}") for grammar in ("javascript", "typescript", "tsx")],
+                 ("java", "string_literal", 'class A { void f() { g("/orders"); } }', "/orders"),
+                 ("java", "string_literal", 'class A { void f() { g("a\\nb"); } }', None),
+                 ("go", "interpreted_string_literal", 'package a\nfunc f() { g("/orders") }', "/orders"),
+                 ("go", "raw_string_literal", "package a\nfunc f() { g(`/orders`) }", "/orders"),
+                 ("csharp", "string_literal", 'class A { void F() { G("/orders"); } }', "/orders"),
+                 ("rust", "string_literal", 'fn f() { g("/orders"); }', "/orders"),
+                 ("c", "string_literal", 'void f() { g("/orders"); }', "/orders"),
+                 ("cpp", "string_literal", 'void f() { g("/orders"); }', "/orders")]
+        for grammar, node_type, source, want in cases:
+            with self.subTest(grammar=grammar, source=source):
+                self.assertEqual(read(grammar, node_type, source), want)
 
 
 class MarkupTests(unittest.TestCase):

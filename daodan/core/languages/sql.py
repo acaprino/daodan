@@ -24,6 +24,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_sql_comments
+from .reading import code_lines
 
 __all__ = ["adapter"]
 
@@ -487,20 +488,8 @@ class _SqlAdapter:
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        return len(_IMPORT_RE.findall(content))
-
-    def strip_comments_and_blanks(self, content: str) -> int:
-        no_blocks = re.sub(r"/\*[\s\S]*?\*/", "", content)
-        code = 0
-        for line in no_blocks.split("\n"):
-            s = line.strip()
-            if not s:
-                continue
-            if s.startswith("--"):
-                continue
-            code += 1
-        return code
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, _LANGUAGE_NAME)
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_sql_comments(content)

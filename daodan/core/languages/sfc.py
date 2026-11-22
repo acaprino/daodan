@@ -452,11 +452,10 @@ class _SfcAdapter:
             result.notes += [unread] if unread else []
         return result
 
-    def count_imports(self, content: str) -> int:
-        from . import javascript as _js
-
-        masked, _, has_script = mask_non_script(content, self.frontmatter)
-        return _js.adapter.count_imports(masked) if has_script else 0
+    def strip_comments_and_blanks(self, content: str) -> None:
+        """Unknown: the product reads the script and the style blocks, and no tree of the whole file; a count
+        needs the rows of the template's tree too (vue, svelte), and astro has no template grammar wired."""
+        return None
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         masked, _, has_script = mask_non_script(content, self.frontmatter)
