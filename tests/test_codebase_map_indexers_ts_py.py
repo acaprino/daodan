@@ -286,8 +286,9 @@ def test_a_package_folder_that_declares_dependencies_no_restore_installs_is_a_ga
     """A folder whose manifest declares dependencies is restored, or is a member its restore's workspaces name (the
     manifest's `workspaces`, a `pnpm-workspace.yaml`), or is a gap: never silence."""
     manifests = {
-        "package.json": {"name": "root", "workspaces": {"packages": ["packages/*", "!packages/legacy"]}},
-        "pnpm-workspace.yaml": "packages:\n  - 'apps/**'\n  - \"libs/core\"  # the core\n\ncatalog:\n  ms: ^2\n",
+        "package.json": {"name": "root"},  # a pnpm root reads its yaml only, not the manifest's `workspaces`
+        "pnpm-workspace.yaml": "packages:\n  - 'packages/*'\n  - '!packages/legacy'\n  - 'apps/**'\n"
+                               "  - \"libs/core\"  # the core\n\ncatalog:\n  ms: ^2\n",
         "pnpm-lock.yaml": "",
         "packages/ui/package.json": {"dependencies": {"ms": "2.1.3"}},
         "packages/legacy/package.json": {"dependencies": {"ms": "2.1.3"}},

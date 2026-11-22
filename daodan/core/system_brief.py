@@ -153,22 +153,6 @@ def _groups(links: dict) -> tuple[list[dict], list[str]]:
     return groups, [e for e in entries if not touched[e] & shared]
 
 
-def _externals(graph: dict, record: dict) -> list[dict]:
-    """The stack step's technologies and the external modules of the graph, by id."""
-    out = {found["id"]: {"id": found["id"], "name": found["name"], "kind": found["kind"],
-                         "type": found["type"] or "altro", "from": ["registry"],
-                         "paths": sorted({s["path"] for s in found["signs"] if s["strength"] == "declared" and s["path"]})}
-           for found in record["technologies"]}
-    for module in graph["modules"]:
-        if module.get("location") == "external":
-            ident = modules.slug(module["name"])
-            out.setdefault(ident, {"id": ident, "name": module["name"], "kind": None, "type": "altro", "from": [],
-                                   "paths": sorted({str(e.get("path") if isinstance(e, dict) else e).split("#")[0]
-                                                    for e in module.get("evidence", [])})})
-            out[ident]["from"] = sorted(set(out[ident]["from"]) | {"modules"})
-    return sorted(out.values(), key=lambda e: system_map.key(e["name"]))
-
-
 # Headed sections, not tags: one line per label, the same convention as the map format that follows the brief.
 HEADER = "\n".join((
     "# System brief",
@@ -339,14 +323,14 @@ def _observations(manifest: Path, edges: list[dict]) -> tuple[bool, dict]:
 def brief(manifest: Path, rules: list[dict]) -> dict:
     """The system brief of a snapshot under its link rules."""
     manifest = Path(manifest).resolve()
+    facts = premap.ensure(manifest)
+    record = technologies.ensure(manifest, facts=facts)  # before the links, whose external nodes are its services
     links = flows.cached_links(manifest, rules)
     graph = modules.load_graph(Path(modules.ensure_graph(manifest)["graph"]))
     with open_snapshot(manifest) as store:
         files = dict(store.iter_file_headers_only())
         runtime, yaml_declarations = _runtime_files(manifest, store, files)
-    facts = premap.ensure(manifest)
-    record = technologies.ensure(manifest, facts=facts)
-    externals = _externals(graph, record)
+    externals = sorted(technologies.externals(graph, record), key=lambda e: system_map.key(e["name"]))
     known = {s["value"] for e in record["technologies"] for s in e["signs"] if s["sign"] == "package"}
     other = {}
     for module in graph["modules"]:

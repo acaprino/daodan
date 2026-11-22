@@ -169,6 +169,33 @@ class DeclaredTests(unittest.TestCase):
         fastapi = next(e for e in system_brief.brief(manifest, [])["externals"] if e["id"] == "fastapi")
         self.assertEqual((fastapi["from"], fastapi["paths"]), (["registry"], ["server/pyproject.toml"]))
 
+    def test_the_links_the_brief_uses_hold_the_services_it_lists_whether_the_stack_record_is_missing_or_stale(self):
+        work = Path(tempfile.mkdtemp(prefix="brief-"))
+        self.addCleanup(shutil.rmtree, work, True)
+        project = work / "project"
+        project.mkdir()
+        (project / "requirements.txt").write_text("stripe==14.3.0\n", encoding="utf-8")
+        (project / "app.py").write_text("def charge():\n    return 1\n", encoding="utf-8")
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "x"]):
+            subprocess.run(command, cwd=project, check=True, capture_output=True)
+        manifest = work / "snapshot/manifest.sqlite"
+        snapshot.main(["write", str(project), "--out", str(manifest), "--no-engine", "--no-index"])
+        record = manifest.with_name("technologies.json")
+        stale = {"schema": json.loads(record.read_text(encoding="utf-8"))["schema"], "inputs_digest": "an older one",
+                 "technologies": [], "modules": []}
+        for state in ("missing", "stale"):
+            record.unlink(missing_ok=True)
+            if state == "stale":
+                record.write_text(json.dumps(stale), encoding="utf-8")
+            used = []
+            real = flows.cached_links
+            with patch.object(flows, "cached_links", lambda *a, **o: used.append(real(*a, **o)) or used[-1]):
+                value = system_brief.brief(manifest, [])
+            listed = {e["id"] for e in value["externals"]}
+            self.assertIn("stripe", listed, state)
+            self.assertEqual({e["id"] for e in used[0]["external"]}, listed, state)
+
     def test_compose_declares_services_and_the_image_is_recognized(self):
         work = Path(tempfile.mkdtemp(prefix="brief-"))
         self.addCleanup(shutil.rmtree, work, True)

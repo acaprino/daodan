@@ -32,6 +32,7 @@ import posixpath
 import re
 from pathlib import Path, PurePosixPath
 
+import preparation
 from premap.origins import origin
 
 NAME, VERSION, RANK = "gradle", "9.9.1", "model"  # the Gradle of `indexers/jvm.py` GRADLE
@@ -86,19 +87,7 @@ def asked_jdk(said: str, stated=()) -> tuple[dict, dict | None] | None:
     the newest the project states at or above that version, else the version Gradle names, with a
     `jdk_from_build_error` gap; None when Gradle asked for nothing."""
     found = ASKS.search(said or "")
-    if not found:
-        return None
-    least = int(found.group(1))
-
-    def major(item) -> int:
-        version = re.match(r"\s*(?:1\.)?(\d+)", str(item.get("version") or ""))
-        return int(version.group(1)) if version else 0
-    newer = [t for t in stated or () if t.get("tool") == "java" and major(t) >= least]
-    if newer:
-        return max(newer, key=major), None
-    return {"tool": "java", "version": str(least), "declared_in": "Gradle's error"}, {
-        "kind": "jdk_from_build_error", "detail": f"Gradle said `{found.group()}` and the project states no JDK "
-        f"at or above {least}: the build ran again on JDK {least}, the version Gradle's error names"}
+    return preparation.jdk_named(int(found.group(1)), found.group(), stated, "Gradle") if found else None
 
 
 def _name(build: str | None, path: str) -> str:

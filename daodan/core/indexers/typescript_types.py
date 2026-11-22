@@ -58,6 +58,11 @@ def _typed(package: str) -> bool:
                 or os.path.isfile(os.path.join(package, main + ".d.ts")))
 
 
+def types_package(name: str) -> str:
+    """The DefinitelyTyped package of a library: `pg` is `@types/pg`, `@scope/name` is `@types/scope__name`."""
+    return f"@types/{name[1:].replace('/', '__')}" if name.startswith("@") else f"@types/{name}"
+
+
 def wanted(work: str, major: str, roots: list[str]) -> list[str]:
     """The type packages to add, `@types/node@<major>` first: see the module's docstring."""
     out = [] if os.path.isdir(os.path.join(work, "node_modules", "@types", "node")) else [f"@types/node@{major}"]
@@ -69,7 +74,7 @@ def wanted(work: str, major: str, roots: list[str]) -> list[str]:
             for name, spec in sorted(declared.items()):
                 if name.startswith("@types/") or str(spec).startswith(LOCAL):
                     continue
-                types = f"@types/{name[1:].replace('/', '__')}" if name.startswith("@") else f"@types/{name}"
+                types = types_package(name)
                 package = _found(work, root, name)
                 # A workspace member is a link out of every node_modules: the project's own code.
                 local = package is not None and f"{os.sep}node_modules{os.sep}" not in os.path.realpath(package)

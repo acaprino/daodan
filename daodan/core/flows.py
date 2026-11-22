@@ -45,8 +45,12 @@ A store rule may name the store's `node_type`, from the closed list of the flow 
 A value counts only when it is a literal or a constant bound to one; a computed
 one is a gap, never a guess. A store link needs the same store and key, a route
 link the same service and method and a path schema that meets: the most literal
-route wins, a tie is an uncertain link, a gap with its candidates. External modules of the module graph are
-nodes too: a symbol in a file an external module cites as evidence uses it. Code outside
+route wins, a tie is an uncertain link, a gap with its candidates. The services of others the brief lists (the
+stack step's technologies and the external modules of the module graph, by id) are nodes too: a symbol in a file
+a service cites as evidence uses it (`dichiarato`), except in a file where an engine resolved a call into a package
+the stack step ties to that service: there the function that makes such a call uses it, once per service and at its
+first call (`dedotto`, with the engine's resolver); a call in a test file is no use, and is counted in the service's
+`in_tests`. Code outside
 any named function, a callback passed as an argument included, belongs to its module,
 the node `file::<module>`; a route it declares or an entry point needs a named function.
 A component written as an element (`<Paywall />`) is called by the function that writes it.
@@ -82,6 +86,10 @@ FLOW_SCHEMA = "daodan/flow/v1"
 LINKS = ("scrive", "legge", "rotta", "offre", "attiva", "ingresso")
 MAX_EDGES = 5000
 MODULE = "<module>"  # the node of the code a file runs outside any named function
+# The ecosystem of the stack step's packages for the manager an engine's symbols name (SCIP's `scheme manager package
+# version`): scip-python writes `python`, scip-typescript `npm`, scip-java `maven`, scip-go `gomod`, rust-analyzer
+# `cargo`, scip-dotnet `nuget`.
+ECOSYSTEMS = {"python": "pypi", "npm": "npm", "maven": "maven", "gomod": "go", "cargo": "crates", "nuget": "nuget"}
 _FIELDS = {"callee", "written", "attribute", "in", "link", "store", "key", "actions_in", "route", "strip",
            "decorates", "handler", "entry", "node_type"}
 NODE_TYPES = ("attore", "schermata", "funzionalità", "servizio o API", "gateway", "database", "coda",
@@ -120,7 +128,8 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
             if rule.get("source") != "modello":
                 raise ValueError(f"{where}: supplied classifications must have source modello; registry decisions come from Daodan")
             if set(rule) != {"link", "reader", "shape", "entry", "source"} or rule["link"] != "ingresso" or (
-                    rule["reader"] not in (entries.ATTRIBUTE, entries.ARGUMENT, entries.DECORATOR, entries.NOIR, entries.MANIFEST)
+                    rule["reader"] not in (entries.ATTRIBUTE, entries.ARGUMENT, entries.DECORATOR, entries.NOIR, entries.MANIFEST,
+                                             entries.NEXT)
                     or not isinstance(rule["shape"], str) or not rule["shape"]
                     or rule["entry"] not in (*entries.ENTRY_KINDS, entries.NO_ENTRY)):
                 raise ValueError(f"{where}: invalid shape classification or entry kind")
@@ -797,6 +806,34 @@ def _name_written_handlers(facts: Facts, view: dict, rules: list[dict]) -> None:
     facts._nodes.clear()
 
 
+def _next_handlers(facts: Facts, resolver, item: dict) -> list[dict]:
+    """The functions a Next.js candidate starts from. The framework's rule is data (`QUERIES["next"]`): the exports of
+    the file that start its config type, the default export of a page or each method a route handler exports. The
+    snapshot's own export records name the function (`exported_target`), so a page is one entry on that function and
+    a route handler one per exported method. A type with no export in the table (a layout) stays as it is; what is not
+    found, or not resolved (a re-export), keeps the file-level symbol with a gap that says which export was looked
+    for, beside the entries of the others."""
+    import entries
+    spec = entries.QUERIES["next"].get(item["shape"], {})
+    methods = "methods" in spec
+    names = spec.get("methods") or spec.get("exports")
+    if not names:
+        return [item]
+    file, found, unread = item["site"], [], []
+    for name in names:
+        identity, reason = resolver.exported_target(file, name)
+        symbol = facts.node(identity) if identity else None
+        if symbol:
+            found.append({**item, "symbol": symbol, "site": f"{file}:{facts.declarations[identity]['line']}",
+                          "handler_source": entries.NEXT, **({"method": name} if methods else {})})
+        elif reason != "export-missing-or-ambiguous":
+            unread.append(f"{name}: {reason}")
+    if found and not unread:
+        return found
+    looked = "; ".join(unread) or ", ".join(names)
+    return [*found, {**item, "gap": f"no function found for the export Next.js starts {item['path']} from: {looked}"}]
+
+
 def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
     """Accesses, deduced links, entry points and gaps of a snapshot under the given rules."""
     import entries as entry_reader
@@ -812,12 +849,16 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
     wanted = {rule["callee"].rsplit("::", 1)[1].split(".")[-1] for rule in rules if "callee" in rule}
     accesses, entries, actions, routes_offered, route_calls, gaps, calls = [], [], [], [], [], [], []
     held: dict[tuple[str, str, str], str] = {}
+    called: dict[tuple[str, str, str], tuple] = {}  # (caller, ecosystem, package) -> site, resolver, file of 1st call
     with open_snapshot(manifest) as store, semantic_store.semantic_reader(store) as db:
         view = edge_view.load_edge_view(store)
         facts = Facts(store, db, view)
         candidates = entry_reader._cached_rows(manifest, (facts, db, view))
         from premap.flow_entries import evidence
         declared, source_gaps = evidence(manifest)
+        resolver = semantic_store._Resolver(db)
+        declared = [row for item in declared
+                    for row in (_next_handlers(facts, resolver, item) if item["reader"] == entry_reader.NEXT else [item])]
         for item in declared:
             if item["reader"] != entry_reader.NOIR:
                 continue
@@ -830,6 +871,30 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                 item.update(symbol=facts.node(matches[0]["id"]), handler_source="noir")
             else:
                 item["gap"] = "Noir reports this endpoint without a unique snapshot handler at its site"
+        # One route, one entry: Noir's route on the path of a Next entry, in the file or on the function that entry
+        # starts, is that entry, provided it is of Noir's method (a page carries none and answers any, a route
+        # handler's entry has its method); the method goes to an entry that lacks one. Another path, or a method no
+        # entry of that file and path carries, is a route of its own.
+        def file_of(site: str) -> str:
+            file, _, line = site.rpartition(":")
+            return file if line.isdecimal() else site
+
+        by_path = defaultdict(list)
+        for item in declared:
+            if item["reader"] == entry_reader.NEXT and not item.get("gap"):
+                by_path[item["path"]].append(item)
+        kept = []
+        for item in declared:
+            method = item.get("method")
+            same = next((n for n in by_path.get(item.get("path"), ())
+                         if (file_of(n["site"]) == file_of(item["site"]) or n["symbol"] == item["symbol"])
+                         and (not method or n.get("method") in (None, method))), None) \
+                if item["reader"] == entry_reader.NOIR else None
+            if same is None:
+                kept.append(item)
+            elif method:
+                same.setdefault("method", method)
+        declared = kept
         candidates = candidates + declared
         _name_written_handlers(facts, view, [r for r in written if r["link"] == "offre" and r.get("handler")])
         callbacks = {item["symbol"]: item["owner"] for item in candidates
@@ -846,6 +911,10 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             span = ref.get("span") or [None, None, None, None]
             site = f"{ref['file']}:{span[0]}"
             parts = [str(part) for part in ref.get("parts") or []]
+            package = ref.get("external")  # the engine resolved the call into a package: its first use, by caller
+            if package and package.get("manager") in ECOSYSTEMS:
+                called.setdefault((caller, ECOSYSTEMS[package["manager"]], package["package"]),
+                                  (site, ref.get("resolver"), ref["file"]))
             # SCIP may identify invoke itself in the SDK. Its registered Rust command is a separate,
             # static dispatch destination, already resolved in the snapshot of the same application.
             native = None
@@ -968,7 +1037,6 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                 calls.append({"from": facts.node(holder) or f"{file}::{MODULE}", "to": component,
                               "site": f"{file}:{line}"})
         # A store function held in a variable is called where that variable is called.
-        resolver = semantic_store._Resolver(db)
         for file, name, caller, site, scope in plain:
             owner = callbacks.get(caller, caller)
             target = held.get((file, owner, name))
@@ -982,6 +1050,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             calls.append({"from": caller, "to": target, "site": site, "origin": "dedotto"})
         _classify_entries(candidates, attributes, decisions, held, actions, entries, gaps)
         external = _external_nodes(manifest, module_graph)
+        ties = _package_services(manifest)
         symbols_by_file = defaultdict(set)
         for declaration in facts.declarations.values():
             if declaration["kind"] in ("function", "method", "class"):
@@ -1010,11 +1079,16 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                       "site": action["site"], "label": action["label"],
                       **{key: action[key] for key in ("shape", "column", "handler_source", "handler_confidence")
                          if key in action}})
+    added = {item.rpartition("@")[0] for items in view["profile"].get("types_added", {}).values() for item in items}
+    uses, in_tests, gave = _service_uses(called, ties, external, added)
     for module in external:
         for file in module["evidence_files"]:
+            if (file, module["id"]) in gave:
+                continue  # the calls the engine resolved there into the service's packages say which symbols use it
             for symbol in sorted(symbols_by_file.get(file, ())):
                 edges.append({"from": symbol, "to": f"module:{module['name']}", "type": "usa", "origin": "dichiarato",
                               "site": file, "status": module["status"]})
+    edges += uses
     stores = defaultdict(lambda: {"writes": set(), "reads": set()})
     for access in accesses:
         stores[f"{access['store']}/{access['key']}"]["writes" if access["link"] == "scrive" else "reads"].add(access["symbol"])
@@ -1027,14 +1101,18 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             "symbol_coverage": _symbol_coverage(symbols_by_file, entries, unique.values()),
             "stores": {name: {"writes": sorted(v["writes"]), "reads": sorted(v["reads"])} for name, v in sorted(stores.items())},
             "entries": sorted({(e["symbol"], e["kind"], e["site"], e.get("column"), e.get("shape"),
-                                e.get("label") if e.get("declared_in") else None, e.get("declared_in")): e
-                               for e in entries}.values(), key=lambda e: (e["kind"], e["symbol"], e["site"], e.get("column", 0))),
+                                e.get("label") if e.get("declared_in") else None, e.get("declared_in"),
+                                e.get("method"), e.get("path")): e  # one function can start several routes
+                               for e in entries}.values(),
+                              key=lambda e: (e["kind"], e["symbol"], e["site"], e.get("column", 0), e.get("method") or "",
+                                             e.get("path") or "")),
             "source_gaps": source_gaps,
             "edges": sorted(unique.values(), key=lambda e: (e["from"], e["to"], e["type"], e["site"])),
             "store_types": {rule["store"]: rule["node_type"] for rule in rules if rule.get("node_type")},
             "routes": {"offered": len({o["key"] for o in routes_offered}),
                        "called": len(route_calls), "linked": sum(1 for e in unique.values() if e.get("route"))},
-            "external": [{"name": m["name"], "status": m["status"]} for m in external],
+            "external": [{"id": m["id"], "name": m["name"], "status": m["status"],
+                          **({"in_tests": in_tests[m["id"]]} if m["id"] in in_tests else {})} for m in external],
             "gaps": sorted(gaps, key=lambda g: (g["site"], g["reason"]))}
 
 
@@ -1070,6 +1148,7 @@ def _links_reader_digest() -> str:
     digest = hashlib.sha256()
     for path in (Path(__file__), SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
                  SCRIPT_DIR / "premap" / "flow_entries.py", SCRIPT_DIR / "premap" / "noir.py",
+                 SCRIPT_DIR / "premap" / "nextjs.py", SCRIPT_DIR / "technologies.py",
                  SCRIPT_DIR / "premap" / "python_build.py", SCRIPT_DIR / "languages" / "rust.py",
                  SCRIPT_DIR / "engine_pass.py", SCRIPT_DIR.parent / "data" / "entry-queries.json"):
         digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))
@@ -1082,9 +1161,10 @@ def _links_stamp(manifest: Path, *, premap=True) -> list:
     edges = manifest.with_name("engine-edges.sqlite")
     files = (manifest, manifest.with_name(manifest.name + "-wal"), edges, edges.with_name(edges.name + "-wal"),
              modules.graph_name(manifest), manifest.with_name(modules.LEDGER_FILE))
-    if premap:
+    if premap:  # the pre-map's record, and the stack step's: its services are the links' external nodes
+        import technologies
         from premap import path
-        files += (path(manifest),)
+        files += (path(manifest), technologies.path(manifest))
     stamp = []
     for path in files:
         try:
@@ -1180,21 +1260,61 @@ def _classify_entries(candidates, attributes, decisions, held, actions, found, g
 
 
 def _external_nodes(manifest: Path, graph=None) -> list[dict]:
-    """External modules of the module graph, with the files they cite as evidence."""
+    """The services of others the links hold as nodes, by id: the stack step's recorded technologies and the external
+    modules of the module graph (`technologies.externals`, the list the brief shows), each with the files it cites. A
+    service the graph knows is named as the graph names it; one only the stack step recognises, by its id."""
     import modules
+    import technologies
     try:
         graph = graph if graph is not None else modules.ensure_graph(manifest)
         payload = json.loads(Path(graph["graph"]).read_text(encoding="utf-8"))
     except (OSError, ValueError, KeyError):
-        return []
-    out = []
-    for module in payload.get("modules", []):
-        if module.get("location") != "external":
+        payload = {}
+    return [{"id": e["id"], "name": e.get("module") or e["id"], "status": e["status"] if "module" in e else "inferred",
+             "evidence_files": e["paths"]}
+            for e in technologies.externals({"modules": payload.get("modules", [])}, technologies.recorded(manifest))]
+
+
+def _package_services(manifest: Path) -> dict[tuple[str, str], str]:
+    """The service of others each package belongs to, by (ecosystem, name as `service_registry.package_key` compares
+    it): the packages a module declares that the stack step's record ties to a technology of kind service (a framework
+    or a tool is no service of others)."""
+    import service_registry
+    import technologies
+    record = technologies.recorded(manifest)
+    services = {item["id"] for item in record["technologies"] if item.get("kind") == "service"}
+    return {(lib["ecosystem"], service_registry.package_key(lib["ecosystem"], lib["name"])): lib["id"]
+            for module in record.get("modules", ()) for lib in module.get("libraries", ()) if lib.get("id") in services}
+
+
+def _service_uses(called: dict, ties: dict, external: list[dict], added: set[str]) -> tuple[list[dict], dict, set]:
+    """The `usa` edges of the calls an engine resolved into a package of a service (`ties`, `_package_services`): one
+    per caller and service, at the first call, its resolver the engine's. A call in a test file is no use of the
+    service: it makes no edge and is counted, per service, in `in_tests` (the files and the callers). `gave` are the
+    (file, service) pairs a call was found for, test files included: the files whose declared edges these replace.
+    A call that ends in a type package the indexer added for a library (`added`, `edge_view`'s `types_added`) is a call
+    into that library: its name is the one the indexer gives it (`typescript_types.types_package`)."""
+    import service_registry
+    from indexers import typescript_types
+    nodes = {node["id"]: node for node in external}
+    ties = {**ties, **{("npm", typescript_types.types_package(name)): service for (ecosystem, name), service in ties.items()
+                       if ecosystem == "npm" and typescript_types.types_package(name) in added}}
+    edges, in_tests, gave = {}, {}, set()
+    for (caller, ecosystem, name), (site, resolver, file) in called.items():
+        service = ties.get((ecosystem, service_registry.package_key(ecosystem, name)))
+        if service not in nodes:
             continue
-        files = sorted({str(item.get("path") if isinstance(item, dict) else item).split("#")[0]
-                        for item in module.get("evidence", [])})
-        out.append({"name": module["name"], "status": module.get("status"), "evidence_files": files})
-    return out
+        gave.add((file, service))
+        if semantic_store._is_test_path(file):
+            left = in_tests.setdefault(service, {"files": set(), "callers": set()})
+            left["files"].add(file)
+            left["callers"].add(caller)
+        elif (caller, service) not in edges:
+            edges[caller, service] = {"from": caller, "to": f"module:{nodes[service]['name']}", "type": "usa",
+                                      "origin": "dedotto", "site": site, "status": nodes[service]["status"],
+                                      **({"resolver": resolver} if resolver else {})}
+    return list(edges.values()), {service: {key: len(items) for key, items in left.items()}
+                                  for service, left in in_tests.items()}, gave
 
 
 # ---------------------------------------------------------------- flows

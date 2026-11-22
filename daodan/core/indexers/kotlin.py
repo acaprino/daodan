@@ -235,7 +235,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, *, 
         prepare = (jvm.modules_line(modules, root) + jvm.tool_line(tool)
                    + jvm.raise_line(toolchains, root, jvm.JDK, "all") + PREPARE)
         result, runs, out = jvm.run(folder, work, prepare, EXECUTE, memory=memory, engine=engine,
-                                    toolchains=toolchains, hosts=(declared or {}).get("hosts", ()),
+                                    toolchains=jvm.for_tool(toolchains, tool), hosts=(declared or {}).get("hosts", ()),
                                     checkout=project_dir)
         part = finish(work, result, runs, out)
         said = jvm.edited(runs, root) if part.get("indexes") else []

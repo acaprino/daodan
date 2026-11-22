@@ -151,6 +151,24 @@ def test_a_package_with_only_its_manifest_is_installed_by_npm_with_its_lifecycle
     assert "gaps" not in answer
 
 
+def test_each_nested_app_with_its_own_lockfile_is_restored_beside_the_root_and_no_gap_is_left(tmp_path, no_download):
+    """A root and independent apps below, each with its own package.json and package-lock.json, no workspaces."""
+    import preparation
+    apps = ("admin-app", "landing-app")
+    files = {"package.json": '{"name": "root", "dependencies": {"ms": "2.1.3"}}\n', "package-lock.json": "{}\n",
+             "tsconfig.json": "{}\n"}
+    for app in apps:
+        files[f"{app}/package.json"] = '{"name": "' + app + '", "dependencies": {"ms": "2.1.3"}}\n'
+        files[f"{app}/package-lock.json"] = "{}\n"
+    _, manifest = manifest_of(tmp_path, files)
+    calls, fake = recorder()
+    with mock.patch.object(container, "run_commands", fake):
+        [answer] = container_runner.runner(manifest)([command("tsc")])
+    line = preparation.restore("npm", [".", *apps], scripts=True)
+    assert f"( {line} )" in calls[0]["commands"][0]["argv"][-1]
+    assert "gaps" not in answer
+
+
 def test_a_package_folder_no_restore_installs_is_a_gap_on_the_answers(tmp_path, no_download):
     """A package under the root's restore that its workspaces do not name declares dependencies nobody installs."""
     _, manifest = manifest_of(tmp_path, {
@@ -228,7 +246,7 @@ def test_every_model_source_of_the_premap_has_a_setup():
              "renovate": premap.renovate, "compose": premap.compose, "daodan-enry": premap.enry,
              "daodan-dockerfile": premap.dockerfile, "cmake": premap.cmake, "meson": premap.meson,
              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
-             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir}
+             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir, "next": premap.nextjs}
     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
     assert set(tools) <= set(container_runner.TOOLS)
 
@@ -237,8 +255,9 @@ def test_every_model_source_of_the_premap_has_a_setup():
 
 SMOKE = os.environ.get("DAODAN_PREMAP_SMOKE") == "1"
 CORPUS = ROOT / "benchmarks/project-model/fixtures"
-CASES = {  # tool -> (corpus fixture, the source), one project each
+CASES = {  # tool -> (corpus fixture, or the folder of one, the source), one project each
     "noir": ("js-nextjs", premap.noir),
+    "next": (ROOT / "benchmarks/system-map/real-paths/next-shop", premap.nextjs),  # js-nextjs is Next.js 14: no typegen
     "go": ("sys-go-buildtags", premap.go), "cargo": ("sys-rust-features", premap.cargo),
     "uv": ("py-uv-workspace", premap.uv), "tsc": ("js-vite-react-ts", premap.tsc),
     "npm": ("js-npm-workspaces", premap.npm), "renovate": ("js-npm-single", premap.renovate),
@@ -269,6 +288,9 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
     assert not [g for g in record["gaps"] if g["kind"] in ("source_failed", "model_failed")]
     if tool == "noir":
         assert any(r["method"] == "GET" and r["path"] == "/api/health" for r in premap.noir.recorded(manifest))
+    if tool == "next":
+        assert {(r["path"], r["site"]) for r in record["framework_entries"]} >= {
+            ("/api/pay", "app/api/pay/route.ts"), ("/checkout", "app/checkout/page.tsx")}
     assert held() == before
 
 

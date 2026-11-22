@@ -7,7 +7,8 @@ classifies the shapes; it does not look for entries.
 
 The residual net reads the links; the other readers read the snapshot the links come from (`candidates`), code from
 its syntax tree: the grammar the snapshot read the file with, and what a framework writes is the data of
-`daodan/data/entry-queries.json`, one query per grammar. `noir` reads the endpoints a ready-made tool reports.
+`daodan/data/entry-queries.json`, one query per grammar. `noir` reads the endpoints a ready-made tool reports, `typegen`
+the file a framework's own tool generates.
 """
 from __future__ import annotations
 
@@ -29,6 +30,7 @@ from languages.sfc import mask_non_script  # noqa: E402
 from snapshot_store import _unpack, open_snapshot  # noqa: E402
 
 RESIDUAL, ARGUMENT, ATTRIBUTE, DECORATOR, NOIR, MANIFEST = "residuo", "argomento", "attributo", "decoratore", "noir", "manifesto"
+NEXT = "next"
 CALLS = ("chiama", "attiva")  # the links by which a symbol is called
 QUERIES = json.loads((SCRIPT_DIR.parent / "data" / "entry-queries.json").read_text(encoding="utf-8"))
 ENTRY_KINDS = tuple(QUERIES["entry_kinds"])
@@ -594,7 +596,8 @@ def _decorated(facts, file, source, grammar, root):
 def noir(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dict]:
     """The endpoints OWASP Noir reports (`noir scan -f json`, run in Daodan's container over `root`) as candidates,
     with no rule: the protocol is the shape and decides the kind (`QUERIES["noir"]`; another protocol is a shape to
-    classify), method and path as Noir writes them, and the handler when Noir names it. The site is the handler's,
+    classify) unless the endpoint's own `kind` is one Daodan knows (`QUERIES["noir_kinds"]`: a server action), which
+    is then the shape and the kind, method and path as Noir writes them, and the handler when Noir names it. The site is the handler's,
     else the first code path's, relative to `root`; an endpoint with neither is none. The symbol is the function
     Noir names in that file, else the file's code outside any function: Noir does not name a method's class."""
     out = []
@@ -611,12 +614,38 @@ def noir(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dic
             gaps.append({"kind": "outside_snapshot", "path": str(path), "detail": "Noir cites a file outside the scanned root"})
             continue
         file = path.relative_to(root).as_posix()
-        name, kind = handler.get("name") if where is handler else None, QUERIES["noir"].get(endpoint["protocol"])
-        out.append({"reader": NOIR, "shape": endpoint["protocol"],
+        known = endpoint.get("kind") in QUERIES["noir_kinds"]  # a kind of Noir's that Daodan knows is the shape
+        shape = endpoint["kind"] if known else endpoint["protocol"]
+        name = handler.get("name") if where is handler else None
+        kind = QUERIES["noir_kinds"][shape] if known else QUERIES["noir"].get(shape)
+        out.append({"reader": NOIR, "shape": shape,
                     "site": f"{file}:{where['line']}" if where.get("line") else file,
                     "symbol": f"{file}::{name or flows.MODULE}", "method": endpoint["method"], "path": endpoint["url"],
                     **({"kind": kind} if kind else {}), **({"handler": name} if name else {})})
     return out
+
+
+def typegen(text: str) -> tuple[list[dict], int | None, list[dict]]:
+    """The blocks of `.next/types/validator.ts` (`next typegen`, run in Daodan's container), read from its syntax tree
+    (`QUERIES["typegen"]`), the line of the first error the tree holds (None when it parses whole), and the blocks it
+    checks a file in that this reader does not read (`QUERIES["typegen_blocks"]`: a config type with no route). Each
+    block is a checked file: the type of config the tool checks it against (`shape`), the route that type is written
+    for (`path`) and the file it imports (`import`, relative to `.next/types`); an unread one gives its `import` and
+    its `block`. The comment above a block is not read. A tree that holds an error gives no block: a file cut short
+    must not pass as a short list."""
+    source = text.encode("utf-8")
+    root = _parse(source, "typescript")
+    if root is not None and root.has_error:
+        node = root
+        while not (node.is_error or node.is_missing):
+            node = next(child for child in node.children if child.has_error)
+        return [], node.start_point[0] + 1, []
+    matches = _matches(source, "typescript", "typegen", root)
+    read = {found["import"][0].start_byte for found in matches}
+    unread = [{"import": _text(source, found["import"][0]), "block": " ".join(_text(source, found["block"][0]).split())}
+              for found in _matches(source, "typescript", "typegen_blocks", root) if found["import"][0].start_byte not in read]
+    return ([{"shape": _text(source, found["shape"][0]), "path": _text(source, found["route"][0]),
+              "import": _text(source, found["import"][0])} for found in matches], None, unread)
 
 
 def _read_syntax(facts, db, view):

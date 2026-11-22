@@ -34,6 +34,12 @@ def test_the_rule_keeps_code_and_leaves_data_and_secrets():
     assert not code_archive.kept("src/labels.json", code_archive.LIMIT + 1)  # data under a code suffix
 
 
+def test_a_package_managers_lockfile_goes_whatever_its_size():
+    for lock in ("web/package-lock.json", "pnpm-lock.yaml", "app/yarn.lock", "uv.lock"):
+        assert code_archive.kept(lock, code_archive.LIMIT * 5), lock  # without it the restore of that folder is a gap
+    assert not code_archive.kept("data/package-lock.json", 1000)  # a data folder stays, lockfile or not
+
+
 def _committed(repository: Path) -> list[str]:
     git = ["git", "-C", str(repository), "-c", "user.name=t", "-c", "user.email=t@example.invalid"]
     subprocess.run(["git", "init", "-q", str(repository)], check=True)

@@ -9,7 +9,7 @@ language is `unavailable`, with the gap's cause and remedy.
   first use and keeps it. Temurin's JDK 17 (`preparation.TEMURIN`) comes as an input like the build tools and is
   unpacked into the state volume, linked where the scripts look for it (`preparation.UNPACK_JDK`), before
   anything runs Java. Another JDK a build asks for, the preparation installs; one it cannot is `unavailable`
-  with that cause (`newer_jdk`).
+  with that cause (`judged`).
 - What the image lacks, Daodan downloads on the host into the shared directory, verified, and the copy carries
   into the container (`tools`): scip-java's classpath at `VERSION`, each jar pinned by sha256, and the build tool
   the project asks for. The wrapper's `distributionUrl` names it (`gradle/wrapper/gradle-wrapper.properties`,
@@ -318,10 +318,11 @@ GRADLE
 }
 '''
 PREPARE += RAISE_LEVELS
-# A build that needs a newer JDK says so: Gradle's toolchain request, javac's release, a class file version
-# (61 is Java 17's).
-NEWER = (re.compile(r"languageVersion=(\d+)"), re.compile(r"release version (\d+) not supported"),
-         re.compile(r"invalid (?:target|source) release:? (\d+)"))
+# A build that needs a newer JDK says so: Gradle's toolchain request (`{languageVersion=21, vendor=JetBrains, ...}`,
+# the vendor read after the words, not part of them), javac's release, a class file version (61 is Java 17's).
+# Regular expressions: the lines of a build's log have no grammar.
+NEWER = (re.compile(r"languageVersion=(\d+)(?=(?:, vendor=(?P<vendor>[^,}]+))?)"),
+         re.compile(r"release version (\d+) not supported"), re.compile(r"invalid (?:target|source) release:? (\d+)"))
 CLASS_FILE = re.compile(r"class file (?:has wrong )?version (\d+)\.0")
 
 
@@ -349,16 +350,33 @@ def toolchains(record: dict) -> list[dict]:
     return [item for item in record.get("toolchains", []) if item.get("tool") in ("java", *preparation.ANDROID)]
 
 
-def _major(version: str) -> int | None:
-    match = re.match(r"\s*(?:1\.)?(\d+)", str(version or ""))
-    return int(match.group(1)) if match else None
+_major = preparation.jdk_major  # the one parser of a JDK version, shared with the pre-map's runner
+
+
+def daemon_jdk(item: dict) -> bool:
+    """Whether a stated toolchain is the JDK a Gradle build's daemon file names (`premap.jvm_files.DAEMON`)."""
+    from premap import jvm_files
+    return item.get("declared_in", "").split("#")[0].endswith(jvm_files.DAEMON)
+
+
+def for_tool(stated, tool: str | None) -> list[dict]:
+    """The toolchains `stated` that state for a build by `tool` (None: the tool scip-java finds): the JDK of a daemon
+    file is Gradle's alone."""
+    return [item for item in stated or () if tool in (None, "gradle") or not daemon_jdk(item)]
 
 
 def wanted_jdk(stated) -> dict | None:
-    """The newest JDK `stated` above the image's: a release or toolchain the image's JDK compiles needs nothing,
-    one above it is installed by the preparation at the version stated."""
-    above = [item for item in stated or () if item.get("tool") == "java" and (_major(item.get("version")) or 0) > JDK]
-    return max(above, key=lambda item: _major(item["version"])) if above else None
+    """The newest JDK `stated` above the image's, or at its major of another vendor than its (Temurin): a release or
+    toolchain the image's JDK compiles needs nothing, one above it is installed by the preparation at the version
+    stated, with the vendor's (`jetbrains-21`). Of two at one major, the one that names a vendor. Where a Gradle
+    build's daemon file names a JDK, that one: the daemon runs on it, whatever toolchains the scripts name, which the
+    preparation installs beside it."""
+    java = [item for item in stated or () if item.get("tool") == "java"]
+    java = [item for item in java if daemon_jdk(item)] or java
+    other = lambda item: preparation.vendor_key(item.get("vendor")) != preparation.vendor_key(None)  # noqa: E731
+    above = [item for item in java if (
+        (_major(item.get("version")) or 0) > JDK or _major(item.get("version")) == JDK and other(item))]
+    return max(above, key=lambda item: (_major(item["version"]), other(item))) if above else None
 
 
 def inside(rel: str, folder: str) -> bool:
@@ -442,7 +460,7 @@ def build_jdk(run: dict, stated) -> dict | None:
     compiler plugin of the pom's time may not read a newer JDK's classes (Error Prone's own javac 9). Not for a pom
     that declares a `release`, which javac 9 or later compiles for it; not for Gradle, which runs on the image's
     JDK and finds the toolchain its scripts ask for."""
-    stated = [item for item in applying(stated, run["root"]) if item.get("tool") == "java"]
+    stated = [item for item in applying(for_tool(stated, run["tool"]), run["root"]) if item.get("tool") == "java"]
     above = wanted_jdk(stated)
     if above or run["tool"] != "maven":
         return above
@@ -582,23 +600,49 @@ def tools(project_dir: Path) -> dict[str, Path]:
     return inputs
 
 
-def newer_jdk(text: str, used: int = JDK) -> int | None:
-    """The newest JDK above `used` a failed build's output asks for, or None."""
-    found = [int(value) for pattern in NEWER for value in pattern.findall(text)]
-    found += [int(value) - 44 for value in CLASS_FILE.findall(text)]
-    found = [value for value in found if value > used]
-    return max(found) if found else None
+def _newer(text: str, used: int = JDK, has=None) -> tuple[int, str, str | None] | None:
+    """The newest JDK a failed build's output asks for that the run's was not, with the words that ask for it and
+    the vendor they name (None for none): one above `used`, or `used` itself of a vendor other than `has`, the
+    vendor of the JDK the run had (None: the image's, Temurin). None when it asks for no such JDK."""
+    found = [(int(match.group(1)), match.group(), preparation.asked_vendor(match.groupdict().get("vendor")))
+             for pattern in NEWER for match in pattern.finditer(text)]
+    found += [(int(match.group(1)) - 44, match.group(), None) for match in CLASS_FILE.finditer(text)]
+    found = [item for item in found if item[0] > used or (
+        item[0] == used and item[2] and preparation.vendor_key(item[2]) != preparation.vendor_key(has))]
+    return max(found, key=lambda item: (item[0], bool(item[2]))) if found else None
 
 
-def judged(result: dict, text: str, used: int = JDK) -> dict:
-    """A failed preparation that asks for a JDK above the one it ran with (`used`) is a gap."""
-    jdk = newer_jdk(text, used) if result["state"] not in ("done", "gap") else None
-    if jdk is None:
+def _jdk(major: int, vendor=None) -> str:
+    """A JDK as a message names it: `JDK 17`, `JetBrains JDK 17` when its vendor is asked."""
+    return f"{preparation.vendor_label(vendor)} JDK {major}" if vendor else f"JDK {major}"
+
+
+def _tried(tried: dict, left: bool) -> str:
+    """What became of the JDK a second run was made for (`tried`, as `preparation.jdk_named` gave it): the build ran on
+    it, or `left` it did not install, whatever its major or vendor, and the image's ran."""
+    kind = _jdk(_major(tried["version"]), tried.get("vendor"))
+    if not left:
+        return f"the build ran again on {kind}, which its first error asked for"
+    return f"{kind}, which its first error asked for, did not install, so the build ran on the image's JDK {JDK}"
+
+
+def judged(result: dict, text: str, used: int = JDK, tried: dict | None = None, has=None, left: bool = False) -> dict:
+    """A failed preparation that asks for a JDK above the one it ran with (`used`, of the vendor `has`), or for its
+    major of another vendor, is a gap. `tried` is the JDK of a second run, the one the first run's error named, and
+    `left` whether it did not install: the gap says what became of it."""
+    found = _newer(text, used, has) if result["state"] not in ("done", "gap") else None
+    if found is None:
         return result
+    asked = _jdk(found[0], found[2])
     held = f"Daodan's image holds JDK {JDK} only" if used == JDK else f"the preparation installed JDK {used}"
-    return {**result, "state": "gap", "cause": f"the build asks for JDK {jdk}; {held}",
-            "remedy": f"declare JDK {jdk} where the pre-map reads it (the build's toolchain or release), so the "
-                      "preparation installs it"}
+    remedy = (f"declare {asked} where the pre-map reads it (the build's toolchain or release), so the "
+              "preparation installs it")
+    if tried:
+        held = _tried(tried, left)
+        if left:
+            remedy = (f"{_jdk(_major(tried['version']), tried.get('vendor'))} could not be installed by the "
+                      "preparation: its toolchain gap says why")
+    return {**result, "state": "gap", "cause": f"the build asks for {asked}; {held}", "remedy": remedy}
 
 
 def _errors(line: str) -> str | None:
@@ -675,7 +719,7 @@ def failed(result: dict, runs: list[dict]) -> dict:
 def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory: int, engine=None,
         toolchains=(), prepare_timeout: float = 1800, timeout: float = 600,
         inputs: dict[str, Path] | None = None, jdk: dict | None = None, hosts=(),
-        checkout: Path | None = None) -> tuple[dict, list[dict], Path]:
+        checkout: Path | None = None, tried: dict | None = None) -> tuple[dict, list[dict], Path]:
     """Both phases in one container run over a copy of `checkout` (`project_dir`'s when not given: a build reads
     what lies outside its folder as it does in a checkout) and the `tools` it needs, the steps in the build's
     folder `project_dir`; the preparation's steps before `prepare` (the JDK it runs on, `jdk` or the newest of
@@ -683,7 +727,9 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
     state for that folder, `applying`; the restore), reaching beside the registries the `hosts` the project
     declares (`preparation.declared`): the operation's result (`judged`, with the preparation's `gaps` and the
     inputs a build stopped without, `missing_inputs`), the runs of both logs, and the folder the outputs came
-    back into."""
+    back into. A build whose output asks for a JDK above the one it ran on, or the same one of another vendor
+    (Gradle's words, else `_newer`) runs once more on it, installed as the preparation installs the pre-map's
+    (`preparation.jdk_named`); that second run, `tried` the JDK it is on, is never followed by a third."""
     import container
     out_dir = Path(work_dir) / "container"
     out = out_dir / Path(OUT).name
@@ -735,23 +781,38 @@ def run(project_dir: Path, work_dir: Path, prepare: str, execute: str, *, memory
             prepared = text if phase == "prepare" else prepared
             runs += steps(text, phase)
     missing = preparation.missing(prepared)
-    if jdk and any(gap["tool"] == "java" and gap["version"] == jdk["version"] for gap in missing):
-        used = JDK  # the head ran with the image's JDK
+    # The JDK that was to run the build did not install (mise failed, or has none of the vendor): the head took
+    # the image's.
+    left =bool(jdk) and any(gap["tool"] == "java" and gap["version"] in (jdk["version"], preparation.mise_version(jdk))
+                             for gap in [*missing, *chains["gaps"]])
+    used = JDK if left else used
+    has = None if left or not jdk else jdk.get("vendor")  # the vendor of the JDK the build ran on
     gaps = (chains["gaps"] + sdk["gaps"] + missing + preparation.restore_gaps(prepared)
             + list(result.get("gaps") or ())  # and what the copy left out (`container.copy_perimeter`)
             + missing_inputs(runs, root))
-    # A Gradle build whose dependency needs a newer JVM runs once more on the JDK it names (`gradle.asked_jdk`).
+    # A build that needs a newer JVM than it ran on, or the same one of another vendor, runs once more on the JDK it
+    # names: Gradle's words first (`gradle.asked_jdk`), else any other error of a failed build (`_newer`). One the
+    # first run already tried to install is not run again.
     from premap import gradle
-    asked = gradle.asked_jdk(prepared, toolchains) if result.get("state") != "gap" else None
-    if asked and (_major(asked[0]["version"]) or 0) > used:
+    asked = None
+    if tried is None and result.get("state") != "gap":
+        asked = gradle.asked_jdk(prepared, toolchains)
+        found = _newer(prepared, used, has) if asked is None and result["state"] != "done" else None
+        asked = preparation.jdk_named(found[0], found[1], toolchains, vendor=found[2]) if found else asked
+    kind = lambda item: (_major(item["version"]) or 0, preparation.vendor_key(item.get("vendor")))  # noqa: E731
+    again_on = kind(asked[0]) if asked else None
+    if asked and again_on[0] >= used and again_on != (used, preparation.vendor_key(has)) and again_on != (
+            kind(jdk) if jdk else None):
         again, more, out = run(project_dir, work_dir, prepare, execute, memory=memory, engine=engine,
                                toolchains=toolchains, prepare_timeout=prepare_timeout, timeout=timeout,
-                               inputs=inputs_given, jdk=asked[0], hosts=hosts, checkout=checkout)
+                               inputs=inputs_given, jdk=asked[0], hosts=hosts, checkout=checkout, tried=asked[0])
         said = [{**asked[1], "path": root or "."}] if asked[1] else []
         return {**again, "gaps": [*said, *again.get("gaps", ())]}, runs + more, out
     why = ungenerated(Path(project_dir), checkout, runs)
-    return ({**judged(result, prepared, used), **({"gaps": gaps} if gaps else {}), **({"why": why} if why else {})},
-            runs, out)
+    ended = judged(result, prepared, used, tried, has, left)
+    if tried and ended["state"] not in ("done", "gap"):  # the second run, on the JDK the first error named, failed
+        why = _tried(tried, left) + (f"; {why}" if why else "")
+    return {**ended, **({"gaps": gaps} if gaps else {}), **({"why": why} if why else {})}, runs, out
 
 
 def with_gaps(part: dict, result: dict) -> dict:

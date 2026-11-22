@@ -5,6 +5,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "daodan/core"))
 import entries
 import flows
@@ -81,3 +83,134 @@ def test_frozen_workflow_triggers_and_service_sites_do_not_guess_a_function_from
     assert not any(e["to"] == "sync.py::sync" for e in flows.cached_links(manifest, [])["edges"])
     assert evidence(manifest)[0] == rows
     assert run.call_count == 1
+
+
+# ------------------------------------------------------------------ Next.js routes
+
+def next_links(tmp_path, files, noir_report=None):
+    """The links of a Next.js snapshot whose pre-map was made from the real `next typegen` output of the fixture and,
+    when given, from a Noir report."""
+    from premap import nextjs, noir
+    from test_codebase_map_premap_container_runner import manifest_of
+    from test_codebase_map_premap_nextjs import VALIDATOR
+
+    def run(commands):
+        if commands[0]["tool"] == "noir":
+            return [{"root": "/work", "returncode": 0, "stdout": json.dumps(noir_report), "stderr": ""}]
+        return [{"root": "/work", "returncode": 0, "stderr": "", "stdout": "" if c["argv"][0] == "npx" else VALIDATOR}
+                for c in commands]
+    _, manifest = manifest_of(tmp_path, files)
+    premap.write(manifest, sources=(noir, nextjs) if noir_report else (nextjs,), runner=run)
+    return flows.cached_links(manifest, [])
+
+
+def shop(**changed):
+    from test_codebase_map_premap_nextjs import SHOP
+    return {**SHOP, **changed}
+
+
+def test_a_next_page_is_an_entry_on_its_default_export_with_the_line_of_that_function(tmp_path):
+    links = next_links(tmp_path, shop())
+    assert {e["path"]: (e["symbol"], e["site"], e["kind"], e["reader"], e["handler_source"])
+            for e in links["entries"] if e["path"] != "/api/pay"} == {
+        "/": ("app/page.tsx::Home", "app/page.tsx:1", "rotta", "next", "next"),
+        "/checkout": ("app/checkout/page.tsx::Checkout", "app/checkout/page.tsx:3", "rotta", "next", "next"),
+        "/orders/[id]": ("app/orders/[id]/page.tsx::Order", "app/orders/[id]/page.tsx:1", "rotta", "next", "next")}
+
+
+def test_a_route_handler_with_two_exported_methods_is_two_entries(tmp_path):
+    route = ("export async function GET() {\n  return Response.json({});\n}\n\n"
+             "export async function POST() {\n  return Response.json({});\n}\n")
+    links = next_links(tmp_path, shop(**{"app/api/pay/route.ts": route}))
+    assert sorted((e["method"], e["symbol"], e["site"]) for e in links["entries"] if e["path"] == "/api/pay") == [
+        ("GET", "app/api/pay/route.ts::GET", "app/api/pay/route.ts:1"),
+        ("POST", "app/api/pay/route.ts::POST", "app/api/pay/route.ts:5")]
+
+
+@pytest.mark.parametrize("file, text, looked_for", [
+    ("app/page.tsx", "export const title = 'Negozio';\n", "default"),
+    ("app/api/pay/route.ts", "export const dynamic = 'force-static';\n", "GET, HEAD, OPTIONS, POST, PUT, DELETE, PATCH")])
+def test_a_file_with_no_export_the_rule_names_has_no_entry_and_a_gap_naming_what_was_looked_for(
+        tmp_path, file, text, looked_for):
+    links = next_links(tmp_path, shop(**{file: text}))
+    assert not [e for e in links["entries"] if e["site"].split(":")[0] == file]
+    [gap] = [g for g in links["gaps"] if g["site"] == file]
+    assert gap["symbol"] == f"{file}::<module>" and looked_for in gap["reason"]
+
+
+def test_an_exported_method_the_snapshot_cannot_resolve_is_a_gap_beside_the_entries_of_the_others(tmp_path):
+    route = "export async function GET() {\n  return Response.json({});\n}\n\nexport { POST } from './handlers';\n"
+    links = next_links(tmp_path, shop(**{"app/api/pay/route.ts": route,
+                                         "app/api/pay/handlers.ts": "export async function POST() {}\n"}))
+    assert [(e["method"], e["symbol"]) for e in links["entries"] if e["path"] == "/api/pay"] == [
+        ("GET", "app/api/pay/route.ts::GET")]
+    [gap] = [g for g in links["gaps"] if g["site"] == "app/api/pay/route.ts"]
+    assert "POST" in gap["reason"] and "reexport" in gap["reason"]
+
+
+def test_a_route_handler_exported_under_two_methods_by_one_function_is_two_entries(tmp_path):
+    route = "async function handler() {\n  return Response.json({});\n}\n\nexport { handler as GET, handler as POST };\n"
+    links = next_links(tmp_path, shop(**{"app/api/pay/route.ts": route}))
+    assert sorted((e["method"], e["symbol"], e["site"]) for e in links["entries"] if e["path"] == "/api/pay") == [
+        ("GET", "app/api/pay/route.ts::handler", "app/api/pay/route.ts:1"),
+        ("POST", "app/api/pay/route.ts::handler", "app/api/pay/route.ts:1")]
+
+
+def test_a_layout_is_no_entry_and_no_gap(tmp_path):
+    links = next_links(tmp_path, shop())
+    assert not [e for e in links["entries"] if e["site"].startswith("app/layout.tsx")]
+    assert not [g for g in links["gaps"] if g["site"].startswith("app/layout.tsx")]
+
+
+def noir_route(url, method, file, name, line):
+    return {"protocol": "http", "url": url, "method": method, "kind": "",
+            "handler": {"path": f"/work/{file}", "line": line, "name": name}}
+
+
+def test_a_noir_route_on_the_symbol_of_a_next_entry_is_dropped_and_one_in_another_file_stays(tmp_path):
+    report = {"endpoints": [noir_route("/api/pay", "POST", "app/api/pay/route.ts", "POST", 1),
+                            noir_route("/other", "GET", "server/other.ts", "other", 1)]}
+    links = next_links(tmp_path, shop(**{"server/other.ts": "export function other() {}\n"}), report)
+    assert [(e["reader"], e["symbol"], e["method"]) for e in links["entries"] if e["path"] == "/api/pay"] == [
+        ("next", "app/api/pay/route.ts::POST", "POST")]
+    assert [(e["reader"], e["symbol"]) for e in links["entries"] if e["path"] == "/other"] == [
+        ("noir", "server/other.ts::other")]
+
+
+def test_a_noir_route_with_no_handler_on_a_file_and_path_a_next_entry_covers_is_that_entry(tmp_path):
+    """Noir names no handler for a page: its row has the file's own symbol, and no unique function at its site."""
+    page = {"protocol": "http", "url": "/checkout", "method": "GET", "kind": "",
+            "details": {"code_paths": [{"path": "/work/app/checkout/page.tsx", "line": 3}]}}
+    links = next_links(tmp_path, shop(), {"endpoints": [page]})
+    assert [(e["reader"], e["symbol"], e["method"]) for e in links["entries"] if e["path"] == "/checkout"] == [
+        ("next", "app/checkout/page.tsx::Checkout", "GET")]
+    assert not [g for g in links["gaps"] if g["site"].startswith("app/checkout/page.tsx")]
+
+
+def test_a_noir_route_on_the_function_a_next_entry_starts_under_another_path_is_its_own_entry(tmp_path):
+    """Noir says the function answers `/other`, and Next starts it from `/checkout`: two routes, neither drops the
+    other, and the method goes to no entry of another path."""
+    report = {"endpoints": [noir_route("/other", "POST", "app/checkout/page.tsx", "Checkout", 3)]}
+    links = next_links(tmp_path, shop(), report)
+    found = [e for e in links["entries"] if e["symbol"] == "app/checkout/page.tsx::Checkout"]
+    assert sorted((e["reader"], e["path"], e.get("method")) for e in found) == [
+        ("next", "/checkout", None), ("noir", "/other", "POST")]
+
+
+def test_a_noir_route_with_a_method_no_next_entry_of_its_file_and_path_carries_is_its_own_entry(tmp_path):
+    """A route handler exports `GET` as a function and `POST` in a form the snapshot's exports do not name (Next gives
+    no entry and no gap for it): Noir's `POST` on that file and path stays, and its `GET` is Next's."""
+    route = "export async function GET() {\n  return Response.json({});\n}\n\nasync function POST() {\n  return 1;\n}\n"
+    report = {"endpoints": [noir_route("/api/pay", "GET", "app/api/pay/route.ts", "GET", 1),
+                            noir_route("/api/pay", "POST", "app/api/pay/route.ts", "POST", 5)]}
+    links = next_links(tmp_path, shop(**{"app/api/pay/route.ts": route}), report)
+    assert [(e["reader"], e["symbol"], e["method"]) for e in links["entries"] if e["path"] == "/api/pay"] == [
+        ("next", "app/api/pay/route.ts::GET", "GET"), ("noir", "app/api/pay/route.ts::POST", "POST")]
+
+
+def test_a_dropped_noir_route_gives_its_method_to_the_next_entry_that_lacks_one(tmp_path):
+    report = {"endpoints": [noir_route("/checkout", "GET", "app/checkout/page.tsx", "Checkout", 3)]}
+    links = next_links(tmp_path, shop(), report)
+    assert [(e["reader"], e["symbol"], e["method"]) for e in links["entries"] if e["path"] == "/checkout"] == [
+        ("next", "app/checkout/page.tsx::Checkout", "GET")]
+

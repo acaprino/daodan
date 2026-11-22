@@ -126,5 +126,90 @@ class PossibleLinks(unittest.TestCase):
             possible.measure(self.manifest, {**self.links, "schema": "daodan/flow-links/v2"}, REFERENCE)
 
 
+class PossibleLinksOfAServiceOnlyTheStackStepKnows(unittest.TestCase):
+    """The same fixture, with no external module in the graph: the provider is a technology of the stack step."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.work = Path(tempfile.mkdtemp(prefix="possible-stack-")).resolve()
+        cls.addClassCleanup(shutil.rmtree, cls.work, True)
+        project = cls.work / "app"
+        shutil.copytree(ROOT / "benchmarks/flow-model/app", project)
+        (project / "server/events.py").write_text(WEBHOOK, encoding="utf-8")
+        declared = json.loads((project / "codebase-modules.json").read_text(encoding="utf-8"))
+        declared["modules"] = [m for m in declared["modules"] if m["name"] != PROVIDER]
+        (project / "codebase-modules.json").write_text(json.dumps(declared), encoding="utf-8")
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+            run(command, cwd=project)
+        cls.manifest = cls.work / "snapshot/manifest.sqlite"
+        core = ROOT / "daodan" / "core"
+        run([sys.executable, str(core / "snapshot.py"), "write", str(project), "--out", str(cls.manifest),
+             "--no-engine", "--no-index"])
+        stack = {"schema": "daodan/technologies/v1", "technologies": [
+            {"id": "cardpay", "name": "Card Pay", "kind": "service", "type": "gateway",
+             "signs": [{"sign": "package", "strength": "declared", "path": path, "line": 1, "value": "cardpay"}
+                       for path in ("server/events.py", "server/gateway.py", "server/payments.py")]}]}
+        cls.manifest.with_name("technologies.json").write_text(json.dumps(stack), encoding="utf-8")
+        cls.links = json.loads(run([sys.executable, str(core / "flows.py"), "links", str(cls.manifest), "--rules",
+                                    str(ROOT / "benchmarks/flow-model/rules.json")]))
+        cls.result = possible.measure(cls.manifest, cls.links, REFERENCE)
+
+    def test_the_service_is_no_longer_without_a_module(self):
+        self.assertEqual(self.result["services"], {"Fornitore delle carte": ["module:cardpay"], "Posta": []})
+
+    def test_an_uncalled_route_in_a_file_of_the_service_is_called_by_it(self):
+        self.assertIn({"from": "module:cardpay", "to": "server/events.py::card_event", "type": "chiama",
+                       "site": "server/events.py:5", "origin": "possibile:ritorno"}, possible.possible(self.links))
+        self.assertEqual(self.result["flows"][0]["entries_from_others"], {"possibile:ritorno": 1, "non visto": 1})
+
+
+class PossibleLinksOfAServiceOnlyTheCallsTheEngineResolvedGive(unittest.TestCase):
+    """The same fixture: the stack step ties the package `cardpay` to the service, declared in a manifest only, and the
+    engine resolved the calls into it, in the handler's file and in the gateway's."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.work = Path(tempfile.mkdtemp(prefix="possible-engine-")).resolve()
+        cls.addClassCleanup(shutil.rmtree, cls.work, True)
+        project = cls.work / "app"
+        shutil.copytree(ROOT / "benchmarks/flow-model/app", project)
+        (project / "server/events.py").write_text("import cardpay\n" + WEBHOOK.replace(
+            "    db.put(", "    cardpay.verify(body)\n    db.put("), encoding="utf-8")  # the call is on line 8
+        declared = json.loads((project / "codebase-modules.json").read_text(encoding="utf-8"))
+        declared["modules"] = [m for m in declared["modules"] if m["name"] != PROVIDER]
+        (project / "codebase-modules.json").write_text(json.dumps(declared), encoding="utf-8")
+        for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                        ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+            run(command, cwd=project)
+        cls.manifest = cls.work / "snapshot/manifest.sqlite"
+        core = ROOT / "daodan" / "core"
+        run([sys.executable, str(core / "snapshot.py"), "write", str(project), "--out", str(cls.manifest),
+             "--no-engine", "--no-index"])
+        sys.path.insert(0, str(ROOT / "tests"))
+        import test_codebase_map_flows as flow_tests  # its helpers write the stack record and the engine's edge store
+        tests = flow_tests.ExternalServiceTests
+        tests.stack(cls.manifest, ("cardpay", "Card Pay", ["requirements.txt"]), libraries=[("pypi", "cardpay", "cardpay")])
+        package = ("python", "cardpay")
+        tests.engine(cls.manifest, {("server/events.py", 8): package, ("server/gateway.py", 15): package})
+        cls.links = json.loads(run([sys.executable, str(core / "flows.py"), "links", str(cls.manifest), "--rules",
+                                    str(ROOT / "benchmarks/flow-model/rules.json")]))
+        cls.result = possible.measure(cls.manifest, cls.links, REFERENCE)
+
+    def test_the_service_is_no_longer_without_a_module(self):
+        self.assertEqual(self.result["services"], {"Fornitore delle carte": ["module:cardpay"], "Posta": []})
+
+    def test_an_uncalled_route_whose_handler_s_file_calls_the_package_is_called_by_the_service(self):
+        self.assertIn({"from": "module:cardpay", "to": "server/events.py::card_event", "type": "chiama",
+                       "site": "server/events.py:6", "origin": "possibile:ritorno"}, possible.possible(self.links))
+        self.assertEqual(self.result["flows"][0]["entries_from_others"], {"possibile:ritorno": 1, "non visto": 1})
+
+    def test_the_arrow_to_the_service_is_certain_through_the_function_that_calls_its_package(self):
+        self.assertIn(("server/gateway.py::charge", "module:cardpay"),
+                      {(e["from"], e["to"]) for e in self.links["edges"] if e["type"] == "usa"})
+        self.assertEqual(self.result["flows"][0]["arrows"], {"dichiarata": 1, "certo": 3, "possibile:ritorno": 1,
+                                                             "mancante": 1, "non visto": 1, "senza modulo": 1})
+
+
 if __name__ == "__main__":
     unittest.main()

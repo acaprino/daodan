@@ -1,0 +1,145 @@
+{
+ "source": "https://mise-java.jdx.dev/jvm/ga/linux/x86_64.json, the catalog mise v2026.11.8 reads (src/plugins/core/java.rs)",
+ "read": "2026-11-22",
+ "vendors": {
+  "corretto": {
+   "catalog": [
+    "corretto.aws",
+    "d3pxv6yz143wms.cloudfront.net"
+   ],
+   "reached": [
+    "corretto.aws"
+   ]
+  },
+  "dragonwell": {
+   "catalog": [
+    "github.com"
+   ]
+  },
+  "graalvm": {
+   "catalog": [
+    "github.com"
+   ]
+  },
+  "graalvm-community": {
+   "catalog": [
+    "github.com"
+   ],
+   "reached": [
+    "github.com",
+    "release-assets.githubusercontent.com"
+   ]
+  },
+  "jetbrains": {
+   "catalog": [
+    "cache-redirector.jetbrains.com"
+   ],
+   "reached": [
+    "cache-redirector.jetbrains.com",
+    "d2xrhe97vsfxuc.cloudfront.net"
+   ]
+  },
+  "kona": {
+   "catalog": [
+    "github.com"
+   ],
+   "reached": [
+    "github.com",
+    "release-assets.githubusercontent.com"
+   ]
+  },
+  "liberica": {
+   "catalog": [
+    "github.com"
+   ],
+   "reached": [
+    "github.com",
+    "release-assets.githubusercontent.com"
+   ]
+  },
+  "liberica-nik": {
+   "catalog": [
+    "download.bell-sw.com",
+    "github.com"
+   ]
+  },
+  "mandrel": {
+   "catalog": [
+    "github.com"
+   ]
+  },
+  "microsoft": {
+   "catalog": [
+    "aka.ms"
+   ],
+   "reached": [
+    "aka.ms",
+    "download.visualstudio.microsoft.com"
+   ]
+  },
+  "openjdk": {
+   "catalog": [
+    "download.java.net"
+   ]
+  },
+  "oracle": {
+   "catalog": [
+    "download.oracle.com"
+   ],
+   "reached": [
+    "download.oracle.com"
+   ]
+  },
+  "oracle-graalvm": {
+   "catalog": [
+    "download.oracle.com",
+    "gds.oracle.com"
+   ]
+  },
+  "redhat": {
+   "catalog": [
+    "developers.redhat.com"
+   ]
+  },
+  "sapmachine": {
+   "catalog": [
+    "github.com"
+   ],
+   "reached": [
+    "github.com",
+    "release-assets.githubusercontent.com"
+   ]
+  },
+  "semeru-openj9": {
+   "catalog": [
+    "github.com"
+   ],
+   "reached": [
+    "github.com",
+    "release-assets.githubusercontent.com"
+   ]
+  },
+  "temurin": {
+   "catalog": [
+    "github.com"
+   ],
+   "reached": [
+    "github.com",
+    "release-assets.githubusercontent.com"
+   ]
+  },
+  "trava": {
+   "catalog": [
+    "github.com"
+   ]
+  },
+  "zulu": {
+   "catalog": [
+    "cdn.azul.com"
+   ],
+   "reached": [
+    "cdn.azul.com"
+   ]
+  }
+ }
+}

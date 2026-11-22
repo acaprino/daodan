@@ -491,6 +491,226 @@ class PreparationTests:
         self.assertIn("JDK 21", result["reason"])
         self.assertEqual([gap["kind"] for gap in result["gaps"]], ["toolchain_unavailable"])
 
+    ASKS_21 = ("> No matching toolchains found for requested specification: "
+               "{languageVersion=21, vendor=any, implementation=vendor-specific}")
+
+    def asking(self, said: str) -> None:
+        self.play("prepare", text=log(("index", 1, said)), code=1)
+
+    def then(self, *plays) -> list[int]:
+        """Each run of the container after the first takes the next of `plays`; the list counts the runs."""
+        real, runs = container.run_in_container, []
+
+        def run(*given, **options):
+            result = real(*given, **options)
+            runs.append(1)
+            if len(runs) <= len(plays):
+                plays[len(runs) - 1]()
+            return result
+        patcher = mock.patch.object(container, "run_in_container", run)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return runs
+
+    def test_a_build_that_asks_for_a_jdk_above_the_one_it_ran_on_runs_again_on_it_and_says_the_project_states_none(self):
+        self.serve_mise()
+        self.asking(self.ASKS_21)
+        runs = self.then(self.play_success)
+        result = self.index()
+        self.assertTrue(result["indexes"])
+        self.assertEqual(len(runs), 2)
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@21", script)
+        self.assertIn("\nDAODAN_JDK=21\n", script)
+        gap = next(gap for gap in result["gaps"] if gap["kind"] == "jdk_from_build_error")
+        for said in ("languageVersion=21", "no JDK at or above 21", "ran again on JDK 21"):
+            self.assertIn(said, gap["detail"])
+
+    def test_a_second_run_that_asks_for_a_still_newer_jdk_is_a_gap_naming_the_one_tried_and_has_no_third_run(self):
+        self.serve_mise()
+        self.asking(self.ASKS_21)
+        runs = self.then(lambda: self.asking(self.ASKS_21.replace("=21", "=25")))
+        result = self.index()
+        self.assertEqual(len(runs), 2)
+        self.assertEqual(result["state"], "unavailable")
+        self.assertIn("JDK 25", result["reason"])
+        self.assertIn("JDK 21", result["reason"])
+
+    def test_a_second_run_that_fails_for_another_reason_says_which_jdk_it_ran_on(self):
+        self.serve_mise()
+        self.asking(self.ASKS_21)
+        runs = self.then(lambda: self.asking("> Task :compileKotlin FAILED"))
+        result = self.index()
+        self.assertEqual(len(runs), 2)
+        self.assertEqual(result["state"], "failed")
+        self.assertIn("ran again on JDK 21", result["reason"])
+        self.assertIn("jdk_from_build_error", [gap["kind"] for gap in result["gaps"]])
+
+    def test_a_jdk_that_cannot_be_installed_is_a_gap_naming_it_and_the_run_is_not_repeated_again(self):
+        self.serve_mise()
+        self.asking(self.ASKS_21)
+        runs = self.then(lambda: self.play("prepare", text="DAODAN-MISSING java@21\n" + log(("index", 1, self.ASKS_21)),
+                                           code=1))
+        result = self.index()
+        self.assertEqual(len(runs), 2)
+        self.assertEqual(result["state"], "unavailable")
+        self.assertIn("JDK 21", result["reason"])
+        self.assertIn("image's JDK 17", result["reason"])
+        self.assertEqual([gap["kind"] for gap in result["gaps"]], ["jdk_from_build_error", "toolchain_unavailable"])
+
+    def test_a_second_run_whose_jdk_did_not_install_says_it_ran_on_the_images_when_the_error_is_gradle_s_own(self):
+        """Gradle's words (`gradle.ASKS`) are not in `NEWER`: `judged` does not see them, and the failure of the second
+        run must not claim a JDK that did not install."""
+        said = ("> Could not resolve dev.zacsweers.metro:gradle-plugin:1.5.2.\n      > Dependency requires at least"
+                " JVM runtime version 21. This build uses a Java 17 JVM.")
+        self.serve_mise()
+        self.asking(said)
+        runs = self.then(lambda: self.play("prepare", text="DAODAN-MISSING java@21\n" + log(("index", 1, said)), code=1))
+        result = self.index()
+        self.assertEqual((len(runs), result["state"]), (2, "failed"))
+        self.assertIn("JDK 21, which its first error asked for, did not install", result["reason"])
+        self.assertIn("image's JDK 17", result["reason"])
+        self.assertNotIn("ran again on JDK 21", result["reason"])
+
+    def test_a_build_that_asks_for_no_newer_jdk_runs_once_as_before(self):
+        self.asking("> Task :compileJava FAILED")
+        runs = self.then()
+        result = self.index()
+        self.assertEqual((len(runs), result["state"]), (1, "failed"))
+        self.assertNotIn("jdk_from_build_error", [gap["kind"] for gap in result.get("gaps", ())])
+
+    def test_a_jdk_the_project_states_at_the_one_asked_is_used_from_the_first_run_and_there_is_no_second(self):
+        self.serve_mise()
+        self.asking(self.ASKS_21)
+        runs = self.then()
+        stated = [{"tool": "java", "version": "21", "declared_in": "build.gradle.kts#java.toolchain.languageVersion"}]
+        result = self.index(toolchains=stated)
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@21", script)
+        self.assertIn("\nDAODAN_JDK=21\n", script)
+        self.assertEqual((len(runs), result["state"]), (1, "failed"))
+        self.assertNotIn("jdk_from_build_error", [gap["kind"] for gap in result.get("gaps", ())])
+
+    # Gradle's own words (`JavaToolchainSpec.getDisplayName`): a build naming no vendor prints `vendor=any vendor`.
+    SPEC = "{languageVersion=21, vendor=%s, implementation=vendor-specific, nativeImageCapable=false}"
+    ASKS_ANY = "> Cannot find a Java installation on your machine (Linux 4.19.0-gvisor amd64) matching: " + SPEC % "any vendor"
+    ASKS_JETBRAINS = ASKS_ANY.replace("any vendor", "JetBrains")
+    DAEMON = "gradle/gradle-daemon-jvm.properties#toolchainVersion"
+    JETBRAINS_21 = {"tool": "java", "version": "21", "vendor": "JETBRAINS",
+                    "declared_in": "build.gradle.kts#java.toolchain.languageVersion"}
+
+    def test_a_build_whose_error_names_a_vendor_runs_again_on_that_vendor_s_jdk_and_says_which(self):
+        self.serve_mise()
+        self.asking(self.ASKS_JETBRAINS)
+        runs = self.then(self.play_success)
+        result = self.index()
+        self.assertTrue(result["indexes"])
+        self.assertEqual(len(runs), 2)
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@jetbrains-21", script)
+        self.assertIn("\nDAODAN_JDK=21\n", script)
+        self.assertTrue(any("cache-redirector.jetbrains.com" in call for call in self.created()))
+        gap = next(gap for gap in result["gaps"] if gap["kind"] == "jdk_from_build_error")
+        for said in ("languageVersion=21", "JetBrains", "ran again on"):
+            self.assertIn(said, gap["detail"])
+
+    def test_an_error_that_names_no_vendor_asks_for_the_jdk_as_before(self):
+        self.serve_mise()
+        self.asking(self.ASKS_ANY)
+        runs = self.then(self.play_success)
+        result = self.index()
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertEqual(len(runs), 2)
+        self.assertIn(" install java@21 ", script)
+        self.assertNotIn("jetbrains", script)
+        self.assertNotIn("vendor", next(gap for gap in result["gaps"] if gap["kind"] == "jdk_from_build_error")["detail"])
+
+    def test_a_vendor_the_error_names_at_the_major_the_build_ran_on_is_asked_for_once_and_not_again(self):
+        """The build ran on JDK 21 of mise's default vendor; its error says the JetBrains one: one more run, no third."""
+        self.serve_mise()
+        self.asking(self.ASKS_JETBRAINS)
+        runs = self.then(lambda: self.asking(self.ASKS_JETBRAINS))
+        stated = [{"tool": "java", "version": "21", "declared_in": "build.gradle.kts#java.toolchain.languageVersion"}]
+        self.index(toolchains=stated)
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertEqual(len(runs), 2)
+        self.assertIn("install java@jetbrains-21", script)
+
+    def test_a_jdk_of_a_vendor_the_project_states_is_installed_from_the_first_run_and_there_is_no_second(self):
+        self.serve_mise()
+        self.asking(self.ASKS_JETBRAINS)
+        runs = self.then()
+        result = self.index(toolchains=[self.JETBRAINS_21])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("install java@jetbrains-21", script)
+        self.assertIn("\nDAODAN_JDK=21\n", script)
+        self.assertEqual((len(runs), result["state"]), (1, "failed"))
+        self.assertNotIn("jdk_from_build_error", [gap["kind"] for gap in result.get("gaps", ())])
+
+    def test_of_two_jdks_at_one_major_the_one_that_names_a_vendor_runs_the_build(self):
+        self.serve_mise()
+        self.play_success()
+        build = {"tool": "java", "version": "21", "declared_in": "build.gradle.kts#java.toolchain.languageVersion"}
+        self.index(toolchains=[build, self.JETBRAINS_21])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn(" install java@jetbrains-21 ", script)
+        self.assertNotIn(" install java@21 ", script)
+
+    def test_a_jdk_at_the_images_major_is_installed_when_it_is_of_another_vendor_and_not_when_it_is_temurin(self):
+        self.serve_mise()
+        self.play_success()
+        declared = self.JETBRAINS_21["declared_in"]
+        self.index(toolchains=[{"tool": "java", "version": "17", "vendor": "ADOPTIUM", "declared_in": declared}])
+        self.assertNotIn("install java@", (self.state / "scripts/prepare.sh").read_text(encoding="utf-8"))
+        self.index(toolchains=[{"tool": "java", "version": "17", "vendor": "AMAZON", "declared_in": declared}])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn(" install java@corretto-17 ", script)
+        self.assertIn("\nDAODAN_JDK=17\n", script)
+
+    def test_a_vendor_mise_has_no_jdk_of_is_a_gap_the_build_runs_and_one_that_still_asks_for_it_says_the_image_holds_17(self):
+        self.serve_mise()
+        self.play_success()
+        result = self.index(toolchains=[{**self.JETBRAINS_21, "vendor": "APPLE"}])
+        self.assertTrue(result["indexes"])  # the build ran, on the image's JDK
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertNotIn("install java@", script)
+        [gap] = [gap for gap in result["gaps"] if gap["kind"] == "toolchain_unavailable"]
+        self.assertEqual((gap["tool"], gap["version"], gap["vendor"]), ("java", "21", "APPLE"))
+        self.asking(self.ASKS_ANY.replace("any vendor", "Apple"))
+        runs = self.then()
+        result = self.index(toolchains=[{**self.JETBRAINS_21, "vendor": "APPLE"}])
+        self.assertEqual((len(runs), result["state"]), (1, "unavailable"))
+        self.assertIn("image holds JDK 17", result["reason"])
+        self.assertIn("toolchain_unavailable", [gap["kind"] for gap in result["gaps"]])
+
+    def test_a_vendor_jdk_that_cannot_be_installed_is_a_gap_naming_it_and_the_run_is_not_repeated(self):
+        self.serve_mise()
+        self.asking(self.ASKS_JETBRAINS)
+        runs = self.then(lambda: self.play("prepare", text="DAODAN-MISSING java@jetbrains-21\n" + log(
+            ("index", 1, self.ASKS_JETBRAINS)), code=1))
+        result = self.index()
+        self.assertEqual((len(runs), result["state"]), (2, "unavailable"))
+        self.assertIn("image's JDK 17", result["reason"])
+        self.assertEqual([gap["kind"] for gap in result["gaps"]], ["jdk_from_build_error", "toolchain_unavailable"])
+        self.assertEqual(result["gaps"][1]["version"], "jetbrains-21")
+
+    def test_a_vendor_jdk_at_the_images_major_that_did_not_install_is_not_said_to_have_run(self):
+        """Run on the image's Temurin 17, the build asks for 17 of another vendor: the rerun is on that JDK or, when it
+        did not install (mise failed, or has none of the vendor), on the image's, and it must say which."""
+        for vendor, name, missing in (("JetBrains", "JetBrains", "DAODAN-MISSING java@jetbrains-17\n"),
+                                      ("Apple", "Apple", "")):  # mise has no JDK of Apple's: a gap of `toolchains`
+            asks = self.ASKS_JETBRAINS.replace("languageVersion=21", "languageVersion=17").replace("JetBrains", vendor)
+            self.serve_mise()
+            self.asking(asks)
+            runs = self.then(lambda: self.play("prepare", text=missing + log(("index", 1, asks)), code=1))
+            result = self.index()
+            self.assertEqual((len(runs), result["state"]), (2, "unavailable"), vendor)
+            self.assertIn(f"{name} JDK 17", result["reason"])
+            self.assertIn("did not install, so the build ran on the image's JDK 17", result["reason"])
+            self.assertNotIn("ran again on JDK 17", result["reason"])
+            self.assertIn("could not be installed by the preparation", result["install"])
+            self.assertNotIn("declare JDK 17", result["install"])
+
     def test_the_stage_is_handed_the_jdk_the_pre_map_states(self):
         module = java if self.language == "java" else kotlin
         record = {"units": [], "workspace": [], "toolchains": [
@@ -561,6 +781,16 @@ class PreparationTests:
 
 
 class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
+    def test_a_maven_build_does_not_install_or_run_on_the_jdk_of_a_gradle_daemon_file(self):
+        """`gradle-daemon-jvm.properties` is Gradle's: a Maven build in the same folder stays on what its poms and the
+        image give."""
+        self.serve_mise()
+        self.play_success()
+        self.index(toolchains=[{**self.JETBRAINS_21, "declared_in": self.DAEMON}], tools={"": ["maven"]})
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertNotIn("install java@", script)
+        self.assertIn("\nDAODAN_JDK=17\n", script)
+
     def test_the_build_runs_only_in_the_container(self):
         self.play_success()
         result = self.index()
@@ -762,15 +992,6 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
         self.assertFalse(any("example.com" in url for url in self.asked))
         self.assertEqual(self.created(), [])
 
-    def test_a_build_asking_for_a_newer_jdk_is_unavailable(self):
-        self.play("prepare", text=log(("index", 1, "> No matching toolchains found for requested specification: "
-                                                   "{languageVersion=21, vendor=any, implementation=vendor-specific}")),
-                  code=1)
-        result = self.index()
-        self.assertEqual(result["state"], "unavailable")
-        self.assertIn("JDK 21", result["reason"])
-        self.assertIn("JDK 17 only", result["reason"])
-
     def test_a_maven_build_on_a_jdk_scip_java_does_not_run_on_is_indexed_on_the_image_s_and_says_so(self):
         """javapoet's pom states Java 8; scip-java's compiler plugin runs on javac 17 or newer only: the build is
         indexed on the image's JDK, none is installed for it, and the result says why. A pom that states its
@@ -881,6 +1102,25 @@ class JavaContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
 
 class KotlinContainerTests(PreparationTests, EachBuildTests, FakeEngineTest):
     language = "kotlin"
+
+    def test_gradle_runs_on_the_jdk_its_daemon_file_names_and_the_script_toolchains_are_installed_beside_it(self):
+        """The daemon runs on the JDK `gradle-daemon-jvm.properties` names and compiles with the toolchains the scripts
+        name, whatever their majors: the newest is no reason to run Gradle on it."""
+        self.serve_mise()
+        self.play_success()
+        daemon_file = {**self.JETBRAINS_21, "declared_in": self.DAEMON}
+        for daemon, toolchain in (("17", "21"), ("21", "25")):
+            self.index(toolchains=[{**daemon_file, "version": daemon},
+                                   {"tool": "java", "version": toolchain, "declared_in": self.JETBRAINS_21["declared_in"]}])
+            script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+            self.assertIn(f" install java@jetbrains-{daemon} ", script, daemon)
+            self.assertIn(f"\nDAODAN_JDK={daemon}\n", script, daemon)  # Gradle runs on it
+            self.assertIn(f" install java@{toolchain} ", script, daemon)  # the toolchain, beside it
+        self.index(toolchains=[{**daemon_file, "version": "17", "vendor": "ADOPTIUM"},
+                               {"tool": "java", "version": "21", "declared_in": self.JETBRAINS_21["declared_in"]}])
+        script = (self.state / "scripts/prepare.sh").read_text(encoding="utf-8")
+        self.assertIn("\nDAODAN_JDK=17\n", script)  # the image's, which the daemon file names
+        self.assertIn(" install java@21 ", script)
 
     def test_a_gradle_build_whose_java_task_does_not_load_the_plugin_is_built_once_more(self):
         """A Kotlin build with Java beside it on a toolchain under 17: the Java compile task fails as declared and

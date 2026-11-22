@@ -1,0 +1,8 @@
+{
+  "name": "admin-app",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}

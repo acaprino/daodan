@@ -21,6 +21,7 @@ import tarfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "daodan" / "core"))
+import preparation  # noqa: E402
 import secret_mask  # noqa: E402
 from container import Gap  # noqa: E402
 
@@ -34,13 +35,19 @@ EXAMPLE = re.compile(r"\.(example|sample|template|dist)$", re.I)
 DATA_FOLDER = re.compile(r"(^|/)(data|datasets?|fixtures|outputs?|dumps?|backups?|node_modules|dist|build|target)/", re.I)
 TOOL_FOLDER = re.compile(r"(^|/)\.(claude|codex|cursor|agents|idea|vscode|jcode|tritech|daodan|codebase-map|tmp)/")  # editors, agents, earlier analyses
 LIMIT = 400_000  # a source or configuration file is not larger than this: beyond it, it is data under a code suffix
+# A package manager's lockfile is configuration whatever its size: without it Daodan does not restore the folder.
+LOCKS = frozenset(name for spec in preparation.RESTORES.values() for name in spec.get("locks", ()))
 
 
 def kept(path: str, size: int) -> bool:
     """Whether a tracked file may go into the archive."""
     if SECRET.search(path) and not EXAMPLE.search(path):
         return False
-    if DATA_FOLDER.search(path) or TOOL_FOLDER.search(path) or size > LIMIT:
+    if DATA_FOLDER.search(path) or TOOL_FOLDER.search(path):
+        return False
+    if path.rsplit("/", 1)[-1] in LOCKS:
+        return True
+    if size > LIMIT:
         return False
     return bool(CODE.search(path) or NAMED.search(path))
 

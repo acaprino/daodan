@@ -258,6 +258,7 @@ def load_edge_view(
 
         engine_pass = None
         languages_covered: dict[str, dict] = {}
+        types_added: dict[str, list] = {}  # the type packages a language's indexer installed (`name@version`)
         if not edge_path.is_file():
             coverage_status = "missing_store"
             engine_pass = resolve_edges.pass_state(store.path)
@@ -281,6 +282,8 @@ def load_edge_view(
                 holes = {hole["reference_id"]: hole["class"] for hole in resolve_edges.read_edge_holes(edge_path)
                          if hole["reference_id"] is not None and hole["language"] not in obsolete}
                 for language, entry in sorted(entries.items()):
+                    if (entry.get("indexer") or {}).get("types"):
+                        types_added[language] = entry["indexer"]["types"]
                     coverage = entry.get("coverage")
                     if coverage:
                         # Stores from before unread intervals lowered the coverage remain readable.
@@ -439,6 +442,7 @@ def load_edge_view(
                 "engine_available": coverage_status in {"complete", "lower-bound"},
                 "engine_store": edge_path.as_posix() if edge_path.is_file() else None,
                 "engine_reports": binding.get("engine_reports", {}) if binding else {},
+                **({"types_added": types_added} if types_added else {}),  # only when an indexer added some
             },
             "coverage": {
                 "status": coverage_status,

@@ -14,6 +14,7 @@ gap, which names the compiler.
 """
 from __future__ import annotations
 
+from itertools import takewhile
 import json
 from pathlib import Path
 import posixpath
@@ -117,14 +118,72 @@ COMPILERS = {f"arm-none-eabi-{c}": "arm-none-eabi" for c in ("gcc", "g++", "cc",
 MISE = ("https://github.com/jdx/mise/releases/download/v2026.11.8/mise-v2026.11.8-linux-x64",
         "32b6abe844efa43d37d7ac4ed21d2ec41e9479d66feb19b0db8d2c548cd6e36d", "mise")
 MISE_HOSTS = {  # mise's tool -> the hosts its backend downloads from, beside mise's own version lists
-    "node": ("nodejs.org",), "go": ("go.dev", "dl.google.com"), "python": GITHUB, "java": ("api.adoptium.net",
-    *GITHUB), "ruby": GITHUB, "rust": ("static.rust-lang.org", "sh.rustup.rs"),
+    # java: the catalog of vendor builds (`mise-java.jdx.dev`, src/plugins/core/java.rs) and Temurin's, GitHub's
+    "node": ("nodejs.org",), "go": ("go.dev", "dl.google.com"), "python": GITHUB, "java": ("mise-java.jdx.dev",
+    "api.adoptium.net", *GITHUB), "ruby": GITHUB, "rust": ("static.rust-lang.org", "sh.rustup.rs"),
     "dotnet": ("dot.net", "builds.dotnet.microsoft.com", "dotnetcli.azureedge.net"),
     "swift": ("download.swift.org",),
     "zig": ("ziglang.org",), "bun": GITHUB, "deno": GITHUB, "cmake": GITHUB, "bazel": GITHUB, "uv": GITHUB,
     "maven": GITHUB, "gradle": ("services.gradle.org", *GITHUB)}
 MISE_OWN = ("mise-versions.jdx.dev", *GITHUB)
 EXACT = re.compile(r"^v?\d+(\.\d+){0,2}([-.+][0-9A-Za-z.]+)?$")  # a version mise installs as written, no range
+# The vendors of Gradle's `JvmVendorSpec` (`KnownJvmVendor`, gradle/gradle, platforms/jvm/jvm-services): the name a
+# build's `toolchainVendor` holds (the key), the name its messages print (`display`), the vendor of mise's JDK
+# catalog (`mise ls-remote java`, mise-java.jdx.dev) that is that distribution, and the hosts its archives come from
+# beside those of `MISE_HOSTS["java"]`, redirects followed (tests/fixtures/premap/mise-java-vendors.json). The
+# catalog holds no AdoptOpenJDK, Apple or HP-UX build (`mise` None): a build asking for one is a gap.
+JDK_VENDORS = {
+    "ADOPTIUM": {"display": "Eclipse Temurin", "mise": "temurin", "hosts": ()},
+    "ADOPTOPENJDK": {"display": "AdoptOpenJDK", "mise": None, "hosts": ()},
+    "AMAZON": {"display": "Amazon Corretto", "mise": "corretto", "hosts": ("corretto.aws",)},
+    "APPLE": {"display": "Apple", "mise": None, "hosts": ()},
+    "AZUL": {"display": "Azul Zulu", "mise": "zulu", "hosts": ("cdn.azul.com",)},
+    "BELLSOFT": {"display": "BellSoft Liberica", "mise": "liberica", "hosts": ()},
+    "GRAAL_VM": {"display": "GraalVM Community", "mise": "graalvm-community", "hosts": ()},
+    "HEWLETT_PACKARD": {"display": "HP-UX", "mise": None, "hosts": ()},
+    "IBM": {"display": "IBM", "mise": "semeru-openj9", "hosts": ()},
+    "JETBRAINS": {"display": "JetBrains", "mise": "jetbrains",
+                  "hosts": ("cache-redirector.jetbrains.com", "d2xrhe97vsfxuc.cloudfront.net")},
+    "MICROSOFT": {"display": "Microsoft", "mise": "microsoft",
+                  "hosts": ("aka.ms", "download.visualstudio.microsoft.com")},
+    "ORACLE": {"display": "Oracle", "mise": "oracle", "hosts": ("download.oracle.com",)},
+    "SAP": {"display": "SAP SapMachine", "mise": "sapmachine", "hosts": ()},
+    "TENCENT": {"display": "Tencent", "mise": "kona", "hosts": ()},
+}
+
+
+def jdk_vendor(name) -> str | None:
+    """The key of `JDK_VENDORS` a vendor stands for, as a build writes it (`JETBRAINS`) or Gradle prints it
+    (`JetBrains`), in any case; None when it is neither."""
+    text = str(name or "").strip().casefold()
+    return next((key for key, row in JDK_VENDORS.items() if text in (key.casefold(), row["display"].casefold())), None)
+
+
+def vendor_label(name) -> str:
+    """A vendor as Gradle prints it: the display name of one of the table, else the words as given."""
+    key = jdk_vendor(name)
+    return JDK_VENDORS[key]["display"] if key else str(name)
+
+
+def asked_vendor(words) -> str | None:
+    """The vendor Gradle's words name, as printed; None when they name none (`vendor=any vendor`)."""
+    text = str(words or "").strip()
+    return None if not text or text.casefold().startswith("any") else text
+
+
+def vendor_key(name) -> str:
+    """The vendor of a JDK as mise names it, so two names of one are equal: a vendor of the table by its mise name
+    (`jetbrains`), one it does not hold as written, and no vendor, which is mise's default (`java@21` is Temurin's,
+    as the image's JDK is)."""
+    key = jdk_vendor(name)
+    return (JDK_VENDORS[key]["mise"] or key) if key else str(name or "temurin").strip().casefold()
+
+
+def mise_version(item: dict) -> str:
+    """What mise installs for a stated toolchain: its version, and for a JDK of a vendor of the table the vendor
+    before it (`jetbrains-21`)."""
+    row = JDK_VENDORS.get(jdk_vendor(item.get("vendor")) or "") if item.get("tool") == "java" else None
+    return f"{row['mise']}-{item['version']}" if row and row["mise"] else str(item.get("version") or "")
 
 
 def setup(names) -> dict:
@@ -152,22 +211,32 @@ def toolchains(stated: list[dict]) -> dict:
     each at the version it states: never one mise would pick. A tool mise has no entry for here, or a version that
     is a range, is a gap naming both; so is a second version of a tool, but for minimums (`MINIMUMS`): the highest
     of them runs, which builds every module, or the version a file pins when that is newer still. An install that
-    fails prints `DAODAN-MISSING tool@version` on stderr and the run goes on with what installed."""
-    wanted, least, second, gaps = {}, {}, [], []
+    fails prints `DAODAN-MISSING tool@version` on stderr and the run goes on with what installed. A JDK of a
+    vendor (`vendor`, a name of `JDK_VENDORS`) is installed under the vendor's name in mise's catalog
+    (`jetbrains-21`) and reaches the hosts of its archives; a vendor mise has no JDK of is a gap naming it."""
+    wanted, least, second, gaps, hosts_of = {}, {}, [], [], []
     for item in stated:
         tool, version = item.get("tool"), str(item.get("version") or "")
+        vendor = item.get("vendor") if tool == "java" else None
+        row = JDK_VENDORS.get(jdk_vendor(vendor) or "")
         minimum = posixpath.basename(str(item.get("declared_in") or "").split("#")[0]) in MINIMUMS.get(tool, ())
         if minimum and tool == "go":
             version = version.removeprefix("go")  # a toolchain line names goV
         why = ("no installer for this tool" if tool not in MISE_HOSTS else
-               "a range, not a version to install" if not EXACT.match(version) else None)
+               "a range, not a version to install" if not EXACT.match(version) else
+               f"mise has no JDK of the vendor {vendor}" if vendor and not (row and row["mise"]) else None)
         if why:
             gaps.append({"kind": "toolchain_unavailable", "tool": tool, "version": version,
-                         "path": item.get("declared_in"), "detail": f"{tool} {version}: {why}"})
-        elif minimum:
+                         **({"vendor": vendor} if vendor else {}), "path": item.get("declared_in"),
+                         "detail": f"{tool} {version}: {why}"})
+            continue
+        version = mise_version(item) if vendor else version
+        if minimum:
             least[tool] = max(least.get(tool, version), version, key=_release)
         elif wanted.setdefault(tool, version.lstrip("v")) != version.lstrip("v"):
             second.append((item, version))
+        elif row:
+            hosts_of += row["hosts"]
     for tool, version in least.items():
         if tool not in wanted or _release(wanted[tool]) < _release(version):
             wanted[tool] = version.lstrip("v")
@@ -184,8 +253,36 @@ def toolchains(stated: list[dict]) -> dict:
                 f" && chmod 755 {T}/bin/$n; done; done")
         lines.append(f"{{ {mise} install {tool}@{version} >&2 && {wrap}; }}"
                      f" || echo 'DAODAN-MISSING {tool}@{version}' >&2")
-    hosts = tuple(dict.fromkeys([*MISE_OWN, *(h for tool in sorted(wanted) for h in MISE_HOSTS[tool])]))
+    hosts = tuple(dict.fromkeys([*MISE_OWN, *(h for tool in sorted(wanted) for h in MISE_HOSTS[tool]), *hosts_of]))
     return {"files": [MISE], "lines": lines, "hosts": hosts, "gaps": gaps}
+
+
+def jdk_major(version) -> int | None:
+    """The major of a JDK version as a project states it: `21`, `21.0.2`, `21-ea`, `1.8` (8); None when it starts with
+    no number. The one parser of the pre-map's runner and the JVM indexer. Hand-written: `packaging.version` was weighed
+    and does not fit, it is no dependency here, it rejects `21-ea` and `21-open` and reads Java's `1.8` as major 1."""
+    head = str(version or "").strip().removeprefix("1.")
+    digits = "".join(takewhile(str.isdigit, head))
+    return int(digits) if digits else None
+
+
+def jdk_named(least: int, said: str, stated=(), who: str = "the build", vendor=None) -> tuple[dict, dict | None]:
+    """The JDK a build runs again on when `who` said in `said` that it needs one of `least` or newer: the newest of the
+    pre-map's `stated` toolchains at or above that version, else the version named, with a `jdk_from_build_error` gap:
+    the project states no such JDK, and the build ran on the one its error names. `vendor`, when the words name one
+    (Gradle prints it, `any vendor` for none), is part of the request: a stated JDK is the one only if it is of that
+    vendor, and the JDK named carries the vendor, as the table names it (`JDK_VENDORS`) or as printed."""
+    asked = asked_vendor(vendor)
+    newer = [t for t in stated or () if t.get("tool") == "java" and (jdk_major(t.get("version")) or 0) >= least
+             and (not asked or vendor_key(t.get("vendor")) == vendor_key(asked))]
+    if newer:
+        return max(newer, key=lambda t: jdk_major(t["version"])), None
+    key = jdk_vendor(asked)
+    kind = f"{vendor_label(asked)} JDK" if asked else "JDK"
+    return {"tool": "java", "version": str(least), **({"vendor": key or asked} if asked else {}),
+            "declared_in": f"{who}'s error"}, {
+        "kind": "jdk_from_build_error", "detail": f"{who} said `{said}` and the project states no {kind} "
+        f"at or above {least}: the build ran again on {kind} {least}, the version {who}'s error names"}
 
 
 ANDROID = {"android-sdk": "platforms;android-{}", "android-build-tools": "build-tools;{}"}  # toolchain -> package
@@ -246,6 +343,7 @@ UV_ENV = "export UV_PYTHON_DOWNLOADS=never UV_NO_PROGRESS=1"
 UV_SYNC = f'UV_PYTHON_DOWNLOADS=automatic UV_PROJECT_ENVIRONMENT="{VENVS}/$f"'  # uv sync: its own Python, $f's venv
 UV_CAUSES = "^ *[×│├╰]|^ *Caused by"  # uv's lines under an error: the requirement, then each cause
 WITHOUT = f"{STATE}/without-vcs.txt"  # the project's VCS requirements, as uv overrides no environment matches
+NPM_LOCKS = ("package-lock.json", "npm-shrinkwrap.json")  # npm's lockfiles: the one place that names them
 RESTORES = {  # manager -> the files that mark where its build starts, its own restore, what in its output is an
     # error (`error`) or a failure it reports with success (`failed`), the hosts beside the registries
     "gradle": {"marks": ("settings.gradle", "settings.gradle.kts", "build.gradle", "build.gradle.kts"),
@@ -255,10 +353,11 @@ RESTORES = {  # manager -> the files that mark where its build starts, its own r
                          "dl.google.com", "maven.google.com")},
     "maven": {"marks": ("pom.xml",), "error": r"^\[ERROR\]", "before": JAVA_PROXY, "hosts": (),
               "line": "mvn -B -q org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline"},
-    # Node: one family, `package.json` marks the folders, the lockfile names the manager (none: npm); scripts off
-    # (`restore` with `scripts` runs the install with them first)
-    "npm": {"marks": ("package.json",), "family": "node", "error": "^npm (error|ERR!)", "hosts": (),
-            "line": "if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ];"
+    # Node: one family, `package.json` marks the folders, the lockfile names the manager (none: npm, the `default`);
+    # scripts off (`restore` with `scripts` runs the install with them first)
+    "npm": {"marks": ("package.json",), "family": "node", "locks": NPM_LOCKS, "default": True,
+            "error": "^npm (error|ERR!)", "hosts": (),
+            "line": f"if {' || '.join(f'[ -f {lock} ]' for lock in NPM_LOCKS)};"
                     " then npm ci --ignore-scripts --no-audit --no-fund;"
                     " else npm install --ignore-scripts --no-audit --no-fund; fi"},
     # `unlocked`: the restore of a folder that names the manager (`packageManager`) and has no lockfile yet
@@ -317,8 +416,8 @@ def restores(files) -> dict[str, list[str]]:
     """Per manager, the folders where its restore runs: each folder with a mark of its family that no other such
     folder holds (a Gradle build, a Maven reactor, a Node workspace restore their projects from their root), every
     marked folder of a manager that is `nested` (each Go module is its own), and each folder with a lockfile of its
-    own; within a family, the folder's lockfile names the manager, and the
-    manager without `locks` is the default."""
+    own (npm's too: `NPM_LOCKS`); within a family, the folder's lockfile names the manager, and the `default` one, else
+    the one without `locks`, is the manager of a folder without."""
     files = list(files)
     families: dict[str, list[str]] = {}
     for manager, spec in RESTORES.items():
@@ -331,7 +430,7 @@ def restores(files) -> dict[str, list[str]]:
                          or (suffixes and rel.endswith(suffixes))}, key=lambda f: (f.count("/"), f))
         locked = {_folder(rel): name for name in managers for rel in files
                   if posixpath.basename(rel) in RESTORES[name].get("locks", ())}
-        default = next(name for name in managers if not RESTORES[name].get("locks"))
+        default = next(name for name in managers if RESTORES[name].get("default") or not RESTORES[name].get("locks"))
         for folder in marked:
             nested = any(RESTORES[name].get("nested") for name in managers)
             if nested or folder in locked or not any(o != folder and _inside(folder, o) for o in marked):
@@ -392,8 +491,7 @@ def node_restores(files, named=None) -> list[tuple[str, list[str], bool]]:
     for manager, folders in restores(files).items():
         for folder in folders if RESTORES[manager].get("family") == "node" else ():
             other = (named or {}).get(folder)
-            locked = manager != "npm" or any(posixpath.normpath(f"{folder}/{lock}") in files
-                                             for lock in ("package-lock.json", "npm-shrinkwrap.json"))
+            locked = any(posixpath.normpath(f"{folder}/{lock}") in files for lock in RESTORES[manager]["locks"])
             free = not locked and "unlocked" in RESTORES.get(other, {})
             out.setdefault((other, True) if free else (manager, False), []).append(folder)
     return [(manager, folders, unlocked) for (manager, unlocked), folders in out.items()]
@@ -402,14 +500,16 @@ def node_restores(files, named=None) -> list[tuple[str, list[str], bool]]:
 DECLARED = ("dependencies", "devDependencies", "optionalDependencies")  # what a Node restore installs
 
 
-def _workspaces(manifest: dict, yaml: str) -> list[str]:
-    """The member patterns a Node restore folder declares: its manifest's `workspaces` (a list, or `packages` of
-    an object) and its `pnpm-workspace.yaml`'s `packages`."""
-    declared = manifest.get("workspaces")
-    patterns = declared.get("packages") if isinstance(declared, dict) else declared
+def _workspaces(manifest: dict, yaml: str, manager: str) -> list[str]:
+    """The member patterns the restore of `manager` reads in a Node folder: pnpm's, its `pnpm-workspace.yaml`'s
+    `packages`; npm's and Yarn's, the manifest's `workspaces` (a list, or `packages` of an object). Each ignores the
+    other's declaration."""
+    if manager != "pnpm":
+        declared = manifest.get("workspaces")
+        patterns = declared.get("packages") if isinstance(declared, dict) else declared
+        return [str(p) for p in patterns if isinstance(p, str)] if isinstance(patterns, list) else []
     block = re.search(r"^packages:[ \t]*\n((?:[ \t]+-.*\n?)+)", yaml, re.MULTILINE)
-    found = re.findall(r"-\s*['\"]?([^'\"#\n]+?)['\"]?\s*(?:#.*)?$", block.group(1), re.MULTILINE) if block else []
-    return [str(p) for p in patterns if isinstance(p, str)] + found if isinstance(patterns, list) else found
+    return re.findall(r"-\s*['\"]?([^'\"#\n]+?)['\"]?\s*(?:#.*)?$", block.group(1), re.MULTILINE) if block else []
 
 
 def _names(patterns: list[str], rel: str) -> bool:
@@ -441,7 +541,26 @@ def node_prepare(files, read) -> dict:
             manager = str(manifest.get("packageManager") or "").split("@")[0]
             if manager:
                 named[_folder(rel)] = manager
+    def covered(folder: str, roots: dict[str, str]) -> bool:
+        """Whether the restore of one of `roots` (folder -> manager) above `folder` installs it: the workspaces the
+        root's manager reads name it."""
+        def names(root: str, manager: str) -> bool:
+            yaml = posixpath.normpath(f"{root}/pnpm-workspace.yaml")
+            return _names(_workspaces(manifests.get(root, {}), read(yaml) if yaml in files else "", manager),
+                          folder if root == "." else folder[len(root) + 1:])
+
+        return any(root != folder and _inside(folder, root) and names(root, manager) for root, manager in roots.items())
+
     found = node_restores(files, named)
+    # A folder a workspace above names is restored by that root, a lockfile of its own left in it or not: from the
+    # outermost folder inward, so a root another installs names no members of its own.
+    roots: dict[str, str] = {}
+    for manager, folder in sorted(((m, f) for m, folders, _unlocked in found for f in folders),
+                                  key=lambda item: (0 if item[1] == "." else item[1].count("/") + 1, item[1])):
+        if not covered(folder, roots):
+            roots[folder] = manager
+    found = [(manager, [f for f in folders if f in roots], unlocked) for manager, folders, unlocked in found]
+    found = [row for row in found if row[1]]
     plan: dict[str, list[str]] = {}
     for manager, folders, _unlocked in found:
         plan[manager] = sorted(plan.get(manager, []) + folders)
@@ -453,11 +572,9 @@ def node_prepare(files, read) -> dict:
     for folder, manifest in sorted(manifests.items()):
         if folder in owner or not any(manifest.get(field) for field in DECLARED):
             continue
-        root = max((o for o in owner if _inside(folder, o)), key=len, default=None)
-        yaml = posixpath.normpath(f"{root}/pnpm-workspace.yaml")
-        if root is not None and _names(_workspaces(manifests.get(root, {}), read(yaml) if yaml in files else ""),
-                                       folder if root == "." else folder[len(root) + 1:]):
+        if covered(folder, owner):
             continue
+        root = max((o for o in owner if _inside(folder, o)), key=len, default=None)
         gaps.append({"kind": "restore_failed", "manager": owner.get(root), "path": folder,
                      "detail": "its packages are not installed: no workspace above names this folder"})
     return {"restores": plan, "lines": lines, "gaps": gaps,
