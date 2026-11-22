@@ -13,17 +13,29 @@ Daodan gives a coding agent two things it cannot get from a prompt: a local,
 refreshable understanding of the repository, and a review whose findings cite
 source and survive independent verification. Sources remain the authority.
 
-## Analysis steps
+## How the graph is built
 
-| Step | What it does | Runs project code | State |
+One pipeline, seven steps, always in this order. Each step uses the official tool of what it reads, behind an
+adapter, and writes what it could not do as a gap.
+
+```mermaid
+flowchart LR
+  parse --> scan --> recognize --> plan --> resolve --> observe --> connect --> G[(Complete graph)]
+```
+
+| Step | What it does | Tool underneath | Runs project code |
 |---|---|---|---|
-| 1. Static | Parsers and the lexical resolver record files, symbols, imports and calls | No | In use |
-| 2. Inference | A language engine resolves calls with the project's libraries, which Daodan downloads | No | In use |
-| 3. Dynamic | The project's tests run in an isolated container and the observed calls join the graph | Only inside the container | [Proposed](docs/specs/2026-11-12-passo-dinamico.md) |
-| 4. Semantic | The model writes semantic cards and link rules; flows connect writers, readers and user actions | No | In use; flows on trial |
+| 1. `parse` | Reads every file: symbols, imports, calls | tree-sitter, Python's `ast` | No |
+| 2. `scan` | Asks the build tools for modules, build units and test commands | cargo, gradle, maven, npm, cmake, … | Only inside the container |
+| 3. `recognize` | Names frameworks, libraries, tools and services | the technology registry | No |
+| 4. `plan` | Decides which adapter runs on which part | — | No |
+| 5. `resolve` | Resolves each call to its target | one SCIP indexer per language | Only inside the container |
+| 6. `observe` | Runs the project's tests and records what they call | one recorder per language | Only inside the container |
+| 7. `connect` | Joins the graphs and lists what is missing | — | No |
 
-Until step 3 is in place nothing runs the project, and runtime behavior needs
-the project's tests.
+After the pipeline the model writes semantic cards and link rules, and flows connect writers, readers and user
+actions. [The process, with example graphs](docs/pipeline.md) explains each step; these names were approved on
+22 November 2026 and the code still uses some earlier ones, listed there under «Stato».
 
 ## How Daodan identifies the stack
 
@@ -104,6 +116,7 @@ checks the viewer against Imago's design rules; the Viewer workflow runs it with
 
 ## Documentation
 
+- [How Daodan builds the graph](docs/pipeline.md)
 - [Design: Codebase Map and semantic review](docs/specs/2026-11-03-semantic-review-foundation.md)
 - [Codebase Map reference](docs/plugins/codebase-map.md)
 - [Research: context building](docs/research/context-building-research.md) · [Research: prompt design and brevity](docs/research/prompt-engineering-and-brevity.md)

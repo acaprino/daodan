@@ -74,6 +74,8 @@ Un `.sql` con marcatori Oracle è PL/SQL. Python richiesto `>= 3.12`: gli script
 
 ## Pipeline
 
+Il processo ad alto livello, con grafi di esempio e i nomi approvati per gli step: [`docs/pipeline.md`](../pipeline.md).
+
 Scritto lo snapshot, `snapshot.py write` e `codebase_map_create_run` eseguono gli step della pipeline (`scripts/pipeline/`), ognuno con i suoi eventi nel giornale accanto al manifest:
 
 1. `scan`: il grafo dei moduli e la pre-mappa (`references/premap.md`): unità, toolchain, registri, comandi di test, servizi e passi della CI e build dei Dockerfile che il progetto dichiara. I comandi di modello dei build system girano nel container.
