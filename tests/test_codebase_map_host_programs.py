@@ -504,7 +504,10 @@ def test_the_real_stack_analyser_runs_nothing_of_the_project(stack_trapped, tmp_
     the Node of the image. The report, in the warnings summary, says for each vector alone whether a naive start runs
     it: that is a fact about this release, not the claim, but for one control: the `node-options` trap must fire there,
     or a green would prove nothing. The claim, which passes or fails the test: started by Daodan
-    in the project holding every vector, with their variables set, it runs none of them, and it did read the project."""
+    in the project holding every vector, with their variables set, it runs none of them, and it did read the project.
+    What it does not prove: it replaces `stack_analyser.cli` (the install: `engine_tools.download`, `unpack`, `publish`
+    on the real archive) and `stack_analyser.node` (`indexers.runtime.node`) by the image's own paths, so neither has run
+    with the real artefacts; it runs on the test image's Node, not the product's `NODE_VERSION`, and on Linux only."""
     import warnings
     import stack_analyser
     project, mark, node = stack_trapped
