@@ -35,3 +35,27 @@
 
 - **11b.** **Gli eventi fra pagina e guscio Tauri** (spec delle interfacce, 4.3 e «Da decidere»; deciso dal proprietario il 20 novembre, dopo il task 2b). Un evento che il guscio Rust emette e la pagina ascolta, e il contrario, è un legame della coppia emette e ascolta, con il nome dell'evento come chiave, letto dall'albero come il comando di `invoke`; un nome che non è un letterale è una lacuna, mai un legame.
    Test: una fixture con un `emit` in Rust e un `listen` nella pagina sullo stesso nome dà il legame con le due posizioni; due nomi diversi non si legano; un nome calcolato è una lacuna con il punto. Riusa: il legame dei comandi (`languages/semantic.py`, `import_resolution.py`) e il suo test in `tests/test_codebase_map_extensions.py`.
+
+- **13.** **Lo strumento ufficiale del framework** (spec, sezione 6, «Lo strumento ufficiale del framework»; deciso dal proprietario il 21 novembre). Un framework alla volta, nell'ordine sotto; ognuno è una sorgente della pre-mappa che gira nel container preparato, come `premap/noir.py`, e dà candidati con `file:riga`. Prima di ogni voce si esegue lo strumento su una fixture nel container e si scrive che cosa dà davvero: se non dà la riga o il dato, la voce si ferma lì con la causa, senza un lettore scritto a mano al suo posto.
+   - **13a.** Next.js: `next typegen`, poi le definizioni delle rotte in `<distDir>/types`. Test: una fixture con `app/checkout/page.tsx`, `app/api/pay/route.ts` e una funzione `"use server"` chiamata da un pulsante dà la pagina, la rotta e il legame dal pulsante al server; senza motore di container la sorgente è una lacuna con la causa. *Fatto il 21 novembre per pagine e gestori (`premap/nextjs.py`, caso `next` di `real_paths.py`, su Modal e nel container). Il legame dal pulsante alla funzione sul server c'è come candidato del linguaggio; che la funzione giri sul server lo dice solo `next build`, non eseguito. Aperti: spec, sezione 6.*
+   - **13b.** React Router e Remix: `react-router routes --json`. Test: l'albero delle rotte di una fixture, ogni rotta con il suo file.
+   - **13c.** SvelteKit: `svelte-kit sync`. Test: le rotte di una fixture dai tipi generati.
+   - **13d.** Nuxt: `nuxt prepare`. Prima si verifica che i tipi generati nominino le pagine: la documentazione non lo dice.
+   - **13e.** Astro: `parse` di `@astrojs/compiler` per il template. Prima si misura quante posizioni sono giuste su una fixture: il compilatore avverte che sono incomplete.
+   - **13f.** Angular: prima si trova lo strumento ufficiale con un'interfaccia pubblica per i template; senza, Angular resta una lacuna dichiarata.
+   Riusa: `premap/noir.py` come forma di sorgente, `node_preparation` per il ripristino condiviso, `entries.candidates`, `premap/container_runner.py`.
+
+- **14.** **Le rotte che nascono all'avvio** (spec, sezione 6, «Le rotte che nascono all'avvio»; deciso dal proprietario il 22 novembre). Un framework alla volta, come il task 13: prima si carica una fixture nel container e si scrive che cosa l'interfaccia dà davvero; se l'applicazione non si carica, o l'interfaccia non dà il gestore, la voce si ferma lì con la causa. Ognuna è una sorgente della pre-mappa nel container preparato, senza rete, e dà candidati nella faccia `framework_entries`; la funzione del gestore la dà lo strumento del linguaggio.
+   - **14a.** FastAPI: `app.openapi()`. Prima si verifica come trovare l'oggetto dell'applicazione senza una convenzione scritta a mano, e che cosa lega un'operazione alla sua funzione.
+   - **14b.** Django: il URLconf caricato. Prima si verifica un modo ufficiale di elencare tutti gli schemi.
+   - **14c.** Flask: `app.url_map` e `app.view_functions`; prima si verifica se `flask routes` è un comando ufficiale.
+   - **14d.** Laravel: `php artisan route:list`; prima si verifica un'uscita per le macchine.
+   - **14e.** Rails: `bin/rails routes`.
+   - **14f.** Spring Boot: Actuator `mappings`; prima si verifica se si ottiene senza aprire una porta.
+   - **14g.** Gin: `(*Engine).Routes()`; prima si verifica come chiamarla senza modificare il progetto.
+   - **14h.** NestJS: `SwaggerModule.createDocument`.
+   - **14i.** Expo Router: i tipi generati.
+   - **14j.** Express: prima si cerca un'interfaccia pubblica; senza, resta Noir e la lacuna dichiarata.
+   Test, per ogni voce: su una fixture, ogni rotta con metodo, percorso e funzione; un'applicazione che non si carica è una lacuna con la causa e i candidati di Noir restano; senza motore di container la sorgente è una lacuna.
+- **15.** **La forma della risposta e ciò che il client ne legge** (deciso dal proprietario il 22 novembre). Per una rotta unita a una chiamata, i campi che il gestore restituisce e quelli che il client legge dalla risposta: un campo letto e non restituito è una segnalazione con i due punti. Prima si valuta la soluzione pronta: lo schema OpenAPI dove il framework lo dà (task 14), i tipi dello strumento del linguaggio, e come lo fa GitNexus (`shape_check`, licenza MIT).
+- **16.** **I contratti fra repository** (deciso dal proprietario il 22 novembre). Una rotta offerta in un repository e chiamata in un altro è un collegamento fra i due sistemi. Dipende da come Daodan tiene più repository in un'analisi; prima si scrive questo nella spec.
