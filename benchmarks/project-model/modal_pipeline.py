@@ -31,7 +31,7 @@ it uploaded and the paths where the two differ.
     DAODAN_FOLDER=<folder> python -m modal run benchmarks/project-model/modal_pipeline.py --folder-out DIR
 
 The last form runs the pipeline on a folder of this PC and brings its snapshot, pre-map, edge store and events
-back into DIR.
+back into DIR; `--folder-stop analyze` ends it after that step, without the tests of the dynamic step.
 """
 from __future__ import annotations
 
@@ -479,13 +479,13 @@ def _engine():
 
 
 KEPT = ("manifest.sqlite", "engine-edges.sqlite", "engine-report.json", "premap.json", "pipeline-events.jsonl",
-        "modules.json")
+        "modules.json", "technologies.json")
 
 
 @app.function(cpu=(0.5, 8.0), memory=(2048, 16384), timeout=7200, volumes={"/results": volume})
-def run_folder() -> dict:
-    """The pipeline on the folder of `DAODAN_FOLDER`: the steps' results, the events, and the run's files
-    (`KEPT`) as a tar.gz, for whoever reads the graph on the PC."""
+def run_folder(stop: str | None = None) -> dict:
+    """The pipeline on the folder of `DAODAN_FOLDER`, through the step `stop` (default: all): the steps' results,
+    the events, and the run's files (`KEPT`) as a tar.gz, for whoever reads the graph on the PC."""
     sys.path[:0] = [REMOTE_SCRIPTS]
     import pipeline
     import snapshot
@@ -502,7 +502,7 @@ def run_folder() -> dict:
             events.append(f"{time.monotonic() - started:7.1f}s {event['kind']:22} {event.get('step') or '':8} "
                           f"{str(event.get('message') or '')[:160]}")
 
-    steps = pipeline.run(manifest, listeners=[listen])
+    steps = pipeline.run(manifest, listeners=[listen], stop=stop)
     packed = io.BytesIO()
     with tarfile.open(fileobj=packed, mode="w:gz") as bundle:
         for name in KEPT:
@@ -567,9 +567,9 @@ def run_cases(names: list) -> dict:
 
 
 @app.local_entrypoint()
-def main(cases: str = "", out: str = "", chunk: int = 4, folder_out: str = ""):
+def main(cases: str = "", out: str = "", chunk: int = 4, folder_out: str = "", folder_stop: str = ""):
     if folder_out:  # the folder of DAODAN_FOLDER: its run's files into `folder_out`
-        answer = run_folder.remote()
+        answer = run_folder.remote(folder_stop or None)
         target = Path(folder_out)
         target.mkdir(parents=True, exist_ok=True)
         with tarfile.open(fileobj=io.BytesIO(answer.pop("files"))) as bundle:

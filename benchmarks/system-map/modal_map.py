@@ -1,35 +1,53 @@
 """System map benchmark on Modal: the system brief without a model (measure 6), the links of a case,
 and the runs of the system-mapper agent (measures 1 to 5).
 
-One container per job, plugin scripts of this checkout. Phazly comes from its private archive,
-polar and tududi are cloned at the commit of their flow benchmark. A run prepares, before the
-session, a Codebase Map run with the case's link rules and the links computed with the engine
-pass, then starts a fresh `claude -p` session as the agent; the event stream, the recorded map
-and the cost go to the volume `daodan-flow-results`. Nothing heavy runs on the local machine.
+One container per job, Daodan and its plugin from this checkout. The private projects come from
+archives (`git archive`, tracked files only), polar and tududi are cloned at the commit of their
+flow benchmark. A run prepares a Codebase Map run before any session. With `--rules session` the
+engine pass runs, a `claude -p` session given the app's `LINKS` task writes the link rules, and the
+links follow from them; the first repetition keeps rules and links on the volume (`rules.json`,
+`links.json`) and starts the other repetitions on them, so a case, scope and model has one rules
+session. With a rules file the links come computed before and replace the cache; with
+`--rules none` the agent finds no rules. Then a fresh `claude -p` session is the agent. The
+event streams, the recorded map, the snapshot's files and the cost go to the volume
+`daodan-flow-results`, under TAG/LABEL; `modal volume get daodan-flow-results TAG/LABEL
+benchmarks/system-map/results/system/TAG` brings a run here. Nothing heavy runs on the local machine.
 
     modal run benchmarks/system-map/modal_map.py::brief --phazly-tar PATH --phazly-links PATH [--cases ...]
     modal run --detach benchmarks/system-map/modal_map.py::links --case tududi --out PATH
+    modal run benchmarks/system-map/modal_map.py::entries --tars CASE=PATH[,CASE=PATH] [--tag entries]
+    modal run benchmarks/system-map/modal_map.py::possible --snapshot VOLUME-DIR --source VOLUME-DIR --rules PATH
+           --expected PATH --out PATH [--generators ritorno,incerto]
     modal deploy benchmarks/system-map/modal_map.py
-    python benchmarks/system-map/modal_map.py spawn --phazly-tar PATH --phazly-links PATH --tududi-links PATH --tag TAG
+    python benchmarks/system-map/modal_map.py spawn --tag TAG --cases CASE[,CASE] --tar CASE=PATH ...
+           [--rules session|none|PATH] [--links CASE=PATH ...] [--scopes system] [--models opus] [--reps 2]
+           [--budget USD]
 """
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
 import modal
 
 HERE = Path(__file__).resolve().parent
-PLUGIN = HERE.parents[1] / "plugins/codebase-map" if modal.is_local() else Path("/daodan/plugins/codebase-map")
+ROOT = HERE.parents[1] if modal.is_local() else Path("/daodan")  # the checkout, and where the image holds it
 SCRIPTS = "/daodan/daodan/core"
 RESULTS = HERE / "results"
 CAPS = (12_000, 24_000, 48_000, 0)  # 0: no cap, the whole brief
 HOLDERS = (5, 8, 12)
 RUN_ID = "sysmap"
 AREA = "pagamenti e abbonamenti"
-MODELS = {"haiku": "claude-haiku-5-5", "sonnet": "claude-sonnet-5-5"}
-BUDGET_USD = 3  # per run: a session past it stops
+MODELS = {"haiku": "claude-haiku-5-5", "sonnet": "claude-sonnet-5-5", "opus": "claude-opus-5-5", "qwen": "janura-qwen"}
+# Served by the owner's LiteLLM gateway, the comparison beside Claude: its address and key are the Modal secret
+# GATEWAY_SECRET (GATEWAY_URL, GATEWAY_KEY), never a file of the repository.
+GATEWAY = {"qwen"}
+GATEWAY_EFFORT = "medium"  # the gateway's model refuses the effort Claude Code sends by default (`high`)
+BUDGET_USD = 3  # per session: a session past it stops, and its summary says so
+SESSION_SECONDS = ENGINE_SECONDS = 3600
+RULES = ("session", "none")  # the rules a run writes itself, or leaves to the agent; anything else is a rules file
 
 CASES = {
     "phazly": {"tar": True, "target": ".", "rules": "benchmarks/phazly-flow/rules.json"},
@@ -40,23 +58,35 @@ CASES = {
                "rules": "benchmarks/tududi-flow/rules.json"},
 }
 
+SKIP = ["**/__pycache__/**", "**/node_modules/**", "**/tests/**"]
+# DAODAN_CODE names the `daodan` folder to run when not the checkout's: an engine index is read only by the code that
+# made it (`engine_pass.adapter_fingerprint`), so a measure on a kept run uses the copy that run was made with.
+CODE = Path(os.environ.get("DAODAN_CODE") or ROOT / "daodan")
+# The package is installed because the plugin's `.mcp.json` starts `daodan mcp`; its dependencies come first,
+# from pyproject.toml, so that a change of the code does not reinstall them.
 image = (
     modal.Image.debian_slim(python_version="3.13")
     .apt_install("git", "curl", "ca-certificates", "nodejs", "npm")
     .run_commands("npm install -g @anthropic-ai/claude-code", "useradd -m runner")
-    .pip_install("uv", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5", "sqlglot>=30", "PyYAML>=6")
-    .add_local_dir(PLUGIN, "/daodan/plugins/codebase-map",
-                   ignore=["**/__pycache__/**", "**/node_modules/**", "**/tests/**", "**/viewer/**"])
+    .pip_install("uv")
+    .pip_install_from_pyproject(str(ROOT / "pyproject.toml"))
+    .add_local_file(ROOT / "pyproject.toml", "/daodan/pyproject.toml", copy=True)
+    .add_local_file(ROOT / "README.md", "/daodan/README.md", copy=True)
+    .add_local_dir(CODE, "/daodan/daodan", copy=True, ignore=SKIP)
+    .run_commands("pip install --no-deps -e /daodan")
+    .add_local_dir(ROOT / "plugins/codebase-map", "/daodan/plugins/codebase-map", ignore=[*SKIP, "**/viewer/**"])
+    .add_local_file(ROOT / "benchmarks/system-map/possible.py", "/daodan/benchmarks/system-map/possible.py")
 )
 app = modal.App("daodan-system-map", image=image)
 # The account the agent runs bill: its OAuth token (`claude setup-token`) as CLAUDE_CODE_OAUTH_TOKEN.
 CLAUDE_SECRET = "claude-code-alt"
+GATEWAY_SECRET = "daodan-gateway"
 volume = modal.Volume.from_name("daodan-flow-results", create_if_missing=True)
 
 
-def _run(command: list[str], cwd: str | None = None, ok: tuple = (0,)) -> str:
+def _run(command: list[str], cwd: str | None = None, ok: tuple = (0,), timeout: int | None = None) -> str:
     import subprocess
-    done = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+    done = subprocess.run(command, cwd=cwd, capture_output=True, text=True, timeout=timeout)
     if done.returncode not in ok:
         raise RuntimeError(f"{' '.join(command)} -> {done.returncode}\n{done.stderr[-4000:]}")
     return done.stdout
@@ -135,29 +165,124 @@ def links_case(name: str, case: dict, rules: str, tag: str) -> dict:
     return links
 
 
-PROMPT = ("The Codebase Map run `{run}` of this project is bound and has its link rules. "
-          "Propose the system map {what}. Follow your fixed sequence and answer with the counts.")
+@app.function(cpu=4, memory=65536, timeout=2 * 3600, volumes={"/results": volume})
+def possible_case(snapshot: str, source: str, rules: str, expected: str, generators: list[str]) -> dict:
+    """`possible.py` with no model on a run the whole pipeline made (`modal_pipeline.py --folder-out`), whose files
+    are in the folder `snapshot` of the volume and whose project is in the folder `source`, laid where the snapshot
+    says its root is (the links read the arguments of a call from the files): the links under `rules`, then the
+    measure against `expected`. The
+    reference comes with the call and the answer goes back to the caller: neither is kept on the volume."""
+    import shutil
+    work = Path("/work/possible")
+    shutil.copytree(Path("/results") / snapshot, work)  # the links' cache is written beside the manifest
+    manifest = work / "manifest.sqlite"
+    sys.path[:0] = [SCRIPTS, "/daodan/benchmarks/system-map"]
+    import flows
+    import possible
+    from snapshot_store import open_snapshot
+    with open_snapshot(manifest) as store:
+        shutil.copytree(Path("/results") / source, store["root"])
+    import technologies
+    technologies.ensure(manifest)  # the stack step's record, which the links read: the run's files may lack it
+    links = flows.link_facts(manifest, flows.validate_rules(json.loads(rules)["rules"]))
+    kinds, types = {}, {}
+    for entry in links["entries"]:
+        kinds[entry["kind"]] = kinds.get(entry["kind"], 0) + 1
+    for edge in links["edges"]:
+        types[edge["type"]] = types.get(edge["type"], 0) + 1
+    import modules
+    reasons = {}
+    for gap in links["gaps"]:
+        reasons[gap["reason"]] = reasons.get(gap["reason"], 0) + 1
+    graph = modules.ensure_graph(manifest)
+    import edge_view
+    view = edge_view.load_edge_view(manifest)  # whether the links read the engine's store or fell back
+    return {"links": {"edges": types, "entries": kinds, "gaps": len(links["gaps"]), "routes": links["routes"],
+                      "external": len(links["external"]), "source_gaps": links["source_gaps"],
+                      "gap_reasons": sorted(reasons.items(), key=lambda item: -item[1])[:60],
+                      "graph": {key: graph.get(key) for key in ("state", "reason", "modules")},
+                      "engine": {"coverage": view["coverage"].get("status"), "profile": view["profile"],
+                                 "languages": {name: entry.get("state") for name, entry in
+                                               (view["coverage"].get("languages") or {}).items()},
+                                 "gaps": view["gaps"][:20], "references": len(view["references"])}},
+            "measure": possible.measure(manifest, links, json.loads(expected), tuple(generators))}
+
+
+@app.function(cpu=4, memory=16384, timeout=2 * 3600, volumes={"/results": volume})
+def entries_case(name: str, case: dict, archive: bytes | None, tag: str) -> dict:
+    """The entry candidates of a case without rules, after the engine pass, with the calls of its links and the
+    snapshot's files: what `entries.py measure` reads (plan, Task C4.1)."""
+    work = Path("/work") / name
+    target = _source(work / "src", case, archive)
+    manifest = work / "snapshot/manifest.sqlite"
+    _run([sys.executable, f"{SCRIPTS}/snapshot.py", "write", str(target), "--out", str(manifest),
+          "--no-engine", "--no-index"])
+    _run([sys.executable, f"{SCRIPTS}/resolve_edges.py", str(manifest), "--pass",
+          "--report-out", str(work / "engine-report.json")], ok=(0, 1), timeout=ENGINE_SECONDS)
+    sys.path.insert(0, SCRIPTS)
+    import entries
+    import flows
+    import system_map
+    links = flows.link_facts(manifest, [])
+    found = {"case": name, "candidates": entries.candidates(links, manifest),
+             "calls": sorted({(e["from"], e["to"]) for e in links["edges"] if e["type"] in entries.CALLS})}
+    files = "".join(f"{path}\n" for path in sorted(system_map._headers(manifest)))
+    _save(tag, f"{name}/candidates.json", found)
+    _save(tag, f"{name}/files.txt", files)
+    volume.commit()
+    return {"case": name, "candidates": found, "files": files}
+
+
+PROMPT = ("The Codebase Map run `{run}` of this project is bound and {rules}. "
+          "Propose the system map {what}. Follow «Sequence» of the map format and answer with the counts.")
+
+
+def _label(name: str, scope: str, model: str, rules: str, rep: int) -> str:
+    return f"{name}-{scope}-{model}-{rules if rules in RULES else 'given'}-{rep}"
+
+
+def _tool_texts(stream: list[dict]):
+    """The text of every tool answer of a session, in order."""
+    for event in stream:
+        for block in (event.get("message") or {}).get("content") or []:
+            if isinstance(block, dict) and block.get("type") == "tool_result":
+                content = block.get("content")
+                yield "".join(c.get("text", "") for c in content if isinstance(c, dict)) \
+                    if isinstance(content, list) else str(content or "")
 
 
 def _report_refused(stream: list[dict]) -> int | None:
     """Arrows refused in the last answer to a `map` proposal of the session."""
     last = None
-    for event in stream:
-        for block in (event.get("message") or {}).get("content") or []:
-            if not isinstance(block, dict) or block.get("type") != "tool_result":
-                continue
-            content = block.get("content")
-            text = "".join(c.get("text", "") for c in content if isinstance(c, dict)) if isinstance(content, list) \
-                else str(content or "")
-            try:
-                value = json.loads(text)
-            except ValueError:
-                continue
-            if isinstance(value, dict) and "coverage" in value and "flows" in value:
-                last = value
+    for text in _tool_texts(stream):
+        try:
+            value = json.loads(text)
+        except ValueError:
+            continue
+        if isinstance(value, dict) and "coverage" in value and "flows" in value:
+            last = value
     if last is None:
         return None
     return sum(1 for f in last["flows"] for a in f.get("arrows", []) if a.get("status") == "refused")
+
+
+def _spent(stream: list[dict]) -> dict:
+    """What a session cost and did: from its `result` and `init` events, its tool calls and their answers."""
+    import collections
+    result = next((e for e in reversed(stream) if e.get("type") == "result"), {})
+    init = next((e for e in stream if e.get("type") == "system" and e.get("subtype") == "init"), {})
+    tools = collections.Counter(block.get("name") for event in stream if event.get("type") == "assistant"
+                                for block in (event.get("message") or {}).get("content") or []
+                                if isinstance(block, dict) and block.get("type") == "tool_use")
+    # what the tools gave back: size, and whether the host kept it out of the session
+    answers = [{"chars": len(text), "kept_out": text.startswith("<persisted-output>")
+                or "exceeds maximum allowed tokens" in text, "error": text.startswith("Error")}
+               for text in _tool_texts(stream)]
+    return {"cost_usd": result.get("total_cost_usd"), "turns": result.get("num_turns"), "usage": result.get("usage"),
+            "model_usage": result.get("modelUsage"), "budget_stop": result.get("subtype") == "error_max_budget_usd",
+            "subtype": result.get("subtype"), "tools": dict(tools), "answers": answers,
+            "init_tools": init.get("tools"), "init_mcp": init.get("mcp_servers"),
+            "version": init.get("claude_code_version"), "result": (result.get("result") or "")[-3000:]}
 
 
 def _levels(system: dict, links: dict, manifest: Path) -> dict:
@@ -200,107 +325,191 @@ def _levels(system: dict, links: dict, manifest: Path) -> dict:
     return out
 
 
-# One container per run: a reused container would keep the project and the session state of another.
-@app.function(cpu=4, memory=16384, timeout=2 * 3600, volumes={"/results": volume}, single_use_containers=True,
-              secrets=[modal.Secret.from_name(CLAUDE_SECRET)])
-def map_run(name: str, case: dict, archive: bytes | None, rules: str, links: bytes, scope: str, model: str,
-            rep: int, tag: str) -> dict:
-    import collections
+HOME = Path("/home/runner")
+AS_RUNNER = ["runuser", "-u", "runner", "--", "env", f"HOME={HOME}"]
+
+
+def _own() -> None:
+    """The runner's home is the runner's again, with what root wrote in it: the sessions run as the runner."""
+    import subprocess
+    subprocess.run(["chown", "-R", "runner:runner", str(HOME)], check=True)
+
+
+def _prepare(project: Path, target: Path, rules: str, links: bytes | None, model: str,
+             budget: float) -> tuple[Path, dict | None]:
+    """The Codebase Map run before any session, and the rules session when `rules` is `session`.
+
+    A rules file is recorded and its links, computed before with the engine pass, replace the cache. Otherwise the
+    engine pass runs here, and the rules session is the app's: the `LINKS` task with the rule format the service
+    answers, given to Claude Code on the app's command line, with Daodan's server as the installed command."""
+    import engines
+    import mcp_service
+    service = mcp_service.MapService(project)
+    service.create_run(target.relative_to(project).as_posix(), RUN_ID, engine=False)
+    manifest = project / f".daodan/map/runs/{RUN_ID}/snapshot/manifest.sqlite"
+    if rules not in RULES:
+        service.flows(RUN_ID, rules=json.loads(rules)["rules"])
+        cache = manifest.with_name("flow-links.json")
+        kept = json.loads(cache.read_text(encoding="utf-8"))
+        kept["links"] = json.loads(links)
+        cache.write_text(json.dumps(kept), encoding="utf-8")
+        return manifest, None
+    _run([sys.executable, f"{SCRIPTS}/resolve_edges.py", str(manifest), "--pass",
+          "--report-out", str(HOME / "engine-report.json")], ok=(0, 1), timeout=ENGINE_SECONDS)
+    if rules == "none":
+        return manifest, None
+    import app as daodan_app
+    needs = service.flows(RUN_ID)
+    if needs.get("status") != "needs_rules":
+        raise RuntimeError(f"a new run should need its rules; the service answered {str(needs)[:600]}")
+    technologies = needs.get("technologies") or needs.get("technologies_unavailable")
+    if "technologies_remaining" in needs:  # as the app fills its task (`App.link`)
+        technologies = {"units": needs["technologies"], "remaining": needs["technologies_remaining"],
+                        "lookup": needs["technologies_lookup"]}
+    prompt = daodan_app.LINKS.format(run=RUN_ID, rounds=daodan_app.ROUNDS, format=needs["format"],
+                                     technologies=json.dumps(technologies, ensure_ascii=False),
+                                     shapes=json.dumps(needs.get("shapes", {}), ensure_ascii=False))
+    folder = HOME / "engine"
+    folder.mkdir()
+    arguments = engines.ClaudeCode().arguments(
+        {"mcp": {"command": "daodan", "args": ["mcp", "--project", str(project)]}}, folder)
+    command = [*AS_RUNNER, "claude", *arguments, "--model", MODELS[model], "--max-budget-usd", str(budget)]
+    return manifest, {"command": command, "prompt": prompt, "cwd": folder}
+
+
+def _through(environment: dict, model: str) -> dict:
+    """A model of the gateway: Claude Code talks to the gateway with its key, every model name it would use is that
+    model, and the Claude account's token stays out of the session. The gateway's address and key, as the secret
+    names them, reach no session: a Claude model's session has no use for them."""
+    own = {k: v for k, v in environment.items() if k not in ("GATEWAY_URL", "GATEWAY_KEY")}  # never a session's to read
+    if model not in GATEWAY:
+        return own
+    name = MODELS[model]
+    kept = {k: v for k, v in own.items() if k not in ("CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY")}
+    return {**kept, "ANTHROPIC_BASE_URL": environment["GATEWAY_URL"], "ANTHROPIC_AUTH_TOKEN": environment["GATEWAY_KEY"],
+            "ANTHROPIC_MODEL": name, "ANTHROPIC_DEFAULT_OPUS_MODEL": name, "ANTHROPIC_DEFAULT_SONNET_MODEL": name,
+            "ANTHROPIC_DEFAULT_HAIKU_MODEL": name, "ANTHROPIC_SMALL_FAST_MODEL": name,
+            "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"}
+
+
+def _session(command: list[str], prompt: str, cwd: Path, stream_file: Path, model: str) -> dict:
+    """One `claude -p` session, its prompt on its input: its events as they came, and how it ended."""
     import os
     import subprocess
     import time
-
-    home = Path("/home/runner")
-    project = home / name
-    target = _source(project, case, archive)
-    rules_file = home / "rules.json"
-    rules_file.write_text(rules, encoding="utf-8")
-    links_file = home / "links.json"
-    links_file.write_bytes(links)
-    # The run is prepared before the session: snapshot, rules and the links of the engine pass.
-    prepare = (f"import json, sys\nfrom pathlib import Path\nsys.path.insert(0, {SCRIPTS!r})\nimport mcp_service\n"
-               f"service = mcp_service.MapService(Path({str(project)!r}))\n"
-               f"service.create_run({Path(target).relative_to(project).as_posix() or '.'!r}, {RUN_ID!r}, engine=False)\n"
-               f"service.flows({RUN_ID!r}, rules=json.loads(Path({str(rules_file)!r}).read_text())['rules'])\n"
-               f"cache = Path({str(project)!r}) / '.daodan/map/runs/{RUN_ID}/snapshot/flow-links.json'\n"
-               f"kept = json.loads(cache.read_text())\n"
-               f"kept['links'] = json.loads(Path({str(links_file)!r}).read_text())\n"
-               f"cache.write_text(json.dumps(kept))\n")
-    subprocess.run(["chown", "-R", "runner:runner", str(home)], check=True)
-    as_runner = ["runuser", "-u", "runner", "--", "env", f"HOME={home}"]
-    # The MCP server's dependencies are installed before the session: a first `uv` install can
-    # outlast the first-turn wait, and the session then runs without the server's tools.
-    done = subprocess.run([*as_runner, "uv", "run", "--no-config", "--no-project", "--script",
-                           f"{SCRIPTS}/mcp_server.py", "--help"], cwd=project, capture_output=True, text=True, timeout=900)
-    if done.returncode != 0:
-        raise RuntimeError(f"mcp server warm-up -> {done.returncode}\n{done.stderr[-4000:]}")
-    # The run is prepared with the server's own dependencies: other parser versions would leave
-    # the snapshot stale for the server ("parser fingerprint changed").
-    header = Path(f"{SCRIPTS}/mcp_server.py").read_text(encoding="utf-8").split("# ///", 2)[1]
-    script = home / "prepare.py"
-    script.write_text("# ///" + header + "# ///\n" + prepare, encoding="utf-8")
-    subprocess.run(["chown", "runner:runner", str(script)], check=True)
-    done = subprocess.run([*as_runner, "uv", "run", "--no-config", "--no-project", "--script", str(script)],
-                          cwd=project, capture_output=True, text=True, timeout=1800)
-    if done.returncode != 0:
-        raise RuntimeError(f"prepare -> {done.returncode}\n{done.stderr[-4000:]}")
-    what = f"for the area «{AREA}» only, with scope" if scope == "area" else "for the whole system"
-    command = [*as_runner, "claude", "-p", PROMPT.format(run=RUN_ID, what=what), "--agent", "codebase-map:system-mapper",
-               "--model", MODELS[model], "--plugin-dir", "/daodan/plugins/codebase-map",
-               "--dangerously-skip-permissions", "--max-budget-usd", str(BUDGET_USD),
-               "--output-format", "stream-json", "--verbose"]
-    stream_file = home / "stream.jsonl"
+    if model in GATEWAY:
+        command = [*command, "--effort", GATEWAY_EFFORT]
+    environment = _through({**os.environ, "HOME": str(HOME), "USER": "runner", "MCP_TIMEOUT": "120000",
+                            "CLAUDE_CODE_MCP_STARTUP_WAIT_MS": "120000"}, model)
     started, timed_out = time.time(), False
     with stream_file.open("w", encoding="utf-8") as sink:
-        process = subprocess.Popen(command, cwd=project, env={**os.environ, "HOME": str(home), "USER": "runner",
-                                                              "MCP_TIMEOUT": "120000",
-                                                              "CLAUDE_CODE_MCP_STARTUP_WAIT_MS": "120000"},
-                                   stdout=sink, stderr=subprocess.PIPE, text=True)
+        process = subprocess.Popen(command, cwd=cwd, env=environment, stdin=subprocess.PIPE, stdout=sink,
+                                   stderr=subprocess.PIPE, text=True)
         try:
-            _, error = process.communicate(timeout=2 * 3600 - 900)
+            _, error = process.communicate(prompt, timeout=SESSION_SECONDS)
         except subprocess.TimeoutExpired:
             process.kill()
             _, error = process.communicate()
             timed_out = True
-    seconds = round(time.time() - started)
+    text = stream_file.read_text(encoding="utf-8", errors="replace")
     stream = []
-    for line in stream_file.read_text(encoding="utf-8", errors="replace").splitlines():
+    for line in text.splitlines():
         try:
-            stream.append(json.loads(line))
+            event = json.loads(line)
         except ValueError:
             continue
-    result = next((e for e in reversed(stream) if e.get("type") == "result"), {})
-    init = next((e for e in stream if e.get("type") == "system" and e.get("subtype") == "init"), {})
-    answers = []  # what the tools gave back: size, and whether the host kept it out of the session
-    for event in stream:
-        for block in (event.get("message") or {}).get("content") or []:
-            if isinstance(block, dict) and block.get("type") == "tool_result":
-                content = block.get("content")
-                text = "".join(c.get("text", "") for c in content if isinstance(c, dict)) \
-                    if isinstance(content, list) else str(content or "")
-                answers.append({"chars": len(text), "kept_out": text.startswith("<persisted-output>")
-                                or "exceeds maximum allowed tokens" in text, "error": text.startswith("Error")})
-    tools = collections.Counter(block.get("name") for event in stream if event.get("type") == "assistant"
-                                for block in (event.get("message") or {}).get("content") or []
-                                if isinstance(block, dict) and block.get("type") == "tool_use")
-    sys.path.insert(0, SCRIPTS)
+        if isinstance(event, dict):
+            stream.append(event)
+    return {"stream": stream, "text": text, "returncode": process.returncode, "timed_out": timed_out,
+            "seconds": round(time.time() - started), "stderr": (error or "")[-3000:]}
+
+
+def _costs(sessions: dict) -> dict:
+    """Each session's end and spending, and the run's: the cost summed, and whether a budget stopped a session."""
+    ended = {name: {**{key: session[key] for key in ("returncode", "timed_out", "seconds", "stderr")},
+                    **_spent(session["stream"])} for name, session in sessions.items()}
+    return {"cost_usd": round(sum(s["cost_usd"] or 0 for s in ended.values()), 6),
+            "budget_stop": any(s["budget_stop"] for s in ended.values()), "sessions": ended}
+
+
+def _record(manifest: Path, stream: list[dict], tag: str, label: str) -> None:
+    """The map as `system_map.load` gives it, with measure 3 and the refused arrows, and the snapshot's files."""
     import flows
     import system_map
-    manifest = project / f".daodan/map/runs/{RUN_ID}/snapshot/manifest.sqlite"
-    recorded = system_map.load(manifest, flows.load_rules(rules_file)) or {"nodes": [], "flows": []}
+    recorded_rules = manifest.with_name("flow-rules.json")
+    rules = flows.load_rules(recorded_rules) if recorded_rules.is_file() else []
+    recorded = system_map.load(manifest, rules) or {"nodes": [], "flows": []}
     recorded["refused_arrows"] = _report_refused(stream) or 0
     try:
-        recorded["levels"] = _levels(recorded, json.loads(links), manifest)
+        recorded["levels"] = _levels(recorded, flows.cached_links(manifest, rules), manifest)
     except Exception as error:  # the measure reports, the run's result stays
         recorded["levels"] = {"error": repr(error)[:2000]}
-    label = f"{name}-{scope}-{model}-{rep}"
-    summary = {"case": name, "scope": scope, "model": MODELS[model], "rep": rep, "returncode": process.returncode,
-               "timed_out": timed_out, "seconds": seconds, "cost_usd": result.get("total_cost_usd"),
-               "turns": result.get("num_turns"), "usage": result.get("usage"), "tools": dict(tools),
-               "answers": answers, "init_tools": init.get("tools"), "init_mcp": init.get("mcp_servers"), "version": init.get("claude_code_version"),
-               "result": (result.get("result") or "")[-3000:], "stderr": (error or "")[-3000:]}
-    _save(tag, f"{label}/stream.jsonl", stream_file.read_text(encoding="utf-8", errors="replace"))
     _save(tag, f"{label}/map.json", recorded)
+    _save(tag, f"{label}/files.txt", "".join(f"{path}\n" for path in sorted(system_map._headers(manifest))))
+
+
+def _hand_on(name: str, case: dict, archive: bytes | None, rules: str, links: dict, scope: str, model: str,
+             reps: int, tag: str, budget: float, label: str) -> list[str]:
+    """The rules a rules session recorded and their links, kept on the volume beside its run and given to the
+    case's other repetitions, which run the agent alone on them: one rules session per case, scope and model."""
+    text = json.dumps(links)
+    _save(tag, f"{label}/rules.json", rules)
+    _save(tag, f"{label}/links.json", text)
+    volume.commit()
+    return [map_run.spawn(name, case, archive, rules, text.encode("utf-8"), scope, model, rep, tag, budget,
+                          origin=label).object_id for rep in range(2, reps + 1)]
+
+
+# One container per run: a reused container would keep the project and the session state of another.
+@app.function(cpu=4, memory=16384, timeout=4 * 3600, volumes={"/results": volume}, single_use_containers=True,
+              secrets=[modal.Secret.from_name(CLAUDE_SECRET), modal.Secret.from_name(GATEWAY_SECRET)])
+def map_run(name: str, case: dict, archive: bytes | None, rules: str, links: bytes | None, scope: str, model: str,
+            rep: int, tag: str, budget: float = BUDGET_USD, reps: int = 1, origin: str | None = None) -> dict:
+    """One run: the case prepared, its rules session when asked, the agent, and what they recorded and cost.
+    `rules` is `session`, `none` or the text of a rules file, whose `links` come computed before. A rules session
+    hands its rules to repetitions 2 to `reps`; `origin` is the run whose session wrote the rules given."""
+    import time
+    mode = "session" if origin else rules if rules in RULES else "given"
+    label = _label(name, scope, model, mode, rep)
+    project = HOME / name
+    target = _source(project, case, archive)
+    sys.path.insert(0, SCRIPTS)
+    import flows
+    started = time.time()
+    manifest, writer = _prepare(project, target, rules, links, model, budget)
+    summary = {"case": name, "scope": scope, "model": MODELS[model], "rep": rep,
+               "rules": mode, "rules_from": origin, "budget_usd": budget,
+               "prepared_seconds": round(time.time() - started)}
+    _own()
+    _run([*AS_RUNNER, "daodan", "mcp", "--help"], cwd=str(project), timeout=300)  # the server the sessions start
+    sessions = {}
+    if writer is not None:
+        sessions["rules"] = _session(writer["command"], writer["prompt"], writer["cwd"], HOME / "rules-stream.jsonl",
+                                     model)
+        _save(tag, f"{label}/rules-stream.jsonl", sessions["rules"]["text"])
+    recorded_rules = manifest.with_name("flow-rules.json")
+    if rules == "session" and not recorded_rules.is_file():
+        summary["stopped"] = "the rules session recorded no rules"
+    else:
+        if recorded_rules.is_file():  # computed now, so that the agent's first call does not wait for them
+            computed = flows.cached_links(manifest, flows.load_rules(recorded_rules))
+            _own()
+            if rules == "session":
+                summary["spawned"] = _hand_on(name, case, archive, recorded_rules.read_text(encoding="utf-8"),
+                                              computed, scope, model, reps, tag, budget, label)
+        what = f"for the area «{AREA}» only, with scope" if scope == "area" else "for the whole system"
+        has = "has its link rules" if recorded_rules.is_file() else "has no link rules yet"
+        command = [*AS_RUNNER, "claude", "-p", "--agent", "codebase-map:system-mapper", "--model", MODELS[model],
+                   "--plugin-dir", "/daodan/plugins/codebase-map", "--dangerously-skip-permissions",
+                   "--max-budget-usd", str(budget), "--output-format", "stream-json", "--verbose"]
+        sessions["mapper"] = _session(command, PROMPT.format(run=RUN_ID, rules=has, what=what), project,
+                                      HOME / "stream.jsonl", model)
+        _save(tag, f"{label}/stream.jsonl", sessions["mapper"]["text"])
+    summary.update(_costs(sessions))
+    try:
+        _record(manifest, sessions["mapper"]["stream"] if "mapper" in sessions else [], tag, label)
+    except Exception as error:  # the streams and the summary stay
+        summary["record_error"] = repr(error)[:2000]
     _save(tag, f"{label}/summary.json", summary)
     volume.commit()
     return summary
@@ -336,42 +545,160 @@ def links(case: str, out: str, tag: str = "system-map"):
           len(value["gaps"]), "gaps", value["routes"])
 
 
-def spawn(phazly_tar: str, phazly_links: str, tududi_links: str, tag: str, cases: str, scopes: str, models: str,
-          reps: int) -> None:
+@app.local_entrypoint()
+def possible(snapshot: str, source: str, rules: str, expected: str, out: str, generators: str = "ritorno,incerto"):
+    """`modal volume put daodan-flow-results DIR SNAPSHOT` first, with the files `--folder-out` brought into DIR,
+    and the same for the project's folder as SOURCE."""
+    value = possible_case.remote(snapshot, source, Path(rules).read_text(encoding="utf-8"),
+                                 Path(expected).read_text(encoding="utf-8"), [g for g in generators.split(",") if g])
+    Path(out).write_text(json.dumps(value, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(value["links"], value["measure"]["possible"], value["measure"]["arrows"],
+          value["measure"]["entries_from_others"])
+
+
+@app.local_entrypoint()
+def entries(tars: str, tag: str = "entries"):
+    """The candidates and files of each case of `--tars CASE=PATH[,CASE=PATH]`, here in results/system/TAG/CASE/."""
+    calls = [(name, CASES[name], Path(path).read_bytes(), tag) for name, path in _pairs(tars.split(","), "tars").items()]
+    _bring(entries_case.starmap(calls, return_exceptions=True), tag)
+
+
+def _bring(results, tag: str) -> None:
+    """The candidates and files of each case a job returned, here in results/system/TAG/CASE/."""
+    for result in results:
+        if isinstance(result, Exception):
+            print("FAILED", repr(result)[:2000])
+            continue
+        out = RESULTS / "system" / tag / result["case"]
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "candidates.json").write_bytes(json.dumps(result["candidates"], ensure_ascii=False, indent=1).encode())
+        (out / "files.txt").write_bytes(result["files"].encode("utf-8"))
+        print(result["case"], len(result["candidates"]["candidates"]), "candidates",
+              len(result["candidates"]["calls"]), "calls", result["files"].count("\n"), "files")
+
+
+# OWASP Noir, a ready-made finder of the endpoints an application offers (MIT, static analysis; plan, Task C4.14): tried
+# here, in a container, before Daodan writes a reader of routes of its own. The version is pinned.
+NOIR = "https://github.com/owasp-noir/noir/releases/download/v1.5.0/noir-v1.5.0-linux-x86_64"
+noir_image = (modal.Image.debian_slim(python_version="3.13").apt_install("git", "curl", "ca-certificates")
+              .run_commands(f"curl -fsSL -o /usr/local/bin/noir {NOIR}", "chmod +x /usr/local/bin/noir"))
+
+
+@app.function(image=noir_image, cpu=4, memory=8192, timeout=3600, volumes={"/results": volume})
+def noir_case(name: str, case: dict, archive: bytes | None, tag: str) -> dict:
+    """What Noir finds in a case: its version, its own help (the flags are read from it, not assumed) and its JSON."""
+    import subprocess
+    work = Path("/work") / name
+    target = _source(work / "src", case, archive)
+    out = work / "noir.json"
+
+    def run(*args: str, timeout: int = 1800) -> dict:
+        done = subprocess.run(["noir", *args], cwd="/work", capture_output=True, text=True, timeout=timeout)
+        return {"returncode": done.returncode, "stdout": done.stdout[-20000:], "stderr": done.stderr[-4000:]}
+
+    found = {"case": name, "version": run("--version", timeout=60), "help": run("scan", "-h", timeout=60),
+             "scan": run("scan", str(target), "-f", "json", "-o", str(out), "--no-log")}
+    found["json"] = out.read_text(encoding="utf-8", errors="replace") if out.is_file() else None
+    _save(tag, f"{name}/noir.json", found)
+    volume.commit()
+    return found
+
+
+@app.local_entrypoint()
+def noir(tars: str, tag: str = "noir"):
+    """Noir's answer for each case of `--tars CASE=PATH[,CASE=PATH]`, here in results/system/TAG/CASE/noir.json."""
+    calls = [(name, CASES[name], Path(path).read_bytes(), tag) for name, path in _pairs(tars.split(","), "tars").items()]
+    for result in noir_case.starmap(calls, return_exceptions=True):
+        if isinstance(result, Exception):
+            print("FAILED", repr(result)[:2000])
+            continue
+        out = RESULTS / "system" / tag / result["case"]
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "noir.json").write_bytes(json.dumps(result, ensure_ascii=False, indent=1).encode("utf-8"))
+        print(result["case"], "scan", result["scan"]["returncode"], "json", len(result["json"] or ""), "characters")
+
+
+def _pairs(values: list[str], what: str) -> dict[str, str]:
+    """`CASE=PATH` options as a mapping; a case this file does not know, or a missing `=`, is refused."""
+    out = {}
+    for value in values:
+        name, sep, path = value.partition("=")
+        if not sep or not path or name not in CASES:
+            raise SystemExit(f"--{what} {value!r}: give CASE=PATH, with CASE one of {', '.join(CASES)}")
+        out[name] = path
+    return out
+
+
+def _inputs(name: str, rules: str | None, tars: dict, links: dict) -> tuple[bytes | None, str, bytes | None]:
+    """A case's archive, rules and links, read before anything is started: `rules` is `session`, `none`, a rules
+    file, or None for the case's own file; a rules file needs the links computed with the engine pass."""
+    case = CASES[name]
+    if case.get("tar") and name not in tars:
+        raise SystemExit(f"{name} comes from an archive: give --tar {name}=PATH")
+    archive = Path(tars[name]).read_bytes() if case.get("tar") else None
+    if rules in RULES:
+        return archive, rules, None
+    if rules is None and "rules" not in case:
+        raise SystemExit(f"{name} has no rules file: give --rules session, none or PATH")
+    if name not in links:
+        raise SystemExit(f"a rules file needs the links of the engine pass: give --links {name}=PATH")
+    text = Path(rules or ROOT / case["rules"]).read_text(encoding="utf-8")
+    return archive, text, Path(links[name]).read_bytes()
+
+
+def spawn(args) -> None:
+    tars, links = _pairs(args.tar, "tar"), _pairs(args.links, "links")
+    prepared = {name: _inputs(name, args.rules, tars, links) for name in args.cases.split(",")}
     function = modal.Function.from_name("daodan-system-map", "map_run")
-    root = HERE.parents[1]
-    inputs = {"phazly": (Path(phazly_tar).read_bytes(), Path(phazly_links).read_bytes()),
-              "tududi": (None, Path(tududi_links).read_bytes() if tududi_links else b"")}
     calls = {}
-    for name in cases.split(","):
-        archive, links_bytes = inputs[name]
-        rules = (root / CASES[name]["rules"]).read_text(encoding="utf-8")
-        for scope in scopes.split(","):
-            for model in models.split(","):
-                for rep in range(1, reps + 1):
-                    calls[f"{name}-{scope}-{model}-{rep}"] = function.spawn(
-                        name, CASES[name], archive, rules, links_bytes, scope, model, rep, tag).object_id
+    for name, (archive, rules, given) in prepared.items():
+        for scope in args.scopes.split(","):
+            for model in args.models.split(","):
+                first = _label(name, scope, model, rules, 1)
+                for rep in range(1, args.reps + 1):  # a rules session's first repetition starts the others
+                    calls[_label(name, scope, model, rules, rep)] = f"started by {first}" \
+                        if rules == "session" and rep > 1 else function.spawn(
+                            name, CASES[name], archive, rules, given, scope, model, rep, args.tag, args.budget,
+                            reps=args.reps).object_id
     print(json.dumps(calls, indent=1))
 
 
+def _arguments(argv: list[str] | None = None):
+    import argparse
+    parser = argparse.ArgumentParser(description="Start runs of the deployed app `daodan-system-map`.")
+    commands = parser.add_subparsers(dest="command", required=True)
+    one = commands.add_parser("spawn", help="one map_run per case, scope, model and repetition")
+    one.add_argument("--tag", required=True, help="the folder of the runs on the volume")
+    one.add_argument("--cases", default="phazly,tududi", help=f"comma-separated, of {', '.join(CASES)}")
+    one.add_argument("--tar", action="append", default=[], metavar="CASE=PATH",
+                     help="the archive of a case (`git archive`), repeatable")
+    one.add_argument("--rules", default=None, metavar="session|none|PATH",
+                     help="session: a Claude Code session writes them, as the app does; none: the agent finds none; "
+                          "PATH: a rules file; default: the case's own rules file")
+    one.add_argument("--links", action="append", default=[], metavar="CASE=PATH",
+                     help="the links computed with the engine pass, for a rules file, repeatable")
+    one.add_argument("--scopes", default="area,system")
+    one.add_argument("--models", default="haiku,sonnet", help=f"comma-separated, of {', '.join(MODELS)}")
+    one.add_argument("--reps", type=int, default=2)
+    one.add_argument("--budget", type=float, default=BUDGET_USD, help="USD per session")
+    by_links = commands.add_parser("spawn-links", help="the links of a cloned case; the volume gets links-CASE.json")
+    by_links.add_argument("case", choices=[name for name, case in CASES.items() if "repo" in case and "rules" in case])
+    by_links.add_argument("tag")
+    args = parser.parse_args(argv)
+    if args.command == "spawn":
+        unknown = [m for m in args.models.split(",") if m not in MODELS] + \
+                  [c for c in args.cases.split(",") if c not in CASES]
+        if unknown:
+            parser.error(f"unknown models or cases: {', '.join(unknown)}")
+    return args
+
+
 if __name__ == "__main__":
-    if sys.argv[1:2] == ["spawn-links"]:  # python modal_map.py spawn-links CASE TAG: the volume gets links-CASE.json
+    arguments = _arguments()
+    if arguments.command == "spawn-links":
         function = modal.Function.from_name("daodan-system-map", "links_case")
-        name, tag = sys.argv[2], sys.argv[3]
-        print(function.spawn(name, CASES[name], (HERE.parents[1] / CASES[name]["rules"]).read_text(encoding="utf-8"),
-                             tag).object_id)
-    if len(sys.argv) >= 2 and sys.argv[1] == "spawn":
-        import argparse
-        parser = argparse.ArgumentParser()
-        parser.add_argument("command")
-        parser.add_argument("--phazly-tar", required=True)
-        parser.add_argument("--phazly-links", required=True)
-        parser.add_argument("--tududi-links", default="")
-        parser.add_argument("--tag", required=True)
-        parser.add_argument("--cases", default="phazly,tududi")
-        parser.add_argument("--scopes", default="area,system")
-        parser.add_argument("--models", default="haiku,sonnet")
-        parser.add_argument("--reps", type=int, default=2)
-        args = parser.parse_args()
-        spawn(args.phazly_tar, args.phazly_links, args.tududi_links, args.tag, args.cases, args.scopes, args.models,
-              args.reps)
+        print(function.spawn(arguments.case, CASES[arguments.case],
+                             (ROOT / CASES[arguments.case]["rules"]).read_text(encoding="utf-8"),
+                             arguments.tag).object_id)
+    else:
+        spawn(arguments)

@@ -1,12 +1,13 @@
-"""Three interface events followed on projects analyzed with the real indexers, in Daodan's container.
+"""Four interface events followed on projects analyzed with the real indexers, in Daodan's container.
 
-    python benchmarks/system-map/real_paths.py [web] [tk] [tauri] [--work DIR]
+    python benchmarks/system-map/real_paths.py [web] [tk] [tauri] [next] [--work DIR]
 
 Each case is copied to a work folder and analyzed through `MapService.create_run` with its engine pass: the
 official indexer of the language runs in Daodan's container, never on the host (the pass is a gap without a
 container engine). Then, as an MCP client would: the candidates before any rule, the shapes still to classify,
-the answers and rules of the case, each card with its numbered steps. The answer is JSON, with `checks` naming
-what held; the script ends with 1 when one did not. `--work` keeps the runs, for the app to open them.
+the answers and rules of the case, each card with its numbered steps and the entries the links end with. The
+answer is JSON, with `checks` naming what held; the script ends with 1 when one did not. `--work` keeps the runs,
+for the app to open them.
 """
 from __future__ import annotations
 
@@ -31,6 +32,8 @@ CASES = {
     "tk": {"source": HERE / "real-paths/tk-desk", "answers": {"tk.Button#command": "controllo dell'interfaccia"},
            "rules": [{"written": "store.put", "link": "scrive", "store": "disk", "key": "arg0"}]},
     "tauri": {"source": HERE / "real-paths/tauri-desk", "answers": {}, "rules": []},
+    # a form's `action` is a shape the registry does not know: the case answers it, as the owner would
+    "next": {"source": HERE / "real-paths/next-shop", "answers": {"action": "controllo dell'interfaccia"}, "rules": []},
 }
 LIMIT = 3600  # seconds one engine pass may take: rust-analyzer builds the dependencies of a Tauri crate
 
@@ -72,7 +75,10 @@ def followed(service: MapService, case: dict) -> dict:
     return {"candidates_before_rules": [{key: c.get(key) for key in ("shape", "event", "label", "symbol", "site",
                                                                     "handler_source")}
                                         for c in before.get("candidates", ())],
-            "shapes_asked": [q.get("shape") for q in asked.get("questions", ())], "answered": answers, "cards": cards}
+            "shapes_asked": [q.get("shape") for q in asked.get("questions", ())], "answered": answers, "cards": cards,
+            "entries": [{key: entry.get(key) for key in ("kind", "symbol", "site", "path", "method", "reader",
+                                                         "handler_source") if entry.get(key) is not None}
+                        for entry in service.flows(RUN)["entries"]]}
 
 
 def reaches(card: dict, target: str) -> dict | None:
@@ -90,6 +96,19 @@ def checks(name: str, found: dict, engine: dict) -> list[dict]:
         card = by_label.get("Salva")
         return [{"check": "the Tk command is bound to App.save", "ok": bool(card and card["handler"].endswith("::App.save"))},
                 {"check": "App.save reaches the write of disk/orders", "ok": bool(card and reaches(card, "store:disk/orders"))}]
+    if name == "next":
+        by_path = {}
+        for entry in found["entries"]:
+            by_path.setdefault(entry.get("path"), []).append(entry)
+        action, card = "app/checkout/actions.ts::pay", by_label.get("Paga")
+        return [{"check": "/checkout is an entry on the page's function, with its line",
+                 "ok": [(e["symbol"], e["site"]) for e in by_path.get("/checkout", ())] == [
+                     ("app/checkout/page.tsx::Checkout", "app/checkout/page.tsx:3")]},
+                {"check": "/api/pay is exactly one entry, on the route handler's POST",
+                 "ok": [e["symbol"] for e in by_path.get("/api/pay", ())] == ["app/api/pay/route.ts::POST"]},
+                {"check": "no entry is the route /pay", "ok": "/pay" not in by_path},
+                {"check": "the Paga card reaches the server action",
+                 "ok": bool(card and (card["handler"] == action or reaches(card, action)))}]
     command = "src-tauri/src/main.rs::"
     typescript = (engine["languages"].get("typescript") or {}).get("state")
     # The Node restore is shared between the runs of the analysis: each still installs its own indexer.

@@ -208,11 +208,40 @@ Eseguire `python benchmarks/system-map/real_paths.py [web] [tk] [tauri] [--work 
 
 Il caso Tauri prima falliva: con il ripristino Node condiviso `tsc` e scip-typescript non trovavano `node.tar.gz` (spec della pipeline, sezione 7.1). Con 6,4 GB liberi rust-analyzer non parte (ne chiede 8) ed è una lacuna con la causa. Le stesse tre fixture su Modal (`modal_pipeline.py --folder-out`): indici `fresh` in 132, 100 e 242 secondi; lì i test Rust non partono per le librerie di sistema che mancano. Le fixture non dichiarano test: nessun arco osservato.
 
+### Le rotte di Next.js dallo strumento del framework, 21 novembre 2026
+
+Eseguire `python benchmarks/system-map/real_paths.py next [--work DIR]` con un motore di container. Parametri: la fixture `real-paths/next-shop` (Next.js 16.4.6, App Router: tre pagine, un gestore `POST`, un layout, un pulsante «Paga» in un form la cui `action` è una funzione `"use server"`), nessuna regola, una risposta sulla forma `action` (il registro non la conosce). La sorgente della pre-mappa lancia `next typegen` del progetto nel container e legge `.next/types/validator.ts`; i collegamenti danno a ogni file la sua funzione dagli export dello snapshot.
+
+| Controllo | Container locale | Modal (`modal_pipeline.py --folder-out`) |
+| --- | --- | --- |
+| secondi dell'analisi | 169 | 145 |
+| `/checkout` è un ingresso sulla funzione della pagina (`app/checkout/page.tsx::Checkout`, riga 3) | sì | sì |
+| `/api/pay` è una sola voce, su `app/api/pay/route.ts::POST` | sì | sì |
+| nessun ingresso è la rotta `/pay` | sì | sì |
+| la scheda «Paga» arriva a `app/checkout/actions.ts::pay` | sì | non misurato: il giro su Modal non apre le schede |
+
+Prima della sorgente le tre pagine non erano ingressi, e Noir dava la funzione sul server come una rotta `/pay` che l'app non ha. `next typegen` da solo, nel container senza rete: 0,9 secondi, exit 0; `next build` 7,9 secondi. Non provati: il Pages Router, un `distDir` diverso, una versione senza `typegen` (la fixture `js-nextjs`, Next.js 14, dà la lacuna `model_failed`).
+
 ### Collegamenti possibili, senza modello
 
 Domanda: delle frecce e degli ingressi che mancano ai flussi di un riferimento, quanti darebbe un collegamento possibile, che la macchina propone senza affermarlo e un modello conferma o scarta. `possible.py` verifica le frecce fra nodi con codice con `system_map.verify`, prima con i soli collegamenti certi e poi aggiungendo i possibili; le frecce e gli ingressi su un servizio di altri li controlla nella loro direzione e sui simboli di ogni nodo (il ritorno di un webhook va dal modulo esterno al gestore, non il contrario). Generatori: `ritorno` (una rotta di una regola `offre` che nessuna chiamata del progetto raggiunge, nemmeno come candidata, in un file che usa un modulo esterno, è chiamata da quel modulo; le rotte trovate da un lettore come Noir non hanno un'offerta a cui unire le chiamate e sono contate a parte) e `incerto` (una chiamata con più rotte candidate va a ognuna). I conteggi per freccia e per ingresso sono elencati nel docstring di `possible.py`. Il contesto React e la chiave in una variabile non hanno un generatore: cadono in `mancante con lacuna` o `mancante`. Un collegamento possibile che non sta su nessuna freccia o ingresso del riferimento è contato in `outside_reference`, non come sbagliato: il 13 novembre i soli collegamenti hanno trovato una freccia vera che il riferimento non aveva. Prova del metodo: `test_possible.py`, sulla fixture `flow-model` con un webhook. Va misurato su tutti i casi con riferimento: la prova piccola dei 35 flussi ha già portato a una scelta sbagliata.
 
-**Risultati: da produrre.**
+**Risultati, phazly, 22 novembre 2026** (riferimento dell'intero sistema: 38 flussi, 240 frecce; snapshot al commit del riferimento, regole di `benchmarks/phazly-flow/rules.json`, nessun modello). L'analisi è l'intera pipeline su Modal fino al passo `analyze` (`benchmarks/project-model/modal_pipeline.py --folder-out DIR --folder-stop analyze`, 41 minuti: Python, TypeScript, JavaScript, Rust e fogli di stile `fresh`, Kotlin fallito); il conteggio è `modal run benchmarks/system-map/modal_map.py::possible` sui file di quel giro caricati sul volume, con la stessa copia del codice che ha fatto l'indice (`DAODAN_CODE`): un indice del motore è letto solo dal codice che l'ha scritto, e un conteggio fatto con un codice diverso ripiega sul parser semplice senza errori (qui dava 13.621 chiamate e 64 frecce certe invece di 23.867 e 91).
+
+| Frecce del riferimento | Prima: servizi di altri fuori dai collegamenti | Dopo: archi `usa` dalle chiamate nei pacchetti dei servizi |
+| --- | ---: | ---: |
+| `certo` | 91 | 101 |
+| `possibile:ritorno` | 0 | 2 |
+| `dichiarata` | 43 | 43 |
+| `senza modulo` | 41 | 21 |
+| `mancante`, `mancante con lacuna` | 39 | 47 |
+| `non misurabile` | 26 | 26 |
+| flussi con ogni effetto raggiunto: solo certi, con i possibili | 13, 13 | 14, 15 |
+| archi `usa` nei collegamenti | 2 | 150 |
+| collegamenti possibili `ritorno`, di cui fuori dal riferimento | 0 | 4, 3 |
+| collegamenti possibili `incerto` | 0 | 0 |
+
+Con gli archi `usa` precisi quattro servizi del riferimento hanno un modulo (Stripe, Firebase Authentication, MongoDB Atlas, Resend) e `ritorno` propone il ritorno di Stripe sul gestore del webhook: «Rinnovo e variazione dell'abbonamento» si chiude solo con quel possibile. Tredici servizi restano `senza modulo`: lo stack li riconosce da un host o da una variabile, non da un pacchetto, e gli archi precisi nascono solo da un pacchetto. Le frecce `senza modulo` che ora hanno un modulo ma nessuna prova passano a `mancante`. I tre possibili fuori dal riferimento non sono stati letti uno per uno. Prima degli archi `usa` precisi i collegamenti non avevano alcun servizio di altri: il grafo dei moduli di phazly ha 13 moduli, tutti interni. Non misurato: gli altri casi con riferimento, e il conteggio dopo le correzioni ai lettori dei framework (i pulsanti su un componente e le rotte scritte nel codice oggi si perdono).
 
 ## Confronto proposto per i flussi multilivello
 

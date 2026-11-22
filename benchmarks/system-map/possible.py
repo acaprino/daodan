@@ -108,11 +108,12 @@ def _as_map(expected: dict) -> dict:
 
 
 def _module_sites(links: dict) -> dict[str, set[str]]:
-    """Per external module of the links, the files it cites as evidence: the sites of its `usa` links."""
+    """Per external module of the links, the files of its `usa` links: a declared link's site is the file, a call the
+    engine resolved into the module's package gives `file:line`."""
     sites = defaultdict(set)
     for edge in links["edges"]:
         if edge["type"] == "usa":
-            sites[edge["to"]].add(edge["site"])
+            sites[edge["to"]].add(system_map._site_file(edge["site"]))
     return sites
 
 
