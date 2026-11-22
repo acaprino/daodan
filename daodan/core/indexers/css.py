@@ -58,7 +58,7 @@ from pathlib import Path
 from languages import stylesheet
 from tree_scope import DEPENDENCY_DIRS
 
-from . import css_astro, css_less, css_sass, css_stylus, css_svelte, css_tailwind, css_typescript, css_vue
+from . import css_astro, css_csstree, css_less, css_sass, css_stylus, css_svelte, css_tailwind, css_typescript, css_vue
 
 LANGUAGE = "stylesheet"  # the label of the graph and of every store row, whatever file holds the site
 STYLESHEETS = (".css", ".scss", ".sass", ".less", ".pcss", ".postcss", ".styl", ".stylus")
@@ -101,7 +101,6 @@ VBIND_RE = re.compile(r"v-bind\(\s*(['\"]?)([^)'\"]+?)\1\s*\)")
 WORD_RE = re.compile(r"\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|[^\s(]+(?:\([^)]*\))?|\([^)]*\)")
 SIZE_RE = re.compile(r"(?:^|\s)(?:[+-]?[\d.]+[a-z%]*|xx-small|x-small|small|medium|large|x-large|xx-large|"
                      r"xxx-large|smaller|larger)(?:\s*/\s*[^\s,]+)?\s+(?=\S)", re.I)
-EJS_RE = re.compile(r"<%.*?%>", re.S)
 TAG_RE = re.compile(r"<%.*?%>|\{\{.*?\}\}|\{%.*?%\}", re.S)  # EJS, and `{{ }}` / `{% %}` of Liquid and its kin
 # An EJS include: `<%- include('partials/head', {...}) %>` or the old `<% include partials/head %>`.
 CUSTOM_MEDIA_RE = re.compile(r"\(\s*(--[\w-]+)\s*\)")
@@ -300,6 +299,7 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
     project_dir = Path(project_dir).resolve()
     files = walk(project_dir) if files is None else files
     own = parse(project_dir, files)
+    plain = engine_sheets(runner, css_csstree, "css", project_dir, files, words=True, styles=own["styles"])
     sass = sass_sheets(runner, project_dir, files)
     less = less_sheets(runner, project_dir, files)
     stylus = engine_sheets(runner, css_stylus, "stylus", project_dir, files)
@@ -307,8 +307,8 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
     script_files = [rel for rel in files if rel.lower().endswith(css_typescript.SUFFIXES)]
     scripts = css_typescript.index(project_dir, runner, script_files, **(program or {})) if script_files else \
         {"indexer": None, "records": [], "missing": {}}
-    records = (own["records"] + sass["records"] + less["records"] + stylus["records"] + components["records"] +
-               scripts["records"])
+    records = (own["records"] + plain["records"] + sass["records"] + less["records"] + stylus["records"] +
+               components["records"] + scripts["records"])
     entries = sorted({r["file"] for r in records if r["t"] == "ref" and r["kind"] == "import"
                       and r["name"] == "tailwindcss" and r["file"].lower().endswith(STYLESHEETS)})
     container, asked = tailwind, {}
@@ -325,14 +325,21 @@ def run(project_dir: Path, runner, files: list[str] | None = None, units: list |
                                   entries)
     restored = restored_sheets(asked.get("sheets") or container(*packages)) if wanted else \
         {"folder": None, "indexer": None}
-    engines = [engine for engine in (own["indexer"], sass["indexer"], less["indexer"], stylus["indexer"],
-                                     *components["indexers"], scripts["indexer"], tailwind["indexer"],
-                                     restored["indexer"]) if engine]
+    engines = [engine for engine in (own["indexer"], plain["indexer"], sass["indexer"], less["indexer"],
+                                     stylus["indexer"], *components["indexers"], scripts["indexer"],
+                                     tailwind["indexer"], restored["indexer"]) if engine]
     _RESTORED[project_dir] = restored["folder"]
+
+    def reader(items):  # the CSS the graph meets later (a sheet from outside the snapshot, a script's CSS)
+        found = css_csstree.index(runner, items)
+        if found["indexer"] and found["indexer"]["name"] not in {engine["name"] for engine in engines}:
+            engines.append(found["indexer"])
+        return found
     try:
         return graph(project_dir, records, tailwind, files, engines,
-                     {**own["missing"], **sass["missing"], **less["missing"], **stylus["missing"],
-                      **components["missing"], **scripts["missing"]}, units, remote)
+                     {**own["missing"], **plain["missing"], **sass["missing"], **less["missing"],
+                      **stylus["missing"], **components["missing"], **scripts["missing"]}, units, remote,
+                     reader=reader)
     finally:
         _RESTORED.pop(project_dir, None)
         if restored["folder"]:
@@ -405,7 +412,7 @@ def component_files(runner, project_dir: Path, files: list[str]) -> dict:
                 missing[item["key"]] = f"not parsed: {data['error']}"[:200]
             else:
                 found[item["key"]] = data
-    sass_items, less_items, stylus_items, owners = [], [], [], {}
+    sass_items, less_items, stylus_items, css_items, owners = [], [], [], [], {}
     for rel, data in found.items():
         records.append({"t": "file", "file": rel})
         for index_, block in enumerate(data["blocks"]):
@@ -421,7 +428,8 @@ def component_files(runner, project_dir: Path, files: list[str]) -> dict:
             elif lang in ("stylus", "styl"):
                 stylus_items.append({"key": key, "text": block["text"]})
             elif lang in ("css", "postcss", "pcss"):
-                records += _sheet(rel, block["text"], "css", offset=offset, scope=scope)
+                css_items.append({"key": key, "text": block["text"], "words": bool(scope),
+                                  "svelte": bool(scope) and scope.startswith("scoped:") and scope.endswith(".svelte")})
             else:
                 missing[rel] = f"partly read: a style block in {lang} at line {block['line']} has no reader"
             for name in block.get("vars") or ():
@@ -438,8 +446,10 @@ def component_files(runner, project_dir: Path, files: list[str]) -> dict:
                 else:
                     records.append({"t": "hole", "file": rel, "line": line, "kind": "v-bind", "cls": "undeclared",
                                     "name": name})
-        for site in data.get("styles", ()):
-            records += _sheet(rel, "x{" + site["text"] + "}", "css", offset=site["line"] - 1, inline=True)
+        for index_, site in enumerate(data.get("styles", ())):
+            key = f"{rel}@style{index_}"
+            owners[key] = (rel, site["line"] - 1, None)
+            css_items.append({"key": key, "text": site["text"], "kind": "declarations"})
         own = [[f"scoped:{rel}", []]]
         for site in data["classes"]:
             records.append({"t": "classes", "kind": site["kind"], "file": rel, "line": site["line"], "from": rel,
@@ -484,7 +494,8 @@ def component_files(runner, project_dir: Path, files: list[str]) -> dict:
         record["scopes"] = [*record["scopes"], *([f"deep:{f}", []] for f in sorted(ancestors | {record["file"]}))]
         if record.get("root"):
             record["scopes"] += [[f"scoped:{parent}", ["child-root"]] for parent in sorted(parents_of[record["file"]])]
-    for engine, items in ((css_sass, sass_items), (css_less, less_items), (css_stylus, stylus_items)):
+    for engine, items in ((css_sass, sass_items), (css_less, less_items), (css_stylus, stylus_items),
+                          (css_csstree, css_items)):
         parsed = engine.index(runner, items)
         if items:
             indexers.append(parsed["indexer"])
@@ -494,7 +505,7 @@ def component_files(runner, project_dir: Path, files: list[str]) -> dict:
             if "error" in sheet:
                 missing[rel] = f"partly read: a style block is not parsed: {sheet['error']}"[:200]
                 continue
-            dialect = {css_less: "less", css_stylus: "stylus"}.get(engine, "scss")
+            dialect = {css_less: "less", css_stylus: "stylus", css_csstree: "css"}.get(engine, "scss")
             records += tree_records(rel, sheet["tree"], dialect, offset=offset, module=scope)
     return {"records": records, "missing": missing, "indexers": indexers}
 
@@ -504,18 +515,35 @@ def less_sheets(runner, project_dir: Path, files: list[str]) -> dict:
     return engine_sheets(runner, css_less, "less", project_dir, files)
 
 
-def engine_sheets(runner, engine, dialect: str, project_dir: Path, files: list[str]) -> dict:
-    """The files of one dialect through its own parser, as records."""
-    items = [{"key": rel, "path": rel} for rel in files if rel.lower().endswith(engine.SUFFIXES)]
-    parsed = engine.index(runner, items)
+def engine_sheets(runner, engine, dialect: str, project_dir: Path, files: list[str], words: bool = False,
+                  styles: list[dict] = ()) -> dict:
+    """The files of one dialect through its own parser, as records. `words`: each item says whether it is a CSS Module
+    (`css_csstree`); `styles`: the style texts markup holds (`parse`), a text of the same dialect, read in the same run."""
+    items = [{"key": rel, "path": rel, **({"words": bool(MODULE_RE.search(rel))} if words else {})}
+             for rel in files if rel.lower().endswith(engine.SUFFIXES)]
+    parsed = engine.index(runner, items + [{k: style[k] for k in ("key", "text", "kind") if k in style}
+                                           for style in styles])
     records, missing = [], {}
     for item in items:
         rel, sheet = item["key"], parsed["sheets"].get(item["key"], {"error": "not parsed"})
         if "error" in sheet:
             missing[rel] = f"not parsed: {sheet['error']}"[:200]
             continue
-        records += tree_records(rel, sheet["tree"], dialect, module=rel if MODULE_RE.search(rel) else None)
+        try:
+            records += tree_records(rel, sheet["tree"], dialect, module=rel if MODULE_RE.search(rel) else None)
+        except RecursionError:  # nested deeper than the walk's stack: that file only
+            missing[rel] = "not parsed: nested too deep to walk"
+            continue
         records.append({"t": "file", "file": rel})
+    for style in styles:
+        sheet = parsed["sheets"].get(style["key"], {"error": "not parsed"})
+        if "error" in sheet:
+            missing[style["rel"]] = f"partly read: a style text is not parsed: {sheet['error']}"[:200]
+            continue
+        try:
+            records += tree_records(style["rel"], sheet["tree"], dialect, offset=style["offset"])
+        except RecursionError:
+            missing[style["rel"]] = "partly read: a style text is nested too deep to walk"
     return {"indexer": parsed["indexer"], "records": records, "missing": missing}
 
 
@@ -538,19 +566,19 @@ def sass_sheets(runner, project_dir: Path, files: list[str]) -> dict:
 # Reading: stylesheets and markup into records.
 
 def parse(project_dir: Path, files: list[str] | None = None) -> dict:
-    """Records of every stylesheet and HTML/EJS file: `node`, `ref`, `classes`, `hole` and `file`."""
+    """Records of every HTML/EJS file: `node`, `ref`, `classes`, `hole` and `file`. Its style blocks and style
+    attributes are `styles`, for the CSS engine (`engine_sheets`): `{key, text, kind, rel, offset}` each."""
     begun = time.time()
     project_dir = Path(project_dir)
-    records, missing = [], {}
+    records, missing, styles = [], {}, []
     for rel in files if files is not None else walk(project_dir):
         lower = rel.lower()
         suffix = Path(lower).suffix
         if suffix in UNREAD:
             missing[rel] = UNREAD[suffix]
             continue
-        if not lower.endswith(STYLESHEETS + MARKUP) or lower.endswith(css_sass.SUFFIXES + css_less.SUFFIXES +
-                                                                      css_stylus.SUFFIXES):
-            continue  # Sass, Less and Stylus are read by their own parsers
+        if not lower.endswith(MARKUP):
+            continue  # every stylesheet is read by its own parser (`css_csstree`, `css_sass`, `css_less`, `css_stylus`)
         if suffix in PARTLY:
             missing[rel] = PARTLY[suffix]
         try:
@@ -559,15 +587,16 @@ def parse(project_dir: Path, files: list[str] | None = None) -> dict:
             missing[rel] = f"not read: {error!r}"[:200]
             continue
         try:
-            found = _markup(rel, text) if lower.endswith(MARKUP) else _sheet(rel, text, stylesheet.dialect_for(rel))
+            found, texts = _markup(rel, text)
         except Exception as error:  # a file the parsers cannot read stays a declared gap
             missing[rel] = f"not parsed: {error!r}"[:200]
             continue
         records += found + [{"t": "file", "file": rel}]
+        styles += texts
     parser = Path(stylesheet.__file__)
     return {"indexer": {"name": "codebase-map stylesheet.py", "version": _sha(parser),
                         "seconds": round(time.time() - begun, 1), "peak_mb": None},
-            "records": records, "missing": missing}
+            "records": records, "missing": missing, "styles": styles}
 
 
 def _sheet(rel: str, text: str, dialect: str, offset: int = 0, inline: bool = False, scope=None) -> list[dict]:
@@ -631,6 +660,9 @@ class _Frame:
         self.face = flags.get("face", parent.face if parent else False)
         self.keyframes = flags.get("keyframes", parent.keyframes if parent else False)
         self.loop = flags.get("loop")  # (variables, iterations or None)
+        # The CSS engine's tree: the names (`[kind, name, mode]`) of the rules and `@scope`s around, the layer around.
+        self.names = flags.get("names", parent.names if parent else [])
+        self.layer = flags.get("layer", parent.layer if parent else None)
         # Less: the namespace path a mixin call names this block by, None when it cannot be called.
         self.path = flags.get("path", parent.path if parent else [])
         self.root = parent is None
@@ -743,12 +775,16 @@ def tree_records(rel: str, tree: list, dialect: str, offset: int = 0, module: st
                       "{" + part["v"] + "}" if "v" in part and styl else
                       "#{" + ((part["ns"] + ".") if part.get("ns") else "") + part["v"] + "}" if "v" in part else
                       "#{" + part["x"] + "}" for part in n["sel"])
-        selectors = stylesheet._flatten(raw, frame.selectors, "scss")
+        parsed = "names" in n  # a rule of the CSS engine's tree: its names come with it, a nested one is CSS nesting
+        # a nested selector list is a CSS nesting's `:is()` for a sheet ("css"), expanded for a script's CSS ("scss"): its names
+        selectors = stylesheet._flatten(raw, frame.selectors, dialect if parsed else "scss")
         here = frame.here if frame.keyframes else f"{rel}:{line} {label(selectors, frame.context)}"
         own = raw.strip()
         path = [*frame.path, own] if less and frame.path is not None and CALLABLE_RE.match(own) else None
-        inner = _Frame(frame, here=here, selectors=selectors, path=path)
+        inner = _Frame(frame, here=here, selectors=selectors, path=path,
+                       **({"names": [*frame.names, *n["names"]]} if parsed else {}))
         refs(n.get("refs"), inner, line)
+        out.extend(_unparsed(rel, line, "selector", text) for text in n.get("lost") or ())
         for item in n.get("extends") or ():
             out.append({"t": "classes", "kind": "class", "file": rel, "line": line, "from": here,
                         "chain": [":extend"], "alts": [[{"s": " ".join(
@@ -762,11 +798,13 @@ def tree_records(rel: str, tree: list, dialect: str, offset: int = 0, module: st
         if frame.keyframes:
             walk(n.get("kids") or [], inner)
             return
-        names = _selector_names(selectors, module) + placeholders(selectors) + _scope_names(frame.context, module)
+        out.extend(_ref("custom-selector", word, word, rel, line, here) for word in n.get("custom") or ())
+        names = _scoped(inner.names, module) if parsed else \
+            _selector_names(selectors, module) + placeholders(selectors) + _scope_names(frame.context, module)
         if path is not None:
             names.append(("less-mixin", " ".join(path), rel))
         record = _node(here, "rule", rel, line, names)
-        if any(interpolation in s for s in selectors):
+        if not parsed and any(interpolation in s for s in selectors):
             variants = generated(selectors, frame)
             if variants is None:
                 out.append({"t": "hole", "file": rel, "line": line, "kind": "rule", "cls": "interpolated-selector",
@@ -793,14 +831,106 @@ def tree_records(rel: str, tree: list, dialect: str, offset: int = 0, module: st
             out.append(_node(f"{rel}:{line} :export {prop}", "export", rel, line, [("export", prop, module)]))
             refs(n.get("refs"), frame, line)
             return
-        if n.get("value"):
-            out.extend(declaration(rel, line, frame.here, prop, n["value"], in_face=frame.face, module=module))
+        if n.get("raw"):  # a value no grammar read: the declaration stands, what it may hold is a hole
+            out.append(_unparsed(rel, line, "declaration", f"{prop}: {n['value']}"))
+        if n.get("value") or "facts" in n:  # the CSS engine's declaration may have no value (`--x:;`): still declared
+            out.extend(declaration(rel, line, frame.here, prop, n["value"], in_face=frame.face, module=module,
+                                   facts=n.get("facts")))
         refs(n.get("refs"), frame, line)
         for kid in n.get("kids") or ():
             if kid["t"] == "decl":
                 decl(kid, frame, prop + "-")
 
+    def at_css(n, frame):
+        """An at-rule of the CSS engine's tree: names, urls and layers are facts of the parsed prelude (a few at-rules
+        the grammar does not know, their prelude's tokens); `params` is the source's slice."""
+        name, params, line, facts, kids = n["name"].lower(), n["params"], line_of(n), n["facts"], n["kids"]
+        context = n.get("text") or f"@{n['name']} {params}".strip()
+        if facts.get("unreadable"):
+            out.append(_unparsed(rel, line, "statement", context))
+        out.extend(_unparsed(rel, line, "selector", text) for text in facts.get("lost") or ())
+        if name.endswith("keyframes"):
+            if "name" not in facts:  # an unreadable prelude names no keyframes: the hole is recorded above
+                walk(kids or [], _Frame(frame, keyframes=True))
+                return
+            here = f"{rel}:{line} @{name} {facts['name']}"
+            out.append(_node(here, "keyframes", rel, line, [("keyframes", facts["name"])]))
+            walk(kids or [], _Frame(frame, here=here, keyframes=True))
+            return
+        if name == "font-face":
+            here = f"{rel}:{line} @font-face {facts['family']}"
+            out.append(_node(here, "font-face", rel, line, [("font-face", facts["family"].lower())]))
+            walk(kids or [], _Frame(frame, here=here, face=True))
+            return
+        if name == "property":
+            here = f"{rel}:{line} @property {params}"
+            out.append(_node(here, "property", rel, line, [("custom-property", params)]))
+            walk(kids or [], _Frame(frame, here=here))
+            return
+        if name == "utility":
+            word = facts["word"]
+            here = f"{rel}:{line} @utility {params}"
+            out.append(_node(here, "rule", rel, line, [("utility-pattern", word[:-1]) if word.endswith("*") else
+                                                         ("utility", params)]))
+            walk(kids or [], _Frame(frame, here=here))
+            return
+        if name == "custom-variant":
+            here = f"{rel}:{line} @custom-variant {facts['word']}"
+            out.append(_node(here, "variant", rel, line, [("variant", facts["word"])]))
+            walk(kids or [], _Frame(frame, here=here))
+            return
+        if name == "custom-media" and kids is None:
+            out.append(_node(f"{rel}:{line} @custom-media {facts['word']}", "custom-media", rel, line,
+                             [("custom-media", facts["word"])]))
+        elif name == "custom-selector":
+            out.append(_node(f"{rel}:{line} @custom-selector {facts['word']}", "custom-selector", rel, line,
+                             [("custom-selector", facts["word"])]))
+        elif name == "variant":
+            out.append(_ref("variant", facts["word"], params, rel, line, frame.here, optional=True))
+        elif name == "import":
+            out.extend(_ref("import", url, url, rel, line, rel) for url in facts.get("urls", ()))
+            if facts.get("layer"):
+                layers.append((line, facts["layer"], rel))
+        elif name == "tailwind":
+            out.append(_ref("import", "tailwindcss", f"@tailwind {params}", rel, line, rel, package="tailwindcss"))
+        elif name == "apply":
+            out.append({"t": "classes", "kind": "class", "file": rel, "line": line, "from": frame.here,
+                        "chain": ["@apply"], "alts": [[{"s": facts["tokens"]}]]})
+        elif name == "extend" and facts.get("classes"):
+            out.append({"t": "classes", "kind": "class", "file": rel, "line": line, "from": frame.here,
+                        "chain": ["@extend"], "alts": [[{"s": " ".join(facts["classes"])}]]})
+        elif name == "source":
+            if facts.get("inline") is not None:
+                out.append({"t": "classes", "kind": "class", "file": rel, "line": line, "from": rel,
+                            "chain": ["@source inline"], "alts": [[{"s": facts["inline"]}]]})
+            elif facts.get("path") is not None:
+                out.append(_ref("source", facts["path"], facts["path"], rel, line, rel))
+        elif name in ("plugin", "config") and facts.get("path") is not None:
+            out.append(_ref(name, facts["path"], facts["path"], rel, line, rel))
+        elif name == "value" and module:
+            if "define" in facts:
+                out.append(_node(f"{rel}:{line} @value {facts['define']}", "css-value", rel, line,
+                                 [("css-value", facts["define"], module)]))
+            elif facts.get("from") not in (None, "global"):  # `from global` names no file
+                out.extend(_ref("css-value", item["name"], item["name"], rel, line, frame.here, ("from",), module=module,
+                                origin=facts["from"], local=item["local"]) for item in facts["items"])
+        elif name == "container":
+            out.extend(_ref("container", word, word, rel, line, frame.here) for word in facts.get("names", ()))
+        elif name == "media":
+            out.extend(_ref("custom-media", word, word, rel, line, frame.here) for word in facts.get("custom", ()))
+        inner = _Frame(frame, context=[*frame.context, context])
+        if name == "layer" and not facts.get("unreadable"):  # a nested layer is its parent's, dotted
+            for segment in facts.get("names") or ([] if kids is None else ["(anonymous)"]):
+                inner.layer = f"{frame.layer}.{segment}" if frame.layer else segment
+                layers.append((line, inner.layer, frame.here))
+        elif name == "scope":
+            inner.names = [*frame.names, *facts.get("names", ())]
+        if kids is not None:
+            walk(kids, inner)
+
     def at(n, frame):
+        if "facts" in n:
+            return at_css(n, frame)
         name, params, line = n["name"].lower(), n.get("params", ""), line_of(n)
         refs(n.get("refs"), frame, line)
         kids = n.get("kids")
@@ -970,21 +1100,47 @@ def tree_records(rel: str, tree: list, dialect: str, offset: int = 0, module: st
                 refs(n.get("refs"), frame, line)
             elif t == "at":
                 at(n, frame)
+            elif t == "hole":
+                out.append(_unparsed(rel, line, n["kind"], n["name"]))
+                walk(n.get("kids") or [], frame)  # the block of a rule whose prelude is Raw is read all the same
 
     walk(tree, root)
     out += _layers(rel, layers, _tailwind_of(tree))
     return out
 
 
+def _unparsed(rel: str, line: int, kind: str, text: str) -> dict:
+    """What the CSS parser keeps as Raw (a statement, a rule's prelude, a declaration's value) or an at-rule prelude it
+    cannot read: a hole with its file and line, never read again by a rule on its shape."""
+    return {"t": "hole", "file": rel, "line": line, "kind": kind, "cls": "unparsed", "name": text}
+
+
+def _scoped(names: list, module: str | None) -> list[tuple]:
+    """(class or id, name, scope) of the names a parsed selector gives (`[kind, name, mode]`): scope None for a global
+    name, the module's path for a local one, the component's deep scope for what `:deep()` reaches."""
+    deep = module.replace("scoped:", "deep:", 1) if module and module.startswith("scoped:") else None
+    found = {(kind, name, module if module and mode == "local" else deep if mode == "deep" else None)
+             for kind, name, mode in names}
+    return sorted(found, key=lambda item: (item[0], item[1], item[2] or ""))
+
+
 def _tailwind_of(tree: list):
-    """What `_layers` needs to know of a parsed tree: which Tailwind it loads."""
+    """What `_layers` needs to know of a parsed tree: which Tailwind it loads, from a directive anywhere in it (Tailwind's
+    own `index.css` has `@tailwind utilities` inside a layer)."""
     class Sheet:
         tailwind = None
-    for n in tree:
-        if n["t"] == "at" and n["name"].lower() == "tailwind":
-            Sheet.tailwind = "v3"
-        elif n["t"] == "import" and str(n.get("url", "")).startswith("tailwindcss"):
-            Sheet.tailwind = "v4"
+
+    def visit(nodes):
+        for n in nodes:
+            if n["t"] == "at" and n["name"].lower() == "tailwind":
+                Sheet.tailwind = Sheet.tailwind or "v3"
+            elif n["t"] == "import" and str(n.get("url", "")).startswith("tailwindcss"):
+                Sheet.tailwind = "v4"
+            elif n["t"] == "at" and n["name"].lower() == "import" and any(
+                    url == "tailwindcss" or url.startswith("tailwindcss/") for url in n.get("facts", {}).get("urls", ())):
+                Sheet.tailwind = "v4"  # the CSS engine's tree: an `@import` is an at-rule with its urls
+            visit(n.get("kids") or ())
+    visit(tree)
     return Sheet
 
 
@@ -1163,14 +1319,17 @@ def _sass_refs(value, rel, line, source, node, parents, local) -> list[dict]:
 
 
 def declaration(rel: str, line: int, source: str, prop: str, value: str | None, chain=(), in_face=False,
-                module=None, script=False) -> list[dict]:
+                module=None, script=False, facts=None) -> list[dict]:
     """The records of one declaration, wherever it is written: a rule, a style attribute, a script's style object
-    or `setProperty`. `script`: the value's `var()` uses come from the script's literals, read on their own."""
+    or `setProperty`. `script`: the value's `var()` uses come from the script's literals, read on their own. `facts`:
+    what the CSS engine read in the value (`css_csstree.js`): the value is not read again here."""
     out = []
     if prop.startswith("--"):
         out.append(_node(f"{rel}:{line} {prop}", "custom-property", rel, line, [("custom-property", prop)]))
     if value is None:
         return out
+    if facts is not None:
+        return out + _fact_refs(rel, line, source, prop, facts, chain, in_face, module)
     if not script:
         out += var_refs(value, rel, line, source, chain)
     lower = prop.lower()
@@ -1191,6 +1350,32 @@ def declaration(rel: str, line: int, source: str, prop: str, value: str | None, 
         plain = stylesheet._STRING_RE.sub(" ", stylesheet._URL_RE.sub(" ", value))
         for word in dict.fromkeys(re.findall(r"(?<![\w$@#.-])([A-Za-z_][\w-]*)(?![\w(-])", plain)):
             out.append(_ref("css-value", word, word, rel, line, source, chain, module=module, optional=True))
+    return out
+
+
+def _fact_refs(rel: str, line: int, source: str, prop: str, facts: dict, chain, in_face: bool, module) -> list[dict]:
+    """The references of a declaration the CSS engine read: its `var()` uses (each on its own line), the names the
+    lexer finds in `animation`, `font` and `container`, `composes`, and a CSS Module's words. What the lexer matches
+    no syntax for (a value with `var()`) is a hole, never a guess from the value's words."""
+    out = [_ref("custom-property", item["name"], item["name"], rel, line + item["dl"], source, chain,
+                fallback=item["fallback"]) for item in facts.get("vars", ())]
+    lower = prop.lower()
+    out += [_ref("keyframes", name, name, rel, line, source, chain) for name in facts.get("kf", ())]
+    if not in_face:
+        out += [_ref("font-face", name.lower(), name, rel, line, source, chain) for name in facts.get("ff", ())]
+    out += [_node(f"{rel}:{line} container {word}", "container", rel, line, [("container", word)])
+            for word in facts.get("ct", ())]
+    if "unmatched" in facts and not (in_face and lower in ("font", "font-family")):
+        kind = "keyframes" if lower.endswith(("animation", "animation-name")) else \
+            "font-face" if lower in ("font", "font-family") else "container"
+        out.append({"t": "hole", "file": rel, "line": line, "kind": kind, "cls": "value-not-matched",
+                    "name": f"{prop}: {facts['unmatched']}"})
+    if module and "composes" in facts:
+        out += [_ref("composes", name, "." + name, rel, line, source, chain, module=module,
+                     origin=facts["composes"]["from"]) for name in facts["composes"]["names"]]
+    if module:  # a word may be one of the module's `@value` names
+        out += [_ref("css-value", word, word, rel, line, source, chain, module=module, optional=True)
+                for word in facts.get("words", ())]
     return out
 
 
@@ -1301,7 +1486,11 @@ class _Markup(html.parser.HTMLParser):
 
     def __init__(self, rel: str):
         super().__init__(convert_charrefs=True)
-        self.rel, self.out, self.in_style = rel, [], False
+        self.rel, self.out, self.in_style, self.styles = rel, [], False, []
+
+    def _style(self, text: str, offset: int, kind: str | None = None):
+        self.styles.append({"key": f"{self.rel}#style{len(self.styles)}", "text": text, "rel": self.rel,
+                            "offset": offset, **({"kind": kind} if kind else {})})
 
     def handle_starttag(self, tag, attrs):
         line, raw = self.getpos()[0], self.get_starttag_text() or ""
@@ -1334,7 +1523,7 @@ class _Markup(html.parser.HTMLParser):
                 self.out.append({"t": "classes", "kind": name, "file": self.rel, "line": at(name), "from": self.rel,
                                  "chain": [], "alts": [parts]})
             elif name == "style":
-                self.out += _sheet(self.rel, "x{" + value + "}", "css", offset=at(name) - 1, inline=True)
+                self._style(value, at(name) - 1, "declarations")
         if tag == "link" and "stylesheet" in values.get("rel", "").lower().split() and values.get("href"):
             self.out.append(_ref("import", values["href"], values["href"], self.rel, at("href"), self.rel))
         if tag == "script" and values.get("src"):
@@ -1346,8 +1535,8 @@ class _Markup(html.parser.HTMLParser):
             self.in_style = False
 
     def handle_data(self, data):
-        if self.in_style:
-            self.out += _sheet(self.rel, data, "css", offset=self.getpos()[0] - 1)
+        if self.in_style and data.strip():
+            self._style(data, self.getpos()[0] - 1)
 
 
 def ng_class(expr: str) -> list:
@@ -1386,14 +1575,15 @@ def ng_class(expr: str) -> list:
     return [[{"h": kind, "x": expr[:120]}]]
 
 
-def _markup(rel: str, text: str) -> list[dict]:
+def _markup(rel: str, text: str) -> tuple[list[dict], list[dict]]:
+    """(the records, the style texts for the CSS engine) of a markup file."""
     parser = _Markup(rel)
     parser.feed(text)
     parser.close()
     for match in INCLUDE_RE.finditer(text) if rel.lower().endswith(".ejs") else ():
         spec = match.group("call") or match.group("bare")
         parser.out.append(_ref("include", spec, spec, rel, text.count("\n", 0, match.start()) + 1, rel))
-    return parser.out
+    return parser.out, parser.styles
 
 
 # Resolving: the records into the graph.
@@ -1818,13 +2008,15 @@ def load_units(refs: list, imports: dict, loads: dict, in_snapshot: set, read: s
 
 
 def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[str], engines: list[dict],
-          missing: dict, units: list | None = None, remote: dict | None = None) -> dict:
+          missing: dict, units: list | None = None, remote: dict | None = None, reader=None) -> dict:
     """The common graph from the adapters' records: nodes, arcs (`uncertain` with every candidate when the cascade
     picks one at run time), holes; Tailwind's verdict on class tokens in `tailwind`.
 
     `units`: the units of code the pre-map states (`load_units`). `remote`: `{url: text}` of the CDN sheets the
     markup links, as the caller took them from the package registry; a linked sheet without its text is an external
     node, and a name of a page that loads it which nothing else declares is a hole `remote-sheet` with its URL.
+    `reader`: `css_csstree.index` over the runner, which reads the plain CSS sheets from outside the snapshot (a
+    checkout file, a package, a CDN sheet); without it the hand reader does (`_sheet`).
     `sites` lists every reference, `[site, kind, symbol]`, the key of its arcs and holes (`ref`)."""
     project_dir = Path(project_dir).resolve()
     nodes, edges, holes, refs = {}, [], [], []
@@ -1857,6 +2049,14 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
         holes.append({"site": site, "name": name, "kind": kind, "class": cls, "reason": reason,
                       "ref": list(current[0] or (site, kind, name))})
 
+    # The CSS text of the scripts (styled-components, emotion), read by the CSS engine in one run when there is one
+    # (a block of declarations goes in `&{ }`, as it is a rule's block).
+    texts = [r for r in records if r["t"] == "cssinjs-text"]
+    read_texts = {}
+    if texts and reader is not None:
+        found = reader([{"key": f"{r['file']}#cssinjs{i}", "text": r["text"] if r["global"] else "&{" + r["text"] + "}"}
+                        for i, r in enumerate(texts)])["sheets"]
+        read_texts = {id(r): found[f"{r['file']}#cssinjs{i}"] for i, r in enumerate(texts)}
     generated, interpolated = {}, []  # (node, name key): the loop it came from; compile-time selector patterns
     loads = collections.defaultdict(set)  # a script module: the project modules it loads
     literals, guarded = {}, set()  # Less: a variable node's literal value; mixins with a guard
@@ -1919,8 +2119,22 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
                 elif item["t"] == "ref":
                     refs.append(item)
         elif kind == "cssinjs-text":
-            text = record["text"] if record["global"] else "&{" + record["text"] + "}"
-            for item in _sheet(rel, text, "scss", offset=record["line"] - 1):
+            sheet = read_texts.get(id(record))
+            if sheet is None:  # no CSS engine given: the hand reader
+                items = _sheet(rel, record["text"] if record["global"] else "&{" + record["text"] + "}", "scss",
+                               offset=record["line"] - 1)
+            elif "error" in sheet:
+                hole(f"{rel}:{record['line']}", "rule", "not-read", f"not parsed: {sheet['error']}"[:200])
+                items = []
+            else:
+                items = tree_records(rel, sheet["tree"], "scss", offset=record["line"] - 1)  # the node ids it had
+            for item in items:
+                if item["t"] == "hole":  # a statement or a value no grammar reads (an interpolated mixin), by its text
+                    label = item["name"]
+                    for key, expression in record["holes"].items():
+                        label = label.replace(key, "${" + expression + "}")
+                    hole(f"{rel}:{item['line']}", item["kind"], item["cls"], label)
+                    continue
                 if item["t"] == "node" and "__dd" in item["id"]:
                     label = item["id"].split(" ", 1)[1]
                     for key, expression in record["holes"].items():
@@ -1946,7 +2160,16 @@ def graph(project_dir: Path, records: list, tailwind: dict | None, files: list[s
             return
         sheets.add(identity)
         node(identity, "module", rel, 1 if rel else None, external)
-        for record in _sheet(identity, text, dialect):
+        found = _sheet(identity, text, dialect) if dialect != "css" or reader is None else None
+        if found is None:
+            parsed = reader([{"key": identity, "text": text}])["sheets"][identity]
+            if "error" in parsed:
+                hole(f"{identity}:1", "import", "not-read", identity, f"not parsed: {parsed['error']}"[:200])
+                return
+            found = tree_records(identity, parsed["tree"], "css")
+        for record in found:
+            if record["t"] == "hole":
+                hole(f"{identity}:{record['line']}", record["kind"], record["cls"], record["name"])
             if record["t"] == "ref" and record["kind"] == "import" and "package" not in record:
                 if re.match(r"^https?:", identity):  # a CDN sheet names its imports relative to its URL
                     url = urllib.parse.urljoin(identity, record["name"])

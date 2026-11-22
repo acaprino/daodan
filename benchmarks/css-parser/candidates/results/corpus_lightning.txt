@@ -1,0 +1,30 @@
+tool: lightning
+corpus: 1860 files, 74.6 MB, time 22015 ms (adapter included)
+rules 517269, declarations 1300175, at-rules 33597, comments 0   (files that threw are counted in none of these)
+files with an error: 36; errors: 156; files that threw: 23
+
+## per package: files, errors, threw, rules, decls, atrules
+open-props                          260 err    102 threw    0 rules    1200 decls     9461 at   373
+@primer/css                          31 err     12 threw    0 rules    9194 decls    49123 at   595
+foundation-sites                      8 err      8 threw    8 rules       0 decls        0 at     0
+semantic-ui-css                      96 err      8 threw    4 rules   11698 decls    21830 at   420
+@primer/primitives                   44 err      6 threw    0 rules      70 decls    62148 at    50
+swiper                               96 err      6 threw    6 rules     827 decls     1715 at     4
+tachyons                             62 err      6 threw    3 rules    2207 decls     2620 at   167
+tailwindcss                           4 err      6 threw    0 rules      72 decls      138 at    12
+flatpickr                            13 err      2 threw    2 rules    1070 decls     4284 at    18
+@fortawesome/fontawesome-free        20 err      0 threw    0 rules   11454 decls    13852 at   146
+@mdi/font                             2 err      0 threw    0 rules   14949 decls    15016 at     6
+@picocss/pico                       238 err      0 threw    0 rules   82320 decls   293490 at  5042
+animate.css                         104 err      0 threw    0 rules    2427 decls     6087 at   783
+bootstrap                            16 err      0 threw    0 rules   20832 decls    37444 at   608
+
+## messages (count, first file)
+   123  Unknown at rule: @custom-media   [@primer/css/dist/primer.css]
+    10  SyntaxError: Invalid media query   [flatpickr/dist/ie.css]
+    10  SyntaxError: Pseudo-elements like '::before' or '::after' can't be followed by selectors l   [semantic-ui-css/components/popup.css]
+     4  'ActiveHover' is not recognized as a valid pseudo-class. Did you mean '::ActiveHover' (pse   [semantic-ui-css/components/label.css]
+     4  Unknown at rule: @theme   [tailwindcss/index.css]
+     2  SyntaxError: Unexpected token Semicolon   [tachyons/css/tachyons.css]
+     2  Unknown at rule: @tailwind   [tailwindcss/index.css]
+     1  SyntaxError: Unexpected end of input   [tachyons/css/tachyons.min.css]

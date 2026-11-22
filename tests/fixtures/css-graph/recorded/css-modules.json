@@ -1,6 +1,177 @@
 {
  "calls": [
   {
+   "script": "css_csstree",
+   "payload": {
+    "items": [
+     {
+      "key": "src/colors.module.css",
+      "path": "src/colors.module.css",
+      "words": true
+     },
+     {
+      "key": "src/theme.pcss",
+      "path": "src/theme.pcss",
+      "words": false
+     }
+    ]
+   },
+   "data": {
+    "sheets": {
+     "src/colors.module.css": {
+      "tree": [
+       {
+        "t": "at",
+        "line": 1,
+        "end": 1,
+        "name": "value",
+        "params": "brand: #0af",
+        "text": "@value brand: #0af",
+        "facts": {
+         "define": "brand"
+        },
+        "kids": null
+       },
+       {
+        "t": "at",
+        "line": 2,
+        "end": 2,
+        "name": "value",
+        "params": "accent: red",
+        "text": "@value accent: red",
+        "facts": {
+         "define": "accent"
+        },
+        "kids": null
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ".base"
+        ],
+        "names": [
+         [
+          "class",
+          "base",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "color",
+          "value": "brand",
+          "important": false,
+          "facts": {
+           "words": [
+            "brand"
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "src/theme.pcss": {
+      "tree": [
+       {
+        "t": "at",
+        "line": 1,
+        "end": 1,
+        "name": "custom-selector",
+        "params": ":--heading h1, h2",
+        "text": "@custom-selector :--heading h1, h2",
+        "facts": {
+         "word": ":--heading"
+        },
+        "kids": null
+       },
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ":--heading"
+        ],
+        "names": [],
+        "custom": [
+         ":--heading"
+        ],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "margin",
+          "value": "0",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 5,
+        "sel": [
+         ".card"
+        ],
+        "names": [
+         [
+          "class",
+          "card",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "rule",
+          "line": 4,
+          "end": 4,
+          "sel": [
+           "& .title"
+          ],
+          "names": [
+           [
+            "class",
+            "title",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 4,
+            "end": 4,
+            "prop": "color",
+            "value": "red",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "version": "4.1.3",
+    "seconds": 0.116
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 127,
+    "stderr_tail": "DAODAN_MAXRSS_KB=129784\n"
+   }
+  },
+  {
    "script": "css_sass",
    "payload": {
     "items": [

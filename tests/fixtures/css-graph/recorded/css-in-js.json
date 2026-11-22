@@ -459,6 +459,261 @@
     "peak_mb": 311,
     "stderr_tail": "DAODAN_MAXRSS_KB=318296\n"
    }
+  },
+  {
+   "script": "css_csstree",
+   "payload": {
+    "items": [
+     {
+      "key": "src/styled.tsx#cssinjs0",
+      "text": "&{\n  color: var(--ink);\n  .dark & { color: white; }\n  & .title { margin: 0; }\n  __dd0__\n}"
+     },
+     {
+      "key": "src/styled.tsx#cssinjs1",
+      "text": "\n  :root { --ink: #111; }\n  .btn-primary { color: red; }\n  .__dd1__ { color: blue; }\n"
+     },
+     {
+      "key": "src/styled.tsx#cssinjs2",
+      "text": "&{\n  padding: 2px;\n  &:hover .title { padding: 4px; }\n}"
+     }
+    ]
+   },
+   "data": {
+    "sheets": {
+     "src/styled.tsx#cssinjs0": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 1,
+        "end": 6,
+        "sel": [
+         "&"
+        ],
+        "names": [],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "color",
+          "value": "var(--ink)",
+          "important": false,
+          "facts": {
+           "vars": [
+            {
+             "name": "--ink",
+             "fallback": null,
+             "dl": 0
+            }
+           ]
+          }
+         },
+         {
+          "t": "rule",
+          "line": 3,
+          "end": 3,
+          "sel": [
+           ".dark &"
+          ],
+          "names": [
+           [
+            "class",
+            "dark",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 3,
+            "end": 3,
+            "prop": "color",
+            "value": "white",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         },
+         {
+          "t": "rule",
+          "line": 4,
+          "end": 4,
+          "sel": [
+           "& .title"
+          ],
+          "names": [
+           [
+            "class",
+            "title",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 4,
+            "end": 4,
+            "prop": "margin",
+            "value": "0",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         },
+         {
+          "t": "hole",
+          "line": 5,
+          "end": 5,
+          "kind": "statement",
+          "name": "__dd0__"
+         }
+        ]
+       }
+      ]
+     },
+     "src/styled.tsx#cssinjs1": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ":root"
+        ],
+        "names": [],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "--ink",
+          "value": "#111",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ".btn-primary"
+        ],
+        "names": [
+         [
+          "class",
+          "btn-primary",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "color",
+          "value": "red",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 4,
+        "end": 4,
+        "sel": [
+         ".__dd1__"
+        ],
+        "names": [
+         [
+          "class",
+          "__dd1__",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "color",
+          "value": "blue",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     },
+     "src/styled.tsx#cssinjs2": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 1,
+        "end": 4,
+        "sel": [
+         "&"
+        ],
+        "names": [],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "padding",
+          "value": "2px",
+          "important": false,
+          "facts": {}
+         },
+         {
+          "t": "rule",
+          "line": 3,
+          "end": 3,
+          "sel": [
+           "&:hover .title"
+          ],
+          "names": [
+           [
+            "class",
+            "title",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 3,
+            "end": 3,
+            "prop": "padding",
+            "value": "4px",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "version": "4.1.3",
+    "seconds": 0.121
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 127,
+    "stderr_tail": "DAODAN_MAXRSS_KB=130252\n"
+   }
   }
  ],
  "packages": {},

@@ -7,8 +7,10 @@ The engines do not run here: each fixture's runs of the pinned engines (`indexer
 files the graph itself reads (`node_modules`), were recorded once on Modal into `fixtures/css-graph/recorded/<name>.json`
 and are replayed by payload. A payload nothing recorded fails the test. To record them again:
 
-    modal deploy benchmarks/inference-audit/lang_css.py
-    python benchmarks/inference-audit/lang_css.py fixtures
+    PYTHONUTF8=1 uv run --no-project --with modal python -m modal run benchmarks/css-parser/modal_css_parser.py::record_fixtures
+
+(`lang_css.py fixtures` records them as well, but its `record()` call gives no CDN sheet: `REMOTE` below is what the `css`
+fixture is given, and the run of the engine on that sheet would be missing.)
 """
 from __future__ import annotations
 
@@ -46,7 +48,7 @@ def replayer(recording: dict):
     return runner
 
 
-def record(project: Path, runner) -> dict:
+def record(project: Path, runner, remote=None) -> dict:
     """The recording of a fixture (`replayer`): its engine runs through a real runner, and every file and folder of
     `node_modules` the graph itself looks at, each file with its text. On Modal only (`lang_css.py fixtures`)."""
     import os
@@ -72,7 +74,7 @@ def record(project: Path, runner) -> dict:
     sys.addaudithook(hook)
     os.stat = watched
     try:
-        css.run(project, recording, files)
+        css.run(project, recording, files, remote=remote)
     finally:
         os.stat, watching[0] = stat, False
     packages, directories = {}, set()
@@ -104,6 +106,24 @@ def project_copy(name: str, folder: Path) -> tuple[Path, dict]:
     return project, recording
 
 
+def csstree(trees: dict, payload: dict) -> dict:
+    """What `css_csstree.js` answers to `payload`, for the tests of plumbing that run no engine: each item's neutral tree
+    (the script's header documents it) is `trees[its text or its path]`."""
+    return {"version": "4.1.3", "seconds": 0, "sheets": {
+        item["key"]: {"tree": trees[item.get("text") or item["path"]]} for item in payload["items"]}}
+
+
+def sheet_import(*urls) -> list:
+    return [{"t": "at", "line": number, "end": number, "name": "import", "params": f'"{url}"', "facts": {"urls": [url]},
+             "kids": None} for number, url in enumerate(urls, 1)]
+
+
+def sheet_rule(name: str, prop: str, value: str) -> list:
+    return [{"t": "rule", "line": 1, "end": 1, "sel": ["." + name], "names": [["class", name, "local"]], "custom": [],
+             "kids": [{"t": "decl", "line": 1, "end": 1, "prop": prop, "value": value, "important": False,
+                       "facts": {}}]}]
+
+
 def _run(name: str, tmp_path_factory, remote=None, units=None) -> dict:
     """The fixture's graph from its recorded engine runs."""
     project, recording = project_copy(name, tmp_path_factory.mktemp(name))
@@ -126,6 +146,7 @@ ANGLE, BRAND = f"{T}:14 @property --angle", f"{T}:20 @font-face Brand Sans"
 ICONS, ANIMATE = "src/vendor/icons/icons.min.css", "animate.css/animate.css"
 CDN = "https://cdn.jsdelivr.net/npm/@acme/ui@1.2.3/dist/ui.css"
 EXTERNAL = (ICONS, ANIMATE, CDN, "tailwindcss", "sass:")
+REMOTE = {"css": {CDN: ".ui-btn { color: red; }"}}  # the CDN sheets a fixture is given (the recording needs them too)
 
 
 def _rows(site, kind, symbol, targets, chain=()):
@@ -250,7 +271,7 @@ def _uncertain(graph: dict) -> dict:
 
 @pytest.fixture(scope="module")
 def graph(tmp_path_factory):
-    return _run("css", tmp_path_factory, remote={CDN: ".ui-btn { color: red; }"})
+    return _run("css", tmp_path_factory, remote=REMOTE["css"])
 
 
 def test_every_arc_and_nothing_else(graph):
@@ -302,6 +323,79 @@ def test_files_read(graph):
     missing = {item["path"]: item["reason"] for item in graph["files"]["missing"]}
     assert missing == {}
     assert graph["files"]["indexed"] == 13 and graph["files"]["snapshot"] == 13
+
+
+# css-plain: plain CSS through the ESLint fork of CSSTree (`css_csstree.js`). The arcs were written from the fixture's text
+# and from what each form means in CSS, before the engine ran (the holes of `PLAIN_UNPARSED`, and the other fixtures' holes
+# the fork brought, were written after the engine's run, from the same reading): relaxed nesting, an upper-case `VAR()` with a fallback holding a
+# parenthesis, an emoji class, `@scope ... to (...)`, `@layer` inside a rule, an `@import` with `layer()` and
+# `supports(selector())`, the names of `animation` and `font`, `container` and a style attribute (a list of
+# declarations). A PostCSS variable no grammar reads is a hole with its line, as is a value that holds one; written
+# before a rule it makes that rule's prelude invalid, as in a browser (CSS Syntax, 5.4.3: the prelude runs to the
+# block), and the rule is lost, its block read all the same.
+QM, QB, QL, QH = "src/styles/main.css", "src/styles/base.css", "src/styles/legacy.pcss", "src/index.html"
+QS = "src/styles/swallow.pcss"
+PLAIN_EXPECTED = [
+    *_rows(f"{QH}:4", "import", "styles/main.css", [QM]),
+    *_rows(f"{QH}:5", "import", "styles/legacy.pcss", [QL]),
+    *_rows(f"{QM}:2", "import", "./base.css", [QB]),
+    *_rows(f"{QM}:3", "layer", "base", [f"{QM}:2 @layer base"]),
+    *_rows(f"{QM}:6", "custom-property", "--angle", [f"{QM}:4 @property --angle"]),
+    *_rows(f"{QM}:11", "custom-property", "--accent", [f"{QM}:9 --accent"]),
+    *_rows(f"{QM}:12", "keyframes", "spin", [f"{QM}:6 @keyframes spin"]),
+    *_rows(f"{QM}:12", "keyframes", "pulse", [f"{QM}:7 @keyframes pulse"]),
+    *_rows(f"{QM}:13", "font-face", "Brand Sans", [f"{QM}:5 @font-face Brand Sans"]),
+    *_rows(f"{QM}:14", "custom-property", "--gap", [f"{QM}:9 --gap"]),
+    *_rows(f"{QM}:16", "custom-media", "--narrow", [f"{QM}:8 @custom-media --narrow"]),
+    *_rows(f"{QM}:17", "layer", "base", [f"{QM}:2 @layer base"]),
+    *_rows(f"{QM}:21", "container", "side", [f"{QM}:20 container side"]),
+    *_rows(f"{QH}:7", "custom-property", "--accent", [f"{QM}:9 --accent"]),
+    *_rows(f"{QH}:7", "keyframes", "spin", [f"{QM}:6 @keyframes spin"]),
+    *_rows(f"{QH}:11", "keyframes", "pulse", [f"{QM}:7 @keyframes pulse"]),
+    *_rows(f"{QH}:11", "class", ".card", [f"{QM}:10 .card", f"{QM}:14 .card .title", f"{QM}:15 .card:hover"]),
+    *_rows(f"{QH}:11", "class", ".😀", [f"{QM}:19 .😀"]),
+    *_rows(f"{QH}:11", "class", ".shell", [f"{QM}:20 .shell", f"{QM}:22 @scope (.shell) to (.limit) {{ img }}"]),
+    *_rows(f"{QH}:11", "class", ".legacy", [f"{QL}:1 .legacy"]),
+    *_rows(f"{QH}:11", "class", ".inline", [f"{QH}:7 .inline"]),
+]
+# (site, kind, class): a variable nothing declares (with its fallback, if any), a family value the lexer cannot match
+# for its `var()` (never read word by word again).
+PLAIN_HOLES = {
+    (f"{QM}:9", "custom-property", "undeclared"), (f"{QM}:15", "custom-property", "undeclared"),
+    (f"{QH}:11", "custom-property", "undeclared"), (f"{QH}:11", "font-face", "value-not-matched"),
+}
+# (site, kind): what no grammar reads, with its text: the value `$gap`, the statement `$gap: 4px;`, and the rule
+# whose prelude it made invalid.
+PLAIN_UNPARSED = {
+    (f"{QL}:1", "declaration"): "margin: $gap", (f"{QL}:2", "statement"): "$gap: 4px;",
+    (f"{QS}:1", "rule"): "$gap: 4px; .swallowed", (f"{QS}:2", "declaration"): "margin: $gap",
+}
+
+
+@pytest.fixture(scope="module")
+def plain(tmp_path_factory):
+    return _run("css-plain", tmp_path_factory)
+
+
+def test_plain_css_every_arc_and_nothing_else(plain):
+    actual, expected = _arcs(plain), set(PLAIN_EXPECTED)
+    assert sorted(actual - expected) == [] and sorted(expected - actual) == []
+
+
+def test_plain_css_holes_name_what_no_declaration_or_grammar_gives(plain):
+    assert {(h["site"], h["kind"], h["class"]) for h in plain["holes"] if h["class"] != "unparsed"} == PLAIN_HOLES
+    named = {(h["site"], h["kind"]): h["name"] for h in plain["holes"]}
+    assert named[(f"{QM}:9", "custom-property")] == "--base-gap" and named[(f"{QM}:15", "custom-property")] == "--missing"
+    assert named[(f"{QH}:11", "font-face")].startswith("font-family: ")  # the property whose value was not matched
+    assert {(h["site"], h["kind"]): h["name"] for h in plain["holes"] if h["class"] == "unparsed"} == PLAIN_UNPARSED
+    assert not [n for n in plain["nodes"] if n["file"] == QS and n["kind"] == "rule"]  # `.swallowed` went with it
+    assert [n["id"] for n in plain["nodes"] if n["file"] == QL and n["kind"] == "rule"] == [f"{QL}:1 .legacy"]
+
+
+def test_plain_css_is_read_by_the_fork_and_every_file_is_read(plain):
+    assert plain["files"]["missing"] == [] and plain["files"]["indexed"] == plain["files"]["snapshot"] == 5
+    assert [engine["name"] for engine in plain["engines"]].count("@eslint/css-tree") == 1
+    assert _uncertain(plain) == {}  # one declaration per name, every sheet loaded by the page that names it
 
 
 # css-sass: SCSS and indented Sass through the official Sass parser. Written from the fixture's text.
@@ -561,6 +655,8 @@ CSSINJS_EXPECTED = [
 CSSINJS_HOLES = {
     (f"{JD}:2", "class", "css-in-js", "cm-ghost"),
     (f"{JS_}:12", "rule", "interpolated-selector", ".${(p: any) => p.name}"),
+    # a statement that is only an interpolation (a mixin the script computes): no grammar reads it, the old reader let it go
+    (f"{JS_}:7", "statement", "unparsed", "${(p: any) => p.extra}"),
 }
 CSSINJS_NODES = {f"{JT}:2 &", f"{JT}:3 &", f"{JT}:5 &.cm-focused .cm-cursor", f"{JT}:7 &", f"{JS_}:3 &", f"{JS_}:5 .dark &",
                  f"{JS_}:14 &", f"{JV}:2 &", f"{JV}:4 .dark &", f"{JV}:6 .prose a", "src/stitches.ts:2 &",
@@ -617,7 +713,12 @@ def test_tailwind4_arcs(tailwind4_graph):
 
 
 def test_tailwind4_holes_and_version(tailwind4_graph):
-    assert _holes(tailwind4_graph) == {(f"{TP}:2", "class", "no-rule", "nope-x")}
+    # Tailwind's own preflight (the package's sheet, read as any external sheet) writes `font-family: --theme(...)`, a
+    # function no grammar knows: the lexer matches nothing and the value could name a family
+    assert _holes(tailwind4_graph) == {
+        (f"{TP}:2", "class", "no-rule", "nope-x"),
+        ("tailwindcss/index.css:568", "font-face", "value-not-matched", "font-family: Mismatch"),
+        ("tailwindcss/index.css:659", "font-face", "value-not-matched", "font-family: Mismatch")}
     assert _uncertain(tailwind4_graph) == {}
     nodes = {node["id"]: node for node in tailwind4_graph["nodes"]}
     assert nodes["tailwindcss text-brand"]["external"] == {"manager": "npm", "package": "tailwindcss",
@@ -1011,7 +1112,13 @@ def test_a_css_style_block_of_a_component_with_apply_is_read_beside_its_template
                  "classes": [{"kind": "class", "line": 2, "chain": [], "alts": [[{"s": "row"}]]}],
                  "imports": [], "components": [], "roots": [2]}
 
+    row = [{"t": "rule", "line": 1, "end": 1, "sel": [".row"], "names": [["class", "row", "local"]], "custom": [],
+            "kids": [{"t": "at", "line": 1, "end": 1, "name": "apply", "params": "flex", "facts": {"tokens": "flex"},
+                      "kids": None}]}]
+
     def runner(script, payload):
+        if Path(script).name == "css_csstree.js":  # the block's CSS, read by the engine of plain CSS
+            return csstree({".row { @apply flex; }\n": row}, payload), {"seconds": 0}
         assert Path(script).name == "css_vue.js"
         return {"version": "3.5.13", "components": {"App.vue": component}}, {"seconds": 0}
     found = css.component_files(runner, tmp_path, ["App.vue"])
@@ -1032,6 +1139,8 @@ def test_a_tailwind_utility_is_answered_by_the_tailwind_that_generates_it_at_its
     asked = []
 
     def runner(script, payload):
+        if Path(script).name == "css_csstree.js":
+            return csstree({"web/src/index.css": sheet_import("tailwindcss")}, payload), {"seconds": 0}
         asked.append((Path(script).name, [entry["path"] for entry in payload["entries"]]))
         return {"version": "4.2.4", "valid": {"flex": "4.2.4"}, "error": None}, {"seconds": 0}
     built = css.run(project, runner)
@@ -1084,6 +1193,10 @@ MARKING = {  # project files that, run as code, leave a mark in `marks/`: none o
     "a.less": '@plugin "./less-plugin.js";\n.a { width: `require("fs").writeFileSync("marks/less-js", "")`; }\n',
     "a.styl": 'use("./stylus-plugin.js")\n.b\n  color red\n',
     "a.scss": '@use "sass:meta";\n.c { color: red; }\n',
+    # plain CSS that Tailwind 4 and PostCSS would run code for: `@config` and `@plugin` load a script, a `.pcss` file is the
+    # input of the `postcss.config.js` above; the fork of CSSTree reads their text and nothing else
+    "a.css": '@config "./tailwind.config.js";\n@plugin "./less-plugin.js";\n@import "./mark.js";\n.d { color: red }\n',
+    "b.pcss": '@import "./mark.js";\n.e { margin: $gap }\n',
     "App.vue": '<script setup>\nrequire("fs").writeFileSync("marks/vue-script", "")\n</script>\n'
                '<template><div class="a"></div></template>\n<style lang="less">@plugin "./less-plugin.js";</style>\n',
     "C.svelte": '<script>\nrequire("fs").writeFileSync("marks/svelte-script", "")\n</script>\n<div class="b"></div>\n',
@@ -1094,7 +1207,8 @@ MARKING = {  # project files that, run as code, leave a mark in `marks/`: none o
 
 def test_the_engines_on_the_host_read_the_projects_files_and_run_none(tmp_path):
     """AGENTS.md: the project's code runs only in the container. The stylesheet engines Daodan starts on the host
-    (sass-parser, less, stylus, the Vue, Svelte and Astro compilers, TypeScript, in `css.node_runner`) parse a
+    (the fork of CSSTree, sass-parser, less, stylus, the Vue, Svelte and Astro compilers, TypeScript, in
+    `css.node_runner`) parse a
     project whose config files, plugins, component scripts and inline JavaScript each leave a mark when run: every
     engine reads them, and no mark appears. Tailwind, which loads its config, runs only in the container (off in
     the suites: a gap, no run). Real engines: Node and the pinned engines are installed (on Modal)."""
@@ -1105,8 +1219,8 @@ def test_the_engines_on_the_host_read_the_projects_files_and_run_none(tmp_path):
     (project / "marks").mkdir()
     result = css.index(project, tmp_path / "work", files=css.walk(project))
     engines = {engine["name"]: engine["version"] for engine in result["graph"]["engines"]}
-    assert {"sass-parser", "less", "stylus", "@vue/compiler-sfc", "svelte", "@astrojs/compiler", "typescript"} <= set(
-        engines) and all(engines[name] for name in engines if name != "tailwindcss"), engines
+    assert {"@eslint/css-tree", "sass-parser", "less", "stylus", "@vue/compiler-sfc", "svelte", "@astrojs/compiler",
+            "typescript"} <= set(engines) and all(engines[name] for name in engines if name != "tailwindcss"), engines
     assert engines["tailwindcss"] is None  # no container in the suites: Tailwind did not run
     assert {item["path"] for item in result["graph"]["files"]["missing"]} <= {"P.astro"}, result["graph"]["files"]
     assert sorted(path.name for path in (project / "marks").iterdir()) == []
@@ -1328,6 +1442,10 @@ def test_a_class_a_package_sheet_declares_is_answered_by_the_restores_copy_of_it
                 "missing": [], "workspace": [], "error": None}, {"seconds": 0}
 
     def host(script, payload):  # the scripts' reader, as its run on the host answers: a script imports a sheet
+        if Path(script).stem == "css_csstree":  # the sheets, read by the engine of plain CSS
+            return csstree({"web/src/index.css": sheet_import("@acme/ui/styles.css"),
+                            ".mu-a { color: red }\n": sheet_rule("mu-a", "color", "red"),
+                            ".kit-a { color: blue }\n": sheet_rule("kit-a", "color", "blue")}, payload), {"seconds": 0}
         assert Path(script).stem == "css_typescript", f"no other host engine reads these files: {script}"
         return {"typescript": "5.9.3", "files": ["web/src/main.ts"],
                 "records": [{"t": "import", "file": "web/src/main.ts", "line": 1, "spec": "@acme/kit/kit.css"}]}, \
@@ -1385,7 +1503,9 @@ def test_tailwinds_run_brings_back_the_packages_sheets_after_the_same_restore(tm
         return {"state": "done", "exit_code": 0, "outputs": []}
 
     def host(script, payload):
-        raise AssertionError(f"no host engine reads these files: {script}")
+        assert Path(script).stem == "css_csstree", f"no other host engine reads these files: {script}"
+        return csstree({"src/index.css": sheet_import("tailwindcss", "@acme/ui/styles.css"),
+                        ".mu-a { color: red }\n": sheet_rule("mu-a", "color", "red")}, payload), {"seconds": 0}
     with mock.patch.object(container, "run_in_container", run_in_container), \
             mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)):
         built = css.run(project, host, css.walk(project), tailwind=css.tailwind_runner(project, tmp_path / "work"))

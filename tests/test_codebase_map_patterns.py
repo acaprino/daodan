@@ -20,7 +20,7 @@ ALLOWED = {
     "dynamic/__init__.py": 2, "dynamic/callgrind.py": 4, "dynamic/clang.py": 3, "dynamic/dotnet.py": 6,
     "dynamic/go.py": 1, "dynamic/javascript.py": 5, "dynamic/jvm.py": 4, "dynamic/python.py": 9, "dynamic/rust.py": 2,
     "engine_tools.py": 1, "flows.py": 7, "import_resolution.py": 1, "indexers/clang.py": 12,
-    "indexers/clang_run.py": 7, "indexers/csharp.py": 8, "indexers/css.py": 60, "indexers/go.py": 7,
+    "indexers/clang_run.py": 7, "indexers/csharp.py": 8, "indexers/css.py": 59, "indexers/go.py": 7,
     "indexers/java.py": 6, "indexers/jvm.py": 10, "indexers/kotlin.py": 1, "indexers/python.py": 12,
     "indexers/python_unbound.py": 1, "indexers/rust.py": 8, "indexers/typescript.py": 6, "languages/__init__.py": 5,
     "languages/cfamily.py": 18, "languages/csharp.py": 5, "languages/go.py": 5, "languages/java.py": 5,

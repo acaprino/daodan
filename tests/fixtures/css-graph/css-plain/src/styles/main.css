@@ -1,0 +1,22 @@
+@charset "utf-8";
+@import url("./base.css") layer(base) supports(selector(:has(a))) screen;
+@layer reset, base;
+@property --angle { syntax: "<angle>"; inherits: false; initial-value: 0deg }
+@font-face { font-family: Brand Sans; src: url(brand.woff2) }
+@keyframes spin { from { transform: rotate(0) } to { transform: rotate(var(--angle)) } }
+@keyframes "pulse" { 50% { opacity: .5 } }
+@custom-media --narrow (max-width: 30em);
+:root { --accent: #0af; --gap: calc(1px + var(--base-gap, 4px)); }
+.card {
+  color: VAR(--accent, calc(1px + 2px));
+  animation: spin 1s linear infinite, "pulse" 2s;
+  font: italic bold 12px/30px "Brand Sans", serif;
+  .title { margin: var(--gap) }
+  &:hover { color: var(--missing) }
+  @media (--narrow) { padding: 0 }
+  @layer base { border: 0 }
+}
+.😀 { font-size: 2em }
+.shell { container: side / inline-size }
+@container side (min-width: 400px) { .wide { padding: 1px } }
+@scope (.shell) to (.limit) { img { display: block } }

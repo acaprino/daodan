@@ -1,0 +1,24 @@
+tool: tinycss2 1.5.1
+corpus: 1860 files, 74.6 MB, cpu time 40681 ms across 4 workers, wall 11.6 s
+rules 545048, declarations 1354707, at-rules 35157, comments 32883
+files with an error: 3; errors (ParseError nodes): 3; files that threw: 0
+
+## per package: files, errors, rules, decls, atrules
+tachyons                             62 err      3 threw   0 rules    6576 decls     7722 at   176
+prismjs                              42 err      0 threw   0 rules     534 decls     1464 at    18
+highlight.js                        516 err      0 threw   0 rules    9819 decls    12905 at     4
+flatpickr                            13 err      0 threw   0 rules    1204 decls     4782 at    22
+purecss                              38 err      0 threw   0 rules    1700 decls     3072 at    18
+bootstrap                            16 err      0 threw   0 rules   20832 decls    37444 at   612
+water.css                             6 err      0 threw   0 rules     863 decls     2661 at   165
+sanitize.css                          7 err      0 threw   0 rules      44 decls      118 at     9
+foundation-sites                      8 err      0 threw   0 rules   11144 decls    25066 at   756
+animate.css                         104 err      0 threw   0 rules    2427 decls     6087 at   786
+modern-normalize                      1 err      0 threw   0 rules      19 decls       31 at     0
+semantic-ui-css                      96 err      0 threw   0 rules   23784 decls    44758 at   844
+@picocss/pico                       238 err      0 threw   0 rules   82320 decls   293490 at  5280
+open-props                          260 err      0 threw   0 rules    1200 decls     9461 at   373
+
+## messages (count, first file)
+     2  Stop token reached before {} block for a qualified rule.   [tachyons/src/_clears.css]
+     1  EOF reached before {} block for a qualified rule.   [tachyons/css/tachyons.min.css]

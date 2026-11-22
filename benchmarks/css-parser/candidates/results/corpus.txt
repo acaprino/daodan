@@ -1,0 +1,127 @@
+module: css-tree
+corpus: 1860 .css files, 74.6 MB, parse time 10732 ms (positions on)
+rules 544830, declarations 1335772, at-rules 34745
+files with at least one parse error: 107; parse errors in all: 7840; parse threw: 0
+Raw nodes: 2824 at statement level, 2461 Raw preludes (rule or at-rule), 9 Raw values of non-custom properties
+
+## per package: files, KB, rules, decls, atrules, files-with-errors, errors, rawStatements, rawPreludes, rawValues
+daisyui                               116    2440   21688   37836  9281 err-files  63 errors  7598 rawStmt 2710 rawPrelude 2346 rawValue    0
+swiper                                 96      98     487    1069     4 err-files  24 errors   110 rawStmt  110 rawPrelude    0 rawValue    0
+open-props                            260     394    1200    9461   373 err-files   4 errors    92 rawStmt    0 rawPrelude   92 rawValue    0
+@primer/css                            31    2330    9194   49123   595 err-files   2 errors    12 rawStmt    0 rawPrelude   12 rawValue    0
+tailwindcss                             4      56      82     164    18 err-files   3 errors    10 rawStmt    4 rawPrelude    2 rawValue    0
+uikit                                   8    2603   14448   23960  1156 err-files   8 errors     8 rawStmt    0 rawPrelude    0 rawValue    8
+@primer/primitives                     44    4057      70   62148    50 err-files   1 errors     6 rawStmt    0 rawPrelude    6 rawValue    0
+tachyons                               62     329    6576    7725   176 err-files   1 errors     3 rawStmt    0 rawPrelude    3 rawValue    0
+leaflet                                 1      14     124     298     1 err-files   1 errors     1 rawStmt    0 rawPrelude    0 rawValue    1
+@fortawesome/fontawesome-free          20     560   11454   13852   146 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+@mdi/font                               2     746   14949   15016     6 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+@picocss/pico                         238   18895   82320  293490  5280 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+animate.css                           104     266    2427    6087   786 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+bootstrap                              16    1661   20832   37444   612 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+bootswatch                            104   26518  271328  586980 12088 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+bulma                                  10    6109   35446   89965  2185 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+flatpickr                              13     190    1204    4782    22 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+foundation-sites                        8    1111   11144   25066   756 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+github-markdown-css                     7     160    1340    3108     2 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+highlight.js                          516    1134    9819   12905     4 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+katex                                   4     113     930    1792    80 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+modern-normalize                        1       3      19      31     0 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+motion-ui                               2      18     184     399     8 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+normalize.css                           1       5      34      57     0 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+prismjs                                42      73     534    1464    18 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+purecss                                38     192    1700    3072    18 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+quill                                   3      58     606     941    62 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+sanitize.css                            7      11      44     118     9 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+semantic-ui-css                        96    2570   23784   44758   844 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+water.css                               6     104     863    2661   165 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+
+## what the Raw nodes are (count, packages, one sample)
+  2348  Raw prelude of a rule   [daisyui, tailwindcss]
+          e.g. alert.css "--alert-border-color:var(--color-base-200);border-radius:var(--radius-"
+  1342  Raw statement inside @layer, starts with an identifier   [daisyui]
+          e.g. alert.css "color:var(--color-info-content);--alert-border-color:var(--color-info)"
+  1092  Raw statement inside @layer, starts with "-"   [daisyui]
+          e.g. aura.css "--aura-padding:0rem"
+   218  Raw statement inside @layer, starts with a selector   [daisyui]
+          e.g. breadcrumbs.css "[dir=rtl] &+:before{rotate:-135deg}"
+   113  Raw prelude of @custom-media   [@primer/css, @primer/primitives, open-props, tachyons]
+          e.g. primer.css "@custom-media --viewportRange-landscape (orientation: landscape);"
+   106  Raw statement inside a rule, starts with a selector   [swiper]
+          e.g. effect-cards.css ".swiper-slide {\n    transform-origin: center bottom;\n    backface-visi"
+    36  Raw statement inside @media, starts with an identifier   [daisyui]
+          e.g. button.css "color:graytext;border-color:graytext"
+    12  Raw statement inside @supports, starts with an identifier   [daisyui]
+          e.g. megamenu.css "max-block-size:stretch"
+    10  Raw statement inside @media, starts with a selector   [daisyui]
+          e.g. daisyui.css ":where(&){--join-r:initial;--join-r-ss:initial;--join-r-se:initial;--j"
+     8  Raw value of aspect-ratio   [uikit]
+          e.g. uikit-core-rtl.css "aspect-ratio: attr(width type(<number>)) / attr(height type(<number>))"
+     4  Raw statement inside a rule, starts with an identifier   [swiper]
+          e.g. pagination.css "button& {\n    border: none;\n    margin: 0;\n    padding: 0;\n    box-sha"
+     2  Raw statement inside @theme, starts with an identifier   [tailwindcss]
+          e.g. index.css "to {\n        transform: rotate(360deg);\n      }"
+     2  Raw statement inside @theme, starts with "-"   [tailwindcss]
+          e.g. index.css "--blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg"
+     1  Raw value of filter   [leaflet]
+          e.g. leaflet.css "filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0"
+
+## parse errors per package and message (count, up to 2 samples)
+  3550  daisyui|Unexpected input
+          components/alert.css:1:217  "alert-border-color:var(--color-base-200);border-radius:var(--radius-box);color:var(--color-base-cont"
+          components/alert.css:1:1232  "ui.l1.l2{color:var(--color-info-content);--alert-border-color:var(--color-info);--alert-color:var(--"
+  2482  daisyui|"{" is expected
+          components/alert.css:1:1303  "or-info);--alert-color:var(--color-info)}}.alert-success{@layer daisyui.l1.l2{color:var(--color-succ"
+          components/alert.css:1:1452  "cess);--alert-color:var(--color-success)}}.alert-warning{@layer daisyui.l1.l2{color:var(--color-warn"
+  1494  daisyui|Identifier is expected
+          components/aura.css:1:101  "{@layer daisyui.l1.l2.l3{--aura-padding:.125rem;padding:var(--aura-padding);border-radius:calc(var(-"
+          components/aura.css:1:2658  "-xs{@layer daisyui.l1.l2{--aura-padding:0rem}}.aura-sm{@layer daisyui.l1.l2{--aura-padding:.0625rem}"
+   106  swiper|Identifier is expected
+          modules/effect-cards.css:5:3  " overflow: visible;\n}\n.swiper-cards {\n  .swiper-slide {\n    transform-origin: center bottom;\n    bac"
+          modules/effect-cards.min.css:1:53  "er-cards{overflow:visible}.swiper-cards{.swiper-slide{backface-visibility:hidden;overflow:hidden;tra"
+    92  open-props|")" is expected
+          media.min.css:1:54  " --motionOK      (prefers-reduced-motion: no-preference);@custom-media --motionNotOK   (prefers-redu"
+          media.min.css:1:124  " --motionNotOK   (prefers-reduced-motion: reduce);@custom-media --opacityOK     (prefers-reduced-tra"
+    72  daisyui|Percent sign is expected
+          components/chat.css:1:2064  "{@layer daisyui.l1.l2.l3{grid-row:span 2/span 2;align-self:flex-end}}.chat-header{@layer daisyui.l1."
+          components/chat.css:1:5018  "{@layer daisyui.l1.l2.l3{grid-row:span 2/span 2;align-self:flex-end}}.sm\\:chat-header{@layer daisyui"
+    12  @primer/css|")" is expected
+          dist/primer.css:6:808299  "a --viewportRange-landscape (orientation: landscape);@custom-media --viewportRange-narrow (max-width"
+          dist/primer.css:6:808359  "-media --viewportRange-narrow (max-width: calc(48rem - 0.02px));@custom-media --viewportRange-narrow"
+     8  uikit|")" is expected
+          dist/css/uikit-core-rtl.css:165:33  "/* 4 */\n  aspect-ratio: attr(width type(<number>)) / attr(height type(<number>));\n  /* 5 */\n  object"
+          dist/css/uikit-core-rtl.min.css:1:1298  "eight:auto;aspect-ratio:attr(width type(<number>))/attr(height type(<number>));object-fit:cover}img:"
+     6  @primer/primitives|")" is expected
+          dist/css/functional/size/viewport.css:1:53  "a --viewportRange-landscape (orientation: landscape);\n@custom-media --viewportRange-narrow (max-widt"
+          dist/css/functional/size/viewport.css:2:48  "-media --viewportRange-narrow (max-width: calc(48rem - 0.02px));\n@custom-media --viewportRange-narro"
+     4  swiper|Colon is expected
+          modules/pagination.css:80:9  "-bullet-inactive-opacity, 0.2);\n  button& {\n    border: none;\n    margin: 0;\n    padding: 0;\n    box"
+          modules/pagination.min.css:1:1366  "iper-pagination-bullet-size,8px));button&{appearance:none;border:none;box-shadow:none;margin:0;paddi"
+     4  tailwindcss|Identifier is expected
+          index.css:5:17  "me {\n  @theme default {\n    --font-sans:\n      -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto"
+          index.css:486:15  ", 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg"
+     4  tailwindcss|Colon is expected
+          index.css:454:10  "finite;\n\n    @keyframes spin {\n      to {\n        transform: rotate(360deg);\n      }\n    }\n\n    @key"
+          index.css:843:18  "dcss/issues/17194)\n*/\n\n  @supports (not (-webkit-appearance: -apple-pay-button)) /* Not Safari */ or"
+     3  tachyons|")" is expected
+          src/_media-queries.css:34:59  "eakpoint-not-small screen and (min-width: 30em);\n@custom-media --breakpoint-medium screen and (min-w"
+          src/_media-queries.css:35:56  "-breakpoint-medium screen and (min-width: 30em) and (max-width: 60em);\n@custom-media --breakpoint-la"
+     2  tailwindcss|"{" is expected
+          index.css:522:3  "iation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n  "
+          theme.css:500:1  "ono--font-variation-settings, initial);\n}\n\n/* Deprecated */\n@theme default inline reference {\n  --bl"
+     1  leaflet|Unexpected input
+          dist/leaflet.css:556:16  "0678, M22=0.70710678)\";\r\n\tfilter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.707"
+
+## files with most errors
+ 3799  daisyui/daisyui.css  (1182278 bytes)
+  312  daisyui/components/button.css  (48048 bytes)
+  216  daisyui/components/badge.css  (17052 bytes)
+  180  daisyui/components/checkbox.css  (21588 bytes)
+  180  daisyui/components/status.css  (11778 bytes)
+  174  daisyui/components/chat.css  (17862 bytes)
+  168  daisyui/components/range.css  (26754 bytes)
+  144  daisyui/components/radio.css  (14947 bytes)
+  132  daisyui/components/aura.css  (17679 bytes)
+  120  daisyui/components/progress.css  (12767 bytes)
+  108  daisyui/components/megamenu.css  (66462 bytes)
+  102  daisyui/components/alert.css  (17646 bytes)

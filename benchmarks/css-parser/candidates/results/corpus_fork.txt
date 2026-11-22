@@ -1,0 +1,99 @@
+module: css-tree-eslint
+corpus: 1860 .css files, 74.6 MB, parse time 7680 ms (positions on)
+rules 544702, declarations 1353200, at-rules 35083
+files with at least one parse error: 30; parse errors in all: 320; parse threw: 0
+Raw nodes: 194 at statement level, 115 Raw preludes (rule or at-rule), 9 Raw values of non-custom properties
+
+## per package: files, KB, rules, decls, atrules, files-with-errors, errors, rawStatements, rawPreludes, rawValues
+daisyui                               116    2440   21182   54532  9619 err-files  11 errors   192 rawStmt  192 rawPrelude    0 rawValue    0
+open-props                            260     394    1200    9461   373 err-files   4 errors    92 rawStmt    0 rawPrelude   92 rawValue    0
+@primer/css                            31    2330    9194   49123   595 err-files   2 errors    12 rawStmt    0 rawPrelude   12 rawValue    0
+uikit                                   8    2603   14448   23960  1156 err-files   8 errors     8 rawStmt    0 rawPrelude    0 rawValue    8
+@primer/primitives                     44    4057      70   62148    50 err-files   1 errors     6 rawStmt    0 rawPrelude    6 rawValue    0
+tailwindcss                             4      56      84     166    18 err-files   2 errors     6 rawStmt    2 rawPrelude    2 rawValue    0
+tachyons                               62     329    6576    7725   176 err-files   1 errors     3 rawStmt    0 rawPrelude    3 rawValue    0
+leaflet                                 1      14     124     298     1 err-files   1 errors     1 rawStmt    0 rawPrelude    0 rawValue    1
+@fortawesome/fontawesome-free          20     560   11454   13852   146 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+@mdi/font                               2     746   14949   15016     6 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+@picocss/pico                         238   18895   82320  293490  5280 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+animate.css                           104     266    2427    6087   786 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+bootstrap                              16    1661   20832   37444   612 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+bootswatch                            104   26518  271328  586980 12088 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+bulma                                  10    6109   35446   89965  2185 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+flatpickr                              13     190    1204    4782    22 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+foundation-sites                        8    1111   11144   25066   756 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+github-markdown-css                     7     160    1340    3108     2 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+highlight.js                          516    1134    9819   12905     4 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+katex                                   4     113     930    1792    80 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+modern-normalize                        1       3      19      31     0 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+motion-ui                               2      18     184     399     8 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+normalize.css                           1       5      34      57     0 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+prismjs                                42      73     534    1464    18 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+purecss                                38     192    1700    3072    18 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+quill                                   3      58     606     941    62 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+sanitize.css                            7      11      44     118     9 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+semantic-ui-css                        96    2570   23784   44758   844 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+swiper                                 96      98     863    1799     4 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+water.css                               6     104     863    2661   165 err-files   0 errors     0 rawStmt    0 rawPrelude    0 rawValue    0
+
+## what the Raw nodes are (count, packages, one sample)
+   120  Raw statement inside @supports, starts with a selector   [daisyui]
+          e.g. diff.css "&:focus{& .diff-resizer{min-width:5cqi;max-width:5cqi}}&:has(.diff-ite"
+   113  Raw prelude of @custom-media   [@primer/css, @primer/primitives, open-props, tachyons]
+          e.g. primer.css "@custom-media --viewportRange-landscape (orientation: landscape);"
+    36  Raw statement inside @starting-style, starts with a selector   [daisyui]
+          e.g. dropdown.css "&[popover],& .dropdown-content{opacity:0;scale:.95}"
+    24  Raw statement inside @media, starts with a selector   [daisyui]
+          e.g. diff.css "&:focus{& .diff-resizer{min-width:5cqi;max-width:5cqi}}&:has(.diff-ite"
+    12  Raw statement inside @scope, starts with a selector   [daisyui]
+          e.g. daisyui.css "& :where(:scope>:focus,:scope>:has(:focus)){z-index:2}@media (hover:ho"
+     8  Raw value of aspect-ratio   [uikit]
+          e.g. uikit-core-rtl.css "aspect-ratio: attr(width type(<number>)) / attr(height type(<number>))"
+     2  Raw prelude of a rule   [tailwindcss]
+          e.g. index.css "--font-sans:\n      -apple-system, BlinkMacSystemFont, \"Segoe UI\", Robo"
+     2  Raw statement inside @theme, starts with "-"   [tailwindcss]
+          e.g. index.css "--blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg"
+     1  Raw value of filter   [leaflet]
+          e.g. leaflet.css "filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0"
+
+## parse errors per package and message (count, up to 2 samples)
+   192  daisyui|Identifier is expected
+          components/diff.css:1:933  ":touch) and (overflow:-webkit-paged-x){&:focus{& .diff-resizer{min-width:5cqi;max-width:5cqi}}&:has("
+          components/diff.css:1:1140  "edia (hover:none) and (pointer:coarse){&:focus{& .diff-resizer{min-width:5cqi;max-width:5cqi}}&:has("
+    92  open-props|")" is expected
+          media.min.css:1:54  " --motionOK      (prefers-reduced-motion: no-preference);@custom-media --motionNotOK   (prefers-redu"
+          media.min.css:1:124  " --motionNotOK   (prefers-reduced-motion: reduce);@custom-media --opacityOK     (prefers-reduced-tra"
+    12  @primer/css|")" is expected
+          dist/primer.css:6:808299  "a --viewportRange-landscape (orientation: landscape);@custom-media --viewportRange-narrow (max-width"
+          dist/primer.css:6:808359  "-media --viewportRange-narrow (max-width: calc(48rem - 0.02px));@custom-media --viewportRange-narrow"
+     8  uikit|")" is expected
+          dist/css/uikit-core-rtl.css:165:33  "/* 4 */\n  aspect-ratio: attr(width type(<number>)) / attr(height type(<number>));\n  /* 5 */\n  object"
+          dist/css/uikit-core-rtl.min.css:1:1298  "eight:auto;aspect-ratio:attr(width type(<number>))/attr(height type(<number>));object-fit:cover}img:"
+     6  @primer/primitives|")" is expected
+          dist/css/functional/size/viewport.css:1:53  "a --viewportRange-landscape (orientation: landscape);\n@custom-media --viewportRange-narrow (max-widt"
+          dist/css/functional/size/viewport.css:2:48  "-media --viewportRange-narrow (max-width: calc(48rem - 0.02px));\n@custom-media --viewportRange-narro"
+     4  tailwindcss|Identifier is expected
+          index.css:5:17  "me {\n  @theme default {\n    --font-sans:\n      -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto"
+          index.css:486:15  ", 0.2, 1);\n      }\n    }\n\n    --blur-xs: 4px;\n    --blur-sm: 8px;\n    --blur-md: 12px;\n    --blur-lg"
+     3  tachyons|")" is expected
+          src/_media-queries.css:34:59  "eakpoint-not-small screen and (min-width: 30em);\n@custom-media --breakpoint-medium screen and (min-w"
+          src/_media-queries.css:35:56  "-breakpoint-medium screen and (min-width: 30em) and (max-width: 60em);\n@custom-media --breakpoint-la"
+     2  tailwindcss|"{" is expected
+          index.css:522:3  "iation-settings,\n      initial\n    );\n  }\n\n  /* Deprecated */\n  @theme default inline reference {\n  "
+          theme.css:500:1  "ono--font-variation-settings, initial);\n}\n\n/* Deprecated */\n@theme default inline reference {\n  --bl"
+     1  leaflet|Unexpected input
+          dist/leaflet.css:556:16  "0678, M22=0.70710678)\";\r\n\tfilter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.707"
+
+## files with most errors
+   96  daisyui/daisyui.css  (1182278 bytes)
+   40  open-props/media.min.css  (2726 bytes)
+   40  open-props/src/props.media.css  (2578 bytes)
+   24  daisyui/components/diff.css  (19272 bytes)
+   18  daisyui/components/progress.css  (12767 bytes)
+   12  daisyui/components/dropdown.css  (20050 bytes)
+    6  @primer/css/dist/primer.css  (1061467 bytes)
+    6  @primer/css/dist/primitives.css  (9251 bytes)
+    6  @primer/primitives/dist/css/functional/size/viewport.css  (471 bytes)
+    6  daisyui/components/input.css  (28656 bytes)
+    6  daisyui/components/modal.css  (23142 bytes)
+    6  daisyui/components/otp.css  (32718 bytes)

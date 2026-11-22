@@ -1,0 +1,827 @@
+{
+ "calls": [
+  {
+   "script": "css_csstree",
+   "payload": {
+    "items": [
+     {
+      "key": "src/styles/base.css",
+      "path": "src/styles/base.css",
+      "words": false
+     },
+     {
+      "key": "src/styles/legacy.pcss",
+      "path": "src/styles/legacy.pcss",
+      "words": false
+     },
+     {
+      "key": "src/styles/main.css",
+      "path": "src/styles/main.css",
+      "words": false
+     },
+     {
+      "key": "src/styles/swallow.pcss",
+      "path": "src/styles/swallow.pcss",
+      "words": false
+     },
+     {
+      "key": "src/index.html#style0",
+      "text": "\n    .inline { animation: spin 1s; color: var(--accent); }\n  "
+     },
+     {
+      "key": "src/index.html#style1",
+      "text": "font-family: 'Brand Sans', var(--fallback); animation: pulse 2s",
+      "kind": "declarations"
+     }
+    ]
+   },
+   "data": {
+    "sheets": {
+     "src/styles/base.css": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 1,
+        "end": 1,
+        "sel": [
+         ".base"
+        ],
+        "names": [
+         [
+          "class",
+          "base",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 1,
+          "end": 1,
+          "prop": "margin",
+          "value": "0",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     },
+     "src/styles/legacy.pcss": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 1,
+        "end": 1,
+        "sel": [
+         ".legacy"
+        ],
+        "names": [
+         [
+          "class",
+          "legacy",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 1,
+          "end": 1,
+          "prop": "margin",
+          "value": "$gap",
+          "important": false,
+          "raw": true,
+          "facts": {}
+         },
+         {
+          "t": "decl",
+          "line": 1,
+          "end": 1,
+          "prop": "color",
+          "value": "red",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "hole",
+        "line": 2,
+        "end": 3,
+        "kind": "statement",
+        "name": "$gap: 4px;"
+       }
+      ]
+     },
+     "src/styles/main.css": {
+      "tree": [
+       {
+        "t": "at",
+        "line": 1,
+        "end": 1,
+        "name": "charset",
+        "params": "\"utf-8\"",
+        "text": "@charset \"utf-8\"",
+        "facts": {},
+        "kids": null
+       },
+       {
+        "t": "at",
+        "line": 2,
+        "end": 2,
+        "name": "import",
+        "params": "url(\"./base.css\") layer(base) supports(selector(:has(a))) screen",
+        "text": "@import url(\"./base.css\") layer(base) supports(selector(:has(a))) screen",
+        "facts": {
+         "urls": [
+          "./base.css"
+         ],
+         "layer": "base"
+        },
+        "kids": null
+       },
+       {
+        "t": "at",
+        "line": 3,
+        "end": 3,
+        "name": "layer",
+        "params": "reset, base",
+        "text": "@layer reset, base",
+        "facts": {
+         "names": [
+          "reset",
+          "base"
+         ]
+        },
+        "kids": null
+       },
+       {
+        "t": "at",
+        "line": 4,
+        "end": 4,
+        "name": "property",
+        "params": "--angle",
+        "text": "@property --angle",
+        "facts": {},
+        "kids": [
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "syntax",
+          "value": "\"<angle>\"",
+          "important": false,
+          "facts": {}
+         },
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "inherits",
+          "value": "false",
+          "important": false,
+          "facts": {}
+         },
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "initial-value",
+          "value": "0deg",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 5,
+        "end": 5,
+        "name": "font-face",
+        "params": "",
+        "text": "@font-face",
+        "facts": {
+         "family": "Brand Sans"
+        },
+        "kids": [
+         {
+          "t": "decl",
+          "line": 5,
+          "end": 5,
+          "prop": "font-family",
+          "value": "Brand Sans",
+          "important": false,
+          "facts": {
+           "ff": [
+            "Brand Sans"
+           ],
+           "fam": "Brand Sans"
+          }
+         },
+         {
+          "t": "decl",
+          "line": 5,
+          "end": 5,
+          "prop": "src",
+          "value": "url(brand.woff2)",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 6,
+        "end": 6,
+        "name": "keyframes",
+        "params": "spin",
+        "text": "@keyframes spin",
+        "facts": {
+         "name": "spin"
+        },
+        "kids": [
+         {
+          "t": "rule",
+          "line": 6,
+          "end": 6,
+          "sel": [
+           "from"
+          ],
+          "names": [],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 6,
+            "end": 6,
+            "prop": "transform",
+            "value": "rotate(0)",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         },
+         {
+          "t": "rule",
+          "line": 6,
+          "end": 6,
+          "sel": [
+           "to"
+          ],
+          "names": [],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 6,
+            "end": 6,
+            "prop": "transform",
+            "value": "rotate(var(--angle))",
+            "important": false,
+            "facts": {
+             "vars": [
+              {
+               "name": "--angle",
+               "fallback": null,
+               "dl": 0
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 7,
+        "end": 7,
+        "name": "keyframes",
+        "params": "\"pulse\"",
+        "text": "@keyframes \"pulse\"",
+        "facts": {
+         "name": "pulse"
+        },
+        "kids": [
+         {
+          "t": "rule",
+          "line": 7,
+          "end": 7,
+          "sel": [
+           "50%"
+          ],
+          "names": [],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 7,
+            "end": 7,
+            "prop": "opacity",
+            "value": ".5",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 8,
+        "end": 8,
+        "name": "custom-media",
+        "params": "--narrow (max-width: 30em)",
+        "text": "@custom-media --narrow (max-width: 30em)",
+        "facts": {
+         "word": "--narrow"
+        },
+        "kids": null
+       },
+       {
+        "t": "rule",
+        "line": 9,
+        "end": 9,
+        "sel": [
+         ":root"
+        ],
+        "names": [],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 9,
+          "end": 9,
+          "prop": "--accent",
+          "value": "#0af",
+          "important": false,
+          "facts": {}
+         },
+         {
+          "t": "decl",
+          "line": 9,
+          "end": 9,
+          "prop": "--gap",
+          "value": "calc(1px + var(--base-gap, 4px))",
+          "important": false,
+          "facts": {
+           "vars": [
+            {
+             "name": "--base-gap",
+             "fallback": "4px",
+             "dl": 0
+            }
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 10,
+        "end": 18,
+        "sel": [
+         ".card"
+        ],
+        "names": [
+         [
+          "class",
+          "card",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 11,
+          "end": 11,
+          "prop": "color",
+          "value": "VAR(--accent, calc(1px + 2px))",
+          "important": false,
+          "facts": {
+           "vars": [
+            {
+             "name": "--accent",
+             "fallback": "calc(1px + 2px)",
+             "dl": 0
+            }
+           ]
+          }
+         },
+         {
+          "t": "decl",
+          "line": 12,
+          "end": 12,
+          "prop": "animation",
+          "value": "spin 1s linear infinite, \"pulse\" 2s",
+          "important": false,
+          "facts": {
+           "kf": [
+            "spin",
+            "pulse"
+           ]
+          }
+         },
+         {
+          "t": "decl",
+          "line": 13,
+          "end": 13,
+          "prop": "font",
+          "value": "italic bold 12px/30px \"Brand Sans\", serif",
+          "important": false,
+          "facts": {
+           "ff": [
+            "Brand Sans"
+           ]
+          }
+         },
+         {
+          "t": "rule",
+          "line": 14,
+          "end": 14,
+          "sel": [
+           ".title"
+          ],
+          "names": [
+           [
+            "class",
+            "title",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 14,
+            "end": 14,
+            "prop": "margin",
+            "value": "var(--gap)",
+            "important": false,
+            "facts": {
+             "vars": [
+              {
+               "name": "--gap",
+               "fallback": null,
+               "dl": 0
+              }
+             ]
+            }
+           }
+          ]
+         },
+         {
+          "t": "rule",
+          "line": 15,
+          "end": 15,
+          "sel": [
+           "&:hover"
+          ],
+          "names": [],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 15,
+            "end": 15,
+            "prop": "color",
+            "value": "var(--missing)",
+            "important": false,
+            "facts": {
+             "vars": [
+              {
+               "name": "--missing",
+               "fallback": null,
+               "dl": 0
+              }
+             ]
+            }
+           }
+          ]
+         },
+         {
+          "t": "at",
+          "line": 16,
+          "end": 16,
+          "name": "media",
+          "params": "(--narrow)",
+          "text": "@media (--narrow)",
+          "facts": {
+           "custom": [
+            "--narrow"
+           ]
+          },
+          "kids": [
+           {
+            "t": "decl",
+            "line": 16,
+            "end": 16,
+            "prop": "padding",
+            "value": "0",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         },
+         {
+          "t": "at",
+          "line": 17,
+          "end": 17,
+          "name": "layer",
+          "params": "base",
+          "text": "@layer base",
+          "facts": {
+           "names": [
+            "base"
+           ]
+          },
+          "kids": [
+           {
+            "t": "decl",
+            "line": 17,
+            "end": 17,
+            "prop": "border",
+            "value": "0",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 19,
+        "end": 19,
+        "sel": [
+         ".😀"
+        ],
+        "names": [
+         [
+          "class",
+          "😀",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 19,
+          "end": 19,
+          "prop": "font-size",
+          "value": "2em",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 20,
+        "end": 20,
+        "sel": [
+         ".shell"
+        ],
+        "names": [
+         [
+          "class",
+          "shell",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 20,
+          "end": 20,
+          "prop": "container",
+          "value": "side / inline-size",
+          "important": false,
+          "facts": {
+           "ct": [
+            "side"
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 21,
+        "end": 21,
+        "name": "container",
+        "params": "side (min-width: 400px)",
+        "text": "@container side (min-width: 400px)",
+        "facts": {
+         "names": [
+          "side"
+         ]
+        },
+        "kids": [
+         {
+          "t": "rule",
+          "line": 21,
+          "end": 21,
+          "sel": [
+           ".wide"
+          ],
+          "names": [
+           [
+            "class",
+            "wide",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 21,
+            "end": 21,
+            "prop": "padding",
+            "value": "1px",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 22,
+        "end": 22,
+        "name": "scope",
+        "params": "(.shell) to (.limit)",
+        "text": "@scope (.shell) to (.limit)",
+        "facts": {
+         "names": [
+          [
+           "class",
+           "shell",
+           "local"
+          ],
+          [
+           "class",
+           "limit",
+           "local"
+          ]
+         ]
+        },
+        "kids": [
+         {
+          "t": "rule",
+          "line": 22,
+          "end": 22,
+          "sel": [
+           "img"
+          ],
+          "names": [],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 22,
+            "end": 22,
+            "prop": "display",
+            "value": "block",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "src/styles/swallow.pcss": {
+      "tree": [
+       {
+        "t": "hole",
+        "line": 1,
+        "end": 2,
+        "kind": "rule",
+        "name": "$gap: 4px; .swallowed",
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "margin",
+          "value": "$gap",
+          "important": false,
+          "raw": true,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     },
+     "src/index.html#style0": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".inline"
+        ],
+        "names": [
+         [
+          "class",
+          "inline",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "animation",
+          "value": "spin 1s",
+          "important": false,
+          "facts": {
+           "kf": [
+            "spin"
+           ]
+          }
+         },
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "color",
+          "value": "var(--accent)",
+          "important": false,
+          "facts": {
+           "vars": [
+            {
+             "name": "--accent",
+             "fallback": null,
+             "dl": 0
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "src/index.html#style1": {
+      "tree": [
+       {
+        "t": "decl",
+        "line": 1,
+        "end": 1,
+        "prop": "font-family",
+        "value": "'Brand Sans', var(--fallback)",
+        "important": false,
+        "facts": {
+         "vars": [
+          {
+           "name": "--fallback",
+           "fallback": null,
+           "dl": 0
+          }
+         ],
+         "unmatched": "Matching for a tree with var() is not supported",
+         "fam": ""
+        }
+       },
+       {
+        "t": "decl",
+        "line": 1,
+        "end": 1,
+        "prop": "animation",
+        "value": "pulse 2s",
+        "important": false,
+        "facts": {
+         "kf": [
+          "pulse"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    "version": "4.1.3",
+    "seconds": 0.137
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 127,
+    "stderr_tail": "DAODAN_MAXRSS_KB=130328\n"
+   }
+  }
+ ],
+ "packages": {},
+ "directories": []
+}
