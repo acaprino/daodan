@@ -231,7 +231,7 @@ def index(project_dir: Path, work_dir: Path, files: list[str] | None = None, ext
         prepare = (jvm.modules_line(modules, root) + jvm.tool_line(tool)
                    + jvm.raise_line(toolchains, root, OLDEST_JDK, "all") + PREPARE)
         result, runs, out = jvm.run(folder, work, prepare, execute(external_classes), memory=memory, engine=engine,
-                                    toolchains=toolchains, jdk=None if older else jdk,
+                                    toolchains=jvm.for_tool(toolchains, tool), jdk=None if older else jdk,
                                     hosts=(declared or {}).get("hosts", ()), checkout=project_dir)
         part = finish(folder, work, result, runs, out)
         said = [unsupported([item], root, tool) for item in [older] if item]

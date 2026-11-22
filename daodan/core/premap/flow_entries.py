@@ -134,7 +134,7 @@ def read_record(manifest):
 
 def evidence(manifest):
     """Load and validate the pre-map once for all of its flow-entry readers."""
-    from premap import module_graph, noir, python_build, renovate
+    from premap import module_graph, nextjs, noir, python_build, renovate
     manifest = Path(manifest)
     try:
         report = read_record(manifest)
@@ -142,6 +142,8 @@ def evidence(manifest):
         return [], [noir.unavailable(error), {"kind": "declared_entries_unavailable", "source": "manifesto",
                     "detail": str(error), "remedy": "refresh the pre-map for this snapshot"}]
     routes, gaps = noir.from_record(report)
+    framework, framework_gaps = nextjs.from_record(report)
+    routes, gaps = routes + framework, gaps + framework_gaps
     rows = report.get("declared_entries")
     if rows is None:
         # Cargo targets in older reports already identify the path. No need for another Cargo run.

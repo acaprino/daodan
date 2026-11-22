@@ -39,8 +39,8 @@ import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
 from premap import (autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
-                    jvm_files, make, maven, meson, module_graph, noir, npm, npm_lock, npm_tests, project_files, python_build,
-                    python_tests, renovate, requirements, sbt, suffix_table, tsc, uv)
+                    jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_tests, project_files,
+                    python_build, python_tests, renovate, requirements, sbt, suffix_table, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
@@ -48,9 +48,10 @@ RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run
 RANKS = ("model", "reader", "scanner")
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, jvm_files, project_files,
            gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
-           gradle, maven, sbt, dotnet, noir)
+           gradle, maven, sbt, dotnet, noir, nextjs)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
     "noir_entries": (),  # individual observations from a single scanner
+    "framework_entries": (),  # individual observations of a framework's own tool (`next`)
     "languages": (("language",),),
     "excluded": (("path",),),
     "units": (("root", "kind", "name", "manifest"), ("root", "kind", "name"), ("root", "kind")),
@@ -362,7 +363,7 @@ def _inputs(digest, root, sources) -> str:
     if renovate in sources:
         value.append("workflow-triggers-v1")
     if noir in sources:
-        value.append("noir-entry-paths-v2")
+        value.append("noir-entry-paths-v3")
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode("utf-8")).hexdigest()
 
 

@@ -1,0 +1,8 @@
+{
+  "name": "landing-app",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "nanoid": "^6.0.2"
+  }
+}

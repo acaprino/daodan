@@ -8,9 +8,9 @@ network. Before them, one setup command unpacks into `STATE/tools` the files the
 downloaded once on the host into Daodan's shared directory and checked by sha256, then carried into the container;
 a setup that installs a package from a registry (TypeScript, Renovate, go-enry) runs in the preparation. A tool
 that reads what the project's packages hold (`restores`: tsc, whose tsconfigs extend installed and generated
-files) has them restored by the setup, the project's own way (`preparation.node_prepare`); a restore or a
-generation that fails, and a package folder no restore installs, is a gap on the first answer, and the commands
-run. A command that fails where its own answer names hosts the project declares for its build (`retry`: the
+files; next, whose command is one of them) has them restored by the setup, the project's own way
+(`preparation.node_prepare`); a restore or a generation that fails, and a package folder no restore installs, is a
+gap on the first answer, and the commands run. A command that fails where its own answer names hosts the project declares for its build (`retry`: the
 repositories of Gradle's settings, where a `pluginManagement` plugin comes from) runs once more, reaching them; one
 that fails again is a `declared_hosts_failed` gap naming them. A run
 that does not happen (no engine, too little memory) or a setup that fails raises: the source states nothing and
@@ -83,6 +83,10 @@ TOOLS = {  # tool -> files (url, sha256, name), the setup, whether it needs the 
     # family of `preparation.RESTORES` whose packages the setup restores first, lifecycle scripts included
     "tsc": {"files": [NODE], "setup": [UNPACK["node"], _npm("typescript@6.0.3")], "registries": True,
             "runs_on": ("node",), "restores": "node", "memory": 3},
+    # the project's own `next` is in the packages the setup restores: no install of its own, but a preparation, where
+    # an analysis' shared restore is taken (`node_preparation.clone`)
+    "next": {"files": [NODE], "setup": [UNPACK["node"]], "registries": True, "runs_on": ("node",),
+             "restores": "node", "memory": 3},
     "renovate": {"files": [NODE], "setup": [UNPACK["node"], _npm("renovate@44.239.1")], "registries": True},
     "compose": {"files": [(*compose.DOWNLOAD, "docker-compose")],  # Compose's own binary: it reads, no engine runs
                 "setup": [f"cp {IN}/docker-compose {T}/bin/docker-compose && chmod 755 {T}/bin/docker-compose"]},

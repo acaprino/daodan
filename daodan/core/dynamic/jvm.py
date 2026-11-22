@@ -501,7 +501,8 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         prepare = jvm.raise_line(planned.get("toolchains"), run["root"], 8, "levels") + prepare
         result, steps, back = jvm.run(Path(project) / run["root"] if run["root"] else Path(project), work, prepare,
                                       execute, memory=MEMORY, engine=engine,
-                                      toolchains=planned.get("toolchains") or (), timeout=LIMIT + 300, inputs=carried,
+                                      toolchains=jvm.for_tool(planned.get("toolchains"), run["tool"]),
+                                      timeout=LIMIT + 300, inputs=carried,
                                       jdk=jvm.build_jdk(run, planned.get("toolchains")),
                                       hosts=planned.get("declared", {}).get("hosts", ()), checkout=Path(project))
         attempt = {"root": run["root"], "gaps": [*result.get("gaps", []), *jvm.edited(

@@ -54,6 +54,19 @@ class MapServiceTests(unittest.TestCase):
             for answer in (candidate, rule_prompt):
                 self.assertLessEqual(len(json.dumps(answer)), system_brief.LIMIT)
 
+    def test_the_links_the_service_answers_hold_the_services_of_the_stack_whether_its_record_is_missing_or_stale(self):
+        (self.source / "requirements.txt").write_text("stripe==14.3.0\n", encoding="utf-8")
+        self.create()
+        [record] = self.project.rglob("technologies.json")
+        stale = {"schema": json.loads(record.read_text(encoding="utf-8"))["schema"], "inputs_digest": "an older one",
+                 "technologies": [], "modules": []}
+        for state in ("missing", "stale"):
+            record.unlink(missing_ok=True)
+            if state == "stale":
+                record.write_text(json.dumps(stale), encoding="utf-8")
+            answer = self.service.flows("example", rules=[])
+            self.assertIn("stripe", [e["id"] for e in answer["external"]], state)
+
     def test_run_creation_starts_the_engine_pass_and_status_reports_it(self):
         import engine_pass
         child = mock.Mock(pid=os.getpid())

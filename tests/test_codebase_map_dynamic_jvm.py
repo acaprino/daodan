@@ -487,6 +487,14 @@ class PlanTest(unittest.TestCase):
         self.assertEqual(gap["kind"], "no_tests")
         self.assertIn("sbt", gap["detail"])
 
+    def test_a_maven_build_beside_a_gradle_one_does_not_run_on_the_jdk_of_the_gradle_daemon_file(self):
+        """`gradle-daemon-jvm.properties` is the JDK Gradle's daemon runs on: no other tool's build takes it."""
+        daemon = {"tool": "java", "version": "21", "vendor": "JETBRAINS",
+                  "declared_in": "gradle/gradle-daemon-jvm.properties#toolchainVersion"}
+        pom = {"tool": "java", "version": "17", "declared_in": "pom.xml#properties.maven.compiler.release"}
+        self.assertIsNone(jvm.jvm.build_jdk({"root": "", "tool": "maven"}, [daemon, pom]))
+        self.assertEqual(jvm.jvm.build_jdk({"root": "", "tool": "gradle"}, [daemon, pom])["vendor"], "JETBRAINS")
+
     def test_a_maven_build_runs_on_the_jdk_its_poms_state_and_a_gradle_one_on_the_image_s(self):
         """Maven compiles with the JDK that runs it, and a compiler plugin of a pom's time may not read a newer
         JDK's classes (Error Prone's own javac 9): a build its poms declare for an older level runs on that JDK.

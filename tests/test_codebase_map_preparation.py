@@ -44,6 +44,170 @@ def test_a_restore_runs_where_the_build_starts_and_its_hosts_are_declared_once()
     assert set(preparation.RESTORES["gradle"]["hosts"]) >= {"plugins.gradle.org", "services.gradle.org"}
 
 
+def test_a_nested_folder_with_npm_s_own_lockfile_is_a_restore_of_its_own():
+    """A root with independent apps below, each with its own manifest and lockfile (no workspaces): every one is
+    restored, whichever of npm's two lockfile names it has."""
+    for lock in ("package-lock.json", "npm-shrinkwrap.json"):
+        files = ["package.json", "package-lock.json", "admin-app/package.json", f"admin-app/{lock}",
+                 "scripts/docs/package.json", f"scripts/docs/{lock}"]
+        assert preparation.restores(files) == {"npm": [".", "admin-app", "scripts/docs"]}
+        assert preparation.node_restores(files) == [("npm", [".", "admin-app", "scripts/docs"], False)]
+
+
+def test_a_nested_folder_with_a_pnpm_or_yarn_lockfile_is_a_restore_of_its_own_with_that_manager():
+    files = ["package.json", "package-lock.json", "web/package.json", "web/pnpm-lock.yaml"]
+    assert preparation.restores(files) == {"npm": ["."], "pnpm": ["web"]}
+    assert preparation.restores([*files[:3], "web/yarn.lock"]) == {"npm": ["."], "yarn": ["web"]}
+
+
+def test_a_workspace_member_is_restored_from_the_root_only_beside_a_nested_project_with_a_lockfile():
+    manifests = {"package.json": {"name": "root", "workspaces": ["packages/*"]}, "package-lock.json": {},
+                 "packages/ui/package.json": {"name": "ui", "dependencies": {"ms": "2.1.3"}},
+                 "admin/package.json": {"name": "admin", "dependencies": {"ms": "2.1.3"}}, "admin/package-lock.json": {}}
+    plan = preparation.node_prepare(list(manifests), lambda rel: json.dumps(manifests[rel]))
+    assert plan["restores"] == {"npm": [".", "admin"]} and plan["gaps"] == []
+
+
+def test_a_member_a_workspace_names_is_restored_by_the_root_only_even_with_a_lockfile_of_its_own():
+    """A leftover `package-lock.json` in a member: the folder above names it, so the root installs it."""
+    manifests = {"package.json": {"name": "root", "workspaces": ["packages/*"]}, "package-lock.json": {},
+                 "packages/ui/package.json": {"name": "ui", "dependencies": {"ms": "2.1.3"}},
+                 "packages/ui/package-lock.json": {},
+                 "admin/package.json": {"name": "admin", "dependencies": {"ms": "2.1.3"}}, "admin/package-lock.json": {}}
+    plan = preparation.node_prepare(list(manifests), lambda rel: json.dumps(manifests[rel]))
+    assert plan["restores"] == {"npm": [".", "admin"]} and plan["gaps"] == []
+
+
+def prepared(manifests: dict) -> dict:
+    return preparation.node_prepare(list(manifests), lambda rel: manifests[rel] if isinstance(manifests[rel], str)
+                                    else json.dumps(manifests[rel]))
+
+
+UI = {"packages/ui/package.json": {"name": "ui", "dependencies": {"ms": "2.1.3"}}}
+PNPM_PACKAGES = "packages:\n  - 'packages/*'\n"
+
+
+def test_a_workspace_names_its_members_where_the_manager_that_restores_the_root_reads_them():
+    """pnpm reads `pnpm-workspace.yaml` and ignores the manifest's `workspaces`; npm and Yarn read `workspaces` and
+    ignore the yaml: a declaration the manager does not read installs nothing, so the member is restored on its own."""
+    # an npm root and a yaml naming `packages/*`: `npm ci` at the root installs no member
+    plan = prepared({"package.json": {"name": "root"}, "package-lock.json": {}, "pnpm-workspace.yaml": PNPM_PACKAGES,
+                     **UI, "packages/ui/package-lock.json": {}})
+    assert plan["restores"] == {"npm": [".", "packages/ui"]} and plan["gaps"] == []
+    # a pnpm root and `workspaces` in the manifest only
+    plan = prepared({"package.json": {"name": "root", "workspaces": ["packages/*"]}, "pnpm-lock.yaml": "",
+                     **UI, "packages/ui/pnpm-lock.yaml": ""})
+    assert plan["restores"] == {"pnpm": [".", "packages/ui"]} and plan["gaps"] == []
+    # each manager with the declaration it reads: the root installs the member
+    plan = prepared({"package.json": {"name": "root"}, "pnpm-lock.yaml": "", "pnpm-workspace.yaml": PNPM_PACKAGES,
+                     **UI, "packages/ui/pnpm-lock.yaml": ""})
+    assert plan["restores"] == {"pnpm": ["."]} and plan["gaps"] == []
+    # a member with no lockfile, which no declaration the root's manager reads names, is a gap, not an install
+    plan = prepared({"package.json": {"name": "root"}, "package-lock.json": {}, "pnpm-workspace.yaml": PNPM_PACKAGES, **UI})
+    assert plan["restores"] == {"npm": ["."]}
+    assert [(g["kind"], g["manager"], g["path"]) for g in plan["gaps"]] == [("restore_failed", "npm", "packages/ui")]
+    # `workspaces` as an object: its `packages` are the patterns
+    plan = prepared({"package.json": {"name": "root", "workspaces": {"packages": ["packages/*"]}}, "package-lock.json": {},
+                     **UI})
+    assert plan["restores"] == {"npm": ["."]} and plan["gaps"] == []
+
+
+def test_a_workspace_root_an_outer_workspace_installs_names_no_members_of_its_own():
+    """`ui` is a member of the root, and `ui` itself declares `examples/*`: the root's install does not read that, so
+    `demo`, with a lockfile of its own, is restored on its own, from the outermost folder inward."""
+    plan = prepared({"package.json": {"name": "root", "workspaces": ["packages/*"]}, "package-lock.json": {},
+                     "packages/ui/package.json": {"name": "ui", "workspaces": ["examples/*"],
+                                                  "dependencies": {"ms": "2.1.3"}},
+                     "packages/ui/package-lock.json": {},
+                     "packages/ui/examples/demo/package.json": {"name": "demo", "dependencies": {"ms": "2.1.3"}},
+                     "packages/ui/examples/demo/package-lock.json": {}})
+    assert plan["restores"] == {"npm": [".", "packages/ui/examples/demo"]} and plan["gaps"] == []
+    # the root's own declaration still reaches a member below a folder that is not a member itself
+    plan = prepared({"package.json": {"name": "root", "workspaces": ["packages/**"]}, "package-lock.json": {},
+                     "packages/ui/package.json": {"name": "ui", "workspaces": ["examples/*"],
+                                                  "dependencies": {"ms": "2.1.3"}},
+                     "packages/ui/package-lock.json": {},
+                     "packages/ui/examples/demo/package.json": {"name": "demo", "dependencies": {"ms": "2.1.3"}},
+                     "packages/ui/examples/demo/package-lock.json": {}})
+    assert plan["restores"] == {"npm": ["."]} and plan["gaps"] == []
+
+
+def test_a_stated_jdk_with_a_suffix_counts_at_its_number_for_the_one_a_build_asks_for():
+    """`21-ea` and `21-open` are JDK 21 to both parsers of a version: the build asks for 21, the project states it."""
+    from indexers import jvm
+    for version in ("21-ea", "21-open", "21.0.2", "21"):
+        stated = [{"tool": "java", "version": version, "declared_in": "build.gradle#x"}]
+        assert preparation.jdk_named(21, "languageVersion=21", stated) == (stated[0], None), version
+        assert jvm._major(version) == preparation.jdk_major(version) == 21
+    assert [jvm._major(v) for v in ("1.8", "8", "1", "v21", "", None)] == [
+        preparation.jdk_major(v) for v in ("1.8", "8", "1", "v21", "", None)] == [8, 8, 1, None, None, None]
+
+
+JETBRAINS_21 = {"tool": "java", "version": "21", "vendor": "JETBRAINS",
+                "declared_in": "gradle/gradle-daemon-jvm.properties#toolchainVersion"}
+CATALOG = json.loads((ANSWERS.parent / "mise-java-vendors.json").read_text(encoding="utf-8"))["vendors"]
+
+
+def test_a_jdk_of_a_vendor_is_installed_by_mise_under_the_vendor_s_name_with_the_hosts_it_reaches():
+    got = preparation.toolchains([JETBRAINS_21])
+    lines = "\n".join(got["lines"])
+    assert got["gaps"] == []
+    assert " install java@jetbrains-21 " in lines and "DAODAN-MISSING java@jetbrains-21" in lines
+    assert {"mise-java.jdx.dev", "cache-redirector.jetbrains.com", "d2xrhe97vsfxuc.cloudfront.net"} <= set(got["hosts"])
+    plain = "\n".join(preparation.toolchains([{k: v for k, v in JETBRAINS_21.items() if k != "vendor"}])["lines"])
+    assert " install java@21 " in plain and "jetbrains" not in plain  # no vendor: mise's default, as before
+
+
+def test_every_vendor_the_table_maps_is_one_mise_lists_and_every_host_its_download_reached_is_declared():
+    """`tests/fixtures/premap/mise-java-vendors.json`: mise's catalog (mise-java.jdx.dev) and the hosts one JDK 21
+    archive of each vendor was fetched through, redirects followed."""
+    mapped = {name: row for name, row in preparation.JDK_VENDORS.items() if row["mise"]}
+    assert len(mapped) == 11
+    for name, row in mapped.items():
+        got = preparation.toolchains([{**JETBRAINS_21, "vendor": name}])
+        assert row["mise"] in CATALOG, name
+        assert set(CATALOG[row["mise"]]["reached"]) <= set(got["hosts"]), name
+        assert f" install java@{row['mise']}-21 " in "\n".join(got["lines"]), name
+
+
+def test_a_vendor_mise_has_no_jdk_of_is_a_gap_naming_the_vendor_and_the_version_and_installs_nothing():
+    for vendor in ("APPLE", "ADOPTOPENJDK", "HEWLETT_PACKARD", "vendor matching('Acme')"):
+        got = preparation.toolchains([{**JETBRAINS_21, "vendor": vendor}])
+        assert (got["files"], got["lines"], got["hosts"]) == ([], [], ()), vendor
+        [gap] = got["gaps"]
+        assert (gap["kind"], gap["tool"], gap["version"], gap["vendor"]) == ("toolchain_unavailable", "java", "21", vendor)
+        assert vendor in gap["detail"] and "21" in gap["detail"]
+        assert gap["path"] == JETBRAINS_21["declared_in"]
+
+
+def test_the_jdk_a_build_names_with_a_vendor_is_asked_for_with_that_vendor_through_the_one_function():
+    said = "languageVersion=21, vendor=JetBrains"
+    item, gap = preparation.jdk_named(21, said, [], "the build", "JetBrains")  # as Gradle prints it
+    assert item == {"tool": "java", "version": "21", "vendor": "JETBRAINS", "declared_in": "the build's error"}
+    assert "JetBrains" in gap["detail"] and "21" in gap["detail"]
+    other = {"tool": "java", "version": "21", "declared_in": "build.gradle#x"}  # states 21, of no vendor in particular
+    assert preparation.jdk_named(21, said, [other], "the build", "JetBrains")[0]["vendor"] == "JETBRAINS"
+    stated = {**other, "vendor": "JETBRAINS"}
+    assert preparation.jdk_named(21, said, [other, stated], "the build", "JetBrains") == (stated, None)
+    for words in (None, "any vendor", "any"):  # Gradle prints `vendor=any vendor` when the build names none
+        assert preparation.jdk_named(21, "languageVersion=21", [], "the build", words)[0] == {
+            "tool": "java", "version": "21", "declared_in": "the build's error"}, words
+    unknown = preparation.jdk_named(21, said, [], "the build", "vendor matching('Acme')")[0]
+    assert unknown["vendor"] == "vendor matching('Acme')"  # what Gradle printed: `toolchains` makes it a gap
+
+
+def test_a_nested_package_no_workspace_names_and_no_lockfile_of_its_own_stays_a_gap_not_an_install():
+    """The owner's rule is every project at any depth, but a folder with no lockfile that no workspace names is not
+    restored on its own: it may be a member of a layout Daodan does not read (js-lerna: `lerna.json` names
+    `packages/*`, and `packages/b` depends on its sibling `@lrn/a` by a version range, which a restore of its own
+    would take from the registry), a publish manifest (js-angular's `projects/ui-kit`) or a test fixture."""
+    manifests = {"package.json": {"name": "root"}, "package-lock.json": {},
+                 "landing/package.json": {"name": "landing", "dependencies": {"ms": "2.1.3"}}}
+    plan = preparation.node_prepare(list(manifests), lambda rel: json.dumps(manifests[rel]))
+    assert plan["restores"] == {"npm": ["."]}
+    assert [(g["kind"], g["path"]) for g in plan["gaps"]] == [("restore_failed", "landing")]
+
+
 def test_every_restore_line_reports_its_failure_and_the_run_goes_on():
     for manager in preparation.RESTORES:
         line = preparation.restore(manager, ["x"])

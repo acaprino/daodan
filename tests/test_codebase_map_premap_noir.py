@@ -1,4 +1,5 @@
 """The recorded scanner answer, container boundary and a second read of the same snapshot."""
+import hashlib
 import json
 from unittest.mock import patch
 
@@ -84,3 +85,35 @@ def test_only_a_repeat_of_the_same_disabled_container_skips_the_premap(tmp_path,
     def custom(commands):
         return [{"root": "/work", "returncode": 0, "stdout": '{"endpoints":[]}', "stderr": ""}]
     assert premap.ensure(manifest, sources, custom)["sources"][0]["state"] == "ran"
+
+
+def test_a_noir_server_action_is_no_entry_and_no_route_of_the_flows(tmp_path):
+    from premap import noir
+    import flows
+    _, manifest = manifest_of(tmp_path, {"app/api/pay/route.ts": "export async function POST() {}\n",
+                                         "app/checkout/actions.ts": '"use server";\n\nexport async function pay() {}\n'})
+    def endpoint(url, kind, file, name, line):
+        return {"protocol": "http", "url": url, "method": "POST", "kind": kind,
+                "handler": {"path": f"/work/{file}", "line": line, "name": name}}
+    report = {"endpoints": [endpoint("/api/pay", "", "app/api/pay/route.ts", "POST", 1),
+                            endpoint("/pay", "server-action", "app/checkout/actions.ts", "pay", 3)]}
+    premap.write(manifest, sources=(noir,), runner=lambda commands: [
+        {"root": "/work", "returncode": 0, "stdout": json.dumps(report), "stderr": ""}])
+    assert [(r["path"], r["shape"], r["kind"]) for r in noir.recorded(manifest)] == [
+        ("/api/pay", "http", "rotta"), ("/pay", "server-action", "nessun ingresso")]
+    links = flows.cached_links(manifest, [])
+    assert [(e["path"], e["symbol"]) for e in links["entries"]] == [("/api/pay", "app/api/pay/route.ts::POST")]
+
+
+def test_a_premap_made_with_the_old_noir_marker_is_stale(tmp_path):
+    from premap import noir
+    _, manifest = manifest_of(tmp_path, {"api.py": "pass\n"})
+    record = premap.write(manifest, sources=(noir,), runner=lambda commands: [
+        {"root": "/work", "returncode": 0, "stdout": '{"endpoints": []}', "stderr": ""}])
+    assert premap.state(manifest, sources=(noir,))["state"] == "fresh"
+    binding = record["binding"]  # the digest the pre-map had before the server action was no entry
+    old = [binding["logical_digest"], binding["root"], [f"{noir.NAME}@{noir.VERSION}"], premap.SCHEMA,
+           "noir-entry-paths-v2"]
+    record["inputs_digest"] = hashlib.sha256(json.dumps(old, sort_keys=True).encode("utf-8")).hexdigest()
+    premap.path(manifest).write_text(json.dumps(record), encoding="utf-8")
+    assert premap.state(manifest, sources=(noir,))["state"] == "stale"

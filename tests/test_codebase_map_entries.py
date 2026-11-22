@@ -529,6 +529,16 @@ class NoirTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             entries.noir(self.REPORT, "/elsewhere")
 
+    def test_a_server_action_is_its_own_shape_and_no_entry_while_another_kind_changes_nothing(self):
+        def endpoint(url, kind):
+            return {"url": url, "method": "POST", "protocol": "http", "kind": kind,
+                    "handler": {"name": "pay", "path": "/work/app/actions.ts", "line": 3},
+                    "details": {"code_paths": [{"path": "/work/app/actions.ts", "line": 3}], "technology": "js_nextjs"}}
+        found = entries.noir({"endpoints": [endpoint("/pay", "server-action"), endpoint("/a", "something-else"),
+                                            endpoint("/b", "")]}, "/work")
+        self.assertEqual([(row["path"], row["shape"], row.get("kind")) for row in found], [
+            ("/pay", "server-action", entries.NO_ENTRY), ("/a", "http", "rotta"), ("/b", "http", "rotta")])
+
 
 class ClassifiedBindingsTests(unittest.TestCase):
     SOURCES = {

@@ -6,7 +6,8 @@ for (`maven.compiler.release`, `source` and `target` properties, `java.version`,
 `maven-compiler-plugin`'s `release`, `source` and `target`) and the version of the `kotlin-maven-plugin`, each a
 property of the same pom or a literal, its field the path in the pom with the plugin by its artifactId (`properties.java.version`,
 `maven-compiler-plugin.configuration.source`). A value naming a property the pom does not define, and a Gradle
-build's Java version, which lives in build scripts only Gradle runs, are `toolchain_undeclared` gaps. A `libs.*`
+build's Java version, which lives in build scripts only Gradle runs, are `toolchain_undeclared` gaps, unless the
+build's `gradle/gradle-daemon-jvm.properties` states it: its `toolchainVersion` and `toolchainVendor`. A `libs.*`
 accessor in a build script is the package `gradle/libs.versions.toml` of its build names, declared on that line (v2).
 """
 from __future__ import annotations
@@ -19,7 +20,8 @@ import xml.etree.ElementTree as ET
 from build_units import pom_version
 import confinement
 
-NAME, VERSION, RANK = "jvm-files", "daodan/premap/v3", "reader"
+NAME, VERSION, RANK = "jvm-files", "daodan/premap/v4", "reader"
+DAEMON = "gradle/gradle-daemon-jvm.properties"  # what `updateDaemonJvm` writes: the JDK a Gradle build's daemon runs on
 WRAPPERS = {"gradle": ("gradle/wrapper/gradle-wrapper.properties", r"gradle-([0-9][^-/]*)-(?:bin|all)\.zip$"),
             "maven": (".mvn/wrapper/maven-wrapper.properties", r"apache-maven-([0-9][^-/]*)-bin\.zip$")}
 JAVA_PROPERTIES = ("maven.compiler.release", "maven.compiler.source", "maven.compiler.target", "java.version",
@@ -101,6 +103,26 @@ def _properties(text: str) -> dict:
 def _line(text: str, needle: str) -> int | None:
     at = text.find(needle)
     return text.count("\n", 0, at) + 1 if at >= 0 else None
+
+
+def _daemon(root, folder: str, toolchains: list) -> bool:
+    """The JDK the Gradle build in `folder` says its daemon runs on, in the `gradle-daemon-jvm.properties` that
+    `updateDaemonJvm` writes: `toolchainVersion`, and `toolchainVendor` (a name of Gradle's `JvmVendorSpec`) when
+    the build names one, stated as a Java toolchain on the line of the version. The `toolchainUrl` lines, where
+    Gradle would download it, are not read: Daodan installs through mise only. True when a version was stated."""
+    rel = DAEMON if folder == "." else f"{folder}/{DAEMON}"
+    path = root / rel
+    confinement.reject_link_chain(path)
+    if not path.is_file():
+        return False
+    text = path.read_text(encoding="utf-8", errors="replace")
+    values = _properties(text)
+    if not values.get("toolchainVersion"):
+        return False
+    toolchains.append({"tool": "java", "version": values["toolchainVersion"],
+                       **({"vendor": values["toolchainVendor"]} if values.get("toolchainVendor") else {}),
+                       "declared_in": f"{rel}#toolchainVersion", "line": _line(text, "toolchainVersion")})
+    return True
 
 
 def _local(tag: str) -> str:
@@ -245,7 +267,8 @@ def run(context):
                 if version:
                     toolchains.append({"tool": tool, "version": version.group(1), "declared_in": f"{rel}#distributionUrl",
                                        "line": _line(text, "distributionUrl")})
-            if tool == "gradle" and any(PurePosixPath(m).name.startswith("settings.gradle")
+            daemon = tool == "gradle" and _daemon(context.root, folder, toolchains)
+            if tool == "gradle" and not daemon and any(PurePosixPath(m).name.startswith("settings.gradle")
                                         for module in graph["modules"] if module["members"][0]["path"] == folder
                                         for m in module["manifests"]):
                 gaps.append({"kind": "toolchain_undeclared", "path": folder,

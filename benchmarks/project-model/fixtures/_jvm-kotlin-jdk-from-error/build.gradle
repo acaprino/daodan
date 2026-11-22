@@ -1,0 +1,13 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+// The JDK of a compile is resolved when the task runs, so no file the pre-map reads (the Java toolchain, a
+// release, a jvmTarget) states it: the build asks for JDK 21 only in its error on the image's 17.
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinJavaToolchain.toolchain.use(javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) })
+}

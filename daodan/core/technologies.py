@@ -240,6 +240,37 @@ def _read(manifest: Path, digest: str) -> dict | None:
     return None
 
 
+def recorded(manifest: Path) -> dict:
+    """The record the stack step last wrote beside `manifest`, as written (`ensure` derives it, this only reads): empty
+    when there is none, or not of this schema."""
+    try:
+        record = json.loads(path(manifest).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"technologies": []}
+    ok = isinstance(record, dict) and record.get("schema") == SCHEMA and isinstance(record.get("technologies"), list)
+    return record if ok else {"technologies": []}
+
+
+def externals(graph: dict, record: dict) -> list[dict]:
+    """The services of others by id: the stack step's technologies (`record`) and the external modules of the module
+    `graph`. A technology gives its name, kind, type and the files that declare it (`paths`); a module adds the files it
+    cites, its own name (`module`, what the links call the node) and its `status`. The brief shows this list and the
+    links (`flows._external_nodes`) hold it as nodes."""
+    out = {found["id"]: {"id": found["id"], "name": found["name"], "kind": found["kind"],
+                         "type": found["type"] or "altro", "from": ["registry"],
+                         "paths": sorted({s["path"] for s in found["signs"] if s["strength"] == "declared" and s["path"]})}
+           for found in record["technologies"]}
+    for module in graph["modules"]:
+        if module.get("location") == "external":
+            ident = modules.slug(module["name"])
+            cited = {str(e.get("path") if isinstance(e, dict) else e).split("#")[0] for e in module.get("evidence", [])}
+            entry = out.setdefault(ident, {"id": ident, "name": module["name"], "kind": None, "type": "altro",
+                                           "from": [], "paths": []})
+            entry.update({"from": sorted({*entry["from"], "modules"}), "paths": sorted({*entry["paths"], *cited}),
+                          "module": module["name"], "status": module.get("status")})
+    return list(out.values())
+
+
 def state(manifest: Path, *, facts: dict | None = None) -> str:
     """fresh, stale or missing."""
     manifest = Path(manifest).resolve()

@@ -577,5 +577,218 @@ class StoreReadTests(unittest.TestCase):
         self.assertIn(link, calls())
 
 
+class ExternalServiceTests(unittest.TestCase):
+    """The services of others the links know are the ones the stack step and the module graph give, by id."""
+
+    CODE = {"app/pay.py": "def charge(amount):\n    return amount\n\n\ndef refund(amount):\n    return amount\n",
+            "app/hook.py": "def event(body):\n    return body\n"}
+    PROVIDER = {"codebase-modules.json": json.dumps({"schema": "daodan/declared-modules/v1", "modules": [
+        {"name": "card payment provider", "kind": "component", "location": "external", "responsibility": "Charges cards",
+         "members": [], "evidence": ["app/pay.py"]}]})}
+
+    def setUp(self):
+        self.work = Path(tempfile.mkdtemp(prefix="flow-services-")).resolve()
+        self.addCleanup(shutil.rmtree, self.work, True)
+
+    def snapshot(self, files) -> Path:
+        project = self.work / "proj"
+        for rel, text in files.items():
+            (project / rel).parent.mkdir(parents=True, exist_ok=True)
+            (project / rel).write_text(text, encoding="utf-8")
+        manifest = self.work / "out" / "manifest.sqlite"
+        snapshot.write_snapshot(project, manifest)
+        return manifest
+
+    @staticmethod
+    def stack(manifest: Path, *services, libraries=(), kind="service") -> None:
+        """The stack step's record with each service `(id, name, the files that declare it)`, and the packages
+        `(ecosystem, name, id)` a module of the project declares that the registry knows for a service."""
+        record = {"schema": "daodan/technologies/v1", "technologies": [
+            {"id": ident, "name": name, "kind": kind, "type": "gateway",
+             "signs": [{"sign": "package", "strength": "declared", "path": path, "line": 1, "value": ident}
+                       for path in paths]} for ident, name, paths in services],
+            "modules": [{"libraries": [{"ecosystem": ecosystem, "name": name, "path": "requirements.txt", "id": ident}
+                                       for ecosystem, name, ident in libraries]}]}
+        manifest.with_name("technologies.json").write_text(json.dumps(record), encoding="utf-8")
+
+    @staticmethod
+    def engine(manifest: Path, calls: dict, *, language="python", left_out=(), types=()) -> None:
+        """The edge store of an engine that ran for `language`: the call of the snapshot at each `(file, line)` of
+        `calls` ends in the package given there (`(manager, package)`); `left_out` are files its index has no
+        document of; `types` the type packages its indexer added (`name@version`)."""
+        import resolve_edges
+        from snapshot_store import open_snapshot
+        with open_snapshot(manifest) as store:
+            sites = store.connection.execute(
+                "SELECT id, file, caller, l0, c0 FROM sem_references WHERE kind='call'").fetchall()
+            files = {"snapshot": 3, "indexed": 3 - len(left_out), "missing": [{"path": p, "reason": "no document in the index"}
+                                                                       for p in left_out]}
+            entry = {"engine": "scip-python@0.6.8", "state": "fresh", "coverage": {"state": "complete", "files": files}}
+            if types:  # an entry of a native index names the adapter that wrote it: the view drops one it does not know
+                import engine_pass
+                import importlib
+                spec = engine_pass.ENGINE_LANGUAGES[language]
+                version = importlib.import_module(f"indexers.{spec.indexer}").VERSION
+                entry.update(engine=f"{spec.name}@{version}", adapter_digest=engine_pass.adapter_fingerprint(spec.indexer),
+                             indexer={"version": version, "types": list(types)})
+            entries = {language: entry}
+            binding = resolve_edges.store_binding(store, manifest, store.metadata.get("parser_fingerprint"), entries, {})
+        edges = [{"reference_id": identity, "file": file, "language": language, "kind": "call", "caller": caller,
+                  "l0": line, "c0": column, "verdict": "external", "target_id": None,
+                  "symbol": f"scip-python {calls[file, line][0]} {calls[file, line][1]} 1.0 `{calls[file, line][1]}`/send().",
+                  "resolver": "scip-python@0.6.8", "confidence": "confirmed", "payload": {"reason": "external"},
+                  "external": {"manager": calls[file, line][0], "package": calls[file, line][1], "version": "1.0"}}
+                 for identity, file, caller, line, column in sites if (file, line) in calls]
+        resolve_edges.write_edge_store(resolve_edges.default_edge_store(manifest), edges, binding)
+
+    @staticmethod
+    def used(links) -> list[tuple]:
+        return [(e["from"], e["to"], e["site"], e["origin"]) for e in links["edges"] if e["type"] == "usa"]
+
+    def test_a_service_only_the_stack_step_recognises_is_a_node_the_symbols_of_its_files_use(self):
+        manifest = self.snapshot(self.CODE)
+        self.stack(manifest, ("cardpay", "Card Pay", ["app/pay.py"]))
+        links = flows.link_facts(manifest, [])
+        self.assertEqual(links["external"], [{"id": "cardpay", "name": "cardpay", "status": "inferred"}])
+        self.assertEqual(self.used(links), [("app/pay.py::charge", "module:cardpay", "app/pay.py", "dichiarato"),
+                                            ("app/pay.py::refund", "module:cardpay", "app/pay.py", "dichiarato")])
+
+    def test_a_service_only_the_module_graph_knows_is_as_it_was(self):
+        links = flows.link_facts(self.snapshot({**self.CODE, **self.PROVIDER}), [])
+        self.assertEqual([(m["name"], m["status"]) for m in links["external"]], [("card payment provider", "confirmed")])
+        self.assertEqual(self.used(links), [
+            ("app/pay.py::charge", "module:card payment provider", "app/pay.py", "dichiarato"),
+            ("app/pay.py::refund", "module:card payment provider", "app/pay.py", "dichiarato")])
+
+    def test_a_service_both_know_is_one_node_named_as_the_graph_names_it_with_the_files_of_both(self):
+        manifest = self.snapshot({**self.CODE, **self.PROVIDER})
+        self.stack(manifest, ("card-payment-provider", "Card payment provider", ["app/hook.py"]))
+        links = flows.link_facts(manifest, [])
+        self.assertEqual([m["name"] for m in links["external"]], ["card payment provider"])
+        self.assertEqual(sorted(edge[:2] for edge in self.used(links)), [
+            ("app/hook.py::event", "module:card payment provider"), ("app/pay.py::charge", "module:card payment provider"),
+            ("app/pay.py::refund", "module:card payment provider")])
+
+    def test_cached_links_are_not_current_when_the_stack_record_changes(self):
+        manifest = self.snapshot(self.CODE)
+        self.assertEqual(flows.cached_links(manifest, [])["external"], [])
+        self.stack(manifest, ("cardpay", "Card Pay", ["app/pay.py"]))
+        self.assertEqual([m["id"] for m in flows.cached_links(manifest, [])["external"]], ["cardpay"])
+        self.stack(manifest)  # the service is no longer recognised
+        self.assertEqual(flows.cached_links(manifest, [])["external"], [])
+
+    # A call the engine resolved into a package the stack step ties to a service: the caller uses the service.
+    CALLS = {"app/pay.py": "import cardpay\n\n\ndef charge(amount):\n    cardpay.send(amount)\n"
+                           "    return cardpay.send(amount)\n\n\ndef refund(amount):\n    return amount\n\n\n"
+                           "cardpay.configure()\n",
+             "app/hook.py": "def event(body):\n    return body\n",
+             "tests/test_pay.py": "import cardpay\n\n\ndef test_charge():\n    cardpay.send(1)\n"}
+    CARDPAY = [("pypi", "cardpay", "cardpay")]
+    PACKAGE = ("python", "cardpay")
+
+    def tied(self, files=None, *, paths=("requirements.txt",), libraries=CARDPAY, **stack):
+        """A snapshot of `files` (`CALLS`) whose stack record ties the package `cardpay` to the service Card Pay."""
+        manifest = self.snapshot(files or {k: self.CALLS[k] for k in ("app/pay.py", "app/hook.py")})
+        self.stack(manifest, ("cardpay", "Card Pay", list(paths)), libraries=libraries, **stack)
+        return manifest
+
+    def test_a_function_that_calls_the_package_of_a_service_uses_it_and_its_neighbour_does_not(self):
+        manifest = self.tied()
+        self.engine(manifest, {("app/pay.py", 5): self.PACKAGE, ("app/pay.py", 6): self.PACKAGE})
+        links = flows.link_facts(manifest, [])
+        # one edge for the caller and the service, however many references, at the first
+        self.assertEqual(self.used(links), [("app/pay.py::charge", "module:cardpay", "app/pay.py:5", "dedotto")])
+        [edge] = [e for e in links["edges"] if e["type"] == "usa"]
+        self.assertEqual(edge["resolver"], "scip-python@0.6.8")  # the engine that resolved the call
+        self.assertNotIn("in_tests", links["external"][0])
+
+    def test_a_reference_outside_any_function_is_the_use_of_the_module_of_its_file(self):
+        manifest = self.tied()
+        self.engine(manifest, {("app/pay.py", 13): self.PACKAGE})
+        self.assertEqual([e[:3] for e in self.used(flows.link_facts(manifest, []))],
+                         [("app/pay.py::<module>", "module:cardpay", "app/pay.py:13")])
+
+    def test_the_files_a_service_cites_give_no_edge_where_the_engine_ran_for_them(self):
+        """A file that names the service, as a configuration does, no longer makes each of its functions use it."""
+        manifest = self.tied(paths=("app/pay.py",))
+        self.assertEqual([(e[0], e[3]) for e in self.used(flows.link_facts(manifest, []))],
+                         [("app/pay.py::charge", "dichiarato"), ("app/pay.py::refund", "dichiarato")])  # no engine
+        self.engine(manifest, {("app/pay.py", 5): self.PACKAGE})
+        self.assertEqual([(e[0], e[3]) for e in self.used(flows.link_facts(manifest, []))],
+                         [("app/pay.py::charge", "dedotto")])
+
+    def test_the_files_a_service_cites_keep_their_edges_where_no_engine_gave_them_a_call(self):
+        for engine in ({"language": "typescript"},  # the engine ran for another language
+                       {"left_out": ("app/pay.py",)}):  # or has no document of this file
+            manifest = self.tied(paths=("app/pay.py",))
+            self.engine(manifest, {}, **engine)  # the index holds no call of this file
+            self.assertEqual([(e[0], e[3]) for e in self.used(flows.link_facts(manifest, []))],
+                             [("app/pay.py::charge", "dichiarato"), ("app/pay.py::refund", "dichiarato")], engine)
+
+    def test_a_service_no_package_ties_keeps_the_edges_of_the_files_it_cites_where_the_engine_ran(self):
+        """A service of the module graph, or one the stack step knows by no package: nothing precise replaces them."""
+        manifest = self.tied(paths=("app/pay.py",), libraries=())
+        self.engine(manifest, {("app/pay.py", 5): self.PACKAGE})
+        self.assertEqual([(e[0], e[3]) for e in self.used(flows.link_facts(manifest, []))],
+                         [("app/pay.py::charge", "dichiarato"), ("app/pay.py::refund", "dichiarato")])
+
+    def test_a_service_whose_calls_the_engine_could_not_name_a_package_for_keeps_its_declared_edges(self):
+        """Kotlin's index names every external with the manager `unknown`: the engine ran and no call ties to a package."""
+        manifest = self.tied(paths=("app/pay.py",))
+        self.engine(manifest, {("app/pay.py", 5): ("unknown", "kotlin.io")})
+        self.assertEqual([(e[0], e[3]) for e in self.used(flows.link_facts(manifest, []))],
+                         [("app/pay.py::charge", "dichiarato"), ("app/pay.py::refund", "dichiarato")])
+
+    def test_a_file_loses_the_declared_edges_of_a_service_only_when_it_gave_a_call_into_that_service(self):
+        manifest = self.snapshot({k: self.CALLS[k] for k in ("app/pay.py", "app/hook.py")})
+        self.stack(manifest, ("cardpay", "Card Pay", ["app/pay.py"]), ("mailer", "Mailer", ["app/pay.py"]),
+                   libraries=[*self.CARDPAY, ("pypi", "mailer", "mailer")])
+        self.engine(manifest, {("app/pay.py", 5): self.PACKAGE})  # a call into cardpay; none into mailer
+        self.assertEqual([(e[0], e[1], e[3]) for e in self.used(flows.link_facts(manifest, []))], [
+            ("app/pay.py::charge", "module:cardpay", "dedotto"),
+            ("app/pay.py::charge", "module:mailer", "dichiarato"), ("app/pay.py::refund", "module:mailer", "dichiarato")])
+
+    TYPED = {"app/pay.ts": 'import { send } from "cardpay";\n\nexport function charge(amount: number) {\n  send(amount);\n}\n\n'
+                           "export function refund(amount: number) {\n  return amount;\n}\n"}
+
+    def test_a_call_into_the_types_package_the_indexer_added_for_a_library_is_a_call_into_the_library(self):
+        """The indexer installs `@types/<library>` for a declared library with no types and records it (`types`); the
+        calls then end in that package, which the stack step never saw. The one it did not add is another package."""
+        for library, types in (("cardpay", "@types/cardpay"), ("@acme/pay", "@types/acme__pay")):
+            manifest = self.snapshot(self.TYPED)
+            self.stack(manifest, ("cardpay", "Card Pay", ["package.json"]), libraries=[("npm", library, "cardpay")])
+            calls = {("app/pay.ts", 4): ("npm", types)}
+            self.engine(manifest, calls, language="typescript", types=[f"{types}@1.2.3"])
+            self.assertEqual(self.used(flows.link_facts(manifest, [])),
+                             [("app/pay.ts::charge", "module:cardpay", "app/pay.ts:4", "dedotto")], library)
+            self.engine(manifest, calls, language="typescript")  # the project declares its own types package
+            self.assertEqual(self.used(flows.link_facts(manifest, [])), [], library)
+
+    def test_a_package_no_service_owns_and_a_package_of_a_framework_give_no_edge(self):
+        manifest = self.tied()
+        self.engine(manifest, {("app/pay.py", 5): ("python", "requests"), ("app/pay.py", 6): self.PACKAGE})
+        self.assertEqual([e[:2] for e in self.used(flows.link_facts(manifest, []))],
+                         [("app/pay.py::charge", "module:cardpay")])  # `requests` belongs to no service
+        manifest = self.tied(kind="project")  # a framework of the stack step is no service of others
+        self.engine(manifest, {("app/pay.py", 5): self.PACKAGE})
+        self.assertEqual(self.used(flows.link_facts(manifest, [])), [])
+
+    def test_the_manager_of_the_engine_names_the_ecosystem_the_stack_step_ties_the_package_in(self):
+        manifest = self.tied(libraries=[("npm", "cardpay", "cardpay")])  # tied in npm: a python call is another package
+        self.engine(manifest, {("app/pay.py", 5): self.PACKAGE})
+        self.assertEqual(self.used(flows.link_facts(manifest, [])), [])
+        manifest = self.tied(libraries=[("pypi", "CardPay", "cardpay")])  # PyPI names compare as PEP 503 does
+        self.engine(manifest, {("app/pay.py", 5): self.PACKAGE})
+        self.assertEqual(len(self.used(flows.link_facts(manifest, []))), 1)
+
+    def test_a_test_file_calling_the_package_is_no_use_of_the_service_and_is_counted(self):
+        manifest = self.tied({k: self.CALLS[k] for k in ("app/pay.py", "tests/test_pay.py")})
+        self.engine(manifest, {("app/pay.py", 5): self.PACKAGE, ("tests/test_pay.py", 5): self.PACKAGE})
+        links = flows.link_facts(manifest, [])
+        self.assertEqual([e[:2] for e in self.used(links)], [("app/pay.py::charge", "module:cardpay")])
+        self.assertEqual(links["external"], [{"id": "cardpay", "name": "cardpay", "status": "inferred",
+                                              "in_tests": {"files": 1, "callers": 1}}])
+
+
 if __name__ == "__main__":
     unittest.main()

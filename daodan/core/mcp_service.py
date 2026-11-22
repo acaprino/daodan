@@ -751,6 +751,10 @@ class MapService:
             if shape_offset is not None:
                 question, _ = flow_questions.page(manifest.path, saved_rules, shape_offset, limit)
                 return {"status": "ok", "run_id": run_id, **question}
+            if (ready or about is not None or map is not None or ask_paths or trace_decision is not None
+                    or next_question or effect_offset is not None):  # all but the rule format, which holds no links
+                import technologies
+                technologies.ensure(manifest.path)  # the links' external nodes are the services of its record
             if ask_paths or trace_decision is not None or next_question or effect_offset is not None:
                 import flow_paths
                 if effect_offset is not None:

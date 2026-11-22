@@ -1,0 +1,10 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+// No build script states a JDK: the build runs on the one `gradle/gradle-daemon-jvm.properties` asks for, JetBrains'
+// 21, which Gradle looks for on the machine and is told not to download (Daodan installs it through mise).
