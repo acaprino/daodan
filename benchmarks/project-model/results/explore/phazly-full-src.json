@@ -77,13 +77,13 @@
    "state": "ready",
    "address": "http://localhost:5174/",
    "port": 5174,
-   "seconds": 4,
+   "seconds": 7,
    "stopped": "term",
    "explored": {
     "pages": 1,
-    "controls": 0,
-    "pressed": 0,
-    "skipped": 0,
+    "controls": 3,
+    "pressed": 1,
+    "skipped": 2,
     "failed": 0
    }
   },
@@ -94,7 +94,7 @@
    "state": "ready",
    "address": "http://localhost:5173/",
    "port": 5173,
-   "seconds": 221,
+   "seconds": 249,
    "stopped": "term",
    "explored": {
     "pages": 8,
@@ -111,26 +111,18 @@
    "state": "ready",
    "address": "http://localhost:5173/",
    "port": 5173,
-   "seconds": 9,
+   "seconds": 19,
    "stopped": "term",
    "explored": {
     "pages": 1,
-    "controls": 0,
+    "controls": 6,
     "pressed": 0,
-    "skipped": 0,
-    "failed": 0
+    "skipped": 2,
+    "failed": 4
    }
   }
  ],
  "gaps": [
-  {
-   "path": "http://localhost:5174/",
-   "kind": "page_without_controls",
-   "errors": [
-    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file."
-   ],
-   "detail": "http://localhost:5174/ shows no control to press (title \"Phazly Admin\"): its first error: Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.; it shows: nothing"
-  },
   {
    "path": "landing-app/package.json#scripts.dev",
    "kind": "calls_unmapped",
@@ -143,35 +135,22 @@
     "http://localhost:5173/src/i18n/locales/it.json?import"
    ],
    "detail": "13 scripts of the app ran with no source map: their functions are named by script, not by file"
-  },
-  {
-   "path": "http://localhost:5173/",
-   "kind": "page_without_controls",
-   "errors": [
-    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.",
-    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.",
-    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.",
-    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.",
-    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file."
-   ],
-   "detail": "http://localhost:5173/ shows no control to press (title \"Phazly\"): its first error: Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.; it shows: nothing"
   }
  ],
  "gap_kinds": {
-  "page_without_controls": 2,
   "calls_unmapped": 1
  },
  "explored": {
   "pages": 10,
-  "controls": 58,
-  "pressed": 39,
+  "controls": 67,
+  "pressed": 40,
   "with_effect": 38,
   "skipped": {
+   "needs_value": 6,
    "leaves_the_app": 13,
-   "needs_value": 2,
    "not_operable": 1
   },
-  "failed": 3,
+  "failed": 7,
   "urls": [
    "http://localhost:5174/",
    "http://localhost:5173/",
@@ -196,10 +175,18 @@
   "authoring": 38,
   "shared": 27,
   "Legal": 21,
-  "build-android.bat": 1,
-  "firestore.indexes.json": 1
+  "package.json": 1,
+  "config.yaml": 1
  },
  "pressed_sample": [
+  {
+   "page": "http://localhost:5174/",
+   "name": "Sign In",
+   "role": "button",
+   "calls": 0,
+   "requests": 0,
+   "first_calls": []
+  },
   {
    "page": "http://localhost:5173/",
    "name": "Phazly, back to top",
@@ -212,7 +199,7 @@
    "page": "http://localhost:5173/",
    "name": "The week",
    "role": "link",
-   "calls": 20,
+   "calls": 16,
    "requests": 0,
    "first_calls": [
     [
@@ -236,7 +223,7 @@
    "page": "http://localhost:5173/",
    "name": "How it works",
    "role": "link",
-   "calls": 21,
+   "calls": 16,
    "requests": 0,
    "first_calls": [
     [
@@ -260,7 +247,7 @@
    "page": "http://localhost:5173/",
    "name": "Features",
    "role": "link",
-   "calls": 21,
+   "calls": 17,
    "requests": 0,
    "first_calls": [
     [
@@ -308,7 +295,7 @@
    "page": "http://localhost:5173/",
    "name": "Pricing",
    "role": "link",
-   "calls": 16,
+   "calls": 20,
    "requests": 0,
    "first_calls": [
     [
@@ -548,7 +535,7 @@
    "page": "http://localhost:5173/",
    "name": "FAQ",
    "role": "link",
-   "calls": 39,
+   "calls": 40,
    "requests": 0,
    "first_calls": [
     [
@@ -581,14 +568,14 @@
      "(anonymous)"
     ],
     [
-     "/src/i18n/index.ts",
-     1,
+     "/src/App.tsx",
+     12,
      "(anonymous)"
     ],
     [
      "/src/i18n/index.ts",
-     36,
-     "en"
+     1,
+     "(anonymous)"
     ]
    ]
   },
@@ -605,14 +592,14 @@
      "(anonymous)"
     ],
     [
-     "/src/i18n/index.ts",
-     1,
+     "/src/App.tsx",
+     12,
      "(anonymous)"
     ],
     [
      "/src/i18n/index.ts",
-     36,
-     "en"
+     1,
+     "(anonymous)"
     ]
    ]
   },
@@ -629,42 +616,161 @@
      "(anonymous)"
     ],
     [
-     "/src/i18n/index.ts",
-     1,
+     "/src/App.tsx",
+     12,
      "(anonymous)"
     ],
     [
      "/src/i18n/index.ts",
-     36,
-     "en"
-    ]
-   ]
-  },
-  {
-   "page": "http://localhost:5173/",
-   "name": "Rifiuta",
-   "role": "button",
-   "calls": 4,
-   "requests": 0,
-   "first_calls": [
-    [
-     "/src/components/CookieConsentBanner.tsx",
-     12,
-     "CookieConsentBanner"
-    ],
-    [
-     "/src/components/CookieConsentBanner.tsx",
-     36,
-     "handleChoice"
-    ],
-    [
-     "/src/components/CookieConsentBanner.tsx",
-     57,
-     "onClick"
+     1,
+     "(anonymous)"
     ]
    ]
   }
  ],
+ "not_pressed_sample": [
+  {
+   "page": "http://localhost:5174/",
+   "name": "Email address",
+   "role": "textbox",
+   "state": "skipped",
+   "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5174/",
+   "name": "Password",
+   "role": "textbox",
+   "state": "skipped",
+   "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Skip to main content",
+   "role": "link",
+   "state": "failed",
+   "reason": "locator.click: Timeout 3000ms exceeded."
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Try free",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Try free",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Get it on Google Play",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Start free",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Get it on Google Play",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Contact",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Cookie preferences",
+   "role": "button",
+   "state": "failed",
+   "reason": "locator.click: Timeout 3000ms exceeded."
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Accetta",
+   "role": "button",
+   "state": "failed",
+   "reason": "not_found_again"
+  },
+  {
+   "page": "http://localhost:5173/privacy",
+   "name": "Go to App",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/terms",
+   "name": "Go to App",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/delete-account",
+   "name": "Open the app",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/delete-account",
+   "name": "Your email",
+   "role": "textbox",
+   "state": "skipped",
+   "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5173/delete-account",
+   "name": "Reason (optional) 0/500",
+   "role": "textbox",
+   "state": "skipped",
+   "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5173/delete-account",
+   "name": "Request deletion",
+   "role": "button",
+   "state": "skipped",
+   "reason": "not_operable"
+  },
+  {
+   "page": "http://localhost:5173/privacy?lang=en",
+   "name": "Go to App",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/privacy?lang=it",
+   "name": "Vai all'App",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/terms?lang=en",
+   "name": "Go to App",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  }
+ ],
+ "page_errors": [],
  "against_static": {
   "static_candidates": 194,
   "static_labelled_click": 0,
@@ -686,9 +792,9 @@
      "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
      "landing-app/src/components/landing/motion.ts:49 boxIn",
      "landing-app/src/components/landing/motion.ts:97 toWeigh",
-     "landing-app/src/components/landing/motion.ts:102 toCell",
      "landing-app/src/components/landing/motion.ts:127 onUpdate",
-     "landing-app/src/components/landing/motion.ts:136 onUpdate"
+     "landing-app/src/components/landing/motion.ts:136 onUpdate",
+     "landing-app/src/components/landing/motion.ts:159 scale"
     ],
     "requests": []
    },
@@ -699,14 +805,14 @@
     "observed_calls": [
      "landing-app/src/components/landing/Nav.tsx:36 Nav",
      "landing-app/src/components/landing/Nav.tsx:57 onScroll",
-     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
      "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
      "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
      "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
      "landing-app/src/components/landing/motion.ts:49 boxIn",
      "landing-app/src/components/landing/motion.ts:97 toWeigh",
-     "landing-app/src/components/landing/motion.ts:102 toCell",
-     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+     "landing-app/src/components/landing/motion.ts:127 onUpdate",
+     "landing-app/src/components/landing/motion.ts:136 onUpdate",
+     "landing-app/src/components/landing/motion.ts:159 scale"
     ],
     "requests": []
    },
@@ -723,8 +829,8 @@
      "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
      "landing-app/src/components/landing/motion.ts:49 boxIn",
      "landing-app/src/components/landing/motion.ts:97 toWeigh",
-     "landing-app/src/components/landing/motion.ts:102 toCell",
-     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+     "landing-app/src/components/landing/motion.ts:127 onUpdate",
+     "landing-app/src/components/landing/motion.ts:136 onUpdate"
     ],
     "requests": []
    },
@@ -758,9 +864,9 @@
      "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
      "landing-app/src/components/landing/motion.ts:49 boxIn",
      "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
      "landing-app/src/components/landing/motion.ts:127 onUpdate",
-     "landing-app/src/components/landing/motion.ts:136 onUpdate",
-     "landing-app/src/components/landing/motion.ts:159 scale"
+     "landing-app/src/components/landing/motion.ts:136 onUpdate"
     ],
     "requests": []
    },
@@ -937,10 +1043,10 @@
      "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
      "landing-app/src/components/landing/Nav.tsx:36 Nav",
      "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
      "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
      "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
-     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
-     "landing-app/src/components/landing/motion.ts:49 boxIn"
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)"
     ],
     "requests": []
    },
@@ -1030,5 +1136,5 @@
    }
   ]
  },
- "seconds": 476.8
+ "seconds": 455.3
 }

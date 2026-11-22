@@ -18,6 +18,7 @@ from __future__ import annotations
 import collections
 import json
 import shutil
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -46,6 +47,9 @@ def explore_folder(source: str, analysis: str, seeds: list | None = None) -> dic
     # `folder`: the folder of DAODAN_FOLDER the image carries; anything else, a folder of the volume
     origin = Path(modal_pipeline.REMOTE_FOLDER) if source == "folder" else Path("/results") / source
     shutil.copytree(origin, project, ignore=shutil.ignore_patterns("node_modules", ".git"))
+    if not (project / ".git").exists():  # the upload leaves `.git` out: a checkout of the folder, as the CI has one
+        for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "x"]):
+            subprocess.run(["git", *command], cwd=project, check=True)
     snapshot.write_snapshot(project, manifest)
     record = premap.write(manifest, sources=[item for item in premap.SOURCES if not hasattr(item, "commands")])
     planned = explorer.plan(record, explore=True, seeds=tuple(seeds or ()))
@@ -84,6 +88,10 @@ def explore_folder(source: str, analysis: str, seeds: list | None = None) -> dic
                                  "requests": len(c.get("requests", [])),
                                  "first_calls": [[call["source"], call["line"], call["name"]] for call in c.get("calls", [])[:3]]}
                                 for page in pages for c in page["controls"] if c.get("state") == "pressed"][:SAMPLE]
+    result["not_pressed_sample"] = [{"page": page["url"], "name": c["name"], "role": c["role"], "state": c["state"],
+                                     "reason": c.get("reason")}
+                                    for page in pages for c in page["controls"] if c.get("state") in ("failed", "skipped")][:SAMPLE]
+    result["page_errors"] = [{"page": page["url"], "errors": page.get("errors", [])} for page in pages if page.get("errors")][:SAMPLE]
     result["against_static"] = {
         "static_candidates": len(static), "static_labelled_click": len(labels),
         "recovered": len(recovered), "matched": sum(1 for n in names if n in labels),

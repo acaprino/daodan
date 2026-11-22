@@ -460,10 +460,11 @@ Su phazly, 22 novembre 2026, file `results/explore/phazly-full-src.json`; la cor
 | App | Avvio | Pagine | Controlli | Premuti | Con effetto |
 |---|---|---|---|---|---|
 | `landing-app` | `npm run dev`, porta 5173 stampata | 8 | 58 | 39 | 38 |
-| `admin-app` | parte, porta 5174 | 1 | 0 | 0 | 0 |
-| `react-app` | parte, porta 5173 | 1 | 0 | 0 | 0 |
+| `admin-app` | parte, porta 5174 | 1 | 3 | 1 | 0 |
+| `react-app` | parte, porta 5173 | 1 | 6 | 0 | 0 |
 
-- `admin-app` e `react-app` mostrano una pagina vuota: l'app lancia «Missing required Firebase configuration» perché le variabili `VITE_FIREBASE_*` stanno in file `.env` che la copia non porta. La lacuna `page_without_controls` lo dice con l'errore. Dare valori di prova alle variabili mancanti non è deciso.
+- Valori di prova: le variabili dei file `.env.example` (e `.env.local.sample`) che Git traccia nella cartella dell'app passano all'app come ambiente (`dotenv_env` con `("*", file)`, `container.exported`): sono ciò che il progetto pubblica, segnaposto e non segreti. Senza, `admin-app` e `react-app` mostravano una pagina vuota («Missing required Firebase configuration», lacuna `page_without_controls`); con i valori mostrano la schermata di accesso: 3 controlli in `admin-app` (2 campi che chiedono un valore, 1 premuto, nessuna funzione partita) e 6 in `react-app` (2 campi, 4 falliti: «Skip to main content», «Cookie preferences» con click oltre i 3 s, «Accetta» non ritrovato dopo il ricaricamento). Non so ancora se un banner dei cookie copra i controlli: la ragione registrata è solo la prima riga dell'errore di Playwright.
+- La corsa è un checkout emulato: lo script fa `git init` e commit della cartella caricata, perché l'upload perde `.git` e solo i file tracciati sono quelli che il progetto pubblica.
 - Saltati nella `landing-app`: 13 collegamenti fuori dall'app, 2 campi che chiedono un valore, 1 controllo non operabile; 3 pressioni fallite.
 - Candidati `observed`: 38, tutti della `landing-app`. I candidati statici di phazly5 non hanno etichetta con evento `click` (0 su 194): quindi la corrispondenza per nome non ne trova nessuno (`matched` 0) e i 38 sono tutti «recuperati» rispetto a quel confronto, che è debole. Gli eventi scartati su un componente sono 0 in quell'analisi: la domanda «quanti ne recupera» non ha un denominatore e non si risponde qui.
 - Un controllo non ha un gestore isolato: la copertura dice quali funzioni sono partite, non quale ha chiamato il click, e dopo un click React ridisegna (hook condivisi come `useTheme`, `Nav`). Le righe elencano le funzioni partite.
@@ -471,7 +472,12 @@ Su phazly, 22 novembre 2026, file `results/explore/phazly-full-src.json`; la cor
 
 ### Non misurato
 
-- Un progetto con un backend raggiungibile: l'esecuzione non ha rete, e `react-app` e `admin-app` non arrivano a mostrare un controllo.
+- Un progetto con un backend raggiungibile: l'esecuzione non ha rete, e `react-app` e `admin-app` mostrano solo la schermata di accesso, senza credenziali di prova per entrare.
+- Il motore di Daodan su Windows (Kiri in WSL, `container.own_engine`): la prova col motore vero sotto è su Linux con Docker.
 - I flussi del riferimento e il loro numero chiuso: nessuna misura.
 - pnpm, Yarn e Bun: `start_runner_not_supported`, non eseguiti.
 - La sorgente `phazly3-src` sul volume è incompleta (mancano `react-app/src/data` e `landing-app/src/assets/lp`): le app non si compilano, e la corsa su quella sorgente dà solo pagine di errore del bundler. Il risultato sopra usa la copia ridotta del progetto vero.
+
+### Col motore container vero
+
+`modal_engine.py` avvia un demone Docker (rete normale) in una VM Sandbox di Modal e lancia `dynamic.app.observe` con `container.find_engine()`, cioè `container.run_in_container` di Daodan e non il sostituto `sandbox_run` di Modal: preparazione con i registri, `keep_root` per il browser, esecuzione senza rete, uscite riportate. Fixture: `explore-fixtures/vite-react` (la stessa del test). Risultato, `results/explore/engine.json`: motore `docker`, app `ready` su 5173, 2 controlli premuti, nessuna lacuna, 42,6 s; Save → `validate` e `save`, Reset → `reset`, con file e riga di `src/lib/actions.ts`.

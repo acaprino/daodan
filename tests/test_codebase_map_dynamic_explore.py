@@ -24,6 +24,7 @@ from test_codebase_map_dynamic_javascript import write  # noqa: E402
 
 pytestmark = pytest.mark.skipif(not os.environ.get("MODAL_TASK_ID"), reason="a browser and code: Modal only")
 PLAYWRIGHT = "1.64.1"
+FIXTURE = Path(__file__).resolve().parents[1] / "benchmarks/project-model/explore-fixtures/vite-react"  # a Vite and React app
 
 SERVER = """const http = require('http');
 const fs = require('fs');
@@ -154,23 +155,7 @@ def test_the_caps_are_declared_when_they_stop_the_exploration(tmp_path, browser)
     assert any(c.get("reason") == "cap" for item in found["pages"] for c in item["controls"])
 
 
-VITE = {
-    "package.json": json.dumps({"name": "v", "private": True, "type": "module", "scripts": {"dev": "vite"},
-                                "dependencies": {"react": "^18.3.1", "react-dom": "^18.3.1"},
-                                "devDependencies": {"@vitejs/plugin-react": "^4.3.3", "vite": "^5.4.10"}}),
-    "index.html": '<!doctype html><div id="root"></div><script type="module" src="/src/main.tsx"></script>\n',
-    "vite.config.js": "import react from '@vitejs/plugin-react';\nexport default { plugins: [react()] };\n",
-    "src/main.tsx": "import { createRoot } from 'react-dom/client';\nimport App from './App';\n"
-                    "createRoot(document.getElementById('root')!).render(<App />);\n",
-    "src/App.tsx": "import { useEffect, useState } from 'react';\nimport { save, reset } from './lib/actions';\n"
-                   "export default function App() {\n  const [total, setTotal] = useState(5);\n"
-                   "  useEffect(() => { const t = setInterval(() => setTotal(n => n), 150); return () => clearInterval(t); }, []);\n"
-                   "  return <main><p>{total}</p><button onClick={() => setTotal(save(total))}>Save</button>\n"
-                   "    <button onClick={() => setTotal(reset())}>Reset</button></main>;\n}\n",
-    "src/lib/actions.ts": "function validate(n: number): number {\n  return Number.isFinite(n) ? n : 0;\n}\n\n"
-                          "export function save(n: number): number {\n  return validate(n) + 1;\n}\n\n"
-                          "export function reset(): number {\n  return 0;\n}\n",
-}
+VITE = {str(p.relative_to(FIXTURE)).replace("\\", "/"): p.read_text(encoding="utf-8") for p in sorted(FIXTURE.rglob("*")) if p.is_file()}
 
 
 def test_a_vite_apps_functions_are_named_by_the_file_and_line_its_source_map_says(tmp_path, browser):

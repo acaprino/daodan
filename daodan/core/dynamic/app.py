@@ -2,7 +2,8 @@
 
 `plan` reads the pre-map's `starts` and `builds` (`premap/npm_start.py`): per module the `start` script, else the
 `dev` one; the module's `build` first where the start reads compiled output (`needs_build`). The command is the
-declared one, `npm run <script>`, never changed. Where the project declares none, or a start needs a build nobody
+declared one, `npm run <script>`, never changed; its environment is the container's, plus the variables of the example
+`.env` files the project publishes and Git tracks in the app's folder (`_examples`): the test values the app asks for. Where the project declares none, or a start needs a build nobody
 declares, or its runner is not npm (pnpm, Yarn and Bun are not yet run: `start_runner_not_supported`), nothing runs
 and the gap says why.
 
@@ -192,6 +193,18 @@ def _outcome(one: dict, number: int, built: str | None, ended: str, back: Path, 
     return entry, gaps
 
 
+def _examples(project: Path, apps: list[dict]) -> list[tuple[str, str]]:
+    """The test values of the apps: every variable of the example `.env` files (`.env.example`, `.env.local.sample`)
+    that Git tracks in an app's own folder, as `(\"*\", file)` for `container.run_in_container`. They are what the project
+    publishes: no secret (D-291) and nothing of Daodan's own. A `.env` or `.env.development` is not one, and a project
+    outside Git has none."""
+    import container
+    tracked = container.tracked(project)
+    folders = {"" if one["root"] == "." else one["root"] for one in apps}
+    return [("*", path) for path in sorted(tracked)
+            if container.example(posixpath.basename(path)) and posixpath.dirname(path) in folders]
+
+
 def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     """The planned apps in one container run over a copy of `project`, read back from `out_dir`:
     `{state, apps, gaps}`, `state` `ran`, `gap` (no container: `cause`, `remedy`) or `failed` (the preparation or the
@@ -206,6 +219,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
     unrun = list(planned.get("gaps") or ())
     if not planned["apps"]:
         return {"state": "ran", "apps": [], "gaps": unrun}
+    dotenv_env = _examples(project, planned["apps"])
     restored = typescript._prepared(project, planned.get("roots") or ())
     restore_lines, shared = node_preparation.options(restored, planned.get("toolchains") or (), ())
     prepare, execute = scripts(planned, restore_lines)
@@ -221,7 +235,7 @@ def observe(project: Path, planned: dict, out_dir: Path, engine=None) -> dict:
         project, ["sh", "-c", execute], image=typescript.IMAGE, out_dir=out_dir, prepare=["sh", "-c", prepare],
         outputs=[OUT], env={**preparation.ENV, "TERM": "dumb", "CI": "true"},
         timeout=len(planned["apps"]) * (BUILD + READY + (EXPLORE if explore else 0) + 300), prepare_timeout=3600,
-        memory=MEMORY, engine=engine, inputs=inputs, keep_root=explore, **shared,
+        memory=MEMORY, engine=engine, inputs=inputs, keep_root=explore, dotenv_env=dotenv_env, **shared,
         registries=tuple(dict.fromkeys([*preparation.NODE_REGISTRIES, *(javascript.BROWSER_HOSTS if explore else ()),
                                         *restored["hosts"], *chains["hosts"]])))
     if result["state"] == "gap":

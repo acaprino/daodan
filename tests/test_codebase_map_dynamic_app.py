@@ -310,3 +310,39 @@ def test_the_pages_the_exploration_saw_are_kept_beside_the_manifest_for_the_entr
     assert json.loads((tmp_path / observed_entries.FILE).read_text(encoding="utf-8"))["apps"] == [
         {"declared_in": "package.json#scripts.dev", "pages": pages}]
     assert app.record(tmp_path / "none" / "manifest.sqlite", planned, tmp_path / "nowhere") == 0
+
+
+# --- the example `.env` files the project publishes are the app's test values --------------------------------------
+
+def test_a_star_exports_every_variable_of_an_example_file_and_a_name_only_its_own():
+    values = {"web/.env.example": {"A": "1", "B": "2"}, "other/.env": {"C": "3", "D": "4"}}
+    assert container.exported([("*", "web/.env.example"), ("C", "other/.env"), ("Z", "other/.env")], values) == {
+        "A": "1", "B": "2", "C": "3"}
+    assert container.exported([("*", "none/.env.example")], values) == {}
+
+
+def tracked_project(tmp_path, files: dict) -> Path:
+    import subprocess
+    project = write(tmp_path / "proj", files)
+    for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "x"]):
+        subprocess.run(["git", *command], cwd=project, check=True)
+    return project
+
+
+def test_the_app_gets_the_values_of_the_example_env_files_git_tracks_in_its_own_folder(tmp_path):
+    project = tracked_project(tmp_path, {
+        "package.json": "{}", ".env.example": "ROOT=1\n", "web/package.json": "{}", "web/.env.example": "VITE_KEY=test\n",
+        "web/.env.development": "SECRET=real\n", "web/.env.local.sample": "SAMPLE=1\n", "api/.env.example": "API=1\n"})
+    played = Played({"app-0.json": result()}, {"execute.log": "DAODAN-APP 0 exit 0 4\n"})
+    planned = {"apps": [start("web", "dev")], "gaps": [], "roots": [""], "toolchains": []}
+    with mock.patch.object(container, "run_in_container", played), \
+            mock.patch.object(container, "free_memory", return_value=64 * 2**30), \
+            mock.patch.object(preparation, "fetched", lambda url, digest, name: Path(name)):
+        app.observe(project, planned, tmp_path / "runs")
+    assert played.given["dotenv_env"] == [("*", "web/.env.example"), ("*", "web/.env.local.sample")]  # never `.env.development`
+
+
+def test_a_project_outside_git_gets_none(tmp_path):
+    played = Played({"app-0.json": result()}, {"execute.log": "DAODAN-APP 0 exit 0 4\n"})
+    observe(tmp_path, played)
+    assert played.given["dotenv_env"] == []

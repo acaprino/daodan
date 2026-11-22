@@ -289,7 +289,7 @@ def sandbox_run(project, command, *, image, out_dir, prepare=None, outputs=(), e
         if said_partial := container.partial(secret):  # what the masks leave, said once
             result["gaps"] = [*(result.get("gaps") or ()), *said_partial]
         services = [container.filled(item, values) for item in services]  # the values only here, never on record
-        exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
+        exported = container.exported(dotenv_env, values)  # `("*", file)`: every variable of an example file
         base = modal.Image.from_registry(image)
         if prepare or bundle or node_restore:
             boxes.append(modal.Sandbox.create(image=base, **options))
