@@ -955,8 +955,8 @@ def last_round() -> dict[str, dict]:
 
 def test_every_lost_name_of_the_last_round_is_accounted_for():
     """The spec's «Verifica», "nessuna perdita": each `(fixture, name)` in `lost` has exactly one line of
-    `accepted-losses.json` and no line is left over; each line has the id the registry lost, a verdict, and a reason
-    that names that id or a package or file the registry holds for it."""
+    `accepted-losses.json` and no line is left over (a round with no loss has an empty file); each line has the id the
+    registry lost, a verdict, and a reason that names that id or a package or file the registry holds for it."""
     fixtures, lines = last_round(), json.loads(ACCEPTED.read_text(encoding="utf-8"))
     lost = sorted((name, lost) for name, entry in fixtures.items() for lost in entry.get("compare", {}).get("lost", ()))
     assert [(line["fixture"], line["name"]) for line in lines] == lost  # one each, none over, sorted
@@ -976,12 +976,22 @@ def test_no_fixture_of_the_last_round_executed_project_code():
     assert answered and [name for name, entry in answered.items() if entry["executed_project_code"] != "no"] == []
 
 
-def test_a_workflow_in_a_dot_folder_and_a_dockerfile_with_a_suffix_are_not_files_of_the_snapshot(tmp_path):
-    """The cause of the `to_fix` lines of `accepted-losses.json`: the registry takes a package at the path the pre-map
-    names, and the translation keeps the evidence of a file the snapshot holds (above); the snapshot holds neither."""
+def test_the_first_round_s_two_paths_are_not_in_the_snapshot_and_what_a_declaration_proves_there_is_kept(tmp_path):
+    """The first round lost `github.pages` and `gotenberg`: the pre-map names a workflow in a dot folder and a Dockerfile
+    with a suffix, the registry takes a package at those paths, and the snapshot holds neither. A declaration's evidence
+    there stays; the tool's own reading of a file the snapshot lacks is dropped and counted."""
     paths = (".github/workflows/web-deploy.yml", "docker/development/Dockerfile.gotenberg")
     manifest = snapshot_of(tmp_path, {paths[0]: "name: web\n", paths[1]: "FROM gotenberg/gotenberg:8\n",
                                       "docker/Dockerfile": "FROM alpine\n"})
     with open_snapshot(manifest) as store:
         files = set(dict(store.iter_file_headers_only()))
     assert "docker/Dockerfile" in files and not files & set(paths)
+    pages = {"id": "github.pages", "name": "Github Pages", "kind": "service"}
+    gotenberg = {"id": "gotenberg", "name": "Gotenberg", "kind": "service"}
+    payload = component(evidence("github.pages", "action", PAGES, "/" + paths[0], "githubactions@1"),
+                        evidence("gotenberg", "image", GOTENBERG, "/" + paths[1], "dockerfile@1"),
+                        evidence("gotenberg", "image", GOTENBERG, "/" + paths[1]))  # the tool's own, same file
+    out, gaps = fork_stack.found(payload, registry(pages, gotenberg), files, ())
+    assert [(entry["id"], [s["source"] for s in entry["signs"]]) for entry in out] == [
+        ("github.pages", ["githubactions@1"]), ("gotenberg", ["dockerfile@1"])]
+    assert gaps == [{"kind": "evidence_outside_snapshot", "count": 1, "paths": [paths[1]]}]
