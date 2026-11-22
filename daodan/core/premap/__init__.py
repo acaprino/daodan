@@ -39,14 +39,14 @@ import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
 from premap import (autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
-                    jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_tests, project_files,
+                    jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_start, npm_tests, project_files,
                     python_build, python_tests, renovate, requirements, sbt, suffix_table, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
 RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run` and the coverage gaps
 RANKS = ("model", "reader", "scanner")
-SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, jvm_files, project_files,
+SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, npm_start, jvm_files, project_files,
            gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
            gradle, maven, sbt, dotnet, noir, nextjs)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
@@ -58,6 +58,8 @@ IDENTITY = {  # the fields that make two entries one fact, from the strictest to
     "workspace": (("root", "tool"),),  # two build systems in one folder are two workspaces
     "toolchains": (("tool", "declared_in", "version"), ("tool", "declared_in")),
     "tests": (("root", "runner"),),  # how the tests of a folder run: the dynamic step's command
+    "starts": (("root", "declared_in"),),  # how a module starts: the exploration's command (`npm_start`)
+    "builds": (("root", "declared_in"),),  # how a module builds: what a start that reads compiled output needs
     "services": (("declared_in",),),  # a service container a CI job starts beside its steps: the dynamic step's too
     "configured_services": (("declared_in", "name"),),  # Compose declarations; not instructions to start containers
     "workflow_triggers": (("declared_in", "event"),),

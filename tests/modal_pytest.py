@@ -72,6 +72,10 @@ image = (modal.Image.debian_slim(python_version="3.13")
                        "npm install --prefix /opt/components --no-audit --no-fund --ignore-scripts "
                        + " ".join(COMPONENTS))
          .run_commands(f"npm install --prefix /opt/babel --no-audit --no-fund --ignore-scripts @babel/core@{BABEL[0]}")
+         # Playwright's client and its headless Chromium with the system libraries it needs (the exploration's own tests,
+         # test_codebase_map_dynamic_explore.py): in the image, since several workers installing at once break apt
+         .run_commands("npm install --prefix /opt/playwright --no-audit --no-fund --ignore-scripts playwright-core@1.64.1",
+                       "node /opt/playwright/node_modules/playwright-core/cli.js install --with-deps --only-shell chromium")
          .run_commands("npm install --prefix /opt/components-vue2 --no-audit --no-fund --ignore-scripts "
                        + " ".join(COMPONENTS_VUE2))
          .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",

@@ -1,0 +1,1034 @@
+{
+ "source": "folder",
+ "analysis": "possible-in/phazly5",
+ "starts": [
+  {
+   "declared_in": "admin-app/package.json#scripts.dev",
+   "mode": "dev",
+   "needs_build": false,
+   "port": null,
+   "root": "admin-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  },
+  {
+   "declared_in": "landing-app/package.json#scripts.dev",
+   "mode": "dev",
+   "needs_build": false,
+   "port": null,
+   "root": "landing-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  },
+  {
+   "declared_in": "react-app/package.json#scripts.dev",
+   "mode": "dev",
+   "needs_build": false,
+   "port": null,
+   "root": "react-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  }
+ ],
+ "builds": [
+  {
+   "declared_in": "admin-app/package.json#scripts.build",
+   "root": "admin-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  },
+  {
+   "declared_in": "landing-app/package.json#scripts.build",
+   "root": "landing-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  },
+  {
+   "declared_in": "react-app/package.json#scripts.build",
+   "root": "react-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  }
+ ],
+ "plan_gaps": [],
+ "apps_planned": [
+  "admin-app/package.json#scripts.dev",
+  "landing-app/package.json#scripts.dev",
+  "react-app/package.json#scripts.dev"
+ ],
+ "state": "ran",
+ "apps": [
+  {
+   "root": "admin-app",
+   "mode": "dev",
+   "declared_in": "admin-app/package.json#scripts.dev",
+   "state": "ready",
+   "address": "http://localhost:5174/",
+   "port": 5174,
+   "seconds": 4,
+   "stopped": "term",
+   "explored": {
+    "pages": 1,
+    "controls": 0,
+    "pressed": 0,
+    "skipped": 0,
+    "failed": 0
+   }
+  },
+  {
+   "root": "landing-app",
+   "mode": "dev",
+   "declared_in": "landing-app/package.json#scripts.dev",
+   "state": "ready",
+   "address": "http://localhost:5173/",
+   "port": 5173,
+   "seconds": 221,
+   "stopped": "term",
+   "explored": {
+    "pages": 8,
+    "controls": 58,
+    "pressed": 39,
+    "skipped": 16,
+    "failed": 3
+   }
+  },
+  {
+   "root": "react-app",
+   "mode": "dev",
+   "declared_in": "react-app/package.json#scripts.dev",
+   "state": "ready",
+   "address": "http://localhost:5173/",
+   "port": 5173,
+   "seconds": 9,
+   "stopped": "term",
+   "explored": {
+    "pages": 1,
+    "controls": 0,
+    "pressed": 0,
+    "skipped": 0,
+    "failed": 0
+   }
+  }
+ ],
+ "gaps": [
+  {
+   "path": "http://localhost:5174/",
+   "kind": "page_without_controls",
+   "errors": [
+    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file."
+   ],
+   "detail": "http://localhost:5174/ shows no control to press (title \"Phazly Admin\"): its first error: Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.; it shows: nothing"
+  },
+  {
+   "path": "landing-app/package.json#scripts.dev",
+   "kind": "calls_unmapped",
+   "files": 13,
+   "examples": [
+    "http://localhost:5173/",
+    "http://localhost:5173/src/i18n/lp/en.json?import",
+    "http://localhost:5173/src/i18n/locales/en.json?import",
+    "http://localhost:5173/src/i18n/lp/it.json?import",
+    "http://localhost:5173/src/i18n/locales/it.json?import"
+   ],
+   "detail": "13 scripts of the app ran with no source map: their functions are named by script, not by file"
+  },
+  {
+   "path": "http://localhost:5173/",
+   "kind": "page_without_controls",
+   "errors": [
+    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.",
+    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.",
+    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.",
+    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.",
+    "Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file."
+   ],
+   "detail": "http://localhost:5173/ shows no control to press (title \"Phazly\"): its first error: Missing required Firebase configuration: VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID, VITE_FIREBASE_APP_ID. Please check your .env file.; it shows: nothing"
+  }
+ ],
+ "gap_kinds": {
+  "page_without_controls": 2,
+  "calls_unmapped": 1
+ },
+ "explored": {
+  "pages": 10,
+  "controls": 58,
+  "pressed": 39,
+  "with_effect": 38,
+  "skipped": {
+   "leaves_the_app": 13,
+   "needs_value": 2,
+   "not_operable": 1
+  },
+  "failed": 3,
+  "urls": [
+   "http://localhost:5174/",
+   "http://localhost:5173/",
+   "http://localhost:5173/privacy",
+   "http://localhost:5173/terms",
+   "http://localhost:5173/delete-account",
+   "http://localhost:5173/privacy?lang=en",
+   "http://localhost:5173/privacy?lang=it",
+   "http://localhost:5173/terms?lang=en",
+   "http://localhost:5173/terms?lang=it",
+   "http://localhost:5173/"
+  ]
+ },
+ "analysis_top_folders": {
+  "react-app": 628,
+  "utils": 622,
+  "docs": 434,
+  "functions-python": 357,
+  "admin-app": 131,
+  "landing-app": 74,
+  "scripts": 49,
+  "authoring": 38,
+  "shared": 27,
+  "Legal": 21,
+  "build-android.bat": 1,
+  "firestore.indexes.json": 1
+ },
+ "pressed_sample": [
+  {
+   "page": "http://localhost:5173/",
+   "name": "Phazly, back to top",
+   "role": "link",
+   "calls": 0,
+   "requests": 0,
+   "first_calls": []
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "The week",
+   "role": "link",
+   "calls": 20,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "How it works",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Features",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Method",
+   "role": "link",
+   "calls": 16,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Pricing",
+   "role": "link",
+   "calls": 16,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "FAQ",
+   "role": "link",
+   "calls": 26,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Italiano",
+   "role": "button",
+   "calls": 92,
+   "requests": 0,
+   "first_calls": [
+    [
+     null,
+     null,
+     "window.$RefreshSig$"
+    ],
+    [
+     null,
+     null,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     118,
+     "(anonymous)"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "English",
+   "role": "button",
+   "calls": 98,
+   "requests": 0,
+   "first_calls": [
+    [
+     null,
+     null,
+     "window.$RefreshSig$"
+    ],
+    [
+     null,
+     null,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     36,
+     "en"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Toggle theme",
+   "role": "button",
+   "calls": 71,
+   "requests": 0,
+   "first_calls": [
+    [
+     null,
+     null,
+     "window.$RefreshSig$"
+    ],
+    [
+     null,
+     null,
+     "(anonymous)"
+    ],
+    [
+     "/src/components/landing/Landing.tsx",
+     31,
+     "Landing"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Phazly, back to top",
+   "role": "link",
+   "calls": 39,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "The week",
+   "role": "link",
+   "calls": 39,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "How it works",
+   "role": "link",
+   "calls": 39,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Features",
+   "role": "link",
+   "calls": 39,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Pricing",
+   "role": "link",
+   "calls": 40,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "FAQ",
+   "role": "link",
+   "calls": 39,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Privacy Policy",
+   "role": "link",
+   "calls": 106,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/main.tsx",
+     12,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     1,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     36,
+     "en"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Terms of Service",
+   "role": "link",
+   "calls": 106,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/main.tsx",
+     12,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     1,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     36,
+     "en"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Delete account",
+   "role": "link",
+   "calls": 106,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/main.tsx",
+     12,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     1,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     36,
+     "en"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Rifiuta",
+   "role": "button",
+   "calls": 4,
+   "requests": 0,
+   "first_calls": [
+    [
+     "/src/components/CookieConsentBanner.tsx",
+     12,
+     "CookieConsentBanner"
+    ],
+    [
+     "/src/components/CookieConsentBanner.tsx",
+     36,
+     "handleChoice"
+    ],
+    [
+     "/src/components/CookieConsentBanner.tsx",
+     57,
+     "onClick"
+    ]
+   ]
+  }
+ ],
+ "against_static": {
+  "static_candidates": 194,
+  "static_labelled_click": 0,
+  "recovered": 38,
+  "matched": 0,
+  "discarded_on_a_component": 0,
+  "discarded_with_a_label": 0,
+  "discarded_with_a_pressed_control_of_the_same_name": 0,
+  "recovered_sample": [
+   {
+    "site": "/",
+    "label": "The week",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate",
+     "landing-app/src/components/landing/motion.ts:136 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "How it works",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Features",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Method",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate",
+     "landing-app/src/components/landing/motion.ts:136 onUpdate",
+     "landing-app/src/components/landing/motion.ts:159 scale"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Pricing",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate",
+     "landing-app/src/components/landing/motion.ts:136 onUpdate",
+     "landing-app/src/components/landing/motion.ts:159 scale"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "FAQ",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:116 onRefreshStart",
+     "landing-app/src/components/landing/motion.ts:119 onRefreshEnd"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Italiano",
+    "role": "button",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:71 EmberGlow",
+     "landing-app/src/components/landing/Faq.tsx:6 Faq",
+     "landing-app/src/components/landing/Faq.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:23 PhotoScan",
+     "landing-app/src/components/landing/Features.tsx:39 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:74 Features",
+     "landing-app/src/components/landing/FinalCta.tsx:11 FinalCta",
+     "landing-app/src/components/landing/FinalCta.tsx:18 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:4 Footer",
+     "landing-app/src/components/landing/Hero.tsx:35 linePath"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "English",
+    "role": "button",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:71 EmberGlow",
+     "landing-app/src/components/landing/Faq.tsx:6 Faq",
+     "landing-app/src/components/landing/Faq.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:23 PhotoScan",
+     "landing-app/src/components/landing/Features.tsx:39 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:74 Features",
+     "landing-app/src/components/landing/FinalCta.tsx:11 FinalCta",
+     "landing-app/src/components/landing/FinalCta.tsx:18 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:4 Footer",
+     "landing-app/src/components/landing/Hero.tsx:35 linePath"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Toggle theme",
+    "role": "button",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:71 EmberGlow",
+     "landing-app/src/components/landing/Faq.tsx:6 Faq",
+     "landing-app/src/components/landing/Faq.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:23 PhotoScan",
+     "landing-app/src/components/landing/Features.tsx:39 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:74 Features",
+     "landing-app/src/components/landing/FinalCta.tsx:11 FinalCta",
+     "landing-app/src/components/landing/FinalCta.tsx:18 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:4 Footer",
+     "landing-app/src/components/landing/Hero.tsx:35 linePath"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Phazly, back to top",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
+     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
+     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "The week",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
+     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
+     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "How it works",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
+     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
+     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Features",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
+     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
+     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Pricing",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
+     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
+     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "FAQ",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:103 draw",
+     "landing-app/src/components/landing/EmberGlow.tsx:125 loop",
+     "landing-app/src/components/landing/EmberGlow.tsx:129 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Privacy Policy",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/App.tsx:12 (anonymous)",
+     "landing-app/src/components/CookieConsentBanner.tsx:51 (anonymous)",
+     "landing-app/src/components/landing/EmberGlow.tsx:140 (anonymous)",
+     "landing-app/src/components/landing/Faq.tsx:12 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:19 _c",
+     "landing-app/src/components/landing/Features.tsx:30 (anonymous)",
+     "landing-app/src/components/landing/FinalCta.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:14 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:20 _c",
+     "landing-app/src/components/landing/Hero.tsx:50 pickLift"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Terms of Service",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/App.tsx:12 (anonymous)",
+     "landing-app/src/components/CookieConsentBanner.tsx:51 (anonymous)",
+     "landing-app/src/components/landing/EmberGlow.tsx:140 (anonymous)",
+     "landing-app/src/components/landing/Faq.tsx:12 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:19 _c",
+     "landing-app/src/components/landing/Features.tsx:30 (anonymous)",
+     "landing-app/src/components/landing/FinalCta.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:14 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:20 _c",
+     "landing-app/src/components/landing/Hero.tsx:50 pickLift"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Delete account",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/App.tsx:12 (anonymous)",
+     "landing-app/src/components/CookieConsentBanner.tsx:51 (anonymous)",
+     "landing-app/src/components/landing/EmberGlow.tsx:140 (anonymous)",
+     "landing-app/src/components/landing/Faq.tsx:12 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:19 _c",
+     "landing-app/src/components/landing/Features.tsx:30 (anonymous)",
+     "landing-app/src/components/landing/FinalCta.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:14 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:20 _c",
+     "landing-app/src/components/landing/Hero.tsx:50 pickLift"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Rifiuta",
+    "role": "button",
+    "observed_calls": [
+     "landing-app/src/components/CookieConsentBanner.tsx:12 CookieConsentBanner",
+     "landing-app/src/components/CookieConsentBanner.tsx:36 handleChoice",
+     "landing-app/src/components/CookieConsentBanner.tsx:57 onClick",
+     "landing-app/src/lib/analytics.ts:54 updateConsent"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/privacy",
+    "label": "Back",
+    "role": "link",
+    "observed_calls": [
+     "landing-app/src/App.tsx:12 (anonymous)",
+     "landing-app/src/components/CookieConsentBanner.tsx:51 (anonymous)",
+     "landing-app/src/components/landing/EmberGlow.tsx:140 (anonymous)",
+     "landing-app/src/components/landing/Faq.tsx:12 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:19 _c",
+     "landing-app/src/components/landing/Features.tsx:30 (anonymous)",
+     "landing-app/src/components/landing/FinalCta.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:14 (anonymous)",
+     "landing-app/src/components/landing/Hero.tsx:20 _c",
+     "landing-app/src/components/landing/Hero.tsx:50 pickLift"
+    ],
+    "requests": []
+   }
+  ]
+ },
+ "seconds": 476.8
+}

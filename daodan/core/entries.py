@@ -25,6 +25,7 @@ if str(SCRIPT_DIR) not in sys.path:
 import code_graph  # noqa: E402
 import edge_view  # noqa: E402
 import flows  # noqa: E402
+import observed_entries  # noqa: E402
 import semantic_store  # noqa: E402
 from languages import _treesitter, get_adapter  # noqa: E402
 from languages.sfc import mask_non_script  # noqa: E402
@@ -1059,7 +1060,17 @@ def _cached_rows(manifest: Path, inputs=None) -> list[dict]:
 
 def candidates(links: dict, manifest: Path) -> list[dict]:
     """The candidates of every reader; a residual symbol is never a confirmed entry by itself."""
-    return residual(links) + [row for row in _cached_rows(manifest) if not row.get("unbound")] + _declared_rows(manifest)
+    found = residual(links) + [row for row in _cached_rows(manifest) if not row.get("unbound")] + _declared_rows(manifest)
+    return found + _observed(manifest, found)
+
+
+def _observed(manifest: Path, static: list[dict]) -> list[dict]:
+    """The controls the browser found that `static` lacks (`observed_entries`); the snapshot is opened only when the
+    exploration ran."""
+    if not Path(manifest).with_name(observed_entries.FILE).is_file():
+        return []
+    with open_snapshot(manifest) as store:
+        return observed_entries.rows(manifest, static, set(store.iter_paths()))
 
 
 def _declared_rows(manifest):
@@ -1070,9 +1081,11 @@ def _declared_rows(manifest):
 def cached_syntax(manifest: Path) -> list[dict]:
     """Public candidates with verified handler, event and label; the model transport masks text before delivery."""
     fields = ("reader", "shape", "site", "symbol", "gap", "label", "event", "label_gap", "handler_source", "column",
-              "kind", "method", "path", "handler", "handler_confidence", "declared_in", "forwarded", "component_gap")
+              "kind", "method", "path", "handler", "handler_confidence", "declared_in", "forwarded", "component_gap",
+              "role", "observed_calls", "requests")
+    static = [row for row in _cached_rows(manifest) + _declared_rows(manifest) if not row.get("unbound")]
     return [{"status": "candidate", **{key: row[key] for key in fields if row.get(key) is not None}}
-            for row in _cached_rows(manifest) + _declared_rows(manifest) if not row.get("unbound")]
+            for row in static + _observed(manifest, static)]
 
 
 def shapes(found: list[dict]) -> list[dict]:

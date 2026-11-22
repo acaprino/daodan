@@ -440,3 +440,38 @@ Tempi in secondi, sulle 178 fixture con record (completa: mediana 0,029 e massim
 - «Nessuna perdita»: passa sulle 178 fixture misurate (nessun nome atteso perso, nessuna riga `to_fix`, `accepted-losses.json` vuoto) e non è verificata sulle 2 senza risposta. Viene dopo la correzione della traduzione e la nuova regola del fork (Primo giro). `compare` conta id e nomi: delle 6 coppie sparite (4 id), tutte passano a un altro id con il loro segno dichiarato; nella sola veloce, `github.pages` in `mix-real-tinyxml2` non passa a nessun id, per una scelta registrata della porta. Le menzioni `env` non passano: il percorso tradotto non ne produce, ed è un secondo riconoscimento che il registro ha e il percorso non ha.
 - Scansione veloce, su Linux, contro l'obiettivo della spec (meno di un secondo dall'avvio al risultato su `py-fastapi-compose`; circa un secondo a ogni modifica sotto `project_lock`): `py-fastapi-compose` 0,331 s, mediana 0,523 s, 29 fixture su 178 da 1 s in su, massimo 5,791 s. La soglia è del proprietario; se l'obiettivo non è raggiunto, la spec ferma il lavoro al passo 3.
 - Tornano al proprietario: i tempi; i servizi in più (da 67 a 86: 22 aggiunti, 3 tolti); le tre differenze della porta che spostano un id senza cambiare nessun nome atteso (`okta`, `gcp`, `_config.yml` di Jekyll); le menzioni `env` e i modelli `.env` che il rilascio apre benché la politica di Daodan non li legga; il `--ignore` oltre i 32.767 caratteri su Windows (`real-stack-owncast`); ciò che «Non misurato» non copre.
+
+## Esplorazione dell'app avviata
+
+Passo 11 del [piano degli ingressi](../../docs/plans/2026-11-20-ingressi-e-flussi.md): Daodan avvia l'app dichiarata nel container, apre un browser senza interfaccia, legge i controlli di ogni pagina dall'albero di accessibilità di Playwright, ne preme ognuno una volta e registra le funzioni del progetto che partono (copertura V8 fra due letture, meno ciò che la pagina ferma esegue da sola).
+
+### Parametri
+
+- Script: `modal_explore.py` (`python -m modal run benchmarks/project-model/modal_explore.py::explore_main --source <cartella del volume | folder> --analysis <cartella del volume> --out <file>`). `--source folder` prende la cartella di `DAODAN_FOLDER`; l'analisi di confronto è una cartella del volume `daodan-flow-results` (`manifest.sqlite`, `engine-edges.sqlite` e i file accanto).
+- Sorgenti: `premap/npm_start.py` (`starts`, `builds`), `dynamic/app.py` e `app.cjs` (avvio, porta, arresto), `dynamic/explore.cjs` (esplorazione), `observed_entries.py` (candidati con fonte `observed`).
+- Tetti di `explore.cjs`: 25 pagine, 300 pressioni, 600 s, 3 s per il click. Ogni controllo si preme dopo aver ricaricato la pagina. Playwright `playwright-core` 1.64.1, Chromium headless shell.
+- Un controllo è un candidato `observed` se la pressione ha fatto partire una funzione del progetto o ha inviato una richiesta, e nessun candidato statico ha la stessa etichetta e lo stesso evento.
+- Non misura nessun flusso: il confronto con i flussi del riferimento non è stato fatto.
+
+### Risultati
+
+Su phazly, 22 novembre 2026, file `results/explore/phazly-full-src.json`; la corsa sulla sorgente incompleta del volume è `results/explore/phazly-volume-src.json` (sorgente: una copia ridotta del progetto vero, senza `node_modules`, `target` e senza alcun file `.env*` o chiave; analisi di confronto `possible-in/phazly5`, 194 candidati statici):
+
+| App | Avvio | Pagine | Controlli | Premuti | Con effetto |
+|---|---|---|---|---|---|
+| `landing-app` | `npm run dev`, porta 5173 stampata | 8 | 58 | 39 | 38 |
+| `admin-app` | parte, porta 5174 | 1 | 0 | 0 | 0 |
+| `react-app` | parte, porta 5173 | 1 | 0 | 0 | 0 |
+
+- `admin-app` e `react-app` mostrano una pagina vuota: l'app lancia «Missing required Firebase configuration» perché le variabili `VITE_FIREBASE_*` stanno in file `.env` che la copia non porta. La lacuna `page_without_controls` lo dice con l'errore. Dare valori di prova alle variabili mancanti non è deciso.
+- Saltati nella `landing-app`: 13 collegamenti fuori dall'app, 2 campi che chiedono un valore, 1 controllo non operabile; 3 pressioni fallite.
+- Candidati `observed`: 38, tutti della `landing-app`. I candidati statici di phazly5 non hanno etichetta con evento `click` (0 su 194): quindi la corrispondenza per nome non ne trova nessuno (`matched` 0) e i 38 sono tutti «recuperati» rispetto a quel confronto, che è debole. Gli eventi scartati su un componente sono 0 in quell'analisi: la domanda «quanti ne recupera» non ha un denominatore e non si risponde qui.
+- Un controllo non ha un gestore isolato: la copertura dice quali funzioni sono partite, non quale ha chiamato il click, e dopo un click React ridisegna (hook condivisi come `useTheme`, `Nav`). Le righe elencano le funzioni partite.
+- Lacuna `calls_unmapped`: 13 script dell'app (per lo più pacchetti già compilati dal server di sviluppo) girano senza mappa dei sorgenti.
+
+### Non misurato
+
+- Un progetto con un backend raggiungibile: l'esecuzione non ha rete, e `react-app` e `admin-app` non arrivano a mostrare un controllo.
+- I flussi del riferimento e il loro numero chiuso: nessuna misura.
+- pnpm, Yarn e Bun: `start_runner_not_supported`, non eseguiti.
+- La sorgente `phazly3-src` sul volume è incompleta (mancano `react-app/src/data` e `landing-app/src/assets/lp`): le app non si compilano, e la corsa su quella sorgente dà solo pagine di errore del bundler. Il risultato sopra usa la copia ridotta del progetto vero.

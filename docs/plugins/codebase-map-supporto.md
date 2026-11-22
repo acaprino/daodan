@@ -60,7 +60,7 @@ Nel giro senza analizzatore: plsql (1 caso, 1 file), sql (7 casi, 51 file).
 
 ## Build tool e toolchain
 
-La pre-mappa ha 29 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
+La pre-mappa ha 30 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
 
 ### Fonti della pre-mappa
 
@@ -74,6 +74,7 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 | `python-tests` | daodan/premap/v1 | lettore: legge i file | `premap/python_tests.py` | not_needed 115, ran 7 |
 | `npm-files` | daodan/premap/v1 | lettore: legge i file | `premap/npm_lock.py` | not_needed 86, ran 36 |
 | `npm-tests` | daodan/premap/v6 | lettore: legge i file | `premap/npm_tests.py` | not_needed 113, ran 9 |
+| `npm-start` | daodan/premap/v1 | lettore: legge i file | `premap/npm_start.py` | non misurato: non era nel giro |
 | `jvm-files` | daodan/premap/v4 | lettore: legge i file | `premap/jvm_files.py` | not_needed 100, ran 22 |
 | `project-files` | daodan/premap/v2 | lettore: legge i file | `premap/project_files.py` | not_needed 115, ran 7 |
 | `gitmodules` | daodan/premap/v1 | lettore: legge i file | `premap/gitmodules.py` | not_needed 120, ran 2 |
