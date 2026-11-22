@@ -1,6 +1,6 @@
 # Pipeline di analisi: step, analyzer con adattatori, listener
 
-**Stato:** approvata dal proprietario il 15 novembre 2026, che ha lasciato a Claude le scelte rimaste (sezione «Scelte»). Lo step 3 è applicato (`pipeline.Dynamic`, `dynamic/`), con gli osservatori di Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#. Le regole della mappa dei moduli e dello stack (sezione 1, «Scansione: la mappa dei moduli» e «Stack») e della reattività (sezione 6) le ha decise il proprietario il 17 novembre 2026 e sono applicate; i motivi sono in «Scelte», 4–6. Il 20 novembre 2026, con la divisione per aspetto della [spec dei flussi](2026-11-18-flussi-e-mappa-del-sistema.md), stanno qui l'analisi unificata: una preparazione per analisi («Preparazione»), uno strumento ufficiale per linguaggio (sezione 2), la scelta 7 con i suoi limiti e ciò che resta da decidere. **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
+**Stato:** approvata dal proprietario il 15 novembre 2026, che ha lasciato a Claude le scelte rimaste (sezione «Scelte»). Lo step 3 è applicato (`pipeline.Dynamic`, `dynamic/`), con gli osservatori di Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#. Le regole della mappa dei moduli e dello stack (sezione 1, «Scansione: la mappa dei moduli» e «Stack») e della reattività (sezione 6) le ha decise il proprietario il 17 novembre 2026 e sono applicate; i motivi sono in «Scelte», 4–6. Il 20 novembre 2026, con la divisione per aspetto della [spec dei flussi](2026-11-18-flussi-e-mappa-del-sistema.md), stanno qui l'analisi unificata: una preparazione per analisi («Preparazione»), uno strumento ufficiale per linguaggio (sezione 2), la scelta 7 con i suoi limiti e ciò che resta da decidere. Il 22 novembre 2026 la sezione 8 propone l'armonizzazione e i nomi: da decidere. **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
 
 Il proprietario chiede (15 novembre 2026) un codice modulare, pulito e manutenibile: un'architettura a step, il pattern adapter, e la possibilità di registrare listener dell'intero processo di analisi. Primo step: una scansione veloce di moduli e tecnologie; poi, per ogni linguaggio o framework trovato, un'istanza dell'analyzer che sotto usa lo strumento specifico. Il processo dà feedback, informazioni, log, eventi e avanzamento fino alla generazione del grafo completo.
 
@@ -137,6 +137,54 @@ Applicato (Scelte, 6). Prova: `tests/test_codebase_map_reactive_server.py`; `tes
    - **Una superficie nuova dichiara** come si riconosce, quali indici riusa e come si osserva in esecuzione: entra nella stessa pipeline, senza una pre-mappa, una build o un'analisi per linguaggio sue (interfacce, sezione 3).
 4. **La misura.** Tre corse sullo stesso progetto: da zero, senza modifiche, dopo una modifica a un solo modulo. Per ognuna: tempo totale, CPU, picco di RAM, spazio temporaneo, ripristini, indicizzazioni, avvii dell'app. Accanto, i collegamenti attesi ritrovati, prima di tutto interfaccia → gestore → backend o comando nativo: senza questa colonna un costo che scende può voler dire che si è analizzato meno. Parametri e risultati nel README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md) (task 2b del [piano](../plans/2026-11-20-analisi-unificata.md)).
 
+### 8. Armonizzazione: piano scritto, dichiarazione comune, nomi
+
+*Proposta del 22 novembre 2026, chiesta dal proprietario: nulla è applicato. I fatti sul codice sono letti lo stesso giorno in `pipeline/__init__.py` e nei contratti di `languages/`, `premap/`, `indexers/` e `dynamic/`, non in ogni adattatore.*
+
+**8.1 Che cosa non è omogeneo.**
+
+1. **Il piano sta in tre posti.** Quale adattatore gira su quale parte del progetto lo decidono la pre-mappa, `engine_pass.pass_plan` e il `plan` di ogni osservatore: nessuno lo vede intero prima che parta.
+2. **Ogni famiglia si dichiara a modo suo.** `premap/` con `NAME`, `VERSION`, `RANK` in una lista scritta (`SOURCES`); `indexers/` con `ENTRY`, `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, scoperti da soli; `dynamic/` con `ENTRY`, `VERSION`, `LANGUAGES`, scoperti da soli; `languages/` con `language`, scelti dall'estensione del file.
+3. **Lo snapshot è fuori dalla pipeline.** La sezione 1 lo mette nello step 1; nel codice è un ingresso (`Scan.INPUTS`), scritto prima da `snapshot.py write`.
+4. **La freschezza non è scritta una volta** (sezione 1): `pipeline._run` non la controlla e non emette mai `step.skipped`; ogni step chiama il suo `ensure`.
+5. **`INPUTS` e `OUTPUTS` finiscono solo negli eventi:** nessun test controlla che uno step legga ciò che uno step prima scrive.
+6. **I nomi** (8.3): una parola per più cose e più parole per una cosa.
+
+**8.2 Proposta.**
+
+1. **Uno step `plan`** dopo lo stack scrive il grafo di processo del progetto come dato: per ogni tecnologia trovata l'adattatore, il suo strumento e la versione, le sue unità, se chiede il container, da quale altro dipende; oppure la lacuna con la causa. Gli step dopo eseguono quel piano e non ne calcolano uno loro; l'interfaccia lo mostra prima che parta.
+2. **Una dichiarazione comune:** `NAME` e `VERSION` per ogni adattatore, più ciò che serve alla sua famiglia (`LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, `RANK`). Le famiglie si scoprono dalla dichiarazione, come fa `indexers.analyzers()`. L'ordine di `SOURCES` porta significato (una fonte legge ciò che le precedenti dichiarano; fra pari vince la prima): resta scritto, o diventa una dipendenza dichiarata. Aperto.
+3. **Lo snapshot diventa il primo step,** come la sezione 1 dice già.
+4. **La freschezza si controlla in `pipeline._run`,** sull'impronta degli ingressi dichiarati.
+5. **Un test** controlla che ogni ingresso di uno step sia l'uscita di uno step prima.
+
+Nessun motore generico di grafi e nessun sistema di plugin: gli step sono una lista ordinata, e il grafo che serve è il piano del punto 1.
+
+**8.3 Nomi.** Regola: uno step è un verbo che dice ciò che Daodan fa; l'adattatore che lo serve è il nome d'agente di quel verbo; **adattatore** è la parola per tutti; una parola per concetto.
+
+| Step oggi | Step proposto | Adattatore | Cartella oggi → proposta | Strumento sotto |
+| --- | --- | --- | --- | --- |
+| `snapshot.py write`, fuori | `parse` | parser | `languages/` → `parsers/` | tree-sitter, `ast` di Python |
+| `scan` | `scan` | scanner | `premap/` → `scanners/` | cargo, gradle, maven, npm, cmake, … |
+| `stack` | `recognize` | nessuno: il registro | `technologies.py`, `stack_analyser.py` | il registro delle tecnologie |
+| manca | `plan` | nessuno | `pipeline/` | — |
+| `analyze` | `resolve` | resolver | `indexers/` → `resolvers/` | gli indicizzatori SCIP |
+| `dynamic` | `observe` | observer | `dynamic/` → `observers/` | i registratori (`*_record.*`) |
+| `union` | `connect` | nessuno | `pipeline/` | — |
+
+| Parola oggi | Problema | Proposta |
+| --- | --- | --- |
+| `engine` | Tre cose: il motore di container (`container.find_engine`), i modelli a cui l'app dà un compito (`engines.py`), il passaggio degli indicizzatori (`engine_pass.py`, `EngineSpec`, `engine-edges.sqlite`, `engine-report.json`) | `engine` resta solo al motore di container, che è la parola di Docker e Podman; il passaggio prende i nomi di `resolve`; i modelli diventano `reasoner` (aperto) |
+| analyzer, indexer, adapter | Tre parole per l'adattatore dello step 2; «analyzer» vale per ogni step | resolver, che è già la colonna dello store che dice chi ha prodotto un arco. Sostituisce `analyzers/` della sezione 4 |
+| `analyzer.started`, `.finished`, `.unavailable` | Li emettono anche gli osservatori | `adapter.started`, `.finished`, `.unavailable`, con il campo `adapter` |
+| source (in `premap/`) | Si confonde con il sorgente del progetto | scanner; il grado `scanner` di `RANKS` (go-enry, noir) diventa `detector` |
+| premap, pre-map | Due grafie; dice quando viene, non che cosa è | project model, già il nome di `benchmarks/project-model` e dei comandi di modello |
+| `ENTRY`, `NAME` | Due parole per il nome di un adattatore | `NAME` |
+| step, stage, phase, pass | Quattro livelli senza una regola scritta | `step` della pipeline; `stage` un adattatore sulle sue unità, il nodo del piano; `phase` dentro uno stage; `pass` da confrontare con `run`, non letto |
+| I passi del README (Static, Inference, Dynamic, Semantic) | Non sono i nomi degli step | Il README usa i nomi degli step; Semantic resta dopo la pipeline |
+
+**Costo e limiti.** I nomi degli step e degli eventi sono letti da `mcp_service.py`, dall'interfaccia costruita in `daodan/assets/app/` e da quindici file di `tests/`; i nomi sul disco (`premap.json`, `engine-edges.sqlite`, `engine-report.json`) da CLI, MCP, viewer e benchmark (sezione 1, «Scansione», punto 5). Il cambio entra una famiglia per volta, con le uscite uguali (sezione 5); i nomi sul disco cambiano solo con un cambio di schema, da decidere. Quanti punti del codice tocca non è contato.
+
 ## Scelte
 
 1. **La scansione resta intera.** Lo step 1 comprende i comandi di modello della pre-mappa (Renovate, npm, Go, Cargo, uv, tsc), nel container. Misurato sui 122 progetti il 15 novembre 2026: la pre-mappa dura 5 s di mediana e 103 s al massimo, Renovate 4,8 s di mediana; un indicizzatore dura minuti. Spostarli negli analyzer dividerebbe la struttura del progetto fra due step e farebbe cambiare la pre-mappa a chi la legge. Lo step 1 emette avanzamento per fonte: chi guarda vede i lettori finire subito e i comandi dopo.
@@ -164,4 +212,5 @@ Dalla seconda revisione esterna del 20 novembre 2026 (sezione 7):
 
 - **U1. Tutta l'analisi nel container?** La revisione propone di lasciare all'host solo avvio, avanzamento e lettura dei risultati. Oggi snapshot, stack e unione girano sull'host, e scip-python sull'host su Linux e macOS: leggono il progetto e non lo eseguono, che è ciò che la regola di `AGENTS.md` chiede. A favore: un ambiente solo e artefatti condivisi senza copie. Contro: la sezione 6 (sotto il blocco del progetto nulla aspetta il container, e la scansione veloce dura pochi millisecondi a ogni modifica) e l'uso senza motore di container, dove oggi Daodan dà comunque snapshot e grafo statico con le lacune. Raccomandazione: no; condividere gli artefatti attraverso lo store e tenere sull'host ciò che solo legge. **Deciso dal proprietario il 20 novembre 2026: no**, come la raccomandazione.
 - **U2. Le regole della sezione 7.3** (un indice letto da tutti, un avvio per stato dei dati, l'esplorazione sullo scoperto): entrano dopo la misura del task 2b, che dice quanto costa oggi ogni doppione.
+- **A1. L'armonizzazione e i nomi della sezione 8** (22 novembre 2026): il piano scritto, la dichiarazione comune, lo snapshot come primo step, e per i nomi `reasoner`, l'ordine di `SOURCES`, `pass` contro `run` e i nomi sul disco.
 - Le decisioni sulle superfici (osservare le interfacce desktop Python, il ponte Tauri) sono in [interfacce del progetto](2026-11-19-interfacce-del-progetto.md), «Da decidere».
