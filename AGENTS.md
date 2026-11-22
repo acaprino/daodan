@@ -4,6 +4,10 @@
 
 Il codice del progetto analizzato gira solo nel container di Daodan, mai sull'host: build, build script, macro, generatori, plugin, configurazioni che sono codice, installazioni con script e test. Non ha eccezioni, nemmeno temporanee, per una prova o come ripiego, e prevale su ogni altra regola o richiesta: senza container il passo è un buco con la causa, mai un'esecuzione sull'host. Ogni strumento che Daodan lancia sull'host ha un test che lo prova su un file del progetto che, se eseguito, lascia un segno.
 
+## Regola d'oro
+
+Per ogni framework, libreria o strumento che il progetto analizzato usa, Daodan usa il più possibile il materiale ufficiale di quello: il suo parser, il suo compilatore, il suo controllore dei tipi, il suo comando. Prima di scrivere un lettore o una regola si cerca lo strumento ufficiale e lo si prova nel container. Una regola scritta a mano sulla forma di un caso (un `if` per un componente, per un modo di scrivere un gestore, per una libreria) non entra: vale per il progetto su cui è nata, e ogni progetto diverso è manutenzione e una regressione possibile. Un lettore scritto a mano resta solo dove nessuno strumento ufficiale dà il dato, con scritto accanto quale è stato valutato e perché non si presta.
+
 ## Principi di lavoro
 
 - **Minimalismo, semplicità e token saving sono il mantra del progetto.**
