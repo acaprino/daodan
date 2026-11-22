@@ -22,6 +22,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import code_graph  # noqa: E402
 import edge_view  # noqa: E402
 import flows  # noqa: E402
 import semantic_store  # noqa: E402
@@ -196,9 +197,9 @@ def _held(node, source: bytes, grammar: str) -> bool:
 
 
 def _resolved(facts, file, places):
-    """Respect the exact indexed read, including an ambiguous or external answer that forbids guessing."""
+    """Respect the exact indexed read or call, including an ambiguous or external answer that forbids guessing."""
     for at in places:
-        reads = facts.reads.get((file, *at), ())
+        reads = [*facts.reads.get((file, *at), ()), *facts.calls_at.get((file, *at), ())]
         if any(edge_view.uncertainty(read) for read in reads):
             return None, "unresolved"
         for read in reads:
@@ -370,12 +371,14 @@ def _passed(facts, references, names, classes, anonymous, parsed):
     return out
 
 
-def _code(text: str, grammar: str | None) -> dict[str, list[str]]:
-    """The captures of an expression written as text in the markup, read with the `code` grammar's query."""
+def _code(text: str, grammar: str | None, *, where: bool = False) -> dict[str, list]:
+    """The captures of an expression written as text in the markup, read with the `code` grammar's query; with
+    `where`, each is `(text, row, column)`, where it starts in the expression."""
     source, found = text.encode("utf-8"), defaultdict(list)
     for captures in _matches(source, grammar) if grammar else ():
         for name, nodes in captures.items():
-            found[name] += [_text(source, node) for node in nodes]
+            found[name] += [(_text(source, node), *node.start_point) if where else _text(source, node)
+                            for node in nodes]
     return found
 
 
@@ -412,12 +415,110 @@ def _at(node) -> tuple[int, int]:
     return node.start_point[0] + 1, node.start_point[1]
 
 
-def bindings(source: bytes, grammar: str, renders=None, root=None) -> list[dict]:
+FUNCTIONS = ("function_declaration", "function_expression", "arrow_function", "method_definition",
+             "generator_function", "generator_function_declaration")  # the nodes a JSX binding is written in
+JSX = ("jsx_element", "jsx_self_closing_element", "jsx_fragment")
+JSX_GRAMMARS = ("tsx", "javascript")  # the grammars whose files write components as markup of their own
+JSX_LANGUAGES = ("typescript", "javascript")  # the languages of the index's answers for those files
+
+
+def _jsx_value(node) -> bool:
+    """Whether an expression is markup: JSX itself, or written through parentheses, a type assertion, a conditional
+    or `&&` and `||` (`cond && <Row />`)."""
+    while node is not None:
+        if node.type in JSX:
+            return True
+        if node.type == "ternary_expression":
+            return any(_jsx_value(node.child_by_field_name(side)) for side in ("consequence", "alternative"))
+        if node.type == "binary_expression":
+            return any(_jsx_value(node.child_by_field_name(side)) for side in ("left", "right"))
+        if node.type not in ("parenthesized_expression", "as_expression", "satisfies_expression", "non_null_expression"):
+            return False
+        node = node.named_children[0] if node.named_children else None
+    return False
+
+
+def _returns_jsx(function) -> bool:
+    """Whether a function returns markup, in the body of an arrow or in a `return` that is not a nested function's:
+    what makes it a component, which a prop may hold as a value (`Component={About}`) with no event in it."""
+    body = function.child_by_field_name("body")
+    if body is None or body.type != "statement_block":
+        return _jsx_value(body)
+    stack = [body]
+    while stack:
+        node = stack.pop()
+        if node.type == "return_statement" and any(_jsx_value(child) for child in node.named_children):
+            return True
+        stack.extend(child for child in node.named_children if child.type not in FUNCTIONS)
+    return False
+
+
+def _props(function, source: bytes) -> tuple[dict[str, str], str | None]:
+    """How a component function names its props: `{local name: prop}` for a first parameter that destructures them
+    (`{ onSave, onX: go, onY = noop }`), else the name of a first parameter that holds them (`props`)."""
+    parameters = function.child_by_field_name("parameters")
+    first = next((node for node in parameters.named_children if not node.is_extra), None) if parameters is not None \
+        else function.child_by_field_name("parameter")
+    if first is not None and first.type in ("required_parameter", "optional_parameter"):
+        first = first.child_by_field_name("pattern")
+    if first is None:
+        return {}, None
+    if first.type == "identifier":
+        return {}, _text(source, first)
+    names = {}
+    for node in first.named_children if first.type == "object_pattern" else ():
+        if node.type == "object_assignment_pattern":
+            node = node.child_by_field_name("left")
+        if node.type == "shorthand_property_identifier_pattern":
+            names[_text(source, node)] = _text(source, node)
+        elif node.type == "pair_pattern":
+            local = node.child_by_field_name("value")
+            local = local.child_by_field_name("left") if local is not None and local.type == "assignment_pattern" else local
+            if local is not None and local.type == "identifier":
+                names[_text(source, local)] = _text(source, node.child_by_field_name("key"))
+    return names, None
+
+
+def _prop(node, source: bytes, name: str | None = None, member: tuple[str, str] | None = None):
+    """The prop of the component a handler written at `node` is, and the function that takes it: `name`, a local name
+    the function destructures, or `member`, `(props, prop)` of `props.onSave`; the nearest function that has it."""
+    while node is not None:
+        if node.type in FUNCTIONS:
+            names, holder = _props(node, source)
+            if name in names:
+                return names[name], node
+            if member and member[0] == holder:
+                return member[1], node
+        node = node.parent
+    return None, None
+
+
+def _inline_prop(inline, source: bytes, node):
+    """The prop a function written in place calls and does nothing else: `() => onSave(1)`, `() => props.onSave()`."""
+    body = inline.child_by_field_name("body")
+    if body is not None and body.type == "statement_block" and len(body.named_children) == 1:
+        body = body.named_children[0]
+        body = body.named_children[0] if body.type == "expression_statement" and body.named_children else body
+    call = body if body is not None and body.type == "call_expression" else None
+    callee = call.child_by_field_name("function") if call is not None else None
+    if callee is None:
+        return None, None
+    if callee.type == "member_expression" and callee.child_by_field_name("object").type == "identifier":
+        return _prop(node, source, member=(_text(source, callee.child_by_field_name("object")),
+                                           _text(source, callee.child_by_field_name("property"))))
+    return _prop(node, source, name=_text(source, callee)) if callee.type == "identifier" else (None, None)
+
+
+def bindings(source: bytes, grammar: str, renders=None, root=None, components=None) -> list[dict]:
     """The events bound in a file of markup, from its tree and its grammar's query (`QUERIES`), one per name an
     attribute binds (each branch of a conditional): the attribute as written (`shape`), its line, the name it binds
-    (`handler` and where it is written, `at`, or `called` when the syntax says the event calls it) or where a
+    (`handler`, or `called` when the syntax says the event calls it, with `at`, where the name is written, in a
+    template's expression too, for the snapshot's reference there to resolve it) or where a
     function written in place as the handler starts (`inline`), and the label of its element with the key when it
-    is one (`_label`)."""
+    is one (`_label`). On a component's tag (a capital letter, a member, a Vue tag with `-`) the tag and where it is
+    written (`tag`, `tag_at`); where the handler is a prop of the component function it is written in, that prop and
+    the function (`prop`, `function_at`), and `registers` when the binding is only the prop's (`props.onSave`): a row
+    of the parent's tag stands for it, as for `() => onSave()` where the function is a component (`_on_components`)."""
     matches, code = _matches(source, grammar, root=root), QUERIES["queries"][grammar].get("code")
     if renders is not None:
         for m in matches:
@@ -431,14 +532,20 @@ def bindings(source: bytes, grammar: str, renders=None, root=None) -> list[dict]
                     stack.extend(item.named_children)
                 else:
                     renders.add(_at(definition))
+    if components is not None and root is not None and grammar in JSX_GRAMMARS:
+        stack = [root]
+        while stack:
+            node = stack.pop()
+            if node.type in FUNCTIONS and _returns_jsx(node):
+                components.add(_at(node))
+            stack.extend(node.named_children)
     elements = sorted(((m["tag"][0], m["element"][0]) for m in matches if "tag" in m),
                       key=lambda pair: pair[1].end_byte - pair[1].start_byte)
     parts = sorted(((kind, node) for m in matches if not {"tag", "event"} & set(m)
                     for kind, nodes in m.items() for node in nodes), key=lambda part: part[1].start_byte)
     def scope(tag):
         # Distinct JSX functions in the same file render different control trees.
-        while tag is not None and tag.type not in ("function_declaration", "method_definition",
-                                                    "arrow_function", "function_expression"):
+        while tag is not None and tag.type not in FUNCTIONS:
             tag = tag.parent
         return tag.start_byte if tag is not None else 0
 
@@ -457,8 +564,21 @@ def bindings(source: bytes, grammar: str, renders=None, root=None) -> list[dict]
             if kind in m:
                 bound["inline" if kind == "inline" else "at"] = _at(m[kind][0])
         for node in m.get("code", [])[:1] if events and not bound else ():
-            bound = {kind: names[0] for kind, names in _code(_text(source, node), code).items()
-                     if kind in ("handler", "called")}
+            for kind, (name, row, column) in [(kind, names[0]) for kind, names in
+                                              _code(_text(source, node), code, where=True).items()
+                                              if kind in ("handler", "called")][:1]:
+                # the name is written in the expression: where it starts in the file, as the snapshot's references say
+                bound = {kind: name, "at": (node.start_point[0] + 1 + row,
+                                            node.start_point[1] + column if row == 0 else column)}
+        prop = function = None  # the prop a component's handler is, in the component that takes it
+        if events and grammar in JSX_GRAMMARS:
+            if "prop" in m and not bound:  # `props.onSave`: a binding only where `props` is the component's own
+                prop, function = _prop(events[0], source, member=(_text(source, m["owner"][0]), _text(source, m["prop"][0])))
+                bound = {"registers": True} if prop else {}
+            elif "handler" in bound:
+                prop, function = _prop(events[0], source, name=bound["handler"])
+            elif "inline" in m:  # `() => onSave()`
+                prop, function = _inline_prop(m["inline"][0], source, events[0])
         once = (events[0].start_byte, *sorted(bound.items())) if events else None
         if not events or not bound or once in seen:
             continue
@@ -470,12 +590,15 @@ def bindings(source: bytes, grammar: str, renders=None, root=None) -> list[dict]
         if tag_name is None and tag:
             tag_name = next((child for child in tag.named_children if child.type == "tag_name"), None)
         tag_text = _text(source, tag_name) if tag_name else ""
-        forwarded = bool(tag_text) and (tag_text[:1].isupper() or (
-            grammar in ("tsx", "javascript") and tag_name.type != "identifier"
+        component = bool(tag_text) and (tag_text[:1].isupper() or (
+            grammar in JSX_GRAMMARS and tag_name.type != "identifier"
         ) or (grammar == "vue" and (tag_text == "component" or "-" in tag_text)))
         out.append({"shape": source[at:events[-1].end_byte].decode("utf-8", errors="replace"),
                     "line": events[0].start_point[0] + 1, **bound, "column": events[0].start_point[1],
-                    **({"forwarded": True} if forwarded else {}), "label": label, "key": key})
+                    **({"tag": tag_text, "tag_at": _at(tag_name)} if component else {}),
+                    **({"prop": prop, "function_at": _at(function)} if prop else {}),
+                    **({"markup": True} if "inline" in m and _returns_jsx(m["inline"][0]) else {}),
+                    "label": label, "key": key})
     return out
 
 
@@ -493,34 +616,241 @@ def _handlers(facts: flows.Facts, classes: dict, values: set, file: str, found: 
             return [{"symbol": symbol, "handler_source": origin}] if symbol else []
     if (file, *found.get("at", ())) in values:
         return []
+    # A call written in a markup's expression (Vue, Svelte) names what its reference resolved to, else what the file's
+    # own script defines: a name is not looked up across the project.
+    template = "called" in found and "method" not in found
     handler, why = _method(facts, classes, file, line, found["method"]) if "method" in found \
-        else (facts.local_function(name, file, line, column=found["column"]), "")
+        else (facts.file_function(name, file) if template
+              else facts.local_function(name, file, line, column=found["column"]), "")
     if handler:
         return [{"symbol": handler, "handler_source": "classe" if "method" in found else "locale"}]
+    holder = facts.enclosing(file, line, column=found["column"])
+    where = facts.node(holder["id"]) if holder else f"{file}::{flows.MODULE}"
+    if (file, name) in facts.outside:
+        return [{"symbol": where, "gap": f"{name} is imported from {facts.outside[file, name]}, which the snapshot does "
+                                         "not resolve to a file of the project"}]
     if "called" not in found:
         return [{"binding": name, "unbound": True}]
-    holder = facts.enclosing(file, line, column=found["column"])
-    return [{"symbol": facts.node(holder["id"]) if holder else f"{file}::{flows.MODULE}",
-             "gap": f"handler {name} not resolved" + (f": {why}" if why else "")}]
+    return [{"symbol": where, "gap": f"handler {name} not resolved" + (f": {why}" if why else "")}]
 
 
-def _markup(facts, file, source, grammar, root, classes, values, render_symbols):
-    """Bindings from this file, and render-only definitions to exclude after all files are read."""
-    out = []
-    renders = set()
-    for found in bindings(source, grammar, renders, root) if root is not None else ():
+def _shape(attribute: str, tag: str) -> str:
+    """The shape of an event on a component the project does not hold: the attribute itself when the table knows it
+    (`onClick`), else one for the component and the attribute, classified once (`<Dialog onOpenChange>`)."""
+    return attribute if attribute in QUERIES["events"] else f"<{tag} {attribute}>"
+
+
+def _component(facts, file: str, found: dict, grammar: str, stems: set[str]) -> tuple[str, str | None]:
+    """What a component tag is: `("project", child)` when the project holds the component, `child` its symbol where
+    the snapshot's read of the tag names it (JSX); else `("outside", module)`, an import from a package, a member of
+    one (`motion.button`), a global or a library's factory (`styled.div`). A Vue or Svelte tag is the project's when
+    its script imports it from a file of the project or a file of the snapshot bears its name. Where the index declares
+    the attribute the tag is not asked (`_declared`): the engine's declaration is the source when there is one."""
+    tag = found["tag"]
+    if grammar in JSX_GRAMMARS:
+        head = tag.partition(".")[0]
+        reads = facts.reads.get((file, *found["tag_at"]), ())
+        targets = [r["target_id"] for r in reads if facts.declarations.get(r.get("target_id") or "", {}).get("kind")
+                   in ("function", "method", "class")]
+        if targets:
+            return "project", facts.node(targets[0])
+        if any(r.get("reason") == "project-value" or r.get("engine_candidate") for r in reads):  # the engine placed it
+            return "project", None
+        if (file, head) in facts.outside:
+            return "outside", facts.outside[file, head]
+        return ("project", None) if head in facts.imported.get(file, ()) else ("outside", None)
+    pascal = "".join(part.capitalize() for part in tag.split("-"))
+    for name in (tag, pascal):
+        if name in facts.imported.get(file, ()):
+            return "project", None
+        if (file, name) in facts.outside:
+            return "outside", facts.outside[file, name]
+    return ("project", None) if tag.replace("-", "").replace("_", "").lower() in stems else ("outside", None)
+
+
+def _named(facts, file: str, at: tuple[int, int]) -> str | None:
+    """The symbol of the function written at `at` when it has a name of its own: an anonymous one is its owner's for
+    `Facts.node`, and a callback (`items.map((item) => ...)`) is not the component around it."""
+    declaration = facts.written_function(file, *at)
+    return facts.node(declaration["id"]) if declaration and declaration["name"] != "(anonymous)" else None
+
+
+def _markup(facts, file, source, grammar, root, classes, values, render_symbols, shared):
+    """Bindings from this file, and render-only definitions to exclude after all files are read. `shared` collects
+    what a component's parent joins to its own handler, across files: the shapes each component binds a prop to
+    (`props`), the functions that return markup (`jsx`), and the stems of the project's Vue and Svelte files."""
+    out, renders, components = [], set(), set()
+    for found in bindings(source, grammar, renders, root, components) if root is not None else ():
         owner = facts.enclosing(file, found["line"], column=found["column"])
-        candidate = {"reader": ATTRIBUTE, "shape": found["shape"], "site": f"{file}:{found['line']}",
-                     "event": QUERIES["events"].get(found["shape"], found["shape"]),
-                     "column": found["column"], "owner": facts.node(owner["id"]) if owner else f"{file}::{flows.MODULE}",
-                     **({"forwarded": True} if found.get("forwarded") else {})}
+        attribute = found["shape"]
+        kind = _component(facts, file, found, grammar, shared["stems"]) if found.get("tag") else None
+        shape = _shape(attribute, found["tag"]) if kind and kind[0] == "outside" else attribute
+        event = QUERIES["events"].get(attribute, attribute)
+        child = _named(facts, file, found["function_at"]) if found.get("prop") else None
+        if child and (kind is None or kind[0] == "outside"):
+            shared["props"][child, found["prop"]].append((shape, event))  # a component binds the prop it is given to this event
+        if found.get("registers"):
+            continue
+        candidate = {"reader": ATTRIBUTE, "shape": shape, "site": f"{file}:{found['line']}", "event": event,
+                     "column": found["column"], "owner": facts.node(owner["id"]) if owner else f"{file}::{flows.MODULE}"}
         label = {"label": found["label"], **({"key": found["key"]} if found["key"] else {})}
-        out += [{**candidate, **bound, **label} for bound in _handlers(facts, classes, values, file, found)]
-    for at in renders:
-        declaration = facts.written_function(file, *at)
-        if declaration and declaration["name"] != "(anonymous)":
-            render_symbols.add(facts.node(declaration["id"]))
+        for bound in _handlers(facts, classes, values, file, found):
+            row = {**candidate, **bound, **label, **({"calls": child} if child and "inline" in found else {})}
+            out.append({**row, "component": {
+                "kind": kind[0], "child": kind[1], "tag": found["tag"], "attribute": attribute, "grammar": grammar,
+                "name": found.get("handler") or found.get("called"), "markup": bool(found.get("markup"))}} if kind else row)
+    render_symbols.update(filter(None, (_named(facts, file, at) for at in renders)))
+    shared["jsx"].update(filter(None, (_named(facts, file, at) for at in components)))
     return out
+
+
+def _component_value(row: dict, via: dict, functions: set[str]) -> bool:
+    """Whether what a component tag is given is a component, not a handler: a function written in place or declared by
+    the project that returns markup (`functions`), or, where the snapshot resolves no function, a name a JSX file writes
+    as a component (a capital letter)."""
+    if via["markup"]:
+        return True
+    if "gap" not in row:
+        return row.get("symbol") in functions
+    return via["grammar"] in JSX_GRAMMARS and str(via["name"] or "")[:1].isupper()
+
+
+def _gap_row(row: dict, why: str) -> dict:
+    """The row of a handler the readers cannot follow into a component: a gap at its site, which names why."""
+    return {key: value for key, value in row.items() if key not in ("symbol", "handler_source", "gap")} \
+        | {"symbol": row["owner"], "gap": why, "component_gap": True}
+
+
+def _through(row: dict, via: dict, props: dict) -> list[dict]:
+    """A handler given to a component of the project: the parent's row is each event the component binds the prop to
+    (`props`), else a gap that names the component and the prop. A Vue or Svelte component's event is that gap: the
+    component's `emit` or `dispatch` is not joined to the parent's handler. Where the index does not declare the
+    attribute (`_declared`) this reading of the syntax is the only one: the engine's declaration is the source when
+    there is one. Evaluated for it: the TypeScript checker, which the index already runs (the edge view's
+    `occurrences`)."""
+    tag, attribute = via["tag"], via["attribute"]
+    jsx = via["grammar"] in JSX_GRAMMARS
+    if shapes := props.get((via["child"], attribute), []) if jsx else []:
+        return [{**row, "shape": shape, "event": event} for shape, event in dict.fromkeys(shapes)]
+    if not jsx:
+        why = f"{attribute} on <{tag}>, a component of the project: its handler is not joined to the event the component emits"
+    elif via["child"] is None:
+        why = f"{attribute} is given to <{tag}>, a component of the project that this reader does not resolve"
+    else:
+        why = (f"{attribute} is given to <{tag}> ({via['child']}), which binds it to no event this reader sees: "
+               "passed on, stored or called from code")
+    return [_gap_row(row, why)]
+
+
+def _occurrences(view: dict) -> dict:
+    """The index's answers at sites the snapshot lists no reference for, in the files of JSX, by file and line."""
+    out = defaultdict(list)
+    for edge in view["occurrences"]:
+        if edge["language"] in JSX_LANGUAGES:
+            out[edge["file"], edge["l0"]].append(edge)
+    return out
+
+
+def _declared(edges: list[dict], attribute: str, grammar: str) -> dict | None:
+    """What the checker declares an attribute written on that line to be, from the index's answers there: the member
+    of a type that has the attribute's name. `element`, a type of a package the grammar's data (`declared`) lists as an
+    element's own attributes; `library`, a type of another package, its `shape` the declaring member; `project`, a type
+    of the project, with the declaration of the member when that is a function. None where the index has no such
+    answer or answers two (two tags on a line): the other readers decide then."""
+    data = QUERIES["declared"][grammar]
+    elements = (QUERIES["declared"][data] if isinstance(data, str) else data)["elements"]
+    found = {}
+    for edge in edges:
+        split = code_graph.split_symbol(edge["symbol"] or "")
+        items = code_graph.descriptors(split[4]) if split else []
+        if len(items) > 1 and items[-1][0] == attribute and items[-2][1] == "type":
+            found[split[2], items[-2][0]] = edge
+    if len(found) != 1:
+        return None
+    [((package, declaring), edge)] = found.items()
+    member = f"{declaring}#{attribute}"
+    if edge["verdict"].startswith("project"):
+        return {"kind": "project", "member": member, "target": edge.get("target_id")}
+    if edge["verdict"] != "external":  # a dead end, a namespace: the index placed it nowhere
+        return None
+    if any(declaring.endswith(suffix) for suffix in elements.get(package, ())):
+        return {"kind": "element", "shape": attribute}
+    return {"kind": "library", "shape": f"{package} {member}"}
+
+
+def _handled(rows: list[dict], declared: dict, facts) -> dict:
+    """The events a function is bound to, `{symbol: [(shape, event, row index, whole)]}`: each row of an element, or of
+    a component the index declares the attribute of, by the symbol of its handler and by those it calls; `whole` when
+    the handler is that function or calls nothing else, so the row is no entry of its own beside the one it stands for."""
+    out, calls, counted = defaultdict(list), defaultdict(set), defaultdict(int)
+    for caller, targets in facts.called.items():  # by the function's id, as an inline handler is, and by its symbol
+        for key in {caller, facts.node(caller)}:
+            calls[key] |= {facts.node(target) for target in targets if target}
+            counted[key] += len(targets)  # a call the index does not resolve counts: it is other work
+    for index, row in enumerate(rows):
+        via, found, symbol = row.get("component"), declared.get(index), row.get("symbol")
+        if "gap" in row or row.get("unbound") or not symbol or (via is not None and (not found or found["kind"] == "project")):
+            continue
+        shape = row["shape"] if via is None else found["shape"]
+        event = row["event"] if via is None else QUERIES["events"].get(via["attribute"], via["attribute"])
+        for key in {symbol, *calls.get(symbol, ())}:  # whole: the event runs that function and nothing else
+            out[key].append((shape, event, index, key == symbol or counted[symbol] == 1))
+    return out
+
+
+def _declaring(row: dict, via: dict, found: dict, handled: dict, facts) -> tuple[list[dict], set[int]]:
+    """A handler given to an attribute the checker declares: a control like an element's or a library component's prop
+    by its declaration; one a type of the project declares goes into that project's component, which the index shows
+    binding it where a handler is that member or calls it (`_handled`): the parent's rows are those events, and the
+    rows of the component's own that are that member or only call it are the ones they replace, where the parent's row
+    has a handler; else a gap names the component and the member."""
+    attribute = via["attribute"]
+    event = QUERIES["events"].get(attribute, attribute)
+    if found["kind"] != "project":
+        return [{**row, "shape": found["shape"], "event": event}], set()
+    if not found["target"]:  # a member that is no function: no event
+        return [{**row, "forwarded": True}], set()
+    bound = handled.get(facts.node(found["target"]), [])
+    if not bound:
+        return [_gap_row(row, f"{attribute} is given to <{via['tag']}>, which the index declares as {found['member']} of the "
+                              "project: no reference it records binds it to an event of an element or of a library component")], set()
+    return ([{**row, "shape": shape, "event": event} for shape, event in dict.fromkeys((s, e) for s, e, _, _ in bound)],
+            {index for _, _, index, whole in bound if whole and not row.get("unbound")})
+
+
+def _on_components(rows: list[dict], shared: dict, facts, occurrences: dict) -> list[dict]:
+    """The rows of events bound on a component tag, each an entry, a question or a gap, by what the tag is. A value
+    that is a component is no handler: the row is `forwarded`. Where the index declares the attribute the declaration
+    decides (`_declared`, `_declaring`); else a component from outside the project is a control like an element, and
+    one of the project passes the handler into its own markup (`_through`)."""
+    declared = {}
+    for index, row in enumerate(rows):
+        via = row.get("component")
+        if via and via["grammar"] in JSX_GRAMMARS:
+            file, _, line = row["site"].rpartition(":")
+            if found := _declared(occurrences.get((file, int(line)), ()), via["attribute"], via["grammar"]):
+                declared[index] = found
+    handled = _handled(rows, declared, facts) if declared else {}
+    results, replaced = [], set()
+    for index, row in enumerate(rows):
+        via = row.get("component")
+        calls = row.get("calls")  # a function written in place that only calls the prop `calls` takes
+        row = {key: value for key, value in row.items() if key not in ("component", "calls")}
+        if calls in shared["jsx"]:  # a component's own: the entry is the parent's tag, as for `onClick={onSave}`
+            results.append([])
+        elif via is None or (row.get("unbound") and index not in declared):
+            results.append([row])
+        elif _component_value(row, via, shared["jsx"]):
+            results.append([{**row, "forwarded": True}])
+        elif index in declared:
+            found, taken = _declaring(row, via, declared[index], handled, facts)
+            results.append(found)
+            replaced |= taken
+        elif via["kind"] == "outside":
+            results.append([row])
+        else:
+            results.append(_through(row, via, shared["props"]))
+    return [row for index, found in enumerate(results) if index not in replaced for row in found]
 
 
 def _defined(value, key: str) -> str | None:
@@ -659,6 +989,9 @@ def _read_syntax(facts, db, view):
     values = {(read["file"], *read["span"][:2]) for read in view["reads"]
               if read.get("known_unrelated") and read.get("span")}
     out, attributes, renders = [], [], set()
+    shared = {"props": defaultdict(list), "jsx": set(),
+              "stems": {PurePosixPath(rel).stem.replace("-", "").replace("_", "").lower()
+                        for rel in facts.store.iter_paths() if rel.endswith((".vue", ".svelte"))}}
     for file in facts.store.iter_paths():
         refs = references.get(file, ())
         source, grammar = _file(facts, file, template=False, section=None if refs else "decorators")
@@ -672,8 +1005,9 @@ def _read_syntax(facts, db, view):
         if markup_grammar:
             tree = root if markup_grammar == grammar and template == source else _parse(template, markup_grammar)
             if tree is not None:
-                attributes.extend(_markup(facts, file, template, markup_grammar, tree, classes, values, renders))
-    return out + translated(facts, [row for row in attributes if row.get("symbol") not in renders])
+                attributes.extend(_markup(facts, file, template, markup_grammar, tree, classes, values, renders, shared))
+    found = _on_components(attributes, shared, facts, _occurrences(view))
+    return out + translated(facts, [row for row in found if row.get("symbol") not in renders])
 
 
 def _syntax(manifest: Path, *, inputs=None) -> list[dict]:
@@ -723,7 +1057,7 @@ def _declared_rows(manifest):
 def cached_syntax(manifest: Path) -> list[dict]:
     """Public candidates with verified handler, event and label; the model transport masks text before delivery."""
     fields = ("reader", "shape", "site", "symbol", "gap", "label", "event", "label_gap", "handler_source", "column",
-              "kind", "method", "path", "handler", "handler_confidence", "declared_in", "forwarded")
+              "kind", "method", "path", "handler", "handler_confidence", "declared_in", "forwarded", "component_gap")
     return [{"status": "candidate", **{key: row[key] for key in fields if row.get(key) is not None}}
             for row in _cached_rows(manifest) + _declared_rows(manifest) if not row.get("unbound")]
 
@@ -744,7 +1078,7 @@ def registry_rules(found):
     kinds = QUERIES["known_shapes"]
     known = {}
     for row in found:
-        if row.get("forwarded") or row.get("unbound"):
+        if row.get("forwarded") or row.get("unbound") or row.get("component_gap"):
             continue
         reader, shape = row["reader"], row["shape"]
         kind = row.get("kind") or kinds.get(reader, {}).get(shape)
@@ -758,7 +1092,8 @@ def registry_rules(found):
 
 def shape_questions(found, rules=()):
     """Only undecided shapes get a number; numbering stays stable as answers are recorded for this snapshot."""
-    rows = [row for row in found if not row.get("forwarded") and not row.get("unbound") and row["reader"] != RESIDUAL]
+    rows = [row for row in found if not row.get("forwarded") and not row.get("unbound") and not row.get("component_gap")
+            and row["reader"] != RESIDUAL]
     known = {(r.get("reader"), r.get("shape")) for r in [*rules, *registry_rules(rows)]}
     return [{"row": index, **shape} for index, shape in enumerate(shapes(rows), 1)
             if (shape["reader"], shape["shape"]) not in known]

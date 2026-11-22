@@ -577,6 +577,32 @@ class StoreReadTests(unittest.TestCase):
         self.assertIn(link, calls())
 
 
+class RenderOfAnImportedNameTests(unittest.TestCase):
+    """A component written as an element is rendered by the project's function of that name only when the file
+    imports the name from a file of the project: a package's `Button` is not the project's."""
+
+    BUTTON = "export function Button(props: any) {\n  return null;\n}\n"
+
+    def renders(self, imported: str) -> set[tuple[str, str]]:
+        work = Path(tempfile.mkdtemp(prefix="flow-render-")).resolve()
+        self.addCleanup(shutil.rmtree, work, True)
+        project = work / "app"
+        for rel, text in {"web/ui/Button.tsx": self.BUTTON,
+                          "web/Bar.tsx": f"{imported}\nexport function Bar() {{\n  return <div><Button /></div>;\n}}\n"}.items():
+            (project / rel).parent.mkdir(parents=True, exist_ok=True)
+            (project / rel).write_text(text, encoding="utf-8")
+        manifest = work / "out" / "manifest.sqlite"
+        snapshot.write_snapshot(project, manifest)
+        return {(e["from"], e["to"]) for e in flows.link_facts(manifest, [])["edges"] if e["type"] == "chiama"}
+
+    def test_a_component_a_package_exports_is_not_rendered_as_the_project_s_of_that_name(self):
+        self.assertEqual(self.renders("import { Button } from '@mui/material';"), set())
+
+    def test_a_component_imported_from_a_file_of_the_project_is_rendered(self):
+        self.assertEqual(self.renders("import { Button } from './ui/Button';"),
+                         {("web/Bar.tsx::Bar", "web/ui/Button.tsx::Button")})
+
+
 class ExternalServiceTests(unittest.TestCase):
     """The services of others the links know are the ones the stack step and the module graph give, by id."""
 

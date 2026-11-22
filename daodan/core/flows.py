@@ -370,8 +370,11 @@ class Facts:
             span = ref.get("span") or [None, None]
             self.reads[(ref["file"], span[0], span[1])].append(ref)
         self.called = defaultdict(list)
+        self.calls_at = defaultdict(list)  # the calls the snapshot records, by where their callee starts
         self.native_dispatch_callers = {r["caller"] for r in view["references"] if "tauri_command" in r}
         for ref in view["references"]:
+            span = ref.get("span") or [None, None]
+            self.calls_at[(ref["file"], span[0], span[1])].append(ref)
             # Even an unknown second call prevents an inline callback from
             # being identified with its one supposedly unique destination.
             self.called[ref["caller"]].append(
@@ -379,9 +382,16 @@ class Facts:
         self.imports = defaultdict(set)
         for source, target in db.execute("SELECT source,target FROM sem_edges"):
             self.imports[source].add(target)
-        self.imported = defaultdict(set)
-        for file, name in db.execute("SELECT file,name FROM sem_bindings WHERE kind='import'"):
-            self.imported[file].add(name)
+        # The names a file imports from a file of the project, and (file, name) -> module for those it imports from
+        # outside it: a package's name is the package's, never a function of the project that happens to share it.
+        project = set(db.execute("SELECT file,module FROM sem_modules"))
+        self.imported, self.outside = defaultdict(set), {}
+        for file, name, payload in db.execute("SELECT file,name,payload FROM sem_bindings WHERE kind='import'"):
+            module = _unpack(payload).get("module")
+            if (file, module) in project:
+                self.imported[file].add(name)
+            else:
+                self.outside[file, name] = module or "another module"
         self._nodes: dict[str, str | None] = {}
         self.route_named: dict[str, str] = {}  # a function written in place as a route handler: its route
 
@@ -401,6 +411,18 @@ class Facts:
         if len(near) == 1:
             return near
         return [named[0]["id"]] if len(named) == 1 and name in self.imported.get(file, ()) else []
+
+    def file_function(self, name: str, file: str) -> str | None:
+        """The one function or method of that name declared at module level in `file` itself; None when there is none
+        or several, or when the file's script has a binding of that name (an import, a destructured variable): what a
+        template names then is that binding, not a method of some object. A template's expression names what its
+        reference resolves to, or what its own script defines (an Options API method), never a function another
+        file declares."""
+        if self.db.execute("SELECT 1 FROM sem_bindings WHERE file=? AND scope='module' AND name=?", (file, name)).fetchone():
+            return None
+        found = [d for d in self.by_name.get(name, ()) if d["file"] == file and d["kind"] in ("function", "method")
+                 and not d.get("contract")]
+        return self.node(found[0]["id"]) if len(found) == 1 else None
 
     def property_label(self, declaration: dict) -> str | None:
         """The property an anonymous function is the value of: `name: (...) => ...`."""
@@ -1237,6 +1259,9 @@ def _classify_entries(candidates, attributes, decisions, held, actions, found, g
         file = site.rsplit(":", 1)[0]
         owner = item.get("owner")
         handler = item.get("symbol")
+        if item.get("component_gap"):  # an event on a component the reader cannot follow: a gap, whatever its shape is
+            gaps.append({"site": site, "symbol": owner or handler, "reason": item["gap"]})
+            continue
         if item.get("unbound"):
             handler = held.get((file, owner, item["binding"]))
             if not handler:

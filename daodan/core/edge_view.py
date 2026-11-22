@@ -11,7 +11,8 @@ confidence `observed`, or `sampled` where no exact end answers: it proves the ca
 arrive there, never that a proven edge is wrong. A sampled edge between two declarations
 answers no reference. A lexical target the caller overrides stays, and its
 divergence from the store is surfaced in `conflicts`. Candidate answers stay outside
-confirmed edges.
+confirmed edges. The store's rows with no reference (`occurrences`) are the index's answers at sites the
+snapshot lists none for, an attribute or a type's member among them: they are handed over whole, by no merge.
 
 Standard library only.
 """
@@ -243,6 +244,7 @@ def load_edge_view(
                 "coverage": {"status": "unsupported_format", "languages": {}, "lexical_disagreements": 0},
                 "references": [],
                 "reads": [],
+                "occurrences": [],
                 "candidates": [],
                 "conflicts": [],
                 "gaps": ["JSON snapshot holds no semantic reference table"],
@@ -452,6 +454,7 @@ def load_edge_view(
             },
             "references": references,
             "reads": reads,
+            "occurrences": [edge for edge in engine_edges if edge.get("reference_id") is None],
             "candidates": candidates,
             "conflicts": conflicts,
             "gaps": gaps,
