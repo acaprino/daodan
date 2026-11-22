@@ -51,6 +51,16 @@ SECRETLINT = ("https://github.com/secretlint/secretlint/releases/download/v14.0.
               "4fe869e7fe3d1bb3bf24003bea6b556d3a6d5343c393ca85301cae70c935fa98", "/opt/secretlint")
 FETCH_SECRETLINT = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
                     "assert hashlib.sha256(data).hexdigest() == '%s'; open('%s', 'wb').write(data)\"" % SECRETLINT)
+# The stack-analyser release (`daodan/core/stack_analyser.py`: its URL and SHA256, repeated here because this launcher
+# does not import daodan/core; tests/test_codebase_map_stack_analyser.py compares them) in /opt/stack-analyser, the
+# archive kept beside what it unpacks to: the test that starts the real release on a trap project
+# (test_codebase_map_host_programs.py) finds it through DAODAN_STACK_ANALYSER and checks the archive's sha256 again.
+STACK_ANALYSER = ("https://github.com/acaprino/stack-analyser/releases/download/v1.27.6-daodan.2/"
+                  "specfy-stack-analyser-1.27.6-daodan.2.tgz",
+                  "57dfe8d1b2e37ecb95c331b3f74c8c2aecead59a4ef95835c71a02d5397a9774", "/opt/stack-analyser")
+FETCH_STACK_ANALYSER = ("python -c \"import hashlib, urllib.request; data = urllib.request.urlopen('%s').read(); "
+                        "assert hashlib.sha256(data).hexdigest() == '%s'; open('%s/release.tgz', 'wb').write(data)\""
+                        % STACK_ANALYSER)
 # Debian's headless JDK 17 builds and runs the JVM recorder in its own tests (test_codebase_map_dynamic_jvm.py);
 # its package wants the manual folder the slim image leaves out.
 image = (modal.Image.debian_slim(python_version="3.13")
@@ -66,7 +76,9 @@ image = (modal.Image.debian_slim(python_version="3.13")
                        + " ".join(COMPONENTS_VUE2))
          .pip_install("pytest", "pytest-xdist", "uv==0.11.28", "tree-sitter==0.26.0", "tree-sitter-language-pack==1.13.5",
                       "sqlglot>=30", "keyring>=25", "PyYAML>=6")
-         .run_commands(FETCH_SECRETLINT, f"chmod +x {SECRETLINT[2]}"))
+         .run_commands(FETCH_SECRETLINT, f"chmod +x {SECRETLINT[2]}")
+         .run_commands(f"mkdir -p {STACK_ANALYSER[2]}", FETCH_STACK_ANALYSER,
+                       f"tar -xzf {STACK_ANALYSER[2]}/release.tgz -C {STACK_ANALYSER[2]}"))
 if LOCAL:
     # The results stay: suites replay the recorded answers kept there. The explorer's sources are no suite's.
     skipped = ["**/__pycache__/**", "**/node_modules/**", "**/.pytest_cache/**", "codebase-explorer/**",
@@ -89,7 +101,8 @@ def pytest(arguments: list) -> int:
     subprocess.run(["git", "init", "-q", REMOTE], check=False)  # suites that ask for the work tree's root
     command = [sys.executable, "-B", "-m", "pytest", "-p", "no:cacheprovider", *arguments]
     print("$", shlex.join(command), flush=True)
-    environment = {**os.environ, "PYTHONUTF8": "1", "DAODAN_TEST_BABEL": BABEL[1], "DAODAN_SECRETLINT": SECRETLINT[2]}
+    environment = {**os.environ, "PYTHONUTF8": "1", "DAODAN_TEST_BABEL": BABEL[1], "DAODAN_SECRETLINT": SECRETLINT[2],
+                   "DAODAN_STACK_ANALYSER": "/opt/stack-analyser/package/dist/cli.mjs"}
     return subprocess.run(command, cwd=REMOTE, env=environment).returncode
 
 
