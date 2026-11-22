@@ -949,16 +949,20 @@ ROUND, ACCEPTED = HERE / "results/daodan_stack_fork.json", HERE / "accepted-loss
 REGISTRY_DATA = ROOT / "daodan/data/service-registry.json"
 
 
-def last_round() -> dict[str, dict]:
-    return json.loads(ROUND.read_text(encoding="utf-8"))["fixtures"]
+def last_round() -> dict:
+    return json.loads(ROUND.read_text(encoding="utf-8"))
 
 
 def test_every_lost_name_of_the_last_round_is_accounted_for():
     """The spec's «Verifica», "nessuna perdita": each `(fixture, name)` in `lost` has exactly one line of
     `accepted-losses.json` and no line is left over (a round with no loss has an empty file); each line has the id the
     registry lost, a verdict, and a reason that names that id or a package or file the registry holds for it."""
-    fixtures, lines = last_round(), json.loads(ACCEPTED.read_text(encoding="utf-8"))
-    lost = sorted((name, lost) for name, entry in fixtures.items() for lost in entry.get("compare", {}).get("lost", ()))
+    results, lines = last_round(), json.loads(ACCEPTED.read_text(encoding="utf-8"))
+    fixtures = results["fixtures"]
+    answered = {name: entry for name, entry in fixtures.items() if "error" not in entry}
+    assert answered and all(isinstance(entry.get("compare", {}).get("lost"), list) for entry in answered.values())  # not a renamed key
+    lost = sorted((name, lost) for name, entry in answered.items() for lost in entry["compare"]["lost"])
+    assert results["totals"]["fixtures_with_lost"] == len({name for name, _ in lost})  # the file's own count agrees
     assert [(line["fixture"], line["name"]) for line in lines] == lost  # one each, none over, sorted
     entries = {entry["id"]: entry for entry in json.loads(REGISTRY_DATA.read_text(encoding="utf-8"))["entries"]}
     for line in lines:
@@ -972,7 +976,7 @@ def test_every_lost_name_of_the_last_round_is_accounted_for():
 
 
 def test_no_fixture_of_the_last_round_executed_project_code():
-    answered = {name: entry for name, entry in last_round().items() if "error" not in entry}
+    answered = {name: entry for name, entry in last_round()["fixtures"].items() if "error" not in entry}
     assert answered and [name for name, entry in answered.items() if entry["executed_project_code"] != "no"] == []
 
 
