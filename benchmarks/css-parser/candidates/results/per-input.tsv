@@ -1,0 +1,198 @@
+id	lang	current	css-tree	css-tree-eslint	postcss	postcss-safe	lightning	lightning-recovery	tinycss2	fork detail	current reader detail
+g1-import-supports-selector	css	E	D	E	E	E	E	E	E		
+g1-font-700-1rem-inter	css	E	E	E	E	E	E	E	E		
+g1-font-bold-calc	css	E	E	E	E	E	E	E	E		
+g1-attr-string-when	css	E	E	E	E	E	E	E	E		
+g1-attr-string-custom-selector	css	E	E	E	E	E	E	E	E		
+g1-var-uppercase	css	E	E	E	E	E	E	E	E		
+g1-scope-limit	css	E	E	E	E	E	E	E	E		
+g1-value-parens-from	css	E	E	E	E	E	E	D	E		
+g1-source-not-inline	tailwind	E	E	E	E	E	E	D	E		
+g1-string-dollar	css	E	E	E	E	E	E	E	E		
+g1-comment-then-rule	css	E	E	E	E	E	D	D	E		
+g1-import-supports-layer-word	css	E	D	E	E	E	E	E	E		
+g1-import-scheme-underscore	css	E	E	E	E	E	E	E	E		
+g1-vue-vbind-comment	css	E	E	E	E	E	D	D	E		
+g1-emoji-class	css	E	E	E	E	E	E	E	E		
+g2-container-named	css	E	E	E	E	E	E	E	E		
+g2-layer-dotted-statement	css	E	E	E	E	E	E	E	E		
+g2-layer-list-statement	css	E	E	E	E	E	E	E	E		
+g2-layer-block	css	E	E	E	E	E	E	E	E		
+g2-layer-anonymous-block	css	E	E	E	E	E	E	E	E		
+g2-import-url-layer-supports-media	css	E	E	E	E	E	E	E	E		
+g2-import-layer-bare	css	E	E	E	E	E	E	E	E		
+g2-import-url-unquoted	css	E	E	E	E	E	E	E	E		
+g2-import-two-strings-comment	css	E	E	E	E	E	E	E	E		
+g2-custom-media	css	E	D	D	E	E	E	D	E	1 error(s) on valid CSS	
+g2-custom-selector	css	E	D	D	E	E	E	D	E	1 error(s) on valid CSS	
+g2-value-define	css	E	D	D	E	E	E	D	E	1 error(s) on valid CSS	
+g2-value-from	css	E	E	E	E	E	E	D	E		
+g2-tw-source	tailwind	E	E	E	E	E	E	D	E		
+g2-tw-apply	tailwind	E	E	E	E	E	E	D	E		
+g2-tw-apply-variant-important	tailwind	E	D	D	E	E	E	D	E	1 error(s) on valid CSS	
+g2-tw-theme	tailwind	E	E	E	E	E	F	F	E		
+g2-tw-utility	tailwind	E	E	E	E	E	F	F	E		
+g2-tw-import-tailwindcss	tailwind	E	E	E	E	E	E	D	E		
+g2-property	css	E	E	E	E	E	E	E	E		
+g2-font-face	css	E	E	E	E	E	E	E	D		
+g2-keyframes	css	E	E	E	E	E	E	E	E		
+g2-keyframes-webkit	css	E	E	E	E	E	E	E	E		
+g2-supports	css	E	D	E	E	E	E	E	E		
+g2-media-range	css	E	E	E	E	E	E	E	E		
+g2-media-custom	css	E	E	E	E	E	E	E	E		
+g2-scope	css	E	E	E	E	E	E	E	E		
+g2-starting-style	css	E	E	E	E	E	E	E	E		
+g2-namespace	css	E	E	E	E	E	E	E	E		
+g2-page	css	E	E	E	E	E	E	E	E		
+g2-unknown	css	D	D	D	D	D	E	D	D	decls: expected 1, got 2	decls: expected 1, got 2
+g2-charset-counter-style	css	E	E	E	E	E	F	F	E		
+g2-media-nested-in-rule	css	E	E	E	E	E	E	E	E		
+g2-layer-nested-in-media	css	E	E	E	E	E	E	E	E		
+g3-nesting-amp	css	E	F	E	E	E	E	E	E		
+g3-nesting-amp-suffix	css	E	E	F	E	E	E	E	E	rules: expected 3, got 1	
+g3-pseudo-functions	css	E	E	E	E	E	E	E	E		
+g3-nth-of	css	E	E	E	E	E	E	E	D		
+g3-shadow-dom	css	E	E	E	E	E	E	D	E		
+g3-attr-strings	css	E	E	E	E	E	E	E	D		
+g3-escaped-classes	css	E	E	E	E	E	E	E	E		
+g3-namespaces	css	E	E	E	E	E	E	E	E		
+g3-combinators-multiline	css	E	E	E	E	E	E	E	E		
+g3-pseudo-elements	css	E	E	E	E	E	E	E	E		
+g3-vue-svelte-modes	css	E	E	E	E	E	T	F	E		
+g3-keyframe-percent-selectors	css	E	E	E	E	E	E	E	E		
+g4-url-forms	css	E	E	E	E	E	T	F	D		
+g4-image-set	css	E	E	E	E	E	E	E	E		
+g4-var-fallback	css	E	E	E	E	E	E	E	E		
+g4-custom-property-json	css	E	E	E	E	D	E	E	E		
+g4-custom-property-semicolon-braces	css	E	E	E	E	E	E	E	E		
+g4-composes	css	E	E	E	E	E	E	E	E		
+g4-animation-container	css	E	E	E	E	E	E	E	E		
+g4-unicode-range	css	E	E	E	E	E	E	E	D		
+g4-important-forms	css	D	E	E	D	D	T	F	D		declarations differ as a set (name, value, important, line)
+g4-ie-hacks	css	E	E	E	D	D	T	F	F		
+g4-numbers-units	css	E	E	E	E	E	E	E	E		
+g4-grid-areas-multiline	css	E	E	E	E	E	E	E	E		
+g4-vendor-and-empty	css	E	E	E	E	E	E	E	E		
+g4-case-property	css	E	E	E	E	E	E	E	E		
+g5-comment-in-selector	css	E	E	E	D	D	D	D	E		
+g5-comment-in-value	css	E	E	E	D	D	D	D	D		
+g5-comment-before-colon	css	E	E	E	E	E	E	E	E		
+g5-comment-multiline-lines	css	E	E	E	E	E	D	D	E		
+g5-comment-star-in-string	css	E	E	E	E	E	D	D	E		
+g5-comment-bang-and-empty	css	E	E	E	E	E	E	E	E		
+g5-comment-unclosed	css	E	E	E	T	E	D	D	E		
+g5-unclosed-block-eof	css	E	E	E	T	E	E	E	E		
+g5-unclosed-nested-eof	css	D	E	E	T	E	E	E	E		rule 0 endLine 4 got 3
+g5-unclosed-string	css	D	D	D	T	D	T	E	D	decls: expected 1, got 2	decls: expected 1, got 2
+g5-unclosed-string-eof	css	E	E	E	T	E	E	E	E		
+g5-stray-close-brace	css	D	D	D	T	D	T	E	D	rules: expected 1, got 2	rules: expected 1, got 2
+g5-stray-close-brace-end	css	E	E	E	T	E	T	E	E		
+g5-extra-close-in-block	css	E	E	E	T	E	T	E	E		
+g5-semicolon-stray-top	css	D	D	D	D	D	T	E	D	rules: expected 0, got 1; decls: expected 0, got 1	rules: expected 0, got 1; decls: expected 0, got 1
+g5-bom	css	E	E	E	E	E	E	E	E		
+g5-crlf	css	E	E	E	E	E	D	D	E		
+g5-lone-cr	css	E	E	E	D	D	E	E	E		
+g5-formfeed	css	D	E	E	D	D	E	E	E		rule 1 line 2 got 1; rule 1 endLine 3 got 1
+g5-empty	css	E	E	E	E	E	E	E	E		
+g5-only-whitespace-comment	css	E	E	E	E	E	D	D	E		
+g5-cdo-cdc	css	E	E	E	D	D	E	E	E		
+g5-slash-slash	css	E	E	E	T	D	T	E	E		
+g5-slash-slash-selector	css	D	D	D	D	D	T	E	D	rules: expected 1, got 2; decls: expected 1, got 2	rules: expected 1, got 2; decls: expected 1, got 2
+g5-nul-and-control	css	E	E	E	E	E	E	E	E		
+g5-astral-offsets	css	E	E	E	E	E	E	E	E		
+g5-tab-columns	css	E	E	E	E	E	D	D	E		
+g5-no-final-newline-rule	css	E	E	E	E	E	E	E	E		
+g5-missing-semicolon-then-prop	css	D	D	D	T	D	E	E	E	rule 0 endLine 3 got 2	rule 0 endLine 3 got 2
+g5-decl-without-colon	css	E	E	E	T	E	T	F	E		
+g5-bad-selector-rule	css	D	D	D	D	D	T	E	D	rules: expected 1, got 2; decls: expected 1, got 2	rules: expected 1, got 2; decls: expected 1, got 2
+g6-scss	scss	E	D	D	T	E	T	D	D	10 error(s) on valid CSS	
+g6-scss-line-comment-only	scss	D	D	D	T	D	T	F	D	rules: expected 1, got 2; 1 error(s) on valid CSS	rules: expected 1, got 2
+g6-less	less	E	D	D	T	E	T	D	D	9 error(s) on valid CSS	
+g6-postcss-mixins	postcss	E	D	D	E	E	E	D	E	7 error(s) on valid CSS	
+g6-postcss-nested-simple-vars	postcss	E	D	D	E	E	T	D	D	3 error(s) on valid CSS	
+g6-stylus	stylus	E	D	D	T	E	T	D	D	2 error(s) on valid CSS	
+g6-sass-indented	sass	E	D	D	T	E	T	D	D	2 error(s) on valid CSS	
+g6-html-style-wrapper	html	E	D	D	T	E	T	D	D	3 error(s) on valid CSS	
+n01-nested-class-first	css	E	F	E	E	E	E	E	E		
+n02-nested-class-after-decl	css	E	F	E	E	E	E	E	E		
+n03-decl-after-nested-class	css	E	F	E	E	E	E	E	E		
+n04-nested-type	css	E	F	E	E	E	E	E	E		
+n05-nested-child-combinator	css	E	F	E	E	E	E	E	E		
+n06-nested-sibling-combinators	css	E	F	E	E	E	E	E	E		
+n07-nested-pseudo-class	css	E	F	E	E	E	E	E	E		
+n08-nested-id	css	E	F	E	E	E	E	E	E		
+n09-nested-attr	css	E	F	E	E	E	E	E	E		
+n10-nested-universal	css	E	F	E	E	E	E	E	E		
+n11-amp-hover-then-dot-amp	css	E	F	E	E	E	E	E	E		
+n12-amp-deep	css	E	E	E	E	E	E	E	E		
+n13-media-in-rule-with-amp	css	E	E	E	E	E	E	E	E		
+n14-nested-is	css	E	F	E	E	E	E	E	E		
+n15-amp-compound-and-child	css	E	E	E	E	E	E	E	E		
+n16-amp-alone	css	E	E	E	E	E	E	E	E		
+n17-nested-list	css	E	F	E	E	E	E	E	E		
+n18-typical-card	css	E	F	E	E	E	E	E	E		
+n19-nested-in-layer	css	E	F	E	E	E	E	E	E		
+n20-top-level-amp	css	E	E	E	E	E	E	E	E		
+n21-nested-class-multiline	css	E	F	E	E	E	E	E	E		
+n22-nested-at-container-and-layer	css	E	F	E	E	E	E	E	E		
+s01-supports-not	css	E	E	E	E	E	E	E	E		
+s02-supports-not-nested	css	E	D	E	E	E	E	E	E		
+s03-supports-paren-not	css	E	D	E	E	E	E	E	E		
+s04-supports-or	css	E	E	E	E	E	E	E	E		
+s05-supports-grouped	css	E	D	E	E	E	E	E	E		
+s06-supports-not-selector	css	E	E	E	E	E	E	E	E		
+s07-supports-selector-combinator	css	E	E	E	E	E	E	E	E		
+s08-supports-font-tech	css	E	D	E	E	E	E	E	E		
+s09-import-supports-not	css	E	D	E	E	E	E	E	E		
+s10-import-supports-selector-simple	css	E	D	E	E	E	E	E	E		
+s11-container-and	css	E	E	E	E	E	E	E	E		
+s12-container-style	css	E	E	E	E	E	E	E	E		
+s13-container-not	css	E	E	E	E	E	E	E	E		
+s14-container-named-style	css	E	E	E	E	E	E	E	E		
+s15-media-not	css	E	E	E	E	E	E	E	E		
+s16-media-only-calc	css	E	E	E	E	E	E	E	E		
+s17-layer-nested-and-list	css	E	E	E	E	E	E	E	E		
+s18-escaped-at-keyword	css	E	D	D	T	D	E	E	E	atrule 0 name import got \69 mport	
+s19-uppercase-at-rule	css	E	E	E	E	E	E	E	E		
+s20-important-escaped	css	D	E	E	D	D	E	E	E		declarations differ as a set (name, value, important, line)
+s21-import-in-media	css	E	E	E	E	E	E	E	E		
+t01-custom-variant-short	tailwind	E	D	D	E	E	E	D	E	1 error(s) on valid CSS	
+t02-custom-variant-block	tailwind	E	E	E	E	E	F	F	E		
+t03-variant	tailwind	E	E	E	E	E	F	F	E		
+t04-plugin-config-reference	tailwind	E	E	E	E	E	E	D	E		
+t05-theme-inline	tailwind	F	F	F	E	E	F	F	F	decls: expected 3, got 2	decls: expected 3, got 2
+t06-source-inline-and-not	tailwind	E	E	E	E	E	E	D	E		
+t07-utility-wildcard	tailwind	E	E	E	E	E	F	F	E		
+t08-layer-utilities-apply	tailwind	E	E	E	E	E	E	D	E		
+t09-apply-variants	tailwind	E	D	D	E	E	E	D	E	1 error(s) on valid CSS	
+t10-apply-arbitrary	tailwind	E	D	D	E	E	E	D	E	1 error(s) on valid CSS	
+t11-theme-functions	tailwind	E	E	E	E	E	E	E	D		
+t12-import-layer-theme	tailwind	E	D	D	E	E	T	D	E	1 error(s) on valid CSS	
+t13-property-fallback	tailwind	E	E	E	E	E	E	E	E		
+m01-export	css	E	E	E	E	E	E	D	E		
+m02-import	css	E	E	E	E	E	E	D	E		
+m03-value-as-from	css	E	D	D	E	E	E	D	E	1 error(s) on valid CSS	
+m04-local-global-composes	css	E	E	E	E	E	E	D	E		
+v01-data-url-unquoted-valid	css	E	E	E	E	E	E	E	E		
+v02-url-fragment	css	E	E	E	E	E	E	E	E		
+v03-slash-values	css	E	E	E	E	E	E	E	E		
+v04-math-functions	css	E	E	E	E	E	E	E	E		
+v05-modern-color	css	E	E	E	E	E	E	E	E		
+v06-font-shorthands	css	E	E	E	E	E	E	E	E		
+v07-font-family-list	css	E	E	E	E	E	E	E	D		
+v08-animation-list	css	E	E	E	E	E	E	E	E		
+v09-escaped-strings	css	E	E	E	E	E	E	E	D		
+v10-minified	css	E	E	E	E	E	E	E	E		
+v11-whitespace-before-colon-and-newline-value	css	E	E	E	E	E	E	E	E		
+c01-custom-selector-use	css	E	E	E	E	E	E	E	E		
+c02-layer-in-rule-dotted	css	E	F	E	E	E	E	E	E		
+c03-layer-in-rule-spaced	css	E	F	E	E	E	E	E	E		
+c04-supports-in-rule	css	E	E	E	E	E	E	E	E		
+c05-scope-in-rule	css	E	E	E	E	E	E	E	E		
+c06-container-in-rule-amp	css	E	E	F	E	E	E	E	E	rules: expected 2, got 1; decls: expected 1, got 0; 1 error(s) on valid CSS	
+c07-span-slash	css	E	E	E	E	E	E	E	E		
+c08-custom-media-complex	css	E	D	D	E	E	E	D	E	3 error(s) on valid CSS	
+c09-amp-suffix-sass-leftover	css	D	D	D	D	D	D	D	D	rules: expected 1, got 2	rules: expected 1, got 2
+c10-media-in-rule-decls-after-nested	css	E	E	E	E	E	E	E	E		
+c11-declarations-after-amp-rule	css	E	E	E	E	E	E	E	E		
+c12-nested-two-levels-class	css	E	F	E	E	E	E	E	E		

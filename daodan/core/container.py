@@ -722,6 +722,16 @@ def secret(values: dict[str, dict[str, str]], public=()) -> dict[str, dict[str, 
     return {path: found for path, found in kept.items() if found}
 
 
+def exported(dotenv_env, values: dict[str, dict[str, str]]) -> dict[str, str]:
+    """The variables `dotenv_env` exports from the tracked .env files' `values`: `(name, file)` the one `name` of
+    `file`, `("*", file)` every variable of it (an example file the project publishes: `example`)."""
+    out = {}
+    for name, file in dotenv_env:
+        found = values.get(file, {})
+        out.update(found if name == "*" else {name: found[name]} if name in found else {})
+    return out
+
+
 def _withheld(relative: str, path: Path, mode: int | None) -> dict:
     """The gap of a file the copy leaves out because Daodan never reads it, with the rule its name or content
     meets."""
@@ -1669,7 +1679,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             if said_partial := partial(hidden_values):  # what the masks leave, said once
                 result["gaps"] = [*(result.get("gaps") or ()), *said_partial]
             pinned = [filled(item, values) for item in pinned]  # the values only here, never on record
-            exported = {name: values[file][name] for name, file in dotenv_env if name in values.get(file, {})}
+            exported_values = exported(dotenv_env, values)
             run_copy, mounts, env = copy, [], {"HOME": HOME, **(env or {})} if prepare else dict(env or {})
             joined, said_steps, steps = None, [], list(steps)
 
@@ -1742,7 +1752,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
                         served, pinned = served + unstarted(failure), []
                 row = phase(found, "prepare", image=image, network=joined or network,
                             command=["sh", "-c", steps_script(steps, timeout, token), "sh", *prepare] if steps
-                            else prepare, env={**env, **exported, **proxy_environment(f"http://proxy:{PROXY_PORT}")},
+                            else prepare, env={**env, **exported_values, **proxy_environment(f"http://proxy:{PROXY_PORT}")},
                             limits=limits, timeout=prepare_timeout + (timeout if steps else 0), copy=prepare_copy, outputs=[],
                             out_dir=out_dir, volumes=mounts, commit=kept_image)
                 append_record(record, {**hidden(row), "copy": digest})
@@ -1773,7 +1783,7 @@ def run_in_container(project: Path, command: list[str], *, image: str, out_dir: 
             joined = joined or "none"
             report()
             row = phase(found, "execute", image=image, command=command, network=joined,
-                        env={**env, **exported, **proxy_environment("")}, limits=limits, timeout=timeout,
+                        env={**env, **exported_values, **proxy_environment("")}, limits=limits, timeout=timeout,
                         copy=run_copy, outputs=list(outputs), out_dir=out_dir, volumes=mounts)
             append_record(record, {**hidden(row), "copy": digest, **({"from": based} if kept_image else {})})
             result.update(exit_code=row.get("exit_code"), outputs=row["outputs"],

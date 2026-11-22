@@ -18,6 +18,20 @@ import flows  # noqa: E402
 import snapshot  # noqa: E402
 
 
+def write_snapshot(work: Path, sources: dict) -> Path:
+    """A snapshot, under `work`, of a project of these files (git-tracked, as the fixtures are)."""
+    app = work / "app"
+    for rel, text in sources.items():
+        (app / rel).parent.mkdir(parents=True, exist_ok=True)
+        (app / rel).write_text(text, encoding="utf-8", newline="\n")
+    for command in (["git", "init", "-q"], ["git", "add", "-A"],
+                    ["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fixture"]):
+        subprocess.run(command, cwd=app, check=True, capture_output=True)
+    manifest = work / "snapshot/manifest.sqlite"
+    snapshot.main(["write", str(app), "--out", str(manifest), "--no-engine", "--no-index"])
+    return manifest
+
+
 class FlowFixtureTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -321,21 +335,21 @@ class WrittenRuleTests(unittest.TestCase):
                           "reads": ["web/store.ts::report", "web/store.ts::reset", "web/store.ts::total",
                                     "web/view.tsx::View"]})
 
-    def test_comments_are_blanked_and_strings_and_divisions_are_kept(self):
-        js = "set(() => { // it's\n  return { a: '//x' }; /* b's */ })"
-        masked = flows.mask_comments(js, python=False)
-        self.assertEqual(len(masked), len(js))
-        self.assertNotIn("it's", masked)
-        self.assertIn("'//x'", masked)
-        self.assertNotIn("b's", masked)
-        py = "f(7 // 2,  # it's\n  '#no')"
-        self.assertEqual(flows.mask_comments(py, python=True), py.replace("# it's", " " * len("# it's")))
+    def test_a_selector_reads_every_field_it_names_through_a_wrapper_and_in_python(self):
+        import entries
 
-    def test_a_wrapped_selector_reads_every_field_it_names(self):
-        call = {"args": [("shallow((s) => ({ n: s.count, r: s.reset }))", 1, 0)], "parts": ["useStore"], "file": "x"}
-        self.assertEqual(flows._keys("selector", call, None), ["count", "reset"])
-        call["args"] = [("(s) => s.count", 1, 0)]
-        self.assertEqual(flows._keys("selector", call, None), ["count"])
+        def keys(expression: str, grammar: str):
+            source = expression.encode()
+            root = entries._parse(source, grammar)
+            call = root.named_children[0]
+            call = call if call.child_by_field_name("arguments") is not None else call.named_children[0]
+            args = [value for _, value in entries._arguments(call, source)]
+            call = {"args": args, "tree": flows.Tree("x", source, root, grammar), "parts": ["useStore"], "file": "x", "node": call}
+            return flows._keys("selector", call, None)
+        self.assertEqual(keys("useStore(shallow((s) => ({ n: s.count, r: s.reset })))", "typescript"), ["count", "reset"])
+        self.assertEqual(keys("useStore((s) => s.count)", "typescript"), ["count"])
+        self.assertEqual(keys("useStore(lambda s: (s.count, s.reset))", "python"), ["count", "reset"])
+        self.assertIsNone(keys("useStore(selectCount)", "typescript"))  # a name: no parameter is read
 
     def test_a_held_state_is_read_only_inside_the_function_that_holds_it(self):
         # `title` holds the state and reads `label`; the `count` read a few lines below belongs to `total`.
@@ -463,6 +477,162 @@ class HandlerRouteTests(unittest.TestCase):
                 flows.validate_rules([rule])
 
 
+class TreeReadTests(unittest.TestCase):
+    """A call's arguments, the value of a constant, the handle a call is made on and the keys it names are read from
+    the file's syntax tree and the snapshot's resolution of its names: never from the lines of the file."""
+
+    SOURCES = {
+        "api/handles.js": ("// const users = db.legacy_users;\nconst users = db.users;\n"
+                           "export function load() {\n  return users.find({});\n}\n"
+                           "export function admins() {\n  const users = db.admins;\n  return users.find({});\n}\n"
+                           "export function stray() {\n  return elsewhere.find({});\n}\n"
+                           "export function viaParameter(users) {\n  return users.find({});\n}\n"
+                           "export function viaExpression(items) {\n  return items.filter(Boolean).find({});\n}\n"
+                           "export function late() {\n  let rows;\n  rows = db.late;\n  return rows.find({});\n}\n"),
+        "api/handles.py": ("from lib import db\n\nusers = db.users; orders = db.orders\n\n\ndef load():\n"
+                           "    return users.find()\n\n\nclass Left:\n    def __init__(self):\n        self._c = db.alpha\n\n"
+                           "    def load(self):\n        return self._c.find()\n\n\nclass Right:\n"
+                           "    def __init__(self):\n        self._c = db.beta\n\n    def load(self):\n        return self._c.find()\n"),
+        "api/routes.js": ("function create(req, res) {}\nfunction save(req, res) {}\nfunction list(req, res) {}\n"
+                          "router.post('/orders', create);\nrouter.post('/api/save', save);\nrouter.get('/orders', list);\n"),
+        "web/consts.ts": ("declare const version: string;\ndeclare function post(url: string): void;\n"
+                          "declare function fetch(url: string, init?: { method?: string }): void;\n"
+                          "const BASE = \"/api\" + version;\nconst SAVE = \"/api/save\";\nconst method = \"POST\";\n"
+                          "export function computed() {\n  post(BASE);\n}\nexport function literal() {\n  post(SAVE);\n}\n"
+                          "export function viaShorthand() {\n  fetch(\"/orders\", { method });\n}\n"
+                          "export function viaParameter(method: string) {\n  fetch(\"/orders\", { method });\n}\n"
+                          "export function viaDefault() {\n  fetch(\"/orders\");\n}\n"),
+        "web/state.ts": ("declare function useStore(): any;\ndeclare function pick(f: any): any;\n"
+                         "declare function shallow(f: any): any;\ndeclare function put(v: any): void;\n"
+                         "declare function log(m: string): void;\n"
+                         "export function show() {\n  const user = useStore();\n  log(\"user.password is masked\");\n"
+                         "  return user.name;\n}\n"
+                         "export function unpack() {\n  const { items = [], total } = useStore();\n  return items.length + total;\n}\n"
+                         "export function chosen() {\n  return pick((s: any) => [s.a, s.list.map((s: any) => s.id)]);\n}\n"
+                         "export function either() {\n  return pick((s: any) => s.a ?? s.b);\n}\n"
+                         "export function wrapped() {\n  return pick(shallow((s: any) => ({ n: s.count, r: s.reset })));\n}\n"
+                         "export function written() {\n  put(() => { // it's\n    log(\"return {secret}\");\n    return { a: '//x' }; /* b's */\n  });\n}\n"
+                         "export function methods() {\n  put({ save() { return 1; }, load: log });\n}\n"),
+        "web/label.ts": ("function run() {}\nfunction fallback() {}\nexport function setup(ready: boolean) {\n"
+                         "  const choose = ready ? fallback : () => run();\n  return choose;\n}\n"),
+        "web/keyword.py": "def keyword():\n    post(path=\"/api/save\")\n\n\ndef positional():\n    post(\"/api/save\")\n",
+        "web/Compare.tsx": ("export function Paywall() {\n  return null;\n}\n"
+                            "export function Home(a: number) {\n  return a <Paywall;\n}\n"),
+    }
+    RULES = [
+        {"written": "*.find", "in": ["api"], "link": "legge", "store": "db", "key": "holder"},
+        {"written": "self.*.find", "in": ["api"], "link": "legge", "store": "db", "key": "holder"},
+        {"written": "router.get|post", "in": ["api"], "link": "offre", "handler": "last",
+         "route": {"service": "api", "method": "part1", "path": "arg0"}},
+        {"written": "post", "in": ["web"], "link": "rotta", "route": {"service": "api", "method": "POST", "path": "arg0"}},
+        {"written": "fetch", "in": ["web"], "link": "rotta",
+         "route": {"service": "api", "method": "arg1.method|GET", "path": "arg0"}},
+        {"written": "useStore", "in": ["web"], "link": "legge", "store": "s", "key": "member"},
+        {"written": "pick", "in": ["web"], "link": "legge", "store": "sel", "key": "selector"},
+        {"written": "put", "in": ["web"], "link": "scrive", "store": "obj", "key": "object"},
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        cls.work = Path(tempfile.mkdtemp(prefix="flow-tree-")).resolve()
+        cls.manifest = write_snapshot(cls.work, cls.SOURCES)
+        cls.links = flows.link_facts(cls.manifest, flows.validate_rules(cls.RULES))
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.work, True)
+
+    def reads(self, store: str, file: str) -> list[str]:
+        return [symbol for symbol in self.links["stores"].get(store, {"reads": []})["reads"] if symbol.startswith(file)]
+
+    def test_a_handle_is_the_assignment_the_snapshot_resolves_its_name_to(self):
+        # `// const users = db.legacy_users;` is a comment; the `users` of each function is its own.
+        self.assertEqual(self.reads("db/users", "api/handles.js"), ["api/handles.js::load"])
+        self.assertEqual(self.reads("db/admins", "api/handles.js"), ["api/handles.js::admins"])
+        self.assertNotIn("db/legacy_users", self.links["stores"])
+        # a declaration with no value, assigned after: the only assignment is the handle's.
+        self.assertEqual(self.reads("db/late", "api/handles.js"), ["api/handles.js::late"])
+        # two statements on one line: the handle is the one assigned to its own name.
+        self.assertEqual(self.reads("db/users", "api/handles.py"), ["api/handles.py::load"])
+        self.assertNotIn("db/orders", self.links["stores"])
+
+    def test_a_handle_held_by_an_attribute_is_the_assignment_of_the_class_that_holds_it(self):
+        for name, owner in (("alpha", "Left"), ("beta", "Right")):
+            self.assertEqual(self.links["stores"][f"db/{name}"]["reads"], [f"api/handles.py::{owner}.load"], name)
+
+    def test_a_receiver_the_snapshot_does_not_resolve_is_a_gap_and_a_parameter_is_no_handle(self):
+        reasons = [g["reason"] for g in self.links["gaps"] if g["site"].startswith("api/handles.js")]
+        self.assertEqual(len(reasons), 1)
+        self.assertIn("elsewhere", reasons[0])
+        self.assertFalse([s for store in self.links["stores"].values() for s in store["reads"] if "viaParameter" in s])
+
+    def test_a_constant_that_is_computed_is_a_gap_not_its_literal_half(self):
+        gaps = {g["symbol"]: g["reason"] for g in self.links["gaps"] if g["site"].startswith("web/consts.ts")}
+        self.assertEqual(gaps["web/consts.ts::computed"], "rotta: route not a literal")
+
+    def test_a_key_of_an_object_argument_is_its_constant_or_a_gap_and_the_default_only_when_absent(self):
+        linked = {(e["from"], e["to"], tuple(e["route"])) for e in self.links["edges"]
+                  if e.get("route") and e["from"].startswith("web/consts.ts")}
+        self.assertEqual(linked, {
+            ("web/consts.ts::literal", "api/routes.js::save", ("api", "POST", "/api/save")),
+            ("web/consts.ts::viaShorthand", "api/routes.js::create", ("api", "POST", "/orders")),  # `{ method }`: a constant
+            ("web/consts.ts::viaDefault", "api/routes.js::list", ("api", "GET", "/orders"))})  # no options: the default
+        gaps = {g["symbol"]: g["reason"] for g in self.links["gaps"] if g["site"].startswith("web/consts.ts")}
+        self.assertEqual(gaps["web/consts.ts::viaParameter"], "rotta: route not a literal")  # `{ method }`, a parameter
+
+    def test_the_keys_read_on_a_held_value_are_the_snapshots_not_those_of_a_string_or_a_default(self):
+        self.assertEqual({k: v["reads"] for k, v in self.links["stores"].items() if k.startswith("s/")},
+                         {"s/items": ["web/state.ts::unpack"], "s/name": ["web/state.ts::show"],
+                          "s/total": ["web/state.ts::unpack"]})
+
+    def test_a_selector_reads_every_field_of_its_own_parameter(self):
+        chosen, either, wrapped = ("web/state.ts::" + n for n in ("chosen", "either", "wrapped"))
+        self.assertEqual({k: v["reads"] for k, v in self.links["stores"].items() if k.startswith("sel/")},
+                         {"sel/a": sorted([chosen, either]), "sel/b": [either], "sel/list": [chosen],
+                          "sel/count": [wrapped], "sel/reset": [wrapped]})
+
+    def test_an_object_names_its_keys_and_the_keys_of_what_a_function_returns_not_those_of_a_string(self):
+        self.assertEqual({k: v["writes"] for k, v in self.links["stores"].items() if k.startswith("obj/")},
+                         {"obj/a": ["web/state.ts::written"], "obj/load": ["web/state.ts::methods"],
+                          "obj/save": ["web/state.ts::methods"]})
+
+    def test_an_anonymous_function_is_named_by_the_property_it_is_the_value_of_not_by_a_ternary_branch(self):
+        calls = {(e["from"], e["to"]) for e in self.links["edges"] if e["type"] == "chiama"}
+        self.assertIn(("web/label.ts::setup", "web/label.ts::run"), calls)
+
+    def test_an_argument_with_a_keyword_is_not_the_one_a_rule_counts_by_position(self):
+        gaps = {g["symbol"]: g["reason"] for g in self.links["gaps"] if g["site"].startswith("web/keyword.py")}
+        self.assertEqual(gaps, {"web/keyword.py::keyword": "rotta: route not a literal"})  # `post(path=...)` is no arg0
+        self.assertIn(("web/keyword.py::positional", "api/routes.js::save"),
+                      {(e["from"], e["to"]) for e in self.links["edges"] if e.get("route")})
+
+    def test_a_comparison_is_no_element(self):
+        calls = {(e["from"], e["to"]) for e in self.links["edges"] if e["type"] == "chiama"}
+        self.assertNotIn(("web/Compare.tsx::Home", "web/Compare.tsx::Paywall"), calls)
+
+    def test_a_file_edited_since_the_snapshot_is_a_gap_not_a_link_read_from_the_new_text(self):
+        work = Path(tempfile.mkdtemp(prefix="flow-edited-")).resolve()
+        self.addCleanup(shutil.rmtree, work, True)
+        manifest = write_snapshot(work, {"web/save.ts": "declare function post(url: string): void;\nexport function save() {\n  post('/api/save');\n}\n"})
+        rules = flows.validate_rules([rule for rule in self.RULES if rule.get("written") == "post"])
+        self.assertEqual(flows.link_facts(manifest, rules)["routes"]["called"], 1)
+        (work / "app/web/save.ts").write_text("declare function post(url: string): void;\nexport function save() {\n  post('/api/other');\n}\n",
+                                              encoding="utf-8", newline="\n")
+        links = flows.link_facts(manifest, rules)
+        self.assertEqual(links["routes"]["called"], 0)
+        self.assertEqual([g["reason"] for g in links["gaps"]], ["call arguments not readable"])
+
+    def test_a_grammar_that_does_not_load_is_a_gap_with_its_cause_not_a_link_read_from_the_text(self):
+        import entries
+        self.assertGreater(self.links["routes"]["called"], 0)
+        with mock.patch.object(entries._treesitter, "get_parser", return_value=None), \
+                mock.patch.object(entries._treesitter, "load_failure", return_value="OSError: no library"):
+            links = flows.link_facts(self.manifest, flows.validate_rules(self.RULES))
+        reasons = {g["reason"] for g in links["gaps"] if g["site"].startswith("web/consts.ts")}
+        self.assertIn("call arguments not readable: grammar typescript not loaded: OSError: no library", reasons)
+        self.assertEqual((links["routes"]["called"], links["stores"]), (0, {}))
+
+
 class RestSchemaTests(unittest.TestCase):
     """REST links by method and path schema, on the fixture in benchmarks/connection-points/fixtures/pets."""
 
@@ -516,6 +686,11 @@ class RestSchemaTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertIsNone(key("api", "GET", path))
         self.assertIsNone(key(None, "GET", "/a"))
+        self.assertEqual(key("api", "GET", "//cdn.example.com/v1/items"), ("api", "GET", "/v1/items"))  # the host is no segment
+        self.assertEqual(key("api", "GET", "file:///etc/x?y"), ("api", "GET", "/etc/x"))
+        self.assertEqual(key("api", "GET", "items:batch?x=1"), ("api", "GET", "/items:batch"))  # a scheme with no host stays
+        self.assertIsNone(key("api", "GET", "//[x/api"))  # a host in brackets that never closes: no reader accepts it
+        self.assertIsNone(key("api", "GET", "https://example.org"))  # nothing after the base
 
     def test_the_most_literal_route_wins_and_a_tie_is_uncertain(self):
         routes = [{"id": r, "key": flows.REST.key("api", "GET", r)}
@@ -575,6 +750,32 @@ class StoreReadTests(unittest.TestCase):
             "symbol": "scip-typescript npm app 1.0.0 web/`Paywall.tsx`/Paywall().", "resolver": "scip-typescript@0.5.2",
             "confidence": "confirmed", "payload": {"chain": ["same-range"]}}], binding)
         self.assertIn(link, calls())
+
+
+class RenderOfAnImportedNameTests(unittest.TestCase):
+    """A component written as an element is rendered by the project's function of that name only when the file
+    imports the name from a file of the project: a package's `Button` is not the project's."""
+
+    BUTTON = "export function Button(props: any) {\n  return null;\n}\n"
+
+    def renders(self, imported: str) -> set[tuple[str, str]]:
+        work = Path(tempfile.mkdtemp(prefix="flow-render-")).resolve()
+        self.addCleanup(shutil.rmtree, work, True)
+        project = work / "app"
+        for rel, text in {"web/ui/Button.tsx": self.BUTTON,
+                          "web/Bar.tsx": f"{imported}\nexport function Bar() {{\n  return <div><Button /></div>;\n}}\n"}.items():
+            (project / rel).parent.mkdir(parents=True, exist_ok=True)
+            (project / rel).write_text(text, encoding="utf-8")
+        manifest = work / "out" / "manifest.sqlite"
+        snapshot.write_snapshot(project, manifest)
+        return {(e["from"], e["to"]) for e in flows.link_facts(manifest, [])["edges"] if e["type"] == "chiama"}
+
+    def test_a_component_a_package_exports_is_not_rendered_as_the_project_s_of_that_name(self):
+        self.assertEqual(self.renders("import { Button } from '@mui/material';"), set())
+
+    def test_a_component_imported_from_a_file_of_the_project_is_rendered(self):
+        self.assertEqual(self.renders("import { Button } from './ui/Button';"),
+                         {("web/Bar.tsx::Bar", "web/ui/Button.tsx::Button")})
 
 
 class ExternalServiceTests(unittest.TestCase):

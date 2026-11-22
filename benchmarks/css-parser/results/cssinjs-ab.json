@@ -1,0 +1,133 @@
+{
+ "files": 139,
+ "cssinjs_texts": 280,
+ "engine_runs": {
+  "all": 3,
+  "plain_sheets_and_markup": [
+   3,
+   0.24
+  ],
+  "items_and_seconds_of_the_others": [
+   [
+    0,
+    0.0
+   ],
+   [
+    280,
+    0.3
+   ]
+  ]
+ },
+ "hand": {
+  "nodes": 581,
+  "edges": 110,
+  "holes": 200
+ },
+ "engine": {
+  "nodes": 579,
+  "edges": 114,
+  "holes": 250
+ },
+ "differences": {
+  "nodes": {
+   "only_hand": [
+    "components/CodeBlock.tsx:44 __dd6__ &",
+    "components/UsersLogos/index.tsx:63 & svg"
+   ],
+   "only_engine": [],
+   "count_only_hand": 2,
+   "count_only_engine": 0
+  },
+  "edges": {
+   "only_hand": [],
+   "only_engine": [
+    "('components/CelebrationEffect.tsx:253', '--angle', 'components/CelebrationEffect.tsx:235 --angle', 'project')",
+    "('components/CelebrationEffect.tsx:253', '--progress', 'components/CelebrationEffect.tsx:78 @property --progress', 'project')",
+    "('components/CelebrationEffect.tsx:253', '--speed', 'components/CelebrationEffect.tsx:236 --speed', 'project')",
+    "('components/CelebrationEffect.tsx:254', '--progress', 'components/CelebrationEffect.tsx:78 @property --progress', 'project')"
+   ],
+   "count_only_hand": 0,
+   "count_only_engine": 4
+  },
+  "holes": {
+   "only_hand": [
+    "('components/CelebrationEffect.tsx:259', 'keyframes', 'no-keyframes', '__dd0__')",
+    "('components/CodeBlock.tsx:44', 'rule', 'interpolated-selector', '${Note} &')",
+    "('components/ShowcaseTile.tsx:96', 'keyframes', 'no-keyframes', '__dd0__')",
+    "('components/ShowcaseTile.tsx:96', 'keyframes', 'no-keyframes', '__dd1__')"
+   ],
+   "only_engine": [
+    "('app/docs/page.tsx:136', 'statement', 'unparsed', '${mobile(css` width: 50%; max-width: 50%; flex-basis: 50%; `)} ${phone(css` width: 100%; max-width: 100%; flex-basis: 100%; `)}')",
+    "('app/docs/page.tsx:162', 'statement', 'unparsed', '${phone(css` width: 100%; `)}')",
+    "('app/showcase/page.tsx:100', 'statement', 'unparsed', '${mobile(css` padding: 0 32px; gap: 40px; `)} ${phone(css` padding: 0 20px; gap: 32px; `)}')",
+    "('app/showcase/page.tsx:139', 'statement', 'unparsed', '${mobile(css` grid-template-columns: repeat(2, 1fr); gap: 48px 24px; `)} ${phone(css` grid-template-columns: 1fr; gap: 40px; `)}')",
+    "('app/showcase/page.tsx:82', 'statement', 'unparsed', '${mobile(css` padding: 72px 0 48px; `)} ${phone(css` padding: 56px 0 32px; `)}')",
+    "('components/Breadcrumbs.tsx:93', 'statement', 'unparsed', '${mobile(css` display: block; `)}')",
+    "('components/CelebrationEffect.tsx:259', 'keyframes', 'value-not-matched', 'animation: Matching for a tree with var() is not supported')",
+    "('components/CelebrationEffect.tsx:263', 'statement', 'unparsed', '${particleBase}')",
+    "('components/CodeBlock.tsx:30', 'rule', 'unparsed', '${codeTextMixin} background-color: ${theme.color.codeBg}; border-radius: ${theme.radius.lg}; border: 1px solid __d')",
+    "('components/CompatibilityMatrix.tsx:450', 'statement', 'unparsed', '${p => statusStyle(p.$status)}')",
+    "('components/CompatibilityMatrix.tsx:494', 'statement', 'unparsed', '${rowDisplay}')",
+    "('components/CompatibilityMatrix.tsx:583', 'statement', 'unparsed', '${baseCell} padding-left: ${theme.space[3]}; gap: ${theme.space[2]}; min-width: 0;')",
+    "('components/CompatibilityMatrix.tsx:651', 'statement', 'unparsed', '${baseCell} justify-content: center; ${p => statusStyle(p.$status)}')",
+    "('components/CompatibilityMatrix.tsx:678', 'statement', 'unparsed', '${rowDisplay}')",
+    "('components/DocsPageNav.tsx:60', 'statement', 'unparsed', '${mobile(css` flex-direction: column; `)}')",
+    "('components/GlobalStyles.tsx:61', 'statement', 'unparsed', '${darkColorCSS} color-scheme: dark;')",
+    "('components/GlobalStyles.tsx:65', 'statement', 'unparsed', '${darkColorCSS} color-scheme: dark;')",
+    "('components/HomepageHeroEditor.tsx:147', 'statement', 'unparsed', '${mobile(css` padding: ${theme.space[20]} ${theme.layout.gutterFluid} 0; `)}')",
+    "('components/HomepageHeroEditor.tsx:159', 'statement', 'unparsed', '${mobile(css` grid-template-columns: 1fr; `)}')",
+    "('components/HomepageHeroEditor.tsx:171', 'statement', 'unparsed', '${mobile(css` align-items: center; `)}')",
+    "('components/HomepageHeroEditor.tsx:195', 'statement', 'unparsed', '${editorMixin};')",
+    "('components/HomepageHeroEditor.tsx:206', 'statement', 'unparsed', '${mobile(css` display: flex; `)}')",
+    "('components/HomepageHeroEditor.tsx:216', 'statement', 'unparsed', '${mobile(css` display: none; `)}')",
+    "('components/Image.tsx:95', 'statement', 'unparsed', \"${props => (props.$captionSpacing ? `margin-top: ${props.$captionSpacing}px;` : '')};\")",
+    "('components/LatestBlogPost.tsx:49', 'statement', 'unparsed', '${mobile(css` margin: ${theme.space[4]} 0; padding: ${theme.space[3]} ${theme.space[4]}; `)}')",
+    "('components/Layout.tsx:10', 'statement', 'unparsed', '${mobile(css` padding-left: 0; `)} ;')",
+    "('components/Layout.tsx:33', 'statement', 'unparsed', '${p => mobile(css` padding: ${theme.space[20]} ${theme.layout.gutter} ${theme.space[6]} ${theme.layout.gutter}; transform:} ;')",
+    "('components/Layout.tsx:39', 'statement', 'unparsed', \"${p => p.$hero ? css` width: auto; container-type: normal; ` : ''} ;\")",
+    "('components/Link.tsx:140', 'statement', 'unparsed', '${inlineStyle}')",
+    "('components/Link.tsx:143', 'statement', 'unparsed', '${inlineStyle}')",
+    "('components/Link.tsx:147', 'statement', 'unparsed', '${headingStyle}')",
+    "('components/Link.tsx:150', 'statement', 'unparsed', '${headingStyle}')",
+    "('components/Link.tsx:154', 'statement', 'unparsed', '${blockStyle}')",
+    "('components/Link.tsx:157', 'statement', 'unparsed', '${blockStyle}')",
+    "('components/LiveEdit.tsx:101', 'statement', 'unparsed', '${editorMixin};')",
+    "('components/LiveEdit.tsx:113', 'statement', 'unparsed', '${columnMixin};')",
+    "('components/LiveEdit.tsx:68', 'statement', 'unparsed', '${phone(css` flex-direction: column; `)} ;')",
+    "('components/LiveEdit.tsx:78', 'statement', 'unparsed', '${phone(css` flex-basis: auto; width: 100%; max-width: 100%; height: auto; `)} ;')",
+    "('components/LiveEdit.tsx:87', 'statement', 'unparsed', '${columnMixin};')",
+    "('components/Nav/MobileNavbar.tsx:42', 'statement', 'unparsed', '${mobile(css` align-items: center; display: flex; flex-grow: 1; height: ${navbarHeight}px; justify-content: space-between;} ;')",
+    "('components/Nav/NavButton.tsx:15', 'statement', 'unparsed', '${resetInput};')",
+    "('components/Nav/Navbar.tsx:89', 'statement', 'unparsed', '${mobile(css` display: none; `)}')",
+    "('components/Nav/Sidebar.tsx:31', 'statement', 'unparsed', '${mobile(css<SidebarProps>` ${p => p.$isFolded ? css` transform: translateX(${-sidebarWidth}px); ` : ``}; `)} ;')",
+    "('components/Nav/Sidebar.tsx:32', 'statement', 'unparsed', '${p => p.$isFolded ? css` transform: translateX(${-sidebarWidth}px); ` : ``} ;')",
+    "('components/Nav/Text.tsx:11', 'statement', 'unparsed', '${mobile(css` display: block; `)} ;')",
+    "('components/NextPage.tsx:19', 'statement', 'unparsed', '${mobile(css` text-align: left; justify-content: center; padding: ${rem(30)} ${rem(20)}; `)} ;')",
+    "('components/ShowcaseTile.tsx:165', 'statement', 'unparsed', '${mobile(css` aspect-ratio: 16 / 9; `)}')",
+    "('components/ShowcaseTile.tsx:223', 'statement', 'unparsed', '${p => !p.$colorFaithful && logoMonochromeMixin}')",
+    "('components/ShowcaseTile.tsx:279', 'statement', 'unparsed', '${phone(css` opacity: 0.85; transform: none; `)}')",
+    "('components/ShowcaseTile.tsx:96', 'keyframes', 'value-not-matched', 'animation: Mismatch')",
+    "('components/UsersLogos/index.tsx:59', 'rule', 'unparsed', '${logoMonochromeMixin} transition: opacity 125ms ease-in-out; flex-shrink: 0; svg')",
+    "('sections/homepage/components.tsx:21', 'statement', 'unparsed', '${p => p.$primary && css` background: ${theme.color.brandPink}; color: ${theme.color.heroText}; `} ;')",
+    "('utils/media.ts:13', 'statement', 'unparsed', '${inner};')",
+    "('utils/media.ts:7', 'statement', 'unparsed', '${inner};')"
+   ],
+   "count_only_hand": 4,
+   "count_only_engine": 54,
+   "by_class_only_hand": {
+    "keyframes no-keyframes": 3,
+    "rule interpolated-selector": 1
+   },
+   "by_class_only_engine": {
+    "statement unparsed": 50,
+    "rule unparsed": 2,
+    "keyframes value-not-matched": 2
+   }
+  }
+ },
+ "differences_outside_script_files": {
+  "nodes": [],
+  "edges": [],
+  "holes": []
+ }
+}

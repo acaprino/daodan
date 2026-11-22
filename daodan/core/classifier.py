@@ -2,9 +2,9 @@
 File Classification Module.
 
 Classifies source files based on:
-- Lines of code (computed by the language adapter, so comment/docstring
-  syntax is respected per language)
-- Number of dependencies (imports, also via the adapter)
+- Lines of code (computed by the language adapter from its syntax tree, so
+  comment/docstring syntax is respected per language; unknown without a tree)
+- Number of dependencies (the imports of the file's parse; unknown without one)
 - Critical patterns (security, authentication, sensitive data) - keyword
   patterns are language-agnostic
 - Complexity indicators (state machines, async patterns, concurrency
@@ -39,6 +39,7 @@ __all__ = [
     "classify_from_content",
     "classify_directory",
     "compute_fan_in",
+    "shown",
 ]
 
 # Classification thresholds (tunable). The dependency threshold used to be 5,
@@ -63,8 +64,8 @@ class Classification(Enum):
 @dataclass
 class ClassificationResult:
     classification: Classification
-    lines_of_code: int
-    num_dependencies: int
+    lines_of_code: int | None  # None: unknown, no tree of the whole file
+    num_dependencies: int | None  # None: unknown, the file has no parse
     critical_patterns_found: list[str]
     complexity_indicators: list[str]
     verification_required: bool
@@ -248,6 +249,11 @@ COMPLEXITY_PATTERNS_PER_LANG: dict[str, list[str]] = {
 COMPLEXITY_PATTERNS_PER_LANG["astro"] = COMPLEXITY_PATTERNS_PER_LANG["typescript"]
 
 
+def shown(count: int | None) -> str:
+    """A count as text: `unknown` for None."""
+    return "unknown" if count is None else str(count)
+
+
 def find_patterns(content: str, patterns: list[str]) -> list[str]:
     """Return the regex patterns that match in the content."""
     found: list[str] = []
@@ -352,17 +358,16 @@ def classify_from_content(
     language = detect_language(Path(file_name), content) if file_name else None
     if language is not None:
         adapter = get_adapter(language)
-        # The stylesheet adapter reads `//` by dialect, which only the file name gives.
-        path_argument = (file_name,) if language == "css" else ()
-        loc = adapter.strip_comments_and_blanks(content, *path_argument)
-        num_deps = (
-            len(parse_result.imports) if parse_result is not None
-            else adapter.count_imports(content, *path_argument)
-        )
+        # Which only the file name gives: the stylesheet's `//` by dialect, TypeScript's JSX.
+        path_argument = (file_name,) if language in ("css", "typescript") else ()
+        counted_loc = adapter.strip_comments_and_blanks(content, *path_argument)
+        counted_deps = len(parse_result.imports) if parse_result is not None else None
     else:
         # Generic fallback: count non-empty lines, no import detection.
-        loc = sum(1 for line in content.splitlines() if line.strip())
-        num_deps = 0
+        counted_loc = sum(1 for line in content.splitlines() if line.strip())
+        counted_deps = 0
+    # An unknown count is 0 in the thresholds below, and the reasoning says so.
+    loc, num_deps = counted_loc or 0, counted_deps or 0
 
     critical_found = find_patterns(content, CRITICAL_PATTERNS)
     complexity_found = find_patterns(content, _complexity_patterns_for(language))
@@ -397,12 +402,18 @@ def classify_from_content(
             reasoning.append(f"Complexity patterns: {len(complexity_found)}")
         if fan_in >= HIGH_FAN_IN_THRESHOLD:
             reasoning.append(f"High fan-in: {fan_in} importers")
-    elif loc < UTILITY_LOC_MAX and num_deps <= UTILITY_DEPS_MAX and not complexity_found and fan_in <= UTILITY_DEPS_MAX:
+    elif (None not in (counted_loc, counted_deps) and loc < UTILITY_LOC_MAX and num_deps <= UTILITY_DEPS_MAX
+          and not complexity_found and fan_in <= UTILITY_DEPS_MAX):  # a size nobody counted is no small file
         classification = Classification.UTILITY
         reasoning.append("Small file with few dependencies")
     else:
         classification = Classification.STANDARD
         reasoning.append("Standard business logic")
+
+    if counted_loc is None:
+        reasoning.append("Lines of code unknown (no tree of the whole file): counted as 0")
+    if counted_deps is None:
+        reasoning.append("Dependencies unknown (the file has no parse): counted as 0")
 
     verification_required = classification in (
         Classification.CRITICAL,
@@ -411,8 +422,8 @@ def classify_from_content(
 
     return ClassificationResult(
         classification=classification,
-        lines_of_code=loc,
-        num_dependencies=num_deps,
+        lines_of_code=counted_loc,
+        num_dependencies=counted_deps,
         critical_patterns_found=critical_found,
         complexity_indicators=complexity_found,
         verification_required=verification_required,
@@ -438,8 +449,8 @@ if __name__ == "__main__":
     print(f"File: {target}")
     print(f"Language: {result.language or 'unknown'}")
     print(f"Classification: {result.classification.value}")
-    print(f"LOC: {result.lines_of_code}")
-    print(f"Dependencies: {result.num_dependencies}")
+    print(f"LOC: {shown(result.lines_of_code)}")
+    print(f"Dependencies: {shown(result.num_dependencies)}")
     print(f"Critical patterns: {len(result.critical_patterns_found)}")
     print(f"Complexity indicators: {len(result.complexity_indicators)}")
     print(f"Verification required: {result.verification_required}")

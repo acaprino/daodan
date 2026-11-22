@@ -27,6 +27,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_sql_comments
+from .reading import code_lines
 from . import sql as _sql
 
 __all__ = ["adapter"]
@@ -179,16 +180,8 @@ class _PlSqlAdapter:
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        # Distinct %TYPE/%ROWTYPE references plus any standard SQL imports.
-        # Dedup the rowtype matches so 6 cursors all referencing `users%ROWTYPE`
-        # count as 1, not 6 -- otherwise the classifier crosses HIGH_DEPS_THRESHOLD
-        # spuriously for small PL/SQL packages.
-        unique_rowtypes = {m.group(0).lower() for m in _ROWTYPE_RE.finditer(content)}
-        return len(unique_rowtypes) + _sql.adapter.count_imports(content)
-
-    def strip_comments_and_blanks(self, content: str) -> int:
-        return _sql.adapter.strip_comments_and_blanks(content)
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, "sql")
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_sql_comments(content)

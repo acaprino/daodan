@@ -1,0 +1,22 @@
+tool: postcss-safe
+corpus: 1860 files, 74.6 MB, time 5395 ms (adapter included)
+rules 545048, declarations 1354710, at-rules 35157, comments 32892   (files that threw are counted in none of these)
+files with an error: 0; errors: 0; files that threw: 0
+
+## per package: files, errors, threw, rules, decls, atrules
+@fortawesome/fontawesome-free        20 err      0 threw    0 rules   11454 decls    13852 at   146
+@mdi/font                             2 err      0 threw    0 rules   14949 decls    15016 at     6
+@picocss/pico                       238 err      0 threw    0 rules   82320 decls   293490 at  5280
+@primer/css                          31 err      0 threw    0 rules    9194 decls    49123 at   595
+@primer/primitives                   44 err      0 threw    0 rules      70 decls    62148 at    50
+animate.css                         104 err      0 threw    0 rules    2427 decls     6087 at   786
+bootstrap                            16 err      0 threw    0 rules   20832 decls    37444 at   612
+bootswatch                          104 err      0 threw    0 rules  271328 decls   586980 at 12088
+bulma                                10 err      0 threw    0 rules   35446 decls    89965 at  2185
+daisyui                             116 err      0 threw    0 rules   21530 decls    55216 at  9691
+flatpickr                            13 err      0 threw    0 rules    1204 decls     4782 at    22
+foundation-sites                      8 err      0 threw    0 rules   11144 decls    25066 at   756
+github-markdown-css                   7 err      0 threw    0 rules    1340 decls     3108 at     2
+highlight.js                        516 err      0 threw    0 rules    9819 decls    12905 at     4
+
+## messages (count, first file)

@@ -271,11 +271,8 @@ class LanguageAdapter(Protocol):
     def parse(self, content: str, file_path: str) -> ParseResult:
         ...
 
-    def count_imports(self, content: str) -> int:
-        ...
-
-    def strip_comments_and_blanks(self, content: str) -> int:
-        """Return number of non-empty, non-comment lines."""
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        """Return number of non-empty, non-comment lines, or None when unknown."""
         ...
 
     def extract_comments(

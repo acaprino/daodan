@@ -1,0 +1,261 @@
+{
+ "current": {
+  "expectationsMet155": "142/155",
+  "css189": {
+   "as expected": 176,
+   "difference": 12,
+   "failed": 1
+  },
+  "group6Threw": "0/8",
+  "nesting22": {
+   "as expected": 22,
+   "difference": 0,
+   "failed": 0
+  },
+  "nestingCodes": "EEEEEEEEEEEEEEEEEEEEEE",
+  "daisyui": "c02:E c03:E c12:E",
+  "unknownAtRules": "EEEEEEFEEEEEEED",
+  "invalidThrew": "0/15",
+  "commentsOk": "10/10",
+  "position": {}
+ },
+ "css-tree": {
+  "expectationsMet155": "125/155",
+  "css189": {
+   "as expected": 139,
+   "difference": 28,
+   "failed": 22
+  },
+  "group6Threw": "0/8",
+  "nesting22": {
+   "as expected": 5,
+   "difference": 0,
+   "failed": 17
+  },
+  "nestingCodes": "FFFFFFFFFFFEEFEEFFFEFF",
+  "daisyui": "c02:F c03:F c12:F",
+  "unknownAtRules": "DDDDDDFEEEEDDDD",
+  "invalidThrew": "0/15",
+  "commentsOk": "10/10",
+  "position": {
+   "nodes": 660,
+   "startSpec": 654,
+   "startEditor": 652,
+   "startNoText": 0,
+   "lcOffset": 660,
+   "lcOffsetOk": 658,
+   "blockEnds": 308,
+   "endExcl": 304,
+   "endIncl": 3,
+   "endGiven": 660,
+   "endNone": 0,
+   "refMembership": 0,
+   "refMembershipOk": 0
+  }
+ },
+ "css-tree-eslint": {
+  "expectationsMet155": "144/155",
+  "css189": {
+   "as expected": 167,
+   "difference": 19,
+   "failed": 3
+  },
+  "group6Threw": "0/8",
+  "nesting22": {
+   "as expected": 22,
+   "difference": 0,
+   "failed": 0
+  },
+  "nestingCodes": "EEEEEEEEEEEEEEEEEEEEEE",
+  "daisyui": "c02:E c03:E c12:E",
+  "unknownAtRules": "DDDDDDFEEEEDDDD",
+  "invalidThrew": "0/15",
+  "commentsOk": "10/10",
+  "position": {
+   "nodes": 718,
+   "startSpec": 712,
+   "startEditor": 710,
+   "startNoText": 0,
+   "lcOffset": 718,
+   "lcOffsetOk": 716,
+   "blockEnds": 334,
+   "endExcl": 330,
+   "endIncl": 3,
+   "endGiven": 718,
+   "endNone": 0,
+   "refMembership": 0,
+   "refMembershipOk": 0
+  }
+ },
+ "postcss": {
+  "expectationsMet155": "133/155",
+  "css189": {
+   "as expected": 164,
+   "difference": 13,
+   "failed": 12
+  },
+  "group6Threw": "6/8",
+  "nesting22": {
+   "as expected": 22,
+   "difference": 0,
+   "failed": 0
+  },
+  "nestingCodes": "EEEEEEEEEEEEEEEEEEEEEE",
+  "daisyui": "c02:E c03:E c12:E",
+  "unknownAtRules": "EEEEEEEEEEEEEED",
+  "invalidThrew": "11/15",
+  "commentsOk": "7/10",
+  "position": {
+   "nodes": 678,
+   "startSpec": 676,
+   "startEditor": 676,
+   "startNoText": 0,
+   "lcOffset": 678,
+   "lcOffsetOk": 671,
+   "blockEnds": 306,
+   "endExcl": 303,
+   "endIncl": 5,
+   "endGiven": 678,
+   "endNone": 0,
+   "refMembership": 0,
+   "refMembershipOk": 0
+  }
+ },
+ "postcss-safe": {
+  "expectationsMet155": "138/155",
+  "css189": {
+   "as expected": 170,
+   "difference": 19,
+   "failed": 0
+  },
+  "group6Threw": "0/8",
+  "nesting22": {
+   "as expected": 22,
+   "difference": 0,
+   "failed": 0
+  },
+  "nestingCodes": "EEEEEEEEEEEEEEEEEEEEEE",
+  "daisyui": "c02:E c03:E c12:E",
+  "unknownAtRules": "EEEEEEEEEEEEEED",
+  "invalidThrew": "0/15",
+  "commentsOk": "8/10",
+  "position": {
+   "nodes": 759,
+   "startSpec": 756,
+   "startEditor": 756,
+   "startNoText": 0,
+   "lcOffset": 759,
+   "lcOffsetOk": 752,
+   "blockEnds": 335,
+   "endExcl": 332,
+   "endIncl": 5,
+   "endGiven": 754,
+   "endNone": 5,
+   "refMembership": 0,
+   "refMembershipOk": 0
+  }
+ },
+ "lightning": {
+  "expectationsMet155": "136/155",
+  "css189": {
+   "as expected": 157,
+   "difference": 11,
+   "failed": 21
+  },
+  "group6Threw": "7/8",
+  "nesting22": {
+   "as expected": 22,
+   "difference": 0,
+   "failed": 0
+  },
+  "nestingCodes": "EEEEEEEEEEEEEEEEEEEEEE",
+  "daisyui": "c02:E c03:E c12:E",
+  "unknownAtRules": "EEEEEEFFEEFEFEE",
+  "invalidThrew": "9/15",
+  "commentsOk": "0/10",
+  "position": {
+   "nodes": 332,
+   "startSpec": 0,
+   "startEditor": 0,
+   "startNoText": 332,
+   "lcOffset": 0,
+   "lcOffsetOk": 0,
+   "blockEnds": 0,
+   "endExcl": 0,
+   "endIncl": 0,
+   "endGiven": 0,
+   "endNone": 0,
+   "refMembership": 332,
+   "refMembershipOk": 306
+  }
+ },
+ "lightning-recovery": {
+  "expectationsMet155": "143/155",
+  "css189": {
+   "as expected": 142,
+   "difference": 35,
+   "failed": 12
+  },
+  "group6Threw": "0/8",
+  "nesting22": {
+   "as expected": 22,
+   "difference": 0,
+   "failed": 0
+  },
+  "nestingCodes": "EEEEEEEEEEEEEEEEEEEEEE",
+  "daisyui": "c02:E c03:E c12:E",
+  "unknownAtRules": "DDDDDDFFDDFDDDD",
+  "invalidThrew": "0/15",
+  "commentsOk": "0/10",
+  "position": {
+   "nodes": 356,
+   "startSpec": 0,
+   "startEditor": 0,
+   "startNoText": 356,
+   "lcOffset": 0,
+   "lcOffsetOk": 0,
+   "blockEnds": 0,
+   "endExcl": 0,
+   "endIncl": 0,
+   "endGiven": 0,
+   "endNone": 0,
+   "refMembership": 356,
+   "refMembershipOk": 330
+  }
+ },
+ "tinycss2": {
+  "expectationsMet155": "136/155",
+  "css189": {
+   "as expected": 170,
+   "difference": 17,
+   "failed": 2
+  },
+  "group6Threw": "0/8",
+  "nesting22": {
+   "as expected": 22,
+   "difference": 0,
+   "failed": 0
+  },
+  "nestingCodes": "EEEEEEEEEEEEEEEEEEEEEE",
+  "daisyui": "c02:E c03:E c12:E",
+  "unknownAtRules": "EEEEEEFEEEEEEED",
+  "invalidThrew": "0/15",
+  "commentsOk": "10/10",
+  "position": {
+   "nodes": 741,
+   "startSpec": 739,
+   "startEditor": 737,
+   "startNoText": 0,
+   "lcOffset": 0,
+   "lcOffsetOk": 0,
+   "blockEnds": 0,
+   "endExcl": 0,
+   "endIncl": 0,
+   "endGiven": 0,
+   "endNone": 741,
+   "refMembership": 0,
+   "refMembershipOk": 0,
+   "startMismatchCount": 2
+  }
+ }
+}

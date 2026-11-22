@@ -1,5 +1,5 @@
 """
-Go adapter. Tree-sitter when available, regex fallback otherwise.
+Go adapter, read from the Tree-sitter tree; a file whose grammar does not load is reported unread.
 
 Covers package-level `func` declarations, methods, `type` declarations (struct,
 interface, alias and defined types), `import` specs, `const` names and a few
@@ -15,10 +15,9 @@ go.mod. This adapter does not read it, so imports are recorded with
 files, while intra-file semantic scopes, declarations and call references are
 extracted when the Tree-sitter grammar is available.
 
-The regex fallback records a start line only, so snapshot.py infers every span
-as `inferred` and the source reader falls back to the whole file. It does not
-read grouped `type ( ... )` declarations. Comment extraction uses the shared
-C-style lexer, which does not understand raw (backtick) strings.
+Without the grammar the file is read by nothing: no symbol, and a note with the
+reason (`languages/reading.py`). Comment extraction uses the shared C-style
+lexer, which does not understand raw (backtick) strings.
 """
 
 from __future__ import annotations
@@ -30,7 +29,6 @@ from ._treesitter import (
     check_syntax_errors,
     extract_ast_calls,
     get_parser,
-    load_failure,
     node_text,
     scan_ast_external_calls,
 )
@@ -43,6 +41,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_c_style_comments
+from .reading import code_lines, unread
 from .semantic import go_semantics
 
 __all__ = ["adapter"]
@@ -106,7 +105,7 @@ def _ts_parse(content: str) -> tuple[ParseResult | None, str | None]:
     src = content.encode("utf-8")
     try:
         tree = parser.parse(src)
-    except Exception as e:  # parse() is contractually non-raising; degrade to regex
+    except Exception as e:  # parse() is contractually non-raising; report the file unread
         return None, f"{type(e).__name__}: {e}"
 
     def text(n: Any) -> str:
@@ -281,98 +280,6 @@ def _ts_parse(content: str) -> tuple[ParseResult | None, str | None]:
 
 
 # ---------------------------------------------------------------------------
-# Regex fallback. Start lines only: spans stay inferred and reads fall back to
-# the whole file.
-# ---------------------------------------------------------------------------
-
-_FUNC_RE = re.compile(
-    r"^func\s*(?:\((?P<recv>[^)]*)\)\s*)?(?P<name>\w+)\s*(?:\[[^\]]*\])?\s*"
-    r"\((?P<params>[^)]*)\)\s*(?P<ret>[^{\n]*)",
-    re.MULTILINE,
-)
-_TYPE_RE = re.compile(
-    r"^type\s+(?P<name>\w+)(?:\[[^\]]*\])?\s*(?P<alias>=\s*)?(?P<kind>struct|interface)?",
-    re.MULTILINE,
-)
-_IMPORT_BLOCK_RE = re.compile(r"^import\s*\((?P<body>.*?)^\)", re.MULTILINE | re.DOTALL)
-_IMPORT_SPEC_RE = re.compile(r'^\s*(?:import\s+)?(?:(?P<alias>[\w.]+)\s+)?"(?P<path>[^"]+)"', re.MULTILINE)
-_CONST_BLOCK_RE = re.compile(r"^const\s*\((?P<body>.*?)^\)", re.MULTILINE | re.DOTALL)
-_CONST_LINE_RE = re.compile(r"^const\s+(?P<name>\w+)", re.MULTILINE)
-
-
-def _import_specs(content: str) -> list[tuple[str | None, str]]:
-    specs: list[tuple[str | None, str]] = []
-    covered: list[tuple[int, int]] = []
-    for block in _IMPORT_BLOCK_RE.finditer(content):
-        covered.append(block.span())
-        specs.extend((m.group("alias"), m.group("path")) for m in _IMPORT_SPEC_RE.finditer(block.group("body")))
-    for m in re.finditer(r'^import\s+(?:(?P<alias>[\w.]+)\s+)?"(?P<path>[^"]+)"', content, re.MULTILINE):
-        if not any(start <= m.start() < end for start, end in covered):
-            specs.append((m.group("alias"), m.group("path")))
-    return specs
-
-
-def _regex_parse(content: str) -> ParseResult:
-    classes: list[ClassInfo] = []
-    functions: list[FunctionInfo] = []
-    constants: list[str] = []
-    exported: list[str] = []
-
-    def line_no(index: int) -> int:
-        return content[:index].count("\n") + 1
-
-    for m in _FUNC_RE.finditer(content):
-        name = m.group("name")
-        if m.group("recv"):
-            receiver = m.group("recv").split()[-1] if m.group("recv").split() else ""
-            name = f"{_receiver_type(receiver)}.{name}"
-        params = [
-            ParameterInfo(name=piece.split()[0] if len(piece.split()) > 1 else "_",
-                          annotation=piece.split(None, 1)[-1] if piece.split() else None)
-            for piece in (p.strip() for p in m.group("params").split(",")) if piece
-        ]
-        fn = FunctionInfo(
-            name=name,
-            parameters=params,
-            return_annotation=m.group("ret").strip() or None,
-            visibility=_visibility(name.split(".")[-1]),
-            line_number=line_no(m.start()),
-        )
-        functions.append(fn)
-        if fn.visibility == "public":
-            exported.append(name)
-
-    for m in _TYPE_RE.finditer(content):
-        name = m.group("name")
-        kind = "type-alias" if m.group("alias") else (m.group("kind") or "type")
-        classes.append(ClassInfo(name=name, kind=kind, visibility=_visibility(name),
-                                 line_number=line_no(m.start())))
-        if _visibility(name) == "public":
-            exported.append(name)
-
-    for block in _CONST_BLOCK_RE.finditer(content):
-        constants.extend(m.group(1) for m in re.finditer(r"^\s*(\w+)", block.group("body"), re.MULTILINE))
-    constants.extend(m.group("name") for m in _CONST_LINE_RE.finditer(content))
-    exported.extend(name for name in constants if _visibility(name) == "public")
-
-    imports = [
-        ImportInfo(module=path, names=[alias or path.rsplit("/", 1)[-1]])
-        for alias, path in _import_specs(content)
-    ]
-    return ParseResult(
-        file_path="",
-        language=_LANGUAGE_NAME,
-        classes=classes,
-        functions=functions,
-        imports=imports,
-        constants=list(dict.fromkeys(constants)),
-        external_calls=_scan_external_calls(content),
-        exported_symbols=list(dict.fromkeys(exported)),
-        notes=["parser=regex-fallback"],
-    )
-
-
-# ---------------------------------------------------------------------------
 
 
 class _GoAdapter:
@@ -381,22 +288,12 @@ class _GoAdapter:
     def parse(self, content: str, file_path: str) -> ParseResult:
         result, error = _ts_parse(content)
         if result is None:
-            result = _regex_parse(content)
-            if error is not None:
-                result.notes.append(f"tree-sitter raised: {error}")
-            reason = load_failure(_LANGUAGE_NAME)
-            if reason is not None:
-                result.notes.append(f"tree-sitter unavailable: {reason}")
+            result = unread(_LANGUAGE_NAME, _LANGUAGE_NAME, error)
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        return len(_import_specs(content))
-
-    def strip_comments_and_blanks(self, content: str) -> int:
-        no_blocks = re.sub(r"/\*[\s\S]*?\*/", "", content)
-        return sum(1 for line in no_blocks.split("\n")
-                   if line.strip() and not line.strip().startswith("//"))
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, _LANGUAGE_NAME)
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_c_style_comments(content)

@@ -188,6 +188,31 @@ class EdgeViewTests(unittest.TestCase):
         self.assertEqual(rejected_view["coverage"]["status"], "rejected_store")
         self.assertTrue(rejected_view["gaps"])
 
+    def test_load_edge_view_keeps_the_engine_answers_at_sites_the_snapshot_lists_no_reference_for(self):
+        """A language server's index answers at positions no snapshot reference names (an attribute, a type's member):
+        the store keeps them, and the view hands them over beside the references, whole, never merged into them."""
+        import edge_view
+
+        site = {"reference_id": None, "file": "app/use.py", "language": "python", "kind": "unknown", "caller": None,
+                "c0": None, "resolver": "stub@1.0", "confidence": "confirmed", "payload": {"from": "owner"}}
+        found = [
+            {**site, "l0": 4, "verdict": "external", "target_id": None, "external": {"manager": "npm", "package": "@types/react", "version": "1"},
+             "symbol": "scip-typescript npm @types/react 1 `index.d.ts`/React/DOMAttributes#onClick."},
+            {**site, "l0": 5, "verdict": "project-callable", "target_id": "app/tool.py::function@5:4",
+             "symbol": "scip-typescript npm app 1 src/`tool.py`/Props#onSave."},
+        ]
+        with open_snapshot(self.manifest) as store:
+            binding = resolve_edges.store_binding(store, self.manifest, store.metadata.get("parser_fingerprint"),
+                                                  {"python": {"engine": "stub", "state": "fresh"}}, {})
+            self.assertEqual(edge_view.load_edge_view(store, engine_store=self.edges)["occurrences"], [])  # no store
+            resolve_edges.write_edge_store(self.edges, found, binding)
+            view = edge_view.load_edge_view(store, engine_store=self.edges)
+        self.assertEqual([(o["file"], o["l0"], o["verdict"], o["symbol"], o["target_id"], (o.get("external") or {}).get("package"))
+                          for o in view["occurrences"]],
+                         [(e["file"], e["l0"], e["verdict"], e["symbol"], e["target_id"], (e.get("external") or {}).get("package"))
+                          for e in found])
+        self.assertEqual(view["coverage"]["status"], "lower-bound")  # still the store's coverage, untouched by them
+
     def test_cli_compact_mode_and_report_out_write_full_report_to_file_and_summary_to_stdout(self):
         report_file = self.root.parent / "full-engine-report.json"
         engine = StubEngine(answers={

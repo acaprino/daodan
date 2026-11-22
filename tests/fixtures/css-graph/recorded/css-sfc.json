@@ -1,6 +1,87 @@
 {
  "calls": [
   {
+   "script": "css_csstree",
+   "payload": {
+    "items": [
+     {
+      "key": "src/global.css",
+      "path": "src/global.css",
+      "words": false
+     }
+    ]
+   },
+   "data": {
+    "sheets": {
+     "src/global.css": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 1,
+        "end": 1,
+        "sel": [
+         ".card"
+        ],
+        "names": [
+         [
+          "class",
+          "card",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 1,
+          "end": 1,
+          "prop": "margin",
+          "value": "0",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".active"
+        ],
+        "names": [
+         [
+          "class",
+          "active",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "color",
+          "value": "green",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "version": "4.1.3",
+    "seconds": 0.123
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 126,
+    "stderr_tail": "DAODAN_MAXRSS_KB=129476\n"
+   }
+  },
+  {
    "script": "css_vue",
    "payload": {
     "items": [
@@ -553,6 +634,409 @@
     "seconds": 0.1,
     "peak_mb": 126,
     "stderr_tail": "DAODAN_MAXRSS_KB=128868\n"
+   }
+  },
+  {
+   "script": "css_csstree",
+   "payload": {
+    "items": [
+     {
+      "key": "src/App.vue#0",
+      "text": "\n.card { color: v-bind(color); }\n.card :deep(.inner) { padding: 0; }\n.on { font-weight: bold; }\n",
+      "words": true,
+      "svelte": false
+     },
+     {
+      "key": "src/App.vue#1",
+      "text": "\n.title { font-size: 2em; }\n",
+      "words": true,
+      "svelte": false
+     },
+     {
+      "key": "src/Card.svelte#0",
+      "text": "\n  .card { color: red; }\n  .label { color: blue; }\n  :global(.on) { color: green; }\n  :global(html).dark .label { color: white; }\n",
+      "words": true,
+      "svelte": true
+     },
+     {
+      "key": "src/Title.astro#0",
+      "text": "\n  .title { color: red; }\n  .big { font-size: 3em; }\n",
+      "words": true,
+      "svelte": false
+     },
+     {
+      "key": "src/Title.astro#1",
+      "text": "\n  .card { border: 0; }\n",
+      "words": false,
+      "svelte": false
+     }
+    ]
+   },
+   "data": {
+    "sheets": {
+     "src/App.vue#0": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".card"
+        ],
+        "names": [
+         [
+          "class",
+          "card",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "color",
+          "value": "v-bind(color)",
+          "important": false,
+          "facts": {
+           "words": [
+            "color"
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ".card :deep(.inner)"
+        ],
+        "names": [
+         [
+          "class",
+          "card",
+          "local"
+         ],
+         [
+          "class",
+          "inner",
+          "deep"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "padding",
+          "value": "0",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 4,
+        "end": 4,
+        "sel": [
+         ".on"
+        ],
+        "names": [
+         [
+          "class",
+          "on",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "font-weight",
+          "value": "bold",
+          "important": false,
+          "facts": {
+           "words": [
+            "bold"
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "src/App.vue#1": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".title"
+        ],
+        "names": [
+         [
+          "class",
+          "title",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "font-size",
+          "value": "2em",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     },
+     "src/Card.svelte#0": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".card"
+        ],
+        "names": [
+         [
+          "class",
+          "card",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "color",
+          "value": "red",
+          "important": false,
+          "facts": {
+           "words": [
+            "red"
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ".label"
+        ],
+        "names": [
+         [
+          "class",
+          "label",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "color",
+          "value": "blue",
+          "important": false,
+          "facts": {
+           "words": [
+            "blue"
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 4,
+        "end": 4,
+        "sel": [
+         ":global(.on)"
+        ],
+        "names": [
+         [
+          "class",
+          "on",
+          "global"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "color",
+          "value": "green",
+          "important": false,
+          "facts": {
+           "words": [
+            "green"
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 5,
+        "end": 5,
+        "sel": [
+         ":global(html).dark .label"
+        ],
+        "names": [
+         [
+          "class",
+          "dark",
+          "global"
+         ],
+         [
+          "class",
+          "label",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 5,
+          "end": 5,
+          "prop": "color",
+          "value": "white",
+          "important": false,
+          "facts": {
+           "words": [
+            "white"
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "src/Title.astro#0": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".title"
+        ],
+        "names": [
+         [
+          "class",
+          "title",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "color",
+          "value": "red",
+          "important": false,
+          "facts": {
+           "words": [
+            "red"
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ".big"
+        ],
+        "names": [
+         [
+          "class",
+          "big",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "font-size",
+          "value": "3em",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     },
+     "src/Title.astro#1": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".card"
+        ],
+        "names": [
+         [
+          "class",
+          "card",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "border",
+          "value": "0",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "version": "4.1.3",
+    "seconds": 0.115
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 126,
+    "stderr_tail": "DAODAN_MAXRSS_KB=129496\n"
    }
   },
   {

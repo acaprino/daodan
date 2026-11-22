@@ -74,6 +74,7 @@ _LANG_PACK_ALIASES = {
     "vue": "vue",  # the templates of single-file components (`languages/sfc.py`)
     "svelte": "svelte",
     "angular": "angular",  # the markup the entry readers read (`daodan/data/entry-queries.json`)
+    "bash": "bash",  # the scripts of a manifest (`premap/npm_start.py`)
 }
 
 # Per-grammar package names for the fallback strategy.

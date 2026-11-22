@@ -10,7 +10,7 @@
     "test:ui": "node test/browser.mjs"
   },
   "dependencies": {
-    "@acaprino/imago": "github:acaprino/imago#v0.3.0",
+    "@acaprino/imago": "github:acaprino/imago#v0.4.1",
     "elkjs": "0.12.1",
     "lucide-react": "1.70.0",
     "react": "19.3.1",

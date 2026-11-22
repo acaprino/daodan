@@ -1,7 +1,7 @@
 """Go through the whole chain: adapter, snapshot spans, selective reading.
 
-The tree-sitter cases run wherever the grammar is installed; the regex cases
-force the fallback, whose contract is that it never claims an exact span.
+The tree-sitter cases run wherever the grammar is installed; the unread case
+forces the grammar away, whose contract is that nothing is read in its place.
 """
 import re
 import shutil
@@ -170,19 +170,15 @@ class GoTreeSitterTests(unittest.TestCase):
         self.assertTrue(any(note.startswith("syntax error:") for note in result.notes))
 
 
-class GoRegexFallbackTests(unittest.TestCase):
-    def test_fallback_finds_the_symbols_but_never_claims_an_end_line(self):
+class GoUnreadTests(unittest.TestCase):
+    def test_without_the_grammar_nothing_is_read_and_the_result_says_why(self):
         with grammar_unavailable():
             result = parse()
 
-        self.assertIn("parser=regex-fallback", result.notes)
-        self.assertEqual({f.name for f in result.functions}, {"Invoice.Pay", "NewInvoice", "helper"})
-        self.assertEqual({c.name: c.kind for c in result.classes},
-                         {"Invoice": "struct", "Payer": "interface", "Money": "type-alias"})
-        self.assertTrue(all(f.end_line is None for f in result.functions))
-        self.assertTrue(all(c.end_line is None for c in result.classes))
-        self.assertEqual({i.module for i in result.imports}, {"fmt", "github.com/acme/ledger"})
-        self.assertEqual(set(result.constants), {"MaxRetries", "minimum", "Ceiling"})
+        self.assertEqual(result.notes[0], "parser=none")
+        self.assertIn("tree-sitter unavailable: no tree-sitter grammar installed", result.notes)
+        self.assertEqual((result.functions, result.classes, result.imports, result.constants, result.exported_symbols),
+                         ([], [], [], [], []))
 
 
 class GoSnapshotAndReadingTests(unittest.TestCase):

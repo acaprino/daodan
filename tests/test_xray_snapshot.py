@@ -462,17 +462,14 @@ class ParseReuseTests(unittest.TestCase):
         self.assertEqual(manifest_path.read_bytes(), parent_bytes)
 
     def test_loaded_grammar_source_failure_stays_readable_and_is_reparsed(self):
-        from languages import FunctionInfo, ParseResult, get_adapter
+        from languages import get_adapter
+        from languages.reading import unread
         from source_reader import read_packet
         target = self.tmp / "native"
         write(target, "app.js", 'function selected() { return 7; }\nfunction sibling() { return "SIBLING"; }\n')
         adapter = get_adapter("javascript")
         available = {"language": "javascript", "backend": "tree-sitter", "grammar": "javascript"}
-        failed_native_parse = ParseResult(
-            file_path="app.js", language="javascript",
-            functions=[FunctionInfo("selected", line_number=1), FunctionInfo("sibling", line_number=2)],
-            notes=["parser=regex-fallback", "tree-sitter raised: RuntimeError: fixture source failure"],
-        )
+        failed_native_parse = unread("javascript", "javascript", "RuntimeError: fixture source failure")
 
         # Availability and parser failure are controlled at their public adapter
         # boundary; source bytes, manifest construction and reading remain real.
@@ -481,7 +478,7 @@ class ParseReuseTests(unittest.TestCase):
             manifest = self.snapshot.build_manifest(target)
             refreshed = self.snapshot.build_manifest(target, previous=manifest)
             key = next(iter(manifest["files"]))
-            packet = read_packet(manifest, [{"path": key, "symbols": ["selected"]}])
+            packet = read_packet(manifest, [{"path": key, "full_file": True}])
 
         self.assertEqual(parser.call_count, 2)
         self.assertEqual(manifest["files"][key]["parser_profile"], available)

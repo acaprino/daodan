@@ -197,6 +197,14 @@ def possible_case(snapshot: str, source: str, rules: str, expected: str, generat
     graph = modules.ensure_graph(manifest)
     import edge_view
     view = edge_view.load_edge_view(manifest)  # whether the links read the engine's store or fell back
+    import entries
+    syntax, forwarded, with_gap = entries.cached_syntax(manifest), {}, {}
+    for row in syntax:  # what the syntax readers found and what became of it
+        if row.get("forwarded"):
+            forwarded[row["shape"]] = forwarded.get(row["shape"], 0) + 1
+        if row.get("gap"):
+            key = row["gap"].split(":")[0][:90]
+            with_gap[key] = with_gap.get(key, 0) + 1
     return {"links": {"edges": types, "entries": kinds, "gaps": len(links["gaps"]), "routes": links["routes"],
                       "external": len(links["external"]), "source_gaps": links["source_gaps"],
                       "gap_reasons": sorted(reasons.items(), key=lambda item: -item[1])[:60],
@@ -204,7 +212,10 @@ def possible_case(snapshot: str, source: str, rules: str, expected: str, generat
                       "engine": {"coverage": view["coverage"].get("status"), "profile": view["profile"],
                                  "languages": {name: entry.get("state") for name, entry in
                                                (view["coverage"].get("languages") or {}).items()},
-                                 "gaps": view["gaps"][:20], "references": len(view["references"])}},
+                                 "gaps": view["gaps"][:20], "references": len(view["references"])},
+                      "syntax": {"candidates": len(syntax), "forwarded": sum(forwarded.values()),
+                                 "forwarded_shapes": sorted(forwarded.items(), key=lambda item: -item[1])[:40],
+                                 "gaps": sorted(with_gap.items(), key=lambda item: -item[1])[:25]}},
             "measure": possible.measure(manifest, links, json.loads(expected), tuple(generators))}
 
 

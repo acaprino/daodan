@@ -1,5 +1,5 @@
 """
-JavaScript adapter. Tree-sitter when available, regex fallback otherwise.
+JavaScript adapter, read from the Tree-sitter tree; a file whose grammar does not load is reported unread.
 
 Covers: classes, functions (declarations, expressions, arrow), imports (ES6,
 CommonJS require), exported symbols, common external API calls (fetch, fs.*,
@@ -16,7 +16,6 @@ from ._treesitter import (
     check_syntax_errors,
     extract_ast_calls,
     get_parser,
-    load_failure,
     node_text,
     scan_ast_external_calls,
 )
@@ -29,6 +28,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_c_style_comments
+from .reading import code_lines, unread
 from .semantic import javascript_semantics
 
 __all__ = ["adapter"]
@@ -478,223 +478,6 @@ def _ts_parse(
 
 
 # ---------------------------------------------------------------------------
-# Regex fallback.
-# ---------------------------------------------------------------------------
-
-
-_IMPORT_RE = re.compile(
-    r"""import\s+(?:(?P<default>\w+)\s*,?\s*)?(?:\{\s*(?P<named>[^}]+)\}\s*)?(?:\*\s*as\s*(?P<ns>\w+)\s*)?(?:from\s+)?['"`](?P<source>[^'"`]+)['"`]""",
-    re.MULTILINE | re.DOTALL,
-)
-_REQUIRE_RE = re.compile(
-    r"""(?:const|let|var)\s+(?P<binding>\{[^}]+\}|\w+)\s*=\s*require\(['"`](?P<source>[^'"`]+)['"`]\)""",
-    re.MULTILINE,
-)
-_CLASS_RE = re.compile(
-    r"^\s*(?:export\s+(?:default\s+)?)?(?:abstract\s+)?class\s+(?P<name>\w+)(?:\s+extends\s+(?P<ext>[\w.<>]+))?(?:\s+implements\s+(?P<impl>[\w.,\s<>]+))?\s*\{",
-    re.MULTILINE,
-)
-_FUNC_RE = re.compile(
-    r"^\s*(?:export\s+(?:default\s+)?)?(?P<async>async\s+)?function\s*\*?\s*(?P<name>\w+)\s*\(",
-    re.MULTILINE,
-)
-_ARROW_RE = re.compile(
-    r"^\s*(?:export\s+(?:default\s+)?)?(?:const|let|var)\s+(?P<name>\w+)\s*=\s*(?P<async>async\s+)?\([^)]*\)\s*=>",
-    re.MULTILINE,
-)
-_CONSTANT_RE = re.compile(
-    r"^\s*(?:export\s+)?const\s+(?P<name>[A-Z][A-Z0-9_]*)\s*=",
-    re.MULTILINE,
-)
-# Class members. Two forms: the shorthand method `name(args) {`, with the
-# modifiers and TypeScript annotations one may carry, and the arrow property
-# `name = (args) =>`. Indentation is required, which is what keeps a top-level
-# call or statement out: a class member is never at column 0 in either form.
-_METHOD_RE = re.compile(
-    r"^[ \t]+(?:(?:public|private|protected)\s+)?"
-    r"(?:(?:static|readonly|abstract|override|async|declare|get|set)\s+|\*\s*)*"
-    r"(?P<name>[A-Za-z_$][\w$]*)\s*"
-    r"(?:"
-    r"(?:<[^>(]*>)?\((?P<params>[^)]*)\)\s*(?::[^{;=]+)?\{"
-    r"|=\s*(?:async\s+)?\((?P<aparams>[^)]*)\)\s*(?::[^=]+)?=>"
-    r")",
-    re.MULTILINE,
-)
-# Words that reach _METHOD_RE's shape without being a member: `if (x) {` and its
-# relatives read as a call followed by a block.
-_NOT_A_METHOD = frozenset({
-    "if", "for", "while", "switch", "catch", "do", "else", "try", "finally",
-    "with", "return", "function", "typeof", "instanceof", "new", "delete",
-    "void", "await", "yield", "case", "throw", "class", "import", "export",
-})
-_EXPORT_RE = re.compile(
-    r"^\s*export\s+(?:default\s+)?(?:class|function|const|let|var)\s+(?P<name>\w+)",
-    re.MULTILINE,
-)
-_DEFAULT_DECL_RE = re.compile(
-    r"^\s*export\s+default\s+(?:(?:abstract\s+)?class|(?:async\s+)?function\s*\*?)\s+(?P<name>[A-Za-z_$][\w$]*)\b",
-    re.MULTILINE,
-)
-_DEFAULT_IDENTIFIER_RE = re.compile(
-    r"^\s*export\s+default\s+(?P<name>[A-Za-z_$][\w$]*)\s*(?=;|$)", re.MULTILINE,
-)
-_EXPORT_CLAUSE_RE = re.compile(
-    r"^\s*export\s*\{(?P<names>[^}]*)\}\s*"
-    r"(?:(?P<from>from)\s+['\"`](?P<source>[^'\"`]+)['\"`])?", re.MULTILINE,
-)
-
-
-def _regex_parse(content: str, language: str = _LANGUAGE_NAME) -> ParseResult:
-    imports: list[ImportInfo] = []
-    for m in _IMPORT_RE.finditer(content):
-        source = m.group("source")
-        names: list[str] = []
-        default_import = m.group("default")
-        if m.group("default"):
-            names.append(m.group("default"))
-        if m.group("named"):
-            names.extend(n.strip().split(" as ")[0].strip() for n in m.group("named").split(",") if n.strip())
-        if m.group("ns"):
-            names.append("* as " + m.group("ns"))
-        imports.append(
-            ImportInfo(
-                module=source,
-                names=names,
-                is_from_import=True,
-                is_internal=_is_internal_module(source),
-                default_import=default_import,
-            )
-        )
-    for m in _REQUIRE_RE.finditer(content):
-        source = m.group("source")
-        binding = m.group("binding")
-        names: list[str] = []
-        if binding.startswith("{"):
-            # Preserve destructuring and aliases, as the native adapter does.
-            # The resolver distinguishes a named binding from the whole module.
-            names = [binding]
-        else:
-            names = [binding]
-        imports.append(
-            ImportInfo(
-                module=source,
-                names=names,
-                is_from_import=False,
-                is_internal=_is_internal_module(source),
-            )
-        )
-
-    classes: list[ClassInfo] = []
-    for m in _CLASS_RE.finditer(content):
-        bases: list[str] = []
-        if m.group("ext"):
-            bases.append(m.group("ext"))
-        if m.group("impl"):
-            bases.extend(b.strip() for b in m.group("impl").split(",") if b.strip())
-        classes.append(
-            ClassInfo(
-                name=m.group("name"),
-                bases=bases,
-                kind="class",
-                line_number=content[: m.start()].count("\n") + 1,
-            )
-        )
-
-    functions: list[FunctionInfo] = []
-    for m in _FUNC_RE.finditer(content):
-        functions.append(
-            FunctionInfo(
-                name=m.group("name"),
-                is_async=bool(m.group("async")),
-                line_number=content[: m.start()].count("\n") + 1,
-            )
-        )
-    for m in _ARROW_RE.finditer(content):
-        functions.append(
-            FunctionInfo(
-                name=m.group("name"),
-                is_async=bool(m.group("async")),
-                line_number=content[: m.start()].count("\n") + 1,
-            )
-        )
-
-    # Methods, associated to the nearest preceding class: the same rough
-    # association the Java adapter makes. Without this pass a class parsed by
-    # the fallback carries no members at all, so snapshot.py records one span
-    # for the whole class and an edit to a single method is indistinguishable
-    # from an edit to any other.
-    if classes:
-        by_line = sorted(classes, key=lambda c: c.line_number)
-        for m in _METHOD_RE.finditer(content):
-            name = m.group("name")
-            if name in _NOT_A_METHOD:
-                continue
-            line_no = content[: m.start()].count("\n") + 1
-            owner = None
-            for cls in by_line:
-                if cls.line_number <= line_no:
-                    owner = cls
-                else:
-                    break
-            if owner is None:
-                continue
-            params_raw = m.group("params")
-            if params_raw is None:
-                params_raw = m.group("aparams") or ""
-            params = [
-                ParameterInfo(name=piece.strip().split(":")[0].strip().lstrip("."))
-                for piece in params_raw.split(",")
-                if piece.strip()
-            ]
-            owner.methods.append(
-                FunctionInfo(
-                    name=name,
-                    parameters=params,
-                    is_async=re.search(r"\basync\b", m.group(0)) is not None,
-                    line_number=line_no,
-                )
-            )
-
-    constants = list({m.group("name") for m in _CONSTANT_RE.finditer(content)})
-    exported = list(dict.fromkeys(m.group("name") for m in _EXPORT_RE.finditer(content)))
-    default_export = None
-    default_match = _DEFAULT_DECL_RE.search(content) or _DEFAULT_IDENTIFIER_RE.search(content)
-    if default_match is not None and default_match.group("name") not in ("extends", "function", "class"):
-        default_export = default_match.group("name")
-    for clause in _EXPORT_CLAUSE_RE.finditer(content):
-        if clause.group("from"):
-            names = []
-            for spec in clause.group("names").split(","):
-                parts = re.split(r"\s+as\s+", spec.strip())
-                if parts[0]:
-                    names.append(parts[0])
-                    exported.append(parts[-1])
-            source = clause.group("source")
-            imports.append(ImportInfo(module=source, names=names, is_from_import=True,
-                                      is_internal=_is_internal_module(source)))
-            continue
-        for spec in clause.group("names").split(","):
-            parts = re.split(r"\s+as\s+", spec.strip())
-            if len(parts) == 2 and parts[1] == "default" and parts[0].isidentifier():
-                default_export = parts[0]
-    if default_export is not None and default_export not in exported:
-        exported.append(default_export)
-
-    return ParseResult(
-        file_path="",
-        language=language,
-        classes=classes,
-        functions=functions,
-        imports=imports,
-        constants=constants,
-        external_calls=_scan_external_calls(content),
-        exported_symbols=exported,
-        notes=["parser=regex-fallback"],
-        default_export=default_export,
-    )
-
-
-# ---------------------------------------------------------------------------
 
 
 class _JavaScriptAdapter:
@@ -704,30 +487,12 @@ class _JavaScriptAdapter:
         _TS_ERROR_HOLDER.pop("last", None)
         result = _ts_parse(content, self.language)
         if result is None:
-            result = _regex_parse(content, self.language)
-            err = _TS_ERROR_HOLDER.pop("last", None)
-            if err is not None:
-                result.notes.append(f"tree-sitter raised: {err}")
-            reason = load_failure(self.language)
-            if reason is not None:
-                result.notes.append(f"tree-sitter unavailable: {reason}")
+            result = unread(self.language, self.language, _TS_ERROR_HOLDER.pop("last", None))
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        return len(_IMPORT_RE.findall(content)) + len(_REQUIRE_RE.findall(content))
-
-    def strip_comments_and_blanks(self, content: str) -> int:
-        no_blocks = re.sub(r"/\*[\s\S]*?\*/", "", content)
-        code = 0
-        for line in no_blocks.split("\n"):
-            s = line.strip()
-            if not s:
-                continue
-            if s.startswith("//"):
-                continue
-            code += 1
-        return code
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, self.language)
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_c_style_comments(content)

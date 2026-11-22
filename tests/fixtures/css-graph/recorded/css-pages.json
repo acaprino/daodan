@@ -1,6 +1,140 @@
 {
  "calls": [
   {
+   "script": "css_csstree",
+   "payload": {
+    "items": [
+     {
+      "key": "frontend/fonts.css",
+      "path": "frontend/fonts.css",
+      "words": false
+     },
+     {
+      "key": "frontend/src/app.css",
+      "path": "frontend/src/app.css",
+      "words": false
+     },
+     {
+      "key": "backend/views/partials/head.ejs#style0",
+      "text": "\n  .nav-wrap { display: flex; }\n"
+     }
+    ]
+   },
+   "data": {
+    "sheets": {
+     "frontend/fonts.css": {
+      "tree": [
+       {
+        "t": "at",
+        "line": 1,
+        "end": 1,
+        "name": "font-face",
+        "params": "",
+        "text": "@font-face",
+        "facts": {
+         "family": "Lora"
+        },
+        "kids": [
+         {
+          "t": "decl",
+          "line": 1,
+          "end": 1,
+          "prop": "font-family",
+          "value": "Lora",
+          "important": false,
+          "facts": {
+           "ff": [
+            "Lora"
+           ],
+           "fam": "Lora"
+          }
+         },
+         {
+          "t": "decl",
+          "line": 1,
+          "end": 1,
+          "prop": "src",
+          "value": "url(lora.woff2)",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     },
+     "frontend/src/app.css": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 1,
+        "end": 1,
+        "sel": [
+         ".shell"
+        ],
+        "names": [
+         [
+          "class",
+          "shell",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 1,
+          "end": 1,
+          "prop": "display",
+          "value": "grid",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     },
+     "backend/views/partials/head.ejs#style0": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".nav-wrap"
+        ],
+        "names": [
+         [
+          "class",
+          "nav-wrap",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "display",
+          "value": "flex",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "version": "4.1.3",
+    "seconds": 0.128
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 127,
+    "stderr_tail": "DAODAN_MAXRSS_KB=129644\n"
+   }
+  },
+  {
    "script": "css_typescript",
    "payload": {
     "tsconfig": {
@@ -91,6 +225,86 @@
     "seconds": 1.0,
     "peak_mb": 246,
     "stderr_tail": "DAODAN_MAXRSS_KB=251976\n"
+   }
+  },
+  {
+   "script": "css_csstree",
+   "payload": {
+    "items": [
+     {
+      "key": "backend/public/vendor/icons/icons.css",
+      "text": "/*! Icons Kit 1.0.0 */\n.sr-only { position: absolute; }\n.ic { display: inline-block; }\n"
+     }
+    ]
+   },
+   "data": {
+    "sheets": {
+     "backend/public/vendor/icons/icons.css": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 2,
+        "end": 2,
+        "sel": [
+         ".sr-only"
+        ],
+        "names": [
+         [
+          "class",
+          "sr-only",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 2,
+          "end": 2,
+          "prop": "position",
+          "value": "absolute",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 3,
+        "end": 3,
+        "sel": [
+         ".ic"
+        ],
+        "names": [
+         [
+          "class",
+          "ic",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 3,
+          "end": 3,
+          "prop": "display",
+          "value": "inline-block",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "version": "4.1.3",
+    "seconds": 0.119
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 126,
+    "stderr_tail": "DAODAN_MAXRSS_KB=129464\n"
    }
   }
  ],

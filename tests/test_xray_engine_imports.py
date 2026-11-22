@@ -287,15 +287,20 @@ class EngineImportTests(unittest.TestCase):
                             "engine.worker.ts": {}, "engine.ts": {}})
         self.assertEqual(graph["main.ts"], ["engine.worker.ts"])
 
-    def test_usage_commonjs_destructuring_fallback_keeps_named_bindings(self):
+    def test_files_no_tree_was_read_from_have_no_importers_and_say_why(self):
         from languages import javascript
 
-        source = self.write("core.js", "export class Engine {}\nexport function start() {}\n")
-        self.write("main.cjs", "const { Engine: Renamed } = require('./core');\nnew Renamed();\n")
+        source = self.write("core.js", "export default class Engine {}\nexport class Other {}\n")
+        self.write("cjs.cjs", "const { Engine: Renamed } = require('./core');\nnew Renamed();\n")
+        self.write("main.js", "import Other from './core.js';\n")
+        self.write("dual.js", "import Other, { default as Second } from './core.js';\n")
         with mock.patch.object(javascript, "_ts_parse", return_value=None):
-            result = usage_finder.find_all_usages_batch(["Engine", "start"], source, self.root)
-        self.assertEqual(result["Engine"].importing_modules, ["main.cjs"])
-        self.assertEqual(result["start"].importing_modules, [])
+            manifest = snapshot.build_manifest(self.root)
+        for entry in manifest["files"].values():
+            self.assertEqual((entry["status"], entry["imports"]), ("parse-error", []))
+            self.assertEqual(entry["parser_notes"][0], "parser=none")
+        result = usage_finder.find_all_usages_batch(["Engine", "Other"], source, self.root, manifest=manifest)
+        self.assertEqual((result["Engine"].importing_modules, result["Other"].importing_modules), ([], []))
 
     def test_default_import_alias_matches_only_the_default_export(self):
         source = self.write("core.js", "export default class Engine {}\nexport class Other {}\n")
@@ -321,35 +326,11 @@ class EngineImportTests(unittest.TestCase):
         self.assertEqual(result["Other"].importing_modules, ["mixed.js"])
         self.assertEqual(set(result["Engine"].importing_modules), {"main.js", "mixed.js", "dual.js"})
 
-    def test_default_alias_provenance_is_preserved_in_regex_fallback(self):
-        from languages import javascript
-
-        source = self.write("core.js", "export default class Engine {}\nexport class Other {}\n")
-        self.write("main.js", "import Other from './core.js';\n")
-        self.write("dual.js", "import Other, { default as Second } from './core.js';\n")
-        with mock.patch.object(javascript, "_ts_parse", return_value=None):
-            manifest = snapshot.build_manifest(self.root)
-        result = usage_finder.find_all_usages_batch(["Engine", "Other"], source, self.root, manifest=manifest)
-        self.assertEqual(set(result["Engine"].importing_modules), {"main.js", "dual.js"})
-        self.assertEqual(result["Other"].importing_modules, [])
-
     def test_named_default_alias_collision_preserves_a_real_named_export(self):
         source = self.write("core.js", "export default class Engine {}\nexport class Other {}\n")
         self.write("main.js", "import { default as Other, Other as Named } from './core.js';\n")
         self.write("reverse.js", "import { Other as Named, default as Other } from './core.js';\n")
         result = usage_finder.find_all_usages_batch(["Engine", "Other"], source, self.root)
-        self.assertEqual(set(result["Engine"].importing_modules), {"main.js", "reverse.js"})
-        self.assertEqual(set(result["Other"].importing_modules), {"main.js", "reverse.js"})
-
-    def test_named_default_alias_collision_is_preserved_in_regex_fallback(self):
-        from languages import javascript
-
-        source = self.write("core.js", "export default class Engine {}\nexport class Other {}\n")
-        self.write("main.js", "import { default as Other, Other as Named } from './core.js';\n")
-        self.write("reverse.js", "import { Other as Named, default as Other } from './core.js';\n")
-        with mock.patch.object(javascript, "_ts_parse", return_value=None):
-            manifest = snapshot.build_manifest(self.root)
-        result = usage_finder.find_all_usages_batch(["Engine", "Other"], source, self.root, manifest=manifest)
         self.assertEqual(set(result["Engine"].importing_modules), {"main.js", "reverse.js"})
         self.assertEqual(set(result["Other"].importing_modules), {"main.js", "reverse.js"})
 

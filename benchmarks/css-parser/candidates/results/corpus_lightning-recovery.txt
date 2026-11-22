@@ -1,0 +1,32 @@
+tool: lightning-recovery
+corpus: 1860 files, 74.6 MB, time 23224 ms (adapter included)
+rules 545020, declarations 1353829, at-rules 34782, comments 0   (files that threw are counted in none of these)
+files with an error: 36; errors: 168; files that threw: 0
+
+## per package: files, errors, threw, rules, decls, atrules
+open-props                          260 err    102 threw    0 rules    1200 decls     9461 at   373
+swiper                               96 err     14 threw    0 rules     849 decls     1783 at     4
+@primer/css                          31 err     12 threw    0 rules    9194 decls    49123 at   595
+semantic-ui-css                      96 err     12 threw    0 rules   23780 decls    44750 at   844
+foundation-sites                      8 err      8 threw    0 rules   11144 decls    25066 at   748
+@primer/primitives                   44 err      6 threw    0 rules      70 decls    62148 at    50
+tachyons                             62 err      6 threw    0 rules    6576 decls     7722 at   176
+tailwindcss                           4 err      6 threw    0 rules      72 decls      138 at    12
+flatpickr                            13 err      2 threw    0 rules    1204 decls     4782 at    22
+@fortawesome/fontawesome-free        20 err      0 threw    0 rules   11454 decls    13852 at   146
+@mdi/font                             2 err      0 threw    0 rules   14949 decls    15016 at     6
+@picocss/pico                       238 err      0 threw    0 rules   82320 decls   293490 at  5042
+animate.css                         104 err      0 threw    0 rules    2427 decls     6087 at   783
+bootstrap                            16 err      0 threw    0 rules   20832 decls    37444 at   608
+
+## messages (count, first file)
+   123  Unknown at rule: @custom-media   [@primer/css/dist/primer.css]
+    12  Pseudo-elements like '::before' or '::after' can't be followed by selectors like 'Colon'   [swiper/modules/effect-cube-element.css]
+    10  Invalid media query   [flatpickr/dist/ie.css]
+     8  'ActiveHover' is not recognized as a valid pseudo-class. Did you mean '::ActiveHover' (pse   [semantic-ui-css/components/label.css]
+     4  Pseudo-elements like '::before' or '::after' can't be followed by selectors like 'Delim('.   [semantic-ui-css/components/popup.css]
+     4  Unknown at rule: @theme   [tailwindcss/index.css]
+     2  Pseudo-elements like '::before' or '::after' can't be followed by selectors like 'Delim('+   [swiper/modules/effect-cube-element.css]
+     2  Unexpected token Semicolon   [tachyons/css/tachyons.css]
+     2  Unknown at rule: @tailwind   [tailwindcss/index.css]
+     1  Unexpected end of input   [tachyons/css/tachyons.min.css]

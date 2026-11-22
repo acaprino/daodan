@@ -84,13 +84,14 @@ Ogni task: prima il test rosso, poi il codice; tocca solo i file che nomina. Dop
 | 10 | La ricerca sull'anagrafica | [ricerca e pacchetto di review](2026-11-20-ricerca-e-pacchetto-di-review.md) |
 | 10b | Il pacchetto di una review dalla ricerca | [ricerca e pacchetto di review](2026-11-20-ricerca-e-pacchetto-di-review.md) |
 | 10c | L'embedder propone gli abbinamenti, non li decide | [ricerca e pacchetto di review](2026-11-20-ricerca-e-pacchetto-di-review.md) |
-| 11 | La fonte osservata | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
+| 11 | La fonte osservata (11.0–11.5), dal 22 novembre prima dei lettori dei framework | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 | 11b | Gli eventi fra pagina e guscio Tauri | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 | 12 | La mappa nel grafo dell'app | qui sotto |
 | 13 | Lo strumento ufficiale del framework (13a–13f) | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 | 14 | Le rotte che nascono all'avvio (14a–14j) | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 | 15 | La forma della risposta e ciò che il client ne legge | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 | 16 | I contratti fra repository | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
+| 17 | I lettori di GitNexus | [ingressi e flussi](2026-11-20-ingressi-e-flussi.md) |
 
 12. **La mappa nel grafo dell'app** (F1, F2, F3, F5). `app_view.product` dalla mappa e dall'anagrafica, apertura sul posto e trascinamento (F2, che la prova di F5 controlla), un flusso acceso, la prova nel browser nel container.
    Test: `benchmarks/standalone-app/app_graph.py`. Riusa: `GRAPH.open`, `App.serve`.

@@ -1,0 +1,1182 @@
+{
+ "source": "folder",
+ "analysis": "possible-in/phazly5",
+ "starts": [
+  {
+   "declared_in": "admin-app/package.json#scripts.dev",
+   "mode": "dev",
+   "needs_build": false,
+   "port": null,
+   "root": "admin-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  },
+  {
+   "declared_in": "landing-app/package.json#scripts.dev",
+   "mode": "dev",
+   "needs_build": false,
+   "port": null,
+   "root": "landing-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  },
+  {
+   "declared_in": "react-app/package.json#scripts.dev",
+   "mode": "dev",
+   "needs_build": false,
+   "port": null,
+   "root": "react-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  }
+ ],
+ "builds": [
+  {
+   "declared_in": "admin-app/package.json#scripts.build",
+   "root": "admin-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  },
+  {
+   "declared_in": "landing-app/package.json#scripts.build",
+   "root": "landing-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  },
+  {
+   "declared_in": "react-app/package.json#scripts.build",
+   "root": "react-app",
+   "runner": "npm",
+   "sources": [
+    "npm-start@daodan/premap/v1"
+   ]
+  }
+ ],
+ "plan_gaps": [],
+ "apps_planned": [
+  "admin-app/package.json#scripts.dev",
+  "landing-app/package.json#scripts.dev",
+  "react-app/package.json#scripts.dev"
+ ],
+ "state": "ran",
+ "apps": [
+  {
+   "root": "admin-app",
+   "mode": "dev",
+   "declared_in": "admin-app/package.json#scripts.dev",
+   "state": "ready",
+   "address": "http://localhost:5174/",
+   "port": 5174,
+   "seconds": 9,
+   "stopped": "term",
+   "explored": {
+    "pages": 1,
+    "controls": 3,
+    "pressed": 1,
+    "skipped": 2,
+    "failed": 0
+   }
+  },
+  {
+   "root": "landing-app",
+   "mode": "dev",
+   "declared_in": "landing-app/package.json#scripts.dev",
+   "state": "ready",
+   "address": "http://localhost:5173/",
+   "port": 5173,
+   "seconds": 600,
+   "stopped": "term",
+   "explored": {
+    "pages": 8,
+    "controls": 140,
+    "pressed": 118,
+    "skipped": 19,
+    "failed": 3
+   }
+  },
+  {
+   "root": "react-app",
+   "mode": "dev",
+   "declared_in": "react-app/package.json#scripts.dev",
+   "state": "ready",
+   "address": "http://localhost:5173/",
+   "port": 5173,
+   "seconds": 59,
+   "stopped": "term",
+   "explored": {
+    "pages": 1,
+    "controls": 14,
+    "pressed": 10,
+    "skipped": 4,
+    "failed": 0
+   }
+  }
+ ],
+ "gaps": [
+  {
+   "path": "landing-app/package.json#scripts.dev",
+   "kind": "calls_unmapped",
+   "files": 11,
+   "examples": [
+    "http://localhost:5173/",
+    "http://localhost:5173/privacy",
+    "http://localhost:5173/src/index.css",
+    "http://localhost:5173/src/i18n/lp/it.json?import",
+    "http://localhost:5173/src/i18n/locales/it.json?import"
+   ],
+   "detail": "11 scripts of the app ran with no source map: their functions are named by script, not by file"
+  }
+ ],
+ "gap_kinds": {
+  "calls_unmapped": 1
+ },
+ "explored": {
+  "pages": 10,
+  "controls": 157,
+  "revealed": 76,
+  "pressed": 129,
+  "with_effect": 126,
+  "with_handler": 97,
+  "skipped": {
+   "needs_value": 8,
+   "leaves_the_app": 16,
+   "not_operable": 1
+  },
+  "failed": 3,
+  "urls": [
+   "http://localhost:5174/",
+   "http://localhost:5173/",
+   "http://localhost:5173/privacy",
+   "http://localhost:5173/terms",
+   "http://localhost:5173/delete-account",
+   "http://localhost:5173/privacy?lang=en",
+   "http://localhost:5173/privacy?lang=it",
+   "http://localhost:5173/terms?lang=en",
+   "http://localhost:5173/terms?lang=it",
+   "http://localhost:5173/"
+  ]
+ },
+ "analysis_top_folders": {
+  "react-app": 628,
+  "utils": 622,
+  "docs": 434,
+  "functions-python": 357,
+  "admin-app": 131,
+  "landing-app": 74,
+  "scripts": 49,
+  "authoring": 38,
+  "shared": 27,
+  "Legal": 21,
+  "README.md": 1,
+  "build-android.bat": 1
+ },
+ "pressed_sample": [
+  {
+   "page": "http://localhost:5174/",
+   "name": "Sign In",
+   "role": "button",
+   "calls": 0,
+   "requests": 0,
+   "handler": null,
+   "first_calls": []
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Phazly, back to top",
+   "role": "link",
+   "calls": 0,
+   "requests": 0,
+   "handler": null,
+   "first_calls": []
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "The week",
+   "role": "link",
+   "calls": 20,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "How it works",
+   "role": "link",
+   "calls": 22,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Features",
+   "role": "link",
+   "calls": 22,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Method",
+   "role": "link",
+   "calls": 22,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Pricing",
+   "role": "link",
+   "calls": 22,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "FAQ",
+   "role": "link",
+   "calls": 26,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Italiano",
+   "role": "button",
+   "calls": 90,
+   "requests": 0,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Nav.tsx",
+    "source": "/src/components/landing/Nav.tsx",
+    "line": 125
+   },
+   "first_calls": [
+    [
+     null,
+     null,
+     "window.$RefreshSig$"
+    ],
+    [
+     null,
+     null,
+     "(anonymous)"
+    ],
+    [
+     "/src/i18n/index.ts",
+     118,
+     "(anonymous)"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Phazly, torna all\u2019inizio",
+   "role": "link",
+   "calls": 0,
+   "requests": 0,
+   "handler": null,
+   "first_calls": []
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "La settimana",
+   "role": "link",
+   "calls": 19,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Come funziona",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Funzioni",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Metodo",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Prezzi",
+   "role": "link",
+   "calls": 21,
+   "requests": 0,
+   "handler": null,
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Cambia tema",
+   "role": "button",
+   "calls": 70,
+   "requests": 0,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Nav.tsx",
+    "source": "/src/components/landing/Nav.tsx",
+    "line": 135
+   },
+   "first_calls": [
+    [
+     null,
+     null,
+     "window.$RefreshSig$"
+    ],
+    [
+     null,
+     null,
+     "(anonymous)"
+    ],
+    [
+     "/src/components/landing/Landing.tsx",
+     31,
+     "Landing"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle",
+   "role": "button",
+   "calls": 46,
+   "requests": 0,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Week.tsx",
+    "source": "/src/components/landing/Week.tsx",
+    "line": 86
+   },
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "A occhio",
+   "role": "button",
+   "calls": 2,
+   "requests": 0,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Week.tsx",
+    "source": "/src/components/landing/Week.tsx",
+    "line": 136
+   },
+   "first_calls": [
+    [
+     "/src/components/landing/Nav.tsx",
+     57,
+     "onScroll"
+    ],
+    [
+     "/src/components/landing/Week.tsx",
+     136,
+     "onClick"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Grammi",
+   "role": "button",
+   "calls": 32,
+   "requests": 0,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Week.tsx",
+    "source": "/src/components/landing/Week.tsx",
+    "line": 139
+   },
+   "first_calls": [
+    [
+     "/src/components/landing/Nav.tsx",
+     57,
+     "onScroll"
+    ],
+    [
+     "/src/components/landing/Week.tsx",
+     24,
+     "Week"
+    ],
+    [
+     "/src/components/landing/Week.tsx",
+     62,
+     "(anonymous)"
+    ]
+   ]
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Marted\u00ec, Colazione: Gallette di riso con formaggio spalmabile light e salmone affumicato",
+   "role": "button",
+   "calls": 46,
+   "requests": 0,
+   "handler": {
+    "name": "onClick",
+    "url": "/src/components/landing/Week.tsx",
+    "source": "/src/components/landing/Week.tsx",
+    "line": 86
+   },
+   "first_calls": [
+    [
+     "/src/hooks/useTheme.ts",
+     35,
+     "getSnapshot"
+    ],
+    [
+     "/src/hooks/useTheme.ts",
+     45,
+     "useTheme"
+    ],
+    [
+     "/src/components/landing/Nav.tsx",
+     36,
+     "Nav"
+    ]
+   ]
+  }
+ ],
+ "not_pressed_sample": [
+  {
+   "page": "http://localhost:5173/",
+   "name": "Skip to main content",
+   "role": "link",
+   "state": "failed",
+   "reason": "locator.click: Timeout 3000ms exceeded. \u2014 - element is outside of the viewport"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Vai al contenuto principale",
+   "role": "link",
+   "state": "failed",
+   "reason": "locator.click: Timeout 3000ms exceeded. \u2014 - element is outside of the viewport"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Cookie preferences",
+   "role": "button",
+   "state": "failed",
+   "reason": "locator.click: Timeout 3000ms exceeded. \u2014 - <button class=\"flex-1 px-4 py-2.5 rounded-lg border border-border text-sm text-foreground hover:bg-muted/50 transition-colors\">Rifiuta</button> from <div class=\"fixed bottom-0 left-0 right-0 z-[9999] bg-card/95 backdrop-blur-md border-t border-border px-4 py-4 sm:px-6\">\u2026</div"
+  },
+  {
+   "page": "http://localhost:5174/",
+   "name": "Email address",
+   "role": "textbox",
+   "state": "skipped",
+   "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5174/",
+   "name": "Password",
+   "role": "textbox",
+   "state": "skipped",
+   "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Prova gratis",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Prova gratis",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Disponibile su Google Play",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Try free",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Try free",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Get it on Google Play",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Start free",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Get it on Google Play",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/",
+   "name": "Contact",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/privacy",
+   "name": "Go to App",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/terms",
+   "name": "Go to App",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/delete-account",
+   "name": "Open the app",
+   "role": "link",
+   "state": "skipped",
+   "reason": "leaves_the_app"
+  },
+  {
+   "page": "http://localhost:5173/delete-account",
+   "name": "Your email",
+   "role": "textbox",
+   "state": "skipped",
+   "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5173/delete-account",
+   "name": "Reason (optional) 0/500",
+   "role": "textbox",
+   "state": "skipped",
+   "reason": "needs_value"
+  },
+  {
+   "page": "http://localhost:5173/delete-account",
+   "name": "Request deletion",
+   "role": "button",
+   "state": "skipped",
+   "reason": "not_operable"
+  }
+ ],
+ "page_errors": [],
+ "against_static": {
+  "static_candidates": 194,
+  "static_labelled_click": 0,
+  "recovered": 126,
+  "recovered_with_handler": 97,
+  "matched": 0,
+  "discarded_on_a_component": 0,
+  "discarded_with_a_label": 0,
+  "discarded_with_a_pressed_control_of_the_same_name": 0,
+  "recovered_sample": [
+   {
+    "site": "/",
+    "label": "The week",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate",
+     "landing-app/src/components/landing/motion.ts:136 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "How it works",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Features",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Method",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Pricing",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "FAQ",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:79 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:116 onRefreshStart",
+     "landing-app/src/components/landing/motion.ts:119 onRefreshEnd"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Italiano",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Nav.tsx:125 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:71 EmberGlow",
+     "landing-app/src/components/landing/Faq.tsx:6 Faq",
+     "landing-app/src/components/landing/Faq.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:23 PhotoScan",
+     "landing-app/src/components/landing/Features.tsx:39 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:74 Features",
+     "landing-app/src/components/landing/FinalCta.tsx:11 FinalCta",
+     "landing-app/src/components/landing/FinalCta.tsx:18 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:4 Footer",
+     "landing-app/src/components/landing/Hero.tsx:35 linePath"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "La settimana",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate",
+     "landing-app/src/components/landing/motion.ts:136 onUpdate",
+     "landing-app/src/components/landing/motion.ts:159 scale"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Come funziona",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Funzioni",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Metodo",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Prezzi",
+    "role": "link",
+    "handler": null,
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/motion.ts:49 boxIn",
+     "landing-app/src/components/landing/motion.ts:97 toWeigh",
+     "landing-app/src/components/landing/motion.ts:102 toCell",
+     "landing-app/src/components/landing/motion.ts:127 onUpdate"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Cambia tema",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Nav.tsx:135 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/EmberGlow.tsx:71 EmberGlow",
+     "landing-app/src/components/landing/Faq.tsx:6 Faq",
+     "landing-app/src/components/landing/Faq.tsx:15 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:23 PhotoScan",
+     "landing-app/src/components/landing/Features.tsx:39 (anonymous)",
+     "landing-app/src/components/landing/Features.tsx:74 Features",
+     "landing-app/src/components/landing/FinalCta.tsx:11 FinalCta",
+     "landing-app/src/components/landing/FinalCta.tsx:18 (anonymous)",
+     "landing-app/src/components/landing/Footer.tsx:4 Footer",
+     "landing-app/src/components/landing/Hero.tsx:35 linePath"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Luned\u00ec, Colazione: Pancake integrali con yogurt greco, banana e mandorle",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:86 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "A occhio",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:136 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Week.tsx:136 onClick"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Grammi",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:139 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week",
+     "landing-app/src/components/landing/Week.tsx:62 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:67 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:98 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:139 onClick",
+     "landing-app/src/components/landing/Week.tsx:145 (anonymous)"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Marted\u00ec, Colazione: Gallette di riso con formaggio spalmabile light e salmone affumicato",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:86 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "A occhio",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:136 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Week.tsx:136 onClick"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Grammi",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:139 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week",
+     "landing-app/src/components/landing/Week.tsx:62 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:67 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:98 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:139 onClick",
+     "landing-app/src/components/landing/Week.tsx:145 (anonymous)"
+    ],
+    "requests": []
+   },
+   {
+    "site": "/",
+    "label": "Mercoled\u00ec, Colazione: Chia pudding con yogurt greco e mirtilli",
+    "role": "button",
+    "handler": "landing-app/src/components/landing/Week.tsx:86 onClick",
+    "observed_calls": [
+     "landing-app/src/components/landing/Hero.tsx:91 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:36 Nav",
+     "landing-app/src/components/landing/Nav.tsx:57 onScroll",
+     "landing-app/src/components/landing/Nav.tsx:76 IntersectionObserver.rootMargin",
+     "landing-app/src/components/landing/Nav.tsx:110 (anonymous)",
+     "landing-app/src/components/landing/Nav.tsx:118 (anonymous)",
+     "landing-app/src/components/landing/SectionMark.tsx:15 two",
+     "landing-app/src/components/landing/SectionMark.tsx:18 SectionMark",
+     "landing-app/src/components/landing/SectionMark.tsx:20 (anonymous)",
+     "landing-app/src/components/landing/Week.tsx:24 Week"
+    ],
+    "requests": []
+   }
+  ]
+ },
+ "seconds": 877.7
+}

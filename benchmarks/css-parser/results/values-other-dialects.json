@@ -1,0 +1,404 @@
+{
+ "files": {
+  "scss": 922,
+  "less": 147,
+  "styl": 19,
+  "sass": 0
+ },
+ "not_read": {
+  "sass": 3
+ },
+ "dialects": {
+  "sass": {
+   "values": 22827,
+   "unique": 9249,
+   "cells": {
+    "same": {
+     "unique": 4206,
+     "occurrences": 15771,
+     "examples": []
+    },
+    "same (with a hole); the parser threw": {
+     "unique": 4821,
+     "occurrences": 6599,
+     "examples": [
+      {
+       "property": "border-color",
+       "value": "var(--#{v.$css-prefix}-border-color, #{v.$border-color})",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "border-radius",
+       "value": "var(--#{v.$css-prefix}-border-radius, #{v.$border-radius})",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "border-style",
+       "value": "var(--#{v.$css-prefix}-border-style, #{v.$border-style})",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "border-width",
+       "value": "var(--#{v.$css-prefix}-border-width, #{v.$border-width})",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      }
+     ]
+    },
+    "fork reads more": {
+     "unique": 171,
+     "occurrences": 359,
+     "examples": [
+      {
+       "property": "font-family",
+       "value": "'#{$mdi-font-name}'",
+       "old": [],
+       "new": [
+        "('ref', 'font-face', '#{$mdi-font-name}')"
+       ],
+       "holes": []
+      },
+      {
+       "property": "background",
+       "value": "var(--overlay-bgColor, var(--color-canvas-overlay))",
+       "old": [
+        "('ref', 'custom-property', '--overlay-bgColor')"
+       ],
+       "new": [
+        "('ref', 'custom-property', '--color-canvas-overlay')",
+        "('ref', 'custom-property', '--overlay-bgColor')"
+       ],
+       "holes": []
+      },
+      {
+       "property": "box-shadow",
+       "value": "var(--shadow-resting-medium, var(--color-shadow-medium))",
+       "old": [
+        "('ref', 'custom-property', '--shadow-resting-medium')"
+       ],
+       "new": [
+        "('ref', 'custom-property', '--color-shadow-medium')",
+        "('ref', 'custom-property', '--shadow-resting-medium')"
+       ],
+       "holes": []
+      },
+      {
+       "property": "color",
+       "value": "var(--fgColor-onEmphasis, var(--color-fg-on-emphasis))",
+       "old": [
+        "('ref', 'custom-property', '--fgColor-onEmphasis')"
+       ],
+       "new": [
+        "('ref', 'custom-property', '--color-fg-on-emphasis')",
+        "('ref', 'custom-property', '--fgColor-onEmphasis')"
+       ],
+       "holes": []
+      }
+     ]
+    },
+    "fork loses some, a hole says so; the parser threw": {
+     "unique": 51,
+     "occurrences": 98,
+     "examples": [
+      {
+       "property": "font-family",
+       "value": "var(--_#{v.$css-prefix}-family)",
+       "old": [
+        "('ref', 'custom-property', '--_')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "border",
+       "value": "$border-width $border-style var(--borderColor-default, var(--color-border-default))",
+       "old": [
+        "('ref', 'custom-property', '--borderColor-default')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "border-bottom",
+       "value": "$border-width $border-style var(--borderColor-muted, var(--color-border-muted))",
+       "old": [
+        "('ref', 'custom-property', '--borderColor-muted')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "font-size",
+       "value": "var(--body-font-size, $body-font-size)",
+       "old": [
+        "('ref', 'custom-property', '--body-font-size')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      }
+     ]
+    }
+   },
+   "by_kind": {
+    "values with a Sass variable": {
+     "threw": 6029,
+     "ok": 35
+    },
+    "values with Sass interpolation": {
+     "threw": 2154,
+     "ok": 33
+    },
+    "values with braces (Stylus interpolation)": {
+     "threw": 2154,
+     "ok": 33
+    },
+    "custom-property": {
+     "same": 1545,
+     "lost": 93,
+     "gained": 366
+    },
+    "font-face": {
+     "same": 359,
+     "gained": 3,
+     "lost": 5
+    },
+    "keyframes": {
+     "same": 68,
+     "lost": 3
+    },
+    "values with a Less variable or call": {
+     "ok": 1
+    }
+   }
+  },
+  "less": {
+   "values": 3108,
+   "unique": 1828,
+   "cells": {
+    "same (with a hole); the parser threw": {
+     "unique": 1408,
+     "occurrences": 1571,
+     "examples": [
+      {
+       "property": "color",
+       "value": "@inverse-accordion-default-title-hover-color",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "color",
+       "value": "@inverse-accordion-default-title-color",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "margin-top",
+       "value": "@accordion-default-content-margin-top",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "color",
+       "value": "@accordion-default-title-hover-color",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      }
+     ]
+    },
+    "same": {
+     "unique": 411,
+     "occurrences": 1528,
+     "examples": []
+    },
+    "fork loses some, a hole says so; the parser threw": {
+     "unique": 9,
+     "occurrences": 9,
+     "examples": [
+      {
+       "property": "font-family",
+       "value": "@base-pre-font-family",
+       "old": [
+        "('ref', 'font-face', '@base-pre-font-family')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "font-family",
+       "value": "@base-heading-font-family",
+       "old": [
+        "('ref', 'font-face', '@base-heading-font-family')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "font-family",
+       "value": "@base-code-font-family",
+       "old": [
+        "('ref', 'font-face', '@base-code-font-family')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "font-family",
+       "value": "@base-body-font-family",
+       "old": [
+        "('ref', 'font-face', '@base-body-font-family')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      }
+     ]
+    }
+   },
+   "by_kind": {
+    "values with a Less variable or call": {
+     "threw": 1544
+    },
+    "custom-property": {
+     "same": 107,
+     "lost": 3
+    },
+    "keyframes": {
+     "same": 32,
+     "lost": 2
+    },
+    "font-face": {
+     "lost": 6
+    },
+    "values with Less interpolation": {
+     "threw": 23
+    },
+    "values with braces (Stylus interpolation)": {
+     "threw": 23
+    }
+   }
+  },
+  "styl": {
+   "values": 798,
+   "unique": 459,
+   "cells": {
+    "same": {
+     "unique": 377,
+     "occurrences": 696,
+     "examples": []
+    },
+    "same (with a hole); the parser threw": {
+     "unique": 81,
+     "occurrences": 101,
+     "examples": [
+      {
+       "property": "line-height",
+       "value": "$timeHeight",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "max-height",
+       "value": "$timeHeight",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "background",
+       "value": "lighten($dayHoverBackground, 3)",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      },
+      {
+       "property": "color",
+       "value": "$dayForeground",
+       "old": [],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      }
+     ]
+    },
+    "fork loses some, a hole says so; the parser threw": {
+     "unique": 1,
+     "occurrences": 1,
+     "examples": [
+      {
+       "property": "animation",
+       "value": "fpFadeInDown 300ms $bezier",
+       "old": [
+        "('ref', 'keyframes', 'fpFadeInDown')"
+       ],
+       "new": [],
+       "holes": [
+        "threw"
+       ]
+      }
+     ]
+    }
+   },
+   "by_kind": {
+    "values with a Sass variable": {
+     "threw": 91
+    },
+    "keyframes": {
+     "lost": 1
+    },
+    "font-face": {
+     "same": 13
+    }
+   }
+  }
+ }
+}

@@ -142,6 +142,7 @@ def cmd_analyze(args: argparse.Namespace) -> None:
             "by_type": analysis.by_type,
             "by_classification": analysis.by_classification,
             "issues": analysis.issues,
+            "gap": analysis.gap,
             "comments": [
                 {
                     "line": c.line_number,
@@ -184,6 +185,9 @@ def cmd_analyze(args: argparse.Namespace) -> None:
         print(f"[!]  Rewrite: {rewrite}")
         print(f"[X]  Delete: {delete}")
 
+        if analysis.gap:
+            print("")
+            print(f"Gap: {analysis.gap}; commented-out code and restated lines were not looked for.")
         if analysis.issues:
             print("")
             print(f"Found {len(analysis.issues)} issue(s). Use --report for details.")
@@ -275,6 +279,9 @@ def cmd_scan(args: argparse.Namespace) -> None:
         print(f"  - To rewrite: {total_rewrite}")
         print("")
 
+        for gap in sorted({a.gap for a in results if a.gap}):
+            print(f"Gap in {sum(a.gap == gap for a in results)} file(s): {gap}")
+
         # Show files with most issues
         files_with_issues = [a for a in results if a.issues]
         files_with_issues.sort(key=lambda a: len(a.issues), reverse=True)
@@ -345,6 +352,7 @@ def cmd_report(args: argparse.Namespace) -> None:
         f"- **Total Comments:** {total_comments:,}",
         f"- **Comment Ratio:** {avg_ratio:.1f} per 100 lines",
         f"- **Total Issues:** {len(all_issues)}",
+        f"- **Files read without their grammar:** {sum(1 for a in results if a.gap)}",
         "",
     ])
 
@@ -384,10 +392,11 @@ def cmd_report(args: argparse.Namespace) -> None:
         "trivial": "Obvious statements (BAD)",
         "debt": "TODO/FIXME markers (BAD)",
         "backup": "Commented-out code (BAD)",
+        "directive": "Compiler or linter directives (never touched)",
         "unknown": "Needs human review",
     }
 
-    for type_name in ["function", "design", "why", "teacher", "checklist", "guide", "trivial", "debt", "backup", "unknown"]:
+    for type_name in ["function", "design", "why", "teacher", "checklist", "guide", "trivial", "debt", "backup", "directive", "unknown"]:
         count = total_by_type.get(type_name, 0)
         desc = type_descriptions.get(type_name, "")
         lines.append(f"| {type_name} | {count} | {desc} |")

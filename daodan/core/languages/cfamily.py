@@ -1,5 +1,5 @@
 """
-C and C++ adapters. Tree-sitter when available; without the grammar, only the includes.
+C and C++ adapters, read from the Tree-sitter tree; a file whose grammar does not load is reported unread.
 
 The outline holds the definitions: functions, structs, unions, enums, typedefs and, in C++, classes with the
 methods defined in their body, namespaces qualifying what they hold (`geo.Circle`). A member defined outside
@@ -25,12 +25,12 @@ from ._treesitter import (
     check_syntax_errors,
     extract_ast_calls,
     get_parser,
-    load_failure,
     node_text,
     scan_ast_external_calls,
 )
 from .base import ClassInfo, ExternalCallInfo, FunctionInfo, ImportInfo, NestedDefinition, ParameterInfo, ParseResult
 from .comments import CommentToken, extract_c_style_comments
+from .reading import code_lines, unread
 from .semantic import c_callable_name, c_declarator, c_is_static, c_semantics, cpp_semantics
 
 __all__ = ["blank_annotations", "c_adapter", "cpp_adapter", "decorating", "include_contexts", "macro_definitions",
@@ -363,7 +363,7 @@ def _ts_parse(content: str, language: str, macros: dict | None) -> tuple[ParseRe
     src, statics = prepare(content.encode("utf-8"), language, macros)
     try:
         tree = parser.parse(src)
-    except Exception as e:  # parse() is contractually non-raising; degrade to the fallback
+    except Exception as e:  # parse() is contractually non-raising; report the file unread
         return None, f"{type(e).__name__}: {e}"
 
     def text(n: Any) -> str:
@@ -545,23 +545,12 @@ class _CFamilyAdapter:
         """`macros`: the definitions of the project headers the file includes (`include_contexts`)."""
         result, error = _ts_parse(content, self.language, macros)
         if result is None:
-            result = ParseResult(file_path="", language=self.language, notes=["parser=regex-fallback"],
-                                 imports=[_include(m.group(2), m.group(1) == '"') for m in _INCLUDE_RE.finditer(content)],
-                                 external_calls=_scan_external_calls(content))
-            if error is not None:
-                result.notes.append(f"tree-sitter raised: {error}")
-            reason = load_failure(self.language)
-            if reason is not None:
-                result.notes.append(f"tree-sitter unavailable: {reason}")
+            result = unread(self.language, self.language, error)
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        return len(_INCLUDE_RE.findall(content))
-
-    def strip_comments_and_blanks(self, content: str) -> int:
-        no_blocks = re.sub(r"/\*[\s\S]*?\*/", "", content)
-        return sum(1 for line in no_blocks.split("\n") if line.strip() and not line.strip().startswith("//"))
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, self.language)
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_c_style_comments(content)

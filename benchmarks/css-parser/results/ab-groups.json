@@ -1,0 +1,522 @@
+{
+ "files": 1860,
+ "bytes": 74578563,
+ "chunks": 24,
+ "groups": {
+  "changed ref custom-property: fallback:old-cut-at-the-first-parenthesis": {
+   "count": 4543,
+   "files": 427,
+   "examples": [
+    {
+     "file": "@fortawesome/fontawesome-free/css/all.css",
+     "old": "{\"chain\": [], \"fallback\": \"var(--fa-style-family,\", \"file\": \"@fortawesome/fontawesome-free/css/all.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.css:6 .fa-solid, .fa-regular, .fa-brands, .fa-classic, .fas, .far, .fab, .fa\", \"kind\": \"custom-property\", \"name\": \"--fa-family\", \"site\": \"@fortawesome/fontawesome-free/css/all.css:14\", \"symbol\": \"--fa-family\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"fallback\": \"var(--fa-style-family, 'Font Awesome 7 Free')\", \"file\": \"@fortawesome/fontawesome-free/css/all.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.css:6 .fa-solid, .fa-regular, .fa-brands, .fa-classic, .fas, .far, .fab, .fa\", \"kind\": \"custom-property\", \"name\": \"--fa-family\", \"site\": \"@fortawesome/fontawesome-free/css/all.css:14\", \"symbol\": \"--fa-family\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "@fortawesome/fontawesome-free/css/all.css",
+     "old": "{\"chain\": [], \"fallback\": \"cubic-bezier(0.28, 0.84, 0.42, 1\", \"file\": \"@fortawesome/fontawesome-free/css/all.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.css:207 .fa-bounce\", \"kind\": \"custom-property\", \"name\": \"--fa-animation-timing\", \"site\": \"@fortawesome/fontawesome-free/css/all.css:213\", \"symbol\": \"--fa-animation-timing\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"fallback\": \"cubic-bezier(0.28, 0.84, 0.42, 1)\", \"file\": \"@fortawesome/fontawesome-free/css/all.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.css:207 .fa-bounce\", \"kind\": \"custom-property\", \"name\": \"--fa-animation-timing\", \"site\": \"@fortawesome/fontawesome-free/css/all.css:213\", \"symbol\": \"--fa-animation-timing\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "@fortawesome/fontawesome-free/css/all.css",
+     "old": "{\"chain\": [], \"fallback\": \"steps(8\", \"file\": \"@fortawesome/fontawesome-free/css/all.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.css:274 .fa-pulse, .fa-spin-pulse\", \"kind\": \"custom-property\", \"name\": \"--fa-animation-timing\", \"site\": \"@fortawesome/fontawesome-free/css/all.css:280\", \"symbol\": \"--fa-animation-timing\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"fallback\": \"steps(8)\", \"file\": \"@fortawesome/fontawesome-free/css/all.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.css:274 .fa-pulse, .fa-spin-pulse\", \"kind\": \"custom-property\", \"name\": \"--fa-animation-timing\", \"site\": \"@fortawesome/fontawesome-free/css/all.css:280\", \"symbol\": \"--fa-animation-timing\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "@fortawesome/fontawesome-free/css/all.min.css",
+     "old": "{\"chain\": [], \"fallback\": \"var(--fa-style-family,\", \"file\": \"@fortawesome/fontawesome-free/css/all.min.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.min.css:6 .fa, .fa-brands, .fa-classic, .fa-regular, .fa-solid, .fab, .far, .fas\", \"kind\": \"custom-property\", \"name\": \"--fa-family\", \"site\": \"@fortawesome/fontawesome-free/css/all.min.css:6\", \"symbol\": \"--fa-family\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"fallback\": \"var(--fa-style-family,\\\"Font Awesome 7 Free\\\")\", \"file\": \"@fortawesome/fontawesome-free/css/all.min.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.min.css:6 .fa, .fa-brands, .fa-classic, .fa-regular, .fa-solid, .fab, .far, .fas\", \"kind\": \"custom-property\", \"name\": \"--fa-family\", \"site\": \"@fortawesome/fontawesome-free/css/all.min.css:6\", \"symbol\": \"--fa-family\", \"t\""
+    },
+    {
+     "file": "@picocss/pico/css/pico.classless.conditional.indigo.min.css",
+     "old": "{\"chain\": [], \"fallback\": \"0 0 0 rgba(0, 0, 0, 0\", \"file\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css\", \"from\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css:4 .pico [role=button], .pico [type=button], .pico [type=file]::file-selector-button, .pico [type=reset], .pico [type=submit], .pico button\", \"kind\": \"custom-property\", \"name\": \"--pico-button-box-shadow\", \"site",
+     "new": "{\"chain\": [], \"fallback\": \"0 0 0 rgba(0, 0, 0, 0)\", \"file\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css\", \"from\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css:4 .pico [role=button], .pico [type=button], .pico [type=file]::file-selector-button, .pico [type=reset], .pico [type=submit], .pico button\", \"kind\": \"custom-property\", \"name\": \"--pico-button-box-shadow\", \"sit"
+    },
+    {
+     "file": "@picocss/pico/css/pico.classless.conditional.indigo.min.css",
+     "old": "{\"chain\": [], \"fallback\": \"0 0 0 rgba(0, 0, 0, 0\", \"file\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css\", \"from\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css:4 .pico [role=button]:is(:hover,:active,:focus), .pico [role=button]:is([aria-current]:not([aria-current=false])), .pico [type=button]:is(:hover,:active,:focus), .pico [type=button]:is([aria-current]:not([aria",
+     "new": "{\"chain\": [], \"fallback\": \"0 0 0 rgba(0, 0, 0, 0)\", \"file\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css\", \"from\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css:4 .pico [role=button]:is(:hover,:active,:focus), .pico [role=button]:is([aria-current]:not([aria-current=false])), .pico [type=button]:is(:hover,:active,:focus), .pico [type=button]:is([aria-current]:not([ari"
+    }
+   ],
+   "sample_files": [
+    "@fortawesome/fontawesome-free/css/all.css",
+    "@fortawesome/fontawesome-free/css/all.min.css",
+    "@fortawesome/fontawesome-free/css/fontawesome.css",
+    "@fortawesome/fontawesome-free/css/fontawesome.min.css",
+    "@fortawesome/fontawesome-free/css/svg-with-js.css",
+    "@fortawesome/fontawesome-free/css/svg-with-js.min.css"
+   ]
+  },
+  "only new ref custom-property": {
+   "count": 3344,
+   "files": 416,
+   "examples": [
+    {
+     "file": "@fortawesome/fontawesome-free/css/all.css",
+     "old": null,
+     "new": "{\"chain\": [], \"fallback\": \"'Font Awesome 7 Free'\", \"file\": \"@fortawesome/fontawesome-free/css/all.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.css:6 .fa-solid, .fa-regular, .fa-brands, .fa-classic, .fas, .far, .fab, .fa\", \"kind\": \"custom-property\", \"name\": \"--fa-style-family\", \"site\": \"@fortawesome/fontawesome-free/css/all.css:14\", \"symbol\": \"--fa-style-family\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "@fortawesome/fontawesome-free/css/all.min.css",
+     "old": null,
+     "new": "{\"chain\": [], \"fallback\": \"\\\"Font Awesome 7 Free\\\"\", \"file\": \"@fortawesome/fontawesome-free/css/all.min.css\", \"from\": \"@fortawesome/fontawesome-free/css/all.min.css:6 .fa, .fa-brands, .fa-classic, .fa-regular, .fa-solid, .fab, .far, .fas\", \"kind\": \"custom-property\", \"name\": \"--fa-style-family\", \"site\": \"@fortawesome/fontawesome-free/css/all.min.css:6\", \"symbol\": \"--fa-style-family\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "@fortawesome/fontawesome-free/css/fontawesome.css",
+     "old": null,
+     "new": "{\"chain\": [], \"fallback\": \"'Font Awesome 7 Free'\", \"file\": \"@fortawesome/fontawesome-free/css/fontawesome.css\", \"from\": \"@fortawesome/fontawesome-free/css/fontawesome.css:6 .fa-solid, .fa-regular, .fa-brands, .fa-classic, .fas, .far, .fab, .fa\", \"kind\": \"custom-property\", \"name\": \"--fa-style-family\", \"site\": \"@fortawesome/fontawesome-free/css/fontawesome.css:14\", \"symbol\": \"--fa-style-family\", \"t\""
+    },
+    {
+     "file": "@fortawesome/fontawesome-free/css/fontawesome.min.css",
+     "old": null,
+     "new": "{\"chain\": [], \"fallback\": \"\\\"Font Awesome 7 Free\\\"\", \"file\": \"@fortawesome/fontawesome-free/css/fontawesome.min.css\", \"from\": \"@fortawesome/fontawesome-free/css/fontawesome.min.css:6 .fa, .fa-brands, .fa-classic, .fa-regular, .fa-solid, .fab, .far, .fas\", \"kind\": \"custom-property\", \"name\": \"--fa-style-family\", \"site\": \"@fortawesome/fontawesome-free/css/fontawesome.min.css:6\", \"symbol\": \"--fa-style"
+    },
+    {
+     "file": "@picocss/pico/css/pico.classless.conditional.indigo.min.css",
+     "old": null,
+     "new": "{\"chain\": [], \"file\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css\", \"from\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css:4 .pico fieldset legend, .pico label\", \"kind\": \"custom-property\", \"name\": \"--pico-font-weight\", \"site\": \"@picocss/pico/css/pico.classless.conditional.indigo.min.css:4\", \"symbol\": \"--pico-font-weight\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "@picocss/pico/css/pico.classless.conditional.jade.css",
+     "old": null,
+     "new": "{\"chain\": [], \"file\": \"@picocss/pico/css/pico.classless.conditional.jade.css\", \"from\": \"@picocss/pico/css/pico.classless.conditional.jade.css:1201 .pico label, .pico fieldset legend\", \"kind\": \"custom-property\", \"name\": \"--pico-font-weight\", \"site\": \"@picocss/pico/css/pico.classless.conditional.jade.css:1206\", \"symbol\": \"--pico-font-weight\", \"t\": \"ref\"}"
+    }
+   ],
+   "sample_files": [
+    "@fortawesome/fontawesome-free/css/all.css",
+    "@fortawesome/fontawesome-free/css/all.min.css",
+    "@fortawesome/fontawesome-free/css/fontawesome.css",
+    "@fortawesome/fontawesome-free/css/fontawesome.min.css",
+    "@picocss/pico/css/pico.amber.css",
+    "@picocss/pico/css/pico.amber.min.css"
+   ]
+  },
+  "changed ref custom-property: site:old-line-lacks-the-use+new-line-has-it": {
+   "count": 325,
+   "files": 16,
+   "examples": [
+    {
+     "file": "open-props/src/extra/buttons.css",
+     "old": "{\"chain\": [], \"file\": \"open-props/src/extra/buttons.css\", \"from\": \"open-props/src/extra/buttons.css:4 :where(.btn,button,input:is([type=\\\"button\\\"],[type=\\\"submit\\\"],[type=\\\"reset\\\"])), :where(input[type=\\\"file\\\"])::-webkit-file-upload-button, :where(input[type=\\\"file\\\"])::file-selector-button\", \"kind\": \"custom-property\", \"name\": \"--shadow-2\", \"site\": \"open-props/src/extra/buttons.css:33\", \"symbol",
+     "new": "{\"chain\": [], \"file\": \"open-props/src/extra/buttons.css\", \"from\": \"open-props/src/extra/buttons.css:4 :where(.btn,button,input:is([type=\\\"button\\\"],[type=\\\"submit\\\"],[type=\\\"reset\\\"])), :where(input[type=\\\"file\\\"])::-webkit-file-upload-button, :where(input[type=\\\"file\\\"])::file-selector-button\", \"kind\": \"custom-property\", \"name\": \"--shadow-2\", \"site\": \"open-props/src/extra/buttons.css:34\", \"symbol"
+    },
+    {
+     "file": "open-props/src/extra/buttons.css",
+     "old": "{\"chain\": [], \"file\": \"open-props/src/extra/buttons.css\", \"from\": \"open-props/src/extra/buttons.css:4 :where(.btn,button,input:is([type=\\\"button\\\"],[type=\\\"submit\\\"],[type=\\\"reset\\\"])), :where(input[type=\\\"file\\\"])::-webkit-file-upload-button, :where(input[type=\\\"file\\\"])::file-selector-button\", \"kind\": \"custom-property\", \"name\": \"--surface-3\", \"site\": \"open-props/src/extra/buttons.css:33\", \"symbo",
+     "new": "{\"chain\": [], \"file\": \"open-props/src/extra/buttons.css\", \"from\": \"open-props/src/extra/buttons.css:4 :where(.btn,button,input:is([type=\\\"button\\\"],[type=\\\"submit\\\"],[type=\\\"reset\\\"])), :where(input[type=\\\"file\\\"])::-webkit-file-upload-button, :where(input[type=\\\"file\\\"])::file-selector-button\", \"kind\": \"custom-property\", \"name\": \"--surface-3\", \"site\": \"open-props/src/extra/buttons.css:35\", \"symbo"
+    },
+    {
+     "file": "open-props/src/extra/buttons.css",
+     "old": "{\"chain\": [], \"file\": \"open-props/src/extra/buttons.css\", \"from\": \"open-props/src/extra/buttons.css:4 :where(.btn,button,input:is([type=\\\"button\\\"],[type=\\\"submit\\\"],[type=\\\"reset\\\"])), :where(input[type=\\\"file\\\"])::-webkit-file-upload-button, :where(input[type=\\\"file\\\"])::file-selector-button\", \"kind\": \"custom-property\", \"name\": \"--_highlight-size\", \"site\": \"open-props/src/extra/buttons.css:33\", ",
+     "new": "{\"chain\": [], \"file\": \"open-props/src/extra/buttons.css\", \"from\": \"open-props/src/extra/buttons.css:4 :where(.btn,button,input:is([type=\\\"button\\\"],[type=\\\"submit\\\"],[type=\\\"reset\\\"])), :where(input[type=\\\"file\\\"])::-webkit-file-upload-button, :where(input[type=\\\"file\\\"])::file-selector-button\", \"kind\": \"custom-property\", \"name\": \"--_highlight-size\", \"site\": \"open-props/src/extra/buttons.css:36\", "
+    },
+    {
+     "file": "open-props/src/extra/buttons.css",
+     "old": "{\"chain\": [], \"file\": \"open-props/src/extra/buttons.css\", \"from\": \"open-props/src/extra/buttons.css:4 :where(.btn,button,input:is([type=\\\"button\\\"],[type=\\\"submit\\\"],[type=\\\"reset\\\"])), :where(input[type=\\\"file\\\"])::-webkit-file-upload-button, :where(input[type=\\\"file\\\"])::file-selector-button\", \"kind\": \"custom-property\", \"name\": \"--_highlight\", \"site\": \"open-props/src/extra/buttons.css:33\", \"symb",
+     "new": "{\"chain\": [], \"file\": \"open-props/src/extra/buttons.css\", \"from\": \"open-props/src/extra/buttons.css:4 :where(.btn,button,input:is([type=\\\"button\\\"],[type=\\\"submit\\\"],[type=\\\"reset\\\"])), :where(input[type=\\\"file\\\"])::-webkit-file-upload-button, :where(input[type=\\\"file\\\"])::file-selector-button\", \"kind\": \"custom-property\", \"name\": \"--_highlight\", \"site\": \"open-props/src/extra/buttons.css:36\", \"symb"
+    },
+    {
+     "file": "water.css/out/dark.css",
+     "old": "{\"chain\": [], \"file\": \"water.css/out/dark.css\", \"from\": \"water.css/out/dark.css:49 button\", \"kind\": \"custom-property\", \"name\": \"--animation-duration\", \"site\": \"water.css/out/dark.css:56\", \"symbol\": \"--animation-duration\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"file\": \"water.css/out/dark.css\", \"from\": \"water.css/out/dark.css:49 button\", \"kind\": \"custom-property\", \"name\": \"--animation-duration\", \"site\": \"water.css/out/dark.css:57\", \"symbol\": \"--animation-duration\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "water.css/out/dark.css",
+     "old": "{\"chain\": [], \"file\": \"water.css/out/dark.css\", \"from\": \"water.css/out/dark.css:49 button\", \"kind\": \"custom-property\", \"name\": \"--animation-duration\", \"site\": \"water.css/out/dark.css:56\", \"symbol\": \"--animation-duration\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"file\": \"water.css/out/dark.css\", \"from\": \"water.css/out/dark.css:49 button\", \"kind\": \"custom-property\", \"name\": \"--animation-duration\", \"site\": \"water.css/out/dark.css:58\", \"symbol\": \"--animation-duration\", \"t\": \"ref\"}"
+    }
+   ],
+   "sample_files": [
+    "open-props/src/extra/buttons.css",
+    "open-props/src/extra/buttons.dark.css",
+    "open-props/src/extra/buttons.light.css",
+    "open-props/src/extra/durations.css",
+    "open-props/src/extra/utilities.css",
+    "open-props/src/props.gradients.css"
+   ]
+  },
+  "only new hole keyframes value-not-matched": {
+   "count": 183,
+   "files": 114,
+   "examples": [
+    {
+     "file": "bootstrap/dist/css/bootstrap.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"bootstrap/dist/css/bootstrap.css\", \"kind\": \"keyframes\", \"line\": 6227, \"name\": \"animation: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "bootstrap/dist/css/bootstrap.min.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"bootstrap/dist/css/bootstrap.min.css\", \"kind\": \"keyframes\", \"line\": 5, \"name\": \"animation: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "bootstrap/dist/css/bootstrap.rtl.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"bootstrap/dist/css/bootstrap.rtl.css\", \"kind\": \"keyframes\", \"line\": 6209, \"name\": \"animation: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "bootstrap/dist/css/bootstrap.rtl.min.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"bootstrap/dist/css/bootstrap.rtl.min.css\", \"kind\": \"keyframes\", \"line\": 5, \"name\": \"animation: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "bootswatch/dist/cerulean/bootstrap.rtl.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"bootswatch/dist/cerulean/bootstrap.rtl.css\", \"kind\": \"keyframes\", \"line\": 6232, \"name\": \"animation: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "bootswatch/dist/cerulean/bootstrap.rtl.min.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"bootswatch/dist/cerulean/bootstrap.rtl.min.css\", \"kind\": \"keyframes\", \"line\": 11, \"name\": \"animation: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    }
+   ],
+   "sample_files": [
+    "bootstrap/dist/css/bootstrap.css",
+    "bootstrap/dist/css/bootstrap.min.css",
+    "bootstrap/dist/css/bootstrap.rtl.css",
+    "bootstrap/dist/css/bootstrap.rtl.min.css",
+    "bootswatch/dist/brite/bootstrap.css",
+    "bootswatch/dist/brite/bootstrap.min.css"
+   ]
+  },
+  "changed ref custom-property: fallback": {
+   "count": 138,
+   "files": 120,
+   "examples": [
+    {
+     "file": "@primer/css/dist/base.css",
+     "old": "{\"chain\": [], \"fallback\": \"-apple-system, BlinkMacSystemFont,           ,            , Helvetica, Arial, sans-serif,                    ,\", \"file\": \"@primer/css/dist/base.css\", \"from\": \"@primer/css/dist/base.css:1 body\", \"kind\": \"custom-property\", \"name\": \"--fontStack-sansSerif\", \"site\": \"@primer/css/dist/base.css:1\", \"symbol\": \"--fontStack-sansSerif\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"fallback\": \"-apple-system, BlinkMacSystemFont, \\\"Segoe UI\\\", \\\"Noto Sans\\\", Helvetica, Arial, sans-serif, \\\"Apple Color Emoji\\\", \\\"Segoe UI Emoji\\\"\", \"file\": \"@primer/css/dist/base.css\", \"from\": \"@primer/css/dist/base.css:1 body\", \"kind\": \"custom-property\", \"name\": \"--fontStack-sansSerif\", \"site\": \"@primer/css/dist/base.css:1\", \"symbol\": \"--fontStack-sansSerif\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "@primer/css/dist/core.css",
+     "old": "{\"chain\": [], \"fallback\": \"-apple-system, BlinkMacSystemFont,           ,            , Helvetica, Arial, sans-serif,                    ,\", \"file\": \"@primer/css/dist/core.css\", \"from\": \"@primer/css/dist/core.css:6 body\", \"kind\": \"custom-property\", \"name\": \"--fontStack-sansSerif\", \"site\": \"@primer/css/dist/core.css:6\", \"symbol\": \"--fontStack-sansSerif\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"fallback\": \"-apple-system, BlinkMacSystemFont, \\\"Segoe UI\\\", \\\"Noto Sans\\\", Helvetica, Arial, sans-serif, \\\"Apple Color Emoji\\\", \\\"Segoe UI Emoji\\\"\", \"file\": \"@primer/css/dist/core.css\", \"from\": \"@primer/css/dist/core.css:6 body\", \"kind\": \"custom-property\", \"name\": \"--fontStack-sansSerif\", \"site\": \"@primer/css/dist/core.css:6\", \"symbol\": \"--fontStack-sansSerif\", \"t\": \"ref\"}"
+    },
+    {
+     "file": "@primer/css/dist/core.css",
+     "old": "{\"chain\": [], \"fallback\": \"normal normal 11px/1.5 var(--fontStack-sansSerif, -apple-system, BlinkMacSystemFont,           ,            , Helvetica, Arial, sans-serif,                    ,\", \"file\": \"@primer/css/dist/core.css\", \"from\": \"@primer/css/dist/core.css:6 .tooltipped::after\", \"kind\": \"custom-property\", \"name\": \"--text-body-shorthand-small\", \"site\": \"@primer/css/dist/core.css:6\", \"symbol\": ",
+     "new": "{\"chain\": [], \"fallback\": \"normal normal 11px/1.5 var(--fontStack-sansSerif, -apple-system, BlinkMacSystemFont, \\\"Segoe UI\\\", \\\"Noto Sans\\\", Helvetica, Arial, sans-serif, \\\"Apple Color Emoji\\\", \\\"Segoe UI Emoji\\\")\", \"file\": \"@primer/css/dist/core.css\", \"from\": \"@primer/css/dist/core.css:6 .tooltipped::after\", \"kind\": \"custom-property\", \"name\": \"--text-body-shorthand-small\", \"site\": \"@primer/css/di"
+    },
+    {
+     "file": "@primer/css/dist/markdown.css",
+     "old": "{\"chain\": [], \"fallback\": \"-apple-system, BlinkMacSystemFont,           ,            , Helvetica, Arial, sans-serif,                    ,\", \"file\": \"@primer/css/dist/markdown.css\", \"from\": \"@primer/css/dist/markdown.css:1 .markdown-body\", \"kind\": \"custom-property\", \"name\": \"--fontStack-sansSerif\", \"site\": \"@primer/css/dist/markdown.css:1\", \"symbol\": \"--fontStack-sansSerif\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"fallback\": \"-apple-system, BlinkMacSystemFont, \\\"Segoe UI\\\", \\\"Noto Sans\\\", Helvetica, Arial, sans-serif, \\\"Apple Color Emoji\\\", \\\"Segoe UI Emoji\\\"\", \"file\": \"@primer/css/dist/markdown.css\", \"from\": \"@primer/css/dist/markdown.css:1 .markdown-body\", \"kind\": \"custom-property\", \"name\": \"--fontStack-sansSerif\", \"site\": \"@primer/css/dist/markdown.css:1\", \"symbol\": \"--fontStack-sansSerif\""
+    },
+    {
+     "file": "@primer/css/dist/marketing-type.css",
+     "old": "{\"chain\": [], \"fallback\": \"-apple-system, BlinkMacSystemFont,           ,            , Helvetica, Arial, sans-serif,                    ,\", \"file\": \"@primer/css/dist/marketing-type.css\", \"from\": \"@primer/css/dist/marketing-type.css:1 .h0-mktg, .h1-mktg, .h2-mktg, .h3-mktg, .h4-mktg, .h5-mktg, .h6-mktg\", \"kind\": \"custom-property\", \"name\": \"--fontStack-sansSerif\", \"site\": \"@primer/css/dist/marketing",
+     "new": "{\"chain\": [], \"fallback\": \"-apple-system, BlinkMacSystemFont, \\\"Segoe UI\\\", \\\"Noto Sans\\\", Helvetica, Arial, sans-serif, \\\"Apple Color Emoji\\\", \\\"Segoe UI Emoji\\\"\", \"file\": \"@primer/css/dist/marketing-type.css\", \"from\": \"@primer/css/dist/marketing-type.css:1 .h0-mktg, .h1-mktg, .h2-mktg, .h3-mktg, .h4-mktg, .h5-mktg, .h6-mktg\", \"kind\": \"custom-property\", \"name\": \"--fontStack-sansSerif\", \"site\": \"@"
+    },
+    {
+     "file": "bootstrap/dist/css/bootstrap.css",
+     "old": "{\"chain\": [], \"file\": \"bootstrap/dist/css/bootstrap.css\", \"from\": \"bootstrap/dist/css/bootstrap.css:4705 .breadcrumb-item + .breadcrumb-item::before\", \"kind\": \"custom-property\", \"name\": \"--bs-breadcrumb-divider\", \"site\": \"bootstrap/dist/css/bootstrap.css:4709\", \"symbol\": \"--bs-breadcrumb-divider\", \"t\": \"ref\"}",
+     "new": "{\"chain\": [], \"fallback\": \"\\\"/\\\"\", \"file\": \"bootstrap/dist/css/bootstrap.css\", \"from\": \"bootstrap/dist/css/bootstrap.css:4705 .breadcrumb-item + .breadcrumb-item::before\", \"kind\": \"custom-property\", \"name\": \"--bs-breadcrumb-divider\", \"site\": \"bootstrap/dist/css/bootstrap.css:4709\", \"symbol\": \"--bs-breadcrumb-divider\", \"t\": \"ref\"}"
+    }
+   ],
+   "sample_files": [
+    "@primer/css/dist/base.css",
+    "@primer/css/dist/core.css",
+    "@primer/css/dist/markdown.css",
+    "@primer/css/dist/marketing-type.css",
+    "@primer/css/dist/marketing.css",
+    "@primer/css/dist/primer.css"
+   ]
+  },
+  "only old ref font-face -apple-system": {
+   "count": 80,
+   "files": 36,
+   "examples": [
+    {
+     "file": "bootswatch/dist/litera/bootstrap.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.css\", \"from\": \"bootswatch/dist/litera/bootstrap.css:12144 .lead\", \"kind\": \"font-face\", \"name\": \"-apple-system\", \"site\": \"bootswatch/dist/litera/bootstrap.css:12145\", \"symbol\": \"-apple-system\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.css\", \"from\": \"bootswatch/dist/litera/bootstrap.css:12168 .alert, .alert p\", \"kind\": \"font-face\", \"name\": \"-apple-system\", \"site\": \"bootswatch/dist/litera/bootstrap.css:12170\", \"symbol\": \"-apple-system\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.min.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.min.css\", \"from\": \"bootswatch/dist/litera/bootstrap.min.css:11 .lead\", \"kind\": \"font-face\", \"name\": \"-apple-system\", \"site\": \"bootswatch/dist/litera/bootstrap.min.css:11\", \"symbol\": \"-apple-system\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.min.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.min.css\", \"from\": \"bootswatch/dist/litera/bootstrap.min.css:11 .alert, .alert p\", \"kind\": \"font-face\", \"name\": \"-apple-system\", \"site\": \"bootswatch/dist/litera/bootstrap.min.css:11\", \"symbol\": \"-apple-system\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.rtl.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.rtl.css\", \"from\": \"bootswatch/dist/litera/bootstrap.rtl.css:12118 .lead\", \"kind\": \"font-face\", \"name\": \"-apple-system\", \"site\": \"bootswatch/dist/litera/bootstrap.rtl.css:12119\", \"symbol\": \"-apple-system\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.rtl.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.rtl.css\", \"from\": \"bootswatch/dist/litera/bootstrap.rtl.css:12142 .alert, .alert p\", \"kind\": \"font-face\", \"name\": \"-apple-system\", \"site\": \"bootswatch/dist/litera/bootstrap.rtl.css:12144\", \"symbol\": \"-apple-system\", \"t\": \"ref\"}",
+     "new": null
+    }
+   ],
+   "sample_files": [
+    "bootswatch/dist/litera/bootstrap.css",
+    "bootswatch/dist/litera/bootstrap.min.css",
+    "bootswatch/dist/litera/bootstrap.rtl.css",
+    "bootswatch/dist/litera/bootstrap.rtl.min.css",
+    "bootswatch/dist/minty/bootstrap.css",
+    "bootswatch/dist/minty/bootstrap.min.css"
+   ]
+  },
+  "only old ref font-face blinkmacsystemfont": {
+   "count": 75,
+   "files": 35,
+   "examples": [
+    {
+     "file": "bootswatch/dist/litera/bootstrap.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.css\", \"from\": \"bootswatch/dist/litera/bootstrap.css:12144 .lead\", \"kind\": \"font-face\", \"name\": \"blinkmacsystemfont\", \"site\": \"bootswatch/dist/litera/bootstrap.css:12145\", \"symbol\": \"BlinkMacSystemFont\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.css\", \"from\": \"bootswatch/dist/litera/bootstrap.css:12168 .alert, .alert p\", \"kind\": \"font-face\", \"name\": \"blinkmacsystemfont\", \"site\": \"bootswatch/dist/litera/bootstrap.css:12170\", \"symbol\": \"BlinkMacSystemFont\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.min.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.min.css\", \"from\": \"bootswatch/dist/litera/bootstrap.min.css:11 .lead\", \"kind\": \"font-face\", \"name\": \"blinkmacsystemfont\", \"site\": \"bootswatch/dist/litera/bootstrap.min.css:11\", \"symbol\": \"BlinkMacSystemFont\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.min.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.min.css\", \"from\": \"bootswatch/dist/litera/bootstrap.min.css:11 .alert, .alert p\", \"kind\": \"font-face\", \"name\": \"blinkmacsystemfont\", \"site\": \"bootswatch/dist/litera/bootstrap.min.css:11\", \"symbol\": \"BlinkMacSystemFont\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.rtl.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.rtl.css\", \"from\": \"bootswatch/dist/litera/bootstrap.rtl.css:12118 .lead\", \"kind\": \"font-face\", \"name\": \"blinkmacsystemfont\", \"site\": \"bootswatch/dist/litera/bootstrap.rtl.css:12119\", \"symbol\": \"BlinkMacSystemFont\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "bootswatch/dist/litera/bootstrap.rtl.css",
+     "old": "{\"chain\": [], \"file\": \"bootswatch/dist/litera/bootstrap.rtl.css\", \"from\": \"bootswatch/dist/litera/bootstrap.rtl.css:12142 .alert, .alert p\", \"kind\": \"font-face\", \"name\": \"blinkmacsystemfont\", \"site\": \"bootswatch/dist/litera/bootstrap.rtl.css:12144\", \"symbol\": \"BlinkMacSystemFont\", \"t\": \"ref\"}",
+     "new": null
+    }
+   ],
+   "sample_files": [
+    "bootswatch/dist/litera/bootstrap.css",
+    "bootswatch/dist/litera/bootstrap.min.css",
+    "bootswatch/dist/litera/bootstrap.rtl.css",
+    "bootswatch/dist/litera/bootstrap.rtl.min.css",
+    "bootswatch/dist/minty/bootstrap.css",
+    "bootswatch/dist/minty/bootstrap.min.css"
+   ]
+  },
+  "only old ref keyframes [a new hole at its line]": {
+   "count": 74,
+   "files": 5,
+   "examples": [
+    {
+     "file": "daisyui/base/rootscrollgutter.css",
+     "old": "{\"chain\": [], \"file\": \"daisyui/base/rootscrollgutter.css\", \"from\": \"daisyui/base/rootscrollgutter.css:1 @layer base { :root }\", \"kind\": \"keyframes\", \"name\": \"set-page-has-scroll\", \"site\": \"daisyui/base/rootscrollgutter.css:1\", \"symbol\": \"set-page-has-scroll\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "daisyui/components/aura.css",
+     "old": "{\"chain\": [], \"file\": \"daisyui/components/aura.css\", \"from\": \"daisyui/components/aura.css:1 @layer utilities { .aura }\", \"kind\": \"keyframes\", \"name\": \"aura\", \"site\": \"daisyui/components/aura.css:1\", \"symbol\": \"aura\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "daisyui/components/aura.css",
+     "old": "{\"chain\": [], \"file\": \"daisyui/components/aura.css\", \"from\": \"daisyui/components/aura.css:1 @layer utilities { .aura-holo }\", \"kind\": \"keyframes\", \"name\": \"aura\", \"site\": \"daisyui/components/aura.css:1\", \"symbol\": \"aura\", \"t\": \"ref\"}",
+     "new": null
+    },
+    {
+     "file": "daisyui/components/aura.css",
+     "old": "{\"chain\": [], \"file\": \"daisyui/components/aura.css\", \"from\": \"daisyui/components/aura.css:1 @layer utilities { @layer daisyui.l1.l2 { .aura-glow:before } }\", \"kind\": \"keyframes\", \"name\": \"aura-glow\", \"site\": \"daisyui/components/aura.css:1\", \"symbol\": \"aura-glow\", \"t\": \"ref\"}",
+     "new": null
+    }
+   ],
+   "sample_files": [
+    "daisyui/base/rootscrollgutter.css",
+    "daisyui/components/aura.css",
+    "daisyui/components/menu.css",
+    "daisyui/components/textrotate.css",
+    "daisyui/daisyui.css"
+   ]
+  },
+  "only new hole font-face value-not-matched": {
+   "count": 60,
+   "files": 22,
+   "examples": [
+    {
+     "file": "@primer/css/dist/base.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"@primer/css/dist/base.css\", \"kind\": \"font-face\", \"line\": 1, \"name\": \"font-family: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "@primer/css/dist/base.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"@primer/css/dist/base.css\", \"kind\": \"font-face\", \"line\": 1, \"name\": \"font-family: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "@primer/css/dist/base.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"@primer/css/dist/base.css\", \"kind\": \"font-face\", \"line\": 1, \"name\": \"font-family: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "@primer/css/dist/base.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"@primer/css/dist/base.css\", \"kind\": \"font-face\", \"line\": 1, \"name\": \"font: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "@primer/css/dist/core.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"@primer/css/dist/core.css\", \"kind\": \"font-face\", \"line\": 6, \"name\": \"font-family: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "@primer/css/dist/core.css",
+     "old": null,
+     "new": "{\"cls\": \"value-not-matched\", \"file\": \"@primer/css/dist/core.css\", \"kind\": \"font-face\", \"line\": 6, \"name\": \"font-family: Matching for a tree with var() is not supported\", \"t\": \"hole\"}"
+    }
+   ],
+   "sample_files": [
+    "@primer/css/dist/base.css",
+    "@primer/css/dist/branch-name.css",
+    "@primer/css/dist/core.css",
+    "@primer/css/dist/forms.css",
+    "@primer/css/dist/markdown.css",
+    "@primer/css/dist/marketing-type.css"
+   ]
+  },
+  "only new hole declaration unparsed": {
+   "count": 21,
+   "files": 13,
+   "examples": [
+    {
+     "file": "bootswatch/dist/quartz/bootstrap.css",
+     "old": null,
+     "new": "{\"cls\": \"unparsed\", \"file\": \"bootswatch/dist/quartz/bootstrap.css\", \"kind\": \"declaration\", \"line\": 12087, \"name\": \"--bs-table-hover-color: $white\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "bootswatch/dist/quartz/bootstrap.min.css",
+     "old": null,
+     "new": "{\"cls\": \"unparsed\", \"file\": \"bootswatch/dist/quartz/bootstrap.min.css\", \"kind\": \"declaration\", \"line\": 11, \"name\": \"--bs-table-hover-color: $white\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "bootswatch/dist/quartz/bootstrap.rtl.css",
+     "old": null,
+     "new": "{\"cls\": \"unparsed\", \"file\": \"bootswatch/dist/quartz/bootstrap.rtl.css\", \"kind\": \"declaration\", \"line\": 12061, \"name\": \"--bs-table-hover-color: $white\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "bootswatch/dist/quartz/bootstrap.rtl.min.css",
+     "old": null,
+     "new": "{\"cls\": \"unparsed\", \"file\": \"bootswatch/dist/quartz/bootstrap.rtl.min.css\", \"kind\": \"declaration\", \"line\": 11, \"name\": \"--bs-table-hover-color: $white\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "leaflet/dist/leaflet.css",
+     "old": null,
+     "new": "{\"cls\": \"unparsed\", \"file\": \"leaflet/dist/leaflet.css\", \"kind\": \"declaration\", \"line\": 556, \"name\": \"filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)\", \"t\": \"hole\"}"
+    },
+    {
+     "file": "uikit/dist/css/uikit-core-rtl.css",
+     "old": null,
+     "new": "{\"cls\": \"unparsed\", \"file\": \"uikit/dist/css/uikit-core-rtl.css\", \"kind\": \"declaration\", \"line\": 165, \"name\": \"aspect-ratio: attr(width type(<number>)) / attr(height type(<number>))\", \"t\": \"hole\"}"
+    }
+   ],
+   "sample_files": [
+    "bootswatch/dist/quartz/bootstrap.css",
+    "bootswatch/dist/quartz/bootstrap.min.css",
+    "bootswatch/dist/quartz/bootstrap.rtl.css",
+    "bootswatch/dist/quartz/bootstrap.rtl.min.css",
+    "leaflet/dist/leaflet.css",
+    "uikit/dist/css/uikit-core-rtl.css"
+   ]
+  },
+  "only old ref font-face --theme( --default-font-family, -apple-system, blinkmacsystemfont, \"segoe ui\", roboto, \"helvetica neue\", \"noto sans\", arial, sans-serif, \"apple color emoji\", \"segoe ui emoji\", \"segoe ui symbol\", \"noto color emoji\" ) [a new hole at its line]": {
+   "count": 1,
+   "files": 1,
+   "examples": [
+    {
+     "file": "tailwindcss/index.css",
+     "old": "{\"chain\": [], \"file\": \"tailwindcss/index.css\", \"from\": \"tailwindcss/index.css:563 @layer base { html, :host }\", \"kind\": \"font-face\", \"name\": \"--theme( --default-font-family, -apple-system, blinkmacsystemfont, \\\"segoe ui\\\", roboto, \\\"helvetica neue\\\", \\\"noto sans\\\", arial, sans-serif, \\\"apple color emoji\\\", \\\"segoe ui emoji\\\", \\\"segoe ui symbol\\\", \\\"noto color emoji\\\" )\", \"site\": \"tailwindcss/index",
+     "new": null
+    }
+   ],
+   "sample_files": [
+    "tailwindcss/index.css"
+   ]
+  },
+  "only old ref font-face --theme( --default-mono-font-family, ui-monospace, sfmono-regular, menlo, monaco, consolas, \"liberation mono\", \"courier new\", monospace ) [a new hole at its line]": {
+   "count": 1,
+   "files": 1,
+   "examples": [
+    {
+     "file": "tailwindcss/index.css",
+     "old": "{\"chain\": [], \"file\": \"tailwindcss/index.css\", \"from\": \"tailwindcss/index.css:655 @layer base { code, kbd, samp, pre }\", \"kind\": \"font-face\", \"name\": \"--theme( --default-mono-font-family, ui-monospace, sfmono-regular, menlo, monaco, consolas, \\\"liberation mono\\\", \\\"courier new\\\", monospace )\", \"site\": \"tailwindcss/index.css:659\", \"symbol\": \"--theme( --default-mono-font-family, ui-monospace, SFMono",
+     "new": null
+    }
+   ],
+   "sample_files": [
+    "tailwindcss/index.css"
+   ]
+  },
+  "only old ref font-face --theme( --default-font-family, -apple-system, blinkmacsystemfont, 'segoe ui', roboto, 'helvetica neue', 'noto sans', arial, sans-serif, 'apple color emoji', 'segoe ui emoji', 'segoe ui symbol', 'noto color emoji' ) [a new hole at its line]": {
+   "count": 1,
+   "files": 1,
+   "examples": [
+    {
+     "file": "tailwindcss/preflight.css",
+     "old": "{\"chain\": [], \"file\": \"tailwindcss/preflight.css\", \"from\": \"tailwindcss/preflight.css:28 html, :host\", \"kind\": \"font-face\", \"name\": \"--theme( --default-font-family, -apple-system, blinkmacsystemfont, 'segoe ui', roboto, 'helvetica neue', 'noto sans', arial, sans-serif, 'apple color emoji', 'segoe ui emoji', 'segoe ui symbol', 'noto color emoji' )\", \"site\": \"tailwindcss/preflight.css:33\", \"symbol\":",
+     "new": null
+    }
+   ],
+   "sample_files": [
+    "tailwindcss/preflight.css"
+   ]
+  },
+  "only old ref font-face --theme( --default-mono-font-family, ui-monospace, sfmono-regular, menlo, monaco, consolas, 'liberation mono', 'courier new', monospace ) [a new hole at its line]": {
+   "count": 1,
+   "files": 1,
+   "examples": [
+    {
+     "file": "tailwindcss/preflight.css",
+     "old": "{\"chain\": [], \"file\": \"tailwindcss/preflight.css\", \"from\": \"tailwindcss/preflight.css:114 code, kbd, samp, pre\", \"kind\": \"font-face\", \"name\": \"--theme( --default-mono-font-family, ui-monospace, sfmono-regular, menlo, monaco, consolas, 'liberation mono', 'courier new', monospace )\", \"site\": \"tailwindcss/preflight.css:118\", \"symbol\": \"--theme( --default-mono-font-family, ui-monospace, SFMono-Regular",
+     "new": null
+    }
+   ],
+   "sample_files": [
+    "tailwindcss/preflight.css"
+   ]
+  }
+ },
+ "missing_old": {},
+ "missing_new": {},
+ "totals": {
+  "old": {
+   "node": 968198,
+   "ref": 459946,
+   "file": 1860
+  },
+  "new": {
+   "node": 968198,
+   "ref": 463057,
+   "file": 1860,
+   "hole": 264
+  }
+ },
+ "seconds_new": 48.0,
+ "uses": {
+  "truth": 449958,
+  "files": 1860,
+  "old_found": 446614,
+  "old_missing": 3669,
+  "old_wrong": 325,
+  "old_fallback_off": 4681,
+  "old_exact": 1416,
+  "new_found": 449958,
+  "new_missing": 0,
+  "new_wrong": 0,
+  "new_fallback_off": 0,
+  "new_exact": 1860
+ }
+}

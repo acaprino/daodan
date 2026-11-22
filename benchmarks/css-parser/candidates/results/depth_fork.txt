@@ -1,0 +1,56 @@
+
+## rules nested with &
+n=  100: parse ok (errors 0, 3.4 ms) | walk ok(509) | generate ok(306) | toPlainObject ok(75107)
+n=  300: parse ok (errors 0, 2.4 ms) | walk ok(1509) | generate ok(906) | toPlainObject ok(224307)
+n= 1000: parse ok (errors 0, 10.9 ms) | walk ok(5009) | generate THREW RangeError: Maximum call stack size exceeded | toPlainObject ok(758545)
+n= 3000: parse ok (errors 1, 12.6 ms) | walk ok(8247) | generate THREW RangeError: Maximum call stack size exceeded | toPlainObject THREW RangeError: Maximum call stack size exceeded
+n=10000: parse ok (errors 1, 22.2 ms) | walk ok(10122) | generate THREW RangeError: Maximum call stack size exceeded | toPlainObject THREW RangeError: Maximum call stack size exceeded
+n=50000: parse ok (errors 1, 22.0 ms) | walk THREW RangeError: Maximum call stack size exceeded | generate THREW RangeError: Maximum call stack size exceeded | toPlainObject THREW RangeError: Maximum call stack size exceeded
+
+## at-rules nested (@media)
+n=  100: parse ok (errors 0, 1.9 ms) | walk ok(509) | generate ok(1406) | toPlainObject ok(83861)
+n=  300: parse ok (errors 0, 3.1 ms) | walk ok(1509) | generate ok(4206) | toPlainObject ok(251461)
+n= 1000: parse ok (errors 0, 6.7 ms) | walk ok(5009) | generate ok(14006) | toPlainObject ok(845789)
+n= 3000: parse ok (errors 1, 9.8 ms) | walk ok(7877) | generate ok(42006) | toPlainObject THREW RangeError: Maximum call stack size exceeded
+n=10000: parse ok (errors 1, 13.7 ms) | walk ok(8002) | generate ok(140006) | toPlainObject THREW RangeError: Maximum call stack size exceeded
+n=50000: parse ok (errors 1, 38.6 ms) | walk THREW RangeError: Maximum call stack size exceeded | generate ok(700006) | toPlainObject THREW RangeError: Maximum call stack size exceeded
+
+## parentheses in a value
+n=  100: parse ok (errors 0, 1.6 ms) | walk ok(109) | generate ok(206) | toPlainObject ok(16434)
+n=  300: parse ok (errors 0, 0.5 ms) | walk ok(309) | generate ok(606) | toPlainObject ok(47034)
+n= 1000: parse ok (errors 0, 0.9 ms) | walk ok(1009) | generate ok(2006) | toPlainObject ok(156157)
+n= 3000: parse ok (errors 1, 2.7 ms) | walk ok(8) | generate ok(6006) | toPlainObject ok(7196)
+n=10000: parse ok (errors 1, 3.8 ms) | walk ok(8) | generate ok(20006) | toPlainObject ok(21206)
+n=50000: parse ok (errors 1, 5.4 ms) | walk ok(8) | generate ok(100006) | toPlainObject ok(101216)
+
+## calc( in a value
+n=  100: parse ok (errors 0, 1.1 ms) | walk ok(109) | generate ok(606) | toPlainObject ok(17694)
+n=  300: parse ok (errors 0, 0.8 ms) | walk ok(309) | generate ok(1806) | toPlainObject ok(51309)
+n= 1000: parse ok (errors 0, 1.7 ms) | walk ok(1009) | generate ok(6006) | toPlainObject ok(168909)
+n= 3000: parse ok (errors 1, 3.2 ms) | walk ok(8) | generate ok(18006) | toPlainObject ok(19206)
+n=10000: parse ok (errors 1, 4.8 ms) | walk ok(8) | generate ok(60006) | toPlainObject ok(61206)
+n=50000: parse ok (errors 1, 8.9 ms) | walk ok(8) | generate ok(300006) | toPlainObject ok(301216)
+
+## :is( in a selector
+n=  100: parse ok (errors 0, 0.7 ms) | walk ok(309) | generate ok(506) | toPlainObject ok(48907)
+n=  300: parse ok (errors 0, 0.6 ms) | walk ok(909) | generate ok(1506) | toPlainObject ok(146439)
+n= 1000: parse ok (errors 0, 4.7 ms) | walk ok(3009) | generate ok(5006) | toPlainObject THREW RangeError: Maximum call stack size exceeded
+n= 3000: parse ok (errors 1, 3.3 ms) | walk ok(7) | generate ok(15006) | toPlainObject ok(16103)
+n=10000: parse ok (errors 1, 4.5 ms) | walk ok(7) | generate ok(50006) | toPlainObject ok(51103)
+n=50000: parse ok (errors 1, 10.1 ms) | walk ok(7) | generate ok(250006) | toPlainObject ok(251125)
+
+## :not( in a selector
+n=  100: parse ok (errors 0, 0.5 ms) | walk ok(309) | generate ok(606) | toPlainObject ok(49043)
+n=  300: parse ok (errors 0, 0.7 ms) | walk ok(909) | generate ok(1806) | toPlainObject ok(147075)
+n= 1000: parse ok (errors 0, 1.9 ms) | walk ok(3009) | generate ok(6006) | toPlainObject THREW RangeError: Maximum call stack size exceeded
+n= 3000: parse ok (errors 1, 2.7 ms) | walk ok(7) | generate ok(18006) | toPlainObject ok(19103)
+n=10000: parse ok (errors 1, 4.8 ms) | walk ok(7) | generate ok(60006) | toPlainObject ok(61103)
+n=50000: parse ok (errors 1, 9.8 ms) | walk ok(7) | generate ok(300006) | toPlainObject ok(301125)
+
+## blocks {} in a custom property
+n=  100: parse ok (errors 0, 0.5 ms) | walk ok(8) | generate ok(207) | toPlainObject ok(1387)
+n=  300: parse ok (errors 0, 0.3 ms) | walk ok(8) | generate ok(607) | toPlainObject ok(1787)
+n= 1000: parse ok (errors 0, 0.5 ms) | walk ok(8) | generate ok(2007) | toPlainObject ok(3197)
+n= 3000: parse ok (errors 0, 0.9 ms) | walk ok(8) | generate ok(6007) | toPlainObject ok(7197)
+n=10000: parse ok (errors 0, 2.8 ms) | walk ok(8) | generate ok(20007) | toPlainObject ok(21207)
+n=50000: parse ok (errors 0, 13.7 ms) | walk ok(8) | generate ok(100007) | toPlainObject ok(101217)

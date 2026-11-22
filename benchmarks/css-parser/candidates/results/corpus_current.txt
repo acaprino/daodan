@@ -1,0 +1,4 @@
+tool: current reader (languages/stylesheet.py parse_sheet, css)
+corpus: 1860 files, 74.6 MB, cpu 74006 ms across 4 workers, wall 20.9 s
+rules 545048, declarations 1354710, at-rule blocks 34282, comments 33040
+files that threw: 0 (the reader reports no parse errors)

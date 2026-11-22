@@ -1,5 +1,509 @@
 {
- "calls": [],
+ "calls": [
+  {
+   "script": "css_csstree",
+   "payload": {
+    "items": [
+     {
+      "key": "src/base.css",
+      "path": "src/base.css",
+      "words": false
+     },
+     {
+      "key": "src/modern.css",
+      "path": "src/modern.css",
+      "words": false
+     }
+    ]
+   },
+   "data": {
+    "sheets": {
+     "src/base.css": {
+      "tree": [
+       {
+        "t": "rule",
+        "line": 1,
+        "end": 1,
+        "sel": [
+         ".icon"
+        ],
+        "names": [
+         [
+          "class",
+          "icon",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 1,
+          "end": 1,
+          "prop": "width",
+          "value": "1em",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       }
+      ]
+     },
+     "src/modern.css": {
+      "tree": [
+       {
+        "t": "at",
+        "line": 1,
+        "end": 1,
+        "name": "import",
+        "params": "url(\"base.css\") layer(base) supports(display: grid) screen",
+        "text": "@import url(\"base.css\") layer(base) supports(display: grid) screen",
+        "facts": {
+         "urls": [
+          "base.css"
+         ],
+         "layer": "base"
+        },
+        "kids": null
+       },
+       {
+        "t": "at",
+        "line": 2,
+        "end": 2,
+        "name": "layer",
+        "params": "base, components",
+        "text": "@layer base, components",
+        "facts": {
+         "names": [
+          "base",
+          "components"
+         ]
+        },
+        "kids": null
+       },
+       {
+        "t": "at",
+        "line": 3,
+        "end": 3,
+        "name": "custom-media",
+        "params": "--narrow (max-width: 30em)",
+        "text": "@custom-media --narrow (max-width: 30em)",
+        "facts": {
+         "word": "--narrow"
+        },
+        "kids": null
+       },
+       {
+        "t": "at",
+        "line": 4,
+        "end": 4,
+        "name": "property",
+        "params": "--angle",
+        "text": "@property --angle",
+        "facts": {},
+        "kids": [
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "syntax",
+          "value": "\"<angle>\"",
+          "important": false,
+          "facts": {}
+         },
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "inherits",
+          "value": "false",
+          "important": false,
+          "facts": {}
+         },
+         {
+          "t": "decl",
+          "line": 4,
+          "end": 4,
+          "prop": "initial-value",
+          "value": "0deg",
+          "important": false,
+          "facts": {}
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 5,
+        "end": 9,
+        "sel": [
+         ".card"
+        ],
+        "names": [
+         [
+          "class",
+          "card",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 6,
+          "end": 6,
+          "prop": "color",
+          "value": "red",
+          "important": false,
+          "facts": {}
+         },
+         {
+          "t": "rule",
+          "line": 7,
+          "end": 7,
+          "sel": [
+           "& .title"
+          ],
+          "names": [
+           [
+            "class",
+            "title",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 7,
+            "end": 7,
+            "prop": "rotate",
+            "value": "var(--angle)",
+            "important": false,
+            "facts": {
+             "vars": [
+              {
+               "name": "--angle",
+               "fallback": null,
+               "dl": 0
+              }
+             ]
+            }
+           }
+          ]
+         },
+         {
+          "t": "rule",
+          "line": 8,
+          "end": 8,
+          "sel": [
+           "&:has(.icon)"
+          ],
+          "names": [
+           [
+            "class",
+            "icon",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 8,
+            "end": 8,
+            "prop": "padding",
+            "value": "0",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 10,
+        "end": 12,
+        "name": "scope",
+        "params": "(.panel) to (.panel-body)",
+        "text": "@scope (.panel) to (.panel-body)",
+        "facts": {
+         "names": [
+          [
+           "class",
+           "panel",
+           "local"
+          ],
+          [
+           "class",
+           "panel-body",
+           "local"
+          ]
+         ]
+        },
+        "kids": [
+         {
+          "t": "rule",
+          "line": 11,
+          "end": 11,
+          "sel": [
+           ".heading"
+          ],
+          "names": [
+           [
+            "class",
+            "heading",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 11,
+            "end": 11,
+            "prop": "margin",
+            "value": "0",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 13,
+        "end": 15,
+        "name": "media",
+        "params": "(--narrow)",
+        "text": "@media (--narrow)",
+        "facts": {
+         "custom": [
+          "--narrow"
+         ]
+        },
+        "kids": [
+         {
+          "t": "rule",
+          "line": 14,
+          "end": 14,
+          "sel": [
+           ":is(.card, .tile) > :where(.badge)"
+          ],
+          "names": [
+           [
+            "class",
+            "card",
+            "local"
+           ],
+           [
+            "class",
+            "tile",
+            "local"
+           ],
+           [
+            "class",
+            "badge",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 14,
+            "end": 14,
+            "prop": "display",
+            "value": "none",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 16,
+        "end": 16,
+        "name": "media",
+        "params": "(--wide)",
+        "text": "@media (--wide)",
+        "facts": {
+         "custom": [
+          "--wide"
+         ]
+        },
+        "kids": [
+         {
+          "t": "rule",
+          "line": 16,
+          "end": 16,
+          "sel": [
+           ".x"
+          ],
+          "names": [
+           [
+            "class",
+            "x",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 16,
+            "end": 16,
+            "prop": "a",
+            "value": "b",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 17,
+        "end": 19,
+        "name": "supports",
+        "params": "(display: grid)",
+        "text": "@supports (display: grid)",
+        "facts": {},
+        "kids": [
+         {
+          "t": "at",
+          "line": 18,
+          "end": 18,
+          "name": "container",
+          "params": "side (min-width: 20em)",
+          "text": "@container side (min-width: 20em)",
+          "facts": {
+           "names": [
+            "side"
+           ]
+          },
+          "kids": [
+           {
+            "t": "rule",
+            "line": 18,
+            "end": 18,
+            "sel": [
+             ".tile"
+            ],
+            "names": [
+             [
+              "class",
+              "tile",
+              "local"
+             ]
+            ],
+            "custom": [],
+            "kids": [
+             {
+              "t": "decl",
+              "line": 18,
+              "end": 18,
+              "prop": "gap",
+              "value": "1em",
+              "important": false,
+              "facts": {}
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "rule",
+        "line": 20,
+        "end": 20,
+        "sel": [
+         ".side"
+        ],
+        "names": [
+         [
+          "class",
+          "side",
+          "local"
+         ]
+        ],
+        "custom": [],
+        "kids": [
+         {
+          "t": "decl",
+          "line": 20,
+          "end": 20,
+          "prop": "container",
+          "value": "side / inline-size",
+          "important": false,
+          "facts": {
+           "ct": [
+            "side"
+           ]
+          }
+         }
+        ]
+       },
+       {
+        "t": "at",
+        "line": 21,
+        "end": 21,
+        "name": "layer",
+        "params": "components",
+        "text": "@layer components",
+        "facts": {
+         "names": [
+          "components"
+         ]
+        },
+        "kids": [
+         {
+          "t": "rule",
+          "line": 21,
+          "end": 21,
+          "sel": [
+           ".btn"
+          ],
+          "names": [
+           [
+            "class",
+            "btn",
+            "local"
+           ]
+          ],
+          "custom": [],
+          "kids": [
+           {
+            "t": "decl",
+            "line": 21,
+            "end": 21,
+            "prop": "color",
+            "value": "blue",
+            "important": false,
+            "facts": {}
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "version": "4.1.3",
+    "seconds": 0.136
+   },
+   "measured": {
+    "seconds": 0.2,
+    "peak_mb": 127,
+    "stderr_tail": "DAODAN_MAXRSS_KB=130000\n"
+   }
+  }
+ ],
  "packages": {},
  "directories": []
 }

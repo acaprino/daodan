@@ -1,5 +1,5 @@
 """
-C# language adapter. Tree-sitter when available, regex fallback otherwise.
+C# language adapter, read from the Tree-sitter tree; a file whose grammar does not load is reported unread.
 """
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ from . import _treesitter
 from ._treesitter import (
     check_syntax_errors,
     extract_ast_calls,
-    load_failure,
     node_text,
     scan_ast_external_calls,
 )
@@ -25,6 +24,7 @@ from .base import (
     ParseResult,
 )
 from .comments import CommentToken, extract_c_style_comments
+from .reading import code_lines, unread
 from .semantic import csharp_semantics
 
 __all__ = ["adapter"]
@@ -288,53 +288,6 @@ def _ts_parse(content: str) -> ParseResult | None:
     )
 
 
-_CS_USING_RE = re.compile(r"^\s*using\s+(?:static\s+)?([\w.= ]+)\s*;", re.MULTILINE)
-_CS_CLASS_RE = re.compile(
-    r"^\s*(?:(?P<vis>public|private|protected|internal)\s+)?(?:sealed\s+|abstract\s+|partial\s+|static\s+)*"
-    r"(?P<kind>class|interface|struct|record|enum)\s+(?P<name>\w+)"
-    r"(?:\s*\([^)]*\))?(?:\s*:\s*(?P<bases>[^{;]+))?",
-    re.MULTILINE,
-)
-
-
-def _regex_parse(content: str) -> ParseResult:
-    imports: list[ImportInfo] = []
-    for m in _CS_USING_RE.finditer(content):
-        raw = m.group(1).strip()
-        if "=" in raw:
-            alias, target = [p.strip() for p in raw.split("=", 1)]
-            imports.append(ImportInfo(module=target, names=[alias], is_from_import=True, is_internal=_is_internal_import(target)))
-        else:
-            imports.append(ImportInfo(module=raw, names=[raw.rsplit(".", 1)[-1]], is_from_import=False, is_internal=_is_internal_import(raw)))
-
-    classes: list[ClassInfo] = []
-    exported: list[str] = []
-    for m in _CS_CLASS_RE.finditer(content):
-        vis_raw = m.group("vis") or "protected"
-        vis = "protected" if vis_raw == "internal" else vis_raw
-        name = m.group("name")
-        bases = [b.strip() for b in (m.group("bases") or "").split(",") if b.strip()]
-        classes.append(ClassInfo(
-            name=name,
-            bases=bases,
-            kind=m.group("kind"),  # type: ignore[arg-type]
-            visibility=vis,  # type: ignore[arg-type]
-            line_number=content[:m.start()].count("\n") + 1,
-        ))
-        if vis == "public":
-            exported.append(name)
-
-    return ParseResult(
-        file_path="",
-        language=_LANGUAGE_NAME,
-        classes=classes,
-        imports=imports,
-        exported_symbols=exported,
-        external_calls=_scan_external_calls(content),
-        notes=["parser=regex-fallback (tree-sitter unavailable)"],
-    )
-
-
 class _CSharpAdapter:
     language = _LANGUAGE_NAME
 
@@ -342,18 +295,12 @@ class _CSharpAdapter:
         _TS_ERROR_HOLDER.pop("last", None)
         result = _ts_parse(content)
         if result is None:
-            result = _regex_parse(content)
-            err = _TS_ERROR_HOLDER.pop("last", None)
-            if err is not None:
-                result.notes.append(f"tree-sitter raised: {err}")
-            reason = load_failure(_LANGUAGE_NAME)
-            if reason is not None:
-                result.notes.append(f"tree-sitter unavailable: {reason}")
+            result = unread(_LANGUAGE_NAME, _LANGUAGE_NAME, _TS_ERROR_HOLDER.pop("last", None))
         result.file_path = file_path
         return result
 
-    def count_imports(self, content: str) -> int:
-        return len(_CS_USING_RE.findall(content))
+    def strip_comments_and_blanks(self, content: str) -> int | None:
+        return code_lines(content, _LANGUAGE_NAME)
 
     def extract_comments(self, content: str) -> list[CommentToken]:
         return extract_c_style_comments(content)
