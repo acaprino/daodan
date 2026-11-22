@@ -102,3 +102,22 @@ def test_a_source_the_dev_server_names_from_the_apps_root_is_found_under_the_app
                  control("Save", calls=[call("save", "/src/lib/actions.ts", 5), call("other", "/src/lib/missing.ts", 2)])]}]}]
     [row] = observed_entries.candidates(apps, [], {"web/src/lib/actions.ts", "api/src/lib/actions.ts"})
     assert row["observed_calls"] == ["web/src/lib/actions.ts:5 save"]
+
+
+def test_a_handler_the_browser_isolated_is_named_and_the_row_no_longer_says_it_is_not():
+    """The pause of Chrome's own breakpoint on `click` (`explore.cjs`): the first project function the event reaches."""
+    handled = control("Save", calls=[call("save", "/src/lib/actions.ts", 5)],
+                      handler={"name": "onClick", "url": "/src/App.tsx", "source": "/src/App.tsx", "line": 6})
+    apps = [{"declared_in": "web/package.json#scripts.dev",
+             "pages": [{"url": "http://localhost:5173/", "controls": [handled]}]}]
+    [row] = observed_entries.candidates(apps, [], {"web/src/App.tsx", "web/src/lib/actions.ts"})
+    assert row["handler"] == "web/src/App.tsx:6 onClick" and row["handler_confidence"] == "observed"
+    assert "gap" not in row and row["observed_calls"] == ["web/src/lib/actions.ts:5 save"]
+
+
+def test_a_handler_outside_the_project_leaves_the_row_without_one():
+    """A pause in a dependency's file names no function of the project: the handler is still not isolated."""
+    odd = control("Save", calls=[call("save", "src/lib/actions.ts", 5)],
+                  handler={"name": "dispatch", "url": "/lib/vendor.js", "source": None, "line": 80})
+    [row] = observed_entries.candidates(pages(odd), [], FILES)
+    assert "handler" not in row and "not isolated" in row["gap"]

@@ -3,9 +3,11 @@ pressed (`dynamic/app.py`, `explore.cjs`), kept as candidates of the source `obs
 
 A control is an entry when the press did something (a function of the project ran, or the page sent a request) and no
 static candidate stands for it: a static candidate of the same accessible name and the same event keeps the control
-as it is, and so does a static candidate nobody pressed. A press names no handler: the coverage says which functions
-ran, not which one the click called, so the row lists the project functions that ran (`observed_calls`) and says in
-`gap` that its handler is not isolated. The file is written beside the manifest by whoever ran the exploration.
+as it is, and so does a static candidate nobody pressed. The handler is the first function of the project the click's event reached, when the
+exploration isolated it (Chrome's breakpoint on `click` with the dependencies blackboxed, `explore.cjs`) and it is a file
+of the snapshot: `handler`, with `handler_confidence` `observed`. Otherwise the row lists the project functions that
+ran (`observed_calls`) and says in `gap` that its handler is not isolated: coverage alone does not say which one the
+click called. The file is written beside the manifest by whoever ran the exploration.
 """
 from __future__ import annotations
 
@@ -68,11 +70,15 @@ def candidates(apps: list[dict], static: list[dict], files: set[str]) -> list[di
                     continue  # nothing the press did is seen: not an entry
                 if ((control["name"] or "").strip().lower(), "click") in known:
                     continue  # the static reader has it
+                caught = control.get("handler") or {}
+                place = _project(caught.get("source") or caught.get("url"), files, folder) if caught.get("line") else None
                 found.append({
                     "status": "candidate", "reader": "observed", "shape": "control", "kind": KIND,
                     "site": _path(page["url"]), "label": control["name"], "event": "click", "role": control["role"],
                     "occurrence": control.get("occurrence", 0), "declared_in": app.get("declared_in"),
                     "observed_calls": [f"{rel}:{line} {name}" for rel, line, name in ran[:CALLS]], "requests": requests,
-                    "gap": f"the handler is not isolated: the press ran {len(ran)} project functions and sent "
-                           f"{len(requests)} requests, and the coverage does not record which function the click called"})
+                    **({"handler": f"{place}:{caught['line']} {caught['name']}", "handler_confidence": "observed"} if place else
+                       {"gap": f"the handler is not isolated: the press ran {len(ran)} project functions and sent "
+                               f"{len(requests)} requests, and the coverage does not record which function the click "
+                               "called"})})
     return found

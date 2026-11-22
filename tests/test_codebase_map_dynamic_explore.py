@@ -188,3 +188,70 @@ def test_a_page_with_no_control_is_a_gap_with_its_error_and_what_it_shows(tmp_pa
     found = explore(tmp_path, browser, {**APP_FILES, "server.js": broken}, seeds=["/broken"])
     [gap] = [gap for gap in found["gaps"] if gap["kind"] == "page_without_controls"]
     assert gap["path"].endswith("/broken") and "boom: missing configuration" in gap["detail"] and "loading" in gap["detail"]
+
+
+def test_a_control_something_covers_fails_with_what_covers_it(tmp_path, browser):
+    """A cookie banner or a modal over the page: the failure names the element that takes the click."""
+    covered = SERVER.replace("'/details':", "'/covered': `<!doctype html><button>Under</button>"
+                             "<div id=banner style=\"position:fixed;inset:0;background:#fff\">cookies</div>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": covered}, seeds=["/covered"])
+    under = controls(found, "/covered")[("button", "Under")]
+    assert under["state"] == "failed" and "intercepts pointer events" in under["reason"] and "banner" in under["reason"]
+
+
+def test_a_control_a_page_shows_late_is_waited_for_and_found_again_after_each_reload(tmp_path, browser):
+    """A login screen drawn once the auth state answers: the controls are read when they are there, not at the load."""
+    late = SERVER.replace("'/details':", "'/late': `<!doctype html><title>late</title><script>setTimeout(() => {"
+                          "const a = document.createElement('button'); a.textContent = 'First'; document.body.append(a);"
+                          "const b = document.createElement('button'); b.textContent = 'Second'; document.body.append(b);"
+                          "a.addEventListener('click', () => fetch('/api/save')); }, 1100)</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": late}, seeds=["/late"])
+    shown = controls(found, "/late")
+    assert [shown[("button", name)]["state"] for name in ("First", "Second")] == ["pressed", "pressed"]
+    assert shown[("button", "First")]["requests"]
+
+
+def test_each_press_starts_from_a_first_visit_so_what_the_app_remembers_does_not_change_the_next_control(tmp_path, browser):
+    """A page that draws its intro only until it has been seen (an onboarding, a cookie notice kept in storage)."""
+    once = SERVER.replace("'/details':", "'/once': `<!doctype html><title>once</title><body><script>"
+                          "if (!localStorage.getItem('seen')) { localStorage.setItem('seen', '1');"
+                          "const b = document.createElement('button'); b.textContent = 'Intro'; document.body.append(b);"
+                          "b.addEventListener('click', () => fetch('/api/save')); } else { document.body.append('welcome back'); }"
+                          "</script>`,\n  '/details':")
+    found = explore(tmp_path, browser, {**APP_FILES, "server.js": once}, seeds=["/once"])
+    shown = controls(found, "/once")
+    assert ("button", "Intro") in shown, (shown, found["gaps"])
+    assert shown[("button", "Intro")]["state"] == "pressed" and shown[("button", "Intro")]["requests"]
+
+
+# --- the handler a click called: the first function of the project the event reaches (CDP's own breakpoint) --------
+
+def test_the_handler_of_a_click_is_the_first_project_function_the_event_reaches(tmp_path, browser):
+    """`DOMDebugger.setEventListenerBreakpoint("click")` with the dependencies in `Debugger.setBlackboxPatterns`: the
+    pause is in the handler, not in what it calls, nor in what ran because the state changed."""
+    found = explore(tmp_path, browser, APP_FILES)
+    here = controls(found, f"{found['origin'].rpartition(':')[2]}/")
+    save, reset = here[("button", "Save")], here[("button", "Reset")]
+    assert "handler" in save, json.dumps({k: v for k, v in save.items() if k != "calls"})
+    assert (save["handler"]["name"], save["handler"]["url"]) == ("save", "/src/app.js")
+    assert reset["handler"]["name"] == "reset"
+    assert "handler" not in here[("link", "Out")]  # not pressed: no handler
+
+
+def test_a_react_handler_is_the_function_written_in_the_component_not_reacts_own_dispatch(tmp_path, browser):
+    project = write(tmp_path / "proj", VITE)
+    subprocess.run([shutil.which("npm"), "install", "--ignore-scripts", "--no-audit", "--no-fund"], cwd=project,
+                   check=True, capture_output=True, timeout=600)
+    out = tmp_path / "out"
+    out.mkdir()
+    done = subprocess.run(["node", str(SCRIPTS / "dynamic/explore.cjs"), str(out), "0", str(project), "-", "60",
+                           "npm run dev"], capture_output=True, text=True, timeout=400,
+                          env={**os.environ, "DAODAN_PLAYWRIGHT": str(browser)})
+    assert done.returncode == 0, done.stderr[-1500:]
+    [page] = json.loads((out / "explore-0.json").read_text(encoding="utf-8"))["pages"]
+    lines = VITE["src/App.tsx"].split("\n")
+    wanted = {name: next(i + 1 for i, text in enumerate(lines) if call in text)
+              for name, call in (("Save", "setTotal(save(total))"), ("Reset", "setTotal(reset())"))}
+    for name, line in wanted.items():
+        handler = next(c for c in page["controls"] if c["name"] == name)["handler"]
+        assert handler["source"].endswith("src/App.tsx") and handler["line"] == line, (name, handler)

@@ -4,14 +4,19 @@
 // (`app.cjs`), opens headless Chromium on it, and for each page reads the controls from Playwright's own accessibility
 // tree (`page.ariaSnapshotJSON({mode: 'ai'})`: role, name, ref), presses each once (`page.getByRef`) and records which
 // functions of the project ran between the two takes of V8's precise coverage (the counters reset on each take),
-// less what a still page runs by itself. Writes <out dir>/explore-<name>.json.
-// The page is loaded again before each press, so one press does not change what the next one meets.
+// less what a still page runs by itself. The handler of a click is the first function of the project the event
+// reaches: Chrome's own breakpoint on the `click` event (`DOMDebugger.setEventListenerBreakpoint`), with the
+// dependencies and the dev server's scripts blackboxed (`Debugger.setBlackboxPatterns`: the debugger leaves a
+// blackboxed script by stepping in, so the pause lands in the project's own function), and the pause's top frame.
+// Writes <out dir>/explore-<name>.json.
+// Each press starts from a first visit: a browser context of its own, with no storage or cookie of the others (an
+// onboarding or a cookie notice that an app remembers would change what the next control meets).
 const fs = require('node:fs');
 const { SourceMap } = require('node:module');
-const { chromium } = require(process.env.DAODAN_PLAYWRIGHT || 'playwright-core');
+const { chromium, request: apiRequest } = require(process.env.DAODAN_PLAYWRIGHT || 'playwright-core');
 const app = require('./app.cjs');
 
-const LIMITS = { pages: 25, presses: 300, seconds: 600, settle: 400, click: 3000 };
+const LIMITS = { pages: 25, presses: 300, seconds: 600, settle: 400, click: 3000, render: 3000 };
 const PRESS = new Set(['button', 'link', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'switch', 'checkbox', 'radio']);
 const VALUE = new Set(['textbox', 'combobox', 'searchbox', 'spinbutton', 'slider']); // they ask for a value: not pressed
 const LIBRARY = /\/node_modules\/|\/@vite\/|\/@react-refresh|\/@id\//; // a dependency's or the dev server's own script
@@ -41,24 +46,48 @@ function controlsOf(tree) {
   return found;
 }
 
+// The controls once the app has drawn them: an app answers its auth state or its data a while after the load, so the tree
+// is read again until `done(found)`, up to `render` ms, and what is there then is what is pressed.
+async function controlsAfter(page, done) {
+  const until = Date.now() + LIMITS.render;
+  let found = [];
+  for (;;) {
+    const before = found.length;
+    found = controlsOf(await page.ariaSnapshotJSON({ mode: 'ai' }));
+    if (done(found, before) || Date.now() > until) return found;
+    await sleep(250);
+  }
+}
+const settled = (found, before) => found.length > 0 && found.length === before; // the same count twice running
+
+// The function a pause is in, as `{name, url, source, line}`: through the script's source map where it has one.
+async function handlerOf(read, frame, url) {
+  const { map } = await read(url);
+  const { lineNumber, columnNumber } = frame.location;
+  let source = null, line = lineNumber + 1;
+  const entry = map ? map.findEntry(lineNumber, columnNumber) : null;
+  if (entry && entry.originalLine !== undefined) { source = new URL(entry.originalSource, url).pathname; line = entry.originalLine + 1; }
+  return { name: frame.functionName || '(anonymous)', url: new URL(url).pathname, source, line };
+}
+
 const offsetToLine = (text, offset) => { // V8 gives an offset into the script; the source map wants line and column
   const before = text.slice(0, offset), line = before.split('\n').length - 1;
   return [line, offset - (before.lastIndexOf('\n') + 1)];
 };
 
 // The scripts' texts and their source maps, once per script (an inline map, or the file the comment names).
-function scriptReader(context, origin) {
+function scriptReader(api) {
   const cache = new Map();
   return async url => {
     if (!cache.has(url)) {
       let text = '', map = null;
       try {
-        text = await (await context.request.get(url)).text();
+        text = await (await api.get(url)).text();
         const comment = /\/\/# sourceMappingURL=(\S+)\s*$/m.exec(text);
         if (comment) {
           const inline = /^data:application\/json[^,]*;base64,(.+)$/.exec(comment[1]);
           const payload = inline ? Buffer.from(inline[1], 'base64').toString('utf8')
-            : await (await context.request.get(new URL(comment[1], url).href)).text();
+            : await (await api.get(new URL(comment[1], url).href)).text();
           map = new SourceMap(JSON.parse(payload));
         }
       } catch (error) { /* a script without its text or map is unmapped */ }
@@ -99,18 +128,32 @@ async function ran(cdp, read, origin, unmapped) {
 async function explore(ready, out, name, seeds) {
   const started = Date.now(), origin = new URL(ready.address).origin, hit = new Set();
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  const cdp = await context.newCDPSession(page);
-  await cdp.send('Profiler.enable');
-  const read = scriptReader(context, origin), unmapped = new Set();
-  const state = { requests: [], dialogs: [], popups: [], errors: [] };
-  page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) state.requests.push({ method: request.method(), url: request.url() }); });
-  page.on('dialog', dialog => { state.dialogs.push(dialog.type()); dialog.dismiss().catch(() => {}); });
-  page.on('pageerror', error => state.errors.push(String(error.message).slice(0, 200)));
-  context.on('page', popup => { if (popup !== page) { state.popups.push(popup.url()); popup.close().catch(() => {}); } });
-
+  const api = await apiRequest.newContext(); // the scripts and their maps are fetched apart from any page's state
+  const read = scriptReader(api), unmapped = new Set();
+  const state = { requests: [], dialogs: [], popups: [], errors: [], frame: null };
+  let context = null, page = null, cdp = null;
+  const open = async () => { // a clean context: what a first visit meets
+    if (context) await context.close().catch(() => {});
+    context = await browser.newContext();
+    page = await context.newPage();
+    cdp = await context.newCDPSession(page);
+    await cdp.send('Profiler.enable');
+    await cdp.send('Debugger.enable');
+    await cdp.send('Debugger.setBlackboxPatterns', { patterns: [LIBRARY.source] });
+    const scripts = new Map(); // a call frame's `url` is empty in recent Chromium: its script's url comes from `scriptParsed`
+    cdp.on('Debugger.scriptParsed', event => scripts.set(event.scriptId, event.url));
+    cdp.on('Debugger.paused', event => { // the first pause of a press names the handler; every pause resumes at once
+      const top = event.callFrames[0], url = top && scripts.get(top.location.scriptId);
+      if (!state.frame && url && url.startsWith(origin)) state.frame = { frame: top, url };
+      cdp.send('Debugger.resume').catch(() => {});
+    });
+    page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) state.requests.push({ method: request.method(), url: request.url() }); });
+    page.on('dialog', dialog => { state.dialogs.push(dialog.type()); dialog.dismiss().catch(() => {}); });
+    page.on('pageerror', error => state.errors.push(String(error.message).slice(0, 200)));
+    context.on('page', popup => { if (popup !== page) { state.popups.push(popup.url()); popup.close().catch(() => {}); } });
+  };
   const load = async url => {
+    await open();
     await page.goto(url, { waitUntil: 'load', timeout: 15000 });
     await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
     await cdp.send('Profiler.startPreciseCoverage', { callCount: true, detailed: true });
@@ -130,7 +173,7 @@ async function explore(ready, out, name, seeds) {
       state.errors = []; await load(url);
       await cdp.send('Profiler.takePreciseCoverage'); await sleep(LIMITS.settle); // a still page's own runs
       const idle = await ran(cdp, read, origin, unmapped);
-      const controls = controlsOf(await page.ariaSnapshotJSON({ mode: 'ai' }));
+      const controls = await controlsAfter(page, settled);
       record.errors = state.errors.slice(0, 5);
       if (!controls.length) { // nothing to press: say why (its error, what it shows), not a silence
         const shown = (await page.ariaSnapshot().catch(() => '')).replace(/\s+/g, ' ').trim().slice(0, 300);
@@ -152,27 +195,32 @@ async function explore(ready, out, name, seeds) {
         presses += 1;
         try {
           await load(url);
-          const now = controlsOf(await page.ariaSnapshotJSON({ mode: 'ai' }))
-            .find(c => c.role === control.role && c.name === control.name && c.occurrence === control.occurrence);
+          const same = c => c.role === control.role && c.name === control.name && c.occurrence === control.occurrence;
+          const now = (await controlsAfter(page, found => found.some(same))).find(same);
           if (!now) { Object.assign(entry, { state: 'failed', reason: 'not_found_again' }); continue; }
           const locator = page.getByRef(now.ref);
           if (!await locator.isVisible() || !await locator.isEnabled()) { Object.assign(entry, { state: 'skipped', reason: 'not_operable' }); continue; }
-          Object.assign(state, { requests: [], dialogs: [], popups: [] });
+          Object.assign(state, { requests: [], dialogs: [], popups: [], frame: null });
+          await cdp.send('DOMDebugger.setEventListenerBreakpoint', { eventName: 'click' });
           await cdp.send('Profiler.takePreciseCoverage');
           await locator.click({ timeout: LIMITS.click });
+          await cdp.send('DOMDebugger.removeEventListenerBreakpoint', { eventName: 'click' }).catch(() => {});
           await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
           await sleep(LIMITS.settle);
           const after = await ran(cdp, read, origin, unmapped);
           const calls = [...after].filter(([key]) => !idle.has(key)).map(([, fn]) => fn);
           const landed = where(page.url(), origin);
-          Object.assign(entry, { state: 'pressed', calls, requests: state.requests.slice(0, 10),
+          Object.assign(entry, { state: 'pressed', ...(state.frame ? { handler: await handlerOf(read, state.frame.frame, state.frame.url) } : {}), calls, requests: state.requests.slice(0, 10),
             ...(landed && landed !== url ? { navigated: landed } : {}),
             ...(!landed ? { left_the_app: page.url() } : {}),
             ...(state.dialogs.length ? { dialogs: state.dialogs } : {}), ...(state.popups.length ? { popups: state.popups } : {}) });
           if (landed && landed !== url) queue.push(landed);
           if (target && target !== url) queue.push(target);
         } catch (error) {
-          Object.assign(entry, { state: 'failed', reason: String(error.message).split('\n')[0].slice(0, 200) });
+          // Playwright's call log says why a click waited (`<div id=banner> intercepts pointer events`): keep that line too
+          const lines = String(error.message).split('\n').map(line => line.trim()).filter(Boolean);
+          const why = lines.find(line => /intercepts pointer events|is not visible|outside of the viewport|is not stable|not enabled/.test(line));
+          Object.assign(entry, { state: 'failed', reason: (lines[0] + (why ? ` — ${why}` : '')).slice(0, 320) });
         }
       }
     } catch (error) {

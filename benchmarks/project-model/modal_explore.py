@@ -66,6 +66,7 @@ def explore_folder(source: str, analysis: str, seeds: list | None = None) -> dic
     result["explored"] = {"pages": len(pages), "controls": sum(len(page["controls"]) for page in pages),
                           "pressed": len(pressed),
                           "with_effect": sum(1 for c in pressed if c.get("calls") or c.get("requests")),
+                          "with_handler": sum(1 for c in pressed if c.get("handler")),
                           "skipped": dict(collections.Counter(c.get("reason") for page in pages for c in page["controls"]
                                                               if c.get("state") == "skipped")),
                           "failed": sum(1 for page in pages for c in page["controls"] if c.get("state") == "failed"),
@@ -85,21 +86,24 @@ def explore_folder(source: str, analysis: str, seeds: list | None = None) -> dic
     names = {(c["name"] or "").strip().lower() for c in pressed if c.get("calls") or c.get("requests")}
     result["analysis_top_folders"] = dict(collections.Counter(path.split("/")[0] for path in files).most_common(12))
     result["pressed_sample"] = [{"page": page["url"], "name": c["name"], "role": c["role"], "calls": len(c.get("calls", [])),
-                                 "requests": len(c.get("requests", [])),
+                                 "requests": len(c.get("requests", [])), "handler": c.get("handler"),
                                  "first_calls": [[call["source"], call["line"], call["name"]] for call in c.get("calls", [])[:3]]}
                                 for page in pages for c in page["controls"] if c.get("state") == "pressed"][:SAMPLE]
     result["not_pressed_sample"] = [{"page": page["url"], "name": c["name"], "role": c["role"], "state": c["state"],
                                      "reason": c.get("reason")}
-                                    for page in pages for c in page["controls"] if c.get("state") in ("failed", "skipped")][:SAMPLE]
+                                    for page in pages for c in page["controls"] if c.get("state") in ("failed", "skipped")]
+    result["not_pressed_sample"].sort(key=lambda row: row["state"] != "failed")  # the failures first: they are the ones to read
+    result["not_pressed_sample"] = result["not_pressed_sample"][:SAMPLE]
     result["page_errors"] = [{"page": page["url"], "errors": page.get("errors", [])} for page in pages if page.get("errors")][:SAMPLE]
     result["against_static"] = {
         "static_candidates": len(static), "static_labelled_click": len(labels),
-        "recovered": len(recovered), "matched": sum(1 for n in names if n in labels),
+        "recovered": len(recovered), "recovered_with_handler": sum(1 for row in recovered if row.get("handler")),
+        "matched": sum(1 for n in names if n in labels),
         "discarded_on_a_component": len(discarded),
         "discarded_with_a_label": sum(1 for row in discarded if row.get("label")),
         "discarded_with_a_pressed_control_of_the_same_name": sum(
             1 for row in discarded if (row.get("label") or "").strip().lower() in names),
-        "recovered_sample": [{key: row.get(key) for key in ("site", "label", "role", "observed_calls", "requests")}
+        "recovered_sample": [{key: row.get(key) for key in ("site", "label", "role", "handler", "observed_calls", "requests")}
                              for row in recovered[:SAMPLE]]}
     result["seconds"] = round(time.monotonic() - started, 1)
     return result
