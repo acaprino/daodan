@@ -652,7 +652,12 @@ def write_reading(inventory: Path, out: Path, *, format: str = "sqlite", previou
             and hasattr(previous, "verified_reusable_headers")
             and previous._has_json_cache()
         )
-        run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress, dict(listed.iter_inventory()))
+        # The plan says which files are read, each by its parse node (spec 8.4): the reading takes no other.
+        from pipeline import plan as planning
+        rows = dict(listed.iter_inventory())
+        parse = {node["id"] for node in planning.plan(rows.items())["nodes"] if node["step"] == "parse"}
+        run = _SnapshotPass(format, previous, reusable, fast_reuse, metrics, progress,
+                            {path: row for path, row in rows.items() if planning.node_of(row) in parse})
         scope = listed.metadata["scope"]
     try:
         with SnapshotWriter(temporary, format) as writer:

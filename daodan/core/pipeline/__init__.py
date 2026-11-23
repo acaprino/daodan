@@ -8,7 +8,8 @@ stop, else the words that say how it goes on) and `run(context)`; it says what i
 1. `parse`: the files the inventory lists, read into the snapshot (`file_inventory.write`, `snapshot.write_reading`);
    a caller that wrote the snapshot with `write_snapshot` finds it fresh. The order parse -> scan is today's (scan's
    module graph and the pre-map's framework sources still read the symbols) and flips when they stop reading them
-   (spec 8.11, step 5).
+   (spec 8.11, step 5). It also says the plan (`pipeline.plan`, spec 8.4): which adapter runs on which files,
+   executed by `write_reading`, `engine_pass.pass_plan` and `dynamic.run`.
 2. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
    commands run in Daodan's container (`premap.container_runner`).
 3. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
@@ -65,10 +66,15 @@ class Parse:
             raise
         except (OSError, ValueError) as error:  # a missing, unreadable or refused store
             raise StepFailed(f"the snapshot cannot be read: {error}", "write the snapshot again") from error
-        if not pending:
-            return {"action": "fresh"}
-        written = snapshot.write_reading(context.manifest, context.manifest)
-        return {"action": "read", "files": written["file_count"]}
+        result = {"action": "fresh"}
+        if pending:
+            written = snapshot.write_reading(context.manifest, context.manifest)
+            result = {"action": "read", "files": written["file_count"]}
+        from . import plan as planning
+        with open_snapshot(context.manifest) as store:
+            planned = planning.plan(planning.stored(store))
+        context.bus.emit("log", "the plan", step=Parse.NAME, plan=planned)
+        return {**result, "plan": {"nodes": len(planned["nodes"]), "gaps": len(planned["gaps"])}}
 
 
 class Scan:

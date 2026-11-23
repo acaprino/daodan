@@ -61,17 +61,20 @@ def _statuses(connection) -> dict[str, dict[str, int]]:
     return held
 
 
+def snapshot_plan(connection) -> dict:
+    """The plan (`pipeline.plan`) of the snapshot's files, each with its language and parse status: the inventory has
+    no exclusion field yet, so a file outside the perimeter (status `excluded`) is the snapshot's to say."""
+    from pipeline import plan as planning
+    return planning.plan((file, {"language": language, "status": status}) for file, language, status in
+                         connection.execute("SELECT file, language, status FROM sem_coverage"))
+
+
 def pass_languages(connection) -> list[str]:
     """The languages the pass serves: every one the snapshot holds a file of, parsed or not (`unparsed`), and those
     of an analyzer whose graph is built from files of other languages (`SNAPSHOT_LANGUAGES`, the stylesheet graph)
-    when the snapshot holds one."""
-    import indexers
-    held = _statuses(connection)
-    present = {language for language, files in held.items() if set(files) - {"excluded"}}
-    for analyzer in indexers.analyzers():
-        if set(held) & set(getattr(analyzer, "SNAPSHOT_LANGUAGES", ())):
-            present.update(analyzer.LANGUAGES)
-    return sorted(present)
+    when the snapshot holds one: the languages of the plan's parse and resolve nodes."""
+    return sorted({language for node in snapshot_plan(connection)["nodes"] if node["step"] in ("parse", "resolve")
+                   for language in node["on"]["languages"]})
 
 
 def unparsed(connection) -> dict[str, str]:
@@ -399,11 +402,19 @@ def engine_command(manifest: Path, report_path: Path) -> list[str]:
             "--pass", "--report-out", str(report_path)]
 
 
+def _unparsed_needs(connection) -> dict[str, str]:
+    """`unparsed` as the plan's `failed`: the parse node of each language the snapshot did not parse, with why."""
+    return {f"parse:{language}": reason for language, reason in unparsed(connection).items()}
+
+
 def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict, str]:
-    """The engines whose languages the snapshot holds parsed, with the entries already fresh."""
+    """The engines that serve the languages of the plan's resolve nodes whose parser did run, each with them, and
+    the entries already fresh."""
+    from pipeline import plan as planning
     manifest = Path(manifest)
     with open_snapshot(manifest) as store:
-        present = set(pass_languages(store.connection)) - set(unparsed(store.connection))
+        nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == "resolve"]
+        failed = _unparsed_needs(store.connection)
         digest = logical_digest(store)
         fresh = {}
         if default_edge_store(manifest).is_file():
@@ -411,6 +422,8 @@ def pass_plan(manifest: Path) -> tuple[list[tuple[EngineSpec, list[str]]], dict,
             if reason is None:
                 fresh = {language: entry for language, entry in (binding.get("languages") or {}).items()
                          if entry.get("state") == "fresh" and from_source(language, entry)}
+    present = {language for node in nodes for language in node["on"]["languages"]
+               if language not in planning.blocked(node, failed)}
     plan = [(spec, [language for language in spec.languages
                     if language in present and ENGINE_LANGUAGES.get(language) is spec]) for spec in ENGINES]
     return [(spec, wanted) for spec, wanted in plan if wanted], fresh, digest
@@ -435,11 +448,14 @@ def run_pass(manifest: Path, report_path: Path, bus=None) -> dict:
     if pipeline_run:
         report["pipeline_complete"] = False
     outcomes = report["languages"]
+    from pipeline import plan as planning
     with open_snapshot(manifest) as store:
-        skipped = unparsed(store.connection)
-    for language, reason in sorted(skipped.items()):
-        if language in ENGINE_LANGUAGES:
-            _not_fresh(bus, ENGINE_LANGUAGES[language], [language], outcomes, "unavailable", reason, PARSER_INSTALL)
+        nodes = [node for node in snapshot_plan(store.connection)["nodes"] if node["step"] == "resolve"]
+        failed = _unparsed_needs(store.connection)
+    stopped = {language: (ENGINE_LANGUAGES[language], *why) for node in nodes
+               for language, why in planning.blocked(node, failed).items() if language in ENGINE_LANGUAGES}
+    for language, (spec, needed, reason) in sorted(stopped.items()):  # a resolver does not start without its parser
+        _not_fresh(bus, spec, [language], outcomes, "unavailable", reason, PARSER_INSTALL, needed)
     exhausted = None
     for number, (spec, wanted) in enumerate(plan, 1):
         bus.progress("analyze", number - 1, len(plan), analyzer=spec.name, message=f"{spec.name}: {', '.join(wanted)}")
@@ -523,17 +539,19 @@ def _launch(spec: EngineSpec, wanted: list[str], manifest: Path) -> tuple[str | 
     return ("unavailable" if install else "failed"), stage.get("reason"), install, stage
 
 
-def _not_fresh(bus, spec: EngineSpec, wanted: list[str], outcomes: dict, state: str, reason, install) -> None:
-    """A stage that is unavailable here or failed: its event and its languages' outcomes."""
+def _not_fresh(bus, spec: EngineSpec, wanted: list[str], outcomes: dict, state: str, reason, install,
+               need: str | None = None) -> None:
+    """A stage that is unavailable here or failed: its event and its languages' outcomes. `need` is the plan's node
+    whose failure stopped it, when one did."""
     if state == "unavailable":
         bus.emit("analyzer.unavailable", f"{spec.name} cannot run here", step="analyze", analyzer=spec.name,
-                 level="warning", cause=reason, remedy=install, languages=wanted)
+                 level="warning", cause=reason, remedy=install, languages=wanted, **({"need": need} if need else {}))
     else:
         bus.emit("analyzer.finished", f"{spec.name} failed", step="analyze", analyzer=spec.name, level="error",
                  cause=reason, remedy=f"see {LOG_NAME} beside the snapshot", languages=wanted)
     for language in wanted:
-        outcomes[language] = {key: value for key, value in
-                              (("state", state), ("engine", spec.name), ("reason", reason), ("install", install))
+        outcomes[language] = {key: value for key, value in (("state", state), ("engine", spec.name), ("need", need),
+                                                            ("reason", reason), ("install", install))
                               if value is not None}
 
 

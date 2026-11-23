@@ -563,8 +563,7 @@ def run(manifest: Path, bus) -> dict:
         detail = "the dynamic step is off (DAODAN_DYNAMIC=off): no test runs, the graph stays static"
         say(detail, {"kind": "dynamic-off", "detail": detail})
         return {"languages": outcomes}
-    found = observers()
-    served = {language for module in found for language in module.LANGUAGES}
+    from pipeline import plan as planning
     asked: dict = {}
     declared, paths = None, {}  # the services of the project's CI (`services`), and where each is declared
     with code_graph.Snapshot(manifest) as snapshot:
@@ -575,21 +574,28 @@ def run(manifest: Path, bus) -> dict:
         obsolete = engine_pass.superseded_languages(entries)
         graphs = {language: entry for language, entry in entries.items()
                   if reason is None and language not in obsolete and entry.get("state") == "fresh"}
-        for language in sorted(set(graphs) - served):
-            detail = f"{language}: no observer runs its tests, so its graph holds no observed edge"
-            say(detail, {"kind": "no-observer", "language": language, "detail": detail}, language=language)
-            left([language], "no-observer", "no observer runs this language's tests")
-        present = set(snapshot.languages.values())
-        waiting = [module for module in found if present & set(module.LANGUAGES)]
-        for number, module in enumerate(waiting):
+        layout = planning.plan((rel, {"language": language}) for rel, language in snapshot.languages.items())
+        for gap in layout["gaps"]:  # the observers the plan holds are the ones that start
+            if gap["kind"] == "no-observer" and gap["language"] in graphs:
+                say(gap["detail"], {key: gap[key] for key in ("kind", "language", "detail")}, language=gap["language"])
+                left([gap["language"]], "no-observer", "no observer runs this language's tests")
+        by_entry = {module.ENTRY: module for module in observers()}
+        waiting = [node for node in layout["nodes"] if node["step"] == "observe"]
+        for number, node in enumerate(waiting):
+            module = by_entry[node["adapter"]]
             name, entry = resolver(module), module.ENTRY
-            wanted = sorted(present & set(module.LANGUAGES))
-            for language in (language for language in wanted if language not in graphs):
-                detail = (f"{language}: the store holds no static graph of it ({reason or 'its analyzer left none'}): "
-                          "an observed edge answers a reference of a graph that is there")
-                say(detail, {"kind": "no-static-graph", "language": language, "detail": detail}, entry, language)
-                left([language], "no-static-graph", detail)
-            wanted = [language for language in wanted if language in graphs]
+            failed: dict = {}  # the resolver node of each language whose graph the store does not hold
+            for language in node["on"]["languages"]:
+                if language not in graphs:
+                    detail = (f"{language}: the store holds no static graph of it "
+                              f"({reason or 'its analyzer left none'}): an observed edge answers a reference of a "
+                              "graph that is there")
+                    failed.setdefault(planning.need(node, language), {})[language] = detail
+            for language, (needed, detail) in sorted(planning.blocked(node, failed).items()):
+                say(detail, {"kind": "no-static-graph", "language": language, "need": needed, "detail": detail},
+                    entry, language)
+                outcomes[language] = {"state": "no-static-graph", "need": needed, "reason": detail}
+            wanted = [language for language in node["on"]["languages"] if language in graphs]
             if not wanted:
                 continue
             bus.progress(STEP, number, len(waiting), analyzer=entry, phase="plan", message=f"{entry}: the plan")
