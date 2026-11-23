@@ -3,9 +3,11 @@
     python benchmarks/project-model/entries_vs_reference.py <reference.json> <explore result.json>
 
 A reference flow starts at an `attiva` arrow: a control, cited as `file:line`. The cite is covered by a static entry when
-one sits in the same file within `NEAR` lines of it, and by an observed entry (the controls the exploration pressed,
-`against_static.links` of `modal_explore.py`) when the cite falls in the lines its handler spans. The reference is read
-from the path given; no reference is kept in the repository.
+one sits in the same file within `NEAR` lines of it or the cite falls in the lines of the function it starts from
+(`static_spans`), and by an observed entry (the controls the exploration pressed,
+`against_static.links` of `modal_explore.py`) when the cite falls in the lines its handler spans (an inline arrow) or within
+`NEAR` lines of a place the code names an observed handler (`onSubmit={handleSubmit}`: `observed_binding_sites`). The
+reference is read from the path given; no reference is kept in the repository.
 """
 from __future__ import annotations
 
@@ -27,25 +29,27 @@ def cites(reference: dict) -> dict[str, str]:
 
 
 def compare(reference: dict, links: dict) -> dict:
-    """`{cites, static, observed, none, by_folder}`: how many cites there are, how many a static entry covers, how many
-    only an observed one covers, how many neither, and the same per top folder."""
+    """`{cites, static, observed, both, none, by_folder}`: how many cites there are and how many only a static entry covers,
+    only an observed one, both, or neither, and the same per top folder."""
     static = [site.rpartition(":") for site in links["static_sites"]]
+    held = links.get("static_spans", [])
     spans = links["observed_spans"]
+    bound = [site.rpartition(":") for site in links.get("observed_binding_sites", [])]
     kinds, by_folder = collections.Counter(), collections.defaultdict(collections.Counter)
     for cite in cites(reference):
         file, _, line = cite.rpartition(":")
         at = int(line) if line.isdecimal() else None
         if at is None:
             continue
-        if any(f == file and l.isdecimal() and abs(int(l) - at) <= NEAR for f, _, l in static):
-            kind = "static"
-        elif any(s["file"] == file and s["line"] <= at <= s["end"] for s in spans):
-            kind = "observed"
-        else:
-            kind = "none"
+        by_static = any(f == file and l.isdecimal() and abs(int(l) - at) <= NEAR for f, _, l in static) or \
+            any(s["file"] == file and s["line"] <= at <= s["end"] for s in held)
+        by_browser = any(s["file"] == file and s["line"] <= at <= s["end"] for s in spans) or \
+            any(f == file and l.isdecimal() and abs(int(l) - at) <= NEAR for f, _, l in bound)
+        kind = "both" if by_static and by_browser else "static" if by_static else "observed" if by_browser else "none"
         kinds[kind] += 1
         by_folder[file.split("/")[0]][kind] += 1
-    return {"cites": sum(kinds.values()), "static": kinds["static"], "observed": kinds["observed"], "none": kinds["none"],
+    return {"cites": sum(kinds.values()), "static": kinds["static"], "observed": kinds["observed"], "both": kinds["both"],
+            "none": kinds["none"],
             "by_folder": {folder: dict(count) for folder, count in sorted(by_folder.items())}}
 
 

@@ -117,3 +117,41 @@ def test_two_functions_on_the_line_the_handler_starts_at_are_told_apart_by_the_c
          pressed("Inner", started("src/wire.ts", line=2, at=2, column=41)))
     links = flows.cached_links(manifest, [])
     assert sorted(entry["symbol"].partition("@")[2] for entry in links["entries"]) == ["2:31", "2:41"]
+
+
+def test_a_control_the_browser_pressed_is_a_card_with_its_label_event_and_handler(tmp_path):
+    """The cards of the paths (`flow_paths`) are the entries of the links: an observed one carries the control's name."""
+    import flow_paths
+    manifest = snapshot_of(tmp_path, ALONE)
+    keep(manifest, pressed("Save", named("save")))
+    _links, cards, _revision = flow_paths._deck(manifest, [])
+    [card] = [card for card in cards.values() if card.get("reader") == "observed"]
+    assert (card["label"], card["event"], card["handler"], card["kind"]) == (
+        "Save", "click", "src/lib.ts::save", observed_entries.KIND)
+    assert card["handler_confidence"] == "observed" and card["site"] == "src/lib.ts:1"
+    [step] = flow_paths._steps(flow_paths._graph(_links, None), card)[:1]
+    assert step["from"] == "src/lib.ts::save"  # the path starts at the handler the browser named
+
+
+def test_a_handler_the_static_reader_could_not_name_is_an_entry_though_it_has_a_candidate_of_the_same_name(tmp_path):
+    """The static candidate (`Save`, click) is there with a prop for a handler: no entry. The browser ran `save`: that is one."""
+    manifest = snapshot_of(tmp_path, {
+        "src/lib.ts": LIB,
+        "src/View.tsx": "export function View(props: {onSave: () => void}) { return <button onClick={props.onSave}>Save</button>; }\n"})
+    assert flows.cached_links(manifest, [])["entries"] == []
+    keep(manifest, pressed("Save", named("save")))
+    [entry] = flows.cached_links(manifest, [])["entries"]
+    assert (entry["symbol"], entry["reader"], entry["label"]) == ("src/lib.ts::save", "observed", "Save")
+
+
+def test_a_static_candidate_of_the_same_name_does_not_hide_a_handler_the_browser_ran_that_the_candidate_does_not_start_from(tmp_path):
+    """On phazly the static reader gave `Dismiss` the member of a context's interface (`clearError`), a declaration with no body; the
+    browser ran the arrow that implements it. The two are told apart by the function, not by the name of the control: here the
+    static entry is the arrow of `Save` and the browser says `save`, the function it calls."""
+    view = 'import {save} from "./lib";\nexport function View() { return <button onClick={() => save(1)}>Save</button>; }\n'
+    manifest = snapshot_of(tmp_path, {"src/lib.ts": LIB, "src/View.tsx": view})
+    [static] = flows.cached_links(manifest, [])["entries"]
+    assert static["label"] == "Save" and static["symbol"].startswith("src/View.tsx::function@")
+    keep(manifest, pressed("Save", named("save")))
+    entries = flows.cached_links(manifest, [])["entries"]
+    assert sorted(entry["symbol"] for entry in entries) == sorted([static["symbol"], "src/lib.ts::save"])
