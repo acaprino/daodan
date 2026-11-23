@@ -13,17 +13,30 @@ Daodan gives a coding agent two things it cannot get from a prompt: a local,
 refreshable understanding of the repository, and a review whose findings cite
 source and survive independent verification. Sources remain the authority.
 
-## Analysis steps
+## How the graph is built
 
-| Step | What it does | Runs project code | State |
+Seven steps, always in this order: each starts from what the ones before it established, and none finds out
+again what another already knows. Each uses the official tool of what it reads, behind an adapter, and writes
+what it could not do as a gap. The seven steps and their names are the design approved on 22 November 2026; the
+last column says what the code does today.
+
+```mermaid
+flowchart LR
+  scan --> recognize --> plan --> parse --> resolve --> observe --> connect --> G[(Complete graph)]
+```
+
+| Step | What it does | Runs project code | In the code today |
 |---|---|---|---|
-| 1. Static | Parsers and the lexical resolver record files, symbols, imports and calls | No | In use |
-| 2. Inference | A language engine resolves calls with the project's libraries, which Daodan downloads | No | In use |
-| 3. Dynamic | The project's tests run in an isolated container and the observed calls join the graph | Only inside the container | [Proposed](docs/specs/2026-11-12-passo-dinamico.md) |
-| 4. Semantic | The model writes semantic cards and link rules; flows connect writers, readers and user actions | No | In use; flows on trial |
+| 1. `scan` | Walks every folder and file, then asks the build tools for modules, build units and test commands | Only inside the container | Step `scan`; the file inventory is written before the pipeline (`snapshot.py write`) |
+| 2. `recognize` | Names frameworks, libraries, tools and services | No | Step `stack` |
+| 3. `plan` | Decides which adapter runs on which part, and what each needs | No | Not yet: decided in three places |
+| 4. `parse` | Reads the source files the plan gives it: symbols, imports, calls | No | Before the pipeline, with the inventory (`snapshot.py write`) |
+| 5. `resolve` | Resolves each call to its target | Only inside the container | Step `analyze` |
+| 6. `observe` | Runs the project's tests and records what they call | Only inside the container | Step `dynamic` |
+| 7. `connect` | Joins the graphs and lists what is missing | No | Step `union`: it lists, it does not join yet |
 
-Until step 3 is in place nothing runs the project, and runtime behavior needs
-the project's tests.
+After the pipeline the model writes semantic cards and link rules, and flows connect writers, readers and user
+actions. [The process, its tools and example graphs](docs/plugins/codebase-map.md#pipeline).
 
 ## How Daodan identifies the stack
 

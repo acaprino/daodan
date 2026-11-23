@@ -1,6 +1,6 @@
 # Pipeline di analisi: step, analyzer con adattatori, listener
 
-**Stato:** approvata dal proprietario il 15 novembre 2026, che ha lasciato a Claude le scelte rimaste (sezione «Scelte»). Lo step 3 è applicato (`pipeline.Dynamic`, `dynamic/`), con gli osservatori di Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#. Le regole della mappa dei moduli e dello stack (sezione 1, «Scansione: la mappa dei moduli» e «Stack») e della reattività (sezione 6) le ha decise il proprietario il 17 novembre 2026 e sono applicate; i motivi sono in «Scelte», 4–6. Il 20 novembre 2026, con la divisione per aspetto della [spec dei flussi](2026-11-18-flussi-e-mappa-del-sistema.md), stanno qui l'analisi unificata: una preparazione per analisi («Preparazione»), uno strumento ufficiale per linguaggio (sezione 2), la scelta 7 con i suoi limiti e ciò che resta da decidere. **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
+**Stato:** approvata dal proprietario il 15 novembre 2026, che ha lasciato a Claude le scelte rimaste (sezione «Scelte»). Lo step 3 è applicato (`pipeline.Dynamic`, `dynamic/`), con gli osservatori di Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#. Le regole della mappa dei moduli e dello stack (sezione 1, «Scansione: la mappa dei moduli» e «Stack») e della reattività (sezione 6) le ha decise il proprietario il 17 novembre 2026 e sono applicate; i motivi sono in «Scelte», 4–6. Il 20 novembre 2026, con la divisione per aspetto della [spec dei flussi](2026-11-18-flussi-e-mappa-del-sistema.md), stanno qui l'analisi unificata: una preparazione per analisi («Preparazione»), uno strumento ufficiale per linguaggio (sezione 2), la scelta 7 con i suoi limiti e ciò che resta da decidere. Il 22 e il 23 novembre 2026 il proprietario approva la sezione 8: i nomi, l'ordine degli step da ciò che ognuno deve sapere prima di partire, il piano. Nel codice c'è solo la solidità (8.9); il resto non è applicato, e il processo con i nomi nuovi è spiegato in [Codebase Map, sezione Pipeline](../plugins/codebase-map.md#pipeline). **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
 
 Il proprietario chiede (15 novembre 2026) un codice modulare, pulito e manutenibile: un'architettura a step, il pattern adapter, e la possibilità di registrare listener dell'intero processo di analisi. Primo step: una scansione veloce di moduli e tecnologie; poi, per ogni linguaggio o framework trovato, un'istanza dell'analyzer che sotto usa lo strumento specifico. Il processo dà feedback, informazioni, log, eventi e avanzamento fino alla generazione del grafo completo.
 
@@ -137,6 +137,156 @@ Applicato (Scelte, 6). Prova: `tests/test_codebase_map_reactive_server.py`; `tes
    - **Una superficie nuova dichiara** come si riconosce, quali indici riusa e come si osserva in esecuzione: entra nella stessa pipeline, senza una pre-mappa, una build o un'analisi per linguaggio sue (interfacce, sezione 3).
 4. **La misura.** Tre corse sullo stesso progetto: da zero, senza modifiche, dopo una modifica a un solo modulo. Per ognuna: tempo totale, CPU, picco di RAM, spazio temporaneo, ripristini, indicizzazioni, avvii dell'app. Accanto, i collegamenti attesi ritrovati, prima di tutto interfaccia → gestore → backend o comando nativo: senza questa colonna un costo che scende può voler dire che si è analizzato meno. Parametri e risultati nel README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md) (task 2b del [piano](../plans/2026-11-20-analisi-unificata.md)).
 
+### 8. La pipeline riordinata: ordine, piano, nomi
+
+*Chiesta dal proprietario il 22 e il 23 novembre 2026 e approvata: i nomi con «sì a tutto», l'ordine e la regola di 8.1 con parole sue. Di questa sezione il codice ha solo 8.9. I fatti sul codice sono letti in quei due giorni in `pipeline/`, `snapshot.py`, `engine_pass.py`, `import_resolution.py`, `technologies.py` e nei contratti di `languages/`, `premap/`, `indexers/` e `dynamic/`, non in ogni adattatore.*
+
+**8.1 La regola.** Ogni step parte da ciò che gli step prima hanno stabilito. **Ogni fatto ha un padrone solo:** uno step non riscopre ciò che un altro stabilisce, lo chiede a lui. Dove il padrone non ha potuto stabilirlo (manca il container), chi ne ha bisogno usa un ripiego e lo scrive accanto al dato.
+
+**8.2 Gli step.** L'ordine viene dalla colonna «Deve sapere prima»: `scan`, `recognize`, `plan`, `parse`, `resolve`, `observe`, `connect`.
+
+| Step | Che cosa fa | Deve sapere prima, e da chi | Che cosa scrive |
+| --- | --- | --- | --- |
+| 1 `scan` | Percorre tutte le cartelle e i file; chiede agli strumenti di build com'è fatto il progetto | La cartella e il perimetro: da chi avvia l'analisi | L'inventario dei file (percorso, dimensione, hash, linguaggio, motivo di esclusione) e il modello del progetto (moduli, unità, toolchain, pacchetti, comandi di test, servizi, radici e alias degli import) |
+| 2 `recognize` | Riconosce framework, librerie, strumenti e servizi | Pacchetti, servizi, immagini e unità: da `scan` | Le tecnologie di ogni modulo |
+| 3 `plan` | Decide quale adattatore gira su quale parte, e che cosa gli serve prima | File e linguaggi per modulo: da `scan`. Tecnologie: da `recognize`. Le dichiarazioni degli adattatori | Il piano (8.4) |
+| 4 `parse` | Legge i sorgenti | Quali file, in che linguaggio, in quale modulo, con quali letture di framework: dal piano. Radici e alias degli import: da `scan` | Simboli, import e riferimenti di ogni file, e come è andata la sua lettura (letto, escluso, errore, ripiego) |
+| 5 `resolve` | Trova dove arriva ogni chiamata | I riferimenti: da `parse`. Unità e build: da `scan`. L'ambiente preparato | Gli archi provati |
+| 6 `observe` | Esegue i test e registra che cosa chiamano | I comandi di test: da `scan`. I riferimenti: da `parse`. Il grafo statico del linguaggio: da `resolve`. L'ambiente preparato | Gli archi osservati, i campionati a parte |
+| 7 `connect` | Unisce, e dice che cosa manca | Tutto | Il grafo completo: gli archi fra moduli, gli ingressi dei flussi uniti alle loro definizioni, l'osservato contro il provato, e le lacune |
+
+| Step | Adattatore | Strumento sotto | Oggi nel codice |
+| --- | --- | --- | --- |
+| 1 `scan` | scanner | Il percorso dell'albero (`tree_scope.py`); go-enry; cargo, gradle, maven, npm, `tsc`, cmake, … | Lo step `scan` c'è; l'inventario lo scrive lo snapshot, prima della pipeline |
+| 2 `recognize` | recognizer | stack-analyser, il fork ([spec del 21 novembre](2026-11-21-stack-dal-fork.md): approvata, non collegata allo step) | Step `stack`, sul registro (`service_registry.py`); legge già solo i fatti dello step 1 |
+| 3 `plan` | nessuno | — | Manca: decidono la pre-mappa, `engine_pass.pass_plan` (dai linguaggi che la lettura ha trovato) e il `plan` di ogni osservatore |
+| 4 `parse` | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari (`languages/sql.py`, `plsql.py`) | `snapshot.py write`, fuori dalla pipeline e per primo (8.3) |
+| 5 `resolve` | resolver | Un indicizzatore SCIP per tecnologia (scip-typescript serve quattro linguaggi); per i fogli di stile i loro parser | Step `analyze` |
+| 6 `observe` | observer | Un registratore per linguaggio (`*_record.*`) | Step `dynamic`; senza grafo statico non parte (`no-static-graph`) |
+| 7 `connect` | nessuno | — | Step `union`: dice ciò che il grafo ha e non ha, non unisce ancora |
+
+Perché `recognize` e `plan` stanno prima di `parse`: `recognize` non legge nulla di ciò che `parse` produce (`technologies.py`: solo i fatti dello step 1), mentre `parse` deve sapere che cosa leggere e come. Perché gli archi fra moduli e gli ingressi dei flussi stanno in `connect`: uniscono ciò che `parse` legge a ciò che `scan` stabilisce, e cambiano quando cambia uno dei due; in `parse`, a un modulo che lo strumento di build corregge dopo si dovrebbero rileggere file che non sono cambiati. Oggi li scrive lo step `scan` (`module_derive`, `premap/flow_entries.py`), perché gira dopo la lettura.
+
+**8.3 Che cosa `parse` smette di scoprire da sé.** Oggi gira per primo, e stabilisce da solo quattro fatti che non sono suoi:
+
+1. **Quali file ci sono:** percorre l'albero (`_SnapshotPass.sources`). Diventa: li riceve dall'inventario.
+2. **Il linguaggio di un file:** estensione, più espressioni regolari sul contenuto per `.h`, `.ts` e `.sql` (`languages.detect_language`). `scan` lo chiede a go-enry, il port di Linguist. Diventa: il linguaggio è dell'inventario; l'estensione è il ripiego finché go-enry non ha risposto.
+3. **Quali file lasciare fuori:** legge anche quelli che `scan` poi dichiara generati, di terze parti o binari, e l'esclusione arriva dopo, come stato. Diventa: non li legge.
+4. **La configurazione degli import:** legge `tsconfig`, `jsconfig` e i workspace a mano (`import_resolution.py`: commenti, `extends`, `baseUrl`, `paths`). `scan` lo chiede a `tsc`. Diventa: radici e alias sono del modello del progetto; la lettura a mano è il ripiego dove `tsc` non è girato.
+
+In più cerca il ponte di Tauri in ogni file Rust (`languages/rust.py`): una lettura di framework, che il piano assegna solo dove `recognize` trova quel framework.
+
+La risoluzione degli import non è parte della lettura di un file: si calcola dal manifest e dalla configurazione (`import_resolution.resolved_imports`). Quando radici e alias cambiano si ricalcola, senza rileggere.
+
+**8.4 Il piano.** Una funzione sola, dall'inventario, dal modello del progetto, dalle tecnologie e dalle dichiarazioni degli adattatori. Non stabilisce fatti sul progetto: solo scelte.
+
+- **Un nodo** è un adattatore sulle sue unità o sui suoi file: lo step, l'adattatore con la versione, su che cosa gira, se chiede il container, di quali altri nodi ha bisogno. **Una lacuna** è ciò che nessun adattatore serve, con la causa.
+- **I bisogni fanno il grafo.** Un resolver ha bisogno del parser del suo linguaggio; un observer del resolver. La preparazione (toolchain e dipendenze nel container, «Preparazione») è un nodo, fatto una volta per analisi, di cui hanno bisogno gli strumenti di build di `scan`, i resolver e gli observer: non è uno step.
+- **Un nodo il cui bisogno è fallito non parte,** e dice quale. Oggi lo fanno due casi, ognuno a modo suo: un linguaggio che la lettura non ha letto lascia il suo analyzer `unavailable` (`engine_pass.run_pass`), e un linguaggio senza grafo statico non ha osservatore (`no-static-graph`).
+- **Ogni file dell'inventario è in un nodo di `parse` o ha un motivo di esclusione.** Nessun adattatore gira fuori dal piano.
+- **Si ricalcola quando un fatto cambia,** e rifà solo i nodi che leggono quel fatto: un nodo è fresco quando l'impronta di ciò che legge non è cambiata (8.8).
+- È il risultato dello step e un suo evento. Un file a parte entra quando l'interfaccia mostra il piano prima che l'analisi parta, non prima: sarebbe un doppione di ciò che il modello del progetto dichiara già.
+
+Gli step restano una lista ordinata; dentro uno step i nodi girano nell'ordine del piano, i resolver dal più leggero al più pesante in memoria come oggi. Nessun motore generico di grafi e nessun sistema di plugin.
+
+**8.5 Le due parti di `scan` e la prima analisi.** La prima parte gira sull'host, subito: l'albero, il linguaggio per estensione, i lettori dei file. La seconda gira nel container: gli strumenti di build, go-enry, `tsc` (5 s di mediana e 103 s al massimo sui 122 progetti, Scelte 1).
+
+Il proprietario, il 23 novembre 2026, fissa l'obiettivo e non la modalità («alla fine l'obiettivo quello è, al di là della modalità»): alla fine dell'analisi il grafo è quello di un `parse` che ha lavorato sui file, i linguaggi e i moduli che `scan` ha stabilito per intero, comunque ci si arrivi.
+
+**Scelta di chi scrive:** alla prima analisi `parse` parte dopo la prima parte, mentre la seconda gira; la mappa resta utilizzabile subito, come oggi, e la sezione 6 resta com'è. Quando la seconda parte corregge un fatto, si rifà solo ciò che lo legge:
+
+| La seconda parte corregge | Si rifà |
+| --- | --- |
+| Il linguaggio di un file, o la sua esclusione | La lettura di quel file |
+| Radici e alias degli import | La risoluzione degli import, senza rileggere |
+| I file di un modulo | Gli archi fra moduli, in `connect` |
+| Le unità di una tecnologia | I nodi di `resolve` e `observe` di quella tecnologia |
+
+Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto `scan`, e un test li confronta (8.10). L'altra modalità si ottiene cambiando solo ciò che i nodi di `parse` dichiarano di aspettare. Dopo la prima analisi le due coincidono: la struttura è nota e si aggiorna solo ciò che è cambiato. Senza container la seconda parte è una lacuna (`model_not_run`) e i ripieghi di 8.3 restano il dato, dichiarati.
+
+**8.6 Lo snapshot si divide.** Oggi `write_snapshot` è un passaggio solo sul perimetro (`_SnapshotPass`): per ogni file lo legge, ne calcola l'hash, riusa la voce di prima se vale ancora oppure lo legge a fondo, e scrive; lo store si pubblica intero, con una sostituzione. La sua impronta (`logical_digest`) lega ciò che viene dopo: pre-mappa, grafo dei moduli, tecnologie, schede, archi.
+
+1. **Due scritture sullo stesso store.** L'inventario (`scan`) scrive di ogni file percorso, dimensione, data, hash, linguaggio e motivo di esclusione. `parse` aggiunge simboli, import e riferimenti dei file che il piano gli dà. Ognuna pubblica intera, come oggi.
+2. **Due impronte.** Quella dell'inventario lega ciò che legge solo l'inventario: `scan`, `recognize`, `plan`. `logical_digest` continua a legare ciò che legge i simboli: `resolve`, `connect`, le schede. Oggi pre-mappa, moduli e tecnologie si legano a `logical_digest` (`premap/__init__.py`, `modules.py`, `technologies.py`): con `scan` per primo non potrebbero esistere prima di `parse`, e scadrebbero a ogni sua modifica.
+3. **Uno store con l'inventario e senza simboli lo dice.** Chi cerca un simbolo riceve «la lettura è in corso» o «non è partita», mai un risultato vuoto.
+4. **Il riuso resta dov'è utile.** L'inventario riusa per dimensione e data, come `compare_files`; `parse` riusa la voce di prima per hash e impronta del parser, come `_entry`. I file C e C++ che aspettano il contesto degli include (`c_family`) e i file Python che l'interprete di Daodan rifiuta (`newer`) restano di `parse`.
+5. **Le uscite non cambiano.** Sullo stesso albero, lo store dopo inventario e lettura ha lo stesso `logical_digest` del passaggio solo di oggi (8.10).
+6. **Da misurare prima di scegliere come.** Il contenuto di un sorgente si legge due volte, per l'hash e per la lettura, dove oggi una: il tempo sul corpus dice se l'inventario deve passare i byte a `parse` o se la seconda lettura non pesa.
+
+**8.7 Nomi.** Regola: uno step è un verbo che dice ciò che Daodan fa; l'adattatore che lo serve è il nome d'agente di quel verbo; **adattatore** è la parola per tutti; una parola per concetto.
+
+| Step oggi | Step | Adattatore | Cartella oggi → nuova |
+| --- | --- | --- | --- |
+| `scan`, più l'inventario di `snapshot.py write` | `scan` | scanner | `premap/` → `scanners/` |
+| `stack` | `recognize` | recognizer | `stack_analyser.py` |
+| manca | `plan` | nessuno | `pipeline/` |
+| la lettura di `snapshot.py write` | `parse` | parser | `languages/` → `parsers/` |
+| `analyze` | `resolve` | resolver | `indexers/` → `resolvers/` |
+| `dynamic` | `observe` | observer | `dynamic/` → `observers/` |
+| `union` | `connect` | nessuno | `pipeline/` |
+
+| Parola oggi | Problema | Proposta |
+| --- | --- | --- |
+| `engine` | Tre cose: il motore di container (`container.find_engine`), i modelli a cui l'app dà un compito (`engines.py`), il passaggio degli indicizzatori (`engine_pass.py`, `EngineSpec`, `engine-edges.sqlite`, `engine-report.json`) | `engine` resta solo al motore di container, che è la parola di Docker e Podman; il passaggio prende i nomi di `resolve`; i modelli diventano `reasoner` (aperto) |
+| analyzer, indexer, adapter | Tre parole per l'adattatore dello step 2; «analyzer» vale per ogni step | resolver. Sostituisce `analyzers/` della sezione 4 |
+| `resolver` (colonna dello store) | Nomina chiunque abbia prodotto un arco: un resolver, ma anche un observer e il resolver lessicale dello snapshot. Con il nome nuovo dello step 5 la parola avrebbe due sensi | La colonna diventa `producer` al prossimo cambio di schema; fino ad allora resta. Aperto (A1) |
+| `analyzer.started`, `.finished`, `.unavailable` | Li emettono anche gli osservatori | `adapter.started`, `.finished`, `.unavailable`, con il campo `adapter` |
+| source (in `premap/`) | Si confonde con il sorgente del progetto | scanner; il grado `scanner` di `RANKS` (go-enry, noir) diventa `detector` |
+| premap, pre-map | Due grafie; dice quando viene, non che cosa è | project model, già il nome di `benchmarks/project-model` e dei comandi di modello |
+| `ENTRY`, `NAME` | Due parole per il nome di un adattatore | `NAME` |
+| step, stage, phase, pass | Quattro livelli senza una regola scritta | `step` della pipeline; `stage` un adattatore sulle sue unità, il nodo del piano; `phase` dentro uno stage; `pass` da confrontare con `run`, non letto |
+| I passi del README (Static, Inference, Dynamic, Semantic) | Non sono i nomi degli step | Il README usa i nomi degli step; Semantic resta dopo la pipeline |
+
+**Costo e limiti.** I nomi degli step e degli eventi sono letti da `mcp_service.py`, dall'interfaccia costruita in `daodan/assets/app/` e dai test che nominano step ed eventi; i nomi sul disco (`premap.json`, `engine-edges.sqlite`, `engine-report.json`) da CLI, MCP, viewer e benchmark (sezione 1, «Scansione», punto 5). Il cambio entra una famiglia per volta, con le uscite uguali (sezione 5); i nomi sul disco cambiano solo con un cambio di schema, da decidere. Quanti punti del codice tocca non è contato.
+
+**8.8 Dichiarazione comune e controlli dell'orchestratore.**
+
+1. **Una dichiarazione per ogni adattatore:** `NAME` e `VERSION`, più ciò che serve alla sua famiglia (`LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, `RANK`). Oggi `premap/` dichiara `NAME`, `VERSION`, `RANK` in una lista scritta (`SOURCES`); `indexers/` `ENTRY`, `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`; `dynamic/` `ENTRY`, `VERSION`, `LANGUAGES`; `languages/` `language`, scelto dall'estensione. Le famiglie si scoprono dalla dichiarazione, come fa `indexers.analyzers()`. L'ordine di `SOURCES` porta significato (una fonte legge ciò che le precedenti dichiarano; fra pari vince la prima): resta scritto, o diventa un bisogno dichiarato come quelli del piano. Aperto (A1).
+2. **La freschezza si controlla in un punto solo,** `pipeline._run`, sull'impronta degli ingressi dichiarati (sezione 1). Oggi `_run` non la controlla e non emette mai `step.skipped`: ogni step chiama il suo `ensure`.
+3. **Un test controlla gli ingressi:** ogni ingresso di uno step è l'uscita di uno step prima, o un ingresso della pipeline. Oggi `INPUTS` e `OUTPUTS` finiscono solo negli eventi.
+
+**8.9 Solidità del processo.** *Revisione del 23 novembre 2026 su `pipeline/` e su `engine_pass.run_pass`: applicata.* Prova: `tests/test_codebase_map_pipeline.py`.
+
+Corretto:
+
+1. **Un giornale che non si può scrivere fermava l'analisi** (disco pieno, permessi): l'errore usciva da `Bus.emit`. Ora i listener lo sanno una volta, con causa e rimedio, e gli eventi continuano ad arrivare loro.
+2. **Una riga rotta rendeva il giornale illeggibile per sempre:** `events.read` falliva su di essa a ogni lettura, e con lui `follow` e `runtime`. Ora la riga conta nel cursore e si salta. Ogni evento è una scrittura sola, così le righe di due processi che scrivono insieme non si mescolano.
+3. **Un programma di stage che non parte chiudeva l'intera analisi** (`OSError` in `engine_pass._launch`), e così un rapporto di stage che non è un oggetto. Ora fallisce quello stage e gli altri girano.
+4. **Uno step tollerato che fallisce finiva con uno `step.finished` uguale a quello di un successo.** Ora porta `failed` con la causa.
+5. **La lacuna «nessun arco osservato» perdeva la causa** quando lo step dinamico falliva o non girava in quell'analisi. Ora la dice.
+6. **Un `start` o `stop` che non nomina uno step** dava un errore di lista; ora è rifiutato prima di ogni evento, con i nomi validi.
+7. **Un'analisi interrotta lasciava nel giornale uno step iniziato e mai finito.** Ora la fine la dice chi sa che l'analisi è finita: lo step stesso su un'interruzione (Ctrl-C, l'uscita dell'interprete); `stop_pass` e `reset_pass` dopo aver chiuso il passaggio; `ensure_edges` prima di avviarne uno nuovo, per quello morto senza una parola (`events.close_open`: uno `step.failed` per step, un `analyzer.finished` di errore per analyzer, con la causa). Limite: chi chiude non distingue uno step di un'altra analisi che gira nello stesso momento sullo stesso snapshot; nessuno dei tre chiamanti di `ensure_edges` la chiama da dentro uno step.
+8. **La durata di ogni stage non era registrata.** Ora il rapporto del passaggio la tiene (`engines.<nome>.seconds`): è la misura che serve al limite di tempo qui sotto.
+
+Aperto:
+
+- **Uno stage non ha un limite di tempo suo** (`_launch`): i comandi nel container hanno i loro, ma un indicizzatore che non risponde ferma l'analisi finché qualcuno non la interrompe (`stop_pass`). Serve un limite dichiarato da ogni analyzer accanto a `MIN_FREE`, preso dalle durate che il rapporto ora registra (punto 8) sul corpus; un numero scelto senza misura fermerebbe indicizzazioni lunghe ma sane. Da leggere prima: che cosa resta del container di uno stage chiuso da fuori.
+- **Il giornale cresce a ogni analisi dello stesso snapshot** e `events.read` lo scorre dall'inizio a ogni lettura: il cursore è un numero di righe, parte del contratto di MCP. Un cursore in byte lo toglierebbe, cambiando quel contratto.
+
+**8.10 Prove.** Ogni prova resta nel repository; nessuna è scritta finora.
+
+1. **Lo snapshot diviso dà lo stesso store:** sulle fixture del grafo, `logical_digest` dopo inventario e lettura è quello del passaggio solo (8.6, punto 5).
+2. **Le due modalità danno lo stesso grafo:** su una fixture con un file che go-enry dichiara generato e un alias di `tsconfig`, il grafo finale di «`parse` dopo la prima parte» è quello di «`parse` dopo tutto `scan`» (8.5).
+3. **Il piano copre tutto:** ogni file dell'inventario è in un nodo di `parse` o ha un motivo di esclusione; nessun adattatore parte senza il suo nodo (come il test che oggi impedisce a un indicizzatore di cercare file da solo).
+4. **Un bisogno fallito ferma solo chi ne ha bisogno:** con un parser che manca, il resolver di quel linguaggio non parte e dice perché; gli altri girano.
+5. **Un ripiego è dichiarato:** senza container, il linguaggio di un `.h` e gli alias di un `tsconfig` portano scritto che vengono dal ripiego.
+6. **Gli ingressi degli step** (8.8, punto 3).
+
+Misure, su Modal con gli strumenti veri, nel README di [`benchmarks/project-model`](../../benchmarks/project-model/README.md): il tempo della doppia lettura (8.6, punto 6); il tempo di una prima analisi nelle due modalità; quanti file la lettura di oggi legge e `scan` poi esclude.
+
+**8.11 Ordine del lavoro.** Ogni passo lascia i test verdi e le uscite uguali (sezione 5).
+
+1. `write_snapshot` in due scritture, inventario e lettura, chiamate una dopo l'altra come oggi: prova 1.
+2. La lettura prende file e linguaggio dall'inventario invece di percorrere l'albero.
+3. L'inventario entra nello step `scan` e la lettura diventa lo step `parse`; le due impronte (8.6, punto 2).
+4. La funzione del piano; `parse`, `resolve` e `observe` la eseguono: prove 3 e 4.
+5. `parse` prende da `scan` linguaggio, esclusioni e configurazione degli import, con i ripieghi dichiarati; archi fra moduli e ingressi dei flussi passano a `connect`: prove 2 e 5.
+6. I nomi, una famiglia per volta (8.7), e la dichiarazione comune (8.8).
+
+Il recognizer entra con il passaggio al fork, nella sua spec.
+
+**8.12 Non letto.** Se le fonti della pre-mappa che guardano un framework (`noir`, `nextjs`) siano lavoro che dipende da `recognize`, e vada quindi nel piano. Che cosa resta del container di uno stage chiuso da fuori (8.9). `pass` contro `run`. Quanti punti del codice tocca la rinomina.
+
 ## Scelte
 
 1. **La scansione resta intera.** Lo step 1 comprende i comandi di modello della pre-mappa (Renovate, npm, Go, Cargo, uv, tsc), nel container. Misurato sui 122 progetti il 15 novembre 2026: la pre-mappa dura 5 s di mediana e 103 s al massimo, Renovate 4,8 s di mediana; un indicizzatore dura minuti. Spostarli negli analyzer dividerebbe la struttura del progetto fra due step e farebbe cambiare la pre-mappa a chi la legge. Lo step 1 emette avanzamento per fonte: chi guarda vede i lettori finire subito e i comandi dopo.
@@ -164,4 +314,5 @@ Dalla seconda revisione esterna del 20 novembre 2026 (sezione 7):
 
 - **U1. Tutta l'analisi nel container?** La revisione propone di lasciare all'host solo avvio, avanzamento e lettura dei risultati. Oggi snapshot, stack e unione girano sull'host, e scip-python sull'host su Linux e macOS: leggono il progetto e non lo eseguono, che è ciò che la regola di `AGENTS.md` chiede. A favore: un ambiente solo e artefatti condivisi senza copie. Contro: la sezione 6 (sotto il blocco del progetto nulla aspetta il container, e la scansione veloce dura pochi millisecondi a ogni modifica) e l'uso senza motore di container, dove oggi Daodan dà comunque snapshot e grafo statico con le lacune. Raccomandazione: no; condividere gli artefatti attraverso lo store e tenere sull'host ciò che solo legge. **Deciso dal proprietario il 20 novembre 2026: no**, come la raccomandazione.
 - **U2. Le regole della sezione 7.3** (un indice letto da tutti, un avvio per stato dei dati, l'esplorazione sullo scoperto): entrano dopo la misura del task 2b, che dice quanto costa oggi ogni doppione.
+- **A1. L'armonizzazione e i nomi della sezione 8.** **Deciso dal proprietario il 22 novembre 2026: sì**, anche `reasoner`. Il 23 novembre fissa l'ordine degli step (8.2) e l'obiettivo della prima analisi (8.5). Restano aperte le scelte che non sono un sì o un no: l'ordine di `SOURCES` (scritto, o bisogno dichiarato: 8.8), `pass` contro `run`, quando cambiano i nomi sul disco, il nome `producer` per la colonna `resolver` dello store, e in 8.9 il limite di tempo di uno stage e la dimensione del giornale.
 - Le decisioni sulle superfici (osservare le interfacce desktop Python, il ponte Tauri) sono in [interfacce del progetto](2026-11-19-interfacce-del-progetto.md), «Da decidere».
