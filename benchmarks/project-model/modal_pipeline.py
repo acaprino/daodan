@@ -62,7 +62,7 @@ REMOTE_FOLDER = "/folder"
 SCRATCH = "project-model/pipeline-scratch"  # on the volume: each run's copy, removed when the run ends
 FAMILIES = ("js", "py", "jvm", "sys", "mix")
 PACKED = "/tmp/daodan-outputs.tar"
-SANDBOX_CPU = 2.0  # cores a build or an indexer is given: the default share would throttle Gradle and CMake
+SANDBOX_CPU = 8.0  # cores a build or an indexer is given: the default share would throttle Gradle and CMake; the cost of Modal is no limit here
 DOCKER = ("https://download.docker.com/linux/static/stable/x86_64/docker-29.10.0.tgz",
           "7c1ebadc65c716cdc6d35fc78759ed0e4317debf43c21dd12f066f2006999def")  # the services' engine in a sandbox
 ENGINE = "/daodan/engine"  # where its binaries lie in a sandbox
@@ -482,7 +482,7 @@ KEPT = ("manifest.sqlite", "engine-edges.sqlite", "engine-report.json", "premap.
         "modules.json", "technologies.json")
 
 
-@app.function(cpu=(0.5, 8.0), memory=(2048, 16384), timeout=7200, volumes={"/results": volume})
+@app.function(cpu=(2.0, 16.0), memory=(4096, 32768), timeout=7200, volumes={"/results": volume})
 def run_folder(stop: str | None = None) -> dict:
     """The pipeline on the folder of `DAODAN_FOLDER`, through the step `stop` (default: all): the steps' results,
     the events, and the run's files (`KEPT`) as a tar.gz, for whoever reads the graph on the PC."""
@@ -513,7 +513,7 @@ def run_folder(stop: str | None = None) -> dict:
 
 
 # A request and a limit: the function mostly waits for its sandboxes, and is billed for what it uses above the request.
-@app.function(cpu=(0.5, 8.0), memory=(2048, 16384), timeout=7200, volumes={"/results": volume})
+@app.function(cpu=(2.0, 16.0), memory=(4096, 32768), timeout=7200, volumes={"/results": volume})
 def run_cases(names: list) -> dict:
     sys.path[:0] = [REMOTE_SCRIPTS, REMOTE_PM]
     import pipeline

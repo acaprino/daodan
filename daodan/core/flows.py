@@ -1177,7 +1177,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             elif method:
                 same.setdefault("method", method)
         declared = kept
-        candidates = candidates + declared + _observed_entries(manifest, store, facts, candidates + declared, gaps)
+        candidates = candidates + declared + _observed_entries(manifest, store, facts, gaps)
         _name_written_handlers(facts, view, [r for r in written if r["link"] == "offre" and r.get("handler")])
         callbacks = {item["symbol"]: item["owner"] for item in candidates
                      if item.get("handler_source") == "inline" and item["symbol"] in facts.declarations
@@ -1536,14 +1536,16 @@ def _handler_at(facts, at: dict) -> dict | None:
     return same[0] if len(same) == 1 else None
 
 
-def _observed_entries(manifest: Path, store, facts, static: list[dict], gaps: list[dict]) -> list[dict]:
+def _observed_entries(manifest: Path, store, facts, gaps: list[dict]) -> list[dict]:
     """The controls the browser pressed (`observed_entries`) as candidates at their handler (`_handler_at`). An inline arrow
     is its own node, owned by the function that holds it (as the static reader's `inline` handlers are). A handler the
     browser isolated that no function of the snapshot stands for is a gap at the place it paused; one handler is one entry,
-    at the first control that reached it, and `link_facts` leaves it out where a static reader starts there."""
+    at the first control that reached it, and `link_facts` leaves it out where a static reader starts there. A static
+    candidate of the same name does not leave it out: it may start from another function (a member of a type that the
+    handler implements), and the two are told apart by the function."""
     import observed_entries
     found: dict[str, dict] = {}
-    for row in observed_entries.rows(manifest, static, set(store.iter_paths())):
+    for row in observed_entries.rows(manifest, [], set(store.iter_paths())):  # no static row: the function is the identity, not the name
         at = row.get("at")
         if not at:
             continue
