@@ -5,17 +5,21 @@ Each step has the same contract: `NAME`, `INPUTS` (what it reads, written by the
 stop, else the words that say how it goes on) and `run(context)`; it says what it does on the context's event bus
 (`pipeline.events`). The snapshot is the pipeline's input; the flows read the complete graph after it.
 
-1. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
+1. `parse`: the files the inventory lists, read into the snapshot (`file_inventory.write`, `snapshot.write_reading`);
+   a caller that wrote the snapshot with `write_snapshot` finds it fresh. The order parse -> scan is today's (scan's
+   module graph and the pre-map's framework sources still read the symbols) and flips when they stop reading them
+   (spec 8.11, step 5).
+2. `scan`: the module graph and the pre-map, the project's modules and technologies; the pre-map's model
    commands run in Daodan's container (`premap.container_runner`).
-2. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
+3. `stack`: the technologies of each build unit, frameworks, libraries, tools and services, from the registry's
    signs (`technologies.ensure`).
-3. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
-4. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
+4. `analyze`: one analyzer per technology of the pre-map, each with its adapter's tool (`resolve_edges.run_pass`).
+5. `dynamic`: one observer per technology with a static graph (`dynamic.run`): the project's tests run in
    Daodan's container under a recorder, and the calls they execute enter the store as observed edges. With no
    container engine, no observer for a language or no test command the project declares, it says the gap and
    the pipeline goes on. The same step starts the app the project declares and explores it in a browser: the controls
    it pressed are entries of the links (`dynamic/app.py`). `DAODAN_DYNAMIC=off` skips it.
-5. `union`: the graphs of the technologies as the complete graph. Until the connection points exist, it is the
+6. `union`: the graphs of the technologies as the complete graph. Until the connection points exist, it is the
    store of each technology's graph: it says what a run observed (the sites, the holes closed, the sampled ones
    apart) and what stayed
    unobserved (a language with no observed edge, the tests that did not run, the files no test executed, an
@@ -44,6 +48,21 @@ class Context:
     report_path: Path | None = None  # the analysis's report, beside the snapshot by default
     fast_scan: bool = False  # reader-only scan without container commands, for interactive/hook callers
     results: dict = field(default_factory=dict)  # each step's result by its name, for the steps after it
+
+
+class Parse:
+    NAME, INPUTS, OUTPUTS, WITHOUT = "parse", ("inventory",), ("snapshot",), None
+
+    @staticmethod
+    def run(context: Context) -> dict:
+        import snapshot
+        from snapshot_store import open_snapshot
+        with open_snapshot(context.manifest) as store:  # a header read only: this runs under the project lock
+            pending = store.metadata.get("reading") == "not-started"
+        if not pending:
+            return {"action": "fresh"}
+        written = snapshot.write_reading(context.manifest, context.manifest)
+        return {"action": "read", "files": written["file_count"]}
 
 
 class Scan:
@@ -229,7 +248,7 @@ class Union:
                          "examples": conflicts["examples"], "detail": detail}, language)
 
 
-STEPS = (Scan, Stack, Analyze, Dynamic, Union)
+STEPS = (Parse, Scan, Stack, Analyze, Dynamic, Union)
 
 
 class StepFailed(Exception):

@@ -157,7 +157,8 @@ def test_the_steps_run_in_order_to_the_complete_graph_and_say_what_they_do(tmp_p
             mock.patch.object(engine_pass, "free_memory", return_value=64 * 2**30):
         result = pipeline.run(manifest, listeners=[seen.append])
     steps = [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")]
-    assert steps == [("step.started", "scan"), ("step.finished", "scan"), ("step.started", "stack"),
+    assert steps == [("step.started", "parse"), ("step.finished", "parse"),
+                     ("step.started", "scan"), ("step.finished", "scan"), ("step.started", "stack"),
                      ("step.finished", "stack"), ("step.started", "analyze"),
                      ("step.finished", "analyze"), ("step.started", "dynamic"), ("step.finished", "dynamic"),
                      ("step.started", "union"), ("step.finished", "union")]
@@ -186,7 +187,8 @@ def test_a_run_can_start_and_stop_at_a_step_and_a_failed_step_stops_the_rest(tmp
     snapshot.write_snapshot(tmp_path / "p", manifest)
     seen = []
     result = pipeline.run(manifest, listeners=[seen.append], stop="scan")
-    assert list(result) == ["scan"] and [e["step"] for e in seen if e["kind"].startswith("step.")] == ["scan", "scan"]
+    assert list(result) == ["parse", "scan"]
+    assert [e["step"] for e in seen if e["kind"].startswith("step.")] == ["parse", "parse", "scan", "scan"]
     with mock.patch.object(pipeline.Analyze, "run", side_effect=pipeline.StepFailed("no store", "write it")):
         result = pipeline.run(manifest, listeners=[seen.append], start="analyze")
     assert result == {"analyze": {"failed": "no store", "remedy": "write it"}}
@@ -318,7 +320,7 @@ def test_the_pass_records_how_long_each_stage_took(tmp_path):
 
 def test_a_start_or_stop_that_names_no_step_is_refused_before_any_event(tmp_path):
     seen = []
-    with pytest.raises(ValueError, match="no step 'analyse': the steps are scan, stack, analyze, dynamic, union"):
+    with pytest.raises(ValueError, match="no step 'analyse': the steps are parse, scan, stack, analyze, dynamic, union"):
         pipeline.run(tmp_path / "manifest.sqlite", listeners=[seen.append], start="analyse")
     assert seen == [] and not (tmp_path / events.JOURNAL).exists()
 
@@ -362,12 +364,47 @@ def test_an_error_a_step_the_others_need_does_not_foresee_is_said_before_it_leav
 
 
 def test_the_pipeline_declares_its_steps_in_one_place():
-    assert [step.NAME for step in pipeline.STEPS] == ["scan", "stack", "analyze", "dynamic", "union"]
+    assert [step.NAME for step in pipeline.STEPS] == ["parse", "scan", "stack", "analyze", "dynamic", "union"]
     for step in pipeline.STEPS:
         assert step.INPUTS and step.OUTPUTS and callable(step.run)
     # what the pipeline does without a step that fails; None: the steps after it need it, and it stops them
     assert {step.NAME: bool(step.WITHOUT) for step in pipeline.STEPS} == {
-        "scan": False, "stack": True, "analyze": False, "dynamic": True, "union": False}
+        "parse": False, "scan": False, "stack": True, "analyze": False, "dynamic": True, "union": False}
+    # the reading comes from the inventory and gives the snapshot every step after it reads (spec 8.11, step 3)
+    assert (pipeline.Parse.INPUTS, pipeline.Parse.OUTPUTS) == (("inventory",), ("snapshot",))
+
+
+def test_the_parse_step_reads_a_store_that_holds_only_its_inventory_and_leaves_a_read_one_as_it_is(tmp_path):
+    """A store with the inventory and no reading says so in its header (spec 8.6, point 3); the parse step reads
+    it into the snapshot the single pass gives, and finds a store already read fresh without writing it again."""
+    import file_inventory
+    import hashlib
+    import json
+    from snapshot_store import logical_digest, open_snapshot
+    project = tmp_path / "p"
+    project.mkdir()
+    (project / "a.py").write_text("def answer():\n    return 42\n", encoding="utf-8")
+    (project / "b.py").write_text("from a import answer\n\nVALUE = answer()\n", encoding="utf-8")
+    manifest = tmp_path / "out" / "manifest.sqlite"
+    file_inventory.write(project, manifest)
+    with open_snapshot(manifest) as store:
+        assert (store.metadata["reading"], store.file_count) == ("not-started", 0)
+    seen = []
+    result = pipeline.run(manifest, listeners=[seen.append], stop="parse")
+    assert list(result) == ["parse"] and result["parse"]["action"] == "read"
+    assert [(e["kind"], e["step"]) for e in seen if e["kind"].startswith("step.")] == [
+        ("step.started", "parse"), ("step.finished", "parse")]
+    single = snapshot.build_manifest(project)
+    with open_snapshot(manifest) as store:
+        assert "reading" not in store.metadata and store.file_count == 2
+        keys = sorted((set(store.metadata) | {"files"}) - {"created_at"})
+        expected = hashlib.sha256(json.dumps({key: single.get(key) for key in keys}, sort_keys=True,
+                                             separators=(",", ":")).encode("utf-8")).hexdigest()
+        assert logical_digest(store, keys=keys) == expected
+    written = manifest.read_bytes()
+    with mock.patch.object(snapshot, "write_reading", side_effect=AssertionError("a read store read again")):
+        assert pipeline.run(manifest, stop="parse")["parse"]["action"] == "fresh"
+    assert manifest.read_bytes() == written
 
 
 def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarations():

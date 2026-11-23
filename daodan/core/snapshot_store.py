@@ -212,6 +212,17 @@ class SnapshotStore:
         for (path,) in self.connection.execute("SELECT path FROM files ORDER BY path"):
             yield path, self.get_file(path, semantic=semantic)
 
+    def iter_inventory(self) -> Iterator[tuple[str, dict]]:
+        """The inventory rows in write order; none for a JSON snapshot or a store written before it."""
+        self._open()
+        if self._json:
+            return
+        try:
+            for path, payload in self.connection.execute("SELECT path,payload FROM inventory ORDER BY ordinal"):
+                yield path, _unpack(payload)
+        except sqlite3.OperationalError:
+            return
+
     def get_file_header(self, path: str) -> dict | None:
         self._open()
         if self._json:
@@ -332,6 +343,7 @@ class SnapshotWriter:
         _plain(self.path)
         self.closed = False
         self._json_started = False
+        self._inventoried = 0
         self._metadata = {}
         self.connection = None
         self._handle = None
@@ -357,6 +369,7 @@ class SnapshotWriter:
                     PRIMARY KEY(file,kind,ordinal));
                 CREATE TABLE index_records(kind TEXT NOT NULL,ordinal INTEGER NOT NULL,payload BLOB NOT NULL,
                     PRIMARY KEY(kind,ordinal));
+                CREATE TABLE inventory(path TEXT PRIMARY KEY,ordinal INTEGER NOT NULL,payload BLOB NOT NULL);
                 CREATE TABLE file_json_cache(
                     path TEXT PRIMARY KEY,
                     row_sig BLOB NOT NULL,
@@ -455,6 +468,14 @@ class SnapshotWriter:
             "INSERT OR REPLACE INTO file_json_cache VALUES(?,?,?,?,?)",
             (path, row_sig, is_ascii, _pack_bytes(utf8_bytes), ascii_blob),
         )
+
+    def put_inventory(self, path: str, row: dict) -> None:
+        """One inventory row, ordered by the call that wrote it."""
+        self._open()
+        if self.format != "sqlite":
+            raise ValueError("the inventory needs a SQLite snapshot")
+        self.connection.execute("INSERT INTO inventory VALUES(?,?,?)", (path, self._inventoried, _pack(row)))
+        self._inventoried += 1
 
     def copy_file(self, previous: SnapshotStore, path: str) -> None:
         self.put_file(path, previous.get_file(path))
