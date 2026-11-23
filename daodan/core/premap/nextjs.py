@@ -11,9 +11,10 @@ writes no validator.ts is a gap, and the other folders are still read.
 """
 from __future__ import annotations
 
-import json
 import posixpath
 from pathlib import PurePosixPath
+
+from premap import frameworks
 
 NAME, VERSION, RANK = "next", "daodan/premap/v2", "scanner"
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a `.js` import names: `.ts`, `.tsx`, `.js`, `.jsx`
@@ -21,26 +22,9 @@ TYPES = ".next/types"
 VALIDATOR = f"{TYPES}/validator.ts"
 
 
-def _folders(context) -> list[str]:
-    """The folders whose `package.json` declares `next`; one that is not valid JSON is skipped: `npm-files` reports it."""
-    folders = []
-    for rel in context.inventory.files:
-        if PurePosixPath(rel).name != "package.json":
-            continue
-        text = context.inventory.text(rel)
-        try:
-            manifest = json.loads(text)
-        except ValueError:
-            continue
-        if isinstance(manifest, dict) and any(isinstance(manifest.get(section), dict) and "next" in manifest[section]
-                                              for section in ("dependencies", "devDependencies")):
-            folders.append(PurePosixPath(rel).parent.as_posix())
-    return folders
-
-
 def commands(context):
     return [{"tool": NAME, "argv": argv, "cwd": folder, "env": env, "network": "none"}
-            for folder in _folders(context)
+            for folder in frameworks.folders(context, ("next",))
             for argv, env in ((["npx", "--no-install", "next", "typegen"], {"NEXT_TELEMETRY_DISABLED": "1", "npm_config_offline": "true"}),
                               (["cat", VALIDATOR], {}))] or None
 

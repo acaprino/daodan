@@ -36,7 +36,7 @@ import json
 import posixpath
 from pathlib import PurePosixPath
 
-from premap import react_router
+from premap import frameworks
 
 NAME, VERSION, RANK = "sveltekit", "daodan/premap/v1", "scanner"
 PACKAGE = "@sveltejs/kit"
@@ -59,25 +59,8 @@ def sync_seconds(folders: int) -> int:
     return max(10, SYNC_TOTAL // folders)
 
 
-def _folders(context) -> list[str]:
-    """The folders whose `package.json` declares `@sveltejs/kit`; one that is not valid JSON is skipped: `npm-files`
-    reports it."""
-    folders = []
-    for rel in context.inventory.files:
-        if PurePosixPath(rel).name != "package.json":
-            continue
-        try:
-            manifest = json.loads(context.inventory.text(rel))
-        except ValueError:
-            continue
-        if isinstance(manifest, dict) and any(isinstance(manifest.get(section), dict) and PACKAGE in manifest[section]
-                                              for section in ("dependencies", "devDependencies")):
-            folders.append(PurePosixPath(rel).parent.as_posix())
-    return folders
-
-
 def commands(context):
-    folders = _folders(context)
+    folders = frameworks.folders(context, ("@sveltejs/kit",))
     if not folders:
         return None
     sync = ["timeout", "--kill-after=10", str(sync_seconds(len(folders))), "npx", "--no-install", "svelte-kit", "sync"]
@@ -92,7 +75,7 @@ def _failed(command: dict, result: dict) -> str:
         return f"svelte-kit sync did not end in {seconds} seconds"
     if result["returncode"] == 137:  # `timeout` had to kill it, or the memory of the run did: the signal does not say which
         return f"svelte-kit sync was killed (exit 137): it did not end in {seconds} seconds, or it ran out of memory ({MEMORY_GB} GB)"
-    return f"svelte-kit sync exited with {result['returncode']}: {react_router._excerpt(result)}"
+    return f"svelte-kit sync exited with {result['returncode']}: {frameworks.excerpt(result)}"
 
 
 def _files(listed) -> dict[str, str]:
@@ -121,7 +104,7 @@ def read(context, commands, results):
             gaps.append({"kind": "model_failed", "path": folder, "detail": _failed(command, sync)})
             continue
         if printed["returncode"] != 0:
-            said = react_router._excerpt({"stdout": "", "stderr": sync["stderr"]})
+            said = frameworks.excerpt({"stdout": "", "stderr": sync["stderr"]})
             gaps.append({"kind": "model_failed", "path": folder,
                          "detail": f"svelte-kit sync exited with 0 and wrote no {META}: its outDir is not .svelte-kit, or this SvelteKit "
                                    f"writes none (the four measured, 2.0.0 to 2.70.4, do){f'; it said: {said}' if said else ''}"})
@@ -130,7 +113,7 @@ def read(context, commands, results):
             owner = _files(json.loads(printed["stdout"]))
         except ValueError as error:
             gaps.append({"kind": "model_failed", "path": folder,
-                         "detail": f"{META} is no JSON of the known layout ({error}): {react_router._excerpt(printed)}"})
+                         "detail": f"{META} is no JSON of the known layout ({error}): {frameworks.excerpt(printed)}"})
             continue
         for file, route in sorted(owner.items(), key=lambda item: (item[1], item[0])):
             path = posixpath.normpath(posixpath.join(folder, file))
@@ -162,7 +145,7 @@ def read(context, commands, results):
                 # are anonymous functions), `load = (async () => ...) satisfies PageServerLoad` (a documented form: the arrow is under the
                 # `satisfies`), `GET = make('get')` and a re-export are rows with the snapshot's own cause; when one is met, bind them
                 # from the type-checker's answer for the member or the wrapped function, which no tool of SvelteKit gives
-                found, unread = react_router._starts(db, resolver, file, names)
+                found, unread = frameworks.starts(db, resolver, file, names)
                 rows += [{**base, "site": f"{file}:{line}", "symbol": f"{file}::{qualified}", "handler_source": NAME, "handler": name}
                          for name, qualified, line in found]
                 if not found or unread:

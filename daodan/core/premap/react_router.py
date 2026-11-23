@@ -24,7 +24,8 @@ from __future__ import annotations
 
 import json
 import posixpath
-from pathlib import PurePosixPath
+
+from premap import frameworks
 
 NAME, VERSION, RANK = "react-router", "daodan/premap/v3", "scanner"  # v3: the data functions of the root and of a layout with no path; v2: an absolute child, the root under `app/`, `timeout`
 CLI = {"@react-router/dev": "react-router", "@remix-run/dev": "remix"}  # the package that installs the command -> the command
@@ -43,41 +44,18 @@ def seconds(folders: int) -> int:
     return min(EACH, max(10, TOTAL // folders))
 
 
-def _folders(context) -> list[tuple[str, str]]:
+def commands(context):
     """`(folder, command)` for each folder whose `package.json` declares a package of `CLI`; one that is not valid JSON is
     skipped: `npm-files` reports it."""
     # shortcut: the command runs in each folder whose package.json declares the dev package, and in a workspace that is the root, where
     # the dev package may be hoisted and the app is a folder below (the run then fails with the tool's own "Route config file not
     # found" and is a gap), when a monorepo declares @react-router/dev in its root: take the folders that hold an app/routes.ts
     found = []
-    for rel in context.inventory.files:
-        if PurePosixPath(rel).name != "package.json":
-            continue
-        try:
-            manifest = json.loads(context.inventory.text(rel))
-        except ValueError:
-            continue
-        if not isinstance(manifest, dict):
-            continue
-        for package, command in CLI.items():
-            if any(isinstance(manifest.get(section), dict) and package in manifest[section]
-                   for section in ("dependencies", "devDependencies")):
-                found.append((PurePosixPath(rel).parent.as_posix(), command))
-    return found
-
-
-def commands(context):
-    found = _folders(context)
+    for folder in frameworks.folders(context, tuple(CLI)):  # in the inventory's order, then the CLI's, as the manifest was read
+        found += [(folder, command) for package, command in CLI.items() if folder in frameworks.folders(context, (package,))]
     limit = ["timeout", "--kill-after=10", str(seconds(len(found) or 1))]
     return [{"tool": NAME, "argv": [*limit, "npx", "--no-install", command, "routes", "--json"], "cwd": folder, "env": ENV,
              "network": "none"} for folder, command in found] or None
-
-
-def _excerpt(result: dict) -> str:
-    """What the tool said: both ends when it is long, the cause is first in React Router's and the stack after it, and Remix
-    writes its warnings first."""
-    text = (result["stderr"] or result["stdout"]).strip()
-    return text if len(text) <= 600 else f"{text[:300]} [...] {text[-300:]}"
 
 
 def _routes(tree, parents=(), top=True) -> list[dict]:
@@ -106,23 +84,6 @@ def _routes(tree, parents=(), top=True) -> list[dict]:
     return found
 
 
-def _starts(db, resolver, file: str, names: list[str]) -> tuple[list[tuple[str, str, int]], list[str]]:
-    """The exports of a file that name a function of the snapshot, `(export, qualified name, line)`, and why the others do
-    not: an export that the file does not make (`export-missing`) is no reason (a route module has the exports it needs), one the
-    file makes in several records (`export-ambiguous`: an overload, a value and a type of one name) or the snapshot's own records
-    cannot follow (a re-export, a name that is no function) is. Nothing here picks one of several records: it is a gap."""
-    from snapshot_store import _unpack
-    found, unread = [], []
-    for name in names:
-        identity, reason = resolver.exported_target(file, name)
-        if identity:
-            declared = db.execute("SELECT name,l0,payload FROM sem_declarations WHERE id=?", (identity,)).fetchone()
-            found.append((name, _unpack(declared[2]).get("qualified_name") or declared[0], declared[1]))
-        elif reason != "export-missing":
-            unread.append(f"{name}: {reason}")
-    return found, unread
-
-
 def read(context, commands, results):
     import entries
     import flows
@@ -136,14 +97,14 @@ def read(context, commands, results):
                                                                            f"its config waits for something, or does not stop"})
             continue
         if result["returncode"] != 0:
-            gaps.append({"kind": "model_failed", "path": folder, "detail": f"{tool} exited with {result['returncode']}: {_excerpt(result)}"})
+            gaps.append({"kind": "model_failed", "path": folder, "detail": f"{tool} exited with {result['returncode']}: {frameworks.excerpt(result)}"})
             continue
         try:
             # shortcut: the standard output is read as one JSON text, so a line the project's config prints to it makes the whole folder a gap
             # (model_failed, with the output), when a config logs to the standard output: read the last JSON document of it
             tree = _routes(json.loads(result["stdout"]))
         except ValueError as error:
-            gaps.append({"kind": "model_failed", "path": folder, "detail": f"{tool} printed no JSON of the known layout ({error}): {_excerpt(result)}"})
+            gaps.append({"kind": "model_failed", "path": folder, "detail": f"{tool} printed no JSON of the known layout ({error}): {frameworks.excerpt(result)}"})
             continue
         if not tree:
             gaps.append({"kind": "model_partial", "path": folder, "detail": f"{tool} printed no route"})
@@ -188,7 +149,7 @@ def read(context, commands, results):
                     shape = "root-data" if route["root"] else "layout-data"
                     base = {**base, "shape": shape, "kind": table[shape]["kind"]}
                     module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
-                found, unread = _starts(db, resolver, file, table[shape]["exports"])
+                found, unread = frameworks.starts(db, resolver, file, table[shape]["exports"])
                 rows += [{**base, "site": f"{file}:{line}", "symbol": f"{file}::{qualified}", "handler_source": NAME, "handler": name}
                          for name, qualified, line in found]
                 # a route that exports nothing it starts is a gap; a layout with no data function is normal

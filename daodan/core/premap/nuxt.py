@@ -31,7 +31,8 @@ from __future__ import annotations
 
 import json
 import posixpath
-from pathlib import PurePosixPath
+
+from premap import frameworks
 
 NAME, VERSION, RANK = "nuxt", "daodan/premap/v1", "scanner"
 SCRIPTS = ("typescript", "javascript")  # the snapshot's languages of the files a handler import names, written with no extension
@@ -56,27 +57,11 @@ def pages_seconds(folders: int) -> int:
     return max(10, PAGES_TOTAL // folders)
 
 
-def _folders(context) -> list[str]:
-    """The folders whose `package.json` declares `nuxt`; one that is not valid JSON is skipped: `npm-files` reports it."""
-    folders = []
-    for rel in context.inventory.files:
-        if PurePosixPath(rel).name != "package.json":
-            continue
-        try:
-            manifest = json.loads(context.inventory.text(rel))
-        except ValueError:
-            continue
-        if isinstance(manifest, dict) and any(isinstance(manifest.get(section), dict) and "nuxt" in manifest[section]
-                                              for section in ("dependencies", "devDependencies")):
-            folders.append(PurePosixPath(rel).parent.as_posix())
-    return folders
-
-
 def commands(context):
     """For each folder `nuxt prepare` and the print of the file it writes (the server routes); then, for each, one of Daodan's
     script (`nuxt_pages.mjs`, `daodan-nuxt`), under `timeout`: the pages. The script needs no list: `loadNuxt` finds them. The
     script runs after all the others, so a slow one loses the rows of no other folder."""
-    folders = _folders(context)
+    folders = frameworks.folders(context, ("nuxt",))
     routes = [{"tool": NAME, "argv": argv, "cwd": folder, "env": env, "network": "none"}
               for folder in folders
               for argv, env in ((["npx", "--no-install", "nuxt", "prepare"], ENV), (["cat", ROUTES], {}))]
@@ -117,21 +102,17 @@ def _printed(result: dict) -> tuple[bool, list[dict]]:
 
 def _stopped(result: dict, seconds: str) -> str:
     """Why the script did not give its answer, in the words of the tool: the cause it wrote first, or the limit that ended it."""
-    from premap import react_router
     if result["returncode"] == 124:  # `timeout` ended the command
         return f"{SCRIPT} did not end in {seconds} seconds"
     if result["returncode"] == 137:  # `timeout` had to kill it, or the memory of the run did: the signal does not say which
         return f"{SCRIPT} was killed (exit 137): it did not end in {seconds} seconds, or it ran out of memory ({MEMORY_GB} GB)"
-    return f"{SCRIPT} exited with {result['returncode']}: {react_router._excerpt(result)}"
+    return f"{SCRIPT} exited with {result['returncode']}: {frameworks.excerpt(result)}"
 
 
 def read(context, commands, results):
     import entries
     import flows
     import semantic_store
-    # shortcut: `_excerpt` (both ends of what a tool said) and `_starts` (an export bound to its function) are React Router's, called
-    # from there rather than copied; when a third source needs them, move them to one module
-    from premap import react_router
     spec = entries.QUERIES[NAME]
     by_path: dict[str, list[str]] = {}  # the files of the snapshot that are scripts, by their path without the extension
     for rel, header in context.inventory.headers.items():
@@ -143,7 +124,7 @@ def read(context, commands, results):
         folder = command["cwd"]
         if prepare["returncode"] != 0:
             gaps.append({"kind": "model_failed", "path": folder,
-                         "detail": f"nuxt prepare exited with {prepare['returncode']}: {react_router._excerpt(prepare)}"})
+                         "detail": f"nuxt prepare exited with {prepare['returncode']}: {frameworks.excerpt(prepare)}"})
             continue
         if printed["returncode"] != 0:
             gaps.append({"kind": "model_failed", "path": folder,
@@ -186,7 +167,7 @@ def read(context, commands, results):
             called, found = _printed(result)
         except ValueError as error:
             gaps.append({"kind": "model_failed", "path": folder,
-                         "detail": f"{SCRIPT} printed no JSON of the known layout ({error}): {react_router._excerpt(result)}"})
+                         "detail": f"{SCRIPT} printed no JSON of the known layout ({error}): {frameworks.excerpt(result)}"})
             continue
         if not called:
             gaps.append({"kind": "model_partial", "path": folder,
@@ -223,7 +204,7 @@ def read(context, commands, results):
                 # shortcut: the default export of a handler file is nearly always a call, `defineEventHandler(...)`, which the
                 # snapshot's export records bind to no function: a row on the file with the gap, not a guess by name; when the
                 # records bind the function a call is given as its argument, the row is on that function
-                found, unread = react_router._starts(db, resolver, file, server["exports"])
+                found, unread = frameworks.starts(db, resolver, file, server["exports"])
                 rows += [{**base, "site": f"{file}:{line}", "symbol": f"{file}::{qualified}", "handler_source": NAME, "handler": name}
                          for name, qualified, line in found]
                 if not found or unread:
