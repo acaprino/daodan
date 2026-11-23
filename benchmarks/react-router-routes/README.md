@@ -121,16 +121,32 @@ ripristino dei pacchetti dal `package-lock.json` con la rete aperta ai soli regi
 | Noir sulla stessa fixture | 25 endpoint `http` negli stessi file, con il suo metodo (`GET` per ogni modulo; `GET`, `POST`, `PUT`, `PATCH`, `DELETE` per `api/pay`, `checkout` e `users/edit`, che esportano `action`) e il suo modo di scrivere il percorso (`/orders/{id}`, `/docs/{splat}`, `/{lang}/blog`), senza il nome del gestore: nei collegamenti sono 25 lacune «Noir reports this endpoint without a unique snapshot handler», non ingressi |
 | collegamenti | 19 ingressi (`react-router rotta`), `routes` `{offered: 0, called: 0, linked: 0}`, 27 lacune: le 25 di Noir e le 2 righe di lacuna di React Router |
 
+## La radice e un layout senza percorso
+
+Letto, non eseguito: `react-router` 7.18.6 e `@react-router/dev` 7.18.6 scaricati con `npm pack --ignore-scripts` ed estratti, nessun codice girato (parametro da provare su Modal: richieste a `/`, a una pagina e a una rotta risorsa con un `loader` e un'`action` in radice e in un layout senza percorso).
+
+| Che cosa | Dal sorgente | Scelta |
+| --- | --- | --- |
+| bersaglio di un invio | `getTargetMatch` (~5699) prende l'ultimo match che contribuisce al percorso (`getPathContributingMatches`, ~983: `index === 0` o `route.path` non vuoto), o la rotta indice con `?index` | l'`action` e la `clientAction` della radice sono ingressi (un POST a `/` senza `?index` le chiama); quelle di un layout senza percorso non sono mai il bersaglio: codice che il framework non chiama, né ingresso né lacuna |
+| `loader` | tutti i match di una richiesta di documento o di dati di una pagina lo eseguono; una rotta risorsa (`queryRoute`, ~3789) esegue solo il match bersaglio, e sul client decide anche `shouldRevalidate` | il `loader` e il `clientLoader` della radice e di un layout senza percorso sono ingressi, con il percorso che è il prefisso sotto cui girano (`/` per la radice e per un layout sotto di lei) |
+| forme | la riga sul file del layout resta (forma `layout`, «nessun ingresso»); le funzioni sono righe di forma `root-data` e `layout-data` (`entry-queries.json`), perché il registro dà un tipo per forma; senza `loader` nessuna riga in più, una funzione non legata dallo snapshot è una riga di lacuna con la stessa forma | `default` non c'è: un componente di layout non avvia un flusso, i suoi controlli li legge il lettore JSX |
+
+Non misurato: Remix (`@remix-run/router` 1.x non è nel pacchetto letto), l'esecuzione su un'app, il numero di righe in più su un progetto reale. La fixture `framework` non cambia (la sua radice e il suo layout non esportano funzioni di dati): restano 23 righe; i test usano file sostituiti.
+
+## `basename`
+
+Non c'è uno strumento ufficiale che lo dia senza un build, valutati su `@react-router/dev` 7.18.6 (letto): `routes` stampa solo `configResult.value.routes` (`cli/index.js` ~2368, e con `basename: "/base/"` l'uscita non cambiava); `./config` esporta solo tipi; `typegen` scrive `export const basename: ServerBuild["basename"]` (il tipo, `+server-build.d.ts`); i comandi sono `routes`, `build`, `reveal`, `dev`, `typegen`. Il valore sta nel modulo virtuale `virtual:react-router/server-build` (`vite.js` ~3294), cioè in un build o in un dev server di Vite. Un lettore di `react-router.config.ts` non è scritto: è codice che può calcolare il valore (`process.env`, un preset). Nessuna lacuna a runtime: quasi ogni progetto ha quel file, sarebbe rumore, e il percorso delle righe non ha oggi un consumatore che lo usi come URL (`routes.offered` è 0). Il punto resta aperto e dichiarato.
+
 ## Limiti dichiarati
 
 Ognuno ha il suo `# shortcut: <limite>, <quando>` in [`react_router.py`](../../daodan/core/premap/react_router.py).
 
 | Limite | Quando si toglie |
 | --- | --- |
-| il `loader` e l'`action` della radice e di un layout senza percorso non sono né un ingresso né una lacuna (un layout con un percorso è una rotta e si legge) | quando la funzione di dati di un layout avvia un flusso che serve: `exports` per `layout` in `entry-queries.json` |
+| il `middleware` della radice (`future.v8_middleware`) gira a ogni richiesta e non è letto; `loader` e `action` della radice e di un layout senza percorso sono righe (vedi «La radice e un layout senza percorso»), ma la regola è letta dal sorgente e non eseguita su un'app | quando si serve la fixture su Modal: `react-router build` con un server, richieste a `/` e a una pagina; per Remix, `@remix-run/router` |
 | lo standard output si legge intero: una riga di log del config lo rende una lacuna `model_failed` per la cartella, con l'uscita | quando un config scrive sullo standard output: si legge l'ultimo documento JSON |
 | la cartella dell'app è `app` se il file della radice c'è; con un'altra `appDirectory` e un file della radice anche sotto `app/` (una seconda app, un avanzo) i file di entrambe si legano senza una lacuna | quando un progetto lo fa: si legge la cartella dai file che `react-router typegen` scrive (misurato) |
-| il percorso è quello del comando: senza il `basename` del config (misurato con `/base/`: l'uscita non lo ha) | quando un progetto lo imposta: si legge e si mette prima di ogni percorso |
+| il percorso è quello del comando: senza il `basename` del config (misurato con `/base/`: l'uscita non lo ha); nessuno strumento ufficiale lo dà senza un build (vedi «`basename`») | quando un consumatore usa il percorso come URL: si prende dal modulo `virtual:react-router/server-build` |
 | un figlio assoluto che non comincia con il percorso del padre si legge come scritto, anche se React Router lo direbbe non valido | quando un progetto lo fa: si controlla il prefisso |
 | la lacuna della libreria scatta anche per un pacchetto di componenti di un monorepo che dichiara `react-router-dom` | quando un monorepo ne ha: solo un manifesto la cui cartella ha un avvio o una costruzione (`npm-start`) |
 | più di 90 cartelle che dichiarano il pacchetto chiedono più dei 900 secondi che si dividono (300 ciascuna fino a tre cartelle, poi 900 divisi fra loro, mai meno di 10) | quando un progetto ne ha tante: si alza il totale |

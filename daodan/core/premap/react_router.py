@@ -26,7 +26,7 @@ import json
 import posixpath
 from pathlib import PurePosixPath
 
-NAME, VERSION, RANK = "react-router", "daodan/premap/v2", "scanner"  # v2: an absolute child's path, the root's file under `app/`, `timeout`
+NAME, VERSION, RANK = "react-router", "daodan/premap/v3", "scanner"  # v3: the data functions of the root and of a layout with no path; v2: an absolute child, the root under `app/`, `timeout`
 CLI = {"@react-router/dev": "react-router", "@remix-run/dev": "remix"}  # the package that installs the command -> the command
 LIBRARY = ("react-router", "react-router-dom")  # the library: routes written in code, which no command lists
 APP = "app"  # the app directory the tool prints its files against, by default
@@ -80,7 +80,7 @@ def _excerpt(result: dict) -> str:
     return text if len(text) <= 600 else f"{text[:300]} [...] {text[-300:]}"
 
 
-def _routes(tree, parents=()) -> list[dict]:
+def _routes(tree, parents=(), top=True) -> list[dict]:
     """The routes of the tree the tool prints, each `{file, path, index, ...}` with its full `path` (the path of its ancestors
     and its own, `/` for none; a path of its own that begins with a slash is the whole path, as React Router reads it: `users` >
     `/users/:id` is `/users/:id`, and so is what is under it). Raises ValueError for a tree that is not the known layout: a list
@@ -94,12 +94,15 @@ def _routes(tree, parents=()) -> list[dict]:
         own = node.get("path") or ""
         # shortcut: an absolute child is taken as written, though React Router calls one that does not begin with its parent's path
         # invalid and the tool prints it without a word (`other` > `/elsewhere` is `/elsewhere`), when a project does it: check the prefix
-        # shortcut: the path is the tool's, with no `basename` of react-router.config.ts (the tool prints none: measured with
-        # `basename: "/base/"`), when a project sets one: read it and put it before every path
+        # shortcut: the path is the tool's, with no `basename` of react-router.config.ts, when a consumer uses the path as a URL: no
+        # official tool gives the value cheaply (@react-router/dev 7.18.6, read): `routes` prints only `config.routes` (and printed none
+        # measured with `basename: "/base/"`), `./config` exports types, `typegen` writes the type of `basename` and not its value; the value
+        # is in the `virtual:react-router/server-build` module of a Vite build or dev server; reading the config file is a hand-written
+        # reader of code that can compute it (`process.env`, a preset): then take it from that module
         segments = [*([] if own.startswith("/") else parents), own.strip("/")]
-        found.append({"file": node["file"], "own": own, "index": bool(node.get("index")),
+        found.append({"file": node["file"], "own": own, "index": bool(node.get("index")), "root": top and not found,
                       "path": "/" + "/".join(s for s in segments if s)})
-        found += _routes(node.get("children") or [], segments)
+        found += _routes(node.get("children") or [], segments, False)
     return found
 
 
@@ -170,21 +173,27 @@ def read(context, commands, results):
             resolver = semantic_store._Resolver(db)
             for route, file in routes:
                 shape = "index" if route["index"] else "route" if route["own"] else "layout"
-                spec = table[shape]
-                base = {"reader": NAME, "shape": shape, "kind": spec["kind"], "path": route["path"]}
+                base = {"reader": NAME, "shape": shape, "kind": table[shape]["kind"], "path": route["path"]}
                 module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
-                names = spec.get("exports")
-                # shortcut: the loader and action of the root route and of a layout with no path are neither an entry nor a gap (a layout with
-                # a path is a route and is read), when the data function of a layout starts a flow the map needs: give `layout` exports in
-                # `entry-queries.json`
-                if not names:  # a layout starts no flow of its own
+                data = shape == "layout"
+                if data:  # the module row stays; the functions the framework calls on a request are rows of their own shape
+                    # The root and a layout with no path run their `loader` for each request of a page under them (their `path` is the
+                    # prefix they run under). Only the root's `action` is ever called: `getTargetMatch` takes the last match that
+                    # contributes a path, the first match always does and a layout with no path never does (read in react-router
+                    # 7.18.6, not run); a layout with a path is a route and is read as one.
+                    # shortcut: read from react-router's own source (`getTargetMatch`, `getPathContributingMatches`, `queryRoute`) and not
+                    # run on an app, and not read in Remix's `@remix-run/router`, when a run can serve the fixture on Modal: ask `/` and a
+                    # page for each, and the `middleware` export (`future.v8_middleware`), which runs on each request, is not read
                     rows.append(module)
-                    continue
-                found, unread = _starts(db, resolver, file, names)
+                    shape = "root-data" if route["root"] else "layout-data"
+                    base = {**base, "shape": shape, "kind": table[shape]["kind"]}
+                    module = {**base, "site": file, "symbol": f"{file}::{flows.MODULE}"}
+                found, unread = _starts(db, resolver, file, table[shape]["exports"])
                 rows += [{**base, "site": f"{file}:{line}", "symbol": f"{file}::{qualified}", "handler_source": NAME, "handler": name}
                          for name, qualified, line in found]
-                if not found or unread:
-                    looked = "; ".join(unread) or ", ".join(names)
+                # a route that exports nothing it starts is a gap; a layout with no data function is normal
+                if unread or (not found and not data):
+                    looked = "; ".join(unread) or ", ".join(table[shape]["exports"])
                     rows.append({**module, "gap": f"no function found for the exports the framework starts {route['path']} from: {looked}"})
     return {"facts": {"framework_entries": rows} if rows else {}, "gaps": gaps}
 
