@@ -427,6 +427,31 @@ def _around(payload, root):
     return payload
 
 
+# What Tauri's own signatures say about an event call (`@tauri-apps/api@2` `event.d.ts`; the `tauri` crate's `Emitter` and
+# `Listener` traits, 2.12.7): the side it is, the position of the name, and for a listener the position of its callback.
+# Tauri 1's `Window::emit`, `emit_all` and `listen_global` have no trait to prove them and are not read. No ready tool joins them:
+# tauri-specta types the events of a project that adopts it, which this reader does not assume.
+TAURI_PAGE_EVENTS = {"listen": ("listen", 0, 1), "once": ("listen", 0, 1), "emit": ("emit", 0, None), "emitTo": ("emit", 1, None)}
+TAURI_RUST_EVENTS = {
+    "tauri::Emitter": {"emit": ("emit", 0, None), "emit_str": ("emit", 0, None), "emit_to": ("emit", 1, None),
+                       "emit_str_to": ("emit", 1, None), "emit_filter": ("emit", 0, None), "emit_str_filter": ("emit", 0, None)},
+    "tauri::Listener": {"listen": ("listen", 0, 1), "once": ("listen", 0, 1), "listen_any": ("listen", 0, 1),
+                        "once_any": ("listen", 0, 1)},
+}
+
+
+def tauri_event(kind, arguments, name_at, handler_at, literal, text):
+    """The `tauri_event` of a call that Tauri owns: `{kind, name, handler}`. `name` is the literal at `name_at` or None (a gap),
+    `handler` where a listener's callback starts (and the identifier it names, if it names one)."""
+    named = arguments[name_at] if name_at < len(arguments) else None
+    event = {"kind": kind, "name": literal(named) if named is not None else None}
+    callback = arguments[handler_at] if handler_at is not None and handler_at < len(arguments) else None
+    if callback is not None:
+        event["handler"] = {"line": callback.start_point[0] + 1, "column": callback.start_point[1],
+                            **({"name": text(callback)} if callback.type == "identifier" else {})}
+    return event
+
+
 def javascript_semantics(root, src, language):
     return _around(_JavaScriptEvidence(src, language).extract(root), root)
 
@@ -440,6 +465,8 @@ class _JavaScriptEvidence(_Evidence):
         self.tauri_invoke_locals = set()
         self.tauri_namespaces = set()
         self.tauri_calls = [] if b"@tauri-apps/api" in src else None
+        self.tauri_event_locals, self.tauri_event_namespaces = {}, set()  # the names `@tauri-apps/api/event` is imported as
+        self.tauri_event_calls = [] if b"@tauri-apps/api/event" in src else None
         # Overload signatures by (scope, name), waiting for the declaration that implements them.
         self.signatures: dict[tuple[str, str], list] = {}
 
@@ -461,7 +488,30 @@ class _JavaScriptEvidence(_Evidence):
             declaration["qualified_name"] = self.qualified(declaration["name"], scope)
         if self.tauri_calls:
             self.bind_tauri_calls()
+        if self.tauri_event_calls:
+            self.bind_tauri_events()
         return self.finish()
+
+    def bind_tauri_events(self):
+        """Mark the calls of `listen`, `once`, `emit` and `emitTo` that `@tauri-apps/api/event` gave this file (not a local of
+        the same name that shadows them) with the event they name and, for a listener, where its callback starts."""
+        declared = {(d["scope"], d["name"]) for d in self.data["declarations"] if d.get("lexical") is not False}
+        for ref, node in self.tauri_event_calls:
+            parts = ref["parts"]
+            if len(parts) == 1:
+                imported = self.tauri_event_locals.get(parts[0])
+            else:
+                imported = parts[1] if parts[0] in self.tauri_event_namespaces and parts[1] in TAURI_PAGE_EVENTS else None
+            scope = ref["scope"]
+            while imported and scope and (scope, parts[0]) not in declared and not self.scope_by_id[scope].get("unresolved"):
+                scope = self.scope_by_id[scope].get("parent")
+            if not imported or scope is not None:
+                continue
+            kind, name_at, handler_at = TAURI_PAGE_EVENTS[imported]
+            arguments = node.child_by_field_name("arguments")
+            ref["tauri_event"] = tauri_event(
+                kind, list(arguments.named_children) if arguments is not None else [], name_at, handler_at,
+                lambda n: self.text(n)[1:-1] if n.type == "string" else None, self.text)
 
     def bind_tauri_calls(self):
         """Resolve the imported invoke binding after declarations and hoisted local shadows are known."""
@@ -583,6 +633,11 @@ class _JavaScriptEvidence(_Evidence):
                 self.tauri_invoke_locals.add(local_name)
             elif mode == "namespace":
                 self.tauri_namespaces.add(local_name)
+        elif module == "@tauri-apps/api/event":
+            if mode == "named" and imported in TAURI_PAGE_EVENTS:
+                self.tauri_event_locals[local_name] = imported
+            elif mode == "namespace":
+                self.tauri_event_namespaces.add(local_name)
         self.data["imports"].append(entry)
 
     def write_binding(self, node):
@@ -911,6 +966,8 @@ class _JavaScriptEvidence(_Evidence):
                     first = args.named_children[0] if args and args.named_children else None
                     command = self.text(first)[1:-1] if first is not None and first.type == "string" else None
                     self.tauri_calls.append((ref, command, self.span(first) if first is not None else ref["span"]))
+                if self.tauri_event_calls is not None and t == "call_expression" and 0 < len(parts) <= 2:
+                    self.tauri_event_calls.append((ref, node))
                 if not parts:
                     self.walk(function.child_by_field_name("object") if call_parts else function)
                 if parts == ["eval"]:
@@ -1039,6 +1096,7 @@ class _TreeSitterEvidence(_Evidence):
         self.language = language
         self.tag_calls = set()
         self.writes = []
+        self.tauri_traits, self.tauri_event_calls = set(), []  # the Tauri traits `use` brings, and the method calls to read
 
     def extract(self, root):
         from ._treesitter import query_tags
@@ -1061,7 +1119,24 @@ class _TreeSitterEvidence(_Evidence):
                 scope = self.scope_by_id[scope]["parent"]
             declaration["scope"] = scope
             declaration["qualified_name"] = self.qualified(declaration["name"], scope)
+        self.bind_tauri_events()
         return self.finish()
+
+    def bind_tauri_events(self):
+        """Rust: a method of Tauri's `Emitter` or `Listener` called in a file that has the trait in scope (`use tauri::Emitter`,
+        also `as _`), with the event it names. shortcut: the trait in scope proves the method is Tauri's, not that the receiver is
+        (a type of the project with an `emit` of its own, in a file that also imports the trait, would be read); the receiver's
+        type is the engine's to say, and a file with no such trait is not read at all, when a case shows the difference."""
+        for ref, node in self.tauri_event_calls:
+            for trait in self.tauri_traits:
+                found = TAURI_RUST_EVENTS[trait].get(ref["parts"][-1])
+                if found is None:
+                    continue
+                kind, name_at, handler_at = found
+                arguments = node.child_by_field_name("arguments")
+                ref["tauri_event"] = tauri_event(
+                    kind, list(arguments.named_children) if arguments is not None else [], name_at, handler_at,
+                    lambda n: self.text(n)[1:-1] if n.type == "string_literal" else None, self.text)
 
     def text(self, node):
         from ._treesitter import node_text
@@ -1253,6 +1328,10 @@ class _TreeSitterEvidence(_Evidence):
             else:
                 self._bind_pattern(param.child_by_field_name("name") or param, "parameter")
 
+    def note_use(self, full):
+        if full in TAURI_RUST_EVENTS:
+            self.tauri_traits.add(full)
+
     def _use_tree(self, node, prefix=""):
         if node is None:
             return
@@ -1262,6 +1341,7 @@ class _TreeSitterEvidence(_Evidence):
         elif t == "identifier":
             name = self.text(node)
             full = f"{prefix}::{name}" if prefix else name
+            self.note_use(full)
             self.data["imports"].append({
                 "scope": self.scope, "local": name, "module": full,
                 "imported": name, "mode": "named", "span": self.span(node),
@@ -1269,6 +1349,7 @@ class _TreeSitterEvidence(_Evidence):
         elif t == "scoped_identifier":
             raw = self.text(node)
             full = f"{prefix}::{raw}" if prefix else raw
+            self.note_use(full)
             name_node = node.child_by_field_name("name")
             imported = self.text(name_node) if name_node is not None else full.rsplit("::", 1)[-1]
             self.data["imports"].append({
@@ -1279,6 +1360,7 @@ class _TreeSitterEvidence(_Evidence):
             raw_path = self.text(node.child_by_field_name("path"))
             alias_node = node.child_by_field_name("alias")
             full = f"{prefix}::{raw_path}" if prefix else raw_path
+            self.note_use(full)
             if alias_node is not None and self.text(alias_node) != "_":
                 if raw_path == "self" and prefix:
                     self.data["imports"].append({
@@ -1718,12 +1800,14 @@ class _TreeSitterEvidence(_Evidence):
                 if named is not None:
                     # Type arguments after the name (`List<T>`, `foo::<T>`) are not part of the callee.
                     callee_span = callee_span[:2] + [named.end_point[0] + 1, named.end_point[1]]
-            self.reference(
+            ref = self.reference(
                 parts,
                 "call",
                 callee_span,
                 "dynamic-callee" if (not parts or parts[0] == "(expr)") else None,
             )
+            if self.language == "rust" and t == "call_expression" and parts and target_node.type == "field_expression":  # `receiver.method(..)`
+                self.tauri_event_calls.append((ref, node))
             args_node = node.child_by_field_name("arguments") or next(
                 (c for c in node.named_children if c.type in ("call_suffix", "value_arguments", "argument_list")),
                 None,

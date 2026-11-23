@@ -1185,7 +1185,7 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         # An event has its own callable scope, including when it has no outgoing call.
         facts._nodes.update((symbol, symbol) for symbol in callbacks)
         members = {id(rule): facts.property_functions(rule["actions_in"]) for rule in rules if rule.get("actions_in")}
-        plain = []
+        plain, sent, heard = [], [], []
         for ref in view["references"]:
             target = facts.named(ref.get("target_id")) if ref["resolution"] == "resolved" else None
             named = facts.node(ref.get("caller"))
@@ -1197,6 +1197,18 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             if package and package.get("manager") in ECOSYSTEMS:
                 called.setdefault((caller, ECOSYSTEMS[package["manager"]], package["package"]),
                                   (site, ref.get("resolver"), ref["file"]))
+            if "tauri_event" in ref:  # a call Tauri owns (`semantic.TAURI_PAGE_EVENTS`, `TAURI_RUST_EVENTS`): the name is the key
+                happened = ref["tauri_event"]
+                if happened["name"] is None:
+                    gaps.append({"site": site, "symbol": caller, "reason": "Tauri event: the name is not a string literal"})
+                else:
+                    callback = happened.get("handler") or {}
+                    named_callback = facts.targets(callback["name"], ref["file"], callback["line"], callback["column"],
+                                                   ("function", "method")) if callback.get("name") else []
+                    # a listener ends at the function its callback is; a closure is no declaration: it ends where it is held
+                    (heard if happened["kind"] == "listen" else sent).append({
+                        "name": happened["name"], "file": ref["file"], "site": site,
+                        "node": (facts.node(named_callback[0]) if len(named_callback) == 1 else None) or caller})
             # SCIP may identify invoke itself in the SDK. Its registered Rust command is a separate,
             # static dispatch destination, already resolved in the snapshot of the same application.
             native = None
@@ -1319,6 +1331,13 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
             if component:
                 calls.append({"from": facts.node(holder) or f"{file}::{MODULE}", "to": component,
                               "site": f"{file}:{line}"})
+        # An emit and a listen of the same name on the two sides of the bridge, Rust and the page, are linked, each pair: the name is
+        # the key and an event has no declaration, so the link has both positions. Several listeners are normal, none a gap.
+        for out in sent:
+            for into in heard:
+                if out["name"] == into["name"] and out["file"].endswith(".rs") != into["file"].endswith(".rs"):
+                    calls.append({"from": out["node"], "to": into["node"], "site": out["site"], "target_site": into["site"],
+                                  "origin": "dedotto", "resolver": "tauri-event", "event": out["name"]})
         # A store function held in a variable is called where that variable is called.
         for file, name, caller, site, scope in plain:
             owner = callbacks.get(caller, caller)

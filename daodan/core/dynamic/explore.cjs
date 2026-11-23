@@ -23,6 +23,7 @@ const LIBRARY = /\/node_modules\/|\/@vite\/|\/@react-refresh|\/@id\//; // a depe
 const DECLARED = ['a control a press reveals is read after the press and pressed after the presses that show it, up to `depth` deep',
   'pages behind a login are not reached without a test credential',
   'a field is filled only to submit the form of a button, with a value of its HTML type (a proposal, not a decision); a field alone is not',
+  'the presses of a page run in tabs at once: the answer is the same for an app with no state on a server, and may not be for one that has it',
   'each control is pressed once, from a freshly loaded page',
   'a function that also runs by itself while the page is still is not attributed to a press'];
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -110,7 +111,7 @@ async function fillForm(page, locator) {
   const fields = await locator.evaluate(button => {
     if (!button.form) return [];
     const skipped = ['hidden', 'submit', 'button', 'reset', 'image', 'file', 'color'];
-    return [...button.form.elements].filter(f => ['INPUT', 'TEXTAREA', 'SELECT'].includes(f.tagName) && !f.disabled && !skipped.includes(f.type))
+    return [...button.form.elements].filter(f => ['INPUT', 'TEXTAREA', 'SELECT'].includes(f.tagName) && !f.disabled && f !== button && !skipped.includes(f.type))
       .map((f, i) => { f.setAttribute('data-daodan-field', String(i));
         const label = f.getAttribute('aria-label') || (f.labels && f.labels[0] && f.labels[0].textContent.trim()) || f.name || f.id || '';
         return { i, type: f.type, name: label, min: f.min, options: f.tagName === 'SELECT' ? [...f.options].map(o => o.value) : [] }; });
