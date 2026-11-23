@@ -1,0 +1,72 @@
+exports: R3TargetBinder:function SelectorMatcher:function TmplAstVariable:function TmplAstReference:function TmplAstLetDeclaration:function
+--- declare class R3TargetBinder: 
+/
+type DirectiveMatcher<DirectiveT extends DirectiveMeta> = SelectorMatcher<DirectiveT[]>;
+/**
+ * Processes `Target`s with a given set of directives and performs a binding operation, which
+ * returns an object similar to TypeScript's `ts.TypeChecker` that contains knowledge about the
+ * target.
+ */
+declare class R3TargetBinder<DirectiveT extends DirectiveMeta> implements TargetBinder<DirectiveT> {
+    private directiveMatcher;
+    private foreignComponentMatcher;
+    constructor(directiveMatcher: DirectiveMatcher<DirectiveT> | null, foreignComponentMatcher?: SelectorlessMatcher<ForeignComponentMeta> | null);
+    /**
+     * Perform a binding operation on the given `Target` and return a `BoundTarget` which contains
+     * metadata about the types referenced in the template.
+     */
+    bind(target: Target<DirectiveT>): BoundTarget<DirectiveT>;
+}
+
+/**
+ * This array represents the DOM schema. It encodes inheritance, properties, and events.
+ *
+ * ## Overview
+ *
+ * Each line represents one k
+--- getExpressionTarget(: 
+**
+     * If the given `AST` expression refers to a `Reference` or `Variable` within the `Target`, then
+     * return that.
+     *
+     * Otherwise, returns `null`.
+     *
+     * This is only defined for `AST` expressions that read or write to a property of an
+     * `ImplicitReceiver`.
+     */
+    getExpressionTarget(expr: AST): TemplateEntity | null;
+    /**
+     * Given a particular `Reference` or `Variable`, get the `ScopedNode` which created it.
+     *
+     * All `Variable`s are defined on node, so this will always return a value for a `Variable`
+     * from the `Target`. Returns `null` otherwise.
+     */
+    getDefinitionNodeOfSymbol(symbol: TemplateEntity): ScopedNode | null;
+    /**
+     * Get the nesting level of a particular `ScopedNode`.
+     *
+     * This starts at 1 for top-level nodes within the `Target` and increases for nodes
+     * nested at deeper levels.
+     */
+    getNestingLevel(node: ScopedNode): number;
+    /**
+     * Get all `Reference`s and `Variables` visible
+parse errors: null
+
+=== new R3TargetBinder(null) ===
+BoundTarget methods: constructor, getEntitiesInScope, getDirectivesOfNode, getForeignComponent, getReferenceTarget, getConsumerOfBinding, getExpressionTarget, getDefinitionNodeOfSymbol, getNestingLevel, getUsedDirectives, getEagerlyUsedDirectives, getUsedPipes, getEagerlyUsedPipes, getDeferBlocks, getDeferredTriggerTarget, isDeferred, getDeferBlocksOfNode, getDeferBlocksOfPipe, getConflictingHostDirectiveBindings, findEntityInScope, referenceTargetToElement
+c() -> Variable name="c"
+save() -> LetDeclaration name="save"
+go() -> Variable name="go"
+real() -> null
+(this) save() -> null
+
+=== new R3TargetBinder(new SelectorMatcher()) ===
+BoundTarget methods: constructor, getEntitiesInScope, getDirectivesOfNode, getForeignComponent, getReferenceTarget, getConsumerOfBinding, getExpressionTarget, getDefinitionNodeOfSymbol, getNestingLevel, getUsedDirectives, getEagerlyUsedDirectives, getUsedPipes, getEagerlyUsedPipes, getDeferBlocks, getDeferredTriggerTarget, isDeferred, getDeferBlocksOfNode, getDeferBlocksOfPipe, getConflictingHostDirectiveBindings, findEntityInScope, referenceTargetToElement
+c() -> Variable name="c"
+save() -> LetDeclaration name="save"
+go() -> Variable name="go"
+real() -> null
+(this) save() -> null
+
+--- exit 0

@@ -60,7 +60,7 @@ Nel giro senza analizzatore: plsql (1 caso, 1 file), sql (7 casi, 51 file).
 
 ## Build tool e toolchain
 
-La pre-mappa ha 30 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
+La pre-mappa ha 35 fonti (`scripts/premap/`, `SOURCES`); il grafo dei moduli legge 42 manifest di 30 ecosistemi (`scripts/build_units.py`); un modulo riceve 52 toolchain dal suo ecosistema o linguaggio (`scripts/module_derive.py`); la preparazione porta 11 toolchain nel container (`scripts/preparation.py`, `NEEDS`).
 
 ### Fonti della pre-mappa
 
@@ -98,6 +98,11 @@ Stati di ogni fonte nei casi del giro del 16 novembre 2026 (`benchmarks/project-
 | `dotnet` | 10.0.404 | modello: il comando del build tool, nel container | `premap/dotnet.py` | not_needed 117, ran 5 |
 | `noir` | 1.5.0 | scanner: legge ogni file | `premap/noir.py` | non misurato: non era nel giro |
 | `next` | daodan/premap/v2 | scanner: legge ogni file | `premap/nextjs.py` | non misurato: non era nel giro |
+| `react-router` | daodan/premap/v2 | scanner: legge ogni file | `premap/react_router.py` | non misurato: non era nel giro |
+| `nuxt` | daodan/premap/v1 | scanner: legge ogni file | `premap/nuxt.py` | non misurato: non era nel giro |
+| `sveltekit` | daodan/premap/v1 | scanner: legge ogni file | `premap/sveltekit.py` | non misurato: non era nel giro |
+| `angular` | daodan/premap/v1 | scanner: legge ogni file | `premap/angular.py` | non misurato: non era nel giro |
+| `astro` | daodan/premap/v2 | scanner: legge ogni file | `premap/astro.py` | non misurato: non era nel giro |
 
 ### Pre-mappa per faccia
 
@@ -197,7 +202,7 @@ Riconoscimento dello stack sul corpus, giro del 19 novembre 2026 (`benchmarks/pr
 | stack | 38 | 182 / 352 (51,7 %) | 290 / 653 (44,4 %), 37 sbagliati | 96 / 395 (24,3 %), 55 in più |
 | tutte | 178 | 362 / 568 (63,7 %) | 552 / 1.001 (55,1 %), 50 sbagliati | 141 / 518 (27,2 %), 65 in più |
 
-Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: un suo segno (un pacchetto, un'immagine, un file) è nel progetto; vale per ogni voce. Codice analizzato: il codice del progetto che la dichiara è letto dall'analizzatore del suo linguaggio; la colonna dà questi linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Nessun framework ha le rotte lette dal posto di un file (le pagine di Next.js, Nuxt, SvelteKit, Remix o Astro): è un buco dichiarato.
+Che cosa vuol dire «supportata» per una voce della tabella che segue, a livelli. Riconosciuta: un suo segno (un pacchetto, un'immagine, un file) è nel progetto; vale per ogni voce. Codice analizzato: il codice del progetto che la dichiara è letto dall'analizzatore del suo linguaggio; la colonna dà questi linguaggi fra quelli degli ecosistemi dei segni della voce, e dice quando un linguaggio non ha analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo per 4 voci (Vue.js, Svelte, Astro, Tailwind). Rotte e collegamenti fra le parti vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix (`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco dichiarato.
 
 <details><summary>Framework, librerie e strumenti riconoscibili: 462 voci</summary>
 
@@ -216,7 +221,7 @@ Che cosa vuol dire «supportata» per una voce della tabella che segue, a livell
 | Apollo Server | `apollo-server` | framework | npm | JavaScript, TypeScript | — | 1 |
 | ASP.NET Core | `aspnetcore` | framework | nuget | C# | — | 6 |
 | Assemble | `assemble` | framework | npm | JavaScript, TypeScript | — | 0 |
-| Astro | `astro` | framework | npm, files | JavaScript, TypeScript | frontmatter e `<script>` nello snapshot, il template no (`languages/sfc.py`); stili con il compilatore del framework (`indexers/css_astro.py`) | 1 |
+| Astro | `astro` | framework | npm, files | JavaScript, TypeScript | frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`premap/astro.py`); stili con il compilatore del framework (`indexers/css_astro.py`) | 1 |
 | Axum | `axum` | framework | crates | Rust | — | 3 |
 | Blazor | `blazor` | framework | nuget | C# | — | 1 |
 | Blitzjs | `blitzjs` | framework | npm | JavaScript, TypeScript | — | 0 |

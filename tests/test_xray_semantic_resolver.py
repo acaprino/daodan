@@ -137,6 +137,21 @@ class SemanticResolverTests(unittest.TestCase):
         self.files["main.py"]["semantic"]["imports"][0]["type_only"] = True
         self.assertEqual(self.index()["references"][0]["reason"], "type-only-import")
 
+    def test_an_export_the_file_does_not_make_and_one_it_makes_twice_have_their_own_reasons(self):
+        """The portable index and the snapshot's reader give the same two reasons (`semantic_store.exported_target` is the other):
+        a name the file never exports is `export-missing`, a name it exports in several records (an overload, a value and a type)
+        is `export-ambiguous`, and neither is guessed."""
+        self.add("core.js", "export function save() {}\nexport function save() {}\n", payload(
+            declarations=[declaration()],
+            exports=[{"exported": "save", "local": "save"}, {"exported": "save", "local": "save"}]), language="javascript")
+        self.add("main.js", "import { save, gone } from './core';\nsave();\ngone();\n", payload(
+            imports=[{"scope": "module", "local": "save", "module": "core", "imported": "save", "mode": "named", "span": [1, 0, 1, 1]},
+                     {"scope": "module", "local": "gone", "module": "core", "imported": "gone", "mode": "named", "span": [1, 0, 1, 1]}],
+            references=[reference(["save"], 2), reference(["gone"], 3)]), language="javascript")
+        self.graph = {"main.js": {"core": ["core.js"]}}
+        refs = self.index()["references"]
+        self.assertEqual([(r["target_id"], r["reason"]) for r in refs], [(None, "export-ambiguous"), (None, "export-missing")])
+
     def test_repeated_declarations_and_reexport_chains_are_not_guessed(self):
         self.core()
         self.files["core.py"]["semantic"]["declarations"].append(declaration(identity="function@1:0#2"))

@@ -1,0 +1,40 @@
+=== A. which option makes getTemplateTypeChecker() work (each in a fresh program) ===
+{} -> threw: The `TemplateTypeChecker` does not work without `enableTemplateTypeChecker`.
+{"_enableTemplateTypeChecker":true} -> works
+{"enableTemplateTypeChecker":true} -> threw: The `TemplateTypeChecker` does not work without `enableTemplateTypeChecker`.
+{"_enableTemplateTypeChecker":true,"enableTemplateTypeChecker":true} -> works
+
+=== B. lazy resolvers: getTsSymbolOfSymbol / getTypeOfSymbol on the symbols getSymbolOfNode returns ===
+getTsSymbolOfSymbol: getTsSymbolOfSymbol(symbol) { const location = getTcbLocationForSymbol(symbol); if (!location) { return null; } const sf = this.programDriver.getProgram().getSourceFile(location.tcbPath); if (!sf) { return null; } let node = getTokenAtPosition(sf, location.pos
+getTypeOfSymbol: getTypeOfSymbol(symbol) { const location = "tcbTypeLocation" in symbol && symbol.tcbTypeLocation !== void 0 ? symbol.tcbTypeLocation : "kind" in symbol && (symbol.kind === SymbolKind.Variable || symbol.kind === SymbolKind.LetDeclaration) ? symbol.localVarLocation : getTcbLocationForSymbol(symbol
+getTsSymbolOfReference: getTsSymbolOfReference(target, typeChecker) { if (!target || !("filePath" in target)) { return null; } const sf = this.programDriver.getProgram().getSourceFile(target.filePath); if (!sf) { return null; } const visit2 = (node) => { if (node.pos <= target.posi
+"save()" method save: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> save decl=src/app/app.component.ts:22:2 "save() {}"; getTypeOfSymbol -> () => void
+"this.save()" method save: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> save decl=src/app/app.component.ts:22:2 "save() {}"; getTypeOfSymbol -> () => void
+"svc.cancel()" method cancel: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> cancel decl=src/app/order.service.ts:4:2 "cancel(): void {}"; getTypeOfSymbol -> () => void
+"!busy && save()" method save: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> save decl=src/app/app.component.ts:22:2 "save() {}"; getTypeOfSymbol -> () => void
+"busy ? close() : reopen()" method close: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> close decl=src/app/app.component.ts:23:2 "close() {}"; getTypeOfSymbol -> () => void
+"busy ? close() : reopen()" method reopen: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> reopen decl=src/app/app.component.ts:24:2 "reopen() {}"; getTypeOfSymbol -> () => void
+"save(); close()" method save: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> save decl=src/app/app.component.ts:22:2 "save() {}"; getTypeOfSymbol -> () => void
+"save(); close()" method close: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> close decl=src/app/app.component.ts:23:2 "close() {}"; getTypeOfSymbol -> () => void
+"router.navigate(['/orders'])" method navigate: getSymbolOfNode -> kind 8; getTsSymbolOfSymbol -> navigate decl=node_modules/@angular/router/types/_router_module-chunk.d.ts:1675:4 "navigate(commands: readonly any[], extras?: Naviga"; getTypeOfSymbol -> (commands: readonly any[], extras?: NavigationExtras | undefined) => Promise<boolean>
+event click (save()): getSymbolOfNode kind 1, bindings 1; getTsSymbolOfSymbol(bindings[0]) -> addEventListener node_modules/typescript/lib/lib.dom.d.ts:17399:4|node_modules/typescript/lib/lib.dom.d.ts:17400:4
+event ngSubmit (submit()): getSymbolOfNode kind 1, bindings 1; getTsSymbolOfSymbol(bindings[0]) -> ngSubmit node_modules/@angular/forms/types/forms.d.ts:4500:4
+event saved (onSaved($event)): getSymbolOfNode kind 1, bindings 1; getTsSymbolOfSymbol(bindings[0]) -> saved src/app/editor.component.ts:7:2
+
+=== C. getHostElement with and without typeCheckHostBindings ===
+{"_enableTemplateTypeChecker":true} -> getHostElement: HostElement with 2 listeners [click@-, keydown.escape@window], 1 bindings
+{"_enableTemplateTypeChecker":true,"typeCheckHostBindings":true} -> getHostElement: HostElement with 2 listeners [click@-, keydown.escape@window], 1 bindings
+
+=== D. full ngc --help ===
+Options:
+      --help                Show help                                  [boolean]
+      --version             Show version number                        [boolean]
+      --i18nFile                                                        [string]
+      --i18nFormat                                                      [string]
+      --locale                                                          [string]
+      --missingTranslation      [string] [choices: "error", "warning", "ignore"]
+      --outFile                                                         [string]
+  -w, --watch                                                          [boolean]
+
+
+--- exit 0

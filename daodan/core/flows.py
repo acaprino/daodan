@@ -24,8 +24,11 @@ What (`link`):
   argument), `member` (the property read on the call's result) or `holder` (the
   call is made on a handle assigned in the same file as `handle = store.key` or
   `handle = store[KEY]`: a variable the snapshot's scopes bind to that assignment, or an
-  attribute of `self` or `this` that the class assigns so; a receiver with no such
-  assignment is not this store, one the snapshot does not resolve is a gap). With `actions_in`
+  attribute of `self` or `this` that the class assigns so, or on `store[KEY]` itself
+  (`db[COLLECTION].find()`, `get_db()[COLLECTION].find()`); KEY is a text or a constant bound
+  to one; a receiver with no such assignment is not this store, one the snapshot does not
+  resolve is a gap, and so is an index that is no such text, with its own cause: computed,
+  imported and linked to no declaration, `module.NAME`, `self.NAME`). With `actions_in`
   a key naming a function declared as a property under those prefixes is a call to
   it, also through the variable that holds it.
 - `rotta` / `offre`: a route reached or declared; `route` gives `service`, `method`,
@@ -51,7 +54,9 @@ a grammar that does not load) the rule yields a gap for that call, with the caus
 A value counts only when it is a literal or a constant bound to one; a computed
 one is a gap, never a guess. A store link needs the same store and key, a route
 link the same service and method and a path schema that meets: the most literal
-route wins, a tie is an uncertain link, a gap with its candidates. The services of others the brief lists (the
+route wins, a tie is an uncertain link, a gap with its candidates. A route Noir or Next.js declares (a route
+handler, not a page, on a function the snapshot resolves) is offered too, with the service `*`: it meets a call of
+any service, and a route of the call's own service, from a rule, comes before it; a catch-all path is a gap. The services of others the brief lists (the
 stack step's technologies and the external modules of the module graph, by id) are nodes too: a symbol in a file
 a service cites as evidence uses it (`dichiarato`), except in a file where an engine resolved a call into a package
 the stack step ties to that service: there the function that makes such a call uses it, once per service and at its
@@ -182,6 +187,9 @@ def validate_rules(rules: list, *, recorded=False) -> list[dict]:
                 raise ValueError(f"{where}: unknown entry kind {rule['entry']!r}")
         if rule["link"] in ("rotta", "offre") and set(rule["route"]) != {"service", "method", "path"}:
             raise ValueError(f"{where}: route has exactly service, method and path")
+        if rule["link"] in ("rotta", "offre") and rule["route"]["service"] == ANY_SERVICE:
+            raise ValueError(f"{where}: the service {ANY_SERVICE} is reserved for the routes Noir and Next.js declare: "
+                             "a rule names the service of its route")
         if "handler" in rule:
             # `handler` is a field of the rule (`arg1`, `last`), not source text.
             if rule["link"] not in ("offre", "attiva") or not re.fullmatch(r"arg\d+|last", str(rule["handler"])):
@@ -732,19 +740,42 @@ def _segment_grade(asked: str, offered: str) -> int | None:
     return None
 
 
+ANY_SERVICE = "*"  # the service of an offered route no rule names (Noir and Next.js do not know it): it meets any
+
+
 def _rest_meet(asked: tuple, offered: tuple) -> tuple | None:
-    """Same service, method and number of segments, every segment meeting; (True, total) when no hole has to
-    equal a literal, the most literal route first; (False, 0) otherwise, so loose candidates always tie."""
-    if asked[:2] != offered[:2]:
+    """Same method and number of segments, every segment meeting, and the same service or an offered `ANY_SERVICE`
+    (the asking side names its service: it is never `*`). The service comes first: a route of the asked service
+    before one of `*`, so a declared route only fills where no route of a rule meets. Then (True, total) when no
+    hole has to equal a literal, the most literal route first; (False, 0) otherwise, so loose candidates tie; a route
+    of `*` meets only the first kind: a hole that would have to equal one of its literals is no link to a route no
+    rule vouches for."""
+    if asked[1] != offered[1] or offered[0] not in (asked[0], ANY_SERVICE):
         return None
     calls, routes = asked[2].strip("/").split("/"), offered[2].strip("/").split("/")
     grades = [_segment_grade(c, r) for c, r in zip(calls, routes)] if len(calls) == len(routes) else [None]
     if None in grades:
         return None
-    return (True, sum(grades)) if min(grades) >= 1 else (False, 0)
+    exact, strict = offered[0] == asked[0], min(grades) >= 1
+    if not (exact or strict):
+        return None
+    # shortcut: the service ranks before the literal, so a rule's `/x/{}` beats a declared `/x/search`, when a measured project shows the declared route was the right one
+    return (exact, strict, sum(grades) if strict else 0)
 
 
 REST = LinkType("rest", ("rotta", "offre"), _rest_key, _rest_meet)  # the guide's "metodo e schema del percorso"
+
+
+def _store_index(node):
+    """The index of `store[INDEX]`: `store` is a name, a dotted name all the way down, or the result of a call
+    (`get_db()[NAME]`); None for any other node."""
+    # shortcut: the object indexed is a name or a call, not a longer expression (`a.b()[NAME]`, `x[0][NAME]`), when a measured project holds its store that way
+    if node is None or node.type not in SUBSCRIPTS:
+        return None
+    base = _unwrapped(node.child_by_field_name("object") or node.child_by_field_name("value"))
+    if base is not None and (_dotted(base) or base.child_by_field_name("arguments") is not None):
+        return node.child_by_field_name("index") or node.child_by_field_name("subscript")
+    return None
 
 
 def _store_key(value, tree: Tree, facts) -> str | None:
@@ -757,21 +788,57 @@ def _store_key(value, tree: Tree, facts) -> str | None:
     if node.type in MEMBERS and _dotted(node):
         name = node.child_by_field_name("property") or node.child_by_field_name("attribute")
         return entries._text(tree.source, name) if name is not None else None
-    if node.type in SUBSCRIPTS and _dotted(node.child_by_field_name("object") or node.child_by_field_name("value")):
-        text = facts.literal(node.child_by_field_name("index") or node.child_by_field_name("subscript"), tree)
+    if (index := _store_index(node)) is not None:
+        text = facts.literal(index, tree)
         return text if text is not None and "${" not in text else None
     return None
 
 
+def _unread_index(index, call: dict, facts) -> str:
+    """Why the index of a receiver is no text: one cause for each case, so a gap says what is missing. `self.NAME` and
+    `this.NAME` name the attribute of a class: the engine's index names its declaration (a value end, `project-value`) and
+    the view drops it (`edge_grading.grade`, `code_graph.Traversal.ends`, `edge_view.load_edge_view`), so no reader here
+    can tell what the attribute holds without a hand-written reading of the class, which also has to see every way
+    a name is assigned (a tuple, `+=`, `cls.NAME = ...`, `Class.NAME = ...` at module level, a default, `setattr`)."""
+    import entries
+    tree, node = call["tree"], _unwrapped(index)
+    if node is not None and node.type in MEMBERS and _dotted(node):
+        owner = entries._text(tree.source, node.child_by_field_name("object"))
+        if owner in entries.RECEIVERS:
+            return (f"receiver index is an attribute of {owner}: the engine's identity for the class attribute does not "
+                    "reach the view (edge_grading drops it)")
+        return "receiver index is a dotted name (`module.NAME`, `Class.NAME`): Facts.literal reads none"
+    if node is not None and node.type in NAMES and any(
+            ref.get("imported_name") for ref in facts.reads.get((tree.file, *entries._at(node)), ())):
+        return f"receiver index {entries._text(tree.source, node)} is imported and the snapshot links it to no declaration"
+    return f"receiver index {_not_literal(call)}"
+
+
+def _inline_handle(call: dict, facts) -> tuple[str | None, str | None]:
+    """`(key, why)` of a call made on `store[INDEX]` itself, `db[COLLECTION].find()`, a receiver that is no name: the key
+    is read as for `handle = store[INDEX]` (`_store_key`); the rule's `callee` or `written` says which calls are the store's.
+    An index that is no constant is `why` (`_unread_index`), never a key. No key and no `why`: the receiver is no
+    `store[...]` (the result of a call that is not indexed, a text)."""
+    callee = call["node"].child_by_field_name("function")
+    node = _unwrapped(callee.child_by_field_name("object")) if callee is not None else None
+    if (index := _store_index(node)) is None:
+        return None, None
+    key = _store_key(node, call["tree"], facts)
+    return (key, None) if key else (None, _unread_index(index, call, facts))
+
+
 def _handle(call: dict, facts) -> tuple[str | None, str | None]:
     """`(key, why)` of the store handle a call is made on: `handle = store.key` or `handle = store[KEY]`, assigned where
-    the snapshot's scopes bind the receiver (a variable), or in the class that holds it (`self.handle`, `this.handle`).
+    the snapshot's scopes bind the receiver (a variable), or in the class that holds it (`self.handle`, `this.handle`);
+    or the receiver itself, `store[KEY]` (`_inline_handle`).
     No key and no `why`: the receiver is no handle of the store (a parameter, an import, a value of another shape);
-    `why`: the snapshot does not tell what the receiver is, or it is assigned from several keys."""
+    `why`: the snapshot does not tell what the receiver is, it is assigned from several keys, or its index is no constant."""
     import entries
     tree, receiver = call["tree"], call["parts"][:-1]
     name = ".".join(receiver)
-    if not receiver or receiver[0] == DYNAMIC or (len(receiver) == 1 and receiver[0] in entries.RECEIVERS):
+    if receiver[:1] == [DYNAMIC]:
+        return _inline_handle(call, facts)
+    if not receiver or (len(receiver) == 1 and receiver[0] in entries.RECEIVERS):
         return None, None
     if len(receiver) == 1:
         found, why = facts.bindings(tree.file, call["scope"], name)
@@ -973,12 +1040,76 @@ def _next_handlers(facts: Facts, resolver, item: dict) -> list[dict]:
         if symbol:
             found.append({**item, "symbol": symbol, "site": f"{file}:{facts.declarations[identity]['line']}",
                           "handler_source": entries.NEXT, **({"method": name} if methods else {})})
-        elif reason != "export-missing-or-ambiguous":
+        elif reason != "export-missing":  # an export the file does not make is no gap: a route module has the exports it needs
             unread.append(f"{name}: {reason}")
     if found and not unread:
         return found
     looked = "; ".join(unread) or ", ".join(names)
     return [*found, {**item, "gap": f"no function found for the export Next.js starts {item['path']} from: {looked}"}]
+
+
+def _next_path(path: str) -> str | None:
+    """A Next.js route as `REST` reads a path: each dynamic segment (`[id]`) is a parameter, `{}`; None for a catch-all
+    (`[...x]`, `[[...x]]`), which stands for several path schemas. Next.js's own table of a route's parameters is
+    `ParamMap` in `.next/types/routes.d.ts` (the file `validator.ts` imports): the pre-map does not carry it (the
+    Next.js source prints only `validator.ts`), so the segments of the route text are read, as the framework writes
+    them: a whole segment between brackets. A text with no grammar, read with string operations."""
+    # shortcut: the route text, not ParamMap of routes.d.ts (not read, not checked), and a segment like `a-[id]` stays literal, when the Next.js source also prints routes.d.ts
+    segments = path.split("/")
+    if any(segment.startswith(("[...", "[[...")) for segment in segments):
+        return None
+    return "/".join("{}" if segment.startswith("[") and segment.endswith("]") else segment for segment in segments)
+
+
+def _declared_schema(reader: str, path: str | None) -> tuple[str | None, str]:
+    """`(schema, "")`, the path of a route Noir or Next.js declares as `REST` reads one (`/orders/{}`: `:id` and
+    `[id]` alike), or `(None, cause)` when it has none."""
+    import entries
+    if path is None:
+        return None, "it has no path"
+    # shortcut: Noir's spelling of a Next.js dynamic segment is not measured, a Noir path with `[id]` stays literal, when a Noir report of a real Next.js project is read
+    if reader == entries.NEXT and (path := _next_path(path)) is None:
+        return None, "a catch-all segment stands for several path schemas, so no call is linked to it"
+    key = REST.key(ANY_SERVICE, "", path)  # the key wants a method, the schema is the same under any
+    return (key[2], "") if key else (None, "the path is no schema (nothing after the base URL, or a computed first segment)")
+
+
+def _declared_key(reader: str, method: str | None, path: str | None) -> tuple[tuple | None, str]:
+    """`(key, "")` of a route Noir or Next.js declares, in `REST`'s terms and with no service (`ANY_SERVICE`), or
+    `(None, cause)` when it cannot be one."""
+    if not method:
+        return None, "it has no method"
+    schema, cause = _declared_schema(reader, path)
+    return (REST.key(ANY_SERVICE, method, schema), "") if schema is not None else (None, cause)
+
+
+def _declared_routes(found: list[dict], offered: list[dict]) -> tuple[list[dict], list[dict]]:
+    """`(points, gaps)`: the routes Noir and Next.js declare as offered points of `REST`, and those that cannot be one.
+    `found` are the entries already classified (an entry of kind `rotta` on a function, no gap: the same
+    classification as the entries themselves), `offered` the points the rules gave. What is a route with a method of
+    its own is in the tables (`QUERIES`): the protocol of Noir that is a route (a server action and any other protocol
+    are not), the config type of Next.js that lists methods (a route handler; a page answers any method, and the one
+    Noir's route on its path gave it is not its own). A point is dropped when one of the same function, method and
+    path schema exists, whatever its service: the rule's comes first, then the first declared."""
+    import entries
+    points, gaps = [], []
+    taken = {(o["symbol"], *o["key"][1:]) for o in offered}
+    for item in found:
+        reader, shape = item.get("reader"), item.get("shape")
+        # shortcut: a Next.js page only Noir reports (no typegen) has Noir's method and its protocol, so it is offered, when the Noir row keeps its technology
+        http = {entries.NOIR: entries.QUERIES["noir"].get(shape) == "rotta",
+                entries.NEXT: "methods" in entries.QUERIES["next"].get(shape, {})}.get(reader, False)
+        if item.get("kind") != "rotta" or not http or not item.get("symbol"):
+            continue
+        method, path = item.get("method"), item.get("path")
+        key, cause = _declared_key(reader, method, path)
+        if key is None:
+            gaps.append({"site": item["site"], "symbol": item["symbol"], "reason": f"declared route {method} {path}: {cause}"})
+        # shortcut: the declared route goes whatever the calling service, so a call of another service than the rule's finds no declared route of that function, when one function is offered under two services
+        elif (item["symbol"], *key[1:]) not in taken:
+            taken.add((item["symbol"], *key[1:]))
+            points.append({"symbol": item["symbol"], "key": key, "site": item["site"]})
+    return points, gaps
 
 
 def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
@@ -1018,22 +1149,26 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
                 item.update(symbol=facts.node(matches[0]["id"]), handler_source="noir")
             else:
                 item["gap"] = "Noir reports this endpoint without a unique snapshot handler at its site"
-        # One route, one entry: Noir's route on the path of a Next entry, in the file or on the function that entry
-        # starts, is that entry, provided it is of Noir's method (a page carries none and answers any, a route
-        # handler's entry has its method); the method goes to an entry that lacks one. Another path, or a method no
-        # entry of that file and path carries, is a route of its own.
+        # One route, one entry: Noir's route on the path of a Next entry (the same path schema, `:id` as `[id]`; the
+        # text where a path has none), in the file or on the function that entry starts, is that entry, provided it
+        # is of Noir's method (a page carries none and answers any, a route handler's entry has its method); the
+        # method goes to an entry that lacks one. Another path, or a method no entry of that file and path carries,
+        # is a route of its own.
         def file_of(site: str) -> str:
             file, _, line = site.rpartition(":")
             return file if line.isdecimal() else site
 
+        def route_of(item: dict):
+            return _declared_schema(item["reader"], item.get("path"))[0] or item.get("path")
+
         by_path = defaultdict(list)
         for item in declared:
             if item["reader"] == entry_reader.NEXT and not item.get("gap"):
-                by_path[item["path"]].append(item)
+                by_path[route_of(item)].append(item)
         kept = []
         for item in declared:
             method = item.get("method")
-            same = next((n for n in by_path.get(item.get("path"), ())
+            same = next((n for n in by_path.get(route_of(item), ())
                          if (file_of(n["site"]) == file_of(item["site"]) or n["symbol"] == item["symbol"])
                          and (not method or n.get("method") in (None, method))), None) \
                 if item["reader"] == entry_reader.NOIR else None
@@ -1200,6 +1335,10 @@ def link_facts(manifest: Path, rules: list[dict], *, module_graph=None) -> dict:
         starts = {entry["symbol"] for entry in entries if entry.get("reader") != "observed"}
         entries[:] = [entry for entry in entries if entry.get("reader") != "observed" or entry["symbol"] not in starts]
         actions[:] = [action for action in actions if action.get("reader") != "observed" or action["handler"] not in starts]
+        # The routes Noir and Next.js declare are offered too, for a call to meet: they are entries already, and add none.
+        declared_points, declared_gaps = _declared_routes(entries, routes_offered)
+        routes_offered += declared_points
+        gaps += declared_gaps
         external = _external_nodes(manifest, module_graph)
         ties = _package_services(manifest)
         symbols_by_file = defaultdict(set)
@@ -1296,10 +1435,12 @@ def _symbol_coverage(symbols_by_file, entries, edges):
 @cache
 def _links_reader_digest() -> str:
     """Installed link readers and rules; one bounded read of Daodan's own code per process."""
+    from premap import FRAMEWORK_SOURCES, TEMPLATE_SOURCES
     digest = hashlib.sha256()
     for path in (Path(__file__), SCRIPT_DIR / "edge_view.py", SCRIPT_DIR / "edge_store.py", SCRIPT_DIR / "entries.py",
                  SCRIPT_DIR / "premap" / "flow_entries.py", SCRIPT_DIR / "premap" / "noir.py",
-                 SCRIPT_DIR / "premap" / "nextjs.py", SCRIPT_DIR / "technologies.py",
+                 *(Path(source.__file__) for source in (*FRAMEWORK_SOURCES, *TEMPLATE_SOURCES)),
+                 SCRIPT_DIR / "premap" / "angular_templates.mjs", SCRIPT_DIR / "technologies.py",
                  SCRIPT_DIR / "premap" / "python_build.py", SCRIPT_DIR / "languages" / "rust.py",
                  SCRIPT_DIR / "engine_pass.py", SCRIPT_DIR.parent / "data" / "entry-queries.json"):
         digest.update(path.name.encode() + b"\0" + path.read_bytes().replace(b"\r\n", b"\n"))

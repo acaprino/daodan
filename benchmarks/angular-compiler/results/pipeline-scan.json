@@ -1,0 +1,716 @@
+{
+ "about": "The scan step of benchmarks/project-model/modal_pipeline.py --folder-stop scan on benchmarks/angular-compiler/fixture, on Modal, in Daodan's container: the sources' states, the rows of the angular source and its gaps, from the run's premap.json.",
+ "framework_entries": [
+  {
+   "column": 30,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/accents.component.ts::AccentsComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/accents.component.ts:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/accents.component.ts::AccentsComponent.brew"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:2",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.save"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:3",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.save"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:4",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/order.service.ts::OrderService.cancel"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:5",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.save"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.close"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.reopen"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:7",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.save"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:7",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.close"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "gap": "router.navigate is declared in node_modules/@angular/router/types/_router_module-chunk.d.ts, which the snapshot does not hold (a package's, or outside the project)",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:9",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:10",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.pay"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:11",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.withIcon"
+  },
+  {
+   "column": 6,
+   "event": "(ngSubmit)",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(ngSubmit)",
+   "site": "src/app/app.component.html:12",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.submit"
+  },
+  {
+   "column": 34,
+   "event": "(keyup.enter)",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(keyup.enter)",
+   "site": "src/app/app.component.html:13",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.search"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:17",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.inIf"
+  },
+  {
+   "column": 31,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:20",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.liClick"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:21",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.remove"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:25",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.removeFor"
+  },
+  {
+   "column": 10,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/app.component.html:28",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.inTpl"
+  },
+  {
+   "column": 5,
+   "event": "(window:resize)",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(window:resize)",
+   "site": "src/app/app.component.html:30",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.onResize"
+  },
+  {
+   "column": 12,
+   "event": "(saved)",
+   "handler_source": "angular",
+   "owner": "src/app/app.component.ts::AppComponent",
+   "reader": "attributo",
+   "shape": "(saved)",
+   "site": "src/app/app.component.html:31",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/app.component.ts::AppComponent.onSaved"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/bad.component.ts::BadComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/bad.component.html:1",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/bad.component.ts::BadComponent.oops"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "gap": "handlers[0](): the callee of a call is no name (KeyedRead): the call is not read",
+   "owner": "src/app/callee.component.ts::CalleeComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/callee.component.ts:7",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/callee.component.ts::CalleeComponent"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/callee.component.ts::CalleeComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/callee.component.ts:8",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/callee.component.ts::CalleeComponent.factory"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "gap": "factory()(): the callee of a call is no name (Call): the call is not read",
+   "owner": "src/app/callee.component.ts::CalleeComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/callee.component.ts:8",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/callee.component.ts::CalleeComponent"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/crlf.component.ts::CrlfComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/crlf.component.ts:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/crlf.component.ts::CrlfComponent.go"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/crlf.component.ts::CrlfComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/crlf.component.ts:7",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/crlf.component.ts::CrlfComponent.stop"
+  },
+  {
+   "column": 21,
+   "event": "click",
+   "gap": "saved.emit is declared in node_modules/@angular/core/types/_api-chunk.d.ts, which the snapshot does not hold (a package's, or outside the project)",
+   "owner": "src/app/editor.component.ts::EditorComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/editor.component.ts:5",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/editor.component.ts::EditorComponent"
+  },
+  {
+   "column": 21,
+   "event": "click",
+   "gap": "GoneComponent does not declare gone: it is inherited, or assigned at run time",
+   "owner": "src/app/gone.component.ts::GoneComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/gone.component.ts:5",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/gone.component.ts::GoneComponent"
+  },
+  {
+   "column": 14,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/inline.component.ts::InlineComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/inline.component.ts:9",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/inline.component.ts::InlineComponent.go"
+  },
+  {
+   "column": 14,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/inline.component.ts::InlineComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/inline.component.ts:10",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/inline.component.ts::InlineComponent.goThis"
+  },
+  {
+   "column": 27,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/inline.component.ts::InlineEscapedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/inline.component.ts:24",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/inline.component.ts::InlineEscapedComponent.esc"
+  },
+  {
+   "column": 65,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/inline.component.ts::InlineEscapedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/inline.component.ts:24",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/inline.component.ts::InlineEscapedComponent.esc2"
+  },
+  {
+   "column": 21,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/inline.component.ts::InlineDoubleQuotedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/inline.component.ts:33",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/inline.component.ts::InlineDoubleQuotedComponent.dq"
+  },
+  {
+   "column": 8,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/legacy.component.ts::LegacyComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/legacy.component.html:1",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/legacy.component.ts::LegacyComponent.legacySave"
+  },
+  {
+   "column": 44,
+   "event": "click",
+   "gap": "c is a template variable declared in the template, not a method of ScopedComponent: the handler it stands for is not known",
+   "owner": "src/app/scoped.component.ts::ScopedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/scoped.component.ts:8",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/scoped.component.ts::ScopedComponent"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "gap": "save is a template @let declared in the template, not a method of ScopedComponent: the handler it stands for is not known",
+   "owner": "src/app/scoped.component.ts::ScopedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/scoped.component.ts:10",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/scoped.component.ts::ScopedComponent"
+  },
+  {
+   "column": 14,
+   "event": "click",
+   "gap": "go is a template variable declared in the template, not a method of ScopedComponent: the handler it stands for is not known",
+   "owner": "src/app/scoped.component.ts::ScopedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/scoped.component.ts:12",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/scoped.component.ts::ScopedComponent"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/scoped.component.ts::ScopedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/scoped.component.ts:14",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/scoped.component.ts::ScopedComponent.real"
+  },
+  {
+   "column": 12,
+   "event": "click",
+   "handler_source": "angular",
+   "owner": "src/app/scoped.component.ts::ScopedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/scoped.component.ts:15",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/scoped.component.ts::ScopedComponent.save"
+  },
+  {
+   "column": 21,
+   "event": "click",
+   "gap": "helper.run: UnreachedComponent (src/app/unreached.component.ts:8) is not in the program of tsconfig.json (1 root files)",
+   "owner": "src/app/unreached.component.ts::UnreachedComponent",
+   "reader": "attributo",
+   "shape": "(click)",
+   "site": "src/app/unreached.component.ts:6",
+   "sources": [
+    "angular@daodan/premap/v1"
+   ],
+   "symbol": "src/app/unreached.component.ts::UnreachedComponent"
+  }
+ ],
+ "gaps": [
+  {
+   "detail": "the template of ComputedComponent (src/app/computed.component.ts:7) is no text written in place (a `${...}` or an expression): its events are not read",
+   "kind": "model_partial",
+   "path": "src/app/computed.component.ts",
+   "source": "angular@daodan/premap/v1"
+  },
+  {
+   "detail": "the templateUrl of MissingComponent (src/app/missing.component.ts:5) names src/app/nowhere.component.html, a file the snapshot does not hold",
+   "kind": "outside_snapshot",
+   "path": "src/app/nowhere.component.html",
+   "source": "angular@daodan/premap/v1"
+  },
+  {
+   "detail": "parseTemplate reported 2 errors in src/app/bad.component.html, so events may be missing: Parser Error: Unexpected end of expression: oops( at the end of the expression [oops(] in src/app/bad.component.html@0:17 (\"<button (click)=\"[ERROR ->]oops(\">Bad</button>\n\"): src/app/bad.component.htm",
+   "kind": "model_partial",
+   "path": "src/app/bad.component.html",
+   "source": "angular@daodan/premap/v1"
+  }
+ ],
+ "seconds": 145.0,
+ "sources": [
+  {
+   "seconds": 0.004,
+   "source": "modules.py@daodan/module-graph/v1+compose.1.pyyaml.6.0.4.unit-resolution.3.image.2",
+   "state": "ran"
+  },
+  {
+   "seconds": 0.0,
+   "source": "python-build@daodan/premap/v3",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.001,
+   "source": "requirements@daodan/premap/v2",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "python-tests@daodan/premap/v1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.002,
+   "source": "npm-files@daodan/premap/v1",
+   "state": "ran"
+  },
+  {
+   "seconds": 0.0,
+   "source": "npm-tests@daodan/premap/v6",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "npm-start@daodan/premap/v1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "jvm-files@daodan/premap/v4",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.001,
+   "source": "project-files@daodan/premap/v2",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "gitmodules@daodan/premap/v1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "autotools@daodan/premap/v1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 44.407,
+   "source": "go-enry@v2.9.6",
+   "state": "ran"
+  },
+  {
+   "seconds": 42.784,
+   "source": "renovate@44.239.1",
+   "state": "ran"
+  },
+  {
+   "seconds": 0.0,
+   "source": "compose@5.6.1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "buildkit@v0.34.2",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "go@1.27.3",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "cargo@1.99.1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "uv@0.11.28",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 17.712,
+   "source": "tsc@6.0.3",
+   "state": "ran"
+  },
+  {
+   "seconds": 9.516,
+   "source": "npm@11.19.1",
+   "state": "ran"
+  },
+  {
+   "seconds": 0.0,
+   "source": "cmake@4.4.5",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "meson@1.12.1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "bazel@9.3.1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "make@4.3",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "gradle@9.9.1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "maven@3.10.0",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "sbt@1.13.1",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 0.0,
+   "source": "dotnet@10.0.404",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 9.549,
+   "source": "noir@1.5.0",
+   "state": "ran"
+  },
+  {
+   "seconds": 0.0,
+   "source": "next@daodan/premap/v2",
+   "state": "not_needed"
+  },
+  {
+   "seconds": 19.168,
+   "source": "angular@daodan/premap/v1",
+   "state": "ran"
+  }
+ ]
+}

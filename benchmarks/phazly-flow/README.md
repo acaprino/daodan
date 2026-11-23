@@ -233,3 +233,35 @@ Totale 39,86 USD. Costo medio per prova: B 9,98 USD, C 9,95 USD, entrambe 1,10 v
 - **Condizioni diverse dalla spec, come nella prima esecuzione:** la mappa che ogni run crea non è completa, e cambia da run a run. Chiamate risolte: 48,3% in B1 (motore Kotlin fallito), circa 15% in B2 (archi del motore rifiutati), passata del motore ancora in corso in C1 e in C2 (0,18 alla pubblicazione). In C1 la pubblicazione della mappa è rifiutata per «snapshot parser identity changed». B1 dichiara 194 celle coperte su 240.
 - **Lo scrittore che lascia lo stato «saltato»** (`favoritesSlice.ts:152-155`) è nel rapporto di tutte e quattro: Medium in B1, C1 e C2, Low in B2. Era già in tutte le run della prima esecuzione, quindi non distingue le prove.
 - La cartella della review è salvata intera per tutte e quattro: `.team-review/` in tre, `.daodan/review/.team-review/` in B2.
+
+## La chiave dello store come indice costante, 23 novembre 2026
+
+Misura del task 18 del piano degli ingressi e dei flussi: una regola di store con `key: holder` legge la chiave anche quando il ricevente della chiamata è `store[INDICE]` (`db[COLLECTION].insert_one(x)`).
+
+| Parametro | Valore |
+|---|---|
+| Script | `measure_links.py` (Modal, derivato da `modal_map.py::possible_case`) e `check_store_keys.py` (locale, legge il sorgente dall'albero sintattico) |
+| Input | un run della pipeline intera sul volume `daodan-flow-results`: la cartella dello snapshot (`possible-in/phazly5`) e quella del sorgente (`possible-in/phazly3-src`); il record registrato della pre-mappa è tenuto, come nella misura del 23 novembre |
+| Regole | `rules.json` di questa cartella, 18 regole |
+| Riferimento | il privato del proprietario, letto a runtime con `--expected`, non copiato |
+| Prima | l'albero della misura del 23 novembre, rieseguito: stesso sha di `flows.py`, stesso digest dei collegamenti e gli stessi numeri |
+| Dopo | lo stesso albero con i soli blocchi di `flows.py` di questa modifica (`_store_index`, `_store_key`, `_unread_index`, `_inline_handle`, `_handle`) |
+
+| Misura | Prima | Dopo |
+|---|---|---|
+| Flussi chiusi su 38, con i soli collegamenti certi | 14 | **15** |
+| Flussi chiusi su 38, con i possibili | 15 | 16 |
+| Frecce certe su 240 | 101 | **104** |
+| Frecce mancante / non misurabile / mancante con lacuna | 39 / 26 / 10 | 30 / 25 / 17 |
+| Legami `scrive` / `legge` | 459 / 463 | 507 / 489 |
+| Legami di store nuovi, nessuno perso | | 74 (48 `scrive`, 26 `legge`) |
+| Chiavi di store (mongo) | 121 (38) | 127 (44) |
+| Store con scrittori e lettori | 88 | 95 |
+| Lacune | 261 | 303 |
+| Flussi tracciati da un ingresso, incompleti su 1105 | 119 | 205 |
+
+- Un solo flusso cambia, e passa a chiuso: quello che la diagnosi dei 24 flussi aperti attribuiva a una chiave `db[COLLECTION]` nello stesso file. Nessun flusso peggiora.
+- Le 74 chiavi nuove sono controllate dall'albero sintattico del sorgente (`check_store_keys.py`): 74 giuste, 0 sbagliate; 70 sono una costante dichiarata nello stesso file, 4 un testo. Il campione di 10 (seme 11) è stato riletto a mano sul sorgente: tutte la collezione vera.
+- Le 42 lacune nuove, una causa per caso: 24 `self.NOME` (l'identità che il motore dà non arriva alla vista), 10 indici calcolati, 5 nomi puntati (`modulo.NOME`), 3 nomi importati che lo snapshot non lega a una dichiarazione. Tutti gli 86 flussi che diventano incompleti hanno una di queste lacune sul percorso: prima la chiamata era muta.
+- Una versione precedente leggeva `self.NOME` dalla dichiarazione della classe che racchiude: dava 17 flussi chiusi, ma con il motore vero produceva legami certi sbagliati (tupla, `+=`, `cls.NOME = ...`, `Classe.NOME = ...` a livello di modulo) ed è stata tolta.
+- Non misurato: un altro progetto; la pre-mappa non è rigenerata col codice di oggi.

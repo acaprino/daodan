@@ -1,0 +1,18 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "svelte-kit",
+   "sync"
+  ],
+  "cwd": "config-throws",
+  "left_in_the_project": [
+   ".svelte-kit/tsconfig.json"
+  ],
+  "returncode": 1,
+  "seconds": 1.41,
+  "stderr": "Loading Svelte config from Vite config failed: Error: svelte.config.js needs a secret\n    at file:///work/config-throws/svelte.config.js?ts=1795426705898:1:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async load_svelte_config (file:///work/config-throws/node_modules/@sveltejs/kit/src/core/config/index.js:171:17)\n    at async sveltekit (file:///work/config-throws/node_modules/@sveltejs/kit/src/exports/vite/index.js:176:19) \n\nFalling back to loading svelte.config.js\n> svelte.config.js needs a secret\n    at file:///work/config-throws/svelte.config.js?ts=1795426705900:1:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async load_svelte_config (file:///work/config-throws/node_modules/@sveltejs/kit/src/core/config/index.js:171:17)\n    at async file:///work/config-throws/node_modules/@sveltejs/kit/src/cli.js:98:18\n",
+  "stdout": ""
+ }
+]

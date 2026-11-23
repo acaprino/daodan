@@ -211,9 +211,11 @@ def test_the_commands_use_the_projects_own_next_without_network_and_the_setup_in
     project, manifest = manifest_of(tmp_path, {"package.json": '{"dependencies": {"next": "16.4.6"}}\n'})
     with open_snapshot(manifest) as store:
         asked = premap.nextjs.commands(premap.Context(manifest, store))
+    # `npm_config_offline`: without `next` installed `npx --no-install` still asks the registry and fails after 70 seconds with a network
+    # error (measured for `react-router` and `remix`, `benchmarks/react-router-routes/`); offline it fails at once, saying what is missing
     assert asked == [
         {"tool": "next", "argv": ["npx", "--no-install", "next", "typegen"], "cwd": ".",
-         "env": {"NEXT_TELEMETRY_DISABLED": "1"}, "network": "none"},
+         "env": {"NEXT_TELEMETRY_DISABLED": "1", "npm_config_offline": "true"}, "network": "none"},
         {"tool": "next", "argv": ["cat", ".next/types/validator.ts"], "cwd": ".", "env": {}, "network": "none"}]
     spec = container_runner.TOOLS["next"]
     assert spec["setup"] == [container_runner.UNPACK["node"]]  # Node only: `next` is the project's own

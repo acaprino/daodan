@@ -127,6 +127,22 @@ def test_a_route_handler_with_two_exported_methods_is_two_entries(tmp_path):
         ("POST", "app/api/pay/route.ts::POST", "app/api/pay/route.ts:5")]
 
 
+@pytest.mark.parametrize("get", [
+    # a TypeScript overload: three records of the one export name
+    "export async function GET(a: string): Promise<Response>;\nexport async function GET(a: number): Promise<Response>;\n"
+    "export async function GET(a: any) {\n  return Response.json({});\n}\n",
+    # a value and a type of one name
+    "export const GET = () => Response.json({});\nexport type GET = { x: number };\n"])
+def test_an_exported_method_the_file_makes_twice_is_a_gap_naming_the_cause_beside_the_entries_of_the_others(tmp_path, get):
+    """`export-missing-or-ambiguous` was one reason, and an ambiguous export left without a word: the entry of the others stayed
+    and the lost one was in no gap. Missing and ambiguous are two reasons, and only the missing one is silent."""
+    route = get + "\nexport async function POST() {\n  return Response.json({});\n}\n"
+    links = next_links(tmp_path, shop(**{"app/api/pay/route.ts": route}))
+    assert [e["method"] for e in links["entries"] if e["path"] == "/api/pay"] == ["POST"]
+    [gap] = [g for g in links["gaps"] if g["site"] == "app/api/pay/route.ts"]
+    assert "GET: export-ambiguous" in gap["reason"] and "HEAD" not in gap["reason"] and "POST" not in gap["reason"]
+
+
 @pytest.mark.parametrize("file, text, looked_for", [
     ("app/page.tsx", "export const title = 'Negozio';\n", "default"),
     ("app/api/pay/route.ts", "export const dynamic = 'force-static';\n", "GET, HEAD, OPTIONS, POST, PUT, DELETE, PATCH")])

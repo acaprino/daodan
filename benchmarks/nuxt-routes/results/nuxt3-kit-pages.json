@@ -1,0 +1,59 @@
+[
+ {
+  "argv": [
+   "node",
+   "--input-type=module",
+   "-e",
+   "import { loadNuxt, buildNuxt } from '@nuxt/kit'\nconst nuxt = await loadNuxt({ cwd: process.cwd(), overrides: { _prepare: true } })\nconst found = []\nconst walk = (pages, hook) => pages.forEach((p) => { found.push({ hook, name: p.name, path: p.path, file: p.file, children: (p.children || []).length }); walk(p.children || [], hook) })\nnuxt.hook('pages:extend', (pages) => walk(pages, 'pages:extend'))\nnuxt.hook('pages:resolved', (pages) => walk(pages, 'pages:resolved'))\nawait buildNuxt(nuxt)\nawait nuxt.close()\nconsole.log(JSON.stringify(found))\n"
+  ],
+  "changed_in_the_project": [],
+  "cwd": "nuxt3-kit-pages",
+  "left_in_home": [],
+  "left_in_the_project": [
+   ".nuxt/app.config.mjs",
+   ".nuxt/components.d.ts",
+   ".nuxt/imports.d.ts",
+   ".nuxt/manifest/meta/01c56245-f1fc-440c-a130-d0f6e22e6889.json",
+   ".nuxt/types/app-defaults.d.ts",
+   ".nuxt/types/app.config.d.ts",
+   ".nuxt/types/build.d.ts",
+   ".nuxt/types/builder-env.d.ts",
+   ".nuxt/types/components.d.ts",
+   ".nuxt/types/imports.d.ts",
+   ".nuxt/types/layouts.d.ts",
+   ".nuxt/types/middleware.d.ts",
+   ".nuxt/types/nitro-layouts.d.ts",
+   ".nuxt/types/nitro-middleware.d.ts",
+   ".nuxt/types/nitro-nuxt.d.ts",
+   ".nuxt/types/plugins.d.ts",
+   ".nuxt/types/schema.d.ts",
+   ".nuxt/types/vue-shim.d.ts",
+   "node_modules/.cache/jiti/nuxt3-kit-pages-nuxt.config.428e531b.mjs"
+  ],
+  "max_rss_mb": 295.3,
+  "nuxt_dir": {
+   ".nuxt/app.config.mjs": 338,
+   ".nuxt/components.d.ts": 5914,
+   ".nuxt/imports.d.ts": 4564,
+   ".nuxt/manifest/meta/01c56245-f1fc-440c-a130-d0f6e22e6889.json": 2,
+   ".nuxt/types/app-defaults.d.ts": 199,
+   ".nuxt/types/app.config.d.ts": 1022,
+   ".nuxt/types/build.d.ts": 1009,
+   ".nuxt/types/builder-env.d.ts": 21,
+   ".nuxt/types/components.d.ts": 5641,
+   ".nuxt/types/imports.d.ts": 38098,
+   ".nuxt/types/layouts.d.ts": 642,
+   ".nuxt/types/middleware.d.ts": 231,
+   ".nuxt/types/nitro-layouts.d.ts": 385,
+   ".nuxt/types/nitro-middleware.d.ts": 580,
+   ".nuxt/types/nitro-nuxt.d.ts": 1460,
+   ".nuxt/types/plugins.d.ts": 1756,
+   ".nuxt/types/schema.d.ts": 1053,
+   ".nuxt/types/vue-shim.d.ts": 0
+  },
+  "returncode": 0,
+  "seconds": 1.03,
+  "stderr": "",
+  "stdout": "[{\"hook\":\"pages:extend\",\"name\":\"about\",\"path\":\"/about\",\"file\":\"/work/nuxt3-kit-pages/pages/about.vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"index\",\"path\":\"/\",\"file\":\"/work/nuxt3-kit-pages/pages/index.vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"quokka\",\"path\":\"/quokka-path\",\"file\":\"/work/nuxt3-kit-pages/pages/legacy.vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"parent\",\"path\":\"/parent\",\"file\":\"/work/nuxt3-kit-pages/pages/parent.vue\",\"children\":1},{\"hook\":\"pages:extend\",\"name\":\"parent-child\",\"path\":\"child\",\"file\":\"/work/nuxt3-kit-pages/pages/parent/child.vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"foo-bar\",\"path\":\"/foo/bar\",\"file\":\"/work/nuxt3-kit-pages/pages/foo/bar.vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"slug\",\"path\":\"/:slug(.*)*\",\"file\":\"/work/nuxt3-kit-pages/pages/[...slug].vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"foo\",\"path\":\"/foo\",\"file\":\"/work/nuxt3-kit-pages/pages/foo/index.vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"users-id\",\"path\":\"/users/:id()\",\"file\":\"/work/nuxt3-kit-pages/pages/users/[id].vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"blog-page\",\"path\":\"/blog/:page?\",\"file\":\"/work/nuxt3-kit-pages/pages/blog/[[page]].vue\",\"children\":0},{\"hook\":\"pages:extend\",\"name\":\"from-hook\",\"path\":\"/from-hook\",\"file\":\"/work/nuxt3-kit-pages/pages/about.vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"about\",\"path\":\"/about\",\"file\":\"/work/nuxt3-kit-pages/pages/about.vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"index\",\"path\":\"/\",\"file\":\"/work/nuxt3-kit-pages/pages/index.vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"quokka\",\"path\":\"/quokka-path\",\"file\":\"/work/nuxt3-kit-pages/pages/legacy.vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"parent\",\"path\":\"/parent\",\"file\":\"/work/nuxt3-kit-pages/pages/parent.vue\",\"children\":1},{\"hook\":\"pages:resolved\",\"name\":\"parent-child\",\"path\":\"child\",\"file\":\"/work/nuxt3-kit-pages/pages/parent/child.vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"foo-bar\",\"path\":\"/foo/bar\",\"file\":\"/work/nuxt3-kit-pages/pages/foo/bar.vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"slug\",\"path\":\"/:slug(.*)*\",\"file\":\"/work/nuxt3-kit-pages/pages/[...slug].vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"foo\",\"path\":\"/foo\",\"file\":\"/work/nuxt3-kit-pages/pages/foo/index.vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"users-id\",\"path\":\"/users/:id()\",\"file\":\"/work/nuxt3-kit-pages/pages/users/[id].vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"blog-page\",\"path\":\"/blog/:page?\",\"file\":\"/work/nuxt3-kit-pages/pages/blog/[[page]].vue\",\"children\":0},{\"hook\":\"pages:resolved\",\"name\":\"from-hook\",\"path\":\"/from-hook\",\"file\":\"/work/nuxt3-kit-pages/pages/about.vue\",\"children\":0}]\n"
+ }
+]

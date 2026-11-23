@@ -1,0 +1,173 @@
+@astrojs/compiler 4.0.0
+
+=== per kind of node: the start of its position against the text
+CRLF attribute:empty: n=10; start exact=10; line:column agree with the offset=10; no end=10; offset right only as BYTES, wrong as UTF-16 units=1
+CRLF attribute:expression: n=8; start exact=8; line:column agree with the offset=8; no end=8
+CRLF attribute:quoted: n=67; start exact=67; line:column agree with the offset=67; no end=67; offset right only as BYTES, wrong as UTF-16 units=4
+CRLF attribute:shorthand: n=1; start exact=1; line:column agree with the offset=1; no end=1
+CRLF attribute:spread: n=2; start exact=2; line:column agree with the offset=2; no end=2
+CRLF comment: n=1; start exact=1; line:column agree with the offset=1; has end=1
+CRLF component: n=7; start exact=7; line:column agree with the offset=7; has end=7
+CRLF custom-element: n=1; start exact=1; line:column agree with the offset=1; has end=1
+CRLF doctype: n=1; no position=1
+CRLF element: n=78; start exact=75; line:column agree with the offset=78; has end=75; start: token -1 from the offset=3; no end=3; offset right only as BYTES, wrong as UTF-16 units=5
+CRLF expression: n=12; start: token +1 from the offset=12; line:column agree with the offset=12; has end=12
+CRLF fragment: n=1; start exact=1; line:column agree with the offset=1; has end=1
+CRLF frontmatter: n=11; start exact=11; line:column agree with the offset=11; has end=11
+CRLF root: n=13; no position=13
+CRLF text: n=165; start exact=165; line:column agree with the offset=165; has end=165; offset right only as BYTES, wrong as UTF-16 units=9
+LF   attribute:empty: n=10; start exact=10; line:column agree with the offset=10; no end=10; offset right only as BYTES, wrong as UTF-16 units=1
+LF   attribute:expression: n=8; start exact=8; line:column agree with the offset=8; no end=8
+LF   attribute:quoted: n=67; start exact=67; line:column agree with the offset=67; no end=67; offset right only as BYTES, wrong as UTF-16 units=4
+LF   attribute:shorthand: n=1; start exact=1; line:column agree with the offset=1; no end=1
+LF   attribute:spread: n=2; start exact=2; line:column agree with the offset=2; no end=2
+LF   comment: n=1; start exact=1; line:column agree with the offset=1; has end=1
+LF   component: n=7; start exact=7; line:column agree with the offset=7; has end=7
+LF   custom-element: n=1; start exact=1; line:column agree with the offset=1; has end=1
+LF   doctype: n=1; no position=1
+LF   element: n=78; start exact=75; line:column agree with the offset=78; has end=75; start: token -1 from the offset=3; no end=3; offset right only as BYTES, wrong as UTF-16 units=5
+LF   expression: n=12; start: token +1 from the offset=12; line:column agree with the offset=12; has end=12
+LF   fragment: n=1; start exact=1; line:column agree with the offset=1; has end=1
+LF   frontmatter: n=11; start exact=11; line:column agree with the offset=11; has end=11
+LF   root: n=13; no position=13
+LF   text: n=165; start exact=165; line:column agree with the offset=165; has end=165; offset right only as BYTES, wrong as UTF-16 units=9
+
+=== the end of the node, where the compiler gives one
+CRLF comment: elsewhere=1
+CRLF component: to the end of the closing tag=5; elsewhere=2
+CRLF custom-element: to the end of the closing tag=1
+CRLF element: to the end of the closing tag=70; one before the > of a self-closing tag=2; elsewhere=3
+CRLF expression: elsewhere=12
+CRLF fragment: elsewhere=1
+CRLF frontmatter: to the closing fence=11
+CRLF text: exactly its value=163; elsewhere=2
+LF   comment: elsewhere=1
+LF   component: to the end of the closing tag=5; elsewhere=2
+LF   custom-element: to the end of the closing tag=1
+LF   element: to the end of the closing tag=70; one before the > of a self-closing tag=2; elsewhere=3
+LF   expression: elsewhere=12
+LF   fragment: elsewhere=1
+LF   frontmatter: to the closing fence=11
+LF   text: exactly its value=163; elsewhere=2
+
+=== line:column that disagree with the offset (0)
+
+=== the events of the fixture, one by one: the name of the attribute in the text and what the compiler says
+exact  LF   src/components/Card.astro onclick="openCard(this)" <button> quoted: compiler 6:29@128, text 6:29@128
+exact  LF   src/components/Counter.astro onclick="increment()" <button> quoted: compiler 4:25@69, text 4:25@69
+exact  LF   src/pages/about.astro onclick="goHome()" <a> quoted: compiler 6:15@106, text 6:15@106
+exact  LF   src/pages/blog/[slug].astro onclick="share()" <button> quoted: compiler 11:13@265, text 11:13@265
+exact  LF   src/pages/broken.astro onclick="beforeBreak()" <button> quoted: compiler 5:11@41, text 5:11@41
+exact  LF   src/pages/broken.astro onclick="afterBreak()" <button> quoted: compiler 7:13@105, text 7:13@105
+exact  LF   src/pages/broken.astro onclick="inBroken()" <span> quoted: compiler 8:18@160, text 8:18@160
+exact  LF   src/pages/calls.astro onclick="cart.add(1)" <button> quoted: compiler 1:9@8, text 1:9@8
+exact  LF   src/pages/calls.astro onclick="window.open('/x'); save()" <button> quoted: compiler 2:9@59, text 2:9@59
+exact  LF   src/pages/calls.astro onclick="items[0]()" <button> quoted: compiler 3:9@129, text 3:9@129
+exact  LF   src/pages/calls.astro onclick="factory()()" <button> quoted: compiler 4:9@183, text 4:9@183
+exact  LF   src/pages/calls.astro onclick="(0, run)()" <button> quoted: compiler 5:9@237, text 5:9@237
+exact  LF   src/pages/calls.astro onclick="new Thing()" <button> quoted: compiler 6:9@296, text 6:9@296
+exact  LF   src/pages/calls.astro one="two()" <div> quoted: compiler 7:6@344, text 7:6@344
+exact  LF   src/pages/calls.astro onfoo="bar()" <p> quoted: compiler 8:4@378, text 8:4@378
+exact  LF   src/pages/edge.astro onclick="afterScripts()" <button> quoted: compiler 17:11@391, text 17:11@391
+exact  LF   src/pages/edge.astro onclick="afterString()" <button> quoted: compiler 19:11@486, text 19:11@486
+exact  LF   src/pages/edge.astro onclick="afterMultiline()" <div> quoted: compiler 23:5@582, text 23:5@582
+exact  LF   src/pages/edge.astro onclick="fromFrontmatter()" <button> quoted: compiler 24:11@627, text 24:11@627
+exact  LF   src/pages/edge.astro onclick="fromProcessedScript()" <button> quoted: compiler 25:11@686, text 25:11@686
+exact  LF   src/pages/edge.astro onclick="fromModuleScript()" <button> quoted: compiler 26:11@747, text 26:11@747
+exact  LF   src/pages/edge.astro onclick="fromLayout()" <button> quoted: compiler 27:11@802, text 27:11@802
+exact  LF   src/pages/index.astro onclick="save()" <button> quoted: compiler 14:21@392, text 14:21@392
+exact  LF   src/pages/index.astro onclick="this.disabled = true; confirmOrder( <button> quoted: compiler 15:11@433, text 15:11@433
+exact  LF   src/pages/index.astro onclick='cancel("now")' <button> quoted: compiler 16:21@520, text 16:21@520
+exact  LF   src/pages/index.astro onclick=go() <button> quoted: compiler 17:11@589, text 17:11@589
+exact  LF   src/pages/index.astro onclick="multiLine()" <button> quoted: compiler 20:5@646, text 20:5@646
+exact  LF   src/pages/index.astro onsubmit="return validate(this)" <form> quoted: compiler 22:9@694, text 22:9@694
+exact  LF   src/pages/index.astro oninput="update(this.value)" <input> quoted: compiler 22:49@734, text 22:49@734
+exact  LF   src/pages/index.astro onclick={`pick('${item}')`} <li> expression: compiler 25:11@817, text 25:11@817
+exact  LF   src/pages/index.astro onclick="track('x')" <a> quoted: compiler 28:37@909, text 28:37@909
+exact  LF   src/pages/index.astro onclick="cardClick()" <Card> quoted: compiler 29:22@961, text 29:22@961
+exact  LF   src/pages/index.astro {onclick} <button> shorthand: compiler 32:12@1083, text 32:12@1083
+exact  LF   src/pages/index.astro onclick="widget()" <my-widget> quoted: compiler 33:14@1124, text 33:14@1124
+exact  LF   src/pages/index.astro onclick="svgClick()" <svg> quoted: compiler 34:8@1163, text 34:8@1163
+exact  LF   src/pages/nofront.astro onclick="noFrontmatter()" <button> quoted: compiler 2:11@23, text 2:11@23
+exact  LF   src/pages/svg.astro onclick="foreignClick()" <foreignObject> quoted: compiler 5:18@81, text 5:18@81
+exact  LF   src/pages/svg.astro onend="smilEnd()" <animate> quoted: compiler 6:12@155, text 6:12@155
+exact  LF   src/pages/svg.astro onclick="pathClick()" <textPath> quoted: compiler 7:13@206, text 7:13@206
+exact  LF   src/pages/tabs.astro onclick="tabbed()" <button> quoted: compiler 5:10@37, text 5:10@37
+exact  LF   src/pages/tabs.astro onclick="deep()" <span> quoted: compiler 8:10@109, text 8:10@109
+exact  LF   src/pages/unicode.astro onclick="afterText()" <button> quoted: compiler 4:28@74, text 4:28@74
+exact  LF   src/pages/unicode.astro onclick="afterUnicodeAttr()" <div> quoted: compiler 6:18@143, text 6:18@143
+exact  CRLF src/components/Card.astro onclick="openCard(this)" <button> quoted: compiler 6:29@133, text 6:29@133
+exact  CRLF src/components/Counter.astro onclick="increment()" <button> quoted: compiler 4:25@72, text 4:25@72
+exact  CRLF src/pages/about.astro onclick="goHome()" <a> quoted: compiler 6:15@111, text 6:15@111
+exact  CRLF src/pages/blog/[slug].astro onclick="share()" <button> quoted: compiler 11:13@275, text 11:13@275
+exact  CRLF src/pages/broken.astro onclick="beforeBreak()" <button> quoted: compiler 5:11@45, text 5:11@45
+exact  CRLF src/pages/broken.astro onclick="afterBreak()" <button> quoted: compiler 7:13@111, text 7:13@111
+exact  CRLF src/pages/broken.astro onclick="inBroken()" <span> quoted: compiler 8:18@167, text 8:18@167
+exact  CRLF src/pages/calls.astro onclick="cart.add(1)" <button> quoted: compiler 1:9@8, text 1:9@8
+exact  CRLF src/pages/calls.astro onclick="window.open('/x'); save()" <button> quoted: compiler 2:9@60, text 2:9@60
+exact  CRLF src/pages/calls.astro onclick="items[0]()" <button> quoted: compiler 3:9@131, text 3:9@131
+exact  CRLF src/pages/calls.astro onclick="factory()()" <button> quoted: compiler 4:9@186, text 4:9@186
+exact  CRLF src/pages/calls.astro onclick="(0, run)()" <button> quoted: compiler 5:9@241, text 5:9@241
+exact  CRLF src/pages/calls.astro onclick="new Thing()" <button> quoted: compiler 6:9@301, text 6:9@301
+exact  CRLF src/pages/calls.astro one="two()" <div> quoted: compiler 7:6@350, text 7:6@350
+exact  CRLF src/pages/calls.astro onfoo="bar()" <p> quoted: compiler 8:4@385, text 8:4@385
+exact  CRLF src/pages/edge.astro onclick="afterScripts()" <button> quoted: compiler 17:11@407, text 17:11@407
+exact  CRLF src/pages/edge.astro onclick="afterString()" <button> quoted: compiler 19:11@504, text 19:11@504
+exact  CRLF src/pages/edge.astro onclick="afterMultiline()" <div> quoted: compiler 23:5@604, text 23:5@604
+exact  CRLF src/pages/edge.astro onclick="fromFrontmatter()" <button> quoted: compiler 24:11@650, text 24:11@650
+exact  CRLF src/pages/edge.astro onclick="fromProcessedScript()" <button> quoted: compiler 25:11@710, text 25:11@710
+exact  CRLF src/pages/edge.astro onclick="fromModuleScript()" <button> quoted: compiler 26:11@772, text 26:11@772
+exact  CRLF src/pages/edge.astro onclick="fromLayout()" <button> quoted: compiler 27:11@828, text 27:11@828
+exact  CRLF src/pages/index.astro onclick="save()" <button> quoted: compiler 14:21@405, text 14:21@405
+exact  CRLF src/pages/index.astro onclick="this.disabled = true; confirmOrder( <button> quoted: compiler 15:11@447, text 15:11@447
+exact  CRLF src/pages/index.astro onclick='cancel("now")' <button> quoted: compiler 16:21@535, text 16:21@535
+exact  CRLF src/pages/index.astro onclick=go() <button> quoted: compiler 17:11@605, text 17:11@605
+exact  CRLF src/pages/index.astro onclick="multiLine()" <button> quoted: compiler 20:5@665, text 20:5@665
+exact  CRLF src/pages/index.astro onsubmit="return validate(this)" <form> quoted: compiler 22:9@715, text 22:9@715
+exact  CRLF src/pages/index.astro oninput="update(this.value)" <input> quoted: compiler 22:49@755, text 22:49@755
+exact  CRLF src/pages/index.astro onclick={`pick('${item}')`} <li> expression: compiler 25:11@841, text 25:11@841
+exact  CRLF src/pages/index.astro onclick="track('x')" <a> quoted: compiler 28:37@936, text 28:37@936
+exact  CRLF src/pages/index.astro onclick="cardClick()" <Card> quoted: compiler 29:22@989, text 29:22@989
+exact  CRLF src/pages/index.astro {onclick} <button> shorthand: compiler 32:12@1114, text 32:12@1114
+exact  CRLF src/pages/index.astro onclick="widget()" <my-widget> quoted: compiler 33:14@1156, text 33:14@1156
+exact  CRLF src/pages/index.astro onclick="svgClick()" <svg> quoted: compiler 34:8@1196, text 34:8@1196
+exact  CRLF src/pages/nofront.astro onclick="noFrontmatter()" <button> quoted: compiler 2:11@24, text 2:11@24
+exact  CRLF src/pages/svg.astro onclick="foreignClick()" <foreignObject> quoted: compiler 5:18@85, text 5:18@85
+exact  CRLF src/pages/svg.astro onend="smilEnd()" <animate> quoted: compiler 6:12@160, text 6:12@160
+exact  CRLF src/pages/svg.astro onclick="pathClick()" <textPath> quoted: compiler 7:13@212, text 7:13@212
+exact  CRLF src/pages/tabs.astro onclick="tabbed()" <button> quoted: compiler 5:10@41, text 5:10@41
+exact  CRLF src/pages/tabs.astro onclick="deep()" <span> quoted: compiler 8:10@116, text 8:10@116
+exact  CRLF src/pages/unicode.astro onclick="afterText()" <button> quoted: compiler 4:28@77, text 4:28@77
+exact  CRLF src/pages/unicode.astro onclick="afterUnicodeAttr()" <div> quoted: compiler 6:18@148, text 6:18@148
+
+events: 86 listed (LF and CRLF), found 86, name start exact in offset (bytes), line and column (UTF-16 units) 86
+
+=== attributes named on*: in the tree against listed in the fixture (a difference is a handler the tree lacks or one it invents)
+same  LF   src/components/Card.astro: tree 1, listed 1
+same  LF   src/components/Counter.astro: tree 1, listed 1
+same  LF   src/layouts/Layout.astro: tree 0, listed 0
+same  LF   src/pages/about.astro: tree 1, listed 1
+same  LF   src/pages/blog/[slug].astro: tree 1, listed 1
+same  LF   src/pages/broken.astro: tree 3, listed 3
+same  LF   src/pages/calls.astro: tree 8, listed 8
+same  LF   src/pages/edge.astro: tree 7, listed 7
+same  LF   src/pages/index.astro: tree 13, listed 13
+same  LF   src/pages/nofront.astro: tree 1, listed 1
+same  LF   src/pages/svg.astro: tree 3, listed 3
+same  LF   src/pages/tabs.astro: tree 2, listed 2
+same  LF   src/pages/unicode.astro: tree 2, listed 2
+same  CRLF src/components/Card.astro: tree 1, listed 1
+same  CRLF src/components/Counter.astro: tree 1, listed 1
+same  CRLF src/layouts/Layout.astro: tree 0, listed 0
+same  CRLF src/pages/about.astro: tree 1, listed 1
+same  CRLF src/pages/blog/[slug].astro: tree 1, listed 1
+same  CRLF src/pages/broken.astro: tree 3, listed 3
+same  CRLF src/pages/calls.astro: tree 8, listed 8
+same  CRLF src/pages/edge.astro: tree 7, listed 7
+same  CRLF src/pages/index.astro: tree 13, listed 13
+same  CRLF src/pages/nofront.astro: tree 1, listed 1
+same  CRLF src/pages/svg.astro: tree 3, listed 3
+same  CRLF src/pages/tabs.astro: tree 2, listed 2
+same  CRLF src/pages/unicode.astro: tree 2, listed 2
+
+--- exit 0

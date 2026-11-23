@@ -1,0 +1,31 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "react-router",
+   "routes",
+   "--json"
+  ],
+  "cwd": "flat",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 1.24,
+  "stderr": "",
+  "stdout": "[\n  {\n    \"id\": \"root\",\n    \"path\": \"\",\n    \"file\": \"root.tsx\",\n    \"children\": [\n      {\n        \"id\": \"routes/($lang).docs\",\n        \"path\": \":lang?/docs\",\n        \"file\": \"routes/($lang).docs.tsx\"\n      },\n      {\n        \"id\": \"routes/api.pay\",\n        \"path\": \"api/pay\",\n        \"file\": \"routes/api.pay.ts\"\n      },\n      {\n        \"id\": \"routes/files.$\",\n        \"path\": \"files/*\",\n        \"file\": \"routes/files.$.tsx\"\n      },\n      {\n        \"id\": \"routes/_index\",\n        \"index\": true,\n        \"file\": \"routes/_index.tsx\"\n      },\n      {\n        \"id\": \"routes/_auth\",\n        \"file\": \"routes/_auth.tsx\",\n        \"children\": [\n          {\n            \"id\": \"routes/_auth.login\",\n            \"path\": \"login\",\n            \"file\": \"routes/_auth.login.tsx\"\n          }\n        ]\n      },\n      {\n        \"id\": \"routes/about\",\n        \"path\": \"about\",\n        \"file\": \"routes/about.tsx\"\n      },\n      {\n        \"id\": \"routes/blog\",\n        \"path\": \"blog\",\n        \"file\": \"routes/blog.tsx\",\n        \"children\": [\n          {\n            \"id\": \"routes/blog._index\",\n            \"index\": true,\n            \"file\": \"routes/blog._index.tsx\"\n          },\n          {\n            \"id\": \"routes/blog.$slug\",\n            \"path\": \":slug\",\n            \"file\": \"routes/blog.$slug.tsx\"\n          }\n        ]\n      },\n      {\n        \"id\": \"routes/shop\",\n        \"path\": \"shop\",\n        \"file\": \"routes/shop/route.tsx\"\n      }\n    ]\n  }\n]\n"
+ },
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "react-router",
+   "routes"
+  ],
+  "cwd": "flat",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 1.21,
+  "stderr": "",
+  "stdout": "<Routes>\n  <Route file=\"root.tsx\">\n    <Route path=\":lang?/docs\" file=\"routes/($lang).docs.tsx\" />\n    <Route path=\"api/pay\" file=\"routes/api.pay.ts\" />\n    <Route path=\"files/*\" file=\"routes/files.$.tsx\" />\n    <Route index file=\"routes/_index.tsx\" />\n    <Route file=\"routes/_auth.tsx\">\n      <Route path=\"login\" file=\"routes/_auth.login.tsx\" />\n    </Route>\n    <Route path=\"about\" file=\"routes/about.tsx\" />\n    <Route path=\"blog\" file=\"routes/blog.tsx\">\n      <Route index file=\"routes/blog._index.tsx\" />\n      <Route path=\":slug\" file=\"routes/blog.$slug.tsx\" />\n    </Route>\n    <Route path=\"shop\" file=\"routes/shop/route.tsx\" />\n  </Route>\n</Routes>\n"
+ }
+]

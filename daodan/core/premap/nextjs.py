@@ -1,8 +1,8 @@
 """Source: the routes Next.js itself validates, `next typegen`, run in Daodan's container.
 
 `commands` describes, in each folder whose `package.json` declares `next`, the project's own `next typegen`
-(`npx --no-install`: the runner's setup restores the project's packages first, `container_runner.TOOLS`, and
-installs nothing else) and the print of `.next/types/validator.ts`, where each block ties a route and the kind of
+(`npx --no-install`, offline: the runner's setup restores the project's packages first, `container_runner.TOOLS`, and
+installs nothing else; without `next` installed `npx` would still ask the registry and fail after 70 seconds) and the print of `.next/types/validator.ts`, where each block ties a route and the kind of
 config the tool checks a file against (a page, a route handler, a layout) to the import of that file. `read` reads
 the blocks from the syntax tree (`entries.typegen`) and binds each import to the one file of the snapshot with that
 path and stem: a candidate with the route and no line, since the tool gives none. A route whose file is in another
@@ -41,7 +41,7 @@ def _folders(context) -> list[str]:
 def commands(context):
     return [{"tool": NAME, "argv": argv, "cwd": folder, "env": env, "network": "none"}
             for folder in _folders(context)
-            for argv, env in ((["npx", "--no-install", "next", "typegen"], {"NEXT_TELEMETRY_DISABLED": "1"}),
+            for argv, env in ((["npx", "--no-install", "next", "typegen"], {"NEXT_TELEMETRY_DISABLED": "1", "npm_config_offline": "true"}),
                               (["cat", VALIDATOR], {}))] or None
 
 

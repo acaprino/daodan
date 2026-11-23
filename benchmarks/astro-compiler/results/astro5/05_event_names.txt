@@ -1,0 +1,16 @@
+astro 5.18.2
+typescript/lib/lib.dom.d.ts from the project: /fix/astro5/node_modules/typescript/lib/lib.dom.d.ts
+astro/astro-jsx.d.ts: 56494 bytes
+astro/dist/types/public/elements.d.ts: 1157 bytes
+astro/dist/types/public/index.d.ts: 1410 bytes
+astro/dist/types/astro-jsx.d.ts: absent
+astro/types.d.ts: 1446 bytes
+.d.ts files under astro: 528
+  "onclick" in: astro-jsx.d.ts(1)
+  "onend" in: astro-jsx.d.ts(4)
+  "GlobalEventHandlers" in: none
+  "on:click" in: none
+  "onClick" in: none
+lib.dom.d.ts: 1874815 chars; declares GlobalEventHandlers true; names onclick true, onend true, one false
+
+--- exit 0

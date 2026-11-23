@@ -1,0 +1,12 @@
+[
+ {
+  "returncode": 3,
+  "stdout": "",
+  "stderr": "daodan-angular: @angular/compiler is not installed for /work/bare: Cannot find module '@angular/compiler'\n"
+ },
+ {
+  "returncode": 3,
+  "stdout": "",
+  "stderr": "daodan-angular: @angular/compiler is not installed for /work/bare: Cannot find module '@angular/compiler'\n"
+ }
+]

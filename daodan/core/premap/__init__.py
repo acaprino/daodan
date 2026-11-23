@@ -38,9 +38,9 @@ import module_derive  # noqa: E402
 import modules  # noqa: E402
 from snapshot_store import logical_digest, open_snapshot  # noqa: E402
 
-from premap import (autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
-                    jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_start, npm_tests, project_files,
-                    python_build, python_tests, renovate, requirements, sbt, suffix_table, tsc, uv)
+from premap import (angular, astro, autotools, bazel, cargo, cmake, compose, dockerfile, dotnet, enry, gitmodules, go, gradle,  # noqa: E402
+                    jvm_files, make, maven, meson, module_graph, nextjs, noir, npm, npm_lock, npm_start, npm_tests, nuxt, project_files,
+                    python_build, python_tests, react_router, renovate, requirements, sbt, suffix_table, sveltekit, tsc, uv)
 
 SCHEMA = "daodan/premap/v1"
 FILE = "premap.json"
@@ -48,10 +48,19 @@ RULE = "premap@" + SCHEMA  # the source of what the pre-map derives itself: `run
 RANKS = ("model", "reader", "scanner")
 SOURCES = (module_graph, python_build, requirements, python_tests, npm_lock, npm_tests, npm_start, jvm_files, project_files,
            gitmodules, autotools, enry, renovate, compose, dockerfile, go, cargo, uv, tsc, npm, cmake, meson, bazel, make,
-           gradle, maven, sbt, dotnet, noir, nextjs)
+           gradle, maven, sbt, dotnet, noir, nextjs, react_router, nuxt, sveltekit, angular, astro)
+# The sources whose `framework_entries` rows are entries of their own (a page, a route handler): `flow_entries.evidence` reads
+# each one's rows and gaps, and the key of the cached links hashes each one's file (`flows._links_reader_digest`). Another
+# framework's source is one more name here, with its table in `entry-queries.json` under its `NAME`. `angular` and `astro` are not:
+# their rows stand for, or join, the tree reader's at the same events (`entries.compiled`), and their gaps are told on their own.
+FRAMEWORK_SOURCES = (nextjs, react_router, nuxt, sveltekit)
+# The sources whose rows stand for, or join, the tree reader's at the same events (`entries.compiled`: the events of a template): their
+# gaps are told by `flow_entries.evidence`, and the key of the cached links hashes each one's file. Their script is not in it: a
+# pre-map is fresh for the `NAME@VERSION` that made it, and the version goes with the script (each one's test of the recorded print).
+TEMPLATE_SOURCES = (angular, astro)
 IDENTITY = {  # the fields that make two entries one fact, from the strictest to the loosest
     "noir_entries": (),  # individual observations from a single scanner
-    "framework_entries": (),  # individual observations of a framework's own tool (`next`)
+    "framework_entries": (),  # individual observations of a framework's own tool (`next`, `react-router`, `angular`)
     "languages": (("language",),),
     "excluded": (("path",),),
     "units": (("root", "kind", "name", "manifest"), ("root", "kind", "name"), ("root", "kind")),

@@ -1,0 +1,11 @@
+---
+const n = 1;
+---
+<main>
+	<button	onclick="tabbed()"	class="t">Tab</button>
+	<div>
+		{n > 0 && (
+			<span onclick="deep()">deep</span>
+		)}
+	</div>
+</main>

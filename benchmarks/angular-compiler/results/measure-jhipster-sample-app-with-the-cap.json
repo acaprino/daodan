@@ -1,0 +1,27 @@
+{
+ "budget": 20000,
+ "capped_templates": {
+  ".": 59
+ },
+ "commands": 1,
+ "components": 59,
+ "gaps_with_the_cap": [],
+ "gaps_without": [],
+ "head": [
+  {
+   "f": "src/main/webapp/app/account/activate/activate.html"
+  },
+  {
+   "f": "src/main/webapp/app/account/password-reset/finish/password-reset-finish.html"
+  },
+  {
+   "f": "src/main/webapp/app/account/password-reset/init/password-reset-init.html"
+  }
+ ],
+ "list_characters": {
+  ".": 4335
+ },
+ "templates": {
+  ".": 59
+ }
+}

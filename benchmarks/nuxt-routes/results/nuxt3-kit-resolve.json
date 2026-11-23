@@ -1,0 +1,47 @@
+[
+ {
+  "argv": [
+   "node",
+   "-e",
+   "const { createRequire } = require('node:module')\nconst r = createRequire(process.cwd() + '/')\nconst out = {}\nfor (const name of ['@nuxt/kit', 'nuxt', 'nuxt/package.json', '@nuxt/kit/package.json']) {\n  try { out[name] = r.resolve(name) } catch (error) { out[name] = 'ERR ' + error.code }\n}\ntry { out.nuxtThenKit = createRequire(r.resolve('nuxt')).resolve('@nuxt/kit') } catch (error) { out.nuxtThenKit = 'ERR ' + error.code }\nconsole.log(JSON.stringify(out, null, 1))\n"
+  ],
+  "changed_in_the_project": [],
+  "cwd": "nuxt3-kit-resolve",
+  "left_in_home": [],
+  "left_in_the_project": [],
+  "max_rss_mb": 122.5,
+  "nuxt_dir": {
+   ".nuxt/app.config.mjs": 338,
+   ".nuxt/components.d.ts": 5914,
+   ".nuxt/imports.d.ts": 4564,
+   ".nuxt/manifest/meta/7a6580b5-1e8b-441d-93dd-e28ae523afa3.json": 2,
+   ".nuxt/nuxt.d.ts": 920,
+   ".nuxt/schema/nuxt.schema.d.ts": 622,
+   ".nuxt/schema/nuxt.schema.json": 15,
+   ".nuxt/tsconfig.json": 3472,
+   ".nuxt/tsconfig.server.json": 2870,
+   ".nuxt/types/app-defaults.d.ts": 199,
+   ".nuxt/types/app.config.d.ts": 1022,
+   ".nuxt/types/build.d.ts": 1009,
+   ".nuxt/types/builder-env.d.ts": 21,
+   ".nuxt/types/components.d.ts": 5641,
+   ".nuxt/types/imports.d.ts": 38098,
+   ".nuxt/types/layouts.d.ts": 620,
+   ".nuxt/types/middleware.d.ts": 231,
+   ".nuxt/types/nitro-config.d.ts": 202,
+   ".nuxt/types/nitro-imports.d.ts": 15137,
+   ".nuxt/types/nitro-layouts.d.ts": 385,
+   ".nuxt/types/nitro-middleware.d.ts": 580,
+   ".nuxt/types/nitro-nuxt.d.ts": 1460,
+   ".nuxt/types/nitro-routes.d.ts": 2057,
+   ".nuxt/types/nitro.d.ts": 135,
+   ".nuxt/types/plugins.d.ts": 1756,
+   ".nuxt/types/schema.d.ts": 1053,
+   ".nuxt/types/vue-shim.d.ts": 0
+  },
+  "returncode": 0,
+  "seconds": 0.08,
+  "stderr": "",
+  "stdout": "{\n \"@nuxt/kit\": \"/work/nuxt3-kit-resolve/node_modules/@nuxt/kit/dist/index.mjs\",\n \"nuxt\": \"ERR ERR_PACKAGE_PATH_NOT_EXPORTED\",\n \"nuxt/package.json\": \"/work/nuxt3-kit-resolve/node_modules/nuxt/package.json\",\n \"@nuxt/kit/package.json\": \"/work/nuxt3-kit-resolve/node_modules/@nuxt/kit/package.json\",\n \"nuxtThenKit\": \"ERR ERR_PACKAGE_PATH_NOT_EXPORTED\"\n}\n"
+ }
+]

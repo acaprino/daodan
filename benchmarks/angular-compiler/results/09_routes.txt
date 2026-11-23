@@ -1,0 +1,47 @@
+private/migrations exports include PartialEvaluator: function TypeScriptReflectionHost: function DynamicValue: function
+
+--- evaluate app.routes.ts :: routes
+[
+  {
+    path: "",
+    component: Reference(AppComponent in src/app/app.component.ts)
+  },
+  {
+    path: "orders",
+    loadComponent: DynamicValue(; node "() => import('./orders.component').then((m) => m.OrdersComponent)")
+  },
+  {
+    path: "admin",
+    children: [
+      {
+        path: "users",
+        component: Reference(InlineComponent in src/app/inline.component.ts)
+      }
+    ]
+  },
+  {
+    path: "legacy",
+    loadChildren: DynamicValue(; node "() => import('./legacy.module').then((m) => m.LegacyModule)")
+  },
+  {
+    path: "**",
+    redirectTo: ""
+  }
+]
+
+--- evaluate app.config.ts :: appConfig
+{
+  providers: [
+    DynamicValue(; node "provideRouter(routes)")
+  ]
+}
+
+--- evaluate the argument of RouterModule.forChild(...) in legacy.module.ts
+[
+  {
+    path: "",
+    component: Reference(LegacyComponent in src/app/legacy.component.ts)
+  }
+]
+
+--- exit 0

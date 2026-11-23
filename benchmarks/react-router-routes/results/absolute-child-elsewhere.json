@@ -1,0 +1,17 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "react-router",
+   "routes",
+   "--json"
+  ],
+  "cwd": "absolute-child-elsewhere",
+  "left_in_the_project": [],
+  "returncode": 0,
+  "seconds": 1.32,
+  "stderr": "",
+  "stdout": "[\n  {\n    \"id\": \"root\",\n    \"path\": \"\",\n    \"file\": \"root.tsx\",\n    \"children\": [\n      {\n        \"id\": \"routes/docs\",\n        \"path\": \"other\",\n        \"file\": \"routes/docs.tsx\",\n        \"children\": [\n          {\n            \"id\": \"routes/legacy\",\n            \"path\": \"/elsewhere\",\n            \"file\": \"routes/legacy.jsx\"\n          }\n        ]\n      }\n    ]\n  }\n]\n"
+ }
+]

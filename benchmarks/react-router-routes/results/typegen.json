@@ -1,0 +1,37 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "react-router",
+   "typegen"
+  ],
+  "cwd": "typegen",
+  "left_in_the_project": [
+   ".react-router/types/+future.ts",
+   ".react-router/types/+routes.ts",
+   ".react-router/types/+server-build.d.ts",
+   ".react-router/types/app/+types/root.ts",
+   ".react-router/types/app/routes/+types/about.ts",
+   ".react-router/types/app/routes/+types/blog.ts",
+   ".react-router/types/app/routes/+types/docs.ts",
+   ".react-router/types/app/routes/+types/hello.ts",
+   ".react-router/types/app/routes/+types/home.ts",
+   ".react-router/types/app/routes/+types/legacy.ts",
+   ".react-router/types/app/routes/api/+types/health.ts",
+   ".react-router/types/app/routes/api/+types/pay.ts",
+   ".react-router/types/app/routes/nested/+types/child.ts",
+   ".react-router/types/app/routes/nested/+types/index.ts",
+   ".react-router/types/app/routes/nested/+types/layout.ts",
+   ".react-router/types/app/routes/shop/+types/checkout.ts",
+   ".react-router/types/app/routes/shop/+types/layout.ts",
+   ".react-router/types/app/routes/shop/+types/order.ts",
+   ".react-router/types/app/routes/users/+types/edit.ts",
+   ".react-router/types/app/routes/users/+types/user.ts"
+  ],
+  "returncode": 0,
+  "seconds": 1.99,
+  "stderr": "",
+  "stdout": ""
+ }
+]

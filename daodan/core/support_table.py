@@ -252,8 +252,8 @@ def own_reading(key: str) -> str:
     language = languages.SUPPORTED_EXTENSIONS.get(key)
     adapter = languages.get_adapter(language) if language else None
     if isinstance(adapter, type(sfc.vue_adapter)):
-        parts.append(("frontmatter e `<script>` nello snapshot, il template no" if adapter.frontmatter
-                      else "`<script>` e template nello snapshot") + " (`languages/sfc.py`)")
+        parts.append("frontmatter e `<script>` nello snapshot (`languages/sfc.py`), del template solo gli eventi (`premap/astro.py`)"
+                     if adapter.frontmatter else "`<script>` e template nello snapshot (`languages/sfc.py`)")
     if key in css.COMPONENTS:
         parts.append("stili con il compilatore del framework "
                      f"(`indexers/{css.COMPONENTS[key].__name__.rsplit('.', 1)[-1]}.py`)")
@@ -333,8 +333,15 @@ def stack_section(registry: dict, stack: dict) -> list[str]:
             "analizzatore. Lettura propria: ciò che Daodan legge del framework oltre al suo linguaggio, e vale solo "
             f"per {_of(len(read_names), 'voce', 'voci')} ({', '.join(read_names)}). Rotte e collegamenti fra le parti "
             "vengono dalle regole di collegamento che un modello scrive per ogni progetto e che `scripts/flows.py` "
-            "applica a chiamate, decoratori e attributi, per qualunque framework. Nessun framework ha le rotte lette "
-            "dal posto di un file (le pagine di Next.js, Nuxt, SvelteKit, Remix o Astro): è un buco dichiarato.", "",
+            "applica a chiamate, decoratori e attributi, per qualunque framework. Le rotte lette dallo strumento "
+            "del framework, nel container, sono quelle di Next.js (`next typegen`), React Router e Remix "
+            "(`routes --json`), le rotte del server e le pagine di Nuxt (`nuxt prepare`, `loadNuxt`) e i moduli delle "
+            "rotte di SvelteKit (`svelte-kit sync`). Gli eventi dei template li legge il compilatore del framework: "
+            "con il metodo che chiamano per Angular (`parseTemplate`), con la riga e la colonna ma senza la funzione "
+            "per Astro (`parse`: il gestore è una stringa di JavaScript). Non sono lette le pagine di Astro (`sync()` "
+            "dell'API le elenca con l'hook `astro:routes:resolved` senza avviare l'app: misurato, non scritto) né le "
+            "pagine di SvelteKit che sono solo un componente: per queste la rotta dal posto di un file è un buco "
+            "dichiarato.", "",
             "<details><summary>Framework, librerie e strumenti riconoscibili: "
             f"{len(listed)} voci</summary>", "",
             *_table(["Voce", "Id", "Classe", "Segni", "Codice analizzato", "Lettura propria",

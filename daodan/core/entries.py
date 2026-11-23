@@ -969,6 +969,40 @@ def noir(report: dict, root: str, *, gaps: list[dict] | None = None) -> list[dic
     return out
 
 
+def _error_line(root) -> int:
+    """The line (from 1) of the first error a tree that holds one has."""
+    node = root
+    while not (node.is_error or node.is_missing):
+        node = next(child for child in node.children if child.has_error)
+    return node.start_point[0] + 1
+
+
+def nitro_routes(text: str) -> tuple[list[dict], int | None, list[str]]:
+    """The routes of `.nuxt/types/nitro-routes.d.ts` (`nuxt prepare`, run in Daodan's container), read from its syntax tree
+    (`QUERIES["nitro_routes"]`): per route and method, `{path, method, import}` as the tool wrote them (the method `default` is
+    a handler with no method in its file name), in the file's order; the line of the first error the tree holds (None when it
+    parses whole), and the routes in which no import was read (`unread`: the tool named no handler file the reader knows). The
+    import is assigned to the method, and the method to the route, whose type contains it, so the generics the tool wraps it in
+    are no part of the reader. A tree that holds an error gives no route: a file cut short must not pass as a short list."""
+    source = text.encode("utf-8")
+    root = _parse(source, "typescript")
+    if root is not None and root.has_error:
+        return [], _error_line(root), []
+    found = _matches(source, "typescript", "nitro_routes", root)
+    inside = lambda inner, outer: outer.start_byte <= inner.start_byte and inner.end_byte <= outer.end_byte  # noqa: E731
+    imports = [match["import"][0] for match in found if "import" in match]
+    methods = [(match["method"][0], match["value"][0]) for match in found if "method" in match]
+    out, unread = [], []
+    for match in (m for m in found if "route" in m):
+        path, before = _text(source, match["route"][0]), len(out)
+        out += [{"path": path, "method": _text(source, name), "import": _text(source, imported)}
+                for name, value in methods if inside(value, match["methods"][0])
+                for imported in imports if inside(imported, value)]
+        if len(out) == before:
+            unread.append(path)
+    return out, None, unread
+
+
 def typegen(text: str) -> tuple[list[dict], int | None, list[dict]]:
     """The blocks of `.next/types/validator.ts` (`next typegen`, run in Daodan's container), read from its syntax tree
     (`QUERIES["typegen"]`), the line of the first error the tree holds (None when it parses whole), and the blocks it
@@ -980,10 +1014,7 @@ def typegen(text: str) -> tuple[list[dict], int | None, list[dict]]:
     source = text.encode("utf-8")
     root = _parse(source, "typescript")
     if root is not None and root.has_error:
-        node = root
-        while not (node.is_error or node.is_missing):
-            node = next(child for child in node.children if child.has_error)
-        return [], node.start_point[0] + 1, []
+        return [], _error_line(root), []
     matches = _matches(source, "typescript", "typegen", root)
     read = {found["import"][0].start_byte for found in matches}
     unread = [{"import": _text(source, found["import"][0]), "block": " ".join(_text(source, found["block"][0]).split())}
@@ -1033,6 +1064,33 @@ def _syntax(manifest: Path, *, inputs=None) -> list[dict]:
 
 
 def _cached_rows(manifest: Path, inputs=None) -> list[dict]:
+    """The tree readers' candidates, persisted once (`_stored_rows`), with the rows of the framework's compiler in place of theirs
+    where it read the same events (`compiled`)."""
+    return compiled(_stored_rows(manifest, inputs), manifest)
+
+
+def compiled(rows: list[dict], manifest: Path) -> list[dict]:
+    """The rows of Angular's own compiler (`premap/angular.py`, `parseTemplate` run in Daodan's container) in place of the tree
+    reader's at the same events: an attribute row at the file, line and column of an event the compiler read is dropped, its
+    label (the tree reader reads the accessible name) goes to the compiler's rows, and the compiler's rows are added: they hold
+    the method the handler is, the events of a template written in a `.ts` and the calls on another object (a gap with its
+    cause). Astro's compiler (`premap/astro.py`) gives rows of the same shape for the events of a `.astro` template, which no tree
+    reader reads. Without a pre-map record of the compiler the rows are the tree reader's, whole."""
+    from premap import TEMPLATE_SOURCES
+    found = [row for source in TEMPLATE_SOURCES for row in source.recorded(manifest)]
+    if not found:
+        return rows
+    events = {(row["site"], row["column"]) for row in found}
+    labels = {}
+    for row in rows:
+        if row["reader"] == ATTRIBUTE and (row["site"], row.get("column")) in events and (row.get("label") or row.get("label_gap")):
+            labels.setdefault((row["site"], row["column"]), {name: row[name] for name in ("label", "key", "label_gap") if row.get(name)})
+    merged = [row for row in rows if not (row["reader"] == ATTRIBUTE and (row["site"], row.get("column")) in events)]
+    merged += [{**row, **labels.get((row["site"], row["column"]), {})} for row in found]
+    return sorted(merged, key=lambda row: (row["site"], row.get("column", 0), row["reader"], row["shape"], row.get("symbol", "")))
+
+
+def _stored_rows(manifest: Path, inputs=None) -> list[dict]:
     """Persist verified AST bindings once, including unbound names that a store rule may resolve later."""
     import snapshot
     manifest = Path(manifest)

@@ -1,0 +1,17 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "remix",
+   "routes",
+   "--json"
+  ],
+  "cwd": "remix-not-installed",
+  "left_in_the_project": [],
+  "returncode": 1,
+  "seconds": 70.58,
+  "stderr": "npm error code EAI_AGAIN\nnpm error syscall getaddrinfo\nnpm error errno EAI_AGAIN\nnpm error request to https://registry.npmjs.org/remix failed, reason: getaddrinfo EAI_AGAIN registry.npmjs.org\nnpm error A complete log of this run can be found in: /root/.npm/_logs/2026-11-23T08_25_09_211Z-debug-0.log\n",
+  "stdout": ""
+ }
+]

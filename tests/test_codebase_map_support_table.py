@@ -93,7 +93,7 @@ class StackSectionTests(unittest.TestCase):
         self.assertEqual(set(support_table.OWN_READINGS.values()),
                          set(components.SUFFIXES) | set(css.COMPONENTS) | sfc_read | {css_tailwind.PACKAGE})
         self.assertIn(css_tailwind.PACKAGE, registry["tailwind"]["signs"]["packages"]["npm"])
-        self.assertIn("il template no", support_table.own_reading(".astro"))
+        self.assertIn("del template solo gli eventi (`premap/astro.py`)", support_table.own_reading(".astro"))
         with mock.patch.dict(css.COMPONENTS, clear=True):  # a reading the code no longer has is not said
             self.assertNotIn("indexers/css_", support_table.own_reading(".vue"))
         self.assertEqual(support_table.own_reading(".nothing"), "")

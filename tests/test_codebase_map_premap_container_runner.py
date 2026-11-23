@@ -246,7 +246,8 @@ def test_every_model_source_of_the_premap_has_a_setup():
              "renovate": premap.renovate, "compose": premap.compose, "daodan-enry": premap.enry,
              "daodan-dockerfile": premap.dockerfile, "cmake": premap.cmake, "meson": premap.meson,
              "bazel": premap.bazel, "make": premap.make, "gradle": premap.gradle, "maven": premap.maven,
-             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir, "next": premap.nextjs}
+             "sbt": premap.sbt, "dotnet": premap.dotnet, "noir": premap.noir, "next": premap.nextjs,
+             "react-router": premap.react_router, "nuxt": premap.nuxt, "sveltekit": premap.sveltekit, "angular": premap.angular, "astro": premap.astro}
     assert {s for s in premap.SOURCES if hasattr(s, "commands")} == set(tools.values())
     assert set(tools) <= set(container_runner.TOOLS)
 
@@ -258,6 +259,8 @@ CORPUS = ROOT / "benchmarks/project-model/fixtures"
 CASES = {  # tool -> (corpus fixture, or the folder of one, the source), one project each
     "noir": ("js-nextjs", premap.noir),
     "next": (ROOT / "benchmarks/system-map/real-paths/next-shop", premap.nextjs),  # js-nextjs is Next.js 14: no typegen
+    "react-router": (ROOT / "benchmarks/react-router-routes/fixture/framework", premap.react_router),
+    "nuxt": (ROOT / "benchmarks/nuxt-routes/fixture/nuxt3", premap.nuxt),
     "go": ("sys-go-buildtags", premap.go), "cargo": ("sys-rust-features", premap.cargo),
     "uv": ("py-uv-workspace", premap.uv), "tsc": ("js-vite-react-ts", premap.tsc),
     "npm": ("js-npm-workspaces", premap.npm), "renovate": ("js-npm-single", premap.renovate),
@@ -291,6 +294,11 @@ def test_smoke_each_tool_runs_in_the_container_and_states_its_facts(tmp_path, to
     if tool == "next":
         assert {(r["path"], r["site"]) for r in record["framework_entries"]} >= {
             ("/api/pay", "app/api/pay/route.ts"), ("/checkout", "app/checkout/page.tsx")}
+    if tool == "react-router":
+        assert {(r["path"], r.get("handler")) for r in record["framework_entries"]} >= {("/api/pay", "action"), ("/checkout", "default")}
+    if tool == "nuxt":
+        assert {(r["path"], r.get("method"), r["site"].split(":")[0]) for r in record["framework_entries"]} >= {
+            ("/api/hello", "GET", "server/api/hello.get.ts"), ("/api/users", "POST", "server/api/users/index.post.ts")}
     assert held() == before
 
 

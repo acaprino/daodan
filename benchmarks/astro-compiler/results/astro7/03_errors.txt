@@ -1,0 +1,9 @@
+@astrojs/compiler-rs 0.5.3
+frontmatter not closed: 0 diagnostics []; attributes: onclick@25
+tag not closed: 1 diagnostics [{"severity":"error","text":"Expected `,` or `>` but found `Identifier`","hint":"","labels":[{"text":"`,` or `>` expected","start":53,"end":60,"line":4,"column":8},{"text":"Opened here","start":45,"end":46,"line":4,"column":0}]}]; attributes: 
+quote not closed: THREW Expected ',' or '}' after property value in JSON at position 662 (line 1 column 663)
+brace not closed: 1 diagnostics [{"severity":"error","text":"Expected `,` or `)` but found `}`","hint":"","labels":[{"text":"`,` or `)` expected","start":41,"end":42,"line":1,"column":41},{"text":"Opened here","start":13,"end":14,"line":1,"column":13}]}]; attributes: 
+empty file: 0 diagnostics []; attributes: 
+only text: 0 diagnostics []; attributes: 
+
+--- exit 0

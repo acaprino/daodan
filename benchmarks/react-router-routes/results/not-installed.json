@@ -1,0 +1,17 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "react-router",
+   "routes",
+   "--json"
+  ],
+  "cwd": "not-installed",
+  "left_in_the_project": [],
+  "returncode": 1,
+  "seconds": 70.68,
+  "stderr": "npm error code EAI_AGAIN\nnpm error syscall getaddrinfo\nnpm error errno EAI_AGAIN\nnpm error request to https://registry.npmjs.org/react-router failed, reason: getaddrinfo EAI_AGAIN registry.npmjs.org\nnpm error A complete log of this run can be found in: /root/.npm/_logs/2026-11-23T08_23_40_593Z-debug-0.log\n",
+  "stdout": ""
+ }
+]

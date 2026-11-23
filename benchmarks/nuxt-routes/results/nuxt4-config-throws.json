@@ -1,0 +1,24 @@
+[
+ {
+  "argv": [
+   "npx",
+   "--no-install",
+   "nuxt",
+   "prepare"
+  ],
+  "changed_in_the_project": [],
+  "cwd": "nuxt4-config-throws",
+  "left_in_home": [
+   ".npm/_logs/2026-11-23T10_05_29_018Z-debug-0.log"
+  ],
+  "left_in_the_project": [
+   "node_modules/.cache/jiti/nuxt4-config-throws-nuxt.config.5ff5cd63.mjs"
+  ],
+  "max_rss_mb": 211.2,
+  "nuxt_dir": {},
+  "returncode": 1,
+  "seconds": 0.92,
+  "stderr": "\n ERROR  nuxt.config needs a database\n\n    at nuxt.config.ts?_1:1:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async Object.importConfigFile [as import] (node_modules/@nuxt/kit/dist/index.mjs:869:11)\n    at async resolveConfig (node_modules/@nuxt/kit/dist/index.mjs:656:51)\n    at async loadConfig (node_modules/@nuxt/kit/dist/index.mjs:467:22)\n    at async withDefineNuxtConfig (node_modules/@nuxt/kit/dist/index.mjs:1139:10)\n    at async loadNuxtConfig (node_modules/@nuxt/kit/dist/index.mjs:957:19)\n    at async loadNuxt (node_modules/nuxt/dist/index.mjs:10023:18)\n    at async loadNuxt (node_modules/@nuxt/kit/dist/index.mjs:1168:9) \n\n\n",
+  "stdout": ""
+ }
+]

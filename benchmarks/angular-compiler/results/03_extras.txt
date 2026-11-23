@@ -1,0 +1,168 @@
+=== A. *ngFor: the event on the element that carries the structural directive ===
+nodes owning the event: Template<li> , Element<li>
+same BoundEvent object on both: true
+Template.outputs[0].sourceSpan 19:31@844 19:51@864  Element.outputs[0].sourceSpan 19:31@844 19:51@864
+Template<li>.attributes: [] inputs: [] templateAttrs: [ 'TextAttribute:ngFor', 'BoundAttribute:ngForOf' ] variables: [ 'o' ]
+Template<li>.sourceSpan 19:2@815 21:7@925 ; inner Element<li>.sourceSpan 19:2@815 21:7@925
+Template<li> keys: tagName,attributes,inputs,outputs,templateAttrs,children,references,variables,isSelfClosing,sourceSpan,startSourceSpan,endSourceSpan,i18n
+
+=== B. escapes: Text values with escapedString true vs false (inline template with \' and \n) ===
+escapedString=true: top-level nodes: Text("It's ") 23:13@528..23:19@534 | Element("button") 23:19@534..23:55@570 | Element("button") 23:57@572..23:98@613
+escapedString=false: top-level nodes: Text("It\\'s ") 23:13@528..23:19@534 | Element("button") 23:19@534..23:55@570 | Text("\\n") 23:55@570..23:57@572 | Element("button") 23:57@572..23:98@613
+
+=== C. errors and broken templates ===
+unterminated call  (click)="save(" | always=false: errors=["ERROR Parser Error: Unexpected end of expression: save( at the end of the expression [save(] in broken.html@0:17 @0:17@17","ERROR Parser Error: Missing expected ) at the end of the expression [save(] in broken.html@0:17 @0:17@17"] ; events=["save( [Call]"]
+unterminated call  (click)="save(" | always=true: errors=["ERROR Parser Error: Unexpected end of expression: save( at the end of the expression [save(] in broken.html@0:17 @0:17@17","ERROR Parser Error: Missing expected ) at the end of the expression [save(] in broken.html@0:17 @0:17@17"] ; events=["save( [Call]"]
+empty handler      (click)="" | always=false: errors=["ERROR Empty expressions are not allowed @0:17@17"] ; events=["ERROR [LiteralPrimitive]"]
+empty handler      (click)="" | always=true: errors=["ERROR Empty expressions are not allowed @0:17@17"] ; events=["ERROR [LiteralPrimitive]"]
+unclosed element | always=false: errors=null ; events=["a() [Call]"]
+unclosed element | always=true: errors=null ; events=["a() [Call]"]
+unclosed @if block | always=false: errors=["ERROR Unclosed block \"if\" @0:0@0"] ; events=[]
+unclosed @if block | always=true: errors=["ERROR Unclosed block \"if\" @0:0@0"] ; events=["a() [Call]"]
+unknown block @foo | always=false: errors=["ERROR Unexpected character \"EOF\" (Do you have an unescaped \"{\" in your template? Use \"{{ '{' }}\") to escape it.) @0:41@41","ERROR Invalid ICU message. Missing '}'. @0:41@41"] ; events=[]
+unknown block @foo | always=true: errors=["ERROR Unexpected character \"EOF\" (Do you have an unescaped \"{\" in your template? Use \"{{ '{' }}\") to escape it.) @0:41@41","ERROR Invalid ICU message. Missing '}'. @0:41@41"] ; events=[]
+two statements, bad second  save(); close( | always=false: errors=["ERROR Parser Error: Unexpected end of expression: save(); close( at the end of the expression [save(); close(] in broken.html@0:17 @0:17@17","ERROR Parser Error: Missing expected ) at the end of the expression [save(); close(] in broken.html@0:17 @0:17@17"] ; events=["save(); close( [Chain]"]
+two statements, bad second  save(); close( | always=true: errors=["ERROR Parser Error: Unexpected end of expression: save(); close( at the end of the expression [save(); close(] in broken.html@0:17 @0:17@17","ERROR Parser Error: Missing expected ) at the end of the expression [save(); close(] in broken.html@0:17 @0:17@17"] ; events=["save(); close( [Chain]"]
+duplicate attribute | always=false: errors=null ; events=["a() [Call]","b() [Call]"]
+duplicate attribute | always=true: errors=null ; events=["a() [Call]","b() [Call]"]
+handler with pipe  (click)="a() | p" | always=false: errors=["ERROR Parser Error: Cannot have a pipe in an action expression at column 7 in [a() | p] in broken.html@0:17 @0:17@17","ERROR Parser Error: Unexpected end of input, expected identifier or keyword at the end of the expression [a() | p] in broken.html@0:17 @0:17@17"] ; events=["a() | p [BindingPipe]"]
+handler with pipe  (click)="a() | p" | always=true: errors=["ERROR Parser Error: Cannot have a pipe in an action expression at column 7 in [a() | p] in broken.html@0:17 @0:17@17","ERROR Parser Error: Unexpected end of input, expected identifier or keyword at the end of the expression [a() | p] in broken.html@0:17 @0:17@17"] ; events=["a() | p [BindingPipe]"]
+
+=== D. CRLF copy of app.component.html ===
+options {}: spans checked 63: exact 63, offsets right but line:col differ 0, wrong 0
+   first event handlerSpan covers "save()"  ; a label Text node value: "Orders"
+options {"preserveLineEndings":true}: spans checked 63: exact 63, offsets right but line:col differ 0, wrong 0
+   first event handlerSpan covers "save()"  ; a label Text node value: "Orders"
+
+=== E. other syntax, one template ===
+errors: null
+"$any(x).go()"                     name=click type=0  AST=Call  calls=["$any(...).go","<implicit component member>.$any"]  path=Element<button>
+"a?.b()"                           name=click type=0  AST=Call  calls=["a.b"]  path=Element<button>
+"items[0].run()"                   name=click type=0  AST=Call  calls=["items[LiteralPrimitive(value=0)].run"]  path=Element<button>
+"canon()"                          name=click type=0  AST=Call  calls=["<implicit component member>.canon"]  path=Element<button>
+"svc.a.b.c()"                      name=click type=0  AST=Call  calls=["svc.a.b.c"]  path=Element<button>
+"fn(1)(2)"                         name=click type=0  AST=Call  calls=["?.<callee Call>","<implicit component member>.fn"]  path=Element<button>
+"a = b; c()"                       name=click type=0  AST=Chain  calls=["<implicit component member>.c"]  path=Element<button>
+"count.set(count() + 1)"           name=click type=0  AST=Call  calls=["count.set","<implicit component member>.count"]  path=Element<button>
+"x.y = 1"                          name=click type=0  AST=Binary  calls=[]  path=Element<button>
+"$event.stopPropagation()"         name=click type=0  AST=Call  calls=["$event.stopPropagation"]  path=Element<button>
+"cond && (a() || b())"             name=click type=0  AST=Binary  calls=["<implicit component member>.a","<implicit component member>.b"]  path=Element<button>
+"a ?? b()"                         name=click type=0  AST=Binary  calls=["<implicit component member>.b"]  path=Element<button>
+"inCase()"                         name=click type=0  AST=Call  calls=["<implicit component member>.inCase"]  path=SwitchBlock > SwitchBlockCaseGroup > Element<button>
+"inDefault()"                      name=click type=0  AST=Call  calls=["<implicit component member>.inDefault"]  path=SwitchBlock > SwitchBlockCaseGroup > Element<button>
+"inDefer()"                        name=click type=0  AST=Call  calls=["<implicit component member>.inDefer"]  path=DeferredBlock > Element<button>
+"inPlaceholder()"                  name=click type=0  AST=Call  calls=["<implicit component member>.inPlaceholder"]  path=DeferredBlock > DeferredBlockPlaceholder > Element<button>
+"useLet(v)"                        name=click type=0  AST=Call  calls=["<implicit component member>.useLet"]  path=Element<button>
+"inIfDirective()"                  name=click type=0  AST=Call  calls=["<implicit component member>.inIfDirective"]  path=Template<ng-container> > Element<ng-container> > Element<button>
+"onOpened()"                       name=opened type=0  AST=Call  calls=["<implicit component member>.onOpened"]  path=Element<app-card>
+"onClosed($event)"                 name=closed type=0  AST=Call  calls=["<implicit component member>.onClosed"]  path=Element<app-card>
+"anim()"                           name=fade phase=done type=1  AST=Call  calls=["<implicit component member>.anim"]  path=Element<button>
+
+AST of a few:
+  $any(x).go() => Call(receiver=PropertyRead(receiver=Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="$any"), args=[PropertyRead(receiver=ImplicitReceiver(), name="x")]), name="go"), args=[])
+  a?.b() => Call(receiver=SafePropertyRead(receiver=PropertyRead(receiver=ImplicitReceiver(), name="a"), name="b"), args=[])
+  items[0].run() => Call(receiver=PropertyRead(receiver=KeyedRead(receiver=PropertyRead(receiver=ImplicitReceiver(), name="items"), key=LiteralPrimitive(value=0)), name="run"), args=[])
+  fn(1)(2) => Call(receiver=Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="fn"), args=[LiteralPrimitive(value=1)]), args=[LiteralPrimitive(value=2)])
+  count.set(count() + 1) => Call(receiver=PropertyRead(receiver=PropertyRead(receiver=ImplicitReceiver(), name="count"), name="set"), args=[Binary(operation="+", left=Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="count"), args=[]), right=LiteralPrimitive(value=1))])
+  x.y = 1 => Binary(operation="=", left=PropertyRead(receiver=PropertyRead(receiver=ImplicitReceiver(), name="x"), name="y"), right=LiteralPrimitive(value=1))
+  a ?? b() => Binary(operation="??", left=PropertyRead(receiver=ImplicitReceiver(), name="a"), right=Call(receiver=PropertyRead(receiver=ImplicitReceiver(), name="b"), args=[]))
+
+=== F. API status of what we use ===
+@angular/compiler/types/compiler.d.ts: 243610 chars, '@publicApi' occurrences 0, '@internal' 0, 'private' (case-insens) 78
+@angular/compiler/types/_index-chunk.d.ts: 65758 chars, '@publicApi' occurrences 1, '@internal' 0, 'private' (case-insens) 16
+@angular/compiler-cli/index.d.ts: 2180 chars, '@publicApi' occurrences 0, '@internal' 0, 'private' (case-insens) 2
+@angular/language-service/api.d.ts: 17113 chars, '@publicApi' occurrences 0, '@internal' 0, 'private' (case-insens) 0
+@angular/language-service/index.d.ts: 384 chars, '@publicApi' occurrences 0, '@internal' 0, 'private' (case-insens) 0
+@angular/language-service/private.d.ts: 242 chars, '@publicApi' occurrences 0, '@internal' 0, 'private' (case-insens) 0
+parseTemplate in compiler.d.ts: the 300 chars before the declaration: "lean;\n}\n/**\n * Parse a template into render3 `Node`s and additional metadata, with no other dependencies.\n *\n * @param template text of the template to parse\n * @param templateUrl URL to use for source mapping of the parsed template\n * @param options options to modify how the template is parsed\n */\n"
+BoundEvent in _index-chunk.d.ts: the 300 chars before the declaration: ", unit: string | null, sourceSpan: ParseSourceSpan, keySpan: ParseSourceSpan, valueSpan: ParseSourceSpan | undefined, i18n: I18nMeta | undefined);\n    static fromBoundElementProperty(prop: BoundElementProperty, i18n?: I18nMeta): BoundAttribute;\n    visit<Result>(visitor: Visitor<Result>): Result;\n}\n"
+
+=== G. host helpers: createHostElement / verifyHostBindings typings ===
+--- declare function createHostElement: 
+declare function createHostElement(type: 'component' | 'directive', selector: string | null, nameSpan: ParseSourceSpan$1, hostObjectLiteralBindings: HostObjectLiteralBinding[], hostBindingDecorators: HostBindingDecorator[], hostListenerDecorators: HostListenerDecorator[]): HostElement | null;
+/**
+ * Creates an AST node that can be used as a guard in `if` statements to distinguish TypeScript
+ * nodes used for checking host bindings from ones used for checking templates.
+ */
+declare function createHostBindingsBlockGuard(): string;
+
+/** Categories of diagnostics that can be reported by a `OutOfBandDiagnosticRecorder`. */
+declare enum OutOfBandDiagnosticCategory {
+    Error = 0,
+    Warning = 1
+}
+/**
+ * Collects diagnostics on problems which occur in the template which aren't directly sourced
+ * from type check blocks.
+ *
+ * During the creation of a type check block, the template is traverse
+--- declare function parseHostBindings: 
+declare function parseHostBindings(host: {
+    [key: string]: string | Expression;
+}): ParsedHostBindings;
+/**
+ * Verifies host bindings and returns the list of errors (if any). Empty array indicates that a
+ * given set of host bindings has no errors.
+ *
+ * @param bindings set of host bindings to verify.
+ * @param sourceSpan source span where host bindings were defined.
+ * @returns array of errors associated with a given set of host bindings.
+ */
+declare function verifyHostBindings(bindings: ParsedHostBindings, sourceSpan: ParseSourceSpan$1): ParseError[];
+/**
+ * Encapsulates a CSS stylesheet with emulated view encapsulation.
+ * This allows a stylesheet to be used with an Angular component that
+ * is using the `ViewEncapsulation.Emulated` mode.
+ *
+ * @param style The content of a CSS stylesheet.
+ * @param componentIdentifier The identifier to use within the CSS rules.
+ * @returns The enc
+--- interface ParsedHostBindings: 
+interface ParsedHostBindings {
+    attributes: Record<string, Expression>;
+    listeners: Record<string, string>;
+    properties: Record<string, string>;
+    specialAttributes: {
+        styleAttr?: string;
+        classAttr?: string;
+    };
+}
+declare function parseHostBindings(host: {
+    [key: string]: string | Expression;
+}): ParsedHostBindings;
+/**
+ * Verifies host bindings and returns the list of errors (if any). Empty array indicates that a
+ * given set of host bindings has no errors.
+ *
+ * @param bindings set of host bindings to verify.
+ * @param sourceSpan source span where host bindings were defined.
+ * @returns array of errors associated with a given set of host bindings.
+ */
+declare function verifyHostBindings(bindings: ParsedHostBindings, sourceSpan: ParseSourceSpan$1): ParseError[];
+/**
+ * Encapsulates a CSS stylesheet with emulated view encapsulation.
+ * This allows a style
+--- declare class HostElement: 
+declare class HostElement implements Node {
+    readonly tagNames: string[];
+    readonly bindings: BoundAttribute[];
+    readonly listeners: BoundEvent[];
+    readonly sourceSpan: ParseSourceSpan;
+    constructor(tagNames: string[], bindings: BoundAttribute[], listeners: BoundEvent[], sourceSpan: ParseSourceSpan);
+    visit<Result>(): Result;
+}
+interface Visitor<Result = any> {
+    visit?(node: Node): Result;
+    visitElement(element: Element): Result;
+    visitTemplate(template: Template): Result;
+    visitContent(content: Content): Result;
+    visitVariable(variable: Variable): Result;
+    visitReference(reference: Reference): Result;
+    visitTextAttribute(attribute: TextAttribute): Result;
+    visitBoundAttribute(attribute: BoundAttribute): Result;
+    visitBoundEvent(attribute: BoundEvent): Result;
+    visitText(text: Text): Result;
+    visitBoundText(text: BoundText): Result;
+    
+
+--- exit 0

@@ -1,0 +1,28 @@
+---
+import Layout from '../layouts/Layout.astro';
+const label = 'x';
+function fromFrontmatter() {}
+---
+<Layout title="Edge">
+  <style>
+    .a::after { content: "</div>{"; }
+  </style>
+  <script>
+    const marker = "</p> { <b onclick='inString()'>";
+    function fromProcessedScript() {}
+  </script>
+  <script is:inline type="module">
+    function fromModuleScript() {}
+  </script>
+  <button onclick="afterScripts()">After scripts</button>
+  <p>{label === '}' ? '>' : "<"}</p>
+  <button onclick="afterString()">After string</button>
+  <div title={
+    `multi
+     line ${label}`
+  } onclick="afterMultiline()">m</div>
+  <button onclick="fromFrontmatter()">Frontmatter</button>
+  <button onclick="fromProcessedScript()">Processed</button>
+  <button onclick="fromModuleScript()">Module</button>
+  <button onclick="fromLayout()">Layout</button>
+</Layout>

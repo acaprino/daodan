@@ -1,0 +1,11 @@
+---
+const { heading = 'Card', ...rest } = Astro.props;
+---
+<section {...rest}>
+  <h2>{heading}</h2>
+  <button class="card-open" onclick="openCard(this)">Open</button>
+  <slot />
+</section>
+<script is:inline>
+  function openCard(button) { button.textContent = 'opened'; }
+</script>
