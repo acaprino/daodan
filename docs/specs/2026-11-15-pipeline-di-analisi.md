@@ -152,7 +152,7 @@ Applicato (Scelte, 6). Prova: `tests/test_codebase_map_reactive_server.py`; `tes
 | 3 `plan` | Decide quale adattatore gira su quale parte, e che cosa gli serve prima | File e linguaggi per modulo: da `scan`. Tecnologie: da `recognize`. Le dichiarazioni degli adattatori | Il piano (8.4) |
 | 4 `parse` | Legge i sorgenti | Quali file, in che linguaggio, in quale modulo, con quali letture di framework: dal piano. Radici e alias degli import: da `scan` | Simboli, import e riferimenti di ogni file, e come è andata la sua lettura (letto, escluso, errore, ripiego) |
 | 5 `resolve` | Trova dove arriva ogni chiamata | I riferimenti: da `parse`. Unità e build: da `scan`. L'ambiente preparato | Gli archi provati |
-| 6 `observe` | Esegue i test e registra che cosa chiamano | I comandi di test: da `scan`. I riferimenti: da `parse`. Il grafo statico del linguaggio: da `resolve`. L'ambiente preparato | Gli archi osservati, i campionati a parte |
+| 6 `observe` | Esegue i test e registra che cosa chiamano; avvia l'app che il progetto dichiara e ne preme i controlli in un browser | I comandi di test, di avvio e di build: da `scan`. I riferimenti: da `parse`. Il grafo statico del linguaggio: da `resolve`. L'ambiente preparato | Gli archi osservati, i campionati a parte; i controlli premuti, con le funzioni del progetto che hanno fatto girare |
 | 7 `connect` | Unisce, e dice che cosa manca | Tutto | Il grafo completo: gli archi fra moduli, gli ingressi dei flussi uniti alle loro definizioni, l'osservato contro il provato, e le lacune |
 
 | Step | Adattatore | Strumento sotto | Oggi nel codice |
@@ -162,7 +162,7 @@ Applicato (Scelte, 6). Prova: `tests/test_codebase_map_reactive_server.py`; `tes
 | 3 `plan` | nessuno | — | Manca: decidono la pre-mappa, `engine_pass.pass_plan` (dai linguaggi che la lettura ha trovato) e il `plan` di ogni osservatore |
 | 4 `parse` | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari (`languages/sql.py`, `plsql.py`) | `snapshot.py write`, fuori dalla pipeline e per primo (8.3) |
 | 5 `resolve` | resolver | Un indicizzatore SCIP per tecnologia (scip-typescript serve quattro linguaggi); per i fogli di stile i loro parser | Step `analyze` |
-| 6 `observe` | observer | Un registratore per linguaggio (`*_record.*`) | Step `dynamic`; senza grafo statico non parte (`no-static-graph`) |
+| 6 `observe` | observer | Un registratore per linguaggio (`*_record.*`); per l'app, Chromium senza interfaccia di Playwright (`dynamic/app.py`, `explore.cjs`) | Step `dynamic`; senza grafo statico non parte (`no-static-graph`); l'app si avvia solo con npm (`start_runner_not_supported` per pnpm, Yarn e Bun) |
 | 7 `connect` | nessuno | — | Step `union`: dice ciò che il grafo ha e non ha, non unisce ancora |
 
 Perché `recognize` e `plan` stanno prima di `parse`: `recognize` non legge nulla di ciò che `parse` produce (`technologies.py`: solo i fatti dello step 1), mentre `parse` deve sapere che cosa leggere e come. Perché gli archi fra moduli e gli ingressi dei flussi stanno in `connect`: uniscono ciò che `parse` legge a ciò che `scan` stabilisce, e cambiano quando cambia uno dei due; in `parse`, a un modulo che lo strumento di build corregge dopo si dovrebbero rileggere file che non sono cambiati. Oggi li scrive lo step `scan` (`module_derive`, `premap/flow_entries.py`), perché gira dopo la lettura.

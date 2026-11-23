@@ -88,7 +88,7 @@ flowchart LR
   plan["3 plan<br>decide chi gira su cosa"] --> parse
   parse["4 parse<br>legge i sorgenti<br>che il piano gli dà"] --> resolve
   resolve["5 resolve<br>risolve le chiamate"] --> observe
-  observe["6 observe<br>esegue i test<br>e guarda cosa chiamano"] --> connect
+  observe["6 observe<br>esegue i test, avvia l'app<br>e guarda cosa chiamano"] --> connect
   connect["7 connect<br>unisce e dice cosa manca"] --> G[(Grafo completo)]
 ```
 
@@ -99,7 +99,7 @@ flowchart LR
 | 3 `plan` (manca) | Quale adattatore gira su quale parte, con che cosa gli serve, e quale no? | nessuno | — | No |
 | 4 `parse` | Che cosa c'è in ogni sorgente che il piano gli dà: simboli, import, chiamate? | parser | tree-sitter, `ast` di Python; SQL e PL/SQL ancora con espressioni regolari | No |
 | 5 `resolve` | Dove arriva ogni chiamata? | resolver | un indicizzatore SCIP per tecnologia; per i fogli di stile i loro parser | Solo nel container |
-| 6 `observe` | Che cosa chiamano davvero i test? | observer | un registratore per linguaggio | Solo nel container |
+| 6 `observe` | Che cosa chiamano davvero i test, e che cosa fa girare ogni controllo dell'app? | observer | un registratore per linguaggio; per l'app, Chromium senza interfaccia di Playwright | Solo nel container |
 | 7 `connect` | Qual è il grafo intero, e che cosa non contiene? | nessuno | — | No |
 
 Dopo la pipeline, schede semantiche e flussi leggono il grafo completo.
@@ -145,6 +145,7 @@ flowchart LR
   end
   subgraph observe
     f1([dynamic-record-javascript<br>npm test])
+    f2([l'app avviata ed esplorata<br>npm start, Chromium])
   end
   subgraph connect
     g1[grafo completo]
@@ -249,6 +250,8 @@ Strumenti, versioni e licenze per linguaggio: `docs/plugins/codebase-map-linguag
 ## Passo dinamico
 
 Lo step `dynamic` (`scripts/dynamic/`) esegue i test che il progetto dichiara (i `tests` della pre-mappa, mai una convenzione) nel container: le dipendenze ripristinate a modo del progetto nella preparazione, i test nell'esecuzione, senza rete. I servizi che la CI avvia accanto ai test (i service container di GitHub Actions, i `services:` di GitLab CI, i servizi che `docker compose up` avvia in un passo di GitHub Actions o in uno script di test npm, letti dal `config` di Compose senza motore: la faccetta `services`) partono accanto a ogni esecuzione, in un pod con `--network none`: i test li raggiungono a localhost o per nome, e nient'altro (`container.beside`). I passi di un job di GitHub Actions prima del suo passo di test, e le righe di `before_script` e `script` di un job di GitLab CI prima di quella che esegue i test (la faccetta `ci_steps`; un `!reference` si risolve come lo risolve GitLab, e uno che il file non ha è `reference_not_found`: `premap/renovate.py`), girano in ordine alla fine della preparazione, con i servizi accanto e le variabili del workflow, del job e del passo, come li esegue il runner; poi il pod lascia la rete della preparazione, e i test trovano i servizi con ciò che i passi vi hanno scritto e ricevono le variabili del loro passo. Un passo che Daodan non esegue (un'azione diversa dal checkout e dal setup di una toolchain, un `if:`, un'espressione `${{ }}`) è `ci_step_not_run`, uno che fallisce `ci_step_failed`, una variabile del passo di test che la CI o la shell calcola `ci_step_incomplete`, un servizio che non parte `service_unavailable`, un'esecuzione di test che nessun job esegue, dove la CI ne esegue altri, `tests_not_in_ci`. Un osservatore per tecnologia li fa girare sotto un registratore esatto, che dà ogni chiamata con chiamante, chiamato e sito, con le toolchain che il progetto dichiara. Le chiamate entrano nello store degli archi come archi osservati, con resolver `ENTRY@VERSION`, e chiudono i buchi dove sono avvenute. Un arco osservato prova che una chiamata può arrivare lì, non che arrivi solo lì; una chiamata che nessun test esegue resta come l'hanno lasciata gli step statici. Il profiler a campioni di una toolchain è una seconda fonte dichiarata, con confidenza `sampled`, mai contrapposta a un arco provato. Osservatori e registratori per linguaggio: `docs/plugins/codebase-map-linguaggi.md`.
+
+Lo stesso step avvia l'app che il progetto dichiara (`scripts/dynamic/app.py`): lo script `start` del modulo, altrimenti `dev`, dai fatti `starts` e `builds` della pre-mappa, con il comando dichiarato e mai cambiato, nel container e senza rete nell'esecuzione. Un Chromium senza interfaccia di Playwright apre l'app, legge i controlli di ogni pagina dall'albero di accessibilità, ne preme ognuno una volta e tiene le funzioni del progetto che hanno girato (`explore.cjs`); un controllo premuto diventa un ingresso dei collegamenti quando il suo gestore è una funzione dello snapshot. Ciò che non accade è una lacuna con la causa: nessun avvio dichiarato, un avvio che chiede una build che nessuno dichiara, un runner che non è npm (`start_runner_not_supported`: pnpm, Yarn e Bun non sono ancora eseguiti), `build_failed`, `app_not_started`, `not_ready`, `port_not_declared`, `app_not_stopped`, `explore_failed`.
 
 Ogni corsa dice come sono finiti i suoi test: `ran`, `timeout`, `killed`, `not_started`, `no_tests`. Sono lacune, mai silenzio: un linguaggio senza osservatore, un progetto senza comando di test dichiarato, una corsa senza motore di container, un risultato che rompe il contratto dell'osservatore (`observer-malformed`), una corsa in cui nessun test è partito (`not-run`) e una che non ha piazzato righe di un linguaggio (`not-observed`); di queste non si tiene nulla e l'analisi successiva riprova. `DAODAN_DYNAMIC=off` salta lo step. Disegno e misure: `docs/specs/2026-11-12-passo-dinamico.md`.
 

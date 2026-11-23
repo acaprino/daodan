@@ -32,7 +32,7 @@ flowchart LR
 | 3. `plan` | Decides which adapter runs on which part, and what each needs | No | Not yet: decided in three places |
 | 4. `parse` | Reads the source files the plan gives it: symbols, imports, calls | No | Before the pipeline, with the inventory (`snapshot.py write`) |
 | 5. `resolve` | Resolves each call to its target | Only inside the container | Step `analyze` |
-| 6. `observe` | Runs the project's tests and records what they call | Only inside the container | Step `dynamic` |
+| 6. `observe` | Runs the project's tests and records what they call; starts the app the project declares and presses its controls in a browser | Only inside the container | Step `dynamic` |
 | 7. `connect` | Joins the graphs and lists what is missing | No | Step `union`: it lists, it does not join yet |
 
 After the pipeline the model writes semantic cards and link rules, and flows connect writers, readers and user
