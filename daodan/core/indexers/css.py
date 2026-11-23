@@ -125,7 +125,7 @@ def _sha(path: Path) -> str:
 
 # The files the graph reads, or lists as missing with the reason.
 SUFFIXES = STYLESHEETS + MARKUP + tuple(COMPONENTS) + css_typescript.SUFFIXES + tuple(UNREAD)
-MIN_FREE = 1536 * 2**20  # 1,458 MB peak of the TypeScript run on tududi (benchmarks/inference-audit, 14 November 2026)
+MIN_FREE = 1536 * 2**20  # 1,458 MB peak of the TypeScript run on a real project (benchmarks/inference-audit, 14 November 2026)
 NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "stylesheet", (LANGUAGE,), frozenset(), False
 READS = SUFFIXES  # the stage hands `index` the snapshot's files with these suffixes
 # The snapshot's languages whose files bring this entry into the pass.
