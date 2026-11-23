@@ -1,6 +1,6 @@
 # Pipeline di analisi: step, analyzer con adattatori, listener
 
-**Stato:** approvata dal proprietario il 15 novembre 2026, che ha lasciato a Claude le scelte rimaste (sezione «Scelte»). Lo step 3 è applicato (`pipeline.Dynamic`, `dynamic/`), con gli osservatori di Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#. Le regole della mappa dei moduli e dello stack (sezione 1, «Scansione: la mappa dei moduli» e «Stack») e della reattività (sezione 6) le ha decise il proprietario il 17 novembre 2026 e sono applicate; i motivi sono in «Scelte», 4–6. Il 20 novembre 2026, con la divisione per aspetto della [spec dei flussi](2026-11-18-flussi-e-mappa-del-sistema.md), stanno qui l'analisi unificata: una preparazione per analisi («Preparazione»), uno strumento ufficiale per linguaggio (sezione 2), la scelta 7 con i suoi limiti e ciò che resta da decidere. Il 22 e il 23 novembre 2026 il proprietario approva la sezione 8: i nomi, l'ordine degli step da ciò che ognuno deve sapere prima di partire, il piano. Nel codice ci sono la solidità (8.9) e i passi 1–3 di 8.11 (23 novembre 2026); il resto non è applicato, e il processo con i nomi nuovi è spiegato in [Codebase Map, sezione Pipeline](../plugins/codebase-map.md#pipeline). **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
+**Stato:** approvata dal proprietario il 15 novembre 2026, che ha lasciato a Claude le scelte rimaste (sezione «Scelte»). Lo step 3 è applicato (`pipeline.Dynamic`, `dynamic/`), con gli osservatori di Python, JavaScript e TypeScript, Go, Java e Kotlin, Rust, C e C++, C#. Le regole della mappa dei moduli e dello stack (sezione 1, «Scansione: la mappa dei moduli» e «Stack») e della reattività (sezione 6) le ha decise il proprietario il 17 novembre 2026 e sono applicate; i motivi sono in «Scelte», 4–6. Il 20 novembre 2026, con la divisione per aspetto della [spec dei flussi](2026-11-18-flussi-e-mappa-del-sistema.md), stanno qui l'analisi unificata: una preparazione per analisi («Preparazione»), uno strumento ufficiale per linguaggio (sezione 2), la scelta 7 con i suoi limiti e ciò che resta da decidere. Il 22 e il 23 novembre 2026 il proprietario approva la sezione 8: i nomi, l'ordine degli step da ciò che ognuno deve sapere prima di partire, il piano. Nel codice ci sono la solidità (8.9), i passi 1–3 di 8.11 e il formato comune degli adattatori di ingressi (8.13), del 23 novembre 2026; il resto non è applicato, e il processo con i nomi nuovi è spiegato in [Codebase Map, sezione Pipeline](../plugins/codebase-map.md#pipeline). **Piano:** [analisi unificata](../plans/2026-11-20-analisi-unificata.md).
 
 Il proprietario chiede (15 novembre 2026) un codice modulare, pulito e manutenibile: un'architettura a step, il pattern adapter, e la possibilità di registrare listener dell'intero processo di analisi. Primo step: una scansione veloce di moduli e tecnologie; poi, per ogni linguaggio o framework trovato, un'istanza dell'analyzer che sotto usa lo strumento specifico. Il processo dà feedback, informazioni, log, eventi e avanzamento fino alla generazione del grafo completo.
 
@@ -312,7 +312,7 @@ Il recognizer entra con il passaggio al fork, nella sua spec.
 
 **8.12 Non letto.** Se le fonti della pre-mappa che guardano un framework (`noir`, `nextjs`) siano lavoro che dipende da `recognize`, e vada quindi nel piano. Che cosa resta del container di uno stage chiuso da fuori (8.9). `pass` contro `run`. Quanti punti del codice tocca la rinomina.
 
-**8.13 Il formato comune degli adattatori di ingressi.** *Chiesto dal proprietario il 23 novembre 2026: «un adapter che riesca ad adattare l'output di ogni strumento in un formato unico e condiviso in tutto Daodan». L'inventario che lo regge è letto lo stesso giorno in `premap/`, `entries.py`, `flows.py` e `dynamic/app.py`, in sola lettura (due sonde eseguite). Non applicato.*
+**8.13 Il formato comune degli adattatori di ingressi.** *Chiesto dal proprietario il 23 novembre 2026: «un adapter che riesca ad adattare l'output di ogni strumento in un formato unico e condiviso in tutto Daodan». L'inventario che lo regge è letto lo stesso giorno in `premap/`, `entries.py`, `flows.py` e `dynamic/app.py`, in sola lettura (due sonde eseguite). Applicato lo stesso giorno, tranne i task 14: vedi «Fatto» qui sotto.*
 
 **Scelta di chi scrive: il formato comune parte dalla famiglia delle sorgenti di ingressi** (`noir`, `nextjs`, `react_router`, `angular`, `sveltekit`, `nuxt`, `astro` e i task 14 del [piano](../plans/2026-11-20-ingressi-e-flussi.md)). Le altre famiglie hanno già la loro uscita nello store (simboli, import, archi), e un formato unico fra famiglie sarebbe un sistema di plugin, che 8.4 esclude. È l'applicazione di 8.8 a questa famiglia.
 
@@ -327,6 +327,27 @@ L'adattatore c'è già: `commands(context)`, `read(context, commands, results)` 
 **Prova prima del codice.** Un adattatore finto aggiunto alla tupla: la sua riga di modulo è legata, fusa con una riga di Noir sulla stessa rotta, classificata e offerta, **senza una riga modificata fuori dal suo file e dalla sua tabella**. Il test estende quello di 13b. Poi, a ogni passo: test verdi e uscite uguali sulle pre-mappe registrate.
 
 **Ordine.** (1) La misura di phazly e la suite su Modal sullo stato di oggi, come base. (2) La tupla, la chiave dei collegamenti e il modulo comune. (3) Il binder unico per Next, React Router e SvelteKit. (4) I campi `schema`, `page` e `method` come sopra, e la lettura di Noir, Nuxt e Next negli adattatori. (5) I task 14, una sorgente per volta, solo dopo il passo 4. Una revisione alla fine del passo 4 e di ogni sorgente.
+
+*Fatto il 23 novembre 2026*, in quattro commit, ognuno con la sua prova vista rossa prima del codice:
+
+| Punto | Dove | Prova |
+| --- | --- | --- |
+| 4, gli aiutanti comuni | `premap/frameworks.py`: `folders`, `nearest_first`, `folder_of`, `excerpt`, `column_bytes` | `tests/test_codebase_map_premap_frameworks.py`, con la guardia su ogni modulo di `premap/` |
+| 2, il binder | `binder.bind`, chiamato da `flows.link_facts` e da `entries._declared_rows`; tolti `_next_handlers` e il ciclo di Noir | `tests/test_codebase_map_entry_binder.py`: una sorgente finta aggiunta alla tupla |
+| 1, i campi | `schema` (Next.js e Noir), il `method` dello strumento, `page` (Next.js); `_next_path` in `premap/nextjs.py`; i lettori di `validate_rules` dalle tuple | la stessa sorgente finta offre le sue rotte e assorbe Noir; `dynamic/app._pages` legge `page` |
+| 4, le letture | `premap/noir.rows`, `nuxt.nitro_routes`, `nextjs.typegen` | `test_the_reading_of_a_tools_output_is_in_its_adapter` |
+
+Le uscite: il replay delle 122 pre-mappe registrate cambia solo nelle versioni delle quattro sorgenti. Su 482 collegamenti ricalcolati prima e dopo il binder cambiano solo le sue diciture delle lacune. Su 489 dopo i campi restano uguali rotte, archi e store; cambiano i campi nuovi degli ingressi, il metodo di Noir non più copiato su una pagina e la dicitura del catch-all. Due revisioni Opus.
+
+Scelte fatte nel lavoro:
+- Il nome di un simbolo legato è quello di `Facts.node`; per le esportazioni provate coincide con quello di prima.
+- Una riga di una sorgente fuori dalla tupla (Noir) sulla stessa rotta di una riga di una sorgente della tupla è quella riga, per ogni sorgente della tupla.
+- Noir scrive sempre `handler`, anche vuoto: una riga senza nome è una lacuna del binder.
+- `schema` e `page` li scrivono oggi solo Next.js e Noir: le altre sorgenti li prendono con i loro task, senza cambiare le uscite prima.
+
+Aperti:
+- `premap/flask_app.py` (task 14, in corso altrove) lega ancora dentro `read()`: la guardia lo ferma quando entra nella tupla.
+- Un default anonimo (`export default function () {}`) si legge come `export-missing` e sparisce senza lacuna, come prima.
 
 **Da decidere o non letto.** `handler_source` vale due cose, il nome dell'adattatore e un modo (`inline`, `classe`, `locale`), e il viewer lo mostra. Il nome di un simbolo si costruisce in tre modi (`Facts.node`, `_starts`, Angular) e per un'esportazione anonima possono divergere: dedotto, non provato. Una lacuna su una riga senza regola, o di tipo «nessun ingresso», sembra sparire da `links["gaps"]`: dedotto, da provare. Chi assorbe chi fra Noir e Next lo decide il grado `detector` di 8.7: oggi Noir e Next hanno lo stesso grado.
 
