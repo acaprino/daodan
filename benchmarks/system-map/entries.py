@@ -29,6 +29,15 @@ def _file(symbol: str) -> str:
     return symbol.split("::")[0]
 
 
+def _symbol(candidate: dict) -> str:
+    """A candidate's symbol; a control the browser found (reader `observed`) has none, only the place of its
+    handler (`at`: file, line, name)."""
+    if "symbol" in candidate:
+        return candidate["symbol"]
+    at = candidate["at"]
+    return f"{at['file']}::{at['name']}"
+
+
 def measure(candidates: dict, expected: dict, files: list[str]) -> dict:
     """Per reader and per entry kind, the entries found over those counted; the candidates that are no entry; the
     entries counted apart, per kind; the files no candidate reaches, per folder."""
@@ -45,12 +54,12 @@ def measure(candidates: dict, expected: dict, files: list[str]) -> dict:
     readers = []
     for reader in dict.fromkeys(c["reader"] for c in candidates["candidates"]):
         theirs = [c for c in candidates["candidates"] if c["reader"] == reader]
-        mine = {_file(c["symbol"]) for c in theirs}
+        mine = {_file(_symbol(c)) for c in theirs}
         readers.append({"reader": reader, "candidates": len(theirs),
-                        "not_entries": sum(_file(c["symbol"]) not in entry_files for c in theirs),
+                        "not_entries": sum(_file(_symbol(c)) not in entry_files for c in theirs),
                         "by_kind": {kind: {"found": sum(k == kind and bool(have & mine) for k, have in counted),
                                            "of": sum(k == kind for k, _ in counted)} for kind in kinds}})
-    out = {"<candidates>": [(c["symbol"],) for c in candidates["candidates"]]}
+    out = {"<candidates>": [(_symbol(c),) for c in candidates["candidates"]]}
     for source, target in candidates.get("calls", []):
         out.setdefault(source, []).append((target,))
     reached = {_file(symbol) for symbol in traces.reached(out, "<candidates>")}
