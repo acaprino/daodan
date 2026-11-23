@@ -93,10 +93,10 @@ Molti framework non hanno un comando che elenca le rotte: l'elenco esiste solo d
 | Django | `resolve()` e `urlpatterns` del URLconf | per un percorso, la funzione della vista e lo schema | come elencare tutti gli schemi; nessuno dei comandi inclusi elenca gli URL |
 | Flask | `app.url_map`, `app.view_functions` | la mappa delle regole e, per nome, la funzione | il comando `flask routes` non è nelle pagine lette |
 | NestJS | `SwaggerModule.createDocument(app, config)` | il documento OpenAPI «with all HTTP routes defined», da un'istanza dell'applicazione | se serve `listen()`; il gestore, oltre all'`operationId`; il CLI non ha un comando |
-| Express | nessuna | la documentazione dell'applicazione e del router non ha un'interfaccia né un comando che elenchi le rotte | tutto: resta Noir, finché non si trova un'interfaccia pubblica |
+| Express | nessuna (verificato in sola lettura il 23 novembre: `app._router` è privato in Express 4, `app.router` di Express 5 è l'istanza del router e `router.stack` non è documentato) | la documentazione dell'applicazione e del router non ha un'interfaccia né un comando che elenchi le rotte | **Fatto:** resta Noir, con la lacuna e la causa (`benchmarks/express-routes/`); **aperto:** nulla eseguito, pagine lette troncate |
 | Expo Router | i tipi generati all'avvio del server di sviluppo o da `npx expo customize tsconfig.json`; la rotta `/_sitemap` | i tipi delle rotte in `expo-env.d.ts` | un comando che elenchi le rotte |
 
-Nessuna di queste è stata eseguita. Strumenti di terzi che esistono e non sono stati letti: `express-list-endpoints`, `show_urls` di django-extensions. Piano: [ingressi e flussi](../plans/2026-11-20-ingressi-e-flussi.md), task 14.
+Nessuna di queste è stata eseguita (NestJS ed Expo Router, 23 novembre: aperte, non misurate per mancanza di credenziali Modal; da una lettura dei sorgenti, i tipi di Expo Router nominano i percorsi e non i file: `benchmarks/nestjs-routes/`, `benchmarks/expo-router-routes/`). Strumenti di terzi: `express-list-endpoints` letto il 23 novembre (legge `app._router.stack` con espressioni regolari, non funziona con Express 5: non usato); `show_urls` di django-extensions non letto. Piano: [ingressi e flussi](../plans/2026-11-20-ingressi-e-flussi.md), task 14.
 
 **Due misure in più, decise lo stesso giorno.** La forma della risposta di una rotta confrontata con ciò che il client ne legge, e i contratti fra repository diversi (chi offre una rotta in uno, chi la chiama in un altro): Daodan oggi non fa né l'una né l'altra. Piano, task 15 e 16.
 
