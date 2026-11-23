@@ -77,7 +77,7 @@ Lo step 3 ha un osservatore per tecnologia, con lo stesso pattern degli analyzer
 
 ### 2. Analyzer: un'istanza per tecnologia trovata
 
-- Ogni adattatore si dichiara da solo (`ENTRY`, `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`): i linguaggi che indicizza e i tipi di unità della pre-mappa da cui prende la struttura (`go-module`, `gradle-project`, `cmake-target`, …). Le voci del passaggio si costruiscono da queste dichiarazioni (`indexers.analyzers`), dal più leggero in memoria al più pesante: uno che esaurisce la memoria ferma quelli dopo.
+- Ogni adattatore si dichiara da solo (`NAME`, `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`): i linguaggi che indicizza e i tipi di unità della pre-mappa da cui prende la struttura (`go-module`, `gradle-project`, `cmake-target`, …). Le voci del passaggio si costruiscono da queste dichiarazioni (`indexers.analyzers`), dal più leggero in memoria al più pesante: uno che esaurisce la memoria ferma quelli dopo.
 - Lo step 2 crea un'istanza per ogni tecnologia presente: parte quando lo snapshot ha file dei suoi linguaggi, anche fuori da ogni unità (il codice senza file di build non si perde), e prende le sue unità dalla pre-mappa.
 - Interfaccia comune: `structure(premap)`, `index(...)`, le correzioni del grafo opzionali di oggi (`hops`, `same_range`, `classify`, `static`, `refine`, `missing`, `tasks`).
 - **Uno strumento ufficiale per linguaggio, nessun lettore scritto a mano accanto.** *Deciso dal proprietario il 20 novembre 2026.* Chi ha bisogno di un fatto del codice (la funzione che un legame nomina, il tipo di un attributo) lo prende dall'indice che l'analyzer scrive già nel container preparato: nessun secondo programma e nessuna seconda installazione. Motivo: [ingressi e scoperta dei flussi](2026-11-20-ingressi-e-scoperta-dei-flussi.md), motivo 14.
@@ -258,7 +258,7 @@ Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto 
 | `analyzer.started`, `.finished`, `.unavailable` | Li emettono anche gli osservatori | `adapter.started`, `.finished`, `.unavailable`, con il campo `adapter` |
 | source (in `premap/`) | Si confonde con il sorgente del progetto | scanner; il grado `scanner` di `RANKS` (go-enry, noir) diventa `detector` |
 | premap, pre-map | Due grafie; dice quando viene, non che cosa è | project model, già il nome di `benchmarks/project-model` e dei comandi di modello |
-| `ENTRY`, `NAME` | Due parole per il nome di un adattatore | `NAME` |
+| `ENTRY`, `NAME` | Due parole per il nome di un adattatore | `NAME`; *fatto il 23 novembre per `indexers/`*, `dynamic/` aspetta |
 | step, stage, phase, pass | Quattro livelli senza una regola scritta | `step` della pipeline; `stage` un adattatore sulle sue unità, il nodo del piano; `phase` dentro uno stage; `pass` da confrontare con `run`, non letto |
 | I passi del README (Static, Inference, Dynamic, Semantic) | Non sono i nomi degli step | Il README usa i nomi degli step; Semantic resta dopo la pipeline |
 
@@ -266,7 +266,7 @@ Vincolo: il risultato finale è uguale a quello che si avrebbe aspettando tutto 
 
 **8.8 Dichiarazione comune e controlli dell'orchestratore.**
 
-1. **Una dichiarazione per ogni adattatore:** `NAME` e `VERSION`, più ciò che serve alla sua famiglia (`LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, `RANK`). Oggi `premap/` dichiara `NAME`, `VERSION`, `RANK` in una lista scritta (`SOURCES`); `indexers/` `ENTRY`, `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`; `dynamic/` `ENTRY`, `VERSION`, `LANGUAGES`; `languages/` `language`, scelto dall'estensione. Le famiglie si scoprono dalla dichiarazione, come fa `indexers.analyzers()`. L'ordine di `SOURCES` porta significato (una fonte legge ciò che le precedenti dichiarano; fra pari vince la prima): resta scritto, o diventa un bisogno dichiarato come quelli del piano. Aperto (A1).
+1. **Una dichiarazione per ogni adattatore:** `NAME` e `VERSION`, più ciò che serve alla sua famiglia (`LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`, `RANK`). Oggi `premap/` dichiara `NAME`, `VERSION`, `RANK` in una lista scritta (`SOURCES`); `indexers/` `NAME` (era `ENTRY` fino al 23 novembre), `LANGUAGES`, `UNIT_KINDS`, `NEEDS_CONTAINER`; `dynamic/` `ENTRY`, `VERSION`, `LANGUAGES`; `languages/` `language`, scelto dall'estensione. Le famiglie si scoprono dalla dichiarazione, come fa `indexers.analyzers()`. L'ordine di `SOURCES` porta significato (una fonte legge ciò che le precedenti dichiarano; fra pari vince la prima): resta scritto, o diventa un bisogno dichiarato come quelli del piano. Aperto (A1).
 2. **La freschezza si controlla in un punto solo,** `pipeline._run`, sull'impronta degli ingressi dichiarati (sezione 1). Oggi `_run` non la controlla e non emette mai `step.skipped`: ogni step chiama il suo `ensure`.
 3. **Un test controlla gli ingressi:** ogni ingresso di uno step è l'uscita di uno step prima, o un ingresso della pipeline. *Fatto il 23 novembre:* prova 6.
 

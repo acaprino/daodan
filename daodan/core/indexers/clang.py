@@ -766,7 +766,7 @@ def _folder(path: str | None) -> str:
 NATIVE = frozenset({CMAKE_UNIT, *OTHER_BUILDS, *BUILDS})  # the units that build C and C++ (a go-module through cgo)
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATIVE, True
+NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-clang", ("c", "cpp"), NATIVE, True
 
 
 

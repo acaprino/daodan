@@ -171,7 +171,7 @@ def refine(index, graph: dict, compiled: dict[str, str]) -> None:
 
 # The analyzer this adapter is: the pass's entry, the languages it indexes, the unit kinds of the pre-map it takes
 # its structure from, and whether its build runs only in a container (`indexers.analyzers`).
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-kotlin", ("kotlin",), frozenset({"gradle-project", "maven-module"}), True
+NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "scip-kotlin", ("kotlin",), frozenset({"gradle-project", "maven-module"}), True
 MIN_FREE = 5 * 2**30  # the container's memory: 4,688 MB for all its processes on klaxon (13 November 2026)
 # Under Maven scip-java indexes Java only: `jvm.MAVEN_KOTLIN` indexes the modules' Kotlin after its build, and the
 # targetroot is aggregated again into the index. scip-java runs the build tool it is told (`jvm.tool_line`), else

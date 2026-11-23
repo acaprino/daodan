@@ -126,7 +126,7 @@ def _sha(path: Path) -> str:
 # The files the graph reads, or lists as missing with the reason.
 SUFFIXES = STYLESHEETS + MARKUP + tuple(COMPONENTS) + css_typescript.SUFFIXES + tuple(UNREAD)
 MIN_FREE = 1536 * 2**20  # 1,458 MB peak of the TypeScript run on tududi (benchmarks/inference-audit, 14 November 2026)
-ENTRY, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "stylesheet", (LANGUAGE,), frozenset(), False
+NAME, LANGUAGES, UNIT_KINDS, NEEDS_CONTAINER = "stylesheet", (LANGUAGE,), frozenset(), False
 READS = SUFFIXES  # the stage hands `index` the snapshot's files with these suffixes
 # The snapshot's languages whose files bring this entry into the pass.
 SNAPSHOT_LANGUAGES = ("css", "markup", "vue", "svelte", "astro")
@@ -157,12 +157,12 @@ def index(project_dir: Path, work_dir: Path, *, files: list[str], tsconfig: str 
     files = [rel for rel in files
              if not any(part in DEPENDENCY_DIRS or part.startswith(".") for part in rel.split("/"))]
     try:
-        runtime.memory(ENTRY, MIN_FREE)
+        runtime.memory(NAME, MIN_FREE)
         tailwind = tailwind_runner(project_dir, Path(work_dir))
         built = run(project_dir, node_runner(project_dir, Path(work_dir)), files, tailwind=tailwind,
                     program={"tsconfig": tsconfig, "paths": paths})
     except runtime.Unavailable as error:
-        return runtime.refused(ENTRY, None, error)
+        return runtime.refused(NAME, None, error)
     versions, gaps = built["indexer"]["version"], list(getattr(tailwind, "gaps", ()))
     return {"graph": built, "indexer": {**built["indexer"], "versions": versions,
                                         "version": hashlib.sha256(versions.encode("utf-8")).hexdigest()[:12]},

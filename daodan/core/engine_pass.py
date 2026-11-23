@@ -863,7 +863,7 @@ def compact_report(report: dict, *, report_out: Path | None = None) -> dict:
 
 
 # The analyzers (docs/plans/2026-11-14-grafo-dall-indice.md), each from its adapter's own declaration.
-ENGINES = tuple(EngineSpec(analyzer.ENTRY, tuple(analyzer.LANGUAGES), tuple(getattr(analyzer, "REQUIREMENTS", ())),
+ENGINES = tuple(EngineSpec(analyzer.NAME, tuple(analyzer.LANGUAGES), tuple(getattr(analyzer, "REQUIREMENTS", ())),
                            getattr(analyzer, "IMPORT", "tree_sitter"), getattr(analyzer, "INSTALL", INDEXER_INSTALL),
                            analyzer.__name__.rsplit(".", 1)[-1], needs_container=analyzer.NEEDS_CONTAINER)
                 for analyzer in __import__("indexers").analyzers())

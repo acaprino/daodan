@@ -443,21 +443,23 @@ def test_the_callers_say_a_failure_of_the_scan_step(tmp_path, capsys):
 
 
 def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarations():
-    """An analyzer is one adapter module under `indexers/`: it says its entry, the languages it indexes, the unit
+    """An analyzer is one adapter module under `indexers/`: it says its name, the languages it indexes, the unit
     kinds it takes its structure from and whether its build runs only in a container, and gives its index. No
-    hand-written list names them: a module that declares itself is an analyzer of the pass."""
+    hand-written list names them: a module that declares itself is an analyzer of the pass. Its name is `NAME`, as
+    every adapter's (spec of the pipeline, 8.8 point 1), not `ENTRY`."""
     import importlib
     import indexers
     declared = indexers.analyzers()
-    assert {module.ENTRY for module in declared} == {
+    assert {module.NAME for module in declared} == {
         "scip-go", "scip-rust", "scip-typescript", "scip-python", "scip-java", "scip-kotlin", "scip-clang",
         "scip-dotnet", "stylesheet"}
     for module in declared:
+        assert not hasattr(module, "ENTRY")
         assert module.LANGUAGES and isinstance(module.UNIT_KINDS, frozenset)
         assert isinstance(module.NEEDS_CONTAINER, bool)
         assert module.MIN_FREE > 0
         assert callable(module.structure) and callable(module.index)
-        spec = next(spec for spec in resolve_edges.ENGINES if spec.name == module.ENTRY)
+        spec = next(spec for spec in resolve_edges.ENGINES if spec.name == module.NAME)
         assert (spec.languages, spec.indexer, spec.needs_container) == (
             tuple(module.LANGUAGES), module.__name__.rsplit(".", 1)[-1], module.NEEDS_CONTAINER)
     source = importlib.util.find_spec("resolve_edges").origin
@@ -467,7 +469,7 @@ def test_every_analyzer_declares_itself_and_the_pass_is_built_from_the_declarati
 def test_an_analyzer_takes_the_units_of_the_kinds_it_declares():
     import indexers
     for module in indexers.analyzers():
-        if module.ENTRY == "scip-python":
+        if module.NAME == "scip-python":
             continue  # its runs are the outermost Python projects (`premap.python_runs`)
         if not module.UNIT_KINDS:
             continue  # one run over the snapshot's files (`indexers/css.py`): it takes no unit
@@ -475,7 +477,7 @@ def test_an_analyzer_takes_the_units_of_the_kinds_it_declares():
                             for number, kind in enumerate(sorted(module.UNIT_KINDS))], "workspace": []}
         given = module.structure(record)
         folders = given.get("roots") or {unit["root"] for unit in given.get("units", [])}
-        assert folders, module.ENTRY
+        assert folders, module.NAME
 
 
 

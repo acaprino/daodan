@@ -8,7 +8,7 @@ the project, only choices; the steps run the nodes it gives and nothing else (`s
 `engine_pass.pass_plan`, `dynamic.run`).
 
 A node is `{id, step, adapter, [version], on, container, needs}`: `id` is `<step>:<adapter>` (`parse:<language>`,
-`parse:file-level` for the files with no language, `resolve:<analyzer entry>`, `observe:<observer entry>`); `on` is
+`parse:file-level` for the files with no language, `resolve:<analyzer name>`, `observe:<observer entry>`); `on` is
 `{"languages", "files"}` (counts, never paths), and for a resolver also `unit_kinds`; `container` is whether it runs
 in Daodan's container; `needs` are the ids of the nodes it waits for. A gap is `{kind, language, files, detail}`:
 `no-analyzer` (a language no analyzer lists) or `no-observer` (a language with a resolver and no observer).
@@ -56,7 +56,7 @@ def _analyzers() -> list:
     for spec in engine_pass.ENGINES:
         module = importlib.import_module(f"indexers.{spec.indexer}")
         found.append(types.SimpleNamespace(
-            ENTRY=spec.name, LANGUAGES=spec.languages, VERSION=getattr(module, "VERSION", None),
+            NAME=spec.name, LANGUAGES=spec.languages, VERSION=getattr(module, "VERSION", None),
             UNIT_KINDS=module.UNIT_KINDS, NEEDS_CONTAINER=spec.needs_container,
             SNAPSHOT_LANGUAGES=getattr(module, "SNAPSHOT_LANGUAGES", ())))
     return found
@@ -74,7 +74,7 @@ def need(node: dict, language: str) -> str | None:
         needed = f"parse:{language}"
     else:
         owner = _owner(language)
-        needed = f"resolve:{owner.ENTRY}" if owner else None
+        needed = f"resolve:{owner.NAME}" if owner else None
     return needed if needed in node["needs"] else None
 
 
@@ -176,7 +176,7 @@ def plan(rows, record=None) -> dict:
         sources = sorted(language for language in analyzer.SNAPSHOT_LANGUAGES if files[language])
         # A graph of other languages' files reads them with its own parsers: no parse node of the snapshot is its need.
         needs = [] if analyzer.SNAPSHOT_LANGUAGES else [f"parse:{language}" for language in mine if files[language]]
-        nodes.append(_node("resolve", analyzer.ENTRY, analyzer.VERSION,
+        nodes.append(_node("resolve", analyzer.NAME, analyzer.VERSION,
                            {"languages": mine, "files": sum(files[language] for language in {*mine, *sources}),
                             "unit_kinds": sorted(analyzer.UNIT_KINDS)}, bool(analyzer.NEEDS_CONTAINER), needs))
         resolved += mine
@@ -187,7 +187,7 @@ def plan(rows, record=None) -> dict:
         if mine:
             nodes.append(_node("observe", observer.ENTRY, getattr(observer, "VERSION", None),
                                {"languages": mine, "files": sum(files[language] for language in mine)}, True,
-                               sorted({f"resolve:{owner[language].ENTRY}" for language in mine})))
+                               sorted({f"resolve:{owner[language].NAME}" for language in mine})))
     gaps = []
     served = {language for analyzer in analyzers for language in analyzer.SNAPSHOT_LANGUAGES}
     for language in languages:  # a graph of other languages' files serves one whose files it reads no code of
